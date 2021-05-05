@@ -1,508 +1,236 @@
-1 5.09s 9.55s 0.24s 509644KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stArgsZeroOneBalance/balanceNonConst.json
-1 4.98s 9.08s 0.20s 524784KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stArgsZeroOneBalance/extcodecopyNonConst.json
-1 4.23s 9.82s 0.25s 501480KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stArgsZeroOneBalance/extcodesizeNonConst.json
-1 11.56s 14.77s 0.28s 514084KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stAttackTest/ContractCreationSpam.json
-1 9.03s 17.68s 0.33s 802360KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBadOpcode/invalidAddr.json
-1 5.34s 10.23s 0.24s 569304KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBugs/randomStatetestDEFAULT-Tue_07_58_41-15153-575192.json
-1 6.07s 12.18s 0.28s 635476KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBugs/extcodehashEmpty.json
-1 5.51s 9.57s 0.30s 542884KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Call1024BalanceTooLow.json
-1 5.88s 9.01s 0.28s 605584KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Call1024PreCalls.json
-1 5.98s 10.41s 0.27s 599244KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Call1024OOG.json
-1 6.91s 10.43s 0.21s 523824KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Callcode1024BalanceTooLow.json
-1 6.61s 9.24s 0.26s 603304KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/CallcodeLoseGasOOG.json
-1 7.18s 10.48s 0.26s 560360KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Callcode1024OOG.json
-1 7.03s 10.14s 0.21s 498256KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/callcodeOutput1.json
-1 7.15s 9.69s 0.25s 609348KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/callcodeOutput2.json
-1 6.56s 9.91s 0.22s 553792KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/callcodeOutput3.json
-1 6.82s 9.52s 0.22s 495472KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/callcodeOutput3partial.json
-1 7.00s 11.37s 0.23s 601156KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/CallLoseGasOOG.json
-1 4.87s 9.85s 0.26s 559052KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/CallRecursiveBombPreCall.json
-1 5.85s 10.43s 0.29s 614008KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCodeCopyTest/ExtCodeCopyTests.json
-1 5.73s 10.96s 0.32s 596992KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/create2callPrecompiles.json
-1 6.78s 10.53s 0.22s 526220KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/create2InitCodes.json
-1 5.87s 9.43s 0.20s 469756KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/create2SmartInitCode.json
-1 6.58s 10.56s 0.24s 575712KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/CREATE2_Suicide.json
-1 10.35s 15.19s 0.28s 686840KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/Create2Recursive.json
-1 6.67s 10.56s 0.27s 569296KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CodeInConstructor.json
-1 6.68s 9.95s 0.20s 494832KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Call1024BalanceTooLow.json
-1 7.63s 10.52s 0.28s 539860KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Call1024OOG.json
-1 9.22s 12.94s 0.30s 490004KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CreateResults.json
-1 9.34s 11.97s 0.30s 579760KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Call1024PreCalls.json
-1 8.81s 11.42s 0.41s 554928KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/CallcodeLoseGasOOG.json
-1 10.09s 12.66s 0.34s 582288KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callcodeOutput3.json
-1 9.37s 10.19s 0.34s 512220KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/CallLoseGasOOG.json
-1 9.59s 12.34s 0.33s 621844KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callOutput1.json
-1 9.09s 11.24s 0.29s 543912KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callOutput2.json
-1 8.75s 10.94s 0.36s 502032KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callOutput3.json
-1 8.33s 10.82s 0.35s 589884KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callOutput3partial.json
-1 8.45s 11.58s 0.32s 567356KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/CallRecursiveBombPreCall.json
-1 8.43s 11.72s 0.35s 545476KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Delegatecall1024.json
-1 8.46s 11.56s 0.38s 563704KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Delegatecall1024OOG.json
-1 11.05s 15.30s 0.36s 633664KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP150singleCodeGasPrices/eip2929.json
-1 11.41s 17.23s 0.38s 576892KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP150singleCodeGasPrices/gasCostBerlin.json
-1 11.83s 18.49s 0.46s 597272KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP150singleCodeGasPrices/gasCost.json
-1 7.93s 10.31s 0.26s 512744KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP158Specific/EXTCODESIZE_toNonExistent.json
-1 9.69s 13.98s 0.33s 652928KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/addressOpcodes.json
-1 10.30s 12.78s 0.36s 589864KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/storageCosts.json
-1 8.52s 10.82s 0.24s 492464KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/transactionCosts.json
-1 12.31s 14.84s 0.35s 654632KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/variedContext.json
-1 9.80s 11.34s 0.26s 567036KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/codeCopyZero.json
-1 10.54s 12.89s 0.27s 487480KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/callToNonExistent.json
-1 9.20s 11.42s 0.27s 578968KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashDeletedAccount2.json
-1 10.06s 11.12s 0.28s 622024KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashDeletedAccount1.json
-1 10.79s 13.62s 0.29s 541560KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashDynamicArgument.json
-1 8.78s 10.32s 0.35s 548340KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashNonExistingAccount.json
-1 8.74s 12.67s 0.32s 588916KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashPrecompiles.json
-1 9.31s 13.65s 0.34s 655144KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashSubcallOOG.json
-1 7.65s 12.06s 0.31s 572032KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stInitCodeTest/OutOfGasContractCreation.json
-113 2.33s 4.44s 0.12s 270500KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stPreCompiledContracts2/modexpRandomInput.json
-134 6.56s 4.65s 0.11s 252716KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call20KbytesContract50_2.json
-139 0.02s 0.01s 0.00s 7132KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call50000_identity.json
-134 6.73s 8.82s 0.18s 424152KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call20KbytesContract50_1.json
-1 6.77s 11.50s 0.26s 535664KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call1MB1024Calldepth.json
-139 0.16s 0.02s 0.00s 9500KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call50000.json
-134 6.89s 10.25s 0.24s 440424KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call20KbytesContract50_3.json
-139 0.15s 0.01s 0.00s 8048KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000Byzantium.json
-113 17.63s 6.88s 8.19s 28471280KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stPreCompiledContracts/modexp.json
-1 19.78s 21.45s 0.61s 612264KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000.json
-1 19.51s 19.17s 0.31s 554100KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Return50000.json
-1 8.20s 11.80s 0.38s 574832KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest447.json
-1 12.04s 14.72s 0.47s 876644KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest418.json
-1 6.55s 11.53s 0.26s 609928KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest473.json
-1 6.16s 10.47s 0.28s 541956KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest498.json
-134 30.48s 0.34s 1.17s 200984KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Return50000_2.json
-1 5.01s 10.61s 0.28s 588180KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest541.json
-1 4.91s 8.83s 2.25s 9050480KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest571.json
-134 32.74s 3.50s 0.15s 240160KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest476.json
-134 48.98s 2.33s 1.57s 289388KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest401.json
-134 33.16s 6.22s 0.13s 350776KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest508.json
-134 27.04s 2.52s 0.11s 177748KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest544.json
-1 4.27s 8.37s 0.20s 487252KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stArgsZeroOneBalance/balanceNonConst.json
-1 4.70s 8.92s 0.16s 545892KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stArgsZeroOneBalance/extcodecopyNonConst.json
-1 3.92s 8.24s 0.18s 532120KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stArgsZeroOneBalance/extcodesizeNonConst.json
-1 8.12s 16.49s 0.27s 695960KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBadOpcode/invalidAddr.json
-1 10.37s 13.59s 0.15s 505284KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stAttackTest/ContractCreationSpam.json
-1 5.10s 10.76s 0.24s 583864KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBugs/randomStatetestDEFAULT-Tue_07_58_41-15153-575192.json
-1 5.67s 11.11s 0.24s 591476KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBugs/extcodehashEmpty.json
-1 5.03s 9.13s 0.17s 557504KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Call1024BalanceTooLow.json
-1 5.44s 9.95s 0.21s 575152KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Call1024OOG.json
-1 6.28s 9.93s 0.15s 523304KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Call1024PreCalls.json
-1 6.35s 10.29s 0.21s 635336KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Callcode1024OOG.json
-1 6.21s 9.79s 0.17s 583648KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/CallcodeLoseGasOOG.json
-1 7.24s 10.83s 0.20s 587160KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Callcode1024BalanceTooLow.json
-1 6.17s 8.55s 0.20s 521248KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/callcodeOutput1.json
-1 6.10s 11.29s 0.20s 642716KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/callcodeOutput2.json
-1 5.89s 8.95s 0.18s 530308KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/callcodeOutput3.json
-1 6.14s 9.18s 0.20s 544400KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/callcodeOutput3partial.json
-1 6.33s 9.87s 0.25s 604588KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/CallLoseGasOOG.json
-1 4.21s 9.31s 0.25s 493564KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/CallRecursiveBombPreCall.json
-1 4.76s 9.00s 0.22s 607148KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCodeCopyTest/ExtCodeCopyTests.json
-1 5.25s 9.77s 0.20s 536320KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/create2callPrecompiles.json
-1 6.21s 10.28s 0.20s 514412KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/create2InitCodes.json
-1 5.42s 9.91s 0.19s 540352KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/create2SmartInitCode.json
-1 7.01s 10.67s 0.15s 464904KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/CREATE2_Suicide.json
-1 9.19s 14.94s 0.24s 731188KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/Create2Recursive.json
-1 5.46s 10.47s 0.19s 571060KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CodeInConstructor.json
-1 6.20s 9.17s 0.15s 550112KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Call1024BalanceTooLow.json
-1 6.88s 10.09s 0.21s 602384KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Call1024OOG.json
-1 7.27s 13.07s 0.22s 657728KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CreateResults.json
-1 6.55s 10.35s 0.19s 616440KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Call1024PreCalls.json
-1 6.71s 9.83s 0.16s 515972KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/CallcodeLoseGasOOG.json
-1 6.02s 9.12s 0.16s 554728KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callcodeOutput3.json
-1 6.24s 8.94s 0.21s 552956KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/CallLoseGasOOG.json
-1 6.25s 9.91s 0.23s 585012KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callOutput1.json
-1 5.82s 9.38s 0.22s 542352KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callOutput3.json
-1 6.12s 9.65s 0.20s 573680KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callOutput2.json
-1 6.11s 10.53s 0.26s 623960KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callOutput3partial.json
-1 6.16s 8.92s 0.16s 545160KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/CallRecursiveBombPreCall.json
-1 4.95s 8.83s 0.16s 480264KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Delegatecall1024OOG.json
-1 6.11s 10.33s 0.23s 543612KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Delegatecall1024.json
-1 8.17s 13.53s 0.24s 576924KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP150singleCodeGasPrices/eip2929.json
-1 7.86s 12.81s 0.19s 571328KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP150singleCodeGasPrices/gasCostBerlin.json
-1 7.84s 14.05s 0.26s 684272KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP150singleCodeGasPrices/gasCost.json
-1 6.32s 11.22s 0.18s 555072KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP158Specific/EXTCODESIZE_toNonExistent.json
-1 6.89s 10.88s 0.24s 570260KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/addressOpcodes.json
-1 7.22s 11.43s 0.22s 614804KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/storageCosts.json
-1 6.87s 9.68s 0.20s 544180KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/transactionCosts.json
-1 6.65s 9.22s 0.22s 554476KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/codeCopyZero.json
-1 7.40s 10.26s 0.20s 536264KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/callToNonExistent.json
-1 6.93s 9.77s 0.19s 534076KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashDeletedAccount2.json
-1 7.51s 10.17s 0.22s 590040KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashDeletedAccount1.json
-1 10.18s 12.83s 0.23s 631708KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/variedContext.json
-1 8.47s 10.62s 0.25s 583828KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashDynamicArgument.json
-1 5.86s 9.13s 0.23s 583636KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashNonExistingAccount.json
-1 6.58s 10.24s 0.22s 577704KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashPrecompiles.json
-1 6.46s 10.95s 0.20s 520400KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashSubcallOOG.json
-1 5.12s 9.62s 0.24s 582348KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stInitCodeTest/OutOfGasContractCreation.json
-113 1.62s 3.43s 0.09s 268660KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stPreCompiledContracts2/modexpRandomInput.json
-1 5.15s 9.01s 0.21s 583208KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call1MB1024Calldepth.json
-1 6.32s 10.47s 0.23s 538324KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call20KbytesContract50_3.json
-1 7.02s 11.57s 0.19s 591792KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call20KbytesContract50_1.json
-1 9.44s 13.16s 0.26s 528424KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call20KbytesContract50_2.json
-113 14.45s 6.49s 7.75s 31828688KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stPreCompiledContracts/modexp.json
-1 13.24s 18.77s 0.57s 538076KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000Byzantium.json
-1 12.96s 19.12s 0.69s 678368KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000.json
-1 5.57s 9.17s 0.20s 523532KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest401.json
-1 6.04s 9.05s 0.15s 455228KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest447.json
-1 14.45s 16.50s 0.25s 566524KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Return50000.json
-1 9.25s 12.58s 0.37s 821716KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest418.json
-1 16.78s 17.76s 0.19s 519768KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Return50000_2.json
-1 6.96s 10.13s 0.25s 586568KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest473.json
-1 6.84s 9.90s 0.20s 563088KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest476.json
-1 6.36s 10.88s 0.22s 610900KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest498.json
-1 6.34s 9.16s 0.16s 503064KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest508.json
-1 6.75s 10.15s 0.25s 585252KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest513.json
-1 6.35s 10.06s 0.25s 538172KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest544.json
-1 6.89s 9.94s 0.15s 571772KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest541.json
-1 6.38s 9.09s 0.20s 548640KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest571.json
-1 7.48s 10.25s 0.17s 459736KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest572.json
-1 6.84s 11.24s 0.20s 526552KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest577.json
-1 6.83s 9.36s 0.20s 576324KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest596.json
-1 6.52s 10.07s 0.21s 571452KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest618.json
-1 6.85s 9.80s 0.20s 587320KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest628.json
-1 6.75s 11.38s 0.27s 637652KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest636.json
-1 6.35s 9.44s 0.24s 570048KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest16.json
-1 6.44s 9.63s 0.18s 566328KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest171.json
-1 6.75s 9.67s 0.23s 493364KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest17.json
-1 9.52s 14.20s 0.29s 827112KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest159.json
-1 5.72s 8.82s 0.18s 525940KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest199.json
-1 5.78s 9.77s 0.19s 454768KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest207.json
-1 6.61s 8.70s 0.20s 534540KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest228.json
-1 6.85s 10.69s 0.23s 703260KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest246.json
-1 7.43s 10.01s 0.17s 516560KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest244.json
-1 6.67s 9.80s 0.24s 513644KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest261.json
-1 6.52s 9.77s 0.25s 588896KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest265.json
-1 6.58s 8.79s 0.22s 561924KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest26.json
-1 6.18s 9.08s 0.21s 487800KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest282.json
-1 7.09s 9.54s 0.19s 561640KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest287.json
-1 6.39s 10.53s 0.19s 604596KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest295.json
-1 5.96s 10.25s 0.22s 588988KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest30.json
-1 6.56s 10.36s 0.21s 601708KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest320.json
-1 6.75s 10.12s 0.22s 570300KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest340.json
-1 6.56s 9.00s 0.21s 516628KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest346.json
-1 6.91s 8.08s 0.21s 521160KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest365.json
-1 6.09s 8.22s 0.24s 586236KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest36.json
-1 6.03s 10.45s 0.23s 643472KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest43.json
-1 6.77s 10.35s 0.22s 582604KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest42.json
-1 6.15s 8.89s 0.17s 494416KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest45.json
-1 6.47s 9.99s 0.21s 479488KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest7.json
-1 5.80s 7.93s 0.17s 520300KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRefundTest/refund50percentCap.json
-1 6.08s 9.23s 0.20s 541572KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRefundTest/refund600.json
-1 7.41s 13.19s 0.24s 667840KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRecursiveCreate/recursiveCreateReturnValue.json
-1 7.48s 9.66s 0.23s 556752KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stReturnDataTest/modexp_modsize0_returndatasize.json
-1 6.85s 9.08s 0.21s 515756KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/LoopCallsThenRevert.json
-1 7.00s 9.00s 0.19s 518380KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/LoopCallsDepthThenRevert2.json
-1 7.41s 9.67s 0.21s 570672KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/LoopCallsDepthThenRevert3.json
-1 7.37s 10.00s 0.16s 585732KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/LoopCallsDepthThenRevert.json
-1 7.22s 8.87s 0.17s 559712KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/LoopDelegateCallsDepthThenRevert.json
-1 5.67s 10.08s 0.18s 538596KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/PythonRevertTestTue201814-1430.json
-1 5.37s 11.49s 0.22s 589368KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/RevertSubCallStorageOOG2.json
-1 5.95s 9.27s 0.20s 556768KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/RevertRemoteSubCallStorageOOG.json
-1 6.69s 9.50s 0.20s 594224KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/ContractInheritance.json
-1 7.65s 10.06s 0.17s 565304KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/CallLowLevelCreatesSolidity.json
-1 7.29s 9.35s 0.17s 552744KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestBlockAndTransactionProperties.json
-1 7.28s 10.25s 0.21s 619880KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestContractInteraction.json
-1 7.98s 9.59s 0.17s 534420KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestContractSuicide.json
-1 7.47s 9.14s 0.22s 576860KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestCryptographicFunctions.json
-1 6.18s 8.63s 0.16s 504896KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestKeywords.json
-1 6.85s 9.14s 0.22s 547272KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestOverflow.json
-1 6.64s 9.00s 0.17s 584988KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestStructuresAndVariabless.json
-1 7.07s 10.06s 0.22s 584428KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestStoreGasPrices.json
-1 6.02s 9.17s 0.20s 612264KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSpecialTest/deploymentError.json
-1 6.36s 9.71s 0.20s 578444KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/InitCollision.json
-1 6.41s 10.09s 0.21s 559024KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/InitCollisionNonZeroNonce.json
-1 6.82s 11.44s 0.24s 529156KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0to0.json
-1 8.00s 11.56s 0.22s 605364KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0to0to0.json
-1 8.61s 11.36s 0.21s 616412KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0toX.json
-1 8.68s 11.83s 0.21s 610332KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0toXto0.json
-1 8.92s 11.19s 0.21s 540336KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0toXto0toX.json
-1 9.55s 12.88s 0.22s 562332KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0to0toX.json
-1 9.45s 13.08s 0.24s 589396KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0toXtoX.json
-1 9.56s 12.39s 0.19s 530392KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0toXtoY.json
-1 7.36s 9.35s 0.23s 552712KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/SstoreCallToSelfSubRefundBelowZero.json
-1 7.65s 10.60s 0.25s 523156KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_changeFromExternalCallInInitCode.json
-1 7.73s 9.33s 0.14s 534380KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_gasLeft.json
-1 9.64s 12.72s 0.19s 587812KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_Xto0.json
-1 9.10s 13.01s 0.21s 559380KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_Xto0to0.json
-1 9.34s 12.07s 0.24s 623124KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_Xto0toX.json
-1 9.01s 11.53s 0.21s 550196KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_Xto0toXto0.json
-1 8.47s 10.90s 0.21s 524368KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_Xto0toY.json
-1 8.92s 11.81s 0.22s 612416KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoX.json
-1 9.41s 10.97s 0.21s 491596KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoXto0.json
-1 9.51s 12.58s 0.24s 571944KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoXtoX.json
-1 8.33s 11.07s 0.24s 586448KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoXtoY.json
-1 8.18s 10.67s 0.19s 567312KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoY.json
-1 8.10s 11.20s 0.21s 607036KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoYtoX.json
-1 9.05s 12.20s 0.23s 682992KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoYto0.json
-1 7.71s 10.55s 0.24s 594452KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoYtoY.json
-1 7.12s 11.06s 0.21s 592164KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoYtoZ.json
-1 5.52s 9.52s 0.21s 589416KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_ABAcalls2.json
-1 5.89s 9.44s 0.18s 551760KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_ABAcalls3.json
-1 6.15s 9.20s 0.21s 515220KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1024BalanceTooLow2.json
-1 6.07s 9.32s 0.19s 559132KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1024BalanceTooLow.json
-1 6.91s 9.36s 0.22s 554604KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1024OOG.json
-1 7.05s 9.27s 0.24s 525660KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1024PreCalls2.json
-1 6.23s 8.37s 0.20s 562076KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1024PreCalls.json
-1 7.19s 9.47s 0.19s 578648KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1024PreCalls3.json
-1 6.04s 9.90s 0.19s 591584KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call10.json
-1 6.11s 9.09s 0.19s 526944KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth.json
-1 11.74s 14.64s 0.13s 504168KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000_ecrec.json
-1 11.96s 14.94s 0.21s 540636KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000_identity2.json
-1 4.52s 9.80s 0.25s 590816KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcall_00_OOGE_1.json
-1 12.68s 17.11s 0.23s 596004KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000.json
-1 5.24s 9.96s 0.23s 662440KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcall_00_OOGE_2.json
-1 6.62s 10.23s 0.22s 517636KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcall_00_OOGE.json
-1 6.43s 8.51s 0.20s 572472KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcall_000_OOGMAfter2.json
-1 6.40s 9.39s 0.21s 554268KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcall_000_OOGMBefore.json
-1 6.85s 10.11s 0.22s 631540KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGE_2.json
-1 6.84s 9.66s 0.22s 520032KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGE.json
-1 6.56s 9.35s 0.19s 550168KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGMAfter2.json
-1 6.87s 9.26s 0.19s 577772KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGMAfter_2.json
-1 6.56s 9.88s 0.20s 610532KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGMAfter_3.json
-1 6.83s 9.73s 0.19s 536272KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGMBefore2.json
-1 7.46s 11.08s 0.22s 585108KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGMAfter.json
-1 7.34s 10.89s 0.18s 545388KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGMBefore.json
-1 8.04s 11.12s 0.21s 591640KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcode_01_OOGE_2.json
-1 7.31s 9.49s 0.22s 590788KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGE_2.json
-1 66.25s 82.54s 1.22s 2757108KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStackTests/underflowTest.json
-1 7.02s 9.86s 0.18s 550508KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGE.json
-1 6.90s 9.14s 0.23s 556076KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGMAfter_2.json
-1 6.99s 9.56s 0.16s 535932KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGMAfter2.json
-1 7.20s 9.76s 0.25s 507628KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGMAfter_3.json
-1 7.31s 9.31s 0.17s 559448KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGMAfter.json
-1 7.56s 9.76s 0.20s 549684KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGMBefore2.json
-1 6.84s 9.76s 0.19s 567068KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGMBefore.json
-1 6.88s 8.80s 0.22s 535540KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGE.json
-1 7.28s 10.02s 0.17s 530332KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGMAfter_1.json
-1 7.37s 10.25s 0.18s 490860KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGMAfter_2.json
-1 7.51s 9.47s 0.21s 585128KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGMAfter2.json
-1 7.47s 9.80s 0.19s 480812KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGMAfter.json
-1 7.71s 11.20s 0.19s 558432KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGMBefore2.json
-1 7.84s 10.75s 0.23s 622008KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGMBefore.json
-1 8.10s 10.74s 0.19s 597028KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callChangeRevert.json
-1 7.92s 9.74s 0.21s 538100KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecall_10_OOGE.json
-1 7.98s 10.19s 0.23s 481420KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecall_10_OOGE_2.json
-1 6.86s 10.17s 0.20s 584188KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGE.json
-1 7.11s 9.65s 0.22s 575640KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGE2.json
-1 8.43s 9.89s 0.21s 546776KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMAfter_2.json
-1 7.26s 9.07s 0.23s 630224KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMAfter2.json
-1 7.10s 9.47s 0.18s 472304KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMAfter_3.json
-1 7.72s 10.37s 0.21s 506816KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMAfter.json
-1 7.04s 10.00s 0.17s 563816KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMBefore2.json
-1 7.44s 10.74s 0.21s 555440KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMBefore.json
-1 7.07s 9.25s 0.16s 524208KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGE.json
-1 7.63s 9.71s 0.21s 551100KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGE_2.json
-1 7.71s 9.15s 0.13s 543332KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMAfter_1.json
-1 7.70s 10.46s 0.21s 556020KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMAfter_3.json
-1 8.09s 10.50s 0.20s 529228KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMAfter2.json
-1 8.09s 10.68s 0.20s 580456KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMAfter.json
-1 6.67s 9.25s 0.19s 559988KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMBefore.json
-1 7.89s 10.16s 0.22s 554624KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMBefore2.json
-1 7.34s 9.94s 0.18s 534208KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGE2.json
-1 7.36s 9.93s 0.24s 505760KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMAfter_2.json
-1 7.63s 9.15s 0.25s 550560KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGE.json
-1 7.74s 10.42s 0.20s 583256KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMAfter2.json
-1 7.45s 10.48s 0.23s 545256KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMAfter_3.json
-1 6.77s 9.19s 0.17s 474504KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMAfter.json
-1 6.26s 9.96s 0.23s 560952KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMBefore2.json
-1 6.58s 9.33s 0.21s 581988KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMBefore.json
-1 6.84s 10.50s 0.20s 532776KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callCreate2.json
-1 6.16s 10.98s 0.26s 608912KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_calldelcode_01_OOGE.json
-1 6.69s 9.97s 0.24s 541720KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_CallGoesOOGOnSecondLevel2.json
-1 6.20s 10.79s 0.18s 581708KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_CallLoseGasOOG.json
-1 6.05s 10.45s 0.29s 627936KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_CallRecursiveBomb3.json
-1 6.40s 9.44s 0.23s 527048KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_CREATE_ContractSuicideDuringInit.json
-1 6.84s 8.99s 0.20s 541240KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_contractCreationOOGdontLeaveEmptyContractViaTransaction.json
-1 7.76s 11.73s 0.17s 490900KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_contractCreationMakeCallThatAskMoreGasThenTransactionProvided.json
-1 6.80s 9.11s 0.17s 554284KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_InternalCallHittingGasLimit2.json
-1 7.32s 10.71s 0.20s 544212KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_ExecuteCallThatAskForeGasThenTrabsactionHas.json
-1 6.11s 10.00s 0.19s 477852KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_LoopCallsDepthThenRevert.json
-1 6.02s 10.09s 0.21s 544484KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_RevertDepth2.json
-1 5.91s 9.34s 0.24s 584280KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticFlagEnabled/StaticcallForPrecompilesIssue683.json
-1 5.87s 9.51s 0.21s 587092KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/ABAcalls1.json
-1 6.04s 9.42s 0.20s 535656KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/ABAcalls2.json
-1 5.76s 9.96s 0.20s 583108KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/ABAcalls3.json
-1 6.22s 9.19s 0.23s 599832KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/balanceInputAddressTooBig.json
-1 6.74s 9.61s 0.21s 501252KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/Call10.json
-1 17.33s 18.63s 0.21s 614320KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000_2.json
-1 6.90s 9.72s 0.14s 462292KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/callcodeToNameRegistratorZeroMemExpanion.json
-1 6.98s 9.75s 0.21s 567304KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallRecursiveBomb0.json
-1 7.40s 9.58s 0.18s 543732KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallRecursiveBomb0_OOG_atMaxCallDepth.json
-1 7.14s 9.79s 0.26s 524820KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallRecursiveBomb1.json
-1 7.01s 9.22s 0.21s 530796KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallRecursiveBomb2.json
-1 7.15s 10.10s 0.21s 567568KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallRecursiveBomb3.json
-1 7.33s 10.52s 0.26s 616496KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallRecursiveBombLog2.json
-1 7.47s 11.19s 0.23s 551112KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallRecursiveBombLog.json
-1 6.84s 9.43s 0.20s 501064KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallToNameRegistrator0.json
-1 6.40s 9.42s 0.17s 540600KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallToNameRegistratorZeorSizeMemExpansion.json
-1 5.95s 8.98s 0.24s 582356KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/extcodecopy.json
-1 4.90s 8.41s 0.18s 543432KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/TestNameRegistrator.json
-1 27.09s 34.92s 0.67s 1490404KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial00_2.json
-1 27.30s 35.29s 0.67s 1696256KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial00.json
-1 26.54s 34.48s 0.65s 1784144KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial10_2.json
-1 28.28s 36.44s 0.60s 1679412KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial01_2.json
-1 27.53s 34.83s 0.70s 1748148KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial01.json
-1 27.40s 36.59s 0.59s 1489264KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial10.json
-1 26.26s 32.96s 0.55s 1577612KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial20.json
-1 29.38s 37.89s 0.70s 1659948KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial11_2.json
-1 27.22s 33.69s 0.65s 1652196KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial20_2.json
-1 27.52s 35.10s 0.64s 1890556KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial11.json
-1 5.06s 10.02s 0.19s 537276KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/dayLimitResetSpentToday.json
-1 10.23s 16.26s 0.23s 731328KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTransactionTest/Opcodes_TransactionInit.json
-1 5.37s 9.44s 0.18s 628088KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/dayLimitSetDailyLimit.json
-1 5.85s 10.30s 0.23s 581740KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/dayLimitSetDailyLimitNoData.json
-1 6.02s 9.52s 0.24s 631900KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedAddOwnerAddMyself.json
-1 21.63s 22.53s 0.19s 527400KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/static_Call50000_sha256.json
-1 6.51s 9.75s 0.20s 613328KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedAddOwner.json
-1 6.33s 10.44s 0.17s 612480KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedChangeOwner_fromNotOwner.json
-1 30.16s 36.73s 0.70s 1612616KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial21_2.json
-1 6.28s 9.45s 0.23s 639800KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedChangeOwner.json
-1 29.76s 36.49s 0.64s 1597424KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial21.json
-1 6.38s 9.89s 0.18s 568640KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedChangeOwnerNoArgument.json
-1 7.35s 10.64s 0.21s 526400KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedChangeOwner_toIsOwner.json
-1 6.61s 9.34s 0.27s 574228KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedChangeRequirementTo0.json
-1 6.94s 9.47s 0.20s 634284KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedChangeRequirementTo1.json
-1 6.94s 10.15s 0.19s 611664KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedChangeRequirementTo2.json
-1 6.97s 9.85s 0.21s 604536KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedRemoveOwner.json
-1 6.56s 9.75s 0.25s 638384KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedRemoveOwner_ownerIsNotOwner.json
-1 7.39s 10.56s 0.20s 618944KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedRemoveOwner_mySelf.json
-1 6.11s 9.14s 0.21s 569440KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletAddOwnerRemovePendingTransaction.json
-1 7.37s 10.26s 0.23s 602920KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletChangeOwnerRemovePendingTransaction.json
-1 6.96s 9.61s 0.21s 582992KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletChangeRequirementRemovePendingTransaction.json
-1 7.20s 10.26s 0.23s 534852KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletConfirm.json
-1 6.75s 10.05s 0.19s 597700KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletExecuteOverDailyLimitMultiOwner.json
-1 6.26s 8.79s 0.25s 613240KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletExecuteOverDailyLimitOnlyOneOwner.json
-1 7.06s 10.34s 0.19s 598992KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletExecuteOverDailyLimitOnlyOneOwnerNew.json
-1 6.50s 9.41s 0.31s 653016KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletExecuteUnderDailyLimit.json
-1 6.19s 9.00s 0.22s 559972KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletKill.json
-1 5.83s 8.57s 0.21s 570092KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletKillToWallet.json
-1 6.05s 9.89s 0.27s 610888KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletRemoveOwnerRemovePendingTransaction.json
-1 5.12s 10.13s 0.18s 529284KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stArgsZeroOneBalance/balanceNonConst_d0g0v1.json
-1 5.39s 9.12s 0.25s 576532KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stArgsZeroOneBalance/balanceNonConst_d0g0v0.json
-1 6.46s 9.67s 0.15s 507156KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stArgsZeroOneBalance/extcodecopyNonConst_d0g0v0.json
-1 6.36s 9.09s 0.18s 485448KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stArgsZeroOneBalance/extcodecopyNonConst_d0g0v1.json
-1 6.30s 9.30s 0.21s 503692KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stArgsZeroOneBalance/extcodesizeNonConst_d0g0v0.json
-1 4.94s 9.22s 0.18s 497688KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stArgsZeroOneBalance/extcodesizeNonConst_d0g0v1.json
-1 3.89s 9.33s 0.27s 562600KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stBugs/randomStatetestDEFAULT-Tue_07_58_41-15153-575192_d0g0v0.json
-1 4.17s 9.16s 0.21s 537468KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stCodeCopyTest/ExtCodeCopyTests_d0g0v0.json
-1 20.78s 32.11s 0.47s 1126712KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stAttackTest/ContractCreationSpam_d0g0v0.json
-1 7.38s 14.19s 0.34s 701688KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stCreate2/Create2Recursive_d0g0v0.json
-1 7.86s 15.43s 0.33s 708308KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stCreate2/Create2Recursive_d0g1v0.json
-1 6.39s 9.41s 0.20s 555440KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stEIP158Specific/EXTCODESIZE_toNonExistent_d0g0v0.json
-1 6.39s 9.45s 0.16s 553096KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/codeCopyZero_d0g0v0.json
-1 6.44s 9.39s 0.20s 571372KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashDeletedAccount1_d0g0v0.json
-1 6.50s 9.53s 0.18s 448588KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashDeletedAccount2_d0g0v0.json
-1 6.64s 9.16s 0.21s 544880KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashDynamicArgument_d0g0v0.json
-1 6.53s 9.10s 0.22s 573648KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashDynamicArgument_d4g0v0.json
-1 6.33s 8.06s 0.20s 505464KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashPrecompiles_d1g0v0.json
-1 6.33s 8.85s 0.18s 533192KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashPrecompiles_d2g0v0.json
-1 6.44s 9.38s 0.19s 523308KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashNonExistingAccount_d0g0v0.json
-1 6.25s 8.72s 0.22s 511400KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashPrecompiles_d3g0v0.json
-1 6.40s 9.90s 0.19s 598904KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashPrecompiles_d6g0v0.json
-1 6.74s 9.29s 0.17s 595664KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashPrecompiles_d4g0v0.json
-1 6.84s 9.49s 0.19s 516984KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashPrecompiles_d7g0v0.json
-1 6.88s 9.40s 0.20s 572204KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashPrecompiles_d5g0v0.json
-1 6.64s 9.33s 0.19s 572560KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashPrecompiles_d8g0v0.json
-1 4.82s 9.40s 0.22s 615324KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashSubcallOOG_d4g0v0.json
-1 5.23s 9.35s 0.20s 551360KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashSubcallOOG_d3g0v0.json
-1 5.29s 10.05s 0.18s 565936KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stExtCodeHash/extCodeHashSubcallOOG_d5g0v0.json
-1 9.80s 17.38s 0.29s 678780KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000Byzantium_d0g1v0.json
-1 10.25s 16.84s 0.27s 652124KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000_d0g1v0.json
-1 7.22s 14.33s 0.32s 775740KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest418_d0g0v0.json
-1 5.36s 11.01s 0.22s 622656KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest476_d0g0v0.json
-1 5.63s 10.77s 0.21s 605308KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest473_d0g0v0.json
-1 4.91s 10.55s 0.24s 595428KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest513_d0g0v0.json
-1 4.78s 9.28s 0.25s 507524KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest544_d0g0v0.json
-1 4.69s 9.07s 0.16s 528076KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest572_d0g0v0.json
-1 4.77s 10.06s 0.23s 625400KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest596_d0g0v0.json
-1 4.91s 10.26s 0.27s 618264KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest618_d0g0v0.json
-1 4.44s 8.81s 0.20s 583936KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom/randomStatetest16_d0g0v0.json
-1 4.78s 10.40s 0.31s 639236KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom/randomStatetest17_d0g0v0.json
-1 5.04s 9.57s 0.18s 455904KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom/randomStatetest228_d0g0v0.json
-1 5.10s 9.15s 0.20s 542276KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom/randomStatetest265_d0g0v0.json
-1 5.28s 9.78s 0.20s 591748KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom/randomStatetest261_d0g0v0.json
-1 5.89s 10.57s 0.26s 544292KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom/randomStatetest295_d0g0v0.json
-1 5.24s 9.24s 0.21s 483856KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom/randomStatetest320_d0g0v0.json
-1 5.46s 10.39s 0.26s 695744KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom/randomStatetest36_d0g0v0.json
-1 5.85s 9.67s 0.19s 551848KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom/randomStatetest365_d0g0v0.json
-1 5.42s 10.24s 0.23s 626576KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom/randomStatetest43_d0g0v0.json
-1 4.81s 10.13s 0.19s 501152KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRandom/randomStatetest7_d0g0v0.json
-1 5.64s 11.70s 0.26s 612664KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRecursiveCreate/recursiveCreateReturnValue_d0g0v0.json
-1 4.59s 10.10s 0.16s 511412KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcall_00_OOGE_1_d1g0v0.json
-1 5.62s 10.13s 0.24s 576908KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcall_00_OOGE_2_d1g0v0.json
-1 5.94s 10.71s 0.29s 619716KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcall_00_OOGE_d1g0v0.json
-1 5.75s 9.42s 0.17s 513540KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcall_000_OOGMAfter2_d0g0v0.json
-1 5.62s 10.19s 0.23s 607408KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcall_000_OOGMBefore_d0g0v0.json
-1 6.49s 9.62s 0.21s 552164KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGE_d0g0v0.json
-1 7.27s 11.19s 0.22s 624252KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGE_2_d1g0v0.json
-1 6.54s 9.43s 0.22s 567024KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGMAfter_2_d1g0v0.json
-1 6.34s 9.51s 0.22s 530196KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGMAfter2_d1g0v0.json
-1 6.67s 9.27s 0.19s 536860KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGMAfter_3_d1g0v0.json
-1 6.45s 10.38s 0.26s 605332KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGMAfter_d1g0v0.json
-1 6.46s 9.68s 0.18s 597104KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGMBefore2_d1g0v0.json
-1 6.59s 10.29s 0.16s 580464KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_001_OOGMBefore_d0g0v0.json
-1 6.96s 10.58s 0.24s 644464KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcode_01_OOGE_2_d1g0v0.json
-1 7.24s 10.62s 0.18s 540864KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGE_2_d1g0v0.json
-1 6.78s 10.06s 0.24s 558896KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGE_d0g0v0.json
-1 6.45s 9.48s 0.16s 476444KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGMAfter2_d0g0v0.json
-1 7.00s 9.51s 0.16s 529500KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGMAfter_2_d1g0v0.json
-1 6.48s 8.88s 0.19s 470800KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGMAfter_3_d1g0v0.json
-1 6.40s 9.33s 0.27s 604700KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGMAfter_d1g0v0.json
-1 5.80s 8.72s 0.18s 452732KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGMBefore2_d0g0v0.json
-1 5.68s 9.61s 0.20s 581996KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecall_010_OOGMBefore_d1g0v0.json
-1 6.50s 9.64s 0.17s 555040KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGE_d1g0v0.json
-1 6.63s 9.47s 0.15s 588880KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGMAfter_1_d1g0v0.json
-1 6.41s 8.85s 0.19s 533244KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGMAfter_2_d1g0v0.json
-1 6.68s 9.49s 0.21s 575752KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGMAfter2_d1g0v0.json
-1 6.68s 9.46s 0.18s 532292KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGMAfter_d1g0v0.json
-1 6.64s 9.71s 0.21s 544432KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGMBefore2_d1g0v0.json
-1 6.59s 9.67s 0.19s 570880KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcodecallcode_011_OOGMBefore_d1g0v0.json
-1 6.58s 10.06s 0.21s 548076KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callChangeRevert_d1g0v0.json
-1 6.52s 8.75s 0.17s 507052KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecall_10_OOGE_2_d1g0v0.json
-1 6.67s 10.01s 0.21s 596280KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecall_10_OOGE_d1g0v0.json
-1 7.05s 10.18s 0.23s 576508KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGE2_d1g0v0.json
-1 7.02s 10.17s 0.27s 601336KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGE_d1g0v0.json
-1 7.02s 10.31s 0.26s 577292KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMAfter_2_d0g0v0.json
-1 6.82s 9.05s 0.24s 556388KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMAfter2_d0g0v0.json
-1 8.51s 11.09s 0.13s 558776KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMAfter2_d0g0v1.json
-1 6.18s 8.91s 0.20s 558164KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMAfter_3_d0g0v1.json
-1 6.63s 9.30s 0.18s 543888KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMAfter_3_d0g0v0.json
-1 6.59s 9.10s 0.21s 538968KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMAfter_d0g0v0.json
-1 6.62s 10.45s 0.22s 588332KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMBefore2_d0g0v0.json
-1 7.05s 10.47s 0.22s 594540KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMBefore2_d0g0v1.json
-1 7.13s 10.51s 0.24s 586200KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMBefore_d0g0v0.json
-1 6.62s 10.13s 0.24s 573592KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGE_d0g0v0.json
-1 6.96s 10.04s 0.17s 534024KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGE_2_d0g0v0.json
-1 6.99s 10.68s 0.18s 509956KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMAfter_1_d0g0v0.json
-1 7.27s 9.19s 0.20s 548716KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMAfter2_d0g0v0.json
-1 6.53s 10.98s 0.18s 591792KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMAfter_d0g0v0.json
-1 7.33s 8.99s 0.15s 518016KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMAfter2_d0g0v1.json
-1 6.73s 9.57s 0.17s 482716KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMBefore2_d0g0v0.json
-1 7.05s 10.42s 0.21s 588544KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMAfter_3_d0g0v0.json
-1 6.41s 8.98s 0.20s 538584KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMBefore2_d0g0v1.json
-1 5.89s 9.40s 0.21s 592764KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMBefore_d0g0v0.json
-1 5.91s 9.03s 0.13s 556068KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGE_d0g0v0.json
-1 6.25s 9.00s 0.16s 529268KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGE2_d0g0v1.json
-1 6.42s 8.55s 0.18s 485004KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGE2_d0g0v2.json
-1 7.19s 8.98s 0.21s 512120KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json
-1 6.24s 9.09s 0.19s 505024KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMAfter2_d0g0v1.json
-1 7.47s 10.48s 0.15s 495848KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMAfter2_d0g0v0.json
-1 6.16s 9.00s 0.16s 463012KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMAfter_3_d0g0v0.json
-1 6.62s 9.35s 0.19s 559868KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMAfter2_d0g0v2.json
-1 6.42s 9.42s 0.17s 476208KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMAfter_d0g0v0.json
-1 6.20s 9.18s 0.24s 473080KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMBefore2_d0g0v1.json
-1 6.09s 9.87s 0.23s 563048KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMBefore_d0g0v0.json
-1 6.74s 10.84s 0.20s 596008KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMBefore2_d0g0v2.json
-1 5.09s 9.71s 0.17s 587880KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callCreate2_d2g0v0.json
-1 5.34s 9.18s 0.17s 441448KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_calldelcode_01_OOGE_d1g0v0.json
-1 4.83s 10.03s 0.23s 543520KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_CallGoesOOGOnSecondLevel2_d1g0v0.json
-1 6.33s 9.61s 0.24s 573584KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_contractCreationOOGdontLeaveEmptyContractViaTransaction_d0g0v0.json
-1 6.68s 9.88s 0.19s 577744KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_CREATE_ContractSuicideDuringInit_d1g0v0.json
-1 6.94s 9.80s 0.16s 558304KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_contractCreationMakeCallThatAskMoreGasThenTransactionProvided_d2g0v0.json
-1 6.56s 8.98s 0.18s 474476KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_ExecuteCallThatAskForeGasThenTrabsactionHas_d1g0v0.json
-1 6.52s 9.74s 0.21s 606340KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_InternalCallHittingGasLimit2_d0g0v0.json
-1 4.08s 10.05s 0.21s 557628KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stSystemOperationsTest/balanceInputAddressTooBig_d0g0v0.json
-1 3.99s 10.30s 0.21s 576596KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stSystemOperationsTest/extcodecopy_d0g0v0.json
-1 5.38s 9.58s 0.18s 579696KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stTransactionTest/Opcodes_TransactionInit_d25g0v0.json
-1 5.48s 9.90s 0.19s 585868KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stTransactionTest/Opcodes_TransactionInit_d35g0v0.json
-1 5.54s 9.54s 0.19s 579140KB kevm interpret --backend llvm --mode NORMAL --schedule BERLIN --chainid 1 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stTransactionTest/Opcodes_TransactionInit_d36g0v0.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBadOpcode/invalidAddr.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stAttackTest/ContractCreationSpam.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBugs/extcodehashEmpty.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Call1024BalanceTooLow.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Call1024OOG.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Call1024PreCalls.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Callcode1024BalanceTooLow.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/Callcode1024OOG.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/CallcodeLoseGasOOG.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/callcodeOutput1.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/callcodeOutput2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/callcodeOutput3.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/callcodeOutput3partial.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/CallLoseGasOOG.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCreateCallCodeTest/CallRecursiveBombPreCall.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/create2callPrecompiles.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/create2InitCodes.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/create2SmartInitCode.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/Create2Recursive.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/CREATE2_Suicide.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreateTest/CodeInConstructor.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Call1024BalanceTooLow.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Call1024OOG.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/CallcodeLoseGasOOG.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Call1024PreCalls.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/CallLoseGasOOG.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callcodeOutput3.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callOutput1.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callOutput2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callOutput3.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/callOutput3partial.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/CallRecursiveBombPreCall.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Delegatecall1024.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stDelegatecallTestHomestead/Delegatecall1024OOG.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP150singleCodeGasPrices/eip2929.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/addressOpcodes.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/test.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/storageCosts.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/transactionCosts.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/variedContext.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stInitCodeTest/OutOfGasContractCreation.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stPreCompiledContracts2/modexpRandomInput.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call1MB1024Calldepth.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stPreCompiledContracts/modexp.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call20KbytesContract50_1.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call20KbytesContract50_2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call20KbytesContract50_3.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000Byzantium.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Return50000_2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest401.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Return50000.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest447.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest508.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest498.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest571.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest541.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest577.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest636.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest628.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest171.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest159.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest199.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest207.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest228.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest246.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest244.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest26.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest287.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest282.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest30.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest346.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest340.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest365.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest42.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom/randomStatetest45.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRefundTest/refund50percentCap.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRecursiveCreate/recursiveCreateReturnValue.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stReturnDataTest/modexp_modsize0_returndatasize.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRefundTest/refund600.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/LoopCallsDepthThenRevert3.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/LoopCallsDepthThenRevert2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/LoopCallsDepthThenRevert.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/LoopCallsThenRevert.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/LoopDelegateCallsDepthThenRevert.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/PythonRevertTestTue201814-1430.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/RevertRemoteSubCallStorageOOG.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRevertTest/RevertSubCallStorageOOG2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/ContractInheritance.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/CallLowLevelCreatesSolidity.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestContractInteraction.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestContractSuicide.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestCryptographicFunctions.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestKeywords.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestOverflow.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestStoreGasPrices.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestStructuresAndVariabless.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSpecialTest/deploymentError.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSolidityTest/TestBlockAndTransactionProperties.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/InitCollision.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/InitCollisionNonZeroNonce.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0to0.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0to0toX.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0to0to0.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0toX.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0toXto0toX.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0toXtoX.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0toXto0.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_0toXtoY.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/SstoreCallToSelfSubRefundBelowZero.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_changeFromExternalCallInInitCode.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_Xto0.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_gasLeft.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_Xto0to0.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_Xto0toX.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_Xto0toY.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoX.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoXto0.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoXtoX.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoXtoY.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoY.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoYto0.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoYtoX.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_Xto0toXto0.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoYtoY.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_XtoYtoZ.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_ABAcalls2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_ABAcalls3.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1024BalanceTooLow2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStackTests/underflowTest.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1024OOG.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1024BalanceTooLow.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1024PreCalls2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1024PreCalls3.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1024PreCalls.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call1MB1024Calldepth.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call10.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000bytesContract50_2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000_ecrec.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000_identity2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callChangeRevert.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMAfter_3.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_CallLoseGasOOG.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_CallRecursiveBomb3.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_LoopCallsDepthThenRevert.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_Return50000_2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_RevertDepth2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/ABAcalls1.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticFlagEnabled/StaticcallForPrecompilesIssue683.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/ABAcalls2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/Call10.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/ABAcalls3.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallRecursiveBomb0.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/callcodeToNameRegistratorZeroMemExpanion.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallRecursiveBomb0_OOG_atMaxCallDepth.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallRecursiveBomb1.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallRecursiveBomb3.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallRecursiveBomb2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallRecursiveBombLog.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallRecursiveBombLog2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallToNameRegistrator0.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/CallToNameRegistratorZeorSizeMemExpansion.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stSystemOperationsTest/TestNameRegistrator.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial00_2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial00.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial01_2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial01.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial10_2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial10.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial11_2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial11.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial20_2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial20.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial21_2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial21.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stTimeConsuming/static_Call50000_sha256.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/dayLimitResetSpentToday.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/dayLimitSetDailyLimit.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/dayLimitSetDailyLimitNoData.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedAddOwnerAddMyself.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedAddOwner.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedChangeOwner_fromNotOwner.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedChangeOwner.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedChangeOwnerNoArgument.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedChangeOwner_toIsOwner.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedChangeRequirementTo0.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedChangeRequirementTo1.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedChangeRequirementTo2.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedRemoveOwner.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedRemoveOwner_mySelf.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/multiOwnedRemoveOwner_ownerIsNotOwner.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletAddOwnerRemovePendingTransaction.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletChangeOwnerRemovePendingTransaction.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletChangeRequirementRemovePendingTransaction.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletConfirm.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletExecuteOverDailyLimitMultiOwner.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletExecuteOverDailyLimitOnlyOneOwner.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletExecuteOverDailyLimitOnlyOneOwnerNew.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletExecuteUnderDailyLimit.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletKill.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletKillToWallet.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stWalletTest/walletRemoveOwnerRemovePendingTransaction.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stAttackTest/ContractCreationSpam_d0g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stCreate2/Create2Recursive_d0g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stCreate2/Create2Recursive_d0g1v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stPreCompiledContracts/modexp_d19g3v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stPreCompiledContracts/modexp_d1g1v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stPreCompiledContracts/modexp_d20g2v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stPreCompiledContracts/modexp_d26g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stPreCompiledContracts/modexp_d31g2v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call50000bytesContract50_2_d0g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call50000bytesContract50_3_d0g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Call50000bytesContract50_3_d0g1v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000Byzantium_d0g1v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000_d0g1v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRecursiveCreate/recursiveCreateReturnValue_d0g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stSpecialTest/JUMPDEST_Attack_d0g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stSpecialTest/JUMPDEST_AttackwithJump_d0g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000bytesContract50_2_d0g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000bytesContract50_3_d0g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000bytesContract50_3_d1g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_Call50000_ecrec_d1g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_d0g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_OOGMAfter_3_d0g0v1.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_100_SuicideMiddle2_d0g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcall_ABCB_RECURSIVE2_d0g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_OOGMAfter_d0g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_SuicideEnd2_d0g0v1.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcallcode_101_SuicideMiddle2_d0g0v1.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_callcodecallcodecall_110_OOGMBefore2_d0g0v2.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_CallGoesOOGOnSecondLevel2_d1g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_CheckOpcodes2_d0g1v1.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_CheckOpcodes2_d1g0v1.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stStaticCall/static_contractCreationMakeCallThatAskMoreGasThenTransactionProvided_d1g0v0.json
+tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stTimeConsuming/sstore_combinations_initial1_d889g0v0.json

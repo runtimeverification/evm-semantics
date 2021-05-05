@@ -153,6 +153,9 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <sigR>       .ByteArray </sigR>               // T_r
                 <sigS>       .ByteArray </sigS>               // T_s
                 <data>       .ByteArray </data>               // T_i/T_e
+                <txType>     0          </txType>
+                <txAccess>   [ .JSONs ] </txAccess>
+                <txChainID>  0          </txChainID>
               </message>
             </messages>
 
@@ -1137,11 +1140,11 @@ For now, I assume that they instantiate an empty account and use the empty data.
            <balance> BAL </balance>
            ...
          </account>
-         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
 
     rule <k> BALANCE ACCT => 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
       requires notBool ACCT in ACCTS
 
     syntax UnStackOp ::= "EXTCODESIZE"
@@ -1152,11 +1155,11 @@ For now, I assume that they instantiate an empty account and use the empty data.
            <code> CODE </code>
            ...
          </account>
-         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
 
     rule <k> EXTCODESIZE ACCT => 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
       requires notBool ACCT in ACCTS
 
     syntax UnStackOp ::= "EXTCODEHASH"
@@ -1172,7 +1175,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
            <balance> BAL </balance>
            ...
          </account>
-         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
       requires notBool #accountEmpty(CODE, NONCE, BAL)
 
      rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k>
@@ -1183,12 +1186,12 @@ For now, I assume that they instantiate an empty account and use the empty data.
            <balance> BAL </balance>
            ...
          </account>
-         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
        requires #accountEmpty(CODE, NONCE, BAL)
 
     rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
       requires notBool ACCT in ACCTS
 ```
 
@@ -1205,11 +1208,11 @@ Should we pad zeros (for the copied "program")?
            <code> PGM </code>
            ...
          </account>
-         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
 
     rule <k> EXTCODECOPY ACCT _MEMSTART _PGMSTART _WIDTH => . ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
       requires notBool ACCT in ACCTS
 ```
 
@@ -2238,6 +2241,15 @@ There are several helpers for calculating gas (most of them also specified in th
     rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
 ```
 
+```.k
+    syntax Int ::= preG0 ( Schedule , Map )       [function]
+                 | preG0 ( Schedule , Map , Int ) [function, klabel("preG0Aux")]
+ // ----------------------------------------------------------------------------
+    rule preG0(SCHED, M) => preG0(SCHED, M, 0)
+    rule preG0(SCHED, ACCT |-> STRGKS:Set M, RESULT) => preG0(SCHED, M, RESULT +Int Gaccesslistaddress <SCHED> +Int size(STRGKS) *Int Gaccessliststoragekey <SCHED>)
+    rule preG0(SCHED, .Map, RESULT) => RESULT
+```
+
 ```{.k .nobytes}
     syntax Int ::= G0 ( Schedule , ByteArray , Bool ) [function]
  // ------------------------------------------------------------
@@ -2342,14 +2354,14 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     syntax Int ::= ScheduleConst "<" Schedule ">" [function, functional]
  // --------------------------------------------------------------------
 
-    syntax ScheduleConst ::= "Gzero"            | "Gbase"          | "Gverylow"      | "Glow"          | "Gmid"        | "Ghigh"
-                           | "Gextcodesize"     | "Gextcodecopy"   | "Gbalance"      | "Gsload"        | "Gjumpdest"   | "Gsstoreset"
-                           | "Gsstorereset"     | "Rsstoreclear"   | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"     | "Gcodedeposit"  | "Gcall"
-                           | "Gcallvalue"       | "Gcallstipend"   | "Gnewaccount"   | "Gexp"          | "Gexpbyte"    | "Gmemory"       | "Gtxcreate"
-                           | "Gtxdatazero"      | "Gtxdatanonzero" | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
-                           | "Gsha3word"        | "Gcopy"          | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
-                           | "Gecadd"           | "Gecmul"         | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"     | "Gcoldsload"    | "Gcoldaccountaccess"
-                           | "Gwarmstorageread"
+    syntax ScheduleConst ::= "Gzero"            | "Gbase"            | "Gverylow"      | "Glow"          | "Gmid"        | "Ghigh"
+                           | "Gextcodesize"     | "Gextcodecopy"     | "Gbalance"      | "Gsload"        | "Gjumpdest"   | "Gsstoreset"
+                           | "Gsstorereset"     | "Rsstoreclear"     | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"     | "Gcodedeposit"  | "Gcall"
+                           | "Gcallvalue"       | "Gcallstipend"     | "Gnewaccount"   | "Gexp"          | "Gexpbyte"    | "Gmemory"       | "Gtxcreate"
+                           | "Gtxdatazero"      | "Gtxdatanonzero"   | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
+                           | "Gsha3word"        | "Gcopy"            | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
+                           | "Gecadd"           | "Gecmul"           | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"     | "Gcoldsload"    | "Gcoldaccountaccess"
+                           | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"
  // ----------------------------------------------------------------------------------------------------------
 ```
 
@@ -2417,6 +2429,9 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gcoldsload         < DEFAULT > => 0
     rule Gcoldaccountaccess < DEFAULT > => 0
     rule Gwarmstorageread   < DEFAULT > => 0
+
+    rule Gaccessliststoragekey < DEFAULT > => 0
+    rule Gaccesslistaddress    < DEFAULT > => 0
 
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true
@@ -2579,17 +2594,21 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "BERLIN" [klabel(BERLIN_EVM), symbol, smtlib(schedule_BERLIN)]
  // ----------------------------------------------------------------------------------
-    rule Gcoldsload         < BERLIN > => 2100
-    rule Gcoldaccountaccess < BERLIN > => 2600
-    rule Gwarmstorageread   < BERLIN > => 100
-    rule Gsload             < BERLIN > => Gwarmstorageread < BERLIN >
-    rule Gsstorereset       < BERLIN > => 5000 -Int Gcoldsload < BERLIN >
+    rule Gcoldsload            < BERLIN > => 2100
+    rule Gcoldaccountaccess    < BERLIN > => 2600
+    rule Gwarmstorageread      < BERLIN > => 100
+    rule Gsload                < BERLIN > => Gwarmstorageread < BERLIN >
+    rule Gsstorereset          < BERLIN > => 5000 -Int Gcoldsload < BERLIN >
+    rule Gaccessliststoragekey < BERLIN > => 1900
+    rule Gaccesslistaddress    < BERLIN > => 2400
     rule SCHEDCONST         < BERLIN > => SCHEDCONST < ISTANBUL >
       requires notBool ( SCHEDCONST ==K Gcoldsload
                   orBool SCHEDCONST ==K Gcoldaccountaccess
                   orBool SCHEDCONST ==K Gwarmstorageread
                   orBool SCHEDCONST ==K Gsload
                   orBool SCHEDCONST ==K Gsstorereset
+                  orBool SCHEDCONST ==K Gaccessliststoragekey
+                  orBool SCHEDCONST ==K Gaccesslistaddress
                        )
 
     rule Ghasaccesslist << BERLIN >> => true
