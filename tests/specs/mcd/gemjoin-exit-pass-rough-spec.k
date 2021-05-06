@@ -180,7 +180,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -212,9 +212,9 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Vat_balance)
        andBool (#rangeUInt(256, DSToken_balance)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
-       andBool ((#notPrecompileAddress(Vat))
-       andBool ((#notPrecompileAddress(DSToken))
-       andBool ((#notPrecompileAddress(Owner))
+       andBool ((notBool #isPrecompiledAccount(Vat), ISTANBUL)
+       andBool ((notBool #isPrecompiledAccount(DSToken), ISTANBUL)
+       andBool ((notBool #isPrecompiledAccount(Owner), ISTANBUL)
        andBool ((ACCT_ID =/=Int Vat)
        andBool ((ACCT_ID =/=Int DSToken)
        andBool ((ACCT_ID =/=Int ABI_usr)
@@ -426,7 +426,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -623,7 +623,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -648,7 +648,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
        andBool (#rangeAddress(Owner)
        andBool (#rangeBool(Stopped)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
-       andBool ((#notPrecompileAddress(Owner))
+       andBool ((notBool #isPrecompiledAccount(Owner), ISTANBUL)
        andBool ((ABI_usr =/=Int CALLER_ID)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)

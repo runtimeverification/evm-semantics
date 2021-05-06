@@ -162,7 +162,7 @@ module DSVALUE-PEEK-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -184,7 +184,7 @@ module DSVALUE-PEEK-PASS-ROUGH-SPEC
        andBool (#rangeBytes(32, Value)
        andBool (#rangeBool(Ok)
        andBool (#sizeByteArray(CD) <=Int 1250000000
-       andBool (#notPrecompileAddress(Owner)
+       andBool (notBool #isPrecompiledAccount(Owner, ISTANBUL)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool ((VCallValue ==Int 0)))))))))

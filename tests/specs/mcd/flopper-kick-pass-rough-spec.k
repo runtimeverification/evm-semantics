@@ -162,7 +162,7 @@ module FLOPPER-KICK-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -194,7 +194,7 @@ module FLOPPER-KICK-PASS-ROUGH-SPEC
        andBool (#rangeUInt(48, Old_end)
        andBool (#rangeUInt(256, Ward)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
-       andBool ((#notPrecompileAddress(Old_guy))
+       andBool ((notBool #isPrecompiledAccount(Old_guy), ISTANBUL)
        andBool ((#rangeUInt(48, TIME))
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
@@ -404,7 +404,7 @@ module FLOPPER-KICK-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)

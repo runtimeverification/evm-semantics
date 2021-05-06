@@ -171,7 +171,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -207,8 +207,8 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Dai_g)
        andBool (#rangeUInt(256, Vat_balance)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
-       andBool ((#notPrecompileAddress(Vat))
-       andBool ((#notPrecompileAddress(Guy))
+       andBool ((notBool #isPrecompiledAccount(Vat), ISTANBUL)
+       andBool ((notBool #isPrecompiledAccount(Guy), ISTANBUL)
        andBool ((ACCT_ID =/=Int Vat)
        andBool ((CALLER_ID =/=Int ACCT_ID)
        andBool ((CALLER_ID =/=Int Guy)
@@ -447,7 +447,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -634,7 +634,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -821,7 +821,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)

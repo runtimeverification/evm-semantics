@@ -18,10 +18,6 @@ endmodule
 module LEMMAS-MCD-SYNTAX
     imports LEMMAS
 
-    syntax Bool ::= #notPrecompileAddress ( Int ) [function]
- // --------------------------------------------------------
-    rule #notPrecompileAddress ( X ) => 0 ==Int X orBool (10 <=Int X andBool #rangeAddress(X))
-
     syntax Int ::= #string2Word ( String ) [function]
  // -------------------------------------------------
     rule #string2Word(S) => #asWord(#padRightToWidth(32, #parseByteStackRaw(S)))
@@ -351,10 +347,6 @@ module LEMMAS-MCD-COMMON
     // (check-sat)
     // (pop)
     rule X -Word chop(Y) => chop(X -Int Y) [simplification]
-
-    // ### end-pack-pass-rough
-
-    rule ADDR in (SetItem(I) REST) => ADDR in REST requires #notPrecompileAddress(ADDR) andBool notBool #notPrecompileAddress(I) [simplification]
 
     // ### vat-subui-pass
 

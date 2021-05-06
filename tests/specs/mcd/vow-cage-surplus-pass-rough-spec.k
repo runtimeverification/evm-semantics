@@ -189,7 +189,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -228,11 +228,11 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Flapper_balance)
        andBool (#rangeUInt(256, Flopper_balance)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
-       andBool ((#notPrecompileAddress(Vat))
-       andBool ((#notPrecompileAddress(Flapper))
-       andBool ((#notPrecompileAddress(Flopper))
-       andBool ((#notPrecompileAddress(FlapVat))
-       andBool ((#notPrecompileAddress(FlopVow))
+       andBool ((notBool #isPrecompiledAccount(Vat), ISTANBUL)
+       andBool ((notBool #isPrecompiledAccount(Flapper), ISTANBUL)
+       andBool ((notBool #isPrecompiledAccount(Flopper), ISTANBUL)
+       andBool ((notBool #isPrecompiledAccount(FlapVat), ISTANBUL)
+       andBool ((notBool #isPrecompiledAccount(FlopVow), ISTANBUL)
        andBool ((ACCT_ID =/=Int Vat)
        andBool ((ACCT_ID =/=Int Flapper)
        andBool ((ACCT_ID =/=Int Flopper)
@@ -519,7 +519,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -705,7 +705,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -893,7 +893,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -1081,7 +1081,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -1300,7 +1300,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -1326,7 +1326,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Dai_u)
        andBool (#rangeUInt(256, Vat_balance)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
-       andBool ((#notPrecompileAddress(Vat))
+       andBool ((notBool #isPrecompiledAccount(Vat), ISTANBUL)
        andBool ((CALLER_ID =/=Int ACCT_ID)
        andBool (ACCT_ID =/=Int Vat
        andBool ((Vat =/=Int 0)
@@ -1523,7 +1523,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -1545,7 +1545,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Live)
        andBool (#rangeAddress(Vow)
        andBool (#sizeByteArray(CD) <=Int 1250000000
-       andBool (#notPrecompileAddress(Vow)
+       andBool (notBool #isPrecompiledAccount(Vow, ISTANBUL)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (#rangeUInt(256, Junk_2)

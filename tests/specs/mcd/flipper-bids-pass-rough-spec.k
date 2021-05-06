@@ -162,7 +162,7 @@ module FLIPPER-BIDS-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -190,9 +190,9 @@ module FLIPPER-BIDS-PASS-ROUGH-SPEC
        andBool (#rangeAddress(Gal)
        andBool (#rangeUInt(256, Tab)
        andBool (#sizeByteArray(CD) <=Int 1250000000
-       andBool (#notPrecompileAddress(Guy)
-       andBool (#notPrecompileAddress(Usr)
-       andBool (#notPrecompileAddress(Gal)
+       andBool (notBool #isPrecompiledAccount(Guy, ISTANBUL)
+       andBool (notBool #isPrecompiledAccount(Usr, ISTANBUL)
+       andBool (notBool #isPrecompiledAccount(Gal, ISTANBUL)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (#rangeUInt(256, Junk_2)

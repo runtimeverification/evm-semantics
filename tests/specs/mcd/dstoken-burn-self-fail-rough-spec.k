@@ -162,7 +162,7 @@ module DSTOKEN-BURN-SELF-FAIL-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -188,7 +188,7 @@ module DSTOKEN-BURN-SELF-FAIL-ROUGH-SPEC
        andBool (#rangeBool(Stoppedd)
        andBool (#rangeAddress(Owner)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
-       andBool ((#notPrecompileAddress(Owner))
+       andBool ((notBool #isPrecompiledAccount(Owner), ISTANBUL)
        andBool ((CALLER_ID ==Int Owner)
        andBool ((CALLER_ID =/=Int ACCT_ID)
        andBool ((CALLER_ID ==Int ABI_src)

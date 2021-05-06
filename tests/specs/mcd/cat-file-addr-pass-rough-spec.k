@@ -162,7 +162,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -185,7 +185,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, May)
        andBool (#rangeAddress(Vow)
        andBool (#sizeByteArray(CD) <=Int 1250000000
-       andBool (#notPrecompileAddress(Vow)
+       andBool (notBool #isPrecompiledAccount(Vow, ISTANBUL)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool ((May ==Int 1)

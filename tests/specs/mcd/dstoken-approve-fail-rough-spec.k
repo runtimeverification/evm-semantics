@@ -162,7 +162,7 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -186,7 +186,7 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
        andBool (#rangeBool(Stopped)
        andBool (#rangeAddress(Owner)
        andBool (#sizeByteArray(CD) <=Int 1250000000
-       andBool (#notPrecompileAddress(Owner)
+       andBool (notBool #isPrecompiledAccount(Owner, ISTANBUL)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1))))))))))
 

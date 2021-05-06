@@ -171,7 +171,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -210,9 +210,9 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
        andBool (#rangeBool(Stopped)
        andBool (#rangeUInt(256, DSToken_balance)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
-       andBool ((#notPrecompileAddress(DSToken))
-       andBool ((#notPrecompileAddress(Guy))
-       andBool ((#notPrecompileAddress(Owner))
+       andBool ((notBool #isPrecompiledAccount(DSToken), ISTANBUL)
+       andBool ((notBool #isPrecompiledAccount(Guy), ISTANBUL)
+       andBool ((notBool #isPrecompiledAccount(Owner), ISTANBUL)
        andBool ((ACCT_ID =/=Int DSToken)
        andBool ((#rangeUInt(48, TIME))
        andBool ((CALLER_ID =/=Int ACCT_ID)
@@ -463,7 +463,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -653,7 +653,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -843,7 +843,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -870,7 +870,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
        andBool (#rangeAddress(Owner)
        andBool (#rangeBool(Stopped)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
-       andBool ((#notPrecompileAddress(Owner))
+       andBool ((notBool #isPrecompiledAccount(Owner), ISTANBUL)
        andBool ((ABI_src =/=Int ABI_dst)
        andBool ((ABI_src =/=Int CALLER_ID)
        andBool (#rangeUInt(256, Junk_0)
