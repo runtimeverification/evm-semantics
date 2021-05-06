@@ -1305,8 +1305,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [function, functional]
  // -------------------------------------------------------------------------------
-    rule #isPrecompiledAccount(ACCTCODE, SCHED) => true  requires ACCTCODE in #precompiledAccounts(SCHED)
-    rule #isPrecompiledAccount(_       , _    ) => false [owise]
+    rule #isPrecompiledAccount(ACCTCODE, SCHED) => true  requires         ACCTCODE in #precompiledAccounts(SCHED)
+    rule #isPrecompiledAccount(ACCTCODE, SCHED) => false requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
     syntax KItem ::= "#initVM"
  // --------------------------
