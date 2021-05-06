@@ -188,7 +188,7 @@ module DSTOKEN-BURN-SELF-FAIL-ROUGH-SPEC
        andBool (#rangeBool(Stoppedd)
        andBool (#rangeAddress(Owner)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
-       andBool ((notBool #isPrecompiledAccount(Owner), ISTANBUL)
+       andBool ((notBool #isPrecompiledAccount(Owner, ISTANBUL))
        andBool ((CALLER_ID ==Int Owner)
        andBool ((CALLER_ID =/=Int ACCT_ID)
        andBool ((CALLER_ID ==Int ABI_src)

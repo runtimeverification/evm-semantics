@@ -200,7 +200,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Dai_p)
        andBool (#rangeUInt(256, Vat_balance)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
-       andBool ((notBool #isPrecompiledAccount(Vat), ISTANBUL)
+       andBool ((notBool #isPrecompiledAccount(Vat, ISTANBUL))
        andBool ((ACCT_ID =/=Int Vat)
        andBool ((ACCT_ID =/=Int CALLER_ID)
        andBool ((Vat =/=Int 0)

@@ -189,7 +189,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
        andBool (#rangeUInt(48, Tic)
        andBool (#rangeUInt(48, End)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
-       andBool ((notBool #isPrecompiledAccount(Guy), ISTANBUL)
+       andBool ((notBool #isPrecompiledAccount(Guy, ISTANBUL))
        andBool ((#rangeUInt(48, TIME))
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
