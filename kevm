@@ -101,7 +101,7 @@ run_klab() {
     local run_mode klab_log def_module omit_cells omit_labels
 
     run_mode="$1" ; shift
-    klab_log="$(basename "${run_file%-spec.k}")"
+    klab_log="$(basename "${run_file%-spec.k}").k"
 
     def_module="$1" ; shift
 
