@@ -67,14 +67,14 @@ module INFINITE-GAS-SPEC
 
     claim <k> runLemma(4822 <Int minInt(#gas(VGas +Int 4544) +Int (#gas(VGas +Int 4544) /Int 64), #gas(VGas +Int 3844))) => doneLemma(true) ... </k>
 
-    claim <k> runLemma(3 <Int minInt(#gas(VGas), 2)) => doneLemma(false) ... </k>
-    claim <k> runLemma(2 <Int minInt(#gas(VGas), 3)) => doneLemma(true ) ... </k>
+    claim <k> runLemma(3 <Int minInt(#gas(_VGas), 2)) => doneLemma(false) ... </k>
+    claim <k> runLemma(2 <Int minInt(#gas(_VGas), 3)) => doneLemma(true ) ... </k>
 
-    claim <k> runLemma(#gas(G) -Int Csstore(_, _, _, _) <Int 2) => doneLemma(false) ... </k>
-    claim <k> runLemma(minInt(#gas(G), #gas(G'')) +Int -2522 <Int Csstore(_, _, _, _)) => doneLemma(false) ... </k>
+    claim <k> runLemma(#gas(_G) -Int Csstore(_, _, _, _) <Int 2) => doneLemma(false) ... </k>
+    claim <k> runLemma(minInt(#gas(_G), #gas(_G'')) +Int -2522 <Int Csstore(_, _, _, _)) => doneLemma(false) ... </k>
 
-    claim <k> runLemma(#gas(G) <Int #gas(G' +Int 700))  => doneLemma(false) ... </k>
-    claim <k> runLemma(#gas(G' +Int 700) <=Int #gas(G)) => doneLemma(true)  ... </k>
+    claim <k> runLemma(#gas(_G) <Int #gas(_G' +Int 700))  => doneLemma(false) ... </k>
+    claim <k> runLemma(#gas(_G' +Int 700) <=Int #gas(_G)) => doneLemma(true)  ... </k>
 
     claim <k> runLemma(#if _:Int ==Int 0 #then #gas(VGas -Int Csstore(_, _, _,_)) #else #gas(VGas +Int -344) #fi <Int 8)  => doneLemma(false) ... </k>
     claim <k> runLemma(8 <=Int #if _:Int ==Int 0 #then #gas(VGas -Int Csstore(_, _, _,_)) #else #gas(VGas +Int -344) #fi) => doneLemma(true)  ... </k>
@@ -82,6 +82,6 @@ module INFINITE-GAS-SPEC
     claim <k> runLemma(#if _:Int ==Int 0 #then #gas(VGas -Int Csstore(_, _, _,_)) #else #gas(VGas +Int -344) #fi <Int minInt(#if _ #then #gas(_) #else #gas(_) #fi, #gas(_)))  => doneLemma(false) ... </k>
     claim <k> runLemma(minInt(#if _ #then #gas(_) #else #gas(_) #fi, #gas(_)) <=Int #if _:Int ==Int 0 #then #gas(VGas -Int Csstore(_, _, _,_)) #else #gas(VGas +Int -344) #fi) => doneLemma(true)  ... </k>
 
-    claim <k> runLemma(#allBut64th(#gas(G)) <Int #gas(G')) => doneLemma(false) ... </k>
+    claim <k> runLemma(#allBut64th(#gas(_G)) <Int #gas(_G')) => doneLemma(false) ... </k>
 
 endmodule
