@@ -30,9 +30,9 @@ module LEMMAS-SPEC
  // ----------------------
 
     claim <k> runLemma(#rangeUInt(256, #lookup(M, KX) -Int #lookup(M, KY))) => doneLemma(true) ... </k>
-      requires #rangeUInt(256, X) andBool X ==Int #lookup(M, KX)
-       andBool #rangeUInt(256, Y) andBool Y ==Int #lookup(M, KY)
-       andBool #rangeUInt(256, Z) andBool Z ==Int #lookup(M, KZ)
+      requires #rangeUInt(256, X) andBool X ==Int #lookup(M,  KX)
+       andBool #rangeUInt(256, Y) andBool Y ==Int #lookup(M,  KY)
+       andBool #rangeUInt(256, Z) andBool Z ==Int #lookup(M, _KZ)
        andBool #rangeUInt(256, (X -Int Y) -Int Z)
 
  // Buffer write simplifications

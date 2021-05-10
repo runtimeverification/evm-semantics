@@ -27,7 +27,7 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> #gas(INITGAS, 0, 0) => ?_ </gas>
+          <gas> #gas(_, 0, 0) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
@@ -40,7 +40,7 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin
-        <blockhashes> BLOCK_HASHES </blockhashes> // block.blockhash
+        <blockhashes> _BLOCK_HASHES </blockhashes> // block.blockhash
         <block>
           <previousHash> _ </previousHash>
           <ommersHash> _ </ommersHash>
@@ -70,7 +70,7 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
             <balance> CONTRACT_BAL </balance>
             <code> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b600060016000540160008190555060005490509056fea165627a7a7230582084ad795d13123f60bc7fd2a18dba66eb8d320ddea8765847f2ae5982179470600029") </code>
             <storage> S => S [ #hashedLocation("Solidity", 0, .IntList) <- N0 +Int 1 ] </storage>
-            <origStorage> _OS => ?OS </origStorage>
+            <origStorage> _OS => ?_OS </origStorage>
             <nonce> _ </nonce>
           </account>
 
