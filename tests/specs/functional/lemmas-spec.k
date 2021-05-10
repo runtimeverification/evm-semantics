@@ -30,6 +30,14 @@ module LEMMAS-SPEC
       requires #lookup(Flapper_STORAGE, 2) ==Int FlapVat
        andBool #rangeAddress(FlapVat) andBool notBool #isPrecompiledAccount(FlapVat, ISTANBUL)
 
+    claim <k> runLemma(#lookup(Flapper_STORAGE, 2) in #precompiledAccounts(ISTANBUL) SetItem(#lookup(ACCT_ID_STORAGE, 3)) SetItem(#lookup(ACCT_ID_STORAGE, 2)) SetItem(#lookup(ACCT_ID_STORAGE, 1)) SetItem(ACCT_ID)) => doneLemma(true) ... </k>
+      requires #lookup(Flapper_STORAGE, 2) ==Int #lookup(ACCT_ID_STORAGE, 1)
+       andBool #lookup(ACCT_ID_STORAGE, 3) ==Int Flopper andBool notBool #isPrecompiledAccount(#lookup(ACCT_ID_STORAGE, 3), ISTANBUL) andBool ACCT_ID =/=Int #lookup(ACCT_ID_STORAGE, 3) andBool #rangeAddress(#lookup(ACCT_ID_STORAGE, 3))
+       andBool #lookup(ACCT_ID_STORAGE, 2) ==Int Flapper andBool notBool #isPrecompiledAccount(#lookup(ACCT_ID_STORAGE, 2), ISTANBUL) andBool ACCT_ID =/=Int #lookup(ACCT_ID_STORAGE, 2) andBool #rangeAddress(#lookup(ACCT_ID_STORAGE, 2))
+       andBool #lookup(ACCT_ID_STORAGE, 1) ==Int FlapVat andBool notBool #isPrecompiledAccount(#lookup(ACCT_ID_STORAGE, 1), ISTANBUL) andBool ACCT_ID =/=Int #lookup(ACCT_ID_STORAGE, 1) andBool #rangeAddress(#lookup(ACCT_ID_STORAGE, 1))
+       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL) andBool #rangeAddress(ACCT_ID)
+       andBool FlapVat =/=Int Flopper andBool FlapVat =/=Int Flapper andBool FlapVat =/=Int ACCT_ID
+
  // Arithmetic Comparisons
  // ----------------------
 

@@ -89,15 +89,18 @@ module LEMMAS
 
     rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
 
-    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, DEFAULT)           andBool notBool #isPrecompiledAccount(X, DEFAULT)           [simplification]
-    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, FRONTIER)          andBool notBool #isPrecompiledAccount(X, FRONTIER)          [simplification]
-    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, HOMESTEAD)         andBool notBool #isPrecompiledAccount(X, HOMESTEAD)         [simplification]
-    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, TANGERINE_WHISTLE) andBool notBool #isPrecompiledAccount(X, TANGERINE_WHISTLE) [simplification]
-    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, SPURIOUS_DRAGON)   andBool notBool #isPrecompiledAccount(X, SPURIOUS_DRAGON)   [simplification]
-    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, BYZANTIUM)         andBool notBool #isPrecompiledAccount(X, BYZANTIUM)         [simplification]
-    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, CONSTANTINOPLE)    andBool notBool #isPrecompiledAccount(X, CONSTANTINOPLE)    [simplification]
-    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, PETERSBURG)        andBool notBool #isPrecompiledAccount(X, PETERSBURG)        [simplification]
-    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, ISTANBUL)          andBool notBool #isPrecompiledAccount(X, ISTANBUL)          [simplification]
+    rule X in (SetItem(Y) REST) => true      requires X  ==Int Y [simplification]
+    rule X in (SetItem(Y) REST) => X in REST requires X =/=Int Y [simplification]
+
+    rule X ==Int Y => false requires notBool #isPrecompiledAccount(X, DEFAULT)           andBool #isPrecompiledAccount(Y, DEFAULT)           [simplification]
+    rule X ==Int Y => false requires notBool #isPrecompiledAccount(X, FRONTIER)          andBool #isPrecompiledAccount(Y, FRONTIER)          [simplification]
+    rule X ==Int Y => false requires notBool #isPrecompiledAccount(X, HOMESTEAD)         andBool #isPrecompiledAccount(Y, HOMESTEAD)         [simplification]
+    rule X ==Int Y => false requires notBool #isPrecompiledAccount(X, TANGERINE_WHISTLE) andBool #isPrecompiledAccount(Y, TANGERINE_WHISTLE) [simplification]
+    rule X ==Int Y => false requires notBool #isPrecompiledAccount(X, SPURIOUS_DRAGON)   andBool #isPrecompiledAccount(Y, SPURIOUS_DRAGON)   [simplification]
+    rule X ==Int Y => false requires notBool #isPrecompiledAccount(X, BYZANTIUM)         andBool #isPrecompiledAccount(Y, BYZANTIUM)         [simplification]
+    rule X ==Int Y => false requires notBool #isPrecompiledAccount(X, CONSTANTINOPLE)    andBool #isPrecompiledAccount(Y, CONSTANTINOPLE)    [simplification]
+    rule X ==Int Y => false requires notBool #isPrecompiledAccount(X, PETERSBURG)        andBool #isPrecompiledAccount(Y, PETERSBURG)        [simplification]
+    rule X ==Int Y => false requires notBool #isPrecompiledAccount(X, ISTANBUL)          andBool #isPrecompiledAccount(Y, ISTANBUL)          [simplification]
 
 endmodule
 
