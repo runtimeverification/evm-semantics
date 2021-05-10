@@ -89,6 +89,16 @@ module LEMMAS
 
     rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
 
+    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, DEFAULT)           andBool notBool #isPrecompiledAccount(X, DEFAULT)           [simplification]
+    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, FRONTIER)          andBool notBool #isPrecompiledAccount(X, FRONTIER)          [simplification]
+    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, HOMESTEAD)         andBool notBool #isPrecompiledAccount(X, HOMESTEAD)         [simplification]
+    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, TANGERINE_WHISTLE) andBool notBool #isPrecompiledAccount(X, TANGERINE_WHISTLE) [simplification]
+    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, SPURIOUS_DRAGON)   andBool notBool #isPrecompiledAccount(X, SPURIOUS_DRAGON)   [simplification]
+    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, BYZANTIUM)         andBool notBool #isPrecompiledAccount(X, BYZANTIUM)         [simplification]
+    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, CONSTANTINOPLE)    andBool notBool #isPrecompiledAccount(X, CONSTANTINOPLE)    [simplification]
+    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, PETERSBURG)        andBool notBool #isPrecompiledAccount(X, PETERSBURG)        [simplification]
+    rule X in (SetItem(Y) REST) => X in REST requires #isPrecompiledAccount(Y, ISTANBUL)          andBool notBool #isPrecompiledAccount(X, ISTANBUL)          [simplification]
+
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]

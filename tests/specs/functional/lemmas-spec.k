@@ -26,6 +26,10 @@ module LEMMAS-SPEC
 
     claim <k> runLemma(#isPrecompiledAccount(#newAddr(TESTER_ACCT, 1), ISTANBUL)) => doneLemma(false) ... </k> requires #rangeAddress(TESTER_ACCT)
 
+    claim <k> runLemma(#lookup(Flapper_STORAGE, 2) in SetItem(1) SetItem(2) SetItem(3) SetItem(4) SetItem(5) SetItem(6) SetItem(7) SetItem(8) SetItem(9)) => doneLemma(false) ... </k>
+      requires #lookup(Flapper_STORAGE, 2) ==Int FlapVat
+       andBool #rangeAddress(FlapVat) andBool notBool #isPrecompiledAccount(FlapVat, ISTANBUL)
+
  // Arithmetic Comparisons
  // ----------------------
 
