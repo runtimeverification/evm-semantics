@@ -1299,8 +1299,13 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
  // --------------------------------------------------------------
-    rule <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> requires         ACCTCODE in #precompiledAccounts(SCHED)
-    rule <k> #precompiled?(ACCTCODE, SCHED) => .                                ... </k> requires notBool ACCTCODE in #precompiledAccounts(SCHED)
+    rule <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> requires         #isPrecompiledAccount(ACCTCODE, SCHED)
+    rule <k> #precompiled?(ACCTCODE, SCHED) => .                                ... </k> requires notBool #isPrecompiledAccount(ACCTCODE, SCHED)
+
+    syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [function, functional, smtlib(isPrecompiledAccount)]
+ // -------------------------------------------------------------------------------------------------------------
+    rule [isPrecompiledAccount.true]:  #isPrecompiledAccount(ACCTCODE, SCHED) => true  requires         ACCTCODE in #precompiledAccounts(SCHED)
+    rule [isPrecompiledAccount.false]: #isPrecompiledAccount(ACCTCODE, SCHED) => false requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
     syntax KItem ::= "#initVM"
  // --------------------------
@@ -1623,8 +1628,8 @@ Precompiled Contracts
     rule #precompiled(8) => ECPAIRING
     rule #precompiled(9) => BLAKE2F
 
-    syntax Set ::= #precompiledAccounts ( Schedule ) [function]
- // -----------------------------------------------------------
+    syntax Set ::= #precompiledAccounts ( Schedule ) [function, functional]
+ // -----------------------------------------------------------------------
     rule #precompiledAccounts(DEFAULT)           => SetItem(1) SetItem(2) SetItem(3) SetItem(4)
     rule #precompiledAccounts(FRONTIER)          => #precompiledAccounts(DEFAULT)
     rule #precompiledAccounts(HOMESTEAD)         => #precompiledAccounts(FRONTIER)
