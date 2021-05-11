@@ -162,7 +162,7 @@ module DSTOKEN-TRANSFERFROM-FAIL-ROUGH-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
+       andBool #notPrecompileAddress(ACCT_ID)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
@@ -189,7 +189,7 @@ module DSTOKEN-TRANSFERFROM-FAIL-ROUGH-SPEC
        andBool (#rangeAddress(Owner)
        andBool (#rangeBool(Stopped)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
-       andBool ((notBool #isPrecompiledAccount(Owner, ISTANBUL))
+       andBool ((#notPrecompileAddress(Owner))
        andBool ((ABI_src =/=Int ABI_dst)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)

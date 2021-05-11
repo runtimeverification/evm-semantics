@@ -18,6 +18,10 @@ endmodule
 module LEMMAS-MCD-SYNTAX
     imports LEMMAS
 
+    syntax Bool ::= #notPrecompileAddress ( Int ) [function]
+ // --------------------------------------------------------
+    rule #notPrecompileAddress ( X ) => 0 ==Int X orBool (10 <=Int X andBool #rangeAddress(X))
+
     syntax Int ::= #string2Word ( String ) [function]
  // -------------------------------------------------
     rule #string2Word(S) => #asWord(#padRightToWidth(32, #parseByteStackRaw(S)))
@@ -348,6 +352,10 @@ module LEMMAS-MCD-COMMON
     // (pop)
     rule X -Word chop(Y) => chop(X -Int Y) [simplification]
 
+    // ### end-pack-pass-rough
+
+    rule ADDR in (SetItem(I) REST) => ADDR in REST requires #notPrecompileAddress(ADDR) andBool notBool #notPrecompileAddress(I) [simplification]
+
     // ### vat-subui-pass
 
     rule chop(X) ==K 0 => X ==Int 0 requires #rangeSInt(256, X) [simplification]
@@ -383,6 +391,9 @@ module LEMMAS-MCD-COMMON
     rule X +Int Y <Int X => false requires 0 <=Int Y [simplification]
 
     // ### vow-cage-surplus-pass-rough
+
+    rule ADDR in (SetItem(I) REST) => true         requires ADDR  ==Int I [simplification]
+    rule ADDR in (SetItem(I) REST) => ADDR in REST requires ADDR =/=Int I [simplification]
 
     rule <acctID> ACCTID </acctID>  ==K <acctID> ACCTID' </acctID> => ACCTID  ==Int ACCTID' [simplification]
     rule <acctID> ACCTID </acctID> =/=K <acctID> ACCTID' </acctID> => ACCTID =/=Int ACCTID' [simplification]

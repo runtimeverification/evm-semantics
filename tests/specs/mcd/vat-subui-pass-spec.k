@@ -168,7 +168,7 @@ module VAT-SUBUI-PASS-SPEC
       </ethereum>
       requires #rangeAddress(ACCT_ID)
        andBool ACCT_ID =/=Int 0
-       andBool notBool #isPrecompiledAccount(ACCT_ID, ISTANBUL)
+       andBool #notPrecompileAddress(ACCT_ID)
        andBool #rangeAddress(CALLER_ID)
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
