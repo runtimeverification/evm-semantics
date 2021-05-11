@@ -2123,15 +2123,20 @@ There are several helpers for calculating gas (most of them also specified in th
          Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
 
-    rule [Csstore.new]:
+    rule [Csstore.berlin]:
          Csstore(SCHED, NEW, CURR, ORIG, ISWARM)
-      => Cstorageaccess(SCHED, ISWARM) +Int #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload < SCHED > #else #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi #fi
-      requires Ghasdirtysstore << SCHED >>
+      => #if ISWARM #then 0 #else Gcoldsload < SCHED > #fi +Int #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload < SCHED > #else #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi #fi
+      requires SCHED ==K BERLIN
+
+    rule [Csstore.new]:
+         Csstore(SCHED, NEW, CURR, ORIG, _ISWARM)
+      => #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload < SCHED > #else #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi #fi
+      requires SCHED =/=K BERLIN andBool Ghasdirtysstore << SCHED >>
 
     rule [Csstore.old]:
          Csstore(SCHED, NEW, CURR, _ORIG, _ISWARM)
       => #if CURR ==Int 0 andBool NEW =/=Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
-      requires notBool Ghasdirtysstore << SCHED >>
+      requires SCHED =/=K BERLIN andBool notBool Ghasdirtysstore << SCHED >>
 
     rule [Rsstore.new]:
          Rsstore(SCHED, NEW, CURR, ORIG)

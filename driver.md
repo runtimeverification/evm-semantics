@@ -118,7 +118,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
-         <callGas> _ => GLIMIT -Int preG0(SCHED,#parseAccessList(TA)) -Int G0(SCHED, CODE, true) </callGas>
+         <callGas> _ => GLIMIT -Int preG0(SCHED, #parseAccessList(TA)) -Int G0(SCHED, CODE, true) </callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
