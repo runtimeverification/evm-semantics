@@ -392,9 +392,6 @@ module LEMMAS-MCD-COMMON
 
     // ### vow-cage-surplus-pass-rough
 
-    rule ADDR in (SetItem(I) REST) => true         requires ADDR  ==Int I [simplification]
-    rule ADDR in (SetItem(I) REST) => ADDR in REST requires ADDR =/=Int I [simplification]
-
     rule <acctID> ACCTID </acctID>  ==K <acctID> ACCTID' </acctID> => ACCTID  ==Int ACCTID' [simplification]
     rule <acctID> ACCTID </acctID> =/=K <acctID> ACCTID' </acctID> => ACCTID =/=Int ACCTID' [simplification]
 
