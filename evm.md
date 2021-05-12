@@ -183,14 +183,6 @@ Our semantics is modal, with the initial mode being set on the command line via 
  // ---------------------------------------------------
 ```
 
--   `#setMode_` sets the mode to the supplied one.
-
-```k
-    syntax InternalOp ::= "#setMode" Mode
- // -------------------------------------
-    rule <k> #setMode EXECMODE => . ... </k> <mode> _ => EXECMODE </mode>
-```
-
 State Stacks
 ------------
 
@@ -1309,7 +1301,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </k>
 
     rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
-          => #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
+          => #touchAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
          ...
          </k>
          <callDepth> CD => CD +Int 1 </callDepth>
@@ -1325,8 +1317,13 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
  // --------------------------------------------------------------
-    rule <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> requires         ACCTCODE in #precompiledAccounts(SCHED)
-    rule <k> #precompiled?(ACCTCODE, SCHED) => .                                ... </k> requires notBool ACCTCODE in #precompiledAccounts(SCHED)
+    rule <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> requires         #isPrecompiledAccount(ACCTCODE, SCHED)
+    rule <k> #precompiled?(ACCTCODE, SCHED) => .                                ... </k> requires notBool #isPrecompiledAccount(ACCTCODE, SCHED)
+
+    syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [function, functional, smtlib(isPrecompiledAccount)]
+ // -------------------------------------------------------------------------------------------------------------
+    rule [isPrecompiledAccount.true]:  #isPrecompiledAccount(ACCTCODE, SCHED) => true  requires         ACCTCODE in #precompiledAccounts(SCHED)
+    rule [isPrecompiledAccount.false]: #isPrecompiledAccount(ACCTCODE, SCHED) => false requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
     syntax KItem ::= "#initVM"
  // --------------------------
@@ -1342,6 +1339,13 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #loadProgram BYTES => . ... </k>
          <program> _ => BYTES </program>
          <jumpDests> _ => #computeValidJumpDests(BYTES) </jumpDests>
+
+    syntax KItem ::= "#touchAccounts" Account | "#touchAccounts" Account Account
+ // ----------------------------------------------------------------------------
+    rule <k> #touchAccounts ADDR1 ADDR2 => #touchAccounts ADDR1 ~> #touchAccounts ADDR2 ... </k>
+
+    rule <k> #touchAccounts ADDR => . ... </k>
+         <touchedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set SetItem(ADDR) </touchedAccounts>
 
     syntax Set ::= #computeValidJumpDests(ByteArray)            [function, memo]
                  | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
@@ -1486,7 +1490,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
 
     rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
-          => #loadProgram INITCODE ~> #initVM ~> #execute
+          => #touchAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -1502,7 +1506,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
            ...
          </account>
-         <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) ... </touchedAccounts>
 
     rule <k> #incrementNonce ACCT => . ... </k>
          <account>
@@ -1608,7 +1611,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 ```k
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <k> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <id> ACCT </id>
          <selfDestruct> ... (.Set => SetItem(ACCT)) ... </selfDestruct>
          <account>
@@ -1617,10 +1620,9 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            ...
          </account>
          <output> _ => .ByteArray </output>
-         <touchedAccounts> ... .Set => SetItem(ACCT) SetItem(ACCTTO) ... </touchedAccounts>
       requires ACCT =/=Int ACCTTO
 
-    rule <k> SELFDESTRUCT ACCT => #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
          <id> ACCT </id>
          <selfDestruct> ... (.Set => SetItem(ACCT)) ... </selfDestruct>
          <account>
@@ -1629,7 +1631,6 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            ...
          </account>
          <output> _ => .ByteArray </output>
-         <touchedAccounts> ... .Set => SetItem(ACCT) ... </touchedAccounts>
 ```
 
 Precompiled Contracts
@@ -1651,8 +1652,8 @@ Precompiled Contracts
     rule #precompiled(8) => ECPAIRING
     rule #precompiled(9) => BLAKE2F
 
-    syntax Set ::= #precompiledAccounts ( Schedule ) [function]
- // -----------------------------------------------------------
+    syntax Set ::= #precompiledAccounts ( Schedule ) [function, functional]
+ // -----------------------------------------------------------------------
     rule #precompiledAccounts(DEFAULT)           => SetItem(1) SetItem(2) SetItem(3) SetItem(4)
     rule #precompiledAccounts(FRONTIER)          => #precompiledAccounts(DEFAULT)
     rule #precompiledAccounts(HOMESTEAD)         => #precompiledAccounts(FRONTIER)

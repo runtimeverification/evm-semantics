@@ -5,6 +5,8 @@ EVM.Cgascap
 EVM.Cmem
 EVM.Csstore.new
 EVM.Csstore.old
+EVM.isPrecompiledAccount.false
+EVM.isPrecompiledAccount.true
 EVM.#memoryUsageUpdate.some
 EVM.Rsstore.new
 EVM.Rsstore.old

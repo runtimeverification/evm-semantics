@@ -49,7 +49,7 @@ The following are needed for building/running KEVM:
 
 -   [git](https://git-scm.com/)
 -   GNU [Bison](https://www.gnu.org/software/bison/), [Flex](https://github.com/westes/flex), and [Autoconf](http://www.gnu.org/software/autoconf/).
--   GNU [libmpfr](http://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
+-   GNU [libmpfr](https://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
 
 For the exact dependencies check the Dockerfile.
@@ -221,13 +221,13 @@ Resources
 -   [EVM Yellowpaper](https://github.com/ethereum/yellowpaper): Original specification of EVM.
 -   [LEM Semantics of EVM](https://github.com/pirapira/eth-isabelle)
 
-For more information about [The K Framework](http://kframework.org), refer to these sources:
+For more information about [The K Framework](https://kframework.org), refer to these sources:
 
--   [The K Tutorial](https://github.com/kframework/k/tree/master/k-distribution/tutorial)
+-   [The K Tutorial](https://kframework.org/k-distribution/pl-tutorial/)
 -   [Semantics-Based Program Verifiers for All Languages](http://fsl.cs.illinois.edu/index.php/Semantics-Based_Program_Verifiers_for_All_Languages)
 -   [Reachability Logic Resources](http://fsl.cs.illinois.edu/index.php/Reachability_Logic_in_K)
 -   [Matching Logic Resources](http://fsl.cs.illinois.edu/index.php/Matching_Logic)
--   [Logical Frameworks](http://dl.acm.org/citation.cfm?id=208700): Discussion of logical frameworks.
+-   [Logical Frameworks](https://dl.acm.org/doi/10.5555/208683.208700): Discussion of logical frameworks.
 
 [Jello Paper]: <https://jellopaper.org>
 [2017 Devcon3]: <https://ethereumfoundation.org/devcon3/>

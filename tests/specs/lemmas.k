@@ -87,6 +87,11 @@ module LEMMAS
 
     rule N /Int 1 => N  [simplification]
 
+    rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
+
+    rule X in (SetItem(Y) REST) => true      requires X  ==Int Y [simplification]
+    rule X in (SetItem(Y) REST) => X in REST requires X =/=Int Y [simplification]
+
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]

@@ -1,0 +1,28 @@
+ARG BASE_IMAGE=bionic
+FROM ubuntu:${BASE_IMAGE}
+ARG BASE_IMAGE=bionic
+
+ENV TZ=America/Chicago
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN    apt-get update                   \
+    && apt-get upgrade --yes            \
+    && apt-get install --yes            \
+                        build-essential \
+                        git             \
+                        python
+
+RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.6 \
+    && cd z3                                                        \
+    && python scripts/mk_make.py                                    \
+    && cd build                                                     \
+    && make -j8                                                     \
+    && make install                                                 \
+    && cd ../..                                                     \
+    && rm -rf z3
+
+COPY kevm_amd64_${BASE_IMAGE}.deb /kevm.deb
+RUN    apt-get update                  \
+    && apt-get upgrade --yes           \
+    && apt-get install --yes /kevm.deb \
+    && rm -rf /kevm.deb

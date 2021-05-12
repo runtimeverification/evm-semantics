@@ -7,8 +7,6 @@ notif() { echo "== $@" >&2 ; }
 fatal() { echo "[FATAL] $@" ; exit 1 ; }
 
 check_k_install() {
-    which kore-exec &> /dev/null \
-        || fatal "Must have K installed! See https://github.com/kframework/k/releases."
     which kast &> /dev/null \
         || fatal "Must have K installed! See https://github.com/kframework/k/releases."
     which krun &> /dev/null \
@@ -30,6 +28,13 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 # -------
 
 # User Commands
+
+run_kompile() {
+   kompile --backend "$backend" "$run_file"    \
+        -I "${INSTALL_LIB}/include/kframework" \
+        --hook-namespaces "JSON KRYPTO"        \
+        "$@"
+}
 
 run_krun() {
     local cschedule cmode cchainid parser
@@ -79,7 +84,7 @@ run_prove() {
 
     proof_args=(--def-module "$def_module")
     ! $debug      || proof_args+=(--debug)
-    ! $repl       || proof_args+=(--debugger --debug-script kast.kscript)
+    ! $debugger   || proof_args+=(--debugger)
     ! $bug_report || proof_args+=(--haskell-backend-command "kore-exec --bug-report $bug_report_name")
 
     ! $debug || set -x
@@ -96,7 +101,7 @@ run_klab() {
     local run_mode klab_log def_module omit_cells omit_labels
 
     run_mode="$1" ; shift
-    klab_log="$(basename "${run_file%-spec.k}")"
+    klab_log="$(basename "${run_file%-spec.k}").k"
 
     def_module="$1" ; shift
 
@@ -127,7 +132,7 @@ view_klab() {
 # Dev Commands
 
 run_interpret() {
-    local interpreter kast output output_text output_format exit_status
+    local interpreter kast output output_text output_format exit_status cmdprefix
 
     interpreter="$backend_dir/driver-kompiled/interpreter"
     kast="$(mktemp)"
@@ -135,7 +140,7 @@ run_interpret() {
     output_text="$(mktemp)"
     trap "rm -rf $kast $output $output_text" INT TERM EXIT
     exit_status=0
-    debugger=
+    cmdprefix=
     output_format='kore'
     case "$backend" in
         java)    run_kast kast > "$kast"
@@ -149,8 +154,8 @@ run_interpret() {
                  ;;
 
         llvm)    run_kast kore > "$kast"
-                 if $debug; then debugger="gdb --args"; fi
-                 $debugger "$interpreter" "$kast" -1 "$output" "$@" \
+                 if $debugger; then cmdprefix="gdb --args"; fi
+                 $cmdprefix "$interpreter" "$kast" -1 "$output" "$@" \
                      || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "$0" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
@@ -185,6 +190,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                $0 kast         [--backend (llvm|java|haskell)]           <KEVM_arg>* <pgm>  <output format> <K arg>*
                $0 prove        [--backend (java|haskell)]                            <spec> <def_module> <K arg>*
                $0 search       [--backend (java|haskell)]                            <pgm>  <pattern> <K arg>*
+               $0 kompile      [--backend (java|llvm|haskell)]                       <main> <K arg>*
                $0 klab-run                                                           <pgm>  <K arg>*
                $0 klab-prove                                                         <spec> <def_module> <K arg>*
                $0 klab-view                                                          <spec>
@@ -196,6 +202,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
            $0 kast      : Parse an EVM program and output it in a supported format
            $0 prove     : Run an EVM K proof
            $0 search    : Search for a K pattern in an EVM program execution
+           $0 kompile   : Run kompile with arguments setup to include KEVM parameters as defaults
            $0 klab-(run|prove) : Run program or prove spec and dump StateLogs which KLab can read
            $0 klab-view : View the statelog associated with a given program or spec
 
@@ -204,6 +211,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
 
            Note: <pgm> is a path to a file containing an EVM program/test.
                  <spec> is a K specification to be proved.
+                 <main> is a K definition to be kompiled, which may include files from KEVM.
                  <KEVM arg> is one of [--mode (NORMAL|VMTESTS)]
                                       [--schedule (BERLIN|ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
                                       [--chainid NNN]
@@ -228,7 +236,7 @@ backend="llvm"
 debug=false
 dump=false
 unparse=true
-repl=false
+debugger=false
 bug_report=false
 mode=NORMAL
 schedule=BERLIN
@@ -244,7 +252,7 @@ while [[ $# -gt 0 ]]; do
         --debug)              debug=true ; args+=("$1") ; shift   ;;
         --dump)               dump=true                 ; shift   ;;
         --no-unparse)         unparse=false             ; shift   ;;
-        --repl)               repl=true                 ; shift   ;;
+        --debugger)           debugger=true             ; shift   ;;
         --bug-report)         bug_report=true           ; shift   ;;
         --backend)            backend="$2"              ; shift 2 ;;
         --backend-dir)        backend_dir="$2"          ; shift 2 ;;
@@ -259,7 +267,7 @@ done
 [[ "${#args[@]}" -le 0 ]] || set -- "${args[@]}"
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
-! $repl || [[ "$backend" == haskell ]] || fatal "Option --repl only usable with --backend haskell!"
+! $debugger || [[ "$backend" == haskell ]] || [[ "$backend" == llvm ]] || fatal "Option --debugger only usable with --backend [llvm|haskell]!"
 
 # get the run file
 run_file="$1" ; shift
@@ -280,6 +288,7 @@ cSCHEDULE_kast="\`${schedule}_EVM\`(.KList)"
 cCHAINID_kast="#token(\"${chainid}\",\"Int\")"
 
 case "$run_command-$backend" in
+    kompile-@(java|llvm|haskell)   ) run_kompile                     "$@" ;;
     run-@(java|llvm|haskell)       ) run_krun                        "$@" ;;
     kast-@(java|llvm|haskell)      ) run_kast                        "$@" ;;
     interpret-@(llvm|haskell|java) ) run_interpret                   "$@" ;;

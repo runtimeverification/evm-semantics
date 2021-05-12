@@ -154,11 +154,6 @@ module VERIFICATION
   // Simplification
   // ########################
 
-    rule (X +Int 31) /Int 32 *Int 32 => #ceil32(X)
-      [simplification]
-    rule (31 +Int X) /Int 32 *Int 32 => #ceil32(X)
-      [simplification]
-
     rule #asWord(#buf(32, DATA)) => DATA  requires #rangeUInt(256, DATA)
       [simplification]
 
@@ -252,6 +247,8 @@ module VERIFICATION
     rule 0 <Int 1 <<Int N => true requires 0 <=Int N [simplification]
 
     rule X <=Int #ceil32(X) => true requires X >=Int 0 [simplification]
+
+    rule #ceil32(N) => ((N +Int 31) /Int 32) *Int 32 [smt-lemma]
 
   // ########################
   // Gnosis
