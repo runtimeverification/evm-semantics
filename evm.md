@@ -2127,17 +2127,19 @@ There are several helpers for calculating gas (most of them also specified in th
     rule [Csstore.berlin]:
          Csstore(SCHED, NEW, CURR, ORIG, ISWARM)
       => #if ISWARM #then 0 #else Gcoldsload < SCHED > #fi +Int #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload < SCHED > #else #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi #fi
-      requires SCHED ==K BERLIN
+      requires Ghasaccesslist << SCHED >>
 
     rule [Csstore.new]:
          Csstore(SCHED, NEW, CURR, ORIG, _ISWARM)
       => #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload < SCHED > #else #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi #fi
-      requires SCHED =/=K BERLIN andBool Ghasdirtysstore << SCHED >>
+      requires notBool Ghasaccesslist << SCHED >>
+       andBool Ghasdirtysstore << SCHED >>
 
     rule [Csstore.old]:
          Csstore(SCHED, NEW, CURR, _ORIG, _ISWARM)
       => #if CURR ==Int 0 andBool NEW =/=Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
-      requires SCHED =/=K BERLIN andBool notBool Ghasdirtysstore << SCHED >>
+      requires notBool Ghasaccesslist << SCHED >> 
+       andBool notBool Ghasdirtysstore << SCHED >>
 
     rule [Rsstore.new]:
          Rsstore(SCHED, NEW, CURR, ORIG)
@@ -2213,11 +2215,11 @@ There are several helpers for calculating gas (most of them also specified in th
     rule [Cmodexp.old]:
          Cmodexp(SCHED, DATA)
       => #multComplexity(maxInt(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 64 .. 32 ]))) *Int maxInt(#adjustedExpLength(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), DATA), 1) /Int Gquaddivisor < SCHED >
-      requires SCHED =/=K BERLIN
+      requires notBool Ghasaccesslist << SCHED >>
     rule [Cmodexp.new]:
          Cmodexp(SCHED, DATA)
       => #calculateGasCost(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 64 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #asWord(DATA [ 96 +Int #asWord(DATA [ 0 .. 32 ]) .. #asWord(DATA [ 32 .. 32 ])]))
-      requires SCHED ==K BERLIN
+      requires Ghasaccesslist << SCHED >>
 
     syntax BExp    ::= Bool
     syntax KResult ::= Bool
