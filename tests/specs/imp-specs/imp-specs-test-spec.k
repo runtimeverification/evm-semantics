@@ -119,7 +119,7 @@ module IMP-SPECS-TEST-SPEC
      andBool #rangeAddress(CALLER_ID)
      andBool #rangeAddress(ORIGIN_ID)
      andBool #range(0 <= CALL_DEPTH < 1020) // providing enough room for 4 calls, including test calls
-     andBool notBool (ACCT_ID in #precompiledAccounts(CONSTANTINOPLE))
+     andBool notBool #isPrecompiledAccount(ACCT_ID, CONSTANTINOPLE)
      andBool #rangeUInt(256, OLD_S)
      andBool #rangeUInt(256, VALUE)
      andBool VALUE =/=Int 0
