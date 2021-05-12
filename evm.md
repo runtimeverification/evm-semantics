@@ -49,7 +49,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <endPC>           0           </endPC>
             <callStack>       .List       </callStack>
             <interimStates>   .List       </interimStates>
-            <touchedAccounts> .Set        </touchedAccounts>
 
             <callState>
               <program> .ByteArray </program>
@@ -75,9 +74,11 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             // A_* (execution substate)
             <substate>
-              <selfDestruct> .Set  </selfDestruct>            // A_s
-              <log>          .List </log>                     // A_l
-              <refund>       0     </refund>                  // A_r
+              <selfDestruct>    .Set  </selfDestruct>            // A_s
+              <log>             .List </log>                     // A_l
+              <refund>          0     </refund>                  // A_r
+              <touchedAccounts> .Set  </touchedAccounts>
+
             </substate>
 
             // Immutable during a single transaction
@@ -2220,7 +2221,7 @@ There are several helpers for calculating gas (most of them also specified in th
       requires notBool Ghasaccesslist << SCHED >>
     rule [Cmodexp.new]:
          Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN)
-      => #calculateGasCost(BASELEN, MODLEN, EXPLEN, #asWord(DATA [ 96 +Int BASELEN .. EXPLEN]))
+      => #calculateGasCost(BASELEN, MODLEN, EXPLEN, #asWord(DATA [96 +Int BASELEN .. EXPLEN]))
       requires Ghasaccesslist << SCHED >>
 
     syntax BExp    ::= Bool
