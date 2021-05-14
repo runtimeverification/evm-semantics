@@ -209,7 +209,7 @@ This is the decoding of the typed arguments.
     rule #constructTypedArg(T, V) => #int256   (              String2Base(V, 16) modInt pow256) requires T ==String "int256" andBool String2Base(V, 16) modInt pow256 <=Int maxSInt256
     rule #constructTypedArg(T, V) => #int128   ((String2Base(V, 16) modInt pow128) -Int pow128) requires T ==String "int128" andBool String2Base(V, 16) modInt pow128 >Int maxSInt128
     rule #constructTypedArg(T, V) => #int128   (              String2Base(V, 16) modInt pow128) requires T ==String "int128" andBool String2Base(V, 16) modInt pow128 <=Int maxSInt128
-    rule #constructTypedArg(T, V) => #bytes    (                              #String2Bytes(V)) requires T ==String "bytes"
+    rule #constructTypedArg(T, V) => #bytes    (                               String2Bytes(V)) requires T ==String "bytes"
     rule #constructTypedArg(T, V) => #bytes32  (                              #parseHexWord(V)) requires T ==String "bytes32"
     rule #constructTypedArg(T, V) => #bool     (                   String2Base(V, 16) modInt 2) requires T ==String "bool"
     rule #constructTypedArg(T, V) => #string   (                                             V) requires T ==String "string"
