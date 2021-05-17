@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/INSTALL/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/kframework/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../">Homepage</a>
+      <a class="bd-toc-link" href="../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h1 id="installing-kevm">Installing KEVM</h1>
+<p>We currently provide these ways to install KEVM:</p>
+<ul>
+<li>Ubuntu packages,</li>
+<li>Docker images, and</li>
+<li>Building from source.</li>
+</ul>
+<p>The provided packages ship with their own version of K, to ensure that you get exactly the correct version to use.</p>
+<h2 id="downloading-packages">Downloading Packages</h2>
+<p>Download the appropriate packages from the <a href="https://github.com/kframework/evm-semantics/releases" target="_blank" rel="noopener">GitHub Releases Page</a>.
+Releases are generated as often as possible from the <code>master</code> branch, and are tagged with their version and git commit.</p>
+<h2 id="installing-packages">Installing Packages</h2>
+<h3 id="ubuntu">Ubuntu</h3>
+<p>Download the <code>kevm_X.Y.Z_amd64_DISTRO.deb</code> package from GitHub releases (where <code>X.Y.Z</code> is the version identifier and <code>DISTRO</code> is one of <code>bionic</code> or <code>focal</code>).
+Install it with the following command:</p>
+<pre class="language-text"><code>sudo apt-get install ./kevm_X.Y.Z_amd64_DISTRO.deb
+</code></pre>
+<h3 id="docker-images">Docker Images</h3>
+<p>Docker images with KEVM pre-installed are available at the <a href="https://hub.docker.com/repository/docker/runtimeverificationinc/kframework-evm-semantics" target="_blank" rel="noopener">runtimeverification/kframework-evm-semantics Docker Hub repository</a>.</p>
+<p>Each release at <code>COMMIT_ID</code> has an image associated with it at <code>runtimeverificationinc/kframework-k:ubuntu-focal-COMMIT_ID</code>.
+The latest <code>master</code> build Docker image can be accessed with <code>COMMIT_ID</code> set to <code>master</code>.</p>
+<p>To run the image directly:</p>
+<pre class="language-text"><code>docker run -it runtimeverificationinc/kframework-evm-semantics:ubuntu-focal-COMMIT_ID
+</code></pre>
+<p>and to make a Docker Image based on it, use the following line in your <code>Dockerfile</code>:</p>
+<pre class="language-text"><code>FROM runtimeverificationinc/kframework-evm-semantics:ubuntu-focal-COMMIT_ID
+</code></pre>
+<p>We also create Ubuntu 18.04 images with the <code>ubuntu-bionic-COMMIT_ID</code> tags.</p>
+<h3 id="from-source-build">From Source Build</h3>
+<p>Follow the instructions in the <a href="https://github.com/kframework/evm-semantics" target="_blank" rel="noopener">README file</a> for building KEVM from source.</p>
+</body></html></div>
+        </main>
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 text-md-right">
+        <p class="copyright">2021 © all rights reserved</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
