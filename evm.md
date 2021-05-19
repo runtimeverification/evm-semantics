@@ -1133,11 +1133,9 @@ For now, I assume that they instantiate an empty account and use the empty data.
            <balance> BAL </balance>
            ...
          </account>
-         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
 
     rule <k> BALANCE ACCT => 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
       requires notBool ACCT in ACCTS
 
     syntax UnStackOp ::= "EXTCODESIZE"
@@ -1148,11 +1146,9 @@ For now, I assume that they instantiate an empty account and use the empty data.
            <code> CODE </code>
            ...
          </account>
-         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
 
     rule <k> EXTCODESIZE ACCT => 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
       requires notBool ACCT in ACCTS
 
     syntax UnStackOp ::= "EXTCODEHASH"
@@ -1168,7 +1164,6 @@ For now, I assume that they instantiate an empty account and use the empty data.
            <balance> BAL </balance>
            ...
          </account>
-         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
       requires notBool #accountEmpty(CODE, NONCE, BAL)
 
      rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k>
@@ -1179,12 +1174,10 @@ For now, I assume that they instantiate an empty account and use the empty data.
            <balance> BAL </balance>
            ...
          </account>
-         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
        requires #accountEmpty(CODE, NONCE, BAL)
 
     rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
       requires notBool ACCT in ACCTS
 ```
 
@@ -1201,11 +1194,9 @@ Should we pad zeros (for the copied "program")?
            <code> PGM </code>
            ...
          </account>
-         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
 
     rule <k> EXTCODECOPY ACCT _MEMSTART _PGMSTART _WIDTH => . ... </k>
          <activeAccounts> ACCTS </activeAccounts>
-         <touchedAccounts> TA => TA SetItem(ACCT) </touchedAccounts>
       requires notBool ACCT in ACCTS
 ```
 
@@ -1804,6 +1795,7 @@ Overall Gas
  // ------------------------------------------------------
     rule <k> #gas [ OP , AOP ]
           => #if #usesMemory(OP) #then #memory [ AOP ] #else .K #fi
+          ~> #if #usesAccessList(OP) #then #access [ AOP ] #else .K #fi
           ~> #gas [ AOP ]
          ...
         </k>
@@ -1881,6 +1873,67 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
  // ----------------------------------------------------------------------------
     rule [#memoryUsageUpdate.none]: #memoryUsageUpdate(MU,     _, WIDTH) => MU                                       requires notBool WIDTH >Int 0
     rule [#memoryUsageUpdate.some]: #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH  >Int 0
+```
+
+Access List Gas
+---------------
+
+```k
+    syntax Bool ::= #usesAccessList ( OpCode ) [function]
+ // -----------------------------------------------------
+    rule #usesAccessList(OP) => true requires OP ==K BALANCE
+                                       orBool OP ==K SELFDESTRUCT
+                                       orBool OP ==K EXTCODEHASH
+                                       orBool OP ==K EXTCODESIZE
+                                       orBool OP ==K EXTCODECOPY
+                                       // orBool isCallOp(OP)
+                                       // orBool isCallSixOp(OP)
+    rule #usesAccessList(_) => false [owise]
+
+    syntax InternalOp ::= "#access" "[" OpCode "]"
+ // --------------------------------------------
+    rule <k> #access [ OP ] => #gasAccess(SCHED, OP) ~> #deductGas ... </k>
+         <schedule> SCHED </schedule>
+      requires Ghasaccesslist << SCHED >>
+    rule <k> #access [ _ ] => . ... </k> [owise]
+
+    syntax InternalOp ::= #gasAccess ( Schedule, OpCode )
+ // -----------------------------------------------------
+    rule <k> #gasAccess (SCHED, EXTCODESIZE ACCT) => Caddraccess(SCHED, ACCT in ACCTS) ... </k>
+         <schedule>        SCHED                        </schedule>
+         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+
+    rule <k> #gasAccess (SCHED, EXTCODECOPY ACCT _ _ _) => Caddraccess(SCHED, ACCT in ACCTS) ... </k>
+         <schedule>        SCHED                        </schedule>
+         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+
+    rule <k> #gasAccess (SCHED, EXTCODEHASH ACCT) => Caddraccess(SCHED, ACCT in ACCTS) ... </k>
+         <schedule>        SCHED                        </schedule>
+         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+
+    rule <k> #gasAccess (SCHED, BALANCE ACCT) => Caddraccess(SCHED, ACCT in ACCTS) ... </k>
+         <schedule>        SCHED                        </schedule>
+         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+
+//   rule <k> #gasAccess (SCHED, CALL _ ACCT _ _ _ _ _) => Caddraccess(SCHED, ACCT in ACCTS) ... </k>
+//        <schedule>        SCHED                        </schedule>
+//        <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+//
+//   rule <k> #gasAccess (SCHED, CALLCODE _ ACCT _ _ _ _ _) => Caddraccess(SCHED, ACCT in ACCTS) ... </k>
+//        <schedule>        SCHED                        </schedule>
+//        <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+//
+//   rule <k> #gasAccess (SCHED, DELEGATECALL _ ACCT _ _ _ _) => Caddraccess(SCHED, ACCT in ACCTS) ... </k>
+//        <schedule>        SCHED                        </schedule>
+//        <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+//
+//   rule <k> #gasAccess (SCHED, STATICCALL  _ ACCT _ _ _ _) => Caddraccess(SCHED, ACCT in ACCTS) ... </k>
+//        <schedule>        SCHED                        </schedule>
+//        <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
+
+    rule <k> #gasAccess (SCHED, SELFDESTRUCT ACCT) => #if ACCT in ACCTS #then 0 #else Gcoldaccountaccess <SCHED> #fi ... </k>
+         <schedule>        SCHED                        </schedule>
+         <touchedAccounts> ACCTS => ACCTS SetItem(ACCT) </touchedAccounts>
 ```
 
 Execution Gas
@@ -2056,11 +2109,11 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     // Whigh
     rule <k> #gasExec(SCHED, JUMPI _ _) => Ghigh < SCHED > ... </k>
 
-    rule <k> #gasExec(SCHED, EXTCODECOPY ACCT _ _ WIDTH) => Cextcodecopy(SCHED, WIDTH, ACCT in ACCTS)  ... </k> <touchedAccounts> ACCTS </touchedAccounts>
-    rule <k> #gasExec(SCHED, EXTCODESIZE ACCT )          => Cextcodesize(SCHED, ACCT in ACCTS)         ... </k> <touchedAccounts> ACCTS </touchedAccounts>
-    rule <k> #gasExec(SCHED, BALANCE ACCT)               => Cbalance(SCHED, ACCT in ACCTS)             ... </k> <touchedAccounts> ACCTS </touchedAccounts>
-    rule <k> #gasExec(SCHED, EXTCODEHASH ACCT)           => Cextcodehash (SCHED, ACCT in ACCTS)        ... </k> <touchedAccounts> ACCTS </touchedAccounts>
-    rule <k> #gasExec(SCHED, BLOCKHASH _) => Gblockhash < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, EXTCODECOPY _ _ _ WIDTH) => Cextcodecopy(SCHED, WIDTH) ... </k>
+    rule <k> #gasExec(SCHED, EXTCODESIZE _)           => Cextcodesize(SCHED)        ... </k>
+    rule <k> #gasExec(SCHED, BALANCE _)               => Cbalance(SCHED)            ... </k>
+    rule <k> #gasExec(SCHED, EXTCODEHASH _)           => Cextcodehash(SCHED)        ... </k>
+    rule <k> #gasExec(SCHED, BLOCKHASH _)             => Gblockhash < SCHED > ... </k>
 
     // Precompiled
     rule <k> #gasExec(_, ECREC)  => 3000 ... </k>
@@ -2117,10 +2170,10 @@ There are several helpers for calculating gas (most of them also specified in th
                  | Caddraccess    ( Schedule , Bool )                        [function, functional, smtlib(gas_Caddraccess)   ]
                  | Cstorageaccess ( Schedule , Bool )                        [function, functional, smtlib(gas_Cstorageaccess)]
                  | Csload         ( Schedule , Bool )                        [function, functional, smtlib(gas_Csload)        ]
-                 | Cextcodesize   ( Schedule , Bool )                        [function, functional, smtlib(gas_Cextcodesize)  ]
-                 | Cextcodecopy   ( Schedule , Int , Bool )                  [function, functional, smtlib(gas_Cextcodecopy)  ]
-                 | Cextcodehash   ( Schedule , Bool )                        [function, functional, smtlib(gas_Cextcodehash)  ]
-                 | Cbalance       ( Schedule , Bool )                        [function, functional, smtlib(gas_Cbalance)      ]
+                 | Cextcodesize   ( Schedule )                               [function, functional, smtlib(gas_Cextcodesize)  ]
+                 | Cextcodecopy   ( Schedule , Int )                         [function, functional, smtlib(gas_Cextcodecopy)  ]
+                 | Cextcodehash   ( Schedule )                               [function, functional, smtlib(gas_Cextcodehash)  ]
+                 | Cbalance       ( Schedule )                               [function, functional, smtlib(gas_Cbalance)      ]
                  | Cmodexp        ( Schedule , ByteArray , Int , Int , Int ) [function, functional, smtlib(gas_Cmodexp)       ]
  // ---------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
@@ -2197,21 +2250,21 @@ There are several helpers for calculating gas (most of them also specified in th
     rule [Csload.new]: Csload(SCHED, ISWARM)  => Cstorageaccess(SCHED, ISWARM) requires Ghasaccesslist << SCHED >>
     rule [Csload.old]: Csload(SCHED, _ISWARM) => Gsload < SCHED >              requires notBool Ghasaccesslist << SCHED >>
 
-    rule [Cextcodesize.new]: Cextcodesize(SCHED, ISWARM)  => Caddraccess(SCHED, ISWARM) requires Ghasaccesslist << SCHED >>
-    rule [Cextcodesize.old]: Cextcodesize(SCHED, _ISWARM) => Gextcodesize < SCHED >     requires notBool Ghasaccesslist << SCHED >>
+    rule [Cextcodesize.new]: Cextcodesize(SCHED) => 0                      requires Ghasaccesslist << SCHED >>
+    rule [Cextcodesize.old]: Cextcodesize(SCHED) => Gextcodesize < SCHED > requires notBool Ghasaccesslist << SCHED >>
 
-    rule [Cextcodehash.new]: Cextcodehash(SCHED, ISWARM)  => Caddraccess(SCHED, ISWARM) requires Ghasaccesslist << SCHED >>
-    rule [Cextcodehash.old]: Cextcodehash(SCHED, _ISWARM) => Gbalance < SCHED >         requires notBool Ghasaccesslist << SCHED >>
+    rule [Cextcodehash.new]: Cextcodehash(SCHED) => 0                  requires Ghasaccesslist << SCHED >>
+    rule [Cextcodehash.old]: Cextcodehash(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
 
-    rule [Cbalance.new]: Cbalance(SCHED, ISWARM)  => Caddraccess(SCHED, ISWARM) requires Ghasaccesslist << SCHED >>
-    rule [Cbalance.old]: Cbalance(SCHED, _ISWARM) => Gbalance < SCHED >         requires notBool Ghasaccesslist << SCHED >>
+    rule [Cbalance.new]: Cbalance(SCHED) => 0                  requires Ghasaccesslist << SCHED >>
+    rule [Cbalance.old]: Cbalance(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
 
     rule [Cextcodecopy.new]: 
-        Cextcodecopy(SCHED, WIDTH, ISWARM)
-      => Caddraccess(SCHED, ISWARM) +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32))
+        Cextcodecopy(SCHED, WIDTH)
+      => Gcopy < SCHED > *Int (WIDTH up/Int 32)
     requires Ghasaccesslist << SCHED >>
     rule [Cextcodecopy.old]:
-         Cextcodecopy(SCHED, WIDTH, _ISWARM)
+         Cextcodecopy(SCHED, WIDTH)
       => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32))
       requires notBool Ghasaccesslist << SCHED >>
 
@@ -2257,8 +2310,8 @@ There are several helpers for calculating gas (most of them also specified in th
                  | preG0 ( Schedule , Map , Int ) [function, klabel("preG0Aux")]
  // ----------------------------------------------------------------------------
     rule preG0(SCHED, M) => preG0(SCHED, M, 0)
-    rule preG0(SCHED, ACCT |-> STRGKS:Set M, RESULT) => preG0(SCHED, M, RESULT +Int Gaccesslistaddress <SCHED> +Int size(STRGKS) *Int Gaccessliststoragekey <SCHED>)
-    rule preG0(SCHED, .Map, RESULT) => RESULT
+    rule preG0(SCHED, _ACCT |-> STRGKS:Set M, RESULT) => preG0(SCHED, M, RESULT +Int Gaccesslistaddress <SCHED> +Int size(STRGKS) *Int Gaccessliststoragekey <SCHED>)
+    rule preG0(_SCHED, .Map, RESULT) => RESULT
 ```
 
 ```{.k .nobytes}
