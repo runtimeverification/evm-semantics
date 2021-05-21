@@ -174,7 +174,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 -   `#parseMap` interprets a JSON key/value object as a map from `Word` to `Word`.
 -   `#parseAddr` interprets a string as a 160 bit hex-endcoded address.
 -   `#parseAccessList` interprets a JSON list object as an access list map, according to EIP-2930.
--   `#parseJSONBytes` interprets a JSON list object as a Set, casting each string element as a `Word`.
+-   `#parseAccessListStorageKeys` interprets a JSON list object as a Set, casting each string element as a `Word`.
 
 ```k
     syntax Int ::= #parseHexWord ( String ) [function]
@@ -238,19 +238,14 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
  // -----------------------------------------------
     rule #parseAddr(S) => #addr(#parseHexWord(S))
 
-    syntax Map ::= #parseAccessList ( JSONs )       [function]
-                 | #parseAccessList ( JSONs , Map ) [function, klabel(#parseAccessListAux)]
- // ---------------------------------------------------------------------------------------
-    rule #parseAccessList( J                                      ) => #parseAccessList(J, .Map)
-    rule #parseAccessList([[ACCT, [STRG:JSONs]], REST], RESULT:Map) => #parseAccessList([REST], RESULT[#asAccount(#parseByteStackRaw(ACCT)) <- #parseJSONBytes([STRG]) ])
-    rule #parseAccessList([.JSONs                    ], RESULT:Map) => RESULT
+    syntax AccessListEntry ::= "{" Account "|" Int "}"
 
-    syntax Set ::= #parseJSONBytes ( JSONs )       [function]
-                 | #parseJSONBytes ( JSONs , Set ) [function, klabel(#parseJSONBytesAux)]
- // -------------------------------------------------------------------------------------
-    rule #parseJSONBytes( J                          ) => #parseJSONBytes(J, .Set)
-    rule #parseJSONBytes([S:String, REST], RESULT:Set) => #parseJSONBytes([REST], SetItem(#asWord(#parseByteStackRaw(S))) RESULT )
-    rule #parseJSONBytes([ .JSONs       ], RESULT:Set) => RESULT
+    syntax List ::= #parseAccessListStorageKeys ( JSONs )        [function]
+                  | #parseAccessListStorageKeys ( JSONs , List ) [function, klabel(#parseAccessListStorageKeysAux)]
+ // ---------------------------------------------------------------------------------------------------------------
+    rule #parseAccessListStorageKeys( J                           ) => #parseAccessListStorageKeys(J, .List)
+    rule #parseAccessListStorageKeys([S:String, REST], RESULT:List) => #parseAccessListStorageKeys([REST], ListItem(#asWord(#parseByteStackRaw(S))) RESULT )
+    rule #parseAccessListStorageKeys([ .JSONs       ], RESULT:List) => RESULT
 ```
 
 Unparsing

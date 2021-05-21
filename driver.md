@@ -112,13 +112,14 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= loadTx ( Account )
  // ---------------------------------------------
     rule <k> loadTx(ACCTFROM)
-          => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
+          => #loadAccessList(TA)
+          ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
-         <callGas> _ => GLIMIT -Int preG0(SCHED, #parseAccessList(TA)) -Int G0(SCHED, CODE, true) </callGas>
+         <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -139,16 +140,17 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE </nonce>
            ...
          </account>
-         <touchedAccounts> _ => keys(#parseAccessList(TA)) SetItem(MINER) </touchedAccounts>
+         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
 
     rule <k> loadTx(ACCTFROM)
-          => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
+          => #loadAccessList(TA)
+          ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
-         <callGas> _ => GLIMIT -Int preG0(SCHED,#parseAccessList(TA)) -Int G0(SCHED, DATA, false) </callGas>
+         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -169,7 +171,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
-         <touchedAccounts> _ => keys(#parseAccessList(TA)) SetItem(MINER) </touchedAccounts>
+         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
 
     syntax EthereumCommand ::= "#finishTx"
@@ -197,6 +199,38 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            ...
          </message>
       requires TT =/=K .Account
+
+    syntax EthereumCommand ::= #loadAccessList ( JSON )
+                             | #loadAccessListAux ( Account , List )
+ // ----------------------------------------------------------------
+    rule <k> #loadAccessList ([ .JSONs ]) => . ... </k>
+         <schedule> SCHED </schedule>
+      requires Ghasaccesslist << SCHED >>
+
+    rule <k> #loadAccessList ([ _ ]) => . ... </k>
+         <schedule> SCHED </schedule>
+      requires notBool Ghasaccesslist << SCHED >>
+
+    rule <k> #loadAccessList ([[ACCT, [STRG:JSONs]], REST])
+          => #loadAccessListAux (#asAccount(#parseByteStackRaw(ACCT)), #parseAccessListStorageKeys([STRG]))
+          ~> #loadAccessList ([REST])
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+      requires Ghasaccesslist << SCHED >>
+
+    rule <k> #loadAccessListAux (ACCT, (ListItem(STRGK) STRGKS))
+          => #loadAccessListAux (ACCT, STRGKS)
+         ...
+         </k>
+         <touchedStorage> TS => TS |Set SetItem({ACCT|STRGK:Int})                   </touchedStorage>
+         <callGas>        GLIMIT => GLIMIT -Int Gaccessliststoragekey < SCHED > </callGas>
+         <schedule>       SCHED                                                 </schedule>
+
+    rule <k> #loadAccessListAux (ACCT, .List) => . ... </k>
+         <touchedAccounts> TA => TA |Set SetItem(ACCT)                        </touchedAccounts>
+         <callGas>         GLIMIT => GLIMIT -Int Gaccesslistaddress < SCHED > </callGas>
+         <schedule>        SCHED                                              </schedule>
 ```
 
 -   `exception` only clears from the `<k>` cell if there is an exception preceding it.
@@ -514,7 +548,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : "accessList" : { "address" : V1 , "storageKeys": V2 , .JSONs } => check "transactions" : "accessList" : "address" : #parseHexWord(V1) : "storageKeys" : V2  ... </k>
 
     rule <k> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : [ KEY , REST ] => check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : #parseHexWord(KEY) ~> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : [ REST ] ... </k>
-    rule <k> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : KEY => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txAccess> TA </txAccess> ... </message> requires KEY in {#parseAccessList(TA)[ADDR]}:>Set
+    rule <k> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : KEY => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txAccess> TA </txAccess> ... </message> requires isInAccessList(ADDR, KEY, TA)
     rule <k> check "transactions" : "accessList" : "address" : _ : "storageKeys" : [ .JSONs ] => . ... </k>
     rule <k> check "transactions" : "accessList" : [ .JSONs ] => . ... </k>
 
@@ -530,8 +564,17 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ("chainId"  : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txChainID>  VALUE </txChainID>  ... </message>
     rule <k> check "transactions" : ("type"     : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txType>     VALUE </txType>     ... </message>
 
+    syntax Bool ::= isInAccessList ( Account , Int , JSON ) [function]
+ // ------------------------------------------------------------------
+    rule isInAccessList(_, _, [.JSONs]) => false
+    rule isInAccessList(ADDR, KEY, [[ACCT, [STRG:JSONs]],  REST]) => isInAccessListStorage (KEY, [STRG]) orBool isInAccessList(ADDR, KEY, [REST]) requires ADDR ==K #asAccount(#parseByteStackRaw(ACCT))
+    rule isInAccessList(ADDR, KEY, [[ACCT, [_STRG:JSONs]], REST]) => isInAccessList(ADDR, KEY, [REST])   requires notBool ADDR ==K #asAccount(#parseByteStackRaw(ACCT))
 
-
+    syntax Bool ::= isInAccessListStorage ( Int , JSON ) [function]
+ // ---------------------------------------------------------------
+    rule isInAccessListStorage(_, [.JSONs]) => false
+    rule isInAccessListStorage(KEY, [SKEY, _REST]) => true requires KEY ==Int #asWord(#parseByteStackRaw(SKEY))
+    rule isInAccessListStorage(KEY, [SKEY, REST])  => isInAccessListStorage(KEY, [REST]) requires  notBool KEY ==Int #asWord(#parseByteStackRaw(SKEY))
 ```
 
 TODO: case with nonzero ommers.

@@ -78,6 +78,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <log>             .List </log>                     // A_l
               <refund>          0     </refund>                  // A_r
               <touchedAccounts> .Set  </touchedAccounts>
+              <touchedStorage>  .Set  </touchedStorage>
 
             </substate>
 
@@ -132,7 +133,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <storage>        .Map                   </storage>
                 <origStorage>    .Map                   </origStorage>
                 <nonce>          0                      </nonce>
-                <touchedStorage> .Set                   </touchedStorage>
               </account>
             </accounts>
 
@@ -521,7 +521,6 @@ After executing a transaction, it's necessary to have the effect of the substate
            <acctID>         ACCT         </acctID>
            <storage>        STORAGE      </storage>
            <origStorage>    _ => STORAGE </origStorage>
-           <touchedStorage> _ => .Set    </touchedStorage>
            ...
          </account>
 
@@ -534,6 +533,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <selfDestruct>    .Set      </selfDestruct>
          <activeAccounts>  ACCTS     </activeAccounts>
          <touchedAccounts> _ => .Set </touchedAccounts>
+         <touchedStorage> _ => .Set </touchedStorage>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
          <coinbase> MINER </coinbase>
@@ -1209,10 +1209,10 @@ These rules reach into the network state and load/store from account storage:
  // ----------------------------
     rule <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k>
          <id> ACCT </id>
+         <touchedStorage> TS => TS |Set SetItem({ACCT|INDEX}) </touchedStorage>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
-           <touchedStorage> KEYS => KEYS SetItem(INDEX) </touchedStorage>
            ...
          </account>
 
@@ -1220,10 +1220,10 @@ These rules reach into the network state and load/store from account storage:
  // ------------------------------
     rule <k> SSTORE INDEX NEW => . ... </k>
          <id> ACCT </id>
+         <touchedStorage> TS => TS |Set SetItem({ACCT|INDEX}) </touchedStorage>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
-           <touchedStorage> KEYS => KEYS SetItem(INDEX) </touchedStorage>
            ...
          </account>
 ```
@@ -1946,14 +1946,14 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 ```k
     syntax InternalOp ::= #gasExec ( Schedule , OpCode )
  // ----------------------------------------------------
-    rule <k> #gasExec(SCHED, SSTORE INDEX NEW) => Csstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX), INDEX in KEYS) ... </k>
+    rule <k> #gasExec(SCHED, SSTORE INDEX NEW) => Csstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX), {ACCT|INDEX} in TS) ... </k>
          <id> ACCT </id>
          <gas> GAVAIL </gas>
+         <touchedStorage> TS </touchedStorage>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
            <origStorage> ORIGSTORAGE </origStorage>
-           <touchedStorage> KEYS </touchedStorage>
            ...
          </account>
          <refund> R => R +Int Rsstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) </refund>
@@ -2034,13 +2034,9 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </k>
 
     rule <k> #gasExec(SCHED, JUMPDEST)     => Gjumpdest < SCHED >          ... </k>
-    rule <k> #gasExec(SCHED, SLOAD INDEX)  => Csload(SCHED, INDEX in KEYS) ... </k>
+    rule <k> #gasExec(SCHED, SLOAD INDEX)  => Csload(SCHED, {ACCT|INDEX} in TS) ... </k>
          <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <touchedStorage> KEYS </touchedStorage>
-           ...
-         </account>
+         <touchedStorage> TS </touchedStorage>
 
     // Wzero
     rule <k> #gasExec(SCHED, STOP)       => Gzero < SCHED > ... </k>
@@ -2303,15 +2299,6 @@ There are several helpers for calculating gas (most of them also specified in th
  // ---------------------------------------------------------------------------------
     rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
     rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
-```
-
-```.k
-    syntax Int ::= preG0 ( Schedule , Map )       [function]
-                 | preG0 ( Schedule , Map , Int ) [function, klabel("preG0Aux")]
- // ----------------------------------------------------------------------------
-    rule preG0(SCHED, M) => preG0(SCHED, M, 0)
-    rule preG0(SCHED, _ACCT |-> STRGKS:Set M, RESULT) => preG0(SCHED, M, RESULT +Int Gaccesslistaddress <SCHED> +Int size(STRGKS) *Int Gaccessliststoragekey <SCHED>)
-    rule preG0(_SCHED, .Map, RESULT) => RESULT
 ```
 
 ```{.k .nobytes}

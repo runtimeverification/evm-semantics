@@ -4,10 +4,6 @@ tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/create2callPrec
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/create2InitCodes.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/CREATE2_Suicide.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/Create2Recursive.json
-tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/addressOpcodes.json
-tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/transactionCosts.json
-tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/storageCosts.json
-tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP2930/variedContext.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stPreCompiledContracts2/modexpRandomInput.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stPreCompiledContracts/modexp.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000Byzantium.json
@@ -37,4 +33,3 @@ tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTest
 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000Byzantium_d0g1v0.json
 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000_d0g1v0.json
 tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stRecursiveCreate/recursiveCreateReturnValue_d0g0v0.json
-tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stSpecialTest/JUMPDEST_Attack_d0g0v0.json
