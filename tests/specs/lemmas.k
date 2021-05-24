@@ -5,6 +5,10 @@ module LEMMAS
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
 
+    rule I1 +Int I2 <=Int I3 +Int I4 => I1 <=Int I3 +Int (I2 -Int I4) [simplification, concrete(I2, I4)]
+    rule #stackUnderflow(WS, N) => false requires N <=Int #sizeWordStack(WS) [simplification]
+    rule #sizeWordStack(WS [ I := _ ], N) => #sizeWordStack(WS, N) requires I <Int #sizeWordStack(WS) [simplification]
+
     rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma, simplification]
     rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma, simplification]
 
