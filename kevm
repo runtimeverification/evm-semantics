@@ -83,9 +83,10 @@ run_prove() {
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
 
     proof_args=(--def-module "$def_module")
-    ! $debug      || proof_args+=(--debug)
-    ! $debugger   || proof_args+=(--debugger)
-    ! $bug_report || proof_args+=(--haskell-backend-command "kore-exec --bug-report $bug_report_name")
+    ! $debug                          || proof_args+=(--debug)
+    ! $debugger                       || proof_args+=(--debugger)
+    ! $bug_report                     || proof_args+=(--haskell-backend-command "kore-exec --bug-report $bug_report_name")
+    [[ ! -f ${concrete_rules_file} ]] || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
 
     ! $debug || set -x
     kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
@@ -215,6 +216,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                  <KEVM arg> is one of [--mode (NORMAL|VMTESTS)]
                                       [--schedule (ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
                                       [--chainid NNN]
+                                      [--concrete-rules-file <concrete_rules_file>]
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <output format> is the format for Kast to output the term in.
@@ -241,6 +243,7 @@ bug_report=false
 mode=NORMAL
 schedule=ISTANBUL
 chainid=1
+concrete_rules_file=
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 kevm_port='8545'
@@ -249,19 +252,20 @@ args=()
 while [[ $# -gt 0 ]]; do
     arg="$1"
     case $arg in
-        --debug)              debug=true ; args+=("$1") ; shift   ;;
-        --dump)               dump=true                 ; shift   ;;
-        --no-unparse)         unparse=false             ; shift   ;;
-        --debugger)           debugger=true             ; shift   ;;
-        --bug-report)         bug_report=true           ; shift   ;;
-        --backend)            backend="$2"              ; shift 2 ;;
-        --backend-dir)        backend_dir="$2"          ; shift 2 ;;
-        --mode)               mode="$2"                 ; shift 2 ;;
-        --schedule)           schedule="$2"             ; shift 2 ;;
-        --chainid)            chainid="$2"              ; shift 2 ;;
-        -p|--port)            kevm_port="$2"            ; shift 2 ;;
-        -h|--host|--hostname) kevm_host="$2"            ; shift 2 ;;
-        *)                    args+=("$1")              ; shift   ;;
+        --debug)               debug=true ; args+=("$1") ; shift   ;;
+        --dump)                dump=true                 ; shift   ;;
+        --no-unparse)          unparse=false             ; shift   ;;
+        --debugger)            debugger=true             ; shift   ;;
+        --bug-report)          bug_report=true           ; shift   ;;
+        --backend)             backend="$2"              ; shift 2 ;;
+        --backend-dir)         backend_dir="$2"          ; shift 2 ;;
+        --concrete-rules-file) concrete_rules_file="$2"  ; shift 2 ;;
+        --mode)                mode="$2"                 ; shift 2 ;;
+        --schedule)            schedule="$2"             ; shift 2 ;;
+        --chainid)             chainid="$2"              ; shift 2 ;;
+        -p|--port)             kevm_port="$2"            ; shift 2 ;;
+        -h|--host|--hostname)  kevm_host="$2"            ; shift 2 ;;
+        *)                     args+=("$1")              ; shift   ;;
     esac
 done
 [[ "${#args[@]}" -le 0 ]] || set -- "${args[@]}"
