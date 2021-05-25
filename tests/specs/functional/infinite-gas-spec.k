@@ -89,4 +89,7 @@ module INFINITE-GAS-SPEC
 
     claim <k> runLemma(Gverylow < SCHED > <=Int #gas(_)) => doneLemma(true) ... </k>
 
+    claim <k> runLemma(Gexp < SCHED > +Int Gexpbyte < SCHED > *Int ( log2Int ( W1 ) /Int 8 +Int 1 ) <=Int #gas(GAVAIL)) => doneLemma(true)  ... </k>
+    claim <k> runLemma(#gas(GAVAIL) <Int Gexp < SCHED > +Int Gexpbyte < SCHED > *Int ( log2Int ( W1 ) /Int 8 +Int 1 ))  => doneLemma(false) ... </k>
+
 endmodule
