@@ -1,8 +1,5 @@
-tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBadOpcode/invalidAddr.json.run
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBadOpcode/invalidAddr.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBugs/extcodehashEmpty.json
-tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/create2callPrecompiles.json
-tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/create2InitCodes.json
-tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/CREATE2_Suicide.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/Create2Recursive.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000Byzantium.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000.json
