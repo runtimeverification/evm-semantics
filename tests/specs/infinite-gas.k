@@ -155,10 +155,16 @@ module INFINITE-GAS-COMMON
     rule #gas(_)  <Int Csstore(_, _, _, _) => false [simplification]
     rule #gas(_) >=Int Csstore(_, _, _, _) => true  [simplification]
 
+    rule 0 <=Int Cmem(_, _)       => true  [simplification]
+    rule Cmem(_, _) <Int #gas(_)  => true  [simplification]
     rule #gas(_) <Int Cmem(_, _)  => false [simplification]
     rule Cmem(_, _) <=Int #gas(_) => true  [simplification]
 
     rule 0 <=Int #allBut64th(_G)      => true                          [simplification]
     rule #allBut64th(G) <Int #gas(G') => true requires G <Int #gas(G') [simplification]
+
+    rule 0 <=Int _:ScheduleConst < _:Schedule >       => true [simplification]
+    rule _:ScheduleConst < _:Schedule > <Int #gas(_)  => true [simplification]
+    rule _:ScheduleConst < _:Schedule > <=Int #gas(_) => true [simplification]
 
 endmodule
