@@ -92,6 +92,8 @@ module INFINITE-GAS-COMMON
     rule I -Int I => 0              [simplification]
     rule (I1 -Int I2) +Int I2 => I1 [simplification]
 
+    rule X -Int Y +Int Z <=Int A => false requires A <Int X -Int Y andBool 0 <=Int Z [simplification]
+
  // Symbolic Gas
 
     syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
@@ -163,8 +165,12 @@ module INFINITE-GAS-COMMON
     rule 0 <=Int #allBut64th(_G)      => true                          [simplification]
     rule #allBut64th(G) <Int #gas(G') => true requires G <Int #gas(G') [simplification]
 
-    rule 0 <=Int _:ScheduleConst < _:Schedule >       => true [simplification]
-    rule _:ScheduleConst < _:Schedule > <Int #gas(_)  => true [simplification]
-    rule _:ScheduleConst < _:Schedule > <=Int #gas(_) => true [simplification]
+    rule 0 <=Int _:ScheduleConst < _:Schedule >       => true  [simplification]
+    rule _:ScheduleConst < _:Schedule > <Int #gas(_)  => true  [simplification]
+    rule _:ScheduleConst < _:Schedule > <=Int #gas(_) => true  [simplification]
+    rule #gas(_) <Int _:ScheduleConst < _:Schedule >  => false [simplification]
+
+    rule log2Int(_) <=Int #gas(_) => true  [simplification]
+    rule #gas(_) <Int log2Int(_)  => false [simplification]
 
 endmodule
