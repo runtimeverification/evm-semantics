@@ -9,6 +9,8 @@ requires "evm.md"
 module EVM-OPTIMIZATIONS [kore]
     imports EVM
 
+    // Nonsense rule to trigger initial slowdown
+    rule <k> #halt ~> #halt ~> #halt => . </k> [priority(40)]
 
 // {OPTIMIZATIONS}
 
