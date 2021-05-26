@@ -145,6 +145,44 @@ rule <kevm>
     [priority(40)]
 
 
+rule <kevm>
+       <k>
+         ( #next[ MLOAD ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <ethereum>
+         <evm>
+           <callState>
+             <wordStack>
+               ( W0 : WS => #asWord( #range( LM , W0 , 32 ) ) : WS )
+             </wordStack>
+             <localMem>
+               LM
+             </localMem>
+             <pc>
+               ( PCOUNT => ( PCOUNT +Int 1 ) )
+             </pc>
+             <gas>
+               ( GAVAIL => ( GAVAIL -Int ( ( Cmem( SCHED , #memoryUsageUpdate( MU , W0 , 32 ) ) -Int Cmem( SCHED , MU ) ) +Int Gverylow < SCHED > ) ) )
+             </gas>
+             <memoryUsed>
+               ( MU => #memoryUsageUpdate( MU , W0 , 32 ) )
+             </memoryUsed>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires ( ( ( Cmem( SCHED , #memoryUsageUpdate( MU , W0 , 32 ) ) -Int Cmem( SCHED , MU ) ) +Int Gverylow < SCHED > ) <=Int GAVAIL )
+   andBool ( #sizeWordStack( #asWord( #range( LM , W0 , 32 ) ) : WS ) <=Int 1024 )
+    [priority(40)]
+
+
 // {OPTIMIZATIONS}
 
 
