@@ -8,3 +8,5 @@
 /pkg
 /src
 /tests/specs/**/*.prove.out
+/optimizer/*.k
+/optimizer/*.json
