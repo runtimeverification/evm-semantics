@@ -136,6 +136,7 @@ SOURCE_FILES       := abi                        \
                       hashed-locations           \
                       json-rpc                   \
                       network                    \
+                      optimizations              \
                       serialization              \
                       state-loader               \
                       blockchain-k-plugin/krypto
