@@ -1,4 +1,4 @@
-make tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBadOpcode/invalidAddr.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBadOpcode/invalidAddr.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBugs/extcodehashEmpty.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/Create2Recursive.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stQuadraticComplexityTest/Create1000Byzantium.json
