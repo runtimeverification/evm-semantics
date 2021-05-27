@@ -13,8 +13,6 @@ endmodule
 module EVM-OPTIMIZATIONS [kore]
     imports EVM-OPTIMIZATIONS-LEMMAS
 
-    // Nonsense rule to trigger initial slowdown
-    rule <k> #halt ~> #halt ~> #halt => . </k> [priority(40)]
 
 // {OPTIMIZATIONS}
 
