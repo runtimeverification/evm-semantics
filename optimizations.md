@@ -609,6 +609,38 @@ rule <kevm>
     [priority(40)]
 
 
+rule <kevm>
+       <k>
+         ( #next[ DIV ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <ethereum>
+         <evm>
+           <callState>
+             <wordStack>
+               ( W0 : W1 : WS => W0 /Word W1 : WS )
+             </wordStack>
+             <pc>
+               ( PCOUNT => ( PCOUNT +Int 1 ) )
+             </pc>
+             <gas>
+               ( GAVAIL => ( GAVAIL -Int Glow < SCHED > ) )
+             </gas>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires ( Glow < SCHED > <=Int GAVAIL )
+   andBool ( #sizeWordStack( W0 /Word W1 : WS ) <=Int 1024 )
+    [priority(40)]
+
+
 // {OPTIMIZATIONS}
 
 
