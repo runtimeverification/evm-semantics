@@ -150,10 +150,10 @@ module INFINITE-GAS-COMMON
     rule G  <Int minInt(G', G'') => G  <Int G' andBool G  <Int G'' [simplification]
     rule G <=Int minInt(G', G'') => G <=Int G' andBool G <=Int G'' [simplification]
 
-    rule 0 <=Int Csstore(_, _, _, _)       => true  [simplification]
-    rule Csstore(_, _, _, _) <Int #gas(_)  => true  [simplification]
-    rule #gas(_)  <Int Csstore(_, _, _, _) => false [simplification]
-    rule #gas(_) >=Int Csstore(_, _, _, _) => true  [simplification]
+    rule 0 <=Int Csstore(_, _, _, _, _)       => true  [simplification]
+    rule Csstore(_, _, _, _, _) <Int #gas(_)  => true  [simplification]
+    rule #gas(_)  <Int Csstore(_, _, _, _, _) => false [simplification]
+    rule #gas(_) >=Int Csstore(_, _, _, _, _) => true  [simplification]
 
     rule #gas(_) <Int Cmem(_, _)  => false [simplification]
     rule Cmem(_, _) <=Int #gas(_) => true  [simplification]
