@@ -219,6 +219,44 @@ rule <kevm>
     [priority(40)]
 
 
+rule <kevm>
+       <k>
+         ( #next[ MSTORE8 ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <ethereum>
+         <evm>
+           <callState>
+             <wordStack>
+               ( W0 : W1 : WS => WS )
+             </wordStack>
+             <localMem>
+               ( LM => padRightBytes( LM , ( W0 +Int 1 ) , 0 ) [ W0 <- W1 modInt 256 ] )
+             </localMem>
+             <pc>
+               ( PCOUNT => ( PCOUNT +Int 1 ) )
+             </pc>
+             <gas>
+               ( GAVAIL => ( GAVAIL -Int ( ( Cmem( SCHED , #memoryUsageUpdate( MU , W0 , 1 ) ) -Int Cmem( SCHED , MU ) ) +Int Gverylow < SCHED > ) ) )
+             </gas>
+             <memoryUsed>
+               ( MU => #memoryUsageUpdate( MU , W0 , 1 ) )
+             </memoryUsed>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires ( ( ( Cmem( SCHED , #memoryUsageUpdate( MU , W0 , 1 ) ) -Int Cmem( SCHED , MU ) ) +Int Gverylow < SCHED > ) <=Int GAVAIL )
+   andBool ( #sizeWordStack( WS ) <=Int 1024 )
+    [priority(40)]
+
+
 // {OPTIMIZATIONS}
 
 
