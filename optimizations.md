@@ -417,6 +417,38 @@ rule <kevm>
     [priority(40)]
 
 
+rule <kevm>
+       <k>
+         ( #next[ NOT ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <ethereum>
+         <evm>
+           <callState>
+             <wordStack>
+               ( W0 : WS => W0 xorInt 115792089237316195423570985008687907853269984665640564039457584007913129639935 : WS )
+             </wordStack>
+             <pc>
+               ( PCOUNT => ( PCOUNT +Int 1 ) )
+             </pc>
+             <gas>
+               ( GAVAIL => ( GAVAIL -Int Gverylow < SCHED > ) )
+             </gas>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires ( Gverylow < SCHED > <=Int GAVAIL )
+   andBool ( #sizeWordStack( W0 xorInt 115792089237316195423570985008687907853269984665640564039457584007913129639935 : WS ) <=Int 1024 )
+    [priority(40)]
+
+
 // {OPTIMIZATIONS}
 
 
