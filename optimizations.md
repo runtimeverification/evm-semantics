@@ -213,6 +213,38 @@ rule <kevm>
     [priority(40)]
 
 
+rule <kevm>
+       <k>
+         ( #next[ MULMOD ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <ethereum>
+         <evm>
+           <callState>
+             <wordStack>
+               ( W0 : W1 : W2 : WS => ( W0 *Int W1 ) %Word W2 : WS )
+             </wordStack>
+             <pc>
+               ( PCOUNT => ( PCOUNT +Int 1 ) )
+             </pc>
+             <gas>
+               ( GAVAIL => ( GAVAIL -Int Gmid < SCHED > ) )
+             </gas>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires ( Gmid < SCHED > <=Int GAVAIL )
+   andBool ( #sizeWordStack( ( W0 *Int W1 ) %Word W2 : WS ) <=Int 1024 )
+    [priority(40)]
+
+
 // {OPTIMIZATIONS}
 
 
