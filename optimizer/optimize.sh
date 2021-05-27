@@ -133,32 +133,31 @@ git add optimizations.md
 git commit -m 'optimizations: clear optimizations' || true
 
 # score: (number with speedup >7%) - (number with slowdown >7%)
-doOptimization "PUSH(N)"  0 10 40                                                       # 73
-doOptimization "DUP(N)"   0 10 40 '#stackNeeded(DUP(N)) <=Int #sizeWordStack(WS)'       # 14
-doOptimization "SWAP(N)"  1 10 40 '#stackNeeded(SWAP(N)) <=Int #sizeWordStack(W0 : WS)' # 14
-doOptimization ADD        2 10 40                                                       # 8
-doOptimization LT         2 10 40                                                       # 7
-doOptimization POP        1 10 40                                                       # 5
-doOptimization MULMOD     3 10 40                                                       # 1
-
-doOptimization MSTORE8    2 14 40                                                       #  0
-doOptimization SIGNEXTEND 2 10 40                                                       #  0
-doOptimization SGT        2 10 40                                                       #  ?
-doOptimization SLT        2 10 40                                                       #  ?
-doOptimization GT         2 10 40                                                       #  ?
-doOptimization EVMOR      2 10 40                                                       #  ?
-doOptimization MOD        2 10 40                                                       #  ?
-doOptimization SUB        2 10 40                                                       #  ?
-doOptimization DIV        2 10 40                                                       #  ?
-doOptimization AND        2 10 40                                                       #  ?
-doOptimization ADDMOD     3 10 40                                                       # -1
-doOptimization EQ         2 10 40                                                       # -1
-doOptimization MUL        2 10 40                                                       # -1
-doOptimization ISZERO     1 10 40                                                       # -3
-doOptimization NOT        1 10 40                                                       # -4
-doOptimization XOR        2 10 40                                                       # -9
-doOptimization MLOAD      1 14 40                                                       # -9
-doOptimization MSTORE     2 14 40                                                       # -18
+doOptimization "PUSH(N)"  0 10 40                                                       #  73    65
+doOptimization "DUP(N)"   0 10 40 '#stackNeeded(DUP(N)) <=Int #sizeWordStack(WS)'       #  14    16
+doOptimization "SWAP(N)"  1 10 40 '#stackNeeded(SWAP(N)) <=Int #sizeWordStack(W0 : WS)' #  14    16
+doOptimization MSTORE     2 14 40                                                       # -18    11
+doOptimization ADD        2 10 40                                                       #  8     5
+doOptimization POP        1 10 40                                                       #  5     5
+doOptimization MSTORE8    2 14 40                                                       #  0     5
+doOptimization LT         2 10 40                                                       #  7     3
+doOptimization MOD        2 10 40                                                       #  0     3
+doOptimization AND        2 10 40                                                       #  0     2
+doOptimization EQ         2 10 40                                                       # -1     2
+doOptimization MUL        2 10 40                                                       # -1     1
+doOptimization NOT        1 10 40                                                       # -4     1
+doOptimization XOR        2 10 40                                                       # -9     0
+doOptimization SIGNEXTEND 2 10 40                                                       #  0     0
+doOptimization SGT        2 10 40                                                       #  0     0
+doOptimization GT         2 10 40                                                       #  0     0
+doOptimization SUB        2 10 40                                                       #  0     0
+doOptimization DIV        2 10 40                                                       #  0     0
+doOptimization ADDMOD     3 10 40                                                       # -1     0
+doOptimization SLT        2 10 40                                                       #  0    -1
+doOptimization EVMOR      2 10 40                                                       #  0    -1
+doOptimization ISZERO     1 10 40                                                       # -3    -3
+doOptimization MULMOD     3 10 40                                                       #  1    -4
+doOptimization MLOAD      1 14 40                                                       # -9    -4
 
 # spec requires multiple branches
 # doOptimization EXP 2 10
