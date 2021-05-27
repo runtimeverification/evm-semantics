@@ -1304,7 +1304,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
-         <touchedAccounts> ... .Set => SetItem(ACCTFROM) SetItem(ACCTTO) #precompiledAccounts(SCHED) ... </touchedAccounts>
          <schedule> SCHED </schedule>
 
     syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
@@ -1603,7 +1602,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 ```k
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <id> ACCT </id>
          <selfDestruct> ... (.Set => SetItem(ACCT)) ... </selfDestruct>
          <account>
