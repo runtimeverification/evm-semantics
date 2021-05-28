@@ -16,7 +16,6 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Flapper_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Flapper_bin_runtime) </jumpDests>
@@ -37,6 +36,8 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -317,7 +318,6 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Flapper_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Flapper_bin_runtime) </jumpDests>
@@ -338,6 +338,8 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -504,7 +506,6 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Flapper_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Flapper_bin_runtime) </jumpDests>
@@ -528,6 +529,8 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -694,7 +697,6 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> DSToken_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(DSToken_bin_runtime) </jumpDests>
@@ -718,6 +720,8 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>

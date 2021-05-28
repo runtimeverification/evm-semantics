@@ -16,7 +16,6 @@ module ADDRESS00-SPEC
         <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
-        <touchedAccounts> _ => ?_ </touchedAccounts>
         <callState>
           <program> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680634b64e492146044575b600080fd5b348015604f57600080fd5b506082600480360381019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505060c4565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b60008190509190505600a165627a7a72305820fef7ba925e24a935e59bb401907893518a66095fa9e2c2506b29051dfdaa6ff80029") </program>
           <jumpDests> #computeValidJumpDests(#parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680634b64e492146044575b600080fd5b348015604f57600080fd5b506082600480360381019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505060c4565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b60008190509190505600a165627a7a72305820fef7ba925e24a935e59bb401907893518a66095fa9e2c2506b29051dfdaa6ff80029")) </jumpDests>
@@ -37,6 +36,8 @@ module ADDRESS00-SPEC
           <selfDestruct> _ </selfDestruct>
           <log> _ </log>
           <refund> _ </refund>
+          <touchedAccounts> _ => ?_ </touchedAccounts>
+          <touchedStorage> _ => ?_ </touchedStorage>
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin

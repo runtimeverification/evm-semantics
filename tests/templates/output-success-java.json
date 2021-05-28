@@ -85,6 +85,12 @@
         <refund>
           0
         </refund>
+        <touchedAccounts>
+         .Set
+        </touchedAccounts>
+        <touchedStorage>
+         .Set
+        </touchedStorage>
       </substate>
       <gasPrice>
         0

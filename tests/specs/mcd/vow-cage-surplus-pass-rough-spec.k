@@ -16,7 +16,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Vow_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vow_bin_runtime) </jumpDests>
@@ -37,6 +36,8 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -370,7 +371,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Vow_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vow_bin_runtime) </jumpDests>
@@ -394,6 +394,8 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -559,7 +561,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Vat_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
@@ -580,6 +581,8 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -747,7 +750,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Vat_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
@@ -768,6 +770,8 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -935,7 +939,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Vat_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
@@ -956,6 +959,8 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -1145,7 +1150,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Flapper_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Flapper_bin_runtime) </jumpDests>
@@ -1166,6 +1170,8 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -1377,7 +1383,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Flopper_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Flopper_bin_runtime) </jumpDests>
@@ -1398,6 +1403,8 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>

@@ -16,7 +16,6 @@ module STORAGEVAR03-SPEC
         <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
-        <touchedAccounts> _ => ?_ </touchedAccounts>
         <callState>
           <program> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b6000600560008190555060001515608257600080fd5b9056fea165627a7a723058206c2e2e763fa3e914d5806ac22d4cf3bd0ff53cd57740965d5e5d05934668a9110029") </program>
           <jumpDests> #computeValidJumpDests(#parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b6000600560008190555060001515608257600080fd5b9056fea165627a7a723058206c2e2e763fa3e914d5806ac22d4cf3bd0ff53cd57740965d5e5d05934668a9110029")) </jumpDests>
@@ -37,6 +36,8 @@ module STORAGEVAR03-SPEC
           <selfDestruct> _ </selfDestruct>
           <log> _ </log>
           <refund> _ => ?_ </refund>
+          <touchedAccounts> _ => ?_ </touchedAccounts>
+          <touchedStorage> _ => ?_ </touchedStorage>
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin
