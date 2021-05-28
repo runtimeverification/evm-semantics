@@ -331,8 +331,8 @@ test: test-conformance test-prove test-interactive test-parse
 tests/ethereum-tests/VMTests/%: KEVM_MODE     = VMTESTS
 tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
-tests/specs/mcd/functional-spec.k%: KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
-tests/specs/evm-optimizations.md%:  KPROVE_MODULE = EVM-OPTIMIZATIONS-LEMMAS
+tests/specs/mcd/functional-spec.k%:     KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
+tests/specs/evm-optimizations-spec.md%: KPROVE_MODULE = EVM-OPTIMIZATIONS-SPEC-LEMMAS
 
 tests/%.run: tests/%
 	$(KEVM) interpret $< $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                            \
@@ -444,10 +444,10 @@ test-failing-prove: $(prove_failing_tests:=.prove)
 
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
 
-test-prove-optimizations: tests/specs/evm-optimizations.md.prove
+test-prove-optimizations: tests/specs/evm-optimizations-spec.md.prove
 
-tests/specs/evm-optimizations.md: optimizations.md
-	cat $< | sed 's/rule/claim/' | grep -v 'priority(40)' > $@
+tests/specs/evm-optimizations-spec.md: optimizations.md
+	cat $< | sed 's/rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
 
 haskell_dry_run_failing := $(shell cat tests/failing-symbolic.haskell-dry-run)
 haskell_dry_run         := $(filter-out $(haskell_dry_run_failing), $(wildcard $(prove_specs_dir)/*-spec.k) $(wildcard $(prove_specs_dir)/*/*-spec.k) $(wildcard $(prove_specs_dir)/*/*/*-spec.k))
