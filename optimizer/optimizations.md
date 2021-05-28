@@ -11,6 +11,7 @@ module EVM-OPTIMIZATIONS-LEMMAS [kore, symbolic]
 endmodule
 
 module EVM-OPTIMIZATIONS [kore]
+    imports EVM
     imports EVM-OPTIMIZATIONS-LEMMAS
 
 
