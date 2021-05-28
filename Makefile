@@ -447,7 +447,7 @@ test-klab-prove: $(smoke_tests_prove:=.klab-prove)
 test-prove-optimizations: tests/specs/evm-optimizations-spec.md.prove
 
 tests/specs/evm-optimizations-spec.md: optimizations.md
-	cat $< | sed 's/rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
+	cat $< | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
 
 haskell_dry_run_failing := $(shell cat tests/failing-symbolic.haskell-dry-run)
 haskell_dry_run         := $(filter-out $(haskell_dry_run_failing), $(wildcard $(prove_specs_dir)/*-spec.k) $(wildcard $(prove_specs_dir)/*/*-spec.k) $(wildcard $(prove_specs_dir)/*/*/*-spec.k))

@@ -5,11 +5,8 @@ module LEMMAS
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
 
-    rule 0 <=Int #sizeWordStack ( _ , _ ) => true                                                     [simplification, smt-lemma]
-    rule 0 <=Int #sizeByteArray ( _ )     => true                                                     [simplification, smt-lemma]
-    rule #sizeWordStack(WS [ I := _ ], N) => #sizeWordStack(WS, N) requires I <Int #sizeWordStack(WS) [simplification]
-
-    rule #stackUnderflow(WS, N) => false requires N <=Int #sizeWordStack(WS) [simplification]
+    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [smt-lemma, simplification]
+    rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma, simplification]
 
     rule #lookup ( _M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
     rule #lookup (  M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
@@ -289,8 +286,6 @@ module LEMMAS-HASKELL [symbolic, kore]
     imports EVM
     imports EDSL
     imports HASH2
-
-    rule I1 +Int I2 <=Int I3 +Int I4 => I1 <=Int I3 +Int (I2 -Int I4) [simplification, concrete(I2, I4)]
 
     rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)])
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
