@@ -14,34 +14,6 @@ opcode           = pyk.KToken(sys.argv[2], 'OpCode')
 wordstack_number = sys.argv[3]
 json_out         = sys.argv[4]
 
-### utilities
-
-vi1 = pyk.KVariable('I1')
-vi2 = pyk.KVariable('I2')
-vi3 = pyk.KVariable('I3')
-vi4 = pyk.KVariable('I4')
-
-assoc_right_rules = [ (plusInt(plusInt(vi1, vi2), vi3)   , plusInt(vi1, plusInt(vi2, vi3)))    # (X + Y) + Z => X + (Y + Z)
-                    , (plusInt(minusInt(vi1, vi2), vi3)  , minusInt(vi1, minusInt(vi2, vi3)))  # (X - Y) + Z => X - (Y - Z)
-                    , (minusInt(plusInt(vi1, vi2), vi3)  , plusInt(vi1, minusInt(vi2, vi3)))   # (X + Y) - Z => X + (Y - Z)
-                    , (minusInt(minusInt(vi1, vi2), vi3) , minusInt(vi1, plusInt(vi2, vi3)))   # (X - Y) - Z => X - (Y + Z)
-                    ]
-assoc_left_rules  = [ (r, l) for (l, r) in assoc_right ]
-
-def assoc_right(k):
-    newK = k
-    for i in range(3):
-        for rule in assoc_right_rules:
-            newK = pyk.rewriteAnywhereWith(rule, newK)
-    return newK
-
-def assoc_left(k):
-    newK = k
-    for i in range(3):
-        for rule in assoc_left_rules:
-            newK = pyk.rewriteAnywhereWith(rule, newK)
-    return newK
-
 ### KEVM specific
 
 kevm_json = pyk.readKastTerm(json_defn)
@@ -71,6 +43,34 @@ sizeWordStack    = lambda     ws: pyk.KApply('#sizeWordStack(_)_EVM-TYPES_Int_Wo
 stackNeeded      = lambda op    : pyk.KApply('#stackNeeded(_)_EVM_Int_OpCode', [op])
 stackOverflow    = lambda op, ws: pyk.KApply('#stackOverflow(_,_)_EVM_Bool_WordStack_OpCode',  [ws, op])
 stackUnderflow   = lambda op, ws: pyk.KApply('#stackUnderflow(_,_)_EVM_Bool_WordStack_OpCode', [ws, op])
+
+### utilities
+
+vi1 = pyk.KVariable('I1')
+vi2 = pyk.KVariable('I2')
+vi3 = pyk.KVariable('I3')
+vi4 = pyk.KVariable('I4')
+
+assoc_right_rules = [ (plusInt(plusInt(vi1, vi2), vi3)   , plusInt(vi1, plusInt(vi2, vi3)))    # (X + Y) + Z => X + (Y + Z)
+                    , (plusInt(minusInt(vi1, vi2), vi3)  , minusInt(vi1, minusInt(vi2, vi3)))  # (X - Y) + Z => X - (Y - Z)
+                    , (minusInt(plusInt(vi1, vi2), vi3)  , plusInt(vi1, minusInt(vi2, vi3)))   # (X + Y) - Z => X + (Y - Z)
+                    , (minusInt(minusInt(vi1, vi2), vi3) , minusInt(vi1, plusInt(vi2, vi3)))   # (X - Y) - Z => X - (Y + Z)
+                    ]
+assoc_left_rules  = [ (r, l) for (l, r) in assoc_right_rules ]
+
+def assoc_right(k):
+    newK = k
+    for i in range(3):
+        for rule in assoc_right_rules:
+            newK = pyk.rewriteAnywhereWith(rule, newK)
+    return newK
+
+def assoc_left(k):
+    newK = k
+    for i in range(3):
+        for rule in assoc_left_rules:
+            newK = pyk.rewriteAnywhereWith(rule, newK)
+    return newK
 
 ### Build initial and final states
 
