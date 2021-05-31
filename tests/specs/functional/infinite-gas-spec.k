@@ -92,4 +92,6 @@ module INFINITE-GAS-SPEC
     claim <k> runLemma(Gexp < SCHED > +Int Gexpbyte < SCHED > *Int ( log2Int ( W1 ) /Int 8 +Int 1 ) <=Int #gas(GAVAIL)) => doneLemma(true)  ... </k>
     claim <k> runLemma(#gas(GAVAIL) <Int Gexp < SCHED > +Int Gexpbyte < SCHED > *Int ( log2Int ( W1 ) /Int 8 +Int 1 ))  => doneLemma(false) ... </k>
 
+    claim <k> runLemma(#gas ( -271 -Int Cmem ( ISTANBUL , #memoryUsageUpdate ( 5 , 160 , DATA_LEN ) ) ) <Int 3 *Int ( DATA_LEN up/Int 32 ) +Int 3) => doneLemma(false) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+
 endmodule
