@@ -251,8 +251,6 @@ module VERIFICATION
 
     rule X <=Int #ceil32(X) => true requires X >=Int 0 [simplification]
 
-    rule #ceil32(N) => ((N +Int 31) /Int 32) *Int 32 [smt-lemma]
-
   // ########################
   // Gnosis
   // ########################
