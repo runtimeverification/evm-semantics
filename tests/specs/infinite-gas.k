@@ -173,4 +173,7 @@ module INFINITE-GAS-COMMON
     rule log2Int(_) <=Int #gas(_) => true  [simplification]
     rule #gas(_) <Int log2Int(_)  => false [simplification]
 
+    rule _ up/Int _ <=Int #gas(_) => true  [simplification]
+    rule #gas(_) <Int _ up/Int _  => false [simplification]
+
 endmodule
