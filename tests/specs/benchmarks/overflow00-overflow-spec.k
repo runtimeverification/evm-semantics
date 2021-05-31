@@ -36,8 +36,8 @@ module OVERFLOW00-OVERFLOW-SPEC
           <selfDestruct> _ </selfDestruct>
           <log> _ </log>
           <refund> _ </refund>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
-          <touchedStorage> _ => ?_ </touchedStorage>
+          <touchedAccounts> .Set => ?_ </touchedAccounts>
+          <touchedStorage> .Set => ?_ </touchedStorage>
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin

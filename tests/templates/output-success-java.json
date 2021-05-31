@@ -28,9 +28,6 @@
       <interimStates>
         .List
       </interimStates>
-      <touchedAccounts>
-        .Set
-      </touchedAccounts>
       <callState>
         <program>
           .WordStack
