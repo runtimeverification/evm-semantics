@@ -49,7 +49,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <endPC>           0           </endPC>
             <callStack>       .List       </callStack>
             <interimStates>   .List       </interimStates>
-            <touchedAccounts> .Set        </touchedAccounts>
 
             <callState>
               <program> .ByteArray </program>
@@ -75,9 +74,11 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             // A_* (execution substate)
             <substate>
-              <selfDestruct> .Set  </selfDestruct>            // A_s
-              <log>          .List </log>                     // A_l
-              <refund>       0     </refund>                  // A_r
+              <selfDestruct>    .Set  </selfDestruct>            // A_s
+              <log>             .List </log>                     // A_l
+              <refund>          0     </refund>                  // A_r
+              <touchedAccounts> .Set  </touchedAccounts>
+              <touchedStorage>  .Map  </touchedStorage>
             </substate>
 
             // Immutable during a single transaction
@@ -527,6 +528,8 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #finalizeTx(true) => #finalizeStorage(Set2List(ACCTS)) ... </k>
          <selfDestruct> .Set </selfDestruct>
          <activeAccounts> ACCTS </activeAccounts>
+         <touchedAccounts> _ => .Set </touchedAccounts>
+         <touchedStorage> _ => .Map </touchedStorage>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
          <coinbase> MINER </coinbase>
@@ -1284,7 +1287,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </k>
 
     rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
-          => #touchAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
+          => #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
          ...
          </k>
          <callDepth> CD => CD +Int 1 </callDepth>
@@ -1321,6 +1324,19 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #loadProgram BYTES => . ... </k>
          <program> _ => BYTES </program>
          <jumpDests> _ => #computeValidJumpDests(BYTES) </jumpDests>
+
+    syntax KItem ::= "#touchStorage" Account Int
+ // --------------------------------------------
+    rule <k> #touchStorage ACCT INDEX => . ... </k>
+         <touchedStorage> ... ACCT |-> (TS:Set => TS |Set SetItem(INDEX)) ... </touchedStorage>
+    rule <k> #touchStorage ACCT INDEX => . ... </k>
+         <touchedStorage> TS => TS[ACCT <- SetItem(INDEX)] </touchedStorage>
+      requires notBool ACCT in_keys(TS)
+
+    syntax Bool ::= inStorage ( Map , Account , Int ) [function]
+ // ------------------------------------------------------------
+    rule inStorage (TS, ACCT, _ )  => false requires notBool ACCT in_keys(TS)
+    rule inStorage (TS, ACCT, KEY) => KEY in {TS[ACCT]}:>Set requires ACCT in_keys(TS)
 
     syntax KItem ::= "#touchAccounts" Account | "#touchAccounts" Account Account
  // ----------------------------------------------------------------------------
@@ -1468,7 +1484,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
 
     rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
-          => #touchAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
+          => #loadProgram INITCODE ~> #initVM ~> #execute
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -1552,7 +1568,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
-          => #checkCall ACCT VALUE
+          => #touchAccounts #newAddr(ACCT, NONCE)
+          ~> #checkCall ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
@@ -1572,7 +1589,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax QuadStackOp ::= "CREATE2"
  // --------------------------------
     rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
-          => #checkCall ACCT VALUE
+          => #touchAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+          ~> #checkCall ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
          ...
@@ -1587,7 +1605,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 ```k
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCTTO => #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <id> ACCT </id>
          <selfDestruct> ... (.Set => SetItem(ACCT)) ... </selfDestruct>
          <account>
@@ -1598,7 +1616,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
          <output> _ => .ByteArray </output>
       requires ACCT =/=Int ACCTTO
 
-    rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCT => #end EVMC_SUCCESS ... </k>
          <id> ACCT </id>
          <selfDestruct> ... (.Set => SetItem(ACCT)) ... </selfDestruct>
          <account>
@@ -1639,6 +1657,7 @@ Precompiled Contracts
     rule #precompiledAccounts(CONSTANTINOPLE)    => #precompiledAccounts(BYZANTIUM)
     rule #precompiledAccounts(PETERSBURG)        => #precompiledAccounts(CONSTANTINOPLE)
     rule #precompiledAccounts(ISTANBUL)          => #precompiledAccounts(PETERSBURG) SetItem(9)
+    rule #precompiledAccounts(BERLIN)            => #precompiledAccounts(ISTANBUL)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -1779,6 +1798,7 @@ Overall Gas
     rule <k> #gas [ OP , AOP ]
           => #if #usesMemory(OP) #then #memory [ AOP ] #else .K #fi
           ~> #gas [ AOP ]
+          ~> #if #usesAccessList(OP) #then #access [ AOP ] #else .K #fi
          ...
         </k>
 
@@ -1857,6 +1877,48 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
     rule [#memoryUsageUpdate.some]: #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH  >Int 0
 ```
 
+Access List Gas
+---------------
+
+```k
+    syntax Bool ::= #usesAccessList ( OpCode ) [function]
+ // -----------------------------------------------------
+    rule #usesAccessList(OP) => true requires OP ==K BALANCE
+                                       orBool OP ==K SELFDESTRUCT
+                                       orBool OP ==K EXTCODEHASH
+                                       orBool OP ==K EXTCODESIZE
+                                       orBool OP ==K EXTCODECOPY
+                                       orBool OP ==K SLOAD
+                                       orBool OP ==K SSTORE
+                                       orBool OP ==K CALL
+                                       orBool OP ==K CALLCODE
+                                       orBool OP ==K DELEGATECALL
+                                       orBool OP ==K STATICCALL
+    rule #usesAccessList(_) => false [owise]
+
+    syntax InternalOp ::= "#access" "[" OpCode "]"
+ // --------------------------------------------
+    rule <k> #access [ OP ] => #gasAccess(SCHED, OP) ~> #deductGas ... </k>
+         <schedule> SCHED </schedule>
+      requires Ghasaccesslist << SCHED >>
+    rule <k> #access [ _ ] => . ... </k> [owise]
+
+    syntax InternalOp ::= #gasAccess ( Schedule, OpCode )
+ // -----------------------------------------------------
+    rule <k> #gasAccess(SCHED, EXTCODESIZE ACCT)            => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                          ... </k> <touchedAccounts> ACCTS </touchedAccounts>
+    rule <k> #gasAccess(SCHED, EXTCODECOPY ACCT _ _ _)      => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                          ... </k> <touchedAccounts> ACCTS </touchedAccounts>
+    rule <k> #gasAccess(SCHED, EXTCODEHASH ACCT)            => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                          ... </k> <touchedAccounts> ACCTS </touchedAccounts>
+    rule <k> #gasAccess(SCHED, BALANCE ACCT)                => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                          ... </k> <touchedAccounts> ACCTS </touchedAccounts>
+    rule <k> #gasAccess(SCHED, SELFDESTRUCT ACCT)           => #touchAccounts ACCT ~> #if ACCT in ACCTS #then 0 #else Gcoldaccountaccess < SCHED > #fi           ... </k> <touchedAccounts> ACCTS </touchedAccounts>
+    rule <k> #gasAccess(_    , CALL _ ACCT _ _ _ _ _)       => #touchAccounts ACCT ~> 0                                                                          ... </k>
+    rule <k> #gasAccess(_    , CALLCODE _ ACCT _ _ _ _ _)   => #touchAccounts ACCT ~> 0                                                                          ... </k>
+    rule <k> #gasAccess(_    , DELEGATECALL _ ACCT _ _ _ _) => #touchAccounts ACCT ~> 0                                                                          ... </k>
+    rule <k> #gasAccess(_    , STATICCALL _ ACCT _ _ _ _)   => #touchAccounts ACCT ~> 0                                                                          ... </k>
+    rule <k> #gasAccess(_    , SLOAD INDEX )                => #touchStorage ACCT INDEX ~> 0                                                                     ... </k> <id> ACCT </id>
+    rule <k> #gasAccess(SCHED, SSTORE INDEX _)              => #touchStorage ACCT INDEX ~> #if inStorage(TS, ACCT, INDEX) #then 0 #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <touchedStorage> TS </touchedStorage>
+
+```
+
 Execution Gas
 -------------
 
@@ -1888,42 +1950,45 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, EXP _ 0)  => Gexp < SCHED > ... </k>
     rule <k> #gasExec(SCHED, EXP _ W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=Int 0
 
-    rule <k> #gasExec(SCHED, CALLDATACOPY    _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
-    rule <k> #gasExec(SCHED, RETURNDATACOPY  _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
-    rule <k> #gasExec(SCHED, CODECOPY        _ _ WIDTH) => Gverylow     < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
-    rule <k> #gasExec(SCHED, EXTCODECOPY   _ _ _ WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
+    rule <k> #gasExec(SCHED, CALLDATACOPY    _ _ WIDTH) => Gverylow < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
+    rule <k> #gasExec(SCHED, RETURNDATACOPY  _ _ WIDTH) => Gverylow < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
+    rule <k> #gasExec(SCHED, CODECOPY        _ _ WIDTH) => Gverylow < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
 
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
     rule <k> #gasExec(SCHED, CALL GCAP ACCTTO VALUE _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS)
          ...
          </k>
          <gas> GAVAIL </gas>
+         <touchedAccounts> ACCTS </touchedAccounts>
 
-    rule <k> #gasExec(SCHED, CALLCODE GCAP _ VALUE _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE)
+    rule <k> #gasExec(SCHED, CALLCODE GCAP ACCTTO VALUE _ _ _ _)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS)
          ...
          </k>
          <id> ACCTFROM </id>
          <gas> GAVAIL </gas>
+         <touchedAccounts> ACCTS </touchedAccounts>
 
-    rule <k> #gasExec(SCHED, DELEGATECALL GCAP _ _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0)
+    rule <k> #gasExec(SCHED, DELEGATECALL GCAP ACCTTO _ _ _ _)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0, ACCTTO in ACCTS) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0, ACCTTO in ACCTS)
          ...
          </k>
          <id> ACCTFROM </id>
          <gas> GAVAIL </gas>
+         <touchedAccounts> ACCTS </touchedAccounts>
 
     rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0, ACCTTO in ACCTS) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0, ACCTTO in ACCTS)
          ...
          </k>
          <gas> GAVAIL </gas>
+         <touchedAccounts> ACCTS </touchedAccounts>
 
     rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), BAL) ... </k>
          <id> ACCTFROM </id>
@@ -1949,8 +2014,10 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </k>
 
-    rule <k> #gasExec(SCHED, JUMPDEST) => Gjumpdest < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, SLOAD _)  => Gsload    < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, JUMPDEST)    => Gjumpdest < SCHED >                       ... </k>
+    rule <k> #gasExec(SCHED, SLOAD INDEX) => Csload(SCHED, inStorage(TS, ACCT, INDEX)) ... </k>
+         <id> ACCT </id>
+         <touchedStorage> TS </touchedStorage>
 
     // Wzero
     rule <k> #gasExec(SCHED, STOP)       => Gzero < SCHED > ... </k>
@@ -2019,10 +2086,11 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     // Whigh
     rule <k> #gasExec(SCHED, JUMPI _ _) => Ghigh < SCHED > ... </k>
 
-    rule <k> #gasExec(SCHED, EXTCODESIZE _) => Gextcodesize < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, BALANCE _)     => Gbalance     < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, EXTCODEHASH _) => Gbalance     < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, BLOCKHASH _)   => Gblockhash   < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, EXTCODECOPY _ _ _ WIDTH) => Cextcodecopy(SCHED, WIDTH) ... </k>
+    rule <k> #gasExec(SCHED, EXTCODESIZE _)           => Cextcodesize(SCHED)        ... </k>
+    rule <k> #gasExec(SCHED, BALANCE _)               => Cbalance(SCHED)            ... </k>
+    rule <k> #gasExec(SCHED, EXTCODEHASH _)           => Cextcodehash(SCHED)        ... </k>
+    rule <k> #gasExec(SCHED, BLOCKHASH _)             => Gblockhash < SCHED > ... </k>
 
     // Precompiled
     rule <k> #gasExec(_, ECREC)  => 3000 ... </k>
@@ -2059,27 +2127,34 @@ There are several helpers for calculating gas (most of them also specified in th
 ```k
     syntax Exp     ::= Int
     syntax KResult ::= Int
-    syntax Exp ::= Ccall         ( Schedule , BExp , Int , Int , Int ) [strict(2)]
-                 | Ccallgas      ( Schedule , BExp , Int , Int , Int ) [strict(2)]
-                 | Cselfdestruct ( Schedule , BExp , Int )             [strict(2)]
- // ------------------------------------------------------------------------------
-    rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE)
-          => Cextra(SCHED, ISEMPTY, VALUE) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE)) ... </k>
+    syntax Exp ::= Ccall         ( Schedule , BExp , Int , Int , Int , Bool ) [strict(2)]
+                 | Ccallgas      ( Schedule , BExp , Int , Int , Int , Bool ) [strict(2)]
+                 | Cselfdestruct ( Schedule , BExp , Int )                    [strict(2)]
+ // -------------------------------------------------------------------------------------
+   rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
+          => Cextra(SCHED, ISEMPTY, VALUE, ISWARM) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) ... </k>
 
-    rule <k> Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE)
-          => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE)) +Int #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
+    rule <k> Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
+          => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) +Int #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
 
     rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
           => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
 
-    syntax Int ::= Cgascap ( Schedule , Int , Int , Int ) [function, functional, smtlib(gas_Cgascap)   ]
-                 | Csstore ( Schedule , Int , Int , Int ) [function, functional, smtlib(gas_Csstore)   ]
-                 | Rsstore ( Schedule , Int , Int , Int ) [function, functional, smtlib(gas_Rsstore)   ]
-                 | Cextra  ( Schedule , Bool , Int )      [function, functional, smtlib(gas_Cextra)    ]
-                 | Cnew    ( Schedule , Bool , Int )      [function, functional, smtlib(gas_Cnew)      ]
-                 | Cxfer   ( Schedule , Int )             [function, functional, smtlib(gas_Cxfer)     ]
-                 | Cmem    ( Schedule , Int )             [function, functional, smtlib(gas_Cmem), memo]
- // ----------------------------------------------------------------------------------------------------
+    syntax Int ::= Cgascap        ( Schedule , Int , Int , Int )             [function, functional, smtlib(gas_Cgascap)       ]
+                 | Csstore        ( Schedule , Int , Int , Int )             [function, functional, smtlib(gas_Csstore)       ]
+                 | Rsstore        ( Schedule , Int , Int , Int )             [function, functional, smtlib(gas_Rsstore)       ]
+                 | Cextra         ( Schedule , Bool , Int , Bool )           [function, functional, smtlib(gas_Cextra)        ]
+                 | Cnew           ( Schedule , Bool , Int )                  [function, functional, smtlib(gas_Cnew)          ]
+                 | Cxfer          ( Schedule , Int )                         [function, functional, smtlib(gas_Cxfer)         ]
+                 | Cmem           ( Schedule , Int )                         [function, functional, smtlib(gas_Cmem), memo    ]
+                 | Caddraccess    ( Schedule , Bool )                        [function, functional, smtlib(gas_Caddraccess)   ]
+                 | Cstorageaccess ( Schedule , Bool )                        [function, functional, smtlib(gas_Cstorageaccess)]
+                 | Csload         ( Schedule , Bool )                        [function, functional, smtlib(gas_Csload)        ]
+                 | Cextcodesize   ( Schedule )                               [function, functional, smtlib(gas_Cextcodesize)  ]
+                 | Cextcodecopy   ( Schedule , Int )                         [function, functional, smtlib(gas_Cextcodecopy)  ]
+                 | Cextcodehash   ( Schedule )                               [function, functional, smtlib(gas_Cextcodehash)  ]
+                 | Cbalance       ( Schedule )                               [function, functional, smtlib(gas_Cbalance)      ]
+ // ---------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
@@ -2116,9 +2191,14 @@ There are several helpers for calculating gas (most of them also specified in th
       => #if CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
       requires notBool Ghasdirtysstore << SCHED >>
 
-    rule [Cextra]:
-         Cextra(SCHED, ISEMPTY, VALUE)
+    rule [Cextra.new]:
+         Cextra(SCHED, ISEMPTY, VALUE, ISWARM)
+      => Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)
+      requires Ghasaccesslist << SCHED >>
+    rule [Cextra.old]:
+         Cextra(SCHED, ISEMPTY, VALUE, _ISWARM)
       => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)
+      requires notBool Ghasaccesslist << SCHED >>
 
     rule [Cnew]:
          Cnew(SCHED, ISEMPTY:Bool, VALUE)
@@ -2128,6 +2208,35 @@ There are several helpers for calculating gas (most of them also specified in th
     rule [Cxfer.some]: Cxfer( SCHED, N) => Gcallvalue < SCHED > requires N =/=Int 0
 
     rule [Cmem]: Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
+
+    rule [Caddraccess]:
+         Caddraccess(SCHED, ISWARM)
+      => #if ISWARM #then Gwarmstorageread < SCHED > #else Gcoldaccountaccess < SCHED > #fi
+
+    rule [Cstorageaccess]:
+         Cstorageaccess(SCHED, ISWARM)
+      => #if ISWARM #then Gwarmstorageread < SCHED > #else Gcoldsload < SCHED > #fi
+
+    rule [Csload.new]: Csload(SCHED, ISWARM)  => Cstorageaccess(SCHED, ISWARM) requires Ghasaccesslist << SCHED >>
+    rule [Csload.old]: Csload(SCHED, _ISWARM) => Gsload < SCHED >              requires notBool Ghasaccesslist << SCHED >>
+
+    rule [Cextcodesize.new]: Cextcodesize(SCHED) => 0                      requires Ghasaccesslist << SCHED >>
+    rule [Cextcodesize.old]: Cextcodesize(SCHED) => Gextcodesize < SCHED > requires notBool Ghasaccesslist << SCHED >>
+
+    rule [Cextcodehash.new]: Cextcodehash(SCHED) => 0                  requires Ghasaccesslist << SCHED >>
+    rule [Cextcodehash.old]: Cextcodehash(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
+
+    rule [Cbalance.new]: Cbalance(SCHED) => 0                  requires Ghasaccesslist << SCHED >>
+    rule [Cbalance.old]: Cbalance(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
+
+    rule [Cextcodecopy.new]: 
+        Cextcodecopy(SCHED, WIDTH)
+      => Gcopy < SCHED > *Int (WIDTH up/Int 32)
+    requires Ghasaccesslist << SCHED >>
+    rule [Cextcodecopy.old]:
+         Cextcodecopy(SCHED, WIDTH)
+      => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32))
+      requires notBool Ghasaccesslist << SCHED >>
 
     syntax BExp    ::= Bool
     syntax KResult ::= Bool
@@ -2222,8 +2331,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
-                          | "Ghassstorestipend"       | "Ghaschainid"
- // -----------------------------------------------------------------
+                          | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"
+ // -----------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -2234,14 +2343,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     syntax Int ::= ScheduleConst "<" Schedule ">" [function, functional]
  // --------------------------------------------------------------------
 
-    syntax ScheduleConst ::= "Gzero"        | "Gbase"          | "Gverylow"      | "Glow"          | "Gmid"        | "Ghigh"
-                           | "Gextcodesize" | "Gextcodecopy"   | "Gbalance"      | "Gsload"        | "Gjumpdest"   | "Gsstoreset"
-                           | "Gsstorereset" | "Rsstoreclear"   | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"     | "Gcodedeposit"  | "Gcall"
-                           | "Gcallvalue"   | "Gcallstipend"   | "Gnewaccount"   | "Gexp"          | "Gexpbyte"    | "Gmemory"       | "Gtxcreate"
-                           | "Gtxdatazero"  | "Gtxdatanonzero" | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
-                           | "Gsha3word"    | "Gcopy"          | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
-                           | "Gecadd"       | "Gecmul"         | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"
- // ----------------------------------------------------------------------------------------------------------
+    syntax ScheduleConst ::= "Gzero"            | "Gbase"              | "Gverylow"      | "Glow"          | "Gmid"        | "Ghigh"
+                           | "Gextcodesize"     | "Gextcodecopy"       | "Gbalance"      | "Gsload"        | "Gjumpdest"   | "Gsstoreset"
+                           | "Gsstorereset"     | "Rsstoreclear"       | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"     | "Gcodedeposit"  | "Gcall"
+                           | "Gcallvalue"       | "Gcallstipend"       | "Gnewaccount"   | "Gexp"          | "Gexpbyte"    | "Gmemory"       | "Gtxcreate"
+                           | "Gtxdatazero"      | "Gtxdatanonzero"     | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
+                           | "Gsha3word"        | "Gcopy"              | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
+                           | "Gecadd"           | "Gecmul"             | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"     | "Gcoldsload"    | "Gcoldaccountaccess"
+                           | "Gwarmstorageread"
+ // -------------------------------------------
 ```
 
 ### Default Schedule
@@ -2305,6 +2415,10 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule maxCodeSize < DEFAULT > => 2 ^Int 32 -Int 1
     rule Rb          < DEFAULT > => 5 *Int (10 ^Int 18)
 
+    rule Gcoldsload         < DEFAULT > => 0
+    rule Gcoldaccountaccess < DEFAULT > => 0
+    rule Gwarmstorageread   < DEFAULT > => 0
+
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true
     rule Gemptyisnonexistent     << DEFAULT >> => false
@@ -2319,6 +2433,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasextcodehash         << DEFAULT >> => false
     rule Ghasselfbalance         << DEFAULT >> => false
     rule Ghaschainid             << DEFAULT >> => false
+    rule Ghasaccesslist          << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -2458,6 +2573,29 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDFLAG ==K Ghassstorestipend
                   orBool SCHEDFLAG ==K Ghaschainid
                        )
+```
+
+### Berlin Schedule
+
+```k
+    syntax Schedule ::= "BERLIN" [klabel(BERLIN_EVM), symbol, smtlib(schedule_BERLIN)]
+ // ----------------------------------------------------------------------------------
+    rule Gcoldsload            < BERLIN > => 2100
+    rule Gcoldaccountaccess    < BERLIN > => 2600
+    rule Gwarmstorageread      < BERLIN > => 100
+    rule Gsload                < BERLIN > => Gwarmstorageread < BERLIN >
+    rule Gsstorereset          < BERLIN > => 5000 -Int Gcoldsload < BERLIN >
+
+    rule SCHEDCONST         < BERLIN > => SCHEDCONST < ISTANBUL >
+      requires notBool ( SCHEDCONST ==K Gcoldsload
+                  orBool SCHEDCONST ==K Gcoldaccountaccess
+                  orBool SCHEDCONST ==K Gwarmstorageread
+                  orBool SCHEDCONST ==K Gsload
+                  orBool SCHEDCONST ==K Gsstorereset
+                       )
+    rule Ghasaccesslist << BERLIN >> => true
+    rule SCHEDFLAG      << BERLIN >> => SCHEDFLAG << ISTANBUL >>
+      requires notBool ( SCHEDFLAG ==K Ghasaccesslist )
 ```
 
 EVM Program Representations

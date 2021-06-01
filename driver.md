@@ -99,7 +99,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
-         <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID     </msgID>
            <txGasPrice> GPRICE   </txGasPrice>
@@ -115,7 +114,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE </nonce>
            ...
          </account>
-         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
+         <touchedAccounts> _ => SetItem(ACCTFROM) SetItem(#newAddr(ACCTFROM, NONCE)) #precompiledAccounts(SCHED) </touchedAccounts>
 
     rule <k> loadTx(ACCTFROM)
           => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
@@ -128,7 +127,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
-         <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID   </msgID>
            <txGasPrice> GPRICE </txGasPrice>
@@ -144,7 +142,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
-         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
+         <touchedAccounts> _ => SetItem(ACCTFROM) SetItem(ACCTTO) #precompiledAccounts(SCHED) </touchedAccounts>
       requires ACCTTO =/=K .Account
 
     syntax EthereumCommand ::= "#finishTx"
