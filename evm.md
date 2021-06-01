@@ -153,6 +153,9 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <sigR>       .ByteArray </sigR>               // T_r
                 <sigS>       .ByteArray </sigS>               // T_s
                 <data>       .ByteArray </data>               // T_i/T_e
+                <txType>     0          </txType>
+                <txAccess>   [ .JSONs ] </txAccess>
+                <txChainID>  0          </txChainID>
               </message>
             </messages>
 
@@ -2360,8 +2363,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gtxdatazero"      | "Gtxdatanonzero"     | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
                            | "Gsha3word"        | "Gcopy"              | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
                            | "Gecadd"           | "Gecmul"             | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"     | "Gcoldsload"    | "Gcoldaccountaccess"
-                           | "Gwarmstorageread"
- // -------------------------------------------
+                           | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"
+ // --------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
@@ -2428,6 +2431,9 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gcoldsload         < DEFAULT > => 0
     rule Gcoldaccountaccess < DEFAULT > => 0
     rule Gwarmstorageread   < DEFAULT > => 0
+
+    rule Gaccessliststoragekey < DEFAULT > => 0
+    rule Gaccesslistaddress    < DEFAULT > => 0
 
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true
@@ -2596,15 +2602,20 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gsload                < BERLIN > => Gwarmstorageread < BERLIN >
     rule Gsstorereset          < BERLIN > => 5000 -Int Gcoldsload < BERLIN >
     rule Gquaddivisor          < BERLIN > => 3
+    rule Gaccessliststoragekey < BERLIN > => 1900
+    rule Gaccesslistaddress    < BERLIN > => 2400
 
-    rule SCHEDCONST         < BERLIN > => SCHEDCONST < ISTANBUL >
+    rule SCHEDCONST            < BERLIN > => SCHEDCONST < ISTANBUL >
       requires notBool ( SCHEDCONST ==K Gcoldsload
                   orBool SCHEDCONST ==K Gcoldaccountaccess
                   orBool SCHEDCONST ==K Gwarmstorageread
                   orBool SCHEDCONST ==K Gsload
                   orBool SCHEDCONST ==K Gsstorereset
                   orBool SCHEDCONST ==K Gquaddivisor
+                  orBool SCHEDCONST ==K Gaccessliststoragekey
+                  orBool SCHEDCONST ==K Gaccesslistaddress
                        )
+
     rule Ghasaccesslist << BERLIN >> => true
     rule SCHEDFLAG      << BERLIN >> => SCHEDFLAG << ISTANBUL >>
       requires notBool ( SCHEDFLAG ==K Ghasaccesslist )
