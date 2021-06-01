@@ -40,7 +40,6 @@ module IMP-SPECS-TEST-SPEC
         <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
-        <touchedAccounts> _ => ?_ </touchedAccounts>
 
         <callState>
           <program> _ => ?_ </program>
@@ -67,6 +66,8 @@ module IMP-SPECS-TEST-SPEC
           <selfDestruct> _ </selfDestruct>
           <log> _:List => ?_ </log>
           <refund> _ => ?_ </refund>
+          <touchedAccounts> _ => ?_ </touchedAccounts>
+          <touchedStorage> _ => ?_ </touchedStorage>
         </substate>
 
         <gasPrice> _ </gasPrice>

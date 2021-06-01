@@ -16,7 +16,6 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Vow_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vow_bin_runtime) </jumpDests>
@@ -37,6 +36,8 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -220,7 +221,6 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Vow_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vow_bin_runtime) </jumpDests>
@@ -241,6 +241,8 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -407,7 +409,6 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Vow_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vow_bin_runtime) </jumpDests>
@@ -428,6 +429,8 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>

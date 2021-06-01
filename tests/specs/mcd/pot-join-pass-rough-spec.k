@@ -16,7 +16,6 @@ module POT-JOIN-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Pot_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Pot_bin_runtime) </jumpDests>
@@ -37,6 +36,8 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -265,7 +266,6 @@ module POT-JOIN-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Pot_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Pot_bin_runtime) </jumpDests>
@@ -286,6 +286,8 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -452,7 +454,6 @@ module POT-JOIN-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Pot_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Pot_bin_runtime) </jumpDests>
@@ -476,6 +477,8 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -642,7 +645,6 @@ module POT-JOIN-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Vat_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
@@ -663,6 +665,8 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <touchedAccounts> _ => ?_ </touchedAccounts>
+            <touchedStorage> _ => ?_ </touchedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>

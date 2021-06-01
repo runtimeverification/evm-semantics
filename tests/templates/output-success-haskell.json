@@ -28,9 +28,6 @@
       <interimStates>
         .List
       </interimStates>
-      <touchedAccounts>
-        .Set
-      </touchedAccounts>
       <callState>
         <program>
           b""
@@ -85,6 +82,12 @@
         <refund>
           0
         </refund>
+        <touchedAccounts>
+        .Set
+        </touchedAccounts>
+        <touchedStorage>
+          .Map
+        </touchedStorage>
       </substate>
       <gasPrice>
         0

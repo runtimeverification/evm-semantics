@@ -16,7 +16,6 @@ module CAT-EXHAUSTIVENESS-SPEC
            <endPC> _ => ?_ </endPC>
            <callStack> _VCallStack </callStack>
            <interimStates> _ </interimStates>
-           <touchedAccounts> _ => ?_ </touchedAccounts>
            <callState>
              <program> Cat_bin_runtime </program>
              <jumpDests> #computeValidJumpDests(Cat_bin_runtime) </jumpDests>
@@ -37,6 +36,8 @@ module CAT-EXHAUSTIVENESS-SPEC
              <selfDestruct> _VSelfDestruct </selfDestruct>
              <log> _ => ?_ </log>
              <refund> _ => ?_ </refund>
+             <touchedAccounts> _ => ?_ </touchedAccounts>
+             <touchedStorage> _ => ?_ </touchedStorage>
            </substate>
            <gasPrice> _ </gasPrice>
            <origin> ORIGIN_ID </origin>
