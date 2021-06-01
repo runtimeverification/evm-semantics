@@ -57,6 +57,10 @@ module LEMMAS
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)
       requires #rangeUInt(256, V)                                                                         [simplification]
 
+    //For #bufStrict simplification in benchmarks
+    rule 0 <=Int #ceil32(I)        => true requires 0 <=Int I [simplification]
+    rule 0 <=Int #ceil32(I) -Int I => true requires 0 <=Int I [simplification]
+
     rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeByteArray(WS) -Int (M /Int 8) ])
       requires 0 <=Int M andBool M modInt 8 ==Int 0                                                       [simplification]
 
