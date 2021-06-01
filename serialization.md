@@ -238,8 +238,6 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
  // -----------------------------------------------
     rule #parseAddr(S) => #addr(#parseHexWord(S))
 
-    syntax AccessListEntry ::= "{" Account "|" Int "}"
-
     syntax List ::= #parseAccessListStorageKeys ( JSONs )        [function]
                   | #parseAccessListStorageKeys ( JSONs , List ) [function, klabel(#parseAccessListStorageKeysAux)]
  // ---------------------------------------------------------------------------------------------------------------

@@ -218,17 +218,16 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
       requires Ghasaccesslist << SCHED >>
 
     rule <k> #loadAccessListAux (ACCT, (ListItem(STRGK) STRGKS))
-          => #loadAccessListAux (ACCT, STRGKS)
+          => #touchStorage ACCT STRGK:Int
+          ~> #loadAccessListAux (ACCT, STRGKS)
          ...
          </k>
-         <touchedStorage> TS => TS |Set SetItem({ACCT|STRGK:Int})                   </touchedStorage>
-         <callGas>        GLIMIT => GLIMIT -Int Gaccessliststoragekey < SCHED > </callGas>
-         <schedule>       SCHED                                                 </schedule>
+         <schedule> SCHED </schedule>
+         <callGas> GLIMIT => GLIMIT -Int Gaccessliststoragekey < SCHED > </callGas>
 
-    rule <k> #loadAccessListAux (ACCT, .List) => . ... </k>
-         <touchedAccounts> TA => TA |Set SetItem(ACCT)                        </touchedAccounts>
-         <callGas>         GLIMIT => GLIMIT -Int Gaccesslistaddress < SCHED > </callGas>
-         <schedule>        SCHED                                              </schedule>
+    rule <k> #loadAccessListAux (ACCT, .List) => #touchAccounts ACCT ... </k>
+         <schedule> SCHED </schedule>
+         <callGas> GLIMIT => GLIMIT -Int Gaccesslistaddress < SCHED > </callGas>
 ```
 
 -   `exception` only clears from the `<k>` cell if there is an exception preceding it.

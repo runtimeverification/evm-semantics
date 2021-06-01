@@ -78,7 +78,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <log>             .List </log>                     // A_l
               <refund>          0     </refund>                  // A_r
               <touchedAccounts> .Set  </touchedAccounts>
-              <touchedStorage>  .Set  </touchedStorage>
+              <touchedStorage>  .Map  </touchedStorage>
             </substate>
 
             // Immutable during a single transaction
@@ -532,7 +532,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <selfDestruct> .Set </selfDestruct>
          <activeAccounts> ACCTS </activeAccounts>
          <touchedAccounts> _ => .Set </touchedAccounts>
-         <touchedStorage> _ => .Set </touchedStorage>
+         <touchedStorage> _ => .Map </touchedStorage>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
          <coinbase> MINER </coinbase>
@@ -1331,7 +1331,15 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax KItem ::= "#touchStorage" Account Int
  // --------------------------------------------
     rule <k> #touchStorage ACCT INDEX => . ... </k>
-         <touchedStorage> TOUCHED_STORAGE => TOUCHED_STORAGE |Set SetItem({ACCT|INDEX}) </touchedStorage>
+         <touchedStorage> ... ACCT |-> (TS:Set => TS |Set SetItem(INDEX)) ... </touchedStorage>
+    rule <k> #touchStorage ACCT INDEX => . ... </k>
+         <touchedStorage> TS => TS[ACCT <- SetItem(INDEX)] </touchedStorage>
+      requires notBool ACCT in_keys(TS)
+
+    syntax Bool ::= inStorage ( Map , Account , Int ) [function]
+ // ------------------------------------------------------------
+    rule inStorage (TS, ACCT, _ )  => false requires notBool ACCT in_keys(TS)
+    rule inStorage (TS, ACCT, KEY) => KEY in {TS[ACCT]}:>Set requires ACCT in_keys(TS)
 
     syntax KItem ::= "#touchAccounts" Account | "#touchAccounts" Account Account
  // ----------------------------------------------------------------------------
@@ -1900,17 +1908,17 @@ Access List Gas
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode )
  // -----------------------------------------------------
-    rule <k> #gasAccess(SCHED, EXTCODESIZE ACCT)            => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                  ... </k> <touchedAccounts> ACCTS </touchedAccounts>
-    rule <k> #gasAccess(SCHED, EXTCODECOPY ACCT _ _ _)      => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                  ... </k> <touchedAccounts> ACCTS </touchedAccounts>
-    rule <k> #gasAccess(SCHED, EXTCODEHASH ACCT)            => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                  ... </k> <touchedAccounts> ACCTS </touchedAccounts>
-    rule <k> #gasAccess(SCHED, BALANCE ACCT)                => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                  ... </k> <touchedAccounts> ACCTS </touchedAccounts>
-    rule <k> #gasAccess(SCHED, SELFDESTRUCT ACCT)           => #touchAccounts ACCT ~> #if ACCT in ACCTS #then 0 #else Gcoldaccountaccess < SCHED > #fi   ... </k> <touchedAccounts> ACCTS </touchedAccounts>
-    rule <k> #gasAccess(_    , CALL _ ACCT _ _ _ _ _)       => #touchAccounts ACCT ~> 0                                                                  ... </k>
-    rule <k> #gasAccess(_    , CALLCODE _ ACCT _ _ _ _ _)   => #touchAccounts ACCT ~> 0                                                                  ... </k>
-    rule <k> #gasAccess(_    , DELEGATECALL _ ACCT _ _ _ _) => #touchAccounts ACCT ~> 0                                                                  ... </k>
-    rule <k> #gasAccess(_    , STATICCALL _ ACCT _ _ _ _)   => #touchAccounts ACCT ~> 0                                                                  ... </k>
-    rule <k> #gasAccess(_    , SLOAD INDEX )                => #touchStorage ACCT INDEX ~> 0                                                             ... </k> <id> ACCT </id>
-    rule <k> #gasAccess(SCHED, SSTORE INDEX _)              => #touchStorage ACCT INDEX ~> #if {ACCT|INDEX} in TS #then 0 #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <touchedStorage> TS </touchedStorage>
+    rule <k> #gasAccess(SCHED, EXTCODESIZE ACCT)            => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                        ... </k> <touchedAccounts> ACCTS </touchedAccounts>
+    rule <k> #gasAccess(SCHED, EXTCODECOPY ACCT _ _ _)      => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                        ... </k> <touchedAccounts> ACCTS </touchedAccounts>
+    rule <k> #gasAccess(SCHED, EXTCODEHASH ACCT)            => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                        ... </k> <touchedAccounts> ACCTS </touchedAccounts>
+    rule <k> #gasAccess(SCHED, BALANCE ACCT)                => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                        ... </k> <touchedAccounts> ACCTS </touchedAccounts>
+    rule <k> #gasAccess(SCHED, SELFDESTRUCT ACCT)           => #touchAccounts ACCT ~> #if ACCT in ACCTS #then 0 #else Gcoldaccountaccess < SCHED > #fi         ... </k> <touchedAccounts> ACCTS </touchedAccounts>
+    rule <k> #gasAccess(_    , CALL _ ACCT _ _ _ _ _)       => #touchAccounts ACCT ~> 0                                                                        ... </k>
+    rule <k> #gasAccess(_    , CALLCODE _ ACCT _ _ _ _ _)   => #touchAccounts ACCT ~> 0                                                                        ... </k>
+    rule <k> #gasAccess(_    , DELEGATECALL _ ACCT _ _ _ _) => #touchAccounts ACCT ~> 0                                                                        ... </k>
+    rule <k> #gasAccess(_    , STATICCALL _ ACCT _ _ _ _)   => #touchAccounts ACCT ~> 0                                                                        ... </k>
+    rule <k> #gasAccess(_    , SLOAD INDEX )                => #touchStorage ACCT INDEX ~> 0                                                                   ... </k> <id> ACCT </id>
+    rule <k> #gasAccess(SCHED, SSTORE INDEX _)              => #touchStorage ACCT INDEX ~> #if inStorage(TS, ACCT, INDEX) #then 0 #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <touchedStorage> TS </touchedStorage>
 
 ```
 
@@ -2009,8 +2017,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </k>
 
-    rule <k> #gasExec(SCHED, JUMPDEST)    => Gjumpdest < SCHED >          ... </k>
-    rule <k> #gasExec(SCHED, SLOAD INDEX) => Csload(SCHED, {ACCT|INDEX} in TS) ... </k>
+    rule <k> #gasExec(SCHED, JUMPDEST)    => Gjumpdest < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, SLOAD INDEX) => Csload(SCHED, inStorage(TS,ACCT,INDEX)) ... </k>
          <id> ACCT </id>
          <touchedStorage> TS </touchedStorage>
 
