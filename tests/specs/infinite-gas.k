@@ -138,6 +138,8 @@ module INFINITE-GAS-COMMON
     rule I *Int I' <=Int #gas(G) => true requires                     I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
     rule I /Int I' <=Int #gas(G) => true requires I' =/=Int 0 andBool I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
 
+    rule I *Int I' <Int #gas(G) => true requires I <Int #gas(G) andBool I' <Int #gas(G) [simplification]
+
     rule #gas(G) <Int I +Int I' => false requires                     notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
     rule #gas(G) <Int I -Int I' => false requires                     notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
     rule #gas(G) <Int I *Int I' => false requires                     notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
@@ -166,14 +168,18 @@ module INFINITE-GAS-COMMON
     rule #allBut64th(G) <Int #gas(G') => true requires G <Int #gas(G') [simplification]
 
     rule 0 <=Int _:ScheduleConst < _:Schedule >       => true  [simplification]
-    rule _:ScheduleConst < _:Schedule > <Int #gas(_)  => true  [simplification]
+    rule _:ScheduleConst < _:Schedule >  <Int #gas(_) => true  [simplification]
     rule _:ScheduleConst < _:Schedule > <=Int #gas(_) => true  [simplification]
     rule #gas(_) <Int _:ScheduleConst < _:Schedule >  => false [simplification]
 
     rule log2Int(_) <=Int #gas(_) => true  [simplification]
     rule #gas(_) <Int log2Int(_)  => false [simplification]
 
-    rule _ up/Int _ <=Int #gas(_) => true  [simplification]
-    rule #gas(_) <Int _ up/Int _  => false [simplification]
+    rule 0 <=Int G up/Int _        => true  requires         0 <=Int G        [simplification]
+    rule G up/Int _  <Int #gas(G') => true  requires         G  <Int #gas(G') [simplification]
+    rule G up/Int _ <=Int #gas(G') => true  requires         G <=Int #gas(G') [simplification]
+    rule #gas(G') <Int G up/Int _  => false requires notBool #gas(G') <Int G  [simplification]
+
+    rule 0 <=Int X *Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
 
 endmodule

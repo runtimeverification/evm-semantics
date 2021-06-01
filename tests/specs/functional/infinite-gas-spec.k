@@ -55,6 +55,12 @@ module INFINITE-GAS-SPEC
     claim <k> runLemma(#gas(G) -Int Cmem(SCHED, #memoryUsageUpdate(MU, W0, 32))) => doneLemma(#gas(G -Int Cmem(SCHED, #memoryUsageUpdate(MU, W0, 32)))) ... </k>
     claim <k> runLemma(#gas(G) -Int Gverylow < SCHED >) => doneLemma(#gas(G -Int Gverylow < SCHED >)) ... </k>
 
+    claim <k> runLemma(#gas(G) -Int 3 *Int (DATA_LEN up/Int 32)) => doneLemma(#gas(G -Int 3 *Int (DATA_LEN up/Int 32))) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+
+    claim <k> runLemma (#gas(-271 -Int Cmem(ISTANBUL, #memoryUsageUpdate(5, 160, DATA_LEN))) -Int 3 *Int (DATA_LEN up/Int 32) +Int -3)
+           => doneLemma(#gas(-271 -Int Cmem(ISTANBUL, #memoryUsageUpdate(5, 160, DATA_LEN)) -Int 3 *Int (DATA_LEN up/Int 32) +Int -3)) ... </k>
+      requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+
  // Infinite Gas comparisons
  // ------------------------
 
@@ -92,6 +98,11 @@ module INFINITE-GAS-SPEC
     claim <k> runLemma(Gexp < SCHED > +Int Gexpbyte < SCHED > *Int ( log2Int ( W1 ) /Int 8 +Int 1 ) <=Int #gas(GAVAIL)) => doneLemma(true)  ... </k>
     claim <k> runLemma(#gas(GAVAIL) <Int Gexp < SCHED > +Int Gexpbyte < SCHED > *Int ( log2Int ( W1 ) /Int 8 +Int 1 ))  => doneLemma(false) ... </k>
 
-    claim <k> runLemma(#gas ( -271 -Int Cmem ( ISTANBUL , #memoryUsageUpdate ( 5 , 160 , DATA_LEN ) ) ) <Int 3 *Int ( DATA_LEN up/Int 32 ) +Int 3) => doneLemma(false) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+    claim <k> runLemma(#gas(G) <Int 3 *Int (DATA_LEN up/Int 32) +Int 3) => doneLemma(false) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+    claim <k> runLemma(#gas(G) <Int         DATA_LEN up/Int 32        ) => doneLemma(false) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+    claim <k> runLemma(#gas(G) <Int         DATA_LEN                  ) => doneLemma(false) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+
+    claim <k> runLemma(0 <=Int 3 *Int (DATA_LEN up/Int 32)) => doneLemma(true) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+    claim <k> runLemma(3 *Int (DATA_LEN up/Int 32) <Int #gas(_)) => doneLemma(true) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
 
 endmodule
