@@ -156,10 +156,12 @@ LEMMA_FILES := infinite-gas.k                           \
 lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(LEMMA_FILES))
 
 $(KEVM_INCLUDE)/kframework/%.md: %.md
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 $(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 tangle_concrete := k & ( ( ! ( symbolic | nobytes ) ) | concrete | bytes   )
 tangle_java     := k & ( ( ! ( concrete | bytes   ) ) | symbolic | nobytes )
@@ -266,10 +268,13 @@ build_bins := $(install_bins)
 build_libs := $(install_libs)
 
 $(KEVM_BIN)/$(KEVM): $(KEVM)
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
+
 
 $(KEVM_LIB)/%.py: %.py
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 $(KEVM_LIB)/version:
 	@mkdir -p $(dir $@)
@@ -295,10 +300,12 @@ install: $(patsubst %, $(DESTDIR)$(INSTALL_BIN)/%, $(all_bin_sources)) \
          $(patsubst %, $(DESTDIR)$(INSTALL_LIB)/%, $(all_lib_sources))
 
 $(DESTDIR)$(INSTALL_BIN)/%: $(KEVM_BIN)/%
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 $(DESTDIR)$(INSTALL_LIB)/%: $(KEVM_LIB)/%
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 uninstall:
 	rm -rf $(DESTDIR)$(INSTALL_BIN)/kevm
