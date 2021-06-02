@@ -1884,20 +1884,19 @@ Access List Gas
 ---------------
 
 ```k
-    syntax Bool ::= #usesAccessList ( OpCode ) [function]
- // -----------------------------------------------------
-    rule #usesAccessList(OP) => true requires OP ==K BALANCE
-                                       orBool OP ==K SELFDESTRUCT
-                                       orBool OP ==K EXTCODEHASH
-                                       orBool OP ==K EXTCODESIZE
-                                       orBool OP ==K EXTCODECOPY
-                                       orBool OP ==K SLOAD
-                                       orBool OP ==K SSTORE
-                                       orBool OP ==K CALL
-                                       orBool OP ==K CALLCODE
-                                       orBool OP ==K DELEGATECALL
-                                       orBool OP ==K STATICCALL
-    rule #usesAccessList(_) => false [owise]
+    syntax Bool ::= #usesAccessList ( OpCode ) [function, functional]
+ // -----------------------------------------------------------------
+    rule #usesAccessList(OP) => OP ==K BALANCE
+                         orBool OP ==K SELFDESTRUCT
+                         orBool OP ==K EXTCODEHASH
+                         orBool OP ==K EXTCODESIZE
+                         orBool OP ==K EXTCODECOPY
+                         orBool OP ==K SLOAD
+                         orBool OP ==K SSTORE
+                         orBool OP ==K CALL
+                         orBool OP ==K CALLCODE
+                         orBool OP ==K DELEGATECALL
+                         orBool OP ==K STATICCALL
 
     syntax InternalOp ::= "#access" "[" OpCode "]"
  // --------------------------------------------
