@@ -2097,11 +2097,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(_, SHA256) =>  60 +Int  12 *Int (#sizeByteArray(DATA) up/Int 32) ... </k> <callData> DATA </callData>
     rule <k> #gasExec(_, RIP160) => 600 +Int 120 *Int (#sizeByteArray(DATA) up/Int 32) ... </k> <callData> DATA </callData>
     rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (#sizeByteArray(DATA) up/Int 32) ... </k> <callData> DATA </callData>
-    rule <k> #gasExec(_, MODEXP)
-          => #multComplexity(maxInt(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 64 .. 32 ]))) *Int maxInt(#adjustedExpLength(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), DATA), 1) /Int Gquaddivisor < SCHED >
-         ...
-         </k>
-         <schedule> SCHED </schedule>
+
+    rule <k> #gasExec(SCHED, MODEXP) => Cmodexp(SCHED, DATA, #asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #asWord(DATA [ 64 .. 32 ])) ... </k>
          <callData> DATA </callData>
 
     rule <k> #gasExec(SCHED, ECADD)     => Gecadd < SCHED>  ... </k>
@@ -2154,6 +2151,7 @@ There are several helpers for calculating gas (most of them also specified in th
                  | Cextcodecopy   ( Schedule , Int )                         [function, functional, smtlib(gas_Cextcodecopy)  ]
                  | Cextcodehash   ( Schedule )                               [function, functional, smtlib(gas_Cextcodehash)  ]
                  | Cbalance       ( Schedule )                               [function, functional, smtlib(gas_Cbalance)      ]
+                 | Cmodexp        ( Schedule , ByteArray , Int , Int , Int ) [function, functional, smtlib(gas_Cmodexp)       ]
  // ---------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
@@ -2229,7 +2227,7 @@ There are several helpers for calculating gas (most of them also specified in th
     rule [Cbalance.new]: Cbalance(SCHED) => 0                  requires Ghasaccesslist << SCHED >>
     rule [Cbalance.old]: Cbalance(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
 
-    rule [Cextcodecopy.new]: 
+    rule [Cextcodecopy.new]:
         Cextcodecopy(SCHED, WIDTH)
       => Gcopy < SCHED > *Int (WIDTH up/Int 32)
     requires Ghasaccesslist << SCHED >>
@@ -2237,6 +2235,15 @@ There are several helpers for calculating gas (most of them also specified in th
          Cextcodecopy(SCHED, WIDTH)
       => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32))
       requires notBool Ghasaccesslist << SCHED >>
+
+    rule [Cmodexp.old]:
+         Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN)
+      => #multComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1) /Int Gquaddivisor < SCHED >
+      requires notBool Ghasaccesslist << SCHED >>
+    rule [Cmodexp.new]:
+         Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN)
+      => maxInt(200, (#newMultComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1)) /Int Gquaddivisor < SCHED >)
+      requires Ghasaccesslist << SCHED >>
 
     syntax BExp    ::= Bool
     syntax KResult ::= Bool
@@ -2295,11 +2302,14 @@ There are several helpers for calculating gas (most of them also specified in th
  // ----------------------------------------------------------
     rule G*(GAVAIL, GLIMIT, REFUND) => GAVAIL +Int minInt((GLIMIT -Int GAVAIL)/Int 2, REFUND)
 
-    syntax Int ::= #multComplexity(Int) [function]
- // ----------------------------------------------
+    syntax Int ::= #multComplexity(Int)    [function]
+                 | #newMultComplexity(Int) [function]
+ // -------------------------------------------------
     rule #multComplexity(X) => X *Int X                                     requires X <=Int 64
     rule #multComplexity(X) => X *Int X /Int 4 +Int 96 *Int X -Int 3072     requires X >Int 64 andBool X <=Int 1024
     rule #multComplexity(X) => X *Int X /Int 16 +Int 480 *Int X -Int 199680 requires X >Int 1024
+
+    rule #newMultComplexity(X) => (X up/Int 8) ^Int 2
 
     syntax Int ::= #adjustedExpLength(Int, Int, ByteArray) [function]
                  | #adjustedExpLength(Int)                 [function, klabel(#adjustedExpLengthAux)]
@@ -2585,6 +2595,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gwarmstorageread      < BERLIN > => 100
     rule Gsload                < BERLIN > => Gwarmstorageread < BERLIN >
     rule Gsstorereset          < BERLIN > => 5000 -Int Gcoldsload < BERLIN >
+    rule Gquaddivisor          < BERLIN > => 3
 
     rule SCHEDCONST         < BERLIN > => SCHEDCONST < ISTANBUL >
       requires notBool ( SCHEDCONST ==K Gcoldsload
@@ -2592,6 +2603,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDCONST ==K Gwarmstorageread
                   orBool SCHEDCONST ==K Gsload
                   orBool SCHEDCONST ==K Gsstorereset
+                  orBool SCHEDCONST ==K Gquaddivisor
                        )
     rule Ghasaccesslist << BERLIN >> => true
     rule SCHEDFLAG      << BERLIN >> => SCHEDFLAG << ISTANBUL >>
