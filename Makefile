@@ -156,10 +156,12 @@ LEMMA_FILES := infinite-gas.k                           \
 lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(LEMMA_FILES))
 
 $(KEVM_INCLUDE)/kframework/%.md: %.md
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 $(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 tangle_concrete := k & ( ( ! ( symbolic | nobytes ) ) | concrete | bytes   )
 tangle_java     := k & ( ( ! ( concrete | bytes   ) ) | symbolic | nobytes )
@@ -266,10 +268,13 @@ build_bins := $(install_bins)
 build_libs := $(install_libs)
 
 $(KEVM_BIN)/$(KEVM): $(KEVM)
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
+
 
 $(KEVM_LIB)/%.py: %.py
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 $(KEVM_LIB)/version:
 	@mkdir -p $(dir $@)
@@ -295,10 +300,12 @@ install: $(patsubst %, $(DESTDIR)$(INSTALL_BIN)/%, $(all_bin_sources)) \
          $(patsubst %, $(DESTDIR)$(INSTALL_LIB)/%, $(all_lib_sources))
 
 $(DESTDIR)$(INSTALL_BIN)/%: $(KEVM_BIN)/%
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 $(DESTDIR)$(INSTALL_LIB)/%: $(KEVM_LIB)/%
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 uninstall:
 	rm -rf $(DESTDIR)$(INSTALL_BIN)/kevm
@@ -362,12 +369,10 @@ tests/%.parse: tests/%
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 tests/%.prove: tests/%
-	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
+	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 tests/%.prove-dry-run: tests/%
-	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend haskell --format-failures $(KPROVE_OPTS) --dry-run \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
+	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend haskell --format-failures $(KPROVE_OPTS) --dry-run --concrete-rules-file $(dir $@)concrete-rules.txt
 
 tests/%.search: tests/%
 	$(KEVM) search $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) > $@-out
@@ -375,8 +380,7 @@ tests/%.search: tests/%
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 tests/%.klab-prove: tests/%
-	$(KEVM) klab-prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
+	$(KEVM) klab-prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 # Smoke Tests
 
