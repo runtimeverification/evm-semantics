@@ -139,7 +139,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE </nonce>
            ...
          </account>
-         <touchedAccounts> _ => SetItem(ACCTFROM) SetItem(#newAddr(ACCTFROM, NONCE)) #precompiledAccounts(SCHED) </touchedAccounts>
+         <touchedAccounts> _ => SetItem(ACCTFROM) |Set SetItem(#newAddr(ACCTFROM, NONCE)) |Set #precompiledAccounts(SCHED) </touchedAccounts>
 
     rule <k> loadTx(ACCTFROM)
           => #loadAccessList(TA)
@@ -169,7 +169,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
-         <touchedAccounts> _ => SetItem(ACCTFROM) SetItem(ACCTTO) #precompiledAccounts(SCHED) </touchedAccounts>
+         <touchedAccounts> _ => SetItem(ACCTFROM) |Set SetItem(ACCTTO) |Set #precompiledAccounts(SCHED) </touchedAccounts>
       requires ACCTTO =/=K .Account
 
     syntax EthereumCommand ::= "#finishTx"
