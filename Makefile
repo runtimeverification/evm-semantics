@@ -157,10 +157,12 @@ LEMMA_FILES := infinite-gas.k                           \
 lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(LEMMA_FILES))
 
 $(KEVM_INCLUDE)/kframework/%.md: %.md
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 $(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 tangle_concrete := k & ( ( ! ( symbolic | nobytes ) ) | concrete | bytes   )
 tangle_java     := k & ( ( ! ( concrete | bytes   ) ) | symbolic | nobytes )
@@ -267,10 +269,13 @@ build_bins := $(install_bins)
 build_libs := $(install_libs)
 
 $(KEVM_BIN)/$(KEVM): $(KEVM)
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
+
 
 $(KEVM_LIB)/%.py: %.py
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 $(KEVM_LIB)/version:
 	@mkdir -p $(dir $@)
@@ -296,10 +301,12 @@ install: $(patsubst %, $(DESTDIR)$(INSTALL_BIN)/%, $(all_bin_sources)) \
          $(patsubst %, $(DESTDIR)$(INSTALL_LIB)/%, $(all_lib_sources))
 
 $(DESTDIR)$(INSTALL_BIN)/%: $(KEVM_BIN)/%
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 $(DESTDIR)$(INSTALL_LIB)/%: $(KEVM_LIB)/%
-	install -D $< $@
+	@mkdir -p $(dir $@)
+	install $< $@
 
 uninstall:
 	rm -rf $(DESTDIR)$(INSTALL_BIN)/kevm
@@ -331,8 +338,11 @@ test: test-conformance test-prove test-interactive test-parse
 tests/ethereum-tests/VMTests/%: KEVM_MODE     = VMTESTS
 tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
-tests/specs/mcd/functional-spec.k%:     KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
-tests/specs/evm-optimizations-spec.md%: KPROVE_MODULE = EVM-OPTIMIZATIONS-SPEC-LEMMAS
+tests/specs/benchmarks/functional-spec.k%: KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
+tests/specs/evm-optimizations-spec.md%:    KPROVE_MODULE = EVM-OPTIMIZATIONS-SPEC-LEMMAS
+tests/specs/mcd/functional-spec.k%:        KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
+
+tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
 
 tests/%.run: tests/%
 	$(KEVM) interpret $< $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                            \
@@ -360,15 +370,11 @@ tests/%.parse: tests/%
 	$(CHECK) $@-out $@-expected
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
-tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
-
 tests/%.prove: tests/%
-	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
+	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 tests/%.prove-dry-run: tests/%
-	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend haskell --format-failures $(KPROVE_OPTS) --dry-run \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
+	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend haskell --format-failures $(KPROVE_OPTS) --dry-run --concrete-rules-file $(dir $@)concrete-rules.txt
 
 tests/%.search: tests/%
 	$(KEVM) search $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) > $@-out
@@ -376,8 +382,7 @@ tests/%.search: tests/%
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 tests/%.klab-prove: tests/%
-	$(KEVM) klab-prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
-	    --concrete-rules $(shell cat $(dir $@)concrete-rules.txt | tr '\n' ',')
+	$(KEVM) klab-prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 # Smoke Tests
 
