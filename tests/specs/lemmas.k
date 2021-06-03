@@ -93,7 +93,7 @@ module LEMMAS
 
     rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
 
-    rule X in (SetItem(Y) REST) => true      requires X  ==Int Y [simplification]
+    rule X in (SetItem(Y) _   ) => true      requires X  ==Int Y [simplification]
     rule X in (SetItem(Y) REST) => X in REST requires X =/=Int Y [simplification]
 
 endmodule
