@@ -393,6 +393,9 @@ The `#next [_]` operator initiates execution by:
 ```k
     syntax Bool ::= #changesState ( OpCode , WordStack ) [function]
  // ---------------------------------------------------------------
+```
+
+```{.k .nobytes}
     rule #changesState(CALL, _ : _ : VALUE : _) => VALUE =/=Int 0
     rule #changesState(OP,   _)                 => ( isLogOp(OP)
                                               orBool OP ==K SSTORE
@@ -401,6 +404,16 @@ The `#next [_]` operator initiates execution by:
                                               orBool OP ==K SELFDESTRUCT
                                                    )
       requires notBool OP ==K CALL
+```
+
+```{.k .bytes}
+    rule #changesState(CALL         , _ : _ : VALUE : _) => true  requires VALUE =/=Int 0
+    rule #changesState(LOG(_)       , _)                 => true
+    rule #changesState(SSTORE       , _)                 => true
+    rule #changesState(CREATE       , _)                 => true
+    rule #changesState(CREATE2      , _)                 => true
+    rule #changesState(SELFDESTRUCT , _)                 => true
+    rule #changesState(_            , _)                 => false [owise]
 ```
 
 ### Execution Step
@@ -462,25 +475,36 @@ We make sure the given arguments (to be interpreted as addresses) are with 160 b
  // --------------------------------------------
     rule <k> #addr [ OP:OpCode ] => . ... </k>
          <wordStack> (W0 => #addr(W0)) : _WS </wordStack>
-      requires OP ==K BALANCE
-        orBool OP ==K SELFDESTRUCT
-        orBool OP ==K EXTCODEHASH
-        orBool OP ==K EXTCODESIZE
-        orBool OP ==K EXTCODECOPY
+      requires isAddr1Op(OP)
 
     rule <k> #addr [ OP:OpCode ] => . ... </k>
          <wordStack> _W0 : (W1 => #addr(W1)) : _WS </wordStack>
-      requires isCallOp(OP) orBool isCallSixOp(OP)
+      requires isAddr2Op(OP)
 
     rule <k> #addr [ OP:OpCode ] => . ... </k>
-      requires notBool ( OP ==K BALANCE
-                  orBool OP ==K SELFDESTRUCT
-                  orBool OP ==K EXTCODEHASH
-                  orBool OP ==K EXTCODESIZE
-                  orBool OP ==K EXTCODECOPY
-                  orBool isCallOp(OP)
-                  orBool isCallSixOp(OP)
-                       )
+      requires notBool ( isAddr1Op(OP) orBool isAddr2Op(OP) )
+
+    syntax Bool ::= isAddr1Op ( OpCode ) [function, functional]
+                  | isAddr2Op ( OpCode ) [function, functional]
+ // -----------------------------------------------------------
+```
+
+```{.k .nobytes}
+    rule isAddr1Op(OP) => OP ==K BALANCE orBool OP ==K SELFDESTRUCT orBool OP ==K EXTCODEHASH orBool OP ==K EXTCODESIZE orBool OP ==K EXTCODECOPY
+    rule isAddr2Op(OP) => isCallOp(OP) orBool isCallSixOp(OP)
+```
+
+```{.k .bytes}
+    rule isAddr1Op(BALANCE)      => true
+    rule isAddr1Op(SELFDESTRUCT) => true
+    rule isAddr1Op(EXTCODEHASH)  => true
+    rule isAddr1Op(EXTCODESIZE)  => true
+    rule isAddr1Op(EXTCODECOPY)  => true
+    rule isAddr1Op(_)            => false [owise]
+
+    rule isAddr2Op(_:CallOp)    => true
+    rule isAddr2Op(_:CallSixOp) => true
+    rule isAddr2Op(_)           => false [owise]
 ```
 
 ### Program Counter
