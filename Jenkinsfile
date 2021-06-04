@@ -28,7 +28,7 @@ pipeline {
           failFast true
           options { timeout(time: 25, unit: 'MINUTES') }
           parallel {
-            stage('Conformance (LLVM)') { steps { sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm' } }
+            stage('Conformance (LLVM)') { steps { sh 'make test-temp -j8 -k TEST_CONCRETE_BACKEND=llvm' } }
             stage('VM (Haskell)')       { steps { sh 'make test-vm -j8 TEST_CONCRETE_BACKEND=haskell'       } }
           }
         }

@@ -407,10 +407,12 @@ all_vm_tests     = $(wildcard tests/ethereum-tests/VMTests/*/*.json)
 quick_vm_tests   = $(filter-out $(slow_conformance_tests), $(all_vm_tests))
 passing_vm_tests = $(filter-out $(failing_conformance_tests), $(quick_vm_tests))
 rest_vm_tests    = $(filter-out $(passing_vm_tests), $(all_vm_tests))
+temp_tests =  $(wildcard tests/check_tests/*.json)
 
 test-all-vm: $(all_vm_tests:=.run)
 test-rest-vm: $(rest_vm_tests:=.run)
 test-vm: $(passing_vm_tests:=.run)
+test-temp: $(temp_tests:=.run)
 
 all_bchain_tests     = $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)                            \
                        $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/*/*.json)
