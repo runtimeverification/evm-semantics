@@ -134,6 +134,7 @@ SOURCE_FILES       := abi                        \
                       evm                        \
                       evm-types                  \
                       hashed-locations           \
+											infinite-gas               \
                       json-rpc                   \
                       network                    \
                       serialization              \
@@ -223,9 +224,9 @@ $(KEVM_LIB)/$(java_kompiled): $(includes)
 # Haskell
 
 haskell_dir            := haskell
-haskell_main_module    := ETHEREUM-SIMULATION
+haskell_main_module    := EDSL
 haskell_syntax_module  := $(haskell_main_module)
-haskell_main_file      := driver.md
+haskell_main_file      := edsl.md
 haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
 haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
 

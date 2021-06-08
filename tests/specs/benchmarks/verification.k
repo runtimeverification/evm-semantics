@@ -344,7 +344,7 @@ endmodule
 
 module VERIFICATION-HASKELL [symbolic, kore]
     imports VERIFICATION-COMMON
-    imports INFINITE-GAS
+    imports INFINITE-GAS-LEMMAS
 endmodule
 
 module VERIFICATION-JAVA [symbolic, kast]

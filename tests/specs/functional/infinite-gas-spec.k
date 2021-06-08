@@ -1,7 +1,7 @@
 requires "../infinite-gas.k"
 
 module VERIFICATION
-    imports INFINITE-GAS
+    imports INFINITE-GAS-LEMMAS
 
     syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
  // -------------------------------------------------------
