@@ -277,11 +277,8 @@ module LEMMAS-JAVA [symbolic, kast]
       requires #sizeByteArray(BA) <=Int 32                                      andBool  #isConcrete(BA) [simplification]
 
     //For #bufStrict simplification in benchmarks
-    rule 0 <Int 2 ^Int I           => true
-      requires 0 <=Int I                                                        [simplification]
-    rule 0 <=Int I *Int 8          => 0 <=Int I                                 [simplification]
-    rule 0 <=Int #ceil32(I) -Int I => true
-      requires 0 <=Int I                                                        [simplification]
+    rule 0 <Int 2 ^Int I  => true      requires 0 <=Int I [simplification]
+    rule 0 <=Int I *Int 8 => 0 <=Int I                    [simplification]
 
 endmodule
 
