@@ -18,7 +18,7 @@ endmodule
 module INFINITE-GAS-LEMMAS-HASKELL [kore]
     imports INFINITE-GAS-LEMMAS-COMMON
 
-    syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
+    syntax Int ::= #gas ( Int , Int , Int ) // startGas, nonMemory, memory
  //-----------------------------------------------------------------------------------
 
     rule #gas(_,_,_) => #gas(0) [macro]
