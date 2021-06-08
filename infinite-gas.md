@@ -1,4 +1,6 @@
 Infinite Gas
+============
+
 Here we use the construct `#gas` to represent positive infinity, while tracking the gas formula through execution.
 This allows (i) computing final gas used, and (ii) never stopping because of out-of-gas.
 Note that the argument to `#gas(_)` is just metadata tracking the current gas usage, and is not meant to be compared to other values.
