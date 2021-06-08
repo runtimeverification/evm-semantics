@@ -351,11 +351,6 @@ module VERIFICATION-JAVA [symbolic, kast]
     imports VERIFICATION-COMMON
     imports K-REFLECTION
 
-  // ########################
-  // Symbolic Gas
-  // ########################
-
-    syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
  // -----------------------------------------------------------------------------------
     rule #gas(_, _, _) <=Int I => false requires #isConcrete(I) [simplification]
 

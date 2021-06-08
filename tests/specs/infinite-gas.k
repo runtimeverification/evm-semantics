@@ -18,9 +18,6 @@ endmodule
 module INFINITE-GAS-LEMMAS-HASKELL [kore]
     imports INFINITE-GAS-LEMMAS-COMMON
 
-    syntax Int ::= #gas ( Int , Int , Int ) // startGas, nonMemory, memory
- //-----------------------------------------------------------------------------------
-
     rule #gas(_,_,_) => #gas(0) [macro]
 
     rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 [concrete(C2, C3), simplification]
@@ -80,6 +77,9 @@ endmodule
 module INFINITE-GAS-LEMMAS-COMMON
     imports EVM
     imports INFINITE-GAS
+
+    syntax Int ::= #gas ( Int , Int , Int ) // startGas, nonMemory, memory
+ //-----------------------------------------------------------------------------------
 
  // Generic rules
 
