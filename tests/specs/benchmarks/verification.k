@@ -405,7 +405,7 @@ module VERIFICATION-JAVA [symbolic, kast]
     rule (A +Int I1) +Int (B +Int I2) => (A +Int B) +Int (I1 +Int I2)
       requires notBool #isConcrete(A) andBool notBool #isConcrete(B) andBool #isConcrete(I1) andBool #isConcrete(I2) [simplification]
 
-    rule chop(#ceil32(X) +Int Y) => #ceil32(X) +Int Y requires 0 <=Int X andBool X <=Int pow16 andBool 0 <=Int Y andBool Y <Int pow16 [simplification]
+    rule chop(X +Int Y) => X +Int Y requires 0 <=Int X andBool X <=Int pow16 andBool 0 <=Int Y andBool Y <Int pow16 [simplification]
 
     rule X +Int Y <Int Z => X <Int Z -Int Y requires #isConcrete(Y) [simplification]
 
