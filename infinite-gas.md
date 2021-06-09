@@ -87,7 +87,6 @@ In particular, this means that `#gas(_) <Int #gas(_) => false`, and `#gas(_) <=I
     rule log2Int(_) <=Int #gas(_) => true  [simplification]
     rule #gas(_) <Int log2Int(_)  => false [simplification]
 endmodule
-```
 
 module INFINITE-GAS-HASKELL [kore]
     imports INFINITE-GAS-COMMON
