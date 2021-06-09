@@ -79,7 +79,7 @@ module INFINITE-GAS-LEMMAS-COMMON
     imports INFINITE-GAS
 
     syntax Int ::= #gas ( Int , Int , Int ) // startGas, nonMemory, memory
- //-----------------------------------------------------------------------------------
+ // -----------------------------------------------------------------------
 
  // Generic rules
 
