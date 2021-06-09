@@ -42,9 +42,7 @@ In particular, this means that `#gas(_) <Int #gas(_) => false`, and `#gas(_) <=I
     rule #if B #then #gas(G) #else #gas(G') #fi => #gas(#if B #then G #else G' #fi) [simplification]
 
     rule #allBut64th(#gas(G)) => #gas(#allBut64th(G)) [simplification]
-```
-`#gas` is positive infinity, and is equal to itself.
-```k
+
     rule #gas(_)  <Int #gas(_) => false [simplification]
     rule #gas(_) <=Int #gas(_) => true  [simplification]
 
