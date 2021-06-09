@@ -84,6 +84,10 @@ In particular, this means that `#gas(_) <Int #gas(_) => false`, and `#gas(_) <=I
 
     rule log2Int(_) <=Int #gas(_) => true  [simplification]
     rule #gas(_) <Int log2Int(_)  => false [simplification]
+
+    rule G up/Int _  <Int #gas(G') => true  requires         G  <Int #gas(G') [simplification]
+    rule G up/Int _ <=Int #gas(G') => true  requires         G <=Int #gas(G') [simplification]
+    rule #gas(G') <Int G up/Int _  => false requires notBool #gas(G') <Int G  [simplification]
 endmodule
 
 module INFINITE-GAS-HASKELL [kore]

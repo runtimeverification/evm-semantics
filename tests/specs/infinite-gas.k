@@ -103,10 +103,6 @@ module INFINITE-GAS-LEMMAS-COMMON
     rule 0 <=Int _:ScheduleConst < _:Schedule > => true  [simplification]
     rule 0 <=Int G up/Int _        => true  requires         0 <=Int G        [simplification]
 
-    rule G up/Int _  <Int #gas(G') => true  requires         G  <Int #gas(G') [simplification]
-    rule G up/Int _ <=Int #gas(G') => true  requires         G <=Int #gas(G') [simplification]
-    rule #gas(G') <Int G up/Int _  => false requires notBool #gas(G') <Int G  [simplification]
-
     rule 0 <=Int X *Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
 
 endmodule
