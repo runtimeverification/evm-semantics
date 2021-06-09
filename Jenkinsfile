@@ -24,20 +24,13 @@ pipeline {
       stages {
         stage('Deps')  { steps { sh 'make plugin-deps'            } }
         stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
-        stage('Test Execution') {
-          failFast true
-          options { timeout(time: 25, unit: 'MINUTES') }
-          parallel {
-            stage('Conformance (LLVM)') { steps { sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm' } }
-            stage('VM (Haskell)')       { steps { sh 'make test-vm -j8 TEST_CONCRETE_BACKEND=haskell'       } }
-          }
-        }
-        stage('Proofs') {
+        stage('Test') {
           options {
             lock("proofs-${env.NODE_NAME}")
             timeout(time: 100, unit: 'MINUTES')
           }
           parallel {
+            stage('Conformance (LLVM)') { steps { sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm' } }
             stage('Java')              { steps { sh 'make test-prove -j5 TEST_SYMBOLIC_BACKEND=java'    } }
             stage('Haskell')           { steps { sh 'make test-prove -j4 TEST_SYMBOLIC_BACKEND=haskell' } }
             stage('Haskell (dry-run)') { steps { sh 'make test-haskell-dry-run -j3'                     } }
