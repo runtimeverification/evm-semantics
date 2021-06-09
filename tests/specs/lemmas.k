@@ -58,7 +58,7 @@ module LEMMAS
       requires #rangeUInt(256, V)                                                                         [simplification]
 
     //For #bufStrict simplification in benchmarks
-    rule 0 <=Int #ceil32(I)        => true requires 0 <=Int I [simplification]
+    rule 0 <=Int #ceil32(I)        => true requires 0 <=Int I [smt-lemma, simplification]
     rule 0 <=Int #ceil32(I) -Int I => true requires 0 <=Int I [simplification]
 
     rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeByteArray(WS) -Int (M /Int 8) ])

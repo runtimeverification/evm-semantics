@@ -7,8 +7,8 @@ module FUNCTIONAL-SPEC-SYNTAX
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
 
-    syntax Step ::= ByteArray
- // -------------------------
+    syntax Step ::= ByteArray | Int | Bool
+ // --------------------------------------
 
 endmodule
 
@@ -21,4 +21,10 @@ module FUNCTIONAL-SPEC
            => doneLemma(#buf(32, keccak(#buf(32,A0) ++ #buf(32,A1)))) ... </k>
       requires #rangeUInt(256, A0)
        andBool #rangeUInt(256, A1)
+
+    claim <k> runLemma(       chop( #ceil32(DATA_LEN) +Int 64 )          ) => doneLemma ( #ceil32(DATA_LEN) +Int 64 ) ... </k> requires #range(0 <= DATA_LEN < pow16)
+    claim <k> runLemma( chop( chop( #ceil32(DATA_LEN) +Int 64 ) +Int 4 ) ) => doneLemma ( #ceil32(DATA_LEN) +Int 68 ) ... </k> requires #range(0 <= DATA_LEN < pow16)
+
+    claim <k> runLemma(#ceil32(DATA_LEN) +Int 292 <Int DATA_LEN +Int 292) => doneLemma(false) ... </k> requires #range(0 <= DATA_LEN < pow16)
+
 endmodule
