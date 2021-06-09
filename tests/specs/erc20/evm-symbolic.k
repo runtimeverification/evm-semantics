@@ -1,8 +1,10 @@
 requires "edsl.md"
+requires "../infinite-gas.k"
 
 module EVM-SYMBOLIC     [symbolic]
     imports EVM
     imports EDSL
+    imports INFINITE-GAS-LEMMAS
 
   // ########################
   // Ecrecover
