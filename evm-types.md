@@ -198,11 +198,12 @@ NOTE: Here, we choose to add `I2 -Int 1` to the numerator beforing doing the div
 You could alternatively calculate `I1 modInt I2`, then add one to the normal integer division afterward depending on the result.
 
 ```k
-    syntax Int ::= Int "up/Int" Int [function]
- // ------------------------------------------
-    rule _I1 up/Int 0  => 0
-    rule  I1 up/Int 1  => I1
-    rule  I1 up/Int I2 => (I1 +Int (I2 -Int 1)) /Int I2 requires I2 >Int 1
+    syntax Int ::= Int "up/Int" Int [function, functional, smtlib(upDivInt)]
+ // ------------------------------------------------------------------------
+    rule              _I1 up/Int 0  => 0
+    rule              _I1 up/Int I2 => 0                             requires I2 <Int 0
+    rule               I1 up/Int 1  => I1
+    rule [upDivInt] :  I1 up/Int I2 => (I1 +Int (I2 -Int 1)) /Int I2 requires I2 >Int 1
 ```
 
 -   `log256Int` returns the log base 256 (floored) of an integer.
