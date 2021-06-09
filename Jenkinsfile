@@ -31,9 +31,9 @@ pipeline {
           }
           parallel {
             stage('Conformance (LLVM)') { steps { sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm' } }
-            stage('Java')              { steps { sh 'make test-prove -j5 TEST_SYMBOLIC_BACKEND=java'    } }
-            stage('Haskell')           { steps { sh 'make test-prove -j4 TEST_SYMBOLIC_BACKEND=haskell' } }
-            stage('Haskell (dry-run)') { steps { sh 'make test-haskell-dry-run -j3'                     } }
+            stage('Java')               { steps { sh 'make test-prove -j5 TEST_SYMBOLIC_BACKEND=java'    } }
+            stage('Haskell')            { steps { sh 'make test-prove -j4 TEST_SYMBOLIC_BACKEND=haskell' } }
+            stage('Haskell (dry-run)')  { steps { sh 'make test-haskell-dry-run -j3'                     } }
           }
         }
         stage('Test Interactive') {
