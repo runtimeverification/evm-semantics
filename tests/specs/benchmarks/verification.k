@@ -163,6 +163,9 @@ module VERIFICATION
     rule #asWord(WS) &Int maxUInt256 => #asWord(WS)
       [simplification]
 
+    rule maxUInt256 &Int X => X requires #rangeUInt(256, X)
+      [simplification]
+
     // 2^256 - 2^160 = 0xff..ff00..00 (96 1's followed by 160 0's)
     rule 115792089237316195423570985007226406215939081747436879206741300988257197096960 &Int ADDR => 0
       requires #rangeAddress(ADDR)
@@ -246,9 +249,11 @@ module VERIFICATION
 
     rule 0 <Int 1 <<Int N => true requires 0 <=Int N [simplification]
 
-    rule X <=Int #ceil32(X) => true requires X >=Int 0 [simplification]
+    rule X +Int Y <Int pow256 => true requires X <=Int pow16 andBool Y <Int pow16 [simplification]
 
-    rule #ceil32(N) => ((N +Int 31) /Int 32) *Int 32 [smt-lemma]
+    rule X <=Int #ceil32(X)     => true  requires 0 <=Int X                       [simplification]
+    rule #ceil32(X) <Int X      => false requires 0 <=Int X                       [simplification]
+    rule #ceil32(X) <=Int pow16 => true  requires 0 <=Int X andBool X <=Int pow16 [simplification]
 
   // ########################
   // Gnosis
@@ -345,6 +350,9 @@ endmodule
 module VERIFICATION-HASKELL [symbolic, kore]
     imports VERIFICATION-COMMON
     imports INFINITE-GAS-LEMMAS
+
+    rule X +Int Y <Int Z => X <Int Z -Int Y [concrete(Y), simplification]
+
 endmodule
 
 module VERIFICATION-JAVA [symbolic, kast]
@@ -391,6 +399,10 @@ module VERIFICATION-JAVA [symbolic, kast]
 
     rule (A +Int I1) +Int (B +Int I2) => (A +Int B) +Int (I1 +Int I2)
       requires notBool #isConcrete(A) andBool notBool #isConcrete(B) andBool #isConcrete(I1) andBool #isConcrete(I2) [simplification]
+
+    rule chop(X +Int Y) => X +Int Y requires 0 <=Int X andBool X <=Int pow16 andBool 0 <=Int Y andBool Y <Int pow16 [simplification]
+
+    rule X +Int Y <Int Z => X <Int Z -Int Y requires #isConcrete(Y) [simplification]
 
   // ########################
   // Gas
