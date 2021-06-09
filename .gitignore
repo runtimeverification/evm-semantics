@@ -8,3 +8,6 @@
 /pkg
 /src
 /tests/specs/**/*.prove.out
+/optimizer/*.k
+/optimizer/*.json
+/tests/specs/evm-optimizations-spec.md
