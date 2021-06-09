@@ -452,6 +452,7 @@ test-klab-prove: $(smoke_tests_prove:=.klab-prove)
 
 test-prove-optimizations: $(prove_optimization_tests:=.prove)
 
+# to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/evm-optimizations-spec.md: optimizations.md
 	cat $< | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
 
