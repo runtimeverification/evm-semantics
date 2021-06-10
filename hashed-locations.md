@@ -90,16 +90,6 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
     rule bytesInNextInt(WS, N) => #sizeByteArray(WS) -Int 32 *Int (N -Int 1)
 ```
 
-Solidity stores values of type `bytes` and `string` in one slot if they are short enough.
-If the data is at most 31 bytes long, it is stored in the higher-order bytes (left aligned) and the lowest-order byte stores `2 * length`.
-
-```k
-    syntax Int ::= #packBytes ( ByteArray ) [function]
- // --------------------------------------------------
-    rule #packBytes( WS ) => #asInteger(#padRightToWidth(31, WS) ++ #asByteStack(2 *Int #sizeByteArray(WS)))
-      requires #sizeByteArray(WS) <=Int 31
-```
-
 ```k
 endmodule
 ```
