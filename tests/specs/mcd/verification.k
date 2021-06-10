@@ -132,7 +132,7 @@ module LEMMAS-MCD-COMMON
 
     // This lemma is considered "safe enough" because `hash2` is a hash function over a large range and is very unlikely to overflow.
     // Note that this case comes from a solidity struct being accessed (hence the integer offsets), so it's an assumption built into the Solidity compiler anyway.
-    rule chop(hash2(I1, I2) +Int N) => hash2(I1, I2) +Int N requires 0 <=Int N andBool N <Int 6 [simplification]
+    rule chop(keccak(BA) +Int N) => keccak(BA) +Int N requires 0 <=Int N andBool N <Int 6 [simplification]
 
     rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 ) [simplification]
 
