@@ -1,4 +1,4 @@
-make -j8 -k TEST_SYMBOLIC_BACKEND=haskell                       \
+make -j8 -k TEST_SYMBOLIC_BACKEND=haskell --output-sync         \
     tests/specs/functional/merkle-spec.k.prove                  \
     tests/specs/functional/lemmas-no-smt-spec.k.prove           \
     tests/specs/functional/infinite-gas-spec.k.prove            \
