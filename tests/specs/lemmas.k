@@ -41,14 +41,12 @@ module LEMMAS
     rule (BUF1 ++ BUF2)[START .. WIDTH] => BUF2 [START -Int #sizeByteArray(BUF1) .. WIDTH]
       requires START >=Int #sizeByteArray(BUF1) [simplification]
 
-    rule #sizeByteArray(BUF1 ++ BUF2)                  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
-    rule #sizeByteArray(#buf(SIZE, _))                 => SIZE                                            [simplification]
-    rule #sizeByteArray(#buf(SIZE, _)[START .. WIDTH]) => WIDTH
-      requires #range(0 <= START < SIZE)
-       andBool #range(0 < WIDTH <= SIZE -Int START)                                                       [simplification]
-
-    rule #sizeByteArray(#range(_, START, WIDTH)) => WIDTH
-      requires WIDTH >=Int 0 andBool START >=Int 0                                                        [simplification]
+    rule #sizeByteArray(BUF1 ++ BUF2)                  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)     [simplification]
+    rule #sizeByteArray(#buf(SIZE, _))                 => SIZE                                               [simplification]
+    rule #sizeByteArray(_BUF [ START .. WIDTH ])       => WIDTH
+        requires 0 <=Int START andBool 0 <=Int WIDTH                                                         [simplification]
+    rule #sizeByteArray(#range(_, START, WIDTH))       => WIDTH
+      requires WIDTH >=Int 0 andBool START >=Int 0                                                           [simplification]
 
     //Todo custom ==K unification doesn't work in Haskell yet
     //++ unification
