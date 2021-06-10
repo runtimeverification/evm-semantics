@@ -41,7 +41,6 @@ tests/specs/erc20/ds/transferFrom-success-1-spec.k
 tests/specs/erc20/ds/transferFrom-success-2-spec.k
 tests/specs/erc20/ds/transfer-success-1-spec.k
 tests/specs/erc20/ds/transfer-success-2-spec.k
-tests/specs/erc20/hkg/allowance-spec.k
 tests/specs/erc20/hkg/approve-spec.k
 tests/specs/erc20/hkg/balanceOf-spec.k
 tests/specs/erc20/hkg/transfer-failure-1-spec.k
