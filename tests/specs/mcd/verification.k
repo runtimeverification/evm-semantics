@@ -130,7 +130,7 @@ module LEMMAS-MCD-COMMON
 
     // ### flipper-bids-pass-rough
 
-    // This lemma is considered "safe enough" because `hash2` is a hash function over a large range and is very unlikely to overflow.
+    // This lemma is considered "safe enough" because `keccak` is a hash function over a large range and is very unlikely to overflow.
     // Note that this case comes from a solidity struct being accessed (hence the integer offsets), so it's an assumption built into the Solidity compiler anyway.
     rule chop(keccak(BA) +Int N) => keccak(BA) +Int N requires 0 <=Int N andBool N <Int 6 [simplification]
 
