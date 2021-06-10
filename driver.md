@@ -6,11 +6,13 @@ Actual execution of the EVM is defined in [the EVM file](../evm).
 
 ```k
 requires "evm.md"
+requires "optimizations.md"
 requires "asm.md"
 requires "state-loader.md"
 
 module ETHEREUM-SIMULATION
     imports EVM
+    imports EVM-OPTIMIZATIONS
     imports EVM-ASSEMBLY
     imports STATE-LOADER
 ```
