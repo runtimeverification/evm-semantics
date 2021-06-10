@@ -1361,15 +1361,19 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
       requires notBool ACCT in_keys(TS)
 
     syntax KItem ::= "#touchAccounts" Account
+                   | "#touchAccounts" Set
                    | "#touchAccounts" Account Account
-                   | "#touchAccounts" Account Account Account
- // ---------------------------------------------------------
-    rule <k> #touchAccounts ADDR1 ADDR2 ADDR3 => #touchAccounts ADDR1 ~> #touchAccounts ADDR2 ~> #touchAccounts ADDR3 ... </k>
+                   | "#touchAccounts" Account Account Set
+ // -----------------------------------------------------
+    rule <k> #touchAccounts ADDR1:Account ADDR2:Account ADDRSET:Set => #touchAccounts ADDR1 ~> #touchAccounts ADDR2 ~> #touchAccounts ADDRSET ... </k>
 
-    rule <k> #touchAccounts ADDR1 ADDR2 => #touchAccounts ADDR1 ~> #touchAccounts ADDR2 ... </k>
+    rule <k> #touchAccounts ADDR1:Account ADDR2:Account => #touchAccounts ADDR1 ~> #touchAccounts ADDR2 ... </k>
 
-    rule <k> #touchAccounts ADDR => . ... </k>
+    rule <k> #touchAccounts ADDR:Account => . ... </k>
          <touchedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set SetItem(ADDR) </touchedAccounts>
+
+    rule <k> #touchAccounts ADDRSET:Set => . ... </k>
+         <touchedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </touchedAccounts>
 
     syntax Set ::= #computeValidJumpDests(ByteArray)            [function, memo]
                  | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
@@ -1827,6 +1831,7 @@ Overall Gas
           ~> #if Ghasaccesslist << SCHED >> andBool #usesAccessList(OP) #then #access [ AOP ] #else .K #fi
          ...
         </k>
+        <schedule> SCHED </schedule>
 
     rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
@@ -1915,24 +1920,13 @@ Access List Gas
 ```k
     syntax Bool ::= #usesAccessList ( OpCode ) [function, functional]
  // -----------------------------------------------------------------
-    rule #usesAccessList(OP) => OP ==K BALANCE
-                         orBool OP ==K SELFDESTRUCT
-                         orBool OP ==K EXTCODEHASH
-                         orBool OP ==K EXTCODESIZE
-                         orBool OP ==K EXTCODECOPY
-                         orBool OP ==K SLOAD
-                         orBool OP ==K SSTORE
-                         orBool OP ==K CALL
-                         orBool OP ==K CALLCODE
-                         orBool OP ==K DELEGATECALL
-                         orBool OP ==K STATICCALL
+    rule #usesAccessList(OP) => isAddr1Op(OP) orBool isAddr2Op(OP) orBool OP ==K SLOAD orBool OP ==K SSTORE
 
     syntax InternalOp ::= "#access" "[" OpCode "]"
  // --------------------------------------------
     rule <k> #access [ OP ] => #gasAccess(SCHED, OP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
       requires Ghasaccesslist << SCHED >>
-    rule <k> #access [ _ ] => . ... </k> [owise]
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode )
  // -----------------------------------------------------
@@ -2121,7 +2115,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, EXTCODESIZE _)           => Cextcodesize(SCHED)        ... </k>
     rule <k> #gasExec(SCHED, BALANCE _)               => Cbalance(SCHED)            ... </k>
     rule <k> #gasExec(SCHED, EXTCODEHASH _)           => Cextcodehash(SCHED)        ... </k>
-    rule <k> #gasExec(SCHED, BLOCKHASH _)             => Gblockhash < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BLOCKHASH _)             => Gblockhash < SCHED >       ... </k>
 
     // Precompiled
     rule <k> #gasExec(_, ECREC)  => 3000 ... </k>

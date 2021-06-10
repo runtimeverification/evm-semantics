@@ -231,9 +231,7 @@ The `"rlp"` key loads the block information.
           ...
           </k>
 
-    rule <k> load "transaction" : [ (T => [#rlpDecodeTransaction(#parseByteStackRaw(T))]) , _ ]
-          ...
-          </k>
+    rule <k> load "transaction" : [ (T => [#rlpDecodeTransaction(#parseByteStackRaw(T))]) , _ ] ... </k>
 
     rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TG, TT, TV, TI, TA, TY , TR, TS ]] , REST ]
           => mkTX !ID:Int
