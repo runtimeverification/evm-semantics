@@ -89,8 +89,12 @@ module INFINITE-GAS-COMMON
     rule (notBool (A andBool B)) andBool A => (notBool B) andBool A                      [simplification]
     rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]
 
-    rule I -Int I => 0              [simplification]
-    rule (I1 -Int I2) +Int I2 => I1 [simplification]
+    rule I -Int I => 0                                                    [simplification]
+    rule   (I1 -Int I2)                   +Int I2 =>  I1                  [simplification]
+    rule  ((I1 -Int I2) -Int I3)          +Int I2 =>  I1 -Int I3          [simplification]
+    rule (((I1 -Int I2) -Int I3) -Int I4) +Int I2 => (I1 -Int I3) -Int I4 [simplification]
+
+    rule X -Int Y +Int Z <=Int A => false requires A <Int X -Int Y andBool 0 <=Int Z [simplification]
 
  // Symbolic Gas
 
@@ -136,6 +140,8 @@ module INFINITE-GAS-COMMON
     rule I *Int I' <=Int #gas(G) => true requires                     I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
     rule I /Int I' <=Int #gas(G) => true requires I' =/=Int 0 andBool I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
 
+    rule I *Int I' <Int #gas(G) => true requires I <Int #gas(G) andBool I' <Int #gas(G) [simplification]
+
     rule #gas(G) <Int I +Int I' => false requires                     notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
     rule #gas(G) <Int I -Int I' => false requires                     notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
     rule #gas(G) <Int I *Int I' => false requires                     notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
@@ -155,10 +161,27 @@ module INFINITE-GAS-COMMON
     rule #gas(_)  <Int Csstore(_, _, _, _) => false [simplification]
     rule #gas(_) >=Int Csstore(_, _, _, _) => true  [simplification]
 
+    rule 0 <=Int Cmem(_, _)       => true  [simplification]
+    rule Cmem(_, _) <Int #gas(_)  => true  [simplification]
     rule #gas(_) <Int Cmem(_, _)  => false [simplification]
     rule Cmem(_, _) <=Int #gas(_) => true  [simplification]
 
     rule 0 <=Int #allBut64th(_G)      => true                          [simplification]
     rule #allBut64th(G) <Int #gas(G') => true requires G <Int #gas(G') [simplification]
+
+    rule 0 <=Int _:ScheduleConst < _:Schedule >       => true  [simplification]
+    rule _:ScheduleConst < _:Schedule >  <Int #gas(_) => true  [simplification]
+    rule _:ScheduleConst < _:Schedule > <=Int #gas(_) => true  [simplification]
+    rule #gas(_) <Int _:ScheduleConst < _:Schedule >  => false [simplification]
+
+    rule log2Int(_) <=Int #gas(_) => true  [simplification]
+    rule #gas(_) <Int log2Int(_)  => false [simplification]
+
+    rule 0 <=Int G up/Int _        => true  requires         0 <=Int G        [simplification]
+    rule G up/Int _  <Int #gas(G') => true  requires         G  <Int #gas(G') [simplification]
+    rule G up/Int _ <=Int #gas(G') => true  requires         G <=Int #gas(G') [simplification]
+    rule #gas(G') <Int G up/Int _  => false requires notBool #gas(G') <Int G  [simplification]
+
+    rule 0 <=Int X *Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
 
 endmodule
