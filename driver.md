@@ -88,7 +88,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            ...
          </message>
 
-    rule <k> startTx => loadTx(#sender(TYPE, CID, TN, TP, TG, TT, TV, #unparseByteStack(DATA), TA, TW, TR, TS)) ... </k>
+    rule <k> startTx => loadTx(#sender(1 , CID, TN, TP, TG, TT, TV, #unparseByteStack(DATA), TA, TW, TR, TS)) ... </k>
          <chainID> CID </chainID>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
@@ -102,17 +102,17 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <sigR>       TR   </sigR>
            <sigS>       TS   </sigS>
            <data>       DATA </data>
-           <txType>     TYPE </txType>
+           <txType>     1    </txType>
            <txChainID>  CID  </txChainID>
            <txAccess>   TA   </txAccess>
            ...
          </message>
-    requires TYPE ==Int 1
 
     syntax EthereumCommand ::= loadTx ( Account )
  // ---------------------------------------------
     rule <k> loadTx(ACCTFROM)
-          => #loadAccessList(TA)
+          => #touchAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccounts(SCHED)
+          ~> #loadAccessList(TA)
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
@@ -139,10 +139,11 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE </nonce>
            ...
          </account>
-         <touchedAccounts> _ => SetItem(ACCTFROM) |Set SetItem(#newAddr(ACCTFROM, NONCE)) |Set #precompiledAccounts(SCHED) </touchedAccounts>
+         <touchedAccounts> _ => .Set </touchedAccounts>
 
     rule <k> loadTx(ACCTFROM)
-          => #loadAccessList(TA)
+          => #touchAccounts ACCTFROM ACCTTO #precompiledAccounts(SCHED)
+          ~> #loadAccessList(TA)
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
@@ -169,7 +170,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
-         <touchedAccounts> _ => SetItem(ACCTFROM) |Set SetItem(ACCTTO) |Set #precompiledAccounts(SCHED) </touchedAccounts>
+         <touchedAccounts> _ => .Set </touchedAccounts>
       requires ACCTTO =/=K .Account
 
     syntax EthereumCommand ::= "#finishTx"
@@ -360,15 +361,15 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> loadAccount _ { "code"    : ((CODE:String)     => #parseByteStack(CODE)),  _ } ... </k>
     rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONs } => #parseMap({ STORAGE })), _ } ... </k>
 
-    rule <k> loadTransaction _ { "type"       : (TT:String => #asWord(#parseByteStackRaw(TT))), _      } ... </k>
-    rule <k> loadTransaction _ { "chainID"    : (TC:String => #asWord(#parseByteStackRaw(TC))), _      } ... </k>
-    rule <k> loadTransaction _ { "gasLimit"   : (TG:String => #asWord(#parseByteStackRaw(TG))), _      } ... </k>
-    rule <k> loadTransaction _ { "gasPrice"   : (TP:String => #asWord(#parseByteStackRaw(TP))), _      } ... </k>
-    rule <k> loadTransaction _ { "nonce"      : (TN:String => #asWord(#parseByteStackRaw(TN))), _      } ... </k>
-    rule <k> loadTransaction _ { "v"          : (TW:String => #asWord(#parseByteStackRaw(TW))), _      } ... </k>
-    rule <k> loadTransaction _ { "value"      : (TV:String => #asWord(#parseByteStackRaw(TV))), _      } ... </k>
-    rule <k> loadTransaction _ { "to"         : (TT:String => #asAccount(#parseByteStackRaw(TT))), _   } ... </k>
-    rule <k> loadTransaction _ { "data"       : (TI:String => #parseByteStackRaw(TI)), _               } ... </k>
+    rule <k> loadTransaction _ { "type"       : (TT:String => #asWord(#parseByteStackRaw(TT))), _         } ... </k>
+    rule <k> loadTransaction _ { "chainID"    : (TC:String => #asWord(#parseByteStackRaw(TC))), _         } ... </k>
+    rule <k> loadTransaction _ { "gasLimit"   : (TG:String => #asWord(#parseByteStackRaw(TG))), _         } ... </k>
+    rule <k> loadTransaction _ { "gasPrice"   : (TP:String => #asWord(#parseByteStackRaw(TP))), _         } ... </k>
+    rule <k> loadTransaction _ { "nonce"      : (TN:String => #asWord(#parseByteStackRaw(TN))), _         } ... </k>
+    rule <k> loadTransaction _ { "v"          : (TW:String => #asWord(#parseByteStackRaw(TW))), _         } ... </k>
+    rule <k> loadTransaction _ { "value"      : (TV:String => #asWord(#parseByteStackRaw(TV))), _         } ... </k>
+    rule <k> loadTransaction _ { "to"         : (TT:String => #asAccount(#parseByteStackRaw(TT))), _      } ... </k>
+    rule <k> loadTransaction _ { "data"       : (TI:String => #parseByteStackRaw(TI)), _                  } ... </k>
     rule <k> loadTransaction _ { "r"          : (TR:String => #padToWidth(32, #parseByteStackRaw(TR))), _ } ... </k>
     rule <k> loadTransaction _ { "s"          : (TS:String => #padToWidth(32, #parseByteStackRaw(TS))), _ } ... </k>
 ```
@@ -542,12 +543,11 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ( KEY : (VALUE:ByteArray => #padToWidth(32, VALUE))) ... </k> requires KEY in (SetItem("r") SetItem("s")) andBool #sizeByteArray(VALUE) <Int 32
     rule <k> check "transactions" : ( KEY : (VALUE:ByteArray => #asWord(VALUE)))         ... </k> requires KEY in (SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce") SetItem("v") SetItem("value") SetItem("chainId") SetItem("type"))
 
-    rule <k> check "transactions" : "accessList" : [ ACCESSLIST  , REST ] => check "transactions" : "accessList" : ACCESSLIST  ~> check "transactions" : "accessList" : [ REST ] ... </k>
+    rule <k> check "transactions" : "accessList" : [ ACCESSLIST , REST ] => check "transactions" : "accessList" : ACCESSLIST  ~> check "transactions" : "accessList" : [ REST ] ... </k>
     rule <k> check "transactions" : "accessList" : { "address" : V1 , "storageKeys": V2 , .JSONs } => check "transactions" : "accessList" : "address" : #parseHexWord(V1) : "storageKeys" : V2  ... </k>
 
-    rule <k> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : [ KEY , REST ] => check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : #parseHexWord(KEY) ~> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : [ REST ] ... </k>
-    rule <k> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : KEY => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txAccess> TA </txAccess> ... </message> requires isInAccessList(ADDR, KEY, TA)
-    rule <k> check "transactions" : "accessList" : "address" : _ : "storageKeys" : [ .JSONs ] => . ... </k>
+    rule <k> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : KEY        => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txAccess> TA </txAccess> ... </message> requires isInAccessList(ADDR, KEY, TA)
+    rule <k> check "transactions" : "accessList" : "address" : _    : "storageKeys" : [ .JSONs ] => . ... </k>
     rule <k> check "transactions" : "accessList" : [ .JSONs ] => . ... </k>
 
     rule <k> check "transactions" : ("data"     : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <data>       VALUE </data>       ... </message>
