@@ -96,6 +96,11 @@ module LEMMAS
     rule X in (SetItem(Y) _   ) => true      requires X  ==Int Y [simplification]
     rule X in (SetItem(Y) REST) => X in REST requires X =/=Int Y [simplification]
 
+    rule M:Memory [ K1 := BUF1 ] [ K2 := BUF2 ] => M [ K2 := BUF2 ]
+      requires K2 <=Int K1
+       andBool K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2)
+      [simplification]
+
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]
@@ -247,11 +252,6 @@ module LEMMAS-JAVA [symbolic, kast]
     //For #bufStrict simplification in benchmarks
     rule 0 <Int 2 ^Int I  => true      requires 0 <=Int I [simplification]
     rule 0 <=Int I *Int 8 => 0 <=Int I                    [simplification]
-
-    rule M:Memory [ K1 := BUF1 ] [ K2 := BUF2 ] => M [ K2 := BUF2 ]
-      requires K2 <=Int K1
-       andBool K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2)
-      [simplification]
 
 endmodule
 
