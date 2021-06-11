@@ -82,10 +82,12 @@ $(libsecp256k1_out): $(PLUGIN_SUBMODULE)/deps/secp256k1/autogen.sh
 
 LIBFF_PREFIX = $(CURDIR)/
 
+LIBFF_CMAKE_FLAGS = -DPROFILE_OP_COUNTS=OFF
+
 ifeq ($(UNAME_S),Linux)
-    LIBFF_CMAKE_FLAGS=
+    LIBFF_CMAKE_FLAGS +=
 else
-    LIBFF_CMAKE_FLAGS=-DWITH_PROCPS=OFF
+    LIBFF_CMAKE_FLAGS += -DWITH_PROCPS=OFF
 endif
 
 $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
@@ -188,16 +190,6 @@ ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
 endif
 
-STANDALONE_KOMPILE_OPTS :=
-
-ifeq ($(UNAME_S),Linux)
-    STANDALONE_KOMPILE_OPTS += -lprocps
-endif
-ifeq ($(UNAME_S),Darwin)
-    OPENSSL_ROOT := $(shell brew --prefix openssl)
-    STANDALONE_KOMPILE_OPTS += -I/usr/local/include -L/usr/local/lib -I$(OPENSSL_ROOT)/include -L$(OPENSSL_ROOT)/lib
-endif
-
 # Java
 
 java_dir           := java
@@ -247,8 +239,7 @@ $(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out) $(plugin_includes)
 	    --directory $(KEVM_LIB)/$(llvm_dir)             \
 	    --main-module $(llvm_main_module)               \
 	    --syntax-module $(llvm_syntax_module)           \
-	    $(KOMPILE_OPTS)                                 \
-	    $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
+	    $(KOMPILE_OPTS)
 
 # Installing
 # ----------

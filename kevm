@@ -34,24 +34,30 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 # User Commands
 
 run_kompile() {
-    local kompile_opts
+    local kompile_opts openssl_root
 
     kompile_opts=(  --backend "${backend}" "${run_file}"                       )
     kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${INSTALL_INCLUDE}" )
     kompile_opts+=( --hook-namespaces "JSON KRYPTO"                            )
     kompile_opts+=( --emit-json                                                )
     case "${backend}" in
-        haskell) kompile_opts+=( --md-selector 'k & ! nobytes' )
-                 ;;
-        java)    kompile_opts+=( --md-selector 'k & ! bytes' )
-                 ;;
-        llvm)    kompile_opts+=( --md-selector 'k & ! nobytes'                                                 )
-                 kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
-                 kompile_opts+=( -ccopt ${plugin_include}/plugin-c/plugin_util.cpp                             )
-                 kompile_opts+=( -ccopt ${plugin_include}/plugin-c/crypto.cpp                                  )
-                 kompile_opts+=( -ccopt ${plugin_include}/plugin-c/blake2.cpp                                  )
-                 kompile_opts+=( -ccopt -g -ccopt -std=c++14                                                   )
-                 kompile_opts+=( -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lssl -ccopt -lcrypto )
+        haskell)    kompile_opts+=( --md-selector 'k & ! nobytes' )
+                    ;;
+        java)       kompile_opts+=( --md-selector 'k & ! bytes' )
+                    ;;
+        llvm)       kompile_opts+=( --md-selector 'k & ! nobytes'                                                 )
+                    kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
+                    kompile_opts+=( -ccopt ${plugin_include}/plugin-c/plugin_util.cpp                             )
+                    kompile_opts+=( -ccopt ${plugin_include}/plugin-c/crypto.cpp                                  )
+                    kompile_opts+=( -ccopt ${plugin_include}/plugin-c/blake2.cpp                                  )
+                    kompile_opts+=( -ccopt -g -ccopt -std=c++14                                                   )
+                    kompile_opts+=( -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lssl -ccopt -lcrypto )
+                    if [[ "$(uname -s)" == 'Linux' ]]; then
+                        kompile_opts+=( -ccopt -lprocps )
+                    elif [[ "$(uname -s)" == 'Darwin' ]]; then
+                        openssl_root="$(brew --prefix openssl)"
+                        kompile_opts+=( -I/usr/local/include -L/usr/local/lib -I${openssl_root}/include -L${openssl_root}/lib )
+                    fi
                  ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
