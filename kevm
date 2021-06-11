@@ -47,7 +47,6 @@ run_kompile() {
                  ;;
         llvm)    kompile_opts+=( --md-selector 'k & ! nobytes'                                                 )
                  kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
-                 kompile_opts+=( -ccopt -L${plugin_include}/lib                                                )
                  kompile_opts+=( -ccopt ${plugin_include}/plugin-c/plugin_util.cpp                             )
                  kompile_opts+=( -ccopt ${plugin_include}/plugin-c/crypto.cpp                                  )
                  kompile_opts+=( -ccopt ${plugin_include}/plugin-c/blake2.cpp                                  )
