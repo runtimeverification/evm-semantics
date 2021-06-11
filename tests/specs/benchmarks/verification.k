@@ -3,6 +3,7 @@ requires "../lemmas.k"
 
 module VERIFICATION-COMMON
     imports LEMMAS
+    imports INFINITE-GAS-LEMMAS
 
   // ########################
   // Ecrecover
@@ -349,7 +350,6 @@ endmodule
 
 module VERIFICATION-HASKELL [symbolic, kore]
     imports VERIFICATION-COMMON
-    imports INFINITE-GAS-LEMMAS
 
     rule X +Int Y <Int Z => X <Int Z -Int Y [concrete(Y), simplification]
 

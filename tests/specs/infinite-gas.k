@@ -18,6 +18,8 @@ endmodule
 module INFINITE-GAS-LEMMAS-HASKELL [kore]
     imports INFINITE-GAS-LEMMAS-COMMON
 
+    syntax Int ::= #gas ( Int , Int , Int ) // startGas, nonMemory, memory
+ // -----------------------------------------------------------------------
     rule #gas(_,_,_) => #gas(0) [macro]
 
     rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 [concrete(C2, C3), simplification]
@@ -49,6 +51,8 @@ module INFINITE-GAS-LEMMAS-JAVA [kast]
     imports INFINITE-GAS-LEMMAS-COMMON
     imports K-REFLECTION
 
+    syntax Int ::= #gas ( Int , Int , Int ) [function] // startGas, nonMemory, memory
+
     rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 requires #isConcrete(C2) andBool #isConcrete(C3) [simplification]
     rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
     rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
@@ -78,7 +82,7 @@ module INFINITE-GAS-LEMMAS-COMMON
     imports EVM
     imports INFINITE-GAS
 
-    syntax Int ::= #gas ( Int , Int , Int ) // startGas, nonMemory, memory
+ //   syntax Int ::= #gas ( Int , Int , Int ) // startGas, nonMemory, memory
  // -----------------------------------------------------------------------
 
  // Generic rules
