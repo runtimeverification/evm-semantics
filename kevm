@@ -19,6 +19,7 @@ INSTALL_INCLUDE=${INSTALL_LIB}/include
 
 install_k_bin=${INSTALL_LIB}/kframework/bin
 plugin_include=${INSTALL_INCLUDE}/blockchain-k-plugin
+libff_dir=${INSTALL_LIB}/libff
 
 export PATH="$install_k_bin:$INSTALL_BIN:$INSTALL_LIB:$PATH"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
@@ -46,6 +47,7 @@ run_kompile() {
                  ;;
         llvm)    kompile_opts+=( --md-selector 'k & ! nobytes'                                                 )
                  kompile_opts+=( -ccopt -L${plugin_include}/lib                                                )
+                 kompile_opts+=( -ccopt -I${libff_dir}/include                                                 )
                  kompile_opts+=( -ccopt ${plugin_include}/plugin-c/plugin_util.cpp                             )
                  kompile_opts+=( -ccopt ${plugin_include}/plugin-c/crypto.cpp                                  )
                  kompile_opts+=( -ccopt ${plugin_include}/plugin-c/blake2.cpp                                  )

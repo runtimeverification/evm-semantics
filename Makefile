@@ -68,7 +68,7 @@ distclean:
 # ------------------
 
 libsecp256k1_out := $(LOCAL_LIB)/pkgconfig/libsecp256k1.pc
-libff_out        := $(LOCAL_LIB)/libff.a
+libff_out        := $(KEVM_LIB)/libff/lib/libff.a
 
 libsecp256k1: $(libsecp256k1_out)
 libff:        $(libff_out)
@@ -88,9 +88,9 @@ endif
 
 $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	@mkdir -p $(PLUGIN_SUBMODULE)/deps/libff/build
-	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                               \
-	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) $(LIBFF_CMAKE_FLAGS) \
-	    && make -s -j4                                                                                    \
+	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                                  \
+	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(KEVM_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
+	    && make -s -j4                                                                                       \
 	    && make install
 
 # K Dependencies
