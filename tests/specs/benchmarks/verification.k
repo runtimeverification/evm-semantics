@@ -359,7 +359,6 @@ module VERIFICATION-JAVA [symbolic, kast]
     imports VERIFICATION-COMMON
     imports K-REFLECTION
 
- // -----------------------------------------------------------------------------------
     rule #gas(_, _, _) <=Int I => false requires #isConcrete(I) [simplification]
 
   // ########################
