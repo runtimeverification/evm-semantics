@@ -19,10 +19,6 @@ module EVM-DATA
     imports JSON-EXT
 ```
 
-```{.k .concrete .bytes}
-    imports BYTES
-```
-
 ```k
 endmodule
 ```
