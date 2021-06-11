@@ -88,15 +88,15 @@ endif
 
 $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	@mkdir -p $(PLUGIN_SUBMODULE)/deps/libff/build
-	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                                  \
-	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(KEVM_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
-	    && make -s -j4                                                                                       \
+	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                                            \
+	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(CURDIR)/$(KEVM_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
+	    && make -s -j4                                                                                                 \
 	    && make install
 
 # K Dependencies
 # --------------
 
-deps: k-deps plugin-deps
+deps: k-deps
 
 K_MVN_ARGS :=
 ifneq ($(SKIP_LLVM),)
