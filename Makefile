@@ -103,10 +103,25 @@ k-deps:
 	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
 	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/kframework package/package
 
-plugin-deps: $(PLUGIN_SOURCE)
+plugin_include  := $(KEVM_INCLUDE)/blockchain-k-plugin
+plugin_cpp      := $(patsubst %, blockchain-k-plugin/plugin-c/%.cpp, plugin_util crypto blake2)
+plugin_h        := $(patsubst %, blockchain-k-plugin/plugin-c/%.h,   plugin_util        blake2)
+plugin_includes := $(plugin_include)/krypto.md                     \
+                   $(patsubst %, $(KEVM_INCLUDE)/%, $(plugin_cpp)) \
+                   $(patsubst %, $(KEVM_INCLUDE)/%, $(plugin_h))
 
-$(PLUGIN_SOURCE): $(PLUGIN_SUBMODULE)/plugin/krypto.md
-	cd deps/plugin && make INSTALL_PREFIX=$(CURDIR)/$(KEVM_LIB) install
+plugin-deps: $(plugin_includes)
+
+#$(PLUGIN_SOURCE): $(PLUGIN_SUBMODULE)/plugin/krypto.md
+#	cd deps/plugin && make INSTALL_PREFIX=$(CURDIR)/$(KEVM_LIB) install
+
+$(plugin_include)/%: $(PLUGIN_SUBMODULE)/%
+	@mkdir -p $(dir $@)
+	install $< $@
+
+$(plugin_include)/%.md: $(PLUGIN_SUBMODULE)/plugin/%.md
+	@mkdir -p $(dir $@)
+	install $< $@
 
 K_MVN_ARGS :=
 ifneq ($(SKIP_LLVM),)
