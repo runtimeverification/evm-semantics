@@ -164,9 +164,8 @@ $(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
 	@mkdir -p $(dir $@)
 	install $< $@
 
-tangle_concrete := k & ( ( !              nobytes   ) | concrete | bytes   )
-tangle_java     := k & ( ( ! ( concrete | bytes   ) )            | nobytes )
-tangle_haskell  := k & ( ( ! ( concrete | nobytes ) )            | bytes   )
+tangle_bytes   := k & ( ! nobytes )
+tangle_nobytes := k & ( ! bytes   )
 
 HOOK_NAMESPACES    = KRYPTO JSON
 KOMPILE_INCLUDES   = $(KEVM_INCLUDE)/kframework $(INSTALL_INCLUDE)/kframework
@@ -179,12 +178,12 @@ endif
 
 JAVA_KOMPILE_OPTS ?=
 
-KOMPILE_JAVA := kompile --debug --backend java --md-selector "$(tangle_java)" \
+KOMPILE_JAVA := kompile --debug --backend java --md-selector "$(tangle_nobytes)" \
                 $(KOMPILE_OPTS) $(JAVA_KOMPILE_OPTS)
 
 HASKELL_KOMPILE_OPTS ?=
 
-KOMPILE_HASKELL := kompile --debug --backend haskell --md-selector "$(tangle_haskell)" \
+KOMPILE_HASKELL := kompile --debug --backend haskell --md-selector "$(tangle_bytes)" \
                    $(KOMPILE_OPTS) $(HASKELL_KOMPILE_OPTS)
 
 STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB)                               \
@@ -202,9 +201,8 @@ ifeq ($(UNAME_S),Darwin)
     STANDALONE_KOMPILE_OPTS += -I/usr/local/include -L/usr/local/lib -I$(OPENSSL_ROOT)/include -L$(OPENSSL_ROOT)/lib
 endif
 
-KOMPILE_STANDALONE := kompile --debug --backend llvm --md-selector "$(tangle_concrete)" \
-                      $(KOMPILE_OPTS)                \
-                      $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
+KOMPILE_STANDALONE := kompile --debug --backend llvm --md-selector "$(tangle_bytes)"  \
+                      $(KOMPILE_OPTS) $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
 
 # Java
 
