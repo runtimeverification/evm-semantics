@@ -98,6 +98,20 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 
 deps: k-deps plugin-deps
 
+K_MVN_ARGS :=
+ifneq ($(SKIP_LLVM),)
+    K_MVN_ARGS += -Dllvm.backend.skip
+endif
+ifneq ($(SKIP_HASKELL),)
+    K_MVN_ARGS += -Dhaskell.backend.skip
+endif
+
+ifneq ($(RELEASE),)
+    K_BUILD_TYPE := FastBuild
+else
+    K_BUILD_TYPE := Debug
+endif
+
 k-deps:
 	cd $(K_SUBMODULE)                                                                                                                                                                            \
 	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
@@ -112,9 +126,6 @@ plugin_includes := $(plugin_include)/krypto.md                     \
 
 plugin-deps: $(plugin_includes)
 
-#$(PLUGIN_SOURCE): $(PLUGIN_SUBMODULE)/plugin/krypto.md
-#	cd deps/plugin && make INSTALL_PREFIX=$(CURDIR)/$(KEVM_LIB) install
-
 $(plugin_include)/%: $(PLUGIN_SUBMODULE)/%
 	@mkdir -p $(dir $@)
 	install $< $@
@@ -122,20 +133,6 @@ $(plugin_include)/%: $(PLUGIN_SUBMODULE)/%
 $(plugin_include)/%.md: $(PLUGIN_SUBMODULE)/plugin/%.md
 	@mkdir -p $(dir $@)
 	install $< $@
-
-K_MVN_ARGS :=
-ifneq ($(SKIP_LLVM),)
-    K_MVN_ARGS += -Dllvm.backend.skip
-endif
-ifneq ($(SKIP_HASKELL),)
-    K_MVN_ARGS += -Dhaskell.backend.skip
-endif
-
-ifneq ($(RELEASE),)
-    K_BUILD_TYPE := FastBuild
-else
-    K_BUILD_TYPE := Debug
-endif
 
 # Building
 # --------
