@@ -171,6 +171,8 @@ LEMMA_FILES := infinite-gas.k                           \
 
 lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(LEMMA_FILES))
 
+$(includes): $(KEVM_BIN)/$(KEVM)
+
 $(KEVM_INCLUDE)/kframework/%.md: %.md
 	@mkdir -p $(dir $@)
 	install $< $@
@@ -179,34 +181,13 @@ $(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
 	@mkdir -p $(dir $@)
 	install $< $@
 
-tangle_bytes   := k & ( ! nobytes )
-tangle_nobytes := k & ( ! bytes   )
-
-HOOK_NAMESPACES    = KRYPTO JSON
-KOMPILE_INCLUDES   = $(KEVM_INCLUDE)/kframework $(INSTALL_INCLUDE)/kframework
-EXTRA_KOMPILE_OPTS =
-KOMPILE_OPTS      += --emit-json --hook-namespaces "$(HOOK_NAMESPACES)" $(addprefix -I ,$(KOMPILE_INCLUDES)) $(EXTRA_KOMPILE_OPTS)
+KOMPILE_OPTS = --debug
 
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
 endif
 
-JAVA_KOMPILE_OPTS ?=
-
-KOMPILE_JAVA := kompile --debug --backend java --md-selector "$(tangle_nobytes)" \
-                $(KOMPILE_OPTS) $(JAVA_KOMPILE_OPTS)
-
-HASKELL_KOMPILE_OPTS ?=
-
-KOMPILE_HASKELL := kompile --debug --backend haskell --md-selector "$(tangle_bytes)" \
-                   $(KOMPILE_OPTS) $(HASKELL_KOMPILE_OPTS)
-
-STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB)                               \
-                           $(PLUGIN_SUBMODULE)/plugin-c/plugin_util.cpp \
-                           $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp      \
-                           $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp      \
-                           -g -std=c++14 -lff -lcryptopp -lsecp256k1    \
-                           -lssl -lcrypto
+STANDALONE_KOMPILE_OPTS :=
 
 ifeq ($(UNAME_S),Linux)
     STANDALONE_KOMPILE_OPTS += -lprocps
@@ -215,9 +196,6 @@ ifeq ($(UNAME_S),Darwin)
     OPENSSL_ROOT := $(shell brew --prefix openssl)
     STANDALONE_KOMPILE_OPTS += -I/usr/local/include -L/usr/local/lib -I$(OPENSSL_ROOT)/include -L$(OPENSSL_ROOT)/lib
 endif
-
-KOMPILE_STANDALONE := kompile --debug --backend llvm --md-selector "$(tangle_bytes)"  \
-                      $(KOMPILE_OPTS) $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
 
 # Java
 
@@ -229,10 +207,12 @@ java_main_filename := $(basename $(notdir $(java_main_file)))
 java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/compiled.bin
 
 $(KEVM_LIB)/$(java_kompiled): $(includes)
-	$(KOMPILE_JAVA) $(java_main_file)                     \
-	                --directory $(KEVM_LIB)/$(java_dir)   \
-	                --main-module $(java_main_module)     \
-	                --syntax-module $(java_syntax_module)
+	kevm kompile --backend java                \
+	    $(java_main_file) $(JAVA_KOMPILE_OPTS) \
+	    --directory $(KEVM_LIB)/$(java_dir)    \
+	    --main-module $(java_main_module)      \
+	    --syntax-module $(java_syntax_module)  \
+	    $(KOMPILE_OPTS)
 
 # Haskell
 
@@ -244,10 +224,12 @@ haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
 haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
 
 $(KEVM_LIB)/$(haskell_kompiled): $(includes)
-	$(KOMPILE_HASKELL) $(haskell_main_file)                     \
-	                   --directory $(KEVM_LIB)/$(haskell_dir)   \
-	                   --main-module $(haskell_main_module)     \
-	                   --syntax-module $(haskell_syntax_module)
+	kevm kompile --backend haskell                   \
+	    $(haskell_main_file) $(HASKELL_KOMPILE_OPTS) \
+	    --directory $(KEVM_LIB)/$(haskell_dir)       \
+	    --main-module $(haskell_main_module)         \
+	    --syntax-module $(haskell_syntax_module)     \
+	    $(KOMPILE_OPTS)
 
 # Standalone
 
@@ -258,11 +240,14 @@ llvm_main_file     := driver.md
 llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
 llvm_kompiled      := $(llvm_dir)/$(llvm_main_filename)-kompiled/interpreter
 
-$(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out)
-	$(KOMPILE_STANDALONE) $(llvm_main_file)                     \
-	                      --directory $(KEVM_LIB)/$(llvm_dir)   \
-	                      --main-module $(llvm_main_module)     \
-	                      --syntax-module $(llvm_syntax_module)
+$(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out) $(plugin_includes)
+	kevm kompile --backend llvm                         \
+	    $(llvm_main_file)                               \
+	    --directory $(KEVM_LIB)/$(llvm_dir)             \
+	    --main-module $(llvm_main_module)               \
+	    --syntax-module $(llvm_syntax_module)           \
+	    $(KOMPILE_OPTS)                                 \
+	    $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
 
 # Installing
 # ----------
