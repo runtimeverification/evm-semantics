@@ -51,7 +51,7 @@ module INFINITE-GAS-LEMMAS-JAVA [kast]
     imports INFINITE-GAS-LEMMAS-COMMON
     imports K-REFLECTION
 
-    syntax Int ::= #gas ( Int , Int , Int ) [function] // startGas, nonMemory, memory
+    syntax Int ::= #gas ( Int , Int , Int ) [function, no-evaluators] // startGas, nonMemory, memory
 
     rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 requires #isConcrete(C2) andBool #isConcrete(C3) [simplification]
     rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
