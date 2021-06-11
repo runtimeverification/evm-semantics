@@ -22,7 +22,6 @@ pipeline {
         }
       }
       stages {
-        stage('Deps')  { steps { sh 'make plugin-deps'            } }
         stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
         stage('Test Execution') {
           failFast true
