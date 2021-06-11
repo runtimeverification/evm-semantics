@@ -220,6 +220,8 @@ The `"rlp"` key loads the block information.
           ...
           </messages>
 
+    rule <k> load "transaction" : [ (T => [#rlpDecodeTransaction(#parseByteStackRaw(T))]) , _ ] ... </k>
+
     rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST ]
           => mkTX !ID:Int
           ~> loadTransaction !ID { "data"  : TI   ,   "gasLimit" : TG   ,   "gasPrice" : TP
@@ -230,8 +232,6 @@ The `"rlp"` key loads the block information.
           ~> load "transaction" : [ REST ]
           ...
           </k>
-
-    rule <k> load "transaction" : [ (T => [#rlpDecodeTransaction(#parseByteStackRaw(T))]) , _ ] ... </k>
 
     rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TG, TT, TV, TI, TA, TY , TR, TS ]] , REST ]
           => mkTX !ID:Int

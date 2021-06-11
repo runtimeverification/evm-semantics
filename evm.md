@@ -1926,7 +1926,7 @@ Access List Gas
  // --------------------------------------------
     rule <k> #access [ OP ] => #gasAccess(SCHED, OP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
-      requires Ghasaccesslist << SCHED >>
+
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode )
  // -----------------------------------------------------
@@ -1941,6 +1941,7 @@ Access List Gas
     rule <k> #gasAccess(_    , STATICCALL _ ACCT _ _ _ _)   => #touchAccounts ACCT ~> 0                                                                           ... </k>
     rule <k> #gasAccess(_    , SLOAD INDEX )                => #touchStorage ACCT INDEX ~> 0                                                                      ... </k> <id> ACCT </id>
     rule <k> #gasAccess(SCHED, SSTORE INDEX _)              => #touchStorage ACCT INDEX ~> #if #inStorage(TS, ACCT, INDEX) #then 0 #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <touchedStorage> TS </touchedStorage>
+    rule <k> #gasAccess(_    , _ )                          => 0                                                                                                  ... </k> [owise]
 
 ```
 
@@ -2214,14 +2215,8 @@ There are several helpers for calculating gas (most of them also specified in th
       => #if CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
       requires notBool Ghasdirtysstore << SCHED >>
 
-    rule [Cextra.new]:
-         Cextra(SCHED, ISEMPTY, VALUE, ISWARM)
-      => Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)
-      requires Ghasaccesslist << SCHED >>
-    rule [Cextra.old]:
-         Cextra(SCHED, ISEMPTY, VALUE, _ISWARM)
-      => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)
-      requires notBool Ghasaccesslist << SCHED >>
+    rule [Cextra.new]: Cextra(SCHED, ISEMPTY, VALUE, ISWARM)  => Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE) requires         Ghasaccesslist << SCHED >>
+    rule [Cextra.old]: Cextra(SCHED, ISEMPTY, VALUE, _ISWARM) => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)            requires notBool Ghasaccesslist << SCHED >>
 
     rule [Cnew]:
          Cnew(SCHED, ISEMPTY:Bool, VALUE)
@@ -2232,42 +2227,27 @@ There are several helpers for calculating gas (most of them also specified in th
 
     rule [Cmem]: Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
 
-    rule [Caddraccess]:
-         Caddraccess(SCHED, ISWARM)
-      => #if ISWARM #then Gwarmstorageread < SCHED > #else Gcoldaccountaccess < SCHED > #fi
+    rule [Caddraccess]:    Caddraccess(SCHED, ISWARM)    => #if ISWARM #then Gwarmstorageread < SCHED > #else Gcoldaccountaccess < SCHED > #fi
+    rule [Cstorageaccess]: Cstorageaccess(SCHED, ISWARM) => #if ISWARM #then Gwarmstorageread < SCHED > #else Gcoldsload < SCHED > #fi
 
-    rule [Cstorageaccess]:
-         Cstorageaccess(SCHED, ISWARM)
-      => #if ISWARM #then Gwarmstorageread < SCHED > #else Gcoldsload < SCHED > #fi
-
-    rule [Csload.new]: Csload(SCHED, ISWARM)  => Cstorageaccess(SCHED, ISWARM) requires Ghasaccesslist << SCHED >>
+    rule [Csload.new]: Csload(SCHED, ISWARM)  => Cstorageaccess(SCHED, ISWARM) requires         Ghasaccesslist << SCHED >>
     rule [Csload.old]: Csload(SCHED, _ISWARM) => Gsload < SCHED >              requires notBool Ghasaccesslist << SCHED >>
 
-    rule [Cextcodesize.new]: Cextcodesize(SCHED) => 0                      requires Ghasaccesslist << SCHED >>
+    rule [Cextcodesize.new]: Cextcodesize(SCHED) => 0                      requires         Ghasaccesslist << SCHED >>
     rule [Cextcodesize.old]: Cextcodesize(SCHED) => Gextcodesize < SCHED > requires notBool Ghasaccesslist << SCHED >>
 
-    rule [Cextcodehash.new]: Cextcodehash(SCHED) => 0                  requires Ghasaccesslist << SCHED >>
+    rule [Cextcodehash.new]: Cextcodehash(SCHED) => 0                  requires         Ghasaccesslist << SCHED >>
     rule [Cextcodehash.old]: Cextcodehash(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
 
-    rule [Cbalance.new]: Cbalance(SCHED) => 0                  requires Ghasaccesslist << SCHED >>
+    rule [Cbalance.new]: Cbalance(SCHED) => 0                  requires         Ghasaccesslist << SCHED >>
     rule [Cbalance.old]: Cbalance(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
 
-    rule [Cextcodecopy.new]:
-        Cextcodecopy(SCHED, WIDTH)
-      => Gcopy < SCHED > *Int (WIDTH up/Int 32)
-    requires Ghasaccesslist << SCHED >>
-    rule [Cextcodecopy.old]:
-         Cextcodecopy(SCHED, WIDTH)
-      => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32))
-      requires notBool Ghasaccesslist << SCHED >>
+    rule [Cextcodecopy.new]: Cextcodecopy(SCHED, WIDTH) => Gcopy < SCHED > *Int (WIDTH up/Int 32)                               requires         Ghasaccesslist << SCHED >>
+    rule [Cextcodecopy.old]: Cextcodecopy(SCHED, WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) requires notBool Ghasaccesslist << SCHED >>
 
-    rule [Cmodexp.old]:
-         Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN)
-      => #multComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1) /Int Gquaddivisor < SCHED >
+    rule [Cmodexp.old]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => #multComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1) /Int Gquaddivisor < SCHED >
       requires notBool Ghasaccesslist << SCHED >>
-    rule [Cmodexp.new]:
-         Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN)
-      => maxInt(200, (#newMultComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1)) /Int Gquaddivisor < SCHED >)
+    rule [Cmodexp.new]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => maxInt(200, (#newMultComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1)) /Int Gquaddivisor < SCHED > )
       requires Ghasaccesslist << SCHED >>
 
     syntax BExp    ::= Bool

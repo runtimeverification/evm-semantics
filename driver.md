@@ -549,10 +549,10 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : "accessList" : { "address" : V1 , "storageKeys": V2 , .JSONs } => check "transactions" : "accessList" : "address" : #parseHexWord(V1) : "storageKeys" : V2  ... </k>
     rule <k> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : [ KEY , REST ] => check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : #parseHexWord(KEY) ~> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : [ REST ] ... </k>
 
-    rule <k> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : KEY        => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txAccess> TA </txAccess> ... </message> requires isInAccessList(ADDR, KEY, TA)
     rule <k> check "transactions" : "accessList" : "address" : _    : "storageKeys" : [ .JSONs ] => . ... </k>
     rule <k> check "transactions" : "accessList" : [ .JSONs ] => . ... </k>
 
+    rule <k> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : KEY        => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txAccess> TA </txAccess> ... </message> requires isInAccessList(ADDR, KEY, TA)
     rule <k> check "transactions" : ("data"     : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <data>       VALUE </data>       ... </message>
     rule <k> check "transactions" : ("gasLimit" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasLimit> VALUE </txGasLimit> ... </message>
     rule <k> check "transactions" : ("gasPrice" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasPrice> VALUE </txGasPrice> ... </message>
