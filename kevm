@@ -13,11 +13,14 @@ check_k_install() {
         || fatal "Must have K installed! See https://github.com/kframework/k/releases."
 }
 
-INSTALL_BIN="$(dirname $0)"
-INSTALL_LIB=${INSTALL_BIN}/../lib/kevm
-INSTALL_K_BIN=${INSTALL_LIB}/kframework/bin
+INSTALL_BIN="$(cd $(dirname $0) && pwd)"
+INSTALL_LIB="$(dirname ${INSTALL_BIN})/lib/kevm"
+INSTALL_INCLUDE=${INSTALL_LIB}/include
 
-export PATH="$INSTALL_K_BIN:$INSTALL_BIN:$INSTALL_LIB:$PATH"
+install_k_bin=${INSTALL_LIB}/kframework/bin
+plugin_include=${INSTALL_INCLUDE}/blockchain-k-plugin
+
+export PATH="$install_k_bin:$INSTALL_BIN:$INSTALL_LIB:$PATH"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
@@ -30,18 +33,28 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 # User Commands
 
 run_kompile() {
-    local tangle_tag
+    local kompile_opts
 
+    kompile_opts=(  --backend "${backend}" "${run_file}"                       )
+    kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${INSTALL_INCLUDE}" )
+    kompile_opts+=( --hook-namespaces "JSON KRYPTO"                            )
+    kompile_opts+=( --emit-json                                                )
     case "${backend}" in
-        haskell|llvm) tangle_tag='k & ! nobytes'                      ;;
-        java)         tangle_tag='k & ! bytes'                        ;;
-        *)            fatal "Unknown backend for kompile: ${backend}" ;;
+        haskell) kompile_opts+=( --md-selector 'k & ! nobytes' )
+                 ;;
+        java)    kompile_opts+=( --md-selector 'k & ! bytes' )
+                 ;;
+        llvm)    kompile_opts+=( --md-selector 'k & ! nobytes'                                                 )
+                 kompile_opts+=( -ccopt -L${plugin_include}/lib                                                )
+                 kompile_opts+=( -ccopt ${plugin_include}/plugin-c/plugin_util.cpp                             )
+                 kompile_opts+=( -ccopt ${plugin_include}/plugin-c/crypto.cpp                                  )
+                 kompile_opts+=( -ccopt ${plugin_include}/plugin-c/blake2.cpp                                  )
+                 kompile_opts+=( -ccopt -g -ccopt -std=c++14                                                   )
+                 kompile_opts+=( -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lssl -ccopt -lcrypto )
+                 ;;
+        *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
-    kompile --backend "$backend" "$run_file"    \
-         -I "${INSTALL_LIB}/include/kframework" \
-         --hook-namespaces "JSON KRYPTO"        \
-         --md-selector "${tangle_tag}"          \
-         "$@"
+    kompile "${kompile_opts[@]}" "$@"
 }
 
 run_krun() {
