@@ -30,10 +30,18 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 # User Commands
 
 run_kompile() {
-   kompile --backend "$backend" "$run_file"    \
-        -I "${INSTALL_LIB}/include/kframework" \
-        --hook-namespaces "JSON KRYPTO"        \
-        "$@"
+    local tangle_tag
+
+    case "${backend}" in
+        haskell|llvm) tangle_tag='k & ! nobytes'                      ;;
+        java)         tangle_tag='k & ! bytes'                        ;;
+        *)            fatal "Unknown backend for kompile: ${backend}" ;;
+    esac
+    kompile --backend "$backend" "$run_file"    \
+         -I "${INSTALL_LIB}/include/kframework" \
+         --hook-namespaces "JSON KRYPTO"        \
+         --md-selector "${tangle_tag}"          \
+         "$@"
 }
 
 run_krun() {
