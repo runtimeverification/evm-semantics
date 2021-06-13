@@ -18,7 +18,7 @@ INSTALL_LIB="$(dirname ${INSTALL_BIN})/lib/kevm"
 INSTALL_INCLUDE=${INSTALL_LIB}/include
 
 install_k_bin=${INSTALL_LIB}/kframework/bin
-plugin_include=${INSTALL_INCLUDE}/blockchain-k-plugin
+plugin_include=${INSTALL_LIB}/blockchain-k-plugin/include
 libff_dir=${INSTALL_LIB}/libff
 
 export PATH="$install_k_bin:$INSTALL_BIN:$INSTALL_LIB:$PATH"
@@ -36,10 +36,10 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 run_kompile() {
     local kompile_opts openssl_root
 
-    kompile_opts=(  --backend "${backend}" "${run_file}"                       )
-    kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${INSTALL_INCLUDE}" )
-    kompile_opts+=( --hook-namespaces "JSON KRYPTO"                            )
-    kompile_opts+=( --emit-json                                                )
+    kompile_opts=(  --backend "${backend}" "${run_file}"                                 )
+    kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
+    kompile_opts+=( --hook-namespaces "JSON KRYPTO"                                      )
+    kompile_opts+=( --emit-json                                                          )
     case "${backend}" in
         haskell)    kompile_opts+=( --md-selector 'k & ! nobytes' )
                     ;;
@@ -47,9 +47,9 @@ run_kompile() {
                     ;;
         llvm)       kompile_opts+=( --md-selector 'k & ! nobytes'                                                 )
                     kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
-                    kompile_opts+=( -ccopt ${plugin_include}/plugin-c/plugin_util.cpp                             )
-                    kompile_opts+=( -ccopt ${plugin_include}/plugin-c/crypto.cpp                                  )
-                    kompile_opts+=( -ccopt ${plugin_include}/plugin-c/blake2.cpp                                  )
+                    kompile_opts+=( -ccopt ${plugin_include}/c/plugin_util.cpp                                    )
+                    kompile_opts+=( -ccopt ${plugin_include}/c/crypto.cpp                                         )
+                    kompile_opts+=( -ccopt ${plugin_include}/c/blake2.cpp                                         )
                     kompile_opts+=( -ccopt -g -ccopt -std=c++14                                                   )
                     kompile_opts+=( -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lssl -ccopt -lcrypto )
                     if [[ "$(uname -s)" == 'Linux' ]]; then

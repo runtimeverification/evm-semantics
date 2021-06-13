@@ -119,22 +119,21 @@ k-deps:
 	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
 	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/kframework package/package
 
-plugin_include  := $(KEVM_INCLUDE)/blockchain-k-plugin
-plugin_cpp      := $(patsubst %, blockchain-k-plugin/plugin-c/%.cpp, plugin_util crypto blake2)
-plugin_h        := $(patsubst %, blockchain-k-plugin/plugin-c/%.h,   plugin_util        blake2)
-plugin_includes := $(plugin_include)/krypto.md                     \
-                   $(patsubst %, $(KEVM_INCLUDE)/%, $(plugin_cpp)) \
-                   $(patsubst %, $(KEVM_INCLUDE)/%, $(plugin_h))
+plugin_include    := $(KEVM_LIB)/blockchain-k-plugin/include
+plugin_k          := krypto.md
+plugin_c          := plugin_util.cpp crypto.cpp blake2.cpp plugin_util.h blake2.h
+plugin_includes   := $(patsubst %, $(plugin_include)/kframework/%, $(plugin_k))
+plugin_c_includes := $(patsubst %, $(plugin_include)/c/%,          $(plugin_c))
 
-plugin-deps: $(plugin_includes)
-
-$(plugin_include)/%: $(PLUGIN_SUBMODULE)/%
+$(plugin_include)/c/%: $(PLUGIN_SUBMODULE)/plugin-c/%
 	@mkdir -p $(dir $@)
 	install $< $@
 
-$(plugin_include)/%.md: $(PLUGIN_SUBMODULE)/plugin/%.md
+$(plugin_include)/kframework/%: $(PLUGIN_SUBMODULE)/plugin/%
 	@mkdir -p $(dir $@)
 	install $< $@
+
+plugin-deps: $(plugin_includes) $(plugin_c_includes)
 
 # Building
 # --------
@@ -154,12 +153,11 @@ SOURCE_FILES       := abi                        \
                       network                    \
                       optimizations              \
                       serialization              \
-                      state-loader               \
-                      blockchain-k-plugin/krypto
+                      state-loader
 EXTRA_SOURCE_FILES :=
 ALL_FILES          := $(patsubst %, %.md, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
 
-includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(ALL_FILES))
+includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(ALL_FILES)) $(plugin_includes)
 
 LEMMA_FILES := infinite-gas.k                           \
                lemmas.k                                 \
@@ -231,7 +229,7 @@ llvm_main_file     := driver.md
 llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
 llvm_kompiled      := $(llvm_dir)/$(llvm_main_filename)-kompiled/interpreter
 
-$(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out) $(plugin_includes)
+$(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out) $(plugin_c_includes)
 	$(KOMPILE) --backend llvm                 \
 	    $(llvm_main_file)                     \
 	    --directory $(KEVM_LIB)/$(llvm_dir)   \
