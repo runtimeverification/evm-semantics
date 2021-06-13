@@ -232,11 +232,11 @@ llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
 llvm_kompiled      := $(llvm_dir)/$(llvm_main_filename)-kompiled/interpreter
 
 $(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out) $(plugin_includes)
-	$(KOMPILE) --backend llvm                           \
-	    $(llvm_main_file)                               \
-	    --directory $(KEVM_LIB)/$(llvm_dir)             \
-	    --main-module $(llvm_main_module)               \
-	    --syntax-module $(llvm_syntax_module)           \
+	$(KOMPILE) --backend llvm                 \
+	    $(llvm_main_file)                     \
+	    --directory $(KEVM_LIB)/$(llvm_dir)   \
+	    --main-module $(llvm_main_module)     \
+	    --syntax-module $(llvm_syntax_module) \
 	    $(KOMPILE_OPTS)
 
 # Installing
