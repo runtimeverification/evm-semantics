@@ -46,7 +46,7 @@ module LEMMAS
     rule #sizeByteArray(_BUF [ START .. WIDTH ])       => WIDTH
         requires 0 <=Int START andBool 0 <=Int WIDTH                                                         [simplification]
     rule #sizeByteArray(#range(_, START, WIDTH))       => WIDTH
-      requires WIDTH >=Int 0 andBool START >=Int 0                                                           [simplification]
+      requires 0 <=Int START andBool 0 <=Int WIDTH                                                           [simplification]
 
     //Todo custom ==K unification doesn't work in Haskell yet
     //++ unification
