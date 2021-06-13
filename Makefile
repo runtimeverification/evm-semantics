@@ -43,7 +43,7 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps k-deps plugin-deps libsecp256k1 libff                                               \
-        build build-java build-haskell build-llvm build-lemmas                                                                   \
+        build build-java build-haskell build-llvm                                                                                \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-prove test-failing-prove                                                                                            \
@@ -157,8 +157,6 @@ SOURCE_FILES       := abi                        \
 EXTRA_SOURCE_FILES :=
 ALL_FILES          := $(patsubst %, %.md, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
 
-includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(ALL_FILES)) $(plugin_includes)
-
 LEMMA_FILES := infinite-gas.k                           \
                lemmas.k                                 \
                erc20/abstract-semantics-segmented-gas.k \
@@ -169,6 +167,8 @@ LEMMA_FILES := infinite-gas.k                           \
                mcd/word-pack.k
 
 lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(LEMMA_FILES))
+
+includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(ALL_FILES)) $(plugin_includes) $(lemma_includes)
 
 $(includes): $(KEVM_BIN)/$(KEVM)
 
@@ -278,7 +278,6 @@ build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%
 build-haskell: $(KEVM_LIB)/$(haskell_kompiled)
 build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-java:    $(KEVM_LIB)/$(java_kompiled)
-build-lemmas:  $(lemma_includes)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
