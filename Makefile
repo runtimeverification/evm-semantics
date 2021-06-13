@@ -80,9 +80,7 @@ $(libsecp256k1_out): $(PLUGIN_SUBMODULE)/deps/secp256k1/autogen.sh
 	    && $(MAKE)                                                        \
 	    && $(MAKE) install
 
-LIBFF_PREFIX = $(CURDIR)/
-
-LIBFF_CMAKE_FLAGS = -DPROFILE_OP_COUNTS=OFF
+LIBFF_CMAKE_FLAGS :=
 
 ifeq ($(UNAME_S),Linux)
     LIBFF_CMAKE_FLAGS +=
@@ -92,10 +90,10 @@ endif
 
 $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	@mkdir -p $(PLUGIN_SUBMODULE)/deps/libff/build
-	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                                                 \
-	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(LIBFF_PREFIX)$(KEVM_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
-	    && make -s -j4                                                                                                      \
-	    && make install
+	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                                     \
+	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
+	    && make -s -j4                                                                                          \
+	    && make install DESTDIR=$(CURDIR)/$(BUILD_DIR)
 
 # K Dependencies
 # --------------
