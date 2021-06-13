@@ -282,8 +282,12 @@ build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-java:    $(KEVM_LIB)/$(java_kompiled)
 build-lemmas:  $(lemma_includes)
 
-all_bin_sources := $(shell find $(KEVM_BIN) -type f                                                                                                                    | sed 's|^$(KEVM_BIN)/||')
-all_lib_sources := $(shell find $(KEVM_LIB) -type f -not -path "$(KEVM_LIB)/llvm/driver-kompiled/dt/*" -not -path "$(KEVM_LIB)/kframework/share/kframework/pl-tutorial/*" | sed 's|^$(KEVM_LIB)/||')
+all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
+all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
+                            -not -path "$(KEVM_LIB)/llvm/driver-kompiled/dt/*"                 \
+                            -not -path "$(KEVM_LIB)/kframework/share/kframework/pl-tutorial/*" \
+                            -not -path "$(KEVM_LIB)/kframework/share/kframework/k-tutorial/*"  \
+                        | sed 's|^$(KEVM_LIB)/||')
 
 install: $(patsubst %, $(DESTDIR)$(INSTALL_BIN)/%, $(all_bin_sources)) \
          $(patsubst %, $(DESTDIR)$(INSTALL_LIB)/%, $(all_lib_sources))
