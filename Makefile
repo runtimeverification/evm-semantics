@@ -140,24 +140,22 @@ plugin-deps: $(plugin_includes) $(plugin_c_includes)
 
 KOMPILE := $(KEVM) kompile
 
-SOURCE_FILES       := abi                        \
-                      asm                        \
-                      buf                        \
-                      data                       \
-                      driver                     \
-                      edsl                       \
-                      evm                        \
-                      evm-types                  \
-                      hashed-locations           \
-                      json-rpc                   \
-                      network                    \
-                      optimizations              \
-                      serialization              \
-                      state-loader
-EXTRA_SOURCE_FILES :=
-ALL_FILES          := $(patsubst %, %.md, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
+kevm_includes := abi.md              \
+                 asm.md              \
+                 buf.md              \
+                 data.md             \
+                 driver.md           \
+                 edsl.md             \
+                 evm.md              \
+                 evm-types.md        \
+                 hashed-locations.md \
+                 json-rpc.md         \
+                 network.md          \
+                 optimizations.md    \
+                 serialization.md    \
+                 state-loader.md
 
-LEMMA_FILES := infinite-gas.k                           \
+kevm_lemmas := infinite-gas.k                           \
                lemmas.k                                 \
                erc20/abstract-semantics-segmented-gas.k \
                erc20/evm-symbolic.k                     \
@@ -166,9 +164,9 @@ LEMMA_FILES := infinite-gas.k                           \
                mcd/verification.k                       \
                mcd/word-pack.k
 
-lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(LEMMA_FILES))
+lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(kevm_lemmas))
 
-includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(ALL_FILES)) $(plugin_includes) $(lemma_includes)
+includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_includes)) $(plugin_includes) $(lemma_includes)
 
 $(includes): $(KEVM_BIN)/$(KEVM)
 
