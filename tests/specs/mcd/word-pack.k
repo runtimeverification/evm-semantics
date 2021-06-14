@@ -65,6 +65,11 @@ module WORD-PACK-HASKELL [kore]
     andBool #rangeUInt(168, ADDR_UINT8)
       [simplification]
 
+    rule maxUInt48 &Int (X /Int pow48) => X /Int pow48 requires #rangeUInt(96, X) [simplification]
+
+    rule X |Int 0 => X requires 0 <=Int X [simplification]
+    rule 0 &Int X => 0 requires 0 <=Int X [simplification]
+
 endmodule
 
 module WORD-PACK-COMMON
