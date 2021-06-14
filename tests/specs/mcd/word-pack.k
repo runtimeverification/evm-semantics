@@ -21,22 +21,6 @@ endmodule
 
 module WORD-PACK-JAVA [kast]
     imports WORD-PACK-COMMON
-endmodule
-
-module WORD-PACK-HASKELL [kore]
-    imports WORD-PACK-COMMON
-endmodule
-
-module WORD-PACK-COMMON
-    imports EVM-TYPES
-
-    syntax Int ::= #WordPackUInt48UInt48     (       Int , Int ) [function, no-evaluators, smtlib(WordPackUInt48UInt48)]
-                 | #WordPackAddrUInt48UInt48 ( Int , Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt48UInt48)]
-                 | #WordPackAddrUInt8        (       Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt8)]
- // -----------------------------------------------------------------------------------------------------------------
-    // rule #WordPackUInt48UInt48     (            UINT48_1 , UINT48_2 ) => UINT48_2 *Int pow48 +Int UINT48_1                        requires #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2)
-    // rule #WordPackAddrUInt48UInt48 (     ADDR , UINT48_1 , UINT48_2 ) => UINT48_2 *Int pow208 +Int UINT48_1 *Int pow160 +Int ADDR requires #rangeAddress(ADDR) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2)
-    // rule #WordPackAddrUInt8        (     ADDR , UINT8               ) => UINT8 *Int pow160 +Int ADDR                              requires #rangeAddress(ADDR) andBool #rangeUInt(8, UINT_8)
 
     rule    ADDR_UINT48_UINT48 ==K #WordPackAddrUInt48UInt48(ADDR, UINT48_1, UINT48_2)
          => ADDR     ==Int maxUInt160 &Int  ADDR_UINT48_UINT48
@@ -56,6 +40,43 @@ module WORD-PACK-COMMON
     andBool UINT8 ==Int maxUInt8   &Int (ADDR_UINT8 /Int pow160)
     andBool #rangeUInt(168, ADDR_UINT8)
       [simplification]
+
+endmodule
+
+module WORD-PACK-HASKELL [kore]
+    imports WORD-PACK-COMMON
+
+    rule    ADDR_UINT48_UINT48 ==Int #WordPackAddrUInt48UInt48(ADDR, UINT48_1, UINT48_2)
+         => ADDR     ==Int maxUInt160 &Int  ADDR_UINT48_UINT48
+    andBool UINT48_1 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160)
+    andBool UINT48_2 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208)
+    andBool #rangeUInt(256, ADDR_UINT48_UINT48)
+      [simplification]
+
+    rule    UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2)
+         => UINT48_1 ==Int maxUInt48 &Int  UINT48_UINT48
+    andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
+    andBool #rangeUInt(96, UINT48_UINT48)
+      [simplification]
+
+    rule    ADDR_UINT8 ==Int #WordPackAddrUInt8(ADDR, UINT8)
+         => ADDR  ==Int maxUInt160 &Int  ADDR_UINT8
+    andBool UINT8 ==Int maxUInt8   &Int (ADDR_UINT8 /Int pow160)
+    andBool #rangeUInt(168, ADDR_UINT8)
+      [simplification]
+
+endmodule
+
+module WORD-PACK-COMMON
+    imports EVM-TYPES
+
+    syntax Int ::= #WordPackUInt48UInt48     (       Int , Int ) [function, no-evaluators, smtlib(WordPackUInt48UInt48)]
+                 | #WordPackAddrUInt48UInt48 ( Int , Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt48UInt48)]
+                 | #WordPackAddrUInt8        (       Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt8)]
+ // -----------------------------------------------------------------------------------------------------------------
+    // rule #WordPackUInt48UInt48     (            UINT48_1 , UINT48_2 ) => UINT48_2 *Int pow48 +Int UINT48_1                        requires #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2)
+    // rule #WordPackAddrUInt48UInt48 (     ADDR , UINT48_1 , UINT48_2 ) => UINT48_2 *Int pow208 +Int UINT48_1 *Int pow160 +Int ADDR requires #rangeAddress(ADDR) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2)
+    // rule #WordPackAddrUInt8        (     ADDR , UINT8               ) => UINT8 *Int pow160 +Int ADDR                              requires #rangeAddress(ADDR) andBool #rangeUInt(8, UINT_8)
 
     syntax Int ::= "maskWordPackUInt48UInt48_1" // 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000FFFFFFFFFFFF
                  | "maskWordPackUInt48UInt48_2" // 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000
