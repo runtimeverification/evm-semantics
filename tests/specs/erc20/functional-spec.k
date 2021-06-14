@@ -15,7 +15,7 @@ endmodule
 module FUNCTIONAL-SPEC
     imports FUNCTIONAL-SPEC-SYNTAX
 
-    claim <k> runLemma(#hashedLocation("Solidity", keccakIntList(OWNER 2 .IntList), SPENDER .IntList))
-           => doneLemma(keccak(#buf(32, SPENDER) ++ #buf(32, keccak(#buf(32, OWNER) ++ #buf(32, 2))))) ... </k>
+    claim <k> runLemma(#hashedLocation("Solidity", 2, OWNER SPENDER .IntList))
+           => doneLemma(keccak(#bufStrict(32, SPENDER) ++ #bufStrict(32, keccak(#bufStrict(32, OWNER) ++ #bufStrict(32, 2))))) ... </k>
       requires #rangeUInt(256, SPENDER) andBool #rangeUInt(256, OWNER)
 endmodule
