@@ -101,8 +101,6 @@ module LEMMAS-MCD-COMMON
 
     // ### cat-exhaustiveness
 
-    rule #sizeByteArray(_WS [ START .. WIDTH ]) => WIDTH requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
-
     rule WS [ START .. WIDTH ] [ 0 .. WIDTH' ]  => WS [ START .. WIDTH' ] requires WIDTH' <=Int WIDTH [simplification]
 
     // ### cat-file-addr-pass-rough
