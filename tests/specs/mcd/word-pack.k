@@ -15,6 +15,19 @@ requires "evm-types.md"
     //
 
 module WORD-PACK
+    imports WORD-PACK-HASKELL
+    imports WORD-PACK-JAVA
+endmodule
+
+module WORD-PACK-JAVA [kast]
+    imports WORD-PACK-COMMON
+endmodule
+
+module WORD-PACK-HASKELL [kore]
+    imports WORD-PACK-COMMON
+endmodule
+
+module WORD-PACK-COMMON
     imports EVM-TYPES
 
     syntax Int ::= #WordPackUInt48UInt48     (       Int , Int ) [function, no-evaluators, smtlib(WordPackUInt48UInt48)]
