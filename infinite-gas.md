@@ -58,6 +58,8 @@ In particular, this means that `#gas(_) <Int #gas(_) => false`, and `#gas(_) <=I
     rule I *Int I' <=Int #gas(G) => true requires                     I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
     rule I /Int I' <=Int #gas(G) => true requires I' =/=Int 0 andBool I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
 
+    rule I *Int I' <Int #gas(G) => true requires I <Int #gas(G) andBool I' <Int #gas(G) [simplification]
+
     rule #gas(G) <Int I +Int I' => false requires                     notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
     rule #gas(G) <Int I -Int I' => false requires                     notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
     rule #gas(G) <Int I *Int I' => false requires                     notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
@@ -78,7 +80,7 @@ In particular, this means that `#gas(_) <Int #gas(_) => false`, and `#gas(_) <=I
 
     rule #allBut64th(G) <Int #gas(G') => true requires G <Int #gas(G') [simplification]
 
-    rule _:ScheduleConst < _:Schedule > <Int #gas(_)  => true  [simplification]
+    rule _:ScheduleConst < _:Schedule >  <Int #gas(_) => true  [simplification]
     rule _:ScheduleConst < _:Schedule > <=Int #gas(_) => true  [simplification]
     rule #gas(_) <Int _:ScheduleConst < _:Schedule >  => false [simplification]
 
