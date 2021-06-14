@@ -54,6 +54,10 @@ endmodule
 module LEMMAS-MCD-HASKELL [symbolic, kore]
     imports LEMMAS-MCD-COMMON
 
+    // ### functional
+
+    rule chop(Y) => Y +Int pow256 requires #rangeSInt(256, Y) andBool Y <Int 0 [simplification]
+
     // ### flapper-yank-pass-rough
 
     rule #range(M:Memory [ K <- V ], START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)
