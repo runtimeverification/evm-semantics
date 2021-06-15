@@ -108,4 +108,6 @@ module INFINITE-GAS-SPEC
     claim <k> runLemma(0 <=Int 3 *Int (DATA_LEN up/Int 32))      => doneLemma(true) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
     claim <k> runLemma(3 *Int (DATA_LEN up/Int 32) <Int #gas(_)) => doneLemma(true) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
 
+    claim <k> runLemma( #gas ( -133 ) <Int Csload ( ISTANBUL , #inStorage ( _20 , CONTRACT_ID:Int , 0 ) )) => doneLemma(false) ... </k> requires CONTRACT_ID =/=Int 0 andBool #rangeAddress(CONTRACT_ID)
+
 endmodule

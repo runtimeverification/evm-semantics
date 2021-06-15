@@ -184,4 +184,7 @@ module INFINITE-GAS-COMMON
 
     rule 0 <=Int X *Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
 
+    rule Csload(_, _) <Int #gas(_) => true  [simplification]
+    rule #gas(_) <Int Csload(_, _) => false [simplification]
+
 endmodule
