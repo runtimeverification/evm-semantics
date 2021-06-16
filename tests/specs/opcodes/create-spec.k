@@ -53,6 +53,10 @@ module CREATE-SPEC
                   <static> false </static>
                   <callDepth> CALL_DEPTH </callDepth>
                 </callState>
+                <substate>
+                  <touchedAccounts> _ => ?_  </touchedAccounts>
+                  ...
+                </substate>
                 ...
               </evm>
               <network>
@@ -128,6 +132,10 @@ module CREATE-SPEC
                   <static> false </static>
                   <callDepth> CALL_DEPTH </callDepth>
                 </callState>
+                <substate>
+                  <touchedAccounts> _ => ?_  </touchedAccounts>
+                  ...
+                </substate>
                 ...
               </evm>
               <network>
