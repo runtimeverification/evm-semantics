@@ -38,7 +38,6 @@ tests/specs/erc20/ds/transferFrom-success-1-spec.k
 tests/specs/erc20/ds/transferFrom-success-2-spec.k
 tests/specs/erc20/ds/transfer-success-1-spec.k
 tests/specs/erc20/ds/transfer-success-2-spec.k
-tests/specs/erc20/hkg/allowance-spec.k
 tests/specs/erc20/hkg/approve-spec.k
 tests/specs/erc20/hkg/balanceOf-spec.k
 tests/specs/erc20/hkg/transfer-failure-1-spec.k
@@ -73,7 +72,6 @@ tests/specs/mcd/flopper-dent-guy-same-pass-rough-spec.k
 tests/specs/mcd/flopper-file-pass-rough-spec.k
 tests/specs/mcd/flopper-kick-pass-rough-spec.k
 tests/specs/mcd/flopper-tick-pass-rough-spec.k
-tests/specs/mcd/functional-spec.k
 tests/specs/mcd/gemjoin-exit-pass-rough-spec.k
 tests/specs/mcd/pot-join-pass-rough-spec.k
 tests/specs/mcd/vat-addui-fail-rough-spec.k
