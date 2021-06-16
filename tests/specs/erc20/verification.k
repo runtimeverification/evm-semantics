@@ -25,6 +25,6 @@ module VERIFICATION-JAVA [symbolic, kast]
 endmodule
 
 module VERIFICATION-HASKELL [symbolic, kore]
-    import INFINITE-GAS
-
+    imports INFINITE-GAS
+    imports EDSL
 endmodule

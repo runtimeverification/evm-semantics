@@ -70,7 +70,6 @@ tests/specs/mcd/flopper-dent-guy-same-pass-rough-spec.k
 tests/specs/mcd/flopper-file-pass-rough-spec.k
 tests/specs/mcd/flopper-kick-pass-rough-spec.k
 tests/specs/mcd/flopper-tick-pass-rough-spec.k
-tests/specs/mcd/functional-spec.k
 tests/specs/mcd/gemjoin-exit-pass-rough-spec.k
 tests/specs/mcd/pot-join-pass-rough-spec.k
 tests/specs/mcd/vat-addui-fail-rough-spec.k

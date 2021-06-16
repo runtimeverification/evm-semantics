@@ -54,6 +54,10 @@ endmodule
 module LEMMAS-MCD-HASKELL [symbolic, kore]
     imports LEMMAS-MCD-COMMON
 
+    // ### functional
+
+    rule chop(Y) => Y +Int pow256 requires #rangeSInt(256, Y) andBool Y <Int 0 [simplification]
+
     // ### flapper-yank-pass-rough
 
     rule #range(M:Memory [ K <- V ], START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)
@@ -393,10 +397,10 @@ module LEMMAS-MCD-COMMON
     rule <acctID> ACCTID </acctID>  ==K <acctID> ACCTID' </acctID> => ACCTID  ==Int ACCTID' [simplification]
     rule <acctID> ACCTID </acctID> =/=K <acctID> ACCTID' </acctID> => ACCTID =/=Int ACCTID' [simplification]
 
-    rule ((K |-> V) REST) [ K' <- undef ] => REST                             requires K  ==K K' [simplification]
+    rule ((K |-> _) REST) [ K' <- undef ] => REST                             requires K  ==K K' [simplification]
     rule ((K |-> V) REST) [ K' <- undef ] => (K |-> V) (REST [ K' <- undef ]) requires K =/=K K' [simplification]
 
-    rule M:Map [ K1 <- V1 ] [ K2 <- V2 ] [ K1 <- V1' ] => M [ K1 <- V1' ] [ K2 <- V2 ] requires K1 =/=Int K2 [simplification]
+    rule M:Map [ K1 <- _ ] [ K2 <- V2 ] [ K1 <- V1' ] => M [ K1 <- V1' ] [ K2 <- V2 ] requires K1 =/=Int K2 [simplification]
 
     // ### end-cage-ilk-pass-rough
 
@@ -423,7 +427,7 @@ module LEMMAS-MCD-COMMON
 
     rule ((I1 -Int I2) -Int I3) +Int I2 => I1 -Int I3 [simplification]
 
-    rule M:Map [ K1 <- V1 ] [ K2 <- V2 ] [ K3 <- V3 ] [ K1 <- V4 ] => M [ K1 <- V4 ] [ K2 <- V2 ] [ K3 <- V3 ] requires K1 =/=Int K2 andBool K1 =/=Int K3 [simplification]
+    rule M:Map [ K1 <- _ ] [ K2 <- V2 ] [ K3 <- V3 ] [ K1 <- V4 ] => M [ K1 <- V4 ] [ K2 <- V2 ] [ K3 <- V3 ] requires K1 =/=Int K2 andBool K1 =/=Int K3 [simplification]
 
     // ### vat-fold-pass-rough
 
