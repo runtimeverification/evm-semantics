@@ -85,8 +85,6 @@ sudo pacman -S                                               \
     mpfr python stack yaml-cpp z3 zlib
 ```
 
-In addition, you'll need the `glog-git` AUR package: <https://aur.archlinux.org/packages/glog-git/>.
-
 #### MacOS
 
 On OSX, using [Homebrew](https://brew.sh/), after installing the command line tools package:
