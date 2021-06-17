@@ -27,8 +27,8 @@ module FUNCTIONAL-SPEC
 
     claim <k> runLemma(#ceil32(DATA_LEN) +Int 292 <Int DATA_LEN +Int 292) => doneLemma(false) ... </k> requires #range(0 <= DATA_LEN < pow16)
 
-    claim <k> runLemma ( #buf ( 32 , keccak ( #range ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" [ 128 := ( #buf ( DATA_LEN , DATA ) ++ #buf ( ( DATA_LEN up/Int 32 ) *Int 32 -Int DATA_LEN , 0 ) ) [ 0 .. DATA_LEN ] ] , 128 , DATA_LEN ) ) ) ) =>
-              doneLemma( #encodeArgs(#bytes32(keccak(#buf(DATA_LEN, DATA)))) )
-          </k>
+    // from tests/specs/benchmarks/bytes00-spec.k and tests/specs/benchmarks/keccak00-spec.k
+    claim <k> runLemma ( #buf(32, keccak(#range (_:ByteArray [ 128 := (#buf (DATA_LEN, DATA) ++ #buf((DATA_LEN up/Int 32) *Int 32 -Int DATA_LEN ,0)) [ 0 .. DATA_LEN ] ], 128, DATA_LEN))) ) => 
+              doneLemma( #encodeArgs(#bytes32(keccak(#buf(DATA_LEN, DATA)))) ) ...  </k>
 
 endmodule
