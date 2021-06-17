@@ -730,7 +730,7 @@ These are just used by the other operators for shuffling local execution state a
 ```k
     syntax InternalOp ::= "#push" | "#setStack" WordStack
  // -----------------------------------------------------
-    rule <k> W0:Int ~> #push => . ... </k> <wordStack> WS => W0 : WS </wordStack>
+    rule <k> W0:Int ~> #push => . ... </k> <wordStack> WS => W0 : WS </wordStack> [priority(45)]
     rule <k> #setStack WS    => . ... </k> <wordStack> _  => WS      </wordStack>
 ```
 
