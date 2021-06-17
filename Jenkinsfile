@@ -28,7 +28,7 @@ pipeline {
           failFast true
           options {
             lock("proofs-${env.NODE_NAME}")
-            timeout(time: 120, unit: 'MINUTES')
+            timeout(time: 150, unit: 'MINUTES')
           }
           parallel {
             stage('Conformance (LLVM)')         { steps { sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm' } }
