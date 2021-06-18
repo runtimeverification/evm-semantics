@@ -53,10 +53,10 @@ pipeline {
       }
     }
     stage('Package') {
-      // when {
-      //   branch 'master'
-      //   beforeAgent true
-      // }
+      when {
+        branch 'master'
+        beforeAgent true
+      }
       post { failure { slackSend color: '#cb2431' , channel: '#kevm' , message: "Packaging Phase Failed: ${env.BUILD_URL}" } }
       stages {
         stage('Ubuntu Focal') {
