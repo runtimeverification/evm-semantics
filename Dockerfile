@@ -21,8 +21,6 @@ RUN    apt-get update           \
             pkg-config          \
             python3             \
             python-pygments     \
-            python-recommonmark \
-            python-sphinx       \
             rapidjson-dev       \
             zlib1g-dev
 
