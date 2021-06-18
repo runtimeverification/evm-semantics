@@ -1,5 +1,5 @@
 ARG K_COMMIT
-FROM runtimeverificationinc/kframework-k:ubuntu-bionic-${K_COMMIT}
+FROM runtimeverificationinc/kframework-k:ubuntu-focal-${K_COMMIT}
 
 RUN    apt-get update           \
     && apt-get upgrade --yes    \
