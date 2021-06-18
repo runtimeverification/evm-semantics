@@ -43,7 +43,7 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps k-deps plugin-deps libsecp256k1 libff                                               \
-        build build-java build-haskell build-llvm build-lemmas                                                                   \
+        build build-java build-haskell build-llvm                                                                                \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-prove test-failing-prove                                                                                            \
@@ -68,7 +68,7 @@ distclean:
 # ------------------
 
 libsecp256k1_out := $(LOCAL_LIB)/pkgconfig/libsecp256k1.pc
-libff_out        := $(LOCAL_LIB)/libff.a
+libff_out        := $(KEVM_LIB)/libff/lib/libff.a
 
 libsecp256k1: $(libsecp256k1_out)
 libff:        $(libff_out)
@@ -80,33 +80,25 @@ $(libsecp256k1_out): $(PLUGIN_SUBMODULE)/deps/secp256k1/autogen.sh
 	    && $(MAKE)                                                        \
 	    && $(MAKE) install
 
+LIBFF_CMAKE_FLAGS :=
+
 ifeq ($(UNAME_S),Linux)
-    LIBFF_CMAKE_FLAGS=
+    LIBFF_CMAKE_FLAGS +=
 else
-    LIBFF_CMAKE_FLAGS=-DWITH_PROCPS=OFF
+    LIBFF_CMAKE_FLAGS += -DWITH_PROCPS=OFF
 endif
 
 $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	@mkdir -p $(PLUGIN_SUBMODULE)/deps/libff/build
-	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                               \
-	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(BUILD_LOCAL) $(LIBFF_CMAKE_FLAGS) \
-	    && make -s -j4                                                                                    \
-	    && make install
+	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                                     \
+	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
+	    && make -s -j4                                                                                          \
+	    && make install DESTDIR=$(CURDIR)/$(BUILD_DIR)
 
 # K Dependencies
 # --------------
 
-deps: k-deps plugin-deps
-
-k-deps:
-	cd $(K_SUBMODULE)                                                                                                                                                                            \
-	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
-	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/kframework package/package
-
-plugin-deps: $(PLUGIN_SOURCE)
-
-$(PLUGIN_SOURCE): $(PLUGIN_SUBMODULE)/plugin/krypto.md
-	cd deps/plugin && make INSTALL_PREFIX=$(CURDIR)/$(KEVM_LIB) install
+deps: k-deps
 
 K_MVN_ARGS :=
 ifneq ($(SKIP_LLVM),)
@@ -122,30 +114,48 @@ else
     K_BUILD_TYPE := Debug
 endif
 
+k-deps:
+	cd $(K_SUBMODULE)                                                                                                                                                                            \
+	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
+	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/kframework package/package
+
+plugin_include    := $(KEVM_LIB)/blockchain-k-plugin/include
+plugin_k          := krypto.md
+plugin_c          := plugin_util.cpp crypto.cpp blake2.cpp plugin_util.h blake2.h
+plugin_includes   := $(patsubst %, $(plugin_include)/kframework/%, $(plugin_k))
+plugin_c_includes := $(patsubst %, $(plugin_include)/c/%,          $(plugin_c))
+
+$(plugin_include)/c/%: $(PLUGIN_SUBMODULE)/plugin-c/%
+	@mkdir -p $(dir $@)
+	install $< $@
+
+$(plugin_include)/kframework/%: $(PLUGIN_SUBMODULE)/plugin/%
+	@mkdir -p $(dir $@)
+	install $< $@
+
+plugin-deps: $(plugin_includes) $(plugin_c_includes)
+
 # Building
 # --------
 
-SOURCE_FILES       := abi                        \
-                      asm                        \
-                      buf                        \
-                      data                       \
-                      driver                     \
-                      edsl                       \
-                      evm                        \
-                      evm-types                  \
-                      hashed-locations           \
-                      json-rpc                   \
-                      network                    \
-                      optimizations              \
-                      serialization              \
-                      state-loader               \
-                      blockchain-k-plugin/krypto
-EXTRA_SOURCE_FILES :=
-ALL_FILES          := $(patsubst %, %.md, $(SOURCE_FILES) $(EXTRA_SOURCE_FILES))
+KOMPILE := $(KEVM) kompile
 
-includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(ALL_FILES))
+kevm_includes := abi.md              \
+                 asm.md              \
+                 buf.md              \
+                 data.md             \
+                 driver.md           \
+                 edsl.md             \
+                 evm.md              \
+                 evm-types.md        \
+                 hashed-locations.md \
+                 json-rpc.md         \
+                 network.md          \
+                 optimizations.md    \
+                 serialization.md    \
+                 state-loader.md
 
-LEMMA_FILES := infinite-gas.k                           \
+kevm_lemmas := infinite-gas.k                           \
                lemmas.k                                 \
                erc20/abstract-semantics-segmented-gas.k \
                erc20/evm-symbolic.k                     \
@@ -154,7 +164,11 @@ LEMMA_FILES := infinite-gas.k                           \
                mcd/verification.k                       \
                mcd/word-pack.k
 
-lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(LEMMA_FILES))
+lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(kevm_lemmas))
+
+includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_includes)) $(plugin_includes) $(lemma_includes)
+
+$(includes): $(KEVM_BIN)/$(KEVM)
 
 $(KEVM_INCLUDE)/kframework/%.md: %.md
 	@mkdir -p $(dir $@)
@@ -164,47 +178,11 @@ $(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
 	@mkdir -p $(dir $@)
 	install $< $@
 
-tangle_concrete := k & ( ( ! ( symbolic | nobytes ) ) | concrete | bytes   )
-tangle_java     := k & ( ( ! ( concrete | bytes   ) ) | symbolic | nobytes )
-tangle_haskell  := k & ( ( ! ( concrete | nobytes ) ) | symbolic | bytes   )
-
-HOOK_NAMESPACES    = KRYPTO JSON
-KOMPILE_INCLUDES   = $(KEVM_INCLUDE)/kframework $(INSTALL_INCLUDE)/kframework
-EXTRA_KOMPILE_OPTS =
-KOMPILE_OPTS      += --emit-json --hook-namespaces "$(HOOK_NAMESPACES)" $(addprefix -I ,$(KOMPILE_INCLUDES)) $(EXTRA_KOMPILE_OPTS)
+KOMPILE_OPTS = --debug
 
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
 endif
-
-JAVA_KOMPILE_OPTS ?=
-
-KOMPILE_JAVA := kompile --debug --backend java --md-selector "$(tangle_java)" \
-                $(KOMPILE_OPTS) $(JAVA_KOMPILE_OPTS)
-
-HASKELL_KOMPILE_OPTS ?=
-
-KOMPILE_HASKELL := kompile --debug --backend haskell --md-selector "$(tangle_haskell)" \
-                   $(KOMPILE_OPTS) $(HASKELL_KOMPILE_OPTS)
-
-STANDALONE_KOMPILE_OPTS := -L$(LOCAL_LIB)                               \
-                           $(PLUGIN_SUBMODULE)/plugin-c/plugin_util.cpp \
-                           $(PLUGIN_SUBMODULE)/plugin-c/crypto.cpp      \
-                           $(PLUGIN_SUBMODULE)/plugin-c/blake2.cpp      \
-                           -g -std=c++14 -lff -lcryptopp -lsecp256k1    \
-                           -lssl -lcrypto
-
-ifeq ($(UNAME_S),Linux)
-    STANDALONE_KOMPILE_OPTS += -lprocps
-endif
-ifeq ($(UNAME_S),Darwin)
-    OPENSSL_ROOT := $(shell brew --prefix openssl)
-    STANDALONE_KOMPILE_OPTS += -I/usr/local/include -L/usr/local/lib -I$(OPENSSL_ROOT)/include -L$(OPENSSL_ROOT)/lib
-endif
-
-KOMPILE_STANDALONE := kompile --debug --backend llvm --md-selector "$(tangle_concrete)" \
-                      $(KOMPILE_OPTS)                \
-                      $(addprefix -ccopt ,$(STANDALONE_KOMPILE_OPTS))
 
 # Java
 
@@ -216,10 +194,12 @@ java_main_filename := $(basename $(notdir $(java_main_file)))
 java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/compiled.bin
 
 $(KEVM_LIB)/$(java_kompiled): $(includes)
-	$(KOMPILE_JAVA) $(java_main_file)                     \
-	                --directory $(KEVM_LIB)/$(java_dir)   \
-	                --main-module $(java_main_module)     \
-	                --syntax-module $(java_syntax_module)
+	$(KOMPILE) --backend java                  \
+	    $(java_main_file) $(JAVA_KOMPILE_OPTS) \
+	    --directory $(KEVM_LIB)/$(java_dir)    \
+	    --main-module $(java_main_module)      \
+	    --syntax-module $(java_syntax_module)  \
+	    $(KOMPILE_OPTS)
 
 # Haskell
 
@@ -231,10 +211,12 @@ haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
 haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
 
 $(KEVM_LIB)/$(haskell_kompiled): $(includes)
-	$(KOMPILE_HASKELL) $(haskell_main_file)                     \
-	                   --directory $(KEVM_LIB)/$(haskell_dir)   \
-	                   --main-module $(haskell_main_module)     \
-	                   --syntax-module $(haskell_syntax_module)
+	$(KOMPILE) --backend haskell                     \
+	    $(haskell_main_file) $(HASKELL_KOMPILE_OPTS) \
+	    --directory $(KEVM_LIB)/$(haskell_dir)       \
+	    --main-module $(haskell_main_module)         \
+	    --syntax-module $(haskell_syntax_module)     \
+	    $(KOMPILE_OPTS)
 
 # Standalone
 
@@ -245,11 +227,13 @@ llvm_main_file     := driver.md
 llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
 llvm_kompiled      := $(llvm_dir)/$(llvm_main_filename)-kompiled/interpreter
 
-$(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out)
-	$(KOMPILE_STANDALONE) $(llvm_main_file)                     \
-	                      --directory $(KEVM_LIB)/$(llvm_dir)   \
-	                      --main-module $(llvm_main_module)     \
-	                      --syntax-module $(llvm_syntax_module)
+$(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out) $(plugin_c_includes)
+	$(KOMPILE) --backend llvm                 \
+	    $(llvm_main_file)                     \
+	    --directory $(KEVM_LIB)/$(llvm_dir)   \
+	    --main-module $(llvm_main_module)     \
+	    --syntax-module $(llvm_syntax_module) \
+	    $(KOMPILE_OPTS)
 
 # Installing
 # ----------
@@ -292,10 +276,13 @@ build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%
 build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_BIN)/$(KEVM) $(KEVM_LIB)/kore-json.py
 build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_BIN)/$(KEVM) $(KEVM_LIB)/kore-json.py
 build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_BIN)/$(KEVM) $(KEVM_LIB)/kast-json.py
-build-lemmas:  $(lemma_includes)
 
-all_bin_sources := $(shell find $(KEVM_BIN) -type f                                                                                                                    | sed 's|^$(KEVM_BIN)/||')
-all_lib_sources := $(shell find $(KEVM_LIB) -type f -not -path "$(KEVM_LIB)/llvm/driver-kompiled/dt/*" -not -path "$(KEVM_LIB)/kframework/share/kframework/pl-tutorial/*" | sed 's|^$(KEVM_LIB)/||')
+all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
+all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
+                            -not -path "$(KEVM_LIB)/llvm/driver-kompiled/dt/*"                 \
+                            -not -path "$(KEVM_LIB)/kframework/share/kframework/pl-tutorial/*" \
+                            -not -path "$(KEVM_LIB)/kframework/share/kframework/k-tutorial/*"  \
+                        | sed 's|^$(KEVM_LIB)/||')
 
 install: $(patsubst %, $(DESTDIR)$(INSTALL_BIN)/%, $(all_bin_sources)) \
          $(patsubst %, $(DESTDIR)$(INSTALL_LIB)/%, $(all_lib_sources))
