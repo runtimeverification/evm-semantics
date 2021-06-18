@@ -76,6 +76,38 @@ pipeline {
                 stash name: 'focal', includes: "kevm_${env.VERSION}_amd64.deb"
               }
             }
+            stage('Test Ubuntu Focal') {
+              agent {
+                dockerfile {
+                  filename 'package/debian/Dockerfile.test'
+                  additionalBuildArgs '--build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g) --build-arg BASE_IMAGE=ubuntu:focal'
+                  reuseNode true
+                }
+              }
+              options { skipDefaultCheckout() }
+              steps {
+                dir('focal-test') {
+                  checkout scm
+                  unstash 'focal'
+                  sh '''
+                    export KLAB_OUT=$(pwd)
+                    sudo apt-get update
+                    sudo apt-get upgrade --yes
+                    sudo apt-get install --yes ./kevm_${VERSION}_amd64.deb
+                    which kevm
+                    kevm help
+                    kevm version
+                    make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=llvm
+                    make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=java
+                    make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=haskell
+                    make -j4 test-parse              TEST_CONCRETE_BACKEND=llvm
+                    make -j4 test-failure            TEST_CONCRETE_BACKEND=llvm
+                    make -j4 test-klab-prove         TEST_SYMBOLIC_BACKEND=java
+                    make -j4 test-interactive-search TEST_SYMBOLIC_BACKEND=haskell
+                  '''
+                }
+              }
+            }
           }
         }
         stage('DockerHub') {

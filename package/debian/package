@@ -2,7 +2,7 @@
 
 set -xeuo pipefail
 
-distro="${1:-bionic}"
+distro="${1:-focal}"
 
 case "$distro" in
     focal)  control_file=control.focal              ;;
