@@ -84,7 +84,10 @@ pipeline {
                   reuseNode true
                 }
               }
-              options { skipDefaultCheckout() }
+              options {
+                skipDefaultCheckout()
+                timeout(time: 25, unit: 'MINUTES')
+              }
               steps {
                 dir('focal-test') {
                   checkout scm
