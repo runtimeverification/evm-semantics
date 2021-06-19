@@ -94,10 +94,9 @@ pipeline {
                   unstash 'focal'
                   sh '''
                     export KLAB_OUT=$(pwd)
-                    export DEBIAN_FRONTEND=noninteractive
-                    sudo apt-get update
-                    sudo apt-get upgrade --yes
-                    sudo apt-get install --yes ./kevm_${VERSION}_amd64.deb
+                    sudo DEBIAN_FRONTEND=noninteractive apt-get update
+                    sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes
+                    sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes ./kevm_${VERSION}_amd64.deb
                     which kevm
                     kevm help
                     kevm version
