@@ -75,21 +75,30 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir proof_args bug_report_name
+    local def_module run_dir proof_args bug_report_name eventlog_name haskell_backend_args
 
     check_k_install
 
     def_module="$1" ; shift
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
+    eventlog_name="$run_file.log.json"
+
+    haskell_backend_args=()
+    ! $bug_report || haskell_backend_args+=(--bug-report "$bug_report_name")
+    ! $profile    || haskell_backend_args+=(+RTS -l -ol$eventlog_name -RTS)
+    haskell_backend_args="${haskell_backend_args[@]}"
 
     proof_args=(--def-module "$def_module")
     ! $debug                          || proof_args+=(--debug)
     ! $debugger                       || proof_args+=(--debugger)
-    ! $bug_report                     || proof_args+=(--haskell-backend-command "kore-exec --bug-report $bug_report_name")
+    [[ -z $haskell_backend_args ]]    || proof_args+=(--haskell-backend-command "kore-exec $haskell_backend_args")
     [[ ! -f ${concrete_rules_file} ]] || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
 
     ! $debug || set -x
     kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
+
+    ! $profile || { kore-prof "$eventlog_name" > "$eventlog_name.tmp" \
+               &&   mv "$eventlog_name.tmp" "$eventlog_name"; }
 }
 
 run_search() {
@@ -190,7 +199,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                $0 interpret    [--backend (llvm)] [--debug|--no-unparse] <KEVM_arg>* <pgm>  <interpreter arg>*
                $0 interpret    [--backend (java|haskell)] [--no-unparse] <KEVM_arg>* <pgm>
                $0 kast         [--backend (llvm|java|haskell)]           <KEVM_arg>* <pgm>  <output format> <K arg>*
-               $0 prove        [--backend (java|haskell)]                            <spec> <def_module> <K arg>*
+               $0 prove        [--backend (java|haskell)]                            <spec> <def_module> <KEVM_arg>* <K arg>*
                $0 search       [--backend (java|haskell)]                            <pgm>  <pattern> <K arg>*
                $0 kompile      [--backend (java|llvm|haskell)]                       <main> <K arg>*
                $0 klab-run                                                           <pgm>  <K arg>*
@@ -218,6 +227,8 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--schedule (ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
                                       [--chainid NNN]
                                       [--concrete-rules-file <concrete_rules_file>]
+                                      [--bug-report]
+                                      [--profile]
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <output format> is the format for Kast to output the term in.
@@ -240,6 +251,7 @@ debug=false
 dump=false
 unparse=true
 debugger=false
+profile=false
 bug_report=false
 mode=NORMAL
 schedule=ISTANBUL
@@ -257,6 +269,7 @@ while [[ $# -gt 0 ]]; do
         --dump)                dump=true                 ; shift   ;;
         --no-unparse)          unparse=false             ; shift   ;;
         --debugger)            debugger=true             ; shift   ;;
+        --profile)             profile=true              ; shift   ;;
         --bug-report)          bug_report=true           ; shift   ;;
         --backend)             backend="$2"              ; shift 2 ;;
         --backend-dir)         backend_dir="$2"          ; shift 2 ;;
@@ -273,6 +286,7 @@ done
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
 ! $debugger || [[ "$backend" == haskell ]] || [[ "$backend" == llvm ]] || fatal "Option --debugger only usable with --backend [llvm|haskell]!"
+! $profile  || [[ "$backend" == haskell ]] || fatal "Option --profile only usable with --backend haskell!"
 
 # get the run file
 run_file="$1" ; shift
