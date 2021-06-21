@@ -310,7 +310,7 @@ The `#next [_]` operator initiates execution by:
          <static> STATIC:Bool </static>
       requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
        andBool notBool ( STATIC andBool #changesState(OP, WS) )
-      [priority(45)]
+      [priority(40)]
 
     rule <k> #next [ OP ] => #end EVMC_STACK_UNDERFLOW ... </k>
          <wordStack> WS </wordStack>
@@ -730,7 +730,7 @@ These are just used by the other operators for shuffling local execution state a
 ```k
     syntax InternalOp ::= "#push" | "#setStack" WordStack
  // -----------------------------------------------------
-    rule <k> W0:Int ~> #push => . ... </k> <wordStack> WS => W0 : WS </wordStack> [priority(45)]
+    rule <k> W0:Int ~> #push => . ... </k> <wordStack> WS => W0 : WS </wordStack> [priority(40)]
     rule <k> #setStack WS    => . ... </k> <wordStack> _  => WS      </wordStack>
 ```
 
