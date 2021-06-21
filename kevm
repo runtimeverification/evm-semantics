@@ -83,10 +83,10 @@ run_prove() {
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
     eventlog_name="$run_file.log.json"
 
-    haskell_backend_args=()
+    haskell_backend_args=(initial)
     ! $bug_report || haskell_backend_args+=(--bug-report "$bug_report_name")
     ! $profile    || haskell_backend_args+=(+RTS -l -ol$eventlog_name -RTS)
-    haskell_backend_args="${haskell_backend_args[@]}"
+    haskell_backend_args="${haskell_backend_args[@]:1}"
 
     proof_args=(--def-module "$def_module")
     ! $debug                          || proof_args+=(--debug)
