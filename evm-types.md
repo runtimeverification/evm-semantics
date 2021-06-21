@@ -12,7 +12,7 @@ module EVM-TYPES
     imports COLLECTIONS
 ```
 
-```{.k .concrete .bytes}
+```{.k .bytes}
     imports BYTES
 ```
 
