@@ -75,7 +75,7 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir proof_args bug_report_name eventlog_name haskell_backend_args
+    local def_module run_dir proof_args haskell_backend_args bug_report_name eventlog_name
 
     check_k_install
 
