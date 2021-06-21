@@ -10,7 +10,7 @@ Package: kevm
 Architecture: any
 Section: devel
 Priority: optional
-Depends: clang-10 , default-jre-headless , flex , libcrypto++-dev , libgmp-dev , libjemalloc-dev , libmpfr-dev , libprocps-dev , libsecp256k1-dev , lld-10 , python3 , z3
+Depends: clang-10 , default-jre-headless , flex , gcc , libcrypto++-dev , libgmp-dev , libjemalloc-dev , libmpfr-dev , libprocps-dev , libsecp256k1-dev , lld-10 , python3 , z3
 Description: K Semantics of EVM
  Implementation of Ethereum Virtual Machine (EVM) in K.
  kevm-vm executable communicates over protobuf to run EVM transactions.
