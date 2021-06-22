@@ -12,15 +12,6 @@ RUN    apt-get update                   \
                         git             \
                         python
 
-RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.6 \
-    && cd z3                                                        \
-    && python scripts/mk_make.py                                    \
-    && cd build                                                     \
-    && make -j8                                                     \
-    && make install                                                 \
-    && cd ../..                                                     \
-    && rm -rf z3
-
 COPY kevm_amd64_${BASE_IMAGE}.deb /kevm.deb
 RUN    apt-get update                  \
     && apt-get upgrade --yes           \
