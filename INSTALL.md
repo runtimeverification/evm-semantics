@@ -46,8 +46,6 @@ and to make a Docker Image based on it, use the following line in your `Dockerfi
 FROM runtimeverificationinc/kframework-evm-semantics:ubuntu-focal-COMMIT_ID
 ```
 
-We also create Ubuntu 18.04 images with the `ubuntu-focal-COMMIT_ID` tags.
-
 ### From Source Build
 
 Follow the instructions in the [README file](https://github.com/kframework/evm-semantics) for building KEVM from source.

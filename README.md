@@ -64,8 +64,8 @@ sudo apt-get install --yes                                                      
             libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev \
             libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev        \
             lld-10 llvm-10-tools make maven netcat-openbsd openjdk-11-jdk        \
-            pkg-config python3 python-pygments python-sphinx                     \
-            rapidjson-dev time z3 zlib1g-dev
+            pkg-config python3 python-pygments python-sphinx rapidjson-dev time  \
+            z3 zlib1g-dev
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
