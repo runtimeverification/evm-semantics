@@ -109,7 +109,7 @@ run_prove() {
 
     def_module="$1" ; shift
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
-    eventlog_name="$run_file.log.json"
+    eventlog_name="$run_file.eventlog"
 
     haskell_backend_command=(kore-exec)
     ! $bug_report || haskell_backend_command+=(--bug-report "$bug_report_name")
@@ -123,9 +123,6 @@ run_prove() {
 
     ! $debug || set -x
     kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
-
-    ! $profile || { kore-prof "$eventlog_name" > "$eventlog_name.tmp" \
-               &&   mv "$eventlog_name.tmp" "$eventlog_name"; }
 }
 
 run_search() {
