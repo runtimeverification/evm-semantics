@@ -22,6 +22,7 @@ RUN    apt-get update           \
             python3             \
             python-pygments     \
             rapidjson-dev       \
+            z3                  \
             zlib1g-dev
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
