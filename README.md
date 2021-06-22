@@ -8,7 +8,7 @@ Documentation/Support
 
 These may be useful for learning KEVM and K (newest to oldest):
 
--   [Jello Paper], generated using [Sphinx Documentation Generation].
+-   [Jello Paper], a nice presentation of this repository.
 -   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQNov) at [2017 Devcon3].
 -   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
 -   [KEVM Paper at CSF'18/FLoC](http://fsl.cs.illinois.edu/index.php/KEVM:_A_Complete_Semantics_of_the_Ethereum_Virtual_Machine).
@@ -60,12 +60,11 @@ On Ubuntu >= 18.04 (for example):
 
 ```sh
 sudo apt-get install --yes                                                       \
-            autoconf bison clang-8 cmake curl flex gcc jq libboost-test-dev      \
+            autoconf bison clang-10 cmake curl flex gcc jq libboost-test-dev     \
             libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev \
             libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev        \
-            lld-8 llvm-8-tools make maven netcat-openbsd openjdk-11-jdk          \
-            pkg-config python3 python-pygments python-recommonmark               \
-            python-sphinx rapidjson-dev time z3 zlib1g-dev
+            lld-10 llvm-10-tools make maven netcat-openbsd openjdk-11-jdk        \
+            pkg-config python3 python-pygments rapidjson-dev time z3 zlib1g-dev
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
@@ -229,7 +228,6 @@ For more information about [The K Framework](https://kframework.org), refer to t
 
 [Jello Paper]: <https://jellopaper.org>
 [2017 Devcon3]: <https://ethereumfoundation.org/devcon3/>
-[Sphinx Documentation Generation]: <http://sphinx-doc.org>
 [K Reachability Logic Prover]: <http://fsl.cs.illinois.edu/FSL/papers/2016/stefanescu-park-yuwen-li-rosu-2016-oopsla/stefanescu-park-yuwen-li-rosu-2016-oopsla-public.pdf>
 [K Editor Support]: <https://github.com/kframework/k-editor-support>
 [Ethereum Test Set]: <https://github.com/ethereum/tests>
