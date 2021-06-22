@@ -111,11 +111,11 @@ module LEMMAS-JAVA [symbolic, kast]
 
     rule #sizeByteArray(_W : WS)       => 1 +Int #sizeByteArray(WS)             [simplification]
     rule #sizeByteArray(#drop(N, BUF)) => maxInt(#sizeByteArray(BUF) -Int N, 0) [simplification]
-    rule #sizeByteArray(#take(N, _  )) => maxInt(N,                          0) [simplification]
+    // rule #sizeByteArray(#take(N, _  )) => maxInt(N,                          0) [simplification]
 
-    rule #take(N, BUF)           => BUF                                              requires N ==Int #sizeByteArray(BUF)  [simplification]
-    rule #take(N, BUF1 ++ _BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeByteArray(BUF1) [simplification]
-    rule #take(N, BUF1 ++  BUF2) => BUF1 ++ #take(N -Int #sizeByteArray(BUF1), BUF2) requires N  >Int #sizeByteArray(BUF1) [simplification]
+    // rule #take(N, BUF)           => BUF                                              requires N ==Int #sizeByteArray(BUF)  [simplification]
+    // rule #take(N, BUF1 ++ _BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeByteArray(BUF1) [simplification]
+    // rule #take(N, BUF1 ++  BUF2) => BUF1 ++ #take(N -Int #sizeByteArray(BUF1), BUF2) requires N  >Int #sizeByteArray(BUF1) [simplification]
 
     rule #drop(N, BUF)          => .ByteArray                               requires N >=Int #sizeByteArray(BUF)  [simplification]
     rule #drop(N, BUF1 ++ BUF2) => #drop(N -Int #sizeByteArray(BUF1), BUF2) requires N >=Int #sizeByteArray(BUF1) [simplification]
@@ -123,7 +123,7 @@ module LEMMAS-JAVA [symbolic, kast]
 
     rule #asWord(#buf(_N, BUF)) => BUF [simplification]
 
-    rule #asWord(BUF) /Int 26959946667150639794667015087019630673637144422540572481103610249216 => #asWord(#take(4, BUF)) [simplification]
+    // rule #asWord(BUF) /Int 26959946667150639794667015087019630673637144422540572481103610249216 => #asWord(#take(4, BUF)) [simplification]
 
     rule #range(_M, _N, K) => .ByteArray requires notBool K >Int 0 [simplification]
 
@@ -145,11 +145,11 @@ module LEMMAS-JAVA [symbolic, kast]
 
 
     // for Solidity
-    rule #asWord(WS) /Int D => #asWord(#take(#sizeByteArray(WS) -Int log256Int(D), WS))
-      requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
-       andBool #sizeByteArray(WS) >=Int log256Int(D)
-       andBool #noOverflow(WS)
-      [simplification]
+    // rule #asWord(WS) /Int D => #asWord(#take(#sizeByteArray(WS) -Int log256Int(D), WS))
+    //   requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
+    //    andBool #sizeByteArray(WS) >=Int log256Int(D)
+    //    andBool #noOverflow(WS)
+    //   [simplification]
 
     rule #buf(N, #asWord(WS)) => WS
       requires #noOverflow(WS) andBool N ==Int #sizeByteArray(WS)
