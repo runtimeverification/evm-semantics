@@ -103,7 +103,7 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir proof_args haskell_backend_args bug_report_name eventlog_name
+    local def_module run_dir proof_args haskell_backend_command bug_report_name eventlog_name
 
     check_k_install
 
@@ -111,16 +111,15 @@ run_prove() {
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
     eventlog_name="$run_file.log.json"
 
-    haskell_backend_args=(initial)
-    ! $bug_report || haskell_backend_args+=(--bug-report "$bug_report_name")
-    ! $profile    || haskell_backend_args+=(+RTS -l -ol$eventlog_name -RTS)
-    haskell_backend_args="${haskell_backend_args[@]:1}"
+    haskell_backend_command=(kore-exec)
+    ! $bug_report || haskell_backend_command+=(--bug-report "$bug_report_name")
+    ! $profile    || haskell_backend_command+=(+RTS -l -ol$eventlog_name -RTS)
 
     proof_args=(--def-module "$def_module")
-    ! $debug                          || proof_args+=(--debug)
-    ! $debugger                       || proof_args+=(--debugger)
-    [[ -z $haskell_backend_args ]]    || proof_args+=(--haskell-backend-command "kore-exec $haskell_backend_args")
-    [[ ! -f ${concrete_rules_file} ]] || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
+    ! $debug                                   || proof_args+=(--debug)
+    ! $debugger                                || proof_args+=(--debugger)
+    [[ ${#haskell_backend_command[@]} -le 1 ]] || proof_args+=(--haskell-backend-command "${haskell_backend_command[*]}")
+    [[ ! -f ${concrete_rules_file} ]]          || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
 
     ! $debug || set -x
     kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
