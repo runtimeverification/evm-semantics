@@ -305,7 +305,7 @@ The `#next [_]` operator initiates execution by:
     syntax InternalOp ::= "#next" "[" OpCode "]"
  // --------------------------------------------
     rule <k> #next [ OP ]
-          => #addr [ OP ]
+          => #if isAddr1Op(OP) orBool isAddr2Op(OP) #then #addr [ OP ] #else . #fi
           ~> #exec [ OP ]
           ~> #pc   [ OP ]
          ...
