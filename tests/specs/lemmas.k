@@ -107,19 +107,19 @@ module LEMMAS-JAVA [symbolic, kast]
 
     rule BUF [ L .. _W ] => .ByteArray requires L >=Int #sizeByteArray(BUF) [simplification]
 
-    rule #asWord( BUF => #drop(1, BUF) ) requires BUF [ 0 ] ==Int 0 [simplification]
+    // rule #asWord( BUF => #drop(1, BUF) ) requires BUF [ 0 ] ==Int 0 [simplification]
 
     rule #sizeByteArray(_W : WS)       => 1 +Int #sizeByteArray(WS)             [simplification]
-    rule #sizeByteArray(#drop(N, BUF)) => maxInt(#sizeByteArray(BUF) -Int N, 0) [simplification]
+    // rule #sizeByteArray(#drop(N, BUF)) => maxInt(#sizeByteArray(BUF) -Int N, 0) [simplification]
     // rule #sizeByteArray(#take(N, _  )) => maxInt(N,                          0) [simplification]
 
     // rule #take(N, BUF)           => BUF                                              requires N ==Int #sizeByteArray(BUF)  [simplification]
     // rule #take(N, BUF1 ++ _BUF2) => #take(N, BUF1)                                   requires N <=Int #sizeByteArray(BUF1) [simplification]
     // rule #take(N, BUF1 ++  BUF2) => BUF1 ++ #take(N -Int #sizeByteArray(BUF1), BUF2) requires N  >Int #sizeByteArray(BUF1) [simplification]
 
-    rule #drop(N, BUF)          => .ByteArray                               requires N >=Int #sizeByteArray(BUF)  [simplification]
-    rule #drop(N, BUF1 ++ BUF2) => #drop(N -Int #sizeByteArray(BUF1), BUF2) requires N >=Int #sizeByteArray(BUF1) [simplification]
-    rule #drop(N, BUF1 ++ BUF2) => #drop(N, BUF1) ++ BUF2                   requires N  <Int #sizeByteArray(BUF1) [simplification]
+    // rule #drop(N, BUF)          => .ByteArray                               requires N >=Int #sizeByteArray(BUF)  [simplification]
+    // rule #drop(N, BUF1 ++ BUF2) => #drop(N -Int #sizeByteArray(BUF1), BUF2) requires N >=Int #sizeByteArray(BUF1) [simplification]
+    // rule #drop(N, BUF1 ++ BUF2) => #drop(N, BUF1) ++ BUF2                   requires N  <Int #sizeByteArray(BUF1) [simplification]
 
     rule #asWord(#buf(_N, BUF)) => BUF [simplification]
 
@@ -160,7 +160,7 @@ module LEMMAS-JAVA [symbolic, kast]
  // -------------------------------------------------------
     rule #noOverflow(WS) => #sizeByteArray(WS) <=Int 32 andBool #noOverflowAux(WS)
 
-    rule #noOverflowAux(BA        ) => 0 <=Int BA[0] andBool BA[0] <Int 256 andBool #noOverflowAux(#drop(1,BA)) requires #sizeByteArray(BA) >Int 0
+    // rule #noOverflowAux(BA        ) => 0 <=Int BA[0] andBool BA[0] <Int 256 andBool #noOverflowAux(#drop(1,BA)) requires #sizeByteArray(BA) >Int 0
     rule #noOverflowAux(.ByteArray) => true
 
     rule 1 *Int N => N
