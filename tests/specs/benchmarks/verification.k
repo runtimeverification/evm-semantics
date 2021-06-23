@@ -353,6 +353,8 @@ module VERIFICATION-HASKELL [symbolic, kore]
 
     rule X +Int Y <Int Z => X <Int Z -Int Y [concrete(Y), simplification]
 
+    rule BA1 ++ (BA2 ++ BA3) => (BA1 ++ BA2) ++ BA3 [concrete(BA1, BA2), simplification]
+
 endmodule
 
 module VERIFICATION-JAVA [symbolic, kast]
