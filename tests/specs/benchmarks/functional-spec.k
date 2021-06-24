@@ -26,4 +26,7 @@ module FUNCTIONAL-SPEC
     claim <k> runLemma( chop( chop( #ceil32(DATA_LEN) +Int 64 ) +Int 4 ) ) => doneLemma ( #ceil32(DATA_LEN) +Int 68 ) ... </k> requires #range(0 <= DATA_LEN < pow16)
 
     claim <k> runLemma(#ceil32(DATA_LEN) +Int 292 <Int DATA_LEN +Int 292) => doneLemma(false) ... </k> requires #range(0 <= DATA_LEN < pow16)
+
+    claim <k> runLemma(#buf(4, 0) ++ (#buf(32, 6) ++ BA:ByteArray)) => doneLemma(#buf(36, 6) ++ BA:ByteArray) ... </k>
+    
 endmodule
