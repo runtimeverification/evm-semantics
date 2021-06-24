@@ -26,11 +26,4 @@ module FUNCTIONAL-SPEC
     claim <k> runLemma( chop( chop( #ceil32(DATA_LEN) +Int 64 ) +Int 4 ) ) => doneLemma ( #ceil32(DATA_LEN) +Int 68 ) ... </k> requires #range(0 <= DATA_LEN < pow16)
 
     claim <k> runLemma(#ceil32(DATA_LEN) +Int 292 <Int DATA_LEN +Int 292) => doneLemma(false) ... </k> requires #range(0 <= DATA_LEN < pow16)
-
-    // from tests/specs/benchmarks/bytes00-spec.k and tests/specs/benchmarks/keccak00-spec.k
-    claim <k> runLemma  ( (#buf(DATA_LEN, DATA) ++ _BUF) [0 .. DATA_LEN] ) 
-           => doneLemma (  #buf(DATA_LEN, DATA)          [0 .. DATA_LEN] ) ... </k>
-      requires #range(0 <= DATA < (2 ^Int (DATA_LEN *Int 8)))
-       andBool 0 <=Int DATA_LEN
-
 endmodule

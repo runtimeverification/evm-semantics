@@ -141,9 +141,9 @@ module LEMMAS-SPEC
 
  // buffer range sinplification
  // ---------------------------
-    claim <k> runLemma  ( (#buf (SIZE, DATA) ++ _BUF) [ 0 .. SIZE ] )
-           => doneLemma ( #buf (SIZE, DATA) ) </k>
-      requires #range(0 <= DATA < 2 ^Int (SIZE *Int 8))
-       andBool 0 <=Int SIZE
+    claim <k> runLemma  ( (#buf(DATA_LEN, DATA) ++ _BUF) [0 .. DATA_LEN] ) 
+           => doneLemma (  #buf(DATA_LEN, DATA)          [0 .. DATA_LEN] ) ... </k>
+      requires #range(0 <= DATA < (2 ^Int (DATA_LEN *Int 8)))
+       andBool 0 <=Int DATA_LEN
 
 endmodule
