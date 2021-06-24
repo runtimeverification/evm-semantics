@@ -139,4 +139,11 @@ module LEMMAS-SPEC
     claim <k> runLemma ( 160 ==Int #asWord ( #buf( 4, 160 ) ++ ( #buf( 32 , _BUF ) [ 0 .. 28 ] ) ) >>Int 224 )
            => doneLemma( true ) ... </k>
 
+ // buffer range sinplification
+ // ---------------------------
+    claim <k> runLemma  ( (#buf (SIZE, DATA) ++ _BUF) [ 0 .. SIZE ] )
+           => doneLemma ( #buf (SIZE, DATA) ) </k>
+      requires #range(0 <= DATA < 2 ^Int (SIZE *Int 8))
+       andBool 0 <=Int SIZE
+
 endmodule

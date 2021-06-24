@@ -30,13 +30,13 @@ module LEMMAS
     rule _BUF [ _ .. W ] => .ByteArray requires W ==Int 0                    [simplification]
     rule  BUF [ 0 .. W ] => BUF        requires W ==Int #sizeByteArray(BUF)  [simplification]
 
-    rule (#buf(DATA_LEN, DATA) ++ _BUF) [0 .. DATA_LEN] => #buf( DATA_LEN , DATA ) [simplification]
-
     rule (BUF1 ++ BUF2)[START .. WIDTH] => (BUF1[START .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])
-      requires #range(0 <= START < #sizeByteArray(BUF1))
-       andBool #sizeByteArray(BUF1) <Int START +Int WIDTH [simplification]
-
-    rule (BUF1 ++_BUF2)[START .. WIDTH] => (BUF1[START .. WIDTH])
+      requires 0 <=Int START 
+        andBool 0 <=Int WIDTH
+        andBool START +Int WIDTH <=Int #sizeByteArray(BUF1)
+        [simplification]
+        
+    rule (BUF1 ++ _BUF2)[START .. WIDTH] => (BUF1[START .. WIDTH])
       requires #range(0 <= START < #sizeByteArray(BUF1))
        andBool START +Int WIDTH <=Int #sizeByteArray(BUF1) [simplification]
 
