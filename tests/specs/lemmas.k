@@ -36,9 +36,8 @@ module LEMMAS
         
     rule (BUF1 ++ _BUF2)[START .. WIDTH] => (BUF1[START .. WIDTH])
       requires 0 <=Int START 
-        andBool 0 <=Int WIDTH
-        andBool START +Int WIDTH <=Int #sizeByteArray(BUF1)
-        [simplification]
+       andBool 0 <=Int WIDTH
+       andBool START +Int WIDTH <=Int #sizeByteArray(BUF1) [simplification]
 
     rule (BUF1 ++ BUF2)[START .. WIDTH] => BUF2 [START -Int #sizeByteArray(BUF1) .. WIDTH]
       requires START >=Int #sizeByteArray(BUF1) [simplification]
