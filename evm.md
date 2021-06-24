@@ -1028,7 +1028,7 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax UnStackOp ::= "JUMP"
  // ---------------------------
-    rule <k> JUMP DEST => #endBasicBlock... </k>
+    rule <k> JUMP DEST => #endBasicBlock ... </k>
          <pc> _ => DEST </pc>
          <jumpDests> DESTS </jumpDests>
       requires DEST in DESTS
