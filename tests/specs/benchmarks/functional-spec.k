@@ -32,6 +32,6 @@ module FUNCTIONAL-SPEC
     claim <k> runLemma((112 : 190 : 104 : 75 : (#buf(32, A0) ++ #buf(32, A1))) [0 .. 32]) => doneLemma(112 : 190 : 104 : 75 : (#buf(32, A0) [0 .. 28])) ... </k> requires #rangeUInt(256, A0) andBool #rangeUInt(256, A1)
     claim <k> runLemma((112 : 190 : 104 : 75 : (#buf(32, A0) ++ #buf(32, A1))) [0 .. 4])  => doneLemma(112 : 190 : 104 : 75 : .ByteArray)               ... </k> requires #rangeUInt(256, A0) andBool #rangeUInt(256, A1)
 
-    claim <k> runLemma(#asWord(112 : 190 : 104 : 74 : #buf(28, A0)) /Int pow224) => doneLemma(1891526730) ... </k>
+    claim <k> runLemma(#asWord(112 : 190 : 104 : 74 : #buf(28, A0)) /Int pow224) => doneLemma(1891526730) ... </k> requires #rangeUInt(224, A0)
 
 endmodule
