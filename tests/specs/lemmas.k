@@ -108,6 +108,9 @@ module LEMMAS-JAVA [symbolic, kast]
 
     rule BUF [ L .. _W ] => .ByteArray requires L >=Int #sizeByteArray(BUF) [simplification]
 
+    rule (W0 : WS) [ 0     .. WIDTH ] => W0 : (WS [ 0            .. WIDTH -Int 1 ]) requires #rangeUInt(8, W0) andBool 0 <Int WIDTH [simplification]
+    rule (W0 : WS) [ START .. WIDTH ] =>       WS [ START -Int 1 .. WIDTH        ]  requires #rangeUInt(8, W0) andBool 0 <Int START [simplification]
+
     rule #sizeByteArray(_W : WS)       => 1 +Int #sizeByteArray(WS)             [simplification]
 
     rule #asWord(#buf(_N, BUF)) => BUF [simplification]
@@ -129,6 +132,8 @@ module LEMMAS-JAVA [symbolic, kast]
       requires K  >Int 0
        andBool L >=Int N +Int #sizeByteArray(BUF)
       [simplification]
+
+    rule #asWord(BUF) /Int pow224 => #asWord(BUF [ 0 .. 4 ]) requires #sizeByteArray(BUF) ==Int 32 [simplification]
 
     rule #buf(N, #asWord(WS)) => WS
       requires #noOverflow(WS) andBool N ==Int #sizeByteArray(WS)
