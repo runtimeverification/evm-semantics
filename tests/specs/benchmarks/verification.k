@@ -113,10 +113,6 @@ module VERIFICATION
     rule #sizeWordStack(WS, N) <=Int SIZE => #sizeWordStack(WS, 0) +Int N <=Int SIZE requires N =/=Int 0
       [simplification]
 
-    // TODO: remove this to see if any proofs break
-    // rule #take(#sizeWordStack(WS, 0), WS) => WS
-    //   [simplification]
-
   // ########################
   // Range
   // ########################
