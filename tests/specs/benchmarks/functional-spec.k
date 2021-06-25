@@ -29,4 +29,6 @@ module FUNCTIONAL-SPEC
 
     claim <k> runLemma(#buf(4, 0) ++ (#buf(32, 6) ++ BA:ByteArray)) => doneLemma(#buf(36, 6) ++ BA:ByteArray) ... </k>
 
+    claim <k> runLemma((112 : 190 : 104 : 75 : (#buf(32, A0) ++ (#buf(32, A1) ++ #buf(32, A2)))) [0 .. 32]) => doneLemma(112 : 190 : 104 : 75 : (#buf(32, A0) [0 .. 28])) ... </k>
+
 endmodule

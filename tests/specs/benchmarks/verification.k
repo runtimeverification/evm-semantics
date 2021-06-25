@@ -426,4 +426,7 @@ module VERIFICATION-JAVA [symbolic, kast]
 
     rule 0 <=Int #gas(_, _, _)             => true [simplification]
     rule         #gas(_, _, _) <Int pow256 => true [simplification]
+
+    rule (W0 : WS) [ 0 .. WIDTH ] => W0 : (WS [ 0 .. WIDTH -Int 1 ]) requires 0 <Int WIDTH [simplification]
+
 endmodule
