@@ -201,18 +201,19 @@ You can also debug proofs interactively:
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION --debugger --debug-script kscript
 ```
 
-Here, `kscript` is a file containing `kore-repl` commands. For example, we advise to put an alias for 
-outputting the current configuration as a pretty-printed term (as opposed to raw `kore` term):
+Here, `kscript` is a file containing `kore-repl` commands.
+For example, we advise to put an alias for outputting the current configuration as a pretty-printed term (as opposed to raw `kore` term):
+
 ```sh
 alias konfig = config | kast -i kore -o pretty -d .build/usr/lib/kevm/haskell /dev/stdin
 ```
 
 ### Keeping `.build` up-to-date while developing
 
-* `make build` needs to be re-run if you touch any of this repos files.
-* `make deps` needs to be re-run if there is a submodule update (you did `git submodule update --init --recursive` and it actually did something).
-* If both `deps` and `build` need to be re-run, you need to do `deps` first.
-* `make clean` is a safe way to remove the `.build` directory, but then you need to re-run `make deps` (should be quick this time) and `make build`.
+-   `make build` needs to be re-run if you touch any of this repos files.
+-   `make deps` needs to be re-run if there is a submodule update (you did `git submodule update --init --recursive` and it actually did something).
+-   If both `deps` and `build` need to be re-run, you need to do `deps` first.
+-   `make clean` is a safe way to remove the `.build` directory, but then you need to re-run `make deps` (should be quick this time) and `make build`.
 
 Media
 -----
