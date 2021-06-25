@@ -423,8 +423,8 @@ module VERIFICATION-JAVA [symbolic, kast]
     rule 0 <=Int #gas(_, _, _)             => true [simplification]
     rule         #gas(_, _, _) <Int pow256 => true [simplification]
 
-    rule (W0 : WS) [ 0     .. WIDTH ] => W0 : (WS [ 0            .. WIDTH -Int 1 ]) requires #rangeUInt(8, W0) andBool 0 <Int WIDTH                      [simplification]
-    rule (W0 : WS) [ START .. WIDTH ] =>       WS [ START -Int 1 .. WIDTH        ]  requires #rangeUInt(8, W0) andBool 0 <Int WIDTH andBool 0 <Int START [simplification]
+    rule (W0 : WS) [ 0     .. WIDTH ] => W0 : (WS [ 0            .. WIDTH -Int 1 ]) requires #rangeUInt(8, W0) andBool 0 <Int WIDTH [simplification]
+    rule (W0 : WS) [ START .. WIDTH ] =>       WS [ START -Int 1 .. WIDTH        ]  requires #rangeUInt(8, W0) andBool 0 <Int START [simplification]
 
     rule #asWord(BUF) /Int pow224 => #asWord(BUF [ 0 .. 4 ]) requires #sizeByteArray(BUF) ==Int 32 [simplification]
 
