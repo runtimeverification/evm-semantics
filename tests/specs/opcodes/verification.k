@@ -3,6 +3,10 @@ requires "edsl.md"
 module VERIFICATION
     imports EDSL
 
+  // ########################
+  // Buffer Reasoning
+  // ########################
+
     syntax ByteArray ::= "#generatedCode" [function]
  // ------------------------------------------------
     // This rule is used to avoid complicated memory allocation gas cost.
@@ -10,6 +14,9 @@ module VERIFICATION
     // as #generatedCode will be a concrete byte array.
     rule #sizeByteArray(#generatedCode) => 0 [simplification]
 
+  // ########################
+  // Placeholders
+  // ########################
 
     // TODO: should these be here or in tests/specs/opcodes/create-spec.k?
     //       see comment at beginning of that file.
