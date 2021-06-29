@@ -13,6 +13,7 @@ module VERIFICATION-COMMON
 
     //Symbolic predicate representing whether output of #ecrec is empty. No implementation.
     syntax Bool ::= #ecrecEmpty( ByteArray ) [function]
+
 endmodule
 
 module VERIFICATION
@@ -24,17 +25,14 @@ module VERIFICATION
   // Map
   // ########################
 
-    rule M:Map [ K1 <- _  ] [ K2 <- V2 ] => M [ K1 <- V2 ]              requires K1 ==Int K2
-      [simplification]
-    rule M:Map [ K1 <- V1 ] [ K2 <- V2 ] => M [ K2 <- V2 ] [ K1 <- V1 ] requires K2  <Int K1
-      [simplification]
+    rule M:Map [ K1 <- _  ] [ K2 <- V2 ] => M [ K1 <- V2 ]               requires K1 ==Int K2 [simplification]
+    rule M:Map [ K1 <- V1 ] [ K2 <- V2 ] => M [ K2 <- V2 ] [ K1 <- V1 ]  requires K2  <Int K1 [simplification]
 
   // ########################
   // Gas Calculation
   // ########################
 
-    rule Rsstore(BYZANTIUM, NEW, _CURR, _ORIG) => 0 requires NEW =/=Int 0
-      [simplification]
+    rule Rsstore(BYZANTIUM, NEW, _CURR, _ORIG) => 0  requires NEW =/=Int 0 [simplification]
 
   // ########################
   // Ecrecover
