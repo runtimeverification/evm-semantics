@@ -103,21 +103,29 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir proof_args bug_report_name
+    local def_module run_dir proof_args haskell_backend_command bug_report_name eventlog_name
 
     check_k_install
 
     def_module="$1" ; shift
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
+    eventlog_name="$run_file.log.json"
+
+    haskell_backend_command=(kore-exec)
+    ! $bug_report || haskell_backend_command+=(--bug-report "$bug_report_name")
+    ! $profile    || haskell_backend_command+=(+RTS -l -ol$eventlog_name -RTS)
 
     proof_args=(--def-module "$def_module")
-    ! $debug                          || proof_args+=(--debug)
-    ! $debugger                       || proof_args+=(--debugger)
-    ! $bug_report                     || proof_args+=(--haskell-backend-command "kore-exec --bug-report $bug_report_name")
-    [[ ! -f ${concrete_rules_file} ]] || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
+    ! $debug                                   || proof_args+=(--debug)
+    ! $debugger                                || proof_args+=(--debugger)
+    [[ ${#haskell_backend_command[@]} -le 1 ]] || proof_args+=(--haskell-backend-command "${haskell_backend_command[*]}")
+    [[ ! -f ${concrete_rules_file} ]]          || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
 
     ! $debug || set -x
     kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
+
+    ! $profile || { kore-prof "$eventlog_name" > "$eventlog_name.tmp" \
+               &&   mv "$eventlog_name.tmp" "$eventlog_name"; }
 }
 
 run_search() {
@@ -218,15 +226,13 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                $0 interpret    [--backend (llvm)] [--debug|--no-unparse] <KEVM_arg>* <pgm>  <interpreter arg>*
                $0 interpret    [--backend (java|haskell)] [--no-unparse] <KEVM_arg>* <pgm>
                $0 kast         [--backend (llvm|java|haskell)]           <KEVM_arg>* <pgm>  <output format> <K arg>*
-               $0 prove        [--backend (java|haskell)]                            <spec> <def_module> <K arg>*
+               $0 prove        [--backend (java|haskell)]                            <spec> <def_module> <KEVM_arg>* <K arg>*
                $0 search       [--backend (java|haskell)]                            <pgm>  <pattern> <K arg>*
                $0 kompile      [--backend (java|llvm|haskell)]                       <main> <K arg>*
                $0 klab-run                                                           <pgm>  <K arg>*
                $0 klab-prove                                                         <spec> <def_module> <K arg>*
                $0 klab-view                                                          <spec>
-
                $0 [help|--help|version|--version]
-
            $0 run       : Run a single EVM program
            $0 interpret : Run JSON EVM programs without K Frontend (external parser)
            $0 kast      : Parse an EVM program and output it in a supported format
@@ -235,10 +241,8 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
            $0 kompile   : Run kompile with arguments setup to include KEVM parameters as defaults
            $0 klab-(run|prove) : Run program or prove spec and dump StateLogs which KLab can read
            $0 klab-view : View the statelog associated with a given program or spec
-
            $0 help    : Display this help message.
            $0 version : Display the versions of KEVM, K, Kore, and Z3 in use.
-
            Note: <pgm> is a path to a file containing an EVM program/test.
                  <spec> is a K specification to be proved.
                  <main> is a K definition to be kompiled, which may include files from KEVM.
@@ -246,12 +250,13 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--schedule (ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
                                       [--chainid NNN]
                                       [--concrete-rules-file <concrete_rules_file>]
+                                      [--bug-report]
+                                      [--profile]
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <output format> is the format for Kast to output the term in.
                  <pattern> is the configuration pattern to search for.
                  <def_module> is the module to take as axioms when doing verification.
-
            klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
     "
     exit 0
@@ -268,6 +273,7 @@ debug=false
 dump=false
 unparse=true
 debugger=false
+profile=false
 bug_report=false
 mode=NORMAL
 schedule=ISTANBUL
@@ -285,6 +291,7 @@ while [[ $# -gt 0 ]]; do
         --dump)                dump=true                 ; shift   ;;
         --no-unparse)          unparse=false             ; shift   ;;
         --debugger)            debugger=true             ; shift   ;;
+        --profile)             profile=true              ; shift   ;;
         --bug-report)          bug_report=true           ; shift   ;;
         --backend)             backend="$2"              ; shift 2 ;;
         --backend-dir)         backend_dir="$2"          ; shift 2 ;;
@@ -301,6 +308,7 @@ done
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
 ! $debugger || [[ "$backend" == haskell ]] || [[ "$backend" == llvm ]] || fatal "Option --debugger only usable with --backend [llvm|haskell]!"
+! $profile  || [[ "$backend" == haskell ]] || fatal "Option --profile only usable with --backend haskell!"
 
 # get the run file
 run_file="$1" ; shift
