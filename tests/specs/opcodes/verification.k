@@ -4,17 +4,6 @@ module VERIFICATION
     imports EDSL
 
   // ########################
-  // Buffer Reasoning
-  // ########################
-
-    syntax ByteArray ::= "#generatedCode" [function]
- // ------------------------------------------------
-    // This rule is used to avoid complicated memory allocation gas cost.
-    // when doing actual proof, the rule is no longer needed 
-    // as #generatedCode will be a concrete byte array.
-    rule #sizeByteArray(#generatedCode) => 0 [simplification]
-
-  // ########################
   // Placeholders
   // ########################
 
@@ -24,6 +13,17 @@ module VERIFICATION
                  | "#memWidth" [function]
 
     syntax Memory ::= "#mapWithCode" [function]
+
+  // ########################
+  // Buffer Reasoning
+  // ########################
+
+    syntax ByteArray ::= "#generatedCode" [function]
+ // ------------------------------------------------
+    // This rule is used to avoid complicated memory allocation gas cost.
+    // when doing actual proof, the rule is no longer needed 
+    // as #generatedCode will be a concrete byte array.
+    rule #sizeByteArray(#generatedCode) => 0 [simplification]
 
   // ########################
   // Arithmetic
