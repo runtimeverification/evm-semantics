@@ -262,8 +262,6 @@ module LEMMAS-MCD-COMMON
     // So we need this rule to do the structural simplification because the Java backend will not use this string of equalities to do the simplification directly.
     rule #WordPackAddrUInt48UInt48(ADDR, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) => #WordPackAddrUInt48UInt48(ADDR, 0, UINT48_2) requires maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) ==Int 0 [simplification]
 
-
-
   // ########################
   // Map
   // ########################
