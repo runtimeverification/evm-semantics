@@ -22,7 +22,7 @@ module VERIFICATION
     imports VERIFICATION-HASKELL
 
   // ########################
-  // Map
+  // Map Reasoning
   // ########################
 
     rule M:Map [ K1 <- _  ] [ K2 <- V2 ] => M [ K1 <- V2 ]               requires K1 ==Int K2 [simplification]
