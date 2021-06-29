@@ -7,6 +7,10 @@ module VERIFICATION
     imports EDSL
     imports LEMMAS
 
+  // ########################
+  // Buffer Reasoning
+  // ########################
+
     //semantics of #buf
     rule #buf(LEN, BYTES) => #padToWidth(LEN, #asByteStack( BYTES )) [simplification, concrete]
 
