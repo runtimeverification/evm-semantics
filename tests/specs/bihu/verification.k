@@ -46,6 +46,10 @@ module VERIFICATION
        andBool I2 >=Int I3
       [simplification]
 
+  // ########################
+  // #roundpower
+  // ########################
+
     syntax Int ::= "#roundpower" "(" Int "," Int "," Int "," Int ")"  [function, smtlib(smt_roundpower)]
  // ----------------------------------------------------------------------------------------------------
     rule #roundpower(0,                           BASEN, BASED, EXPONENT) => 0                                                requires BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0
@@ -62,12 +66,16 @@ module VERIFICATION
     rule 0 <=Int (#roundpower(ACC, BASEN, BASED, EXPONENT) *Int A /Int B *Int C)            => true  requires  ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0 andBool A >=Int 0 andBool B >Int 0 andBool C >=Int 0                                                  [simplification]
     rule          #roundpower(ACC, BASEN, BASED, EXPONENT) *Int A /Int B *Int C <Int pow256 => true  requires  ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0 andBool A >=Int 0 andBool B >Int 0 andBool C >=Int 0 andBool ACC *Int A /Int B *Int C <Int 2 ^Int 256 [simplification]
 
+
     syntax Int ::= "@remainingTokens" "(" Int "," Int "," Int ")"
                  | "@canExtractThisYear" "(" Int "," Int "," Int ")"
  // ----------------------------------------------------------------
     rule @remainingTokens(TOTAL, NOW, START) => #roundpower(TOTAL, 90, 100, (NOW -Int START) /Int 31536000)  [macro]
     rule @canExtractThisYear(TOTAL, NOW, START) => ((#roundpower(TOTAL, 90, 100, (NOW -Int START) /Int 31536000) *Int 10 /Int 100) *Int ((NOW -Int START) modInt 31536000)) /Int 31536000  [macro]
 
+  // ###############################
+  // #accumulatedReleasedTokens
+  // ###############################
 
     syntax Int ::= "#accumulatedReleasedTokens" "(" Int "," Int "," Int "," Int ")"  [function]
  // -------------------------------------------------------------------------------------------
