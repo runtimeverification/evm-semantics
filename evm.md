@@ -761,9 +761,9 @@ These are just used by the other operators for shuffling local execution state a
 
     rule <k> #newExistingAccount ACCT => . ... </k>
          <account>
-           <acctID>      ACCT      </acctID>
-           <code>        WS        </code>
-           <nonce>       0         </nonce>
+           <acctID>      ACCT                      </acctID>
+           <code>        WS                        </code>
+           <nonce>       0                         </nonce>
            <storage>     _ => .Map:ContractStorage </storage>
            <origStorage> _ => .Map:ContractStorage </origStorage>
            ...
@@ -1237,7 +1237,7 @@ These rules reach into the network state and load/store from account storage:
     rule <k> SSTORE INDEX NEW => . ... </k>
          <id> ACCT </id>
          <account>
-           <acctID> ACCT </acctID>
+           <acctID> ACCT                                    </acctID>
            <storage> STORAGE => #write(STORAGE, INDEX, NEW) </storage>
            ...
          </account>
