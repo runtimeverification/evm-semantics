@@ -113,9 +113,6 @@ module VERIFICATION
     rule #sizeWordStack(WS, N) <=Int SIZE => #sizeWordStack(WS, 0) +Int N <=Int SIZE requires N =/=Int 0
       [simplification]
 
-    rule #take(#sizeWordStack(WS, 0), WS) => WS
-      [simplification]
-
   // ########################
   // Range
   // ########################
@@ -425,4 +422,5 @@ module VERIFICATION-JAVA [symbolic, kast]
 
     rule 0 <=Int #gas(_, _, _)             => true [simplification]
     rule         #gas(_, _, _) <Int pow256 => true [simplification]
+
 endmodule
