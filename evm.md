@@ -2155,7 +2155,7 @@ There are several helpers for calculating gas (most of them also specified in th
                  | Cselfdestruct ( Schedule , BExp , Int )                    [strict(2)]
  // -------------------------------------------------------------------------------------
    rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
-          => Cextra(SCHED, ISEMPTY, VALUE, ISWARM) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) ... </k>
+         => Cextra(SCHED, ISEMPTY, VALUE, ISWARM) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) ... </k>
 
     rule <k> Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
           => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) +Int #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
