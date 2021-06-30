@@ -70,7 +70,7 @@ module VERIFICATION
 
     syntax ByteArray ::= #abiCallData2 ( String , TypedArgs ) [function]
 
-    rule #abiCallData2( FSIG , ARGS )
+    rule #abiCallData2(FSIG, ARGS)
       => #parseByteStack(substrString(Keccak256(FSIG), 0, 8))
       ++ #encodeArgs(ARGS)
 
@@ -82,18 +82,17 @@ module VERIFICATION
 
     rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START0, WIDTH0), START1, WIDTH1) => #memoryUsageUpdate(MU, START0, WIDTH0)
       requires START1 +Int WIDTH1 <=Int START0 +Int WIDTH0
-       andBool 0 <Int WIDTH0
+       andBool 0  <Int WIDTH0
        andBool 0 <=Int WIDTH1
       [simplification]
 
     rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START0, WIDTH0), START1, WIDTH1) => #memoryUsageUpdate(MU, START1, WIDTH1)
       requires START0 +Int WIDTH0 <Int START1 +Int WIDTH1
        andBool 0 <=Int WIDTH0
-       andBool 0 <Int WIDTH1
+       andBool 0  <Int WIDTH1
       [simplification]
 
-    rule 0 <=Int #memoryUsageUpdate(_MU, _START, _WIDTH) => true
-      [simplification]
+    rule 0 <=Int #memoryUsageUpdate(_MU, _START, _WIDTH) => true [simplification]
 
   // ########################
   // Buffer Reasoning
@@ -270,8 +269,8 @@ module VERIFICATION
     // definition of #signer
 
     rule #signer(_   , I, _         ) => 0                                          requires I  <Int 0 // address lastOwner = address(0);
-    rule #signer(SIGS, I,  DATA_HASH) => #symEcrec(#ecrecData(SIGS, I, DATA_HASH))  requires I >=Int 0 andBool   #sigV(SIGS, I) =/=Int 0 andBool #sigV(SIGS, I) =/=Int 1   andBool notBool #ecrecEmpty(#ecrecData(SIGS, I, DATA_HASH))
     rule #signer(SIGS, I,  DATA_HASH) => 0                                          requires I >=Int 0 andBool   #sigV(SIGS, I) =/=Int 0 andBool #sigV(SIGS, I) =/=Int 1   andBool         #ecrecEmpty(#ecrecData(SIGS, I, DATA_HASH))
+    rule #signer(SIGS, I,  DATA_HASH) => #symEcrec(#ecrecData(SIGS, I, DATA_HASH))  requires I >=Int 0 andBool   #sigV(SIGS, I) =/=Int 0 andBool #sigV(SIGS, I) =/=Int 1   andBool notBool #ecrecEmpty(#ecrecData(SIGS, I, DATA_HASH))
     rule #signer(SIGS, I, _DATA_HASH) => #sigR(SIGS, I)                             requires I >=Int 0 andBool ( #sigV(SIGS, I)  ==Int 0  orBool #sigV(SIGS, I)  ==Int 1 )
 
   // ########################
@@ -373,10 +372,8 @@ module VERIFICATION-JAVA [symbolic, kast]
       [simplification]
 
     rule chop(X +Int Y) => X +Int Y
-      requires 0 <=Int X
-       andBool X <=Int pow16
-       andBool 0 <=Int Y
-       andBool Y <Int pow16
+      requires #range(0 <= X <= pow16)
+       andBool #range(0 <= Y <  pow16)
       [simplification]
 
     rule X +Int Y <Int Z => X <Int Z -Int Y requires #isConcrete(Y) [simplification]
