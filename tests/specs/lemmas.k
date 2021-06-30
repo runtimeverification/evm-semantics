@@ -83,13 +83,13 @@ module LEMMAS
   // ########################
 
     // re-order assignments
-    rule MEM [ K1 := BUF1 ] [ K2 := BUF2 ] => MEM [ K2 := BUF2 ] [ K1 := BUF1 ]  requires K1  >Int K2 andBool K1 -Int K2 >=Int #sizeByteArray(BUF2)                           [simplification]
+    rule MEM [ K1 := BUF1:ByteArray ] [ K2 := BUF2:ByteArray ] => MEM [ K2 := BUF2 ] [ K1 := BUF1 ]  requires K1  >Int K2 andBool K1 -Int K2 >=Int #sizeByteArray(BUF2)                           [simplification]
 
     // overwritten assignment
-    rule MEM [ K1 := BUF1 ] [ K2 := BUF2 ] => MEM [ K2 := BUF2 ]                 requires K2 <=Int K1 andBool K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2) [simplification]
+    rule MEM [ K1 := BUF1           ] [ K2 := BUF2           ] => MEM [ K2 := BUF2 ]                 requires K2 <=Int K1 andBool K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2) [simplification]
 
     // redundant assignment
-    rule MEM [ K  := BUF1 ] [ K  := BUF2 ] => MEM [ K  := BUF2 ]                 requires #sizeByteArray(BUF1) ==Int #sizeByteArray(BUF2)                                     [simplification]
+    rule MEM [ K  := BUF1           ] [ K  := BUF2           ] => MEM [ K  := BUF2 ]                 requires #sizeByteArray(BUF1) ==Int #sizeByteArray(BUF2)                                     [simplification]
 
     // lookup range in memory
     rule _MEM [ _ .. W ] => .ByteArray  requires W ==Int 0                    [simplification]
@@ -326,10 +326,10 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     // #range
 
-    rule #range(_             , _, K) => .ByteArray                                                                                                                                                          requires notBool K >Int 0                                                                               [simplification]
-    rule #range(M [ N := BUF ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))                                                                          requires K  >Int 0 andBool L <Int N                                                                     [simplification]
-    rule #range(M [ N := BUF ], L, K) => BUF [ L -Int N .. minInt(K, #sizeByteArray(BUF) -Int (L -Int N)) ] ++ #range(M, N +Int #sizeByteArray(BUF), K -Int minInt(K, #sizeByteArray(BUF) -Int (L -Int N)))  requires K  >Int 0 andBool L <Int N +Int #sizeByteArray(BUF) andBool L >=Int N                          [simplification]
-    rule #range(M [ N := BUF ], L, K) => #range(M, L, K)                                                                                                                                                     requires K  >Int 0                                           andBool L >=Int N +Int #sizeByteArray(BUF) [simplification]
+    rule #range(_                       , _, K) => .ByteArray                                                                                                                                                          requires notBool K >Int 0                                                                               [simplification]
+    rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))                                                                          requires K  >Int 0 andBool L <Int N                                                                     [simplification]
+    rule #range(M [ N := BUF:ByteArray ], L, K) => BUF [ L -Int N .. minInt(K, #sizeByteArray(BUF) -Int (L -Int N)) ] ++ #range(M, N +Int #sizeByteArray(BUF), K -Int minInt(K, #sizeByteArray(BUF) -Int (L -Int N)))  requires K  >Int 0 andBool L <Int N +Int #sizeByteArray(BUF) andBool L >=Int N                          [simplification]
+    rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, K)                                                                                                                                                     requires K  >Int 0                                           andBool L >=Int N +Int #sizeByteArray(BUF) [simplification]
 
     rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma, simplification]
 
