@@ -690,7 +690,7 @@ Storage/Memory Lookup
 
 ```k
     syntax ContractStorage ::= #write ( ContractStorage , Int, Int ) [function, functional]
- // ----------------------------------------------------------------------
+ // ---------------------------------------------------------------------------------------
     rule #write ( M:Map , KEY, VAL:Int ) => M [ KEY <- VAL ]
 ```
 
