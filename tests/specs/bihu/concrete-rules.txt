@@ -1,11 +1,9 @@
 EVM.Cextra.new
-EVM.Cextra.old
 EVM.Cgascap
 EVM.Cmem
 EVM.Caddraccess
 EVM.Cstorageaccess
 EVM.Csload.new
-EVM.Csload.old
 EVM.Cextcodesize.new
 EVM.Cextcodesize.old
 EVM.Cextcodehash.new
