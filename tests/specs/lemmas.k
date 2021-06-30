@@ -41,14 +41,10 @@ module LEMMAS
     rule (BUF1 ++ BUF2)[START .. WIDTH] => BUF2 [START -Int #sizeByteArray(BUF1) .. WIDTH]
       requires START >=Int #sizeByteArray(BUF1) [simplification]
 
-    rule #sizeByteArray(BUF1 ++ BUF2)                  => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)  [simplification]
-    rule #sizeByteArray(#buf(SIZE, _))                 => SIZE                                            [simplification]
-    rule #sizeByteArray(#buf(SIZE, _)[START .. WIDTH]) => WIDTH
-      requires #range(0 <= START < SIZE)
-       andBool #range(0 < WIDTH <= SIZE -Int START)                                                       [simplification]
-
-    rule #sizeByteArray(#range(_, START, WIDTH)) => WIDTH
-      requires WIDTH >=Int 0 andBool START >=Int 0                                                        [simplification]
+    rule #sizeByteArray(BUF1 ++ BUF2)            => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)     [simplification]
+    rule #sizeByteArray(#buf(SIZE, _))           => SIZE                                               [simplification]
+    rule #sizeByteArray(_BUF [ START .. WIDTH ]) => WIDTH requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+    rule #sizeByteArray(#range(_, START, WIDTH)) => WIDTH requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
 
     //Todo custom ==K unification doesn't work in Haskell yet
     //++ unification
@@ -96,6 +92,11 @@ module LEMMAS
     rule X in (SetItem(Y) _   ) => true      requires X  ==Int Y [simplification]
     rule X in (SetItem(Y) REST) => X in REST requires X =/=Int Y [simplification]
 
+    rule M:Memory [ K1 := BUF1 ] [ K2 := BUF2 ] => M [ K2 := BUF2 ]
+      requires K2 <=Int K1
+       andBool K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2)
+      [simplification]
+
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]
@@ -142,7 +143,6 @@ module LEMMAS-JAVA [symbolic, kast]
        andBool L >=Int N +Int #sizeByteArray(BUF)
       [simplification]
 
-    rule keccak(BUF1 ++ BUF2) => hash2(#asWord(BUF1), #asWord(BUF2)) requires #sizeByteArray(BUF1) ==Int 32 andBool #sizeByteArray(BUF2) ==Int 32 [simplification]
 
     // for Solidity
     rule #asWord(WS) /Int D => #asWord(#take(#sizeByteArray(WS) -Int log256Int(D), WS))
@@ -162,28 +162,6 @@ module LEMMAS-JAVA [symbolic, kast]
 
     rule #noOverflowAux(BA        ) => 0 <=Int BA[0] andBool BA[0] <Int 256 andBool #noOverflowAux(#drop(1,BA)) requires #sizeByteArray(BA) >Int 0
     rule #noOverflowAux(.ByteArray) => true
-
-    // TODO: drop hash1 and keccakIntList once new vyper hashed location scheme is captured in edsl.md
-
-    syntax Int ::= hash1(Int) [function, smtlib(smt_hash1)]
- // -------------------------------------------------------
-    rule hash1(V) => keccak(#padToWidth(32, #asByteStack(V)))
-      requires 0 <=Int V andBool V <Int pow256
-      [concrete]
-
-    rule hash2(V1, V2) => keccak(   #padToWidth(32, #asByteStack(V1))
-                                 ++ #padToWidth(32, #asByteStack(V2)))
-      requires 0 <=Int V1 andBool V1 <Int pow256
-       andBool 0 <=Int V2 andBool V2 <Int pow256
-      [concrete]
-
-    rule keccakIntList(V:Int .IntList) => hash1(V)
-    rule keccakIntList(V1:Int V2:Int .IntList) => hash2(V1, V2)
-
-    // for terms came from bytecode not via #hashedLocation
-    rule keccak(WS) => keccakIntList(byteStack2IntList(WS))
-      requires ( notBool #isConcrete(WS) )
-       andBool ( #sizeByteArray(WS) ==Int 32 orBool #sizeByteArray(WS) ==Int 64 )
 
     rule 1 *Int N => N
     rule N *Int 1 => N
@@ -254,15 +232,6 @@ module LEMMAS-JAVA [symbolic, kast]
 
     rule 0 <=Int #asWord(_WS)         => true [simplification]
     rule #asWord(_WS) <Int pow256     => true [simplification]
-
-    rule 0 <=Int hash1(_)             => true [simplification]
-    rule         hash1(_) <Int pow256 => true [simplification]
-
-    rule 0 <=Int hash2(_,_)             => true [simplification]
-    rule         hash2(_,_) <Int pow256 => true [simplification]
-
-    rule 0 <=Int keccakIntList(_)             => true [simplification]
-    rule         keccakIntList(_) <Int pow256 => true [simplification]
 
     rule X <=Int maxUInt256 => X <Int pow256 [simplification]
     rule X <=Int maxUInt160 => X <Int pow160 [simplification]
@@ -347,6 +316,4 @@ endmodule
 module HASH2 [symbolic]
     imports INT
 
-    syntax Int ::= hash2 ( Int , Int ) [function]
- // ---------------------------------------------
 endmodule

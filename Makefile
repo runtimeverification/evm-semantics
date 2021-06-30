@@ -273,9 +273,15 @@ $(KEVM_LIB)/release.md: INSTALL.md
 
 build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs)) $(lemma_includes)
 
+<<<<<<< HEAD
 build-haskell: $(KEVM_LIB)/$(haskell_kompiled)
 build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-java:    $(KEVM_LIB)/$(java_kompiled)
+=======
+build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_BIN)/$(KEVM) $(KEVM_LIB)/kore-json.py
+build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_BIN)/$(KEVM) $(KEVM_LIB)/kore-json.py
+build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_BIN)/$(KEVM) $(KEVM_LIB)/kast-json.py
+>>>>>>> origin/master
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
@@ -326,6 +332,7 @@ tests/ethereum-tests/VMTests/%: KEVM_MODE     = VMTESTS
 tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
 tests/specs/benchmarks/functional-spec.k%: KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
+tests/specs/erc20/functional-spec.k%:      KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
 tests/specs/evm-optimizations-spec.md%:    KPROVE_MODULE = EVM-OPTIMIZATIONS-SPEC-LEMMAS
 tests/specs/mcd/functional-spec.k%:        KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
 
