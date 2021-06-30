@@ -146,31 +146,6 @@ Finally, you can build the semantics.
 make build
 ```
 
-Example Usage
--------------
-
-After building, make sure you setup `PATH` correctly:
-
-```sh
-export PATH=$(pwd)/.build/usr/bin:$PATH
-```
-
-After building the definition, you can run the definition using the `kevm` runner.
-You can call `kevm help` to get a quick summary of how to use the script.
-
-Run the file `tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json`:
-
-```sh
-kevm run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json --schedule DEFAULT --mode VMTESTS
-```
-
-To run proofs, you can similarly use `kevm`.
-For example, to prove one of the specifications:
-
-```sh
-kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION
-```
-
 Running Tests
 -------------
 
@@ -190,6 +165,55 @@ These are the individual test-suites (all of these can be suffixed with `-all` t
 -   `make test-interactive`: Tests of the `kevm` command.
 
 When running tests with the `Makefile`, you can specify the `TEST_CONCRETE_BACKEND` (for concrete tests), or `TEST_SYMBOLIC_BACKEND` (for proofs).
+
+For Developers
+-------------
+
+After building, the `kevm` executable will be located in the `.build/usr/bin:$PATH` directory .
+The one in the project root is a build artifact, don't use it.
+To make sure you are using the correct `kevm`, add this directory to your `PATH`:
+
+```sh
+export PATH=$(pwd)/.build/usr/bin:$PATH
+```
+
+Alternatively, if you work on multiple checkouts of `evm-semantics`, or other semantics, you could add the relative path `.build/usr/bin` to your `PATH`. 
+Do note, however, that this is a security concern.
+
+You can call `kevm help` to get a quick summary of how to use the script.
+
+Run the file `tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json`:
+
+```sh
+kevm run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json --schedule DEFAULT --mode VMTESTS
+```
+
+To run proofs, you can similarly use `kevm`.
+For example, to prove one of the specifications:
+
+```sh
+kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION
+```
+
+You can also debug proofs interactively: 
+
+```sh
+kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION --debugger --debug-script kscript
+```
+
+Here, `kscript` is a file containing `kore-repl` commands.
+For example, we advise to put an alias for outputting the current configuration as a pretty-printed term (as opposed to raw `kore` term):
+
+```sh
+alias konfig = config | kast -i kore -o pretty -d .build/usr/lib/kevm/haskell /dev/stdin
+```
+
+### Keeping `.build` up-to-date while developing
+
+-   `make build` needs to be re-run if you touch any of this repos files.
+-   `make deps` needs to be re-run if there is a submodule update (you did `git submodule update --init --recursive` and it actually did something).
+-   If both `deps` and `build` need to be re-run, you need to do `deps` first.
+-   `make clean` is a safe way to remove the `.build` directory, but then you need to re-run `make deps` (should be quick this time) and `make build`.
 
 Media
 -----
