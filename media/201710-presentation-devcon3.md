@@ -123,11 +123,11 @@ configuration
     <activeAccounts> .Map </activeAccounts>
     <accounts>
       <account multiplicity="*" type="Bag">
-        <acctID>  0          </acctID>
-        <balance> 0          </balance>
-        <code>    .WordStack </code>
-        <storage> .Map       </storage>
-        <nonce>   0          </nonce>
+        <acctID>  0                    </acctID>
+        <balance> 0                    </balance>
+        <code>    .WordStack           </code>
+        <storage> .Map:ContractStorage </storage>
+        <nonce>   0                    </nonce>
       </account>
     </accounts>
     ...
@@ -216,10 +216,10 @@ These rules reach into the network state and load/store from account storage:
 ``` {.k .uiuck .rvk}
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
-    rule <k> SLOAD INDEX => VALUE ~> #push ... </k> <id> ACCT </id>
+    rule <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k> <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> ... INDEX |-> VALUE ... </storage>
+           <storage> STORAGE </storage>
            ...
          </account>
 ```
@@ -232,7 +232,7 @@ These rules reach into the network state and load/store from account storage:
     rule <k> SSTORE INDEX VALUE => . ... </k> <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> STORAGE => STORAGE [ INDEX <- VALUE ] </storage>
+           <storage> STORAGE => #write(STORAGE, INDEX, VALUE) </storage>
            ...
          </account>
       requires notBool (INDEX in_keys(STORAGE))
@@ -485,8 +485,7 @@ ERC20: Specifying `transfer`
    <callData>  #abiCallData("transfer", ...) </callData>
    <accounts>
      <account>
-       <storage> (%ACCT_1_BALANCE |-> (B1 => B1 -Int TRANSFER))
-                 (%ACCT_2_BALANCE |-> (B2 => B2 +Int TRANSFER))
+       <storage> STORAGE => #write(STORAGE, %ACCT_1_BALANCE, #lookup(STORAGE, %ACCT_1_BALANCE) -Int TRANSFER) ~> #write(STORAGE, %ACCT_2_BALANCE, #lookup(STORAGE, %ACCT_2_BALANCE) +Int TRANSFER)
        </storage>
        ...
      </account>
