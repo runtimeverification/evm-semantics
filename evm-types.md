@@ -680,10 +680,10 @@ Storage/Memory Lookup
     //Impossible case, for completeness
     rule [#lookup.notInt]:       #lookup(       (KEY |-> VAL    ) _M:Map, KEY ) => 0                 requires notBool isInt(VAL)
 
-    rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) _M, KEY ) => VAL modInt 256
-    rule [#lookupMemory.none]:   #lookupMemory(                    M, KEY ) => 0                 requires notBool KEY in_keys(M)
+    rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) _M, KEY )     => VAL modInt 256
+    rule [#lookupMemory.none]:   #lookupMemory(                    M, KEY )     => 0                 requires notBool KEY in_keys(M)
     //Impossible case, for completeness
-    rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
+    rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) _M, KEY )     => 0                 requires notBool isInt(VAL)
 ```
 
 `#write` stores a value for a certain key in the contract storage.
@@ -691,7 +691,7 @@ Storage/Memory Lookup
 ```k
     syntax ContractStorage ::= #write ( ContractStorage , Int, Int ) [function, functional]
  // ---------------------------------------------------------------------------------------
-    rule #write ( M:Map , KEY, VAL:Int ) => M [ KEY <- VAL ]
+    rule #write ( M:Map , KEY, VAL) => M [ KEY <- VAL ]
 ```
 
 Substate Log
