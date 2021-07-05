@@ -665,13 +665,17 @@ Accounts
 Storage/Memory Lookup
 ---------------------
 
-`#lookup*` looks up a key in the contract storage and returns 0 if the key doesn't exist, otherwise returning its value.
+- `#lookup` looks up a key in the contract storage and returns 0 if the key doesn't exist, otherwise returning its value.
+
+- `#lookupMemory` looks up a key in the local memory and returns 0 if the key doesn't exist, otherwise returning its value.
+
+- `#write` stores a value for a certain key in the contract storage.
 
 ```k
     syntax ContractStorage ::= Map
 
     syntax Int ::= #lookup        ( ContractStorage , Int ) [function, functional, smtlib(lookup)]
-                 | #lookupMemory  ( Map , Int ) [function, functional, smtlib(lookupMemory)]
+                 | #lookupMemory  ( Map             , Int ) [function, functional, smtlib(lookupMemory)]
  // ----------------------------------------------------------------------------------------
     rule [#lookup.some]:         #lookup(       (KEY |-> VAL:Int) _M:Map, KEY ) => VAL modInt pow256
     rule [#lookup.none]:         #lookup(                          M:Map, KEY ) => 0                 requires notBool KEY in_keys(M)
@@ -682,11 +686,7 @@ Storage/Memory Lookup
     rule [#lookupMemory.none]:   #lookupMemory(                    M, KEY )     => 0                 requires notBool KEY in_keys(M)
     //Impossible case, for completeness
     rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) _M, KEY )     => 0                 requires notBool isInt(VAL)
-```
 
-`#write` stores a value for a certain key in the contract storage.
-
-```k
     syntax ContractStorage ::= #write ( ContractStorage , Int, Int ) [function, functional]
  // ---------------------------------------------------------------------------------------
     rule #write ( M:Map , KEY, VAL) => M [ KEY <- VAL ]
