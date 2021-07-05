@@ -667,11 +667,9 @@ Accounts
 Storage/Memory Lookup
 ---------------------
 
-- `#lookup` looks up a key in the contract storage and returns 0 if the key doesn't exist, otherwise returning its value.
-
-- `#lookupMemory` looks up a key in the local memory and returns 0 if the key doesn't exist, otherwise returning its value.
-
-- `#write` stores a value for a certain key in the contract storage.
+-   `#lookup` looks up a key in the contract storage and returns 0 if the key doesn't exist, otherwise returning its value.
+-   `#lookupMemory` looks up a key in the local memory and returns 0 if the key doesn't exist, otherwise returning its value.
+-   `#write` stores a value for a certain key in the contract storage.
 
 ```k
     syntax ContractStorage ::= Map
@@ -691,7 +689,7 @@ Storage/Memory Lookup
 
     syntax ContractStorage ::= #write ( ContractStorage , Int, Int ) [function, functional]
  // ---------------------------------------------------------------------------------------
-    rule #write ( M:Map , KEY, VAL) => M [ KEY <- VAL ]
+    rule #write(M:Map, KEY, VAL) => M [ KEY <- VAL ]
 ```
 
 Substate Log
