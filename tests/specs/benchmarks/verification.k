@@ -273,22 +273,6 @@ module VERIFICATION
     rule #signer(SIGS, I,  DATA_HASH) => #symEcrec(#ecrecData(SIGS, I, DATA_HASH))  requires I >=Int 0 andBool   #sigV(SIGS, I) =/=Int 0 andBool #sigV(SIGS, I) =/=Int 1   andBool notBool #ecrecEmpty(#ecrecData(SIGS, I, DATA_HASH))
     rule #signer(SIGS, I, _DATA_HASH) => #sigR(SIGS, I)                             requires I >=Int 0 andBool ( #sigV(SIGS, I)  ==Int 0  orBool #sigV(SIGS, I)  ==Int 1 )
 
-  // ########################
-  // Account Map
-  // ########################
-
-    syntax Int ::= "#CONTRACT_ID"   [function]
- // ------------------------------------------
-    rule 0 <=Int #CONTRACT_ID               => true [simplification]
-    rule         #CONTRACT_ID   <Int pow160 => true [simplification]
-    rule         #CONTRACT_ID   <Int pow256 => true [simplification]
-
-    syntax Int ::= "#CALLEE_ID"    [function]
- // ------------------------------------------
-    rule 0 <=Int #CALLEE_ID                 => true [simplification]
-    rule         #CALLEE_ID     <Int pow160 => true [simplification]
-    rule         #CALLEE_ID     <Int pow256 => true [simplification]
-
 endmodule
 
 module VERIFICATION-HASKELL [symbolic, kore]
