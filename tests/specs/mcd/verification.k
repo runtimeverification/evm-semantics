@@ -95,8 +95,6 @@ module LEMMAS-MCD-JAVA [symbolic, kast]
   // Range
   // ########################
 
-    // ### flapper-yank-pass-rough
-
     rule #range(M:Memory [ K <- V ]                        , START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)  requires #isConcrete(K)  andBool #isConcrete(V) andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START andBool K +Int 1                    ==Int START +Int WIDTH [simplification]
     rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS')        ], START, WIDTH)  requires #isConcrete(K)  andBool #isConcrete(V) andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START andBool K +Int 1                    ==Int K'              
                                                                                                                                   andBool #isConcrete(K') andBool #isConcrete(VS')                                                                andBool K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH [simplification] 
@@ -229,16 +227,12 @@ module LEMMAS-MCD-COMMON
     // (pop)
     rule 0 s<Word X => bool2Word(sgn(X) ==Int 1 andBool X =/=Int 0) requires #rangeUInt(256, X) [simplification]
 
-    // ### vat-subui-pass-rough
-
     // Via Z3 4.7.1:
     // (push)
     // (assert (not (=> true (= (chop (- x (chop y))) (chop (- x y)) ) ) ))
     // (check-sat)
     // (pop)
     rule X -Word chop(Y) => chop(X -Int Y) [simplification]
-
-    // ### end-pack-pass-rough
 
     rule ADDR in (SetItem(I) REST) => ADDR in REST requires #notPrecompileAddress(ADDR) andBool notBool #notPrecompileAddress(I) [simplification]
 
