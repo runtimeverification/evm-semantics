@@ -76,15 +76,11 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
   // Arithmetic
   // ########################
 
-    // ### functional
-
     rule chop(Y) => Y +Int pow256 requires #rangeSInt(256, Y) andBool Y <Int 0 [simplification]
 
   // ########################
   // Map
   // ########################
-
-    // ### flapper-yank-pass-rough
 
     rule #range(M:Memory [ K <- V ]                        , START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)  requires K +Int 1                    ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START [concrete(K    , V     ), simplification]
     rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS')        ], START, WIDTH)  requires K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START 
@@ -116,8 +112,6 @@ module LEMMAS-MCD-COMMON
   // Buffer Reasoning
   // ########################
 
-    // ### vat-move-diff
-
     rule (W0 : WS) [ 0     .. WIDTH ] => W0 : (WS [ 0 .. WIDTH -Int 1 ])  requires 0 <Int WIDTH [simplification]
     rule (_  : WS) [ START .. WIDTH ] => WS [ START -Int 1 .. WIDTH ]     requires 0 <Int START [simplification]
 
@@ -131,17 +125,12 @@ module LEMMAS-MCD-COMMON
   // Word Reasoning
   // ########################
 
-    // ### cat-file-addr-pass-rough
-
     rule maskWordPackAddrUInt48UInt48_1 &Int ADDR => 0  requires #rangeAddress(ADDR) [simplification]
-
-    // ### PERFORMANCE: dai-adduu-fail-rough
-    // 99s -> 48s
 
     rule #sizeWordStack(WS, N) => #sizeWordStack(WS, 0) +Int N  requires N =/=Int 0 [simplification]
 
     // ### vat-addui-fail-rough
-
+    // 
     // Proof:
     // case sgn(X) ==Int  1
     //      X s<Word 0
@@ -184,13 +173,9 @@ module LEMMAS-MCD-COMMON
     // (check-sat)
     rule X s<Word 0 => bool2Word(sgn(X) ==Int -1)  requires #rangeUInt(256, X) [simplification]
 
-    // ### vow-flog-fail-rough
-
     rule X -Word Y <=Int X => #rangeUInt(256, X -Int Y) requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
     
     rule 0 <=Int X +Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
-
-    // ### vat-subui-fail-rough
 
     // ;(set-option :smt.mbqi true)
     //
@@ -266,18 +251,11 @@ module LEMMAS-MCD-COMMON
   // Map
   // ########################
 
-    // ### PERFORMANCE: vat-deny-diff-fail-rough
-    // 27.21m -> 3.16m
-
     rule M:Memory [ K <- V ]             [ K' <- V' ] => M [ K' <- V' ] [ K <- V ]    requires K' <Int K                           [simplification]
     rule M:Memory [ K := BUF:ByteArray ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ]  requires K' <Int K 
                                                                                         orBool K +Int #sizeByteArray(BUF) <=Int K' [simplification]
 
-    // ### dsvalue-read-pass
-
     rule M [ K <- V ] => M requires #lookup(M, K) ==Int V [simplification]
-
-    // ### flapper-yank-pass-rough
 
     rule M:Memory [ K := BUF:ByteArray ] [ K' := BUF':ByteArray ] => M [ K := (BUF [ 0 .. K' -Int K ]) ] [ K' := BUF' ]
       requires K <Int K'
@@ -286,8 +264,6 @@ module LEMMAS-MCD-COMMON
       [simplification]
 
     rule M:Map [ K1 <- _ ] [ K2 <- V2 ] [ K1 <- V1' ] => M [ K1 <- V1' ] [ K2 <- V2 ] requires K1 =/=Int K2 [simplification]
-
-    // ### end-cage-ilk-pass-rough
 
     rule M:Memory [ K1 := (BUF11 ++ BUF12) ] [ K2 := BUF2 ] => M [ K1 +Int #sizeByteArray(BUF11) := BUF12 ] [ K2 := BUF2 ]
       requires K2 <=Int K1
@@ -298,22 +274,16 @@ module LEMMAS-MCD-COMMON
   // Arithmetic
   // ########################
 
-    // ### dstoken-transferfrom-fail-rough
-
     rule chop(N +Int M) <Int N => true  requires #rangeUInt(256, N) 
                                          andBool #rangeUInt(256, M)
                                          andBool notBool #rangeUInt(256, N +Int M)
                                         [simplification]
-
-    // ### flipper-bids-pass-rough
 
     // This lemma is considered "safe enough" because `keccak` is a hash function over a large range and is very unlikely to overflow.
     // Note that this case comes from a solidity struct being accessed (hence the integer offsets), so it's an assumption built into the Solidity compiler anyway.
     rule chop(keccak(BA) +Int N) => keccak(BA) +Int N requires 0 <=Int N andBool N <Int 6 [simplification]
 
     rule sgn(chop(X)) ==Int -1 => X <Int 0  requires #rangeSInt(256, X) [simplification]
-
-    // ### vat-mului-pass
 
     rule chop(X *Int chop(Y)) => chop(X *Int Y) [simplification]
 
@@ -400,11 +370,7 @@ module LEMMAS-MCD-COMMON
     // (check-sat)
     rule chop(X *Int Y) /sWord chop(Y) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0 [simplification]
 
-    // ### vat-slip-pass-rough
-
     rule chop(X +Int chop(Y)) => chop(X +Int Y) [simplification]
-
-    // ### flipper-addu48u48-fail-rough
 
     rule maxUInt48 &Int (X +Int Y) <Int X => true requires #rangeUInt(48, X) andBool #rangeUInt(48, Y) andBool notBool (X +Int Y <Int pow48) [simplification]
 
@@ -415,11 +381,7 @@ module LEMMAS-MCD-COMMON
     // (pop)
     rule sgn(chop(Y)) ==K 1 => 0 <=Int Y requires #rangeSInt(256, Y) [simplification]
 
-    // ### vat-subui-pass
-
     rule chop(X) ==K 0 => X ==Int 0 requires #rangeSInt(256, X) [simplification]
-
-    // ### flopper-kick-pass-rough
 
     rule 0 <=Int X |Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
     rule 0 <=Int X &Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
@@ -429,16 +391,10 @@ module LEMMAS-MCD-COMMON
 
     rule (maxUInt160 &Int (X |Int Y)) => (maxUInt160 &Int X) |Int (maxUInt160 &Int Y) [simplification]
 
-    // ### flopper-tick-pass-rough
-
     rule chop(X *Int Y) => X *Int Y requires 0 <=Int X andBool 0 <=Int Y andBool X *Int Y <Int pow256 [simplification]
-
-    // ### flapper-yank-pass-rough
 
     rule X <Int X -Int Y => false requires 0 <=Int Y [simplification]
     rule X +Int Y <Int X => false requires 0 <=Int Y [simplification]
-
-    // ### vow-cage-surplus-pass-rough
 
     rule <acctID> ACCTID </acctID>  ==K <acctID> ACCTID' </acctID> => ACCTID  ==Int ACCTID' [simplification]
     rule <acctID> ACCTID </acctID> =/=K <acctID> ACCTID' </acctID> => ACCTID =/=Int ACCTID' [simplification]
@@ -446,27 +402,17 @@ module LEMMAS-MCD-COMMON
     rule ((K |-> _) REST) [ K' <- undef ] => REST                             requires K  ==K K' [simplification]
     rule ((K |-> V) REST) [ K' <- undef ] => (K |-> V) (REST [ K' <- undef ]) requires K =/=K K' [simplification]
 
-    // ### vat-frob-diff-zero-dart-pass-rough
-
     rule chop( X -Int chop(Y))         => chop( X -Int Y)         [simplification]
     rule chop((X -Int chop(Y)) *Int Z) => chop((X -Int Y) *Int Z) [simplification]
-
-    // ### vat-fork-diff-pass-rough
 
     rule chop(X +Int pow256)  => chop(X)        [simplification]
     rule chop(chop(X) *Int Y) => chop(X *Int Y) [simplification]
 
-    // ### vow-cage-deficit-pass-rough
-
     rule (I1 +Int I2) -Int I1 => I2 [simplification]
-
-    // ### flapper-tend-guy-diff-pass-rough
 
     rule ((I1 -Int I2) -Int I3) +Int I2 => I1 -Int I3 [simplification]
 
     rule M:Map [ K1 <- _ ] [ K2 <- V2 ] [ K3 <- V3 ] [ K1 <- V4 ] => M [ K1 <- V4 ] [ K2 <- V2 ] [ K3 <- V3 ] requires K1 =/=Int K2 andBool K1 =/=Int K3 [simplification]
-
-    // ### vat-fold-pass-rough
 
     rule chop(X *Int (Y +Int pow256)) => chop(X *Int Y) [simplification]
 
