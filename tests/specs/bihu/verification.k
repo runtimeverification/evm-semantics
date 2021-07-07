@@ -40,7 +40,8 @@ module VERIFICATION
 
     rule I1 <Int I1 -Int I2 => false requires 0 <=Int I2 [simplification]
 
-    rule chop(I1 -Int I2) => I1 -Int I2 requires 0 <=Int I1 andBool I2 <Int pow256 andBool I1 >=Int I2 [simplification]
+    // TODO: is this needed?
+    // rule chop(I1 -Int I2) => I1 -Int I2 requires 0 <=Int I1 andBool I2 <Int pow256 andBool I1 >=Int I2 [simplification]
 
     rule chop(I1 +Int (I2 -Int I3)) => I1 +Int (I2 -Int I3)
       requires  0 <=Int I2
