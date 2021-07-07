@@ -178,7 +178,6 @@ module VERIFICATION
 
     // safeMath mul check c / a == b where c == a * b
     rule (X *Int Y) /Int X => Y  requires X =/=Int 0 [simplification]
-    rule chop(X *Int Y) /Int X ==K Y => false  requires X =/=Int 0 andBool pow256 <=Int X *Int Y [simplification]
 
     rule I1 *Int A +Int I2 *Int A => (I1 +Int I2) *Int A [simplification]
 
