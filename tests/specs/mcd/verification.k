@@ -83,7 +83,7 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
   // ########################
 
     rule #range(M:Memory [ K <- V ]                        , START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)  requires K +Int 1                    ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START [concrete(K    , V     ), simplification]
-    rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS')        ], START, WIDTH)  requires K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START 
+    rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS')        ], START, WIDTH)  requires K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START
                                                                                                                                   andBool K +Int 1                    ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
 
 endmodule
@@ -96,8 +96,8 @@ module LEMMAS-MCD-JAVA [symbolic, kast]
   // ########################
 
     rule #range(M:Memory [ K <- V ]                        , START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)  requires #isConcrete(K)  andBool #isConcrete(V) andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START andBool K +Int 1                    ==Int START +Int WIDTH [simplification]
-    rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS')        ], START, WIDTH)  requires #isConcrete(K)  andBool #isConcrete(V) andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START andBool K +Int 1                    ==Int K'              
-                                                                                                                                  andBool #isConcrete(K') andBool #isConcrete(VS')                                                                andBool K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH [simplification] 
+    rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS')        ], START, WIDTH)  requires #isConcrete(K)  andBool #isConcrete(V) andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START andBool K +Int 1                    ==Int K'
+                                                                                                                                  andBool #isConcrete(K') andBool #isConcrete(VS')                                                                andBool K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH [simplification]
 
 endmodule
 
@@ -128,7 +128,7 @@ module LEMMAS-MCD-COMMON
     rule #sizeWordStack(WS, N) => #sizeWordStack(WS, 0) +Int N  requires N =/=Int 0 [simplification]
 
     // ### vat-addui-fail-rough
-    // 
+    //
     // Proof:
     // case sgn(X) ==Int  1
     //      X s<Word 0
@@ -172,7 +172,7 @@ module LEMMAS-MCD-COMMON
     rule X s<Word 0 => bool2Word(sgn(X) ==Int -1)  requires #rangeUInt(256, X) [simplification]
 
     rule X -Word Y <=Int X => #rangeUInt(256, X -Int Y) requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
-    
+
     rule 0 <=Int X +Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
 
     // ;(set-option :smt.mbqi true)
@@ -246,7 +246,7 @@ module LEMMAS-MCD-COMMON
   // ########################
 
     rule M:Memory [ K <- V ]             [ K' <- V' ] => M [ K' <- V' ] [ K <- V ]    requires K' <Int K                           [simplification]
-    rule M:Memory [ K := BUF:ByteArray ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ]  requires K' <Int K 
+    rule M:Memory [ K := BUF:ByteArray ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ]  requires K' <Int K
                                                                                         orBool K +Int #sizeByteArray(BUF) <=Int K' [simplification]
 
     rule M [ K <- V ] => M requires #lookup(M, K) ==Int V [simplification]
@@ -268,7 +268,7 @@ module LEMMAS-MCD-COMMON
   // Arithmetic
   // ########################
 
-    rule chop(N +Int M) <Int N => true  requires #rangeUInt(256, N) 
+    rule chop(N +Int M) <Int N => true  requires #rangeUInt(256, N)
                                          andBool #rangeUInt(256, M)
                                          andBool notBool #rangeUInt(256, N +Int M)
                                         [simplification]
