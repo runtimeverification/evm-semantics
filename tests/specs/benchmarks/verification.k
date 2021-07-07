@@ -207,47 +207,6 @@ module VERIFICATION
     rule #ceil32(X) <Int X      => false  requires 0 <=Int X                       [simplification]
     rule #ceil32(X) <=Int pow16 => true   requires 0 <=Int X andBool X <=Int pow16 [simplification]
 
-  // ########################
-  // Gnosis
-  // ########################
-
-    syntax ByteArray ::= #ecrecData ( ByteArray , Int , Int ) [function]
- // --------------------------------------------------------------------
-    rule #ecrecData(SIGS, I, DATA_HASH) => #encodeArgs(#bytes32(DATA_HASH), #uint8(#sigV(SIGS,I)), #bytes32(#sigR(SIGS,I)), #bytes32(#sigS(SIGS,I)))
-
-    syntax Int  ::= #fii        ( ByteArray ,       Int , ByteArray , Map , Int )        [function, smtlib(fii)             ] // first-invalid-signature-index
-    syntax Bool ::= #isValid    ( ByteArray , Int , Int , ByteArray , Map , Int , Bool ) [function, smtlib(isValid)         ]
-    syntax Bool ::= #isValidSig ( ByteArray , Int , Int , ByteArray , Map , Int )        [function, smtlib(isValidSig)      ]
-    syntax Bool ::= #isValidSignature ( Int , ByteArray , ByteArray )                    [function, smtlib(isValidSignature)] // ISignatureValidator(currentOwner).isValidSignature(data, contractSignature)
-
-    syntax Int  ::= #signer ( ByteArray , Int , Int ) [function]
-    syntax Int  ::= #sigR   ( ByteArray , Int )       [function]
-    syntax Int  ::= #sigS   ( ByteArray , Int )       [function]
-    syntax Int  ::= #sigV   ( ByteArray , Int )       [function]
-
-    // axiomatization of #fii
-
-    rule 0 <=Int #fii(_,_,_,_,_)             => true [simplification]
-    rule         #fii(_,_,_,_,_) <Int pow256 => true [simplification]
-
-    // axiomatization of #isValid
-
-    rule #isValid(SIGS, I, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER, _) => true   requires I  <Int #fii(SIGS, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER)
-    rule #isValid(SIGS, I, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER, _) => false  requires I ==Int #fii(SIGS, DATA_HASH, DATA_BUF, STORAGE, MSG_SENDER)
-
-    // axiomatization of #isValidSig for each signature type
-
-    rule #isValidSig(SIGS, I, DATA_HASH, _DATA_BUF, _STORAGE, _MSG_SENDER) => notBool #ecrecEmpty(#ecrecData(SIGS, I, DATA_HASH))
-      requires #sigV(SIGS, I) =/=Int 0
-       andBool #sigV(SIGS, I) =/=Int 1
-
-    // definition of #signer
-
-    rule #signer(_   , I, _         ) => 0                                          requires I  <Int 0 // address lastOwner = address(0);
-    rule #signer(SIGS, I,  DATA_HASH) => 0                                          requires I >=Int 0 andBool   #sigV(SIGS, I) =/=Int 0 andBool #sigV(SIGS, I) =/=Int 1   andBool         #ecrecEmpty(#ecrecData(SIGS, I, DATA_HASH))
-    rule #signer(SIGS, I,  DATA_HASH) => #symEcrec(#ecrecData(SIGS, I, DATA_HASH))  requires I >=Int 0 andBool   #sigV(SIGS, I) =/=Int 0 andBool #sigV(SIGS, I) =/=Int 1   andBool notBool #ecrecEmpty(#ecrecData(SIGS, I, DATA_HASH))
-    rule #signer(SIGS, I, _DATA_HASH) => #sigR(SIGS, I)                             requires I >=Int 0 andBool ( #sigV(SIGS, I)  ==Int 0  orBool #sigV(SIGS, I)  ==Int 1 )
-
 endmodule
 
 module VERIFICATION-HASKELL [symbolic, kore]
