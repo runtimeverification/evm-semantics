@@ -99,11 +99,11 @@ module VERIFICATION
   // ########################
 
     rule WS ++ .ByteArray => WS [simplification]
-    
+
     rule ( WS1 ++ WS2 ) ++ WS3 => WS1 ++ ( WS2 ++ WS3 ) [simplification]
 
     rule #sizeWordStack(WS, N) <Int SIZE => #sizeWordStack(WS, 0) +Int N <Int SIZE  requires N =/=Int 0 [simplification]
-    
+
     rule SIZELIMIT <Int #sizeWordStack(WS, N) +Int DELTA  => SIZELIMIT <Int (#sizeWordStack(WS, 0) +Int N) +Int DELTA  requires N =/=Int 0 [simplification]
     rule SIZELIMIT <Int #sizeWordStack(WS, N)             => SIZELIMIT <Int #sizeWordStack(WS, 0) +Int N               requires N =/=Int 0 [simplification]
 
@@ -211,31 +211,6 @@ module VERIFICATION
   // Gnosis
   // ########################
 
-   // checkSignatures is only called once in the executeTransaction, we implicitly assumed the arguments of the following functions
-   // have additional arguments of checkSignatures.
-    syntax Bool ::= "#enoughValidSigs"  [function]
- // ----------------------------------------------
-
-    syntax Bool ::= "#checkSignaturesException" [function]
- // ------------------------------------------------------
-
-    syntax Int ::= "#checkSigsGasNonMem"  [function]
- // ------------------------------------------------
-
-    syntax Int ::= #checkSigsFinalMemUsed ( Int )  [function]  // previous memory used
- // ----------------------------------------------------------------------------------
-
-   // Constant functions are ground terms in kprover. Constraints on the ground terms will not be considered when evaluating conditions only consisting of ground terms.
-   // Thus, #checkSigsNextLoc has to take an argument and this argument should not be a constant.
-    syntax Int ::= #checkSigsNextLoc ( Int )  [function]  // previous memory used
- // -----------------------------------------------------------------------------
-
-    syntax Int ::= #loopGas ( Int , Int )  [function]  // startPC, endPC
- // --------------------------------------------------------------------
-
-    syntax KItem ::= "#handlePaymentSpecApplied"
- // --------------------------------------------
-
     syntax ByteArray ::= #ecrecData ( ByteArray , Int , Int ) [function]
  // --------------------------------------------------------------------
     rule #ecrecData(SIGS, I, DATA_HASH) => #encodeArgs(#bytes32(DATA_HASH), #uint8(#sigV(SIGS,I)), #bytes32(#sigR(SIGS,I)), #bytes32(#sigS(SIGS,I)))
@@ -244,7 +219,7 @@ module VERIFICATION
     syntax Bool ::= #isValid    ( ByteArray , Int , Int , ByteArray , Map , Int , Bool ) [function, smtlib(isValid)         ]
     syntax Bool ::= #isValidSig ( ByteArray , Int , Int , ByteArray , Map , Int )        [function, smtlib(isValidSig)      ]
     syntax Bool ::= #isValidSignature ( Int , ByteArray , ByteArray )                    [function, smtlib(isValidSignature)] // ISignatureValidator(currentOwner).isValidSignature(data, contractSignature)
-    
+
     syntax Int  ::= #signer ( ByteArray , Int , Int ) [function]
     syntax Int  ::= #sigR   ( ByteArray , Int )       [function]
     syntax Int  ::= #sigS   ( ByteArray , Int )       [function]
