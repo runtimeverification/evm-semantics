@@ -1917,11 +1917,23 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 Access List Gas
 ---------------
 
-```k
+```{.k .nobytes}
     syntax Bool ::= #usesAccessList ( OpCode ) [function, functional]
  // -----------------------------------------------------------------
     rule #usesAccessList(OP) => isAddr1Op(OP) orBool isAddr2Op(OP) orBool OP ==K SLOAD orBool OP ==K SSTORE
+```
 
+```{.k .bytes}
+    syntax Bool ::= #usesAccessList ( OpCode ) [function, functional]
+ // -----------------------------------------------------------------
+    rule #usesAccessList(OP)     => true  requires isAddr1Op(OP)
+    rule #usesAccessList(OP)     => true  requires isAddr2Op(OP)
+    rule #usesAccessList(SLOAD)  => true
+    rule #usesAccessList(SSTORE) => true
+    rule #usesAccessList(_)      => false [owise]
+```
+
+```k
     syntax InternalOp ::= "#access" "[" OpCode "]"
  // --------------------------------------------
     rule <k> #access [ OP ] => #gasAccess(SCHED, OP) ~> #deductGas ... </k>
