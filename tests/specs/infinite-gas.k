@@ -101,12 +101,6 @@ module INFINITE-GAS-LEMMAS-COMMON
     rule G  <Int minInt(G', G'') => G  <Int G' andBool G  <Int G'' [simplification]
     rule G <=Int minInt(G', G'') => G <=Int G' andBool G <=Int G'' [simplification]
 
-    rule 0 <=Int Csstore(_, _, _, _)            => true  [simplification]
-    rule 0 <=Int Cmem(_, _)                     => true  [simplification]
-    rule 0 <=Int #allBut64th(_G)                => true  [simplification]
-    rule 0 <=Int _:ScheduleConst < _:Schedule > => true  [simplification]
-    rule 0 <=Int G up/Int _        => true  requires         0 <=Int G        [simplification]
-
     rule 0 <=Int X *Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
 
 endmodule
