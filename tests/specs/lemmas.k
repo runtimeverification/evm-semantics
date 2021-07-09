@@ -38,7 +38,7 @@ module LEMMAS
   // ########################
 
     rule 0 <=Int #sizeWordStack ( _ , N ) => true requires 0 <=Int N [smt-lemma, simplification]
-    rule 0 <=Int #sizeByteArray ( _ )     => true [smt-lemma, simplification]
+    rule 0 <=Int #sizeByteArray ( _ )     => true                    [smt-lemma, simplification]
 
     // bool2Word range & simplification
     rule 0 <=Int bool2Word(_B)             => true   [simplification]
