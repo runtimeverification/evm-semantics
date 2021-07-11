@@ -1848,12 +1848,28 @@ Overall Gas
     rule <k> _G:Int ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
     rule <k>  G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
     rule <k>  G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+```
 
+```{.k .nobytes}
     syntax Bool ::= #inStorage ( Map , Account , Int ) [function]
  // -------------------------------------------------------------
-    rule #inStorage(TS, ACCT, _ )  => false requires notBool ACCT in_keys(TS)
-    rule #inStorage(TS, ACCT, KEY) => KEY in {TS[ACCT]}:>Set requires ACCT in_keys(TS)
+    rule #inStorage(TS, ACCT, _ )  => false                  requires notBool ACCT in_keys(TS)
+    rule #inStorage(TS, ACCT, KEY) => KEY in {TS[ACCT]}:>Set requires         ACCT in_keys(TS)
+```
 
+```{.k .bytes}
+    syntax Bool ::= #inStorage     ( Map   , Account , Int ) [function, functional]
+                  | #inStorageAux1 ( KItem ,           Int ) [function, functional]
+                  | #inStorageAux2 ( Set   ,           Int ) [function, functional]
+ // -------------------------------------------------------------------------------
+    rule #inStorage(TS, ACCT, KEY) => #inStorageAux1(TS[ACCT], KEY) requires ACCT in_keys(TS)
+    rule #inStorage(_, _, _)       => false                         [owise]
+
+    rule #inStorageAux1(KEYS:Set, KEY) => #inStorageAux2(KEYS, KEY)
+    rule #inStorageAux1(_, _)          => false                     [owise]
+
+    rule #inStorageAux2(KEYS, KEY) => true  requires KEY in KEYS
+    rule #inStorageAux2(_, _)      => false [owise]
 ```
 
 Memory Consumption
@@ -2052,7 +2068,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </k>
 
-    rule <k> #gasExec(SCHED, JUMPDEST)    => Gjumpdest < SCHED >                       ... </k>
+    rule <k> #gasExec(SCHED, JUMPDEST)    => Gjumpdest < SCHED >                        ... </k>
     rule <k> #gasExec(SCHED, SLOAD INDEX) => Csload(SCHED, #inStorage(TS, ACCT, INDEX)) ... </k>
          <id> ACCT </id>
          <touchedStorage> TS </touchedStorage>
