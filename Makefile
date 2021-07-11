@@ -140,20 +140,20 @@ plugin-deps: $(plugin_includes) $(plugin_c_includes)
 
 KOMPILE := $(KEVM) kompile
 
-kevm_includes := abi.md              \
-                 asm.md              \
-                 buf.md              \
-                 data.md             \
-                 driver.md           \
-                 edsl.md             \
-                 evm.md              \
-                 evm-types.md        \
-                 hashed-locations.md \
-                 json-rpc.md         \
-                 network.md          \
-                 optimizations.md    \
-                 serialization.md    \
-                 state-loader.md
+kevm_files := abi.md              \
+              asm.md              \
+              buf.md              \
+              data.md             \
+              driver.md           \
+              edsl.md             \
+              evm.md              \
+              evm-types.md        \
+              hashed-locations.md \
+              json-rpc.md         \
+              network.md          \
+              optimizations.md    \
+              serialization.md    \
+              state-loader.md
 
 kevm_lemmas := infinite-gas.k                           \
                lemmas.k                                 \
@@ -166,7 +166,9 @@ kevm_lemmas := infinite-gas.k                           \
 
 lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(kevm_lemmas))
 
-includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_includes)) $(plugin_includes) $(lemma_includes)
+kevm_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_files))
+
+includes := $(kevm_includes) $(lemma_includes) $(plugin_includes) $(plugin_c_includes)
 
 $(includes): $(KEVM_BIN)/$(KEVM)
 
@@ -193,7 +195,7 @@ java_main_file     := driver.md
 java_main_filename := $(basename $(notdir $(java_main_file)))
 java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/compiled.bin
 
-$(KEVM_LIB)/$(java_kompiled): $(includes)
+$(KEVM_LIB)/$(java_kompiled): $(kevm_includes)
 	$(KOMPILE) --backend java                  \
 	    $(java_main_file) $(JAVA_KOMPILE_OPTS) \
 	    --directory $(KEVM_LIB)/$(java_dir)    \
@@ -210,7 +212,7 @@ haskell_main_file      := driver.md
 haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
 haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
 
-$(KEVM_LIB)/$(haskell_kompiled): $(includes)
+$(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes)
 	$(KOMPILE) --backend haskell                     \
 	    $(haskell_main_file) $(HASKELL_KOMPILE_OPTS) \
 	    --directory $(KEVM_LIB)/$(haskell_dir)       \
@@ -227,7 +229,7 @@ llvm_main_file     := driver.md
 llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
 llvm_kompiled      := $(llvm_dir)/$(llvm_main_filename)-kompiled/interpreter
 
-$(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out) $(plugin_c_includes)
+$(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
 	$(KOMPILE) --backend llvm                 \
 	    $(llvm_main_file)                     \
 	    --directory $(KEVM_LIB)/$(llvm_dir)   \
@@ -271,11 +273,11 @@ $(KEVM_LIB)/release.md: INSTALL.md
 	echo                                    >> $@
 	cat INSTALL.md                          >> $@
 
-build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs)) $(lemma_includes)
+build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
 
-build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_BIN)/$(KEVM) $(KEVM_LIB)/kore-json.py
-build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_BIN)/$(KEVM) $(KEVM_LIB)/kore-json.py
-build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_BIN)/$(KEVM) $(KEVM_LIB)/kast-json.py
+build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py $(lemma_includes)
+build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
+build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_LIB)/kast-json.py $(lemma_includes)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
