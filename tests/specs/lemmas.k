@@ -10,7 +10,7 @@ module LEMMAS
   // ########################
 
     //For #bufStrict simplification in benchmarks
-    rule 0 <=Int #ceil32(I)        => true requires 0 <=Int I [smt-lemma, simplification]
+    rule 0 <=Int #ceil32(I)        => true requires 0 <=Int I [simplification, smt-lemma]
     rule 0 <=Int #ceil32(I) -Int I => true requires 0 <=Int I [simplification]
 
     //Inequality sign normalization
@@ -75,25 +75,23 @@ module LEMMAS
   // Buffer Reasoning
   // ########################
 
-    rule WS ++ .ByteArray => WS  [simplification]
-    rule .ByteArray ++ WS => WS  [simplification]
+    rule WS         ++ .ByteArray => WS  [simplification]
+    rule .ByteArray ++ WS         => WS  [simplification]
 
   // ########################
   // Map Reasoning
   // ########################
 
     // re-order assignments
-    rule MEM [ K1 := BUF1:ByteArray ] [ K2 := BUF2:ByteArray ] => MEM [ K2 := BUF2 ] [ K1 := BUF1 ]  requires K1  >Int K2 andBool K1 -Int K2 >=Int #sizeByteArray(BUF2)                           [simplification]
-
+    rule MEM [ K1 := BUF1:ByteArray ] [ K2 := BUF2:ByteArray ] => MEM [ K2 := BUF2 ] [ K1 := BUF1 ]  requires         #sizeByteArray(BUF2) <=Int K1 -Int K2                   andBool K2  <Int K1 [simplification]
     // overwritten assignment
-    rule MEM [ K1 := BUF1           ] [ K2 := BUF2           ] => MEM [ K2 := BUF2 ]                 requires K2 <=Int K1 andBool K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2) [simplification]
-
+    rule MEM [ K1 := BUF1           ] [ K2 := BUF2           ] => MEM [ K2 := BUF2 ]                 requires K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2) andBool K2 <=Int K1 [simplification]
     // redundant assignment
-    rule MEM [ K  := BUF1           ] [ K  := BUF2           ] => MEM [ K  := BUF2 ]                 requires #sizeByteArray(BUF1) ==Int #sizeByteArray(BUF2)                                     [simplification]
+    rule MEM [ K  := BUF1           ] [ K  := BUF2           ] => MEM [ K  := BUF2 ]                 requires         #sizeByteArray(BUF1) ==Int #sizeByteArray(BUF2)                             [simplification]
 
     // lookup range in memory
     rule _MEM [ _ .. W ] => .ByteArray  requires W ==Int 0                    [simplification]
-    rule MEM  [ 0 .. W ] => MEM         requires W ==Int #sizeByteArray(MEM)  [simplification]
+    rule  MEM [ 0 .. W ] => MEM         requires W ==Int #sizeByteArray(MEM)  [simplification]
 
     // lookup range in concatenated memory buffers
     rule (BUF1 ++  BUF2)[START .. WIDTH] =>  BUF2[START -Int #sizeByteArray(BUF1) .. WIDTH                          ]                                                              requires                        #sizeByteArray(BUF1) <=Int START                                                             [simplification]
@@ -104,7 +102,7 @@ module LEMMAS
 
     rule #sizeByteArray(BUF1 ++ BUF2)            => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)      [simplification]
     rule #sizeByteArray(#buf(SIZE, _))           => SIZE                                                [simplification]
-    rule #sizeByteArray(_ [ START .. WIDTH ])    => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+    rule #sizeByteArray(_MEM [ START .. WIDTH ]) => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
     rule #sizeByteArray(#range(_, START, WIDTH)) => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
 
     // TODO: custom ==K unification doesn't work in Haskell yet
@@ -134,7 +132,7 @@ module LEMMAS-JAVA [symbolic, kast]
 
     // #sizeByteArray
 
-    rule #sizeByteArray(_W : WS)       => 1 +Int #sizeByteArray(WS)             [simplification]
+    rule #sizeByteArray(_W : WS) => 1 +Int #sizeByteArray(WS) [simplification]
 
     // #asWord
 
@@ -144,32 +142,33 @@ module LEMMAS-JAVA [symbolic, kast]
 
     // #range
 
-    rule #range(_M, _N, K) => .ByteArray requires notBool K >Int 0 [simplification]
+    rule #range(_M, _N, K) => .ByteArray requires notBool 0 <Int K [simplification]
 
     rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))
-      requires K >Int 0
+      requires 0 <Int K
        andBool L <Int N
       [simplification]
 
     rule #range(M [ N := BUF ], L, K) => BUF [ L -Int N .. minInt(K, #sizeByteArray(BUF) -Int (L -Int N)) ] ++ #range(M, N +Int #sizeByteArray(BUF), K -Int minInt(K, #sizeByteArray(BUF) -Int (L -Int N)))
-      requires K  >Int 0
-       andBool L >=Int N
+      requires 0  <Int K
+       andBool N <=Int L
        andBool L  <Int N +Int #sizeByteArray(BUF)
       [simplification]
 
     rule #range(M [ N := BUF ], L, K) => #range(M, L, K)
-      requires K  >Int 0
-       andBool L >=Int N +Int #sizeByteArray(BUF)
+      requires 0 <Int K
+       andBool N +Int #sizeByteArray(BUF) <=Int L
       [simplification]
 
     rule #buf(N, #asWord(WS)) => WS
-      requires #noOverflow(WS) andBool N ==Int #sizeByteArray(WS)
+      requires #noOverflow(WS)
+       andBool N ==Int #sizeByteArray(WS)
       [simplification]
 
 
-    rule BA:ByteArray        ==K #buf( 32, DATA )    => #buf( 32, DATA ) ==K   BA              requires #isConcrete(BA)             [simplification]
-    rule #buf( 32, DATA )    ==K BA:ByteArray        => DATA             ==Int #asInteger(BA)  requires #isConcrete(BA)
-                                                                                                andBool #sizeByteArray(BA) <=Int 32 [simplification]
+    rule BA:ByteArray     ==K #buf( 32, DATA ) => #buf( 32, DATA ) ==K   BA              requires #isConcrete(BA)             [simplification]
+    rule #buf( 32, DATA ) ==K BA:ByteArray     => DATA             ==Int #asInteger(BA)  requires #isConcrete(BA)
+                                                                                          andBool #sizeByteArray(BA) <=Int 32 [simplification]
 
   // ########################
   // Overflow
@@ -199,32 +198,37 @@ module LEMMAS-JAVA [symbolic, kast]
     rule _N &Int  0 => 0
     rule  N &Int  N => N
 
-    //orienting symbolic term to be first, converting -Int to +Int for concrete values.
-    rule I +Int B => B          +Int I when #isConcrete(I) andBool notBool #isConcrete(B) [simplification]
-    rule A -Int I => A +Int (0 -Int I) when notBool #isConcrete(A) andBool #isConcrete(I) [simplification]
+    // orienting symbolic term to be first, converting -Int to +Int for concrete values.
+    rule I +Int B => B         +Int I  requires #isConcrete(I) andBool notBool #isConcrete(B) [simplification]
+    rule A -Int I => A +Int (0 -Int I) requires #isConcrete(I) andBool notBool #isConcrete(A) [simplification]
+    // +-associativity
 
-    rule (A +Int I2) +Int I3 => A +Int (I2 +Int I3) when notBool #isConcrete(A) andBool #isConcrete(I2) andBool #isConcrete(I3) [simplification]
+ #isConcrete(I) andBool
+ #isConcrete(J) andBool
+ #isConcrete(K) andBool
 
-    rule I1 +Int (B +Int I3) => B +Int (I1 +Int I3) when #isConcrete(I1) andBool notBool #isConcrete(B) andBool #isConcrete(I3) [simplification]
-    rule I1 -Int (B +Int I3) => (I1 -Int I3) -Int B when #isConcrete(I1) andBool notBool #isConcrete(B) andBool #isConcrete(I3) [simplification]
-    rule (I1 -Int B) +Int I3 => (I1 +Int I3) -Int B when #isConcrete(I1) andBool notBool #isConcrete(B) andBool #isConcrete(I3) [simplification]
+ notBool #isConcrete(A) andBool
+ notBool #isConcrete(B) andBool
+ notBool #isConcrete(C) andBool
 
-    rule I1 +Int (I2 +Int C) => (I1 +Int I2) +Int C when #isConcrete(I1) andBool #isConcrete(I2) andBool notBool #isConcrete(C) [simplification]
-    rule I1 +Int (I2 -Int C) => (I1 +Int I2) -Int C when #isConcrete(I1) andBool #isConcrete(I2) andBool notBool #isConcrete(C) [simplification]
-    rule I1 -Int (I2 +Int C) => (I1 -Int I2) -Int C when #isConcrete(I1) andBool #isConcrete(I2) andBool notBool #isConcrete(C) [simplification]
-    rule I1 -Int (I2 -Int C) => (I1 -Int I2) +Int C when #isConcrete(I1) andBool #isConcrete(I2) andBool notBool #isConcrete(C) [simplification]
-
-    rule I1 &Int (I2 &Int C) => (I1 &Int I2) &Int C when #isConcrete(I1) andBool #isConcrete(I2) andBool notBool #isConcrete(C) [simplification]
+    // NEW
+    rule (A +Int J) +Int K => A +Int (J +Int K) requires #isConcrete(J) andBool #isConcrete(K) andBool notBool #isConcrete(A) [simplification]
+    rule I +Int (B +Int K) => B +Int (I +Int K) requires #isConcrete(I) andBool #isConcrete(K) andBool notBool #isConcrete(B) [simplification]
+    rule I -Int (B +Int K) => (I -Int K) -Int B requires #isConcrete(I) andBool #isConcrete(K) andBool notBool #isConcrete(B) [simplification]
+    rule (I -Int B) +Int K => (I +Int K) -Int B requires #isConcrete(I) andBool #isConcrete(K) andBool notBool #isConcrete(B) [simplification]
+    rule I +Int (J +Int C) => (I +Int J) +Int C requires #isConcrete(I) andBool #isConcrete(J) andBool notBool #isConcrete(C) [simplification]
+    rule I +Int (J -Int C) => (I +Int J) -Int C requires #isConcrete(I) andBool #isConcrete(J) andBool notBool #isConcrete(C) [simplification]
+    rule I -Int (J +Int C) => (I -Int J) -Int C requires #isConcrete(I) andBool #isConcrete(J) andBool notBool #isConcrete(C) [simplification]
+    rule I -Int (J -Int C) => (I -Int J) +Int C requires #isConcrete(I) andBool #isConcrete(J) andBool notBool #isConcrete(C) [simplification]
+    rule I &Int (J &Int C) => (I &Int J) &Int C requires #isConcrete(I) andBool #isConcrete(J) andBool notBool #isConcrete(C) [simplification]
 
     // 0xffff...f &Int N = N
-    rule MASK &Int N => N  requires MASK ==Int (2 ^Int (log2Int(MASK) +Int 1)) -Int 1 // MASK = 0xffff...f
-                            andBool 0 <=Int N andBool N <=Int MASK
-      [simplification]
+    // MASK = 0xffff...f
+    rule MASK &Int N    => N requires MASK ==Int (2 ^Int (log2Int(MASK) +Int 1)) -Int 1 andBool 0 <=Int N andBool N <=Int MASK [simplification]
 
     // N &Int 0xffff...f = N
-    rule N &Int MASK => N  requires MASK ==Int (2 ^Int (log2Int(MASK) +Int 1)) -Int 1 // MASK = 0xffff...f
-                            andBool 0 <=Int N andBool N <=Int MASK
-      [simplification]
+    // MASK = 0xffff...f
+    rule N    &Int MASK => N requires MASK ==Int (2 ^Int (log2Int(MASK) +Int 1)) -Int 1 andBool 0 <=Int N andBool N <=Int MASK [simplification]
 
     rule 0 <=Int X &Int Y             => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256 [simplification]
     rule         X &Int Y <Int pow256 => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <=Int Y andBool Y <Int pow256 [simplification]
@@ -312,10 +316,13 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
 
     rule N &Int maxUInt160 => N  requires #rangeUInt(160, N) [simplification]
+
     rule maxUInt160 &Int N => N  requires #rangeUInt(160, N) [simplification]
+
     rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
 
     rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
+
     rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
 
 
@@ -332,8 +339,8 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma, simplification]
 
-    rule BA:ByteArray     ==K #buf( 32, DATA ) => #buf( 32, DATA ) ==K              BA                                       [simplification, concrete(BA)]
-    rule #buf( 32, DATA ) ==K BA:ByteArray     =>           DATA   ==Int #asInteger(BA) requires #sizeByteArray(BA) <=Int 32 [simplification, concrete(BA)]
+    rule BA:ByteArray   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                       [simplification, concrete(BA)]
+    rule #buf(32, DATA) ==K BA:ByteArray   =>          DATA  ==Int #asInteger(BA) requires #sizeByteArray(BA) <=Int 32 [simplification, concrete(BA)]
 
   // ########################
   // Boolean Logic
