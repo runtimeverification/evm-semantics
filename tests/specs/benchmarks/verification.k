@@ -32,7 +32,7 @@ module VERIFICATION
   // Gas Calculation
   // ########################
 
-    rule Rsstore(BYZANTIUM, NEW, _CURR, _ORIG) => 0  requires NEW =/=Int 0 [simplification]
+    rule Rsstore(_BYZANTIUM, NEW, _CURR, _ORIG) => 0  requires NEW =/=Int 0 [simplification]
 
   // ########################
   // Ecrecover
@@ -42,10 +42,8 @@ module VERIFICATION
 
     //case 0 is never wrapped into #symEcrec(), corresponds to #ecrecEmpty(DATA) == true
     rule 0 <Int   #symEcrec(_DATA)             => true [simplification]
-
     //that's because the result in concrete semantics is trimmed to Address range.
     rule          #symEcrec(_DATA) <Int pow160 => true [simplification]
-
     // Lemmas implied by the above, but still required to match side conditions of #padToWidth rule in lemmas.md
     // General range conversion lemmas like below are not an option, dramatic performance decrease:
     rule 0 <=Int  #symEcrec(_DATA)             => true [simplification]
@@ -80,17 +78,8 @@ module VERIFICATION
   // Memory Usage
   // ########################
 
-    rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START0, WIDTH0), START1, WIDTH1) => #memoryUsageUpdate(MU, START0, WIDTH0)
-      requires START1 +Int WIDTH1 <=Int START0 +Int WIDTH0
-       andBool 0  <Int WIDTH0
-       andBool 0 <=Int WIDTH1
-      [simplification]
-
-    rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START0, WIDTH0), START1, WIDTH1) => #memoryUsageUpdate(MU, START1, WIDTH1)
-      requires START0 +Int WIDTH0 <Int START1 +Int WIDTH1
-       andBool 0 <=Int WIDTH0
-       andBool 0  <Int WIDTH1
-      [simplification]
+    rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START0, WIDTH0), START1, WIDTH1) => #memoryUsageUpdate(MU, START0, WIDTH0) requires START1 +Int WIDTH1 <=Int START0 +Int WIDTH0 andBool 0  <Int WIDTH0 andBool 0 <=Int WIDTH1 [simplification]
+    rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START0, WIDTH0), START1, WIDTH1) => #memoryUsageUpdate(MU, START1, WIDTH1) requires START0 +Int WIDTH0  <Int START1 +Int WIDTH1 andBool 0 <=Int WIDTH0 andBool 0  <Int WIDTH1 [simplification]
 
     rule 0 <=Int #memoryUsageUpdate(_MU, _START, _WIDTH) => true [simplification]
 
@@ -98,8 +87,10 @@ module VERIFICATION
   // Buffer Reasoning
   // ########################
 
+    // ++-identity-right
     rule WS ++ .ByteArray => WS [simplification]
 
+    // ++-associativity
     rule ( WS1 ++ WS2 ) ++ WS3 => WS1 ++ ( WS2 ++ WS3 ) [simplification]
 
     rule #sizeWordStack(WS, N) <Int SIZE => #sizeWordStack(WS, 0) +Int N <Int SIZE  requires N =/=Int 0 [simplification]
