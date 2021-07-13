@@ -9,12 +9,12 @@ module LEMMAS
   // Arithmetic
   // ########################
 
-    //For #bufStrict simplification in benchmarks
-    // // TODO: why does this need to be an `smt-lemma`?
-    // rule 0 <=Int #ceil32(I)        => true requires 0 <=Int I [simplification, smt-lemma]
-    // rule 0 <=Int #ceil32(I) -Int I => true requires 0 <=Int I [simplification]
-    // TODO: possibly generalizes the above two rules
-    rule 0 <=Int #ceil32(I) -Int J => true requires J <=Int I [simplification, smt-lemma]
+    // For #bufStrict simplification in benchmarks
+    // TODO: why does this need to be an `smt-lemma`?
+    rule 0 <=Int #ceil32(I)        => true requires 0 <=Int I [simplification, smt-lemma]
+    rule 0 <=Int #ceil32(I) -Int I => true requires 0 <=Int I [simplification]
+    // // TODO: possibly generalizes the above two rules
+    // rule 0 <=Int #ceil32(I) -Int J => true requires J <=Int I [simplification, smt-lemma]
 
     //Inequality sign normalization
     rule          X  >Int Y  => Y  <Int X            [simplification]
