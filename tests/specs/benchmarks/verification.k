@@ -182,7 +182,7 @@ module VERIFICATION
 
     rule ((X *Int Y) /Int Z) /Int Y => X /Int Z  requires Y =/=Int 0 [simplification]
 
-    // x &Int (NOT 31)
+    // X &Int (NOT 31)
     rule X &Int 115792089237316195423570985008687907853269984665640564039457584007913129639904 => (X /Int 32) *Int 32  requires 0 <=Int X [simplification]
 
     rule (X /Int 32) *Int 32 => X  requires X modInt 32 ==Int 0 [simplification]
