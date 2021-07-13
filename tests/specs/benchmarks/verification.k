@@ -60,7 +60,8 @@ module VERIFICATION
   // Rule Replacement
   // ########################
 
-    claim <k> EXTCODESIZE ACCT => #extCodeSize(ACCT) ~> #push ... </k>  [trusted]
+    // TODO: is this needed anymore?
+    // claim <k> EXTCODESIZE ACCT => #extCodeSize(ACCT) ~> #push ... </k>  [trusted]
 
   // ########################
   // ABI Encoding
