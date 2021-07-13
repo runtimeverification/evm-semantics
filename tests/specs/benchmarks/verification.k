@@ -127,8 +127,7 @@ module VERIFICATION
   // Simplification
   // ########################
 
-    // TODO: is generalized by `#asWord(#buf(N, BUF)) => BUF` in `lemmas.k`?
-    // rule #asWord(#buf(32, DATA)) => DATA  requires #rangeUInt(256, DATA) [simplification]
+    rule #asWord(#buf(32, DATA)) => DATA  requires #rangeUInt(256, DATA) [simplification]
 
     rule #range(_M [ N := #buf(WIDTH, DATA) ], N, WIDTH) => #buf(WIDTH, DATA) [simplification]
 
