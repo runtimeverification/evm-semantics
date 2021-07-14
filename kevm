@@ -122,7 +122,13 @@ run_prove() {
     [[ ! -f ${concrete_rules_file} ]]          || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
 
     ! $debug || set -x
-    kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
+    if [[ "$profile_timeout" != "0" ]]
+    then
+        timeout -s INT "$profile_timeout" kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
+    else
+        kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
+    fi
+    ! $profile || kore-prof "$eventlog_name" > "$eventlog_name.json"
 }
 
 run_search() {
@@ -253,6 +259,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--concrete-rules-file <concrete_rules_file>]
                                       [--bug-report]
                                       [--profile]
+                                      [--profile-timeout]
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <output format> is the format for Kast to output the term in.
@@ -276,6 +283,7 @@ dump=false
 unparse=true
 debugger=false
 profile=false
+profile_timeout="0"
 bug_report=false
 mode=NORMAL
 schedule=ISTANBUL
@@ -294,6 +302,7 @@ while [[ $# -gt 0 ]]; do
         --no-unparse)          unparse=false             ; shift   ;;
         --debugger)            debugger=true             ; shift   ;;
         --profile)             profile=true              ; shift   ;;
+        --profile-timeout)     profile_timeout="$2"      ; shift 2 ;;
         --bug-report)          bug_report=true           ; shift   ;;
         --backend)             backend="$2"              ; shift 2 ;;
         --backend-dir)         backend_dir="$2"          ; shift 2 ;;
@@ -311,6 +320,7 @@ backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
 ! $debugger || [[ "$backend" == haskell ]] || [[ "$backend" == llvm ]] || fatal "Option --debugger only usable with --backend [llvm|haskell]!"
 ! $profile  || [[ "$backend" == haskell ]] || fatal "Option --profile only usable with --backend haskell!"
+! $profile_timeout || $profile             || fatal "Option --profile-timeout only usable with --profile!"
 
 # get the run file
 run_file="$1" ; shift
