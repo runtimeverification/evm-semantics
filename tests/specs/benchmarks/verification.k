@@ -113,9 +113,6 @@ module VERIFICATION
   // Simplification
   // ########################
 
-    // TODO: possibly generalizes via lemma from lemmas.k
-    // rule #asWord(#buf(32, DATA)) => DATA  requires #rangeUInt(256, DATA) [simplification]
-
     rule #range(_M [ N := #buf(WIDTH, DATA) ], N, WIDTH) => #buf(WIDTH, DATA) [simplification]
 
     rule #asWord(WS) &Int maxUInt256 => #asWord(WS) [simplification]
