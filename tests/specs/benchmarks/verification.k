@@ -50,20 +50,6 @@ module VERIFICATION
     rule          #symEcrec(_DATA) <Int pow256 => true [simplification]
 
   // ########################
-  // Symbolic Call
-  // ########################
-
-    syntax Int ::= #extCodeSize ( Int )  [function]
- // -----------------------------------------------
-
-  // ########################
-  // Rule Replacement
-  // ########################
-
-    // TODO: is this needed anymore?
-    // claim <k> EXTCODESIZE ACCT => #extCodeSize(ACCT) ~> #push ... </k>  [trusted]
-
-  // ########################
   // ABI Encoding
   // ########################
 
