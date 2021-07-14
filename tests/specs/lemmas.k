@@ -335,9 +335,10 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma, simplification]
 
-    // TODO: why do we need an explicit symmetry rule for `==K`? should this not happend automatically?
-    rule BA:ByteArray   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                       [simplification, concrete(BA)]
-    rule #buf(32, DATA) ==K BA:ByteArray   =>          DATA  ==Int #asInteger(BA) requires #sizeByteArray(BA) <=Int 32 [simplification, concrete(BA)]
+    // TODO: tmp disabled to test generalization below
+    // // TODO: why do we need an explicit symmetry rule for `==K`? should this not happend automatically?
+    // // rule BA:ByteArray   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                       [simplification, concrete(BA)]
+    // // rule #buf(32, DATA) ==K BA:ByteArray   =>          DATA  ==Int #asInteger(BA) requires #sizeByteArray(BA) <=Int 32 [simplification, concrete(BA)]
 
     // TODO: perhaps the above two rules can be combined:
     rule BA:ByteArray ==K #buf(32, DATA) => #asInteger(BA) ==Int DATA requires #sizeByteArray(BA) <=Int 32 [simplification, concrete(BA)]
