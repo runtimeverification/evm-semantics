@@ -1,39 +1,29 @@
 ARG K_COMMIT
-FROM runtimeverificationinc/kframework-k:ubuntu-bionic-${K_COMMIT}
+FROM runtimeverificationinc/kframework-k:ubuntu-focal-${K_COMMIT}
 
-RUN    apt-get update           \
-    && apt-get upgrade --yes    \
-    && apt-get install --yes    \
-            cmake               \
-            curl                \
-            debhelper           \
-            jq                  \
-            libboost-test-dev   \
-            libcrypto++-dev     \
-            libgflags-dev       \
-            libprocps-dev       \
-            libsecp256k1-dev    \
-            libssl-dev          \
-            libyaml-dev         \
-            maven               \
-            netcat-openbsd      \
-            openjdk-11-jdk      \
-            pkg-config          \
-            python3             \
-            python-pygments     \
-            python-recommonmark \
-            python-sphinx       \
-            rapidjson-dev       \
+RUN    apt-get update            \
+    && apt-get upgrade --yes     \
+    && apt-get install --yes     \
+            cmake                \
+            curl                 \
+            debhelper            \
+            default-jdk-headless \
+            jq                   \
+            libboost-test-dev    \
+            libcrypto++-dev      \
+            libgflags-dev        \
+            libprocps-dev        \
+            libsecp256k1-dev     \
+            libssl-dev           \
+            libyaml-dev          \
+            maven                \
+            netcat-openbsd       \
+            pkg-config           \
+            python3              \
+            python-pygments      \
+            rapidjson-dev        \
+            z3                   \
             zlib1g-dev
-
-RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.7 \
-    && cd z3                                                        \
-    && python scripts/mk_make.py                                    \
-    && cd build                                                     \
-    && make -j8                                                     \
-    && make install                                                 \
-    && cd ../..                                                     \
-    && rm -rf z3
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN    apt-get update               \
