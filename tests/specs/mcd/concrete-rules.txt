@@ -1,4 +1,3 @@
-EVM-ABI.#ceil32
 EVM.allBut64th.pos
 EVM.Cextra
 EVM.Cmem
@@ -14,8 +13,10 @@ EVM-TYPES.#asByteStack
 EVM-TYPES.#asByteStackAux.recursive
 EVM-TYPES.#asWord.recursive
 EVM-TYPES.ByteArray.range
+EVM-TYPES.bytesRange
 EVM-TYPES.mapWriteBytes.recursive
 EVM-TYPES.#padToWidth
+EVM-TYPES.padToWidthNonEmpty
 EVM-TYPES.powmod.nonzero
 EVM-TYPES.powmod.zero
 EVM-TYPES.#range
@@ -23,7 +24,7 @@ EVM-TYPES.#rangeAux.rec
 EVM-TYPES.signextend.invalid
 EVM-TYPES.signextend.negative
 EVM-TYPES.signextend.positive
-HASHED-LOCATIONS.keccakIntList
+EVM-TYPES.upDivInt
 SERIALIZATION.keccak
 SERIALIZATION.#newAddr
 SERIALIZATION.#newAddrCreate2

@@ -2,7 +2,7 @@ Parsing/Unparsing
 =================
 
 ```k
-requires "blockchain-k-plugin/krypto.md"
+requires "krypto.md"
 requires "evm-types.md"
 requires "json-rpc.md"
 ```

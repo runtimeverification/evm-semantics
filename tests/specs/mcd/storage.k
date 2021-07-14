@@ -25,14 +25,14 @@ module DSS-STORAGE
  // --------------------------
     rule #Vat.wards[A]           => #hashedLocation("Solidity", 0, A)              [macro]
     rule #Vat.can[A][B]          => #hashedLocation("Solidity", 1, A B)            [macro]
-    rule #Vat.ilks[Ilk].Art      => #hashedLocation("Solidity", 2, Ilk) +Int 0     [macro]
-    rule #Vat.ilks[Ilk].rate     => #hashedLocation("Solidity", 2, Ilk) +Int 1     [macro]
-    rule #Vat.ilks[Ilk].spot     => #hashedLocation("Solidity", 2, Ilk) +Int 2     [macro]
-    rule #Vat.ilks[Ilk].line     => #hashedLocation("Solidity", 2, Ilk) +Int 3     [macro]
-    rule #Vat.ilks[Ilk].dust     => #hashedLocation("Solidity", 2, Ilk) +Int 4     [macro]
-    rule #Vat.urns[Ilk][Usr].ink => #hashedLocation("Solidity", 3, Ilk Usr)        [macro]
-    rule #Vat.urns[Ilk][Usr].art => #hashedLocation("Solidity", 3, Ilk Usr) +Int 1 [macro]
-    rule #Vat.gem[Ilk][Usr]      => #hashedLocation("Solidity", 4, Ilk Usr)        [macro]
+    rule #Vat.ilks[ILK].Art      => #hashedLocation("Solidity", 2, ILK) +Int 0     [macro]
+    rule #Vat.ilks[ILK].rate     => #hashedLocation("Solidity", 2, ILK) +Int 1     [macro]
+    rule #Vat.ilks[ILK].spot     => #hashedLocation("Solidity", 2, ILK) +Int 2     [macro]
+    rule #Vat.ilks[ILK].line     => #hashedLocation("Solidity", 2, ILK) +Int 3     [macro]
+    rule #Vat.ilks[ILK].dust     => #hashedLocation("Solidity", 2, ILK) +Int 4     [macro]
+    rule #Vat.urns[ILK][USR].ink => #hashedLocation("Solidity", 3, ILK USR)        [macro]
+    rule #Vat.urns[ILK][USR].art => #hashedLocation("Solidity", 3, ILK USR) +Int 1 [macro]
+    rule #Vat.gem[ILK][USR]      => #hashedLocation("Solidity", 4, ILK USR)        [macro]
     rule #Vat.dai[A]             => #hashedLocation("Solidity", 5, A)              [macro]
     rule #Vat.sin[A]             => #hashedLocation("Solidity", 6, A)              [macro]
     rule #Vat.debt               => 7                                              [macro]
@@ -68,8 +68,8 @@ module DSS-STORAGE
                  | "#Jug.base"
  // --------------------------
     rule #Jug.wards[A]       => #hashedLocation("Solidity", 0, A)          [macro]
-    rule #Jug.ilks[Ilk].duty => #hashedLocation("Solidity", 1, Ilk) +Int 0 [macro]
-    rule #Jug.ilks[Ilk].rho  => #hashedLocation("Solidity", 1, Ilk) +Int 1 [macro]
+    rule #Jug.ilks[ILK].duty => #hashedLocation("Solidity", 1, ILK) +Int 0 [macro]
+    rule #Jug.ilks[ILK].rho  => #hashedLocation("Solidity", 1, ILK) +Int 1 [macro]
     rule #Jug.vat            => 2                                          [macro]
     rule #Jug.vow            => 3                                          [macro]
     rule #Jug.base           => 4                                          [macro]
@@ -85,8 +85,8 @@ module DSS-STORAGE
                  | "#Drip.repo"
  // ---------------------------
     rule #Drip.wards[A]      => #hashedLocation("Solidity", 0, A)          [macro]
-    rule #Drip.ilks[Ilk].tax => #hashedLocation("Solidity", 1, Ilk) +Int 0 [macro]
-    rule #Drip.ilks[Ilk].rho => #hashedLocation("Solidity", 1, Ilk) +Int 1 [macro]
+    rule #Drip.ilks[ILK].tax => #hashedLocation("Solidity", 1, ILK) +Int 0 [macro]
+    rule #Drip.ilks[ILK].rho => #hashedLocation("Solidity", 1, ILK) +Int 1 [macro]
     rule #Drip.vat           => 2                                          [macro]
     rule #Drip.vow           => 3                                          [macro]
     rule #Drip.repo          => 4                                          [macro]
@@ -134,9 +134,9 @@ module DSS-STORAGE
                  | "#Cat.vow"
  // -------------------------
     rule #Cat.wards[A]       => #hashedLocation("Solidity", 0, A)          [macro]
-    rule #Cat.ilks[Ilk].flip => #hashedLocation("Solidity", 1, Ilk) +Int 0 [macro]
-    rule #Cat.ilks[Ilk].chop => #hashedLocation("Solidity", 1, Ilk) +Int 1 [macro]
-    rule #Cat.ilks[Ilk].lump => #hashedLocation("Solidity", 1, Ilk) +Int 2 [macro]
+    rule #Cat.ilks[ILK].flip => #hashedLocation("Solidity", 1, ILK) +Int 0 [macro]
+    rule #Cat.ilks[ILK].chop => #hashedLocation("Solidity", 1, ILK) +Int 1 [macro]
+    rule #Cat.ilks[ILK].lump => #hashedLocation("Solidity", 1, ILK) +Int 2 [macro]
     rule #Cat.live           => 2                                          [macro]
     rule #Cat.vat            => 3                                          [macro]
     rule #Cat.vow            => 4                                          [macro]
@@ -295,12 +295,12 @@ module DSS-STORAGE
     rule #End.when          => 7                                        [macro]
     rule #End.wait          => 8                                        [macro]
     rule #End.debt          => 9                                        [macro]
-    rule #End.tag[Ilk]      => #hashedLocation("Solidity", 10, Ilk)     [macro]
-    rule #End.gap[Ilk]      => #hashedLocation("Solidity", 11, Ilk)     [macro]
-    rule #End.Art[Ilk]      => #hashedLocation("Solidity", 12, Ilk)     [macro]
-    rule #End.fix[Ilk]      => #hashedLocation("Solidity", 13, Ilk)     [macro]
-    rule #End.bag[Usr]      => #hashedLocation("Solidity", 14, Usr)     [macro]
-    rule #End.out[Ilk][Usr] => #hashedLocation("Solidity", 15, Ilk Usr) [macro]
+    rule #End.tag[ILK]      => #hashedLocation("Solidity", 10, ILK)     [macro]
+    rule #End.gap[ILK]      => #hashedLocation("Solidity", 11, ILK)     [macro]
+    rule #End.Art[ILK]      => #hashedLocation("Solidity", 12, ILK)     [macro]
+    rule #End.fix[ILK]      => #hashedLocation("Solidity", 13, ILK)     [macro]
+    rule #End.bag[USR]      => #hashedLocation("Solidity", 14, USR)     [macro]
+    rule #End.out[ILK][USR] => #hashedLocation("Solidity", 15, ILK USR) [macro]
 
  // ### Pot
  // -------
@@ -316,7 +316,7 @@ module DSS-STORAGE
                  | "#Pot.live"
  // --------------------------
     rule #Pot.wards[A] => #hashedLocation("Solidity", 0, A)   [macro]
-    rule #Pot.pie[Usr] => #hashedLocation("Solidity", 1, Usr) [macro]
+    rule #Pot.pie[USR] => #hashedLocation("Solidity", 1, USR) [macro]
     rule #Pot.Pie      => 2                                   [macro]
     rule #Pot.dsr      => 3                                   [macro]
     rule #Pot.chi      => 4                                   [macro]
@@ -366,8 +366,8 @@ module DSS-STORAGE
                  | "#Spotter.live"
  // ------------------------------
     rule #Spotter.wards[A]      => #hashedLocation("Solidity", 0, A)          [macro]
-    rule #Spotter.ilks[Ilk].pip => #hashedLocation("Solidity", 1, Ilk) +Int 0 [macro]
-    rule #Spotter.ilks[Ilk].mat => #hashedLocation("Solidity", 1, Ilk) +Int 1 [macro]
+    rule #Spotter.ilks[ILK].pip => #hashedLocation("Solidity", 1, ILK) +Int 0 [macro]
+    rule #Spotter.ilks[ILK].mat => #hashedLocation("Solidity", 1, ILK) +Int 1 [macro]
     rule #Spotter.vat           => 2                                          [macro]
     rule #Spotter.par           => 3                                          [macro]
     rule #Spotter.live          => 4                                          [macro]

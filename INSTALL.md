@@ -20,11 +20,11 @@ Installing Packages
 
 ### Ubuntu
 
-Download the `kevm_X.Y.Z_amd64_DISTRO.deb` package from GitHub releases (where `X.Y.Z` is the version identifier and `DISTRO` is one of `bionic` or `focal`).
+Download the `kevm_X.Y.Z_amd64_focal.deb` package from GitHub releases.
 Install it with the following command:
 
 ```sh
-sudo apt-get install ./kevm_X.Y.Z_amd64_DISTRO.deb
+sudo apt-get install ./kevm_X.Y.Z_amd64_focal.deb
 ```
 
 ### Docker Images
@@ -45,8 +45,6 @@ and to make a Docker Image based on it, use the following line in your `Dockerfi
 ```Dockerfile
 FROM runtimeverificationinc/kframework-evm-semantics:ubuntu-focal-COMMIT_ID
 ```
-
-We also create Ubuntu 18.04 images with the `ubuntu-bionic-COMMIT_ID` tags.
 
 ### From Source Build
 

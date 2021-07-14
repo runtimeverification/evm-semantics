@@ -189,9 +189,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #getValue( #int256( X )) => chop(X) requires #rangeSInt(256, X)
     rule #getValue(#bytes32( X )) => X       requires #rangeUInt(256, X)
 
-    syntax Int ::= #ceil32 ( Int ) [function, functional, smtlib(smt_ceil32)]
- // -------------------------------------------------------------------------
-    rule [#ceil32]: #ceil32(N) => ((N +Int 31) /Int 32) *Int 32
+    syntax Int ::= #ceil32 ( Int )
+ // ------------------------------
+    rule #ceil32(N) => (N up/Int 32) *Int 32 [macro]
 ```
 
 ### ABI Event Logs
