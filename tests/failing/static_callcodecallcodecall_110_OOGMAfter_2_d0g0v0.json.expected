@@ -28,12 +28,6 @@
       <interimStates>
         .List
       </interimStates>
-      <touchedAccounts>
-        SetItem ( 91343852333181432387730302044767688728495783936 )
-        SetItem ( 91343852333181432387730302044767688728495783939 )
-        SetItem ( 244687034288125203496486448490407391986876152250 )
-        SetItem ( 966588469268559010541288244128342317224451555083 )
-      </touchedAccounts>
       <callState>
         <program>
           b""
@@ -88,6 +82,12 @@
         <refund>
           0
         </refund>
+        <touchedAccounts>
+          .Set
+        </touchedAccounts>
+        <touchedStorage>
+          .Map
+        </touchedStorage>
       </substate>
       <gasPrice>
         1
@@ -319,6 +319,15 @@
           <data>
             b""
           </data>
+          <txType>
+            0
+          </txType>
+          <txAccess>
+            [ .JSONs ]
+          </txAccess>
+          <txChainID>
+            0
+          </txChainID>
         </message>
       </messages>
     </network>
