@@ -1,3 +1,5 @@
+requires "evm-types.md"
+
 //
 // Int Simplification
 // TODO: explanation
@@ -65,6 +67,7 @@ module INT-SIMPLIFICATION-JAVA [kast]
 endmodule
 
 module INT-SIMPLIFICATION-COMMON
+  imports EVM-TYPES
 
 // Generic rules
 
