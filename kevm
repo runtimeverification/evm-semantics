@@ -260,6 +260,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--bug-report]
                                       [--profile]
                                       [--profile-timeout]
+                                      [--kore-prof-args]
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <output format> is the format for Kast to output the term in.
