@@ -122,11 +122,10 @@ run_prove() {
     [[ ! -f ${concrete_rules_file} ]]          || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
 
     ! $debug || set -x
-    if [[ "$profile_timeout" != "0" ]]
-    then
+    if $profile && [[ "$profile_timeout" != "0" ]]; then
         timeout -s INT "$profile_timeout" kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@" || true
     else
-        kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@" || true
+        kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
     fi
     ! $profile || kore-prof "$eventlog_name" $kore_prof_args > "$eventlog_name.json"
 }
