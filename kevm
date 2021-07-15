@@ -261,12 +261,12 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--profile-timeout <duration>]
                                       [--kore-prof-args \"<kore-prof arg>*\"]
                  <K arg> is an argument you want to pass to K.
-                 <kore-prof arg> is an argument you want to pass to kore-prof.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
+                 <kore-prof arg> is an argument you want to pass to kore-prof.
                  <output format> is the format for Kast to output the term in.
                  <pattern> is the configuration pattern to search for.
                  <def_module> is the module to take as axioms when doing verification.
-                 <duration> is a timeout specifier as for GNU timeout
+                 <duration> is a timeout specifier as for GNU timeout.
 
            klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
     "
