@@ -200,10 +200,6 @@ module LEMMAS-JAVA [symbolic, kast]
 
     // associate concrete terms to the left and symbolic terms to the right
     
-    // // OLD
-    // rule (A  +Int  J) +Int  K  =>  A +Int (J  +Int K) requires #isConcrete(J) andBool #isConcrete(K) andBool notBool #isConcrete(A) [simplification]
-    // rule  I  +Int (B  +Int  K) =>  B +Int (I  +Int K) requires #isConcrete(I) andBool #isConcrete(K) andBool notBool #isConcrete(B) [simplification]
-    // NEW (moves symbolic terms to the fight)
     rule (A  +Int  J) +Int  K  => (J +Int K) +Int A requires #isConcrete(J) andBool #isConcrete(K) andBool notBool #isConcrete(A) [simplification]
     rule  I  +Int (B  +Int  K) => (I +Int K) +Int B requires #isConcrete(I) andBool #isConcrete(K) andBool notBool #isConcrete(B) [simplification]
 
