@@ -1,7 +1,10 @@
 requires "evm.md"
 requires "edsl.md"
+requires "tests/specs/int-simplification.k"
 
 module LEMMAS
+    imports INT-SIMPLIFICATION
+
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
 
