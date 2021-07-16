@@ -24,8 +24,6 @@ module INT-SIMPLIFICATION
 
     rule 0 <=Int X *Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
     
-    rule 0 <=Int G up/Int _ => true requires 0 <=Int G [simplification]
-
   // ##########################
   // from tests/specs/lemmas.k
   // ##########################

@@ -121,4 +121,7 @@ module INFINITE-GAS-COMMON
 
     rule (notBool (A andBool B)) andBool A => (notBool B) andBool A                      [simplification]
     rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]
+
+    rule 0 <=Int G up/Int _ => true requires 0 <=Int G [simplification]
+  
 endmodule
