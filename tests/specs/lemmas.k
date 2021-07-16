@@ -177,40 +177,7 @@ module LEMMAS-JAVA [symbolic, kast]
   // Arithmetic
   // ########################
 
-    rule 1 *Int N => N
-    rule N *Int 1 => N
-    rule 0 *Int _ => 0
-    rule _ *Int 0 => 0
-
-    rule 0 |Int N => N
-    rule N |Int 0 => N
-    rule N |Int N => N
-
-    rule  0 &Int _N => 0
-    rule _N &Int  0 => 0
-    rule  N &Int  N => N
-
-    // 2 terms
-
-    // associate symbolic terms to the left, concrete terms to the right
-    rule I +Int B => B +Int I          requires #isConcrete(I) andBool (notBool #isConcrete(B)) [simplification]
-    // converting -Int to +Int for concrete values.
-    rule A -Int I => A +Int (0 -Int I) requires #isConcrete(I) andBool (notBool #isConcrete(A)) [simplification]
     
-    // 3 terms
-
-    // symbolic first: A, J, K
-    rule (A  +Int  J) +Int  K  =>  A  +Int (J  +Int  K) requires #isConcrete(J) andBool #isConcrete(K) andBool (notBool #isConcrete(A)) [simplification]
-    // symbolic second: I, B, K
-    rule  I  +Int (B  +Int  K) => (I  +Int  K) +Int  B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
-    rule  I  -Int (B  +Int  K) => (I  -Int  K) -Int  B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
-    rule (I  -Int  B) +Int  K  => (I  +Int  K) -Int  B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
-    // symbolic third: I, J, C
-    rule  I  +Int (J  +Int  C) => (I  +Int  J) +Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
-    rule  I  +Int (J  -Int  C) => (I  +Int  J) -Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
-    rule  I  -Int (J  +Int  C) => (I  -Int  J) -Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
-    rule  I  -Int (J  -Int  C) => (I  -Int  J) +Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
-    rule  I  &Int (J  &Int  C) => (I  &Int  J) &Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
 
     // 0xffff...f &Int N = N
     // MASK = 0xffff...f
@@ -268,10 +235,6 @@ module LEMMAS-JAVA [symbolic, kast]
     //Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
     rule I                   ==K bool2Word( B:Bool ) => bool2Word(B) ==Int I             requires #isConcrete(I) [simplification]
     rule bool2Word( B:Bool ) ==K I                   => B            ==K   word2Bool(I)  requires #isConcrete(I) [simplification]
-
-    //For #bufStrict simplification in benchmarks
-    rule 0  <Int 2 ^Int I => true       requires 0 <=Int I [simplification]
-    rule 0 <=Int I *Int 8 => 0 <=Int I                     [simplification]
 
 endmodule
 
