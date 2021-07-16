@@ -83,7 +83,7 @@ module INT-SIMPLIFICATION-COMMON
   rule X -Int Y +Int Z <=Int A => false requires A <Int X -Int Y andBool 0 <=Int Z [simplification]
 
 
-  rule minInt(G, G') <Int G''  => G  <Int G'' orBool G' <Int G''  [simplification]
+  rule minInt(G, G') <Int G''  => G  <Int G'' orBool G'  <Int G'' [simplification]
   rule G  <Int minInt(G', G'') => G  <Int G'  andBool G  <Int G'' [simplification]
   rule G <=Int minInt(G', G'') => G <=Int G'  andBool G <=Int G'' [simplification]
 
