@@ -115,7 +115,6 @@ module INFINITE-GAS-COMMON
     rule log2Int(_) <=Int #gas(_) => true  [simplification]
     rule #gas(_) <Int log2Int(_)  => false [simplification]
 
-    rule 0 <=Int G up/Int _        => true  requires         0 <=Int G        [simplification]
     rule G up/Int _  <Int #gas(G') => true  requires         G  <Int #gas(G') [simplification]
     rule G up/Int _ <=Int #gas(G') => true  requires         G <=Int #gas(G') [simplification]
     rule #gas(G') <Int G up/Int _  => false requires notBool #gas(G') <Int G  [simplification]
