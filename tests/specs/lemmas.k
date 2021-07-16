@@ -273,11 +273,6 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
 
-    rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
-
-    rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
-
-
   // ########################
   // Buffer Reasoning
   // ########################
