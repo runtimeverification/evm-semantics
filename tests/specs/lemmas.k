@@ -5,6 +5,7 @@ requires "./int-simplification.k"
 module LEMMAS
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
+    imports INT-SIMPLIFICATION
 
   // ########################
   // Arithmetic
@@ -117,7 +118,7 @@ module LEMMAS-JAVA [symbolic, kast]
     imports EDSL
     imports K-REFLECTION
     imports HASH2
-    imports INT-SIMPLIFICATION
+    imports INT-SIMPLIFICATION // TODO: perhaps only need INT-SIMPLIFICATION-JAVA
 
   // ########################
   // Buffer Reasoning
@@ -286,7 +287,7 @@ module LEMMAS-HASKELL [symbolic, kore]
     imports EVM
     imports EDSL
     imports HASH2
-    imports INT-SIMPLIFICATION
+    imports INT-SIMPLIFICATION // TODO: perhaps only need INT-SIMPLIFICATION-HASKELL
 
   // ########################
   // Word Reasoning
