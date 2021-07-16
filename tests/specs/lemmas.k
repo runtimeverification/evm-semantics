@@ -15,18 +15,11 @@ module LEMMAS
     rule 0 <=Int #ceil32(I)        => true requires 0 <=Int I [simplification, smt-lemma]
     rule 0 <=Int #ceil32(I) -Int I => true requires 0 <=Int I [simplification]
 
-    //Inequality sign normalization
-    rule          X  >Int Y  => Y  <Int X            [simplification]
-    rule          X >=Int Y  => Y <=Int X            [simplification]
-    rule notBool (X  <Int Y) => Y <=Int X            [simplification]
-    rule notBool (X <=Int Y) => Y  <Int X            [simplification]
-
     // chop range & simplification
     rule chop(I) => I requires #rangeUInt( 256 , I ) [simplification]
     rule 0 <=Int chop(_V)             => true        [simplification]
     rule         chop(_V) <Int pow256 => true        [simplification]
 
-    rule N /Int 1 => N  [simplification]
 
   // ########################
   // Set Reasoning
