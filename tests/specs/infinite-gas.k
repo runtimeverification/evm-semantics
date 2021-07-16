@@ -120,4 +120,6 @@ module INFINITE-GAS-COMMON
     rule G up/Int _ <=Int #gas(G') => true  requires         G <=Int #gas(G') [simplification]
     rule #gas(G') <Int G up/Int _  => false requires notBool #gas(G') <Int G  [simplification]
 
+    rule (notBool (A andBool B)) andBool A => (notBool B) andBool A                      [simplification]
+    rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]
 endmodule
