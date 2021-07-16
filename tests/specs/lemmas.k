@@ -177,8 +177,6 @@ module LEMMAS-JAVA [symbolic, kast]
   // Arithmetic
   // ########################
 
-    
-
     // 0xffff...f &Int N = N
     // MASK = 0xffff...f
     rule MASK &Int N    => N requires MASK ==Int (2 ^Int (log2Int(MASK) +Int 1)) -Int 1 andBool 0 <=Int N andBool N <=Int MASK [simplification]
