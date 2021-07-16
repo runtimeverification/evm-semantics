@@ -39,6 +39,7 @@ module INT-SIMPLIFICATION-HASKELL [kore]
 endmodule 
 
 module INT-SIMPLIFICATION-JAVA [kast]
+    imports K-REFLECTION
     imports INT-SIMPLIFICATION-COMMON
 
     rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 requires #isConcrete(C2) andBool #isConcrete(C3) [simplification]

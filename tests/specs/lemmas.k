@@ -3,8 +3,6 @@ requires "edsl.md"
 requires "./int-simplification.k"
 
 module LEMMAS
-    imports INT-SIMPLIFICATION
-
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
 
@@ -119,6 +117,7 @@ module LEMMAS-JAVA [symbolic, kast]
     imports EDSL
     imports K-REFLECTION
     imports HASH2
+    imports INT-SIMPLIFICATION
 
   // ########################
   // Buffer Reasoning
@@ -287,6 +286,7 @@ module LEMMAS-HASKELL [symbolic, kore]
     imports EVM
     imports EDSL
     imports HASH2
+    imports INT-SIMPLIFICATION
 
   // ########################
   // Word Reasoning
