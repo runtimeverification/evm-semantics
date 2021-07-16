@@ -110,7 +110,7 @@ module INT-SIMPLIFICATION-JAVA [kast]
     rule  I  -Int (J  -Int  C) => (I  -Int  J) +Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
     rule  I  &Int (J  &Int  C) => (I  &Int  J) &Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
 
-    //For #bufStrict simplification in benchmarks
+    // for #bufStrict simplification in benchmarks
     rule 0  <Int 2 ^Int I => true       requires 0 <=Int I [simplification]
     rule 0 <=Int I *Int 8 => 0 <=Int I                     [simplification]
 
