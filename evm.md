@@ -74,11 +74,11 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             // A_* (execution substate)
             <substate>
-              <selfDestruct>    .Set  </selfDestruct>            // A_s
-              <log>             .List </log>                     // A_l
-              <refund>          0     </refund>                  // A_r
-              <touchedAccounts> .Set  </touchedAccounts>
-              <touchedStorage>  .Map  </touchedStorage>
+              <selfDestruct>     .Set  </selfDestruct>            // A_s
+              <log>              .List </log>                     // A_l
+              <refund>           0     </refund>                  // A_r
+              <accessedAccounts> .Set  </accessedAccounts>
+              <accessedStorage>  .Map  </accessedStorage>
             </substate>
 
             // Immutable during a single transaction
@@ -555,8 +555,8 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #finalizeTx(true) => #finalizeStorage(Set2List(ACCTS)) ... </k>
          <selfDestruct> .Set </selfDestruct>
          <activeAccounts> ACCTS </activeAccounts>
-         <touchedAccounts> _ => .Set </touchedAccounts>
-         <touchedStorage> _ => .Map </touchedStorage>
+         <accessedAccounts> _ => .Set </accessedAccounts>
+         <accessedStorage> _ => .Map </accessedStorage>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
          <coinbase> MINER </coinbase>
@@ -1314,7 +1314,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </k>
 
     rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
-          => #touchAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
+          => #accessAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
          ...
          </k>
          <callDepth> CD => CD +Int 1 </callDepth>
@@ -1352,28 +1352,28 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <program> _ => BYTES </program>
          <jumpDests> _ => #computeValidJumpDests(BYTES) </jumpDests>
 
-    syntax KItem ::= "#touchStorage" Account Int
+    syntax KItem ::= "#accessStorage" Account Int
  // --------------------------------------------
-    rule <k> #touchStorage ACCT INDEX => . ... </k>
-         <touchedStorage> ... ACCT |-> (TS:Set => TS |Set SetItem(INDEX)) ... </touchedStorage>
-    rule <k> #touchStorage ACCT INDEX => . ... </k>
-         <touchedStorage> TS => TS[ACCT <- SetItem(INDEX)] </touchedStorage>
+    rule <k> #accessStorage ACCT INDEX => . ... </k>
+         <accessedStorage> ... ACCT |-> (TS:Set => TS |Set SetItem(INDEX)) ... </accessedStorage>
+    rule <k> #accessStorage ACCT INDEX => . ... </k>
+         <accessedStorage> TS => TS[ACCT <- SetItem(INDEX)] </accessedStorage>
       requires notBool ACCT in_keys(TS)
 
-    syntax KItem ::= "#touchAccounts" Account
-                   | "#touchAccounts" Set
-                   | "#touchAccounts" Account Account
-                   | "#touchAccounts" Account Account Set
+    syntax KItem ::= "#accessAccounts" Account
+                   | "#accessAccounts" Set
+                   | "#accessAccounts" Account Account
+                   | "#accessAccounts" Account Account Set
  // -----------------------------------------------------
-    rule <k> #touchAccounts ADDR1:Account ADDR2:Account ADDRSET:Set => #touchAccounts ADDR1 ~> #touchAccounts ADDR2 ~> #touchAccounts ADDRSET ... </k>
+    rule <k> #accessAccounts ADDR1:Account ADDR2:Account ADDRSET:Set => #accessAccounts ADDR1 ~> #accessAccounts ADDR2 ~> #accessAccounts ADDRSET ... </k>
 
-    rule <k> #touchAccounts ADDR1:Account ADDR2:Account => #touchAccounts ADDR1 ~> #touchAccounts ADDR2 ... </k>
+    rule <k> #accessAccounts ADDR1:Account ADDR2:Account => #accessAccounts ADDR1 ~> #accessAccounts ADDR2 ... </k>
 
-    rule <k> #touchAccounts ADDR:Account => . ... </k>
-         <touchedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set SetItem(ADDR) </touchedAccounts>
+    rule <k> #accessAccounts ADDR:Account => . ... </k>
+         <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set SetItem(ADDR) </accessedAccounts>
 
-    rule <k> #touchAccounts ADDRSET:Set => . ... </k>
-         <touchedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </touchedAccounts>
+    rule <k> #accessAccounts ADDRSET:Set => . ... </k>
+         <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
 
     syntax Set ::= #computeValidJumpDests(ByteArray)            [function, memo]
                  | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
@@ -1514,7 +1514,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
 
     rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
-          => #touchAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
+          => #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -1598,7 +1598,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
     rule <k> CREATE VALUE MEMSTART MEMWIDTH
-          => #touchAccounts #newAddr(ACCT, NONCE)
+          => #accessAccounts #newAddr(ACCT, NONCE)
           ~> #checkCall ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
@@ -1619,7 +1619,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax QuadStackOp ::= "CREATE2"
  // --------------------------------
     rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
-          => #touchAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+          => #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #checkCall ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
@@ -1958,17 +1958,17 @@ Access List Gas
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode )
  // -----------------------------------------------------
-    rule <k> #gasAccess(SCHED, EXTCODESIZE ACCT)            => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <touchedAccounts> ACCTS </touchedAccounts>
-    rule <k> #gasAccess(SCHED, EXTCODECOPY ACCT _ _ _)      => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <touchedAccounts> ACCTS </touchedAccounts>
-    rule <k> #gasAccess(SCHED, EXTCODEHASH ACCT)            => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <touchedAccounts> ACCTS </touchedAccounts>
-    rule <k> #gasAccess(SCHED, BALANCE ACCT)                => #touchAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <touchedAccounts> ACCTS </touchedAccounts>
-    rule <k> #gasAccess(SCHED, SELFDESTRUCT ACCT)           => #touchAccounts ACCT ~> #if ACCT in ACCTS #then 0 #else Gcoldaccountaccess < SCHED > #fi            ... </k> <touchedAccounts> ACCTS </touchedAccounts>
-    rule <k> #gasAccess(_    , CALL _ ACCT _ _ _ _ _)       => #touchAccounts ACCT ~> 0                                                                           ... </k>
-    rule <k> #gasAccess(_    , CALLCODE _ ACCT _ _ _ _ _)   => #touchAccounts ACCT ~> 0                                                                           ... </k>
-    rule <k> #gasAccess(_    , DELEGATECALL _ ACCT _ _ _ _) => #touchAccounts ACCT ~> 0                                                                           ... </k>
-    rule <k> #gasAccess(_    , STATICCALL _ ACCT _ _ _ _)   => #touchAccounts ACCT ~> 0                                                                           ... </k>
-    rule <k> #gasAccess(_    , SLOAD INDEX )                => #touchStorage ACCT INDEX ~> 0                                                                      ... </k> <id> ACCT </id>
-    rule <k> #gasAccess(SCHED, SSTORE INDEX _)              => #touchStorage ACCT INDEX ~> #if #inStorage(TS, ACCT, INDEX) #then 0 #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <touchedStorage> TS </touchedStorage>
+    rule <k> #gasAccess(SCHED, EXTCODESIZE ACCT)            => #accessAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(SCHED, EXTCODECOPY ACCT _ _ _)      => #accessAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(SCHED, EXTCODEHASH ACCT)            => #accessAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(SCHED, BALANCE ACCT)                => #accessAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(SCHED, SELFDESTRUCT ACCT)           => #accessAccounts ACCT ~> #if ACCT in ACCTS #then 0 #else Gcoldaccountaccess < SCHED > #fi            ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(_    , CALL _ ACCT _ _ _ _ _)       => #accessAccounts ACCT ~> 0                                                                           ... </k>
+    rule <k> #gasAccess(_    , CALLCODE _ ACCT _ _ _ _ _)   => #accessAccounts ACCT ~> 0                                                                           ... </k>
+    rule <k> #gasAccess(_    , DELEGATECALL _ ACCT _ _ _ _) => #accessAccounts ACCT ~> 0                                                                           ... </k>
+    rule <k> #gasAccess(_    , STATICCALL _ ACCT _ _ _ _)   => #accessAccounts ACCT ~> 0                                                                           ... </k>
+    rule <k> #gasAccess(_    , SLOAD INDEX )                => #accessStorage ACCT INDEX ~> 0                                                                      ... </k> <id> ACCT </id>
+    rule <k> #gasAccess(SCHED, SSTORE INDEX _)              => #accessStorage ACCT INDEX ~> #if #inStorage(TS, ACCT, INDEX) #then 0 #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <accessedStorage> TS </accessedStorage>
     rule <k> #gasAccess(_    , _ )                          => 0                                                                                                  ... </k> [owise]
 
 ```
@@ -2016,7 +2016,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          ...
          </k>
          <gas> GAVAIL </gas>
-         <touchedAccounts> ACCTS </touchedAccounts>
+         <accessedAccounts> ACCTS </accessedAccounts>
 
     rule <k> #gasExec(SCHED, CALLCODE GCAP ACCTTO VALUE _ _ _ _)
           => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS) ~> #allocateCallGas
@@ -2025,7 +2025,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          </k>
          <id> ACCTFROM </id>
          <gas> GAVAIL </gas>
-         <touchedAccounts> ACCTS </touchedAccounts>
+         <accessedAccounts> ACCTS </accessedAccounts>
 
     rule <k> #gasExec(SCHED, DELEGATECALL GCAP ACCTTO _ _ _ _)
           => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0, ACCTTO in ACCTS) ~> #allocateCallGas
@@ -2034,7 +2034,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          </k>
          <id> ACCTFROM </id>
          <gas> GAVAIL </gas>
-         <touchedAccounts> ACCTS </touchedAccounts>
+         <accessedAccounts> ACCTS </accessedAccounts>
 
     rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO _ _ _ _)
           => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0, ACCTTO in ACCTS) ~> #allocateCallGas
@@ -2042,7 +2042,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          ...
          </k>
          <gas> GAVAIL </gas>
-         <touchedAccounts> ACCTS </touchedAccounts>
+         <accessedAccounts> ACCTS </accessedAccounts>
 
     rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), BAL) ... </k>
          <id> ACCTFROM </id>
@@ -2071,7 +2071,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, JUMPDEST)    => Gjumpdest < SCHED >                        ... </k>
     rule <k> #gasExec(SCHED, SLOAD INDEX) => Csload(SCHED, #inStorage(TS, ACCT, INDEX)) ... </k>
          <id> ACCT </id>
-         <touchedStorage> TS </touchedStorage>
+         <accessedStorage> TS </accessedStorage>
 
     // Wzero
     rule <k> #gasExec(SCHED, STOP)       => Gzero < SCHED > ... </k>

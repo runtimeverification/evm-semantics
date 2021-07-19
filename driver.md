@@ -113,7 +113,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= loadTx ( Account )
  // ---------------------------------------------
     rule <k> loadTx(ACCTFROM)
-          => #touchAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccounts(SCHED)
+          => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccounts(SCHED)
           ~> #loadAccessList(TA)
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
@@ -141,10 +141,10 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE </nonce>
            ...
          </account>
-         <touchedAccounts> _ => .Set </touchedAccounts>
+         <accessedAccounts> _ => .Set </accessedAccounts>
 
     rule <k> loadTx(ACCTFROM)
-          => #touchAccounts ACCTFROM ACCTTO #precompiledAccounts(SCHED)
+          => #accessAccounts ACCTFROM ACCTTO #precompiledAccounts(SCHED)
           ~> #loadAccessList(TA)
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
@@ -172,7 +172,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
-         <touchedAccounts> _ => .Set </touchedAccounts>
+         <accessedAccounts> _ => .Set </accessedAccounts>
       requires ACCTTO =/=K .Account
 
     syntax EthereumCommand ::= "#finishTx"
@@ -221,14 +221,14 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
       requires Ghasaccesslist << SCHED >>
 
     rule <k> #loadAccessListAux (ACCT, (ListItem(STRGK) STRGKS))
-          => #touchStorage ACCT STRGK:Int
+          => #accessStorage ACCT STRGK:Int
           ~> #loadAccessListAux (ACCT, STRGKS)
          ...
          </k>
          <schedule> SCHED </schedule>
          <callGas> GLIMIT => GLIMIT -Int Gaccessliststoragekey < SCHED > </callGas>
 
-    rule <k> #loadAccessListAux (ACCT, .List) => #touchAccounts ACCT ... </k>
+    rule <k> #loadAccessListAux (ACCT, .List) => #accessAccounts ACCT ... </k>
          <schedule> SCHED </schedule>
          <callGas> GLIMIT => GLIMIT -Int Gaccesslistaddress < SCHED > </callGas>
 ```

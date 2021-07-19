@@ -54,7 +54,7 @@ module CREATE-SPEC
                   <callDepth> CALL_DEPTH </callDepth>
                 </callState>
                 <substate>
-                  <touchedAccounts> _ => ?_  </touchedAccounts>
+                  <accessedAccounts> _ => ?_  </accessedAccounts>
                   ...
                 </substate>
                 ...
@@ -133,7 +133,7 @@ module CREATE-SPEC
                   <callDepth> CALL_DEPTH </callDepth>
                 </callState>
                 <substate>
-                  <touchedAccounts> _ => ?_  </touchedAccounts>
+                  <accessedAccounts> _ => ?_  </accessedAccounts>
                   ...
                 </substate>
                 ...

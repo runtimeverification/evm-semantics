@@ -40,8 +40,8 @@ module ECRECOVERLOOP02-SIG1-INVALID-SPEC
           <selfDestruct> _ </selfDestruct>
           <log> _ </log>
           <refund> _ </refund>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
-          <touchedStorage> _ => ?_ </touchedStorage>
+          <accessedAccounts> _ => ?_ </accessedAccounts>
+          <accessedStorage> _ => ?_ </accessedStorage>
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin

@@ -82,12 +82,12 @@
         <refund>
           0
         </refund>
-        <touchedAccounts>
+        <accessedAccounts>
         .Set
-        </touchedAccounts>
-        <touchedStorage>
+        </accessedAccounts>
+        <accessedStorage>
           .Map
-        </touchedStorage>
+        </accessedStorage>
       </substate>
       <gasPrice>
         0

@@ -47,7 +47,7 @@ module STATE-LOADER
          <refund>          _ => 0          </refund>
          <gasPrice>        _ => 0          </gasPrice>
          <origin>          _ => .Account   </origin>
-         <touchedAccounts> _ => .Set       </touchedAccounts>
+         <accessedAccounts> _ => .Set       </accessedAccounts>
 
     syntax EthereumCommand ::= "clearBLOCK"
  // ---------------------------------------

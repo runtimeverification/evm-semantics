@@ -44,8 +44,8 @@ module TRANSFERFROM-SUCCESS-2-SPEC
           <selfDestruct> _ </selfDestruct>
           <log> _ => ?_ </log>
           <refund> _ => ?_ </refund> // TODO: more detail
-          <touchedAccounts> _ => ?_ </touchedAccounts>
-          <touchedStorage> _ => ?_ </touchedStorage>
+          <accessedAccounts> _ => ?_ </accessedAccounts>
+          <accessedStorage> _ => ?_ </accessedStorage>
         </substate>
 
         <gasPrice> _ </gasPrice>
