@@ -45,20 +45,20 @@ module INT-SIMPLIFICATION
     rule         (_X modInt  Y) <Int Y  => true  requires Y >Int 0 [simplification]
 
     // TODO: tmp disable
-    // rule (A +Int I2) +Int (I3 -Int A) => I2 +Int I3 [simplification]
-    // rule (A +Int I2) -Int (A +Int I3) => I2 -Int I3 [simplification]
-    // rule (A +Int I2) -Int (I3 +Int A) => I2 -Int I3 [simplification]
-    // rule (I1 +Int I2) -Int (I3 +Int I1) => I2 -Int I3 [simplification]
-    // rule A -Int (A -Int I1) => I1 [simplification]
-    // rule (A +Int I1) -Int A => I1 [simplification]
-    // rule (A +Int B) +Int (C -Int B) => A +Int C [simplification]
-    // rule (A +Int B +Int C) -Int (A +Int D) => B +Int (C -Int D) [simplification]
-    // rule (A +Int B +Int C +Int D +Int E) -Int (A +Int C +Int F) => B +Int D +Int E -Int F [simplification]
+    rule (A +Int I2) +Int (I3 -Int A) => I2 +Int I3 [simplification]
+    rule (A +Int I2) -Int (A +Int I3) => I2 -Int I3 [simplification]
+    rule (A +Int I2) -Int (I3 +Int A) => I2 -Int I3 [simplification]
+    rule (I1 +Int I2) -Int (I3 +Int I1) => I2 -Int I3 [simplification]
+    rule A -Int (A -Int I1) => I1 [simplification]
+    rule (A +Int I1) -Int A => I1 [simplification]
+    rule (A +Int B) +Int (C -Int B) => A +Int C [simplification]
+    rule (A +Int B +Int C) -Int (A +Int D) => B +Int (C -Int D) [simplification]
+    rule (A +Int B +Int C +Int D +Int E) -Int (A +Int C +Int F) => B +Int D +Int E -Int F [simplification]
 
     // Simplify Cmem(_,_) - Cmem(_, _)
     // TODO: tmp disable
-    // rule A +Int (I1 -Int A) => I1 [simplification]
-    // rule (I1 +Int (A -Int I0)) +Int (I2 -Int A) => I1 +Int (I2 -Int I0) [simplification]
+    rule A +Int (I1 -Int A) => I1 [simplification]
+    rule (I1 +Int (A -Int I0)) +Int (I2 -Int A) => I1 +Int (I2 -Int I0) [simplification]
 
     // safeMath mul check c / a == b where c == a * b
     rule (X *Int Y) /Int X => Y  requires X =/=Int 0 [simplification]
