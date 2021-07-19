@@ -11,16 +11,17 @@ module INT-SIMPLIFICATION
   // from tests/specs/infinite-gas.k
   // ################################
 
-    rule I -Int I => 0                                                    [simplification]
-    rule   (I1 -Int I2)                   +Int I2 =>  I1                  [simplification]
-    rule  ((I1 -Int I2) -Int I3)          +Int I2 =>  I1 -Int I3          [simplification]
-    rule (((I1 -Int I2) -Int I3) -Int I4) +Int I2 => (I1 -Int I3) -Int I4 [simplification]
+    rule X -Int X => 0 [simplification]
+
+    rule   (X -Int Y)                 +Int Y =>  X                [simplification]
+    rule  ((X -Int Y) -Int Z)         +Int Y =>  X -Int Z         [simplification]
+    rule (((X -Int Y) -Int Z) -Int W) +Int Y => (X -Int Z) -Int W [simplification]
 
     rule X -Int Y +Int Z <=Int A => false requires A <Int X -Int Y andBool 0 <=Int Z [simplification]
 
-    rule minInt(G, G') <Int G''             => G  <Int G'' orBool G'  <Int G'' [simplification]
-    rule G             <Int minInt(G', G'') => G  <Int G'  andBool G  <Int G'' [simplification]
-    rule G            <=Int minInt(G', G'') => G <=Int G'  andBool G <=Int G'' [simplification]
+    rule minInt(X, Y)  <Int Z            => X  <Int Z orBool  Y  <Int Z [simplification]
+    rule X             <Int minInt(Y, Z) => X  <Int Y andBool X  <Int Z [simplification]
+    rule X            <=Int minInt(Y, Z) => X <=Int Y andBool X <=Int Z [simplification]
 
     rule 0 <=Int X *Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
     
@@ -47,29 +48,29 @@ module INT-SIMPLIFICATION-JAVA [kast]
   // from tests/specs/infinite-gas.k
   // ################################
 
-    rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 requires #isConcrete(C2) andBool #isConcrete(C3) [simplification]
-    rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
-    rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
+    rule X +Int B  <Int  C        => X         <Int C -Int B requires #isConcrete(B) andBool #isConcrete(C) [simplification]
+    rule A         <Int  Y +Int C => A -Int C  <Int Y        requires #isConcrete(A) andBool #isConcrete(C) [simplification]
+    rule A         <=Int Y +Int C => A -Int C <=Int Y        requires #isConcrete(A) andBool #isConcrete(C) [simplification]
 
-    rule C1 +Int S2 => S2 +Int C1 requires #isConcrete(C1) andBool notBool #isConcrete(S2) [simplification]
+    rule A +Int Y => Y +Int A requires #isConcrete(A) andBool notBool #isConcrete(Y) [simplification]
 
-    rule S1 +Int (S2 +Int I3) => (S1 +Int S2) +Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
-    rule S1 +Int (S2 -Int I3) => (S1 +Int S2) -Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
-    rule S1 -Int (S2 +Int I3) => (S1 -Int S2) -Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
-    rule S1 -Int (S2 -Int I3) => (S1 -Int S2) +Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
+    rule X +Int (Y +Int Z) => (X +Int Y) +Int Z requires (notBool #isConcrete(X)) andBool (notBool #isConcrete(Y)) [simplification]
+    rule X +Int (Y -Int Z) => (X +Int Y) -Int Z requires (notBool #isConcrete(X)) andBool (notBool #isConcrete(Y)) [simplification]
+    rule X -Int (Y +Int Z) => (X -Int Y) -Int Z requires (notBool #isConcrete(X)) andBool (notBool #isConcrete(Y)) [simplification]
+    rule X -Int (Y -Int Z) => (X -Int Y) +Int Z requires (notBool #isConcrete(X)) andBool (notBool #isConcrete(Y)) [simplification]
 
-    rule S1 +Int (C2 -Int S3) => (S1 -Int S3) +Int C2 requires #isConcrete(C2) andBool (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S3)) [simplification]
-    rule S1 -Int (C2 -Int S3) => (S1 +Int S3) -Int C2 requires #isConcrete(C2) andBool (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S3)) [simplification]
+    rule X +Int (B -Int Z) => (X -Int Z) +Int B requires #isConcrete(B) andBool (notBool #isConcrete(X)) andBool (notBool #isConcrete(Z)) [simplification]
+    rule X -Int (B -Int Z) => (X +Int Z) -Int B requires #isConcrete(B) andBool (notBool #isConcrete(X)) andBool (notBool #isConcrete(Z)) [simplification]
 
-    rule (I1 +Int C2) +Int S3 => (I1 +Int S3) +Int C2 requires #isConcrete(C2) andBool notBool #isConcrete(S3) [simplification]
-    rule (I1 +Int C2) -Int S3 => (I1 -Int S3) +Int C2 requires #isConcrete(C2) andBool notBool #isConcrete(S3) [simplification]
-    rule (I1 -Int C2) +Int S3 => (I1 +Int S3) -Int C2 requires #isConcrete(C2) andBool notBool #isConcrete(S3) [simplification]
-    rule (I1 -Int C2) -Int S3 => (I1 -Int S3) -Int C2 requires #isConcrete(C2) andBool notBool #isConcrete(S3) [simplification]
+    rule (X +Int B) +Int Z => (X +Int Z) +Int B requires #isConcrete(B) andBool notBool #isConcrete(Z) [simplification]
+    rule (X +Int B) -Int Z => (X -Int Z) +Int B requires #isConcrete(B) andBool notBool #isConcrete(Z) [simplification]
+    rule (X -Int B) +Int Z => (X +Int Z) -Int B requires #isConcrete(B) andBool notBool #isConcrete(Z) [simplification]
+    rule (X -Int B) -Int Z => (X -Int Z) -Int B requires #isConcrete(B) andBool notBool #isConcrete(Z) [simplification]
 
-    rule (S1 +Int C2) +Int C3 => S1 +Int (C2 +Int C3) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
-    rule (S1 +Int C2) -Int C3 => S1 +Int (C2 -Int C3) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
-    rule (S1 -Int C2) +Int C3 => S1 +Int (C3 -Int C2) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
-    rule (S1 -Int C2) -Int C3 => S1 -Int (C2 +Int C3) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
+    rule (X +Int B) +Int C => X +Int (B +Int C) requires #isConcrete(B) andBool #isConcrete(C) andBool notBool #isConcrete(X) [simplification]
+    rule (X +Int B) -Int C => X +Int (B -Int C) requires #isConcrete(B) andBool #isConcrete(C) andBool notBool #isConcrete(X) [simplification]
+    rule (X -Int B) +Int C => X +Int (C -Int B) requires #isConcrete(B) andBool #isConcrete(C) andBool notBool #isConcrete(X) [simplification]
+    rule (X -Int B) -Int C => X -Int (B +Int C) requires #isConcrete(B) andBool #isConcrete(C) andBool notBool #isConcrete(X) [simplification]
 
   // ##########################
   // from tests/specs/lemmas.k
@@ -102,36 +103,36 @@ module INT-SIMPLIFICATION-HASKELL [kore]
   // from tests/specs/infinite-gas.k
   // ################################
 
-    rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 [concrete(C2, C3), simplification]
-    rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         [concrete(C1, C3), simplification]
-    rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         [concrete(C1, C3), simplification]
+    rule X +Int B  <Int C         => X          <Int C -Int B [concrete(B, C), simplification]
+    rule A          <Int Y +Int C => A -Int C  <Int Y         [concrete(A, C), simplification]
+    rule A         <=Int Y +Int C => A -Int C <=Int Y         [concrete(A, C), simplification]
 
-    rule C1 +Int S2 => S2 +Int C1 [concrete(C1), symbolic(S2), simplification]
+    rule A +Int Y => Y +Int A [concrete(A), symbolic(Y), simplification]
 
-    rule S1 +Int (S2 +Int I3) => (S1 +Int S2) +Int I3 [symbolic(S1, S2), simplification]
-    rule S1 +Int (S2 -Int I3) => (S1 +Int S2) -Int I3 [symbolic(S1, S2), simplification]
-    rule S1 -Int (S2 +Int I3) => (S1 -Int S2) -Int I3 [symbolic(S1, S2), simplification]
-    rule S1 -Int (S2 -Int I3) => (S1 -Int S2) +Int I3 [symbolic(S1, S2), simplification]
+    rule X +Int (Y +Int Z) => (X +Int Y) +Int Z [symbolic(X, Y), simplification]
+    rule X +Int (Y -Int Z) => (X +Int Y) -Int Z [symbolic(X, Y), simplification]
+    rule X -Int (Y +Int Z) => (X -Int Y) -Int Z [symbolic(X, Y), simplification]
+    rule X -Int (Y -Int Z) => (X -Int Y) +Int Z [symbolic(X, Y), simplification]
 
-    rule S1 +Int (C2 -Int S3) => (S1 -Int S3) +Int C2 [symbolic(S1, S3), concrete(C2), simplification]
-    rule S1 -Int (C2 -Int S3) => (S1 +Int S3) -Int C2 [symbolic(S1, S3), concrete(C2), simplification]
+    rule X +Int (B -Int Z) => (X -Int Z) +Int B [symbolic(X, Z), concrete(B), simplification]
+    rule X -Int (B -Int Z) => (X +Int Z) -Int B [symbolic(X, Z), concrete(B), simplification]
 
-    rule (I1 +Int C2) +Int S3 => (I1 +Int S3) +Int C2 [concrete(C2), symbolic(S3), simplification]
-    rule (I1 +Int C2) -Int S3 => (I1 -Int S3) +Int C2 [concrete(C2), symbolic(S3), simplification]
-    rule (I1 -Int C2) +Int S3 => (I1 +Int S3) -Int C2 [concrete(C2), symbolic(S3), simplification]
-    rule (I1 -Int C2) -Int S3 => (I1 -Int S3) -Int C2 [concrete(C2), symbolic(S3), simplification]
+    rule (X +Int B) +Int Z => (X +Int Z) +Int B [concrete(B), symbolic(Z), simplification]
+    rule (X +Int B) -Int Z => (X -Int Z) +Int B [concrete(B), symbolic(Z), simplification]
+    rule (X -Int B) +Int Z => (X +Int Z) -Int B [concrete(B), symbolic(Z), simplification]
+    rule (X -Int B) -Int Z => (X -Int Z) -Int B [concrete(B), symbolic(Z), simplification]
 
-    rule (S1 +Int C2) +Int C3 => S1 +Int (C2 +Int C3) [concrete(C2, C3), symbolic(S1), simplification]
-    rule (S1 +Int C2) -Int C3 => S1 +Int (C2 -Int C3) [concrete(C2, C3), symbolic(S1), simplification]
-    rule (S1 -Int C2) +Int C3 => S1 +Int (C3 -Int C2) [concrete(C2, C3), symbolic(S1), simplification]
-    rule (S1 -Int C2) -Int C3 => S1 -Int (C2 +Int C3) [concrete(C2, C3), symbolic(S1), simplification]
+    rule (X +Int B) +Int C => X +Int (B +Int C) [concrete(B, C), symbolic(X), simplification]
+    rule (X +Int B) -Int C => X +Int (B -Int C) [concrete(B, C), symbolic(X), simplification]
+    rule (X -Int B) +Int C => X +Int (C -Int B) [concrete(B, C), symbolic(X), simplification]
+    rule (X -Int B) -Int C => X -Int (B +Int C) [concrete(B, C), symbolic(X), simplification]
 
   // ##########################
   // from tests/specs/lemmas.k
   // ##########################
 
-    rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
+    rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q [simplification]
 
-    rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
+    rule minInt(P, Q) => P requires P <=Int Q [simplification]
 
 endmodule
