@@ -195,7 +195,7 @@ java_main_file     := driver.md
 java_main_filename := $(basename $(notdir $(java_main_file)))
 java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/compiled.bin
 
-$(KEVM_LIB)/$(java_kompiled): $(kevm_includes)
+$(KEVM_LIB)/$(java_kompiled): $(kevm_includes) $(plugin_includes)
 	$(KOMPILE) --backend java                  \
 	    $(java_main_file) $(JAVA_KOMPILE_OPTS) \
 	    --directory $(KEVM_LIB)/$(java_dir)    \
@@ -212,7 +212,7 @@ haskell_main_file      := driver.md
 haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
 haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
 
-$(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes)
+$(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes) $(plugin_includes)
 	$(KOMPILE) --backend haskell                     \
 	    $(haskell_main_file) $(HASKELL_KOMPILE_OPTS) \
 	    --directory $(KEVM_LIB)/$(haskell_dir)       \
