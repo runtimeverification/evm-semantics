@@ -44,8 +44,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // Mutable during a single transaction
             // -----------------------------------
 
-            // <output>          .ByteArray  </output>           // H_RETURN
-            <statusCode>      .StatusCode </statusCode>
+            //<output>          .ByteArray  </output>           // H_RETURN
+            //<statusCode>      .StatusCode </statusCode>
             <endPC>           0           </endPC>
             <callStack>       .List       </callStack>
             <interimStates>   .List       </interimStates>

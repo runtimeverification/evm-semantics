@@ -72,12 +72,12 @@ module STATE-LOADER
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
-    rule <k> clearNETWORK => . ... </k>
-         <statusCode>     _ => .StatusCode </statusCode>
-         <activeAccounts> _ => .Set        </activeAccounts>
-         <accounts>       _ => .Bag        </accounts>
-         <messages>       _ => .Bag        </messages>
-         <schedule>       _ => DEFAULT     </schedule>
+    //rule <k> clearNETWORK => . ... </k>
+    //     <statusCode>     _ => .StatusCode </statusCode>
+    //     <activeAccounts> _ => .Set        </activeAccounts>
+    //     <accounts>       _ => .Bag        </accounts>
+    //     <messages>       _ => .Bag        </messages>
+    //     <schedule>       _ => DEFAULT     </schedule>
 ```
 
 ### Loading State

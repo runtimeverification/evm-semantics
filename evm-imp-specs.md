@@ -119,8 +119,8 @@ Specification expression language
                  | #var( Id )
                  | #sizeByteArrayExp ( Exp ) [strict]
 
-    rule <k> #getStatusCode => SC ... </k>
-         <statusCode> SC </statusCode>
+    //rule <k> #getStatusCode => SC ... </k>
+    //     <statusCode> SC </statusCode>
 
     //rule <k> #getOutput => OUT ... </k>
     //     <output> OUT </output>

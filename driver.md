@@ -56,8 +56,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "flush"
  // ----------------------------------
-    rule <mode> EXECMODE </mode> <statusCode> EVMC_SUCCESS            </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS)          ... </k>
-    rule <mode> EXECMODE </mode> <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS) ~> #halt ... </k>
+    //rule <mode> EXECMODE </mode> <statusCode> EVMC_SUCCESS            </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS)          ... </k>
+    //rule <mode> EXECMODE </mode> <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS) ~> #halt ... </k>
 ```
 
 -   `startTx` computes the sender of the transaction, and places loadTx on the `k` cell.
@@ -151,29 +151,29 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
-    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState                   ... </k>
-    rule <statusCode> EVMC_REVERT             </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k> <gas> GAVAIL </gas>
+    //rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState                   ... </k>
+    //rule <statusCode> EVMC_REVERT             </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k> <gas> GAVAIL </gas>
 
-    rule <statusCode> EVMC_SUCCESS </statusCode>
-         <k> #halt ~> #finishTx => #mkCodeDeposit ACCT ... </k>
-         <id> ACCT </id>
-         <txPending> ListItem(TXID:Int) ... </txPending>
-         <message>
-           <msgID> TXID     </msgID>
-           <to>    .Account </to>
-           ...
-         </message>
+    //rule <statusCode> EVMC_SUCCESS </statusCode>
+    //     <k> #halt ~> #finishTx => #mkCodeDeposit ACCT ... </k>
+    //     <id> ACCT </id>
+    //     <txPending> ListItem(TXID:Int) ... </txPending>
+    //     <message>
+    //       <msgID> TXID     </msgID>
+    //       <to>    .Account </to>
+    //       ...
+    //     </message>
 
-    rule <statusCode> EVMC_SUCCESS </statusCode>
-         <k> #halt ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
-         <gas> GAVAIL </gas>
-         <txPending> ListItem(TXID:Int) ... </txPending>
-         <message>
-           <msgID> TXID </msgID>
-           <to>    TT   </to>
-           ...
-         </message>
-      requires TT =/=K .Account
+    //rule <statusCode> EVMC_SUCCESS </statusCode>
+    //     <k> #halt ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
+    //     <gas> GAVAIL </gas>
+    //     <txPending> ListItem(TXID:Int) ... </txPending>
+    //     <message>
+    //       <msgID> TXID </msgID>
+    //       <to>    TT   </to>
+    //       ...
+    //     </message>
+    //  requires TT =/=K .Account
 ```
 
 -   `exception` only clears from the `<k>` cell if there is an exception preceding it.
@@ -186,10 +186,10 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "exception" | "status" StatusCode
  // ------------------------------------------------------------
-    rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #halt ~> exception => . ... </k>
+    //rule <statusCode> _:ExceptionalStatusCode </statusCode>
+    //     <k> #halt ~> exception => . ... </k>
 
-    rule <k> status SC => . ... </k> <statusCode> SC </statusCode>
+    //rule <k> status SC => . ... </k> <statusCode> SC </statusCode>
 
     syntax EthereumCommand ::= "failure" String | "success"
  // -------------------------------------------------------
