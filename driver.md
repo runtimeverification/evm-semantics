@@ -90,64 +90,64 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= loadTx ( Account )
  // ---------------------------------------------
-    rule <k> loadTx(ACCTFROM)
-          => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
-          ~> #finishTx ~> #finalizeTx(false) ~> startTx
-         ...
-         </k>
-         <schedule> SCHED </schedule>
-         <gasPrice> _ => GPRICE </gasPrice>
-         <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
-         <origin> _ => ACCTFROM </origin>
-         <callDepth> _ => -1 </callDepth>
-         <txPending> ListItem(TXID:Int) ... </txPending>
-         <coinbase> MINER </coinbase>
-         <message>
-           <msgID>      TXID     </msgID>
-           <txGasPrice> GPRICE   </txGasPrice>
-           <txGasLimit> GLIMIT   </txGasLimit>
-           <to>         .Account </to>
-           <value>      VALUE    </value>
-           <data>       CODE     </data>
-           ...
-         </message>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
-           <nonce> NONCE </nonce>
-           ...
-         </account>
-         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
+    //rule <k> loadTx(ACCTFROM)
+    //      => #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
+    //      ~> #finishTx ~> #finalizeTx(false) ~> startTx
+    //     ...
+    //     </k>
+    //     <schedule> SCHED </schedule>
+    //     <gasPrice> _ => GPRICE </gasPrice>
+    //     <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
+    //     <origin> _ => ACCTFROM </origin>
+    //     <callDepth> _ => -1 </callDepth>
+    //     <txPending> ListItem(TXID:Int) ... </txPending>
+    //     <coinbase> MINER </coinbase>
+    //     <message>
+    //       <msgID>      TXID     </msgID>
+    //       <txGasPrice> GPRICE   </txGasPrice>
+    //       <txGasLimit> GLIMIT   </txGasLimit>
+    //       <to>         .Account </to>
+    //       <value>      VALUE    </value>
+    //       <data>       CODE     </data>
+    //       ...
+    //     </message>
+    //     <account>
+    //       <acctID> ACCTFROM </acctID>
+    //       <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
+    //       <nonce> NONCE </nonce>
+    //       ...
+    //     </account>
+    //     <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
 
-    rule <k> loadTx(ACCTFROM)
-          => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
-          ~> #finishTx ~> #finalizeTx(false) ~> startTx
-         ...
-         </k>
-         <schedule> SCHED </schedule>
-         <gasPrice> _ => GPRICE </gasPrice>
-         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
-         <origin> _ => ACCTFROM </origin>
-         <callDepth> _ => -1 </callDepth>
-         <txPending> ListItem(TXID:Int) ... </txPending>
-         <coinbase> MINER </coinbase>
-         <message>
-           <msgID>      TXID   </msgID>
-           <txGasPrice> GPRICE </txGasPrice>
-           <txGasLimit> GLIMIT </txGasLimit>
-           <to>         ACCTTO </to>
-           <value>      VALUE  </value>
-           <data>       DATA   </data>
-           ...
-         </message>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
-           <nonce> NONCE => NONCE +Int 1 </nonce>
-           ...
-         </account>
-         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
-      requires ACCTTO =/=K .Account
+    //rule <k> loadTx(ACCTFROM)
+    //      => #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
+    //      ~> #finishTx ~> #finalizeTx(false) ~> startTx
+    //     ...
+    //     </k>
+    //     <schedule> SCHED </schedule>
+    //     <gasPrice> _ => GPRICE </gasPrice>
+    //     <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
+    //     <origin> _ => ACCTFROM </origin>
+    //     <callDepth> _ => -1 </callDepth>
+    //     <txPending> ListItem(TXID:Int) ... </txPending>
+    //     <coinbase> MINER </coinbase>
+    //     <message>
+    //       <msgID>      TXID   </msgID>
+    //       <txGasPrice> GPRICE </txGasPrice>
+    //       <txGasLimit> GLIMIT </txGasLimit>
+    //       <to>         ACCTTO </to>
+    //       <value>      VALUE  </value>
+    //       <data>       DATA   </data>
+    //       ...
+    //     </message>
+    //     <account>
+    //       <acctID> ACCTFROM </acctID>
+    //       <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
+    //       <nonce> NONCE => NONCE +Int 1 </nonce>
+    //       ...
+    //     </account>
+    //     <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
+    //  requires ACCTTO =/=K .Account
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------

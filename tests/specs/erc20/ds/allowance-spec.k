@@ -17,8 +17,8 @@ module ALLOWANCE-SPEC
         //<statusCode> _ </statusCode> // <statusCode> _ => EVMC_SUCCESS </statusCode>
         //<endPC> _ </endPC> // <endPC> _ => ?_ </endPC>
         //<callStack> _ </callStack>
-        <interimStates> _ </interimStates>
-        <touchedAccounts> _ </touchedAccounts> // <touchedAccounts> _ => ?_ </touchedAccounts>
+        //<interimStates> _ </interimStates>
+        //<touchedAccounts> _ </touchedAccounts> // <touchedAccounts> _ => ?_ </touchedAccounts>
 
         <callState>
           // TODO: enabled so that program is not symbolic

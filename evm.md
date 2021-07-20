@@ -48,8 +48,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
             //<statusCode>      .StatusCode </statusCode>
             //<endPC>           0           </endPC>
             //<callStack>       .List       </callStack>
-            <interimStates>   .List       </interimStates>
-            <touchedAccounts> .Set        </touchedAccounts>
+            //<interimStates>   .List       </interimStates>
+            //<touchedAccounts> .Set        </touchedAccounts>
 
             <callState>
               <program> .ByteArray </program>
