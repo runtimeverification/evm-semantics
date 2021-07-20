@@ -500,3 +500,11 @@ metropolis-theme: $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty
 
 $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
 	cd $(dir $@) && $(MAKE)
+
+# for simple-evm
+
+build-simple:
+	kompile --backend haskell evm-simple.md -I /home/henry/evm-semantics-test/.build/usr/lib/kevm/blockchain-k-plugin/include/kframework --hook-namespaces JSON KRYPTO --emit-json --md-selector "k & ! nobytes" --directory .build/usr/lib/kevm-simple/haskell --main-module ETHEREUM-SIMULATION --syntax-module ETHEREUM-SIMULATION --debug
+
+prove-simple:
+	kprove --directory "/home/henry/evm-semantics-test/.build/usr/lib/kevm-simple/haskell" "tests/specs/erc20/ds/allowance-spec.k" --def-module VERIFICATION --concrete-rules "EVM.Cextra,EVM.Cgascap,EVM.Cmem,EVM.Csstore.new,EVM.Csstore.old,EVM.#memoryUsageUpdate.some,EVM.Rsstore.new,EVM.Rsstore.old,EVM-TYPES.#asByteStack,EVM-TYPES.#asByteStackAux.recursive,EVM-TYPES.#asWord.recursive,EVM-TYPES.ByteArray.range,EVM-TYPES.bytesRange,EVM-TYPES.mapWriteBytes.recursive,EVM-TYPES.#padRightToWidth,EVM-TYPES.#padToWidth,EVM-TYPES.padToWidthNonEmpty,EVM-TYPES.powmod.nonzero,EVM-TYPES.powmod.zero,EVM-TYPES.#range,EVM-TYPES.signextend.invalid,EVM-TYPES.signextend.negative,EVM-TYPES.signextend.positive,EVM-TYPES.upDivInt,SERIALIZATION.keccak,SERIALIZATION.#newAddr,SERIALIZATION.#newAddrCreate2," --format-failures
