@@ -13,10 +13,10 @@ module ALLOWANCE-SPEC
 
     <ethereum>
       <evm>
-        <output> _ </output> // <output> _ => #buf(32, ALLOWANCE) </output>
-        <statusCode> _ </statusCode> // <statusCode> _ => EVMC_SUCCESS </statusCode>
-        <endPC> _ </endPC> // <endPC> _ => ?_ </endPC>
-        <callStack> _ </callStack>
+        //<output> _ </output> // <output> _ => #buf(32, ALLOWANCE) </output>
+        //<statusCode> _ </statusCode> // <statusCode> _ => EVMC_SUCCESS </statusCode>
+        //<endPC> _ </endPC> // <endPC> _ => ?_ </endPC>
+        //<callStack> _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ </touchedAccounts> // <touchedAccounts> _ => ?_ </touchedAccounts>
 

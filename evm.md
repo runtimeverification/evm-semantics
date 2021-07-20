@@ -47,7 +47,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
             //<output>          .ByteArray  </output>           // H_RETURN
             //<statusCode>      .StatusCode </statusCode>
             //<endPC>           0           </endPC>
-            <callStack>       .List       </callStack>
+            //<callStack>       .List       </callStack>
             <interimStates>   .List       </interimStates>
             <touchedAccounts> .Set        </touchedAccounts>
 
