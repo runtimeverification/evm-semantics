@@ -7,9 +7,9 @@ module ALLOWANCE-SPEC
   claim
     <kevm>
     <k> _ </k> // <k> #execute => #halt </k>
-    <exit-code> _ </exit-code> // <exit-code> 1 </exit-code>
-    <mode> _ </mode> // <mode> NORMAL </mode>
-    <schedule> _ </schedule> // <schedule> ISTANBUL </schedule>
+    //<exit-code> _ </exit-code> // <exit-code> 1 </exit-code>
+    //<mode> _ </mode> // <mode> NORMAL </mode>
+    //<schedule> _ </schedule> // <schedule> ISTANBUL </schedule>
 
     <ethereum>
       <evm>

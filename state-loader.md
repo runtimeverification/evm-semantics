@@ -157,19 +157,19 @@ Here we load the environmental information.
 The `"network"` key allows setting the fee schedule inside the test.
 
 ```k
-    rule <k> load "network" : SCHEDSTRING => . ... </k>
-         <schedule> _ => #asScheduleString(SCHEDSTRING) </schedule>
+    //rule <k> load "network" : SCHEDSTRING => . ... </k>
+    //     <schedule> _ => #asScheduleString(SCHEDSTRING) </schedule>
 
     syntax Schedule ::= #asScheduleString ( String ) [function]
  // -----------------------------------------------------------
-    rule #asScheduleString("Frontier")          => FRONTIER
-    rule #asScheduleString("Homestead")         => HOMESTEAD
-    rule #asScheduleString("EIP150")            => TANGERINE_WHISTLE
-    rule #asScheduleString("EIP158")            => SPURIOUS_DRAGON
-    rule #asScheduleString("Byzantium")         => BYZANTIUM
-    rule #asScheduleString("Constantinople")    => CONSTANTINOPLE
-    rule #asScheduleString("ConstantinopleFix") => PETERSBURG
-    rule #asScheduleString("Istanbul")          => ISTANBUL
+    //rule #asScheduleString("Frontier")          => FRONTIER
+    //rule #asScheduleString("Homestead")         => HOMESTEAD
+    //rule #asScheduleString("EIP150")            => TANGERINE_WHISTLE
+    //rule #asScheduleString("EIP158")            => SPURIOUS_DRAGON
+    //rule #asScheduleString("Byzantium")         => BYZANTIUM
+    //rule #asScheduleString("Constantinople")    => CONSTANTINOPLE
+    //rule #asScheduleString("ConstantinopleFix") => PETERSBURG
+    //rule #asScheduleString("Istanbul")          => ISTANBUL
 ```
 
 The `"rlp"` key loads the block information.
