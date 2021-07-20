@@ -197,168 +197,39 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 Word Operations
 ---------------
 
-### Low-Level
-
--   `up/Int` performs integer division but rounds up instead of down.
-
-NOTE: Here, we choose to add `I2 -Int 1` to the numerator beforing doing the division to mimic the C++ implementation.
-You could alternatively calculate `I1 modInt I2`, then add one to the normal integer division afterward depending on the result.
-
 ```k
-    syntax Int ::= Int "up/Int" Int [function, functional, smtlib(upDivInt)]
- // ------------------------------------------------------------------------
-    rule              _I1 up/Int 0  => 0
-    rule              _I1 up/Int I2 => 0                             requires I2 <Int 0
-    rule               I1 up/Int 1  => I1
-    rule [upDivInt] :  I1 up/Int I2 => (I1 +Int (I2 -Int 1)) /Int I2 requires I2 >Int 1
-```
-
--   `log256Int` returns the log base 256 (floored) of an integer.
-
-```k
-    syntax Int ::= log256Int ( Int ) [function]
- // -------------------------------------------
-    rule log256Int(N) => log2Int(N) /Int 8
-```
-
-The corresponding `<op>Word` operations automatically perform the correct modulus for EVM words.
-Warning: operands are assumed to be within the range of a 256 bit EVM word. Unbound integers may not return the correct result.
-
-```k
-    syntax Int ::= Int "+Word" Int [function, functional]
+syntax Int ::= Int "up/Int" Int [function, functional, smtlib(upDivInt)]
+syntax Int ::= log256Int ( Int ) [function]
+syntax Int ::= Int "+Word" Int [function, functional]
                  | Int "*Word" Int [function, functional]
                  | Int "-Word" Int [function, functional]
                  | Int "/Word" Int [function, functional]
                  | Int "%Word" Int [function, functional]
- // -----------------------------------------------------
-    rule W0 +Word W1 => chop( W0 +Int W1 )
-    rule W0 -Word W1 => chop( W0 -Int W1 )
-    rule W0 *Word W1 => chop( W0 *Int W1 )
-    rule  _ /Word W1 => 0            requires W1  ==Int 0
-    rule W0 /Word W1 => W0 /Int W1   requires W1 =/=Int 0
-    rule  _ %Word W1 => 0            requires W1  ==Int 0
-    rule W0 %Word W1 => W0 modInt W1 requires W1 =/=Int 0
-```
-
-Care is needed for `^Word` to avoid big exponentiation.
-The helper `powmod` is a totalization of the operator `_^%Int__` (which comes with K).
-`_^%Int__` is not defined when the modulus (third argument) is zero, but `powmod` is.
-
-```k
-    syntax Int ::= Int "^Word" Int       [function]
-    syntax Int ::= powmod(Int, Int, Int) [function, functional]
- // -----------------------------------------------------------
-    rule W0 ^Word W1 => powmod(W0, W1, pow256)
-
-    rule [powmod.nonzero]: powmod(W0, W1, W2) => W0 ^%Int W1 W2  requires W2 =/=Int 0
-    rule [powmod.zero]:    powmod( _,  _, W2) => 0               requires W2  ==Int 0
-```
-
-`/sWord` and `%sWord` give the signed interperetations of `/Word` and `%Word`.
-
-```k
-    syntax Int ::= Int "/sWord" Int [function]
+syntax Int ::= Int "^Word" Int       [function]
+syntax Int ::= powmod(Int, Int, Int) [function, functional]
+syntax Int ::= Int "/sWord" Int [function]
                  | Int "%sWord" Int [function]
- // ------------------------------------------
-    rule [divSWord.same]: W0 /sWord W1 =>          abs(W0) /Word abs(W1)  requires sgn(W0) *Int sgn(W1) ==Int  1
-    rule [divSWord.diff]: W0 /sWord W1 => 0 -Word (abs(W0) /Word abs(W1)) requires sgn(W0) *Int sgn(W1) ==Int -1
-    rule [modSWord.pos]:  W0 %sWord W1 =>          abs(W0) %Word abs(W1)  requires sgn(W0) ==Int  1
-    rule [modSWord.neg]:  W0 %sWord W1 => 0 -Word (abs(W0) %Word abs(W1)) requires sgn(W0) ==Int -1
-```
-
-### Word Comparison
-
-The `<op>Word` comparisons similarly lift K operators to EVM ones:
-
-```k
-    syntax Int ::= Int "<Word"  Int [function, functional]
+syntax Int ::= Int "<Word"  Int [function, functional]
                  | Int ">Word"  Int [function, functional]
                  | Int "<=Word" Int [function, functional]
                  | Int ">=Word" Int [function, functional]
                  | Int "==Word" Int [function, functional]
- // ------------------------------------------------------
-    rule W0 <Word  W1 => bool2Word(W0 <Int  W1)
-    rule W0 >Word  W1 => bool2Word(W0 >Int  W1)
-    rule W0 <=Word W1 => bool2Word(W0 <=Int W1)
-    rule W0 >=Word W1 => bool2Word(W0 >=Int W1)
-    rule W0 ==Word W1 => bool2Word(W0 ==Int W1)
-```
-
--   `s<Word` implements a less-than for `Word` (with signed interperetation).
-
-```k
-    syntax Int ::= Int "s<Word" Int [function, functional]
- // ------------------------------------------------------
-    rule [s<Word.pp]: W0 s<Word W1 => W0 <Word W1           requires sgn(W0) ==K 1  andBool sgn(W1) ==K 1
-    rule [s<Word.pn]: W0 s<Word W1 => bool2Word(false)      requires sgn(W0) ==K 1  andBool sgn(W1) ==K -1
-    rule [s<Word.np]: W0 s<Word W1 => bool2Word(true)       requires sgn(W0) ==K -1 andBool sgn(W1) ==K 1
-    rule [s<Word.nn]: W0 s<Word W1 => abs(W1) <Word abs(W0) requires sgn(W0) ==K -1 andBool sgn(W1) ==K -1
-```
-
-### Bitwise Operators
-
-Bitwise logical operators are lifted from the integer versions.
-
-```k
-    syntax Int ::= "~Word" Int       [function, functional]
+syntax Int ::= Int "s<Word" Int [function, functional]
+syntax Int ::= "~Word" Int       [function, functional]
                  | Int "|Word"   Int [function, functional]
                  | Int "&Word"   Int [function, functional]
                  | Int "xorWord" Int [function, functional]
                  | Int "<<Word"  Int [function]
                  | Int ">>Word"  Int [function]
                  | Int ">>sWord" Int [function]
- // -------------------------------------------
-    rule ~Word W       => W xorInt maxUInt256
-    rule W0 |Word   W1 => W0 |Int W1
-    rule W0 &Word   W1 => W0 &Int W1
-    rule W0 xorWord W1 => W0 xorInt W1
-    rule W0 <<Word  W1 => chop( W0 <<Int W1 ) requires W1 <Int 256
-    rule  _ <<Word  W1 => 0 requires W1 >=Int 256
-    rule W0 >>Word  W1 => W0 >>Int W1
-    rule W0 >>sWord W1 => chop( (abs(W0) *Int sgn(W0)) >>Int W1 )
-```
-
--   `bit` gets bit $N$ (0 being MSB).
--   `byte` gets byte $N$ (0 being the MSB).
-
-```k
-    syntax Int ::= bit  ( Int , Int ) [function]
+syntax Int ::= bit  ( Int , Int ) [function]
                  | byte ( Int , Int ) [function]
- // --------------------------------------------
-    rule bit (N, _) => 0 requires notBool (N >=Int 0 andBool N <Int 256)
-    rule byte(N, _) => 0 requires notBool (N >=Int 0 andBool N <Int  32)
-
-    rule bit (N, W) => bitRangeInt(W , (255 -Int N)        , 1) requires N >=Int 0 andBool N <Int 256
-    rule byte(N, W) => bitRangeInt(W , ( 31 -Int N) *Int 8 , 8) requires N >=Int 0 andBool N <Int  32
-```
-
--   `#nBits` shifts in $N$ ones from the right.
--   `#nBytes` shifts in $N$ bytes of ones from the right.
--   `_<<Byte_` shifts an integer 8 bits to the left.
--   `_>>Byte_` shifts an integer 8 bits to the right.
-
-```k
-    syntax Int ::= #nBits  ( Int )  [function]
+syntax Int ::= #nBits  ( Int )  [function]
                  | #nBytes ( Int )  [function]
                  | Int "<<Byte" Int [function]
                  | Int ">>Byte" Int [function]
- // ------------------------------------------
-    rule #nBits(N)  => (1 <<Int N) -Int 1 requires N >=Int 0
-    rule #nBytes(N) => #nBits(N *Int 8)   requires N >=Int 0
-    rule N <<Byte M => N <<Int (8 *Int M)
-    rule N >>Byte M => N >>Int (8 *Int M)
+syntax Int ::= signextend( Int , Int ) [function, functional]
 ```
-
--   `signextend(N, W)` sign-extends from byte $N$ of $W$ (0 being MSB).
-
-```k
-    syntax Int ::= signextend( Int , Int ) [function, functional]
- // -------------------------------------------------------------
-    rule [signextend.invalid]:  signextend(N, W) => W requires N >=Int 32 orBool N <Int 0
-    rule [signextend.negative]: signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
-    rule [signextend.positive]: signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
-```
-
 
 A WordStack for EVM
 -------------------

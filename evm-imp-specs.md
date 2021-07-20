@@ -57,35 +57,35 @@ Configuration access commands
 
 ```k
     syntax EthereumCommand ::= "#saveEthereum" Id
-    rule <k> #saveEthereum X => . ... </k>
-         <ethereum> ETH </ethereum>
-         <commandVars> VARS => VARS[X <- ETH] </commandVars>
+    //rule <k> #saveEthereum X => . ... </k>
+    //     <ethereum> ETH </ethereum>
+    //     <commandVars> VARS => VARS[X <- ETH] </commandVars>
 
     syntax EthereumCommand ::= "#restoreEthereum" Id
-    rule <k> #restoreEthereum X => . ... </k>
-         (<ethereum> _ </ethereum> => <ethereum> ETH </ethereum>)
-         <commandVars>... X |-> ETH ...</commandVars>
+    //rule <k> #restoreEthereum X => . ... </k>
+    //     (<ethereum> _ </ethereum> => <ethereum> ETH </ethereum>)
+    //     <commandVars>... X |-> ETH ...</commandVars>
 
     syntax EthereumCommand ::= "#saveOutput" Id
-    rule <k> #saveOutput X => . ... </k>
-         <output> OUT </output>
-         <commandVars> VARS => VARS[X <- OUT] </commandVars>
+    //rule <k> #saveOutput X => . ... </k>
+    //     <output> OUT </output>
+    //     <commandVars> VARS => VARS[X <- OUT] </commandVars>
 
     syntax EthereumCommand ::= "#saveStorage" Int Id
-    rule <k> #saveStorage ACCT_ID X => . ... </k>
-         <acctID> ACCT_ID </acctID>
-         <storage> S </storage>
-         <commandVars> VARS => VARS[X <- S] </commandVars>
+    //rule <k> #saveStorage ACCT_ID X => . ... </k>
+    //     <acctID> ACCT_ID </acctID>
+    //     <storage> S </storage>
+    //     <commandVars> VARS => VARS[X <- S] </commandVars>
 
     syntax EthereumCommand ::= "#saveLog" Id
-    rule <k> #saveLog X => . ... </k>
-         <log> L </log>
-         <commandVars> VARS => VARS[X <- L] </commandVars>
+    //rule <k> #saveLog X => . ... </k>
+    //     <log> L </log>
+    //     <commandVars> VARS => VARS[X <- L] </commandVars>
 
     syntax EthereumCommand ::= "#saveRefund" Id
-    rule <k> #saveRefund X => . ... </k>
-         <refund> R </refund>
-         <commandVars> VARS => VARS[X <- R] </commandVars>
+    //rule <k> #saveRefund X => . ... </k>
+    //     <refund> R </refund>
+    //     <commandVars> VARS => VARS[X <- R] </commandVars>
 ```
 
 Specification expression language
@@ -122,8 +122,8 @@ Specification expression language
     rule <k> #getStatusCode => SC ... </k>
          <statusCode> SC </statusCode>
 
-    rule <k> #getOutput => OUT ... </k>
-         <output> OUT </output>
+    //rule <k> #getOutput => OUT ... </k>
+    //     <output> OUT </output>
 
     rule <k> #getLog => L ... </k>
          <log> L </log>

@@ -402,8 +402,8 @@ Here we check the other post-conditions associated with an EVM test.
 ```k
     rule <k> check TESTID : { "out" : OUT } => check "out" : OUT ~> failure TESTID ... </k>
  // ---------------------------------------------------------------------------------------
-    rule <k> check "out" : ((OUT:String) => #parseByteStack(OUT)) ... </k>
-    rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
+    //rule <k> check "out" : ((OUT:String) => #parseByteStack(OUT)) ... </k>
+    //rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
 
     rule <k> check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID ... </k>
  // -------------------------------------------------------------------------------------------
