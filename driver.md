@@ -256,7 +256,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> load "exec" : J => loadCallState J ... </k>
 
     rule <k> loadCallState { "caller" : (ACCTFROM:Int), REST => REST } ... </k> <caller> _ => ACCTFROM </caller>
-    rule <k> loadCallState { "origin" : (ORIG:Int), REST => REST }     ... </k> <origin> _ => ORIG     </origin>
+    //rule <k> loadCallState { "origin" : (ORIG:Int), REST => REST }     ... </k> <origin> _ => ORIG     </origin>
     rule <k> loadCallState { "address" : (ACCTTO:Int), REST => REST }  ... </k> <id>     _ => ACCTTO   </id>
 
     rule <k> loadCallState { "code" : (CODE:OpCodes), REST } => #loadProgram #asmOpCodes(CODE) ~> loadCallState { REST } ... </k>
@@ -407,7 +407,7 @@ Here we check the other post-conditions associated with an EVM test.
 
     rule <k> check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID ... </k>
  // -------------------------------------------------------------------------------------------
-    rule <k> check "logs" : HASH:String => . ... </k> <log> SL </log> requires #parseHexBytes(Keccak256(#rlpEncodeLogs(SL))) ==K #parseByteStack(HASH)
+    //rule <k> check "logs" : HASH:String => . ... </k> <log> SL </log> requires #parseHexBytes(Keccak256(#rlpEncodeLogs(SL))) ==K #parseByteStack(HASH)
 
     rule <k> check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID ... </k>
  // -------------------------------------------------------------------------------------------
@@ -428,39 +428,39 @@ Here we check the other post-conditions associated with an EVM test.
                         SetItem("transactionsTrie") SetItem("uncleHash")
                       )
 
-    rule <k> check "blockHeader" : { "bloom"            : VALUE } => . ... </k> <logsBloom>        VALUE </logsBloom>
-    rule <k> check "blockHeader" : { "coinbase"         : VALUE } => . ... </k> <coinbase>         VALUE </coinbase>
-    rule <k> check "blockHeader" : { "difficulty"       : VALUE } => . ... </k> <difficulty>       VALUE </difficulty>
-    rule <k> check "blockHeader" : { "extraData"        : VALUE } => . ... </k> <extraData>        VALUE </extraData>
-    rule <k> check "blockHeader" : { "gasLimit"         : VALUE } => . ... </k> <gasLimit>         VALUE </gasLimit>
-    rule <k> check "blockHeader" : { "gasUsed"          : VALUE } => . ... </k> <gasUsed>          VALUE </gasUsed>
-    rule <k> check "blockHeader" : { "mixHash"          : VALUE } => . ... </k> <mixHash>          VALUE </mixHash>
-    rule <k> check "blockHeader" : { "nonce"            : VALUE } => . ... </k> <blockNonce>       VALUE </blockNonce>
-    rule <k> check "blockHeader" : { "number"           : VALUE } => . ... </k> <number>           VALUE </number>
-    rule <k> check "blockHeader" : { "parentHash"       : VALUE } => . ... </k> <previousHash>     VALUE </previousHash>
-    rule <k> check "blockHeader" : { "receiptTrie"      : VALUE } => . ... </k> <receiptsRoot>     VALUE </receiptsRoot>
-    rule <k> check "blockHeader" : { "stateRoot"        : VALUE } => . ... </k> <stateRoot>        VALUE </stateRoot>
-    rule <k> check "blockHeader" : { "timestamp"        : VALUE } => . ... </k> <timestamp>        VALUE </timestamp>
-    rule <k> check "blockHeader" : { "transactionsTrie" : VALUE } => . ... </k> <transactionsRoot> VALUE </transactionsRoot>
-    rule <k> check "blockHeader" : { "uncleHash"        : VALUE } => . ... </k> <ommersHash>       VALUE </ommersHash>
+    //rule <k> check "blockHeader" : { "bloom"            : VALUE } => . ... </k> <logsBloom>        VALUE </logsBloom>
+    //rule <k> check "blockHeader" : { "coinbase"         : VALUE } => . ... </k> <coinbase>         VALUE </coinbase>
+    //rule <k> check "blockHeader" : { "difficulty"       : VALUE } => . ... </k> <difficulty>       VALUE </difficulty>
+    //rule <k> check "blockHeader" : { "extraData"        : VALUE } => . ... </k> <extraData>        VALUE </extraData>
+    //rule <k> check "blockHeader" : { "gasLimit"         : VALUE } => . ... </k> <gasLimit>         VALUE </gasLimit>
+    //rule <k> check "blockHeader" : { "gasUsed"          : VALUE } => . ... </k> <gasUsed>          VALUE </gasUsed>
+    //rule <k> check "blockHeader" : { "mixHash"          : VALUE } => . ... </k> <mixHash>          VALUE </mixHash>
+    //rule <k> check "blockHeader" : { "nonce"            : VALUE } => . ... </k> <blockNonce>       VALUE </blockNonce>
+    //rule <k> check "blockHeader" : { "number"           : VALUE } => . ... </k> <number>           VALUE </number>
+    //rule <k> check "blockHeader" : { "parentHash"       : VALUE } => . ... </k> <previousHash>     VALUE </previousHash>
+    //rule <k> check "blockHeader" : { "receiptTrie"      : VALUE } => . ... </k> <receiptsRoot>     VALUE </receiptsRoot>
+    //rule <k> check "blockHeader" : { "stateRoot"        : VALUE } => . ... </k> <stateRoot>        VALUE </stateRoot>
+    //rule <k> check "blockHeader" : { "timestamp"        : VALUE } => . ... </k> <timestamp>        VALUE </timestamp>
+    //rule <k> check "blockHeader" : { "transactionsTrie" : VALUE } => . ... </k> <transactionsRoot> VALUE </transactionsRoot>
+    //rule <k> check "blockHeader" : { "uncleHash"        : VALUE } => . ... </k> <ommersHash>       VALUE </ommersHash>
 
-    rule <k> check "blockHeader" : { "hash": HASH:ByteArray } => . ...</k>
-         <previousHash>     HP </previousHash>
-         <ommersHash>       HO </ommersHash>
-         <coinbase>         HC </coinbase>
-         <stateRoot>        HR </stateRoot>
-         <transactionsRoot> HT </transactionsRoot>
-         <receiptsRoot>     HE </receiptsRoot>
-         <logsBloom>        HB </logsBloom>
-         <difficulty>       HD </difficulty>
-         <number>           HI </number>
-         <gasLimit>         HL </gasLimit>
-         <gasUsed>          HG </gasUsed>
-         <timestamp>        HS </timestamp>
-         <extraData>        HX </extraData>
-         <mixHash>          HM </mixHash>
-         <blockNonce>       HN </blockNonce>
-      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN) ==Int #asWord(HASH)
+    //rule <k> check "blockHeader" : { "hash": HASH:ByteArray } => . ...</k>
+    //     <previousHash>     HP </previousHash>
+    //     <ommersHash>       HO </ommersHash>
+    //     <coinbase>         HC </coinbase>
+    //     <stateRoot>        HR </stateRoot>
+    //     <transactionsRoot> HT </transactionsRoot>
+    //     <receiptsRoot>     HE </receiptsRoot>
+    //     <logsBloom>        HB </logsBloom>
+    //     <difficulty>       HD </difficulty>
+    //     <number>           HI </number>
+    //     <gasLimit>         HL </gasLimit>
+    //     <gasUsed>          HG </gasUsed>
+    //     <timestamp>        HS </timestamp>
+    //     <extraData>        HX </extraData>
+    //     <mixHash>          HM </mixHash>
+    //     <blockNonce>       HN </blockNonce>
+    //  requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN) ==Int #asWord(HASH)
 
     rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
  // ------------------------------------------------------------------------------------------------------------------------
@@ -470,8 +470,8 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "genesisBlockHeader" : { KEY : _ } => .K ... </k> requires KEY =/=String "hash"
 
     rule <k> check "genesisBlockHeader" : { "hash": (HASH:String => #asWord(#parseByteStack(HASH))) } ... </k>
-    rule <k> check "genesisBlockHeader" : { "hash": HASH } => . ... </k>
-         <blockhashes> ... ListItem(HASH) ListItem(_) </blockhashes>
+    //rule <k> check "genesisBlockHeader" : { "hash": HASH } => . ... </k>
+    //     <blockhashes> ... ListItem(HASH) ListItem(_) </blockhashes>
 
     rule <k> check TESTID : { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ~> failure TESTID ... </k>
  // ---------------------------------------------------------------------------------------------------------------------------
@@ -500,9 +500,9 @@ Here we check the other post-conditions associated with an EVM test.
 TODO: case with nonzero ommers.
 
 ```k
-    rule <k> check TESTID : { "uncleHeaders" : OMMERS } => check "ommerHeaders" : OMMERS ~> failure TESTID ... </k>
+    //rule <k> check TESTID : { "uncleHeaders" : OMMERS } => check "ommerHeaders" : OMMERS ~> failure TESTID ... </k>
  // ---------------------------------------------------------------------------------------------------------------
-    rule <k> check "ommerHeaders" : [ .JSONs ] => . ... </k> <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
+    //rule <k> check "ommerHeaders" : [ .JSONs ] => . ... </k> <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
 ```
 
 ```k

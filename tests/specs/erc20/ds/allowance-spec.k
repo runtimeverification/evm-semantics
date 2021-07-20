@@ -46,34 +46,34 @@ module ALLOWANCE-SPEC
           <callDepth> _ </callDepth> // <callDepth> CALL_DEPTH </callDepth>
         </callState>
 
-        <substate>
-          <selfDestruct> _ </selfDestruct>
-          <log> _ </log>
-          <refund> _ </refund> // TODO: more detail
-        </substate>
+        // <substate>
+        //   <selfDestruct> _ </selfDestruct>
+        //   <log> _ </log>
+        //   <refund> _ </refund> // TODO: more detail
+        // </substate>
 
-        <gasPrice> _ </gasPrice>
-        <origin> _ </origin> // <origin> ORIGIN_ID </origin> // who fires tx
+        // <gasPrice> _ </gasPrice>
+        // <origin> _ </origin> // <origin> ORIGIN_ID </origin> // who fires tx
 
-        <blockhashes> _ </blockhashes>
-        <block>
-          <previousHash> _ </previousHash>
-          <ommersHash> _ </ommersHash>
-          <coinbase> _ </coinbase>
-          <stateRoot> _ </stateRoot>
-          <transactionsRoot> _ </transactionsRoot>
-          <receiptsRoot> _ </receiptsRoot>
-          <logsBloom> _ </logsBloom>
-          <difficulty> _ </difficulty>
-          <number> _ </number>
-          <gasLimit> _ </gasLimit>
-          <gasUsed> _ </gasUsed>
-          <timestamp> _ </timestamp>
-          <extraData> _ </extraData>
-          <mixHash> _ </mixHash>
-          <blockNonce> _ </blockNonce>
-          <ommerBlockHeaders> _ </ommerBlockHeaders>
-        </block>
+        // <blockhashes> _ </blockhashes>
+        // <block>
+        //   <previousHash> _ </previousHash>
+        //   <ommersHash> _ </ommersHash>
+        //   <coinbase> _ </coinbase>
+        //   <stateRoot> _ </stateRoot>
+        //   <transactionsRoot> _ </transactionsRoot>
+        //   <receiptsRoot> _ </receiptsRoot>
+        //   <logsBloom> _ </logsBloom>
+        //   <difficulty> _ </difficulty>
+        //   <number> _ </number>
+        //   <gasLimit> _ </gasLimit>
+        //   <gasUsed> _ </gasUsed>
+        //   <timestamp> _ </timestamp>
+        //   <extraData> _ </extraData>
+        //   <mixHash> _ </mixHash>
+        //   <blockNonce> _ </blockNonce>
+        //   <ommerBlockHeaders> _ </ommerBlockHeaders>
+        // </block>
       </evm>
 
       <network>

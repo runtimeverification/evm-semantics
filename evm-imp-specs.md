@@ -128,8 +128,8 @@ Specification expression language
     rule <k> #getLog => L ... </k>
          <log> L </log>
 
-    rule <k> #getRefund => R ... </k>
-         <refund> R </refund>
+    //rule <k> #getRefund => R ... </k>
+    //     <refund> R </refund>
 
     rule <k> #getStorage(ACCT_ID) => S ... </k>
          <acctID> ACCT_ID </acctID>

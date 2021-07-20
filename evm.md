@@ -51,9 +51,9 @@ In the comments next to each cell, we've marked which component of the YellowPap
             //<interimStates>   .List       </interimStates>
             //<touchedAccounts> .Set        </touchedAccounts>
 
-            <callState>
-              <program> .ByteArray </program>
-              <jumpDests> .Set </jumpDests>
+            <callState> // KEEP 
+              <program> .ByteArray </program> // KEEP
+              <jumpDests> .Set </jumpDests> // KEEP
 
               // I_*
               <id>        .Account   </id>                    // I_a
@@ -74,39 +74,39 @@ In the comments next to each cell, we've marked which component of the YellowPap
             </callState>
 
             // A_* (execution substate)
-            <substate>
-              <selfDestruct> .Set  </selfDestruct>            // A_s
-              <log>          .List </log>                     // A_l
-              <refund>       0     </refund>                  // A_r
-            </substate>
+            //<substate>
+            //  <selfDestruct> .Set  </selfDestruct>            // A_s
+            //  <log>          .List </log>                     // A_l
+            //  <refund>       0     </refund>                  // A_r
+            //</substate>
 
             // Immutable during a single transaction
             // -------------------------------------
 
-            <gasPrice> 0        </gasPrice>                   // I_p
-            <origin>   .Account </origin>                     // I_o
+            //<gasPrice> 0        </gasPrice>                   // I_p
+            //<origin>   .Account </origin>                     // I_o
 
             // I_H* (block information)
-            <blockhashes> .List </blockhashes>
-            <block>
-              <previousHash>     0          </previousHash>     // I_Hp
-              <ommersHash>       0          </ommersHash>       // I_Ho
-              <coinbase>         0          </coinbase>         // I_Hc
-              <stateRoot>        0          </stateRoot>        // I_Hr
-              <transactionsRoot> 0          </transactionsRoot> // I_Ht
-              <receiptsRoot>     0          </receiptsRoot>     // I_He
-              <logsBloom>        .ByteArray </logsBloom>        // I_Hb
-              <difficulty>       0          </difficulty>       // I_Hd
-              <number>           0          </number>           // I_Hi
-              <gasLimit>         0          </gasLimit>         // I_Hl
-              <gasUsed>          0          </gasUsed>          // I_Hg
-              <timestamp>        0          </timestamp>        // I_Hs
-              <extraData>        .ByteArray </extraData>        // I_Hx
-              <mixHash>          0          </mixHash>          // I_Hm
-              <blockNonce>       0          </blockNonce>       // I_Hn
-
-              <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
-            </block>
+            //<blockhashes> .List </blockhashes>
+            //<block>
+            //  <previousHash>     0          </previousHash>     // I_Hp
+            //  <ommersHash>       0          </ommersHash>       // I_Ho
+            //  <coinbase>         0          </coinbase>         // I_Hc
+            //  <stateRoot>        0          </stateRoot>        // I_Hr
+            //  <transactionsRoot> 0          </transactionsRoot> // I_Ht
+            //  <receiptsRoot>     0          </receiptsRoot>     // I_He
+            //  <logsBloom>        .ByteArray </logsBloom>        // I_Hb
+            //  <difficulty>       0          </difficulty>       // I_Hd
+            //  <number>           0          </number>           // I_Hi
+            //  <gasLimit>         0          </gasLimit>         // I_Hl
+            //  <gasUsed>          0          </gasUsed>          // I_Hg
+            //  <timestamp>        0          </timestamp>        // I_Hs
+            //  <extraData>        .ByteArray </extraData>        // I_Hx
+            //  <mixHash>          0          </mixHash>          // I_Hm
+            //  <blockNonce>       0          </blockNonce>       // I_Hn
+            //
+            //  <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
+            //</block>
 
           </evm>
 
@@ -123,12 +123,12 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // ---------------
 
             <activeAccounts> .Set </activeAccounts>
-            <accounts>
+            <accounts> // KEEP
               <account multiplicity="*" type="Map">
                 <acctID>      0                      </acctID>
                 <balance>     0                      </balance>
                 <code>        .ByteArray:AccountCode </code>
-                <storage>     .Map                   </storage>
+                <storage>     .Map                   </storage> // KEEP
                 <origStorage> .Map                   </origStorage>
                 <nonce>       0                      </nonce>
               </account>
@@ -172,7 +172,7 @@ syntax Mode ::= "NORMAL"  [klabel(NORMAL), symbol]
 syntax InternalOp ::= "#pushCallStack"
 syntax InternalOp ::= "#popCallStack"
 syntax InternalOp ::= "#dropCallStack"
-syntax Accounts ::= "{" AccountsCellFragment "|" Set "|" SubstateCellFragment "}"
+//syntax Accounts ::= "{" AccountsCellFragment "|" Set "|" SubstateCellFragment "}"
 syntax InternalOp ::= "#pushWorldState"
 syntax InternalOp ::= "#popWorldState"
 syntax InternalOp ::= "#dropWorldState"

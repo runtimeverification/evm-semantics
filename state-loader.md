@@ -51,24 +51,24 @@ module STATE-LOADER
 
     syntax EthereumCommand ::= "clearBLOCK"
  // ---------------------------------------
-    rule <k> clearBLOCK => . ... </k>
-         <previousHash>      _ => 0          </previousHash>
-         <ommersHash>        _ => 0          </ommersHash>
-         <coinbase>          _ => 0          </coinbase>
-         <stateRoot>         _ => 0          </stateRoot>
-         <transactionsRoot>  _ => 0          </transactionsRoot>
-         <receiptsRoot>      _ => 0          </receiptsRoot>
-         <logsBloom>         _ => .ByteArray </logsBloom>
-         <difficulty>        _ => 0          </difficulty>
-         <number>            _ => 0          </number>
-         <gasLimit>          _ => 0          </gasLimit>
-         <gasUsed>           _ => 0          </gasUsed>
-         <timestamp>         _ => 0          </timestamp>
-         <extraData>         _ => .ByteArray </extraData>
-         <mixHash>           _ => 0          </mixHash>
-         <blockNonce>        _ => 0          </blockNonce>
-         <ommerBlockHeaders> _ => [ .JSONs ] </ommerBlockHeaders>
-         <blockhashes>       _ => .List      </blockhashes>
+    //rule <k> clearBLOCK => . ... </k>
+    //     <previousHash>      _ => 0          </previousHash>
+    //     <ommersHash>        _ => 0          </ommersHash>
+    //     <coinbase>          _ => 0          </coinbase>
+    //     <stateRoot>         _ => 0          </stateRoot>
+    //     <transactionsRoot>  _ => 0          </transactionsRoot>
+    //     <receiptsRoot>      _ => 0          </receiptsRoot>
+    //     <logsBloom>         _ => .ByteArray </logsBloom>
+    //     <difficulty>        _ => 0          </difficulty>
+    //     <number>            _ => 0          </number>
+    //     <gasLimit>          _ => 0          </gasLimit>
+    //     <gasUsed>           _ => 0          </gasUsed>
+    //     <timestamp>         _ => 0          </timestamp>
+    //     <extraData>         _ => .ByteArray </extraData>
+    //     <mixHash>           _ => 0          </mixHash>
+    //     <blockNonce>        _ => 0          </blockNonce>
+    //     <ommerBlockHeaders> _ => [ .JSONs ] </ommerBlockHeaders>
+    //     <blockhashes>       _ => .List      </blockhashes>
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
@@ -133,25 +133,25 @@ Here we load the environmental information.
     rule <k> load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) } ... </k>
       requires KEY in (SetItem("currentCoinbase") SetItem("previousHash"))
  // ----------------------------------------------------------------------
-    rule <k> load "env" : { "currentCoinbase"   : (CB:Int)     } => . ... </k> <coinbase>     _ => CB     </coinbase>
-    rule <k> load "env" : { "currentDifficulty" : (DIFF:Int)   } => . ... </k> <difficulty>   _ => DIFF   </difficulty>
-    rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:Int) } => . ... </k> <gasLimit>     _ => GLIMIT </gasLimit>
-    rule <k> load "env" : { "currentNumber"     : (NUM:Int)    } => . ... </k> <number>       _ => NUM    </number>
-    rule <k> load "env" : { "previousHash"      : (HASH:Int)   } => . ... </k> <previousHash> _ => HASH   </previousHash>
-    rule <k> load "env" : { "currentTimestamp"  : (TS:Int)     } => . ... </k> <timestamp>    _ => TS     </timestamp>
+    //rule <k> load "env" : { "currentCoinbase"   : (CB:Int)     } => . ... </k> <coinbase>     _ => CB     </coinbase>
+    //rule <k> load "env" : { "currentDifficulty" : (DIFF:Int)   } => . ... </k> <difficulty>   _ => DIFF   </difficulty>
+    //rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:Int) } => . ... </k> <gasLimit>     _ => GLIMIT </gasLimit>
+    //rule <k> load "env" : { "currentNumber"     : (NUM:Int)    } => . ... </k> <number>       _ => NUM    </number>
+    //rule <k> load "env" : { "previousHash"      : (HASH:Int)   } => . ... </k> <previousHash> _ => HASH   </previousHash>
+    //rule <k> load "env" : { "currentTimestamp"  : (TS:Int)     } => . ... </k> <timestamp>    _ => TS     </timestamp>
 
     syntax KItem ::= "loadCallState" JSON
  // -------------------------------------
-    rule <k> loadCallState { "data" : ( DATA:String => #parseByteStack( DATA ) ), _REST } ... </k>
+    //rule <k> loadCallState { "data" : ( DATA:String => #parseByteStack( DATA ) ), _REST } ... </k>
 
-    rule <k> loadCallState { "code" : CODE:ByteArray, REST } => #loadProgram CODE ~> loadCallState { REST } ... </k>
+    //rule <k> loadCallState { "code" : CODE:ByteArray, REST } => #loadProgram CODE ~> loadCallState { REST } ... </k>
 
-    rule <k> loadCallState { "gas" : GLIMIT:Int, REST => REST }      ... </k> <gas>       _ => GLIMIT </gas>
-    rule <k> loadCallState { "gasPrice" : GPRICE:Int, REST => REST } ... </k> <gasPrice>  _ => GPRICE </gasPrice>
-    rule <k> loadCallState { "value" : VALUE:Int, REST => REST }     ... </k> <callValue> _ => VALUE  </callValue>
-    rule <k> loadCallState { "data" : DATA:ByteArray, REST => REST } ... </k> <callData>  _ => DATA   </callData>
+    //rule <k> loadCallState { "gas" : GLIMIT:Int, REST => REST }      ... </k> <gas>       _ => GLIMIT </gas>
+    //rule <k> loadCallState { "gasPrice" : GPRICE:Int, REST => REST } ... </k> <gasPrice>  _ => GPRICE </gasPrice>
+    //rule <k> loadCallState { "value" : VALUE:Int, REST => REST }     ... </k> <callValue> _ => VALUE  </callValue>
+    //rule <k> loadCallState { "data" : DATA:ByteArray, REST => REST } ... </k> <callData>  _ => DATA   </callData>
 
-    rule <k> loadCallState { .JSONs } => . ... </k>
+    //rule <k> loadCallState { .JSONs } => . ... </k>
 ```
 
 The `"network"` key allows setting the fee schedule inside the test.
@@ -178,29 +178,29 @@ The `"rlp"` key loads the block information.
     rule <k> load "rlp"        : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL)))) ... </k>
     rule <k> load "genesisRLP" : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL)))) ... </k>
  // ---------------------------------------------------------------------------------------------------------
-    rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONs ] , BT , BU , .JSONs ]
-          => load "transaction" : BT
-         ...
-         </k>
-         <previousHash>      _ => #asWord(#parseByteStackRaw(HP)) </previousHash>
-         <ommersHash>        _ => #asWord(#parseByteStackRaw(HO)) </ommersHash>
-         <coinbase>          _ => #asWord(#parseByteStackRaw(HC)) </coinbase>
-         <stateRoot>         _ => #asWord(#parseByteStackRaw(HR)) </stateRoot>
-         <transactionsRoot>  _ => #asWord(#parseByteStackRaw(HT)) </transactionsRoot>
-         <receiptsRoot>      _ => #asWord(#parseByteStackRaw(HE)) </receiptsRoot>
-         <logsBloom>         _ => #parseByteStackRaw(HB)          </logsBloom>
-         <difficulty>        _ => #asWord(#parseByteStackRaw(HD)) </difficulty>
-         <number>            _ => #asWord(#parseByteStackRaw(HI)) </number>
-         <gasLimit>          _ => #asWord(#parseByteStackRaw(HL)) </gasLimit>
-         <gasUsed>           _ => #asWord(#parseByteStackRaw(HG)) </gasUsed>
-         <timestamp>         _ => #asWord(#parseByteStackRaw(HS)) </timestamp>
-         <extraData>         _ => #parseByteStackRaw(HX)          </extraData>
-         <mixHash>           _ => #asWord(#parseByteStackRaw(HM)) </mixHash>
-         <blockNonce>        _ => #asWord(#parseByteStackRaw(HN)) </blockNonce>
-         <ommerBlockHeaders> _ => BU                              </ommerBlockHeaders>
+    //rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONs ] , BT , BU , .JSONs ]
+    //      => load "transaction" : BT
+    //     ...
+    //     </k>
+    //     <previousHash>      _ => #asWord(#parseByteStackRaw(HP)) </previousHash>
+    //     <ommersHash>        _ => #asWord(#parseByteStackRaw(HO)) </ommersHash>
+    //     <coinbase>          _ => #asWord(#parseByteStackRaw(HC)) </coinbase>
+    //     <stateRoot>         _ => #asWord(#parseByteStackRaw(HR)) </stateRoot>
+    //     <transactionsRoot>  _ => #asWord(#parseByteStackRaw(HT)) </transactionsRoot>
+    //     <receiptsRoot>      _ => #asWord(#parseByteStackRaw(HE)) </receiptsRoot>
+    //     <logsBloom>         _ => #parseByteStackRaw(HB)          </logsBloom>
+    //     <difficulty>        _ => #asWord(#parseByteStackRaw(HD)) </difficulty>
+    //     <number>            _ => #asWord(#parseByteStackRaw(HI)) </number>
+    //     <gasLimit>          _ => #asWord(#parseByteStackRaw(HL)) </gasLimit>
+    //     <gasUsed>           _ => #asWord(#parseByteStackRaw(HG)) </gasUsed>
+    //     <timestamp>         _ => #asWord(#parseByteStackRaw(HS)) </timestamp>
+    //     <extraData>         _ => #parseByteStackRaw(HX)          </extraData>
+    //     <mixHash>           _ => #asWord(#parseByteStackRaw(HM)) </mixHash>
+    //     <blockNonce>        _ => #asWord(#parseByteStackRaw(HN)) </blockNonce>
+    //     <ommerBlockHeaders> _ => BU                              </ommerBlockHeaders>
 
-    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], _, _, .JSONs ] => .K ... </k>
-         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhashes>
+    //rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], _, _, .JSONs ] => .K ... </k>
+    //     <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhashes>
 
     syntax EthereumCommand ::= "mkTX" Int
  // -------------------------------------
