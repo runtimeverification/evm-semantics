@@ -56,21 +56,21 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <jumpDests> .Set </jumpDests> // KEEP
 
               // I_*
-              <id>        .Account   </id>                    // I_a
-              <caller>    .Account   </caller>                // I_s
-              <callData>  .ByteArray </callData>              // I_d
-              <callValue> 0          </callValue>             // I_v
+              //<id>        .Account   </id>                    // I_a
+              //<caller>    .Account   </caller>                // I_s
+              //<callData>  .ByteArray </callData>              // I_d
+              //<callValue> 0          </callValue>             // I_v
 
               // \mu_*
-              <wordStack>   .WordStack </wordStack>           // \mu_s
-              <localMem>    .Memory    </localMem>            // \mu_m
+              //<wordStack>   .WordStack </wordStack>           // \mu_s
+              //<localMem>    .Memory    </localMem>            // \mu_m
               <pc>          0          </pc>                  // \mu_pc
-              <gas>         0          </gas>                 // \mu_g
-              <memoryUsed>  0          </memoryUsed>          // \mu_i
-              <callGas>     0          </callGas>
+              //<gas>         0          </gas>                 // \mu_g
+              //<memoryUsed>  0          </memoryUsed>          // \mu_i
+              //<callGas>     0          </callGas>
 
-              <static>    false </static>
-              <callDepth> 0     </callDepth>
+              //<static>    false </static>
+              //<callDepth> 0     </callDepth>
             </callState>
 
             // A_* (execution substate)
@@ -117,7 +117,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             // Chain identifier
             // ----------------
-            <chainID> $CHAINID:Int </chainID>
+            //<chainID> $CHAINID:Int </chainID>
 
             // Accounts Record
             // ---------------
@@ -137,23 +137,23 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // Transactions Record
             // -------------------
 
-            <txOrder>   .List </txOrder>
-            <txPending> .List </txPending>
+            //<txOrder>   .List </txOrder>
+            //<txPending> .List </txPending>
 
-            <messages>
-              <message multiplicity="*" type="Map">
-                <msgID>      0          </msgID>
-                <txNonce>    0          </txNonce>            // T_n
-                <txGasPrice> 0          </txGasPrice>         // T_p
-                <txGasLimit> 0          </txGasLimit>         // T_g
-                <to>         .Account   </to>                 // T_t
-                <value>      0          </value>              // T_v
-                <sigV>       0          </sigV>               // T_w
-                <sigR>       .ByteArray </sigR>               // T_r
-                <sigS>       .ByteArray </sigS>               // T_s
-                <data>       .ByteArray </data>               // T_i/T_e
-              </message>
-            </messages>
+            //<messages>
+            //  <message multiplicity="*" type="Map">
+            //    <msgID>      0          </msgID>
+            //    <txNonce>    0          </txNonce>            // T_n
+            //    <txGasPrice> 0          </txGasPrice>         // T_p
+            //    <txGasLimit> 0          </txGasLimit>         // T_g
+            //    <to>         .Account   </to>                 // T_t
+            //    <value>      0          </value>              // T_v
+            //    <sigV>       0          </sigV>               // T_w
+            //    <sigR>       .ByteArray </sigR>               // T_r
+            //    <sigS>       .ByteArray </sigS>               // T_s
+            //    <data>       .ByteArray </data>               // T_i/T_e
+            //  </message>
+            //</messages>
 
           </network>
 
