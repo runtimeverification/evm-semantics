@@ -324,65 +324,65 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```k
     syntax EthereumCommand ::= "check" JSON
  // ---------------------------------------
-    rule <k> #halt ~> check J:JSON => check J ~> #halt ... </k>
+    //rule <k> #halt ~> check J:JSON => check J ~> #halt ... </k>
 
-    rule <k> check DATA : { .JSONs } => . ... </k> requires DATA =/=String "transactions"
-    rule <k> check DATA : [ .JSONs ] => . ... </k> requires DATA =/=String "ommerHeaders"
+    //rule <k> check DATA : { .JSONs } => . ... </k> requires DATA =/=String "transactions"
+    //rule <k> check DATA : [ .JSONs ] => . ... </k> requires DATA =/=String "ommerHeaders"
 
-    rule <k> check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } ... </k>
-      requires REST =/=K .JSONs andBool notBool DATA in (SetItem("callcreates") SetItem("transactions"))
+    //rule <k> check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } ... </k>
+    //  requires REST =/=K .JSONs andBool notBool DATA in (SetItem("callcreates") SetItem("transactions"))
 
-    rule <k> check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ] ... </k>
-      requires DATA =/=String "transactions"
+    //rule <k> check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ] ... </k>
+    //  requires DATA =/=String "transactions"
 
-    rule <k> check (KEY:String) : { JS:JSONs => qsortJSONs(JS) } ... </k>
-      requires KEY in (SetItem("callcreates")) andBool notBool sortedJSONs(JS)
+    //rule <k> check (KEY:String) : { JS:JSONs => qsortJSONs(JS) } ... </k>
+    //  requires KEY in (SetItem("callcreates")) andBool notBool sortedJSONs(JS)
 
-    rule <k> check TESTID : { "post" : (POST:String) } => check "blockHeader" : {  "stateRoot" : #parseWord(POST) } ~> failure TESTID ... </k>
-    rule <k> check TESTID : { "post" : { POST } } => check "account" : { POST } ~> failure TESTID ... </k>
+    //rule <k> check TESTID : { "post" : (POST:String) } => check "blockHeader" : {  "stateRoot" : #parseWord(POST) } ~> failure TESTID ... </k>
+    //rule <k> check TESTID : { "post" : { POST } } => check "account" : { POST } ~> failure TESTID ... </k>
 
-    rule <k> check "account" : { ACCTID:Int : { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
-      requires REST =/=K .JSONs
+    //rule <k> check "account" : { ACCTID:Int : { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
+    //  requires REST =/=K .JSONs
 
-    rule <k> check "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : _ACCT }                             ... </k>
-    rule <k> check "account" : { (_ACCT:Int) : { "balance" : ((VAL:String)      => #parseWord(VAL)) } }        ... </k>
-    rule <k> check "account" : { (_ACCT:Int) : { "nonce"   : ((VAL:String)      => #parseWord(VAL)) } }        ... </k>
-    rule <k> check "account" : { (_ACCT:Int) : { "code"    : ((CODE:String)     => #parseByteStack(CODE)) } }  ... </k>
-    rule <k> check "account" : { (_ACCT:Int) : { "storage" : ({ STORAGE:JSONs } => #parseMap({ STORAGE })) } } ... </k>
+    //rule <k> check "account" : { ((ACCTID:String) => #parseAddr(ACCTID)) : _ACCT }                             ... </k>
+    //rule <k> check "account" : { (_ACCT:Int) : { "balance" : ((VAL:String)      => #parseWord(VAL)) } }        ... </k>
+    //rule <k> check "account" : { (_ACCT:Int) : { "nonce"   : ((VAL:String)      => #parseWord(VAL)) } }        ... </k>
+    //rule <k> check "account" : { (_ACCT:Int) : { "code"    : ((CODE:String)     => #parseByteStack(CODE)) } }  ... </k>
+    //rule <k> check "account" : { (_ACCT:Int) : { "storage" : ({ STORAGE:JSONs } => #parseMap({ STORAGE })) } } ... </k>
 
-    rule <mode> EXECMODE </mode>
-         <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-      requires EXECMODE =/=K VMTESTS
+    //rule <mode> EXECMODE </mode>
+    //     <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
+    //     <account>
+    //       <acctID> ACCT </acctID>
+    //       <balance> BAL </balance>
+    //       ...
+    //     </account>
+    //  requires EXECMODE =/=K VMTESTS
 
-    rule <mode> VMTESTS </mode>
-         <k> check "account" : { _ACCT : { "balance" : (_:Int) } } => . ... </k>
+    //rule <mode> VMTESTS </mode>
+    //     <k> check "account" : { _ACCT : { "balance" : (_:Int) } } => . ... </k>
 
-    rule <k> check "account" : {  ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <nonce> NONCE </nonce>
-           ...
-         </account>
+    //rule <k> check "account" : {  ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
+    //     <account>
+    //       <acctID> ACCT </acctID>
+    //       <nonce> NONCE </nonce>
+    //       ...
+    //     </account>
 
-    rule <k> check "account" : { ACCT : { "storage" : (STORAGE:Map) } } => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> ACCTSTORAGE </storage>
-           ...
-         </account>
-      requires #removeZeros(ACCTSTORAGE) ==K STORAGE
+    //rule <k> check "account" : { ACCT : { "storage" : (STORAGE:Map) } } => . ... </k>
+    //     <account>
+    //       <acctID> ACCT </acctID>
+    //       <storage> ACCTSTORAGE </storage>
+    //       ...
+    //     </account>
+    //  requires #removeZeros(ACCTSTORAGE) ==K STORAGE
 
-    rule <k> check "account" : { ACCT : { "code" : (CODE:ByteArray) } } => . ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <code> CODE </code>
-           ...
-         </account>
+    //rule <k> check "account" : { ACCT : { "code" : (CODE:ByteArray) } } => . ... </k>
+    //     <account>
+    //       <acctID> ACCT </acctID>
+    //       <code> CODE </code>
+    //       ...
+    //     </account>
 ```
 
 -   `#removeZeros` removes any entries in a map with zero values.

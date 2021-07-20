@@ -110,19 +110,19 @@ Here we perform pre-proccesing on account data which allows "pretty" specificati
 
     syntax EthereumCommand ::= "loadAccount" Int JSON
  // -------------------------------------------------
-    rule <k> loadAccount _ { .JSONs } => . ... </k>
+    //rule <k> loadAccount _ { .JSONs } => . ... </k>
 
-    rule <k> loadAccount ACCT { "balance" : (BAL:Int), REST => REST } ... </k>
-         <account> <acctID> ACCT </acctID> <balance> _ => BAL </balance> ... </account>
+    //rule <k> loadAccount ACCT { "balance" : (BAL:Int), REST => REST } ... </k>
+    //     <account> <acctID> ACCT </acctID> <balance> _ => BAL </balance> ... </account>
 
-    rule <k> loadAccount ACCT { "code" : (CODE:ByteArray), REST => REST } ... </k>
-         <account> <acctID> ACCT </acctID> <code> _ => CODE </code> ... </account>
+    //rule <k> loadAccount ACCT { "code" : (CODE:ByteArray), REST => REST } ... </k>
+    //     <account> <acctID> ACCT </acctID> <code> _ => CODE </code> ... </account>
 
-    rule <k> loadAccount ACCT { "nonce" : (NONCE:Int), REST => REST } ... </k>
-         <account> <acctID> ACCT </acctID> <nonce> _ => NONCE </nonce> ... </account>
+    //rule <k> loadAccount ACCT { "nonce" : (NONCE:Int), REST => REST } ... </k>
+    //     <account> <acctID> ACCT </acctID> <nonce> _ => NONCE </nonce> ... </account>
 
-    rule <k> loadAccount ACCT { "storage" : (STORAGE:Map), REST => REST } ... </k>
-         <account> <acctID> ACCT </acctID> <origStorage> _ => STORAGE </origStorage> <storage> _ => STORAGE </storage> ... </account>
+    //rule <k> loadAccount ACCT { "storage" : (STORAGE:Map), REST => REST } ... </k>
+    //     <account> <acctID> ACCT </acctID> <origStorage> _ => STORAGE </origStorage> <storage> _ => STORAGE </storage> ... </account>
 ```
 
 Here we load the environmental information.

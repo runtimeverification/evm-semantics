@@ -125,12 +125,12 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <activeAccounts> .Set </activeAccounts>
             <accounts> // KEEP
               <account multiplicity="*" type="Map">
-                <acctID>      0                      </acctID>
-                <balance>     0                      </balance>
-                <code>        .ByteArray:AccountCode </code>
+                //<acctID>      0                      </acctID>
+                //<balance>     0                      </balance>
+                //<code>        .ByteArray:AccountCode </code>
                 <storage>     .Map                   </storage> // KEEP
-                <origStorage> .Map                   </origStorage>
-                <nonce>       0                      </nonce>
+                //<origStorage> .Map                   </origStorage>
+                //<nonce>       0                      </nonce>
               </account>
             </accounts>
 
