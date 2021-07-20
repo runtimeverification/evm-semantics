@@ -122,7 +122,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // Accounts Record
             // ---------------
 
-            <activeAccounts> .Set </activeAccounts>
+            //<activeAccounts> .Set </activeAccounts>
             <accounts> // KEEP
               <account multiplicity="*" type="Map">
                 //<acctID>      0                      </acctID>

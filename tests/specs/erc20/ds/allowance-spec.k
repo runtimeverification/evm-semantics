@@ -79,7 +79,7 @@ module ALLOWANCE-SPEC
       <network>
         //<chainID> _ </chainID>
 
-        <activeAccounts> _ </activeAccounts> // <activeAccounts> SetItem(ACCT_ID) _:Set </activeAccounts>
+        //<activeAccounts> _ </activeAccounts> // <activeAccounts> SetItem(ACCT_ID) _:Set </activeAccounts>
 
         <accounts>
           <account>
