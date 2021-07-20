@@ -16,6 +16,7 @@ module VOW-FESS-FAIL-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
+          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Vow_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vow_bin_runtime) </jumpDests>
@@ -221,6 +222,7 @@ module VOW-FESS-FAIL-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
+          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Vow_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vow_bin_runtime) </jumpDests>

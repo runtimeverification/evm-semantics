@@ -16,6 +16,7 @@ module END-CASH-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
+          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> End_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(End_bin_runtime) </jumpDests>
@@ -257,6 +258,7 @@ module END-CASH-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
+          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> End_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(End_bin_runtime) </jumpDests>
@@ -445,6 +447,7 @@ module END-CASH-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
+          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> End_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(End_bin_runtime) </jumpDests>
@@ -636,6 +639,7 @@ module END-CASH-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
+          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Vat_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>

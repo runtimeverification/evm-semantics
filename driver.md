@@ -125,6 +125,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
+         <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID     </msgID>
            <txGasPrice> GPRICE   </txGasPrice>
@@ -142,6 +143,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            ...
          </account>
          <accessedAccounts> _ => .Set </accessedAccounts>
+         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM ACCTTO #precompiledAccounts(SCHED)
@@ -156,6 +158,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
+         <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID   </msgID>
            <txGasPrice> GPRICE </txGasPrice>
@@ -173,6 +176,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            ...
          </account>
          <accessedAccounts> _ => .Set </accessedAccounts>
+         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
 
     syntax EthereumCommand ::= "#finishTx"

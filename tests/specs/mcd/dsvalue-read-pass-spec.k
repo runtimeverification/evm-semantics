@@ -16,6 +16,7 @@ module DSVALUE-READ-PASS-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
+          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> DSValue_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(DSValue_bin_runtime) </jumpDests>

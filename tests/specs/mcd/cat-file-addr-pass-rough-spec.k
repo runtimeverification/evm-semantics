@@ -16,6 +16,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
+          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Cat_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Cat_bin_runtime) </jumpDests>

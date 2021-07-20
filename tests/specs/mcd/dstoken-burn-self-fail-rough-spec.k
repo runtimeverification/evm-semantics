@@ -16,6 +16,7 @@ module DSTOKEN-BURN-SELF-FAIL-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
+          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> DSToken_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(DSToken_bin_runtime) </jumpDests>

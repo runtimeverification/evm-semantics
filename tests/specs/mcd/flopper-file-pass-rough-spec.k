@@ -16,6 +16,7 @@ module FLOPPER-FILE-PASS-ROUGH-SPEC
           <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
+          <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
             <program> Flopper_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Flopper_bin_runtime) </jumpDests>
