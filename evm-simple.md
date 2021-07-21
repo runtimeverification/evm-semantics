@@ -1530,7 +1530,7 @@ It will incrementally build up to supporting the entire [EVM-C API].
 module NETWORK
     imports STRING-SYNTAX
 
-    syntax String ::= StatusCode2String(StatusCode) [function]
+    //syntax String ::= StatusCode2String(StatusCode) [function]
  // ----------------------------------------------------------
 ```
 
@@ -1589,12 +1589,12 @@ These additional status codes indicate that execution has ended in some non-exce
 -   `EVMC_REVERT` indicates that the contract called `REVERT`.
 
 ```k
-    syntax EndStatusCode ::= ExceptionalStatusCode
-                           | "EVMC_SUCCESS"
-                           | "EVMC_REVERT"
+    //syntax EndStatusCode ::= ExceptionalStatusCode
+    //                       | "EVMC_SUCCESS"
+    //                       | "EVMC_REVERT"
  // --------------------------------------
-    rule StatusCode2String(EVMC_SUCCESS) => "EVMC_SUCCESS"
-    rule StatusCode2String(EVMC_REVERT)  => "EVMC_REVERT"
+    //rule StatusCode2String(EVMC_SUCCESS) => "EVMC_SUCCESS"
+    //rule StatusCode2String(EVMC_REVERT)  => "EVMC_REVERT"
 ```
 
 ### Other Codes
@@ -1606,14 +1606,14 @@ The following codes indicate other non-execution errors with the VM.
 -   `.StatusCode` is an extra code added for "unset or unknown".
 
 ```k
-    syntax StatusCode ::= EndStatusCode
-                        | "EVMC_REJECTED"
-                        | "EVMC_INTERNAL_ERROR"
-                        | ".StatusCode"
+    //syntax StatusCode ::= EndStatusCode
+    //                    | "EVMC_REJECTED"
+    //                    | "EVMC_INTERNAL_ERROR"
+    //                    | ".StatusCode"
  // -----------------------------------
-    rule StatusCode2String(EVMC_REJECTED)       => "EVMC_REJECTED"
-    rule StatusCode2String(EVMC_INTERNAL_ERROR) => "EVMC_INTERNAL_ERROR"
-    rule StatusCode2String(.StatusCode)         => ""
+    //rule StatusCode2String(EVMC_REJECTED)       => "EVMC_REJECTED"
+    //rule StatusCode2String(EVMC_INTERNAL_ERROR) => "EVMC_INTERNAL_ERROR"
+    //rule StatusCode2String(.StatusCode)         => ""
 ```
 
 Client/Network Codes
@@ -1626,11 +1626,11 @@ These are not present in the [EVM-C API].
 -   `EVMC_BALANCE_UNDERFLOW` indicates an attempt to create an account which already exists.
 
 ```k
-    syntax ExceptionalStatusCode ::= "EVMC_ACCOUNT_ALREADY_EXISTS"
-                                   | "EVMC_BALANCE_UNDERFLOW"
+    //syntax ExceptionalStatusCode ::= "EVMC_ACCOUNT_ALREADY_EXISTS"
+    //                               | "EVMC_BALANCE_UNDERFLOW"
  // ---------------------------------------------------------
-    rule StatusCode2String(EVMC_ACCOUNT_ALREADY_EXISTS) => "EVMC_ACCOUNT_ALREADY_EXISTS"
-    rule StatusCode2String(EVMC_BALANCE_UNDERFLOW)      => "EVMC_BALANCE_UNDERFLOW"
+    //rule StatusCode2String(EVMC_ACCOUNT_ALREADY_EXISTS) => "EVMC_ACCOUNT_ALREADY_EXISTS"
+    //rule StatusCode2String(EVMC_BALANCE_UNDERFLOW)      => "EVMC_BALANCE_UNDERFLOW"
 ```
 
 ```k
