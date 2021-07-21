@@ -326,7 +326,7 @@ syntax AccountCode ::= ByteArray
 //syntax InternalOp ::= #gasExec ( Schedule , OpCode )
 //syntax InternalOp ::= "#allocateCallGas"
 //syntax InternalOp ::= "#allocateCreateGas"
-syntax Exp     ::= Int
+//syntax Exp     ::= Int
 //syntax KResult ::= Int
 //syntax Exp ::= Ccall         ( Schedule , BExp , Int , Int , Int ) [strict(2)]
 //              | Ccallgas      ( Schedule , BExp , Int , Int , Int ) [strict(2)]
@@ -340,8 +340,8 @@ syntax Exp     ::= Int
 //                 | Cmem    ( Schedule , Int )             [function, functional, smtlib(gas_Cmem), memo]
 //syntax BExp    ::= Bool
 //syntax KResult ::= Bool
-syntax BExp ::= #accountNonexistent ( Int )
-syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, klabel(accountEmpty), symbol]
+//syntax BExp ::= #accountNonexistent ( Int )
+//syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, klabel(accountEmpty), symbol]
 //syntax Int ::= #allBut64th ( Int ) [function, functional, smtlib(gas_allBut64th)]
 //syntax Int ::= G0 ( Schedule , ByteArray , Bool ) [function]
 //syntax Int ::= "G*" "(" Int "," Int "," Int ")" [function]
@@ -390,7 +390,7 @@ syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, klabel(acco
 
 
 // [#] #widthOpCode
-  syntax Int ::= #widthOpCode(Int) [function]
+    syntax Int ::= #widthOpCode(Int) [function]
  // -------------------------------------------
     rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
     rule #widthOpCode(_) => 1 [owise]
@@ -550,41 +550,41 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
 -   Range of types
 
 ```k
-    syntax Bool ::= #rangeBool    ( Int )
-                  | #rangeSInt    ( Int , Int )
-                  | #rangeUInt    ( Int , Int )
-                  | #rangeSFixed  ( Int , Int , Int )
-                  | #rangeUFixed  ( Int , Int , Int )
-                  | #rangeAddress ( Int )
-                  | #rangeBytes   ( Int , Int )
- // -------------------------------------------
-    rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1                         [macro]
-    rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      ) [macro]
-    rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      ) [macro]
-    rule #rangeUInt    (   8 ,      X ) => #range ( minUInt8        <= X <  256             ) [macro]
-    rule #rangeUInt    (  16 ,      X ) => #range ( minUInt16       <= X <  pow16           ) [macro]
-    rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <  pow48           ) [macro]
-    rule #rangeUInt    (  96 ,      X ) => #range ( minUInt96       <= X <  pow96           ) [macro]
-    rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <  pow128          ) [macro]
-    rule #rangeUInt    ( 160 ,      X ) => #range ( minUInt160      <= X <  pow160          ) [macro]
-    rule #rangeUInt    ( 168 ,      X ) => #range ( minUInt168      <= X <  pow168          ) [macro]
-    rule #rangeUInt    ( 208 ,      X ) => #range ( minUInt208      <= X <  pow208          ) [macro]
-    rule #rangeUInt    ( 224 ,      X ) => #range ( minUInt224      <= X <  pow224          ) [macro]
-    rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <  pow256          ) [macro]
-    rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 ) [macro]
-    rule #rangeUFixed  ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 ) [macro]
-    rule #rangeAddress (            X ) => #range ( minUInt160      <= X <  pow160          ) [macro]
-    rule #rangeBytes   (   N ,      X ) => #range ( 0               <= X <  1 <<Byte N      ) [macro]
+//     syntax Bool ::= #rangeBool    ( Int )
+//                   | #rangeSInt    ( Int , Int )
+//                   | #rangeUInt    ( Int , Int )
+//                   | #rangeSFixed  ( Int , Int , Int )
+//                   | #rangeUFixed  ( Int , Int , Int )
+//                   | #rangeAddress ( Int )
+//                   | #rangeBytes   ( Int , Int )
+//  // -------------------------------------------
+//     rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1                         [macro]
+//     rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      ) [macro]
+//     rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      ) [macro]
+//     rule #rangeUInt    (   8 ,      X ) => #range ( minUInt8        <= X <  256             ) [macro]
+//     rule #rangeUInt    (  16 ,      X ) => #range ( minUInt16       <= X <  pow16           ) [macro]
+//     rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <  pow48           ) [macro]
+//     rule #rangeUInt    (  96 ,      X ) => #range ( minUInt96       <= X <  pow96           ) [macro]
+//     rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <  pow128          ) [macro]
+//     rule #rangeUInt    ( 160 ,      X ) => #range ( minUInt160      <= X <  pow160          ) [macro]
+//     rule #rangeUInt    ( 168 ,      X ) => #range ( minUInt168      <= X <  pow168          ) [macro]
+//     rule #rangeUInt    ( 208 ,      X ) => #range ( minUInt208      <= X <  pow208          ) [macro]
+//     rule #rangeUInt    ( 224 ,      X ) => #range ( minUInt224      <= X <  pow224          ) [macro]
+//     rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <  pow256          ) [macro]
+//     rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 ) [macro]
+//     rule #rangeUFixed  ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 ) [macro]
+//     rule #rangeAddress (            X ) => #range ( minUInt160      <= X <  pow160          ) [macro]
+//     rule #rangeBytes   (   N ,      X ) => #range ( 0               <= X <  1 <<Byte N      ) [macro]
 
-    syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")"
-                  | "#range" "(" Int "<"  Int "<=" Int ")"
-                  | "#range" "(" Int "<=" Int "<"  Int ")"
-                  | "#range" "(" Int "<=" Int "<=" Int ")"
- // ------------------------------------------------------
-    rule #range ( LB <  X <  UB ) => LB  <Int X andBool X  <Int UB [macro]
-    rule #range ( LB <  X <= UB ) => LB  <Int X andBool X <=Int UB [macro]
-    rule #range ( LB <= X <  UB ) => LB <=Int X andBool X  <Int UB [macro]
-    rule #range ( LB <= X <= UB ) => LB <=Int X andBool X <=Int UB [macro]
+//     syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")"
+//                   | "#range" "(" Int "<"  Int "<=" Int ")"
+//                   | "#range" "(" Int "<=" Int "<"  Int ")"
+//                   | "#range" "(" Int "<=" Int "<=" Int ")"
+//  // ------------------------------------------------------
+//     rule #range ( LB <  X <  UB ) => LB  <Int X andBool X  <Int UB [macro]
+//     rule #range ( LB <  X <= UB ) => LB  <Int X andBool X <=Int UB [macro]
+//     rule #range ( LB <= X <  UB ) => LB <=Int X andBool X  <Int UB [macro]
+//     rule #range ( LB <= X <= UB ) => LB <=Int X andBool X <=Int UB [macro]
 ```
 
 -   `chop` interprets an integer modulo $2^256$.
@@ -810,29 +810,6 @@ Most of EVM data is held in local memory.
     rule WM [ IDX := VAL ] => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ]
 ```
 
-```{.k .nobytes}
-    syntax Memory = Map
-    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, functional]
- // --------------------------------------------------------------------------
-    rule [mapWriteBytes.base]:      WM[ _N := .WordStack ] => WM
-    rule [mapWriteBytes.recursive]: WM[  N := W : WS     ] => (WM[N <- W])[N +Int 1 := WS]
-
-    syntax ByteArray ::= #range ( Memory , Int , Int )             [function, functional]
-    syntax ByteArray ::= #range ( Memory , Int , Int , ByteArray ) [function, functional, klabel(#rangeAux)]
- // --------------------------------------------------------------------------------------------------------
-    rule [#range]:         #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack)
-    rule [#rangeAux.base]: #range( _,  _END, WIDTH, WS) => WS requires notBool 0 <Int WIDTH
-    rule [#rangeAux.rec]:  #range(WM,   END => END -Int 1, WIDTH => WIDTH -Int 1, WS => #lookupMemory(WM, END) : WS) requires 0 <Int WIDTH
-
-    syntax Memory ::= ".Memory"
- // ---------------------------
-    rule .Memory => .Map [macro]
-
-    syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
- // --------------------------------------------------------
-    rule WM [ IDX := VAL:Int ] => WM [ IDX <- VAL ]
-```
-
 Byte Arrays
 -----------
 
@@ -893,56 +870,6 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule [padToWidthNonEmpty] : #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0
     rule                        #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
     rule                        #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0
-```
-
-```{.k .nobytes}
-    syntax ByteArray = WordStack
-    syntax ByteArray ::= ".ByteArray"
- // ---------------------------------
-    rule .ByteArray => .WordStack [macro]
-
-    syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
- // ---------------------------------------------------------------------------
-    rule [#asWord.base-empty]:  #asWord( .WordStack     ) => 0
-    rule [#asWord.base-single]: #asWord( W : .WordStack ) => W
-    rule [#asWord.recursive]:   #asWord( W0 : W1 : WS   ) => #asWord(((W0 *Word 256) +Word W1) : WS)
-
-    syntax Int ::= #asInteger ( ByteArray ) [function]
- // --------------------------------------------------
-    rule #asInteger( .WordStack     ) => 0
-    rule #asInteger( W : .WordStack ) => W
-    rule #asInteger( W0 : W1 : WS   ) => #asInteger(((W0 *Int 256) +Int W1) : WS)
-
-    syntax Account ::= #asAccount ( ByteArray ) [function]
- // ------------------------------------------------------
-    rule #asAccount( .WordStack ) => .Account
-    rule #asAccount( W : WS     ) => #asWord(W : WS)
-
-    syntax ByteArray ::= #asByteStack ( Int )             [function, functional]
-                       | #asByteStack ( Int , ByteArray ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
- // --------------------------------------------------------------------------------------------------------------
-    rule [#asByteStack]:              #asByteStack( W )      => #asByteStack( W , .WordStack )
-    rule [#asByteStackAux.base]:      #asByteStack( 0 , WS ) => WS
-    rule [#asByteStackAux.recursive]: #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W modInt 256 : WS ) requires W =/=K 0
-
-    syntax ByteArray ::= ByteArray "++" ByteArray [function, memo, right, klabel(_++_WS), smtlib(_plusWS_)]
- // -------------------------------------------------------------------------------------------------------
-    rule .WordStack ++ WS' => WS'
-    rule (W : WS)   ++ WS' => W : (WS ++ WS')
-
-    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional, memo]
- // --------------------------------------------------------------------------------
-    rule [ByteArray.range]: WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
-
-    syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, smtlib(sizeByteArray), memo]
- // -----------------------------------------------------------------------------------------------
-    rule #sizeByteArray ( WS ) => #sizeWordStack(WS) [concrete]
-
-    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, functional, memo]
-                       | #padRightToWidth ( Int , ByteArray ) [function, memo]
- // --------------------------------------------------------------------------------------
-    rule [#padToWidth]:      #padToWidth(N, WS)      => #replicateAux(N -Int #sizeByteArray(WS), 0, WS)
-    rule [#padRightToWidth]: #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)
 ```
 
 Accounts
