@@ -173,174 +173,174 @@ syntax EthereumSimulation
 
 syntax AccountCode ::= ByteArray
 
-syntax Mode ::= "NORMAL"  [klabel(NORMAL), symbol]
-              | "VMTESTS" [klabel(VMTESTS), symbol]
+//syntax Mode ::= "NORMAL"  [klabel(NORMAL), symbol]
+//              | "VMTESTS" [klabel(VMTESTS), symbol]
 
-syntax InternalOp ::= "#pushCallStack"
-syntax InternalOp ::= "#popCallStack"
-syntax InternalOp ::= "#dropCallStack"
+//syntax InternalOp ::= "#pushCallStack"
+//syntax InternalOp ::= "#popCallStack"
+//syntax InternalOp ::= "#dropCallStack"
 //syntax Accounts ::= "{" AccountsCellFragment "|" Set "|" SubstateCellFragment "}"
-syntax InternalOp ::= "#pushWorldState"
-syntax InternalOp ::= "#popWorldState"
-syntax InternalOp ::= "#dropWorldState"
+//syntax InternalOp ::= "#pushWorldState"
+//syntax InternalOp ::= "#popWorldState"
+//syntax InternalOp ::= "#dropWorldState"
 //syntax KItem ::= "#halt" | "#end" StatusCode
 //syntax KItem ::= "#execute"
-syntax InternalOp ::= "#next" "[" OpCode "]"
-syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [function]
-                  | #stackUnderflow ( WordStack , Int    ) [function, functional]
-                  | #stackOverflow  ( WordStack , OpCode ) [function]
-syntax Int ::= #stackNeeded ( OpCode ) [function]
-syntax Int ::= #stackAdded ( OpCode ) [function]
-syntax Int ::= #stackDelta ( OpCode ) [function]
-syntax Bool ::= #changesState ( OpCode , WordStack ) [function]
-syntax InternalOp ::= "#exec" "[" OpCode "]"
+//syntax InternalOp ::= "#next" "[" OpCode "]"
+//syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [function]
+//                  | #stackUnderflow ( WordStack , Int    ) [function, functional]
+//                  | #stackOverflow  ( WordStack , OpCode ) [function]
+//syntax Int ::= #stackNeeded ( OpCode ) [function]
+//syntax Int ::= #stackAdded ( OpCode ) [function]
+//syntax Int ::= #stackDelta ( OpCode ) [function]
+//syntax Bool ::= #changesState ( OpCode , WordStack ) [function]
+//syntax InternalOp ::= "#exec" "[" OpCode "]"
 //syntax KItem  ::= OpCode
-syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
-                | InvalidOp | StackOp | InternalOp | CallOp | CallSixOp | PushOp
-syntax InternalOp ::= UnStackOp   Int
-                        | BinStackOp  Int Int
-                        | TernStackOp Int Int Int
-                        | QuadStackOp Int Int Int Int
-syntax InternalOp ::= StackOp WordStack
-syntax InternalOp ::= CallSixOp Int Int     Int Int Int Int
-                        | CallOp    Int Int Int Int Int Int Int
-syntax InternalOp ::= "#addr" "[" OpCode "]"
-syntax Bool ::= isAddr1Op ( OpCode ) [function, functional]
-                  | isAddr2Op ( OpCode ) [function, functional]
-syntax InternalOp ::= "#pc" "[" OpCode "]"
-syntax Int ::= #widthOp ( OpCode ) [function]
-syntax InternalOp ::= #finalizeStorage ( List )
-syntax InternalOp ::= #finalizeTx ( Bool )
-                        | #deleteAccounts ( List )
+//syntax OpCode ::= NullStackOp | UnStackOp | BinStackOp | TernStackOp | QuadStackOp
+//                | InvalidOp | StackOp | InternalOp | CallOp | CallSixOp | PushOp
+//syntax InternalOp ::= UnStackOp   Int
+//                        | BinStackOp  Int Int
+//                        | TernStackOp Int Int Int
+//                        | QuadStackOp Int Int Int Int
+//syntax InternalOp ::= StackOp WordStack
+//syntax InternalOp ::= CallSixOp Int Int     Int Int Int Int
+//                        | CallOp    Int Int Int Int Int Int Int
+//syntax InternalOp ::= "#addr" "[" OpCode "]"
+//syntax Bool ::= isAddr1Op ( OpCode ) [function, functional]
+//                  | isAddr2Op ( OpCode ) [function, functional]
+//syntax InternalOp ::= "#pc" "[" OpCode "]"
+//syntax Int ::= #widthOp ( OpCode ) [function]
+//syntax InternalOp ::= #finalizeStorage ( List )
+//syntax InternalOp ::= #finalizeTx ( Bool )
+//                        | #deleteAccounts ( List )
 //syntax EthereumCommand ::= "#startBlock"
 //syntax EthereumCommand ::= "#finalizeBlock" | #rewardOmmers ( JSONs )
-syntax ByteArray ::= #bloomFilter(List)      [function]
-                       | #bloomFilter(List, Int) [function, klabel(#bloomFilterAux)]
-syntax List ::= listAsByteArrays(List) [function]
-syntax Int ::= "M3:2048" "(" ByteArray ")" [function]
-syntax Int ::= setBloomFilterBits(ByteArray) [function]
-syntax Int ::= getBloomFilterBit(ByteArray, Int) [function]
-syntax InternalOp ::= "#push" | "#setStack" WordStack
-syntax InternalOp ::= "#newAccount" Int
-                        | "#newExistingAccount" Int
-                        | "#newFreshAccount" Int
-syntax InternalOp ::= "#transferFunds" Int Int Int
-syntax InvalidOp ::= "INVALID" | "UNDEFINED" "(" Int ")"
-syntax UnStackOp ::= "POP"
-syntax StackOp ::= DUP ( Int ) | SWAP ( Int )
-syntax PushOp ::= PUSH ( Int )
-syntax UnStackOp ::= "MLOAD"
-syntax BinStackOp ::= "MSTORE" | "MSTORE8"
-syntax UnStackOp ::= "ISZERO" | "NOT"
-syntax BinStackOp ::= "ADD" | "MUL" | "SUB" | "DIV" | "EXP" | "MOD"
-syntax BinStackOp ::= "SDIV" | "SMOD"
-syntax TernStackOp ::= "ADDMOD" | "MULMOD"
-syntax BinStackOp ::= "BYTE" | "SIGNEXTEND"
-syntax BinStackOp ::= "SHL" | "SHR" | "SAR"
-syntax BinStackOp ::= "AND" | "EVMOR" | "XOR"
-syntax BinStackOp ::= "LT" | "GT" | "EQ"
-syntax BinStackOp ::= "SLT" | "SGT"
-syntax BinStackOp ::= "SHA3"
-syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT"
-syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY"
-syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE" | "CHAINID" | "SELFBALANCE"
-syntax NullStackOp ::= "MSIZE" | "CODESIZE"
-syntax TernStackOp ::= "CODECOPY"
-syntax UnStackOp ::= "BLOCKHASH"
-syntax Int ::= #blockhash ( List , Int , Int , Int ) [function]
-syntax NullStackOp ::= "JUMPDEST"
-syntax UnStackOp ::= "JUMP"
-syntax BinStackOp ::= "JUMPI"
-syntax InternalOp ::= "#endBasicBlock"
-syntax NullStackOp ::= "STOP"
-syntax BinStackOp ::= "RETURN"
-syntax BinStackOp ::= "REVERT"
-syntax NullStackOp ::= "CALLDATASIZE"
-syntax UnStackOp ::= "CALLDATALOAD"
-syntax TernStackOp ::= "CALLDATACOPY"
-syntax NullStackOp ::= "RETURNDATASIZE"
-syntax TernStackOp ::= "RETURNDATACOPY"
-syntax BinStackOp ::= LogOp
-syntax LogOp ::= LOG ( Int )
-syntax UnStackOp ::= "BALANCE"
-syntax UnStackOp ::= "EXTCODESIZE"
-syntax UnStackOp ::= "EXTCODEHASH"
-syntax QuadStackOp ::= "EXTCODECOPY"
-syntax UnStackOp ::= "SLOAD"
-syntax BinStackOp ::= "SSTORE"
-syntax InternalOp ::= "#checkCall" Int Int
-                        | "#call"         Int Int Int Int Int ByteArray Bool
-                        | "#callWithCode" Int Int Int ByteArray Int Int ByteArray Bool
-                        | "#mkCall"       Int Int Int ByteArray     Int ByteArray Bool
-syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
-syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [function, functional, smtlib(isPrecompiledAccount)]
+//syntax ByteArray ::= #bloomFilter(List)      [function]
+//                       | #bloomFilter(List, Int) [function, klabel(#bloomFilterAux)]
+//syntax List ::= listAsByteArrays(List) [function]
+//syntax Int ::= "M3:2048" "(" ByteArray ")" [function]
+//syntax Int ::= setBloomFilterBits(ByteArray) [function]
+//syntax Int ::= getBloomFilterBit(ByteArray, Int) [function]
+//syntax InternalOp ::= "#push" | "#setStack" WordStack
+//syntax InternalOp ::= "#newAccount" Int
+//                        | "#newExistingAccount" Int
+//                        | "#newFreshAccount" Int
+//syntax InternalOp ::= "#transferFunds" Int Int Int
+//syntax InvalidOp ::= "INVALID" | "UNDEFINED" "(" Int ")"
+//syntax UnStackOp ::= "POP"
+//syntax StackOp ::= DUP ( Int ) | SWAP ( Int )
+//syntax PushOp ::= PUSH ( Int )
+//syntax UnStackOp ::= "MLOAD"
+//syntax BinStackOp ::= "MSTORE" | "MSTORE8"
+//syntax UnStackOp ::= "ISZERO" | "NOT"
+//syntax BinStackOp ::= "ADD" | "MUL" | "SUB" | "DIV" | "EXP" | "MOD"
+//syntax BinStackOp ::= "SDIV" | "SMOD"
+//syntax TernStackOp ::= "ADDMOD" | "MULMOD"
+//syntax BinStackOp ::= "BYTE" | "SIGNEXTEND"
+//syntax BinStackOp ::= "SHL" | "SHR" | "SAR"
+//syntax BinStackOp ::= "AND" | "EVMOR" | "XOR"
+//syntax BinStackOp ::= "LT" | "GT" | "EQ"
+//syntax BinStackOp ::= "SLT" | "SGT"
+//syntax BinStackOp ::= "SHA3"
+//syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT"
+//syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY"
+//syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE" | "CHAINID" | "SELFBALANCE"
+//syntax NullStackOp ::= "MSIZE" | "CODESIZE"
+//syntax TernStackOp ::= "CODECOPY"
+//syntax UnStackOp ::= "BLOCKHASH"
+//syntax Int ::= #blockhash ( List , Int , Int , Int ) [function]
+//syntax NullStackOp ::= "JUMPDEST"
+//syntax UnStackOp ::= "JUMP"
+//syntax BinStackOp ::= "JUMPI"
+//syntax InternalOp ::= "#endBasicBlock"
+//syntax NullStackOp ::= "STOP"
+//syntax BinStackOp ::= "RETURN"
+//syntax BinStackOp ::= "REVERT"
+//syntax NullStackOp ::= "CALLDATASIZE"
+//syntax UnStackOp ::= "CALLDATALOAD"
+//syntax TernStackOp ::= "CALLDATACOPY"
+//syntax NullStackOp ::= "RETURNDATASIZE"
+//syntax TernStackOp ::= "RETURNDATACOPY"
+//syntax BinStackOp ::= LogOp
+//syntax LogOp ::= LOG ( Int )
+//syntax UnStackOp ::= "BALANCE"
+//syntax UnStackOp ::= "EXTCODESIZE"
+//syntax UnStackOp ::= "EXTCODEHASH"
+//syntax QuadStackOp ::= "EXTCODECOPY"
+//syntax UnStackOp ::= "SLOAD"
+//syntax BinStackOp ::= "SSTORE"
+//syntax InternalOp ::= "#checkCall" Int Int
+//                        | "#call"         Int Int Int Int Int ByteArray Bool
+//                        | "#callWithCode" Int Int Int ByteArray Int Int ByteArray Bool
+//                        | "#mkCall"       Int Int Int ByteArray     Int ByteArray Bool
+//syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
+//syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [function, functional, smtlib(isPrecompiledAccount)]
 //syntax KItem ::= "#initVM"
 //syntax KItem ::= "#loadProgram" ByteArray
 //syntax KItem ::= "#touchAccounts" Account | "#touchAccounts" Account Account
 
-syntax Int ::= #widthOpCode(Int) [function]
+//syntax Int ::= #widthOpCode(Int) [function]
 //syntax KItem ::= "#return" Int Int
-syntax InternalOp ::= "#refund" Exp [strict]
-                        | "#setLocalMem" Int Int ByteArray
-syntax CallOp ::= "CALL"
-syntax CallOp ::= "CALLCODE"
-syntax CallSixOp ::= "DELEGATECALL"
-syntax CallSixOp ::= "STATICCALL"
-syntax InternalOp ::= "#create"   Int Int Int ByteArray
-                        | "#mkCreate" Int Int Int ByteArray
-                        | "#incrementNonce" Int
+//syntax InternalOp ::= "#refund" Exp [strict]
+//                        | "#setLocalMem" Int Int ByteArray
+//syntax CallOp ::= "CALL"
+//syntax CallOp ::= "CALLCODE"
+//syntax CallSixOp ::= "DELEGATECALL"
+//syntax CallSixOp ::= "STATICCALL"
+//syntax InternalOp ::= "#create"   Int Int Int ByteArray
+//                        | "#mkCreate" Int Int Int ByteArray
+//                        | "#incrementNonce" Int
 //syntax KItem ::= "#codeDeposit" Int
 //                   | "#mkCodeDeposit" Int
 //                   | "#finishCodeDeposit" Int ByteArray
-syntax TernStackOp ::= "CREATE"
-syntax QuadStackOp ::= "CREATE2"
-syntax UnStackOp ::= "SELFDESTRUCT"
-syntax NullStackOp   ::= PrecompiledOp
-syntax PrecompiledOp ::= #precompiled ( Int ) [function]
-syntax Set ::= #precompiledAccounts ( Schedule ) [function, functional]
-syntax PrecompiledOp ::= "ECREC"
-syntax ByteArray ::= #ecrec ( Account ) [function]
-syntax PrecompiledOp ::= "SHA256"
-syntax PrecompiledOp ::= "RIP160"
-syntax PrecompiledOp ::= "ID"
-syntax PrecompiledOp ::= "MODEXP"
-syntax ByteArray ::= #modexp1 ( Int , Int , Int , ByteArray ) [function]
-                       | #modexp2 ( Int , Int , Int , ByteArray ) [function]
-                       | #modexp3 ( Int , Int , Int , ByteArray ) [function]
-                       | #modexp4 ( Int , Int , Int )             [function]
-syntax PrecompiledOp ::= "ECADD"
-syntax InternalOp ::= #ecadd(G1Point, G1Point)
-syntax PrecompiledOp ::= "ECMUL"
-syntax InternalOp ::= #ecmul(G1Point, Int)
-syntax ByteArray ::= #point ( G1Point ) [function]
-syntax PrecompiledOp ::= "ECPAIRING"
-syntax InternalOp ::= #ecpairing(List, List, Int, ByteArray, Int)
-syntax InternalOp ::= "#checkPoint"
-syntax PrecompiledOp ::= "BLAKE2F"
-syntax InternalOp ::= "#gas" "[" OpCode "," OpCode "]"
-syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas" | "#deductMemoryGas"
-                        | "#memory" "[" OpCode "]" | "#deductMemory"
-syntax Int ::= #memory ( OpCode , Int ) [function]
-syntax Bool ::= #usesMemory ( OpCode ) [function]
-syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function, functional]
-syntax InternalOp ::= #gasExec ( Schedule , OpCode )
-syntax InternalOp ::= "#allocateCallGas"
-syntax InternalOp ::= "#allocateCreateGas"
+//syntax TernStackOp ::= "CREATE"
+//syntax QuadStackOp ::= "CREATE2"
+//syntax UnStackOp ::= "SELFDESTRUCT"
+//syntax NullStackOp   ::= PrecompiledOp
+//syntax PrecompiledOp ::= #precompiled ( Int ) [function]
+//syntax Set ::= #precompiledAccounts ( Schedule ) [function, functional]
+//syntax PrecompiledOp ::= "ECREC"
+//syntax ByteArray ::= #ecrec ( Account ) [function]
+//syntax PrecompiledOp ::= "SHA256"
+//syntax PrecompiledOp ::= "RIP160"
+//syntax PrecompiledOp ::= "ID"
+//syntax PrecompiledOp ::= "MODEXP"
+//syntax ByteArray ::= #modexp1 ( Int , Int , Int , ByteArray ) [function]
+//                       | #modexp2 ( Int , Int , Int , ByteArray ) [function]
+//                       | #modexp3 ( Int , Int , Int , ByteArray ) [function]
+//                       | #modexp4 ( Int , Int , Int )             [function]
+//syntax PrecompiledOp ::= "ECADD"
+//syntax InternalOp ::= #ecadd(G1Point, G1Point)
+//syntax PrecompiledOp ::= "ECMUL"
+//syntax InternalOp ::= #ecmul(G1Point, Int)
+//syntax ByteArray ::= #point ( G1Point ) [function]
+//syntax PrecompiledOp ::= "ECPAIRING"
+//syntax InternalOp ::= #ecpairing(List, List, Int, ByteArray, Int)
+//syntax InternalOp ::= "#checkPoint"
+//syntax PrecompiledOp ::= "BLAKE2F"
+//syntax InternalOp ::= "#gas" "[" OpCode "," OpCode "]"
+//syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas" | "#deductMemoryGas"
+//                        | "#memory" "[" OpCode "]" | "#deductMemory"
+//syntax Int ::= #memory ( OpCode , Int ) [function]
+//syntax Bool ::= #usesMemory ( OpCode ) [function]
+//syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function, functional]
+//syntax InternalOp ::= #gasExec ( Schedule , OpCode )
+//syntax InternalOp ::= "#allocateCallGas"
+//syntax InternalOp ::= "#allocateCreateGas"
 syntax Exp     ::= Int
-syntax KResult ::= Int
-syntax Exp ::= Ccall         ( Schedule , BExp , Int , Int , Int ) [strict(2)]
-              | Ccallgas      ( Schedule , BExp , Int , Int , Int ) [strict(2)]
-              | Cselfdestruct ( Schedule , BExp , Int )             [strict(2)]
-syntax Int ::= Cgascap ( Schedule , Int , Int , Int ) [function, functional, smtlib(gas_Cgascap)   ]
-                 | Csstore ( Schedule , Int , Int , Int ) [function, functional, smtlib(gas_Csstore)   ]
-                 | Rsstore ( Schedule , Int , Int , Int ) [function, functional, smtlib(gas_Rsstore)   ]
-                 | Cextra  ( Schedule , Bool , Int )      [function, functional, smtlib(gas_Cextra)    ]
-                 | Cnew    ( Schedule , Bool , Int )      [function, functional, smtlib(gas_Cnew)      ]
-                 | Cxfer   ( Schedule , Int )             [function, functional, smtlib(gas_Cxfer)     ]
-                 | Cmem    ( Schedule , Int )             [function, functional, smtlib(gas_Cmem), memo]
-syntax BExp    ::= Bool
-    syntax KResult ::= Bool
-    syntax BExp ::= #accountNonexistent ( Int )
+//syntax KResult ::= Int
+//syntax Exp ::= Ccall         ( Schedule , BExp , Int , Int , Int ) [strict(2)]
+//              | Ccallgas      ( Schedule , BExp , Int , Int , Int ) [strict(2)]
+//              | Cselfdestruct ( Schedule , BExp , Int )             [strict(2)]
+//syntax Int ::= Cgascap ( Schedule , Int , Int , Int ) [function, functional, smtlib(gas_Cgascap)   ]
+//                 | Csstore ( Schedule , Int , Int , Int ) [function, functional, smtlib(gas_Csstore)   ]
+//                 | Rsstore ( Schedule , Int , Int , Int ) [function, functional, smtlib(gas_Rsstore)   ]
+//                 | Cextra  ( Schedule , Bool , Int )      [function, functional, smtlib(gas_Cextra)    ]
+//                 | Cnew    ( Schedule , Bool , Int )      [function, functional, smtlib(gas_Cnew)      ]
+//                 | Cxfer   ( Schedule , Int )             [function, functional, smtlib(gas_Cxfer)     ]
+//                 | Cmem    ( Schedule , Int )             [function, functional, smtlib(gas_Cmem), memo]
+//syntax BExp    ::= Bool
+//syntax KResult ::= Bool
+syntax BExp ::= #accountNonexistent ( Int )
 syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, klabel(accountEmpty), symbol]
 syntax Int ::= #allBut64th ( Int ) [function, functional, smtlib(gas_allBut64th)]
 syntax Int ::= G0 ( Schedule , ByteArray , Bool ) [function]
@@ -952,10 +952,10 @@ These optimizations work on the LLVM and Haskell backend and are generated by th
 module EVM-OPTIMIZATIONS-LEMMAS [kore, symbolic]
     imports EVM
 
-    rule #sizeWordStack(WS           , N) => #sizeWordStack(WS, 0) +Int N requires N =/=Int 0                [simplification]
-    rule #sizeWordStack(WS [ I := _ ], N) => #sizeWordStack(WS, N)        requires I <Int #sizeWordStack(WS) [simplification]
+    //rule #sizeWordStack(WS           , N) => #sizeWordStack(WS, 0) +Int N requires N =/=Int 0                [simplification]
+    //rule #sizeWordStack(WS [ I := _ ], N) => #sizeWordStack(WS, N)        requires I <Int #sizeWordStack(WS) [simplification]
 
-    rule #stackUnderflow(WS, N) => false requires N <=Int #sizeWordStack(WS) [simplification]
+    //rule #stackUnderflow(WS, N) => false requires N <=Int #sizeWordStack(WS) [simplification]
 
 endmodule
 
@@ -2997,161 +2997,161 @@ Operator `#revOps` can be used to reverse a program.
 ```
 
 ```{.k .bytes}
-    syntax ByteArray ::= #asmOpCodes ( OpCodes, StringBuffer ) [function, klabel(#asmOpCodesAux)]
+    //syntax ByteArray ::= #asmOpCodes ( OpCodes, StringBuffer ) [function, klabel(#asmOpCodesAux)]
  // ---------------------------------------------------------------------------------------------
-    rule #asmOpCodes( OPS ) => #asmOpCodes(OPS, .StringBuffer)
+    //rule #asmOpCodes( OPS ) => #asmOpCodes(OPS, .StringBuffer)
 
-    rule #asmOpCodes( PUSH(N, W) ; OCS, SB ) => #asmOpCodes(OCS, (SB +String chrChar(#asmOpCode(PUSH(N)))) +String Bytes2String(Int2Bytes(N, W, BE)))
-    rule #asmOpCodes( OP ; OCS, SB ) => #asmOpCodes(OCS, SB +String chrChar(#asmOpCode(OP))) [owise]
-    rule #asmOpCodes( .OpCodes, SB ) => String2Bytes(StringBuffer2String(SB))
+    //rule #asmOpCodes( PUSH(N, W) ; OCS, SB ) => #asmOpCodes(OCS, (SB +String chrChar(#asmOpCode(PUSH(N)))) +String Bytes2String(Int2Bytes(N, W, BE)))
+    //rule #asmOpCodes( OP ; OCS, SB ) => #asmOpCodes(OCS, SB +String chrChar(#asmOpCode(OP))) [owise]
+    //rule #asmOpCodes( .OpCodes, SB ) => String2Bytes(StringBuffer2String(SB))
 ```
 
 ```k
-    syntax Int ::= #asmOpCode ( OpCode ) [function]
+    //syntax Int ::= #asmOpCode ( OpCode ) [function]
  // -----------------------------------------------
-    rule #asmOpCode( STOP           ) =>   0
-    rule #asmOpCode( ADD            ) =>   1
-    rule #asmOpCode( MUL            ) =>   2
-    rule #asmOpCode( SUB            ) =>   3
-    rule #asmOpCode( DIV            ) =>   4
-    rule #asmOpCode( SDIV           ) =>   5
-    rule #asmOpCode( MOD            ) =>   6
-    rule #asmOpCode( SMOD           ) =>   7
-    rule #asmOpCode( ADDMOD         ) =>   8
-    rule #asmOpCode( MULMOD         ) =>   9
-    rule #asmOpCode( EXP            ) =>  10
-    rule #asmOpCode( SIGNEXTEND     ) =>  11
-    rule #asmOpCode( LT             ) =>  16
-    rule #asmOpCode( GT             ) =>  17
-    rule #asmOpCode( SLT            ) =>  18
-    rule #asmOpCode( SGT            ) =>  19
-    rule #asmOpCode( EQ             ) =>  20
-    rule #asmOpCode( ISZERO         ) =>  21
-    rule #asmOpCode( AND            ) =>  22
-    rule #asmOpCode( EVMOR          ) =>  23
-    rule #asmOpCode( XOR            ) =>  24
-    rule #asmOpCode( NOT            ) =>  25
-    rule #asmOpCode( BYTE           ) =>  26
-    rule #asmOpCode( SHL            ) =>  27
-    rule #asmOpCode( SHR            ) =>  28
-    rule #asmOpCode( SAR            ) =>  29
-    rule #asmOpCode( SHA3           ) =>  32
-    rule #asmOpCode( ADDRESS        ) =>  48
-    rule #asmOpCode( BALANCE        ) =>  49
-    rule #asmOpCode( ORIGIN         ) =>  50
-    rule #asmOpCode( CALLER         ) =>  51
-    rule #asmOpCode( CALLVALUE      ) =>  52
-    rule #asmOpCode( CALLDATALOAD   ) =>  53
-    rule #asmOpCode( CALLDATASIZE   ) =>  54
-    rule #asmOpCode( CALLDATACOPY   ) =>  55
-    rule #asmOpCode( CODESIZE       ) =>  56
-    rule #asmOpCode( CODECOPY       ) =>  57
-    rule #asmOpCode( GASPRICE       ) =>  58
-    rule #asmOpCode( EXTCODESIZE    ) =>  59
-    rule #asmOpCode( EXTCODECOPY    ) =>  60
-    rule #asmOpCode( RETURNDATASIZE ) =>  61
-    rule #asmOpCode( RETURNDATACOPY ) =>  62
-    rule #asmOpCode( EXTCODEHASH    ) =>  63
-    rule #asmOpCode( BLOCKHASH      ) =>  64
-    rule #asmOpCode( COINBASE       ) =>  65
-    rule #asmOpCode( TIMESTAMP      ) =>  66
-    rule #asmOpCode( NUMBER         ) =>  67
-    rule #asmOpCode( DIFFICULTY     ) =>  68
-    rule #asmOpCode( GASLIMIT       ) =>  69
-    rule #asmOpCode( CHAINID        ) =>  70
-    rule #asmOpCode( SELFBALANCE    ) =>  71
-    rule #asmOpCode( POP            ) =>  80
-    rule #asmOpCode( MLOAD          ) =>  81
-    rule #asmOpCode( MSTORE         ) =>  82
-    rule #asmOpCode( MSTORE8        ) =>  83
-    rule #asmOpCode( SLOAD          ) =>  84
-    rule #asmOpCode( SSTORE         ) =>  85
-    rule #asmOpCode( JUMP           ) =>  86
-    rule #asmOpCode( JUMPI          ) =>  87
-    rule #asmOpCode( PC             ) =>  88
-    rule #asmOpCode( MSIZE          ) =>  89
-    rule #asmOpCode( GAS            ) =>  90
-    rule #asmOpCode( JUMPDEST       ) =>  91
-    rule #asmOpCode( PUSH(1)        ) =>  96
-    rule #asmOpCode( PUSH(2)        ) =>  97
-    rule #asmOpCode( PUSH(3)        ) =>  98
-    rule #asmOpCode( PUSH(4)        ) =>  99
-    rule #asmOpCode( PUSH(5)        ) => 100
-    rule #asmOpCode( PUSH(6)        ) => 101
-    rule #asmOpCode( PUSH(7)        ) => 102
-    rule #asmOpCode( PUSH(8)        ) => 103
-    rule #asmOpCode( PUSH(9)        ) => 104
-    rule #asmOpCode( PUSH(10)       ) => 105
-    rule #asmOpCode( PUSH(11)       ) => 106
-    rule #asmOpCode( PUSH(12)       ) => 107
-    rule #asmOpCode( PUSH(13)       ) => 108
-    rule #asmOpCode( PUSH(14)       ) => 109
-    rule #asmOpCode( PUSH(15)       ) => 110
-    rule #asmOpCode( PUSH(16)       ) => 111
-    rule #asmOpCode( PUSH(17)       ) => 112
-    rule #asmOpCode( PUSH(18)       ) => 113
-    rule #asmOpCode( PUSH(19)       ) => 114
-    rule #asmOpCode( PUSH(20)       ) => 115
-    rule #asmOpCode( PUSH(21)       ) => 116
-    rule #asmOpCode( PUSH(22)       ) => 117
-    rule #asmOpCode( PUSH(23)       ) => 118
-    rule #asmOpCode( PUSH(24)       ) => 119
-    rule #asmOpCode( PUSH(25)       ) => 120
-    rule #asmOpCode( PUSH(26)       ) => 121
-    rule #asmOpCode( PUSH(27)       ) => 122
-    rule #asmOpCode( PUSH(28)       ) => 123
-    rule #asmOpCode( PUSH(29)       ) => 124
-    rule #asmOpCode( PUSH(30)       ) => 125
-    rule #asmOpCode( PUSH(31)       ) => 126
-    rule #asmOpCode( PUSH(32)       ) => 127
-    rule #asmOpCode( DUP(1)         ) => 128
-    rule #asmOpCode( DUP(2)         ) => 129
-    rule #asmOpCode( DUP(3)         ) => 130
-    rule #asmOpCode( DUP(4)         ) => 131
-    rule #asmOpCode( DUP(5)         ) => 132
-    rule #asmOpCode( DUP(6)         ) => 133
-    rule #asmOpCode( DUP(7)         ) => 134
-    rule #asmOpCode( DUP(8)         ) => 135
-    rule #asmOpCode( DUP(9)         ) => 136
-    rule #asmOpCode( DUP(10)        ) => 137
-    rule #asmOpCode( DUP(11)        ) => 138
-    rule #asmOpCode( DUP(12)        ) => 139
-    rule #asmOpCode( DUP(13)        ) => 140
-    rule #asmOpCode( DUP(14)        ) => 141
-    rule #asmOpCode( DUP(15)        ) => 142
-    rule #asmOpCode( DUP(16)        ) => 143
-    rule #asmOpCode( SWAP(1)        ) => 144
-    rule #asmOpCode( SWAP(2)        ) => 145
-    rule #asmOpCode( SWAP(3)        ) => 146
-    rule #asmOpCode( SWAP(4)        ) => 147
-    rule #asmOpCode( SWAP(5)        ) => 148
-    rule #asmOpCode( SWAP(6)        ) => 149
-    rule #asmOpCode( SWAP(7)        ) => 150
-    rule #asmOpCode( SWAP(8)        ) => 151
-    rule #asmOpCode( SWAP(9)        ) => 152
-    rule #asmOpCode( SWAP(10)       ) => 153
-    rule #asmOpCode( SWAP(11)       ) => 154
-    rule #asmOpCode( SWAP(12)       ) => 155
-    rule #asmOpCode( SWAP(13)       ) => 156
-    rule #asmOpCode( SWAP(14)       ) => 157
-    rule #asmOpCode( SWAP(15)       ) => 158
-    rule #asmOpCode( SWAP(16)       ) => 159
-    rule #asmOpCode( LOG(0)         ) => 160
-    rule #asmOpCode( LOG(1)         ) => 161
-    rule #asmOpCode( LOG(2)         ) => 162
-    rule #asmOpCode( LOG(3)         ) => 163
-    rule #asmOpCode( LOG(4)         ) => 164
-    rule #asmOpCode( CREATE         ) => 240
-    rule #asmOpCode( CALL           ) => 241
-    rule #asmOpCode( CALLCODE       ) => 242
-    rule #asmOpCode( RETURN         ) => 243
-    rule #asmOpCode( DELEGATECALL   ) => 244
-    rule #asmOpCode( CREATE2        ) => 245
-    rule #asmOpCode( STATICCALL     ) => 250
-    rule #asmOpCode( REVERT         ) => 253
-    rule #asmOpCode( INVALID        ) => 254
-    rule #asmOpCode( SELFDESTRUCT   ) => 255
-    rule #asmOpCode( UNDEFINED(W)   ) =>   W
+    // rule #asmOpCode( STOP           ) =>   0
+    // rule #asmOpCode( ADD            ) =>   1
+    // rule #asmOpCode( MUL            ) =>   2
+    // rule #asmOpCode( SUB            ) =>   3
+    // rule #asmOpCode( DIV            ) =>   4
+    // rule #asmOpCode( SDIV           ) =>   5
+    // rule #asmOpCode( MOD            ) =>   6
+    // rule #asmOpCode( SMOD           ) =>   7
+    // rule #asmOpCode( ADDMOD         ) =>   8
+    // rule #asmOpCode( MULMOD         ) =>   9
+    // rule #asmOpCode( EXP            ) =>  10
+    // rule #asmOpCode( SIGNEXTEND     ) =>  11
+    // rule #asmOpCode( LT             ) =>  16
+    // rule #asmOpCode( GT             ) =>  17
+    // rule #asmOpCode( SLT            ) =>  18
+    // rule #asmOpCode( SGT            ) =>  19
+    // rule #asmOpCode( EQ             ) =>  20
+    // rule #asmOpCode( ISZERO         ) =>  21
+    // rule #asmOpCode( AND            ) =>  22
+    // rule #asmOpCode( EVMOR          ) =>  23
+    // rule #asmOpCode( XOR            ) =>  24
+    // rule #asmOpCode( NOT            ) =>  25
+    // rule #asmOpCode( BYTE           ) =>  26
+    // rule #asmOpCode( SHL            ) =>  27
+    // rule #asmOpCode( SHR            ) =>  28
+    // rule #asmOpCode( SAR            ) =>  29
+    // rule #asmOpCode( SHA3           ) =>  32
+    // rule #asmOpCode( ADDRESS        ) =>  48
+    // rule #asmOpCode( BALANCE        ) =>  49
+    // rule #asmOpCode( ORIGIN         ) =>  50
+    // rule #asmOpCode( CALLER         ) =>  51
+    // rule #asmOpCode( CALLVALUE      ) =>  52
+    // rule #asmOpCode( CALLDATALOAD   ) =>  53
+    // rule #asmOpCode( CALLDATASIZE   ) =>  54
+    // rule #asmOpCode( CALLDATACOPY   ) =>  55
+    // rule #asmOpCode( CODESIZE       ) =>  56
+    // rule #asmOpCode( CODECOPY       ) =>  57
+    // rule #asmOpCode( GASPRICE       ) =>  58
+    // rule #asmOpCode( EXTCODESIZE    ) =>  59
+    // rule #asmOpCode( EXTCODECOPY    ) =>  60
+    // rule #asmOpCode( RETURNDATASIZE ) =>  61
+    // rule #asmOpCode( RETURNDATACOPY ) =>  62
+    // rule #asmOpCode( EXTCODEHASH    ) =>  63
+    // rule #asmOpCode( BLOCKHASH      ) =>  64
+    // rule #asmOpCode( COINBASE       ) =>  65
+    // rule #asmOpCode( TIMESTAMP      ) =>  66
+    // rule #asmOpCode( NUMBER         ) =>  67
+    // rule #asmOpCode( DIFFICULTY     ) =>  68
+    // rule #asmOpCode( GASLIMIT       ) =>  69
+    // rule #asmOpCode( CHAINID        ) =>  70
+    // rule #asmOpCode( SELFBALANCE    ) =>  71
+    // rule #asmOpCode( POP            ) =>  80
+    // rule #asmOpCode( MLOAD          ) =>  81
+    // rule #asmOpCode( MSTORE         ) =>  82
+    // rule #asmOpCode( MSTORE8        ) =>  83
+    // rule #asmOpCode( SLOAD          ) =>  84
+    // rule #asmOpCode( SSTORE         ) =>  85
+    // rule #asmOpCode( JUMP           ) =>  86
+    // rule #asmOpCode( JUMPI          ) =>  87
+    // rule #asmOpCode( PC             ) =>  88
+    // rule #asmOpCode( MSIZE          ) =>  89
+    // rule #asmOpCode( GAS            ) =>  90
+    // rule #asmOpCode( JUMPDEST       ) =>  91
+    // rule #asmOpCode( PUSH(1)        ) =>  96
+    // rule #asmOpCode( PUSH(2)        ) =>  97
+    // rule #asmOpCode( PUSH(3)        ) =>  98
+    // rule #asmOpCode( PUSH(4)        ) =>  99
+    // rule #asmOpCode( PUSH(5)        ) => 100
+    // rule #asmOpCode( PUSH(6)        ) => 101
+    // rule #asmOpCode( PUSH(7)        ) => 102
+    // rule #asmOpCode( PUSH(8)        ) => 103
+    // rule #asmOpCode( PUSH(9)        ) => 104
+    // rule #asmOpCode( PUSH(10)       ) => 105
+    // rule #asmOpCode( PUSH(11)       ) => 106
+    // rule #asmOpCode( PUSH(12)       ) => 107
+    // rule #asmOpCode( PUSH(13)       ) => 108
+    // rule #asmOpCode( PUSH(14)       ) => 109
+    // rule #asmOpCode( PUSH(15)       ) => 110
+    // rule #asmOpCode( PUSH(16)       ) => 111
+    // rule #asmOpCode( PUSH(17)       ) => 112
+    // rule #asmOpCode( PUSH(18)       ) => 113
+    // rule #asmOpCode( PUSH(19)       ) => 114
+    // rule #asmOpCode( PUSH(20)       ) => 115
+    // rule #asmOpCode( PUSH(21)       ) => 116
+    // rule #asmOpCode( PUSH(22)       ) => 117
+    // rule #asmOpCode( PUSH(23)       ) => 118
+    // rule #asmOpCode( PUSH(24)       ) => 119
+    // rule #asmOpCode( PUSH(25)       ) => 120
+    // rule #asmOpCode( PUSH(26)       ) => 121
+    // rule #asmOpCode( PUSH(27)       ) => 122
+    // rule #asmOpCode( PUSH(28)       ) => 123
+    // rule #asmOpCode( PUSH(29)       ) => 124
+    // rule #asmOpCode( PUSH(30)       ) => 125
+    // rule #asmOpCode( PUSH(31)       ) => 126
+    // rule #asmOpCode( PUSH(32)       ) => 127
+    // rule #asmOpCode( DUP(1)         ) => 128
+    // rule #asmOpCode( DUP(2)         ) => 129
+    // rule #asmOpCode( DUP(3)         ) => 130
+    // rule #asmOpCode( DUP(4)         ) => 131
+    // rule #asmOpCode( DUP(5)         ) => 132
+    // rule #asmOpCode( DUP(6)         ) => 133
+    // rule #asmOpCode( DUP(7)         ) => 134
+    // rule #asmOpCode( DUP(8)         ) => 135
+    // rule #asmOpCode( DUP(9)         ) => 136
+    // rule #asmOpCode( DUP(10)        ) => 137
+    // rule #asmOpCode( DUP(11)        ) => 138
+    // rule #asmOpCode( DUP(12)        ) => 139
+    // rule #asmOpCode( DUP(13)        ) => 140
+    // rule #asmOpCode( DUP(14)        ) => 141
+    // rule #asmOpCode( DUP(15)        ) => 142
+    // rule #asmOpCode( DUP(16)        ) => 143
+    // rule #asmOpCode( SWAP(1)        ) => 144
+    // rule #asmOpCode( SWAP(2)        ) => 145
+    // rule #asmOpCode( SWAP(3)        ) => 146
+    // rule #asmOpCode( SWAP(4)        ) => 147
+    // rule #asmOpCode( SWAP(5)        ) => 148
+    // rule #asmOpCode( SWAP(6)        ) => 149
+    // rule #asmOpCode( SWAP(7)        ) => 150
+    // rule #asmOpCode( SWAP(8)        ) => 151
+    // rule #asmOpCode( SWAP(9)        ) => 152
+    // rule #asmOpCode( SWAP(10)       ) => 153
+    // rule #asmOpCode( SWAP(11)       ) => 154
+    // rule #asmOpCode( SWAP(12)       ) => 155
+    // rule #asmOpCode( SWAP(13)       ) => 156
+    // rule #asmOpCode( SWAP(14)       ) => 157
+    // rule #asmOpCode( SWAP(15)       ) => 158
+    // rule #asmOpCode( SWAP(16)       ) => 159
+    // rule #asmOpCode( LOG(0)         ) => 160
+    // rule #asmOpCode( LOG(1)         ) => 161
+    // rule #asmOpCode( LOG(2)         ) => 162
+    // rule #asmOpCode( LOG(3)         ) => 163
+    // rule #asmOpCode( LOG(4)         ) => 164
+    // rule #asmOpCode( CREATE         ) => 240
+    // rule #asmOpCode( CALL           ) => 241
+    // rule #asmOpCode( CALLCODE       ) => 242
+    // rule #asmOpCode( RETURN         ) => 243
+    // rule #asmOpCode( DELEGATECALL   ) => 244
+    // rule #asmOpCode( CREATE2        ) => 245
+    // rule #asmOpCode( STATICCALL     ) => 250
+    // rule #asmOpCode( REVERT         ) => 253
+    // rule #asmOpCode( INVALID        ) => 254
+    // rule #asmOpCode( SELFDESTRUCT   ) => 255
+    // rule #asmOpCode( UNDEFINED(W)   ) =>   W
 
 endmodule
 ```
