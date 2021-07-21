@@ -1,31 +1,30 @@
-```k
-  requires "krypto.md"
-  requires "json.md"
+requires "krypto.md"
+requires "json.md"
 
-  module EVM
-      imports STRING
-      imports EVM-DATA
+module EVM
+    imports STRING
+    imports EVM-DATA
 
-      configuration
-        <kevm>
-          <k> $PGM:EthereumSimulation </k>
-          <ethereum>
-            <evm>
-              <callState> // KEEP 
-                <program> .ByteArray </program> // KEEP
-                <jumpDests> .Set </jumpDests> // KEEP
-                <pc>          0          </pc>                  // \mu_pc
-              </callState>
-            </evm>
-            <network>
-              <accounts> // KEEP
-                <account multiplicity="*" type="Map">
-                  <storage>     .Map                   </storage> // KEEP
-                </account>
-              </accounts>
-            </network>
-          </ethereum>
-        </kevm>
+    configuration
+      <kevm>
+        <k> $PGM:EthereumSimulation </k>
+        <ethereum>
+          <evm>
+            <callState> // KEEP 
+              <program> .ByteArray </program> // KEEP
+              <jumpDests> .Set </jumpDests> // KEEP
+              <pc>          0          </pc>                  // \mu_pc
+            </callState>
+          </evm>
+          <network>
+            <accounts> // KEEP
+              <account multiplicity="*" type="Map">
+                <storage>     .Map                   </storage> // KEEP
+              </account>
+            </accounts>
+          </network>
+        </ethereum>
+      </kevm>
 
   syntax EthereumSimulation
 
@@ -514,4 +513,3 @@ module HASHED-LOCATIONS
     syntax IntList ::= List{Int, ""} [klabel(intList), smtlib(intList)]
  // -------------------------------------------------------------------
 endmodule
-```
