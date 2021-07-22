@@ -217,19 +217,6 @@ module EVM-TYPES
  // ---------------------------------
     rule .ByteArray => .Bytes [macro]
 
-    // syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
- // ---------------------------------------------------------------------------
-    // rule #asWord(WS) => chop(Bytes2Int(WS, BE, Unsigned)) [concrete]
-
-    // syntax Int ::= #asInteger ( ByteArray ) [function, functional]
- // --------------------------------------------------------------
-    // rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned) [concrete]
-
-    // syntax Account ::= #asAccount ( ByteArray ) [function]
- // ------------------------------------------------------
-    // rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
-    // rule #asAccount(BS) => #asWord(BS) [owise]
-
     syntax ByteArray ::= #asByteStack ( Int ) [function, functional]
  // ----------------------------------------------------------------
     rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete] // KEEP
@@ -237,13 +224,6 @@ module EVM-TYPES
     syntax ByteArray ::= ByteArray "++" ByteArray [function, functional, right, klabel(_++_WS), smtlib(_plusWS_)]
  // -------------------------------------------------------------------------------------------------------------
     rule WS ++ WS' => WS +Bytes WS' [concrete]
-
-    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, functional]
- // --------------------------------------------------------------------------
-    // rule                 _ [ START .. WIDTH ] => .ByteArray                      requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
-    // rule [bytesRange] : WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH)
-    //   requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int #sizeByteArray(WS)
-    // rule                 _ [ _     .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0) [owise]
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, functional, klabel(sizeByteArray), smtlib(sizeByteArray)]
  // ----------------------------------------------------------------------------------------------------------------
@@ -260,21 +240,6 @@ module EVM-TYPES
     syntax Account ::= ".Account" | Int
  // -----------------------------------
 
-    // syntax Int ::= #lookup        ( Map , Int ) [function, functional, smtlib(lookup)]
-    //              | #lookupMemory  ( Map , Int ) [function, functional, smtlib(lookupMemory)]
- // ----------------------------------------------------------------------------------------
-    // rule [#lookup.some]:         #lookup(       (KEY |-> VAL:Int) _M, KEY ) => VAL modInt pow256
-    // rule [#lookup.none]:         #lookup(                          M, KEY ) => 0                 requires notBool KEY in_keys(M)
-    // //Impossible case, for completeness
-    // rule [#lookup.notInt]:       #lookup(       (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
-
-    // rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) _M, KEY ) => VAL modInt 256
-    // rule [#lookupMemory.none]:   #lookupMemory(                    M, KEY ) => 0                 requires notBool KEY in_keys(M)
-    // //Impossible case, for completeness
-    // rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
-
-    // syntax SubstateLogEntry ::= "{" Int "|" List "|" ByteArray "}" [klabel(logEntry)]
- // ---------------------------------------------------------------------------------
 
 endmodule
 
@@ -331,18 +296,6 @@ module SERIALIZATION
  // ----------------------------------------------------
     rule #unparseQuantity( I ) => "0x" +String Base2String(I, 16)
 
-    // syntax String ::= #unparseData          ( Int, Int  ) [function]
-    //                 | #unparseDataByteArray ( ByteArray ) [function]
- // ----------------------------------------------------------------
-    // rule #unparseData( DATA, LENGTH ) => #unparseDataByteArray(#padToWidth(LENGTH,#asByteStack(DATA)))
-
-    // rule #unparseDataByteArray( DATA ) => replaceFirst(Base2String(#asInteger(#asByteStack(1) ++ DATA), 16), "1", "0x")
-
-    // syntax String ::= Hex2Raw ( String ) [function]
-    //                 | Raw2Hex ( String ) [function]
- // -----------------------------------------------
-    // rule Hex2Raw ( S ) => #unparseByteStack( #parseByteStack ( S ) )
-    // rule Raw2Hex ( S ) => #unparseDataByteArray( #parseByteStackRaw ( S ) )
 endmodule
 
 module BUF-SYNTAX
