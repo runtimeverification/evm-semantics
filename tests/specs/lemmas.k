@@ -82,8 +82,9 @@ module LEMMAS
     rule MEM [ K1 := BUF1:ByteArray ] [ K2 := BUF2:ByteArray ] => MEM [ K2 := BUF2 ] [ K1 := BUF1 ]  requires         #sizeByteArray(BUF2) <=Int K1 -Int K2                   andBool K2  <Int K1 [simplification]
     // overwritten assignment
     rule MEM [ K1 := BUF1           ] [ K2 := BUF2           ] => MEM [ K2 := BUF2 ]                 requires K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2) andBool K2 <=Int K1 [simplification]
+    // TODO: tmp disable
     // redundant assignment
-    rule MEM [ K  := BUF1           ] [ K  := BUF2           ] => MEM [ K  := BUF2 ]                 requires         #sizeByteArray(BUF1) ==Int #sizeByteArray(BUF2)                             [simplification]
+    // rule MEM [ K  := BUF1           ] [ K  := BUF2           ] => MEM [ K  := BUF2 ]                 requires         #sizeByteArray(BUF1) ==Int #sizeByteArray(BUF2)                             [simplification]
 
     // lookup range in memory
     rule _MEM [ _ .. W ] => .ByteArray  requires W ==Int 0                    [simplification]
