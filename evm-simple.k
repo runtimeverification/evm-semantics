@@ -28,23 +28,18 @@ module EVM
 
   syntax EthereumSimulation
 
-  syntax AccountCode ::= ByteArray
+    syntax Set ::= #computeValidJumpDests( ByteArray )            [function, memo]
+                 | #computeValidJumpDests( ByteArray , Int , List ) [function, klabel(#computeValidJumpDestsAux)]
+  // ---------------------------------------------------------------------------------------------------------
+    rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
 
-  // kept simplifications for these:
+    syntax Set ::= #computeValidJumpDestsWithinBound(ByteArray, Int, List) [function]
+  // ---------------------------------------------------------------------------------
+    rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int #sizeByteArray(PGM)
 
-// [#] #computeValidJumpDests
-  syntax Set ::= #computeValidJumpDests( ByteArray )            [function, memo]
-               | #computeValidJumpDests( ByteArray , Int , List ) [function, klabel(#computeValidJumpDestsAux)]
-// ---------------------------------------------------------------------------------------------------------
-  rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
-
-  syntax Set ::= #computeValidJumpDestsWithinBound(ByteArray, Int, List) [function]
-// ---------------------------------------------------------------------------------
-  rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
-  rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int #sizeByteArray(PGM)
-
-  rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT ListItem(I)) requires PGM [ I ] ==Int 91
-  rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
+    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT ListItem(I)) requires PGM [ I ] ==Int 91
+    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
 
 
 // [#] #widthOpCode
@@ -155,47 +150,13 @@ module EVM-TYPES
     rule minUInt256      =>  0                                                                              [macro]
     rule maxUInt256      =>  115792089237316195423570985008687907853269984665640564039457584007913129639935 [macro]  /*   2^256 - 1  */
 
-    syntax Int ::= "eth"
- // --------------------
-    rule eth => 1000000000000000000 [macro]
+    syntax Bool ::= #rangeUInt    ( Int , Int )
+  // -------------------------------------------
+    rule #rangeUInt(256, X) => #range(minUInt256 <= X < pow256) [macro]
 
-
-
-    syntax Bool ::= #rangeBool    ( Int )
-                  | #rangeSInt    ( Int , Int )
-                  | #rangeUInt    ( Int , Int )
-                  | #rangeSFixed  ( Int , Int , Int )
-                  | #rangeUFixed  ( Int , Int , Int )
-                  | #rangeAddress ( Int )
-                  | #rangeBytes   ( Int , Int )
- // -------------------------------------------
-    rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1                         [macro]
-    rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      ) [macro]
-    rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      ) [macro]
-    rule #rangeUInt    (   8 ,      X ) => #range ( minUInt8        <= X <  256             ) [macro]
-    rule #rangeUInt    (  16 ,      X ) => #range ( minUInt16       <= X <  pow16           ) [macro]
-    rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <  pow48           ) [macro]
-    rule #rangeUInt    (  96 ,      X ) => #range ( minUInt96       <= X <  pow96           ) [macro]
-    rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <  pow128          ) [macro]
-    rule #rangeUInt    ( 160 ,      X ) => #range ( minUInt160      <= X <  pow160          ) [macro]
-    rule #rangeUInt    ( 168 ,      X ) => #range ( minUInt168      <= X <  pow168          ) [macro]
-    rule #rangeUInt    ( 208 ,      X ) => #range ( minUInt208      <= X <  pow208          ) [macro]
-    rule #rangeUInt    ( 224 ,      X ) => #range ( minUInt224      <= X <  pow224          ) [macro]
-    rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <  pow256          ) [macro]
-    rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 ) [macro]
-    rule #rangeUFixed  ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 ) [macro]
-    rule #rangeAddress (            X ) => #range ( minUInt160      <= X <  pow160          ) [macro]
-    rule #rangeBytes   (   N ,      X ) => #range ( 0               <= X <  1 <<Byte N      ) [macro]
-
-    syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")"
-                  | "#range" "(" Int "<"  Int "<=" Int ")"
-                  | "#range" "(" Int "<=" Int "<"  Int ")"
-                  | "#range" "(" Int "<=" Int "<=" Int ")"
+    syntax Bool ::= "#range" "(" Int "<=" Int "<"  Int ")"
  // ------------------------------------------------------
-    rule #range ( LB <  X <  UB ) => LB  <Int X andBool X  <Int UB [macro]
-    rule #range ( LB <  X <= UB ) => LB  <Int X andBool X <=Int UB [macro]
     rule #range ( LB <= X <  UB ) => LB <=Int X andBool X  <Int UB [macro]
-    rule #range ( LB <= X <= UB ) => LB <=Int X andBool X <=Int UB [macro]
 
     syntax Int ::= chop ( Int ) [function, functional, smtlib(chop)]
  // ----------------------------------------------------------------
