@@ -3,23 +3,27 @@ requires "json.md"
 
 module EVM
     imports STRING
-    imports EVM-DATA
+    imports EVM-TYPES
+    imports SERIALIZATION
+    imports STRING-BUFFER
+    imports MAP-SYMBOLIC
+    imports COLLECTIONS
 
     configuration
       <kevm>
         <k> $PGM:EthereumSimulation </k>
         <ethereum>
           <evm>
-            <callState> // KEEP 
-              <program> .ByteArray </program> // KEEP
-              <jumpDests> .Set </jumpDests> // KEEP
-              <pc>          0          </pc>                  // \mu_pc
+            <callState>
+              <program> .ByteArray </program>
+              <jumpDests> .Set </jumpDests>
+              <pc> 0 </pc>
             </callState>
           </evm>
           <network>
-            <accounts> // KEEP
+            <accounts>
               <account multiplicity="*" type="Map">
-                <storage>     .Map                   </storage> // KEEP
+                <storage> .Map </storage>
               </account>
             </accounts>
           </network>
@@ -28,7 +32,7 @@ module EVM
 
   syntax EthereumSimulation
 
-    syntax Set ::= #computeValidJumpDests( ByteArray )            [function, memo]
+    syntax Set ::= #computeValidJumpDests( ByteArray )              [function, memo]
                  | #computeValidJumpDests( ByteArray , Int , List ) [function, klabel(#computeValidJumpDestsAux)]
   // ---------------------------------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
@@ -42,25 +46,11 @@ module EVM
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
 
 
-// [#] #widthOpCode
     syntax Int ::= #widthOpCode(Int) [function]
  // -------------------------------------------
     rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
     rule #widthOpCode(_) => 1 [owise]
 
-endmodule
-
-
-module EVM-DATA
-    imports EVM-TYPES
-    imports SERIALIZATION
-    imports STRING-BUFFER
-    imports MAP-SYMBOLIC
-    imports COLLECTIONS
-endmodule
-
-module ETHEREUM-SIMULATION
-    imports EVM
 endmodule
 
 module EVM-TYPES
@@ -87,7 +77,7 @@ module EVM-TYPES
 
     syntax Int ::= chop ( Int ) [function, functional, smtlib(chop)]
  // ----------------------------------------------------------------
-    rule chop ( I:Int ) => I modInt pow256 [concrete, smt-lemma]
+    rule chop(I:Int) => I modInt pow256 [concrete, smt-lemma]
 
     syntax Int ::= Int "<<Byte" Int [function]
 
@@ -98,7 +88,7 @@ module EVM-TYPES
 
     syntax Bytes ::= Int ":" Bytes [function]
  // -----------------------------------------
-    rule I : BS => Int2Bytes(1, I, BE) ++ BS requires I <Int 256 // KEEP
+    rule I : BS => Int2Bytes(1, I, BE) ++ BS requires I <Int 256
 
     syntax ByteArray = Bytes
     syntax ByteArray ::= ".ByteArray"
@@ -107,7 +97,7 @@ module EVM-TYPES
 
     syntax ByteArray ::= #asByteStack ( Int ) [function, functional]
  // ----------------------------------------------------------------
-    rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete] // KEEP
+    rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete]
 
     syntax ByteArray ::= ByteArray "++" ByteArray [function, functional, right, klabel(_++_WS), smtlib(_plusWS_)]
  // -------------------------------------------------------------------------------------------------------------
@@ -125,10 +115,7 @@ module EVM-TYPES
     rule                        #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
     rule                        #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0
 
-    syntax Account ::= ".Account" | Int
- // -----------------------------------
-
-
+    //syntax Account ::= ".Account" | Int
 endmodule
 
 module SERIALIZATION
@@ -156,35 +143,24 @@ module SERIALIZATION
     rule #alignHexString(S) => S             requires         lengthString(S) modInt 2 ==Int 0
     rule #alignHexString(S) => "0" +String S requires notBool lengthString(S) modInt 2 ==Int 0
 
-    // KEEP
-
     syntax ByteArray ::= #parseHexBytes     ( String ) [function]
                        | #parseHexBytesAux  ( String ) [function]
                        | #parseByteStack    ( String ) [function, memo]
-                       | #parseByteStackRaw ( String ) [function]
  // -------------------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
 
     rule #parseHexBytes(S)  => #parseHexBytesAux(#alignHexString(S))
     rule #parseHexBytesAux("") => .ByteArray
-    rule #parseHexBytesAux(S)  => Int2Bytes(lengthString(S) /Int 2, String2Base(S, 16), BE)
-      requires lengthString(S) >=Int 2
-
-    rule #parseByteStackRaw(S) => String2Bytes(S)
-
-    // KEEP
+    rule #parseHexBytesAux(S)  => Int2Bytes(lengthString(S) /Int 2, String2Base(S, 16), BE) requires lengthString(S) >=Int 2
 
     syntax String ::= #unparseByteStack ( ByteArray ) [function, klabel(unparseByteStack), symbol]
  // ----------------------------------------------------------------------------------------------
     rule #unparseByteStack(WS) => Bytes2String(WS)
 
-    // KEEP
-
     syntax String ::= #padByte( String ) [function]
  // -----------------------------------------------
     rule #padByte( S ) => S             requires lengthString(S) ==K 2
     rule #padByte( S ) => "0" +String S requires lengthString(S) ==K 1
-
 endmodule
 
 module BUF-SYNTAX
@@ -192,41 +168,32 @@ module BUF-SYNTAX
 
     syntax ByteArray ::= #bufStrict ( Int , Int ) [function]
     syntax ByteArray ::= #buf ( Int , Int ) [function, functional, smtlib(buf)]
-
 endmodule
 
 module BUF
     imports BUF-SYNTAX
     imports BUF-KORE
 
-    // KEEP
-    rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA)
-      requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
-
-    // KEEP
-    rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA %Int (2 ^Int (SIZE *Int 8))))
-      [concrete]
+    rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA) requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
+    rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA %Int (2 ^Int (SIZE *Int 8)))) [concrete]
 
 endmodule
 
 module BUF-KORE [kore, symbolic]
     imports BUF-SYNTAX
 
-    rule #bufStrict(_, _) => #Bottom              [owise]
-
+    rule #bufStrict(_, _) => #Bottom [owise]
 endmodule
 
 module HASHED-LOCATIONS
     imports EVM
     imports BUF
 
+    syntax IntList ::= List{Int, ""} [klabel(intList), smtlib(intList)]
+
     syntax Int ::= #hashedLocation( String , Int , IntList ) [function, klabel(hashLoc), smtlib(hashLoc)]
  // -----------------------------------------------------------------------------------------------------
     rule #hashedLocation(_LANG, BASE, .IntList      ) => BASE
     rule #hashedLocation( LANG, BASE, OFFSET OFFSETS) => #hashedLocation(LANG, #hashedLocation(LANG, BASE, OFFSET .IntList), OFFSETS) requires OFFSETS =/=K .IntList
-
     rule #hashedLocation("Solidity", BASE, OFFSET .IntList) => keccak(#bufStrict(32, OFFSET) ++ #bufStrict(32, BASE)) requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET)
-
-    syntax IntList ::= List{Int, ""} [klabel(intList), smtlib(intList)]
- // -------------------------------------------------------------------
 endmodule
