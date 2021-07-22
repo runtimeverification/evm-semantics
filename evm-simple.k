@@ -159,6 +159,8 @@ module EVM-TYPES
  // --------------------
     rule eth => 1000000000000000000 [macro]
 
+
+
     syntax Bool ::= #rangeBool    ( Int )
                   | #rangeSInt    ( Int , Int )
                   | #rangeUInt    ( Int , Int )
@@ -240,109 +242,109 @@ module EVM-TYPES
  // -----------------------------------------
     rule I : BS => Int2Bytes(1, I, BE) ++ BS requires I <Int 256
 
-    syntax WordStack ::= #take ( Int , WordStack ) [klabel(takeWordStack), function, functional]
+    // syntax WordStack ::= #take ( Int , WordStack ) [klabel(takeWordStack), function, functional]
  // --------------------------------------------------------------------------------------------
-    rule [#take.base]:      #take(N, _WS)                => .WordStack                      requires notBool N >Int 0
-    rule [#take.zero-pad]:  #take(N, .WordStack)         => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
-    rule [#take.recursive]: #take(N, (W : WS):WordStack) => W : #take(N -Int 1, WS)         requires N >Int 0
+    // rule [#take.base]:      #take(N, _WS)                => .WordStack                      requires notBool N >Int 0
+    // rule [#take.zero-pad]:  #take(N, .WordStack)         => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
+    // rule [#take.recursive]: #take(N, (W : WS):WordStack) => W : #take(N -Int 1, WS)         requires N >Int 0
 
-    syntax WordStack ::= #drop ( Int , WordStack ) [klabel(dropWordStack), function, functional]
+    // syntax WordStack ::= #drop ( Int , WordStack ) [klabel(dropWordStack), function, functional]
  // --------------------------------------------------------------------------------------------
-    rule #drop(N, WS:WordStack)       => WS                                  requires notBool N >Int 0
-    rule #drop(N, .WordStack)         => .WordStack                          requires         N >Int 0
-    rule #drop(N, (W : WS):WordStack) => #drop(1, #drop(N -Int 1, (W : WS))) requires         N >Int 1
-    rule #drop(1, (_ : WS):WordStack) => WS
+    // rule #drop(N, WS:WordStack)       => WS                                  requires notBool N >Int 0
+    // rule #drop(N, .WordStack)         => .WordStack                          requires         N >Int 0
+    // rule #drop(N, (W : WS):WordStack) => #drop(1, #drop(N -Int 1, (W : WS))) requires         N >Int 1
+    // rule #drop(1, (_ : WS):WordStack) => WS
 
-    syntax Bytes ::= #take ( Int , Bytes ) [klabel(takeBytes), function, functional]
+    // syntax Bytes ::= #take ( Int , Bytes ) [klabel(takeBytes), function, functional]
  // --------------------------------------------------------------------------------
-    rule #take(N, _BS:Bytes) => .Bytes                                      requires                                        notBool N >Int 0
-    rule #take(N,  BS:Bytes) => #padRightToWidth(N, .Bytes)                 requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
-    rule #take(N,  BS:Bytes) => BS ++ #take(N -Int lengthBytes(BS), .Bytes) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
-    rule #take(N,  BS:Bytes) => BS [ 0 .. N ]                               requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
+    // rule #take(N, _BS:Bytes) => .Bytes                                      requires                                        notBool N >Int 0
+    // rule #take(N,  BS:Bytes) => #padRightToWidth(N, .Bytes)                 requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
+    // rule #take(N,  BS:Bytes) => BS ++ #take(N -Int lengthBytes(BS), .Bytes) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
+    // rule #take(N,  BS:Bytes) => BS [ 0 .. N ]                               requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
 
-    syntax Bytes ::= #drop ( Int , Bytes ) [klabel(dropBytes), function, functional]
+    // syntax Bytes ::= #drop ( Int , Bytes ) [klabel(dropBytes), function, functional]
  // --------------------------------------------------------------------------------
-    rule #drop(N, BS:Bytes) => BS                                  requires                                        notBool N >Int 0
-    rule #drop(N, BS:Bytes) => .Bytes                              requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
-    rule #drop(N, BS:Bytes) => .Bytes                              requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
-    rule #drop(N, BS:Bytes) => substrBytes(BS, N, lengthBytes(BS)) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
+    // rule #drop(N, BS:Bytes) => BS                                  requires                                        notBool N >Int 0
+    // rule #drop(N, BS:Bytes) => .Bytes                              requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
+    // rule #drop(N, BS:Bytes) => .Bytes                              requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
+    // rule #drop(N, BS:Bytes) => substrBytes(BS, N, lengthBytes(BS)) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
 
-    syntax Int ::= WordStack "[" Int "]" [function, functional]
+    // syntax Int ::= WordStack "[" Int "]" [function, functional]
  // -----------------------------------------------------------
-    rule (W : _):WordStack [ N ] => W                  requires N ==Int 0
-    rule WS:WordStack      [ N ] => #drop(N, WS) [ 0 ] requires N  >Int 0
-    rule  _:WordStack      [ N ] => 0                  requires N  <Int 0
+    // rule (W : _):WordStack [ N ] => W                  requires N ==Int 0
+    // rule WS:WordStack      [ N ] => #drop(N, WS) [ 0 ] requires N  >Int 0
+    // rule  _:WordStack      [ N ] => 0                  requires N  <Int 0
 
-    syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function, functional]
- // --------------------------------------------------------------------------
-    rule (_W0 : WS):WordStack [ N := W ] => W  : WS                     requires N ==Int 0
-    rule ( W0 : WS):WordStack [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
-    rule        WS :WordStack [ N := _ ] => WS                          requires N  <Int 0
-    rule .WordStack           [ N := W ] => (0 : .WordStack) [ N := W ]
+    // syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function, functional]
+//  // --------------------------------------------------------------------------
+//     rule (_W0 : WS):WordStack [ N := W ] => W  : WS                     requires N ==Int 0
+//     rule ( W0 : WS):WordStack [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
+//     rule        WS :WordStack [ N := _ ] => WS                          requires N  <Int 0
+//     rule .WordStack           [ N := W ] => (0 : .WordStack) [ N := W ]
 
-    syntax Int ::= #sizeWordStack ( WordStack )       [function, functional, smtlib(sizeWordStack)]
-                 | #sizeWordStack ( WordStack , Int ) [function, functional, klabel(sizeWordStackAux), smtlib(sizeWordStackAux)]
+    // syntax Int ::= #sizeWordStack ( WordStack )       [function, functional, smtlib(sizeWordStack)]
+    //              | #sizeWordStack ( WordStack , Int ) [function, functional, klabel(sizeWordStackAux), smtlib(sizeWordStackAux)]
  // ----------------------------------------------------------------------------------------------------------------------------
-    rule #sizeWordStack ( WS ) => #sizeWordStack(WS, 0)
-    rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
-    rule #sizeWordStack ( _ : WS, SIZE )     => #sizeWordStack(WS, SIZE +Int 1)
+    // rule #sizeWordStack ( WS ) => #sizeWordStack(WS, 0)
+    // rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
+    // rule #sizeWordStack ( _ : WS, SIZE )     => #sizeWordStack(WS, SIZE +Int 1)
 
-    syntax Bool ::= Int "in" WordStack [function]
+    // syntax Bool ::= Int "in" WordStack [function]
  // ---------------------------------------------
-    rule _ in .WordStack => false
-    rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
+    // rule _ in .WordStack => false
+    // rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
 
-    syntax WordStack ::= #replicate    ( Int, Int )            [function, functional]
-                       | #replicateAux ( Int, Int, WordStack ) [function, functional]
+    // syntax WordStack ::= #replicate    ( Int, Int )            [function, functional]
+    //                    | #replicateAux ( Int, Int, WordStack ) [function, functional]
  // ---------------------------------------------------------------------------------
-    rule #replicate   ( N,  A )     => #replicateAux(N, A, .WordStack)
-    rule #replicateAux( N,  A, WS ) => #replicateAux(N -Int 1, A, A : WS) requires         N >Int 0
-    rule #replicateAux( N, _A, WS ) => WS                                 requires notBool N >Int 0
+    // rule #replicate   ( N,  A )     => #replicateAux(N, A, .WordStack)
+    // rule #replicateAux( N,  A, WS ) => #replicateAux(N -Int 1, A, A : WS) requires         N >Int 0
+    // rule #replicateAux( N, _A, WS ) => WS                                 requires notBool N >Int 0
 
-    syntax List ::= WordStack2List ( WordStack ) [function, functional]
+    // syntax List ::= WordStack2List ( WordStack ) [function, functional]
  // -------------------------------------------------------------------
-    rule WordStack2List(.WordStack) => .List
-    rule WordStack2List(W : WS) => ListItem(W) WordStack2List(WS)
+    // rule WordStack2List(.WordStack) => .List
+    // rule WordStack2List(W : WS) => ListItem(W) WordStack2List(WS)
 
-    syntax Memory = Bytes
-    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, functional, klabel(mapWriteBytes)]
+    // syntax Memory = Bytes
+    // syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, functional, klabel(mapWriteBytes)]
  // -------------------------------------------------------------------------------------------------
-    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS') requires START >=Int 0  [concrete]
-    rule  _ [ START := _:ByteArray ] => .Memory                                                                  requires START  <Int 0  [concrete]
+    // rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS') requires START >=Int 0  [concrete]
+    // rule  _ [ START := _:ByteArray ] => .Memory                                                                  requires START  <Int 0  [concrete]
 
-    syntax ByteArray ::= #range ( Memory , Int , Int ) [function, functional]
+    // syntax ByteArray ::= #range ( Memory , Int , Int ) [function, functional]
  // -------------------------------------------------------------------------
-    rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ] [concrete]
+    // rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ] [concrete]
 
-    syntax Memory ::= ".Memory"
- // ---------------------------
-    rule .Memory => .Bytes [macro]
+//     syntax Memory ::= ".Memory"
+//  // ---------------------------
+//     rule .Memory => .Bytes [macro]
 
-    syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
+    // syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------
-    rule WM [ IDX := VAL ] => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ]
+    // rule WM [ IDX := VAL ] => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ]
 
     syntax ByteArray = Bytes
     syntax ByteArray ::= ".ByteArray"
  // ---------------------------------
     rule .ByteArray => .Bytes [macro]
 
-    syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
+    // syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
  // ---------------------------------------------------------------------------
-    rule #asWord(WS) => chop(Bytes2Int(WS, BE, Unsigned)) [concrete]
+    // rule #asWord(WS) => chop(Bytes2Int(WS, BE, Unsigned)) [concrete]
 
-    syntax Int ::= #asInteger ( ByteArray ) [function, functional]
+    // syntax Int ::= #asInteger ( ByteArray ) [function, functional]
  // --------------------------------------------------------------
-    rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned) [concrete]
+    // rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned) [concrete]
 
-    syntax Account ::= #asAccount ( ByteArray ) [function]
+    // syntax Account ::= #asAccount ( ByteArray ) [function]
  // ------------------------------------------------------
-    rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
-    rule #asAccount(BS) => #asWord(BS) [owise]
+    // rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
+    // rule #asAccount(BS) => #asWord(BS) [owise]
 
     syntax ByteArray ::= #asByteStack ( Int ) [function, functional]
  // ----------------------------------------------------------------
-    rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete]
+    rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete] // KEEP
 
     syntax ByteArray ::= ByteArray "++" ByteArray [function, functional, right, klabel(_++_WS), smtlib(_plusWS_)]
  // -------------------------------------------------------------------------------------------------------------
@@ -370,24 +372,20 @@ module EVM-TYPES
     syntax Account ::= ".Account" | Int
  // -----------------------------------
 
-    syntax Int ::= #addr ( Int ) [function]
- // ---------------------------------------
-    rule #addr(W) => W %Word pow160
-
     syntax Int ::= #lookup        ( Map , Int ) [function, functional, smtlib(lookup)]
                  | #lookupMemory  ( Map , Int ) [function, functional, smtlib(lookupMemory)]
  // ----------------------------------------------------------------------------------------
-    rule [#lookup.some]:         #lookup(       (KEY |-> VAL:Int) _M, KEY ) => VAL modInt pow256
-    rule [#lookup.none]:         #lookup(                          M, KEY ) => 0                 requires notBool KEY in_keys(M)
-    //Impossible case, for completeness
-    rule [#lookup.notInt]:       #lookup(       (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
+    // rule [#lookup.some]:         #lookup(       (KEY |-> VAL:Int) _M, KEY ) => VAL modInt pow256
+    // rule [#lookup.none]:         #lookup(                          M, KEY ) => 0                 requires notBool KEY in_keys(M)
+    // //Impossible case, for completeness
+    // rule [#lookup.notInt]:       #lookup(       (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
 
-    rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) _M, KEY ) => VAL modInt 256
-    rule [#lookupMemory.none]:   #lookupMemory(                    M, KEY ) => 0                 requires notBool KEY in_keys(M)
-    //Impossible case, for completeness
-    rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
+    // rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) _M, KEY ) => VAL modInt 256
+    // rule [#lookupMemory.none]:   #lookupMemory(                    M, KEY ) => 0                 requires notBool KEY in_keys(M)
+    // //Impossible case, for completeness
+    // rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
 
-    syntax SubstateLogEntry ::= "{" Int "|" List "|" ByteArray "}" [klabel(logEntry)]
+    // syntax SubstateLogEntry ::= "{" Int "|" List "|" ByteArray "}" [klabel(logEntry)]
  // ---------------------------------------------------------------------------------
 
 endmodule
@@ -431,9 +429,6 @@ module SERIALIZATION
 
     rule #parseByteStackRaw(S) => String2Bytes(S)
 
-    syntax Int ::= #parseAddr ( String ) [function]
- // -----------------------------------------------
-    rule #parseAddr(S) => #addr(#parseHexWord(S))
 
     syntax String ::= #unparseByteStack ( ByteArray ) [function, klabel(unparseByteStack), symbol]
  // ----------------------------------------------------------------------------------------------
@@ -448,18 +443,18 @@ module SERIALIZATION
  // ----------------------------------------------------
     rule #unparseQuantity( I ) => "0x" +String Base2String(I, 16)
 
-    syntax String ::= #unparseData          ( Int, Int  ) [function]
-                    | #unparseDataByteArray ( ByteArray ) [function]
+    // syntax String ::= #unparseData          ( Int, Int  ) [function]
+    //                 | #unparseDataByteArray ( ByteArray ) [function]
  // ----------------------------------------------------------------
-    rule #unparseData( DATA, LENGTH ) => #unparseDataByteArray(#padToWidth(LENGTH,#asByteStack(DATA)))
+    // rule #unparseData( DATA, LENGTH ) => #unparseDataByteArray(#padToWidth(LENGTH,#asByteStack(DATA)))
 
-    rule #unparseDataByteArray( DATA ) => replaceFirst(Base2String(#asInteger(#asByteStack(1) ++ DATA), 16), "1", "0x")
+    // rule #unparseDataByteArray( DATA ) => replaceFirst(Base2String(#asInteger(#asByteStack(1) ++ DATA), 16), "1", "0x")
 
-    syntax String ::= Hex2Raw ( String ) [function]
-                    | Raw2Hex ( String ) [function]
+    // syntax String ::= Hex2Raw ( String ) [function]
+    //                 | Raw2Hex ( String ) [function]
  // -----------------------------------------------
-    rule Hex2Raw ( S ) => #unparseByteStack( #parseByteStack ( S ) )
-    rule Raw2Hex ( S ) => #unparseDataByteArray( #parseByteStackRaw ( S ) )
+    // rule Hex2Raw ( S ) => #unparseByteStack( #parseByteStack ( S ) )
+    // rule Raw2Hex ( S ) => #unparseDataByteArray( #parseByteStackRaw ( S ) )
 endmodule
 
 module BUF-SYNTAX
