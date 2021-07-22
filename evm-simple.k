@@ -156,6 +156,8 @@ module SERIALIZATION
     rule #alignHexString(S) => S             requires         lengthString(S) modInt 2 ==Int 0
     rule #alignHexString(S) => "0" +String S requires notBool lengthString(S) modInt 2 ==Int 0
 
+    // KEEP
+
     syntax ByteArray ::= #parseHexBytes     ( String ) [function]
                        | #parseHexBytesAux  ( String ) [function]
                        | #parseByteStack    ( String ) [function, memo]
@@ -170,19 +172,18 @@ module SERIALIZATION
 
     rule #parseByteStackRaw(S) => String2Bytes(S)
 
+    // KEEP
 
     syntax String ::= #unparseByteStack ( ByteArray ) [function, klabel(unparseByteStack), symbol]
  // ----------------------------------------------------------------------------------------------
     rule #unparseByteStack(WS) => Bytes2String(WS)
 
+    // KEEP
+
     syntax String ::= #padByte( String ) [function]
  // -----------------------------------------------
     rule #padByte( S ) => S             requires lengthString(S) ==K 2
     rule #padByte( S ) => "0" +String S requires lengthString(S) ==K 1
-
-    syntax String ::= #unparseQuantity( Int ) [function]
- // ----------------------------------------------------
-    rule #unparseQuantity( I ) => "0x" +String Base2String(I, 16)
 
 endmodule
 
