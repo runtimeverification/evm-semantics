@@ -205,17 +205,18 @@ module LEMMAS-JAVA [symbolic, kast]
     // 3 terms
 
     // symbolic first: A, J, K
-    rule (A  +Int  J) +Int  K  =>  A  +Int (J  +Int  K) requires #isConcrete(J) andBool #isConcrete(K) andBool (notBool #isConcrete(A)) [simplification]
+    //rule (A  +Int  J) +Int  K  =>  A  +Int (J  +Int  K) requires #isConcrete(J) andBool #isConcrete(K) andBool (notBool #isConcrete(A)) [simplification]
+    rule (A  +Int  J) +Int  K  => (J +Int K) +Int A  requires #isConcrete(J) andBool #isConcrete(K) andBool (notBool #isConcrete(A)) [simplification]
     // symbolic second: I, B, K
-    rule  I  +Int (B  +Int  K) => (I  +Int  K) +Int  B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
-    rule  I  -Int (B  +Int  K) => (I  -Int  K) -Int  B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
-    rule (I  -Int  B) +Int  K  => (I  +Int  K) -Int  B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
+    rule  I  +Int (B  +Int  K) => (I +Int K) +Int B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
+    rule  I  -Int (B  +Int  K) => (I -Int K) -Int B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
+    rule (I  -Int  B) +Int  K  => (I +Int K) -Int B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
     // symbolic third: I, J, C
-    rule  I  +Int (J  +Int  C) => (I  +Int  J) +Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
-    rule  I  +Int (J  -Int  C) => (I  +Int  J) -Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
-    rule  I  -Int (J  +Int  C) => (I  -Int  J) -Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
-    rule  I  -Int (J  -Int  C) => (I  -Int  J) +Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
-    rule  I  &Int (J  &Int  C) => (I  &Int  J) &Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+    rule  I  +Int (J  +Int  C) => (I +Int J) +Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+    rule  I  +Int (J  -Int  C) => (I +Int J) -Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+    rule  I  -Int (J  +Int  C) => (I -Int J) -Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+    rule  I  -Int (J  -Int  C) => (I -Int J) +Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+    rule  I  &Int (J  &Int  C) => (I &Int J) &Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
 
     // 0xffff...f &Int N = N
     // MASK = 0xffff...f
