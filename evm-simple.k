@@ -75,7 +75,7 @@ module EVM-TYPES
 
     syntax Int ::= "minUInt256"
  // --------------------------------
-    rule minUInt256      =>  0                                                                              [macro]
+    rule minUInt256 => 0 [macro]
 
     syntax Bool ::= #rangeUInt    ( Int , Int )
   // -------------------------------------------
@@ -224,9 +224,7 @@ module HASHED-LOCATIONS
     rule #hashedLocation(_LANG, BASE, .IntList      ) => BASE
     rule #hashedLocation( LANG, BASE, OFFSET OFFSETS) => #hashedLocation(LANG, #hashedLocation(LANG, BASE, OFFSET .IntList), OFFSETS) requires OFFSETS =/=K .IntList
 
-    //rule #hashedLocation("Vyper",    BASE, OFFSET .IntList) => keccak(#bufStrict(32, BASE)   ++ #bufStrict(32, OFFSET)) requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET)
-    rule #hashedLocation("Solidity", BASE, OFFSET .IntList) => keccak(#bufStrict(32, OFFSET) ++ #bufStrict(32, BASE))   requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET)
-    //rule #hashedLocation("Array",    BASE, OFFSET .IntList) => keccak(#bufStrict(32, BASE)) +Word OFFSET                requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET)
+    rule #hashedLocation("Solidity", BASE, OFFSET .IntList) => keccak(#bufStrict(32, OFFSET) ++ #bufStrict(32, BASE)) requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET)
 
     syntax IntList ::= List{Int, ""} [klabel(intList), smtlib(intList)]
  // -------------------------------------------------------------------
