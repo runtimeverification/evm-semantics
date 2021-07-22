@@ -114,8 +114,6 @@ module EVM-TYPES
     rule [padToWidthNonEmpty] : #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0
     rule                        #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
     rule                        #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0
-
-    //syntax Account ::= ".Account" | Int
 endmodule
 
 module SERIALIZATION
