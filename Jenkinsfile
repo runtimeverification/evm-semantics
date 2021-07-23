@@ -25,10 +25,7 @@ pipeline {
         stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
         stage('Test') {
           failFast true
-          options {
-            lock("proofs-${env.NODE_NAME}")
-            timeout(time: 150, unit: 'MINUTES')
-          }
+          options { timeout(time: 150, unit: 'MINUTES') }
           parallel {
             stage('Conformance (LLVM)')         { steps { sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm' } }
             stage('Proofs (Java)')              { steps { sh 'make test-prove -j5 TEST_SYMBOLIC_BACKEND=java'       } }
