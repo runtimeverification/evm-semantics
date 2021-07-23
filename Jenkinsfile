@@ -1,5 +1,5 @@
 pipeline {
-  agent { label 'docker && !smol' }
+  agent { label 'docker' }
   environment {
     GITHUB_TOKEN     = credentials('rv-jenkins')
     VERSION          = '1.0.1'
