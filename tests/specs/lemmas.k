@@ -82,9 +82,6 @@ module LEMMAS
     rule MEM [ K1 := BUF1:ByteArray ] [ K2 := BUF2:ByteArray ] => MEM [ K2 := BUF2 ] [ K1 := BUF1 ]  requires         #sizeByteArray(BUF2) <=Int K1 -Int K2                   andBool K2  <Int K1 [simplification]
     // overwritten assignment
     rule MEM [ K1 := BUF1           ] [ K2 := BUF2           ] => MEM [ K2 := BUF2 ]                 requires K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2) andBool K2 <=Int K1 [simplification]
-    // TODO: tmp disable
-    // redundant assignment
-    // rule MEM [ K  := BUF1           ] [ K  := BUF2           ] => MEM [ K  := BUF2 ]                 requires         #sizeByteArray(BUF1) ==Int #sizeByteArray(BUF2)                             [simplification]
 
     // lookup range in memory
     rule _MEM [ _ .. W ] => .ByteArray  requires W ==Int 0                    [simplification]
@@ -205,7 +202,6 @@ module LEMMAS-JAVA [symbolic, kast]
     // 3 terms
 
     // symbolic first: A, J, K
-    //rule (A  +Int  J) +Int  K  =>  A  +Int (J  +Int  K) requires #isConcrete(J) andBool #isConcrete(K) andBool (notBool #isConcrete(A)) [simplification]
     rule (A  +Int  J) +Int  K  => (J +Int K) +Int A  requires #isConcrete(J) andBool #isConcrete(K) andBool (notBool #isConcrete(A)) [simplification]
     // symbolic second: I, B, K
     rule  I  +Int (B  +Int  K) => (I +Int K) +Int B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
