@@ -8,7 +8,6 @@ pipeline {
     KEVM_RELEASE_TAG = "v${env.VERSION}-${env.SHORT_REV}"
     K_VERSION        = """${sh(returnStdout: true, script: 'cd deps/k && git tag --points-at HEAD | cut --characters=2-').trim()}"""
   }
-  options { ansiColor('xterm') }
   stages {
     stage('Init title') {
       when { changeRequest() }
