@@ -1,3 +1,14 @@
+properties([ [ $class: 'ThrottleJobProperty'
+             , categories: ['heavy'],
+             , limitOneJobWithMatchingParams: false
+             , maxConcurrentPerNode: 1
+             , maxConcurrentTotal: 0
+             , paramsToUseForLimit: ''
+             , throttleEnabled: true
+             , throttleOption: 'category'
+             ]
+           ]
+          )
 pipeline {
   agent { label 'docker' }
   environment {
@@ -25,10 +36,7 @@ pipeline {
         stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
         stage('Test') {
           failFast true
-          options {
-            timeout(time: 90, unit: 'MINUTES')
-            throttleJobProperty(categories: ['heavy'], throttleEnabled: true, throttleOption: 'category')
-          }
+          options { timeout(time: 90, unit: 'MINUTES') }
           parallel {
             stage('Conformance (LLVM)')         { steps { sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm' } }
             stage('Proofs (Java)')              { steps { sh 'make test-prove -j5 TEST_SYMBOLIC_BACKEND=java'       } }
