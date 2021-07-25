@@ -25,14 +25,11 @@ pipeline {
         stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
         stage('Test') {
           failFast true
-          options {
-            timeout(time: 90, unit: 'MINUTES')
-            lock("heavy-${env.NODE_NAME}")
-          }
+          options { timeout(time: 90, unit: 'MINUTES') }
           parallel {
-            stage('Conformance (LLVM)') { steps { sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm'    } }
-            stage('Proofs (Java)')      { steps { sh 'make test-prove       -j5 TEST_SYMBOLIC_BACKEND=java'    } }
-            stage('Proofs (Haskell)')   { steps { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=haskell' } }
+            stage('Conformance (LLVM)') { steps {                                    sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm'      } }
+            stage('Proofs (Java)')      { steps { lock("heavy-1-${env.NODE_NAME}") { sh 'make test-prove       -j5 TEST_SYMBOLIC_BACKEND=java'    } } }
+            stage('Proofs (Haskell)')   { steps { lock("heavy-2-${env.NODE_NAME}") { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=haskell' } } }
           }
         }
         stage('Test Interactive') {
