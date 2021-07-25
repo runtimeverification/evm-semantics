@@ -27,7 +27,7 @@ pipeline {
           failFast true
           options {
             timeout(time: 90, unit: 'MINUTES')
-            throttle(categories: ['heavy'], throttleEnabled: true, throttleOption: 'category')
+            throttle(categories: ['heavy'])
           }
           parallel {
             stage('Conformance (LLVM)') { steps { sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm' } }
