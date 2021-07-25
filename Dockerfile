@@ -1,28 +1,28 @@
 ARG K_COMMIT
 FROM runtimeverificationinc/kframework-k:ubuntu-focal-${K_COMMIT}
 
-RUN    apt-get update           \
-    && apt-get upgrade --yes    \
-    && apt-get install --yes    \
-            cmake               \
-            curl                \
-            debhelper           \
-            jq                  \
-            libboost-test-dev   \
-            libcrypto++-dev     \
-            libgflags-dev       \
-            libprocps-dev       \
-            libsecp256k1-dev    \
-            libssl-dev          \
-            libyaml-dev         \
-            maven               \
-            netcat-openbsd      \
-            openjdk-11-jdk      \
-            pkg-config          \
-            python3             \
-            python-pygments     \
-            rapidjson-dev       \
-            z3                  \
+RUN    apt-get update            \
+    && apt-get upgrade --yes     \
+    && apt-get install --yes     \
+            cmake                \
+            curl                 \
+            debhelper            \
+            default-jdk-headless \
+            jq                   \
+            libboost-test-dev    \
+            libcrypto++-dev      \
+            libgflags-dev        \
+            libprocps-dev        \
+            libsecp256k1-dev     \
+            libssl-dev           \
+            libyaml-dev          \
+            maven                \
+            netcat-openbsd       \
+            pkg-config           \
+            python3              \
+            python-pygments      \
+            rapidjson-dev        \
+            z3                   \
             zlib1g-dev
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
