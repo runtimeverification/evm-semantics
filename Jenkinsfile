@@ -8,10 +8,7 @@ pipeline {
     KEVM_RELEASE_TAG = "v${env.VERSION}-${env.SHORT_REV}"
     K_VERSION        = """${sh(returnStdout: true, script: 'cd deps/k && git tag --points-at HEAD | cut --characters=2-').trim()}"""
   }
-  options {
-    ansiColor('xterm')
-    lock("heavy-${env.NODE_NAME}")
-  }
+  options { ansiColor('xterm') }
   stages {
     stage('Init title') {
       when { changeRequest() }
@@ -28,7 +25,10 @@ pipeline {
         stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
         stage('Test') {
           failFast true
-          options { timeout(time: 90, unit: 'MINUTES') }
+          options {
+            timeout(time: 90, unit: 'MINUTES')
+            lock("heavy-${env.NODE_NAME}")
+          }
           parallel {
             stage('Conformance (LLVM)') { steps { sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm'    } }
             stage('Proofs (Java)')      { steps { sh 'make test-prove       -j5 TEST_SYMBOLIC_BACKEND=java'    } }
