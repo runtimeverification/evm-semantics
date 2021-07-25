@@ -8,7 +8,10 @@ pipeline {
     KEVM_RELEASE_TAG = "v${env.VERSION}-${env.SHORT_REV}"
     K_VERSION        = """${sh(returnStdout: true, script: 'cd deps/k && git tag --points-at HEAD | cut --characters=2-').trim()}"""
   }
-  options { ansiColor('xterm') }
+  options {
+    ansiColor('xterm')
+    lock("heavy-${env.NODE_NAME}")
+  }
   stages {
     stage('Init title') {
       when { changeRequest() }
@@ -27,9 +30,9 @@ pipeline {
           failFast true
           options { timeout(time: 90, unit: 'MINUTES') }
           parallel {
-            stage('Conformance (LLVM)') { steps {                                    sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm'      } }
-            stage('Proofs (Java)')      { steps { lock("heavy-1-${env.NODE_NAME}") { sh 'make test-prove       -j5 TEST_SYMBOLIC_BACKEND=java'    } } }
-            stage('Proofs (Haskell)')   { steps { lock("heavy-2-${env.NODE_NAME}") { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=haskell' } } }
+            stage('Conformance (LLVM)') { steps { sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm'    } }
+            stage('Proofs (Java)')      { steps { sh 'make test-prove       -j5 TEST_SYMBOLIC_BACKEND=java'    } }
+            stage('Proofs (Haskell)')   { steps { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=haskell' } }
           }
         }
         stage('Test Interactive') {
