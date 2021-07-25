@@ -10,7 +10,7 @@ pipeline {
   }
   options {
     ansiColor('xterm')
-    throttleJobProperty(categories: [], limitOneJobWithMatchingParams: false, maxConcurrentPerNode: 1, maxConcurrentTotal: 0, paramsToUseForLimit: '', throttleEnabled: true, throttleOption: 'project')
+    throttleJobProperty(categories: ['heavy'], throttleEnabled: true, throttleOption: 'category')
   }
   stages {
     stage('Init title') {
