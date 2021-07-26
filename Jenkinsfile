@@ -1,7 +1,7 @@
 pipeline {
   agent { label 'docker' }
   environment {
-    GITHUB_TOKEN     = credentials('rv-jenkins')
+    GITHUB_TOKEN     = credentials('rv-jenkins-access-token')
     VERSION          = '1.0.1'
     LONG_REV         = """${sh(returnStdout: true, script: 'git rev-parse HEAD').trim()}"""
     SHORT_REV        = """${sh(returnStdout: true, script: 'git rev-parse --short=7 HEAD').trim()}"""
