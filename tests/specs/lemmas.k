@@ -77,8 +77,6 @@ module LEMMAS
     rule MEM [ K1 := BUF1:ByteArray ] [ K2 := BUF2:ByteArray ] => MEM [ K2 := BUF2 ] [ K1 := BUF1 ]  requires         #sizeByteArray(BUF2) <=Int K1 -Int K2                   andBool K2  <Int K1 [simplification]
     // overwritten assignment
     rule MEM [ K1 := BUF1           ] [ K2 := BUF2           ] => MEM [ K2 := BUF2 ]                 requires K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2) andBool K2 <=Int K1 [simplification]
-    // redundant assignment
-    rule MEM [ K  := BUF1           ] [ K  := BUF2           ] => MEM [ K  := BUF2 ]                 requires         #sizeByteArray(BUF1) ==Int #sizeByteArray(BUF2)                             [simplification]
 
     // lookup range in memory
     rule _MEM [ _ .. W ] => .ByteArray  requires W ==Int 0                    [simplification]
@@ -177,6 +175,41 @@ module LEMMAS-JAVA [symbolic, kast]
   // Arithmetic
   // ########################
 
+    rule 1 *Int N => N
+    rule N *Int 1 => N
+    rule 0 *Int _ => 0
+    rule _ *Int 0 => 0
+
+    rule 0 |Int N => N
+    rule N |Int 0 => N
+    rule N |Int N => N
+
+    rule  0 &Int _N => 0
+    rule _N &Int  0 => 0
+    rule  N &Int  N => N
+
+    // 2 terms
+
+    // associate symbolic terms to the left, concrete terms to the right
+    rule I +Int B => B +Int I          requires #isConcrete(I) andBool (notBool #isConcrete(B)) [simplification]
+    // converting -Int to +Int for concrete values.
+    rule A -Int I => A +Int (0 -Int I) requires #isConcrete(I) andBool (notBool #isConcrete(A)) [simplification]
+    
+    // 3 terms
+
+    // symbolic first: A, J, K
+    rule (A  +Int  J) +Int  K  => (J +Int K) +Int A  requires #isConcrete(J) andBool #isConcrete(K) andBool (notBool #isConcrete(A)) [simplification]
+    // symbolic second: I, B, K
+    rule  I  +Int (B  +Int  K) => (I +Int K) +Int B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
+    rule  I  -Int (B  +Int  K) => (I -Int K) -Int B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
+    rule (I  -Int  B) +Int  K  => (I +Int K) -Int B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
+    // symbolic third: I, J, C
+    rule  I  +Int (J  +Int  C) => (I +Int J) +Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+    rule  I  +Int (J  -Int  C) => (I +Int J) -Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+    rule  I  -Int (J  +Int  C) => (I -Int J) -Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+    rule  I  -Int (J  -Int  C) => (I -Int J) +Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+    rule  I  &Int (J  &Int  C) => (I &Int J) &Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+
     // 0xffff...f &Int N = N
     // MASK = 0xffff...f
     rule MASK &Int N    => N requires MASK ==Int (2 ^Int (log2Int(MASK) +Int 1)) -Int 1 andBool 0 <=Int N andBool N <=Int MASK [simplification]
@@ -268,8 +301,13 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
 
     rule N &Int maxUInt160 => N  requires #rangeUInt(160, N) [simplification]
-
     rule maxUInt160 &Int N => N  requires #rangeUInt(160, N) [simplification]
+
+    rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
+
+    rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
+
+    rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
 
     rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
 
