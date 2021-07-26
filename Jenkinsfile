@@ -1,7 +1,7 @@
 pipeline {
   agent { label 'docker' }
   environment {
-    GITHUB_TOKEN     = credentials('rv-jenkins')
+    GITHUB_TOKEN     = credentials('rv-jenkins-access-token')
     VERSION          = '1.0.1'
     LONG_REV         = """${sh(returnStdout: true, script: 'git rev-parse HEAD').trim()}"""
     SHORT_REV        = """${sh(returnStdout: true, script: 'git rev-parse --short=7 HEAD').trim()}"""
@@ -161,7 +161,7 @@ pipeline {
         stage('GitHub Release') {
           steps {
             dir('focal')  { unstash 'focal'  }
-            sshagent(['2b3d8d6b-0855-4b59-864a-6b3ddf9c9d1a']) {
+            sshagent(['rv-jenkins-github']) {
               sh '''
                 git clone 'ssh://github.com/kframework/evm-semantics.git' kevm-release
                 cd kevm-release
@@ -198,7 +198,7 @@ pipeline {
         }
         stage('Jello Paper') {
           steps {
-            sshagent(['2b3d8d6b-0855-4b59-864a-6b3ddf9c9d1a']) {
+            sshagent(['rv-jenkins-github']) {
               dir("kevm-${env.VERSION}-jello-paper") {
                 sh '''
                   git clone 'ssh://github.com/kframework/evm-semantics.git'
