@@ -1,5 +1,5 @@
 pipeline {
-  agent { label 'docker && !smol' }
+  agent { label 'docker' }
   environment {
     GITHUB_TOKEN     = credentials('rv-jenkins')
     VERSION          = '1.0.1'
@@ -25,15 +25,11 @@ pipeline {
         stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
         stage('Test') {
           failFast true
-          options {
-            lock("proofs-${env.NODE_NAME}")
-            timeout(time: 150, unit: 'MINUTES')
-          }
+          options { timeout(time: 90, unit: 'MINUTES') }
           parallel {
-            stage('Conformance (LLVM)')         { steps { sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm' } }
-            stage('Proofs (Java)')              { steps { sh 'make test-prove -j5 TEST_SYMBOLIC_BACKEND=java'       } }
-            stage('Proofs (Haskell)')           { steps { sh 'make test-prove -j4 TEST_SYMBOLIC_BACKEND=haskell'    } }
-            stage('Proofs (Haskell - dry-run)') { steps { sh 'make test-haskell-dry-run -j3'                        } }
+            stage('Conformance (LLVM)') { steps {                                         sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm'      } }
+            stage('Proofs (Java)')      { steps { lock("kevm-java-${env.NODE_NAME}")    { sh 'make test-prove       -j5 TEST_SYMBOLIC_BACKEND=java'    } } }
+            stage('Proofs (Haskell)')   { steps { lock("kevm-haskell-${env.NODE_NAME}") { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=haskell' } } }
           }
         }
         stage('Test Interactive') {
