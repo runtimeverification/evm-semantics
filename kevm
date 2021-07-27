@@ -36,16 +36,30 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 run_kompile() {
     local kompile_opts openssl_root
 
-    kompile_opts=(  --backend "${backend}" "${run_file}"                                 )
+    kompile_opts=(  "${run_file}"                                                        )
     kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
-    kompile_opts+=( --hook-namespaces "JSON KRYPTO"                                      )
+    kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN"                           )
     kompile_opts+=( --emit-json                                                          )
     case "${backend}" in
-        haskell)    kompile_opts+=( --md-selector 'k & ! nobytes' )
+        haskell)    kompile_opts+=( --backend haskell --md-selector 'k & ! node & ! nobytes' )
                     ;;
-        java)       kompile_opts+=( --md-selector 'k & ! bytes' )
+        java)       kompile_opts+=( --backend java --md-selector 'k & ! node & ! bytes' )
                     ;;
-        llvm)       kompile_opts+=( --md-selector 'k & ! nobytes'                                                 )
+        llvm)       kompile_opts+=( --backend llvm --md-selector 'k & ! node & ! nobytes'                         )
+                    kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
+                    kompile_opts+=( -ccopt ${plugin_include}/c/plugin_util.cpp                                    )
+                    kompile_opts+=( -ccopt ${plugin_include}/c/crypto.cpp                                         )
+                    kompile_opts+=( -ccopt ${plugin_include}/c/blake2.cpp                                         )
+                    kompile_opts+=( -ccopt -g -ccopt -std=c++14                                                   )
+                    kompile_opts+=( -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lssl -ccopt -lcrypto )
+                    if [[ "$(uname -s)" == 'Linux' ]]; then
+                        kompile_opts+=( -ccopt -lprocps )
+                    elif [[ "$(uname -s)" == 'Darwin' ]]; then
+                        openssl_root="$(brew --prefix openssl)"
+                        kompile_opts+=( -I/usr/local/include -L/usr/local/lib -I${openssl_root}/include -L${openssl_root}/lib )
+                    fi
+                 ;;
+        node)       kompile_opts+=( --backend llvm --no-llvm-kompile --md-selector 'k & ! standalone & ! nobytes' )
                     kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
                     kompile_opts+=( -ccopt ${plugin_include}/c/plugin_util.cpp                                    )
                     kompile_opts+=( -ccopt ${plugin_include}/c/crypto.cpp                                         )
@@ -346,13 +360,13 @@ cSCHEDULE_kast="\`${schedule}_EVM\`(.KList)"
 cCHAINID_kast="#token(\"${chainid}\",\"Int\")"
 
 case "$run_command-$backend" in
-    kompile-@(java|llvm|haskell)   ) run_kompile                     "$@" ;;
-    run-@(java|llvm|haskell)       ) run_krun                        "$@" ;;
-    kast-@(java|llvm|haskell)      ) run_kast                        "$@" ;;
-    interpret-@(llvm|haskell|java) ) run_interpret                   "$@" ;;
-    prove-@(java|haskell)          ) run_prove                       "$@" ;;
-    search-@(java|haskell)         ) run_search                      "$@" ;;
-    klab-@(run|prove)-java         ) run_klab "${run_command#klab-}" "$@" ;;
-    klab-view-java                 ) view_klab                       "$@" ;;
+    kompile-@(java|llvm|haskell|node) ) run_kompile                     "$@" ;;
+    run-@(java|llvm|haskell)          ) run_krun                        "$@" ;;
+    kast-@(java|llvm|haskell)         ) run_kast                        "$@" ;;
+    interpret-@(llvm|haskell|java)    ) run_interpret                   "$@" ;;
+    prove-@(java|haskell)             ) run_prove                       "$@" ;;
+    search-@(java|haskell)            ) run_search                      "$@" ;;
+    klab-@(run|prove)-java            ) run_klab "${run_command#klab-}" "$@" ;;
+    klab-view-java                    ) view_klab                       "$@" ;;
     *) $0 help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
