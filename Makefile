@@ -148,6 +148,7 @@ kevm_files := abi.md              \
               edsl.md             \
               evm.md              \
               evm-types.md        \
+              evm-node.md         \
               hashed-locations.md \
               json-rpc.md         \
               network.md          \
@@ -235,6 +236,23 @@ $(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_inc
 	    --directory $(KEVM_LIB)/$(llvm_dir)   \
 	    --main-module $(llvm_main_module)     \
 	    --syntax-module $(llvm_syntax_module) \
+	    $(KOMPILE_OPTS)
+
+# Node
+
+node_dir           := node
+node_main_module   := EVM-NODE
+node_syntax_module := $(node_main_module)
+node_main_file     := evm-node.md
+node_main_filename := $(basename $(notdir $(node_main_file)))
+node_kore          := $(node_dir)/$(node_main_filename)-kompiled/definition.kore
+
+$(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
+	$(KOMPILE) --backend node                 \
+	    $(node_main_file)                     \
+	    --directory $(KEVM_LIB)/$(node_dir)   \
+	    --main-module $(node_main_module)     \
+	    --syntax-module $(node_syntax_module) \
 	    $(KOMPILE_OPTS)
 
 # Installing
