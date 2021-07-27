@@ -783,6 +783,20 @@ These are just used by the other operators for shuffling local execution state a
          </accounts>
 ```
 
+The following operations help with loading account information from an external running client.
+This minimizes the amount of information which must be stored in the configuration.
+
+-   `#loadAccount` queries for account data from the running client.
+-   `#lookupCode` loads the code of an account into the `<code>` cell.
+-   `#lookupStorage` loads the value of the specified storage key into the `<storage>` cell.
+
+```k
+    syntax InternalOp ::= "#loadAccount"   Int
+                        | "#lookupCode"    Int
+                        | "#lookupStorage" Int Int
+ // ----------------------------------------------
+```
+
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
 
 ```k
