@@ -40,7 +40,6 @@ int init(int port, in_addr host) {
     perror("listen");
     exit(1);
   }
-  set_gc_interval(10000);
   return sock;
 }
 

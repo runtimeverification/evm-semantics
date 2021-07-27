@@ -4,13 +4,15 @@
 UNAME_S := $(shell uname -s)
 
 DEPS_DIR      := deps
-BUILD_DIR     := .build
+BUILD_DIR     := $(abspath .build)
 NODE_DIR      := $(abspath node)
 SUBDEFN_DIR   := .
 DEFN_BASE_DIR := $(BUILD_DIR)/defn
 DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 LOCAL_LIB     := $(BUILD_LOCAL)/lib
+export NODE_DIR
+export LOCAL_LIB
 
 INSTALL_PREFIX  := /usr
 INSTALL_BIN     ?= $(INSTALL_PREFIX)/bin
@@ -22,13 +24,14 @@ KEVM_LIB     := $(BUILD_DIR)$(INSTALL_LIB)
 KEVM_INCLUDE := $(KEVM_LIB)/include
 KEVM_K_BIN   := $(KEVM_LIB)/kframework/bin
 KEVM         := kevm
+export KEVM_LIB
 
 KEVM_VERSION     ?= 1.0.1
 KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
 
 K_SUBMODULE := $(DEPS_DIR)/k
 
-LIBRARY_PATH       := $(LOCAL_LIB)
+LIBRARY_PATH       := $(LOCAL_LIB):$(KEVM_LIB)/libff/lib
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
 PATH               := $(KEVM_BIN):$(KEVM_K_BIN):$(PATH)
@@ -44,7 +47,7 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps all-deps llvm-deps haskell-deps k-deps plugin-deps libsecp256k1 libff protobuf                                      \
-        build build-java build-haskell build-llvm                                                                                \
+        build build-java build-haskell build-llvm build-node                                                                     \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-prove test-failing-prove                                                                                            \
@@ -96,7 +99,7 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                                     \
 	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
 	    && make -s -j4                                                                                          \
-	    && make install DESTDIR=$(CURDIR)/$(BUILD_DIR)
+	    && make install DESTDIR=$(BUILD_DIR)
 
 $(protobuf_out): $(NODE_DIR)/proto/msg.proto
 	@mkdir -p $(LOCAL_LIB)/proto
@@ -123,8 +126,8 @@ endif
 
 k-deps:
 	cd $(K_SUBMODULE)                                                                                                                                                                            \
-	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
-	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/kframework package/package
+	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
+	    && DESTDIR=$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/kframework package/package
 
 plugin_include    := $(KEVM_LIB)/blockchain-k-plugin/include
 plugin_k          := krypto.md
@@ -253,6 +256,9 @@ node_syntax_module := $(node_main_module)
 node_main_file     := evm-node.md
 node_main_filename := $(basename $(notdir $(node_main_file)))
 node_kore          := $(node_dir)/$(node_main_filename)-kompiled/definition.kore
+node_kompiled      := $(node_dir)/build/kevm-vm
+export node_dir
+export node_main_filename
 
 $(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
 	$(KOMPILE) --backend node                 \
@@ -262,10 +268,15 @@ $(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_include
 	    --syntax-module $(node_syntax_module) \
 	    $(KOMPILE_OPTS)
 
+$(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_out)
+	@mkdir -p $(dir $@)
+	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) && $(MAKE)
+
 # Installing
 # ----------
 
-install_bins := kevm
+install_bins := kevm    \
+                kevm-vm
 
 install_libs := $(haskell_kompiled) \
                 $(llvm_kompiled)    \
@@ -283,6 +294,9 @@ $(KEVM_BIN)/$(KEVM): $(KEVM)
 	@mkdir -p $(dir $@)
 	install $< $@
 
+$(KEVM_BIN)/kevm-vm: $(KEVM_LIB)/$(node_kompiled)
+	@mkdir -p $(dir $@)
+	install $< $@
 
 $(KEVM_LIB)/%.py: %.py
 	@mkdir -p $(dir $@)
@@ -303,6 +317,7 @@ build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%
 build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py $(lemma_includes)
 build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_LIB)/kast-json.py $(lemma_includes)
+build-node:    $(KEVM_LIB)/$(node_kompiled)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \

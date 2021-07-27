@@ -7,7 +7,6 @@
 
 extern "C" {
   void initStaticObjects(void);
-  extern void set_gc_interval(uint64_t interval);
   size_t hook_LIST_size_long(list *l);
   block* hook_LIST_get_long(list *l, size_t i);
   list hook_MAP_values(map *m);
