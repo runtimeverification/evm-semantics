@@ -27,7 +27,7 @@ module CREATE-SPEC
                 <endPC> _ => ?_ </endPC>
                 <callStack> _ </callStack>
                 <interimStates> _ </interimStates>
-                <touchedAccounts> _ </touchedAccounts>
+                <touchedAccounts> _ => ?_ </touchedAccounts>
 
                 <callState>
                   <program> _ </program>
