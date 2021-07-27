@@ -302,6 +302,7 @@ The `#next [_]` operator initiates execution by:
  // --------------------------------------------
     rule <k> #next [ OP ]
           => #if isAddr1Op(OP) orBool isAddr2Op(OP) #then #addr [ OP ] #else . #fi
+          ~> #load [ OP ]
           ~> #exec [ OP ]
           ~> #pc   [ OP ]
          ...
@@ -463,6 +464,33 @@ The `CallOp` opcodes all interperet their second argument as an address.
  // -----------------------------------------------------------
     rule <k> #exec [ CSO:CallSixOp ] => #gas [ CSO , CSO W0 W1    W2 W3 W4 W5 ] ~> CSO W0 W1    W2 W3 W4 W5 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
     rule <k> #exec [ CO:CallOp     ] => #gas [ CO  , CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
+```
+
+```k
+    syntax InternalOp ::= "#load" "[" OpCode "]"
+ // --------------------------------------------
+    rule <k> #load [ OP:OpCode ] => #loadAccount W0 ~> #lookupCode W0 ... </k>
+         <wordStack> W0 : _ </wordStack>
+      requires isAddr1Op(OP)
+
+    rule <k> #load [ OP:OpCode ] => #loadAccount W1 ~> #lookupCode W1 ... </k>
+         <wordStack> _ : W1 : _ </wordStack>
+      requires isAddr2Op(OP)
+
+    rule <k> #load [ CREATE ] => #loadAccount #newAddr(ACCT, NONCE) ... </k>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <nonce> NONCE </nonce>
+           ...
+         </account>
+
+    rule <k> #load [ OP:OpCode ] => #lookupStorage ACCT W0 ... </k>
+         <id> ACCT </id>
+         <wordStack> W0 : _ </wordStack>
+      requires OP ==K SSTORE orBool OP ==K SLOAD
+
+    rule <k> #load [ OP:OpCode ] => . ... </k> [owise]
 ```
 
 ### Address Conversion
@@ -795,6 +823,16 @@ This minimizes the amount of information which must be stored in the configurati
                         | "#lookupCode"    Int
                         | "#lookupStorage" Int Int
  // ----------------------------------------------
+```
+
+In `standalone` mode, the semantics assumes that all relevant account data is already loaded into memory.
+
+In `node` mode, the semantics are given in terms of an external call to a running client.
+
+```{.k .standalone}
+    rule <k> #loadAccount   _   => . ... </k>
+    rule <k> #lookupCode    _   => . ... </k>
+    rule <k> #lookupStorage _ _ => . ... </k>
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
@@ -1605,12 +1643,15 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```
 
 `CREATE2` will attempt to `#create` the account, but with the new scheme for choosing the account address.
+Note that we cannot execute #loadAccount during the #load phase earlier because gas will not yet
+have been paid, and it may be to expensive to compute the hash of the init code.
 
 ```k
     syntax QuadStackOp ::= "CREATE2"
  // --------------------------------
     rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
-          => #checkCall ACCT VALUE
+          => #loadAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+          ~> #checkCall ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
          ...
