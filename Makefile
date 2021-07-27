@@ -5,6 +5,7 @@ UNAME_S := $(shell uname -s)
 
 DEPS_DIR      := deps
 BUILD_DIR     := .build
+NODE_DIR      := $(abspath node)
 SUBDEFN_DIR   := .
 DEFN_BASE_DIR := $(BUILD_DIR)/defn
 DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
@@ -42,7 +43,7 @@ PLUGIN_SOURCE    := $(KEVM_INCLUDE)/kframework/blockchain-k-plugin/krypto.md
 export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
-        deps all-deps llvm-deps haskell-deps k-deps plugin-deps libsecp256k1 libff                                               \
+        deps all-deps llvm-deps haskell-deps k-deps plugin-deps libsecp256k1 libff protobuf                                      \
         build build-java build-haskell build-llvm                                                                                \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
@@ -69,9 +70,11 @@ distclean:
 
 libsecp256k1_out := $(LOCAL_LIB)/pkgconfig/libsecp256k1.pc
 libff_out        := $(KEVM_LIB)/libff/lib/libff.a
+protobuf_out     := $(LOCAL_LIB)/proto/proto/msg.pb.cc
 
 libsecp256k1: $(libsecp256k1_out)
 libff:        $(libff_out)
+protobuf:     $(protobuf_out)
 
 $(libsecp256k1_out): $(PLUGIN_SUBMODULE)/deps/secp256k1/autogen.sh
 	cd $(PLUGIN_SUBMODULE)/deps/secp256k1                                 \
@@ -94,6 +97,10 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
 	    && make -s -j4                                                                                          \
 	    && make install DESTDIR=$(CURDIR)/$(BUILD_DIR)
+
+$(protobuf_out): $(NODE_DIR)/proto/msg.proto
+	@mkdir -p $(LOCAL_LIB)/proto
+	protoc --cpp_out=$(LOCAL_LIB)/proto -I $(NODE_DIR) $(NODE_DIR)/proto/msg.proto
 
 # K Dependencies
 # --------------
