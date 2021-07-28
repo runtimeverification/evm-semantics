@@ -62,17 +62,7 @@ module END-CASH-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID)
-          SetItem(Vat)
-          SetItem(1)
-          SetItem(2)
-          SetItem(3)
-          SetItem(4)
-          SetItem(5)
-          SetItem(6)
-          SetItem(7)
-          SetItem(8)
-          SetItem(9) _ </activeAccounts>
+          <activeAccounts> SetItem(ACCT_ID) SetItem(Vat) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -302,16 +292,7 @@ module END-CASH-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID)
-          SetItem(1)
-          SetItem(2)
-          SetItem(3)
-          SetItem(4)
-          SetItem(5)
-          SetItem(6)
-          SetItem(7)
-          SetItem(8)
-          SetItem(9) _ </activeAccounts>
+          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -492,16 +473,7 @@ module END-CASH-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID)
-          SetItem(1)
-          SetItem(2)
-          SetItem(3)
-          SetItem(4)
-          SetItem(5)
-          SetItem(6)
-          SetItem(7)
-          SetItem(8)
-          SetItem(9) _ </activeAccounts>
+          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -679,16 +651,7 @@ module END-CASH-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID)
-          SetItem(1)
-          SetItem(2)
-          SetItem(3)
-          SetItem(4)
-          SetItem(5)
-          SetItem(6)
-          SetItem(7)
-          SetItem(8)
-          SetItem(9) _ </activeAccounts>
+          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
