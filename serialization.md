@@ -700,25 +700,6 @@ Tree Root Helper Functions
     rule #storageRoot( STORAGE ) => MerkleUpdateMap( .MerkleTree, #intMap2StorageMap( STORAGE ) )
 ```
 
-### State Root
-
 ```k
-    syntax Map ::= #precompiledAccountsMap   ( Set )       [function]
-                 | #precompiledAccountsMapAux( List, Map ) [function]
- // -----------------------------------------------------------------
-    rule #precompiledAccountsMap( ACCTS ) => #precompiledAccountsMapAux( Set2List( ACCTS ), .Map )
-
-    rule #precompiledAccountsMapAux( .List, M ) => M
-    rule #precompiledAccountsMapAux( (ListItem( ACCT ) => .List) _, M => M[#parseByteStackRaw( Hex2Raw( #unparseData( ACCT, 20 ) ) ) <- #emptyContractRLP] )
-
-    syntax String ::= "#emptyContractRLP" [function]
- // ------------------------------------------------
-    rule #emptyContractRLP => #rlpEncodeLength(         #rlpEncodeWord(0)
-                                                +String #rlpEncodeWord(0)
-                                                +String #rlpEncodeString( Hex2Raw( Keccak256("\x80") ) )
-                                                +String #rlpEncodeString( Hex2Raw( Keccak256("") ) )
-                                              , 192
-                                              )
-
 endmodule
 ```
