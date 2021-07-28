@@ -2157,9 +2157,15 @@ There are several helpers for calculating gas (most of them also specified in th
     syntax KResult ::= Bool
     syntax BExp ::= #accountNonexistent ( Int )
  // -------------------------------------------
+    rule <k> #accountNonexistent(ACCT) => Gemptyisnonexistent << SCHED >> ... </k>
+         <schedule> SCHED </schedule>
+      requires #isPrecompiledAccount(ACCT, SCHED)
+
     rule <k> #accountNonexistent(ACCT) => true ... </k>
+         <schedule> SCHED </schedule>
          <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+      requires (notBool #isPrecompiledAccount(ACCT, SCHED))
+       andBool (notBool ACCT in ACCTS)
 
     rule <k> #accountNonexistent(ACCT) => #accountEmpty(CODE, NONCE, BAL) andBool Gemptyisnonexistent << SCHED >> ... </k>
          <schedule> SCHED </schedule>
@@ -2170,6 +2176,7 @@ There are several helpers for calculating gas (most of them also specified in th
            <code>    CODE  </code>
            ...
          </account>
+      requires notBool #isPrecompiledAccount(ACCT, SCHED)
 
     syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, klabel(accountEmpty), symbol]
  // --------------------------------------------------------------------------------------------------
