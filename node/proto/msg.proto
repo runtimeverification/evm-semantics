@@ -47,9 +47,6 @@ message EthereumConfig {
   bytes eip161BlockNumber = 5;
   bytes maxCodeSize = 6;
   bytes accountStartNonce = 7;
-  bytes byzantiumBlockNumber = 8;
-  bytes constantinopleBlockNumber = 9;
-  bytes petersburgBlockNumber = 10;
 }
 
 message IeleConfig {
@@ -66,7 +63,6 @@ message Account {
   bytes nonce = 1;
   bytes balance = 2;
   bool codeEmpty = 3;
-  bytes codeHash = 4;
 }
 
 message GetStorageData {
@@ -106,7 +102,6 @@ message CallResult {
   // touchedAccounts is specific Ethereum's EIP-161. VMs that do not follow these rules may ignore this field
   repeated bytes touchedAccounts = 8;
   repeated LogEntry logs = 9;
-  bytes statusCode = 10;
 }
 
 message ModifiedAccount {

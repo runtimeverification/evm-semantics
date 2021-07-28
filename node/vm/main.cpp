@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     fread(&buf[0], 1, len, _if);
     Hello h;
     bool success = h.ParseFromString(buf);
-    if (success && h.version() == "2.1") {
+    if (success && h.version() == "2.0") {
       while(1) {
         fread((char *)&len, 4, 1, _if);
         if (feof(_if)) {

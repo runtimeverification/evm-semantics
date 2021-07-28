@@ -228,7 +228,6 @@ CallResult run_transaction(CallContext ctx) {
   result.set_gasremaining(gasLeft);
   result.set_gasrefund(refund);
   result.set_error(error);
-  result.set_statuscode(statusCode);
   for (mpz_ptr acct : selfdestruct) {
     result.add_deletedaccounts(of_z_width(20, acct));
   }

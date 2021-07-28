@@ -79,11 +79,6 @@ bool hook_BLOCKCHAIN_isCodeEmpty(mpz_t acctID) {
   return acct->codeempty();
 }
 
-mpz_ptr hook_BLOCKCHAIN_getCodeHash(mpz_t acctID) {
-  Account *acct = get_account(acctID);
-  return to_z_unsigned(acct->codehash());
-}
-
 mpz_ptr hook_BLOCKCHAIN_getStorageData(mpz_t acctID, mpz_t index) {
   StorageData *data = get_storage_data(acctID, index);
   return to_z(data->data());

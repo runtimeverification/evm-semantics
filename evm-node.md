@@ -35,8 +35,9 @@ Because the same account may be loaded more than once, implementations of this i
 ```{.k .node}
     syntax Int  ::= #getBalance  ( Int ) [function, hook(BLOCKCHAIN.getBalance)]
                   | #getNonce    ( Int ) [function, hook(BLOCKCHAIN.getNonce)]
-                  | #getCodeHash ( Int ) [function, hook(BLOCKCHAIN.getCodeHash)]
+                  | #getCodeHash ( Int ) [function]
  // -----------------------------------------------------------------------------
+    rule #getCodeHash(ACCT) => keccak(#asByteStack(ACCT))
 
     syntax Bool ::= #isCodeEmpty   ( Int ) [function, hook(BLOCKCHAIN.isCodeEmpty)]
                   | #accountExists ( Int ) [function, hook(BLOCKCHAIN.accountExists)]
