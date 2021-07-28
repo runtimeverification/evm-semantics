@@ -149,6 +149,7 @@ kevm_files := abi.md              \
               evm.md              \
               evm-types.md        \
               hashed-locations.md \
+              infinite-gas.md     \
               json-rpc.md         \
               network.md          \
               optimizations.md    \
@@ -189,9 +190,9 @@ endif
 # Java
 
 java_dir           := java
-java_main_module   := ETHEREUM-SIMULATION
+java_main_module   := EDSL
 java_syntax_module := $(java_main_module)
-java_main_file     := driver.md
+java_main_file     := edsl.md
 java_main_filename := $(basename $(notdir $(java_main_file)))
 java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/compiled.bin
 
@@ -206,9 +207,9 @@ $(KEVM_LIB)/$(java_kompiled): $(kevm_includes) $(plugin_includes)
 # Haskell
 
 haskell_dir            := haskell
-haskell_main_module    := ETHEREUM-SIMULATION
+haskell_main_module    := EDSL
 haskell_syntax_module  := $(haskell_main_module)
-haskell_main_file      := driver.md
+haskell_main_file      := edsl.md
 haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
 haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
 

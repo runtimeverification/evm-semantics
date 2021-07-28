@@ -1,8 +1,10 @@
 requires "edsl.md"
+requires "../infinite-gas.k"
 
 module EVM-SYMBOLIC     [symbolic]
     imports EVM
     imports EDSL
+    imports INFINITE-GAS-LEMMAS
 
   // ########################
   // Ecrecover
@@ -28,22 +30,6 @@ module EVM-SYMBOLIC     [symbolic]
     //    rule A < pow256 => true requires A < pow160
     rule 0 <=Int  #symEcrec(_)             => true [simplification]
     rule          #symEcrec(_) <Int pow256 => true [simplification]
-
-  // ########################
-  // Symbolic Gas
-  // ########################
-
-    syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
- // -----------------------------------------------------------------------------------
- /*
-  startGas - gas available at the beginning of execution
-  nonMemory - gas consumed on non-memory operations
-  memory - gas consumed on memory operation
-
-  Concrete semantics:
-
-  rule #gas ( StartGas , NonMemory , Memory ) => StartGas -Int NonMemory -Int Memory
- */
 
  // callSuccess? caputures various cases where a call may fail including out of gas, insufficient balance and etc.
  // TODO: include the calldata as the argument.

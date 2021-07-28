@@ -10,12 +10,14 @@ The notations are inspired by the production compilers of the smart contract lan
 requires "buf.md"
 requires "hashed-locations.md"
 requires "abi.md"
+requires "infinite-gas.md"
 requires "optimizations.md"
 
 module EDSL
     imports BUF
     imports HASHED-LOCATIONS
     imports EVM-ABI
+    imports INFINITE-GAS
     imports EVM-OPTIMIZATIONS
 endmodule
 ```

@@ -177,7 +177,7 @@ To make sure you are using the correct `kevm`, add this directory to your `PATH`
 export PATH=$(pwd)/.build/usr/bin:$PATH
 ```
 
-Alternatively, if you work on multiple checkouts of `evm-semantics`, or other semantics, you could add the relative path `.build/usr/bin` to your `PATH`. 
+Alternatively, if you work on multiple checkouts of `evm-semantics`, or other semantics, you could add the relative path `.build/usr/bin` to your `PATH`.
 Do note, however, that this is a security concern.
 
 You can call `kevm help` to get a quick summary of how to use the script.
@@ -195,7 +195,7 @@ For example, to prove one of the specifications:
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION
 ```
 
-You can also debug proofs interactively: 
+You can also debug proofs interactively:
 
 ```sh
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION --debugger --debug-script kscript

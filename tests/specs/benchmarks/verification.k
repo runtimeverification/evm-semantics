@@ -3,6 +3,7 @@ requires "../lemmas.k"
 
 module VERIFICATION-COMMON
     imports LEMMAS
+    imports INFINITE-GAS-LEMMAS
 
   // ########################
   // Ecrecover
@@ -186,7 +187,6 @@ endmodule
 
 module VERIFICATION-HASKELL [symbolic, kore]
     imports VERIFICATION-COMMON
-    imports INFINITE-GAS
 
   // ########################
   // Arithmetic
@@ -210,9 +210,7 @@ module VERIFICATION-JAVA [symbolic, kast]
   // Symbolic Gas
   // ########################
 
-    syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
- // -----------------------------------------------------------------------------------
-    rule #gas(_, _, _) <=Int I => false  requires #isConcrete(I) [simplification]
+    rule #gas(_, _, _) <=Int I => false requires #isConcrete(I) [simplification]
 
   // ########################
   // Rule Replacement
