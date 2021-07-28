@@ -96,78 +96,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <origStorage> Flopper_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Flopper => ?_ </nonce>
             </account>
-            <account>
-              <acctID> 1 </acctID>
-              <balance> ECREC_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 2 </acctID>
-              <balance> SHA256_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 3 </acctID>
-              <balance> RIP160_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 4 </acctID>
-              <balance> ID_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 5 </acctID>
-              <balance> MODEXP_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 6 </acctID>
-              <balance> ECADD_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 7 </acctID>
-              <balance> ECMUL_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 8 </acctID>
-              <balance> ECPAIRING_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 9 </acctID>
-              <balance> BLAKE2_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
            ...
           </accounts>
           <txOrder> _ </txOrder>
@@ -182,15 +110,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
        andBool #rangeUInt(256, ACCT_ID_balance)
-       andBool #rangeUInt(256, ECREC_BAL)
-       andBool #rangeUInt(256, SHA256_BAL)
-       andBool #rangeUInt(256, RIP160_BAL)
-       andBool #rangeUInt(256, ID_BAL)
-       andBool #rangeUInt(256, MODEXP_BAL)
-       andBool #rangeUInt(256, ECADD_BAL)
-       andBool #rangeUInt(256, ECMUL_BAL)
-       andBool #rangeUInt(256, ECPAIRING_BAL)
-       andBool #rangeUInt(256, BLAKE2_BAL)
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
@@ -417,78 +336,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vow => ?_ </nonce>
             </account>
-            <account>
-              <acctID> 1 </acctID>
-              <balance> ECREC_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 2 </acctID>
-              <balance> SHA256_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 3 </acctID>
-              <balance> RIP160_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 4 </acctID>
-              <balance> ID_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 5 </acctID>
-              <balance> MODEXP_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 6 </acctID>
-              <balance> ECADD_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 7 </acctID>
-              <balance> ECMUL_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 8 </acctID>
-              <balance> ECPAIRING_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 9 </acctID>
-              <balance> BLAKE2_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
            ...
           </accounts>
           <txOrder> _ </txOrder>
@@ -503,15 +350,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
        andBool #rangeUInt(256, ACCT_ID_balance)
-       andBool #rangeUInt(256, ECREC_BAL)
-       andBool #rangeUInt(256, SHA256_BAL)
-       andBool #rangeUInt(256, RIP160_BAL)
-       andBool #rangeUInt(256, ID_BAL)
-       andBool #rangeUInt(256, MODEXP_BAL)
-       andBool #rangeUInt(256, ECADD_BAL)
-       andBool #rangeUInt(256, ECMUL_BAL)
-       andBool #rangeUInt(256, ECPAIRING_BAL)
-       andBool #rangeUInt(256, BLAKE2_BAL)
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
@@ -594,78 +432,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
             </account>
-            <account>
-              <acctID> 1 </acctID>
-              <balance> ECREC_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 2 </acctID>
-              <balance> SHA256_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 3 </acctID>
-              <balance> RIP160_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 4 </acctID>
-              <balance> ID_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 5 </acctID>
-              <balance> MODEXP_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 6 </acctID>
-              <balance> ECADD_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 7 </acctID>
-              <balance> ECMUL_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 8 </acctID>
-              <balance> ECPAIRING_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 9 </acctID>
-              <balance> BLAKE2_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
            ...
           </accounts>
           <txOrder> _ </txOrder>
@@ -680,15 +446,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
        andBool #rangeUInt(256, ACCT_ID_balance)
-       andBool #rangeUInt(256, ECREC_BAL)
-       andBool #rangeUInt(256, SHA256_BAL)
-       andBool #rangeUInt(256, RIP160_BAL)
-       andBool #rangeUInt(256, ID_BAL)
-       andBool #rangeUInt(256, MODEXP_BAL)
-       andBool #rangeUInt(256, ECADD_BAL)
-       andBool #rangeUInt(256, ECMUL_BAL)
-       andBool #rangeUInt(256, ECPAIRING_BAL)
-       andBool #rangeUInt(256, BLAKE2_BAL)
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
@@ -773,78 +530,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
             </account>
-            <account>
-              <acctID> 1 </acctID>
-              <balance> ECREC_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 2 </acctID>
-              <balance> SHA256_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 3 </acctID>
-              <balance> RIP160_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 4 </acctID>
-              <balance> ID_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 5 </acctID>
-              <balance> MODEXP_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 6 </acctID>
-              <balance> ECADD_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 7 </acctID>
-              <balance> ECMUL_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 8 </acctID>
-              <balance> ECPAIRING_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 9 </acctID>
-              <balance> BLAKE2_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
            ...
           </accounts>
           <txOrder> _ </txOrder>
@@ -859,15 +544,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
        andBool #rangeUInt(256, ACCT_ID_balance)
-       andBool #rangeUInt(256, ECREC_BAL)
-       andBool #rangeUInt(256, SHA256_BAL)
-       andBool #rangeUInt(256, RIP160_BAL)
-       andBool #rangeUInt(256, ID_BAL)
-       andBool #rangeUInt(256, MODEXP_BAL)
-       andBool #rangeUInt(256, ECADD_BAL)
-       andBool #rangeUInt(256, ECMUL_BAL)
-       andBool #rangeUInt(256, ECPAIRING_BAL)
-       andBool #rangeUInt(256, BLAKE2_BAL)
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
@@ -952,78 +628,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
             </account>
-            <account>
-              <acctID> 1 </acctID>
-              <balance> ECREC_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 2 </acctID>
-              <balance> SHA256_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 3 </acctID>
-              <balance> RIP160_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 4 </acctID>
-              <balance> ID_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 5 </acctID>
-              <balance> MODEXP_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 6 </acctID>
-              <balance> ECADD_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 7 </acctID>
-              <balance> ECMUL_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 8 </acctID>
-              <balance> ECPAIRING_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 9 </acctID>
-              <balance> BLAKE2_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
            ...
           </accounts>
           <txOrder> _ </txOrder>
@@ -1038,15 +642,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
        andBool #rangeUInt(256, ACCT_ID_balance)
-       andBool #rangeUInt(256, ECREC_BAL)
-       andBool #rangeUInt(256, SHA256_BAL)
-       andBool #rangeUInt(256, RIP160_BAL)
-       andBool #rangeUInt(256, ID_BAL)
-       andBool #rangeUInt(256, MODEXP_BAL)
-       andBool #rangeUInt(256, ECADD_BAL)
-       andBool #rangeUInt(256, ECMUL_BAL)
-       andBool #rangeUInt(256, ECPAIRING_BAL)
-       andBool #rangeUInt(256, BLAKE2_BAL)
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
@@ -1161,78 +756,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <origStorage> Vat_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
             </account>
-            <account>
-              <acctID> 1 </acctID>
-              <balance> ECREC_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 2 </acctID>
-              <balance> SHA256_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 3 </acctID>
-              <balance> RIP160_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 4 </acctID>
-              <balance> ID_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 5 </acctID>
-              <balance> MODEXP_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 6 </acctID>
-              <balance> ECADD_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 7 </acctID>
-              <balance> ECMUL_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 8 </acctID>
-              <balance> ECPAIRING_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 9 </acctID>
-              <balance> BLAKE2_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
            ...
           </accounts>
           <txOrder> _ </txOrder>
@@ -1247,15 +770,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
        andBool #rangeUInt(256, ACCT_ID_balance)
-       andBool #rangeUInt(256, ECREC_BAL)
-       andBool #rangeUInt(256, SHA256_BAL)
-       andBool #rangeUInt(256, RIP160_BAL)
-       andBool #rangeUInt(256, ID_BAL)
-       andBool #rangeUInt(256, MODEXP_BAL)
-       andBool #rangeUInt(256, ECADD_BAL)
-       andBool #rangeUInt(256, ECMUL_BAL)
-       andBool #rangeUInt(256, ECPAIRING_BAL)
-       andBool #rangeUInt(256, BLAKE2_BAL)
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
@@ -1375,78 +889,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Flopper => ?_ </nonce>
             </account>
-            <account>
-              <acctID> 1 </acctID>
-              <balance> ECREC_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 2 </acctID>
-              <balance> SHA256_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 3 </acctID>
-              <balance> RIP160_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 4 </acctID>
-              <balance> ID_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 5 </acctID>
-              <balance> MODEXP_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 6 </acctID>
-              <balance> ECADD_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 7 </acctID>
-              <balance> ECMUL_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 8 </acctID>
-              <balance> ECPAIRING_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 9 </acctID>
-              <balance> BLAKE2_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
            ...
           </accounts>
           <txOrder> _ </txOrder>
@@ -1461,15 +903,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
        andBool #rangeUInt(256, ACCT_ID_balance)
-       andBool #rangeUInt(256, ECREC_BAL)
-       andBool #rangeUInt(256, SHA256_BAL)
-       andBool #rangeUInt(256, RIP160_BAL)
-       andBool #rangeUInt(256, ID_BAL)
-       andBool #rangeUInt(256, MODEXP_BAL)
-       andBool #rangeUInt(256, ECADD_BAL)
-       andBool #rangeUInt(256, ECMUL_BAL)
-       andBool #rangeUInt(256, ECPAIRING_BAL)
-       andBool #rangeUInt(256, BLAKE2_BAL)
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
