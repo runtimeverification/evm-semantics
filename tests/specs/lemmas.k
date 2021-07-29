@@ -76,8 +76,6 @@ module LEMMAS
     rule MEM [ K1 := BUF1:ByteArray ] [ K2 := BUF2:ByteArray ] => MEM [ K2 := BUF2 ] [ K1 := BUF1 ]  requires         #sizeByteArray(BUF2) <=Int K1 -Int K2                   andBool K2  <Int K1 [simplification]
     // overwritten assignment
     rule MEM [ K1 := BUF1           ] [ K2 := BUF2           ] => MEM [ K2 := BUF2 ]                 requires K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2) andBool K2 <=Int K1 [simplification]
-    // redundant assignment
-    rule MEM [ K  := BUF1           ] [ K  := BUF2           ] => MEM [ K  := BUF2 ]                 requires         #sizeByteArray(BUF1) ==Int #sizeByteArray(BUF2)                             [simplification]
 
     // lookup range in memory
     rule _MEM [ _ .. W ] => .ByteArray  requires W ==Int 0                    [simplification]
@@ -188,17 +186,17 @@ module LEMMAS-JAVA [symbolic, kast]
     // 3 terms
 
     // symbolic first: A, J, K
-    rule (A  +Int  J) +Int  K  =>  A  +Int (J  +Int  K) requires #isConcrete(J) andBool #isConcrete(K) andBool (notBool #isConcrete(A)) [simplification]
+    rule (A  +Int  J) +Int  K  => (J +Int K) +Int A  requires #isConcrete(J) andBool #isConcrete(K) andBool (notBool #isConcrete(A)) [simplification]
     // symbolic second: I, B, K
-    rule  I  +Int (B  +Int  K) => (I  +Int  K) +Int  B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
-    rule  I  -Int (B  +Int  K) => (I  -Int  K) -Int  B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
-    rule (I  -Int  B) +Int  K  => (I  +Int  K) -Int  B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
+    rule  I  +Int (B  +Int  K) => (I +Int K) +Int B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
+    rule  I  -Int (B  +Int  K) => (I -Int K) -Int B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
+    rule (I  -Int  B) +Int  K  => (I +Int K) -Int B  requires #isConcrete(I) andBool #isConcrete(K) andBool (notBool #isConcrete(B)) [simplification]
     // symbolic third: I, J, C
-    rule  I  +Int (J  +Int  C) => (I  +Int  J) +Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
-    rule  I  +Int (J  -Int  C) => (I  +Int  J) -Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
-    rule  I  -Int (J  +Int  C) => (I  -Int  J) -Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
-    rule  I  -Int (J  -Int  C) => (I  -Int  J) +Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
-    rule  I  &Int (J  &Int  C) => (I  &Int  J) &Int  C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+    rule  I  +Int (J  +Int  C) => (I +Int J) +Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+    rule  I  +Int (J  -Int  C) => (I +Int J) -Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+    rule  I  -Int (J  +Int  C) => (I -Int J) -Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+    rule  I  -Int (J  -Int  C) => (I -Int J) +Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
+    rule  I  &Int (J  &Int  C) => (I &Int J) &Int C  requires #isConcrete(I) andBool #isConcrete(J) andBool (notBool #isConcrete(C)) [simplification]
 
     // 0xffff...f &Int N = N
     // MASK = 0xffff...f
@@ -290,7 +288,6 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
 
     rule N &Int maxUInt160 => N  requires #rangeUInt(160, N) [simplification]
-
     rule maxUInt160 &Int N => N  requires #rangeUInt(160, N) [simplification]
 
     rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
