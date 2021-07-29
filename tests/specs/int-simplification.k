@@ -5,6 +5,7 @@ endmodule
 
 module INT-SIMPLIFICATION-JAVA
     imports INT-SIMPLIFICATION-COMMON
+    imports K-REFLECTION
 
   // ###########################################################################
   // lemmas.k
@@ -30,6 +31,10 @@ module INT-SIMPLIFICATION-JAVA
   // ###########################################################################
   // infinite-gas.k
   // ###########################################################################
+
+    rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 requires #isConcrete(C2) andBool #isConcrete(C3) [simplification]
+    rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
+    rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
 endmodule
 
 module INT-SIMPLIFICATION-HASKELL

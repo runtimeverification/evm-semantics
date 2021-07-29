@@ -1,4 +1,5 @@
 requires "evm.md"
+requires "./int-simplification.k"
 
  //
  // Infinite Gas
@@ -10,6 +11,7 @@ requires "evm.md"
  //
 
 module INFINITE-GAS
+    imports INT-SIMPLIFICATION
     imports INFINITE-GAS-JAVA
     imports INFINITE-GAS-HASKELL
 endmodule
@@ -22,10 +24,6 @@ module INFINITE-GAS-JAVA [kast]
     rule #gas(_) <=Int C => false requires #isConcrete(C) [simplification]
     rule #gas(_) >=Int C => true  requires #isConcrete(C) [simplification]
     rule C <=Int #gas(_) => true  requires #isConcrete(C) [simplification]
-
-    rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 requires #isConcrete(C2) andBool #isConcrete(C3) [simplification]
-    rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
-    rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
 
     rule C1 +Int S2 => S2 +Int C1 requires #isConcrete(C1) andBool notBool #isConcrete(S2) [simplification]
 
