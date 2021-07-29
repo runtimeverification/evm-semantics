@@ -97,4 +97,17 @@ module INT-SIMPLIFICATION-COMMON
   // ###########################################################################
   // infinite-gas.k
   // ###########################################################################
+
+    rule I -Int I => 0                                                    [simplification]
+    rule   (I1 -Int I2)                   +Int I2 =>  I1                  [simplification]
+    rule  ((I1 -Int I2) -Int I3)          +Int I2 =>  I1 -Int I3          [simplification]
+    rule (((I1 -Int I2) -Int I3) -Int I4) +Int I2 => (I1 -Int I3) -Int I4 [simplification]
+
+    rule X -Int Y +Int Z <=Int A => false requires A <Int X -Int Y andBool 0 <=Int Z [simplification]
+
+    rule minInt(G, G') <Int G''  => G <Int G'' orBool G' <Int G''  [simplification]
+    rule G  <Int minInt(G', G'') => G  <Int G' andBool G  <Int G'' [simplification]
+    rule G <=Int minInt(G', G'') => G <=Int G' andBool G <=Int G'' [simplification]
+
+    rule 0 <=Int X *Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
 endmodule
