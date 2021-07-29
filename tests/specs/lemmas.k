@@ -1,7 +1,9 @@
 requires "evm.md"
 requires "edsl.md"
+requires "./int-simplification.k"
 
 module LEMMAS
+    imports INT-SIMPLIFICATION
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
 
@@ -13,18 +15,10 @@ module LEMMAS
     rule 0 <=Int #ceil32(I)        => true requires 0 <=Int I [simplification, smt-lemma]
     rule 0 <=Int #ceil32(I) -Int I => true requires 0 <=Int I [simplification]
 
-    //Inequality sign normalization
-    rule          X  >Int Y  => Y  <Int X            [simplification]
-    rule          X >=Int Y  => Y <=Int X            [simplification]
-    rule notBool (X  <Int Y) => Y <=Int X            [simplification]
-    rule notBool (X <=Int Y) => Y  <Int X            [simplification]
-
     // chop range & simplification
     rule chop(I) => I requires #rangeUInt( 256 , I ) [simplification]
     rule 0 <=Int chop(_V)             => true        [simplification]
     rule         chop(_V) <Int pow256 => true        [simplification]
-
-    rule N /Int 1 => N  [simplification]
 
   // ########################
   // Set Reasoning
@@ -181,18 +175,8 @@ module LEMMAS-JAVA [symbolic, kast]
   // Arithmetic
   // ########################
 
-    rule 1 *Int N => N
-    rule N *Int 1 => N
-    rule 0 *Int _ => 0
-    rule _ *Int 0 => 0
-
-    rule 0 |Int N => N
-    rule N |Int 0 => N
-    rule N |Int N => N
-
-    rule  0 &Int _N => 0
-    rule _N &Int  0 => 0
-    rule  N &Int  N => N
+    // TODO: figure out how to safely override these with associativity rules 
+    //       from infinite-gas.k
 
     // 2 terms
 
@@ -273,10 +257,6 @@ module LEMMAS-JAVA [symbolic, kast]
     rule I                   ==K bool2Word( B:Bool ) => bool2Word(B) ==Int I             requires #isConcrete(I) [simplification]
     rule bool2Word( B:Bool ) ==K I                   => B            ==K   word2Bool(I)  requires #isConcrete(I) [simplification]
 
-    //For #bufStrict simplification in benchmarks
-    rule 0  <Int 2 ^Int I => true       requires 0 <=Int I [simplification]
-    rule 0 <=Int I *Int 8 => 0 <=Int I                     [simplification]
-
 endmodule
 
 module LEMMAS-HASKELL [symbolic, kore]
@@ -314,11 +294,6 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule maxUInt160 &Int N => N  requires #rangeUInt(160, N) [simplification]
 
     rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
-
-    rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
-
-    rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
-
 
   // ########################
   // Buffer Reasoning
