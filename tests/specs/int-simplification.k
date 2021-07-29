@@ -1,22 +1,6 @@
 module INT-SIMPLIFICATION
     imports INT-SIMPLIFICATION-JAVA
     imports INT-SIMPLIFICATION-HASKELL
-
-  // ###########################################################################
-  // lemmas.k
-  // ###########################################################################    
-
-    //Inequality sign normalization
-    rule          X  >Int Y  => Y  <Int X            [simplification]
-    rule          X >=Int Y  => Y <=Int X            [simplification]
-    rule notBool (X  <Int Y) => Y <=Int X            [simplification]
-    rule notBool (X <=Int Y) => Y  <Int X            [simplification]
-
-    rule N /Int 1 => N  [simplification]
-
-  // ###########################################################################
-  // infinite-gas.k
-  // ###########################################################################
 endmodule
 
 module INT-SIMPLIFICATION-JAVA
@@ -97,4 +81,20 @@ endmodule
 module INT-SIMPLIFICATION-COMMON
     imports INT
     imports BOOL
+
+  // ###########################################################################
+  // lemmas.k
+  // ###########################################################################    
+
+    //Inequality sign normalization
+    rule          X  >Int Y  => Y  <Int X            [simplification]
+    rule          X >=Int Y  => Y <=Int X            [simplification]
+    rule notBool (X  <Int Y) => Y <=Int X            [simplification]
+    rule notBool (X <=Int Y) => Y  <Int X            [simplification]
+
+    rule N /Int 1 => N  [simplification]
+
+  // ###########################################################################
+  // infinite-gas.k
+  // ###########################################################################
 endmodule
