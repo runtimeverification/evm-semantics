@@ -89,99 +89,45 @@ module INT-SIMPLIFICATION-COMMON
     imports BOOL
 
   // ###########################################################################
-  // lemmas.k
+  // reorganized
   // ###########################################################################    
 
-    //Inequality sign normalization
-    rule          X  >Int Y  => Y  <Int X            [simplification]
-    rule          X >=Int Y  => Y <=Int X            [simplification]
-    rule notBool (X  <Int Y) => Y <=Int X            [simplification]
-    rule notBool (X <=Int Y) => Y  <Int X            [simplification]
-
-    rule N /Int 1 => N  [simplification]
-
-    rule 1 *Int N => N
-    rule N *Int 1 => N
-    rule 0 *Int _ => 0
-    rule _ *Int 0 => 0
-
-    rule 0 |Int N => N
-    rule N |Int 0 => N
-    rule N |Int N => N
-
-    rule  0 &Int _N => 0
-    rule _N &Int  0 => 0
-    rule  N &Int  N => N
-
-    rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
-
-    rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
-
-  // ###########################################################################
-  // infinite-gas.k
-  // ###########################################################################
-
+  // add, sub
+    rule (A +Int I2) +Int (I3 -Int A) => I2 +Int I3 [simplification]
+    rule (A +Int I2) -Int (A +Int I3) => I2 -Int I3 [simplification]
+    rule (A +Int I2) -Int (I3 +Int A) => I2 -Int I3 [simplification]
+    rule (I1 +Int I2) -Int (I3 +Int I1) => I2 -Int I3 [simplification]
+    rule A -Int (A -Int I1) => I1 [simplification]
+    rule (A +Int I1) -Int A => I1 [simplification]
+    rule (A +Int B) +Int (C -Int B) => A +Int C [simplification]
+    rule (A +Int B +Int C) -Int (A +Int D) => B +Int (C -Int D) [simplification]
+    rule (A +Int B +Int C +Int D +Int E) -Int (A +Int C +Int F) => B +Int D +Int E -Int F [simplification]
+    rule A +Int (I1 -Int A) => I1 [simplification]
+    rule (I1 +Int (A -Int I0)) +Int (I2 -Int A) => I1 +Int (I2 -Int I0) [simplification]
+    rule N -Int N => 0 [simplification]
+    rule N -Int N => 0 [simplification]
+    rule I -Int 0 => I [simplification]
+    rule 0 +Int I => I [simplification]
+    rule I +Int 0 => I [simplification]
     rule I -Int I => 0                                                    [simplification]
-
     rule   (I1 -Int I2)                   +Int I2 =>  I1                  [simplification]
     rule  ((I1 -Int I2) -Int I3)          +Int I2 =>  I1 -Int I3          [simplification]
     rule (((I1 -Int I2) -Int I3) -Int I4) +Int I2 => (I1 -Int I3) -Int I4 [simplification]
 
-    rule X -Int Y +Int Z <=Int A => false requires A <Int X -Int Y andBool 0 <=Int Z [simplification]
-
-    rule minInt(G, G') <Int G''  => G <Int G'' orBool G' <Int G''  [simplification]
-    rule G  <Int minInt(G', G'') => G  <Int G' andBool G  <Int G'' [simplification]
-    rule G <=Int minInt(G', G'') => G <=Int G' andBool G <=Int G'' [simplification]
-
-    rule 0 <=Int X *Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
-
-  // ###########################################################################
-  // benchmarks/verification.k
-  // ###########################################################################
-  
-    rule (A +Int I2) +Int (I3 -Int A) => I2 +Int I3 [simplification]
-    rule (A +Int I2) -Int (A +Int I3) => I2 -Int I3 [simplification]
-    rule (A +Int I2) -Int (I3 +Int A) => I2 -Int I3 [simplification]
-
-    rule (I1 +Int I2) -Int (I3 +Int I1) => I2 -Int I3 [simplification]
-
-    rule A -Int (A -Int I1) => I1 [simplification]
-
-    rule (A +Int I1) -Int A => I1 [simplification]
-
-    rule (A +Int B) +Int (C -Int B) => A +Int C [simplification]
-
-    rule (A +Int B +Int C) -Int (A +Int D) => B +Int (C -Int D) [simplification]
-
-    rule (A +Int B +Int C +Int D +Int E) -Int (A +Int C +Int F) => B +Int D +Int E -Int F [simplification]
-
-    // Simplify Cmem(_,_) - Cmem(_, _)
-    rule A +Int (I1 -Int A) => I1 [simplification]
-    rule (I1 +Int (A -Int I0)) +Int (I2 -Int A) => I1 +Int (I2 -Int I0) [simplification]
-
-    // safeMath mul check c / a == b where c == a * b
-    rule (X *Int Y) /Int X => Y  requires X =/=Int 0 [simplification]
-
+  // mul
+    rule 1 *Int N => N
+    rule N *Int 1 => N
+    rule 0 *Int _ => 0
+    rule _ *Int 0 => 0
     rule I1 *Int A +Int I2 *Int A => (I1 +Int I2) *Int A [simplification]
-
     rule I1 *Int A +Int B +Int C +Int D +Int I2 *Int A => (I1 +Int I2) *Int A +Int B +Int C +Int D [simplification]
 
-    rule N -Int N => 0 [simplification]
-
-    rule X modInt Y => X  requires 0 <=Int X andBool X <Int Y [simplification]
-
+  // div
+    rule N /Int 1 => N  [simplification]
+    // safeMath mul check c / a == b where c == a * b
+    rule (X *Int Y) /Int X => Y  requires X =/=Int 0 [simplification]
     rule ((X *Int Y) /Int Z) /Int Y => X /Int Z  requires Y =/=Int 0 [simplification]
-
     rule (X /Int 32) *Int 32 => X  requires X modInt 32 ==Int 0 [simplification]
-
-    rule 0 <Int 1 <<Int N => true  requires 0 <=Int N [simplification]
-
-  // ###########################################################################
-  // bihu/verification.k
-  // ###########################################################################
-
-    rule N -Int N => 0 [simplification]
-
     rule (I1 *Int I2) /Int I3 <=Int I4 => true
       requires  0  <=Int I1
        andBool  0  <=Int I2
@@ -190,19 +136,58 @@ module INT-SIMPLIFICATION-COMMON
        andBool  I2 <=Int I3
       [simplification]
 
-    rule I1 +Int I2 <Int I1 => false requires 0 <=Int I2 [simplification]
+  // inc-or
+    rule 0 |Int N => N
+    rule N |Int 0 => N
+    rule N |Int N => N
 
+  // bit-and
+    rule  0 &Int _N => 0
+    rule _N &Int  0 => 0
+    rule  N &Int  N => N
+
+  // mod
+    rule X modInt Y => X  requires 0 <=Int X andBool X <Int Y [simplification]
+
+  // max, min
+    rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
+
+
+  // inequality
+    rule I1 +Int I2 <Int I1 => false requires 0 <=Int I2 [simplification]
     rule I1 <Int I1 -Int I2 => false requires 0 <=Int I2 [simplification]
+    rule 0 <Int 1 <<Int N => true  requires 0 <=Int N [simplification]
+    //Inequality sign normalization
+    rule          X  >Int Y  => Y  <Int X            [simplification]
+    rule          X >=Int Y  => Y <=Int X            [simplification]
+    rule notBool (X  <Int Y) => Y <=Int X            [simplification]
+    rule notBool (X <=Int Y) => Y  <Int X            [simplification]
+    rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
+    rule X -Int Y +Int Z <=Int A => false requires A <Int X -Int Y andBool 0 <=Int Z [simplification]
+    rule minInt(G, G') <Int G''  => G <Int G'' orBool G' <Int G''  [simplification]
+    rule G  <Int minInt(G', G'') => G  <Int G' andBool G  <Int G'' [simplification]
+    rule G <=Int minInt(G', G'') => G <=Int G' andBool G <=Int G'' [simplification]
+    rule 0 <=Int X *Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
+
+  // ###########################################################################
+  // lemmas.k
+  // ###########################################################################    
+
+  // ###########################################################################
+  // infinite-gas.k
+  // ###########################################################################
+
+  // ###########################################################################
+  // benchmarks/verification.k
+  // ###########################################################################
+
+  // ###########################################################################
+  // bihu/verification.k
+  // ###########################################################################
 
   // ###########################################################################
   // opcodes/verification.k
   // ###########################################################################
-
-    rule I -Int 0 => I [simplification]
-
-    rule 0 +Int I => I [simplification]
-
-    rule I +Int 0 => I [simplification]
 
   // ###########################################################################
   // bihu/verification.k
