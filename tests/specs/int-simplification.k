@@ -3,7 +3,7 @@ module INT-SIMPLIFICATION
     imports INT-SIMPLIFICATION-HASKELL
 endmodule
 
-module INT-SIMPLIFICATION-JAVA
+module INT-SIMPLIFICATION-JAVA [symbolic, kast]
     imports INT-SIMPLIFICATION-COMMON
     imports K-REFLECTION
 
@@ -24,7 +24,7 @@ module INT-SIMPLIFICATION-JAVA
     rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
 endmodule
 
-module INT-SIMPLIFICATION-HASKELL
+module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
     imports INT-SIMPLIFICATION-COMMON
 
   // ###########################################################################
