@@ -177,6 +177,7 @@ bool get_error(mpz_ptr);
 
 CallResult run_transaction(CallContext ctx) {
   std::cerr << ctx.DebugString() << std::endl;
+
   bool iscreate = ctx.recipientaddr().size() == 0;
   mpz_ptr to = to_z_unsigned(ctx.recipientaddr());
   mpz_ptr from = to_z_unsigned(ctx.calleraddr());
@@ -190,25 +191,38 @@ CallResult run_transaction(CallContext ctx) {
   mpz_ptr gaslimit = to_z_unsigned(ctx.blockheader().gaslimit());
   mpz_t timestamp;
   mpz_init_set_ui(timestamp, ctx.blockheader().unixtimestamp());
+
   static uint64_t mode = (((uint64_t)getTagForSymbolName("LblNORMAL{}")) << 32) | 1;
   inj *modeinj = (inj *)koreAlloc(sizeof(inj));
   static blockheader hdr = getBlockHeaderForSymbol(getTagForSymbolName("inj{SortMode{}, SortKItem{}}"));
   modeinj->h = hdr;
   modeinj->data = (block*)mode;
+
   uint64_t schedule = get_schedule(number, &ctx);
   inj *scheduleinj = (inj *)koreAlloc(sizeof(inj));
   static blockheader hdr2 = getBlockHeaderForSymbol(getTagForSymbolName("inj{SortSchedule{}, SortKItem{}}"));
   scheduleinj->h = hdr2;
   scheduleinj->data = (block*)schedule;
+
+  static blockheader injHeaderInt = getBlockHeaderForSymbol(getTagForSymbolName("inj{SortInt{}, SortKItem{}}"));
+  mpz_t chainid_z;
+  mpz_init_set_si(chainid_z, 1);
+  zinj *chainidinj = (zinj *)koreAlloc(sizeof(zinj));
+  chainidinj->h = injHeaderInt;
+  chainidinj->data = move_int(chainid_z);
+
   block* inj = make_k_cell(iscreate, to, from, in.code, in.args, value, gasprice, gas, beneficiary, difficulty, number, gaslimit, move_int(timestamp), in.function);
+
   map withSched = hook_MAP_element(configvar("$SCHEDULE"), (block *)scheduleinj);
   map withMode = hook_MAP_update(&withSched, configvar("$MODE"), (block *)modeinj);
-  map init = hook_MAP_update(&withMode, configvar("$PGM"), inj);
+  map withChainid = hook_MAP_update(&withMode, configvar("$CHAINID"), (block *)chainidinj);
+  map init = hook_MAP_update(&withChainid, configvar("$PGM"), inj);
   static uint32_t tag2 = getTagForSymbolName("LblinitGeneratedTopCell{}");
   void *arr[1];
   arr[0] = &init;
   block* init_config = (block *)evaluateFunctionSymbol(tag2, arr);
   block* final_config = take_steps(-1, init_config);
+
   static uint32_t tag3 = getTagForSymbolName("LblextractConfig{}");
   arr[0] = final_config;
   tx_result* extracted = (tx_result *)evaluateFunctionSymbol(tag3, arr);
@@ -222,6 +236,7 @@ CallResult run_transaction(CallContext ctx) {
   auto touched = set_to_zs(&extracted->touched);
   auto accounts = k_to_accts(&extracted->accounts->data);
   auto logs = k_to_logs(&extracted->logs);
+
   CallResult result;
   result.set_returndata(ret_data);
   result.set_returncode(status);
@@ -244,8 +259,11 @@ CallResult run_transaction(CallContext ctx) {
     auto log_pb = result.add_logs();
     k_to_log(log, log_pb);
   }
+
   std::cerr << result.DebugString() << std::endl;
+
   clear_cache();
+
   return result;
 }
  
