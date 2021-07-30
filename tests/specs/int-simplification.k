@@ -192,4 +192,14 @@ module INT-SIMPLIFICATION-COMMON
     rule I1 +Int I2 <Int I1 => false requires 0 <=Int I2 [simplification]
 
     rule I1 <Int I1 -Int I2 => false requires 0 <=Int I2 [simplification]
+
+  // ###########################################################################
+  // opcodes/verification.k
+  // ###########################################################################
+
+    rule I -Int 0 => I [simplification]
+
+    rule 0 +Int I => I [simplification]
+
+    rule I +Int 0 => I [simplification]
 endmodule

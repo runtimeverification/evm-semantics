@@ -29,11 +29,6 @@ module VERIFICATION
   // Arithmetic
   // ########################
 
-    rule I -Int 0 => I [simplification]
-
-    rule 0 +Int I => I [simplification]
-
-    rule I +Int 0 => I [simplification]
 
     rule chop(I) => I  requires 0 <=Int I andBool I <Int pow256 [simplification]
 
