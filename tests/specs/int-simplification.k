@@ -110,4 +110,47 @@ module INT-SIMPLIFICATION-COMMON
     rule G <=Int minInt(G', G'') => G <=Int G' andBool G <=Int G'' [simplification]
 
     rule 0 <=Int X *Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
+
+  // ###########################################################################
+  // benchmarks/verification.k
+  // ###########################################################################
+  
+    rule (A +Int I2) +Int (I3 -Int A) => I2 +Int I3 [simplification]
+    rule (A +Int I2) -Int (A +Int I3) => I2 -Int I3 [simplification]
+    rule (A +Int I2) -Int (I3 +Int A) => I2 -Int I3 [simplification]
+
+    rule (I1 +Int I2) -Int (I3 +Int I1) => I2 -Int I3 [simplification]
+
+    rule A -Int (A -Int I1) => I1 [simplification]
+
+    rule (A +Int I1) -Int A => I1 [simplification]
+
+    rule (A +Int B) +Int (C -Int B) => A +Int C [simplification]
+
+    rule (A +Int B +Int C) -Int (A +Int D) => B +Int (C -Int D) [simplification]
+
+    rule (A +Int B +Int C +Int D +Int E) -Int (A +Int C +Int F) => B +Int D +Int E -Int F [simplification]
+
+    // Simplify Cmem(_,_) - Cmem(_, _)
+    rule A +Int (I1 -Int A) => I1 [simplification]
+    rule (I1 +Int (A -Int I0)) +Int (I2 -Int A) => I1 +Int (I2 -Int I0) [simplification]
+
+    // safeMath mul check c / a == b where c == a * b
+    rule (X *Int Y) /Int X => Y  requires X =/=Int 0 [simplification]
+
+    rule I1 *Int A +Int I2 *Int A => (I1 +Int I2) *Int A [simplification]
+
+    rule I1 *Int A +Int B +Int C +Int D +Int I2 *Int A => (I1 +Int I2) *Int A +Int B +Int C +Int D [simplification]
+
+    rule N -Int N => 0 [simplification]
+
+    rule X modInt Y => X  requires 0 <=Int X andBool X <Int Y [simplification]
+
+    rule ((X *Int Y) /Int Z) /Int Y => X /Int Z  requires Y =/=Int 0 [simplification]
+
+    rule (X /Int 32) *Int 32 => X  requires X modInt 32 ==Int 0 [simplification]
+
+    rule 0 <Int 1 <<Int N => true  requires 0 <=Int N [simplification]
+
+
 endmodule
