@@ -122,6 +122,7 @@ module INT-SIMPLIFICATION-COMMON
   // ###########################################################################
 
     rule I -Int I => 0                                                    [simplification]
+
     rule   (I1 -Int I2)                   +Int I2 =>  I1                  [simplification]
     rule  ((I1 -Int I2) -Int I3)          +Int I2 =>  I1 -Int I3          [simplification]
     rule (((I1 -Int I2) -Int I3) -Int I4) +Int I2 => (I1 -Int I3) -Int I4 [simplification]
@@ -202,4 +203,10 @@ module INT-SIMPLIFICATION-COMMON
     rule 0 +Int I => I [simplification]
 
     rule I +Int 0 => I [simplification]
+
+  // ###########################################################################
+  // bihu/verification.k
+  // ###########################################################################
+
+    // NOTE: there are no rules to pull out here
 endmodule
