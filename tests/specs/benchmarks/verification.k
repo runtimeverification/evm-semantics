@@ -152,12 +152,6 @@ module VERIFICATION-HASKELL [symbolic, kore]
     imports INFINITE-GAS
 
   // ########################
-  // Arithmetic
-  // ########################
-
-    rule X +Int Y <Int Z => X <Int Z -Int Y [concrete(Y), simplification]
-
-  // ########################
   // Buffer Reasoning
   // ########################
 
@@ -212,20 +206,6 @@ module VERIFICATION-JAVA [symbolic, kast]
   // ########################
   // Arithmetic
   // ########################
-
-    rule ((A +Int I1) +Int B) +Int I2 => (A +Int B) +Int (I1 +Int I2)
-      requires notBool #isConcrete(A)
-       andBool notBool #isConcrete(B)
-       andBool #isConcrete(I1)
-       andBool #isConcrete(I2)
-      [simplification]
-
-    rule (A +Int I1) +Int (B +Int I2) => (A +Int B) +Int (I1 +Int I2)
-      requires notBool #isConcrete(A)
-       andBool notBool #isConcrete(B)
-       andBool #isConcrete(I1)
-       andBool #isConcrete(I2)
-      [simplification]
 
     rule chop(X +Int Y) => X +Int Y
       requires #range(0 <= X <= pow16)

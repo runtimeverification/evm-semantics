@@ -22,6 +22,24 @@ module INT-SIMPLIFICATION-JAVA [symbolic, kast]
     rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 requires #isConcrete(C2) andBool #isConcrete(C3) [simplification]
     rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
     rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
+
+  // ###########################################################################
+  // benchmarks/verification.k
+  // ###########################################################################
+
+    rule ((A +Int I1) +Int B) +Int I2 => (A +Int B) +Int (I1 +Int I2)
+      requires notBool #isConcrete(A)
+       andBool notBool #isConcrete(B)
+       andBool #isConcrete(I1)
+       andBool #isConcrete(I2)
+      [simplification]
+
+    rule (A +Int I1) +Int (B +Int I2) => (A +Int B) +Int (I1 +Int I2)
+      requires notBool #isConcrete(A)
+       andBool notBool #isConcrete(B)
+       andBool #isConcrete(I1)
+       andBool #isConcrete(I2)
+      [simplification]
 endmodule
 
 module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
@@ -59,6 +77,11 @@ module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
     rule (S1 -Int C2) +Int C3 => S1 +Int (C3 -Int C2) [concrete(C2, C3), symbolic(S1), simplification]
     rule (S1 -Int C2) -Int C3 => S1 -Int (C2 +Int C3) [concrete(C2, C3), symbolic(S1), simplification]
 
+  // ###########################################################################
+  // benchmarks/verification.k
+  // ###########################################################################
+
+    rule X +Int Y <Int Z => X <Int Z -Int Y [concrete(Y), simplification]
 endmodule
 
 module INT-SIMPLIFICATION-COMMON
