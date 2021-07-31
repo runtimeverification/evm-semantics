@@ -42,19 +42,13 @@ module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
     imports INT-SIMPLIFICATION-COMMON
 
   // ###########################################################################
-  // lemmas.k
+  // add, sub
   // ###########################################################################
 
-  // ###########################################################################
-  // infinite-gas.k
-  // ###########################################################################
-
-    rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 [concrete(C2, C3), simplification]
-    rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         [concrete(C1, C3), simplification]
-    rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         [concrete(C1, C3), simplification]
+    // associativity normalization
 
     rule C1 +Int S2 => S2 +Int C1 [concrete(C1), symbolic(S2), simplification]
-
+    
     rule S1 +Int (S2 +Int I3) => (S1 +Int S2) +Int I3 [symbolic(S1, S2), simplification]
     rule S1 +Int (S2 -Int I3) => (S1 +Int S2) -Int I3 [symbolic(S1, S2), simplification]
     rule S1 -Int (S2 +Int I3) => (S1 -Int S2) -Int I3 [symbolic(S1, S2), simplification]
@@ -74,8 +68,12 @@ module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
     rule (S1 -Int C2) -Int C3 => S1 -Int (C2 +Int C3) [concrete(C2, C3), symbolic(S1), simplification]
 
   // ###########################################################################
-  // benchmarks/verification.k
+  // inequality
   // ###########################################################################
+
+    rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 [concrete(C2, C3), simplification]
+    rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         [concrete(C1, C3), simplification]
+    rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         [concrete(C1, C3), simplification]
 
     rule X +Int Y <Int Z => X <Int Z -Int Y [concrete(Y), simplification]
 endmodule
