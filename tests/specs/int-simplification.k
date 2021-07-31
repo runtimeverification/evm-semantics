@@ -101,7 +101,7 @@ module INT-SIMPLIFICATION-COMMON
     rule   (C +Int (A  -Int D)) +Int (B  -Int A) =>  C +Int (B  -Int D) [simplification]
     rule (((A -Int  B) -Int C)  -Int  D) +Int B  => (A -Int  C) -Int D  [simplification]
 
-  // >5 terms
+  // >=6 terms
     rule (A +Int B +Int C +Int D +Int E) -Int (A +Int C +Int F) => B +Int D +Int E -Int F [simplification]
 
   // ###########################################################################    
