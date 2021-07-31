@@ -88,110 +88,120 @@ module INT-SIMPLIFICATION-COMMON
     imports INT
     imports BOOL
 
-  // ###########################################################################
-  // reorganized
+  // ###########################################################################    
+  // add, sub
   // ###########################################################################    
 
-  // add, sub
-    rule (A +Int I2) +Int (I3 -Int A) => I2 +Int I3 [simplification]
-    rule (A +Int I2) -Int (A +Int I3) => I2 -Int I3 [simplification]
-    rule (A +Int I2) -Int (I3 +Int A) => I2 -Int I3 [simplification]
-    rule (I1 +Int I2) -Int (I3 +Int I1) => I2 -Int I3 [simplification]
-    rule A -Int (A -Int I1) => I1 [simplification]
-    rule (A +Int I1) -Int A => I1 [simplification]
-    rule (A +Int B) +Int (C -Int B) => A +Int C [simplification]
-    rule (A +Int B +Int C) -Int (A +Int D) => B +Int (C -Int D) [simplification]
-    rule (A +Int B +Int C +Int D +Int E) -Int (A +Int C +Int F) => B +Int D +Int E -Int F [simplification]
-    rule A +Int (I1 -Int A) => I1 [simplification]
-    rule (I1 +Int (A -Int I0)) +Int (I2 -Int A) => I1 +Int (I2 -Int I0) [simplification]
-    rule N -Int N => 0 [simplification]
-    rule N -Int N => 0 [simplification]
-    rule I -Int 0 => I [simplification]
-    rule 0 +Int I => I [simplification]
-    rule I +Int 0 => I [simplification]
-    rule I -Int I => 0                                                    [simplification]
-    rule   (I1 -Int I2)                   +Int I2 =>  I1                  [simplification]
-    rule  ((I1 -Int I2) -Int I3)          +Int I2 =>  I1 -Int I3          [simplification]
-    rule (((I1 -Int I2) -Int I3) -Int I4) +Int I2 => (I1 -Int I3) -Int I4 [simplification]
+  // 2 terms
+    rule A -Int A => 0 [simplification]
+    rule A -Int A => 0 [simplification]
+    rule A -Int 0 => A [simplification]
+    rule 0 +Int A => A [simplification]
+    rule A +Int 0 => A [simplification]
+    rule A -Int A => 0 [simplification]
 
+  // 3 terms
+    rule  (A -Int  B) +Int B  => A [simplification]
+    rule   A -Int (A  -Int B) => B [simplification]
+    rule   A +Int (B  -Int A) => B [simplification]
+    rule  (A +Int  B) -Int A  => B [simplification]
+
+  // 4 terms
+    rule  (A +Int B) +Int (C  -Int A) => B +Int C [simplification]
+    rule  (A +Int B) -Int (A  +Int C) => B -Int C [simplification]
+    rule  (A +Int B) -Int (C  +Int A) => B -Int C [simplification]
+    rule  (A +Int B) -Int (C  +Int A) => B -Int C [simplification]
+    rule  (A +Int B) +Int (C  -Int B) => A +Int C [simplification]
+    rule ((A -Int B) -Int  C) +Int B  => A -Int C [simplification]
+
+  // 5 terms
+    rule   (A +Int  B  +Int C)  -Int (A  +Int D) =>  B +Int (C  -Int D) [simplification]
+    rule   (C +Int (A  -Int D)) +Int (B  -Int A) =>  C +Int (B  -Int D) [simplification]
+    rule (((A -Int  B) -Int C)  -Int  D) +Int B  => (A -Int  C) -Int D  [simplification]
+
+  // >5 terms
+    rule (A +Int B +Int C +Int D +Int E) -Int (A +Int C +Int F) => B +Int D +Int E -Int F [simplification]
+
+  // ###########################################################################    
   // mul
-    rule 1 *Int N => N
-    rule N *Int 1 => N
+  // ###########################################################################    
+
+    rule 1 *Int A => A
+    rule A *Int 1 => A
     rule 0 *Int _ => 0
     rule _ *Int 0 => 0
-    rule I1 *Int A +Int I2 *Int A => (I1 +Int I2) *Int A [simplification]
-    rule I1 *Int A +Int B +Int C +Int D +Int I2 *Int A => (I1 +Int I2) *Int A +Int B +Int C +Int D [simplification]
 
+    rule C *Int A +Int B *Int A => (C +Int B) *Int A [simplification]
+
+    rule E *Int A +Int B +Int C +Int D +Int F *Int A => (E +Int F) *Int A +Int B +Int C +Int D [simplification]
+
+  // ###########################################################################    
   // div
-    rule N /Int 1 => N  [simplification]
-    // safeMath mul check c / a == b where c == a * b
-    rule (X *Int Y) /Int X => Y  requires X =/=Int 0 [simplification]
-    rule ((X *Int Y) /Int Z) /Int Y => X /Int Z  requires Y =/=Int 0 [simplification]
-    rule (X /Int 32) *Int 32 => X  requires X modInt 32 ==Int 0 [simplification]
-    rule (I1 *Int I2) /Int I3 <=Int I4 => true
-      requires  0  <=Int I1
-       andBool  0  <=Int I2
-       andBool  0   <Int I3
-       andBool  I1 <=Int I4
-       andBool  I2 <=Int I3
-      [simplification]
-
-  // inc-or
-    rule 0 |Int N => N
-    rule N |Int 0 => N
-    rule N |Int N => N
-
-  // bit-and
-    rule  0 &Int _N => 0
-    rule _N &Int  0 => 0
-    rule  N &Int  N => N
-
-  // mod
-    rule X modInt Y => X  requires 0 <=Int X andBool X <Int Y [simplification]
-
-  // max, min
-    rule minInt(P, Q)         => P    requires P <=Int Q                   [simplification]
-
-
-  // inequality
-    rule I1 +Int I2 <Int I1 => false requires 0 <=Int I2 [simplification]
-    rule I1 <Int I1 -Int I2 => false requires 0 <=Int I2 [simplification]
-    rule 0 <Int 1 <<Int N => true  requires 0 <=Int N [simplification]
-    //Inequality sign normalization
-    rule          X  >Int Y  => Y  <Int X            [simplification]
-    rule          X >=Int Y  => Y <=Int X            [simplification]
-    rule notBool (X  <Int Y) => Y <=Int X            [simplification]
-    rule notBool (X <=Int Y) => Y  <Int X            [simplification]
-    rule N <=Int maxInt(P, Q) => true requires N <=Int P orBool N <=Int Q  [simplification]
-    rule X -Int Y +Int Z <=Int A => false requires A <Int X -Int Y andBool 0 <=Int Z [simplification]
-    rule minInt(G, G') <Int G''  => G <Int G'' orBool G' <Int G''  [simplification]
-    rule G  <Int minInt(G', G'') => G  <Int G' andBool G  <Int G'' [simplification]
-    rule G <=Int minInt(G', G'') => G <=Int G' andBool G <=Int G'' [simplification]
-    rule 0 <=Int X *Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
-
-  // ###########################################################################
-  // lemmas.k
   // ###########################################################################    
 
-  // ###########################################################################
-  // infinite-gas.k
+    rule A /Int 1 => A  [simplification]
+
+    // safeMath mul check c / a == b where c == a * b
+    rule (A *Int B) /Int A => B  requires A =/=Int 0 [simplification]
+
+    rule ((A *Int B) /Int C) /Int B => A /Int C  requires B =/=Int 0 [simplification]
+
+    rule (A /Int 32) *Int 32 => A  requires A modInt 32 ==Int 0 [simplification]
+
+    rule (A *Int B) /Int C <=Int D => true requires 0 <=Int A andBool 0 <=Int B andBool 0 <Int C andBool A <=Int D andBool B <=Int C [simplification]
+
+  // ###########################################################################    
+  // inc-or
   // ###########################################################################
 
-  // ###########################################################################
-  // benchmarks/verification.k
-  // ###########################################################################
+    rule 0 |Int A => A
+    rule A |Int 0 => A
+    rule A |Int A => A
 
-  // ###########################################################################
-  // bihu/verification.k
-  // ###########################################################################
+  // ###########################################################################    
+  // bit-and
+  // ###########################################################################    
 
-  // ###########################################################################
-  // opcodes/verification.k
-  // ###########################################################################
+    rule 0 &Int _ => 0
+    rule _ &Int 0 => 0
+    rule A &Int A => A
 
-  // ###########################################################################
-  // bihu/verification.k
-  // ###########################################################################
+  // ###########################################################################    
+  // mod
+  // ###########################################################################    
 
-    // NOTE: there are no rules to pull out here
+    rule A modInt B => A  requires 0 <=Int A andBool A <Int B [simplification]
+
+  // ###########################################################################    
+  // max, min
+  // ###########################################################################    
+
+    rule minInt(A, B) => C requires A <=Int B [simplification]
+
+  // ###########################################################################    
+  // inequality
+  // ###########################################################################    
+
+    rule A +Int B <Int A => false requires 0 <=Int B [simplification]
+
+    rule A <Int A -Int B => false requires 0 <=Int B [simplification]
+
+    rule 0 <Int 1 <<Int A => true requires 0 <=Int A [simplification]
+
+    // inequality sign normalization
+    rule          A  >Int B  => B  <Int A [simplification]
+    rule          A >=Int B  => B <=Int A [simplification]
+    rule notBool (A  <Int B) => B <=Int A [simplification]
+    rule notBool (A <=Int B) => B  <Int A [simplification]
+
+    rule 0 <=Int A *Int B => true requires 0 <=Int A andBool 0 <=Int B [simplification]
+
+    rule A -Int B +Int C <=Int D => false requires D <Int A -Int B andBool 0 <=Int C [simplification]
+
+    rule minInt(A, B) <Int C  => A <Int C orBool B <Int C  [simplification]
+
+    rule A  <Int minInt(B, C) => A  <Int B andBool A  <Int C [simplification]
+    rule A <=Int minInt(B, C) => A <=Int B andBool A <=Int C [simplification]
+
+    rule A <=Int maxInt(B, C) => true requires A <=Int B orBool A <=Int C  [simplification]
 endmodule
