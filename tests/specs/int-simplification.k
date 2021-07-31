@@ -173,7 +173,7 @@ module INT-SIMPLIFICATION-COMMON
   // max, min
   // ###########################################################################    
 
-    rule minInt(A, B) => C requires A <=Int B [simplification]
+    rule minInt(A, B) => A requires A <=Int B [simplification]
 
   // ###########################################################################    
   // inequality
