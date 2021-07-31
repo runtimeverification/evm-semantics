@@ -36,6 +36,7 @@ module INT-SIMPLIFICATION-JAVA [symbolic, kast]
     rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 requires #isConcrete(C2) andBool #isConcrete(C3) [simplification]
     rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
     rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
+
 endmodule
 
 module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
@@ -76,6 +77,7 @@ module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
     rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         [concrete(C1, C3), simplification]
 
     rule X +Int Y <Int Z => X <Int Z -Int Y [concrete(Y), simplification]
+
 endmodule
 
 module INT-SIMPLIFICATION-COMMON
@@ -195,4 +197,5 @@ module INT-SIMPLIFICATION-COMMON
     rule A <=Int minInt(B, C) => A <=Int B andBool A <=Int C [simplification]
 
     rule A <=Int maxInt(B, C) => true requires A <=Int B orBool A <=Int C [simplification]
+
 endmodule
