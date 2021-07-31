@@ -8,23 +8,7 @@ module INT-SIMPLIFICATION-JAVA [symbolic, kast]
     imports K-REFLECTION
 
   // ###########################################################################
-  // lemmas.k
-  // ###########################################################################
-
-    //For #bufStrict simplification in benchmarks
-    rule 0  <Int 2 ^Int I => true       requires 0 <=Int I [simplification]
-    rule 0 <=Int I *Int 8 => 0 <=Int I                     [simplification]
-
-  // ###########################################################################
-  // infinite-gas.k
-  // ###########################################################################
-
-    rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 requires #isConcrete(C2) andBool #isConcrete(C3) [simplification]
-    rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
-    rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
-
-  // ###########################################################################
-  // benchmarks/verification.k
+  // add, sub
   // ###########################################################################
 
     rule ((A +Int I1) +Int B) +Int I2 => (A +Int B) +Int (I1 +Int I2)
@@ -40,6 +24,18 @@ module INT-SIMPLIFICATION-JAVA [symbolic, kast]
        andBool #isConcrete(I1)
        andBool #isConcrete(I2)
       [simplification]
+
+  // ###########################################################################
+  // inequality
+  // ###########################################################################
+
+    // For #bufStrict simplification in benchmarks
+    rule 0  <Int 2 ^Int I => true       requires 0 <=Int I [simplification]
+    rule 0 <=Int I *Int 8 => 0 <=Int I                     [simplification]
+
+    rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 requires #isConcrete(C2) andBool #isConcrete(C3) [simplification]
+    rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
+    rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
 endmodule
 
 module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
@@ -88,9 +84,9 @@ module INT-SIMPLIFICATION-COMMON
     imports INT
     imports BOOL
 
-  // ###########################################################################    
+  // ###########################################################################
   // add, sub
-  // ###########################################################################    
+  // ###########################################################################
 
   // 2 terms
     rule A -Int A => 0 [simplification]
