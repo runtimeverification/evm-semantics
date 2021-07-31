@@ -94,11 +94,9 @@ module INT-SIMPLIFICATION-COMMON
 
   // 2 terms
     rule A -Int A => 0 [simplification]
-    rule A -Int A => 0 [simplification]
     rule A -Int 0 => A [simplification]
     rule 0 +Int A => A [simplification]
     rule A +Int 0 => A [simplification]
-    rule A -Int A => 0 [simplification]
 
   // 3 terms
     rule  (A -Int  B) +Int B  => A [simplification]
@@ -109,7 +107,6 @@ module INT-SIMPLIFICATION-COMMON
   // 4 terms
     rule  (A +Int B) +Int (C  -Int A) => B +Int C [simplification]
     rule  (A +Int B) -Int (A  +Int C) => B -Int C [simplification]
-    rule  (A +Int B) -Int (C  +Int A) => B -Int C [simplification]
     rule  (A +Int B) -Int (C  +Int A) => B -Int C [simplification]
     rule  (A +Int B) +Int (C  -Int B) => A +Int C [simplification]
     rule ((A -Int B) -Int  C) +Int B  => A -Int C [simplification]
@@ -170,7 +167,7 @@ module INT-SIMPLIFICATION-COMMON
   // mod
   // ###########################################################################    
 
-    rule A modInt B => A  requires 0 <=Int A andBool A <Int B [simplification]
+    rule A modInt B => A requires 0 <=Int A andBool A <Int B [simplification]
 
   // ###########################################################################    
   // max, min
@@ -203,5 +200,5 @@ module INT-SIMPLIFICATION-COMMON
     rule A  <Int minInt(B, C) => A  <Int B andBool A  <Int C [simplification]
     rule A <=Int minInt(B, C) => A <=Int B andBool A <=Int C [simplification]
 
-    rule A <=Int maxInt(B, C) => true requires A <=Int B orBool A <=Int C  [simplification]
+    rule A <=Int maxInt(B, C) => true requires A <=Int B orBool A <=Int C [simplification]
 endmodule
