@@ -1170,9 +1170,6 @@ For now, I assume that they instantiate an empty account and use the empty data.
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
-```
-
-```k
     rule <k> EXTCODEHASH ACCT => keccak(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
