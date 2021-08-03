@@ -366,18 +366,18 @@ tests/%.prove: tests/%
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 .SECONDEXPANSION:
-tests/specs/benchmarks/%.provex: tests/specs/benchmarks/% tests/specs/benchmarks/$$(basename $*)verification-kompiled/definition.kore
+tests/specs/mcd/%.provex: tests/specs/mcd/% tests/specs/mcd/$$(basename $*)verification-kompiled/definition.kore
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
 	    --provex --backend-dir $(dir $@)
 
 tests/specs/%/verification-kompiled/definition.kore: tests/specs/%/verification.k
-	$(KOMPILE) --backend $(TEST_SYMBOLIC_BACKEND)         \
-	    $< $(HASKELL_KOMPILE_OPTS)                        \
-	    --directory tests/specs/$*                        \
-	    --main-module VERIFICATION                        \
-	    --syntax-module VERIFICATION                      \
-	    --concrete-rules-file $(dir $@)concrete-rules.txt \
-	    --verbose                                         \
+	$(KOMPILE) --backend $(TEST_SYMBOLIC_BACKEND)               \
+	    $< $(HASKELL_KOMPILE_OPTS)                              \
+	    --directory tests/specs/$*                              \
+	    --main-module VERIFICATION                              \
+	    --syntax-module VERIFICATION                            \
+	    --concrete-rules-file tests/specs/$*/concrete-rules.txt \
+	    --verbose                                               \
 	    $(KOMPILE_OPTS)
 
 tests/%.prove-dry-run: tests/%
