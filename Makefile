@@ -365,6 +365,21 @@ tests/%.parse: tests/%
 tests/%.prove: tests/%
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
+.SECONDEXPANSION:
+tests/specs/benchmarks/%.provex: tests/specs/benchmarks/% tests/specs/benchmarks/$$(basename $*)verification-kompiled/definition.kore
+	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
+	    --provex --backend-dir $(dir $@)
+
+tests/specs/%/verification-kompiled/definition.kore: tests/specs/%/verification.k
+	$(KOMPILE) --backend $(TEST_SYMBOLIC_BACKEND)         \
+	    $< $(HASKELL_KOMPILE_OPTS)                        \
+	    --directory tests/specs/$*                        \
+	    --main-module VERIFICATION                        \
+	    --syntax-module VERIFICATION                      \
+	    --concrete-rules-file $(dir $@)concrete-rules.txt \
+	    --verbose                                         \
+	    $(KOMPILE_OPTS)
+
 tests/%.prove-dry-run: tests/%
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend haskell --format-failures $(KPROVE_OPTS) --dry-run --concrete-rules-file $(dir $@)concrete-rules.txt
 
@@ -430,13 +445,13 @@ prove_mcd_tests          := $(filter-out $(prove_failing_tests), $(wildcard $(pr
 prove_optimization_tests := $(filter-out $(prove_failing_tests), tests/specs/evm-optimizations-spec.md)
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
-test-prove-benchmarks: $(prove_benchmarks_tests:=.prove)
-test-prove-functional: $(prove_functional_tests:=.prove)
-test-prove-opcodes:    $(prove_opcodes_tests:=.prove)
-test-prove-erc20:      $(prove_erc20_tests:=.prove)
-test-prove-bihu:       $(prove_bihu_tests:=.prove)
-test-prove-examples:   $(prove_examples_tests:=.prove)
-test-prove-mcd:        $(prove_mcd_tests:=.prove)
+test-prove-benchmarks: $(prove_benchmarks_tests:=.provex)
+test-prove-functional: $(prove_functional_tests:=.provex)
+test-prove-opcodes:    $(prove_opcodes_tests:=.provex)
+test-prove-erc20:      $(prove_erc20_tests:=.provex)
+test-prove-bihu:       $(prove_bihu_tests:=.provex)
+test-prove-examples:   $(prove_examples_tests:=.provex)
+test-prove-mcd:        $(prove_mcd_tests:=.provex)
 
 test-failing-prove: $(prove_failing_tests:=.prove)
 

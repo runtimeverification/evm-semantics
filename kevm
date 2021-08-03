@@ -40,6 +40,9 @@ run_kompile() {
     kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
     kompile_opts+=( --hook-namespaces "JSON KRYPTO"                                      )
     kompile_opts+=( --emit-json                                                          )
+
+    [[ ! -f ${concrete_rules_file} ]] || kompile_opts+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
+
     case "${backend}" in
         haskell)    kompile_opts+=( --md-selector 'k & ! nobytes' )
                     ;;
@@ -103,13 +106,16 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir proof_args haskell_backend_command bug_report_name eventlog_name
+    local def_module run_dir proof_args haskell_backend_command bug_report_name eventlog_name kprove
 
     check_k_install
 
     def_module="$1" ; shift
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
     eventlog_name="$run_file.eventlog"
+
+    kprove=kprove
+    ! ${provex} || kprove=kprovex
 
     haskell_backend_command=(kore-exec)
     ! $bug_report || haskell_backend_command+=(--bug-report "$bug_report_name")
@@ -123,10 +129,10 @@ run_prove() {
 
     ! $debug || set -x
     if $profile; then
-        timeout -s INT "$profile_timeout" kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@" || true
+        timeout -s INT "$profile_timeout" ${kprove} --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@" || true
         kore-prof "$eventlog_name" $kore_prof_args > "$eventlog_name.json"
     else
-        kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
+        ${kprove} --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
     fi
 }
 
@@ -292,6 +298,7 @@ mode=NORMAL
 schedule=ISTANBUL
 chainid=1
 concrete_rules_file=
+provex=false
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 kevm_port='8545'
@@ -311,6 +318,7 @@ while [[ $# -gt 0 ]]; do
         --backend)             backend="$2"              ; shift 2 ;;
         --backend-dir)         backend_dir="$2"          ; shift 2 ;;
         --concrete-rules-file) concrete_rules_file="$2"  ; shift 2 ;;
+        --provex)              provex=true               ; shift   ;;
         --mode)                mode="$2"                 ; shift 2 ;;
         --schedule)            schedule="$2"             ; shift 2 ;;
         --chainid)             chainid="$2"              ; shift 2 ;;
