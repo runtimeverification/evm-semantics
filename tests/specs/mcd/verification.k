@@ -87,8 +87,8 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
                                                                                                                                   andBool K +Int 1                    ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
     rule maxUInt48 &Int X <=Int maxUInt48 &Int X +Int Y => false
       requires #rangeUInt(48, X)
-        andBool #rangeUInt(48, Y)
-        andBool notBool #rangeUInt(48, X +Int Y) [simplification]
+       andBool #rangeUInt(48, Y)
+       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
 endmodule
 
 module LEMMAS-MCD-JAVA [symbolic, kast]

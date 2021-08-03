@@ -29,8 +29,8 @@ module FUNCTIONAL-SPEC
 
     claim <k> runLemma(maxUInt48 &Int ABI_x <=Int maxUInt48 &Int ABI_x +Int ABI_y) => doneLemma(false) ... </k>
       requires #rangeUInt(48, ABI_x)
-        andBool #rangeUInt(48, ABI_y)
-        andBool notBool #rangeUInt(48, ABI_x +Int ABI_y)
+       andBool #rangeUInt(48, ABI_y)
+       andBool notBool #rangeUInt(48, ABI_x +Int ABI_y)
 
     // WordPack
 
