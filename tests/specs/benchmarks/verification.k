@@ -164,26 +164,6 @@ module VERIFICATION-JAVA [symbolic, kast]
     imports K-REFLECTION
 
   // ########################
-  // Rule Replacement
-  // ########################
-
-    claim <k> ECREC => #end EVMC_SUCCESS ... </k>
-         <callData> DATA </callData>
-         <output> _ => #ecrec(#symEcrec(DATA)) </output>
-      requires notBool #isConcrete(DATA)
-       andBool #sizeByteArray(DATA) ==Int 128
-       andBool notBool #ecrecEmpty(DATA)
-      [trusted]
-
-    claim <k> ECREC => #end EVMC_SUCCESS ... </k>
-         <callData> DATA </callData>
-         <output> _ => #ecrec(.Account) </output>
-      requires notBool #isConcrete(DATA)
-       andBool #sizeByteArray(DATA) ==Int 128
-       andBool #ecrecEmpty(DATA)
-      [trusted]
-
-  // ########################
   // Arithmetic
   // ########################
 
