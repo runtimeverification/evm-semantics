@@ -1,6 +1,6 @@
 requires "evm.md"
 requires "edsl.md"
-requires "./int-simplification.k"
+requires "lemmas/int-simplification.k"
 
 module LEMMAS
     imports INT-SIMPLIFICATION
