@@ -1,5 +1,5 @@
 requires "evm.md"
-requires "lemmas/int-simplification.k"
+requires "./int-simplification.k"
 
  //
  // Infinite Gas
