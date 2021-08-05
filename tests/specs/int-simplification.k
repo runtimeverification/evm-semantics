@@ -61,7 +61,7 @@ module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
   // inequality
   // ###########################################################################
 
-    // TODO: can be safely removed in favor of rule below it
+    // TODO: can be safely removed in favor of rule below it (java, haskell)
     // rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 [concrete(C2, C3), simplification]
     rule I1 +Int C   <Int I2         => I1          <Int I2 -Int C  [concrete(C), simplification]
     rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         [concrete(C1, C3), simplification]
@@ -98,13 +98,13 @@ module INT-SIMPLIFICATION-COMMON
     rule ((A -Int B) -Int  C) +Int B  => A -Int C [simplification]
 
   // 5 terms
-    // TODO: can be safely removed
-    // rule   (A +Int  B  +Int C)  -Int (A  +Int D) =>  B +Int (C  -Int D) [simplification]
-    // rule   (C +Int (A  -Int D)) +Int (B  -Int A) =>  C +Int (B  -Int D) [simplification]
-    // rule (((A -Int  B) -Int C)  -Int  D) +Int B  => (A -Int  C) -Int D  [simplification]
+    // NOTE: required for `tests/specs/functional/infinite-gas-spec.k.prove` (haskell)
+    rule   (A +Int  B  +Int C)  -Int (A  +Int D) =>  B +Int (C  -Int D) [simplification]
+    rule   (C +Int (A  -Int D)) +Int (B  -Int A) =>  C +Int (B  -Int D) [simplification]
+    rule (((A -Int  B) -Int C)  -Int  D) +Int B  => (A -Int  C) -Int D  [simplification]
 
   // >=6 terms
-    // TODO: can be safely removed
+    // TODO: can be safely removed (java, haskell)
     // rule (A +Int B +Int C +Int D +Int E) -Int (A +Int C +Int F) => B +Int D +Int E -Int F [simplification]
 
   // ###########################################################################    
@@ -183,7 +183,7 @@ module INT-SIMPLIFICATION-COMMON
 
     rule A -Int B +Int C <=Int D => false requires D <Int A -Int B andBool 0 <=Int C [simplification]
 
-    // TODO: can be safely removed in favor or rules below them
+    // TODO: can be safely removed in favor or rules below them (java, haskell)
     // rule minInt(A, B) <Int C  => A <Int C orBool B <Int C  [simplification]
     // rule A  <Int minInt(B, C) => A  <Int B andBool A  <Int C [simplification]
     // rule A <=Int minInt(B, C) => A <=Int B andBool A <=Int C [simplification]
