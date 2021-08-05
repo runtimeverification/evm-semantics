@@ -61,12 +61,14 @@ module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
   // inequality
   // ###########################################################################
 
-    rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 [concrete(C2, C3), simplification]
+    // TODO: tmp disable in favor of rule below (for which disabling broke functional-spec)
+    // rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 [concrete(C2, C3), simplification]
     rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         [concrete(C1, C3), simplification]
     rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         [concrete(C1, C3), simplification]
 
     // TODO: tmp disable to see if rule on line 64 is sufficient
-    // rule X +Int Y <Int Z => X <Int Z -Int Y [concrete(Y), simplification]
+    // NOTE: this rule is required for tests/specs/benchmarks/functional-spec.k on java and haskell
+    rule X +Int Y <Int Z => X <Int Z -Int Y [concrete(Y), simplification]
 
 endmodule
 
@@ -92,21 +94,21 @@ module INT-SIMPLIFICATION-COMMON
 
   // 4 terms
     // TODO: tmp disable to see if 3-term associativity rules are sufficient
-    // rule  (A +Int B) +Int (C  -Int A) => B +Int C [simplification]
-    // rule  (A +Int B) -Int (A  +Int C) => B -Int C [simplification]
-    // rule  (A +Int B) -Int (C  +Int A) => B -Int C [simplification]
-    // rule  (A +Int B) +Int (C  -Int B) => A +Int C [simplification]
-    // rule ((A -Int B) -Int  C) +Int B  => A -Int C [simplification]
+    rule  (A +Int B) +Int (C  -Int A) => B +Int C [simplification]
+    rule  (A +Int B) -Int (A  +Int C) => B -Int C [simplification]
+    rule  (A +Int B) -Int (C  +Int A) => B -Int C [simplification]
+    rule  (A +Int B) +Int (C  -Int B) => A +Int C [simplification]
+    rule ((A -Int B) -Int  C) +Int B  => A -Int C [simplification]
 
   // 5 terms
     // TODO: tmp disable to see if 3-term associativity rules are sufficient
-    // rule   (A +Int  B  +Int C)  -Int (A  +Int D) =>  B +Int (C  -Int D) [simplification]
-    // rule   (C +Int (A  -Int D)) +Int (B  -Int A) =>  C +Int (B  -Int D) [simplification]
-    // rule (((A -Int  B) -Int C)  -Int  D) +Int B  => (A -Int  C) -Int D  [simplification]
+    rule   (A +Int  B  +Int C)  -Int (A  +Int D) =>  B +Int (C  -Int D) [simplification]
+    rule   (C +Int (A  -Int D)) +Int (B  -Int A) =>  C +Int (B  -Int D) [simplification]
+    rule (((A -Int  B) -Int C)  -Int  D) +Int B  => (A -Int  C) -Int D  [simplification]
 
   // >=6 terms
     // TODO: tmp disable to see if 3-term associativity rules are sufficient
-    // rule (A +Int B +Int C +Int D +Int E) -Int (A +Int C +Int F) => B +Int D +Int E -Int F [simplification]
+    rule (A +Int B +Int C +Int D +Int E) -Int (A +Int C +Int F) => B +Int D +Int E -Int F [simplification]
 
   // ###########################################################################    
   // mul
@@ -189,8 +191,8 @@ module INT-SIMPLIFICATION-COMMON
     // rule A  <Int minInt(B, C) => A  <Int B andBool A  <Int C [simplification]
     // rule A <=Int minInt(B, C) => A <=Int B andBool A <=Int C [simplification]
 
-    // TODO: rephrasing
-    // TODO: do they also need the corresponding `... => false` rules?
+    // TODO: rephrasing; do they also need the corresponding `... => false` rules?
+    // NOTE: this works for haskell backend
     rule minInt(A, B) <Int C  => true requires A  <Int C  orBool B  <Int C [simplification]
     rule A  <Int minInt(B, C) => true requires A  <Int B andBool A  <Int C [simplification]
     rule A <=Int minInt(B, C) => true requires A <=Int B andBool A <=Int C [simplification]
