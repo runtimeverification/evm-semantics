@@ -330,7 +330,7 @@ tests/%.prove: tests/%
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 .SECONDEXPANSION:
-tests/specs/mcd/%.provex: tests/specs/mcd/% tests/specs/mcd/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
+tests/specs/%.provex: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
 	    --provex --backend-dir $(dir $@)$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
