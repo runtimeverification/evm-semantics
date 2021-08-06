@@ -296,6 +296,8 @@ tests/specs/erc20/functional-spec.k%:      KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTA
 tests/specs/evm-optimizations-spec.md%:    KPROVE_MODULE = EVM-OPTIMIZATIONS-SPEC-LEMMAS
 tests/specs/mcd/functional-spec.k%:        KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
 
+KPROVE_DIRECTORY = $(shell echo $(KPROVE_MODULE) | tr '[:upper:]' '[:lower:]')
+
 tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
 
 tests/%.run: tests/%
@@ -328,18 +330,16 @@ tests/%.prove: tests/%
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 .SECONDEXPANSION:
-tests/specs/mcd/%.provex: tests/specs/mcd/% tests/specs/mcd/$$(basename $*)verification-kompiled/definition.kore
+tests/specs/mcd/%.provex: tests/specs/mcd/% tests/specs/mcd/$(KPROVE_DIRECTORY)/$(KPROVE_DIRECTORY)-kompiled/compiled.txt
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
-	    --provex --backend-dir $(dir $@)
+	    --provex --backend-dir $(dir $@)$(KPROVE_DIRECTORY)
 
-tests/specs/%/verification-kompiled/definition.kore: tests/specs/%/verification.k
-	$(KOMPILE) --backend $(TEST_SYMBOLIC_BACKEND)               \
-	    $< $(HASKELL_KOMPILE_OPTS)                              \
-	    --directory tests/specs/$*                              \
-	    --main-module VERIFICATION                              \
-	    --syntax-module VERIFICATION                            \
+tests/specs/%/$(KPROVE_DIRECTORY)/$(KPROVE_DIRECTORY)-kompiled/compiled.txt: tests/specs/%/$(KPROVE_DIRECTORY).k $(kevm_includes) $(plugin_includes)
+	$(KOMPILE) --backend $(TEST_SYMBOLIC_BACKEND) $<            \
+	    --directory tests/specs/$*/$(KPROVE_DIRECTORY)          \
+	    --main-module $(KPROVE_MODULE)                          \
+	    --syntax-module $(KPROVE_MODULE)                        \
 	    --concrete-rules-file tests/specs/$*/concrete-rules.txt \
-	    --verbose                                               \
 	    $(KOMPILE_OPTS)
 
 tests/%.prove-dry-run: tests/%
