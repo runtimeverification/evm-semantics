@@ -330,9 +330,9 @@ tests/%.prove: tests/%
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 .SECONDEXPANSION:
-tests/specs/mcd/%.provex: tests/specs/mcd/% tests/specs/mcd/$$(KPROVE_FILE)/$$(KPROVE_FILE)-kompiled/compiled.txt
+tests/specs/mcd/%.provex: tests/specs/mcd/% tests/specs/mcd/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/compiled.txt
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
-	    --provex --backend-dir $(dir $@)$(KPROVE_FILE)
+	    --provex --backend-dir $(dir $@)$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/mcd/%-kompiled/compiled.txt: tests/specs/mcd/$$(KPROVE_FILE).k $(kevm_includes) $(plugin_includes)
 	$(KOMPILE) --backend $(TEST_SYMBOLIC_BACKEND) $<             \
