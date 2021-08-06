@@ -242,12 +242,13 @@ $(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_inc
 
 install_bins := kevm
 
-install_libs := $(haskell_kompiled) \
-                $(llvm_kompiled)    \
-                $(java_kompiled)    \
-                kore-json.py        \
-                kast-json.py        \
-                release.md          \
+install_libs := $(haskell_kompiled)                                        \
+                $(llvm_kompiled)                                           \
+                $(java_kompiled)                                           \
+                $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
+                kore-json.py                                               \
+                kast-json.py                                               \
+                release.md                                                 \
                 version
 
 build_bins := $(install_bins)
