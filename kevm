@@ -41,7 +41,13 @@ run_kompile() {
     kompile_opts+=( --hook-namespaces "JSON KRYPTO"                                      )
     kompile_opts+=( --emit-json                                                          )
 
-    [[ ! -f ${concrete_rules_file} ]] || kompile_opts+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
+    if [[ ! -z ${concrete_rules_file} ]]; then
+        if [[ -f ${concrete_rules_file} ]]; then
+            kompile_opts+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
+        else
+            fatal "Concrete rules file doesn't exist: ${concrete_rules_file}"
+        fi
+    fi
 
     case "${backend}" in
         haskell)    kompile_opts+=( --md-selector 'k & ! nobytes' )
