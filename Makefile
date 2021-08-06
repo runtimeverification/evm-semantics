@@ -330,16 +330,16 @@ tests/%.prove: tests/%
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 .SECONDEXPANSION:
-tests/specs/mcd/%.provex: tests/specs/mcd/% tests/specs/mcd/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/compiled.txt
+tests/specs/mcd/%.provex: tests/specs/mcd/% tests/specs/mcd/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
 	    --provex --backend-dir $(dir $@)$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
-tests/specs/mcd/%-kompiled/compiled.txt: tests/specs/mcd/$$(KPROVE_FILE).k $(kevm_includes) $(plugin_includes)
-	$(KOMPILE) --backend $(TEST_SYMBOLIC_BACKEND) $<             \
-	    --directory tests/specs/mcd/$(dir $*)                    \
-	    --main-module $(KPROVE_MODULE)                           \
-	    --syntax-module $(KPROVE_MODULE)                         \
-	    --concrete-rules-file tests/specs/mcd/concrete-rules.txt \
+tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).k $(kevm_includes) $(plugin_includes)
+	$(KOMPILE) --backend $(TEST_SYMBOLIC_BACKEND) $<                                                 \
+	    --directory tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND) \
+	    --main-module $(KPROVE_MODULE)                                                               \
+	    --syntax-module $(KPROVE_MODULE)                                                             \
+	    --concrete-rules-file tests/specs/$(firstword $(subst /, ,$*))/concrete-rules.txt            \
 	    $(KOMPILE_OPTS)
 
 tests/%.prove-dry-run: tests/%
