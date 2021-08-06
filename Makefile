@@ -171,7 +171,7 @@ kevm_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_files))
 
 includes := $(kevm_includes) $(lemma_includes) $(plugin_includes) $(plugin_c_includes)
 
-$(includes): $(KEVM_BIN)/$(KEVM)
+$(includes): $(KEVM_BIN)/kevm
 
 $(KEVM_INCLUDE)/kframework/%.md: %.md
 	@mkdir -p $(dir $@)
@@ -220,10 +220,9 @@ build_bins := $(install_bins)
 
 build_libs := $(install_libs)
 
-$(KEVM_BIN)/$(KEVM): $(KEVM)
+$(KEVM_BIN)/kevm: kevm
 	@mkdir -p $(dir $@)
 	install $< $@
-
 
 $(KEVM_LIB)/%.py: %.py
 	@mkdir -p $(dir $@)
