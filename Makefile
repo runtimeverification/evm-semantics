@@ -278,7 +278,8 @@ KEVM_MODE     := NORMAL
 KEVM_SCHEDULE := ISTANBUL
 KEVM_CHAINID  := 1
 
-KPROVE_MODULE := VERIFICATION
+KPROVE_MODULE  = VERIFICATION
+KPROVE_FILE    = verification
 KPROVE_OPTS   ?=
 
 KEEP_OUTPUTS := false
@@ -291,12 +292,11 @@ test: test-conformance test-prove test-interactive test-parse
 tests/ethereum-tests/VMTests/%: KEVM_MODE     = VMTESTS
 tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
-tests/specs/benchmarks/functional-spec.k%: KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
-tests/specs/erc20/functional-spec.k%:      KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
-tests/specs/evm-optimizations-spec.md%:    KPROVE_MODULE = EVM-OPTIMIZATIONS-SPEC-LEMMAS
-tests/specs/mcd/functional-spec.k%:        KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
-
-KPROVE_DIRECTORY = $(shell echo $(KPROVE_MODULE) | tr '[:upper:]' '[:lower:]')
+tests/specs/benchmarks/functional-spec%: KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
+tests/specs/erc20/functional-spec%:      KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
+tests/specs/evm-optimizations-spec%:     KPROVE_MODULE = EVM-OPTIMIZATIONS-SPEC-LEMMAS
+tests/specs/mcd/functional-spec%:        KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
+tests/specs/mcd/functional-spec%:        KPROVE_FILE   = functional-spec
 
 tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
 
@@ -330,16 +330,16 @@ tests/%.prove: tests/%
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 .SECONDEXPANSION:
-tests/specs/mcd/%.provex: tests/specs/mcd/% tests/specs/mcd/$(KPROVE_DIRECTORY)/$(KPROVE_DIRECTORY)-kompiled/compiled.txt
+tests/specs/mcd/%.provex: tests/specs/mcd/% tests/specs/mcd/$$(KPROVE_FILE)/$$(KPROVE_FILE)-kompiled/compiled.txt
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
-	    --provex --backend-dir $(dir $@)$(KPROVE_DIRECTORY)
+	    --provex --backend-dir $(dir $@)$(KPROVE_FILE)
 
-tests/specs/%/$(KPROVE_DIRECTORY)/$(KPROVE_DIRECTORY)-kompiled/compiled.txt: tests/specs/%/$(KPROVE_DIRECTORY).k $(kevm_includes) $(plugin_includes)
-	$(KOMPILE) --backend $(TEST_SYMBOLIC_BACKEND) $<            \
-	    --directory tests/specs/$*/$(KPROVE_DIRECTORY)          \
-	    --main-module $(KPROVE_MODULE)                          \
-	    --syntax-module $(KPROVE_MODULE)                        \
-	    --concrete-rules-file tests/specs/$*/concrete-rules.txt \
+tests/specs/mcd/%-kompiled/compiled.txt: tests/specs/mcd/$$(KPROVE_FILE).k $(kevm_includes) $(plugin_includes)
+	$(KOMPILE) --backend $(TEST_SYMBOLIC_BACKEND) $<             \
+	    --directory tests/specs/mcd/$(dir $*)                    \
+	    --main-module $(KPROVE_MODULE)                           \
+	    --syntax-module $(KPROVE_MODULE)                         \
+	    --concrete-rules-file tests/specs/mcd/concrete-rules.txt \
 	    $(KOMPILE_OPTS)
 
 tests/%.prove-dry-run: tests/%
