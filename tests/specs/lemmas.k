@@ -171,26 +171,26 @@ module LEMMAS-JAVA [symbolic, kast]
     syntax Bool ::= #noOverflow    ( ByteArray ) [function]
                   | #noOverflowAux ( ByteArray ) [function]
  // -------------------------------------------------------
-    rule #noOverflow(WS) => #sizeByteArray(WS) <=Int 32 andBool #noOverflowAux(WS)
+    rule #noOverflow(WS) => #sizeByteArray(WS) <=Int 32 andBool #noOverflowAux(WS) [simplification]
 
-    rule #noOverflowAux(.ByteArray) => true
+    rule #noOverflowAux(.ByteArray) => true [simplification]
 
   // ########################
   // Arithmetic
   // ########################
 
-    rule 1 *Int N => N
-    rule N *Int 1 => N
-    rule 0 *Int _ => 0
-    rule _ *Int 0 => 0
+    rule 1 *Int N => N   [simplification]
+    rule N *Int 1 => N   [simplification]
+    rule 0 *Int _ => 0   [simplification]
+    rule _ *Int 0 => 0   [simplification]
 
-    rule 0 |Int N => N
-    rule N |Int 0 => N
-    rule N |Int N => N
+    rule 0 |Int N => N   [simplification]
+    rule N |Int 0 => N   [simplification]
+    rule N |Int N => N   [simplification]
 
-    rule  0 &Int _N => 0
-    rule _N &Int  0 => 0
-    rule  N &Int  N => N
+    rule  0 &Int _N => 0 [simplification]
+    rule _N &Int  0 => 0 [simplification]
+    rule  N &Int  N => N [simplification]
 
     // 2 terms
 
