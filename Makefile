@@ -157,6 +157,7 @@ kevm_files := abi.md              \
 
 kevm_lemmas := infinite-gas.k                           \
                lemmas.k                                 \
+               int-simplification.k                     \
                erc20/abstract-semantics-segmented-gas.k \
                erc20/evm-symbolic.k                     \
                mcd/bin_runtime.k                        \

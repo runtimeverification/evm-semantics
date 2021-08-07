@@ -132,49 +132,12 @@ module VERIFICATION
   // Arithmetic
   // ########################
 
-    rule (A +Int I2) +Int (I3 -Int A) => I2 +Int I3 [simplification]
-    rule (A +Int I2) -Int (A +Int I3) => I2 -Int I3 [simplification]
-    rule (A +Int I2) -Int (I3 +Int A) => I2 -Int I3 [simplification]
-
-    rule (I1 +Int I2) -Int (I3 +Int I1) => I2 -Int I3 [simplification]
-
-    rule A -Int (A -Int I1) => I1 [simplification]
-
-    rule (A +Int I1) -Int A => I1 [simplification]
-
-    rule (A +Int B) +Int (C -Int B) => A +Int C [simplification]
-
-    rule (A +Int B +Int C) -Int (A +Int D) => B +Int (C -Int D) [simplification]
-
-    rule (A +Int B +Int C +Int D +Int E) -Int (A +Int C +Int F) => B +Int D +Int E -Int F [simplification]
-
-    // Simplify Cmem(_,_) - Cmem(_, _)
-    rule A +Int (I1 -Int A) => I1 [simplification]
-    rule (I1 +Int (A -Int I0)) +Int (I2 -Int A) => I1 +Int (I2 -Int I0) [simplification]
-
-    // safeMath mul check c / a == b where c == a * b
-    rule (X *Int Y) /Int X => Y  requires X =/=Int 0 [simplification]
-
-    rule I1 *Int A +Int I2 *Int A => (I1 +Int I2) *Int A [simplification]
-
-    rule I1 *Int A +Int B +Int C +Int D +Int I2 *Int A => (I1 +Int I2) *Int A +Int B +Int C +Int D [simplification]
-
-    rule N -Int N => 0 [simplification]
-
     rule 2 ^%Int X pow256 => 2 ^Int X  requires 0 <=Int X andBool X <Int 256 [simplification]
-
-    rule X modInt Y => X  requires 0 <=Int X andBool X <Int Y [simplification]
-
-    rule ((X *Int Y) /Int Z) /Int Y => X /Int Z  requires Y =/=Int 0 [simplification]
 
     // X &Int (NOT 31)
     rule X &Int 115792089237316195423570985008687907853269984665640564039457584007913129639904 => (X /Int 32) *Int 32  requires 0 <=Int X [simplification]
 
-    rule (X /Int 32) *Int 32 => X  requires X modInt 32 ==Int 0 [simplification]
-
     rule #ceil32(X) => X  requires X modInt 32 ==Int 0 [simplification]
-
-    rule 0 <Int 1 <<Int N => true  requires 0 <=Int N [simplification]
 
     rule X +Int Y <Int pow256 => true  requires X <=Int pow16 andBool Y <Int pow16 [simplification]
 
@@ -187,12 +150,6 @@ endmodule
 module VERIFICATION-HASKELL [symbolic, kore]
     imports VERIFICATION-COMMON
     imports INFINITE-GAS
-
-  // ########################
-  // Arithmetic
-  // ########################
-
-    rule X +Int Y <Int Z => X <Int Z -Int Y [concrete(Y), simplification]
 
   // ########################
   // Buffer Reasoning
@@ -249,20 +206,6 @@ module VERIFICATION-JAVA [symbolic, kast]
   // ########################
   // Arithmetic
   // ########################
-
-    rule ((A +Int I1) +Int B) +Int I2 => (A +Int B) +Int (I1 +Int I2)
-      requires notBool #isConcrete(A)
-       andBool notBool #isConcrete(B)
-       andBool #isConcrete(I1)
-       andBool #isConcrete(I2)
-      [simplification]
-
-    rule (A +Int I1) +Int (B +Int I2) => (A +Int B) +Int (I1 +Int I2)
-      requires notBool #isConcrete(A)
-       andBool notBool #isConcrete(B)
-       andBool #isConcrete(I1)
-       andBool #isConcrete(I2)
-      [simplification]
 
     rule chop(X +Int Y) => X +Int Y
       requires #range(0 <= X <= pow16)
