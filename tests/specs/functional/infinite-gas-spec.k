@@ -64,6 +64,8 @@ module INFINITE-GAS-SPEC
     claim <k> runLemma(  #gas( -271 -Int CMEM -Int 3 *Int ( DATA_LEN up/Int 32 ) -Int CMEM' +Int CMEM -Int Cmem ( ISTANBUL , #memoryUsageUpdate ( 5 , ( DATA_LEN +Int 31 ) /Int 32 *Int 32 +Int 160 , 32 ) ) +Int CMEM' +Int -122))
            => doneLemma( #gas( -271           -Int 3 *Int ( DATA_LEN up/Int 32 )                      -Int Cmem ( ISTANBUL , #memoryUsageUpdate ( 5 , ( DATA_LEN +Int 31 ) /Int 32 *Int 32 +Int 160 , 32 ) )            +Int -122)) ... </k>
 
+    claim <k> runLemma( Cgascap(ISTANBUL, #gas(-491), #gas(-491), 700) +Int 700 ) => doneLemma(#gas(700)) ... </k>
+
  // Infinite Gas comparisons
  // ------------------------
 
