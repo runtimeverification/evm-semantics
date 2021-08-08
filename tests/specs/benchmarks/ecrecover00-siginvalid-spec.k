@@ -126,8 +126,8 @@ _
      andBool #rangeUInt(8, SIGV)
      andBool #rangeBytes(32, SIGR)
      andBool #rangeBytes(32, SIGS)
-     andBool ECREC_DATA ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV), #bytes32(SIGR), #bytes32(SIGS) )
-     andBool #ecrecEmpty( ECREC_DATA )
+     andBool _RECOVERED ==Int #asWord(#ecrec(#bufStrict(32, HASH), #bufStrict(1, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGV)))
+     andBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(1, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGV))
 
 endmodule
 
