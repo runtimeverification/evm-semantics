@@ -1672,10 +1672,13 @@ Precompiled Contracts
  // --------------------------------
     rule <k> ECREC => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
-         <output> _ => #ecrec(#sender(#unparseByteStack(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #unparseByteStack(DATA [ 64 .. 32 ]), #unparseByteStack(DATA [ 96 .. 32 ]))) </output>
+         <output> _ => #ecrec(DATA [ 0 .. 32 ], DATA [ 32 .. 32 ], DATA [ 64 .. 32 ], DATA [ 96 .. 32 ]) </output>
 
-    syntax ByteArray ::= #ecrec ( Account ) [function]
- // --------------------------------------------------
+    syntax ByteArray ::= #ecrec ( ByteArray , ByteArray , ByteArray , ByteArray ) [function, smtlib(smt_ecrec)]
+                       | #ecrec ( Account )                                       [function]
+ // ----------------------------------------------------------------------------------------
+    rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(#unparseByteStack(HASH), #asWord(SIGV), #unparseByteStack(SIGR), #unparseByteStack(SIGS)))
+
     rule #ecrec(.Account) => .ByteArray
     rule #ecrec(N:Int)    => #padToWidth(32, #asByteStack(N))
 
