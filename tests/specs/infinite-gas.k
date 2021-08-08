@@ -67,12 +67,8 @@ module INFINITE-GAS-COMMON
 
  // Symbolic Gas
 
-    syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
- //-----------------------------------------------------------------------------------
-
     syntax Int ::= #gas ( Int ) [function, functional, no-evaluators, klabel(infGas), symbol, smtlib(infGas)]
  // ---------------------------------------------------------------------------------------------------------
-    rule #gas(_, _, _) => #gas(0)
 
     rule #gas(G) +Int G' => #gas(G +Int G') requires 0 <=Int G' orBool 0 -Int G' <Int #gas(G)  [simplification]
     rule G +Int #gas(G') => #gas(G +Int G') requires 0 <=Int G  orBool 0 -Int G  <Int #gas(G') [simplification]
