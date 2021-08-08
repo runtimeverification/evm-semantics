@@ -9,11 +9,10 @@ module VERIFICATION-COMMON
   // Ecrecover
   // ########################
 
-    //Symbolic wrapper over the argument of #ecrec. No implementation.
-    syntax Int ::= #symEcrec ( ByteArray )   [function]
-
     //Symbolic predicate representing whether output of #ecrec is empty. No implementation.
-    syntax Bool ::= #ecrecEmpty( ByteArray ) [function]
+    syntax Bool ::= #ecrecEmpty( ByteArray , ByteArray , ByteArray , ByteArray ) [function, no-evaluators]
+ // ------------------------------------------------------------------------------------------------------
+    rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
 
 endmodule
 
@@ -39,16 +38,8 @@ module VERIFICATION
   // Ecrecover
   // ########################
 
-    // Range for #symEcrec
-
-    //case 0 is never wrapped into #symEcrec(), corresponds to #ecrecEmpty(DATA) == true
-    rule 0 <Int   #symEcrec(_DATA)             => true [simplification]
-    //that's because the result in concrete semantics is trimmed to Address range.
-    rule          #symEcrec(_DATA) <Int pow160 => true [simplification]
-    // Lemmas implied by the above, but still required to match side conditions of #padToWidth rule in lemmas.md
-    // General range conversion lemmas like below are not an option, dramatic performance decrease:
-    rule 0 <=Int  #symEcrec(_DATA)             => true [simplification]
-    rule          #symEcrec(_DATA) <Int pow256 => true [simplification]
+    rule 0 <=Int #asWord(#ecrec(_, _, _, _))             => true [simplification]
+    rule         #asWord(#ecrec(_, _, _, _)) <Int pow256 => true [simplification]
 
   // ########################
   // ABI Encoding

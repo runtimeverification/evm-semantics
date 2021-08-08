@@ -34,4 +34,19 @@ module FUNCTIONAL-SPEC
 
     claim <k> runLemma(#asWord(112 : 190 : 104 : 74 : #buf(28, A0)) /Int pow224) => doneLemma(1891526730) ... </k> requires #rangeUInt(224, A0)
 
+    claim <k> runLemma( minInt(32, #sizeByteArray(#ecrec(#bufStrict(32, HASH), #bufStrict(1, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))))) => doneLemma(32) ... </k>
+      requires #rangeUInt(256, HASH)
+       andBool #rangeUInt(8, SIGV)
+       andBool #rangeBytes(32, SIGR)
+       andBool #rangeBytes(32, SIGS)
+       andBool notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(1, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
+
+    claim <k> runLemma( #range(_:Memory [ 128 := #ecrec(#bufStrict(32, HASH), #bufStrict(1, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS)) ], 128, 32))
+           => doneLemma(#ecrec(#buf(32, HASH), #buf(1, SIGV), #buf(32, SIGR), #buf(32, SIGS))) ... </k>
+      requires #rangeUInt(256, HASH)
+       andBool #rangeUInt(8, SIGV)
+       andBool #rangeBytes(32, SIGR)
+       andBool #rangeBytes(32, SIGS)
+       andBool notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(1, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
+
 endmodule
