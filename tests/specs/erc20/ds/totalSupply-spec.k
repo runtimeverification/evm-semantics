@@ -33,7 +33,7 @@ module TOTALSUPPLY-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> #gas(100000, 0, 0) => ?_ </gas>
+          <gas> #gas(0) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
 
