@@ -66,9 +66,9 @@ module INFINITE-GAS-SPEC
 
     claim <k> runLemma( Cgascap(ISTANBUL, #gas(VGAS -Int 491), #gas(VGAS -Int 491), 700) +Int 700 ) => doneLemma(#gas(Cgascap(ISTANBUL, VGAS -Int 491, VGAS -Int 491, 700) +Int 700)) ... </k>
 
-    claim <k> runLemma( #gas((     #gas((VGAS -Int Cgascap(ISTANBUL, (VGAS +Int -5413), (VGAS +Int -5413), 700)) +Int -6113)
-                              +Int Cgascap(ISTANBUL, (VGAS +Int -5413), (VGAS +Int -5413), 700))
-                              +Int -1236
+    claim <k> runLemma( #gas((      #gas((VGAS -Int Cgascap(ISTANBUL, (VGAS +Int -5413), (VGAS +Int -5413), 700)) +Int -6113)
+                               +Int Cgascap(ISTANBUL, (VGAS +Int -5413), (VGAS +Int -5413), 700))
+                               +Int -1236
                             )
                       )
            => doneLemma(#gas(VGAS +Int -7349)) ... </k>
