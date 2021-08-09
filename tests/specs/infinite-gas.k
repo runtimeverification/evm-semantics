@@ -69,7 +69,6 @@ module INFINITE-GAS-COMMON
 
     syntax Int ::= #gas ( Int ) [function, functional, no-evaluators, klabel(infGas), symbol, smtlib(infGas)]
  // ---------------------------------------------------------------------------------------------------------
-
     rule #gas(G) +Int G' => #gas(G +Int G') requires 0 <=Int G' orBool 0 -Int G' <Int #gas(G)  [simplification]
     rule G +Int #gas(G') => #gas(G +Int G') requires 0 <=Int G  orBool 0 -Int G  <Int #gas(G') [simplification]
 
@@ -90,10 +89,10 @@ module INFINITE-GAS-COMMON
 
     rule #allBut64th(#gas(G)) => #gas(#allBut64th(G)) [simplification]
 
+    rule #gas(_)  <Int _       => false [simplification]
     rule #gas(_)  <Int #gas(_) => false [simplification]
     rule #gas(_) <=Int #gas(_) => true  [simplification]
 
-    rule #gas(_)  <Int I => false requires I <=Int pow256 [simplification]
     rule #gas(_) <=Int I => false requires I <=Int pow256 [simplification]
     rule #gas(_) >=Int I => true  requires I <=Int pow256 [simplification]
 
@@ -107,25 +106,18 @@ module INFINITE-GAS-COMMON
 
     rule I *Int I' <Int #gas(G) => true requires I <Int #gas(G) andBool I' <Int #gas(G) [simplification]
 
-    rule #gas(G) <Int I +Int I' => false requires                     notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
-    rule #gas(G) <Int I -Int I' => false requires                     notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
-    rule #gas(G) <Int I *Int I' => false requires                     notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
-    rule #gas(G) <Int I /Int I' => false requires I' =/=Int 0 andBool notBool (#gas(G) <Int I orBool #gas(G) <Int I') [simplification]
-
     rule #gas(G) <=Int I +Int I' => false requires                     notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
     rule #gas(G) <=Int I -Int I' => false requires                     notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
     rule #gas(G) <=Int I *Int I' => false requires                     notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
     rule #gas(G) <=Int I /Int I' => false requires I' =/=Int 0 andBool notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
 
-    rule 0 <=Int Csstore(_, _, _, _)       => true  [simplification]
-    rule Csstore(_, _, _, _) <Int #gas(_)  => true  [simplification]
-    rule #gas(_)  <Int Csstore(_, _, _, _) => false [simplification]
-    rule #gas(_) >=Int Csstore(_, _, _, _) => true  [simplification]
+    rule 0 <=Int Csstore(_, _, _, _)       => true [simplification]
+    rule Csstore(_, _, _, _) <Int #gas(_)  => true [simplification]
+    rule #gas(_) >=Int Csstore(_, _, _, _) => true [simplification]
 
-    rule 0 <=Int Cmem(_, _)       => true  [simplification]
-    rule Cmem(_, _) <Int #gas(_)  => true  [simplification]
-    rule #gas(_) <Int Cmem(_, _)  => false [simplification]
-    rule Cmem(_, _) <=Int #gas(_) => true  [simplification]
+    rule 0 <=Int Cmem(_, _)       => true [simplification]
+    rule Cmem(_, _) <Int #gas(_)  => true [simplification]
+    rule Cmem(_, _) <=Int #gas(_) => true [simplification]
 
     rule 0 <=Int Cgascap(_, G1, G2, G3)        => true                                                                              [simplification]
     rule Cgascap(_, G1, G2, G3) <Int #gas(G4)  => true  requires G1 <Int #gas(G4) andBool G2 <Int #gas(G4) andBool G3 <Int #gas(G4) [simplification]
@@ -137,16 +129,14 @@ module INFINITE-GAS-COMMON
     rule 0 <=Int #allBut64th(_G)      => true                          [simplification]
     rule #allBut64th(G) <Int #gas(G') => true requires G <Int #gas(G') [simplification]
 
-    rule 0 <=Int _:ScheduleConst < _:Schedule >       => true  [simplification]
-    rule _:ScheduleConst < _:Schedule >  <Int #gas(_) => true  [simplification]
-    rule _:ScheduleConst < _:Schedule > <=Int #gas(_) => true  [simplification]
-    rule #gas(_) <Int _:ScheduleConst < _:Schedule >  => false [simplification]
+    rule 0 <=Int _:ScheduleConst < _:Schedule >       => true [simplification]
+    rule _:ScheduleConst < _:Schedule >  <Int #gas(_) => true [simplification]
+    rule _:ScheduleConst < _:Schedule > <=Int #gas(_) => true [simplification]
 
-    rule log2Int(_) <=Int #gas(_) => true  [simplification]
-    rule #gas(_) <Int log2Int(_)  => false [simplification]
+    rule log2Int(_) <=Int #gas(_) => true [simplification]
 
-    rule 0 <=Int G up/Int _        => true  requires         0 <=Int G        [simplification]
-    rule G up/Int _  <Int #gas(G') => true  requires         G  <Int #gas(G') [simplification]
-    rule G up/Int _ <=Int #gas(G') => true  requires         G <=Int #gas(G') [simplification]
-    rule #gas(G') <Int G up/Int _  => false requires notBool #gas(G') <Int G  [simplification]
+    rule 0 <=Int G up/Int _        => true requires 0 <=Int G        [simplification]
+    rule G up/Int _  <Int #gas(G') => true requires G  <Int #gas(G') [simplification]
+    rule G up/Int _ <=Int #gas(G') => true requires G <=Int #gas(G') [simplification]
+
 endmodule
