@@ -112,19 +112,18 @@ module INFINITE-GAS-COMMON
     rule #gas(G) <=Int I /Int I' => false requires I' =/=Int 0 andBool notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
 
     rule 0 <=Int Csstore(_, _, _, _)       => true [simplification]
-    rule Csstore(_, _, _, _) <Int #gas(_)  => true [simplification]
-    rule #gas(_) >=Int Csstore(_, _, _, _) => true [simplification]
+    rule Csstore(_, _, _, _)  <Int #gas(_) => true [simplification]
+    rule Csstore(_, _, _, _) <=Int #gas(_) => true [simplification]
 
-    rule 0 <=Int Cmem(_, _)       => true [simplification]
-    rule Cmem(_, _) <Int #gas(_)  => true [simplification]
-    rule Cmem(_, _) <=Int #gas(_) => true [simplification]
+    rule 0 <=Int Cmem(_, N)       => true requires 0 <=Int N       [simplification]
+    rule Cmem(_, N)  <Int #gas(G) => true requires N  <Int #gas(G) [simplification]
+    rule Cmem(_, N) <=Int #gas(G) => true requires N <=Int #gas(G) [simplification]
 
-    rule 0 <=Int Cgascap(_, G1, G2, G3)        => true                                                                              [simplification]
-    rule Cgascap(_, G1, G2, G3) <Int #gas(G4)  => true  requires G1 <Int #gas(G4) andBool G2 <Int #gas(G4) andBool G3 <Int #gas(G4) [simplification]
-    rule #gas(G4) <Int Cgascap(_, G1, G2, G3)  => false                                                                             [simplification]
-    rule Cgascap(_, G1, G2, G3) <=Int #gas(G4) => true  requires G1 <Int #gas(G4) andBool G2 <Int #gas(G4) andBool G3 <Int #gas(G4) [simplification]
+    rule 0 <=Int Cgascap(_, G1, G2, G3)        => true requires 0 <=Int G1 andBool 0 <=Int G2 andBool 0 <=Int G3                   [simplification]
+    rule Cgascap(_, G1, G2, G3)  <Int #gas(G4) => true requires G1  <Int #gas(G4) andBool G2  <Int #gas(G4) andBool G3  <Int #gas(G4) [simplification]
+    rule Cgascap(_, G1, G2, G3) <=Int #gas(G4) => true requires G1 <=Int #gas(G4) andBool G2 <=Int #gas(G4) andBool G3 <=Int #gas(G4) [simplification]
 
-    rule Cgascap(SCHED, #gas(VGAS), #gas(VGAS), GCAP) => #gas(Cgascap(SCHED, VGAS, VGAS, GCAP)) [simplification]
+    rule Cgascap(SCHED, #gas(VGAS), #gas(VGAS), GEXTRA) => #gas(Cgascap(SCHED, VGAS, VGAS, GEXTRA)) [simplification]
 
     rule 0 <=Int #allBut64th(_G)      => true                          [simplification]
     rule #allBut64th(G) <Int #gas(G') => true requires G <Int #gas(G') [simplification]
@@ -133,7 +132,7 @@ module INFINITE-GAS-COMMON
     rule _:ScheduleConst < _:Schedule >  <Int #gas(_) => true [simplification]
     rule _:ScheduleConst < _:Schedule > <=Int #gas(_) => true [simplification]
 
-    rule log2Int(_) <=Int #gas(_) => true [simplification]
+    rule log2Int(N) <=Int #gas(G) => true requires 0 <Int N andBool N <=Int #gas(G) [simplification]
 
     rule 0 <=Int G up/Int _        => true requires 0 <=Int G        [simplification]
     rule G up/Int _  <Int #gas(G') => true requires G  <Int #gas(G') [simplification]
