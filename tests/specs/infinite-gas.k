@@ -89,6 +89,8 @@ module INFINITE-GAS-COMMON
 
     rule #allBut64th(#gas(G)) => #gas(#allBut64th(G)) [simplification]
 
+    rule Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) requires #rangeUInt(256, GEXTRA) [simplification]
+
     rule #gas(_)  <Int _       => false [simplification]
     rule #gas(_)  <Int #gas(_) => false [simplification]
     rule #gas(_) <=Int #gas(_) => true  [simplification]
@@ -126,9 +128,6 @@ module INFINITE-GAS-COMMON
     rule 0 <=Int Cgascap(_, G1, G2, G3)        => true requires 0 <=Int G1        andBool 0 <=Int G2        andBool 0 <=Int G3        [simplification]
     rule Cgascap(_, G1, G2, G3)  <Int #gas(G4) => true requires G1  <Int #gas(G4) andBool G2  <Int #gas(G4) andBool G3  <Int #gas(G4) [simplification]
     rule Cgascap(_, G1, G2, G3) <=Int #gas(G4) => true requires G1 <=Int #gas(G4) andBool G2 <=Int #gas(G4) andBool G3 <=Int #gas(G4) [simplification]
-
-    rule #gas(G1) +Int Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(G1 +Int Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) requires #rangeUInt(256, GEXTRA) [simplification]
-    rule #gas(G1) -Int Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(G1 -Int Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) requires #rangeUInt(256, GEXTRA) [simplification]
 
     rule 0 <=Int #allBut64th(_G)      => true                          [simplification]
     rule #allBut64th(G) <Int #gas(G') => true requires G <Int #gas(G') [simplification]
