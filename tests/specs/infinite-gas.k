@@ -91,13 +91,11 @@ module INFINITE-GAS-COMMON
     rule Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) requires #rangeUInt(256, GEXTRA) [simplification]
 
     rule 0       <=Int #gas(_) => true  [simplification]
-    rule #gas(_)  <Int _       => false [simplification]
-    rule #gas(_)  <Int #gas(_) => false [simplification]
     rule #gas(_) <=Int #gas(_) => true  [simplification]
+    rule #gas(_)  <Int _       => false [simplification]
 
-    rule I       <=Int #gas(_) => true  requires I <=Int pow256 [simplification]
-    rule I        <Int #gas(_) => true  requires I <=Int pow256 [simplification]
-    rule #gas(_) <=Int I       => false requires I <=Int pow256 [simplification]
+    rule I <=Int #gas(_) => true  requires I <=Int pow256 [simplification]
+    rule I  <Int #gas(_) => true  requires I <=Int pow256 [simplification]
 
     rule I +Int I' <=Int #gas(G) => true requires                     I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
     rule I -Int I' <=Int #gas(G) => true requires                     I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
