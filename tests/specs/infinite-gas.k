@@ -127,6 +127,11 @@ module INFINITE-GAS-COMMON
     rule #gas(_) <Int Cmem(_, _)  => false [simplification]
     rule Cmem(_, _) <=Int #gas(_) => true  [simplification]
 
+    rule 0 <=Int Cgascap(_, G1, G2, G3)        => true                                                                              [simplification]
+    rule Cgascap(_, G1, G2, G3) <Int #gas(G4)  => true  requires G1 <Int #gas(G4) andBool G2 <Int #gas(G4) andBool G3 <Int #gas(G4) [simplification]
+    rule #gas(G4) <Int Cgascap(_, G1, G2, G3)  => false                                                                             [simplification]
+    rule Cgascap(_, G1, G2, G3) <=Int #gas(G4) => true  requires G1 <Int #gas(G4) andBool G2 <Int #gas(G4) andBool G3 <Int #gas(G4) [simplification]
+
     rule Cgascap(SCHED, #gas(VGAS), #gas(VGAS), GCAP) => #gas(Cgascap(SCHED, VGAS, VGAS, GCAP)) [simplification]
 
     rule 0 <=Int #allBut64th(_G)      => true                          [simplification]
