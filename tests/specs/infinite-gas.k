@@ -72,7 +72,8 @@ module INFINITE-GAS-COMMON
     rule #gas(G) +Int G' => #gas(G +Int G') requires 0 <=Int G' orBool 0 -Int G' <Int #gas(G)  [simplification]
     rule G +Int #gas(G') => #gas(G +Int G') requires 0 <=Int G  orBool 0 -Int G  <Int #gas(G') [simplification]
 
-    rule #gas(G) -Int G' => #gas(G -Int G') requires 0 <=Int G' andBool G' <Int #gas(G) [simplification]
+    rule #gas(G) -Int G'       => #gas(G -Int G') requires 0 <=Int G' andBool G' <Int #gas(G) [simplification]
+    rule #gas(G) -Int #gas(G') => #gas(G -Int G')                                             [simplification]
 
     rule #gas(G) *Int G' => #gas(G *Int G') requires 0 <=Int G' [simplification]
     rule G *Int #gas(G') => #gas(G *Int G') requires 0 <=Int G  [simplification]
@@ -81,8 +82,6 @@ module INFINITE-GAS-COMMON
     rule G /Int #gas(G') => 0               requires 0 <=Int G  andBool G  <Int #gas(G') [simplification]
 
     rule #gas(#gas(G)) => #gas(G) [simplification]
-
-    rule #gas(G) -Int #gas(G') => #gas(G -Int G') [simplification]
 
     rule minInt(#gas(G), #gas(G'))              => #gas(minInt(G, G'))              [simplification]
     rule #if B #then #gas(G) #else #gas(G') #fi => #gas(#if B #then G #else G' #fi) [simplification]
@@ -114,8 +113,8 @@ module INFINITE-GAS-COMMON
     rule #gas(G) <=Int I /Int I' => false requires I' =/=Int 0 andBool notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
 
     rule 0 <=Int #memoryUsageUpdate(MU, START, WIDTH)       => true requires 0 <=Int MU       andBool 0 <=Int START       andBool 0     <=Int WIDTH   [simplification]
-    rule #memoryUsageUpdate(MU, START, WIDTH)  <Int #gas(G) => true requires MU  <Int #gas(G) andBool START  <Int #gas(G) andBool START  <Int #gas(G) [simplification]
-    rule #memoryUsageUpdate(MU, START, WIDTH) <=Int #gas(G) => true requires MU <=Int #gas(G) andBool START <=Int #gas(G) andBool START <=Int #gas(G) [simplification]
+    rule #memoryUsageUpdate(MU, START, WIDTH)  <Int #gas(G) => true requires MU  <Int #gas(G) andBool START  <Int #gas(G) andBool WIDTH  <Int #gas(G) [simplification]
+    rule #memoryUsageUpdate(MU, START, WIDTH) <=Int #gas(G) => true requires MU <=Int #gas(G) andBool START <=Int #gas(G) andBool WIDTH <=Int #gas(G) [simplification]
 
     rule 0 <=Int Csstore(_, _, _, _)       => true [simplification]
     rule Csstore(_, _, _, _)  <Int #gas(_) => true [simplification]
@@ -125,7 +124,7 @@ module INFINITE-GAS-COMMON
     rule Cmem(_, N)  <Int #gas(G) => true requires N  <Int #gas(G) [simplification]
     rule Cmem(_, N) <=Int #gas(G) => true requires N <=Int #gas(G) [simplification]
 
-    rule 0 <=Int Cgascap(_, G1, G2, G3)        => true requires 0 <=Int G1        andBool 0 <=Int G2        andBool 0 <=Int G3        [simplification]
+    rule 0 <=Int Cgascap(_, G1, G2, G3)        => true                                                                                [simplification]
     rule Cgascap(_, G1, G2, G3)  <Int #gas(G4) => true requires G1  <Int #gas(G4) andBool G2  <Int #gas(G4) andBool G3  <Int #gas(G4) [simplification]
     rule Cgascap(_, G1, G2, G3) <=Int #gas(G4) => true requires G1 <=Int #gas(G4) andBool G2 <=Int #gas(G4) andBool G3 <=Int #gas(G4) [simplification]
 
