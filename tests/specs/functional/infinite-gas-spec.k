@@ -66,10 +66,11 @@ module INFINITE-GAS-SPEC
     claim <k> runLemma(  #gas( -271 -Int CMEM -Int 3 *Int ( DATA_LEN up/Int 32 ) -Int CMEM' +Int CMEM -Int Cmem ( ISTANBUL , #memoryUsageUpdate ( 5 , ( DATA_LEN +Int 31 ) /Int 32 *Int 32 +Int 160 , 32 ) ) +Int CMEM' +Int -122))
            => doneLemma( #gas( -271           -Int 3 *Int ( DATA_LEN up/Int 32 )                      -Int Cmem ( ISTANBUL , #memoryUsageUpdate ( 5 , ( DATA_LEN +Int 31 ) /Int 32 *Int 32 +Int 160 , 32 ) )            +Int -122)) ... </k>
 
-    claim <k> runLemma( Cgascap(ISTANBUL, #gas(VGAS -Int 491), #gas(VGAS -Int 491), 700) +Int 700 ) => doneLemma(#gas(Cgascap(ISTANBUL, VGAS -Int 491, VGAS -Int 491, 700) +Int 700)) ... </k>
+    claim <k> runLemma( #gas(VGAS +Int -6113) +Int Cgascap(ISTANBUL, #gas(VGAS +Int -5413), #gas(VGAS +Int -5413), 700))
+           => doneLemma(#gas((VGAS +Int Cgascap(ISTANBUL, (VGAS +Int -5413), (VGAS +Int -5413), 700)) +Int -6113)) ... </k>
 
-    claim <k> runLemma( #gas((      #gas((VGAS -Int Cgascap(ISTANBUL, (VGAS +Int -5413), (VGAS +Int -5413), 700)) +Int -6113)
-                               +Int Cgascap(ISTANBUL, (VGAS +Int -5413), (VGAS +Int -5413), 700))
+    claim <k> runLemma( #gas((      #gas((VGAS -Int Cgascap(ISTANBUL, VGAS +Int -5413, VGAS +Int -5413, 700)) +Int -6113)
+                               +Int Cgascap(ISTANBUL, #gas(VGAS +Int -5413), #gas(VGAS +Int -5413), 700))
                                +Int -1236
                             )
                       )
