@@ -90,15 +90,14 @@ module INFINITE-GAS-COMMON
 
     rule Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) requires #rangeUInt(256, GEXTRA) [simplification]
 
+    rule 0       <=Int #gas(_) => true  [simplification]
     rule #gas(_)  <Int _       => false [simplification]
     rule #gas(_)  <Int #gas(_) => false [simplification]
     rule #gas(_) <=Int #gas(_) => true  [simplification]
 
-    rule #gas(_) <=Int I => false requires I <=Int pow256 [simplification]
-    rule #gas(_) >=Int I => true  requires I <=Int pow256 [simplification]
-
-    rule I  <Int #gas(_) => true requires I <=Int pow256 [simplification]
-    rule I <=Int #gas(_) => true requires I <=Int pow256 [simplification]
+    rule I       <=Int #gas(_) => true  requires I <=Int pow256 [simplification]
+    rule I        <Int #gas(_) => true  requires I <=Int pow256 [simplification]
+    rule #gas(_) <=Int I       => false requires I <=Int pow256 [simplification]
 
     rule I +Int I' <=Int #gas(G) => true requires                     I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
     rule I -Int I' <=Int #gas(G) => true requires                     I <=Int #gas(G) andBool I' <=Int #gas(G) [simplification]
@@ -124,9 +123,9 @@ module INFINITE-GAS-COMMON
     rule Cmem(_, N)  <Int #gas(G) => true requires N  <Int #gas(G) [simplification]
     rule Cmem(_, N) <=Int #gas(G) => true requires N <=Int #gas(G) [simplification]
 
-    rule 0 <=Int Cgascap(_, G1, G2, G3)        => true                                                                                [simplification]
-    rule Cgascap(_, G1, G2, G3)  <Int #gas(G4) => true requires G1  <Int #gas(G4) andBool G2  <Int #gas(G4) andBool G3  <Int #gas(G4) [simplification]
-    rule Cgascap(_, G1, G2, G3) <=Int #gas(G4) => true requires G1 <=Int #gas(G4) andBool G2 <=Int #gas(G4) andBool G3 <=Int #gas(G4) [simplification]
+    rule 0 <=Int Cgascap(_, _, _, _)                    => true                                                                                       [simplification]
+    rule Cgascap(_, GCAP, GAVAIL, GEXTRA)  <Int #gas(G) => true requires GCAP  <Int #gas(G) andBool GAVAIL  <Int #gas(G) andBool GEXTRA  <Int #gas(G) [simplification]
+    rule Cgascap(_, GCAP, GAVAIL, GEXTRA) <=Int #gas(G) => true requires GCAP <=Int #gas(G) andBool GAVAIL <=Int #gas(G) andBool GEXTRA <=Int #gas(G) [simplification]
 
     rule 0 <=Int #allBut64th(_G)      => true                          [simplification]
     rule #allBut64th(G) <Int #gas(G') => true requires G <Int #gas(G') [simplification]
