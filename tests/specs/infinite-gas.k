@@ -123,7 +123,7 @@ module INFINITE-GAS-COMMON
     rule Cmem(_, N)  <Int #gas(G) => true requires N  <Int #gas(G) [simplification]
     rule Cmem(_, N) <=Int #gas(G) => true requires N <=Int #gas(G) [simplification]
 
-    rule 0 <=Int Cgascap(_, G1, G2, G3)        => true requires 0 <=Int G1 andBool 0 <=Int G2 andBool 0 <=Int G3                   [simplification]
+    rule 0 <=Int Cgascap(_, G1, G2, G3)        => true requires 0 <=Int G1        andBool 0 <=Int G2        andBool 0 <=Int G3        [simplification]
     rule Cgascap(_, G1, G2, G3)  <Int #gas(G4) => true requires G1  <Int #gas(G4) andBool G2  <Int #gas(G4) andBool G3  <Int #gas(G4) [simplification]
     rule Cgascap(_, G1, G2, G3) <=Int #gas(G4) => true requires G1 <=Int #gas(G4) andBool G2 <=Int #gas(G4) andBool G3 <=Int #gas(G4) [simplification]
 
