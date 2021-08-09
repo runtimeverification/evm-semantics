@@ -23,22 +23,8 @@ module VERIFICATION
   // Arithmetic
   // ########################
 
-    rule N -Int N => 0 [simplification]
-
-    rule (I1 *Int I2) /Int I3 <=Int I4 => true
-      requires  0  <=Int I1
-       andBool  0  <=Int I2
-       andBool  0   <Int I3
-       andBool  I1 <=Int I4
-       andBool  I2 <=Int I3
-      [simplification]
-
     rule 0 <=Int X /Int Y             => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <Int  Y andBool Y <Int pow256 [simplification]
     rule         X /Int Y <Int pow256 => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <Int  Y andBool Y <Int pow256 [simplification]
-
-    rule I1 +Int I2 <Int I1 => false requires 0 <=Int I2 [simplification]
-
-    rule I1 <Int I1 -Int I2 => false requires 0 <=Int I2 [simplification]
 
     rule chop(I1 -Int I2) => I1 -Int I2 requires #rangeUInt(256, I1) andBool #rangeUInt(256, I2) andBool I2 <=Int I1 [simplification]
 
