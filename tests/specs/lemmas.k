@@ -107,7 +107,6 @@ module LEMMAS-JAVA [symbolic, kast]
     imports EVM
     imports EDSL
     imports K-REFLECTION
-    imports HASH2
 
   // ########################
   // Buffer Reasoning
@@ -261,7 +260,6 @@ module LEMMAS-HASKELL [symbolic, kore]
     imports INT-SYMBOLIC
     imports EVM
     imports EDSL
-    imports HASH2
 
   // ########################
   // Word Reasoning
@@ -313,10 +311,5 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
 
     rule B ==Bool false => notBool B [simplification]
-
-endmodule
-
-module HASH2 [symbolic]
-    imports INT
 
 endmodule
