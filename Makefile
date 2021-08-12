@@ -146,7 +146,7 @@ plugin-deps: $(plugin_includes) $(plugin_c_includes)
 # Building
 # --------
 
-KOMPILE := ${KEVM_BIN}/$(KEVM) kompile
+KOMPILE := $(KEVM) kompile
 
 kevm_files := abi.md              \
               asm.md              \
