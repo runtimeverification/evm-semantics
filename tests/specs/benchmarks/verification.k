@@ -15,9 +15,10 @@ module VERIFICATION-COMMON
     rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
     rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 0  requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
 
-    rule        #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))                  => 0    requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
-    rule 0 <Int #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))                  => true requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
-    rule        #asWord(#ecrec(_   , _   , _   , _   )) <=Int maxUInt160 => true                                                      [simplification]
+    rule         #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))                  => 0    requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule 0  <Int #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))                  => true requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule 0 <=Int #asWord(#ecrec(_   , _   , _   , _   ))                  => true                                                      [simplification]
+    rule         #asWord(#ecrec(_   , _   , _   , _   )) <=Int maxUInt160 => true                                                      [simplification]
 
 endmodule
 
@@ -38,13 +39,6 @@ module VERIFICATION
   // ########################
 
     rule Rsstore(_BYZANTIUM, NEW, _CURR, _ORIG) => 0  requires NEW =/=Int 0 [simplification]
-
-  // ########################
-  // Ecrecover
-  // ########################
-
-    rule 0 <=Int #asWord(#ecrec(_, _, _, _))             => true [simplification]
-    rule         #asWord(#ecrec(_, _, _, _)) <Int pow256 => true [simplification]
 
   // ########################
   // ABI Encoding
