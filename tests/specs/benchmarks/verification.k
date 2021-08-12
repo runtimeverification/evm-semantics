@@ -15,6 +15,10 @@ module VERIFICATION-COMMON
     rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
     rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 0  requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
 
+    rule        #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))                  => 0    requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule 0 <Int #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))                  => true requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule        #asWord(#ecrec(HASH, SIGV, SIGR, SIGS)) <=Int maxUInt160 => true                                                      [simplification]
+
 endmodule
 
 module VERIFICATION
