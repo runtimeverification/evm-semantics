@@ -11,7 +11,7 @@ module ECRECOVER00-SIGVALID-SPEC
     <schedule> ISTANBUL </schedule>
     <ethereum>
       <evm>
-        <output> _ => #encodeArgs(#address(RECOVERED)) </output>
+        <output> _ => #buf(32, RECOVERED) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
@@ -126,8 +126,8 @@ _
      andBool #rangeUInt(8, SIGV)
      andBool #rangeBytes(32, SIGR)
      andBool #rangeBytes(32, SIGS)
-     andBool RECOVERED ==Int #asWord(#ecrec(#bufStrict(32, HASH), #bufStrict(1, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS)))
-     andBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(1, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
+     andBool RECOVERED ==Int #asWord(#ecrec(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS)))
+     andBool notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
 
 endmodule
 
