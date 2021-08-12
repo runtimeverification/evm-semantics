@@ -49,4 +49,18 @@ module FUNCTIONAL-SPEC
        andBool #rangeBytes(32, SIGS)
        andBool notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(1, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
 
+    claim <k> runLemma(#sizeByteArray(#ecrec(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS)))) => doneLemma(0) ... </k>
+      requires #rangeUInt(256, HASH)
+       andBool #rangeUInt(8, SIGV)
+       andBool #rangeBytes(32, SIGR)
+       andBool #rangeBytes(32, SIGS)
+       andBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
+
+    claim <k> runLemma(#sizeByteArray(#ecrec(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS)))) => doneLemma(32) ... </k>
+      requires #rangeUInt(256, HASH)
+       andBool #rangeUInt(8, SIGV)
+       andBool #rangeBytes(32, SIGR)
+       andBool #rangeBytes(32, SIGS)
+       andBool notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
+
 endmodule

@@ -13,6 +13,7 @@ module VERIFICATION-COMMON
     syntax Bool ::= #ecrecEmpty( ByteArray , ByteArray , ByteArray , ByteArray ) [function, no-evaluators]
  // ------------------------------------------------------------------------------------------------------
     rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 0  requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
 
 endmodule
 
