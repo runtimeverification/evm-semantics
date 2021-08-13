@@ -132,8 +132,6 @@ _
      andBool #rangeBytes(32, SIGR1)
      andBool #rangeBytes(32, SIGS0)
      andBool #rangeBytes(32, SIGS1)
-     andBool _RECOVERED0 ==Int #asWord(#ecrec( #bufStrict(32, HASH), #bufStrict(32, SIGV0), #bufStrict(32, SIGR0), #bufStrict(32, SIGS0) ))
-     andBool _RECOVERED1 ==Int #asWord(#ecrec( #bufStrict(32, HASH), #bufStrict(32, SIGV1), #bufStrict(32, SIGR1), #bufStrict(32, SIGS1) ))
      andBool #ecrecEmpty( #bufStrict(32, HASH), #bufStrict(32, SIGV0), #bufStrict(32, SIGR0), #bufStrict(32, SIGS0) )
 
 endmodule
