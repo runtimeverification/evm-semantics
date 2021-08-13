@@ -1,5 +1,4 @@
 #include <gmp.h>
-#include <gmpxx.h>
 #include <map>
 #include "proto/msg.pb.h"
 #include "world.h"
@@ -7,10 +6,10 @@
 
 using namespace org::kframework::kevm::extvm;
 
-static std::map<mpz_class, std::unique_ptr<Account>> accounts;
-static std::map<mpz_class, std::map<mpz_class, std::unique_ptr<StorageData>>> storage;
-static std::map<mpz_class, std::unique_ptr<Code>> code;
-static std::map<mpz_class, std::unique_ptr<Blockhash>> blockhash;
+static std::map<std::string, std::unique_ptr<Account>> accounts;
+static std::map<std::string, std::map<std::string, std::unique_ptr<StorageData>>> storage;
+static std::map<std::string, std::unique_ptr<Code>> code;
+static std::map<std::string, std::unique_ptr<Blockhash>> blockhash;
 
 void clear_cache() {
   accounts.clear();
@@ -20,7 +19,7 @@ void clear_cache() {
 }
 
 static Account* get_account(mpz_t acctID) {
-  mpz_class id(acctID);
+  std::string id(mpz_get_str(0, 10, acctID));
   Account* acct = accounts[id].get();
   if (!acct) {
     acct = World::get_account(of_z_width(20, acctID));
@@ -30,8 +29,8 @@ static Account* get_account(mpz_t acctID) {
 }
 
 static StorageData* get_storage_data(mpz_t acctID, mpz_t index) {
-  mpz_class id(acctID);
-  mpz_class idx(index);
+  std::string id(mpz_get_str(0, 10, acctID));
+  std::string idx(mpz_get_str(0, 10, index));
   StorageData *data = storage[id][idx].get();
   if (!data) {
     data = World::get_storage_data(of_z_width(20, acctID), of_z(index));
@@ -41,7 +40,7 @@ static StorageData* get_storage_data(mpz_t acctID, mpz_t index) {
 }
 
 static Code* get_code(mpz_t acctID) {
-  mpz_class id(acctID);
+  std::string id(mpz_get_str(0, 10, acctID));
   Code* c = code[id].get();
   if (!c) {
     c = World::get_code(of_z_width(20, acctID));
@@ -51,7 +50,7 @@ static Code* get_code(mpz_t acctID) {
 }
 
 static Blockhash* get_blockhash(mpz_t offset) {
-  mpz_class off(offset);
+  std::string off(mpz_get_str(0, 10, offset));
   Blockhash* h = blockhash[off].get();
   if (!h) {
     h = World::get_blockhash(mpz_get_ui(offset));
