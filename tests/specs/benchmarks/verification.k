@@ -147,7 +147,7 @@ module VERIFICATION-HASKELL [symbolic, kore]
 
     rule BA1 ++ (BA2 ++ BA3) => (BA1 ++ BA2) ++ BA3 [concrete(BA1, BA2), simplification]
 
-    rule X &Int Y => Y requires 0 <=Int Y andBool Y <=Int X [simplification]
+    rule maxUInt160 &Int Y => Y requires 0 <=Int Y andBool Y <=Int maxUInt160 [simplification]
 
 endmodule
 
