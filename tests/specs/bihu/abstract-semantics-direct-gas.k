@@ -1,4 +1,9 @@
 module ABSTRACT-SEMANTICS-DIRECT-GAS
+  imports ABSTRACT-SEMANTICS-DIRECT-GAS-JAVA
+
+endmodule
+
+module ABSTRACT-SEMANTICS-DIRECT-GAS-JAVA [kast]
   imports EVM
 
   // to avoid unnecessary case analyses
