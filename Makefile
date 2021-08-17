@@ -158,6 +158,7 @@ kevm_files := abi.md              \
 
 kevm_lemmas := infinite-gas.k                           \
                lemmas.k                                 \
+               int-simplification.k                     \
                erc20/abstract-semantics-segmented-gas.k \
                erc20/evm-symbolic.k                     \
                mcd/bin_runtime.k                        \
@@ -243,12 +244,13 @@ $(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_inc
 
 install_bins := kevm
 
-install_libs := $(haskell_kompiled) \
-                $(llvm_kompiled)    \
-                $(java_kompiled)    \
-                kore-json.py        \
-                kast-json.py        \
-                release.md          \
+install_libs := $(haskell_kompiled)                                        \
+                $(llvm_kompiled)                                           \
+                $(java_kompiled)                                           \
+                $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
+                kore-json.py                                               \
+                kast-json.py                                               \
+                release.md                                                 \
                 version
 
 build_bins := $(install_bins)

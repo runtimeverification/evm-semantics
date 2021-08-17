@@ -31,12 +31,6 @@ module EVM-SYMBOLIC     [symbolic]
     rule 0 <=Int  #symEcrec(_)             => true [simplification]
     rule          #symEcrec(_) <Int pow256 => true [simplification]
 
- // callSuccess? caputures various cases where a call may fail including out of gas, insufficient balance and etc.
- // TODO: include the calldata as the argument.
-    syntax Int ::= #callGas ( Schedule , Int , Int , Int , Bool )  [function]  // schedule, gasCap, accountTo, value, callSuccess?
- // ------------------------------------------------------------------------------------------------------------------------------
-
-
   // ########################
   // Symbolic Call
   // ########################
