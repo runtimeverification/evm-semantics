@@ -1,9 +1,7 @@
-requires "abstract-semantics-direct-gas.k"
 requires "edsl.md"
 requires "../lemmas.k"
 
 module VERIFICATION
-    imports ABSTRACT-SEMANTICS-DIRECT-GAS
     imports EDSL
     imports LEMMAS
 
