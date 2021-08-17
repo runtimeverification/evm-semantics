@@ -141,6 +141,23 @@ endmodule
 module VERIFICATION-HASKELL [symbolic, kore]
     imports VERIFICATION-COMMON
 
+  // ################################################
+  // benchmarks/ecrecoverloop00-sig0-invalid
+  // ################################################
+
+    rule X &Int Y <=Int 0 => false requires 0 <=Int X andBool 0 <=Int Y [simplification]
+
+    rule 0 <=Int #asWord ( _ ) => true [simplification]
+
+  // ################################################
+  // benchmarks/ecrecoverloop02-sigs-valid-spec
+  // ################################################
+
+    rule 0 |Int X => X requires 0 <=Int X
+
+    rule X *Int 1 => X
+
+
   // ########################
   // Buffer Reasoning
   // ########################
