@@ -27,6 +27,7 @@ In particular, this means that `#gas(_) <Int #gas(_) => false`, and `#gas(_) <=I
     rule G +Int #gas(G') => #gas(G +Int G') requires 0 <=Int G  orBool 0 -Int G  <Int #gas(G') [simplification]
 
     rule #gas(G) -Int G' => #gas(G -Int G') requires 0 <=Int G' andBool G' <Int #gas(G) [simplification]
+    rule #gas(G) -Int #gas(G') => #gas(G -Int G')                                       [simplification]
 
     rule #gas(G) *Int G' => #gas(G *Int G') requires 0 <=Int G' [simplification]
     rule G *Int #gas(G') => #gas(G *Int G') requires 0 <=Int G  [simplification]
@@ -36,12 +37,12 @@ In particular, this means that `#gas(_) <Int #gas(_) => false`, and `#gas(_) <=I
 
     rule #gas(#gas(G)) => #gas(G) [simplification]
 
-    rule #gas(G) -Int #gas(G') => #gas(G -Int G') [simplification]
-
     rule minInt(#gas(G), #gas(G'))              => #gas(minInt(G, G'))              [simplification]
     rule #if B #then #gas(G) #else #gas(G') #fi => #gas(#if B #then G #else G' #fi) [simplification]
 
     rule #allBut64th(#gas(G)) => #gas(#allBut64th(G)) [simplification]
+
+    rule Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) requires #rangeUInt(256, GEXTRA) [simplification]
 
     rule #gas(_)  <Int #gas(_) => false [simplification]
     rule #gas(_) <=Int #gas(_) => true  [simplification]
@@ -79,6 +80,9 @@ In particular, this means that `#gas(_) <Int #gas(_) => false`, and `#gas(_) <=I
     rule Cmem(_, _) <Int #gas(_)  => true  [simplification]
     rule #gas(_) <Int Cmem(_, _)  => false [simplification]
     rule Cmem(_, _) <=Int #gas(_) => true  [simplification]
+    
+    rule 0 <=Int Cgascap(_, _, _, _)                           => true                                                                                       [simplification]
+    rule         Cgascap(_, GCAP, GAVAIL, GEXTRA) <Int #gas(G) => true requires GCAP  <Int #gas(G) andBool GAVAIL  <Int #gas(G) andBool GEXTRA  <Int #gas(G) [simplification]
 
     rule 0 <=Int #allBut64th(_G)      => true                          [simplification]
     rule #allBut64th(G) <Int #gas(G') => true requires G <Int #gas(G') [simplification]
