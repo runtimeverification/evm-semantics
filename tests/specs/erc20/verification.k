@@ -1,4 +1,3 @@
-requires "abstract-semantics-segmented-gas.k"
 requires "edsl.md"
 requires "evm-symbolic.k"
 requires "../infinite-gas.k"
@@ -13,7 +12,6 @@ module VERIFICATION
 endmodule
 
 module VERIFICATION-JAVA [symbolic, kast]
-    imports ABSTRACT-SEMANTICS-SEGMENTED-GAS
     imports EDSL
     imports EVM-SYMBOLIC
 

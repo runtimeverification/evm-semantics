@@ -9,11 +9,16 @@ module VERIFICATION-COMMON
   // Ecrecover
   // ########################
 
-    //Symbolic wrapper over the argument of #ecrec. No implementation.
-    syntax Int ::= #symEcrec ( ByteArray )   [function]
-
     //Symbolic predicate representing whether output of #ecrec is empty. No implementation.
-    syntax Bool ::= #ecrecEmpty( ByteArray ) [function]
+    syntax Bool ::= #ecrecEmpty( ByteArray , ByteArray , ByteArray , ByteArray ) [function, no-evaluators]
+ // ------------------------------------------------------------------------------------------------------
+    rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 0  requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+
+    rule         #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))                  => 0    requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule 0  <Int #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))                  => true requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule 0 <=Int #asWord(#ecrec(_   , _   , _   , _   ))                  => true                                                      [simplification]
+    rule         #asWord(#ecrec(_   , _   , _   , _   )) <=Int maxUInt160 => true                                                      [simplification]
 
 endmodule
 
@@ -34,21 +39,6 @@ module VERIFICATION
   // ########################
 
     rule Rsstore(_BYZANTIUM, NEW, _CURR, _ORIG) => 0  requires NEW =/=Int 0 [simplification]
-
-  // ########################
-  // Ecrecover
-  // ########################
-
-    // Range for #symEcrec
-
-    //case 0 is never wrapped into #symEcrec(), corresponds to #ecrecEmpty(DATA) == true
-    rule 0 <Int   #symEcrec(_DATA)             => true [simplification]
-    //that's because the result in concrete semantics is trimmed to Address range.
-    rule          #symEcrec(_DATA) <Int pow160 => true [simplification]
-    // Lemmas implied by the above, but still required to match side conditions of #padToWidth rule in lemmas.md
-    // General range conversion lemmas like below are not an option, dramatic performance decrease:
-    rule 0 <=Int  #symEcrec(_DATA)             => true [simplification]
-    rule          #symEcrec(_DATA) <Int pow256 => true [simplification]
 
   // ########################
   // ABI Encoding
@@ -157,31 +147,13 @@ module VERIFICATION-HASKELL [symbolic, kore]
 
     rule BA1 ++ (BA2 ++ BA3) => (BA1 ++ BA2) ++ BA3 [concrete(BA1, BA2), simplification]
 
+    rule maxUInt160 &Int Y => Y requires 0 <=Int Y andBool Y <=Int maxUInt160 [simplification]
+
 endmodule
 
 module VERIFICATION-JAVA [symbolic, kast]
     imports VERIFICATION-COMMON
     imports K-REFLECTION
-
-  // ########################
-  // Rule Replacement
-  // ########################
-
-    claim <k> ECREC => #end EVMC_SUCCESS ... </k>
-         <callData> DATA </callData>
-         <output> _ => #ecrec(#symEcrec(DATA)) </output>
-      requires notBool #isConcrete(DATA)
-       andBool #sizeByteArray(DATA) ==Int 128
-       andBool notBool #ecrecEmpty(DATA)
-      [trusted]
-
-    claim <k> ECREC => #end EVMC_SUCCESS ... </k>
-         <callData> DATA </callData>
-         <output> _ => #ecrec(.Account) </output>
-      requires notBool #isConcrete(DATA)
-       andBool #sizeByteArray(DATA) ==Int 128
-       andBool #ecrecEmpty(DATA)
-      [trusted]
 
   // ########################
   // Arithmetic
