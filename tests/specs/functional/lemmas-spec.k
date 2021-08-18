@@ -21,13 +21,23 @@ module LEMMAS-SPEC
 
     claim <k> runLemma ( bool2Word((UINT8 ==K 0) ==K false) ) => doneLemma ( UINT8 ) ... </k> requires #rangeBool(UINT8)
 
+ // sizeByteArray
+ // -------------
+
+    claim <k> runLemma(#sizeByteArray(#padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER .IntList))))) => doneLemma(32) ... </k> requires #rangeUInt(256, OWNER)
+
+ // Addresses
+ // ---------
+
+    claim <k> runLemma(#isPrecompiledAccount(#newAddr(TESTER_ACCT, 1), ISTANBUL)) => doneLemma(false) ... </k> requires #rangeAddress(TESTER_ACCT)
+
  // Arithmetic Comparisons
  // ----------------------
 
     claim <k> runLemma(#rangeUInt(256, #lookup(M, KX) -Int #lookup(M, KY))) => doneLemma(true) ... </k>
-      requires #rangeUInt(256, X) andBool X ==Int #lookup(M, KX)
-       andBool #rangeUInt(256, Y) andBool Y ==Int #lookup(M, KY)
-       andBool #rangeUInt(256, Z) andBool Z ==Int #lookup(M, KZ)
+      requires #rangeUInt(256, X) andBool X ==Int #lookup(M,  KX)
+       andBool #rangeUInt(256, Y) andBool Y ==Int #lookup(M,  KY)
+       andBool #rangeUInt(256, Z) andBool Z ==Int #lookup(M, _KZ)
        andBool #rangeUInt(256, (X -Int Y) -Int Z)
 
  // Buffer write simplifications
@@ -41,6 +51,9 @@ module LEMMAS-SPEC
     // claim <k> runLemma ( M:Map [ I1 <- 1 ] [ I2 <- 2 ] ) => doneLemma ( M [ I2 <- 2 ] [ I1 <- 1 ] ) ... </k> requires I1  >Int I2
     // claim <k> runLemma ( M:Map [ I1 <- 1 ] [ I2 <- 2 ] ) => doneLemma ( M [ I1 <- 2 ]             ) ... </k> requires I1 ==Int I2
     // claim <k> runLemma ( M:Map [ I1 <- 1 ] [ I2 <- 2 ] ) => doneLemma ( M [ I2 <- 2 ]             ) ... </k> requires I1 ==Int I2
+
+    claim <k> runLemma(M:Memory [ 32 := BA1 ] [ 32 := BA2                                                                  ]) => doneLemma(M:Memory [ 32 := BA2                                                                  ]) ... </k> requires #sizeByteArray(BA1) <=Int #sizeByteArray(BA2)
+    claim <k> runLemma(M:Memory [ 32 := BA1 ] [ 32 := #padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER))) ]) => doneLemma(M:Memory [ 32 := #padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER))) ]) ... </k> requires #sizeByteArray(BA1) ==Int 32 andBool #rangeUInt(256, OWNER)
 
  // #lookup simplifications
  // -----------------------
@@ -104,6 +117,11 @@ module LEMMAS-SPEC
     claim <k> runLemma ( #buf( 32 , I:Int )                ==K #buf( 32 , 1 )     ) => doneLemma( I ==K 1    ) ... </k>
     claim <k> runLemma ( #buf( 32 , 1 )                    ==K #buf( 32 , I:Int ) ) => doneLemma( I ==K 1    ) ... </k>
 
+    claim <k> runLemma ( #bufStrict( #ceil32(LEN) -Int LEN, 0 ) ) => doneLemma( #buf( #ceil32(LEN) -Int LEN, 0 ) ) ... </k> requires 0 <=Int LEN
+
+    claim <k> runLemma( #padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER         .IntList))) ) => doneLemma(#buf(32, #hashedLocation("Solidity", 2, OWNER         .IntList))) ... </k> requires #rangeUInt(256, OWNER)
+    claim <k> runLemma( #padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER SPENDER .IntList))) ) => doneLemma(#buf(32, #hashedLocation("Solidity", 2, OWNER SPENDER .IntList))) ... </k> requires #rangeUInt(256, OWNER) andBool #rangeUInt(256, SPENDER)
+
  // chop simplification
  // -------------------
 
@@ -120,5 +138,12 @@ module LEMMAS-SPEC
     //Required for ERC20 + solc5 + constructor call
     claim <k> runLemma ( 160 ==Int #asWord ( #buf( 4, 160 ) ++ ( #buf( 32 , _BUF ) [ 0 .. 28 ] ) ) >>Int 224 )
            => doneLemma( true ) ... </k>
+
+ // buffer range sinplification
+ // ---------------------------
+    claim <k> runLemma  ( (#buf(DATA_LEN, DATA) ++ _BUF) [0 .. DATA_LEN] ) 
+           => doneLemma (  #buf(DATA_LEN, DATA)          [0 .. DATA_LEN] ) ... </k>
+      requires #range(0 <= DATA < (2 ^Int (DATA_LEN *Int 8)))
+       andBool 0 <=Int DATA_LEN
 
 endmodule

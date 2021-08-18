@@ -52,6 +52,33 @@ module INFINITE-GAS-SPEC
     claim <k> runLemma(#gas(G) +Int (#allBut64th((VGas -Int Csstore(ISTANBUL, V1, V2, V3)) +Int -3232) +Int -3232)) => doneLemma(#gas(G +Int (#allBut64th((VGas -Int Csstore(ISTANBUL, V1, V2, V3)) +Int -3232) +Int -3232))) ... </k>
     claim <k> runLemma(#gas(G) +Int ((#allBut64th(VGas -Int Csstore(ISTANBUL, V1, V2, V3)) -Int Csstore(ISTANBUL, V1', V2', V3')) +Int -3232)) => doneLemma(#gas(G +Int ((#allBut64th(VGas -Int Csstore(ISTANBUL, V1, V2, V3)) -Int Csstore(ISTANBUL, V1', V2', V3')) +Int -3232))) ... </k>
 
+    claim <k> runLemma(#gas(G) -Int Cmem(SCHED, #memoryUsageUpdate(MU, W0, 32))) => doneLemma(#gas(G -Int Cmem(SCHED, #memoryUsageUpdate(MU, W0, 32)))) ... </k>
+           requires #rangeUInt(256, MU) andBool #rangeUInt(256, W0)
+
+    claim <k> runLemma(#gas(G) -Int Gverylow < SCHED >) => doneLemma(#gas(G -Int Gverylow < SCHED >)) ... </k>
+
+    claim <k> runLemma(#gas(G) -Int 3 *Int (DATA_LEN up/Int 32)) => doneLemma(#gas(G -Int 3 *Int (DATA_LEN up/Int 32))) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+
+    claim <k> runLemma (#gas(-271 -Int Cmem(ISTANBUL, #memoryUsageUpdate(5, 160, DATA_LEN))) -Int 3 *Int (DATA_LEN up/Int 32) +Int -3)
+           => doneLemma(#gas(-271 -Int Cmem(ISTANBUL, #memoryUsageUpdate(5, 160, DATA_LEN)) -Int 3 *Int (DATA_LEN up/Int 32) +Int -3)) ... </k>
+      requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+
+    claim <k> runLemma(  #gas( -271 -Int CMEM -Int 3 *Int ( DATA_LEN up/Int 32 ) -Int CMEM' +Int CMEM -Int Cmem ( ISTANBUL , #memoryUsageUpdate ( 5 , ( DATA_LEN +Int 31 ) /Int 32 *Int 32 +Int 160 , 32 ) ) +Int CMEM' +Int -122))
+           => doneLemma( #gas( -271           -Int 3 *Int ( DATA_LEN up/Int 32 )                      -Int Cmem ( ISTANBUL , #memoryUsageUpdate ( 5 , ( DATA_LEN +Int 31 ) /Int 32 *Int 32 +Int 160 , 32 ) )            +Int -122)) ... </k>
+
+    claim <k> runLemma( #gas(VGAS +Int -6113) +Int Cgascap(ISTANBUL, VGAS +Int -5413, VGAS +Int -5413, 700))
+           => doneLemma(#gas((VGAS +Int Cgascap(ISTANBUL, VGAS +Int -5413, VGAS +Int -5413, 700)) +Int -6113)) ... </k>
+
+    claim <k> runLemma( #gas(VGAS +Int -6113) +Int Cgascap(ISTANBUL, #gas(VGAS +Int -5413), #gas(VGAS +Int -5413), 700))
+           => doneLemma(#gas((VGAS +Int Cgascap(ISTANBUL, VGAS +Int -5413, VGAS +Int -5413, 700)) +Int -6113)) ... </k>
+
+    claim <k> runLemma( #gas((      #gas((VGAS -Int Cgascap(ISTANBUL, VGAS +Int -5413, VGAS +Int -5413, 700)) +Int -6113)
+                               +Int Cgascap(ISTANBUL, #gas(VGAS +Int -5413), #gas(VGAS +Int -5413), 700))
+                               +Int -1236
+                            )
+                      )
+           => doneLemma(#gas(VGAS +Int -7349)) ... </k>
+
  // Infinite Gas comparisons
  // ------------------------
 
@@ -67,14 +94,14 @@ module INFINITE-GAS-SPEC
 
     claim <k> runLemma(4822 <Int minInt(#gas(VGas +Int 4544) +Int (#gas(VGas +Int 4544) /Int 64), #gas(VGas +Int 3844))) => doneLemma(true) ... </k>
 
-    claim <k> runLemma(3 <Int minInt(#gas(VGas), 2)) => doneLemma(false) ... </k>
-    claim <k> runLemma(2 <Int minInt(#gas(VGas), 3)) => doneLemma(true ) ... </k>
+    claim <k> runLemma(3 <Int minInt(#gas(_VGas), 2)) => doneLemma(false) ... </k>
+    claim <k> runLemma(2 <Int minInt(#gas(_VGas), 3)) => doneLemma(true ) ... </k>
 
-    claim <k> runLemma(#gas(G) -Int Csstore(_, _, _, _) <Int 2) => doneLemma(false) ... </k>
-    claim <k> runLemma(minInt(#gas(G), #gas(G'')) +Int -2522 <Int Csstore(_, _, _, _)) => doneLemma(false) ... </k>
+    claim <k> runLemma(#gas(_G) -Int Csstore(_, _, _, _) <Int 2) => doneLemma(false) ... </k>
+    claim <k> runLemma(minInt(#gas(_G), #gas(_G'')) +Int -2522 <Int Csstore(_, _, _, _)) => doneLemma(false) ... </k>
 
-    claim <k> runLemma(#gas(G) <Int #gas(G' +Int 700))  => doneLemma(false) ... </k>
-    claim <k> runLemma(#gas(G' +Int 700) <=Int #gas(G)) => doneLemma(true)  ... </k>
+    claim <k> runLemma(#gas(_G) <Int #gas(_G' +Int 700))  => doneLemma(false) ... </k>
+    claim <k> runLemma(#gas(_G' +Int 700) <=Int #gas(_G)) => doneLemma(true)  ... </k>
 
     claim <k> runLemma(#if _:Int ==Int 0 #then #gas(VGas -Int Csstore(_, _, _,_)) #else #gas(VGas +Int -344) #fi <Int 8)  => doneLemma(false) ... </k>
     claim <k> runLemma(8 <=Int #if _:Int ==Int 0 #then #gas(VGas -Int Csstore(_, _, _,_)) #else #gas(VGas +Int -344) #fi) => doneLemma(true)  ... </k>
@@ -82,6 +109,21 @@ module INFINITE-GAS-SPEC
     claim <k> runLemma(#if _:Int ==Int 0 #then #gas(VGas -Int Csstore(_, _, _,_)) #else #gas(VGas +Int -344) #fi <Int minInt(#if _ #then #gas(_) #else #gas(_) #fi, #gas(_)))  => doneLemma(false) ... </k>
     claim <k> runLemma(minInt(#if _ #then #gas(_) #else #gas(_) #fi, #gas(_)) <=Int #if _:Int ==Int 0 #then #gas(VGas -Int Csstore(_, _, _,_)) #else #gas(VGas +Int -344) #fi) => doneLemma(true)  ... </k>
 
-    claim <k> runLemma(#allBut64th(#gas(G)) <Int #gas(G')) => doneLemma(false) ... </k>
+    claim <k> runLemma(#allBut64th(#gas(_G)) <Int #gas(_G')) => doneLemma(false) ... </k>
+
+    claim <k> runLemma(Gverylow < SCHED > <=Int #gas(_)) => doneLemma(true) ... </k>
+
+    claim <k> runLemma(Gexp < SCHED > +Int Gexpbyte < SCHED > *Int ( log2Int ( W1 ) /Int 8 +Int 1 ) <=Int #gas(GAVAIL)) => doneLemma(true)  ... </k> requires 0 <Int W1 andBool W1 <Int pow256
+    claim <k> runLemma(#gas(GAVAIL) <Int Gexp < SCHED > +Int Gexpbyte < SCHED > *Int ( log2Int ( W1 ) /Int 8 +Int 1 ))  => doneLemma(false) ... </k> requires 0 <Int W1 andBool W1 <Int pow256
+
+    claim <k> runLemma(#gas(G) <Int 3 *Int (DATA_LEN up/Int 32) +Int 3) => doneLemma(false) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+    claim <k> runLemma(#gas(G) <Int         DATA_LEN up/Int 32        ) => doneLemma(false) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+    claim <k> runLemma(#gas(G) <Int         DATA_LEN                  ) => doneLemma(false) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+
+    claim <k> runLemma(0 <=Int 3 *Int (DATA_LEN up/Int 32))      => doneLemma(true) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+    claim <k> runLemma(3 *Int (DATA_LEN up/Int 32) <Int #gas(_)) => doneLemma(true) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+
+    claim <k> runLemma(Cgascap(ISTANBUL, #gas(_), #gas(_), 700) <Int 3) => doneLemma(false) ... </k>
+    claim <k> runLemma(0 <=Int Cgascap(ISTANBUL, #gas(VGAS +Int -5413), #gas(VGAS +Int -5413), 700)) => doneLemma(true) ... </k>
 
 endmodule

@@ -7,4 +7,5 @@ buildSitemap({
   websiteOrigin,
   websiteDirectory: path.join(__dirname, "../public_content/"),
   sitemapPath: path.join(__dirname, "../public_content/sitemap.xml"),
+  ignore: (url) => url.endsWith(".html"),
 });

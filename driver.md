@@ -6,11 +6,13 @@ Actual execution of the EVM is defined in [the EVM file](../evm).
 
 ```k
 requires "evm.md"
+requires "optimizations.md"
 requires "asm.md"
 requires "state-loader.md"
 
 module ETHEREUM-SIMULATION
     imports EVM
+    imports EVM-OPTIMIZATIONS
     imports EVM-ASSEMBLY
     imports STATE-LOADER
 ```
@@ -336,7 +338,9 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> check (KEY:String) : { JS:JSONs => qsortJSONs(JS) } ... </k>
       requires KEY in (SetItem("callcreates")) andBool notBool sortedJSONs(JS)
 
-    rule <k> check TESTID : { "post" : POST } => check "account" : POST ~> failure TESTID ... </k>
+    rule <k> check TESTID : { "post" : (POST:String) } => check "blockHeader" : {  "stateRoot" : #parseWord(POST) } ~> failure TESTID ... </k>
+    rule <k> check TESTID : { "post" : { POST } } => check "account" : { POST } ~> failure TESTID ... </k>
+
     rule <k> check "account" : { ACCTID:Int : { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
       requires REST =/=K .JSONs
 

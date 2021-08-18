@@ -63,9 +63,6 @@ module FUNCTIONAL-SPEC
 
     claim <k> runLemma(#range(M:Memory [ 0 := #buf(4, X) ] [ 0 <- 10 ] [ 1 <- 11 ] [ 2 <- 12 ] [ 3 <- 13 ], 0, 4)) => doneLemma(10 : 11 : 12 : 13 : .ByteArray) ... </k>
 
-    claim <k> runLemma(M:Memory [ 128 := (B1 : B2 : B3 : B4 : _     : .ByteArray) ] [ 132 := BA':ByteArray ]) => doneLemma(M [ 128 := (B1 : B2 : B3 : B4 : .ByteArray) ] [ 132 := BA' ]) ... </k> requires #sizeByteArray(BA') ==Int 32
-    claim <k> runLemma(M:Memory [ 128 := (B1 : B2 : B3 : B4 : _ : _ : .ByteArray) ] [ 132 := BA':ByteArray ]) => doneLemma(M [ 128 := (B1 : B2 : B3 : B4 : .ByteArray) ] [ 132 := BA' ]) ... </k> requires #sizeByteArray(BA') ==Int 32
-
     claim <k> runLemma( M:Memory [ 132 := #buf(32, B11) ] [ 128 := (#buf(32, B21) ++ #buf(32, B22)) ] ) => doneLemma( M [ 128 := (#buf(32, B21) ++ #buf(32, B22)) ] ) ... </k>
       requires #rangeUInt(256, B11) andBool #rangeUInt(256, B21) andBool #rangeUInt(256, B22)
 

@@ -8,7 +8,7 @@ Documentation/Support
 
 These may be useful for learning KEVM and K (newest to oldest):
 
--   [Jello Paper], generated using [Sphinx Documentation Generation].
+-   [Jello Paper], a nice presentation of this repository.
 -   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQNov) at [2017 Devcon3].
 -   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
 -   [KEVM Paper at CSF'18/FLoC](http://fsl.cs.illinois.edu/index.php/KEVM:_A_Complete_Semantics_of_the_Ethereum_Virtual_Machine).
@@ -49,7 +49,7 @@ The following are needed for building/running KEVM:
 
 -   [git](https://git-scm.com/)
 -   GNU [Bison](https://www.gnu.org/software/bison/), [Flex](https://github.com/westes/flex), and [Autoconf](http://www.gnu.org/software/autoconf/).
--   GNU [libmpfr](http://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
+-   GNU [libmpfr](https://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
 
 For the exact dependencies check the Dockerfile.
@@ -60,12 +60,11 @@ On Ubuntu >= 18.04 (for example):
 
 ```sh
 sudo apt-get install --yes                                                       \
-            autoconf bison clang-8 cmake curl flex gcc jq libboost-test-dev      \
+            autoconf bison clang-10 cmake curl flex gcc jq libboost-test-dev     \
             libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev \
             libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev        \
-            lld-8 llvm-8-tools make maven netcat-openbsd openjdk-11-jdk          \
-            pkg-config python3 python-pygments python-recommonmark               \
-            python-sphinx rapidjson-dev time z3 zlib1g-dev
+            lld-10 llvm-10-tools make maven netcat-openbsd openjdk-11-jdk        \
+            pkg-config python3 python-pygments rapidjson-dev time z3 zlib1g-dev
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
@@ -84,8 +83,6 @@ sudo pacman -S                                               \
     gflags jdk-openjdk jemalloc libsecp256k1 lld llvm maven  \
     mpfr python stack yaml-cpp z3 zlib
 ```
-
-In addition, you'll need the `glog-git` AUR package: <https://aur.archlinux.org/packages/glog-git/>.
 
 #### MacOS
 
@@ -149,31 +146,6 @@ Finally, you can build the semantics.
 make build
 ```
 
-Example Usage
--------------
-
-After building, make sure you setup `PATH` correctly:
-
-```sh
-export PATH=$(pwd)/.build/usr/bin:$PATH
-```
-
-After building the definition, you can run the definition using the `kevm` runner.
-You can call `kevm help` to get a quick summary of how to use the script.
-
-Run the file `tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json`:
-
-```sh
-kevm run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json --schedule DEFAULT --mode VMTESTS
-```
-
-To run proofs, you can similarly use `kevm`.
-For example, to prove one of the specifications:
-
-```sh
-kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION
-```
-
 Running Tests
 -------------
 
@@ -193,6 +165,55 @@ These are the individual test-suites (all of these can be suffixed with `-all` t
 -   `make test-interactive`: Tests of the `kevm` command.
 
 When running tests with the `Makefile`, you can specify the `TEST_CONCRETE_BACKEND` (for concrete tests), or `TEST_SYMBOLIC_BACKEND` (for proofs).
+
+For Developers
+-------------
+
+After building, the `kevm` executable will be located in the `.build/usr/bin:$PATH` directory .
+The one in the project root is a build artifact, don't use it.
+To make sure you are using the correct `kevm`, add this directory to your `PATH`:
+
+```sh
+export PATH=$(pwd)/.build/usr/bin:$PATH
+```
+
+Alternatively, if you work on multiple checkouts of `evm-semantics`, or other semantics, you could add the relative path `.build/usr/bin` to your `PATH`. 
+Do note, however, that this is a security concern.
+
+You can call `kevm help` to get a quick summary of how to use the script.
+
+Run the file `tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json`:
+
+```sh
+kevm run tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json --schedule DEFAULT --mode VMTESTS
+```
+
+To run proofs, you can similarly use `kevm`.
+For example, to prove one of the specifications:
+
+```sh
+kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION
+```
+
+You can also debug proofs interactively: 
+
+```sh
+kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION --debugger --debug-script kscript
+```
+
+Here, `kscript` is a file containing `kore-repl` commands.
+For example, we advise to put an alias for outputting the current configuration as a pretty-printed term (as opposed to raw `kore` term):
+
+```sh
+alias konfig = config | kast -i kore -o pretty -d .build/usr/lib/kevm/haskell /dev/stdin
+```
+
+### Keeping `.build` up-to-date while developing
+
+-   `make build` needs to be re-run if you touch any of this repos files.
+-   `make deps` needs to be re-run if there is a submodule update (you did `git submodule update --init --recursive` and it actually did something).
+-   If both `deps` and `build` need to be re-run, you need to do `deps` first.
+-   `make clean` is a safe way to remove the `.build` directory, but then you need to re-run `make deps` (should be quick this time) and `make build`.
 
 Media
 -----
@@ -221,17 +242,16 @@ Resources
 -   [EVM Yellowpaper](https://github.com/ethereum/yellowpaper): Original specification of EVM.
 -   [LEM Semantics of EVM](https://github.com/pirapira/eth-isabelle)
 
-For more information about [The K Framework](http://kframework.org), refer to these sources:
+For more information about [The K Framework](https://kframework.org), refer to these sources:
 
--   [The K Tutorial](https://github.com/kframework/k/tree/master/k-distribution/tutorial)
+-   [The K Tutorial](https://kframework.org/k-distribution/pl-tutorial/)
 -   [Semantics-Based Program Verifiers for All Languages](http://fsl.cs.illinois.edu/index.php/Semantics-Based_Program_Verifiers_for_All_Languages)
 -   [Reachability Logic Resources](http://fsl.cs.illinois.edu/index.php/Reachability_Logic_in_K)
 -   [Matching Logic Resources](http://fsl.cs.illinois.edu/index.php/Matching_Logic)
--   [Logical Frameworks](http://dl.acm.org/citation.cfm?id=208700): Discussion of logical frameworks.
+-   [Logical Frameworks](https://dl.acm.org/doi/10.5555/208683.208700): Discussion of logical frameworks.
 
 [Jello Paper]: <https://jellopaper.org>
 [2017 Devcon3]: <https://ethereumfoundation.org/devcon3/>
-[Sphinx Documentation Generation]: <http://sphinx-doc.org>
 [K Reachability Logic Prover]: <http://fsl.cs.illinois.edu/FSL/papers/2016/stefanescu-park-yuwen-li-rosu-2016-oopsla/stefanescu-park-yuwen-li-rosu-2016-oopsla-public.pdf>
 [K Editor Support]: <https://github.com/kframework/k-editor-support>
 [Ethereum Test Set]: <https://github.com/ethereum/tests>

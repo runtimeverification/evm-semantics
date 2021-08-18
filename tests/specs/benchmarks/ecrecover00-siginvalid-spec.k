@@ -27,7 +27,7 @@ module ECRECOVER00-SIGINVALID-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> #gas(_INITGAS, 0, 0) => ?_ </gas>
+          <gas> #gas(_VGAS) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
@@ -115,8 +115,8 @@ _
      andBool #rangeUInt(128, BLOCK_NUM) // Solidity
 
      // Account address normality
-     andBool CONTRACT_ID >Int 0 andBool (notBool CONTRACT_ID in #precompiledAccounts(BYZANTIUM))
-     andBool CALLEE_ID   >Int 0 andBool (notBool CALLEE_ID   in #precompiledAccounts(BYZANTIUM))
+     andBool CONTRACT_ID >Int 0 andBool (notBool #isPrecompiledAccount(CONTRACT_ID, BYZANTIUM))
+     andBool CALLEE_ID   >Int 0 andBool (notBool #isPrecompiledAccount(CALLEE_ID  , BYZANTIUM))
 
      andBool #rangeUInt(256, CONTRACT_BAL)
      andBool #rangeUInt(256, CALLEE_BAL)
@@ -126,8 +126,7 @@ _
      andBool #rangeUInt(8, SIGV)
      andBool #rangeBytes(32, SIGR)
      andBool #rangeBytes(32, SIGS)
-     andBool ECREC_DATA ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV), #bytes32(SIGR), #bytes32(SIGS) )
-     andBool #ecrecEmpty( ECREC_DATA )
+     andBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
 
 endmodule
 

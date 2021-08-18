@@ -7,19 +7,21 @@ notif() { echo "== $@" >&2 ; }
 fatal() { echo "[FATAL] $@" ; exit 1 ; }
 
 check_k_install() {
-    which kore-exec &> /dev/null \
-        || fatal "Must have K installed! See https://github.com/kframework/k/releases."
     which kast &> /dev/null \
         || fatal "Must have K installed! See https://github.com/kframework/k/releases."
     which krun &> /dev/null \
         || fatal "Must have K installed! See https://github.com/kframework/k/releases."
 }
 
-INSTALL_BIN="$(dirname $0)"
-INSTALL_LIB=${INSTALL_BIN}/../lib/kevm
-INSTALL_K_BIN=${INSTALL_LIB}/kframework/bin
+INSTALL_BIN="$(cd $(dirname $0) && pwd)"
+INSTALL_LIB="$(dirname ${INSTALL_BIN})/lib/kevm"
+INSTALL_INCLUDE=${INSTALL_LIB}/include
 
-export PATH="$INSTALL_K_BIN:$INSTALL_BIN:$INSTALL_LIB:$PATH"
+install_k_bin=${INSTALL_LIB}/kframework/bin
+plugin_include=${INSTALL_LIB}/blockchain-k-plugin/include
+libff_dir=${INSTALL_LIB}/libff
+
+export PATH="$install_k_bin:$INSTALL_BIN:$INSTALL_LIB:$PATH"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
@@ -30,6 +32,37 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 # -------
 
 # User Commands
+
+run_kompile() {
+    local kompile_opts openssl_root
+
+    kompile_opts=(  --backend "${backend}" "${run_file}"                                 )
+    kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
+    kompile_opts+=( --hook-namespaces "JSON KRYPTO"                                      )
+    kompile_opts+=( --emit-json                                                          )
+    case "${backend}" in
+        haskell)    kompile_opts+=( --md-selector 'k & ! nobytes' )
+                    ;;
+        java)       kompile_opts+=( --md-selector 'k & ! bytes' )
+                    ;;
+        llvm)       kompile_opts+=( --md-selector 'k & ! nobytes'                                                 )
+                    kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
+                    kompile_opts+=( -ccopt ${plugin_include}/c/plugin_util.cpp                                    )
+                    kompile_opts+=( -ccopt ${plugin_include}/c/crypto.cpp                                         )
+                    kompile_opts+=( -ccopt ${plugin_include}/c/blake2.cpp                                         )
+                    kompile_opts+=( -ccopt -g -ccopt -std=c++14                                                   )
+                    kompile_opts+=( -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lssl -ccopt -lcrypto )
+                    if [[ "$(uname -s)" == 'Linux' ]]; then
+                        kompile_opts+=( -ccopt -lprocps )
+                    elif [[ "$(uname -s)" == 'Darwin' ]]; then
+                        openssl_root="$(brew --prefix openssl)"
+                        kompile_opts+=( -I/usr/local/include -L/usr/local/lib -I${openssl_root}/include -L${openssl_root}/lib )
+                    fi
+                 ;;
+        *)       fatal "Unknown backend for kompile: ${backend}" ;;
+    esac
+    kompile "${kompile_opts[@]}" "$@"
+}
 
 run_krun() {
     local cschedule cmode cchainid parser
@@ -70,20 +103,31 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir proof_args bug_report_name
+    local def_module run_dir proof_args haskell_backend_command bug_report_name eventlog_name
 
     check_k_install
 
     def_module="$1" ; shift
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
+    eventlog_name="$run_file.eventlog"
+
+    haskell_backend_command=(kore-exec)
+    ! $bug_report || haskell_backend_command+=(--bug-report "$bug_report_name")
+    ! $profile    || haskell_backend_command+=(+RTS -l -ol$eventlog_name -RTS)
 
     proof_args=(--def-module "$def_module")
-    ! $debug      || proof_args+=(--debug)
-    ! $repl       || proof_args+=(--debugger --debug-script kast.kscript)
-    ! $bug_report || proof_args+=(--haskell-backend-command "kore-exec --bug-report $bug_report_name")
+    ! $debug                                   || proof_args+=(--debug)
+    ! $debugger                                || proof_args+=(--debugger)
+    [[ ${#haskell_backend_command[@]} -le 1 ]] || proof_args+=(--haskell-backend-command "${haskell_backend_command[*]}")
+    [[ ! -f ${concrete_rules_file} ]]          || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
 
     ! $debug || set -x
-    kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
+    if $profile; then
+        timeout -s INT "$profile_timeout" kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@" || true
+        kore-prof "$eventlog_name" $kore_prof_args > "$eventlog_name.json"
+    else
+        kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
+    fi
 }
 
 run_search() {
@@ -96,7 +140,7 @@ run_klab() {
     local run_mode klab_log def_module omit_cells omit_labels
 
     run_mode="$1" ; shift
-    klab_log="$(basename "${run_file%-spec.k}")"
+    klab_log="$(basename "${run_file%-spec.k}").k"
 
     def_module="$1" ; shift
 
@@ -104,6 +148,7 @@ run_klab() {
     omit_labels='#mkCall________EVM #callWithCode_________EVM #create_____EVM #mkCreate_____EVM #newAddrCreate2 #finishCodeDeposit___EVM'
 
     "$0" "$run_mode" --backend java "$run_file" "$def_module"                           \
+        --concrete-rules-file "${concrete_rules_file}"                                  \
         --state-log --state-log-path "$KLAB_OUT/data" --state-log-id "$klab_log"        \
         --state-log-events OPEN,REACHINIT,REACHTARGET,REACHPROVED,RULE,SRULE,NODE,CLOSE \
         --output-flatten "_Map_ #And"                                                   \
@@ -127,7 +172,7 @@ view_klab() {
 # Dev Commands
 
 run_interpret() {
-    local interpreter kast output output_text output_format exit_status
+    local interpreter kast output output_text output_format exit_status cmdprefix
 
     interpreter="$backend_dir/driver-kompiled/interpreter"
     kast="$(mktemp)"
@@ -135,7 +180,7 @@ run_interpret() {
     output_text="$(mktemp)"
     trap "rm -rf $kast $output $output_text" INT TERM EXIT
     exit_status=0
-    debugger=
+    cmdprefix=
     output_format='kore'
     case "$backend" in
         java)    run_kast kast > "$kast"
@@ -149,8 +194,8 @@ run_interpret() {
                  ;;
 
         llvm)    run_kast kore > "$kast"
-                 if $debug; then debugger="gdb --args"; fi
-                 $debugger "$interpreter" "$kast" -1 "$output" "$@" \
+                 if $debugger; then cmdprefix="gdb --args"; fi
+                 $cmdprefix "$interpreter" "$kast" -1 "$output" "$@" \
                      || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "$0" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
@@ -183,8 +228,9 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                $0 interpret    [--backend (llvm)] [--debug|--no-unparse] <KEVM_arg>* <pgm>  <interpreter arg>*
                $0 interpret    [--backend (java|haskell)] [--no-unparse] <KEVM_arg>* <pgm>
                $0 kast         [--backend (llvm|java|haskell)]           <KEVM_arg>* <pgm>  <output format> <K arg>*
-               $0 prove        [--backend (java|haskell)]                            <spec> <def_module> <K arg>*
+               $0 prove        [--backend (java|haskell)]                            <spec> <def_module> <KEVM_arg>* <K arg>*
                $0 search       [--backend (java|haskell)]                            <pgm>  <pattern> <K arg>*
+               $0 kompile      [--backend (java|llvm|haskell)]                       <main> <K arg>*
                $0 klab-run                                                           <pgm>  <K arg>*
                $0 klab-prove                                                         <spec> <def_module> <K arg>*
                $0 klab-view                                                          <spec>
@@ -196,6 +242,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
            $0 kast      : Parse an EVM program and output it in a supported format
            $0 prove     : Run an EVM K proof
            $0 search    : Search for a K pattern in an EVM program execution
+           $0 kompile   : Run kompile with arguments setup to include KEVM parameters as defaults
            $0 klab-(run|prove) : Run program or prove spec and dump StateLogs which KLab can read
            $0 klab-view : View the statelog associated with a given program or spec
 
@@ -204,14 +251,22 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
 
            Note: <pgm> is a path to a file containing an EVM program/test.
                  <spec> is a K specification to be proved.
+                 <main> is a K definition to be kompiled, which may include files from KEVM.
                  <KEVM arg> is one of [--mode (NORMAL|VMTESTS)]
                                       [--schedule (ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
                                       [--chainid NNN]
+                                      [--concrete-rules-file <concrete_rules_file>]
+                                      [--bug-report]
+                                      [--profile]
+                                      [--profile-timeout <duration>]
+                                      [--kore-prof-args \"<kore-prof arg>*\"]
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
+                 <kore-prof arg> is an argument you want to pass to kore-prof.
                  <output format> is the format for Kast to output the term in.
                  <pattern> is the configuration pattern to search for.
                  <def_module> is the module to take as axioms when doing verification.
+                 <duration> is a timeout specifier as for GNU timeout.
 
            klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
     "
@@ -228,11 +283,15 @@ backend="llvm"
 debug=false
 dump=false
 unparse=true
-repl=false
+debugger=false
+profile=false
+profile_timeout="0"
+kore_prof_args=""
 bug_report=false
 mode=NORMAL
 schedule=ISTANBUL
 chainid=1
+concrete_rules_file=
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 kevm_port='8545'
@@ -241,25 +300,32 @@ args=()
 while [[ $# -gt 0 ]]; do
     arg="$1"
     case $arg in
-        --debug)              debug=true ; args+=("$1") ; shift   ;;
-        --dump)               dump=true                 ; shift   ;;
-        --no-unparse)         unparse=false             ; shift   ;;
-        --repl)               repl=true                 ; shift   ;;
-        --bug-report)         bug_report=true           ; shift   ;;
-        --backend)            backend="$2"              ; shift 2 ;;
-        --backend-dir)        backend_dir="$2"          ; shift 2 ;;
-        --mode)               mode="$2"                 ; shift 2 ;;
-        --schedule)           schedule="$2"             ; shift 2 ;;
-        --chainid)            chainid="$2"              ; shift 2 ;;
-        -p|--port)            kevm_port="$2"            ; shift 2 ;;
-        -h|--host|--hostname) kevm_host="$2"            ; shift 2 ;;
-        *)                    args+=("$1")              ; shift   ;;
+        --debug)               debug=true ; args+=("$1") ; shift   ;;
+        --dump)                dump=true                 ; shift   ;;
+        --no-unparse)          unparse=false             ; shift   ;;
+        --debugger)            debugger=true             ; shift   ;;
+        --profile)             profile=true              ; shift   ;;
+        --profile-timeout)     profile_timeout="$2"      ; shift 2 ;;
+        --kore-prof-args)      kore_prof_args="$2"       ; shift 2 ;;
+        --bug-report)          bug_report=true           ; shift   ;;
+        --backend)             backend="$2"              ; shift 2 ;;
+        --backend-dir)         backend_dir="$2"          ; shift 2 ;;
+        --concrete-rules-file) concrete_rules_file="$2"  ; shift 2 ;;
+        --mode)                mode="$2"                 ; shift 2 ;;
+        --schedule)            schedule="$2"             ; shift 2 ;;
+        --chainid)             chainid="$2"              ; shift 2 ;;
+        -p|--port)             kevm_port="$2"            ; shift 2 ;;
+        -h|--host|--hostname)  kevm_host="$2"            ; shift 2 ;;
+        *)                     args+=("$1")              ; shift   ;;
     esac
 done
 [[ "${#args[@]}" -le 0 ]] || set -- "${args[@]}"
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
-! $repl || [[ "$backend" == haskell ]] || fatal "Option --repl only usable with --backend haskell!"
+! $debugger || [[ "$backend" == haskell ]] || [[ "$backend" == llvm ]] || fatal "Option --debugger only usable with --backend [llvm|haskell]!"
+! $profile  || [[ "$backend" == haskell ]] || fatal "Option --profile only usable with --backend haskell!"
+[[ $profile_timeout = "0" ]] || $profile   || fatal "Option --profile-timeout only usable with --profile!"
+[[ $kore_prof_args = "" ]]   || $profile   || fatal "Option --kore-prof-args only usable with --profile!"
 
 # get the run file
 run_file="$1" ; shift
@@ -280,6 +346,7 @@ cSCHEDULE_kast="\`${schedule}_EVM\`(.KList)"
 cCHAINID_kast="#token(\"${chainid}\",\"Int\")"
 
 case "$run_command-$backend" in
+    kompile-@(java|llvm|haskell)   ) run_kompile                     "$@" ;;
     run-@(java|llvm|haskell)       ) run_krun                        "$@" ;;
     kast-@(java|llvm|haskell)      ) run_kast                        "$@" ;;
     interpret-@(llvm|haskell|java) ) run_interpret                   "$@" ;;

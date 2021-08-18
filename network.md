@@ -118,4 +118,4 @@ endmodule
 Resources
 =========
 
-[EVM-C API]: <https://github.com/ethereum/evmjit/tree/master/include/evm.h>
+[EVM-C API]: <https://github.com/ethereum/evmjit/blob/9abb8fd50d2a8164a417a153684701fcbdf54599/include/evm.h>
