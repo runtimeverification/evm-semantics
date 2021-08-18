@@ -11,7 +11,7 @@ module ECRECOVER00-SIGVALID-SPEC
     <schedule> ISTANBUL </schedule>
     <ethereum>
       <evm>
-        <output> _ => #encodeArgs(#address(RECOVERED)) </output>
+        <output> _ => #buf(32, RECOVERED) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
@@ -27,7 +27,7 @@ module ECRECOVER00-SIGVALID-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> #gas(_INITGAS, 0, 0) => ?_ </gas>
+          <gas> #gas(_VGAS) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
@@ -128,9 +128,8 @@ _
      andBool #rangeUInt(8, SIGV)
      andBool #rangeBytes(32, SIGR)
      andBool #rangeBytes(32, SIGS)
-     andBool ECREC_DATA ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV), #bytes32(SIGR), #bytes32(SIGS) )
-     andBool RECOVERED ==Int #symEcrec( ECREC_DATA )
-     andBool notBool #ecrecEmpty( ECREC_DATA )
+     andBool RECOVERED ==Int #asWord(#ecrec(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS)))
+     andBool notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
 
 endmodule
 

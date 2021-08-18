@@ -30,7 +30,7 @@ module ECRECOVERLOOP00-SIGS-VALID-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> #gas(_INITGAS, 0, 0) => ?_ </gas>
+          <gas> #gas(_VGAS) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
@@ -134,12 +134,8 @@ _
      andBool #rangeBytes(32, SIGR1)
      andBool #rangeBytes(32, SIGS0)
      andBool #rangeBytes(32, SIGS1)
-     andBool ECREC_DATA0 ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV0), #bytes32(SIGR0), #bytes32(SIGS0) )
-     andBool ECREC_DATA1 ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV1), #bytes32(SIGR1), #bytes32(SIGS1) )
-     andBool RECOVERED0 ==Int #symEcrec( ECREC_DATA0 )
-     andBool RECOVERED1 ==Int #symEcrec( ECREC_DATA1 )
-     andBool notBool #ecrecEmpty( ECREC_DATA0 )
-     andBool notBool #ecrecEmpty( ECREC_DATA1 )
+     andBool notBool #ecrecEmpty( #bufStrict(32, HASH), #bufStrict(32, SIGV0), #bufStrict(32, SIGR0), #bufStrict(32, SIGS0) )
+     andBool notBool #ecrecEmpty( #bufStrict(32, HASH), #bufStrict(32, SIGV1), #bufStrict(32, SIGR1), #bufStrict(32, SIGS1) )
 
 endmodule
 

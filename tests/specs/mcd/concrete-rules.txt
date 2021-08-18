@@ -1,5 +1,7 @@
 EVM.allBut64th.pos
 EVM.Cextra.new
+EVM.Cextra.old
+EVM.Cgascap
 EVM.Cmem
 EVM.Cnew
 EVM.Csstore.new

@@ -31,7 +31,7 @@ module ECRECOVERLOOP02-SIG0-INVALID-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> #gas(_INITGAS, 0, 0) => ?_ </gas>
+          <gas> #gas(_VGAS) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
@@ -137,9 +137,7 @@ _
      andBool #rangeBytes(32, SIGS1)
      andBool #range(0 <= DATA_LEN < 2 ^Int 16)
      andBool #range(0 <= DATA < (2 ^Int (DATA_LEN *Int 8)))
-     andBool ECREC_DATA0 ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV0), #bytes32(SIGR0), #bytes32(SIGS0) )
-     andBool ECREC_DATA1 ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV1), #bytes32(SIGR1), #bytes32(SIGS1) )
-     andBool #ecrecEmpty( ECREC_DATA0 )
+     andBool #ecrecEmpty( #bufStrict(32, HASH), #bufStrict(32, SIGV0), #bufStrict(32, SIGR0), #bufStrict(32, SIGS0) )
 
 endmodule
 

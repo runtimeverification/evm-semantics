@@ -3,16 +3,22 @@ requires "../lemmas.k"
 
 module VERIFICATION-COMMON
     imports LEMMAS
+    imports INFINITE-GAS
 
   // ########################
   // Ecrecover
   // ########################
 
-    //Symbolic wrapper over the argument of #ecrec. No implementation.
-    syntax Int ::= #symEcrec ( ByteArray )   [function]
-
     //Symbolic predicate representing whether output of #ecrec is empty. No implementation.
-    syntax Bool ::= #ecrecEmpty( ByteArray ) [function]
+    syntax Bool ::= #ecrecEmpty( ByteArray , ByteArray , ByteArray , ByteArray ) [function, no-evaluators]
+ // ------------------------------------------------------------------------------------------------------
+    rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 0  requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+
+    rule         #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))                  => 0    requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule 0  <Int #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))                  => true requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule 0 <=Int #asWord(#ecrec(_   , _   , _   , _   ))                  => true                                                      [simplification]
+    rule         #asWord(#ecrec(_   , _   , _   , _   )) <=Int maxUInt160 => true                                                      [simplification]
 
 endmodule
 
@@ -33,21 +39,6 @@ module VERIFICATION
   // ########################
 
     rule Rsstore(_BYZANTIUM, NEW, _CURR, _ORIG) => 0  requires NEW =/=Int 0 [simplification]
-
-  // ########################
-  // Ecrecover
-  // ########################
-
-    // Range for #symEcrec
-
-    //case 0 is never wrapped into #symEcrec(), corresponds to #ecrecEmpty(DATA) == true
-    rule 0 <Int   #symEcrec(_DATA)             => true [simplification]
-    //that's because the result in concrete semantics is trimmed to Address range.
-    rule          #symEcrec(_DATA) <Int pow160 => true [simplification]
-    // Lemmas implied by the above, but still required to match side conditions of #padToWidth rule in lemmas.md
-    // General range conversion lemmas like below are not an option, dramatic performance decrease:
-    rule 0 <=Int  #symEcrec(_DATA)             => true [simplification]
-    rule          #symEcrec(_DATA) <Int pow256 => true [simplification]
 
   // ########################
   // ABI Encoding
@@ -132,49 +123,12 @@ module VERIFICATION
   // Arithmetic
   // ########################
 
-    rule (A +Int I2) +Int (I3 -Int A) => I2 +Int I3 [simplification]
-    rule (A +Int I2) -Int (A +Int I3) => I2 -Int I3 [simplification]
-    rule (A +Int I2) -Int (I3 +Int A) => I2 -Int I3 [simplification]
-
-    rule (I1 +Int I2) -Int (I3 +Int I1) => I2 -Int I3 [simplification]
-
-    rule A -Int (A -Int I1) => I1 [simplification]
-
-    rule (A +Int I1) -Int A => I1 [simplification]
-
-    rule (A +Int B) +Int (C -Int B) => A +Int C [simplification]
-
-    rule (A +Int B +Int C) -Int (A +Int D) => B +Int (C -Int D) [simplification]
-
-    rule (A +Int B +Int C +Int D +Int E) -Int (A +Int C +Int F) => B +Int D +Int E -Int F [simplification]
-
-    // Simplify Cmem(_,_) - Cmem(_, _)
-    rule A +Int (I1 -Int A) => I1 [simplification]
-    rule (I1 +Int (A -Int I0)) +Int (I2 -Int A) => I1 +Int (I2 -Int I0) [simplification]
-
-    // safeMath mul check c / a == b where c == a * b
-    rule (X *Int Y) /Int X => Y  requires X =/=Int 0 [simplification]
-
-    rule I1 *Int A +Int I2 *Int A => (I1 +Int I2) *Int A [simplification]
-
-    rule I1 *Int A +Int B +Int C +Int D +Int I2 *Int A => (I1 +Int I2) *Int A +Int B +Int C +Int D [simplification]
-
-    rule N -Int N => 0 [simplification]
-
     rule 2 ^%Int X pow256 => 2 ^Int X  requires 0 <=Int X andBool X <Int 256 [simplification]
-
-    rule X modInt Y => X  requires 0 <=Int X andBool X <Int Y [simplification]
-
-    rule ((X *Int Y) /Int Z) /Int Y => X /Int Z  requires Y =/=Int 0 [simplification]
 
     // X &Int (NOT 31)
     rule X &Int 115792089237316195423570985008687907853269984665640564039457584007913129639904 => (X /Int 32) *Int 32  requires 0 <=Int X [simplification]
 
-    rule (X /Int 32) *Int 32 => X  requires X modInt 32 ==Int 0 [simplification]
-
     rule #ceil32(X) => X  requires X modInt 32 ==Int 0 [simplification]
-
-    rule 0 <Int 1 <<Int N => true  requires 0 <=Int N [simplification]
 
     rule X +Int Y <Int pow256 => true  requires X <=Int pow16 andBool Y <Int pow16 [simplification]
 
@@ -186,19 +140,14 @@ endmodule
 
 module VERIFICATION-HASKELL [symbolic, kore]
     imports VERIFICATION-COMMON
-    imports INFINITE-GAS
-
-  // ########################
-  // Arithmetic
-  // ########################
-
-    rule X +Int Y <Int Z => X <Int Z -Int Y [concrete(Y), simplification]
 
   // ########################
   // Buffer Reasoning
   // ########################
 
     rule BA1 ++ (BA2 ++ BA3) => (BA1 ++ BA2) ++ BA3 [concrete(BA1, BA2), simplification]
+
+    rule maxUInt160 &Int Y => Y requires 0 <=Int Y andBool Y <=Int maxUInt160 [simplification]
 
 endmodule
 
@@ -207,62 +156,8 @@ module VERIFICATION-JAVA [symbolic, kast]
     imports K-REFLECTION
 
   // ########################
-  // Symbolic Gas
-  // ########################
-
-    syntax Int ::= #gas ( Int , Int , Int )  [function]  // startGas, nonMemory, memory
- // -----------------------------------------------------------------------------------
-    rule #gas(_, _, _) <=Int I => false  requires #isConcrete(I) [simplification]
-
-  // ########################
-  // Rule Replacement
-  // ########################
-
-    // accumulate the gas cost and never run out of gas
-    claim <k> MEM' ~> #deductMemoryGas => . ... </k>
-         <gas> #gas(INITGAS, NONMEM, MEM) => #gas(INITGAS, NONMEM, MEM +Int MEM') </gas>
-         <callGas> _ => #gas(INITGAS, NONMEM, MEM) </callGas>
-      [trusted, matching(#gas)]
-
-    //Will run only if rule above doesn't match
-    claim <k> G ~> #deductGas => . ... </k>
-         <gas> #gas(INITGAS, NONMEM, MEM) => #gas(INITGAS, NONMEM +Int G, MEM) </gas>
-         <callGas> _ => #gas(INITGAS, NONMEM, MEM) </callGas>
-      [trusted, matching(#gas)]
-
-    claim <k> ECREC => #end EVMC_SUCCESS ... </k>
-         <callData> DATA </callData>
-         <output> _ => #ecrec(#symEcrec(DATA)) </output>
-      requires notBool #isConcrete(DATA)
-       andBool #sizeByteArray(DATA) ==Int 128
-       andBool notBool #ecrecEmpty(DATA)
-      [trusted]
-
-    claim <k> ECREC => #end EVMC_SUCCESS ... </k>
-         <callData> DATA </callData>
-         <output> _ => #ecrec(.Account) </output>
-      requires notBool #isConcrete(DATA)
-       andBool #sizeByteArray(DATA) ==Int 128
-       andBool #ecrecEmpty(DATA)
-      [trusted]
-
-  // ########################
   // Arithmetic
   // ########################
-
-    rule ((A +Int I1) +Int B) +Int I2 => (A +Int B) +Int (I1 +Int I2)
-      requires notBool #isConcrete(A)
-       andBool notBool #isConcrete(B)
-       andBool #isConcrete(I1)
-       andBool #isConcrete(I2)
-      [simplification]
-
-    rule (A +Int I1) +Int (B +Int I2) => (A +Int B) +Int (I1 +Int I2)
-      requires notBool #isConcrete(A)
-       andBool notBool #isConcrete(B)
-       andBool #isConcrete(I1)
-       andBool #isConcrete(I2)
-      [simplification]
 
     rule chop(X +Int Y) => X +Int Y
       requires #range(0 <= X <= pow16)
@@ -270,20 +165,5 @@ module VERIFICATION-JAVA [symbolic, kast]
       [simplification]
 
     rule X +Int Y <Int Z => X <Int Z -Int Y requires #isConcrete(Y) [simplification]
-
-  // ########################
-  // Gas
-  // ########################
-
-    //Generated by rule for #refund
-    rule #gas(A1, B1, C1) +Int #gas(A2, B2, C2) => #gas(A1, B1 -Int A2 +Int B2, C1 +Int C2) [simplification]
-
-    rule 0 <=Int X -Int #gas( A,  B,  C)             => true  requires #gas(A, B, C) <=Int X [simplification]
-    rule         X -Int #gas(_A, _B, _C) <Int pow256 => true  requires X <Int pow256         [simplification]
-
-    rule #gas(A1, B1, C1) -Int #gas(A1, B2, C2) => (B2 +Int C2) -Int (B1 +Int C1) [simplification]
-
-    rule 0 <=Int #gas(_, _, _)             => true [simplification]
-    rule         #gas(_, _, _) <Int pow256 => true [simplification]
 
 endmodule
