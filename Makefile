@@ -42,8 +42,8 @@ PLUGIN_SOURCE    := $(KEVM_INCLUDE)/kframework/blockchain-k-plugin/krypto.md
 export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
-        deps k-deps libsecp256k1 libff                                                                                           \
-        build build-llvm                                                                                                         \
+        deps k-deps plugin-deps libsecp256k1 libff                                                                               \
+        build build-java build-haskell build-llvm                                                                                \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-prove test-failing-prove                                                                                            \
@@ -187,6 +187,40 @@ ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
 endif
 
+# Java
+
+java_dir           := java
+java_main_module   := ETHEREUM-SIMULATION
+java_syntax_module := $(java_main_module)
+java_main_file     := driver.md
+java_main_filename := $(basename $(notdir $(java_main_file)))
+java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/compiled.bin
+
+$(KEVM_LIB)/$(java_kompiled): $(kevm_includes) $(plugin_includes)
+	$(KOMPILE) --backend java                  \
+	    $(java_main_file) $(JAVA_KOMPILE_OPTS) \
+	    --directory $(KEVM_LIB)/$(java_dir)    \
+	    --main-module $(java_main_module)      \
+	    --syntax-module $(java_syntax_module)  \
+	    $(KOMPILE_OPTS)
+
+# Haskell
+
+haskell_dir            := haskell
+haskell_main_module    := ETHEREUM-SIMULATION
+haskell_syntax_module  := $(haskell_main_module)
+haskell_main_file      := driver.md
+haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
+haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
+
+$(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes) $(plugin_includes)
+	$(KOMPILE) --backend haskell                     \
+	    $(haskell_main_file) $(HASKELL_KOMPILE_OPTS) \
+	    --directory $(KEVM_LIB)/$(haskell_dir)       \
+	    --main-module $(haskell_main_module)         \
+	    --syntax-module $(haskell_syntax_module)     \
+	    $(KOMPILE_OPTS)
+
 # Standalone
 
 llvm_dir           := llvm
@@ -209,7 +243,9 @@ $(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_inc
 
 install_bins := kevm
 
-install_libs := $(llvm_kompiled)                                           \
+install_libs := $(haskell_kompiled)                                        \
+                $(llvm_kompiled)                                           \
+                $(java_kompiled)                                           \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
                 kore-json.py                                               \
                 kast-json.py                                               \
@@ -240,7 +276,9 @@ $(KEVM_LIB)/release.md: INSTALL.md
 
 build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
 
-build-llvm: $(KEVM_LIB)/$(llvm_kompiled) $(KEVM_LIB)/kore-json.py
+build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py $(lemma_includes)
+build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
+build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_LIB)/kast-json.py $(lemma_includes)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
