@@ -291,15 +291,21 @@ test: test-conformance test-prove test-interactive test-parse
 tests/ethereum-tests/VMTests/%: KEVM_MODE     = VMTESTS
 tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
-tests/specs/benchmarks/functional-spec%: KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
-tests/specs/benchmarks/functional-spec%: KPROVE_FILE   = functional-spec
-tests/specs/bihu/functional-spec%:       KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
-tests/specs/erc20/functional-spec%:      KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
-tests/specs/evm-optimizations-spec%:     KPROVE_MODULE = EVM-OPTIMIZATIONS-SPEC-LEMMAS
-tests/specs/mcd/functional-spec%:        KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
-tests/specs/mcd/functional-spec%:        KPROVE_FILE   = functional-spec
-
-tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
+tests/specs/benchmarks/functional-spec%:    KPROVE_FILE   =  functional-spec
+tests/specs/benchmarks/functional-spec%:    KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/bihu/functional-spec%:          KPROVE_FILE   =  functional-spec
+tests/specs/bihu/functional-spec%:          KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/erc20/functional-spec%:         KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/evm-optimizations-spec%:        KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
+tests/specs/examples/sum-to-n-spec%:        KPROVE_FILE   =  sum-to-n-spec
+tests/specs/functional/infinite-gas-spec%:  KPROVE_FILE   =  infinite-gas-spec
+tests/specs/functional/lemmas-no-smt-spec%: KPROVE_FILE   =  lemmas-no-smt-spec
+tests/specs/functional/lemmas-no-smt-spec%: KPROVE_OPTS   += --haskell-backend-command "kore-exec --smt=none"
+tests/specs/functional/lemmas-spec%:        KPROVE_FILE   =  lemmas-spec
+tests/specs/functional/merkle-spec%:        KPROVE_FILE   =  merkle-spec
+tests/specs/functional/storageRoot-spec%:   KPROVE_FILE   =  storageRoot-spec
+tests/specs/mcd/functional-spec%:           KPROVE_FILE   =  functional-spec
+tests/specs/mcd/functional-spec%:           KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
 
 tests/%.run: tests/%
 	$(KEVM) interpret $< $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                            \
