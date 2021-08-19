@@ -293,6 +293,7 @@ tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
 tests/specs/benchmarks/functional-spec%: KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
 tests/specs/benchmarks/functional-spec%: KPROVE_FILE   = functional-spec
+tests/specs/bihu/functional-spec%:       KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
 tests/specs/erc20/functional-spec%:      KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
 tests/specs/evm-optimizations-spec%:     KPROVE_MODULE = EVM-OPTIMIZATIONS-SPEC-LEMMAS
 tests/specs/mcd/functional-spec%:        KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
