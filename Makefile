@@ -279,6 +279,7 @@ KEVM_CHAINID  := 1
 
 KPROVE_MODULE  = VERIFICATION
 KPROVE_FILE    = verification
+KPROVE_EXT     = k
 KPROVE_OPTS   ?=
 
 KEEP_OUTPUTS := false
@@ -291,21 +292,23 @@ test: test-conformance test-prove test-interactive test-parse
 tests/ethereum-tests/VMTests/%: KEVM_MODE     = VMTESTS
 tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
-tests/specs/benchmarks/functional-spec%:    KPROVE_FILE   =  functional-spec
-tests/specs/benchmarks/functional-spec%:    KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/bihu/functional-spec%:          KPROVE_FILE   =  functional-spec
-tests/specs/bihu/functional-spec%:          KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/erc20/functional-spec%:         KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/evm-optimizations-spec%:        KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
-tests/specs/examples/sum-to-n-spec%:        KPROVE_FILE   =  sum-to-n-spec
-tests/specs/functional/infinite-gas-spec%:  KPROVE_FILE   =  infinite-gas-spec
-tests/specs/functional/lemmas-no-smt-spec%: KPROVE_FILE   =  lemmas-no-smt-spec
-tests/specs/functional/lemmas-no-smt-spec%: KPROVE_OPTS   += --haskell-backend-command "kore-exec --smt=none"
-tests/specs/functional/lemmas-spec%:        KPROVE_FILE   =  lemmas-spec
-tests/specs/functional/merkle-spec%:        KPROVE_FILE   =  merkle-spec
-tests/specs/functional/storageRoot-spec%:   KPROVE_FILE   =  storageRoot-spec
-tests/specs/mcd/functional-spec%:           KPROVE_FILE   =  functional-spec
-tests/specs/mcd/functional-spec%:           KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/benchmarks/functional-spec%:     KPROVE_FILE   =  functional-spec
+tests/specs/benchmarks/functional-spec%:     KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/bihu/functional-spec%:           KPROVE_FILE   =  functional-spec
+tests/specs/bihu/functional-spec%:           KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/erc20/functional-spec%:          KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/examples/sum-to-n-spec%:         KPROVE_FILE   =  sum-to-n-spec
+tests/specs/functional/infinite-gas-spec%:   KPROVE_FILE   =  infinite-gas-spec
+tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_FILE   =  lemmas-no-smt-spec
+tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_OPTS   += --haskell-backend-command "kore-exec --smt=none"
+tests/specs/functional/lemmas-spec%:         KPROVE_FILE   =  lemmas-spec
+tests/specs/functional/merkle-spec%:         KPROVE_FILE   =  merkle-spec
+tests/specs/functional/storageRoot-spec%:    KPROVE_FILE   =  storageRoot-spec
+tests/specs/mcd/functional-spec%:            KPROVE_FILE   =  functional-spec
+tests/specs/mcd/functional-spec%:            KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/opcodes/evm-optimizations-spec%: KPROVE_EXT    =  md
+tests/specs/opcodes/evm-optimizations-spec%: KPROVE_FILE   =  evm-optimizations-spec
+tests/specs/opcodes/evm-optimizations-spec%: KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
 
 tests/%.run: tests/%
 	$(KEVM) interpret $< $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                            \
@@ -341,7 +344,7 @@ tests/specs/%.provex: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
 	    --provex --backend-dir tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
-tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).k tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(plugin_includes)
+tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(plugin_includes)
 	$(KOMPILE) --backend $(TEST_SYMBOLIC_BACKEND) $<                                                 \
 	    --directory tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND) \
 	    --main-module $(KPROVE_MODULE)                                                               \
@@ -411,7 +414,7 @@ prove_erc20_tests        := $(filter-out $(prove_failing_tests), $(wildcard $(pr
 prove_bihu_tests         := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/bihu/*-spec.k))
 prove_examples_tests     := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k))
 prove_mcd_tests          := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
-prove_optimization_tests := $(filter-out $(prove_failing_tests), tests/specs/evm-optimizations-spec.md)
+prove_optimization_tests := $(filter-out $(prove_failing_tests), tests/specs/opcodes/evm-optimizations-spec.md)
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
 test-prove-benchmarks: $(prove_benchmarks_tests:=.provex)
@@ -426,10 +429,10 @@ test-failing-prove: $(prove_failing_tests:=.prove)
 
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
 
-test-prove-optimizations: $(prove_optimization_tests:=.prove)
+test-prove-optimizations: $(prove_optimization_tests:=.provex)
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
-tests/specs/evm-optimizations-spec.md: optimizations.md
+tests/specs/opcodes/evm-optimizations-spec.md: optimizations.md
 	cat $< | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
 
 haskell_dry_run_failing := $(shell cat tests/failing-symbolic.haskell-dry-run)
