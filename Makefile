@@ -455,19 +455,18 @@ prove_mcd_tests          := $(filter-out $(prove_failing_tests), $(wildcard $(pr
 prove_optimization_tests := $(filter-out $(prove_failing_tests), tests/specs/opcodes/evm-optimizations-spec.md)
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
-test-prove-benchmarks: $(prove_benchmarks_tests:=.provex)
-test-prove-functional: $(prove_functional_tests:=.provex)
-test-prove-opcodes:    $(prove_opcodes_tests:=.provex)
-test-prove-erc20:      $(prove_erc20_tests:=.provex)
-test-prove-bihu:       $(prove_bihu_tests:=.provex)
-test-prove-examples:   $(prove_examples_tests:=.provex)
-test-prove-mcd:        $(prove_mcd_tests:=.provex)
+test-prove-benchmarks:    $(prove_benchmarks_tests:=.provex)
+test-prove-functional:    $(prove_functional_tests:=.provex)
+test-prove-opcodes:       $(prove_opcodes_tests:=.provex)
+test-prove-erc20:         $(prove_erc20_tests:=.provex)
+test-prove-bihu:          $(prove_bihu_tests:=.provex)
+test-prove-examples:      $(prove_examples_tests:=.provex)
+test-prove-mcd:           $(prove_mcd_tests:=.provex)
+test-prove-optimizations: $(prove_optimization_tests:=.provex)
 
 test-failing-prove: $(prove_failing_tests:=.prove)
 
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
-
-test-prove-optimizations: $(prove_optimization_tests:=.provex)
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/opcodes/evm-optimizations-spec.md: optimizations.md
