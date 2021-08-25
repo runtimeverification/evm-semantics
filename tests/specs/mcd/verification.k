@@ -90,19 +90,6 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
     rule #range(M:Memory [ K <- V ]                        , START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)  requires K +Int 1                    ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START [concrete(K    , V     ), simplification]
     rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS')        ], START, WIDTH)  requires K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START
                                                                                                                                   andBool K +Int 1                    ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
-  
-  // ########################
-  // Performance Optimizations
-  // ########################
-
-    rule <k> LT maxUInt48 &Int X +Int Y maxUInt48 &Int X => 1 ~> #push ... </k>
-      requires #rangeUInt(48, X)
-       andBool #rangeUInt(48, Y)
-       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
-
-    rule <k> ADD X Y => X +Int Y ~> #push ... </k>
-      requires #rangeUInt(48, X)
-       andBool #rangeUInt(48, Y) [simplification]
 
 endmodule
 
