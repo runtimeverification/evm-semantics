@@ -90,7 +90,7 @@ module SOLIDITY-CODE-SPEC
           <pc>         0           => ?_ </pc>
           <endPC>      _           => ?_ </endPC>
           <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  _CALLVALUE  => ?_ </callValue>
+          <callValue>  _CALL_VALUE => ?_ </callValue>
 
           <callData> #abiCallData("add", .TypedArgs) </callData>
           <k>          #execute   => #halt ...   </k>
@@ -170,7 +170,7 @@ module SOLIDITY-CODE-SPEC
           <pc>         0           => ?_ </pc>
           <endPC>      _           => ?_ </endPC>
           <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <callValue>  _CALL_VALUE => ?_ </callValue>
 
           <callData> #abiCallData("badAdd", #uint256(X), #uint256(Y)) </callData>
           <k>          #execute   => #halt ...          </k>
@@ -180,6 +180,33 @@ module SOLIDITY-CODE-SPEC
      requires #rangeUInt(256, X)
       andBool #rangeUInt(256, Y)
       andBool notBool #rangeUInt(256, X +Int Y)
+```
+
+### Max Positive Case
+
+```k
+    claim <mode>     NORMAL   </mode>
+          <schedule> ISTANBUL </schedule>
+
+          <callStack> .List                                 </callStack>
+          <program>   #binRuntime()                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
+
+          <localMem>   .Memory     => ?_ </localMem>
+          <memoryUsed> 0           => ?_ </memoryUsed>
+          <wordStack>  .WordStack  => ?_ </wordStack>
+          <pc>         0           => ?_ </pc>
+          <endPC>      _           => ?_ </endPC>
+          <gas>        #gas(_VGAS) => ?_ </gas>
+          <callValue>  0           => ?_ </callValue>
+
+          <callData> #abiCallData("max", #uint256(X), #uint256(Y)) </callData>
+          <k>          #execute   => #halt ...              </k>
+          <output>     .ByteArray => #buf(32, maxInt(X, Y)) </output>
+          <statusCode> ?_         => EVMC_SUCCESS           </statusCode>
+
+     requires #rangeUInt(256, X)
+      andBool #rangeUInt(256, Y)
 ```
 
 ```k
