@@ -57,7 +57,11 @@ module VERIFICATION
 
     rule #getValue(#uint256(X)) => X requires #rangeUInt(256, X) [simplification]
 
-    rule X <=Int chop(X +Int Y) => false requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) andBool notBool #rangeUInt(256, X +Int Y) [simplification]
+    rule X <=Int chop(X +Int Y) => false
+      requires #rangeUInt(256, X)
+       andBool #rangeUInt(256, Y)
+       andBool notBool #rangeUInt(256, X +Int Y)
+      [simplification]
 
     syntax ByteArray ::= #binRuntime()
  // ----------------------------------
@@ -76,8 +80,9 @@ module SOLIDITY-CODE-SPEC
 
 ### Call with wrong call-data
 
-```k
-    claim <mode>     NORMAL   </mode>
+```
+    claim [bad-call-data]:
+          <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
 
           <callStack> .List                                 </callStack>
@@ -100,8 +105,9 @@ module SOLIDITY-CODE-SPEC
 
 ### Add Positive Case
 
-```k
-    claim <mode>     NORMAL   </mode>
+```
+    claim [add-positive]:
+          <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
 
           <callStack> .List                                 </callStack>
@@ -128,8 +134,9 @@ module SOLIDITY-CODE-SPEC
 
 ### Add Negative Case
 
-```k
-    claim <mode>     NORMAL   </mode>
+```
+    claim [add-negative]:
+          <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
 
           <callStack> .List                                 </callStack>
@@ -157,7 +164,8 @@ module SOLIDITY-CODE-SPEC
 ### Bad Add Failing Negative Case
 
 ```
-    claim <mode>     NORMAL   </mode>
+    claim [badAdd-negative]:
+          <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
 
           <callStack> .List                                 </callStack>
@@ -184,8 +192,9 @@ module SOLIDITY-CODE-SPEC
 
 ### Max Positive Case
 
-```k
-    claim <mode>     NORMAL   </mode>
+```
+    claim [max-positive]:
+          <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
 
           <callStack> .List                                 </callStack>
