@@ -89,7 +89,7 @@ module SOLIDITY-CODE-SPEC
 ### Call with wrong call-data
 
 -   Everything from `<mode>` to `<callValue>` is boilerplate.
--   We are setting `<callData>` to `add()`, which is not a signature that exists in the Solidity.
+-   We are setting `<callData>` to `add()`, which is not a signature that exists in the Solidity code.
 -   We ask the prover to show that in all cases, we will end in `EVMC_REVERT` (rollback) when this happens.
 -   This type of proof can be used to prevent some fallback function exploits.
 
@@ -121,7 +121,7 @@ module SOLIDITY-CODE-SPEC
 -   `<callData>` says we are calling `add(X, Y)`.
 -   `<output>` says we expect the function to return `X +Int Y` (addition did not overflow).
 -   `<statusCode>` says we expect the function to exit normally.
--   `requires` says that we only expect this to happen if `0 <=Int X +Int Y <Int 2 ^Int 256`.
+-   `requires` says that we only expect this to happen if `0 <=Int X +Int Y <Int 2 ^Int 256` (no overflow).
 
 ```k
     claim [add-positive]:
