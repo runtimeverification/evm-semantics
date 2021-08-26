@@ -11,7 +11,7 @@ requires "lemmas/infinite-gas.k"
 Solidity Code
 -------------
 
-File `test.sol` contains some code snippets we want to verify:
+File `test.sol` contains some code snippets we want to verify the functional correctness of:
 
 ```sol
 pragma solidity =0.6.7;
