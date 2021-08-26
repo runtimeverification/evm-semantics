@@ -11,7 +11,7 @@ requires "lemmas/infinite-gas.k"
 Solidity Code
 -------------
 
-File `test.sol`:
+File `test.sol` contains some code snippets we want to verify:
 
 ```sol
 pragma solidity =0.6.7;
@@ -48,6 +48,12 @@ Binary of the runtime part:
 Verification Module
 -------------------
 
+Helper module for verification tasks.
+
+-   Define `#binRuntime()` as the compiled bytecode.
+-   Add any lemmas needed for our proofs.
+-   Import a large body of existing lemmas from KEVM.
+
 ```k
 module VERIFICATION
     imports EDSL
@@ -73,6 +79,8 @@ endmodule
 K Specifications
 ----------------
 
+Formal specifications (using KEVM) of the correctness properties for our Solidity code.
+
 ```k
 module SOLIDITY-CODE-SPEC
     imports VERIFICATION
@@ -80,7 +88,12 @@ module SOLIDITY-CODE-SPEC
 
 ### Call with wrong call-data
 
-```
+-   Everything from `<mode>` to `<callValue>` is boilerplate.
+-   We are setting `<callData>` to `add()`, which is not a signature that exists in the Solidity.
+-   We ask the prover to show that in all cases, we will end in `EVMC_REVERT` (rollback) when this happens.
+-   This type of proof can be used to prevent some fallback function exploits.
+
+```k
     claim [bad-call-data]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
@@ -105,7 +118,12 @@ module SOLIDITY-CODE-SPEC
 
 ### Add Positive Case
 
-```
+-   `<callData>` says we are calling `add(X, Y)`.
+-   `<output>` says we expect the function to return `X +Int Y` (addition did not overflow).
+-   `<statusCode>` says we expect the function to exit normally.
+-   `requires` says that we only expect this to happen if `0 <=Int X +Int Y <Int 2 ^Int 256`.
+
+```k
     claim [add-positive]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
@@ -134,7 +152,13 @@ module SOLIDITY-CODE-SPEC
 
 ### Add Negative Case
 
-```
+-   `<callData>` says we are calling `add(X, Y)`.
+-   `<output>` says we don't care what the function outputs.
+-   `<statusCode>` says we expect the function to exit in `REVERT` (state rollback).
+-   `requires` says that we only expect this to happen if `notBool (0 <=Int X +Int Y <Int 2 ^Int 256)` (overflow occurs).
+-   Note that `add-positive` and `add-negative` should cover _all_ cases for `add(X, Y)`.
+
+```k
     claim [add-negative]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
@@ -163,6 +187,12 @@ module SOLIDITY-CODE-SPEC
 
 ### Bad Add Failing Negative Case
 
+-   `<callData>` says we are calling `badAdd(X, Y)`.
+-   `<output>` says we don't care what the function returns.
+-   `<statusCode>` says we expect the function to exit in `REVERT` (state rollback).
+-   `requires` says that we only expect this to happen if `notBool (0 <=Int X +Int Y <Int 2 ^Int 256)` (overflow occurs).
+-   This proof _fails_, because the function `badAdd` fails to call `REVERT` on overflow.
+
 ```
     claim [badAdd-negative]:
           <mode>     NORMAL   </mode>
@@ -182,7 +212,7 @@ module SOLIDITY-CODE-SPEC
 
           <callData> #abiCallData("badAdd", #uint256(X), #uint256(Y)) </callData>
           <k>          #execute   => #halt ...          </k>
-          <output>     .ByteArray => #buf(32, X +Int Y) </output>
+          <output>     .ByteArray => ?_                 </output>
           <statusCode> ?_         => EVMC_REVERT        </statusCode>
 
      requires #rangeUInt(256, X)
@@ -192,7 +222,12 @@ module SOLIDITY-CODE-SPEC
 
 ### Max Positive Case
 
-```
+-   `<callData>` says we are calling `max(X, Y)`.
+-   `<output>` says we want the function to return the maximum of `X` and `Y`.
+-   `<statusCode>` says we expect the function to exit normally (no `REVERT`).
+-   Note that here the prover must consider two branches (for the `if ...` statement in the Solidity code).
+
+```k
     claim [max-positive]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
