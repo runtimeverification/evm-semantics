@@ -1170,9 +1170,6 @@ For now, I assume that they instantiate an empty account and use the empty data.
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
-```
-
-```k
     rule <k> EXTCODEHASH ACCT => keccak(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
@@ -1675,10 +1672,13 @@ Precompiled Contracts
  // --------------------------------
     rule <k> ECREC => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
-         <output> _ => #ecrec(#sender(#unparseByteStack(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #unparseByteStack(DATA [ 64 .. 32 ]), #unparseByteStack(DATA [ 96 .. 32 ]))) </output>
+         <output> _ => #ecrec(DATA [ 0 .. 32 ], DATA [ 32 .. 32 ], DATA [ 64 .. 32 ], DATA [ 96 .. 32 ]) </output>
 
-    syntax ByteArray ::= #ecrec ( Account ) [function]
- // --------------------------------------------------
+    syntax ByteArray ::= #ecrec ( ByteArray , ByteArray , ByteArray , ByteArray ) [function]
+                       | #ecrec ( Account )                                       [function]
+ // ----------------------------------------------------------------------------------------
+    rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(#unparseByteStack(HASH), #asWord(SIGV), #unparseByteStack(SIGR), #unparseByteStack(SIGS)))
+
     rule #ecrec(.Account) => .ByteArray
     rule #ecrec(N:Int)    => #padToWidth(32, #asByteStack(N))
 
@@ -1877,8 +1877,8 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function, functional]
  // ----------------------------------------------------------------------------
-    rule [#memoryUsageUpdate.none]: #memoryUsageUpdate(MU,     _, WIDTH) => MU                                       requires notBool WIDTH >Int 0
-    rule [#memoryUsageUpdate.some]: #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires WIDTH  >Int 0
+    rule [#memoryUsageUpdate.none]: #memoryUsageUpdate(MU,     _, WIDTH) => MU                                       requires notBool 0 <Int WIDTH
+    rule [#memoryUsageUpdate.some]: #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires         0 <Int WIDTH
 ```
 
 Execution Gas
@@ -2107,6 +2107,9 @@ There are several helpers for calculating gas (most of them also specified in th
     rule [Cgascap]:
          Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
+      requires 0 <=Int GCAP
+
+    rule Cgascap(_, GCAP, _, _) => 0 requires GCAP <Int 0
 
     rule [Csstore.new]:
          Csstore(SCHED, NEW, CURR, ORIG)

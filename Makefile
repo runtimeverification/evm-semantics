@@ -42,7 +42,7 @@ PLUGIN_SOURCE    := $(KEVM_INCLUDE)/kframework/blockchain-k-plugin/krypto.md
 export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
-        deps all-deps llvm-deps haskell-deps k-deps plugin-deps libsecp256k1 libff                                               \
+        deps k-deps plugin-deps libsecp256k1 libff                                                                               \
         build build-java build-haskell build-llvm                                                                                \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
@@ -140,23 +140,24 @@ plugin-deps: $(plugin_includes) $(plugin_c_includes)
 
 KOMPILE := $(KEVM) kompile
 
-kevm_includes := abi.md              \
-                 asm.md              \
-                 buf.md              \
-                 data.md             \
-                 driver.md           \
-                 edsl.md             \
-                 evm.md              \
-                 evm-types.md        \
-                 hashed-locations.md \
-                 json-rpc.md         \
-                 network.md          \
-                 optimizations.md    \
-                 serialization.md    \
-                 state-loader.md
+kevm_files := abi.md              \
+              asm.md              \
+              buf.md              \
+              data.md             \
+              driver.md           \
+              edsl.md             \
+              evm.md              \
+              evm-types.md        \
+              hashed-locations.md \
+              json-rpc.md         \
+              network.md          \
+              optimizations.md    \
+              serialization.md    \
+              state-loader.md
 
 kevm_lemmas := infinite-gas.k                           \
                lemmas.k                                 \
+               int-simplification.k                     \
                erc20/abstract-semantics-segmented-gas.k \
                erc20/evm-symbolic.k                     \
                mcd/bin_runtime.k                        \
@@ -166,9 +167,11 @@ kevm_lemmas := infinite-gas.k                           \
 
 lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(kevm_lemmas))
 
-includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_includes)) $(plugin_includes) $(lemma_includes)
+kevm_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_files))
 
-$(includes): $(KEVM_BIN)/$(KEVM)
+includes := $(kevm_includes) $(lemma_includes) $(plugin_includes) $(plugin_c_includes)
+
+$(includes): $(KEVM_BIN)/kevm
 
 $(KEVM_INCLUDE)/kframework/%.md: %.md
 	@mkdir -p $(dir $@)
@@ -193,7 +196,7 @@ java_main_file     := driver.md
 java_main_filename := $(basename $(notdir $(java_main_file)))
 java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/compiled.bin
 
-$(KEVM_LIB)/$(java_kompiled): $(includes)
+$(KEVM_LIB)/$(java_kompiled): $(kevm_includes) $(plugin_includes)
 	$(KOMPILE) --backend java                  \
 	    $(java_main_file) $(JAVA_KOMPILE_OPTS) \
 	    --directory $(KEVM_LIB)/$(java_dir)    \
@@ -210,7 +213,7 @@ haskell_main_file      := driver.md
 haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
 haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
 
-$(KEVM_LIB)/$(haskell_kompiled): $(includes)
+$(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes) $(plugin_includes)
 	$(KOMPILE) --backend haskell                     \
 	    $(haskell_main_file) $(HASKELL_KOMPILE_OPTS) \
 	    --directory $(KEVM_LIB)/$(haskell_dir)       \
@@ -227,7 +230,7 @@ llvm_main_file     := driver.md
 llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
 llvm_kompiled      := $(llvm_dir)/$(llvm_main_filename)-kompiled/interpreter
 
-$(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out) $(plugin_c_includes)
+$(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
 	$(KOMPILE) --backend llvm                 \
 	    $(llvm_main_file)                     \
 	    --directory $(KEVM_LIB)/$(llvm_dir)   \
@@ -240,22 +243,22 @@ $(KEVM_LIB)/$(llvm_kompiled): $(includes) $(libff_out) $(plugin_c_includes)
 
 install_bins := kevm
 
-install_libs := $(haskell_kompiled) \
-                $(llvm_kompiled)    \
-                $(java_kompiled)    \
-                kore-json.py        \
-                kast-json.py        \
-                release.md          \
+install_libs := $(haskell_kompiled)                                        \
+                $(llvm_kompiled)                                           \
+                $(java_kompiled)                                           \
+                $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
+                kore-json.py                                               \
+                kast-json.py                                               \
+                release.md                                                 \
                 version
 
 build_bins := $(install_bins)
 
 build_libs := $(install_libs)
 
-$(KEVM_BIN)/$(KEVM): $(KEVM)
+$(KEVM_BIN)/kevm: kevm
 	@mkdir -p $(dir $@)
 	install $< $@
-
 
 $(KEVM_LIB)/%.py: %.py
 	@mkdir -p $(dir $@)
@@ -271,11 +274,11 @@ $(KEVM_LIB)/release.md: INSTALL.md
 	echo                                    >> $@
 	cat INSTALL.md                          >> $@
 
-build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs)) $(lemma_includes)
+build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
 
-build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_BIN)/$(KEVM) $(KEVM_LIB)/kore-json.py
-build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_BIN)/$(KEVM) $(KEVM_LIB)/kore-json.py
-build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_BIN)/$(KEVM) $(KEVM_LIB)/kast-json.py
+build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py $(lemma_includes)
+build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
+build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_LIB)/kast-json.py $(lemma_includes)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
@@ -312,8 +315,10 @@ KEVM_MODE     := NORMAL
 KEVM_SCHEDULE := ISTANBUL
 KEVM_CHAINID  := 1
 
-KPROVE_MODULE  := VERIFICATION
-KPROVE_OPTS    ?=
+KPROVE_MODULE  = VERIFICATION
+KPROVE_FILE    = verification
+KPROVE_EXT     = k
+KPROVE_OPTS   ?=
 
 KEEP_OUTPUTS := false
 
@@ -325,12 +330,23 @@ test: test-conformance test-prove test-interactive test-parse
 tests/ethereum-tests/VMTests/%: KEVM_MODE     = VMTESTS
 tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
-tests/specs/benchmarks/functional-spec.k%: KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
-tests/specs/erc20/functional-spec.k%:      KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
-tests/specs/evm-optimizations-spec.md%:    KPROVE_MODULE = EVM-OPTIMIZATIONS-SPEC-LEMMAS
-tests/specs/mcd/functional-spec.k%:        KPROVE_MODULE = FUNCTIONAL-SPEC-SYNTAX
-
-tests/specs/functional/lemmas-no-smt-spec.k.prove: KPROVE_OPTS += --haskell-backend-command "kore-exec --smt=none"
+tests/specs/benchmarks/functional-spec%:     KPROVE_FILE   =  functional-spec
+tests/specs/benchmarks/functional-spec%:     KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/bihu/functional-spec%:           KPROVE_FILE   =  functional-spec
+tests/specs/bihu/functional-spec%:           KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/erc20/functional-spec%:          KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/examples/sum-to-n-spec%:         KPROVE_FILE   =  sum-to-n-spec
+tests/specs/functional/infinite-gas-spec%:   KPROVE_FILE   =  infinite-gas-spec
+tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_FILE   =  lemmas-no-smt-spec
+tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_OPTS   += --haskell-backend-command "kore-exec --smt=none"
+tests/specs/functional/lemmas-spec%:         KPROVE_FILE   =  lemmas-spec
+tests/specs/functional/merkle-spec%:         KPROVE_FILE   =  merkle-spec
+tests/specs/functional/storageRoot-spec%:    KPROVE_FILE   =  storageRoot-spec
+tests/specs/mcd/functional-spec%:            KPROVE_FILE   =  functional-spec
+tests/specs/mcd/functional-spec%:            KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/opcodes/evm-optimizations-spec%: KPROVE_EXT    =  md
+tests/specs/opcodes/evm-optimizations-spec%: KPROVE_FILE   =  evm-optimizations-spec
+tests/specs/opcodes/evm-optimizations-spec%: KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
 
 tests/%.run: tests/%
 	$(KEVM) interpret $< $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                            \
@@ -360,6 +376,19 @@ tests/%.parse: tests/%
 
 tests/%.prove: tests/%
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
+
+.SECONDEXPANSION:
+tests/specs/%.provex: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
+	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
+	    --provex --backend-dir tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
+
+tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(plugin_includes)
+	$(KOMPILE) --backend $(TEST_SYMBOLIC_BACKEND) $<                                                 \
+	    --directory tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND) \
+	    --main-module $(KPROVE_MODULE)                                                               \
+	    --syntax-module $(KPROVE_MODULE)                                                             \
+	    --concrete-rules-file tests/specs/$(firstword $(subst /, ,$*))/concrete-rules.txt            \
+	    $(KOMPILE_OPTS)
 
 tests/%.prove-dry-run: tests/%
 	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend haskell --format-failures $(KPROVE_OPTS) --dry-run --concrete-rules-file $(dir $@)concrete-rules.txt
@@ -423,25 +452,24 @@ prove_erc20_tests        := $(filter-out $(prove_failing_tests), $(wildcard $(pr
 prove_bihu_tests         := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/bihu/*-spec.k))
 prove_examples_tests     := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k))
 prove_mcd_tests          := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
-prove_optimization_tests := $(filter-out $(prove_failing_tests), tests/specs/evm-optimizations-spec.md)
+prove_optimization_tests := $(filter-out $(prove_failing_tests), tests/specs/opcodes/evm-optimizations-spec.md)
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
-test-prove-benchmarks: $(prove_benchmarks_tests:=.prove)
-test-prove-functional: $(prove_functional_tests:=.prove)
-test-prove-opcodes:    $(prove_opcodes_tests:=.prove)
-test-prove-erc20:      $(prove_erc20_tests:=.prove)
-test-prove-bihu:       $(prove_bihu_tests:=.prove)
-test-prove-examples:   $(prove_examples_tests:=.prove)
-test-prove-mcd:        $(prove_mcd_tests:=.prove)
+test-prove-benchmarks:    $(prove_benchmarks_tests:=.provex)
+test-prove-functional:    $(prove_functional_tests:=.provex)
+test-prove-opcodes:       $(prove_opcodes_tests:=.provex)
+test-prove-erc20:         $(prove_erc20_tests:=.provex)
+test-prove-bihu:          $(prove_bihu_tests:=.provex)
+test-prove-examples:      $(prove_examples_tests:=.provex)
+test-prove-mcd:           $(prove_mcd_tests:=.provex)
+test-prove-optimizations: $(prove_optimization_tests:=.provex)
 
 test-failing-prove: $(prove_failing_tests:=.prove)
 
 test-klab-prove: $(smoke_tests_prove:=.klab-prove)
 
-test-prove-optimizations: $(prove_optimization_tests:=.prove)
-
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
-tests/specs/evm-optimizations-spec.md: optimizations.md
+tests/specs/opcodes/evm-optimizations-spec.md: optimizations.md
 	cat $< | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
 
 haskell_dry_run_failing := $(shell cat tests/failing-symbolic.haskell-dry-run)

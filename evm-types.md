@@ -10,6 +10,8 @@ module EVM-TYPES
     imports INT
     imports STRING
     imports COLLECTIONS
+    imports BOOL
+    imports K-EQUAL
 ```
 
 ```{.k .bytes}

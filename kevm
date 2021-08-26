@@ -40,24 +40,33 @@ run_kompile() {
     kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
     kompile_opts+=( --hook-namespaces "JSON KRYPTO"                                      )
     kompile_opts+=( --emit-json                                                          )
+
+    if [[ ! -z ${concrete_rules_file} ]]; then
+        if [[ -f ${concrete_rules_file} ]]; then
+            kompile_opts+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
+        else
+            fatal "Concrete rules file doesn't exist: ${concrete_rules_file}"
+        fi
+    fi
+
     case "${backend}" in
-        haskell)    kompile_opts+=( --md-selector 'k & ! nobytes' )
-                    ;;
-        java)       kompile_opts+=( --md-selector 'k & ! bytes' )
-                    ;;
-        llvm)       kompile_opts+=( --md-selector 'k & ! nobytes'                                                 )
-                    kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
-                    kompile_opts+=( -ccopt ${plugin_include}/c/plugin_util.cpp                                    )
-                    kompile_opts+=( -ccopt ${plugin_include}/c/crypto.cpp                                         )
-                    kompile_opts+=( -ccopt ${plugin_include}/c/blake2.cpp                                         )
-                    kompile_opts+=( -ccopt -g -ccopt -std=c++14                                                   )
-                    kompile_opts+=( -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lssl -ccopt -lcrypto )
-                    if [[ "$(uname -s)" == 'Linux' ]]; then
-                        kompile_opts+=( -ccopt -lprocps )
-                    elif [[ "$(uname -s)" == 'Darwin' ]]; then
-                        openssl_root="$(brew --prefix openssl)"
-                        kompile_opts+=( -I/usr/local/include -L/usr/local/lib -I${openssl_root}/include -L${openssl_root}/lib )
-                    fi
+        haskell) kompile_opts+=( --md-selector 'k & ! nobytes' )
+                 ;;
+        java)    kompile_opts+=( --md-selector 'k & ! bytes' )
+                 ;;
+        llvm)    kompile_opts+=( --md-selector 'k & ! nobytes'                                                 )
+                 kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
+                 kompile_opts+=( -ccopt ${plugin_include}/c/plugin_util.cpp                                    )
+                 kompile_opts+=( -ccopt ${plugin_include}/c/crypto.cpp                                         )
+                 kompile_opts+=( -ccopt ${plugin_include}/c/blake2.cpp                                         )
+                 kompile_opts+=( -ccopt -g -ccopt -std=c++14                                                   )
+                 kompile_opts+=( -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lssl -ccopt -lcrypto )
+                 if [[ "$(uname -s)" == 'Linux' ]]; then
+                     kompile_opts+=( -ccopt -lprocps )
+                 elif [[ "$(uname -s)" == 'Darwin' ]]; then
+                     openssl_root="$(brew --prefix openssl)"
+                     kompile_opts+=( -I/usr/local/include -L/usr/local/lib -I${openssl_root}/include -L${openssl_root}/lib )
+                 fi
                  ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
@@ -103,21 +112,34 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir proof_args bug_report_name
+    local def_module run_dir proof_args haskell_backend_command bug_report_name eventlog_name kprove
 
     check_k_install
 
     def_module="$1" ; shift
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
+    eventlog_name="$run_file.eventlog"
+
+    kprove=kprove
+    ! ${provex} || kprove=kprovex
+
+    haskell_backend_command=(kore-exec)
+    ! $bug_report || haskell_backend_command+=(--bug-report "$bug_report_name")
+    ! $profile    || haskell_backend_command+=(+RTS -l -ol$eventlog_name -RTS)
 
     proof_args=(--def-module "$def_module")
-    ! $debug                          || proof_args+=(--debug)
-    ! $debugger                       || proof_args+=(--debugger)
-    ! $bug_report                     || proof_args+=(--haskell-backend-command "kore-exec --bug-report $bug_report_name")
-    [[ ! -f ${concrete_rules_file} ]] || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
+    ! $debug                                   || proof_args+=(--debug)
+    ! $debugger                                || proof_args+=(--debugger)
+    [[ ${#haskell_backend_command[@]} -le 1 ]] || proof_args+=(--haskell-backend-command "${haskell_backend_command[*]}")
+    [[ ! -f ${concrete_rules_file} ]]          || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
 
     ! $debug || set -x
-    kprove --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
+    if $profile; then
+        timeout -s INT "$profile_timeout" ${kprove} --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@" || true
+        kore-prof "$eventlog_name" $kore_prof_args > "$eventlog_name.json"
+    else
+        ${kprove} --directory "$backend_dir" "$run_file" "${proof_args[@]}" "$@"
+    fi
 }
 
 run_search() {
@@ -218,7 +240,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                $0 interpret    [--backend (llvm)] [--debug|--no-unparse] <KEVM_arg>* <pgm>  <interpreter arg>*
                $0 interpret    [--backend (java|haskell)] [--no-unparse] <KEVM_arg>* <pgm>
                $0 kast         [--backend (llvm|java|haskell)]           <KEVM_arg>* <pgm>  <output format> <K arg>*
-               $0 prove        [--backend (java|haskell)]                            <spec> <def_module> <K arg>*
+               $0 prove        [--backend (java|haskell)]                            <spec> <def_module> <KEVM_arg>* <K arg>*
                $0 search       [--backend (java|haskell)]                            <pgm>  <pattern> <K arg>*
                $0 kompile      [--backend (java|llvm|haskell)]                       <main> <K arg>*
                $0 klab-run                                                           <pgm>  <K arg>*
@@ -246,11 +268,17 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--schedule (ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
                                       [--chainid NNN]
                                       [--concrete-rules-file <concrete_rules_file>]
+                                      [--bug-report]
+                                      [--profile]
+                                      [--profile-timeout <duration>]
+                                      [--kore-prof-args \"<kore-prof arg>*\"]
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
+                 <kore-prof arg> is an argument you want to pass to kore-prof.
                  <output format> is the format for Kast to output the term in.
                  <pattern> is the configuration pattern to search for.
                  <def_module> is the module to take as axioms when doing verification.
+                 <duration> is a timeout specifier as for GNU timeout.
 
            klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
     "
@@ -268,11 +296,15 @@ debug=false
 dump=false
 unparse=true
 debugger=false
+profile=false
+profile_timeout="0"
+kore_prof_args=""
 bug_report=false
 mode=NORMAL
 schedule=ISTANBUL
 chainid=1
 concrete_rules_file=
+provex=false
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 kevm_port='8545'
@@ -285,10 +317,14 @@ while [[ $# -gt 0 ]]; do
         --dump)                dump=true                 ; shift   ;;
         --no-unparse)          unparse=false             ; shift   ;;
         --debugger)            debugger=true             ; shift   ;;
+        --profile)             profile=true              ; shift   ;;
+        --profile-timeout)     profile_timeout="$2"      ; shift 2 ;;
+        --kore-prof-args)      kore_prof_args="$2"       ; shift 2 ;;
         --bug-report)          bug_report=true           ; shift   ;;
         --backend)             backend="$2"              ; shift 2 ;;
         --backend-dir)         backend_dir="$2"          ; shift 2 ;;
         --concrete-rules-file) concrete_rules_file="$2"  ; shift 2 ;;
+        --provex)              provex=true               ; shift   ;;
         --mode)                mode="$2"                 ; shift 2 ;;
         --schedule)            schedule="$2"             ; shift 2 ;;
         --chainid)             chainid="$2"              ; shift 2 ;;
@@ -301,6 +337,9 @@ done
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
 ! $debugger || [[ "$backend" == haskell ]] || [[ "$backend" == llvm ]] || fatal "Option --debugger only usable with --backend [llvm|haskell]!"
+! $profile  || [[ "$backend" == haskell ]] || fatal "Option --profile only usable with --backend haskell!"
+[[ $profile_timeout = "0" ]] || $profile   || fatal "Option --profile-timeout only usable with --profile!"
+[[ $kore_prof_args = "" ]]   || $profile   || fatal "Option --kore-prof-args only usable with --profile!"
 
 # get the run file
 run_file="$1" ; shift
