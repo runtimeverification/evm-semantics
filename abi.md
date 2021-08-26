@@ -31,19 +31,19 @@ which denotes (indeed, is translated to) the following byte array:
 where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of `2835717307`, the first four bytes of the hash value of the `transfer` function signature, `keccak256("transfer(address,unit256)")`, and `T1 : ... : T32` and `V1 : ... : V32` are the byte-array representations of `TO` and `VALUE` respectively.
 
 ```k
-    syntax TypedArg ::= #uint160 ( Int )
-                      | #address ( Int )
-                      | #uint256 ( Int )
-                      | #uint48  ( Int )
-                      | #uint16  ( Int )
-                      | #uint8   ( Int )
-                      | #int256  ( Int )
-                      | #int128  ( Int )
-                      | #bytes32 ( Int )
-                      | #bool    ( Int )
-                      | #bytes   ( ByteArray )
-                      | #string  ( String )
-                      | #array   ( TypedArg , Int , TypedArgs )
+    // syntax TypedArg ::= #uint160 ( Int )
+    //                   | #address ( Int )
+    //                   | #uint256 ( Int )
+    //                   | #uint48  ( Int )
+    //                   | #uint16  ( Int )
+    //                   | #uint8   ( Int )
+    //                   | #int256  ( Int )
+    //                   | #int128  ( Int )
+    //                   | #bytes32 ( Int )
+    //                   | #bool    ( Int )
+    //                   | #bytes   ( ByteArray )
+    //                   | #string  ( String )
+    //                   | #array   ( TypedArg , Int , TypedArgs )
  // -----------------------------------------------------------
 
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
@@ -176,7 +176,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 ```
 
 ```k
-    syntax Int ::= #getValue ( TypedArg ) [function]
+    // TODO: tmp moved to evm.dm
+    // syntax Int ::= #getValue ( TypedArg ) [function]
  // ------------------------------------------------
     rule #getValue(   #bool( X )) => X       requires #rangeBool(X)
     rule #getValue(#address( X )) => X       requires #rangeAddress(X)
@@ -225,11 +226,13 @@ The above notation denotes (i.e., is translated to) the following EVM log data s
 where `100389287136786176327247604509743168900146139575972864366142685224231313322991` is the hash value of the event signature, `keccak256("Transfer(address,address,unit256)")`.
 
 ```k
-    syntax EventArg ::= TypedArg
-                      | #indexed ( TypedArg )
+    // TODO: tmp moved to evm.md
+    // syntax EventArg ::= TypedArg
+    //                | #indexed ( TypedArg )
  // -----------------------------------------
 
-    syntax EventArgs ::= List{EventArg, ","} [klabel(eventArgs)]
+    // TODO: tmp moved to evm.md
+    // syntax EventArgs ::= List{EventArg, ","} [klabel(eventArgs)]
  // ------------------------------------------------------------
 
     syntax SubstateLogEntry ::= #abiEventLog ( Int , String , EventArgs ) [function]
@@ -243,7 +246,8 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
       => ListItem(#parseHexWord(Keccak256(#generateSignature(ENAME, #getTypedArgs(EARGS)))))
          #getIndexedArgs(EARGS)
 
-    syntax TypedArgs ::= #getTypedArgs ( EventArgs ) [function]
+    // TODO: moved to evm.md
+    // syntax TypedArgs ::= #getTypedArgs ( EventArgs ) [function]
  // -----------------------------------------------------------
     rule #getTypedArgs(#indexed(E), ES) => E, #getTypedArgs(ES)
     rule #getTypedArgs(E:TypedArg,  ES) => E, #getTypedArgs(ES)

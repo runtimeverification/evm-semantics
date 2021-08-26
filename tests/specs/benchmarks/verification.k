@@ -10,7 +10,8 @@ module VERIFICATION-COMMON
   // ########################
 
     //Symbolic predicate representing whether output of #ecrec is empty. No implementation.
-    syntax Bool ::= #ecrecEmpty( ByteArray , ByteArray , ByteArray , ByteArray ) [function, no-evaluators]
+    // TODO: tmp moved to evm.md
+    // syntax Bool ::= #ecrecEmpty( ByteArray , ByteArray , ByteArray , ByteArray ) [function, no-evaluators]
  // ------------------------------------------------------------------------------------------------------
     rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
     rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 0  requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
@@ -142,12 +143,41 @@ module VERIFICATION-HASKELL [symbolic, kore]
     imports VERIFICATION-COMMON
 
   // ################################################
+  // benchmarks/ecrecover00-sigvalid-spec
+  // ################################################
+
+    // TODO: perhaps this can be generalized by an existing lemma? but it doesn't pass as a functional claim so...
+    rule #range ( _M [ START := BUF ] , START , LEN ) => BUF
+      requires 0 <=Int START
+      andBool LEN ==Int #sizeByteArray(BUF)
+      [simplification]
+
+    // rule #bufStrict(#sizeByteArray(BUF), #asWord(BUF)) => BUF
+    //   [simplification]
+
+    rule #bufStrict(#sizeByteArray(BUF), X) => BUF
+      requires X ==Int #asWord(BUF)
+      [simplification]
+
+    rule #range(0 <= #asWord(#ecrec(_,_,_,_)) <= 2 ^Int (32 *Int 8)) => true [simplification]
+
+    rule #bufStrict(SIZE, #asWord(BUF)) => BUF [simplification]
+
+    rule #asByteStack(#asWord(BUF)) => BUF [simplification]
+
+    rule #padToWidth(N, BUF) => BUF
+      requires #sizeByteArray(BUF) ==Int N
+      [simplification]
+
+  // ################################################
   // benchmarks/ecrecoverloop00-sig0-invalid
   // ################################################
 
     rule X &Int Y <=Int 0 => false requires 0 <=Int X andBool 0 <=Int Y [simplification]
 
     rule 0 <=Int #asWord ( _ ) => true [simplification]
+
+    // rule #ecrec(HASH, SIGV, SIGR, SIGS) => .ByteArray requires #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
 
   // ################################################
   // benchmarks/ecrecoverloop02-sigs-valid-spec

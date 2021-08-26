@@ -22,8 +22,9 @@ is just carried on from LHS without changes. Definition rule LHS should only use
 Claims should always use `#bufStrict` in LHS and `#buf` in RHS.
 
 ```k
-    syntax ByteArray ::= #bufStrict ( Int , Int ) [function]
-    syntax ByteArray ::= #buf ( Int , Int ) [function, functional, smtlib(buf)]
+    // TODO: tmp moved to evm.md
+    // syntax ByteArray ::= #bufStrict ( Int , Int ) [function]
+    // syntax ByteArray ::= #buf ( Int , Int ) [function, functional, smtlib(buf)]
 
 endmodule
 

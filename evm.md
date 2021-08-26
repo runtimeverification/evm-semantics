@@ -17,6 +17,46 @@ module EVM
     imports NETWORK
 ```
 
+```k
+    // TODO: tmp moved from tests/specs/benchmarks/functional-spec.k
+     syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
+ // -------------------------------------------------------
+    rule <k> runLemma(S) => doneLemma(S) ... </k>
+
+    syntax Step ::= ByteArray | Int | Bool
+ // --------------------------------------
+
+  // TODO: tmp moved from tests/specs/infinite-gas.md
+  syntax Int ::= #gas ( Int ) [function, functional, no-evaluators, klabel(infGas), symbol, smtlib(infGas)]
+
+  // TODO: tmp moved from buf.md
+  syntax ByteArray ::= #bufStrict ( Int , Int ) [function]
+  syntax ByteArray ::= #buf ( Int , Int ) [function, functional, smtlib(buf)]
+
+  // TODO: tmp moved from abi.md
+  syntax Int ::= #getValue ( TypedArg ) [function]
+  syntax TypedArgs ::= #getTypedArgs ( EventArgs ) [function]
+  syntax EventArg ::= TypedArg
+                    | #indexed ( TypedArg )
+  syntax EventArgs ::= List{EventArg, ","} [klabel(eventArgs)]
+  syntax TypedArg ::= #uint160 ( Int )
+                    | #address ( Int )
+                    | #uint256 ( Int )
+                    | #uint48  ( Int )
+                    | #uint16  ( Int )
+                    | #uint8   ( Int )
+                    | #int256  ( Int )
+                    | #int128  ( Int )
+                    | #bytes32 ( Int )
+                    | #bool    ( Int )
+                    | #bytes   ( ByteArray )
+                    | #string  ( String )
+                    | #array   ( TypedArg , Int , TypedArgs )
+  
+  // TODO: tmp moved from tests/specs/benchmarks/verification.k
+  syntax Bool ::= #ecrecEmpty( ByteArray , ByteArray , ByteArray , ByteArray ) [function, no-evaluators]
+```
+
 Configuration
 -------------
 
