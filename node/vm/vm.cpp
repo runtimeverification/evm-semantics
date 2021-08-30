@@ -205,11 +205,10 @@ CallResult run_transaction(CallContext ctx) {
   scheduleinj->data = (block*)schedule;
 
   static blockheader injHeaderInt = getBlockHeaderForSymbol(getTagForSymbolName("inj{SortInt{}, SortKItem{}}"));
-  mpz_t chainid_z;
-  mpz_init_set_si(chainid_z, 1);
+  mpz_ptr chainid_z = to_z(ctx.ethereumconfig().chainid());
   zinj *chainidinj = (zinj *)koreAlloc(sizeof(zinj));
   chainidinj->h = injHeaderInt;
-  chainidinj->data = move_int(chainid_z);
+  chainidinj->data = chainid_z;
 
   block* inj = make_k_cell(iscreate, to, from, in.code, in.args, value, gasprice, gas, beneficiary, difficulty, number, gaslimit, move_int(timestamp), in.function);
 
