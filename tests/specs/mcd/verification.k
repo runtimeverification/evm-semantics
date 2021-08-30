@@ -78,6 +78,11 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
 
     rule chop(Y) => Y +Int pow256 requires #rangeSInt(256, Y) andBool Y <Int 0 [simplification]
 
+    rule maxUInt48 &Int X <=Int maxUInt48 &Int X +Int Y => false
+      requires #rangeUInt(48, X)
+       andBool #rangeUInt(48, Y)
+       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
+
   // ########################
   // Map
   // ########################
@@ -90,6 +95,15 @@ endmodule
 
 module LEMMAS-MCD-JAVA [symbolic, kast]
     imports LEMMAS-MCD-COMMON
+
+  // ########################
+  // Arithmetic
+  // ########################
+
+    rule X <=Int maxUInt48 &Int X +Int Y => false
+      requires #rangeUInt(48, X)
+       andBool #rangeUInt(48, Y)
+       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
 
   // ########################
   // Range
@@ -366,7 +380,10 @@ module LEMMAS-MCD-COMMON
 
     rule chop(X +Int chop(Y)) => chop(X +Int Y) [simplification]
 
-    rule maxUInt48 &Int (X +Int Y) <Int X => true requires #rangeUInt(48, X) andBool #rangeUInt(48, Y) andBool notBool (X +Int Y <Int pow48) [simplification]
+    rule maxUInt48 &Int (X +Int Y) <Int X => true
+      requires #rangeUInt(48, X)
+       andBool #rangeUInt(48, Y)
+       andBool notBool (X +Int Y <Int pow48) [simplification]
 
     // Via Z3 4.7.1:
     // (push)
