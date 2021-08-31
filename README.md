@@ -95,8 +95,8 @@ brew install automake libtool gmp mpfr pkg-config maven z3 libffi openssl python
 make libsecp256k1
 ```
 
-**NOTE**: a previous version of these instructions required the user to run `brew link flex --force`.
-After fetching this revision, you should first run `brew unlink flex`, as it is no longer necessary and will cause an error if you have the homebrew version of flex installed instead of the xcode command line tools version.
+**NOTE**: Previous versions of these instructions required the user to use either the homebrew version of `flex` or the xcode command line tools version, with the wrong option giving an error.
+The current recommendation is to use the homebrew version.
 
 #### Haskell Stack (all platforms)
 
