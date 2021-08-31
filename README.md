@@ -95,7 +95,8 @@ brew install automake libtool gmp mpfr pkg-config maven z3 libffi openssl python
 make libsecp256k1
 ```
 
-**NOTE**: Previous versions of these instructions required the user to use either the homebrew version of `flex` or the xcode command line tools version, with the wrong option giving an error. The current recommendation is to use the homebrew version.
+**NOTE**: Previous versions of these instructions required the user to use either the homebrew version of `flex` or the xcode command line tools version, with the wrong option giving an error.
+The current recommendation is to use the homebrew version.
 
 #### Haskell Stack (all platforms)
 
