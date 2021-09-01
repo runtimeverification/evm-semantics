@@ -375,11 +375,11 @@ tests/%.parse: tests/%
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 tests/%.prove: tests/%
-	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
+	$(KEVM) prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 .SECONDEXPANSION:
 tests/specs/%.provex: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
-	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
+	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS)        \
 	    --provex --backend-dir tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(plugin_includes)
@@ -391,7 +391,7 @@ tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$
 	    $(KOMPILE_OPTS)
 
 tests/%.prove-dry-run: tests/%
-	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend haskell --format-failures $(KPROVE_OPTS) --dry-run --concrete-rules-file $(dir $@)concrete-rules.txt
+	$(KEVM) prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend haskell --format-failures $(KPROVE_OPTS) --dry-run --concrete-rules-file $(dir $@)concrete-rules.txt
 
 tests/%.search: tests/%
 	$(KEVM) search $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) > $@-out
@@ -399,7 +399,7 @@ tests/%.search: tests/%
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 tests/%.klab-prove: tests/%
-	$(KEVM) klab-prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
+	$(KEVM) klab-prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 # Smoke Tests
 
