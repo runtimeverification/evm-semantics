@@ -69,7 +69,7 @@ module END-SUBUU-PASS-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> End_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_End => ?_ </nonce>
             </account>
            ...

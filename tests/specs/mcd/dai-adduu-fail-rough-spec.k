@@ -24,10 +24,10 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> ABI_y : ABI_x : JMPTO : WS  => ?_ </wordStack>
+            <wordStack> ABI_y : ABI_x : _JMPTO : WS  => ?_ </wordStack>
             <localMem> _ </localMem>
             <pc> 7825 => ?_ </pc>
-            <gas> #gas(VGas) => ?_ </gas>
+            <gas> #gas(_VGas) => ?_ </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -68,8 +68,8 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Dai_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <storage> _ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Dai => ?_ </nonce>
             </account>
            ...

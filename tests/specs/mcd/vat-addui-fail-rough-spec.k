@@ -24,10 +24,10 @@ module VAT-ADDUI-FAIL-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  => ?_ </wordStack>
+            <wordStack> chop(ABI_y) : ABI_x : _JMPTO : WS  => ?_ </wordStack>
             <localMem> _ </localMem>
             <pc> 13112 => ?_ </pc>
-            <gas> #gas(VGas) => ?_ </gas>
+            <gas> #gas(_VGas) => ?_ </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -68,8 +68,8 @@ module VAT-ADDUI-FAIL-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <storage> _ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
             </account>
            ...
