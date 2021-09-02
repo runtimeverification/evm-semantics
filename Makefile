@@ -69,9 +69,11 @@ distclean:
 
 libsecp256k1_out := $(LOCAL_LIB)/pkgconfig/libsecp256k1.pc
 libff_out        := $(KEVM_LIB)/libff/lib/libff.a
+libcryptopp_out  := $(KEVM_LIB)/cryptopp/lib/libcryptopp.a
 
 libsecp256k1: $(libsecp256k1_out)
 libff:        $(libff_out)
+libcryptopp : $(libcryptopp_out)
 
 $(libsecp256k1_out): $(PLUGIN_SUBMODULE)/deps/secp256k1/autogen.sh
 	cd $(PLUGIN_SUBMODULE)/deps/secp256k1                                 \
@@ -84,6 +86,8 @@ LIBFF_CMAKE_FLAGS :=
 
 ifeq ($(UNAME_S),Linux)
     LIBFF_CMAKE_FLAGS +=
+else ifeq ($(UNAME_S),Darwin)
+    LIBFF_CMAKE_FLAGS += -DWITH_PROCPS=OFF -DOPENSSL_ROOT_DIR=$(shell brew --prefix openssl)
 else
     LIBFF_CMAKE_FLAGS += -DWITH_PROCPS=OFF
 endif
@@ -94,6 +98,10 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
 	    && make -s -j4                                                                                          \
 	    && make install DESTDIR=$(CURDIR)/$(BUILD_DIR)
+
+$(libcryptopp_out): $(PLUGIN_SUBMODULE)/deps/cryptopp/GNUmakefile
+	cd $(PLUGIN_SUBMODULE)/deps/cryptopp                            \
+            && $(MAKE) install DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/cryptopp
 
 # K Dependencies
 # --------------
@@ -213,6 +221,10 @@ haskell_main_file      := driver.md
 haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
 haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
 
+ifeq ($(UNAME_S),Darwin)
+$(KEVM_LIB)/$(haskell_kompiled): $(libsecp256k1_out)
+endif
+
 $(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes) $(plugin_includes)
 	$(KOMPILE) --backend haskell                     \
 	    $(haskell_main_file) $(HASKELL_KOMPILE_OPTS) \
@@ -229,6 +241,10 @@ llvm_syntax_module := $(llvm_main_module)
 llvm_main_file     := driver.md
 llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
 llvm_kompiled      := $(llvm_dir)/$(llvm_main_filename)-kompiled/interpreter
+
+ifeq ($(UNAME_S),Darwin)
+$(KEVM_LIB)/$(llvm_kompiled): $(libcryptopp_out)
+endif
 
 $(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
 	$(KOMPILE) --backend llvm                 \
@@ -377,11 +393,11 @@ tests/%.parse: tests/%
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 tests/%.prove: tests/%
-	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
+	$(KEVM) prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 .SECONDEXPANSION:
 tests/specs/%.provex: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
-	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
+	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS)        \
 	    --provex --backend-dir tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(plugin_includes)
@@ -393,7 +409,7 @@ tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$
 	    $(KOMPILE_OPTS)
 
 tests/%.prove-dry-run: tests/%
-	$(KEVM) prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend haskell --format-failures $(KPROVE_OPTS) --dry-run --concrete-rules-file $(dir $@)concrete-rules.txt
+	$(KEVM) prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend haskell --format-failures $(KPROVE_OPTS) --dry-run --concrete-rules-file $(dir $@)concrete-rules.txt
 
 tests/%.search: tests/%
 	$(KEVM) search $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) > $@-out
@@ -401,7 +417,7 @@ tests/%.search: tests/%
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 tests/%.klab-prove: tests/%
-	$(KEVM) klab-prove $< $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
+	$(KEVM) klab-prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 # Smoke Tests
 
