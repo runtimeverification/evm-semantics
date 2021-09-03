@@ -102,7 +102,7 @@ doOptimization() {
     echo                                                                    >> "${rule_file}"
 
     notif "Building: ${optimize_file}"
-    echo ''                                     >> "${optimize_file}"
+    echo ''                                      > "${optimize_file}"
     echo 'module OPTIMIZE'                      >> "${optimize_file}"
     echo '    imports INT'                      >> "${optimize_file}"
     echo '    imports EVM-OPTIMIZATIONS-LEMMAS' >> "${optimize_file}"
