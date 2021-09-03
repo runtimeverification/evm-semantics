@@ -48,7 +48,7 @@ export PLUGIN_SUBMODULE
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
-        test-prove-mcd test-klab-prove test-haskell-dry-run                                                                      \
+        test-prove-mcd test-klab-prove                                                                                           \
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         media media-pdf metropolis-theme                                                                                         \
@@ -408,9 +408,6 @@ tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$
 	    --concrete-rules-file tests/specs/$(firstword $(subst /, ,$*))/concrete-rules.txt            \
 	    $(KOMPILE_OPTS)
 
-tests/%.prove-dry-run: tests/%
-	$(KEVM) prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend haskell --format-failures $(KPROVE_OPTS) --dry-run --concrete-rules-file $(dir $@)concrete-rules.txt
-
 tests/%.search: tests/%
 	$(KEVM) search $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) > $@-out
 	$(CHECK) $@-out $@-expected
@@ -489,11 +486,6 @@ test-klab-prove: $(smoke_tests_prove:=.klab-prove)
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/opcodes/evm-optimizations-spec.md: optimizations.md
 	cat $< | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
-
-haskell_dry_run_failing := $(shell cat tests/failing-symbolic.haskell-dry-run)
-haskell_dry_run         := $(filter-out $(haskell_dry_run_failing), $(wildcard $(prove_specs_dir)/*-spec.k) $(wildcard $(prove_specs_dir)/*/*-spec.k) $(wildcard $(prove_specs_dir)/*/*/*-spec.k))
-
-test-haskell-dry-run: $(haskell_dry_run:=.prove-dry-run)
 
 # Parse Tests
 
