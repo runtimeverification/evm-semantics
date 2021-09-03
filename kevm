@@ -118,7 +118,6 @@ run_prove() {
     local def_module run_dir proof_args haskell_backend_command bug_report_name eventlog_name kprove
 
     check_k_install
-    ! ${debug} || set -x
 
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
     eventlog_name="${run_file}.eventlog"
@@ -339,6 +338,7 @@ while [[ $# -gt 0 ]]; do
         *)                     args+=("$1")              ; shift   ;;
     esac
 done
+
 [[ "${#args[@]}" -le 0 ]] || set -- "${args[@]}"
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
@@ -364,6 +364,8 @@ cCHAINID_kore="\dv{SortInt{}}(\"${chainid}\")"
 cMODE_kast="\`${mode}\`(.KList)"
 cSCHEDULE_kast="\`${schedule}_EVM\`(.KList)"
 cCHAINID_kast="#token(\"${chainid}\",\"Int\")"
+
+! ${debug} || set -x
 
 case "$run_command-$backend" in
     kompile-@(java|llvm|haskell)   ) run_kompile                     "$@" ;;
