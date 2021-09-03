@@ -5,7 +5,7 @@ set -euo pipefail
 export PATH=$(pwd)/.build/usr/bin:$PATH
 export PYTHONPATH=$(pwd)/.build/usr/lib/kevm/kframework/lib/kframework
 
-kevm_json_defn=$(pwd)/.build/usr/lib/kevm/llvm/driver-kompiled/compiled.json
+kevm_json_defn=$(pwd)/.build/usr/lib/kevm/haskell/driver-kompiled/compiled.json
 
 notif() { echo "$@" >&2 ; }
 
@@ -66,7 +66,7 @@ runProve() {
 
     spec="$1" ; shift
 
-    kevm prove --backend haskell ${spec} OPTIMIZE --concrete-rules-file tests/specs/mcd/concrete-rules.txt "$@"
+    kevm prove --backend haskell ${spec} --verif-module OPTIMIZE --concrete-rules-file tests/specs/concrete-rules.txt "$@"
 }
 
 doOptimization() {
