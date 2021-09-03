@@ -351,6 +351,8 @@ tests/specs/benchmarks/functional-spec%:     KPROVE_MODULE =  FUNCTIONAL-SPEC-SY
 tests/specs/bihu/functional-spec%:           KPROVE_FILE   =  functional-spec
 tests/specs/bihu/functional-spec%:           KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
 tests/specs/erc20/functional-spec%:          KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/examples/solidity-code-spec%:    KPROVE_EXT    =  md
+tests/specs/examples/solidity-code-spec%:    KPROVE_FILE   =  solidity-code-spec
 tests/specs/examples/sum-to-n-spec%:         KPROVE_FILE   =  sum-to-n-spec
 tests/specs/functional/infinite-gas-spec%:   KPROVE_FILE   =  infinite-gas-spec
 tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_FILE   =  lemmas-no-smt-spec
@@ -466,7 +468,7 @@ prove_functional_tests   := $(filter-out $(prove_failing_tests), $(wildcard $(pr
 prove_opcodes_tests      := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/opcodes/*-spec.k))
 prove_erc20_tests        := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/erc20/*/*-spec.k))
 prove_bihu_tests         := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/bihu/*-spec.k))
-prove_examples_tests     := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k))
+prove_examples_tests     := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k) $(wildcard $(prove_specs_dir)/examples/*-spec.md))
 prove_mcd_tests          := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
 prove_optimization_tests := $(filter-out $(prove_failing_tests), tests/specs/opcodes/evm-optimizations-spec.md)
 
