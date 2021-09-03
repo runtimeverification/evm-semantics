@@ -102,11 +102,10 @@ doOptimization() {
     echo                                                                    >> "${rule_file}"
 
     notif "Building: ${optimize_file}"
-    echo 'requires "lemmas/mcd/verification.k"'  > "${optimize_file}"
     echo ''                                     >> "${optimize_file}"
     echo 'module OPTIMIZE'                      >> "${optimize_file}"
     echo '    imports INT'                      >> "${optimize_file}"
-    echo '    imports LEMMAS-MCD'               >> "${optimize_file}"
+    echo '    imports EVM-OPTIMIZATIONS-LEMMAS' >> "${optimize_file}"
     echo '    imports EVM'                      >> "${optimize_file}"
     echo 'endmodule'                            >> "${optimize_file}"
     echo ''                                     >> "${optimize_file}"
