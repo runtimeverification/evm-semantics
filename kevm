@@ -154,7 +154,7 @@ run_prove() {
                      proof_args+=( --output json                                                                   )
                  fi
                  ;;
-        *) fatal "Unknown backend for proving! ${backend}" ;;
+        *)       fatal "Unknown backend for proving! ${backend}" ;;
     esac
 
     if ${profile}; then
