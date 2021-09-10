@@ -174,12 +174,12 @@
             b"`@`\x00`@`\x00s\x10\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01a\xea\xf6\xf4`\x00UZ`\x01U"
           </code>
           <storage>
-            1 |-> 85121
             0 |-> 0
+            1 |-> 85121
           </storage>
           <origStorage>
-            1 |-> 85121
             0 |-> 0
+            1 |-> 85121
           </origStorage>
           <nonce>
             0

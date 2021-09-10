@@ -25,11 +25,11 @@ pipeline {
         stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
         stage('Test') {
           failFast true
-          options { timeout(time: 90, unit: 'MINUTES') }
+          options { timeout(time: 120, unit: 'MINUTES') }
           parallel {
-            stage('Conformance (LLVM)') { steps {                                         sh 'make test-conformance -j8 TEST_CONCRETE_BACKEND=llvm'      } }
-            stage('Proofs (Java)')      { steps { lock("kevm-java-${env.NODE_NAME}")    { sh 'make test-prove       -j5 TEST_SYMBOLIC_BACKEND=java'    } } }
-            stage('Proofs (Haskell)')   { steps { lock("kevm-haskell-${env.NODE_NAME}") { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=haskell' } } }
+            stage('Conformance (LLVM)') { steps {                                         sh 'make test-conformance -j4 TEST_CONCRETE_BACKEND=llvm'      } }
+            stage('Proofs (Java)')      { steps { lock("kevm-java-${env.NODE_NAME}")    { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=java'    } } }
+            stage('Proofs (Haskell)')   { steps { lock("kevm-haskell-${env.NODE_NAME}") { sh 'make test-prove       -j5 TEST_SYMBOLIC_BACKEND=haskell' } } }
           }
         }
         stage('Test Interactive') {
@@ -189,7 +189,7 @@ pipeline {
         }
         stage('Update Dependents') {
           steps {
-            build job: 'rv-devops/master', propagate: false, wait: false                                         \
+            build job: 'DevOps/master', propagate: false, wait: false                                            \
                 , parameters: [ booleanParam ( name: 'UPDATE_DEPS'         , value: true                       ) \
                               , string       ( name: 'UPDATE_DEPS_REPO'    , value: 'kframework/evm-semantics' ) \
                               , string       ( name: 'UPDATE_DEPS_VERSION' , value: "${env.LONG_REV}")           \
