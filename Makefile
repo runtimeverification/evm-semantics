@@ -143,6 +143,7 @@ KOMPILE := $(KEVM) kompile
 kevm_files := abi.md              \
               asm.md              \
               buf.md              \
+              flip.md             \
               data.md             \
               driver.md           \
               edsl.md             \
@@ -181,7 +182,7 @@ $(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
 	@mkdir -p $(dir $@)
 	install $< $@
 
-KOMPILE_OPTS = --debug
+KOMPILE_OPTS = --debug --top-cell KevmCell
 
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2

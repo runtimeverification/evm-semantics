@@ -674,7 +674,7 @@ Storage/Memory Lookup
 ```k
     syntax ContractStorage ::= Map
 
-    syntax Int ::= #lookup        ( ContractStorage , Int ) [function, functional, smtlib(lookup)]
+    syntax Int ::= #lookup        ( ContractStorage , Int ) [function, functional, smtlib(lookupContractStorage)]
                  | #lookupMemory  ( Map             , Int ) [function, functional, smtlib(lookupMemory)]
  // ----------------------------------------------------------------------------------------------------
     rule [#lookup.some]:         #lookup(       (KEY |-> VAL:Int) _M:Map, KEY ) => VAL modInt pow256

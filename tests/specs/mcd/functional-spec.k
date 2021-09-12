@@ -61,7 +61,7 @@ module FUNCTIONAL-SPEC
        andBool GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, _TIC, END)
        andBool #rangeUInt(48, TIME +Int TTL)
 
-    //claim <k> runLemma(maxUInt48 &Int ((CALLER_ID |Int (maskWordPackAddrUInt48UInt48_1 &Int #lookup(M, KX))) /Int pow208)) => doneLemma(maxUInt48 &Int (#lookup(M, KX) /Int pow208)) ... </k>
+    //claim <k> runLemma(maxUInt48 &Int ((CALLER_ID |Int (maskWordPackAddrUInt48UInt48_1 &Int #lookup(M:Map, KX))) /Int pow208)) => doneLemma(maxUInt48 &Int (#lookup(M, KX) /Int pow208)) ... </k>
     //  requires #rangeAddress(CALLER_ID)
 
     // Memory operations

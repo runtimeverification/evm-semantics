@@ -10,11 +10,13 @@ This file only defines the local execution operations, the file `driver.md` will
 ```k
 requires "data.md"
 requires "network.md"
+requires "flip.md"
 
 module EVM
     imports STRING
     imports EVM-DATA
     imports NETWORK
+    imports ABSTRACT-FLIP
 ```
 
 Configuration

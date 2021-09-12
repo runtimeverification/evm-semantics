@@ -1,4 +1,5 @@
 requires "evm-types.md"
+requires "flip.md"
 
     //
     // The Solidity compiler sometimes packs together multiple arguments into one storage location, for optimized reads/writes.
@@ -59,6 +60,12 @@ module WORD-PACK-HASKELL [kore]
     andBool #rangeUInt(96, UINT48_UINT48)
       [simplification]
 
+    rule maxUInt48 &Int #lookup(#storageFlip(<flip> ... <flip-ttl> TTL </flip-ttl> ... </flip>), 5) => TTL
+    [simplification]
+
+    rule maxUInt48 &Int (#lookup(#storageFlip(<flip> ... <flip-tau> TAU </flip-tau> ... </flip>), 5) /Int pow48) => TAU
+    [simplification]
+
     rule    ADDR_UINT8 ==Int #WordPackAddrUInt8(ADDR, UINT8)
          => ADDR  ==Int maxUInt160 &Int  ADDR_UINT8
     andBool UINT8 ==Int maxUInt8   &Int (ADDR_UINT8 /Int pow160)
@@ -74,6 +81,7 @@ endmodule
 
 module WORD-PACK-COMMON
     imports EVM-TYPES
+    imports ABSTRACT-FLIP
 
     syntax Int ::= #WordPackUInt48UInt48     (       Int , Int ) [function, no-evaluators, smtlib(WordPackUInt48UInt48)]
                  | #WordPackAddrUInt48UInt48 ( Int , Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt48UInt48)]
