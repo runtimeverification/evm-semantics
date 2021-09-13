@@ -37,13 +37,7 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 run_kompile() {
     local kompile_opts openssl_root
 
-    case "${backend}" in
-        haskell) kompile_opts=( --backend haskell "${run_file}" --md-selector 'k & ! node       & ! nobytes' ) ;;
-        java)    kompile_opts=( --backend java    "${run_file}" --md-selector 'k & ! node       & ! bytes'   ) ;;
-        llvm)    kompile_opts=( --backend llvm    "${run_file}" --md-selector 'k & ! node       & ! nobytes' ) ;;
-        node)    kompile_opts=( --backend llvm    "${run_file}" --md-selector 'k & ! standalone & ! nobytes' ) ;;
-        *)       fatal "Unknown backend for kompile: ${backend}" ;;
-    esac
+    kompile_opts=( "${run_file}" )
     kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
     kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN"                           )
     kompile_opts+=( --emit-json                                                          )
@@ -57,22 +51,26 @@ run_kompile() {
     fi
 
     case "${backend}" in
-        haskell|java) ;;
-        llvm|node)  kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
-                    kompile_opts+=( -ccopt ${plugin_include}/c/plugin_util.cpp                                    )
-                    kompile_opts+=( -ccopt ${plugin_include}/c/crypto.cpp                                         )
-                    kompile_opts+=( -ccopt ${plugin_include}/c/blake2.cpp                                         )
-                    kompile_opts+=( -ccopt -g -ccopt -std=c++14                                                   )
-                    kompile_opts+=( -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lssl -ccopt -lcrypto )
-                    if [[ "$(uname -s)" == 'Linux' ]]; then
-                        kompile_opts+=( -ccopt -lprocps )
-                    elif [[ "$(uname -s)" == 'Darwin' ]]; then
-                        openssl_root="$(brew --prefix openssl)"
-                        brew_root="$(brew --prefix)"
-                        kompile_opts+=( -ccopt -I${brew_root}/include -ccopt -L/${brew_root}/lib -ccopt -I${openssl_root}/include -ccopt -L${openssl_root}/lib )
-                        kompile_opts+=( -ccopt -I${libcryptopp_dir}/include -ccopt -L/${libcryptopp_dir}/lib )
-                    fi
-                 ;;
+        haskell)   kompile_opts+=( --md-selector 'k & ! nobytes & ! node' --backend haskell)        ;;
+        java)      kompile_opts+=( --md-selector 'k & ! bytes   & ! node' --backend java )          ;;
+        llvm)      kompile_opts+=( --md-selector 'k & ! nobytes & ! node' )                         ;;&
+        node)      kompile_opts+=( --md-selector 'k & ! nobytes & ! standalone' --no-llvm-kompile ) ;;&
+        llvm|node) kompile_opts+=( --backend llvm )
+                   kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
+                   kompile_opts+=( -ccopt ${plugin_include}/c/plugin_util.cpp                                    )
+                   kompile_opts+=( -ccopt ${plugin_include}/c/crypto.cpp                                         )
+                   kompile_opts+=( -ccopt ${plugin_include}/c/blake2.cpp                                         )
+                   kompile_opts+=( -ccopt -g -ccopt -std=c++14                                                   )
+                   kompile_opts+=( -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lssl -ccopt -lcrypto )
+                   if [[ "$(uname -s)" == 'Linux' ]]; then
+                       kompile_opts+=( -ccopt -lprocps )
+                   elif [[ "$(uname -s)" == 'Darwin' ]]; then
+                       openssl_root="$(brew --prefix openssl)"
+                       brew_root="$(brew --prefix)"
+                       kompile_opts+=( -ccopt -I${brew_root}/include -ccopt -L/${brew_root}/lib -ccopt -I${openssl_root}/include -ccopt -L${openssl_root}/lib )
+                       kompile_opts+=( -ccopt -I${libcryptopp_dir}/include -ccopt -L/${libcryptopp_dir}/lib )
+                   fi
+                   ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
     kompile "${kompile_opts[@]}" "$@"
