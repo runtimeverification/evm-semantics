@@ -33,7 +33,7 @@ module FORWARDTOHOTWALLET-SUCCESS-2-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> 22000 => ?_ </gas>
+          <gas> #gas(_VGas) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
 
@@ -44,7 +44,7 @@ module FORWARDTOHOTWALLET-SUCCESS-2-SPEC
         <substate>
           <selfDestruct> _ </selfDestruct>
           <log> _ </log>
-          <refund> _ </refund> // TODO: more detail
+          <refund> _ => ?_ </refund> // TODO: more detail
         </substate>
 
         <gasPrice> _ </gasPrice>
