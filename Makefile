@@ -495,7 +495,7 @@ provex_definitions :=                                                           
                       tests/specs/mcd/verification/java/verification-kompiled/timestamp                            \
                       tests/specs/opcodes/evm-optimizations-spec/haskell/evm-optimizations-spec-kompiled/timestamp \
                       tests/specs/opcodes/verification/java/verification-kompiled/timestamp
-build-provex:  $(provex_definitions)
+build-provex: $(provex_definitions)
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
 test-prove-benchmarks:    $(prove_benchmarks_tests:=.provex)
