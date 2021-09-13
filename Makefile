@@ -468,7 +468,7 @@ prove_optimization_tests := $(filter-out $(prove_failing_tests), tests/specs/opc
 
 ## best-effort list of provex kompiled definitions to produce ahead of time
 provex_definitions :=                                                                                              \
-                      tests/specs/benchmarks/functional-spec/haskell/functional-kompiled/timestamp                 \
+                      tests/specs/benchmarks/functional-spec/haskell/functional-spec-kompiled/timestamp            \
                       tests/specs/benchmarks/functional-spec/java/functional-spec-kompiled/timestamp               \
                       tests/specs/benchmarks/verification/haskell/verification-kompiled/timestamp                  \
                       tests/specs/benchmarks/verification/java/verification-kompiled/timestamp                     \
@@ -480,15 +480,15 @@ provex_definitions :=                                                           
                       tests/specs/erc20/verification/java/verification-kompiled/timestamp                          \
                       tests/specs/examples/solidity-code-spec/haskell/solidity-code-spec-kompiled/timestamp        \
                       tests/specs/examples/solidity-code-spec/java/solidity-code-spec-kompiled/timestamp           \
-                      tests/specs/examples/sum-to-n-spec/haskell/sum-kompiled/timestamp                            \
+                      tests/specs/examples/sum-to-n-spec/haskell/sum-to-n-spec-kompiled/timestamp                  \
                       tests/specs/examples/sum-to-n-spec/java/sum-to-n-spec-kompiled/timestamp                     \
                       tests/specs/functional/infinite-gas-spec/haskell/infinite-gas-spec-kompiled/timestamp        \
-                      tests/specs/functional/lemmas-no-smt-spec/haskell/lemmas-kompiled/timestamp                  \
+                      tests/specs/functional/lemmas-no-smt-spec/haskell/lemmas-no-smt-spec-kompiled/timestamp      \
                       tests/specs/functional/lemmas-no-smt-spec/java/lemmas-no-smt-spec-kompiled/timestamp         \
-                      tests/specs/functional/lemmas-spec/haskell/lemmas-kompiled/timestamp                         \
+                      tests/specs/functional/lemmas-spec/haskell/lemmas-spec-kompiled/timestamp                    \
                       tests/specs/functional/lemmas-spec/java/lemmas-spec-kompiled/timestamp                       \
-                      tests/specs/functional/merkle-spec/haskell/merkle-kompiled/timestamp                         \
-                      tests/specs/functional/storageRoot-spec/haskell/storageRoot-kompiled/timestamp               \
+                      tests/specs/functional/merkle-spec/haskell/merkle-spec-kompiled/timestamp                    \
+                      tests/specs/functional/storageRoot-spec/haskell/storageRoot-spec-kompiled/timestamp          \
                       tests/specs/mcd/functional-spec/haskell/functional-spec-kompiled/timestamp                   \
                       tests/specs/mcd/functional-spec/java/functional-spec-kompiled/timestamp                      \
                       tests/specs/mcd/verification/haskell/verification-kompiled/timestamp                         \
