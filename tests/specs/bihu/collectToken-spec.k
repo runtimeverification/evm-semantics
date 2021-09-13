@@ -33,7 +33,7 @@ module COLLECTTOKEN-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> GASCAP => ?_ </gas>
+          <gas> #gas(_GASCAP) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
 
@@ -115,7 +115,6 @@ andBool #accumulatedReleasedTokens(BAL, COLLECTED, START, NOW) >Int COLLECTED +I
 // canExtract > balance
 andBool #accumulatedReleasedTokens(BAL, COLLECTED, START, NOW) <Int (BAL +Int COLLECTED) -Int 10
 // Max Gas
-andBool GASCAP >=Int (293 *Int ((NOW -Int START) /Int 31536000)) +Int 43000
 ensures ?VALUE ==Int @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int BAL -Int @remainingTokens(COLLECTED +Int BAL, NOW, START)
 
 
