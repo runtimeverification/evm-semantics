@@ -302,7 +302,11 @@ The `#next [_]` operator initiates execution by:
  // --------------------------------------------
     rule <k> #next [ OP ]
           => #if isAddr1Op(OP) orBool isAddr2Op(OP) #then #addr [ OP ] #else . #fi
+```
+```{.k .node}
           ~> #load [ OP ]
+```
+```k
           ~> #exec [ OP ]
           ~> #pc   [ OP ]
          ...
@@ -311,7 +315,9 @@ The `#next [_]` operator initiates execution by:
          <static> STATIC:Bool </static>
       requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
        andBool notBool ( STATIC andBool #changesState(OP, WS) )
+```
 
+```k
     rule <k> #next [ OP ] => #end EVMC_STACK_UNDERFLOW ... </k>
          <wordStack> WS </wordStack>
       requires #stackUnderflow(WS, OP)
@@ -429,6 +435,14 @@ The `#next [_]` operator initiates execution by:
     rule <k> #exec [ OP ] => #gas [ OP , OP ] ~> OP ... </k> requires isNullStackOp(OP) orBool isPushOp(OP)
 ```
 
+-   `#loadAccount` queries for account data from the running client.
+
+```k
+    syntax InternalOp ::= "#load" "[" OpCode "]"
+                        | "#loadAccount"   Int
+ // --------------------------------------------
+```
+
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
 
 ```k
@@ -464,15 +478,6 @@ The `CallOp` opcodes all interperet their second argument as an address.
  // -----------------------------------------------------------
     rule <k> #exec [ CSO:CallSixOp ] => #gas [ CSO , CSO W0 W1    W2 W3 W4 W5 ] ~> CSO W0 W1    W2 W3 W4 W5 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
     rule <k> #exec [ CO:CallOp     ] => #gas [ CO  , CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
-```
-
-```k
-    syntax InternalOp ::= "#load" "[" OpCode "]"
- // --------------------------------------------
-```
-
-```{.k .standalone}
-    rule <k> #load [ _OP:OpCode ] => . ... </k>
 ```
 
 ### Address Conversion
@@ -791,30 +796,6 @@ These are just used by the other operators for shuffling local execution state a
            )
            ...
          </accounts>
-```
-
-The following operations help with loading account information from an external running client.
-This minimizes the amount of information which must be stored in the configuration.
-
--   `#loadAccount` queries for account data from the running client.
--   `#lookupCode` loads the code of an account into the `<code>` cell.
--   `#lookupStorage` loads the value of the specified storage key into the `<storage>` cell.
-
-```k
-    syntax InternalOp ::= "#loadAccount"   Int
-                        | "#lookupCode"    Int
-                        | "#lookupStorage" Int Int
- // ----------------------------------------------
-```
-
-In `standalone` mode, the semantics assumes that all relevant account data is already loaded into memory.
-
-In `node` mode, the semantics are given in terms of an external call to a running client.
-
-```{.k .standalone}
-    rule <k> #loadAccount   _   => . ... </k>
-    rule <k> #lookupCode    _   => . ... </k>
-    rule <k> #lookupStorage _ _ => . ... </k>
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
@@ -1629,8 +1610,15 @@ have been paid, and it may be to expensive to compute the hash of the init code.
     syntax QuadStackOp ::= "CREATE2"
  // --------------------------------
     rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
+```
+```{.k .standalone}
+          => #checkCall ACCT VALUE
+```
+```{.k .node}
           => #loadAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #checkCall ACCT VALUE
+```
+```k
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
          ...

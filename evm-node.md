@@ -69,6 +69,18 @@ Because the same account may be loaded more than once, implementations of this i
  // ---------------------------------------------------------------------------------
 ```
 
+The following operations help with loading account information from an external running client.
+This minimizes the amount of information which must be stored in the configuration.
+
+-   `#lookupCode` loads the code of an account into the `<code>` cell.
+-   `#lookupStorage` loads the value of the specified storage key into the `<storage>` cell.
+
+```k
+    syntax InternalOp ::= "#lookupCode"    Int
+                        | "#lookupStorage" Int Int
+ // ----------------------------------------------
+```
+
 -   `#loadAccount` loads an account's balance and nonce if it exists, and leaves the code and storage unloaded, except if the code is empty, in which case the code is fully loaded.
     If the account does not exist, it does nothing.
 
