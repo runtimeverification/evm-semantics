@@ -302,11 +302,6 @@ The `#next [_]` operator initiates execution by:
  // --------------------------------------------
     rule <k> #next [ OP ]
           => #if isAddr1Op(OP) orBool isAddr2Op(OP) #then #addr [ OP ] #else . #fi
-```
-```{.k .node}
-          ~> #load [ OP ]
-```
-```k
           ~> #exec [ OP ]
           ~> #pc   [ OP ]
          ...
@@ -315,9 +310,7 @@ The `#next [_]` operator initiates execution by:
          <static> STATIC:Bool </static>
       requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
        andBool notBool ( STATIC andBool #changesState(OP, WS) )
-```
 
-```k
     rule <k> #next [ OP ] => #end EVMC_STACK_UNDERFLOW ... </k>
          <wordStack> WS </wordStack>
       requires #stackUnderflow(WS, OP)
@@ -433,14 +426,6 @@ The `#next [_]` operator initiates execution by:
     rule <k> #exec [ IOP:InvalidOp ] => IOP ... </k>
 
     rule <k> #exec [ OP ] => #gas [ OP , OP ] ~> OP ... </k> requires isNullStackOp(OP) orBool isPushOp(OP)
-```
-
--   `#loadAccount` queries for account data from the running client.
-
-```k
-    syntax InternalOp ::= "#load" "[" OpCode "]"
-                        | "#loadAccount"   Int
- // --------------------------------------------
 ```
 
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
@@ -1603,22 +1588,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```
 
 `CREATE2` will attempt to `#create` the account, but with the new scheme for choosing the account address.
-Note that we cannot execute #loadAccount during the #load phase earlier because gas will not yet
-have been paid, and it may be to expensive to compute the hash of the init code.
 
 ```k
     syntax QuadStackOp ::= "CREATE2"
  // --------------------------------
     rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
-```
-```{.k .standalone}
           => #checkCall ACCT VALUE
-```
-```{.k .node}
-          => #loadAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
-          ~> #checkCall ACCT VALUE
-```
-```k
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
          ...

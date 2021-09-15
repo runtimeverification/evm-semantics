@@ -24,6 +24,23 @@ Because the same account may be loaded more than once, implementations of this i
 -   Empty code is detected without lazy evaluation by means of checking the code hash, and therefore will always be represented in the `<code>` cell as `.WordStack`.
 
 ```{.k .node}
+    syntax InternalOp ::= "#load" "[" OpCode "]"
+ // --------------------------------------------
+    rule <k> #next [ OP ]
+          => #if isAddr1Op(OP) orBool isAddr2Op(OP) #then #addr [ OP ] #else . #fi
+          ~> #load [ OP ]
+          ~> #exec [ OP ]
+          ~> #pc   [ OP ]
+         ...
+         </k>
+         <wordStack> WS </wordStack>
+         <static> STATIC:Bool </static>
+      requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
+       andBool notBool ( STATIC andBool #changesState(OP, WS) )
+    [priority(35)]
+```
+
+```{.k .node}
     rule <k> #load [ OP:OpCode ] => #loadAccount W0 ~> #lookupCode W0 ... </k>
          <wordStack> W0 : _ </wordStack>
       requires isAddr1Op(OP)
@@ -72,11 +89,13 @@ Because the same account may be loaded more than once, implementations of this i
 The following operations help with loading account information from an external running client.
 This minimizes the amount of information which must be stored in the configuration.
 
+-   `#loadAccount` queries for account data from the running client.
 -   `#lookupCode` loads the code of an account into the `<code>` cell.
 -   `#lookupStorage` loads the value of the specified storage key into the `<storage>` cell.
 
 ```k
-    syntax InternalOp ::= "#lookupCode"    Int
+    syntax InternalOp ::= "#loadAccount"   Int
+                        | "#lookupCode"    Int
                         | "#lookupStorage" Int Int
  // ----------------------------------------------
 ```
@@ -180,6 +199,23 @@ This minimizes the amount of information which must be stored in the configurati
 ```
 
 ### Transaction Execution
+
+-   `CREATE2` needs to be modified for the node
+Note that we cannot execute #loadAccount during the #load phase earlier because gas will not yet
+have been paid, and it may be to expensive to compute the hash of the init code.
+
+```{.k .node}
+    rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
+          => #loadAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+          ~> #checkCall ACCT VALUE
+          ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
+          ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+         ...
+         </k>
+         <id> ACCT </id>
+         <localMem> LM </localMem>
+    [priority(35)]
+```
 
 -   `runVM` takes all the input state of a transaction and the current block header and executes the transaction according to the specified state, relying on the above loading operations for access to accounts and block hashes.
     The signature of this function must match the signature expected by VM.ml in the blockchain-k-plugin.
