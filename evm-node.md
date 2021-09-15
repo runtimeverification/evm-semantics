@@ -192,8 +192,6 @@ This minimizes the amount of information which must be stored in the configurati
          <account>
            <acctID> ACCT </acctID>
            <code> #unloaded(HASH) </code>
-           <nonce> NONCE </nonce>
-           <balance> BAL </balance>
            ...
          </account>
 ```
@@ -234,7 +232,6 @@ have been paid, and it may be to expensive to compute the hash of the init code.
           ~> #endCreate
          ...
          </k>
-         <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
          <callGas> _ => GAVAIL </callGas>
          <origin> _ => ACCTFROM </origin>
@@ -260,7 +257,6 @@ have been paid, and it may be to expensive to compute the hash of the init code.
           ~> #endVM
          ...
          </k>
-         <schedule> SCHED </schedule>
          <gasPrice> _ => GPRICE </gasPrice>
          <callGas> _ => GAVAIL </callGas>
          <origin> _ => ACCTFROM </origin>
@@ -292,7 +288,7 @@ have been paid, and it may be to expensive to compute the hash of the init code.
          <k> #halt ~> #endVM => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ~> 1 </k>
          <gas> GAVAIL </gas>
 
-    rule <k> #endCreate => W ... </k> <wordStack> W : WS </wordStack>
+    rule <k> #endCreate => W ... </k> <wordStack> W : _WS </wordStack>
 ```
 
 ### Primitive operations expected to exist by the blockchain-k-plugin
