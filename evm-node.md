@@ -24,6 +24,31 @@ Because the same account may be loaded more than once, implementations of this i
 -   Empty code is detected without lazy evaluation by means of checking the code hash, and therefore will always be represented in the `<code>` cell as `.WordStack`.
 
 ```{.k .node}
+    rule <k> #load [ OP:OpCode ] => #loadAccount W0 ~> #lookupCode W0 ... </k>
+         <wordStack> W0 : _ </wordStack>
+      requires isAddr1Op(OP)
+
+    rule <k> #load [ OP:OpCode ] => #loadAccount W1 ~> #lookupCode W1 ... </k>
+         <wordStack> _ : W1 : _ </wordStack>
+      requires isAddr2Op(OP)
+
+    rule <k> #load [ CREATE ] => #loadAccount #newAddr(ACCT, NONCE) ... </k>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <nonce> NONCE </nonce>
+           ...
+         </account>
+
+    rule <k> #load [ OP:OpCode ] => #lookupStorage ACCT W0 ... </k>
+         <id> ACCT </id>
+         <wordStack> W0 : _ </wordStack>
+      requires OP ==K SSTORE orBool OP ==K SLOAD
+
+    rule <k> #load [ _OP:OpCode ] => . ... </k> [owise]
+```
+
+```{.k .node}
     syntax AccountCode ::= #unloaded(Int)
 ```
 

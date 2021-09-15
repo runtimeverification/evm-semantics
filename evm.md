@@ -469,28 +469,10 @@ The `CallOp` opcodes all interperet their second argument as an address.
 ```k
     syntax InternalOp ::= "#load" "[" OpCode "]"
  // --------------------------------------------
-    rule <k> #load [ OP:OpCode ] => #loadAccount W0 ~> #lookupCode W0 ... </k>
-         <wordStack> W0 : _ </wordStack>
-      requires isAddr1Op(OP)
+```
 
-    rule <k> #load [ OP:OpCode ] => #loadAccount W1 ~> #lookupCode W1 ... </k>
-         <wordStack> _ : W1 : _ </wordStack>
-      requires isAddr2Op(OP)
-
-    rule <k> #load [ CREATE ] => #loadAccount #newAddr(ACCT, NONCE) ... </k>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <nonce> NONCE </nonce>
-           ...
-         </account>
-
-    rule <k> #load [ OP:OpCode ] => #lookupStorage ACCT W0 ... </k>
-         <id> ACCT </id>
-         <wordStack> W0 : _ </wordStack>
-      requires OP ==K SSTORE orBool OP ==K SLOAD
-
-    rule <k> #load [ OP:OpCode ] => . ... </k> [owise]
+```{.k .standalone}
+    rule <k> #load [ _OP:OpCode ] => . ... </k>
 ```
 
 ### Address Conversion
