@@ -5,9 +5,11 @@ Contained in this file is glue code needed in order to enable the ability to use
 
 ```{.k .node}
 requires "evm.md"
+requires "optimizations.md"
 
 module EVM-NODE
     imports EVM
+    imports EVM-OPTIMIZATIONS
     imports K-REFLECTION
     imports COLLECTIONS
     imports BYTES
