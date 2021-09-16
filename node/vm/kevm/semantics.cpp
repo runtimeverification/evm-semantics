@@ -20,6 +20,7 @@ std::string get_output_data(string **sptr) {
 #define HEADER(tag) ((((uint64_t)(tag)) << 32) | 1)
 
 uint64_t get_schedule(mpz_ptr number, CallContext *ctx) {
+  static uint64_t berlin_tag           = HEADER(getTagForSymbolName("LblBERLIN'Unds'EVM{}"));
   static uint64_t istanbul_tag         = HEADER(getTagForSymbolName("LblISTANBUL'Unds'EVM{}"));
   static uint64_t petersburg_tag       = HEADER(getTagForSymbolName("LblPETERSBURG'Unds'EVM{}"));
   static uint64_t constantinople_tag   = HEADER(getTagForSymbolName("LblCONSTANTINOPLE'Unds'EVM{}"));
@@ -29,7 +30,11 @@ uint64_t get_schedule(mpz_ptr number, CallContext *ctx) {
   static uint64_t homestead_tag        = HEADER(getTagForSymbolName("LblHOMESTEAD'Unds'EVM{}"));
   static uint64_t frontier_tag         = HEADER(getTagForSymbolName("LblFRONTIER'Unds'EVM{}"));
 
-  mpz_ptr blockNum = to_z(ctx->ethereumconfig().istanbulblocknumber());
+  mpz_ptr blockNum = to_z(ctx->ethereumconfig().berlinblocknumber());
+  if (mpz_cmp(number, blockNum) >= 0) {
+    return berlin_tag;
+  }
+  blockNum = to_z(ctx->ethereumconfig().istanbulblocknumber());
   if (mpz_cmp(number, blockNum) >= 0) {
     return istanbul_tag;
   }
