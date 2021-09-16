@@ -73,5 +73,5 @@ input_data unpack_input(bool iscreate, std::string data) {
   return res;
 }
 
-uint32_t kcellInjTag = getTagForSymbolName("inj{SortEthereumSimulation{}, SortKItem{}}");
+uint32_t zinjTag = getTagForSymbolName("inj{SortInt{}, SortKItem{}}");
 uint32_t unparseByteStack = getTagForSymbolName("LblunparseByteStack{}");

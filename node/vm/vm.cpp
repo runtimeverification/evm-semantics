@@ -60,30 +60,29 @@ void k_to_log(struct log* log, LogEntry *pb) {
   pb->set_data(std::string(token->data, len(token)));
 }
 
-extern uint32_t kcellInjTag;
-
-block* make_k_cell(bool iscreate, mpz_ptr to, mpz_ptr from, string *code, block *args, mpz_ptr value, mpz_ptr gasprice, mpz_ptr gas, mpz_ptr beneficiary, mpz_ptr difficulty, mpz_ptr number, mpz_ptr gaslimit, mpz_ptr timestamp, string *function) {
-  kcellinj *inj = (kcellinj *)koreAlloc(sizeof(kcellinj));
-  inj->h = getBlockHeaderForSymbol(kcellInjTag);
-  kcell* runvm = (kcell *)koreAlloc(sizeof(kcell));
-  inj->data = runvm;
+inj* make_runvm(bool iscreate, mpz_ptr to, mpz_ptr from, string *code, block *args, mpz_ptr value, mpz_ptr gasprice, mpz_ptr gas, mpz_ptr beneficiary, mpz_ptr difficulty, mpz_ptr number, mpz_ptr gaslimit, mpz_ptr timestamp, string *function) {
+  inj *kinj = (inj *)koreAlloc(sizeof(inj));
+  static uint32_t tag = getTagForSymbolName("inj{SortEthereumSimulation{}, SortKItem{}}");
+  kinj->h = getBlockHeaderForSymbol(tag);
+  runvm* runvmsymbol = (runvm *)koreAlloc(sizeof(runvm));
+  kinj->data = (block *)runvmsymbol;
   static uint32_t tag2 = getTagForSymbolName("LblrunVM{}");
-  runvm->h = getBlockHeaderForSymbol(tag2);
-  runvm->iscreate = iscreate;
-  runvm->to = to;
-  runvm->from = from;
-  runvm->code = code;
-  runvm->args = args;
-  runvm->value = value;
-  runvm->gasprice = gasprice;
-  runvm->gas = gas;
-  runvm->beneficiary = beneficiary;
-  runvm->difficulty = difficulty;
-  runvm->number = number;
-  runvm->gaslimit = gaslimit;
-  runvm->timestamp = timestamp;
-  runvm->function = function;
-  return (block*)inj;
+  runvmsymbol->h = getBlockHeaderForSymbol(tag2);
+  runvmsymbol->iscreate = iscreate;
+  runvmsymbol->to = to;
+  runvmsymbol->from = from;
+  runvmsymbol->code = code;
+  runvmsymbol->args = args;
+  runvmsymbol->value = value;
+  runvmsymbol->gasprice = gasprice;
+  runvmsymbol->gas = gas;
+  runvmsymbol->beneficiary = beneficiary;
+  runvmsymbol->difficulty = difficulty;
+  runvmsymbol->number = number;
+  runvmsymbol->gaslimit = gaslimit;
+  runvmsymbol->timestamp = timestamp;
+  runvmsymbol->function = function;
+  return kinj;
 }
 
 bool storage_is_modified(mpz_ptr acctID, map* storage) {
@@ -210,7 +209,7 @@ CallResult run_transaction(CallContext ctx) {
   chainidinj->h = injHeaderInt;
   chainidinj->data = chainid_z;
 
-  block* inj = make_k_cell(iscreate, to, from, in.code, in.args, value, gasprice, gas, beneficiary, difficulty, number, gaslimit, move_int(timestamp), in.function);
+  block* inj = make_runvm(iscreate, to, from, in.code, in.args, value, gasprice, gas, beneficiary, difficulty, number, gaslimit, move_int(timestamp), in.function);
 
   map withSched = hook_MAP_element(configvar("$SCHEDULE"), (block *)scheduleinj);
   map withMode = hook_MAP_update(&withSched, configvar("$MODE"), (block *)modeinj);

@@ -48,6 +48,7 @@ struct tx_result {
 
 std::string get_output_data(string**);
 
+extern uint32_t zinjTag;
 extern uint32_t unparseByteStack;
 
 #define logData(log) log->data

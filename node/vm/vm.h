@@ -30,7 +30,7 @@ struct accounts {
   map data;
 };
 
-struct kcell {
+struct runvm {
   blockheader h;
   bool iscreate;
   mpz_ptr to;
@@ -48,9 +48,17 @@ struct kcell {
   string* function;
 };
 
-struct kcellinj {
+struct accesslist {
   blockheader h;
-  kcell* data;
+  set addresses;
+  set storage;
+  runvm* runvm;
+};
+
+struct storageloc {
+  blockheader h;
+  mpz_ptr address;
+  mpz_ptr location;
 };
 
 #endif
