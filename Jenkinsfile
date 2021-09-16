@@ -22,7 +22,7 @@ pipeline {
         }
       }
       stages {
-        stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
+        stage('Build') { steps { sh 'make build build-provex RELEASE=true -j6' } }
         stage('Test') {
           failFast true
           options { timeout(time: 120, unit: 'MINUTES') }
