@@ -1,5 +1,5 @@
 pipeline {
-  agent { label 'docker' }
+  agent { label 'docker && big' }
   environment {
     GITHUB_TOKEN     = credentials('rv-jenkins-access-token')
     VERSION          = '1.0.1'
