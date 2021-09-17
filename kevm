@@ -125,6 +125,7 @@ run_prove() {
 
     kprove=kprove
     proof_args=(--directory "${backend_dir}" "${run_file}")
+    proof_args+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
 
     ! ${provex} || kprove=kprovex
       ${provex} || proof_args+=(--def-module "$verif_module")
