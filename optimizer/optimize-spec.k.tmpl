@@ -1,9 +1,10 @@
-requires "lemmas/mcd/verification.k"
+requires "lemmas/infinite-gas.k"
 
 module OPTIMIZE
     imports INT
-    imports LEMMAS-MCD
+    imports EVM-OPTIMIZATIONS-LEMMAS
     imports EVM
+    imports INFINITE-GAS
 endmodule
 
 module {MODULE}-SPEC

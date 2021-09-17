@@ -43,7 +43,7 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps k-deps plugin-deps libsecp256k1 libff                                                                               \
-        build build-java build-haskell build-llvm                                                                                \
+        build build-java build-haskell build-llvm build-provex                                                                   \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
         test-prove test-failing-prove                                                                                            \
@@ -401,12 +401,12 @@ tests/specs/%.provex: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/
 	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS)        \
 	    --provex --backend-dir tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
-tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt
-	$(KOMPILE) --backend $(TEST_SYMBOLIC_BACKEND) $<                                                 \
-	    --directory tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND) \
-	    --main-module $(KPROVE_MODULE)                                                               \
-	    --syntax-module $(KPROVE_MODULE)                                                             \
-	    --concrete-rules-file tests/specs/$(firstword $(subst /, ,$*))/concrete-rules.txt            \
+tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes) 
+	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                 \
+	    --directory tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
+	    --main-module $(KPROVE_MODULE)                                                                  \
+	    --syntax-module $(KPROVE_MODULE)                                                                \
+	    --concrete-rules-file tests/specs/$(firstword $(subst /, ,$*))/concrete-rules.txt               \
 	    $(KOMPILE_OPTS)
 
 tests/%.search: tests/%
@@ -466,6 +466,37 @@ prove_bihu_tests         := $(filter-out $(prove_failing_tests), $(wildcard $(pr
 prove_examples_tests     := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k) $(wildcard $(prove_specs_dir)/examples/*-spec.md))
 prove_mcd_tests          := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
 prove_optimization_tests := $(filter-out $(prove_failing_tests), tests/specs/opcodes/evm-optimizations-spec.md)
+
+## best-effort list of provex kompiled definitions to produce ahead of time
+provex_definitions :=                                                                                              \
+                      tests/specs/benchmarks/functional-spec/haskell/functional-spec-kompiled/timestamp            \
+                      tests/specs/benchmarks/functional-spec/java/functional-spec-kompiled/timestamp               \
+                      tests/specs/benchmarks/verification/haskell/verification-kompiled/timestamp                  \
+                      tests/specs/benchmarks/verification/java/verification-kompiled/timestamp                     \
+                      tests/specs/bihu/functional-spec/haskell/functional-spec-kompiled/timestamp                  \
+                      tests/specs/bihu/functional-spec/java/functional-spec-kompiled/timestamp                     \
+                      tests/specs/bihu/verification/haskell/verification-kompiled/timestamp                        \
+                      tests/specs/bihu/verification/java/verification-kompiled/timestamp                           \
+                      tests/specs/erc20/verification/haskell/verification-kompiled/timestamp                       \
+                      tests/specs/erc20/verification/java/verification-kompiled/timestamp                          \
+                      tests/specs/examples/solidity-code-spec/haskell/solidity-code-spec-kompiled/timestamp        \
+                      tests/specs/examples/solidity-code-spec/java/solidity-code-spec-kompiled/timestamp           \
+                      tests/specs/examples/sum-to-n-spec/haskell/sum-to-n-spec-kompiled/timestamp                  \
+                      tests/specs/examples/sum-to-n-spec/java/sum-to-n-spec-kompiled/timestamp                     \
+                      tests/specs/functional/infinite-gas-spec/haskell/infinite-gas-spec-kompiled/timestamp        \
+                      tests/specs/functional/lemmas-no-smt-spec/haskell/lemmas-no-smt-spec-kompiled/timestamp      \
+                      tests/specs/functional/lemmas-no-smt-spec/java/lemmas-no-smt-spec-kompiled/timestamp         \
+                      tests/specs/functional/lemmas-spec/haskell/lemmas-spec-kompiled/timestamp                    \
+                      tests/specs/functional/lemmas-spec/java/lemmas-spec-kompiled/timestamp                       \
+                      tests/specs/functional/merkle-spec/haskell/merkle-spec-kompiled/timestamp                    \
+                      tests/specs/functional/storageRoot-spec/haskell/storageRoot-spec-kompiled/timestamp          \
+                      tests/specs/mcd/functional-spec/haskell/functional-spec-kompiled/timestamp                   \
+                      tests/specs/mcd/functional-spec/java/functional-spec-kompiled/timestamp                      \
+                      tests/specs/mcd/verification/haskell/verification-kompiled/timestamp                         \
+                      tests/specs/mcd/verification/java/verification-kompiled/timestamp                            \
+                      tests/specs/opcodes/evm-optimizations-spec/haskell/evm-optimizations-spec-kompiled/timestamp \
+                      tests/specs/opcodes/verification/java/verification-kompiled/timestamp
+build-provex: $(provex_definitions)
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
 test-prove-benchmarks:    $(prove_benchmarks_tests:=.provex)
