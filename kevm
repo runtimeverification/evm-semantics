@@ -136,8 +136,9 @@ run_prove() {
     haskell_backend_command=(kore-exec)
 
     case "${backend}" in
-        haskell) ! ${bug_report} || haskell_backend_command+=(--bug-report "${bug_report_name}")
-                 ! ${profile}    || haskell_backend_command+=(+RTS -l -ol${eventlog_name} -RTS)
+        haskell) ! ${bug_report}                 || haskell_backend_command+=(--bug-report "${bug_report_name}")
+                 ! ${profile}                    || haskell_backend_command+=(+RTS -l -ol${eventlog_name} -RTS)
+                 [[ -z ${max_counterexamples} ]] || haskell_backend_command+=(--max-counterexamples ${max_counterexamples})
 
                  ! ${debugger}                              || proof_args+=(--debugger)
                  [[ ${#haskell_backend_command[@]} -le 1 ]] || proof_args+=(--haskell-backend-command "${haskell_backend_command[*]}")
@@ -313,6 +314,7 @@ concrete_rules_file=
 provex=false
 verif_module=VERIFICATION
 pyk_minimize=false
+max_counterexamples=
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 kevm_port='8545'
@@ -335,6 +337,7 @@ while [[ $# -gt 0 ]]; do
         --provex)              provex=true               ; shift   ;;
         --verif-module)        verif_module="$2"         ; shift 2 ;;
         --pyk-minimize)        pyk_minimize=true         ; shift   ;;
+        --max-counterexamples) max_counterexamples="$2"  ; shift 2 ;;
         --mode)                mode="$2"                 ; shift 2 ;;
         --schedule)            schedule="$2"             ; shift 2 ;;
         --chainid)             chainid="$2"              ; shift 2 ;;
