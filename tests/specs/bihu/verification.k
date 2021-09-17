@@ -28,12 +28,23 @@ module VERIFICATION
 
     rule chop(I1 -Int I2) => I1 -Int I2 requires #rangeUInt(256, I1) andBool #rangeUInt(256, I2) andBool I2 <=Int I1 [simplification]
 
-    rule chop(I1 +Int (I2 -Int I3)) => I1 +Int (I2 -Int I3)
-      requires  0 <=Int I2
-       andBool I2  <Int pow256
-       andBool  0 <=Int I3
+//    rule chop(I1 +Int (I2 -Int I3)) => I1 +Int (I2 -Int I3)
+//      requires  0 <=Int I2
+//       andBool I2  <Int pow256
+//       andBool  0 <=Int I3
+//       andBool I1 <=Int I3
+//       andBool I2 >=Int I3
+//      [simplification]
+
+//    I1 == ((((RPOWER *Int 10) /Int 100) *Int ((NOW -Int START) modInt 31536000)) /Int 31536000)
+//    I2 == (COLLECTED +Int BAL)
+//    I3 == RPOWER
+    rule chop(((I1 +Int COLLECTED) +Int BAL) -Int I3) => I1 +Int ((COLLECTED +Int BAL) -Int I3)
+      requires 0 <=Int (COLLECTED +Int BAL)
+       andBool (COLLECTED +Int BAL) <Int pow256
+       andBool 0 <=Int I3
        andBool I1 <=Int I3
-       andBool I2 >=Int I3
+       andBool I3 <=Int (COLLECTED +Int BAL)
       [simplification]
 
   // ########################
