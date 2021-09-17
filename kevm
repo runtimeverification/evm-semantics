@@ -343,7 +343,7 @@ while [[ $# -gt 0 ]]; do
         --provex)              provex=true               ; shift   ;;
         --verif-module)        verif_module="$2"         ; shift 2 ;;
         --pyk-minimize)        pyk_minimize=true         ; shift   ;;
-        --pyk-omit-labels)     pyk_omit_labels="$2"       ; shift 2 ;;
+        --pyk-omit-labels)     pyk_omit_labels="$2"      ; shift 2 ;;
         --max-counterexamples) max_counterexamples="$2"  ; shift 2 ;;
         --mode)                mode="$2"                 ; shift 2 ;;
         --schedule)            schedule="$2"             ; shift 2 ;;
