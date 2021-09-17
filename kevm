@@ -115,7 +115,8 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir proof_args haskell_backend_command bug_report_name eventlog_name kprove omit_cells omit_labels klab_log
+    local def_module run_dir proof_args haskell_backend_command bug_report_name \
+          eventlog_name kprove omit_cells omit_labels klab_log pyk_args
 
     check_k_install
 
@@ -135,8 +136,9 @@ run_prove() {
     haskell_backend_command=(kore-exec)
 
     case "${backend}" in
-        haskell) ! ${bug_report} || haskell_backend_command+=(--bug-report "${bug_report_name}")
-                 ! ${profile}    || haskell_backend_command+=(+RTS -l -ol${eventlog_name} -RTS)
+        haskell) ! ${bug_report}                 || haskell_backend_command+=(--bug-report "${bug_report_name}")
+                 ! ${profile}                    || haskell_backend_command+=(+RTS -l -ol${eventlog_name} -RTS)
+                 [[ -z ${max_counterexamples} ]] || haskell_backend_command+=(--max-counterexamples ${max_counterexamples})
 
                  ! ${debugger}                              || proof_args+=(--debugger)
                  [[ ${#haskell_backend_command[@]} -le 1 ]] || proof_args+=(--haskell-backend-command "${haskell_backend_command[*]}")
@@ -162,7 +164,13 @@ run_prove() {
         timeout -s INT "${profile_timeout}" ${kprove} "${proof_args[@]}" "$@" || true
         kore-prof "${eventlog_name}" ${kore_prof_args} > "${eventlog_name}.json"
     else
-        ${kprove} "${proof_args[@]}" "$@"
+        if ${pyk_minimize}; then
+            pyk_args=(${backend_dir}/*-kompiled minimize /dev/stdin)
+            [[ -z "${pyk_omit_labels}" ]] || pyk_args+=(--omit-labels "${pyk_omit_labels}")
+            ${kprove} "${proof_args[@]}" "$@" --output json | kpyk "${pyk_args[@]}"
+        else
+            ${kprove} "${proof_args[@]}" "$@"
+        fi
     fi
 }
 
@@ -273,6 +281,9 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--kore-prof-args \"<kore-prof arg>*\"]
                                       [--provex]
                                       [--verif-module <verification_module>]
+                                      [--pyk-minimize]
+                                      [--pyk-omit-labels <comma_separated_labels>]
+                                      [--max-counterexamples <number_counterexamples>]
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <kore-prof arg> is an argument you want to pass to kore-prof.
@@ -307,6 +318,9 @@ chainid=1
 concrete_rules_file=
 provex=false
 verif_module=VERIFICATION
+pyk_minimize=false
+pyk_omit_labels=
+max_counterexamples=
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 kevm_port='8545'
@@ -328,6 +342,9 @@ while [[ $# -gt 0 ]]; do
         --concrete-rules-file) concrete_rules_file="$2"  ; shift 2 ;;
         --provex)              provex=true               ; shift   ;;
         --verif-module)        verif_module="$2"         ; shift 2 ;;
+        --pyk-minimize)        pyk_minimize=true         ; shift   ;;
+        --pyk-omit-labels)     pyk_omit_labels="$2"      ; shift 2 ;;
+        --max-counterexamples) max_counterexamples="$2"  ; shift 2 ;;
         --mode)                mode="$2"                 ; shift 2 ;;
         --schedule)            schedule="$2"             ; shift 2 ;;
         --chainid)             chainid="$2"              ; shift 2 ;;
@@ -340,9 +357,15 @@ done
 [[ "${#args[@]}" -le 0 ]] || set -- "${args[@]}"
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
-! $profile  || [[ "$backend" == haskell ]] || fatal "Option --profile only usable with --backend haskell!"
-[[ $profile_timeout = "0" ]] || $profile   || fatal "Option --profile-timeout only usable with --profile!"
-[[ $kore_prof_args = "" ]]   || $profile   || fatal "Option --kore-prof-args only usable with --profile!"
+! $profile  || [[ "$backend" == haskell ]]         || fatal "Option --profile only usable with --backend haskell!"
+[[ $profile_timeout = "0" ]] || $profile           || fatal "Option --profile-timeout only usable with --profile!"
+[[ $kore_prof_args = "" ]]   || $profile           || fatal "Option --kore-prof-args only usable with --profile!"
+if ${pyk_minimize}; then
+    ! ${debugger} || fatal "Option --pyk-minimize not usable with --debugger!"
+    ! ${profile}  || fatal "Option --pyk-minimize not usable with --profile!"
+elif [[ ! -z ${pyk_omit_labels} ]]; then
+    fatal "Option --pyk-label-omit only usable with --pyk-minimize!"
+fi
 
 # get the run file
 run_file="$1" ; shift
