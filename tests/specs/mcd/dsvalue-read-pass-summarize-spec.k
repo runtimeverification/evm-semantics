@@ -121,7 +121,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
           <id> ACCT_ID </id>
           <program> DSValue_bin_runtime </program>
           <jumpDests> #computeValidJumpDests(DSValue_bin_runtime) </jumpDests>
-          <callData> #abiCallData("read", .TypedArgs) ++ CD => ?_ </callData>
+          <callData> #abiCallData("read", .TypedArgs) ++ _CD => ?_ </callData>
           <callValue> 0 </callValue>                                            // from counterexample
           <gas> #gas(VGas) => #gas(VGas +Int -2043) </gas>                      // from counterexample
           <pc> 0 => ?_ </pc>
