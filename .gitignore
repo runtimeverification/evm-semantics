@@ -2,6 +2,7 @@
 .kompile*
 .kprove*
 .krun*
+.kevm*
 /media/*.pdf
 /package/pkg
 /package/src
