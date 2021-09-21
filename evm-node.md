@@ -13,6 +13,10 @@ module EVM-NODE
     imports K-REFLECTION
     imports COLLECTIONS
     imports BYTES
+
+  configuration
+    <kevm/>
+    <loaded> false </loaded>
 ```
 
 ### State loading operations.
@@ -28,18 +32,32 @@ Because the same account may be loaded more than once, implementations of this i
 ```{.k .node}
     syntax InternalOp ::= "#load" "[" OpCode "]"
  // --------------------------------------------
-    rule <k> #next [ OP ]
-          => #if isAddr1Op(OP) orBool isAddr2Op(OP) #then #addr [ OP ] #else . #fi
-          ~> #load [ OP ]
-          ~> #exec [ OP ]
-          ~> #pc   [ OP ]
+    rule <k> (. => #load [ OP ]) ~> #next [ OP ] ... </k>
+         <loaded> false => true </loaded>
+      [priority(35)]
+
+    rule <k> #execute ... </k>
+         <loaded> true => false </loaded>
+      [priority(35)]
+```
+
+-   `CREATE2` is a special case
+Note that we cannot execute #loadAccount during the #load phase earlier because gas will not yet
+have been paid, and it may be to expensive to compute the hash of the init code.
+
+```{.k .node}
+    rule <k> #gas [ CREATE2, _ ] ... </k>
+         <loaded> true => false </loaded>
+      [priority(35)]
+
+    rule <k> (. => #loadAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)))
+          ~> CREATE2 VALUE MEMSTART MEMWIDTH SALT
          ...
          </k>
-         <wordStack> WS </wordStack>
-         <static> STATIC:Bool </static>
-      requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
-       andBool notBool ( STATIC andBool #changesState(OP, WS) )
-    [priority(35)]
+         <id> ACCT </id>
+         <localMem> LM </localMem>
+         <loaded> false => true </loaded>
+      [priority(35)]
 ```
 
 ```{.k .node}
@@ -190,32 +208,10 @@ This minimizes the amount of information which must be stored in the configurati
 ```
 
 ```{.k .node}
-    rule <k> EXTCODEHASH ACCT => HASH ~> #push ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <code> #unloaded(HASH) </code>
-           ...
-         </account>
+    rule keccak({#unloaded(HASH)}:>ByteArray) => HASH
 ```
 
 ### Transaction Execution
-
--   `CREATE2` needs to be modified for the node
-Note that we cannot execute #loadAccount during the #load phase earlier because gas will not yet
-have been paid, and it may be to expensive to compute the hash of the init code.
-
-```{.k .node}
-    rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
-          => #loadAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
-          ~> #checkCall ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
-          ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
-         ...
-         </k>
-         <id> ACCT </id>
-         <localMem> LM </localMem>
-    [priority(35)]
-```
 
 -   `runVM` takes all the input state of a transaction and the current block header and executes the transaction according to the specified state, relying on the above loading operations for access to accounts and block hashes.
     The signature of this function must match the signature expected by VM.ml in the blockchain-k-plugin.
