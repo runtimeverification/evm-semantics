@@ -9,7 +9,7 @@ list(APPEND CMAKE_MODULE_PATH "${K_LIB}/cmake/kframework")
 include(LLVMKompilePrelude)
 project (KevmVm CXX)
 
-set(KOMPILED_DIR $ENV{KEVM_LIB}/$ENV{node_dir}/$ENV{node_main_filename}-kompiled)
+set(KOMPILED_DIR $ENV{KEVM_LIB_ABS}/$ENV{node_dir}/$ENV{node_main_filename}-kompiled)
 set(KOMPILE_USE_MAIN "library")
 set(TARGET_NAME "kevm-vm")
 
@@ -38,7 +38,7 @@ target_include_directories(kevm-vm
 	PUBLIC $ENV{NODE_DIR}/vm
 	PUBLIC $ENV{NODE_DIR}/vm/kevm
 	PUBLIC ${CMAKE_SOURCE_DIR}/..
-	PUBLIC $ENV{KEVM_LIB}/libff/include
+	PUBLIC $ENV{KEVM_LIB_ABS}/libff/include
 	PUBLIC ${K_LIB}/../include/kllvm)
 target_compile_options(kevm-vm
 	PUBLIC $ENV{LLVM_KOMPILE_OPTS}

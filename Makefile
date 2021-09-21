@@ -4,7 +4,7 @@
 UNAME_S := $(shell uname -s)
 
 DEPS_DIR      := deps
-BUILD_DIR     := $(abspath .build)
+BUILD_DIR     := .build
 NODE_DIR      := $(abspath node)
 SUBDEFN_DIR   := .
 DEFN_BASE_DIR := $(BUILD_DIR)/defn
@@ -24,17 +24,18 @@ KEVM_LIB     := $(BUILD_DIR)$(INSTALL_LIB)
 KEVM_INCLUDE := $(KEVM_LIB)/include
 KEVM_K_BIN   := $(KEVM_LIB)/kframework/bin
 KEVM         := kevm
-export KEVM_LIB
+KEVM_LIB_ABS := $(abspath $(KEVM_LIB))
+export KEVM_LIB_ABS
 
 KEVM_VERSION     ?= 1.0.1
 KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
 
 K_SUBMODULE := $(DEPS_DIR)/k
 
-LIBRARY_PATH       := $(LOCAL_LIB):$(KEVM_LIB)/libff/lib
+LIBRARY_PATH       := $(LOCAL_LIB):$(KEVM_LIB_ABS)/libff/lib
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
-PATH               := $(KEVM_BIN):$(KEVM_K_BIN):$(PATH)
+PATH               := $(abspath $(KEVM_BIN)):$(abspath $(KEVM_K_BIN)):$(PATH)
 
 export LIBRARY_PATH
 export C_INCLUDE_PATH
@@ -103,7 +104,7 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                                     \
 	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
 	    && make -s -j4                                                                                          \
-	    && make install DESTDIR=$(BUILD_DIR)
+	    && make install DESTDIR=$(CURDIR)/$(BUILD_DIR)
 
 $(protobuf_out): $(NODE_DIR)/proto/msg.proto
 	@mkdir -p $(LOCAL_LIB)/proto
@@ -134,8 +135,8 @@ endif
 
 k-deps:
 	cd $(K_SUBMODULE)                                                                                                                                                                            \
-	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
-	    && DESTDIR=$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/kframework package/package
+	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
+	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/kframework package/package
 
 plugin_include    := $(KEVM_LIB)/blockchain-k-plugin/include
 plugin_k          := krypto.md
