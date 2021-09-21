@@ -29,6 +29,26 @@ message CallContext {
     EthereumConfig ethereumConfig = 8;
     IeleConfig ieleConfig = 9;
   }
+
+  // Support for typed transactions specified by EIP-2718
+  enum TxType {
+    LEGACY     = 0;
+    ACCESSLIST = 1;
+  }
+  TxType txType = 10;
+  oneof extraData {
+    AccessListData accessList = 11;
+  }
+}
+
+message AccessListData {
+  repeated bytes addresses = 1;
+  repeated StorageEntry storageLocations = 2;
+}
+
+message StorageEntry {
+  bytes address = 1;
+  bytes storageLocation = 2;
 }
 
 message BlockHeader {
@@ -49,9 +69,10 @@ message EthereumConfig {
   bytes constantinopleBlockNumber = 7;
   bytes petersburgBlockNumber = 8;
   bytes istanbulBlockNumber = 9;
-  bytes maxCodeSize = 10;
-  bytes accountStartNonce = 11;
-  bytes chainId = 12;
+  bytes berlinBlockNumber = 10;
+  bytes maxCodeSize = 11;
+  bytes accountStartNonce = 12;
+  bytes chainId = 13;
 }
 
 message IeleConfig {
@@ -107,6 +128,7 @@ message CallResult {
   // touchedAccounts is specific Ethereum's EIP-161. VMs that do not follow these rules may ignore this field
   repeated bytes touchedAccounts = 8;
   repeated LogEntry logs = 9;
+  AccessListData accessList = 10;
 }
 
 message ModifiedAccount {
