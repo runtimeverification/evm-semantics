@@ -337,7 +337,7 @@ build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py $(lemma_
 build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_LIB)/kast-json.py $(lemma_includes)
 build-node:    $(KEVM_LIB)/$(node_kompiled)
-build-kevm:    $(KEVM_BIN)/kevm
+build-kevm:    $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
