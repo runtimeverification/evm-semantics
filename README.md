@@ -59,12 +59,12 @@ For the exact dependencies check the Dockerfile.
 On Ubuntu >= 18.04 (for example):
 
 ```sh
-sudo apt-get install --yes                                                       \
-            autoconf bison clang-10 cmake curl flex gcc jq libboost-test-dev     \
-            libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev \
-            libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev        \
-            lld-10 llvm-10-tools make maven netcat-openbsd openjdk-11-jdk        \
-            pkg-config python3 python-pygments rapidjson-dev time z3 zlib1g-dev
+sudo apt-get install --yes                                                             \
+            autoconf bison clang-10 cmake curl flex gcc jq libboost-test-dev           \
+            libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev       \
+            libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-10       \
+            llvm-10-tools make maven netcat-openbsd openjdk-11-jdk pkg-config          \
+            protobuf-compiler python3 python-pygments rapidjson-dev time z3 zlib1g-dev
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
@@ -81,7 +81,7 @@ On ArchLinux:
 sudo pacman -S                                               \
     base base-devel boost clang cmake crypto++ curl git gmp  \
     gflags jdk-openjdk jemalloc libsecp256k1 lld llvm maven  \
-    mpfr python stack yaml-cpp z3 zlib
+    mpfr protobuf python stack yaml-cpp z3 zlib
 ```
 
 #### MacOS
@@ -91,12 +91,12 @@ On OSX, using [Homebrew](https://brew.sh/), after installing the command line to
 ```sh
 brew tap homebrew/cask
 brew install --cask java
-brew install automake libtool gmp mpfr pkg-config maven z3 libffi openssl python
+brew install automake libtool gmp mpfr pkg-config maven z3 libffi openssl protobuf python
 make libsecp256k1
 ```
 
-**NOTE**: a previous version of these instructions required the user to run `brew link flex --force`.
-After fetching this revision, you should first run `brew unlink flex`, as it is no longer necessary and will cause an error if you have the homebrew version of flex installed instead of the xcode command line tools version.
+**NOTE**: Previous versions of these instructions required the user to use either the homebrew version of `flex` or the xcode command line tools version, with the wrong option giving an error.
+The current recommendation is to use the homebrew version.
 
 #### Haskell Stack (all platforms)
 
@@ -192,13 +192,13 @@ To run proofs, you can similarly use `kevm`.
 For example, to prove one of the specifications:
 
 ```sh
-kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION
+kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --verif-module VERIFICATION
 ```
 
 You can also debug proofs interactively: 
 
 ```sh
-kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k VERIFICATION --debugger --debug-script kscript
+kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --verif-module VERIFICATION --debugger --debug-script kscript --backend haskell
 ```
 
 Here, `kscript` is a file containing `kore-repl` commands.

@@ -78,6 +78,16 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
 
     rule chop(Y) => Y +Int pow256 requires #rangeSInt(256, Y) andBool Y <Int 0 [simplification]
 
+    rule maxUInt48 &Int X <=Int maxUInt48 &Int X +Int Y => false
+      requires #rangeUInt(48, X)
+       andBool #rangeUInt(48, Y)
+       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
+
+    rule sgn(chop(X)) ==Int  1 => 0 <=Int X requires #rangeSInt(256, X) [simplification]
+    rule sgn(chop(X)) ==Int -1 => X  <Int 0 requires #rangeSInt(256, X) [simplification]
+
+    rule chop(X) ==Int 0 => X ==Int 0 requires #rangeSInt(256, X) [simplification]
+
   // ########################
   // Map
   // ########################
@@ -90,6 +100,20 @@ endmodule
 
 module LEMMAS-MCD-JAVA [symbolic, kast]
     imports LEMMAS-MCD-COMMON
+
+  // ########################
+  // Arithmetic
+  // ########################
+
+    rule X <=Int maxUInt48 &Int X +Int Y => false
+      requires #rangeUInt(48, X)
+       andBool #rangeUInt(48, Y)
+       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
+
+    rule sgn(chop(X)) ==K  1 => 0 <=Int X requires #rangeSInt(256, X) [simplification]
+    rule sgn(chop(X)) ==K -1 => X  <Int 0 requires #rangeSInt(256, X) [simplification]
+
+    rule chop(X) ==K 0 => X ==K 0 requires #rangeSInt(256, X) [simplification]
 
   // ########################
   // Range
@@ -277,8 +301,6 @@ module LEMMAS-MCD-COMMON
     // Note that this case comes from a solidity struct being accessed (hence the integer offsets), so it's an assumption built into the Solidity compiler anyway.
     rule chop(keccak(BA) +Int N) => keccak(BA) +Int N requires 0 <=Int N andBool N <Int 6 [simplification]
 
-    rule sgn(chop(X)) ==Int -1 => X <Int 0  requires #rangeSInt(256, X) [simplification]
-
     rule chop(X *Int chop(Y)) => chop(X *Int Y) [simplification]
 
     // Proof #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0
@@ -366,16 +388,10 @@ module LEMMAS-MCD-COMMON
 
     rule chop(X +Int chop(Y)) => chop(X +Int Y) [simplification]
 
-    rule maxUInt48 &Int (X +Int Y) <Int X => true requires #rangeUInt(48, X) andBool #rangeUInt(48, Y) andBool notBool (X +Int Y <Int pow48) [simplification]
-
-    // Via Z3 4.7.1:
-    // (push)
-    // (assert (not (=> (sint256 y) (= (= (sgn (chop y)) 1) (<= 0 y) ) ) ))
-    // (check-sat)
-    // (pop)
-    rule sgn(chop(Y)) ==K 1 => 0 <=Int Y requires #rangeSInt(256, Y) [simplification]
-
-    rule chop(X) ==K 0 => X ==Int 0 requires #rangeSInt(256, X) [simplification]
+    rule maxUInt48 &Int (X +Int Y) <Int X => true
+      requires #rangeUInt(48, X)
+       andBool #rangeUInt(48, Y)
+       andBool notBool (X +Int Y <Int pow48) [simplification]
 
     rule 0 <=Int X |Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
     rule 0 <=Int X &Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
