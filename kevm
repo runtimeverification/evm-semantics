@@ -139,6 +139,7 @@ run_prove() {
         haskell) ! ${bug_report}                 || haskell_backend_command+=(--bug-report "${bug_report_name}")
                  ! ${profile}                    || haskell_backend_command+=(+RTS -l -ol${eventlog_name} -RTS)
                  [[ -z ${max_counterexamples} ]] || haskell_backend_command+=(--max-counterexamples ${max_counterexamples})
+                 [[ -z ${branching_allowed}   ]] || haskell_backend_command+=(--breadth ${branching_allowed})
 
                  ! ${debugger}                              || proof_args+=(--debugger)
                  [[ ${#haskell_backend_command[@]} -le 1 ]] || proof_args+=(--haskell-backend-command "${haskell_backend_command[*]}")
@@ -156,6 +157,7 @@ run_prove() {
                      proof_args+=( --no-alpha-renaming --restore-original-names --no-sort-collections              )
                      proof_args+=( --output json                                                                   )
                  fi
+                 [[ -z ${branching_allowed} ]] || proof_args+=(--branching-allowed ${branching_allowed})
                  ;;
         *)       fatal "Unknown backend for proving! ${backend}" ;;
     esac
@@ -284,6 +286,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--pyk-minimize]
                                       [--pyk-omit-labels <comma_separated_labels>]
                                       [--max-counterexamples <number_counterexamples>]
+                                      [--branching-allowed <max_branches>]
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <kore-prof arg> is an argument you want to pass to kore-prof.
@@ -321,6 +324,7 @@ verif_module=VERIFICATION
 pyk_minimize=false
 pyk_omit_labels=
 max_counterexamples=
+branching_allowed=
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 kevm_port='8545'
@@ -345,6 +349,7 @@ while [[ $# -gt 0 ]]; do
         --pyk-minimize)        pyk_minimize=true         ; shift   ;;
         --pyk-omit-labels)     pyk_omit_labels="$2"      ; shift 2 ;;
         --max-counterexamples) max_counterexamples="$2"  ; shift 2 ;;
+        --branching-allowed)   branching_allowed="$2"    ; shift 2 ;;
         --mode)                mode="$2"                 ; shift 2 ;;
         --schedule)            schedule="$2"             ; shift 2 ;;
         --chainid)             chainid="$2"              ; shift 2 ;;
