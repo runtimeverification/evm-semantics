@@ -50,7 +50,7 @@ export PLUGIN_SUBMODULE
         deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
         build build-java build-haskell build-llvm build-provex build-node                                                        \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-kevm-vm                               \
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
         test-prove-mcd test-klab-prove                                                                                           \
@@ -585,6 +585,13 @@ test-interactive-search: $(search_tests:=.search)
 
 test-interactive-help:
 	$(KEVM) help
+
+test-kevm-vm:
+	bash -c " \
+	  kevm-vm 8888 127.0.0.1 & \
+	  netcat localhost 8888 -q 2 < tests/vm/hello_proto.bin; \
+	  sleep 1; \
+	  kill %kevm-vm"
 
 # Media
 # -----
