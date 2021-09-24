@@ -26,6 +26,15 @@ RUN    apt-get update            \
             z3                   \
             zlib1g-dev
 
+RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.12 \
+    && cd z3                                                         \
+    && python scripts/mk_make.py                                     \
+    && cd build                                                      \
+    && make -j8                                                      \
+    && make install                                                  \
+    && cd ../..                                                      \
+    && rm -rf z3
+
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 RUN    apt-get update               \
     && apt-get upgrade --yes        \
