@@ -589,7 +589,7 @@ test-interactive-help:
 test-kevm-vm:
 	bash -c " \
 	  kevm-vm 8888 127.0.0.1 & \
-	  netcat localhost 8888 -q 2 < tests/hello_proto.bin; \
+	  netcat localhost 8888 -q 2 < tests/vm/hello_proto.bin; \
 	  sleep 1; \
 	  kill %kevm-vm"
 
