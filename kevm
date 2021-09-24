@@ -115,7 +115,7 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir proof_args haskell_backend_command bug_report_name \
+    local def_module run_dir proof_args bug_report_name \
           eventlog_name kprove omit_cells omit_labels klab_log pyk_args
 
     check_k_install
@@ -132,8 +132,6 @@ run_prove() {
 
     ! ${debug}                        || proof_args+=(--debug)
     [[ ! -f ${concrete_rules_file} ]] || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
-
-    haskell_backend_command=(kore-exec)
 
     case "${backend}" in
         haskell) ! ${bug_report}                 || haskell_backend_command+=(--bug-report "${bug_report_name}")
@@ -287,6 +285,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--pyk-omit-labels <comma_separated_labels>]
                                       [--max-counterexamples <number_counterexamples>]
                                       [--branching-allowed <max_branches>]
+                                      [--haskell-backend-arg <haskell_backend_arg>]
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <kore-prof arg> is an argument you want to pass to kore-prof.
@@ -325,37 +324,38 @@ pyk_minimize=false
 pyk_omit_labels=
 max_counterexamples=
 branching_allowed=
+haskell_backend_command=(kore-exec)
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 kevm_port='8545'
 kevm_host='127.0.0.1'
 args=()
 while [[ $# -gt 0 ]]; do
-    arg="$1"
-    case $arg in
-        --debug)               debug=true ; args+=("$1") ; shift   ;;
-        --dump)                dump=true                 ; shift   ;;
-        --no-unparse)          unparse=false             ; shift   ;;
-        --debugger)            debugger=true             ; shift   ;;
-        --profile)             profile=true              ; shift   ;;
-        --profile-timeout)     profile_timeout="$2"      ; shift 2 ;;
-        --kore-prof-args)      kore_prof_args="$2"       ; shift 2 ;;
-        --bug-report)          bug_report=true           ; shift   ;;
-        --backend)             backend="$2"              ; shift 2 ;;
-        --backend-dir)         backend_dir="$2"          ; shift 2 ;;
-        --concrete-rules-file) concrete_rules_file="$2"  ; shift 2 ;;
-        --provex)              provex=true               ; shift   ;;
-        --verif-module)        verif_module="$2"         ; shift 2 ;;
-        --pyk-minimize)        pyk_minimize=true         ; shift   ;;
-        --pyk-omit-labels)     pyk_omit_labels="$2"      ; shift 2 ;;
-        --max-counterexamples) max_counterexamples="$2"  ; shift 2 ;;
-        --branching-allowed)   branching_allowed="$2"    ; shift 2 ;;
-        --mode)                mode="$2"                 ; shift 2 ;;
-        --schedule)            schedule="$2"             ; shift 2 ;;
-        --chainid)             chainid="$2"              ; shift 2 ;;
-        -p|--port)             kevm_port="$2"            ; shift 2 ;;
-        -h|--host|--hostname)  kevm_host="$2"            ; shift 2 ;;
-        *)                     args+=("$1")              ; shift   ;;
+    case "$1" in
+        --debug)               debug=true ; args+=("$1")       ; shift   ;;
+        --dump)                dump=true                       ; shift   ;;
+        --no-unparse)          unparse=false                   ; shift   ;;
+        --debugger)            debugger=true                   ; shift   ;;
+        --profile)             profile=true                    ; shift   ;;
+        --profile-timeout)     profile_timeout="$2"            ; shift 2 ;;
+        --kore-prof-args)      kore_prof_args="$2"             ; shift 2 ;;
+        --bug-report)          bug_report=true                 ; shift   ;;
+        --backend)             backend="$2"                    ; shift 2 ;;
+        --backend-dir)         backend_dir="$2"                ; shift 2 ;;
+        --concrete-rules-file) concrete_rules_file="$2"        ; shift 2 ;;
+        --provex)              provex=true                     ; shift   ;;
+        --verif-module)        verif_module="$2"               ; shift 2 ;;
+        --pyk-minimize)        pyk_minimize=true               ; shift   ;;
+        --pyk-omit-labels)     pyk_omit_labels="$2"            ; shift 2 ;;
+        --max-counterexamples) max_counterexamples="$2"        ; shift 2 ;;
+        --branching-allowed)   branching_allowed="$2"          ; shift 2 ;;
+        --haskell-backend-arg) haskell_backend_command+=("$2") ; shift 2 ;;
+        --mode)                mode="$2"                       ; shift 2 ;;
+        --schedule)            schedule="$2"                   ; shift 2 ;;
+        --chainid)             chainid="$2"                    ; shift 2 ;;
+        -p|--port)             kevm_port="$2"                  ; shift 2 ;;
+        -h|--host|--hostname)  kevm_host="$2"                  ; shift 2 ;;
+        *)                     args+=("$1")                    ; shift   ;;
     esac
 done
 
