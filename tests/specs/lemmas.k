@@ -312,4 +312,10 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule B ==Bool false => notBool B [simplification]
 
+  // ########################
+  // Memory access
+  // ########################
+
+    rule M:Memory [ S .. W1 ] [ 0 .. W2 ] => M [ S .. W2 ] requires W2 <=Int W1 [simplification]
+
 endmodule
