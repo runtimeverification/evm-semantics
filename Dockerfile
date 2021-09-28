@@ -26,7 +26,7 @@ RUN    apt-get update            \
             z3                   \
             zlib1g-dev
 
-RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.12 \
+RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.11 \
     && cd z3                                                         \
     && python scripts/mk_make.py                                     \
     && cd build                                                      \
