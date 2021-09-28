@@ -19,6 +19,7 @@ RUN    apt-get update            \
             maven                \
             netcat-openbsd       \
             pkg-config           \
+            protobuf-compiler    \
             python3              \
             python-pygments      \
             rapidjson-dev        \

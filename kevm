@@ -37,9 +37,9 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 run_kompile() {
     local kompile_opts openssl_root
 
-    kompile_opts=(  --backend "${backend}" "${run_file}"                                 )
+    kompile_opts=( "${run_file}" )
     kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
-    kompile_opts+=( --hook-namespaces "JSON KRYPTO"                                      )
+    kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN"                           )
     kompile_opts+=( --emit-json                                                          )
 
     if [[ ! -z ${concrete_rules_file} ]]; then
@@ -51,26 +51,26 @@ run_kompile() {
     fi
 
     case "${backend}" in
-        haskell) kompile_opts+=( --md-selector 'k & ! nobytes' )
-                 ;;
-        java)    kompile_opts+=( --md-selector 'k & ! bytes' )
-                 ;;
-        llvm)    kompile_opts+=( --md-selector 'k & ! nobytes'                                                 )
-                 kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
-                 kompile_opts+=( -ccopt ${plugin_include}/c/plugin_util.cpp                                    )
-                 kompile_opts+=( -ccopt ${plugin_include}/c/crypto.cpp                                         )
-                 kompile_opts+=( -ccopt ${plugin_include}/c/blake2.cpp                                         )
-                 kompile_opts+=( -ccopt -g -ccopt -std=c++14                                                   )
-                 kompile_opts+=( -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lssl -ccopt -lcrypto )
-                 if [[ "$(uname -s)" == 'Linux' ]]; then
-                     kompile_opts+=( -ccopt -lprocps )
-                 elif [[ "$(uname -s)" == 'Darwin' ]]; then
-                     openssl_root="$(brew --prefix openssl)"
-                     brew_root="$(brew --prefix)"
-                     kompile_opts+=( -ccopt -I${brew_root}/include -ccopt -L/${brew_root}/lib -ccopt -I${openssl_root}/include -ccopt -L${openssl_root}/lib )
-                     kompile_opts+=( -ccopt -I${libcryptopp_dir}/include -ccopt -L/${libcryptopp_dir}/lib )
-                 fi
-                 ;;
+        haskell)   kompile_opts+=( --md-selector 'k & ! nobytes & ! node' --backend haskell)        ;;
+        java)      kompile_opts+=( --md-selector 'k & ! bytes   & ! node' --backend java )          ;;
+        llvm)      kompile_opts+=( --md-selector 'k & ! nobytes & ! node' )                         ;;&
+        node)      kompile_opts+=( --md-selector 'k & ! nobytes & ! standalone' --no-llvm-kompile ) ;;&
+        llvm|node) kompile_opts+=( --backend llvm )
+                   kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
+                   kompile_opts+=( -ccopt ${plugin_include}/c/plugin_util.cpp                                    )
+                   kompile_opts+=( -ccopt ${plugin_include}/c/crypto.cpp                                         )
+                   kompile_opts+=( -ccopt ${plugin_include}/c/blake2.cpp                                         )
+                   kompile_opts+=( -ccopt -g -ccopt -std=c++14                                                   )
+                   kompile_opts+=( -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lssl -ccopt -lcrypto )
+                   if [[ "$(uname -s)" == 'Linux' ]]; then
+                       kompile_opts+=( -ccopt -lprocps )
+                   elif [[ "$(uname -s)" == 'Darwin' ]]; then
+                       openssl_root="$(brew --prefix openssl)"
+                       brew_root="$(brew --prefix)"
+                       kompile_opts+=( -ccopt -I${brew_root}/include -ccopt -L/${brew_root}/lib -ccopt -I${openssl_root}/include -ccopt -L${openssl_root}/lib )
+                       kompile_opts+=( -ccopt -I${libcryptopp_dir}/include -ccopt -L/${libcryptopp_dir}/lib )
+                   fi
+                   ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
     kompile "${kompile_opts[@]}" "$@"
@@ -388,12 +388,12 @@ cCHAINID_kast="#token(\"${chainid}\",\"Int\")"
 ! ${debug} || set -x
 
 case "$run_command-$backend" in
-    kompile-@(java|llvm|haskell)   ) run_kompile   "$@" ;;
-    run-@(java|llvm|haskell)       ) run_krun      "$@" ;;
-    kast-@(java|llvm|haskell)      ) run_kast      "$@" ;;
-    interpret-@(llvm|haskell|java) ) run_interpret "$@" ;;
-    prove-@(java|haskell)          ) run_prove     "$@" ;;
-    search-@(java|haskell)         ) run_search    "$@" ;;
-    klab-view-java                 ) view_klab     "$@" ;;
+    kompile-@(java|llvm|haskell|node) ) run_kompile   "$@" ;;
+    run-@(java|llvm|haskell)          ) run_krun      "$@" ;;
+    kast-@(java|llvm|haskell)         ) run_kast      "$@" ;;
+    interpret-@(llvm|haskell|java)    ) run_interpret "$@" ;;
+    prove-@(java|haskell)             ) run_prove     "$@" ;;
+    search-@(java|haskell)            ) run_search    "$@" ;;
+    klab-view-java                    ) view_klab     "$@" ;;
     *) $0 help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
