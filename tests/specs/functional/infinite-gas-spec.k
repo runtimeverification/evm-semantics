@@ -79,6 +79,9 @@ module INFINITE-GAS-SPEC
                       )
            => doneLemma(#gas(VGAS +Int -7349)) ... </k>
 
+    claim <k> runLemma(       Cgascap(ISTANBUL, #gas(VGas +Int -2924), #gas(VGas +Int -2924), Cextra(ISTANBUL, ISEMPTY, VALUE, ISWARM))  )
+           => doneLemma( #gas(Cgascap(ISTANBUL,     (VGas +Int -2924),     (VGas +Int -2924), Cextra(ISTANBUL, ISEMPTY, VALUE, ISWARM))) ) ... </k>
+
  // Infinite Gas comparisons
  // ------------------------
 
