@@ -11,6 +11,7 @@ DEFN_BASE_DIR := $(BUILD_DIR)/defn
 DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 LOCAL_LIB     := $(BUILD_LOCAL)/lib
+LOCAL_BIN     := $(BUILD_LOCAL)/bin
 export NODE_DIR
 export LOCAL_LIB
 
@@ -35,7 +36,7 @@ K_SUBMODULE := $(DEPS_DIR)/k
 LIBRARY_PATH       := $(LOCAL_LIB):$(KEVM_LIB_ABS)/libff/lib
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
-PATH               := $(abspath $(KEVM_BIN)):$(abspath $(KEVM_K_BIN)):$(PATH)
+PATH               := $(abspath $(KEVM_BIN)):$(abspath $(KEVM_K_BIN)):$(LOCAL_BIN):$(PATH)
 
 export LIBRARY_PATH
 export C_INCLUDE_PATH
@@ -587,8 +588,14 @@ test-interactive-search: $(search_tests:=.search)
 test-interactive-help:
 	$(KEVM) help
 
+proto_tester := $(LOCAL_BIN)/proto_tester
+proto-tester: $(proto_tester)
+$(proto_tester): tests/vm/proto_tester.cpp
+	@mkdir -p $(LOCAL_BIN)
+	$(CXX) -I $(LOCAL_LIB)/proto $(protobuf_out) $< -o $@ -lprotobuf
+
 node_tests:=$(wildcard tests/vm/*.bin)
-test-node: $(node_tests:=.run-node)
+test-node: $(KEVM_BIN)/kevm-vm $(proto_tester) $(node_tests:=.run-node)
 
 tests/vm/%.run-node: tests/vm/%.expected
 	bash -c " \
@@ -596,7 +603,7 @@ tests/vm/%.run-node: tests/vm/%.expected
 	  while ! netcat -z 127.0.0.1 8888; do sleep 0.1; done; \
 	  netcat -N 127.0.0.1 8888 < tests/vm/$* > tests/vm/$*.out; \
 	  kill %kevm-vm || true"
-	$(CHECK) $< tests/vm/$*.out
+	$(proto_tester) $< tests/vm/$*.out
 
 # Media
 # -----
