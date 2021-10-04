@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -euox pipefail
 shopt -s extglob
 
 notif() { echo "== $@" >&2 ; }
@@ -126,6 +126,7 @@ run_prove() {
     kprove=kprove
     proof_args=(--directory "${backend_dir}" "${run_file}")
     proof_args+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
+    proof_args+=( --profile-rule-parsing "timings/${run_file}.log" )
 
     ! ${provex} || kprove=kprovex
       ${provex} || proof_args+=(--def-module "$verif_module")

@@ -201,7 +201,7 @@ $(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
 	@mkdir -p $(dir $@)
 	install $< $@
 
-KOMPILE_OPTS = --debug -I $(INSTALL_INCLUDE)/kframework -I $(INSTALL_LIB)/blockchain-k-plugin/include/kframework
+KOMPILE_OPTS = -v --debug -I $(INSTALL_INCLUDE)/kframework -I $(INSTALL_LIB)/blockchain-k-plugin/include/kframework
 
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
@@ -377,7 +377,7 @@ KEVM_CHAINID  := 1
 KPROVE_MODULE  = VERIFICATION
 KPROVE_FILE    = verification
 KPROVE_EXT     = k
-KPROVE_OPTS   ?=
+KPROVE_OPTS   ?= -v --dry-run
 
 KEEP_OUTPUTS := false
 
