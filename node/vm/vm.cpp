@@ -45,6 +45,9 @@ std::vector<account *> k_to_accts(map* m) {
      account* elem = (account*) hook_LIST_get_long(&l, i);
      result.push_back(elem);
   }
+  std::sort(result.begin(), result.end(), [](account *a, account *b) {
+    return mpz_cmp(a->acctID->data, b->acctID->data) < 0;
+  });
   return result;
 }
 
@@ -132,8 +135,14 @@ block* make_accesslist(AccessListData accessList, runvm *runvmsymbol) {
 
 bool storage_is_modified(mpz_ptr acctID, map* storage) {
   list keys = hook_MAP_keys_list(storage);
+  std::vector<zinj *> sorted_keys;
   for (size_t i = 0; i < hook_LIST_size_long(&keys); i++) {
-    zinj* key = (zinj*)hook_LIST_get_long(&keys, i);
+     sorted_keys.push_back((zinj *)hook_LIST_get_long(&keys, i));
+  }
+  std::sort(sorted_keys.begin(), sorted_keys.end(), [](zinj *a, zinj *b) {
+    return mpz_cmp(a->data, b->data) < 0;
+  });
+  for (zinj *key : sorted_keys) {
     zinj* value = (zinj*)hook_MAP_lookup(storage, (block*)key);
     if (mpz_cmp(hook_BLOCKCHAIN_getStorageData(acctID, key->data), value->data) != 0) {
       return true;
@@ -200,8 +209,14 @@ void k_to_mod_acct(account* acct, ModifiedAccount* mod_acct) {
   }
   map* storage = &acct->storage->data;
   list keys = hook_MAP_keys_list(storage);
+  std::vector<zinj *> sorted_keys;
   for (size_t i = 0; i < hook_LIST_size_long(&keys); i++) {
-    zinj* key = (zinj*)hook_LIST_get_long(&keys, i);
+    sorted_keys.push_back((zinj *)hook_LIST_get_long(&keys, i));
+  }
+  std::sort(sorted_keys.begin(), sorted_keys.end(), [](zinj *a, zinj *b) {
+    return mpz_cmp(a->data, b->data) < 0;
+  });
+  for (zinj *key : sorted_keys) {
     zinj* value = (zinj*)hook_MAP_lookup(storage, (block*)key);
     if (mpz_cmp(hook_BLOCKCHAIN_getStorageData(acct->acctID->data, key->data), value->data) != 0) {
       StorageUpdate *update = mod_acct->add_storageupdates();
