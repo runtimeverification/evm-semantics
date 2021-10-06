@@ -592,7 +592,7 @@ proto_tester := $(LOCAL_BIN)/proto_tester
 proto-tester: $(proto_tester)
 $(proto_tester): tests/vm/proto_tester.cpp
 	@mkdir -p $(LOCAL_BIN)
-	$(CXX) -I $(LOCAL_LIB)/proto $(protobuf_out) $< -o $@ -lprotobuf
+	$(CXX) -I $(LOCAL_LIB)/proto $(protobuf_out) $< -o $@ -lprotobuf -lpthread
 
 node_tests:=$(wildcard tests/vm/*.bin)
 test-node: $(KEVM_BIN)/kevm-vm $(proto_tester) $(node_tests:=.run-node)
