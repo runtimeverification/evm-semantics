@@ -595,9 +595,9 @@ $(proto_tester): tests/vm/proto_tester.cpp
 	$(CXX) -I $(LOCAL_LIB)/proto $(protobuf_out) $< -o $@ -lprotobuf -lpthread
 
 node_tests:=$(wildcard tests/vm/*.bin)
-test-node: $(KEVM_BIN)/kevm-vm $(proto_tester) $(node_tests:=.run-node)
+test-node: $(node_tests:=.run-node)
 
-tests/vm/%.run-node: tests/vm/%.expected
+tests/vm/%.run-node: tests/vm/%.expected $(KEVM_BIN)/kevm-vm $(proto_tester)
 	bash -c " \
 	  kevm-vm 8888 127.0.0.1 & \
 	  while ! netcat -z 127.0.0.1 8888; do sleep 0.1; done; \
