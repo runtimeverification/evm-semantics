@@ -572,13 +572,15 @@ Here we check the other post-conditions associated with an EVM test.
     syntax Bool ::= isInAccessListStorage ( Int , JSON )    [function]
                   | isInAccessList ( Account , Int , JSON ) [function]
  // ------------------------------------------------------------------
-    rule isInAccessList(_, _, [.JSONs]) => false
-    rule isInAccessList(ADDR, KEY, [[ACCT, [STRG:JSONs]],  REST]) => isInAccessListStorage (KEY, [STRG]) orBool isInAccessList(ADDR, KEY, [REST]) requires ADDR ==K #asAccount(#parseByteStackRaw(ACCT))
-    rule isInAccessList(ADDR, KEY, [[ACCT, [_STRG:JSONs]], REST]) => isInAccessList(ADDR, KEY, [REST])   requires notBool ADDR ==K #asAccount(#parseByteStackRaw(ACCT))
+    rule isInAccessList(_   , _  , [.JSONs                     ]) => false
+    rule isInAccessList(ADDR, KEY, [[ACCT, [STRG:JSONs]],  REST]) => #if   ADDR ==K #asAccount(#parseByteStackRaw(ACCT))
+                                                                     #then isInAccessListStorage (KEY, [STRG]) orBool isInAccessList(ADDR, KEY, [REST])
+                                                                     #else isInAccessList(ADDR, KEY, [REST]) #fi
 
-    rule isInAccessListStorage(_, [.JSONs]) => false
-    rule isInAccessListStorage(KEY, [SKEY, _REST]) => true requires KEY ==Int #asWord(#parseByteStackRaw(SKEY))
-    rule isInAccessListStorage(KEY, [SKEY, REST])  => isInAccessListStorage(KEY, [REST]) requires  notBool KEY ==Int #asWord(#parseByteStackRaw(SKEY))
+    rule isInAccessListStorage(_  , [.JSONs    ]) => false
+    rule isInAccessListStorage(KEY, [SKEY, REST]) => #if   KEY ==Int #asWord(#parseByteStackRaw(SKEY))
+                                                     #then true
+                                                     #else isInAccessListStorage(KEY, [REST]) #fi
 ```
 
 TODO: case with nonzero ommers.
