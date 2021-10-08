@@ -113,7 +113,7 @@ Address/Hash Helpers
       => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
 
     // Hashing for legacy transactions
-    rule #hashUnsignedTx(0, TN, TP, TG, TT, TV, TD, _CID, .JSONs)
+    rule #hashUnsignedTx(0, TN, TP, TG, TT, TV, TD, _CID, _TA)
       => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
                                       +String #rlpEncodeWord(TP)
                                       +String #rlpEncodeWord(TG)

@@ -72,7 +72,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> startTx => #finalizeBlock ... </k>
          <txPending> .List </txPending>
 
-    rule <k> startTx => loadTx(#sender(0, TN, TP, TG, TT, TV, #unparseByteStack(DATA), CID, .JSONs, TW, TR, TS)) ... </k>
+    rule <k> startTx => loadTx(#sender(TYPE, TN, TP, TG, TT, TV, #unparseByteStack(DATA), CID, TA, TW, TR, TS)) ... </k>
          <chainID> CID </chainID>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
@@ -86,25 +86,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <sigR>       TR   </sigR>
            <sigS>       TS   </sigS>
            <data>       DATA </data>
-           <txType>     0    </txType>
-           ...
-         </message>
-
-    rule <k> startTx => loadTx(#sender(1, TN, TP, TG, TT, TV, #unparseByteStack(DATA), CID, TA, TW, TR, TS)) ... </k>
-         <chainID> CID </chainID>
-         <txPending> ListItem(TXID:Int) ... </txPending>
-         <message>
-           <msgID>      TXID </msgID>
-           <txNonce>    TN   </txNonce>
-           <txGasPrice> TP   </txGasPrice>
-           <txGasLimit> TG   </txGasLimit>
-           <to>         TT   </to>
-           <value>      TV   </value>
-           <sigV>       TW   </sigV>
-           <sigR>       TR   </sigR>
-           <sigS>       TS   </sigS>
-           <data>       DATA </data>
-           <txType>     1    </txType>
+           <txType>     TYPE </txType>
            <txChainID>  CID  </txChainID>
            <txAccess>   TA   </txAccess>
            ...
