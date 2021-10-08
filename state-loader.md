@@ -207,6 +207,7 @@ The `"rlp"` key loads the block information.
     syntax EthereumCommand ::= "mkTX" Int
  // -------------------------------------
     rule <k> mkTX TXID => . ... </k>
+         <chainID> CID </chainID>
          <txOrder>   ... (.List => ListItem(TXID)) </txOrder>
          <txPending> ... (.List => ListItem(TXID)) </txPending>
          <messages>
@@ -215,6 +216,7 @@ The `"rlp"` key loads the block information.
                 <msgID>      TXID:Int </msgID>
                 <txGasPrice> 20000000000   </txGasPrice>
                 <txGasLimit> 90000         </txGasLimit>
+                <txChainID>  CID           </txChainID>
                 ...
               </message>
             )
