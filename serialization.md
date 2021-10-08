@@ -37,24 +37,20 @@ Address/Hash Helpers
     rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192))))
     rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#padToWidth(20, #asByteStack(ACCT))) +String #unparseByteStack(#padToWidth(32, #asByteStack(SALT))) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE)))))))
 
-    syntax Account ::= #sender ( Int , Int , Int , Account , Int , String , Int , ByteArray , ByteArray, Int )                  [function]
-                     | #sender ( String , Int , String , String )                                                               [function, klabel(#senderAux)]
+    syntax Account ::= #sender ( Int , Int , Int , Int , Account , Int , String , Int , JSONs , Int , ByteArray, ByteArray )    [function]
+                     | #sender ( String , Int , String , String )                                                               [function, klabel(#senderAux) ]
                      | #sender ( String )                                                                                       [function, klabel(#senderAux2)]
-                     | #sender ( Int , Int , Int , Int , Int , Account , Int , String , JSONs , Int , ByteArray, ByteArray )    [function, klabel(#senderAux3)]
  // -----------------------------------------------------------------------------------------------------------------------------------------------------------
-    rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS, _CID)
-      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, #parseByteStackRaw(DATA)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
-      requires TW ==Int 27 orBool TW ==Int 28
-
-    rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS, CID)
-      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, #parseByteStackRaw(DATA), CID))), 28 -Int (TW %Int 2), #unparseByteStack(TR), #unparseByteStack(TS))
-      requires TW ==Int CID *Int 2 +Int 35 orBool TW ==Int CID *Int 2 +Int 36
-
-    rule #sender(TYPE, CID, TN, TP, TG, TT, TV, TD, TA, TW, TR, TS)
-      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTxT1(TYPE, CID, TN, TP, TG, TT, TV, #parseByteStackRaw(TD), TA))), TW +Int 27, #unparseByteStack(TR), #unparseByteStack(TS))
+    rule #sender(_, _, _, _, _, _, _, _, _, TW => TW +Int 27, _, _)
       requires TW ==Int 0 orBool TW ==Int 1
 
-    rule #sender(_, _, _, _, _, _, _, _, _, _) => .Account [owise]
+    rule #sender(TYPE, TN, TP, TG, TT, TV, TD, CID, TA, TW, TR, TS)
+      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TYPE, TN, TP, TG, TT, TV, #parseByteStackRaw(TD), CID, TA))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+      requires TW ==Int 27 orBool TW ==Int 28
+
+    rule #sender(_TYPE, TN, TP, TG, TT, TV, TD, CID, _TA, TW, TR, TS)
+      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, #parseByteStackRaw(TD), CID))), 28 -Int (TW %Int 2), #unparseByteStack(TR), #unparseByteStack(TS))
+      requires TW ==Int CID *Int 2 +Int 35 orBool TW ==Int CID *Int 2 +Int 36
 
     rule #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
 
@@ -109,52 +105,54 @@ Address/Hash Helpers
 - `#hashUnsignedTx` Returns the hash of the rlp-encoded transaction without R S or V.
 
 ```k
-    syntax String ::= #hashSignedTx     ( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
-                    | #hashUnsignedTx   ( Int , Int , Int , Account , Int , ByteArray )                               [function]
-                    | #hashUnsignedTx   ( Int , Int , Int , Account , Int , ByteArray, Int )                          [function]
-                    | #hashUnsignedTxT1 ( Int , Int , Int , Int , Int , Account , Int , ByteArray , JSONs )           [function]
- // ----------------------------------------------------------------------------------------------------------------------------
-    rule [hashTx]: #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
-                => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
+    syntax String ::= #hashSignedTx   ( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
+                    | #hashUnsignedTx ( Int , Int , Int , Int , Account , Int , ByteArray , Int , JSONs )           [function]
+                    | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray, Int )                          [function]
+ // --------------------------------------------------------------------------------------------------------------------------
+    rule #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
+      => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
 
-    rule [hashFakeTx]: #hashUnsignedTx(TN, TP, TG, TT, TV, TD)
-                    => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
-                                                    +String #rlpEncodeWord(TP)
-                                                    +String #rlpEncodeWord(TG)
-                                                    +String #rlpEncodeAccount(TT)
-                                                    +String #rlpEncodeWord(TV)
-                                                    +String #rlpEncodeString(#unparseByteStack(TD))
-                                                  , 192
-                                                  )
-                                )
+    // Hashing for legacy transactions
+    rule #hashUnsignedTx(0, TN, TP, TG, TT, TV, TD, _CID, .JSONs)
+      => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
+                                      +String #rlpEncodeWord(TP)
+                                      +String #rlpEncodeWord(TG)
+                                      +String #rlpEncodeAccount(TT)
+                                      +String #rlpEncodeWord(TV)
+                                      +String #rlpEncodeString(#unparseByteStack(TD))
+                                    , 192
+                                    )
+                  )
 
-    rule [hashFakeTx2]: #hashUnsignedTx(TN, TP, TG, TT, TV, TD, CID)
-                     => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
-                                                     +String #rlpEncodeWord(TP)
-                                                     +String #rlpEncodeWord(TG)
-                                                     +String #rlpEncodeAccount(TT)
-                                                     +String #rlpEncodeWord(TV)
-                                                     +String #rlpEncodeString(#unparseByteStack(TD))
-                                                     +String #rlpEncodeWord(CID)
-                                                     +String #rlpEncodeString("")
-                                                     +String #rlpEncodeString("")
-                                                   , 192
-                                                   )
-                                 )
+    // Hashing for EIP-2930: Optional access lists
+    rule #hashUnsignedTx(1, TN, TP, TG, TT, TV, TD, CID, [TA])
+      => Keccak256(       #rlpEncodeBytes(1,1)
+                  +String #rlpEncodeLength(         #rlpEncodeWord(CID)
+                                            +String #rlpEncodeWord(TN)
+                                            +String #rlpEncodeWord(TP)
+                                            +String #rlpEncodeWord(TG)
+                                            +String #rlpEncodeAccount(TT)
+                                            +String #rlpEncodeWord(TV)
+                                            +String #rlpEncodeString(#unparseByteStack(TD))
+                                            +String #rlpEncodeAccessList([TA], "")
+                                          , 192
+                                          )
+                  )
 
-    rule [hashFakeTxT1]: #hashUnsignedTxT1(TYPE, CID, TN, TP, TG, TT, TV, TD, [TA])
-                      => Keccak256(       #rlpEncodeBytes(TYPE,1)
-                                  +String #rlpEncodeLength(         #rlpEncodeWord(CID)
-                                                            +String #rlpEncodeWord(TN)
-                                                            +String #rlpEncodeWord(TP)
-                                                            +String #rlpEncodeWord(TG)
-                                                            +String #rlpEncodeAccount(TT)
-                                                            +String #rlpEncodeWord(TV)
-                                                            +String #rlpEncodeString(#unparseByteStack(TD))
-                                                            +String #rlpEncodeAccessList([TA], "")
-                                                          , 192
-                                                          )
-                                  )
+    // Hashing for EIP-155: Simple replay attack protection
+    rule #hashUnsignedTx(TN, TP, TG, TT, TV, TD, CID)
+      => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
+                                      +String #rlpEncodeWord(TP)
+                                      +String #rlpEncodeWord(TG)
+                                      +String #rlpEncodeAccount(TT)
+                                      +String #rlpEncodeWord(TV)
+                                      +String #rlpEncodeString(#unparseByteStack(TD))
+                                      +String #rlpEncodeWord(CID)
+                                      +String #rlpEncodeString("")
+                                      +String #rlpEncodeString("")
+                                    , 192
+                                    )
+                  )
 ```
 
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
