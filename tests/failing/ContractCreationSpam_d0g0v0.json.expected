@@ -270,7 +270,7 @@
             [ .JSONs ]
           </txAccess>
           <txChainID>
-            0
+            1
           </txChainID>
         </message>
       </messages>
