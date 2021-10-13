@@ -115,6 +115,19 @@ def onCells(cellHandler, constrainedTerm):
                 constraints.append(constraint)
     return buildAssoc(KConstant('#Top'), '#And', [substitute(emptyConfig, subst)] + constraints)
 
+def getAppliedAxiomList(debugLogFile):
+    axioms      = []
+    next_axioms = []
+    with open(debugLogFile, 'r') as logFile:
+        for line in logFile:
+            if line.find('DebugTransition') > 0:
+                if line.find('after  apply axioms:') > 0:
+                    next_axioms.append(line[line.find('after  apply axioms:') + len('after  apply axioms:'):])
+                elif len(next_axioms) > 0:
+                    axioms.append(next_axioms)
+                    next_axioms = []
+    return axioms
+
 ### Utilities
 
 def _notif(msg):
@@ -275,20 +288,14 @@ def kevmGetBasicBlockAndNextStates(directory, mainFileName, mainModuleName, clai
     branching  = False
     depth      = 0
     finalState = nextStates[0]
-
-    with open(logFileName, 'r') as logFile:
-        for line in logFile:
-            if line.find('DebugTransition') > 0 and line.find('after  apply axioms:') > 0:
-                if branching:
-                    break
-                else:
-                    branching = True
-                    depth += 1
-            else:
-                branching = False
+    for axioms in getAppliedAxiomList(logFileName):
+        if len(axioms) > 1:
+            branching = True
+            break
+        else:
+            depth += 1
 
     if branching:
-        depth -= 1
         finalState = kevmProveClaim( directory
                                    , mainFileName
                                    , mainModuleName
