@@ -400,10 +400,10 @@ def buildEmptyClaim(initConstrainedTerm, claimId):
 
 def writeCFG(cfg):
     cfgLines = [ '// CFG:'
-               , '//     states:      ' + ', '.join([str(s) for s in set(list(cfg['graph'].keys()) + cfg['init'] + cfg['terminal'] + cfg['unexplored'] + cfg['stuck'])])
+               , '//     states:      ' + ', '.join([str(s) for s in set(list(cfg['graph'].keys()) + cfg['init'] + cfg['terminal'] + cfg['frontier'] + cfg['stuck'])])
                , '//     init:        ' + ', '.join([str(s) for s in cfg['init']])
                , '//     terminal:    ' + ', '.join([str(s) for s in cfg['terminal']])
-               , '//     unexplored:  ' + ', '.join([str(s) for s in cfg['unexplored']])
+               , '//     frontier:    ' + ', '.join([str(s) for s in cfg['frontier']])
                , '//     stuck:       ' + ', '.join([str(s) for s in cfg['stuck']])
                , '//     transitions:'
                ]
@@ -458,18 +458,18 @@ def kevmSummarize( directory
                  , startOffset = 0
                  ):
 
-    frontier          = [(startOffset + i, ct) for (i, ct) in enumerate(flattenLabel('#Or', initState))]
-    seenStates        = []
-    newClaims         = []
-    newRules          = []
-    cfg               = {}
-    cfg['graph']      = {}
-    cfg['init']       = [i for (i, _) in frontier]
-    cfg['terminal']   = []
-    cfg['unexplored'] = [i for (i, _) in frontier]
-    cfg['stuck']      = []
-    nextStateId       = startOffset + len(frontier)
-    writtenStates     = []
+    frontier        = [(startOffset + i, ct) for (i, ct) in enumerate(flattenLabel('#Or', initState))]
+    seenStates      = []
+    newClaims       = []
+    newRules        = []
+    cfg             = {}
+    cfg['graph']    = {}
+    cfg['init']     = [i for (i, _) in frontier]
+    cfg['terminal'] = []
+    cfg['frontier'] = [i for (i, _) in frontier]
+    cfg['stuck']    = []
+    nextStateId     = startOffset + len(frontier)
+    writtenStates   = []
 
     while len(frontier) > 0 and (maxBlocks is None or len(newClaims) < maxBlocks):
         (initStateId, initState) = frontier.pop(0)
@@ -503,9 +503,6 @@ def kevmSummarize( directory
                 cfg['stuck'].append(finalStateId)
             cfg['graph'][finalStateId] = []
 
-        newClaim = buildRule(basicBlockId, initState, finalState, claim = True)
-        newClaims.append(newClaim)
-
         if not isTerminal(finalState):
             for (i, (ns, newConstraint)) in enumerate(nextStates):
                 subsumed = False
@@ -521,17 +518,12 @@ def kevmSummarize( directory
                         writtenStates.append(stateId)
                     cfg['graph'][finalStateId].append((stateId, printConstraint(newConstraint, symbolTable), 1))
                     frontier.append((stateId, ns))
-            cfg['unexplored'] = [i for (i, _) in frontier]
+        cfg['frontier'] = [i for (i, _) in frontier]
 
+        newClaim = buildRule(basicBlockId, initState, finalState, claim = True)
+        newClaims.append(newClaim)
         if verify:
-            kevmProveClaim( directory
-                          , mainFileName
-                          , mainModuleName
-                          , newClaim
-                          , basicBlockId
-                          , symbolTable
-                          , dieOnFail = True
-                          )
+            kevmProveClaim( directory , mainFileName , mainModuleName , newClaim , basicBlockId , symbolTable , dieOnFail = True )
             _notif('Verified claim: ' + basicBlockId)
         newRule = buildRule(basicBlockId, initState, finalState, claim = False, priority = 35)
         newRules.append(newRule)
