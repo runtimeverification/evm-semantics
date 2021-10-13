@@ -27,27 +27,28 @@ module STATE-LOADER
     syntax EthereumCommand ::= "clearTX"
  // ------------------------------------
     rule <k> clearTX => . ... </k>
-         <output>          _ => .ByteArray </output>
-         <memoryUsed>      _ => 0          </memoryUsed>
-         <callDepth>       _ => 0          </callDepth>
-         <callStack>       _ => .List      </callStack>
-         <program>         _ => .ByteArray </program>
-         <jumpDests>       _ => .Set       </jumpDests>
-         <id>              _ => .Account   </id>
-         <caller>          _ => .Account   </caller>
-         <callData>        _ => .ByteArray </callData>
-         <callValue>       _ => 0          </callValue>
-         <wordStack>       _ => .WordStack </wordStack>
-         <localMem>        _ => .Memory    </localMem>
-         <pc>              _ => 0          </pc>
-         <gas>             _ => 0          </gas>
-         <callGas>         _ => 0          </callGas>
-         <selfDestruct>    _ => .Set       </selfDestruct>
-         <log>             _ => .List      </log>
-         <refund>          _ => 0          </refund>
-         <gasPrice>        _ => 0          </gasPrice>
-         <origin>          _ => .Account   </origin>
-         <touchedAccounts> _ => .Set       </touchedAccounts>
+         <output>           _ => .ByteArray </output>
+         <memoryUsed>       _ => 0          </memoryUsed>
+         <callDepth>        _ => 0          </callDepth>
+         <callStack>        _ => .List      </callStack>
+         <program>          _ => .ByteArray </program>
+         <jumpDests>        _ => .Set       </jumpDests>
+         <id>               _ => .Account   </id>
+         <caller>           _ => .Account   </caller>
+         <callData>         _ => .ByteArray </callData>
+         <callValue>        _ => 0          </callValue>
+         <wordStack>        _ => .WordStack </wordStack>
+         <localMem>         _ => .Memory    </localMem>
+         <pc>               _ => 0          </pc>
+         <gas>              _ => 0          </gas>
+         <callGas>          _ => 0          </callGas>
+         <selfDestruct>     _ => .Set       </selfDestruct>
+         <log>              _ => .List      </log>
+         <refund>           _ => 0          </refund>
+         <gasPrice>         _ => 0          </gasPrice>
+         <origin>           _ => .Account   </origin>
+         <touchedAccounts>  _ => .Set       </touchedAccounts>
+         <accessedAccounts> _ => .Set       </accessedAccounts>
 
     syntax EthereumCommand ::= "clearBLOCK"
  // ---------------------------------------
@@ -170,6 +171,7 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule #asScheduleString("Constantinople")    => CONSTANTINOPLE
     rule #asScheduleString("ConstantinopleFix") => PETERSBURG
     rule #asScheduleString("Istanbul")          => ISTANBUL
+    rule #asScheduleString("Berlin")            => BERLIN
 ```
 
 The `"rlp"` key loads the block information.
@@ -205,6 +207,7 @@ The `"rlp"` key loads the block information.
     syntax EthereumCommand ::= "mkTX" Int
  // -------------------------------------
     rule <k> mkTX TXID => . ... </k>
+         <chainID> CID </chainID>
          <txOrder>   ... (.List => ListItem(TXID)) </txOrder>
          <txPending> ... (.List => ListItem(TXID)) </txPending>
          <messages>
@@ -213,11 +216,14 @@ The `"rlp"` key loads the block information.
                 <msgID>      TXID:Int </msgID>
                 <txGasPrice> 20000000000   </txGasPrice>
                 <txGasLimit> 90000         </txGasLimit>
+                <txChainID>  CID           </txChainID>
                 ...
               </message>
             )
           ...
           </messages>
+
+    rule <k> load "transaction" : [ (T => [#rlpDecodeTransaction(#parseByteStackRaw(T))]) , _ ] ... </k>
 
     rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST ]
           => mkTX !ID:Int
@@ -229,6 +235,19 @@ The `"rlp"` key loads the block information.
           ~> load "transaction" : [ REST ]
           ...
           </k>
+
+    rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TG, TT, TV, TI, TA, TY , TR, TS ]] , REST ]
+          => mkTX !ID:Int
+          ~> loadTransaction !ID { "data"       : TI   ,   "gasLimit" : TG   ,   "gasPrice" : TP
+                                 , "nonce"      : TN   ,   "r"        : TR   ,   "s"        : TS
+                                 , "to"         : TT   ,   "v"        : TY   ,   "value"    : TV
+                                 , "accessList" : TA   ,   "type"     : TYPE ,   "chainID"  : TC
+                                 , .JSONs
+                                 }
+          ~> load "transaction" : [ REST ]
+          ...
+         </k>
+    requires #asWord(#parseByteStackRaw(TYPE)) ==Int 1
 
     syntax EthereumCommand ::= "loadTransaction" Int JSON
  // -----------------------------------------------------
@@ -261,6 +280,15 @@ The `"rlp"` key loads the block information.
 
     rule <k> loadTransaction TXID { "s" : TS:ByteArray, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <sigS> _ => TS </sigS> ... </message>
+
+    rule <k> loadTransaction TXID { "type" : T:Int, REST => REST } ... </k>
+         <message> <msgID> TXID </msgID> <txType> _ => T </txType> ... </message>
+
+    rule <k> loadTransaction TXID { "chainID" : TC:Int, REST => REST } ... </k>
+         <message> <msgID> TXID </msgID> <txChainID> _ => TC </txChainID> ... </message>
+
+    rule <k> loadTransaction TXID { "accessList" : [TA:JSONs], REST => REST } ... </k>
+         <message> <msgID> TXID </msgID> <txAccess> _ => [TA] </txAccess> ... </message>
 ```
 
 ### Block Identifiers

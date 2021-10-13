@@ -11,6 +11,7 @@ DEFN_BASE_DIR := $(BUILD_DIR)/defn
 DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 LOCAL_LIB     := $(BUILD_LOCAL)/lib
+LOCAL_BIN     := $(BUILD_LOCAL)/bin
 export NODE_DIR
 export LOCAL_LIB
 
@@ -35,7 +36,7 @@ K_SUBMODULE := $(DEPS_DIR)/k
 LIBRARY_PATH       := $(LOCAL_LIB):$(KEVM_LIB_ABS)/libff/lib
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
-PATH               := $(abspath $(KEVM_BIN)):$(abspath $(KEVM_K_BIN)):$(PATH)
+PATH               := $(abspath $(KEVM_BIN)):$(abspath $(KEVM_K_BIN)):$(LOCAL_BIN):$(PATH)
 
 export LIBRARY_PATH
 export C_INCLUDE_PATH
@@ -50,7 +51,7 @@ export PLUGIN_SUBMODULE
         deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
         build build-java build-haskell build-llvm build-provex build-node build-kevm                                             \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-kevm-vm                               \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
         test-prove-mcd test-klab-prove                                                                                           \
@@ -337,7 +338,7 @@ build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py $(lemma_
 build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_LIB)/kast-json.py $(lemma_includes)
 build-node:    $(KEVM_LIB)/$(node_kompiled)
-build-kevm:    $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes)
+build-kevm:    $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
@@ -371,7 +372,7 @@ TEST_OPTIONS :=
 CHECK        := git --no-pager diff --no-index --ignore-all-space -R
 
 KEVM_MODE     := NORMAL
-KEVM_SCHEDULE := ISTANBUL
+KEVM_SCHEDULE := BERLIN
 KEVM_CHAINID  := 1
 
 KPROVE_MODULE  = VERIFICATION
@@ -386,8 +387,8 @@ test: test-conformance test-prove test-interactive test-parse
 
 # Generic Test Harnesses
 
-tests/ethereum-tests/VMTests/%: KEVM_MODE     = VMTESTS
-tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE = DEFAULT
+tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTESTS
+tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
 tests/specs/benchmarks/functional-spec%:     KPROVE_FILE   =  functional-spec
 tests/specs/benchmarks/functional-spec%:     KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
@@ -459,9 +460,9 @@ tests/%.search: tests/%
 
 # Smoke Tests
 
-smoke_tests_run=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
-                tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json \
-                tests/interactive/sumTo10.evm
+smoke_tests_run = tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json      \
+                  tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmIOandFlowOperations/pop1.json \
+                  tests/interactive/sumTo10.evm
 
 smoke_tests_prove=tests/specs/erc20/ds/transfer-failure-1-a-spec.k
 
@@ -478,7 +479,7 @@ test-slow-conformance: $(slow_conformance_tests:=.run)
 test-failing-conformance: $(failing_conformance_tests:=.run)
 test-conformance: test-vm test-bchain
 
-all_vm_tests     = $(wildcard tests/ethereum-tests/VMTests/*/*.json)
+all_vm_tests     = $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/VMTests/*/*.json)
 quick_vm_tests   = $(filter-out $(slow_conformance_tests), $(all_vm_tests))
 passing_vm_tests = $(filter-out $(failing_conformance_tests), $(quick_vm_tests))
 rest_vm_tests    = $(filter-out $(passing_vm_tests), $(all_vm_tests))
@@ -587,12 +588,22 @@ test-interactive-search: $(search_tests:=.search)
 test-interactive-help:
 	$(KEVM) help
 
-test-kevm-vm:
+proto_tester := $(LOCAL_BIN)/proto_tester
+proto-tester: $(proto_tester)
+$(proto_tester): tests/vm/proto_tester.cpp
+	@mkdir -p $(LOCAL_BIN)
+	$(CXX) -I $(LOCAL_LIB)/proto $(protobuf_out) $< -o $@ -lprotobuf -lpthread
+
+node_tests:=$(wildcard tests/vm/*.bin)
+test-node: $(node_tests:=.run-node)
+
+tests/vm/%.run-node: tests/vm/%.expected $(KEVM_BIN)/kevm-vm $(proto_tester)
 	bash -c " \
 	  kevm-vm 8888 127.0.0.1 & \
-	  netcat localhost 8888 -q 2 < tests/vm/hello_proto.bin; \
-	  sleep 1; \
-	  kill %kevm-vm"
+	  while ! netcat -z 127.0.0.1 8888; do sleep 0.1; done; \
+	  netcat -N 127.0.0.1 8888 < tests/vm/$* > tests/vm/$*.out; \
+	  kill %kevm-vm || true"
+	$(proto_tester) $< tests/vm/$*.out
 
 # Media
 # -----
