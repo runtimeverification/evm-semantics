@@ -245,7 +245,20 @@ def kevmSanitizeConfig(initConstrainedTerm):
     newConstrainedTerm = removeGeneratedCells(newConstrainedTerm)
     return newConstrainedTerm
 
-def kevmProveClaim(directory, mainFileName, mainModuleName, claim, claimId, symbolTable, kevmArgs = [], teeOutput = False, dieOnFail = False):
+def kevmProveClaim(directory, mainFileName, mainModuleName, claim, claimId, symbolTable, kevmArgs = [], teeOutput = False, dieOnFail = False, logFile = None):
+    logAxiomsFile = directory + '/' + claimId.lower() + '-debug.log' if logFile is None else logFile
+    if os.path.exists(logAxiomsFile):
+        _notif('Clearing old log file: ' + logAxiomsFile)
+        os.remove(logAxiomsFile)
+    newKevmArgs  = [ a for a in kevmArgs ]
+    newKevmArgs += [ '--haskell-backend-arg' , '--log'
+                   , '--haskell-backend-arg' , logAxiomsFile
+                   , '--haskell-backend-arg' , '--log-format'
+                   , '--haskell-backend-arg' , 'oneline'
+                   , '--haskell-backend-arg' , '--enable-log-timestamps'
+                   , '--haskell-backend-arg' , '--log-entries'
+                   , '--haskell-backend-arg' , 'DebugTransition'
+                   ]
     tmpClaim  = directory + '/' + claimId.lower() + '-spec.k'
     tmpModule = claimId.upper() + '-SPEC'
     with open(tmpClaim, 'w') as tc:
@@ -253,36 +266,27 @@ def kevmProveClaim(directory, mainFileName, mainModuleName, claim, claimId, symb
         tc.write(_genFileTimestamp() + '\n')
         tc.write(prettyPrintKast(claimDefinition, symbolTable) + '\n\n')
         tc.flush()
-        finalState = kevmProve(mainFileName, tmpClaim, tmpModule, kevmArgs = kevmArgs, teeOutput = teeOutput, dieOnFail = dieOnFail)
+        finalState = kevmProve(mainFileName, tmpClaim, tmpModule, kevmArgs = newKevmArgs, teeOutput = teeOutput, dieOnFail = dieOnFail)
         if finalState == KConstant('#Top'):
-            return finalState
+            if len(getAppliedAxiomList(logAxiomsFile)) == 0:
+                _fatal('Proof trivially discharged, likely the LHS is invalid: ' + tmpClaim)
+            return KConstant('#Top')
         finalStates = [ kevmSanitizeConfig(fs) for fs in flattenLabel('#Or', finalState) ]
         return buildAssoc(KConstant('#Bottom'), '#Or', finalStates)
 
 def kevmGetBasicBlockAndNextStates(directory, mainFileName, mainModuleName, claim, claimId, symbolTable, debug = False, maxDepth = 1000):
     logFileName = directory + '/' + claimId.lower() + '-debug.log'
-    if os.path.exists(logFileName):
-        _notif('Clearing old log file: ' + logFileName)
-        os.remove(logFileName)
-    nextState  = kevmProveClaim( directory
-                               , mainFileName
-                               , mainModuleName
-                               , claim
-                               , claimId
-                               , symbolTable
-                               , kevmArgs = [ '--haskell-backend-arg' , '--log'
-                                            , '--haskell-backend-arg' , logFileName
-                                            , '--haskell-backend-arg' , '--log-format'
-                                            , '--haskell-backend-arg' , 'oneline'
-                                            , '--haskell-backend-arg' , '--enable-log-timestamps'
-                                            , '--haskell-backend-arg' , '--log-entries'
-                                            , '--haskell-backend-arg' , 'DebugTransition'
-                                            , '--branching-allowed'   , '1'
-                                            , '--depth'               , str(maxDepth)
-                                            ]
-                               , teeOutput = debug
-                               )
-    nextStates = flattenLabel('#Or', nextState)
+    nextState   = kevmProveClaim( directory
+                                , mainFileName
+                                , mainModuleName
+                                , claim
+                                , claimId
+                                , symbolTable
+                                , kevmArgs = [ '--branching-allowed' , '1' , '--depth' , str(maxDepth) ]
+                                , teeOutput = debug
+                                , logFile = logFileName
+                                )
+    nextStates  = flattenLabel('#Or', nextState)
     _notif('Summarization of ' + claimId + ' resulted in ' + str(len(nextStates)) + ' successor states.')
 
     branching  = False
