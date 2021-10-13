@@ -186,7 +186,7 @@ def kevmProve(mainFile, specFile, specModule, kevmArgs = [], teeOutput = False, 
     kevmCommand = [ 'kevm' , 'prove' , specFile
                   , '--backend' , backend , '--backend-dir' , backendDirectory , '-I' , backendDirectory
                   , '--provex' , '--spec-module' , specModule
-                  , '--output' , 'json'
+                  , '--output' , 'json' , '--boundary-cells' , 'k,pc'
                   ]
     kevmCommand += kevmArgs
     _notif(' '.join(kevmCommand))
@@ -348,6 +348,13 @@ def subsumes(constrainedTerm1, constrainedTerm2):
 def isTerminal(constrainedTerm):
     return getCell(constrainedTerm, 'K_CELL') == KSequence([KConstant('#halt_EVM_KItem'), ktokenDots])
 
+def buildTerminal(constrainedTerm):
+    (config, _) = splitConfigAndConstraints(constrainedTerm)
+    cellSubst = { 'K_CELL'  : KSequence([KConstant('#halt_EVM_KItem'), ktokenDots])
+                , 'PC_CELL' : KVariable('?_')
+                }
+    return applyCellSubst(config, cellSubst)
+
 def simplifyBooleanConstraint(constraint):
     constraints    = dedupeClauses(flattenLabel('_andBool_', simplifyBool(constraint)))
     replaces       = []
@@ -368,14 +375,10 @@ def simplifyBooleanConstraint(constraint):
         newConstraint = replaceAnywhereWith(r, newConstraint)
     return simplifyBool(newConstraint)
 
-def buildFinalState(constrainedTerm):
-    (config, _) = splitConfigAndConstraints(constrainedTerm)
-    return setCell(config, 'K_CELL', KSequence([KConstant(klabelEmptyK), ktokenDots]))
-
 ### Summarization Utilities
 
 def buildEmptyClaim(initConstrainedTerm, claimId):
-    finalConstrainedTerm = buildFinalState(initConstrainedTerm)
+    finalConstrainedTerm = buildTerminal(initConstrainedTerm)
     return buildRule(claimId, initConstrainedTerm, finalConstrainedTerm, claim = True, keepVars = collectFreeVars(finalConstrainedTerm))
 
 def writeCFG(cfg):
