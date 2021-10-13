@@ -98,7 +98,6 @@ pipeline {
                     kevm help
                     kevm version
                     make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=llvm
-                    make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=java
                     make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=haskell
                     make -j4 test-parse              TEST_CONCRETE_BACKEND=llvm
                     make -j4 test-failure            TEST_CONCRETE_BACKEND=llvm
