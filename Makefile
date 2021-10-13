@@ -176,14 +176,13 @@ kevm_files := abi.md              \
               serialization.md    \
               state-loader.md
 
-kevm_lemmas := infinite-gas.k                           \
-               lemmas.k                                 \
-               int-simplification.k                     \
-               erc20/abstract-semantics-segmented-gas.k \
-               erc20/evm-symbolic.k                     \
-               mcd/bin_runtime.k                        \
-               mcd/storage.k                            \
-               mcd/verification.k                       \
+kevm_lemmas := infinite-gas.k       \
+               lemmas.k             \
+               int-simplification.k \
+               erc20/evm-symbolic.k \
+               mcd/bin_runtime.k    \
+               mcd/storage.k        \
+               mcd/verification.k   \
                mcd/word-pack.k
 
 lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(kevm_lemmas))
