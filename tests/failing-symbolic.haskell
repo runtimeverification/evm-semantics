@@ -9,7 +9,6 @@ tests/specs/benchmarks/ecrecoverloop02-sigs-valid-spec.k
 tests/specs/bihu/collectToken-spec.k
 tests/specs/erc20/ds/transfer-failure-1-b-spec.k
 tests/specs/erc20/ds/transferFrom-failure-1-b-spec.k
-tests/specs/mcd/cat-file-addr-pass-rough-spec.k
 tests/specs/mcd/dstoken-burn-self-fail-rough-spec.k
 tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
 tests/specs/mcd/end-cash-pass-rough-spec.k
@@ -17,7 +16,6 @@ tests/specs/mcd/end-pack-pass-rough-spec.k
 tests/specs/mcd/flapper-tend-guy-diff-pass-rough-spec.k
 tests/specs/mcd/flapper-yank-pass-rough-spec.k
 tests/specs/mcd/flipper-bids-pass-rough-spec.k
-tests/specs/mcd/flopper-cage-pass-spec.k
 tests/specs/mcd/flopper-dent-guy-diff-tic-not-0-pass-rough-spec.k
 tests/specs/mcd/flopper-dent-guy-same-pass-rough-spec.k
 tests/specs/mcd/flopper-file-pass-rough-spec.k
@@ -25,7 +23,6 @@ tests/specs/mcd/flopper-kick-pass-rough-spec.k
 tests/specs/mcd/flopper-tick-pass-rough-spec.k
 tests/specs/mcd/gemjoin-exit-pass-rough-spec.k
 tests/specs/mcd/pot-join-pass-rough-spec.k
-tests/specs/mcd/vat-deny-diff-fail-rough-spec.k
 tests/specs/mcd/vat-flux-diff-pass-rough-spec.k
 tests/specs/mcd/vat-fold-pass-rough-spec.k
 tests/specs/mcd/vat-fork-diff-pass-rough-spec.k
@@ -35,6 +32,5 @@ tests/specs/mcd/vat-slip-pass-rough-spec.k
 tests/specs/mcd/vat-subui-fail-rough-spec.k
 tests/specs/mcd/vow-cage-deficit-pass-rough-spec.k
 tests/specs/mcd/vow-cage-surplus-pass-rough-spec.k
-tests/specs/mcd/vow-fess-fail-rough-spec.k
 tests/specs/mcd/vow-flog-fail-rough-spec.k
 tests/specs/opcodes/create-spec.k
