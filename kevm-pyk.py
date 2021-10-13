@@ -397,7 +397,7 @@ def writeCFG(cfg):
 
 ### KEVM Summarizer
 
-def buildInitState(contractName, constrainedTerm):
+def buildInitState(contractName, constrainedTerm, schedule = KVariable('SCHEDULE_CELL')):
     accountCell = kevmAccountCell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), KVariable('_ACCT_CODE'), KVariable('_ACCT_STORAGE'), KVariable('_ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
     cellSubst   = { 'K_CELL'         : KSequence([KConstant('#execute_EVM_KItem'), ktokenDots])
                   , 'ID_CELL'        : KVariable('ACCT_ID')
@@ -541,6 +541,7 @@ summarizeArgs.add_argument('--resume-from-state', type = int, nargs = '?', help 
 summarizeArgs.add_argument('--debug', default = False, action = 'store_true', help = 'Keep temporary files around.')
 summarizeArgs.add_argument('--verify',    default = True,  action = 'store_true',  help = 'Prove generated claims before outputting them.')
 summarizeArgs.add_argument('--no-verify', dest = 'verify', action = 'store_false', help = 'Do not prove generated claims before outputting them.')
+summarizeArgs.add_argument('--use-schedule', type = str, help = 'Name of the Ethereum schedule to use for verification.')
 summarizeArgs.add_argument('-o', '--output', type = argparse.FileType('w'), default = '-')
 
 def kevmPykMain(args, kompiled_dir):
@@ -566,6 +567,9 @@ def kevmPykMain(args, kompiled_dir):
             with open(directory + '/' + contractName.lower() + '-state-' + str(args['resume_from_state']) + '.json', 'r') as resumeState:
                 initState = json.loads(resumeState.read())
         initState = kevmSanitizeConfig(initState)
+
+        if 'use_schedule' in args and args['use_schedule'] is not None:
+            initState = setCell(initState, 'SCHEDULE_CELL', KConstant(args['use_schedule'] + '_EVM'))
 
         (newRules, cfg)   = kevmSummarize( directory
                                          , initState
