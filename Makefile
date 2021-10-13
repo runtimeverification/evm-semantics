@@ -342,6 +342,7 @@ build-kevm:    $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_incl
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
+                            -not -path "$(KEVM_LIB)/llvm/driver-kompiled/dt/*"                 \
                             -not -path "$(KEVM_LIB)/kframework/share/kframework/pl-tutorial/*" \
                             -not -path "$(KEVM_LIB)/kframework/share/kframework/k-tutorial/*"  \
                         | sed 's|^$(KEVM_LIB)/||')
