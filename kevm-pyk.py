@@ -392,7 +392,7 @@ def writeCFG(cfg):
                ]
     for initStateId in cfg['graph']:
         for (finalStateId, constraint, depth) in cfg['graph'][initStateId]:
-            cfgLines.append('//         ' + str(initStateId) + ' -> ' + str(finalStateId) + ' [' + str('{0:>5}'.format(depth)) + ' steps]: ' + ' '.join([c.strip() for c in constraint.split('\n')]))
+            cfgLines.append('//         ' + '{0:>3}'.format(initStateId) + ' -> ' + '{0:>3}'.format(finalStateId) + ' [' + '{0:>5}'.format(depth) + ' steps]: ' + ' '.join([c.strip() for c in constraint.split('\n')]))
     return '\n'.join(cfgLines)
 
 ### KEVM Summarizer
