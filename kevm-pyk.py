@@ -2,6 +2,7 @@
 
 import argparse
 from datetime import datetime
+import hashlib
 import os
 from pyk import *
 from pyk.__main__ import main, pykArgs, pykCommandParsers
@@ -128,6 +129,12 @@ def getAppliedAxiomList(debugLogFile):
                     next_axioms = []
     return axioms
 
+def abstractTermSafely(kast, baseName = 'V'):
+    vnameHash = hashlib.sha256()
+    vnameHash.update(str(kast).encode('utf-8'))
+    vname = str(vnameHash.hexdigest())[0:8]
+    return KVariable(baseName + '_' + vname)
+
 ### Utilities
 
 def _notif(msg):
@@ -224,11 +231,10 @@ def kevmSanitizeConfig(initConstrainedTerm):
             return (KVariable('_' + cellName), KConstant('#Top'))
         return None
 
-    numBytesVars = len([ v for v in collectFreeVars(initConstrainedTerm) if v.startswith('BYTES_') ])
     bytesConstraints = []
     def _parseableBytesTokens(_kast):
         if isKToken(_kast) and _kast['sort'] == 'Bytes' and _kast['token'].startswith('b"') and _kast['token'].endswith('"'):
-            bytesVariable = KVariable('BYTES_' + str(len(bytesConstraints) + numBytesVars))
+            bytesVariable = abstractTermSafely(_kast, baseName = 'BYTES')
             bytesConstraints.append(boolToMlPred(KApply('_==K_', [bytesVariable, KApply('String2Bytes(_)_BYTES-HOOKED_Bytes_String', [stringToken(_kast['token'][2:-1])])])))
             return bytesVariable
         return _kast
