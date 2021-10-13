@@ -192,8 +192,6 @@ kevm_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_files))
 
 includes := $(kevm_includes) $(lemma_includes) $(plugin_includes) $(plugin_c_includes)
 
-$(includes): $(KEVM_BIN)/kevm
-
 $(KEVM_INCLUDE)/kframework/%.md: %.md
 	@mkdir -p $(dir $@)
 	install $< $@
@@ -221,7 +219,7 @@ ifeq ($(UNAME_S),Darwin)
 $(KEVM_LIB)/$(llvm_kompiled): $(libcryptopp_out)
 endif
 
-$(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
+$(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend llvm                 \
 	    $(llvm_main_file)                     \
 	    --directory $(KEVM_LIB)/$(llvm_dir)   \
@@ -241,7 +239,7 @@ node_kompiled      := $(node_dir)/build/kevm-vm
 export node_dir
 export node_main_filename
 
-$(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
+$(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend node                 \
 	    $(node_main_file)                     \
 	    --directory $(KEVM_LIB)/$(node_dir)   \
