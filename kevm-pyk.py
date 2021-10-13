@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
 import argparse
-from datetime import datetime
+from   datetime import datetime
+from   graphviz import Digraph
 import hashlib
 import os
-from pyk import *
-from pyk.__main__ import main, pykArgs, pykCommandParsers
-from pyk.__init__ import _teeProcessStdout
 import sys
-import tempfile
+
+from   pyk          import *
+from   pyk.__main__ import main, pykArgs, pykCommandParsers
+from   pyk.__init__ import _teeProcessStdout
 
 sys.setrecursionlimit(15000000)
 
@@ -398,9 +399,10 @@ def buildEmptyClaim(initConstrainedTerm, claimId):
     finalConstrainedTerm = buildTerminal(initConstrainedTerm)
     return buildRule(claimId, initConstrainedTerm, finalConstrainedTerm, claim = True, keepVars = collectFreeVars(finalConstrainedTerm))
 
-def writeCFG(cfg):
+def writeCFG(cfg, graphvizFile = None):
+    states = set(list(cfg['graph'].keys()) + cfg['init'] + cfg['terminal'] + cfg['frontier'] + cfg['stuck'])
     cfgLines = [ '// CFG:'
-               , '//     states:      ' + ', '.join([str(s) for s in set(list(cfg['graph'].keys()) + cfg['init'] + cfg['terminal'] + cfg['frontier'] + cfg['stuck'])])
+               , '//     states:      ' + ', '.join([str(s) for s in states])
                , '//     init:        ' + ', '.join([str(s) for s in cfg['init']])
                , '//     terminal:    ' + ', '.join([str(s) for s in cfg['terminal']])
                , '//     frontier:    ' + ', '.join([str(s) for s in cfg['frontier']])
@@ -410,6 +412,25 @@ def writeCFG(cfg):
     for initStateId in cfg['graph']:
         for (finalStateId, constraint, depth) in cfg['graph'][initStateId]:
             cfgLines.append('//         ' + '{0:>3}'.format(initStateId) + ' -> ' + '{0:>3}'.format(finalStateId) + ' [' + '{0:>5}'.format(depth) + ' steps]: ' + ' '.join([c.strip() for c in constraint.split('\n')]))
+    if graphvizFile is not None:
+        graph = Digraph()
+        for s in states:
+            labels = [str(s) + ':']
+            for l in ['init', 'terminal', 'frontier', 'stuck']:
+                if s in cfg[l]:
+                    labels.append(l)
+            label = ' '.join(labels)
+            graph.node(str(s), label = label)
+        for s in cfg['graph'].keys():
+            for (f, c, d) in cfg['graph'][s]:
+                labelParts = []
+                if d != 1:
+                    labelParts.append(str(d) + ' steps')
+                if c != 'true':
+                    labelParts.append(c)
+                graph.edge(str(s), str(f), label = ' '.join(labelParts))
+        graph.render(graphvizFile)
+        _notif('Wrote graphviz rendering of CFG: ' + graphvizFile + '.pdf')
     return '\n'.join(cfgLines)
 
 ### KEVM Summarizer
@@ -456,6 +477,7 @@ def kevmSummarize( directory
                  , maxBlocks = None
                  , maxDepth = 1000
                  , startOffset = 0
+                 , graphvizFile = None
                  ):
 
     frontier        = [(startOffset + i, ct) for (i, ct) in enumerate(flattenLabel('#Or', initState))]
@@ -502,8 +524,6 @@ def kevmSummarize( directory
             if len(nextStates) == 0:
                 cfg['stuck'].append(finalStateId)
             cfg['graph'][finalStateId] = []
-
-        if not isTerminal(finalState):
             for (i, (ns, newConstraint)) in enumerate(nextStates):
                 subsumed = False
                 for (j, seen) in seenStates:
@@ -532,7 +552,7 @@ def kevmSummarize( directory
             claimDefinition = makeDefinition(newClaims, intermediateClaimsModule, mainFileName, mainModuleName)
             intermediate.write(_genFileTimestamp() + '\n')
             intermediate.write(prettyPrintKast(claimDefinition, symbolTable) + '\n\n')
-            intermediate.write(writeCFG(cfg) + '\n')
+            intermediate.write(writeCFG(cfg, graphvizFile = graphvizFile) + '\n')
             intermediate.flush()
             _notif('Wrote updated claims file: ' + intermediateClaimsFile)
 
@@ -550,7 +570,8 @@ summarizeArgs.add_argument('--resume-from-state', type = int, nargs = '?', help 
 summarizeArgs.add_argument('--debug', default = False, action = 'store_true', help = 'Keep temporary files around.')
 summarizeArgs.add_argument('--verify',    default = True,  action = 'store_true',  help = 'Prove generated claims before outputting them.')
 summarizeArgs.add_argument('--no-verify', dest = 'verify', action = 'store_false', help = 'Do not prove generated claims before outputting them.')
-summarizeArgs.add_argument('--use-schedule', type = str, help = 'Name of the Ethereum schedule to use for verification.')
+summarizeArgs.add_argument('--schedule', type = str, help = 'Name of the Ethereum schedule to use for verification.')
+summarizeArgs.add_argument('--graphviz', default = False, action = 'store_true', help = 'Write graphviz rendering of CFG.')
 summarizeArgs.add_argument('-o', '--output', type = argparse.FileType('w'), default = '-')
 
 def kevmPykMain(args, kompiled_dir):
@@ -569,6 +590,7 @@ def kevmPykMain(args, kompiled_dir):
         summaryRulesModule       = contractName.upper() + '-BASIC-BLOCKS'
         maxBlocks                = None if 'max_blocks' not in args else args['max_blocks']
         resumeFromState          = None if 'max_blocks' not in args else args['resume_from_state']
+        graphvizFile             = None if not args['graphviz']     else directory + '/' + contractName.lower() + '-basic-blocks'
 
         if resumeFromState is None:
             initState = buildInitState(contractName, json.loads(args['init-term'].read())['term'])
@@ -577,8 +599,8 @@ def kevmPykMain(args, kompiled_dir):
                 initState = json.loads(resumeState.read())
         initState = kevmSanitizeConfig(initState)
 
-        if 'use_schedule' in args and args['use_schedule'] is not None:
-            initState = setCell(initState, 'SCHEDULE_CELL', KConstant(args['use_schedule'] + '_EVM'))
+        if 'schedule' in args and args['schedule'] is not None:
+            initState = setCell(initState, 'SCHEDULE_CELL', KConstant(args['schedule'] + '_EVM'))
 
         (newRules, cfg)   = kevmSummarize( directory
                                          , initState
@@ -592,12 +614,13 @@ def kevmPykMain(args, kompiled_dir):
                                          , verify = args['verify']
                                          , maxBlocks = maxBlocks
                                          , startOffset = resumeFromState if resumeFromState is not None else 0
+                                         , graphvizFile = graphvizFile
                                          )
         summaryDefinition = makeDefinition(newRules, summaryRulesModule, mainFileName, mainModuleName)
 
         args['output'].write(_genFileTimestamp() + '\n')
         args['output'].write(prettyPrintKast(summaryDefinition, symbolTable) + '\n\n')
-        args['output'].write(writeCFG(cfg) + '\n')
+        args['output'].write(writeCFG(cfg, graphvizFile = graphvizFile) + '\n')
         args['output'].flush()
 
 if __name__ == '__main__':
