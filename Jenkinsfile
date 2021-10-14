@@ -37,7 +37,6 @@ pipeline {
           options { timeout(time: 35, unit: 'MINUTES') }
           parallel {
             stage('LLVM krun')      { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'           } }
-            stage('Java krun')      { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=java'           } }
             stage('Haskell krun')   { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=haskell'        } }
             stage('LLVM Kast')      { steps { sh 'make test-parse TEST_CONCRETE_BACKEND=llvm'                     } }
             stage('Failing tests')  { steps { sh 'make test-failure TEST_CONCRETE_BACKEND=llvm'                   } }
@@ -98,7 +97,6 @@ pipeline {
                     kevm help
                     kevm version
                     make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=llvm
-                    make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=java
                     make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=haskell
                     make -j4 test-parse              TEST_CONCRETE_BACKEND=llvm
                     make -j4 test-failure            TEST_CONCRETE_BACKEND=llvm
