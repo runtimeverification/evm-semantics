@@ -250,6 +250,8 @@ gen_empty_spec() {
     echo '    imports '${module_name}'-VERIFICATION'
     echo ''
     echo '    claim <k> #execute => #halt ... </k>'
+    echo '          <mode> NORMAL </mode>'
+    echo '          <schedule> '${schedule}' </schedule>'
     echo '          <program> #binRuntime('${contract_name}') </program>'
     echo '          <jumpDests> #computeValidJumpDests(#binRuntime('${contract_name}')) </jumpDests>'
     echo ''
