@@ -37,6 +37,8 @@ module END-PACK-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <accessedAccounts> _ => ?_ </accessedAccounts>
+            <accessedStorage> _ => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -191,6 +193,8 @@ module END-PACK-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <accessedAccounts> _ => ?_ </accessedAccounts>
+            <accessedStorage> _ => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -288,6 +292,8 @@ module END-PACK-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <accessedAccounts> _ => ?_ </accessedAccounts>
+            <accessedStorage> _ => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -385,6 +391,8 @@ module END-PACK-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <accessedAccounts> _ => ?_ </accessedAccounts>
+            <accessedStorage> _ => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>

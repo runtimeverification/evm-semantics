@@ -5,11 +5,15 @@ UNAME_S := $(shell uname -s)
 
 DEPS_DIR      := deps
 BUILD_DIR     := .build
+NODE_DIR      := $(abspath node)
 SUBDEFN_DIR   := .
 DEFN_BASE_DIR := $(BUILD_DIR)/defn
 DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 LOCAL_LIB     := $(BUILD_LOCAL)/lib
+LOCAL_BIN     := $(BUILD_LOCAL)/bin
+export NODE_DIR
+export LOCAL_LIB
 
 INSTALL_PREFIX  := /usr
 INSTALL_BIN     ?= $(INSTALL_PREFIX)/bin
@@ -21,16 +25,18 @@ KEVM_LIB     := $(BUILD_DIR)$(INSTALL_LIB)
 KEVM_INCLUDE := $(KEVM_LIB)/include
 KEVM_K_BIN   := $(KEVM_LIB)/kframework/bin
 KEVM         := kevm
+KEVM_LIB_ABS := $(abspath $(KEVM_LIB))
+export KEVM_LIB_ABS
 
 KEVM_VERSION     ?= 1.0.1
 KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
 
 K_SUBMODULE := $(DEPS_DIR)/k
 
-LIBRARY_PATH       := $(LOCAL_LIB)
+LIBRARY_PATH       := $(LOCAL_LIB):$(KEVM_LIB_ABS)/libff/lib
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
-PATH               := $(KEVM_BIN):$(KEVM_K_BIN):$(PATH)
+PATH               := $(abspath $(KEVM_BIN)):$(abspath $(KEVM_K_BIN)):$(LOCAL_BIN):$(PATH)
 
 export LIBRARY_PATH
 export C_INCLUDE_PATH
@@ -42,10 +48,10 @@ PLUGIN_SOURCE    := $(KEVM_INCLUDE)/kframework/blockchain-k-plugin/krypto.md
 export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
-        deps k-deps plugin-deps libsecp256k1 libff                                                                               \
-        build build-java build-haskell build-llvm                                                                                \
+        deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
+        build build-java build-haskell build-llvm build-provex build-node build-kevm                                             \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                            \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
         test-prove-mcd test-klab-prove                                                                                           \
@@ -70,10 +76,12 @@ distclean:
 libsecp256k1_out := $(LOCAL_LIB)/pkgconfig/libsecp256k1.pc
 libff_out        := $(KEVM_LIB)/libff/lib/libff.a
 libcryptopp_out  := $(KEVM_LIB)/cryptopp/lib/libcryptopp.a
+protobuf_out     := $(LOCAL_LIB)/proto/proto/msg.pb.cc
 
 libsecp256k1: $(libsecp256k1_out)
 libff:        $(libff_out)
 libcryptopp : $(libcryptopp_out)
+protobuf:     $(protobuf_out)
 
 $(libsecp256k1_out): $(PLUGIN_SUBMODULE)/deps/secp256k1/autogen.sh
 	cd $(PLUGIN_SUBMODULE)/deps/secp256k1                                 \
@@ -98,6 +106,10 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
 	    && make -s -j4                                                                                          \
 	    && make install DESTDIR=$(CURDIR)/$(BUILD_DIR)
+
+$(protobuf_out): $(NODE_DIR)/proto/msg.proto
+	@mkdir -p $(LOCAL_LIB)/proto
+	protoc --cpp_out=$(LOCAL_LIB)/proto -I $(NODE_DIR) $(NODE_DIR)/proto/msg.proto
 
 $(libcryptopp_out): $(PLUGIN_SUBMODULE)/deps/cryptopp/GNUmakefile
 	cd $(PLUGIN_SUBMODULE)/deps/cryptopp                            \
@@ -156,6 +168,7 @@ kevm_files := abi.md              \
               edsl.md             \
               evm.md              \
               evm-types.md        \
+              evm-node.md         \
               hashed-locations.md \
               json-rpc.md         \
               network.md          \
@@ -254,10 +267,35 @@ $(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_inc
 	    --syntax-module $(llvm_syntax_module) \
 	    $(KOMPILE_OPTS)
 
+# Node
+
+node_dir           := node
+node_main_module   := EVM-NODE
+node_syntax_module := $(node_main_module)
+node_main_file     := evm-node.md
+node_main_filename := $(basename $(notdir $(node_main_file)))
+node_kore          := $(node_dir)/$(node_main_filename)-kompiled/definition.kore
+node_kompiled      := $(node_dir)/build/kevm-vm
+export node_dir
+export node_main_filename
+
+$(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
+	$(KOMPILE) --backend node                 \
+	    $(node_main_file)                     \
+	    --directory $(KEVM_LIB)/$(node_dir)   \
+	    --main-module $(node_main_module)     \
+	    --syntax-module $(node_syntax_module) \
+	    $(KOMPILE_OPTS)
+
+$(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_out)
+	@mkdir -p $(dir $@)
+	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) && $(MAKE)
+
 # Installing
 # ----------
 
-install_bins := kevm
+install_bins := kevm    \
+                kevm-vm
 
 install_libs := $(haskell_kompiled)                                        \
                 $(llvm_kompiled)                                           \
@@ -273,6 +311,10 @@ build_bins := $(install_bins)
 build_libs := $(install_libs)
 
 $(KEVM_BIN)/kevm: kevm
+	@mkdir -p $(dir $@)
+	install $< $@
+
+$(KEVM_BIN)/kevm-vm: $(KEVM_LIB)/$(node_kompiled)
 	@mkdir -p $(dir $@)
 	install $< $@
 
@@ -295,6 +337,8 @@ build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%
 build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py $(lemma_includes)
 build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_LIB)/kast-json.py $(lemma_includes)
+build-node:    $(KEVM_LIB)/$(node_kompiled)
+build-kevm:    $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
@@ -328,7 +372,7 @@ TEST_OPTIONS :=
 CHECK        := git --no-pager diff --no-index --ignore-all-space -R
 
 KEVM_MODE     := NORMAL
-KEVM_SCHEDULE := ISTANBUL
+KEVM_SCHEDULE := BERLIN
 KEVM_CHAINID  := 1
 
 KPROVE_MODULE  = VERIFICATION
@@ -343,8 +387,8 @@ test: test-conformance test-prove test-interactive test-parse
 
 # Generic Test Harnesses
 
-tests/ethereum-tests/VMTests/%: KEVM_MODE     = VMTESTS
-tests/ethereum-tests/VMTests/%: KEVM_SCHEDULE = DEFAULT
+tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTESTS
+tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
 tests/specs/benchmarks/functional-spec%:     KPROVE_FILE   =  functional-spec
 tests/specs/benchmarks/functional-spec%:     KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
@@ -393,19 +437,20 @@ tests/%.parse: tests/%
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 tests/%.prove: tests/%
-	$(KEVM) prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
+	$(KEVM) prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) \
+	    --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 .SECONDEXPANSION:
 tests/specs/%.provex: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
 	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS)        \
 	    --provex --backend-dir tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
-tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt
-	$(KOMPILE) --backend $(TEST_SYMBOLIC_BACKEND) $<                                                 \
-	    --directory tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND) \
-	    --main-module $(KPROVE_MODULE)                                                               \
-	    --syntax-module $(KPROVE_MODULE)                                                             \
-	    --concrete-rules-file tests/specs/$(firstword $(subst /, ,$*))/concrete-rules.txt            \
+tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes)
+	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                 \
+	    --directory tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
+	    --main-module $(KPROVE_MODULE)                                                                  \
+	    --syntax-module $(KPROVE_MODULE)                                                                \
+	    --concrete-rules-file tests/specs/$(firstword $(subst /, ,$*))/concrete-rules.txt               \
 	    $(KOMPILE_OPTS)
 
 tests/%.search: tests/%
@@ -415,9 +460,9 @@ tests/%.search: tests/%
 
 # Smoke Tests
 
-smoke_tests_run=tests/ethereum-tests/VMTests/vmArithmeticTest/add0.json \
-                tests/ethereum-tests/VMTests/vmIOandFlowOperations/pop1.json \
-                tests/interactive/sumTo10.evm
+smoke_tests_run = tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json      \
+                  tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmIOandFlowOperations/pop1.json \
+                  tests/interactive/sumTo10.evm
 
 smoke_tests_prove=tests/specs/erc20/ds/transfer-failure-1-a-spec.k
 
@@ -434,7 +479,7 @@ test-slow-conformance: $(slow_conformance_tests:=.run)
 test-failing-conformance: $(failing_conformance_tests:=.run)
 test-conformance: test-vm test-bchain
 
-all_vm_tests     = $(wildcard tests/ethereum-tests/VMTests/*/*.json)
+all_vm_tests     = $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/VMTests/*/*.json)
 quick_vm_tests   = $(filter-out $(slow_conformance_tests), $(all_vm_tests))
 passing_vm_tests = $(filter-out $(failing_conformance_tests), $(quick_vm_tests))
 rest_vm_tests    = $(filter-out $(passing_vm_tests), $(all_vm_tests))
@@ -465,6 +510,37 @@ prove_bihu_tests         := $(filter-out $(prove_failing_tests), $(wildcard $(pr
 prove_examples_tests     := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k) $(wildcard $(prove_specs_dir)/examples/*-spec.md))
 prove_mcd_tests          := $(filter-out $(prove_failing_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
 prove_optimization_tests := $(filter-out $(prove_failing_tests), tests/specs/opcodes/evm-optimizations-spec.md)
+
+## best-effort list of provex kompiled definitions to produce ahead of time
+provex_definitions :=                                                                                              \
+                      tests/specs/benchmarks/functional-spec/haskell/functional-spec-kompiled/timestamp            \
+                      tests/specs/benchmarks/functional-spec/java/functional-spec-kompiled/timestamp               \
+                      tests/specs/benchmarks/verification/haskell/verification-kompiled/timestamp                  \
+                      tests/specs/benchmarks/verification/java/verification-kompiled/timestamp                     \
+                      tests/specs/bihu/functional-spec/haskell/functional-spec-kompiled/timestamp                  \
+                      tests/specs/bihu/functional-spec/java/functional-spec-kompiled/timestamp                     \
+                      tests/specs/bihu/verification/haskell/verification-kompiled/timestamp                        \
+                      tests/specs/bihu/verification/java/verification-kompiled/timestamp                           \
+                      tests/specs/erc20/verification/haskell/verification-kompiled/timestamp                       \
+                      tests/specs/erc20/verification/java/verification-kompiled/timestamp                          \
+                      tests/specs/examples/solidity-code-spec/haskell/solidity-code-spec-kompiled/timestamp        \
+                      tests/specs/examples/solidity-code-spec/java/solidity-code-spec-kompiled/timestamp           \
+                      tests/specs/examples/sum-to-n-spec/haskell/sum-to-n-spec-kompiled/timestamp                  \
+                      tests/specs/examples/sum-to-n-spec/java/sum-to-n-spec-kompiled/timestamp                     \
+                      tests/specs/functional/infinite-gas-spec/haskell/infinite-gas-spec-kompiled/timestamp        \
+                      tests/specs/functional/lemmas-no-smt-spec/haskell/lemmas-no-smt-spec-kompiled/timestamp      \
+                      tests/specs/functional/lemmas-no-smt-spec/java/lemmas-no-smt-spec-kompiled/timestamp         \
+                      tests/specs/functional/lemmas-spec/haskell/lemmas-spec-kompiled/timestamp                    \
+                      tests/specs/functional/lemmas-spec/java/lemmas-spec-kompiled/timestamp                       \
+                      tests/specs/functional/merkle-spec/haskell/merkle-spec-kompiled/timestamp                    \
+                      tests/specs/functional/storageRoot-spec/haskell/storageRoot-spec-kompiled/timestamp          \
+                      tests/specs/mcd/functional-spec/haskell/functional-spec-kompiled/timestamp                   \
+                      tests/specs/mcd/functional-spec/java/functional-spec-kompiled/timestamp                      \
+                      tests/specs/mcd/verification/haskell/verification-kompiled/timestamp                         \
+                      tests/specs/mcd/verification/java/verification-kompiled/timestamp                            \
+                      tests/specs/opcodes/evm-optimizations-spec/haskell/evm-optimizations-spec-kompiled/timestamp \
+                      tests/specs/opcodes/verification/java/verification-kompiled/timestamp
+build-provex: $(provex_definitions)
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
 test-prove-benchmarks:    $(prove_benchmarks_tests:=.provex)
@@ -511,6 +587,23 @@ test-interactive-search: $(search_tests:=.search)
 
 test-interactive-help:
 	$(KEVM) help
+
+proto_tester := $(LOCAL_BIN)/proto_tester
+proto-tester: $(proto_tester)
+$(proto_tester): tests/vm/proto_tester.cpp
+	@mkdir -p $(LOCAL_BIN)
+	$(CXX) -I $(LOCAL_LIB)/proto $(protobuf_out) $< -o $@ -lprotobuf -lpthread
+
+node_tests:=$(wildcard tests/vm/*.bin)
+test-node: $(node_tests:=.run-node)
+
+tests/vm/%.run-node: tests/vm/%.expected $(KEVM_BIN)/kevm-vm $(proto_tester)
+	bash -c " \
+	  kevm-vm 8888 127.0.0.1 & \
+	  while ! netcat -z 127.0.0.1 8888; do sleep 0.1; done; \
+	  netcat -N 127.0.0.1 8888 < tests/vm/$* > tests/vm/$*.out; \
+	  kill %kevm-vm || true"
+	$(proto_tester) $< tests/vm/$*.out
 
 # Media
 # -----

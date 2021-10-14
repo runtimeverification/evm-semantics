@@ -1,5 +1,5 @@
 pipeline {
-  agent { label 'docker' }
+  agent { label 'docker && big' }
   environment {
     GITHUB_TOKEN     = credentials('rv-jenkins-access-token')
     VERSION          = '1.0.1'
@@ -22,10 +22,10 @@ pipeline {
         }
       }
       stages {
-        stage('Build') { steps { sh 'make build RELEASE=true -j6' } }
+        stage('Build') { steps { sh 'make build build-provex RELEASE=true -j6' } }
         stage('Test') {
           failFast true
-          options { timeout(time: 120, unit: 'MINUTES') }
+          options { timeout(time: 150, unit: 'MINUTES') }
           parallel {
             stage('Conformance (LLVM)') { steps {                                         sh 'make test-conformance -j4 TEST_CONCRETE_BACKEND=llvm'      } }
             stage('Proofs (Java)')      { steps { lock("kevm-java-${env.NODE_NAME}")    { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=java'    } } }
@@ -43,6 +43,7 @@ pipeline {
             stage('Failing tests')  { steps { sh 'make test-failure TEST_CONCRETE_BACKEND=llvm'                   } }
             stage('Java KLab')      { steps { sh 'make test-klab-prove TEST_SYMBOLIC_BACKEND=java'                } }
             stage('Haskell Search') { steps { sh 'make test-interactive-search TEST_SYMBOLIC_BACKEND=haskell -j4' } }
+            stage('Kevm VM')        { steps { sh 'make test-node'                                                 } }
             stage('KEVM help')      { steps { sh './kevm help'                                                    } }
           }
         }

@@ -100,14 +100,28 @@ module INFINITE-GAS-COMMON
     rule 0 <=Int #memoryUsageUpdate(MU, START, WIDTH)              => true requires 0 <=Int MU       andBool 0 <=Int START       andBool 0     <=Int WIDTH   [simplification]
     rule         #memoryUsageUpdate(MU, START, WIDTH) <Int #gas(G) => true requires MU  <Int #gas(G) andBool START  <Int #gas(G) andBool WIDTH  <Int #gas(G) [simplification]
 
+    rule 0 <=Int Csload(_, _)       => true  [simplification]
+    rule Csload(_, _) <Int #gas(_)  => true  [simplification]
+    rule #gas(_)  <Int Csload(_, _) => false [simplification]
+    rule #gas(_) >=Int Csload(_, _) => true  [simplification]
+
+    rule 0 <=Int Cmem(_, _)       => true  [simplification]
+    rule Cmem(_, _) <Int #gas(_)  => true  [simplification]
+    rule #gas(_) <Int Cmem(_, _)  => false [simplification]
+    rule Cmem(_, _) <=Int #gas(_) => true  [simplification]
+
     rule 0 <=Int Csstore(_, _, _, _)              => true [simplification]
     rule         Csstore(_, _, _, _) <Int #gas(_) => true [simplification]
 
     rule 0 <=Int Cmem(_, N)              => true requires 0 <=Int N       [simplification]
     rule         Cmem(_, N) <Int #gas(G) => true requires N  <Int #gas(G) [simplification]
 
-    rule 0 <=Int Cgascap(_, _, _, _)                           => true                                                                                       [simplification]
-    rule         Cgascap(_, GCAP, GAVAIL, GEXTRA) <Int #gas(G) => true requires GCAP  <Int #gas(G) andBool GAVAIL  <Int #gas(G) andBool GEXTRA  <Int #gas(G) [simplification]
+    rule 0 <=Int Cgascap(_, _, _, _)                           => true                                                                                    [simplification]
+    rule         Cgascap(_, GCAP, GAVAIL, GEXTRA) <Int #gas(G) => true requires GCAP <Int #gas(G) andBool GAVAIL <Int #gas(G) andBool GEXTRA <Int #gas(G) [simplification]
+
+    rule 0 <=Int Cextra(_, _, _, _)              => true [simplification]
+    rule         Cextra(_, _, _, _) <Int #gas(_) => true [simplification]
+    rule         Cextra(_, _, _, _) <Int pow256  => true [simplification]
 
     rule 0 <=Int #allBut64th(_)                => true                          [simplification]
     rule         #allBut64th(G)  <Int #gas(G') => true requires G <Int #gas(G') [simplification]
@@ -117,5 +131,10 @@ module INFINITE-GAS-COMMON
 
     rule 0 <=Int G up/Int _                => true requires 0 <=Int G        [simplification]
     rule G         up/Int _  <Int #gas(G') => true requires G  <Int #gas(G') [simplification]
+
+    rule 0 <=Int Csload(_, _)       => true  [simplification]
+    rule Csload(_, _) <Int #gas(_)  => true  [simplification]
+    rule #gas(_) <Int Csload(_, _)  => false [simplification]
+    rule Csload(_, _) <=Int #gas(_) => true  [simplification]
 
 endmodule
