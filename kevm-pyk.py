@@ -410,8 +410,8 @@ def writeCFG(cfg, graphvizFile = None):
                , '//     transitions:'
                ]
     for initStateId in cfg['graph']:
-        for (finalStateId, constraint, depth) in cfg['graph'][initStateId]:
-            cfgLines.append('//         ' + '{0:>3}'.format(initStateId) + ' -> ' + '{0:>3}'.format(finalStateId) + ' [' + '{0:>5}'.format(depth) + ' steps]: ' + ' '.join([c.strip() for c in constraint.split('\n')]))
+        for (finalStateId, label, depth) in cfg['graph'][initStateId]:
+            cfgLines.append('//         ' + '{0:>3}'.format(initStateId) + ' -> ' + '{0:>3}'.format(finalStateId) + ' [' + '{0:>5}'.format(depth) + ' steps]: ' + label)
     if graphvizFile is not None:
         graph = Digraph()
         for s in states:
@@ -422,13 +422,11 @@ def writeCFG(cfg, graphvizFile = None):
             label = ' '.join(labels)
             graph.node(str(s), label = label)
         for s in cfg['graph'].keys():
-            for (f, c, d) in cfg['graph'][s]:
-                labelParts = []
+            for (f, id, d) in cfg['graph'][s]:
+                label = id
                 if d != 1:
-                    labelParts.append(str(d) + ' steps')
-                if c != 'true':
-                    labelParts.append(c)
-                graph.edge(str(s), str(f), label = ' '.join(labelParts))
+                    label = label + ': ' + str(d) + ' steps'
+                graph.edge(str(s), str(f), label = '  ' + label + '        ')
         graph.render(graphvizFile)
         _notif('Wrote graphviz rendering of CFG: ' + graphvizFile + '.pdf')
     return '\n'.join(cfgLines)
@@ -517,7 +515,7 @@ def kevmSummarize( directory
         if finalStateId not in writtenStates:
             kevmWriteStateToFile(directory, contractName, str(finalStateId), finalState, symbolTable)
             writtenStates.append(finalStateId)
-        cfg['graph'][initStateId] = [(finalStateId, printConstraint(KConstant('#Top'), symbolTable), finalDepth)]
+        cfg['graph'][initStateId] = [(finalStateId, basicBlockId, finalDepth)]
         if isTerminal(finalState):
             cfg['terminal'].append(finalStateId)
         else:
