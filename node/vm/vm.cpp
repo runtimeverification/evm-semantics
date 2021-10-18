@@ -28,6 +28,16 @@ std::vector<mpz_ptr> set_to_zs(set* s) {
   return result;
 }
 
+std::vector<storageloc *> set_to_storagelocs(set *s) {
+  std::vector<storageloc *> result;
+
+  setiter i = set_iterator(s);
+  while(storageloc * elem = (storageloc *) set_iterator_next(&i)) {
+    result.push_back(elem);
+  }
+  return result;
+}
+
 std::vector<account *> k_to_accts(map* m) {
   list l = hook_MAP_values(m);
   std::vector<account *> result;
@@ -35,6 +45,9 @@ std::vector<account *> k_to_accts(map* m) {
      account* elem = (account*) hook_LIST_get_long(&l, i);
      result.push_back(elem);
   }
+  std::sort(result.begin(), result.end(), [](account *a, account *b) {
+    return mpz_cmp(a->acctID->data, b->acctID->data) < 0;
+  });
   return result;
 }
 
@@ -60,36 +73,76 @@ void k_to_log(struct log* log, LogEntry *pb) {
   pb->set_data(std::string(token->data, len(token)));
 }
 
-extern uint32_t kcellInjTag;
-
-block* make_k_cell(bool iscreate, mpz_ptr to, mpz_ptr from, string *code, block *args, mpz_ptr value, mpz_ptr gasprice, mpz_ptr gas, mpz_ptr beneficiary, mpz_ptr difficulty, mpz_ptr number, mpz_ptr gaslimit, mpz_ptr timestamp, string *function) {
-  kcellinj *inj = (kcellinj *)koreAlloc(sizeof(kcellinj));
-  inj->h = getBlockHeaderForSymbol(kcellInjTag);
-  kcell* runvm = (kcell *)koreAlloc(sizeof(kcell));
-  inj->data = runvm;
+inj* make_runvm(bool iscreate, mpz_ptr to, mpz_ptr from, string *code, block *args, mpz_ptr value, mpz_ptr gasprice, mpz_ptr gas, mpz_ptr beneficiary, mpz_ptr difficulty, mpz_ptr number, mpz_ptr gaslimit, mpz_ptr timestamp, string *function) {
+  inj *kinj = (inj *)koreAlloc(sizeof(inj));
+  static uint32_t tag = getTagForSymbolName("inj{SortEthereumSimulation{}, SortKItem{}}");
+  kinj->h = getBlockHeaderForSymbol(tag);
+  runvm* runvmsymbol = (runvm *)koreAlloc(sizeof(runvm));
+  kinj->data = (block *)runvmsymbol;
   static uint32_t tag2 = getTagForSymbolName("LblrunVM{}");
-  runvm->h = getBlockHeaderForSymbol(tag2);
-  runvm->iscreate = iscreate;
-  runvm->to = to;
-  runvm->from = from;
-  runvm->code = code;
-  runvm->args = args;
-  runvm->value = value;
-  runvm->gasprice = gasprice;
-  runvm->gas = gas;
-  runvm->beneficiary = beneficiary;
-  runvm->difficulty = difficulty;
-  runvm->number = number;
-  runvm->gaslimit = gaslimit;
-  runvm->timestamp = timestamp;
-  runvm->function = function;
-  return (block*)inj;
+  runvmsymbol->h = getBlockHeaderForSymbol(tag2);
+  runvmsymbol->iscreate = iscreate;
+  runvmsymbol->to = to;
+  runvmsymbol->from = from;
+  runvmsymbol->code = code;
+  runvmsymbol->args = args;
+  runvmsymbol->value = value;
+  runvmsymbol->gasprice = gasprice;
+  runvmsymbol->gas = gas;
+  runvmsymbol->beneficiary = beneficiary;
+  runvmsymbol->difficulty = difficulty;
+  runvmsymbol->number = number;
+  runvmsymbol->gaslimit = gaslimit;
+  runvmsymbol->timestamp = timestamp;
+  runvmsymbol->function = function;
+  return kinj;
+}
+
+block* make_accesslist(AccessListData accessList, runvm *runvmsymbol) {
+  static blockheader zinjHeader = getBlockHeaderForSymbol(zinjTag);
+  set addresses = set();
+  set storages = set();
+
+  for (auto address : accessList.addresses()) {
+    zinj *addressinj = (zinj *)koreAlloc(sizeof(zinj));
+    addressinj->h = zinjHeader;
+    addressinj->data = to_z_unsigned(address);
+
+    addresses = addresses.insert((block *)addressinj);
+  }
+
+  for (auto entry : accessList.storagelocations()) {
+    mpz_ptr address = to_z_unsigned(entry.address());
+    mpz_ptr location = to_z_unsigned(entry.storagelocation());
+
+    storageloc *storageentry = (storageloc *)koreAlloc(sizeof(storageloc));
+    static uint32_t tag = getTagForSymbolName("LblstorageLocation{}");
+    storageentry->h = getBlockHeaderForSymbol(tag);
+    storageentry->address = address;
+    storageentry->location = location;
+
+    storages = storages.insert((block *)storageentry);
+  }
+
+  accesslist *res = (accesslist *)koreAlloc(sizeof(accesslist));
+  static uint32_t tag = getTagForSymbolName("LblmakeAccessList{}");
+  res->h = getBlockHeaderForSymbol(tag);
+  res->addresses = addresses;
+  res->storage = storages;
+  res->runvm = runvmsymbol;
+  return (block *)res;
 }
 
 bool storage_is_modified(mpz_ptr acctID, map* storage) {
   list keys = hook_MAP_keys_list(storage);
+  std::vector<zinj *> sorted_keys;
   for (size_t i = 0; i < hook_LIST_size_long(&keys); i++) {
-    zinj* key = (zinj*)hook_LIST_get_long(&keys, i);
+     sorted_keys.push_back((zinj *)hook_LIST_get_long(&keys, i));
+  }
+  std::sort(sorted_keys.begin(), sorted_keys.end(), [](zinj *a, zinj *b) {
+    return mpz_cmp(a->data, b->data) < 0;
+  });
+  for (zinj *key : sorted_keys) {
     zinj* value = (zinj*)hook_MAP_lookup(storage, (block*)key);
     if (mpz_cmp(hook_BLOCKCHAIN_getStorageData(acctID, key->data), value->data) != 0) {
       return true;
@@ -156,8 +209,14 @@ void k_to_mod_acct(account* acct, ModifiedAccount* mod_acct) {
   }
   map* storage = &acct->storage->data;
   list keys = hook_MAP_keys_list(storage);
+  std::vector<zinj *> sorted_keys;
   for (size_t i = 0; i < hook_LIST_size_long(&keys); i++) {
-    zinj* key = (zinj*)hook_LIST_get_long(&keys, i);
+    sorted_keys.push_back((zinj *)hook_LIST_get_long(&keys, i));
+  }
+  std::sort(sorted_keys.begin(), sorted_keys.end(), [](zinj *a, zinj *b) {
+    return mpz_cmp(a->data, b->data) < 0;
+  });
+  for (zinj *key : sorted_keys) {
     zinj* value = (zinj*)hook_MAP_lookup(storage, (block*)key);
     if (mpz_cmp(hook_BLOCKCHAIN_getStorageData(acct->acctID->data, key->data), value->data) != 0) {
       StorageUpdate *update = mod_acct->add_storageupdates();
@@ -204,18 +263,28 @@ CallResult run_transaction(CallContext ctx) {
   scheduleinj->h = hdr2;
   scheduleinj->data = (block*)schedule;
 
-  static blockheader injHeaderInt = getBlockHeaderForSymbol(getTagForSymbolName("inj{SortInt{}, SortKItem{}}"));
+  static blockheader injHeaderInt = getBlockHeaderForSymbol(zinjTag);
   mpz_ptr chainid_z = to_z(ctx.ethereumconfig().chainid());
   zinj *chainidinj = (zinj *)koreAlloc(sizeof(zinj));
   chainidinj->h = injHeaderInt;
   chainidinj->data = chainid_z;
 
-  block* inj = make_k_cell(iscreate, to, from, in.code, in.args, value, gasprice, gas, beneficiary, difficulty, number, gaslimit, move_int(timestamp), in.function);
+  inj* inj = make_runvm(iscreate, to, from, in.code, in.args, value, gasprice, gas, beneficiary, difficulty, number, gaslimit, move_int(timestamp), in.function);
+
+  switch (ctx.txtype()) {
+    case CallContext::ACCESSLIST:
+      assert(ctx.has_accesslist());
+      inj->data = make_accesslist(ctx.accesslist(), (runvm *)inj->data);
+      break;
+    case CallContext::LEGACY:
+    default:
+      break;
+  }
 
   map withSched = hook_MAP_element(configvar("$SCHEDULE"), (block *)scheduleinj);
   map withMode = hook_MAP_update(&withSched, configvar("$MODE"), (block *)modeinj);
   map withChainid = hook_MAP_update(&withMode, configvar("$CHAINID"), (block *)chainidinj);
-  map init = hook_MAP_update(&withChainid, configvar("$PGM"), inj);
+  map init = hook_MAP_update(&withChainid, configvar("$PGM"), (block *)inj);
   static uint32_t tag2 = getTagForSymbolName("LblinitGeneratedTopCell{}");
   void *arr[1];
   arr[0] = &init;
@@ -257,6 +326,24 @@ CallResult run_transaction(CallContext ctx) {
   for (struct log *log : logs) {
     auto log_pb = result.add_logs();
     k_to_log(log, log_pb);
+  }
+
+  if (ctx.txtype() == CallContext::ACCESSLIST) {
+    AccessListData *accessListResult = result.mutable_accesslist();
+    static uint32_t extractAccessListTag = getTagForSymbolName("LblextractAccessList{}");
+    accesslist_result *extractedAccessList = (accesslist_result *)evaluateFunctionSymbol(extractAccessListTag, arr);
+
+    auto addresses = set_to_zs(&extractedAccessList->addresses);
+    for (mpz_ptr acct : addresses) {
+      accessListResult->add_addresses(of_z_width(20, acct));
+    }
+
+    auto storagelocs = set_to_storagelocs(&extractedAccessList->locations);
+    for (storageloc *location : storagelocs) {
+      StorageEntry *entry = accessListResult->add_storagelocations();
+      entry->set_address(of_z_width(20, location->address));
+      entry->set_storagelocation(of_z_width(32, location->location));
+    }
   }
 
   std::cerr << result.DebugString() << std::endl;

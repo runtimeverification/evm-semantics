@@ -22,7 +22,7 @@ plugin_include=${INSTALL_LIB}/blockchain-k-plugin/include
 libff_dir=${INSTALL_LIB}/libff
 libcryptopp_dir=${INSTALL_LIB}/cryptopp
 
-export PATH="$install_k_bin:$INSTALL_BIN:$INSTALL_LIB:$PATH"
+export PATH="${INSTALL_BIN}:${INSTALL_LIB}:${install_k_bin}:${PATH}"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
@@ -272,7 +272,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                  <spec> is a K specification to be proved.
                  <main> is a K definition to be kompiled, which may include files from KEVM.
                  <KEVM arg> is one of [--mode (NORMAL|VMTESTS)]
-                                      [--schedule (ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
+                                      [--schedule (BERLIN|ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
                                       [--chainid NNN]
                                       [--concrete-rules-file <concrete_rules_file>]
                                       [--bug-report]
@@ -315,7 +315,7 @@ profile_timeout="0"
 kore_prof_args=""
 bug_report=false
 mode=NORMAL
-schedule=ISTANBUL
+schedule=BERLIN
 chainid=1
 concrete_rules_file=
 provex=false

@@ -37,19 +37,20 @@ Address/Hash Helpers
     rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192))))
     rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#padToWidth(20, #asByteStack(ACCT))) +String #unparseByteStack(#padToWidth(32, #asByteStack(SALT))) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE)))))))
 
-    syntax Account ::= #sender ( Int , Int , Int , Account , Int , String , Int , ByteArray , ByteArray, Int ) [function]
-                     | #sender ( String , Int , String , String )                                              [function, klabel(#senderAux)]
-                     | #sender ( String )                                                                      [function, klabel(#senderAux2)]
- // ------------------------------------------------------------------------------------------------------------------------------------------
-    rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS, _CID)
-      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, #parseByteStackRaw(DATA)))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+    syntax Account ::= #sender ( Int , Int , Int , Int , Account , Int , String , Int , JSONs , Int , ByteArray, ByteArray )    [function]
+                     | #sender ( String , Int , String , String )                                                               [function, klabel(#senderAux) ]
+                     | #sender ( String )                                                                                       [function, klabel(#senderAux2)]
+ // -----------------------------------------------------------------------------------------------------------------------------------------------------------
+    rule #sender(_, _, _, _, _, _, _, _, _, TW => TW +Int 27, _, _)
+      requires TW ==Int 0 orBool TW ==Int 1
+
+    rule #sender(TYPE, TN, TP, TG, TT, TV, TD, CID, TA, TW, TR, TS)
+      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TYPE, TN, TP, TG, TT, TV, #parseByteStackRaw(TD), CID, TA))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
       requires TW ==Int 27 orBool TW ==Int 28
 
-    rule #sender(TN, TP, TG, TT, TV, DATA, TW, TR, TS, CID)
-      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, #parseByteStackRaw(DATA), CID))), 28 -Int (TW %Int 2), #unparseByteStack(TR), #unparseByteStack(TS))
+    rule #sender(_TYPE, TN, TP, TG, TT, TV, TD, CID, _TA, TW, TR, TS)
+      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, #parseByteStackRaw(TD), CID))), 28 -Int (TW %Int 2), #unparseByteStack(TR), #unparseByteStack(TS))
       requires TW ==Int CID *Int 2 +Int 35 orBool TW ==Int CID *Int 2 +Int 36
-
-    rule #sender(_, _, _, _, _, _, _, _, _, _) => .Account [owise]
 
     rule #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
 
@@ -105,36 +106,53 @@ Address/Hash Helpers
 
 ```k
     syntax String ::= #hashSignedTx   ( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
-                    | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray )                               [function]
+                    | #hashUnsignedTx ( Int , Int , Int , Int , Account , Int , ByteArray , Int , JSONs )           [function]
                     | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray, Int )                          [function]
  // --------------------------------------------------------------------------------------------------------------------------
-    rule [hashTx]: #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
-                => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
+    rule #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
+      => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
 
-    rule [hashFakeTx]: #hashUnsignedTx(TN, TP, TG, TT, TV, TD)
-                    => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
-                                                    +String #rlpEncodeWord(TP)
-                                                    +String #rlpEncodeWord(TG)
-                                                    +String #rlpEncodeAccount(TT)
-                                                    +String #rlpEncodeWord(TV)
-                                                    +String #rlpEncodeString(#unparseByteStack(TD))
-                                                  , 192
-                                                  )
-                                )
+    // Hashing for legacy transactions
+    rule #hashUnsignedTx(0, TN, TP, TG, TT, TV, TD, _CID, _TA)
+      => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
+                                      +String #rlpEncodeWord(TP)
+                                      +String #rlpEncodeWord(TG)
+                                      +String #rlpEncodeAccount(TT)
+                                      +String #rlpEncodeWord(TV)
+                                      +String #rlpEncodeString(#unparseByteStack(TD))
+                                    , 192
+                                    )
+                  )
 
-    rule [hashFakeTx2]: #hashUnsignedTx(TN, TP, TG, TT, TV, TD, CID)
-                     => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
-                                                     +String #rlpEncodeWord(TP)
-                                                     +String #rlpEncodeWord(TG)
-                                                     +String #rlpEncodeAccount(TT)
-                                                     +String #rlpEncodeWord(TV)
-                                                     +String #rlpEncodeString(#unparseByteStack(TD))
-                                                     +String #rlpEncodeWord(CID)
-                                                     +String #rlpEncodeString("")
-                                                     +String #rlpEncodeString("")
-                                                   , 192
-                                                   )
-                                 )
+    // Hashing for EIP-2930: Optional access lists
+    rule #hashUnsignedTx(1, TN, TP, TG, TT, TV, TD, CID, [TA])
+      => Keccak256(       #rlpEncodeBytes(1,1)
+                  +String #rlpEncodeLength(         #rlpEncodeWord(CID)
+                                            +String #rlpEncodeWord(TN)
+                                            +String #rlpEncodeWord(TP)
+                                            +String #rlpEncodeWord(TG)
+                                            +String #rlpEncodeAccount(TT)
+                                            +String #rlpEncodeWord(TV)
+                                            +String #rlpEncodeString(#unparseByteStack(TD))
+                                            +String #rlpEncodeAccessList([TA], "")
+                                          , 192
+                                          )
+                  )
+
+    // Hashing for EIP-155: Simple replay attack protection
+    rule #hashUnsignedTx(TN, TP, TG, TT, TV, TD, CID)
+      => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
+                                      +String #rlpEncodeWord(TP)
+                                      +String #rlpEncodeWord(TG)
+                                      +String #rlpEncodeAccount(TT)
+                                      +String #rlpEncodeWord(TV)
+                                      +String #rlpEncodeString(#unparseByteStack(TD))
+                                      +String #rlpEncodeWord(CID)
+                                      +String #rlpEncodeString("")
+                                      +String #rlpEncodeString("")
+                                    , 192
+                                    )
+                  )
 ```
 
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
@@ -153,6 +171,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 -   `#parseWordStack` interprets a JSON list as a stack of `Word`.
 -   `#parseMap` interprets a JSON key/value object as a map from `Word` to `Word`.
 -   `#parseAddr` interprets a string as a 160 bit hex-endcoded address.
+-   `#parseAccessListStorageKeys` interprets a JSON list object as a Set, casting each string element as a `Word`.
 
 ```k
     syntax Int ::= #parseHexWord ( String ) [function]
@@ -215,6 +234,13 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
     syntax Int ::= #parseAddr ( String ) [function]
  // -----------------------------------------------
     rule #parseAddr(S) => #addr(#parseHexWord(S))
+
+   syntax List ::= #parseAccessListStorageKeys ( JSONs )        [function]
+                 | #parseAccessListStorageKeys ( JSONs , List ) [function, klabel(#parseAccessListStorageKeysAux)]
+ // --------------------------------------------------------------------------------------------------------------
+    rule #parseAccessListStorageKeys( J                           ) => #parseAccessListStorageKeys(J, .List)
+    rule #parseAccessListStorageKeys([S:String, REST], RESULT:List) => #parseAccessListStorageKeys([REST], ListItem(#asWord(#parseByteStackRaw(S))) RESULT )
+    rule #parseAccessListStorageKeys([ .JSONs       ], RESULT:List) => RESULT
 ```
 
 Unparsing
@@ -410,6 +436,16 @@ Encoding
 
     rule #rlpMerkleH ( X ) => X
       requires notBool lengthString(X) >=Int 32
+
+    syntax String ::= #rlpEncodeJSONBytes ( JSONs , String ) [function]
+ // -------------------------------------------------------------------
+    rule #rlpEncodeJSONBytes([ S:String, REST ], RESULT:String) => #rlpEncodeJSONBytes([REST], RESULT +String #rlpEncodeBytes(#asWord(#parseByteStackRaw(S)),32))
+    rule #rlpEncodeJSONBytes([.JSONs ], RESULT:String) => #rlpEncodeLength(RESULT, 192)
+
+    syntax String ::= #rlpEncodeAccessList ( JSONs , String ) [function]
+ // --------------------------------------------------------------------
+    rule #rlpEncodeAccessList([[A, [S:JSONs]], REST], RESULT:String) => #rlpEncodeAccessList([REST], RESULT +String #rlpEncodeLength(#rlpEncodeAccount(#asAccount(#parseByteStackRaw(A))) +String #rlpEncodeJSONBytes([S],""), 192 ))
+    rule #rlpEncodeAccessList([.JSONs], RESULT:String) => #rlpEncodeLength(RESULT, 192)
 ```
 
 Decoding
@@ -451,6 +487,10 @@ Decoding
     rule #decodeLengthPrefixLength(#str,  STR, START, B0) => #decodeLengthPrefixLength(#str,  START, B0 -Int 128 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 128 -Int 56 +Int 1)))))
     rule #decodeLengthPrefixLength(#list, STR, START, B0) => #decodeLengthPrefixLength(#list, START, B0 -Int 192 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 192 -Int 56 +Int 1)))))
     rule #decodeLengthPrefixLength(TYPE, START, LL, L) => TYPE(L, START +Int 1 +Int LL)
+
+    syntax JSONs ::= #rlpDecodeTransaction(ByteArray) [function]
+ // ------------------------------------------------------------
+    rule #rlpDecodeTransaction(T) => #unparseByteStack(T[0 .. 1]), #rlpDecode(#unparseByteStack(T[1 .. #sizeByteArray(T) -Int 1]))
 ```
 
 Merkle Patricia Tree
