@@ -249,8 +249,11 @@ def kevmSanitizeConfig(initConstrainedTerm):
     newConstrainedTerm = traverseBottomUp(newConstrainedTerm, _parseableBytesTokens)
     newConstrainedTerm = traverseBottomUp(newConstrainedTerm, _removeCellMapDefinedness)
     newConstrainedTerm = buildAssoc(KConstant('#Top'), '#And', [newConstrainedTerm] + bytesConstraints)
-    newConstrainedTerm = removeGeneratedCells(newConstrainedTerm)
-    return newConstrainedTerm
+
+    (config, constraint) = splitConfigAndConstraints(newConstrainedTerm)
+    config               = removeGeneratedCells(config)
+    constraints          = dedupeClauses(flattenLabel('#And', constraint))
+    return buildAssoc(KConstant('#Top'), '#And', [config] + constraints)
 
 def kevmProveClaim(directory, mainFileName, mainModuleName, claim, claimId, symbolTable, kevmArgs = [], teeOutput = False, dieOnFail = False, logFile = None):
     logAxiomsFile = directory + '/' + claimId.lower() + '-debug.log' if logFile is None else logFile
