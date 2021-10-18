@@ -338,33 +338,50 @@ def kevmGetBasicBlockAndNextStates(directory, mainFileName, mainModuleName, clai
 
 def abstract(constrainedTerm):
 
-    wordStack     = getCell(constrainedTerm, 'WORDSTACK_CELL')
-    wordStackVars = []
+    wordStack          = getCell(constrainedTerm, 'WORDSTACK_CELL')
+    wordStackFreshVars = []
     if not isKVariable(wordStack):
         wordStackItems = flattenLabel('_:__EVM-TYPES_WordStack_Int_WordStack', wordStack)
         if not (len(wordStackItems) > 0 and wordStackItems[-1] == KConstant('.WordStack_EVM-TYPES_WordStack')):
             _fatal('Cannot abstract wordstack: ' + str(wordStack))
-        wordStackVars  = [ 'W' + str(i) for i in range(len(wordStackItems[0:-1])) ]
-        wordStackItems = [ KVariable(v) for v in wordStackVars ]
-        wordStack = buildCons(KConstant('.WordStack_EVM-TYPES_WordStack'), '_:__EVM-TYPES_WordStack_Int_WordStack', wordStackItems)
+        newWordStackItems = []
+        for (i, w) in enumerate(wordStackItems[0:-1]):
+            if isKVariable(w):
+                newWordStackItems.append(w)
+            elif isKToken(w):
+                newWordStackItems.append(w)
+            else:
+                newVar = abstractTermSafely(w, baseName = 'W')
+                wordStackFreshVars.append(newVar['name'])
+                newWordStackItems.append(newVar)
+        wordStack = buildCons(KConstant('.WordStack_EVM-TYPES_WordStack'), '_:__EVM-TYPES_WordStack_Int_WordStack', newWordStackItems)
 
-    cellSubst      = { 'WORDSTACK_CELL'  : wordStack
-                     , 'GAS_CELL'        : infGas(KVariable('_GAS_CELL'))
-                     , 'LOCALMEM_CELL'   : KVariable('_LOCALMEM_CELL')
-                     , 'MEMORYUSED_CELL' : KVariable('MEMORYUSED_CELL')
-                     }
-    newVars        = [ '_GAS_CELL' , '_LOCALMEM_CELL' , 'MEMEORYUSED_CELL' ] + wordStackVars
-    newConstraints = [ boolToMlPred(rangeUInt256(KVariable(v))) for v in wordStackVars ]
+    cellSubst = { 'WORDSTACK_CELL'  : wordStack
+                , 'GAS_CELL'        : infGas(KVariable('_GAS_CELL'))
+                , 'LOCALMEM_CELL'   : KVariable('_LOCALMEM_CELL')
+                , 'MEMORYUSED_CELL' : KVariable('MEMORYUSED_CELL')
+                }
+
+    newVars = [ '_GAS_CELL' , '_LOCALMEM_CELL' , 'MEMEORYUSED_CELL' ] + wordStackFreshVars
+
+    newConstraints = [ boolToMlPred(rangeUInt256(KVariable(v))) for v in wordStackFreshVars ]
     newConstraints.append(boolToMlPred(rangeUInt256(KVariable('MEMORYUSED_CELL'))))
 
     newConstrainedTerm = removeConstraintsFor(newVars, constrainedTerm)
     newConstrainedTerm = applyCellSubst(newConstrainedTerm, cellSubst)
     newConstrainedTerm = removeUselessConstraints(newConstrainedTerm)
-    return buildAssoc(KConstant('Top'), '#And', [newConstrainedTerm] + newConstraints)
+    newConstrainedTerm = buildAssoc(KConstant('Top'), '#And', [newConstrainedTerm] + newConstraints)
+
+    return newConstrainedTerm
 
 def subsumes(constrainedTerm1, constrainedTerm2):
     # Could implement this with the search-final-state-matching check used for LLVM backend? Does it work with constraints?
-    return getCell(constrainedTerm1, 'PC_CELL') == getCell(constrainedTerm2, 'PC_CELL')
+    if getCell(constrainedTerm1, 'PC_CELL') == getCell(constrainedTerm2, 'PC_CELL'):
+        wordStack1 = getCell(constrainedTerm1, 'WORDSTACK_CELL')
+        wordStack2 = getCell(constrainedTerm2, 'WORDSTACK_CELL')
+        if match(wordStack1, wordStack2) is not None:
+            return True
+    return False
 
 def isTerminal(constrainedTerm):
     return getCell(constrainedTerm, 'K_CELL') == KSequence([KConstant('#halt_EVM_KItem'), ktokenDots])
@@ -528,7 +545,7 @@ def kevmSummarize( directory
             for (i, (ns, newConstraint)) in enumerate(nextStates):
                 subsumed = False
                 for (j, seen) in seenStates:
-                    if subsumes(ns, seen):
+                    if subsumes(seen, ns):
                         subsumed = True
                         cfg['graph'][finalStateId].append((j, printConstraint(newConstraint, symbolTable), 1))
                 if not subsumed:
