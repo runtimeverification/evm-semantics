@@ -246,6 +246,7 @@ This minimizes the amount of information which must be stored in the configurati
          </account>
          <touchedAccounts> _ => SetItem(CB) </touchedAccounts>
          <activeAccounts> ACCTS </activeAccounts>
+         <accessedAccounts> ACCESSED => ACCESSED |Set SetItem(ACCTFROM) |Set SetItem(#newAddr(ACCTFROM, NONCE -Int 1)) </accessedAccounts>
       requires ACCTFROM in ACCTS
 
     rule <k> runVM(false, ACCTTO, ACCTFROM, _, ARGS, VALUE, GPRICE, GAVAIL, CB, DIFF, NUMB, GLIMIT, TS, _)
@@ -266,7 +267,25 @@ This minimizes the amount of information which must be stored in the configurati
          <timestamp> _ => TS </timestamp>
          <touchedAccounts> _ => SetItem(CB) </touchedAccounts>
          <activeAccounts> ACCTS </activeAccounts>
+         <accessedAccounts> ACCESSED => ACCESSED |Set SetItem(ACCTFROM) |Set SetItem(ACCTTO) </accessedAccounts>
       requires ACCTFROM in ACCTS
+```
+
+-   `makeAccessList` will initialize the `<accessedAccounts>` and `<accessedStorage>` cells for an access list transaction type and leave runVM at the top of the `<k>` cell.
+
+```{.k .node}
+    syntax KItem ::= storageLocation ( Int, Int ) [symbol]
+    syntax EthereumSimulation ::= makeAccessList ( accessedAddresses: Set, storageList: Set , runvm: EthereumSimulation ) [symbol]
+ // ------------------------------------------------------------------------------------------------------------------------------
+    rule <k> makeAccessList( ACCESSED, .Set, RUNVM ) => RUNVM ... </k>
+         <accessedAccounts> _ => ACCESSED </accessedAccounts>
+
+    rule <k> makeAccessList( _, SetItem(storageLocation(ACCT, LOCATION)) STORAGELIST => STORAGELIST, _ ) ... </k>
+         <accessedStorage> ... ACCT |-> (LOCATIONS => LOCATIONS |Set SetItem(LOCATION)) ... </accessedStorage>
+
+    rule <k> makeAccessList( _, SetItem(storageLocation(ACCT, LOCATION)) STORAGELIST => STORAGELIST, _ ) ... </k>
+         <accessedStorage> STORAGEMAP => STORAGEMAP[ACCT <- SetItem(LOCATION)] </accessedStorage>
+      requires notBool ACCT in_keys(STORAGEMAP)
 ```
 
 -   `#endCreate` and `#endVM` clean up after the transaction finishes and store the return status code of the top level call frame on the top of the `<k>` cell.
@@ -309,6 +328,22 @@ This minimizes the amount of information which must be stored in the configurati
          <accounts> ACCTS </accounts>
          <touchedAccounts> TOUCHED </touchedAccounts>
          <statusCode> STATUSCODE </statusCode>
+
+    syntax KItem ::= accessListResult( accountsSet: Set, storageSet: Set ) [symbol]
+    syntax KItem ::= extractAccessList() [function, symbol]
+ // -------------------------------------------------------------------------------
+    rule [[ extractAccessList() => accessListResult( ACCESSED, warmStorage2Set( keys_list(STORAGE), STORAGE, .Set) ) ]]
+         <accessedAccounts> ACCESSED </accessedAccounts>
+         <accessedStorage>  STORAGE  </accessedStorage>
+
+    syntax Set ::= warmStorage2Set   ( List, Map, Set ) [function]
+                 | warmStorage2SetAux( Int, List, Set ) [function]
+ // --------------------------------------------------------------
+    rule warmStorage2Set( .List, _, STORAGELIST ) => STORAGELIST
+    rule warmStorage2Set( (ListItem(ACCT) => .List) _, STORAGE, RESULT => RESULT |Set warmStorage2SetAux(ACCT, Set2List({STORAGE[ACCT]}:>Set), .Set) )
+
+    rule warmStorage2SetAux( _, .List, RESULT ) => RESULT
+    rule warmStorage2SetAux( ACCT, (ListItem(LOCATION) => .List) LOCATIONS, RESULT => RESULT |Set SetItem(storageLocation(ACCT, LOCATION)) )
 ```
 
 -   `contractBytes` takes the contents of the `<code>` cell and returns its binary representation as a String.

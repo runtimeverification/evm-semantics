@@ -79,6 +79,9 @@ module INFINITE-GAS-SPEC
                       )
            => doneLemma(#gas(VGAS +Int -7349)) ... </k>
 
+    claim <k> runLemma(       Cgascap(ISTANBUL, #gas(VGas +Int -2924), #gas(VGas +Int -2924), Cextra(ISTANBUL, ISEMPTY, VALUE, ISWARM))  )
+           => doneLemma( #gas(Cgascap(ISTANBUL,     (VGas +Int -2924),     (VGas +Int -2924), Cextra(ISTANBUL, ISEMPTY, VALUE, ISWARM))) ) ... </k>
+
  // Infinite Gas comparisons
  // ------------------------
 
@@ -122,6 +125,9 @@ module INFINITE-GAS-SPEC
 
     claim <k> runLemma(0 <=Int 3 *Int (DATA_LEN up/Int 32))      => doneLemma(true) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
     claim <k> runLemma(3 *Int (DATA_LEN up/Int 32) <Int #gas(_)) => doneLemma(true) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+
+    claim <k> runLemma(#gas ( _ ) <Int Csload(_ , _) ) => doneLemma(false) ... </k> requires CONTRACT_ID =/=Int 1 andBool #rangeAddress(CONTRACT_ID)
+    claim <k> runLemma(Csload(_ , _) <=Int #gas ( _) ) => doneLemma(true)  ... </k> requires CONTRACT_ID =/=Int 1 andBool #rangeAddress(CONTRACT_ID)
 
     claim <k> runLemma(Cgascap(ISTANBUL, #gas(_), #gas(_), 700) <Int 3) => doneLemma(false) ... </k>
     claim <k> runLemma(0 <=Int Cgascap(ISTANBUL, #gas(VGAS +Int -5413), #gas(VGAS +Int -5413), 700)) => doneLemma(true) ... </k>
