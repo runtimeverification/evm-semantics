@@ -49,7 +49,7 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
-        build build-haskell build-llvm build-provex build-node build-kevm                                                        \
+        build build-haskell build-vm build-llvm build-provex build-node build-kevm                                                        \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
         test-prove test-failing-prove                                                                                            \
@@ -73,15 +73,14 @@ distclean:
 # Non-K Dependencies
 # ------------------
 
-libsecp256k1_out := $(LOCAL_LIB)/pkgconfig/libsecp256k1.pc
-libff_out        := $(KEVM_LIB)/libff/lib/libff.a
-libcryptopp_out  := $(KEVM_LIB)/cryptopp/lib/libcryptopp.a
 protobuf_out     := $(LOCAL_LIB)/proto/proto/msg.pb.cc
 
-libsecp256k1: $(libsecp256k1_out)
-libff:        $(libff_out)
-libcryptopp : $(libcryptopp_out)
 protobuf:     $(protobuf_out)
+
+ifndef SYSTEM_LIBSECP256K1
+
+libsecp256k1_out := $(LOCAL_LIB)/pkgconfig/libsecp256k1.pc
+libsecp256k1: $(libsecp256k1_out)
 
 $(libsecp256k1_out): $(PLUGIN_SUBMODULE)/deps/secp256k1/autogen.sh
 	cd $(PLUGIN_SUBMODULE)/deps/secp256k1                                 \
@@ -89,6 +88,13 @@ $(libsecp256k1_out): $(PLUGIN_SUBMODULE)/deps/secp256k1/autogen.sh
 	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
 	    && $(MAKE)                                                        \
 	    && $(MAKE) install
+
+endif # ifndef SYSTEM_LIBSECP256K1
+
+ifndef SYSTEM_LIBFF
+
+libff_out := $(KEVM_LIB)/libff/lib/libff.a
+libff: $(libff_out)
 
 LIBFF_CMAKE_FLAGS :=
 
@@ -106,14 +112,20 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
 	    && make -s -j4                                                                                          \
 	    && make install DESTDIR=$(CURDIR)/$(BUILD_DIR)
+endif # ifndef SYSTEM_LIBFF
 
 $(protobuf_out): $(NODE_DIR)/proto/msg.proto
 	@mkdir -p $(LOCAL_LIB)/proto
 	protoc --cpp_out=$(LOCAL_LIB)/proto -I $(NODE_DIR) $(NODE_DIR)/proto/msg.proto
 
+ifndef SYSTEM_LIBCRYPTOPP
+libcryptopp_out  := $(KEVM_LIB)/cryptopp/lib/libcryptopp.a
+libcryptopp : $(libcryptopp_out)
+
 $(libcryptopp_out): $(PLUGIN_SUBMODULE)/deps/cryptopp/GNUmakefile
 	cd $(PLUGIN_SUBMODULE)/deps/cryptopp                            \
             && $(MAKE) install DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/cryptopp
+endif # SYSTEM_LIBCRYPTOPP
 
 # K Dependencies
 # --------------
@@ -317,6 +329,7 @@ build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
 build-node:    $(KEVM_LIB)/$(node_kompiled)
 build-kevm:    $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes)
+build-vm: build-node
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
