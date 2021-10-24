@@ -302,14 +302,18 @@ def kevmGetBasicBlockAndNextStates(directory, mainFileName, mainModuleName, clai
     branching  = False
     depth      = 0
     finalState = nextStates[0]
+    proved     = finalState == KConstant('#Top')
     for axioms in getAppliedAxiomList(logFileName):
         if len(axioms) > 1:
             branching = True
             break
         else:
             depth += 1
+    if proved:
+        depth -= 1
+        nextStates = []
 
-    if branching:
+    if branching or proved:
         finalState = kevmProveClaim( directory
                                    , mainFileName
                                    , mainModuleName
@@ -319,7 +323,7 @@ def kevmGetBasicBlockAndNextStates(directory, mainFileName, mainModuleName, clai
                                    , kevmArgs = [ '--depth' , str(depth) ]
                                    , teeOutput = debug
                                    )
-        _notif('Found basic block terminal state for ' + claimId + ' at depth ' + str(depth) + '.')
+        _notif('Found basic block for ' + claimId + ' at depth ' + str(depth) + '.')
     elif len(nextStates) == 1:
         nextStates = []
 
@@ -371,6 +375,7 @@ def abstract(constrainedTerm):
     newConstrainedTerm = applyCellSubst(newConstrainedTerm, cellSubst)
     newConstrainedTerm = removeUselessConstraints(newConstrainedTerm)
     newConstrainedTerm = buildAssoc(KConstant('Top'), '#And', [newConstrainedTerm] + newConstraints)
+    newConstrainedTerm = markUselessVars(newConstrainedTerm)
 
     return newConstrainedTerm
 
@@ -387,11 +392,13 @@ def isTerminal(constrainedTerm):
     return getCell(constrainedTerm, 'K_CELL') == KSequence([KConstant('#halt_EVM_KItem'), ktokenDots])
 
 def buildTerminal(constrainedTerm):
-    (config, _) = splitConfigAndConstraints(constrainedTerm)
-    cellSubst = { 'K_CELL'  : KSequence([KConstant('#halt_EVM_KItem'), ktokenDots])
-                , 'PC_CELL' : KVariable('?_')
-                }
-    return applyCellSubst(config, cellSubst)
+    (state, _)      = splitConfigAndConstraints(constrainedTerm)
+    (config, subst) = splitConfigFrom(state)
+    for s in subst:
+        subst[s] = KVariable('?_')
+    subst['K_CELL']          = KSequence([KConstant('#halt_EVM_KItem'), ktokenDots])
+    subst['STATUSCODE_CELL'] = KConstant('.StatusCode_NETWORK_StatusCode')
+    return substitute(config, subst)
 
 def simplifyBooleanConstraint(constraint):
     constraints    = dedupeClauses(flattenLabel('_andBool_', simplifyBool(constraint)))
