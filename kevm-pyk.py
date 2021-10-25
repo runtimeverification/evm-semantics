@@ -283,7 +283,6 @@ def kevmSanitizeConfig(initConstrainedTerm):
 def kevmProveClaim(directory, mainFileName, mainModuleName, claim, claimId, symbolTable, kevmArgs = [], teeOutput = False, dieOnFail = False, logFile = None):
     logAxiomsFile = directory + '/' + claimId.lower() + '-debug.log' if logFile is None else logFile
     if os.path.exists(logAxiomsFile):
-        _notif('Clearing old log file: ' + logAxiomsFile)
         os.remove(logAxiomsFile)
     newKevmArgs  = [ a for a in kevmArgs ]
     newKevmArgs += [ '--haskell-backend-arg' , '--log'
@@ -481,12 +480,12 @@ def buildInitState(contractName, constrainedTerm):
 
 def kevmWriteStateToFile(directory, contractName, stateId, state, symbolTable):
     stateFileName = contractName.lower() + '-state-' + stateId
-    _notif('Writing state file: ' + stateFileName)
     with open(directory + '/' + stateFileName + '.json', 'w') as f:
         f.write(json.dumps(state, indent = 2))
     with open(directory + '/' + stateFileName + '.k', 'w') as f:
         f.write(_genFileTimestamp() + '\n')
         f.write(prettyPrintKast(state, symbolTable))
+    _notif('Wrote state file: ' + stateFileName + '.{k,json}')
 
 def kevmSummarize( directory
                  , initState
@@ -543,7 +542,7 @@ def kevmSummarize( directory
             finalStateId = nextStateId
             nextStateId  = nextStateId + 1
             basicBlockId = contractName.upper() + '-BASIC-BLOCK-' + str(initStateId) + '-TO-' + str(finalStateId)
-            cfg['graph'][initStateId].append((finalStateId, basicBlockId + ': ' + prettyPrintKast(newConstraint, symbolTable), depth))
+            cfg['graph'][initStateId].append((finalStateId, basicBlockId + ': ' + printConstraint(newConstraint, symbolTable), depth))
             if finalStateId not in writtenStates:
                 kevmWriteStateToFile(directory, contractName, str(finalStateId), finalState, symbolTable)
                 writtenStates.append(finalStateId)
