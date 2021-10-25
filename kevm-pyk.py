@@ -309,7 +309,7 @@ def kevmProveClaim(directory, mainFileName, mainModuleName, claim, claimId, symb
         finalStates = [ kevmSanitizeConfig(fs) for fs in flattenLabel('#Or', finalState) ]
         return buildAssoc(KConstant('#Bottom'), '#Or', finalStates)
 
-def kevmGetBasicBlocks(directory, mainFileName, mainModuleName, initConstrainedTerm, claimId, symbolTable, debug = False, maxDepth = 1000):
+def kevmGetBasicBlocks(directory, mainFileName, mainModuleName, initConstrainedTerm, claimId, symbolTable, debug = False, maxDepth = 1000, isTerminal = None):
     claim       = buildEmptyClaim(initConstrainedTerm, claimId, symbolTable)
     logFileName = directory + '/' + claimId.lower() + '-debug.log'
     nextState   = kevmProveClaim( directory
@@ -336,18 +336,23 @@ def kevmGetBasicBlocks(directory, mainFileName, mainModuleName, initConstrainedT
         else:
             depth += 1
 
+    if isTerminal is not None and isTerminal(nextStates[0]):
+        depth -= 1
+        nextState = kevmProveClaim(directory, mainFileName, mainModuleName, claim, claimId, kevmArgs = ['--depth', str(depth)], teeOutput = debug)
+        nextStates = flattenLabel('#Or', nextState)
+
     _notif('Found ' + str(len(nextStates)) + ' basic blocks for ' + claimId + ' at depth ' + str(depth) + '.')
 
-    (initState, initConstraint) = splitConfigAndConstraints(initConstrainedTerm)
-    (initConfig, initSubst)     = splitConfigFrom(initState)
-    initConstraints             = flattenLabel('#And', initConstraint)
+    nextStates          = [ abstractCell(ns, 'CALLVALUE_CELL') for ns in nextStates ]
+    statesAndConstraint = flattenLabel('#And', propagateUpConstraints(buildAssoc(KConstant('#Bottom'), '#Or', nextStates)))
+    nextStates          = flattenLabel('#Or', statesAndConstraint[0])
+    commonConstraint    = buildAssoc(KConstant('#Top'), '#And', statesAndConstraint[1:])
 
     newStatesAndConstraints = []
     for ns in nextStates:
-        ns                          = abstractCell(ns, 'CALLVALUE_CELL')
-        (nextState, nextConstraint) = splitConfigAndConstraints(ns)
-        (nextConfig, nextSubst)     = splitConfigFrom(ns)
-        newConstraint               = buildAssoc(KConstant('#Top'), '#And', [ c for c in flattenLabel('#And', nextConstraint) if c not in initConstraints ])
+        nsAndConstraint = flattenLabel('#And', ns)
+        ns              = buildAssoc(KConstant('#Top'), '#And', nsAndConstraint + [commonConstraint])
+        newConstraint   = buildAssoc(KConstant('#Top'), '#And', nsAndConstraint[1:])
         newStatesAndConstraints.append((ns, newConstraint))
 
     return (depth, newStatesAndConstraints)
@@ -532,6 +537,7 @@ def kevmSummarize( directory
                                                               , symbolTable
                                                               , debug = debug
                                                               , maxDepth = maxDepth
+                                                              , isTerminal = isTerminal
                                                               )
         for (finalState, newConstraint) in nextStatesAndConstraints:
             finalStateId = nextStateId
@@ -545,13 +551,14 @@ def kevmSummarize( directory
                 cfg['terminal'].append(finalStateId)
             elif len(nextStatesAndConstraints) == 1:
                 cfg['stuck'].append(finalStateId)
-            subsumed = False
-            for (j, seen) in seenStates:
-                if subsumes(seen, finalState):
-                    subsumed = True
-                    cfg['graph'][finalStateId].append((j, printConstraint(newConstraint, symbolTable), 0))
-            if not subsumed:
-                frontier.append((finalStateId, finalState))
+            else:
+                subsumed = False
+                for (j, seen) in seenStates:
+                    if subsumes(seen, finalState):
+                        subsumed = True
+                        cfg['graph'][finalStateId].append((j, printConstraint(newConstraint, symbolTable), 0))
+                if not subsumed:
+                    frontier.append((finalStateId, finalState))
             cfg['frontier'] = [i for (i, _) in frontier]
 
             newClaim = buildRule(basicBlockId, initState, finalState, claim = True)
