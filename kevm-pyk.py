@@ -79,9 +79,6 @@ def removeConstraintsFor(varNames, constrainedTerm):
             newConstraints.append(c)
     return buildAssoc(KConstant('#Top'), '#And', [state] + newConstraints)
 
-def boolToMlPred(boolVal, isTrue = True):
-    return KApply('#Equals', [KToken('true' if isTrue else 'false', 'Bool'), boolVal])
-
 def buildRule(ruleId, initConstrainedTerm, finalConstrainedTerm, claim = False, priority = None, keepVars = None):
     (initConfig,  initConstraint)  = splitConfigAndConstraints(initConstrainedTerm)
     (finalConfig, finalConstraint) = splitConfigAndConstraints(finalConstrainedTerm)
@@ -89,8 +86,8 @@ def buildRule(ruleId, initConstrainedTerm, finalConstrainedTerm, claim = False, 
     ruleConstrainedTerm            = buildAssoc(KConstant('#Top'), '#And', [ruleBody, initConstraint, finalConstraint])
     ruleConstrainedTerm            = removeUselessConstraints(ruleConstrainedTerm)
     ruleConstrainedTerm            = markUselessVars(ruleConstrainedTerm)
-    (ruleBody, ruleRequires)       = splitConfigAndConstraints(ruleConstrainedTerm)
-    ruleRequires                   = simplifyBooleanConstraint(unsafeMlPredToBool(ruleRequires))
+    (ruleBody, ruleConstraint)     = splitConfigAndConstraints(ruleConstrainedTerm)
+    ruleRequires                   = simplifyBool(unsafeMlPredToBool(ruleConstraint))
     ruleAtt                        = None if priority is None else KAtt(atts = {'priority': str(priority)})
     if not claim:
         rule = KRule (ruleBody, requires = ruleRequires, att = ruleAtt)
@@ -136,6 +133,16 @@ def abstractTermSafely(kast, baseName = 'V'):
     vname = str(vnameHash.hexdigest())[0:8]
     return KVariable(baseName + '_' + vname)
 
+def abstractCell(constrainedTerm, cellName):
+    (state, constraint) = splitConfigAndConstraints(constrainedTerm)
+    constraints         = flattenLabel('#And', constraint)
+    cell                = getCell(state, cellName)
+    cellVar             = KVariable('_' + cellName)
+    if not isKVariable(cell):
+        state = setCell(state, cellName, cellVar)
+        constraints.append(KApply('#Equals', [cellVar, cell]))
+    return buildAssoc(KConstant('#Top'), '#And', [state] + constraints)
+
 ### Utilities
 
 def _notif(msg):
@@ -165,6 +172,7 @@ sizeByteArray         = lambda ba:     KApply('#sizeByteArray(_)_EVM-TYPES_Int_B
 infGas                = lambda g:      KApply('infGas', [g])
 computeValidJumpDests = lambda p:      KApply('#computeValidJumpDests(_)_EVM_Set_ByteArray', [p])
 binRuntime            = lambda c:      KApply('#binRuntime', [c])
+mlEqualsTrue          = lambda b:      KApply('#Equals', [boolToken(True), b])
 
 def kevmAccountCell(id, balance, code, storage, origStorage, nonce):
     return KApply('<account>', [ KApply('<acctID>'      , [id])
@@ -225,6 +233,22 @@ def kevmProve(mainFile, specFile, specModule, kevmArgs = [], teeOutput = False, 
         sys.stderr.write(stderr + '\n')
         _fatal('Exiting...', exitCode = rc)
 
+def kevmUndoMacros(constraint):
+    def _undoMacroRule(rangeOp, rangeVal, numVars):
+        extraVars     = [ KVariable('#V' + str(i)) for i in range(numVars - 1) ]
+        extraVar      = KVariable('#V' + str(numVars - 1))
+        undoMacroRule = ( buildAssoc(KConstant('#Top'), '#And', [mlEqualsTrue(leInt(intToken(0), KVariable('#V')))] + extraVars + [mlEqualsTrue(ltInt(KVariable('#V'), intToken(rangeVal))), extraVar])
+                        , buildAssoc(KConstant('#Top'), '#And', [mlEqualsTrue(rangeUInt256(KVariable('#V')))]       + extraVars + [extraVar])
+                        )
+        return undoMacroRule
+    undoMacroRules = [ _undoMacroRule(rangeOp, rangeVal, numVars)
+                        for (rangeOp, rangeVal) in [(rangeUInt256, 2 ** 256), (rangeAddress, 2 ** 160)]
+                        for numVars             in [6,5,4,3,2,1]
+                     ]
+    for r in undoMacroRules:
+        constraint = rewriteAnywhereWith(r, constraint)
+    return buildAssoc(KConstant('#Top'), '#And', flattenLabel('#And', constraint))
+
 def kevmSanitizeConfig(initConstrainedTerm):
 
     def _parseableVarNames(cellName, term):
@@ -236,7 +260,7 @@ def kevmSanitizeConfig(initConstrainedTerm):
     def _parseableBytesTokens(_kast):
         if isKToken(_kast) and _kast['sort'] == 'Bytes' and _kast['token'].startswith('b"') and _kast['token'].endswith('"'):
             bytesVariable = abstractTermSafely(_kast, baseName = 'BYTES')
-            bytesConstraints.append(boolToMlPred(KApply('_==K_', [bytesVariable, KApply('String2Bytes(_)_BYTES-HOOKED_Bytes_String', [stringToken(_kast['token'][2:-1])])])))
+            bytesConstraints.append(mlEqualsTrue(KApply('_==K_', [bytesVariable, KApply('String2Bytes(_)_BYTES-HOOKED_Bytes_String', [stringToken(_kast['token'][2:-1])])])))
             return bytesVariable
         return _kast
 
@@ -250,10 +274,11 @@ def kevmSanitizeConfig(initConstrainedTerm):
     newConstrainedTerm = traverseBottomUp(newConstrainedTerm, _removeCellMapDefinedness)
     newConstrainedTerm = buildAssoc(KConstant('#Top'), '#And', [newConstrainedTerm] + bytesConstraints)
 
-    (config, constraint) = splitConfigAndConstraints(newConstrainedTerm)
-    config               = removeGeneratedCells(config)
-    constraints          = dedupeClauses(flattenLabel('#And', constraint))
-    return buildAssoc(KConstant('#Top'), '#And', [config] + constraints)
+    (state, constraint) = splitConfigAndConstraints(newConstrainedTerm)
+    state               = removeGeneratedCells(state)
+    constraint          = buildAssoc(KConstant('#Top'), '#And', dedupeClauses(flattenLabel('#And', constraint)))
+    constraint          = kevmUndoMacros(constraint, symbolTable)
+    return buildAssoc(KConstant('#Top'), '#And', [state, constraint])
 
 def kevmProveClaim(directory, mainFileName, mainModuleName, claim, claimId, symbolTable, kevmArgs = [], teeOutput = False, dieOnFail = False, logFile = None):
     logAxiomsFile = directory + '/' + claimId.lower() + '-debug.log' if logFile is None else logFile
@@ -279,12 +304,13 @@ def kevmProveClaim(directory, mainFileName, mainModuleName, claim, claimId, symb
         finalState = kevmProve(mainFileName, tmpClaim, tmpModule, kevmArgs = newKevmArgs, teeOutput = teeOutput, dieOnFail = dieOnFail)
         if finalState == KConstant('#Top'):
             if len(getAppliedAxiomList(logAxiomsFile)) == 0:
-                _fatal('Proof trivially discharged, likely the LHS is invalid: ' + tmpClaim)
+                _fatal('Proof took zero steps, likely the LHS is invalid: ' + tmpClaim)
             return KConstant('#Top')
         finalStates = [ kevmSanitizeConfig(fs) for fs in flattenLabel('#Or', finalState) ]
         return buildAssoc(KConstant('#Bottom'), '#Or', finalStates)
 
-def kevmGetBasicBlockAndNextStates(directory, mainFileName, mainModuleName, claim, claimId, symbolTable, debug = False, maxDepth = 1000):
+def kevmGetBasicBlocks(directory, mainFileName, mainModuleName, initConstrainedTerm, claimId, symbolTable, debug = False, maxDepth = 1000):
+    claim       = buildEmptyClaim(initConstrainedTerm, claimId, symbolTable)
     logFileName = directory + '/' + claimId.lower() + '-debug.log'
     nextState   = kevmProveClaim( directory
                                 , mainFileName
@@ -296,47 +322,35 @@ def kevmGetBasicBlockAndNextStates(directory, mainFileName, mainModuleName, clai
                                 , teeOutput = debug
                                 , logFile = logFileName
                                 )
-    nextStates  = flattenLabel('#Or', nextState)
-    _notif('Summarization of ' + claimId + ' resulted in ' + str(len(nextStates)) + ' successor states.')
+    if nextState == KConstant('#Top'):
+        _fatal('Proved claim for generating basic block, use unproveable claims for summaries.')
+    nextStates = flattenLabel('#Or', nextState)
 
-    branching  = False
-    depth      = 0
-    finalState = nextStates[0]
-    proved     = finalState == KConstant('#Top')
+    branching = False
+    depth     = 0
     for axioms in getAppliedAxiomList(logFileName):
         if len(axioms) > 1:
             branching = True
+            depth += 1
             break
         else:
             depth += 1
-    if proved:
-        depth -= 1
-        nextStates = []
 
-    if branching or proved:
-        finalState = kevmProveClaim( directory
-                                   , mainFileName
-                                   , mainModuleName
-                                   , claim
-                                   , claimId
-                                   , symbolTable
-                                   , kevmArgs = [ '--depth' , str(depth) ]
-                                   , teeOutput = debug
-                                   )
-        _notif('Found basic block for ' + claimId + ' at depth ' + str(depth) + '.')
-    elif len(nextStates) == 1:
-        nextStates = []
+    _notif('Found ' + str(len(nextStates)) + ' basic blocks for ' + claimId + ' at depth ' + str(depth) + '.')
 
-    nextStatesWithAddedConstraints = []
-    (_, finalConstraint) = splitConfigAndConstraints(finalState)
-    finalConstraints     = flattenLabel('#And', finalConstraint)
+    (initState, initConstraint) = splitConfigAndConstraints(initConstrainedTerm)
+    (initConfig, initSubst)     = splitConfigFrom(initState)
+    initConstraints             = flattenLabel('#And', initConstraint)
+
+    newStatesAndConstraints = []
     for ns in nextStates:
-        (_, constraint) = splitConfigAndConstraints(ns)
-        constraints     = flattenLabel('#And', constraint)
-        newConstraints  = [ c for c in constraints if c not in finalConstraints ]
-        nextStatesWithAddedConstraints.append((ns, buildAssoc(KConstant('#Top'), '#And', newConstraints)))
+        ns                          = abstractCell(ns, 'CALLVALUE_CELL')
+        (nextState, nextConstraint) = splitConfigAndConstraints(ns)
+        (nextConfig, nextSubst)     = splitConfigFrom(ns)
+        newConstraint               = buildAssoc(KConstant('#Top'), '#And', [ c for c in flattenLabel('#And', nextConstraint) if c not in initConstraints ])
+        newStatesAndConstraints.append((ns, newConstraint))
 
-    return ((depth, finalState), nextStatesWithAddedConstraints)
+    return (depth, newStatesAndConstraints)
 
 ### KEVM Specialization
 
@@ -368,8 +382,8 @@ def abstract(constrainedTerm):
 
     newVars = [ '_GAS_CELL' , '_LOCALMEM_CELL' , 'MEMEORYUSED_CELL' ] + wordStackFreshVars
 
-    newConstraints = [ boolToMlPred(rangeUInt256(KVariable(v))) for v in wordStackFreshVars ]
-    newConstraints.append(boolToMlPred(rangeUInt256(KVariable('MEMORYUSED_CELL'))))
+    newConstraints = [ mlEqualsTrue(rangeUInt256(KVariable(v))) for v in wordStackFreshVars ]
+    newConstraints.append(mlEqualsTrue(rangeUInt256(KVariable('MEMORYUSED_CELL'))))
 
     newConstrainedTerm = removeConstraintsFor(newVars, constrainedTerm)
     newConstrainedTerm = applyCellSubst(newConstrainedTerm, cellSubst)
@@ -399,26 +413,6 @@ def buildTerminal(constrainedTerm):
     subst['K_CELL']          = KSequence([KConstant('#halt_EVM_KItem'), ktokenDots])
     subst['STATUSCODE_CELL'] = KConstant('.StatusCode_NETWORK_StatusCode')
     return substitute(config, subst)
-
-def simplifyBooleanConstraint(constraint):
-    constraints    = dedupeClauses(flattenLabel('_andBool_', simplifyBool(constraint)))
-    replaces       = []
-    newConstraints = []
-    for c in constraints:
-        if isKApply(c) and c['label'] in [ '_<Int_' , '_<=Int_' ]:
-            if c['label'] == '_<=Int_' and c['args'][0] == intToken(0) and isKVariable(c['args'][1]):
-                if ltInt(c['args'][1], intToken(2 ** 256)) in constraints:
-                    newConstraints.append(rangeUInt256(c['args'][1]))
-                    replaces.append((leInt(intToken(0), c['args'][1]), boolToken(True)))
-                    replaces.append((ltInt(c['args'][1], intToken(2 ** 256)), boolToken(True)))
-                if ltInt(c['args'][1], intToken(2 ** 160)) in constraints:
-                    newConstraints.append(rangeAddress(c['args'][1]))
-                    replaces.append((leInt(intToken(0), c['args'][1]), boolToken(True)))
-                    replaces.append((ltInt(c['args'][1], intToken(2 ** 160)), boolToken(True)))
-    newConstraint = buildAssoc(boolToken(True), '_andBool_', constraints + newConstraints)
-    for r in replaces:
-        newConstraint = replaceAnywhereWith(r, newConstraint)
-    return simplifyBool(newConstraint)
 
 ### Summarization Utilities
 
@@ -472,11 +466,11 @@ def buildInitState(contractName, constrainedTerm):
                   , 'LOCALMEM_CELL'  : KVariable('LOCALMEM_CELL')
                   , 'ACCOUNTS_CELL'  : KApply('_AccountCellMap_', [KApply('AccountCellMapItem', [KApply('<acctID>', [KVariable('ACCT_ID')]), accountCell]), KVariable('_ACCOUNTS')])
                   }
-    constraints = [ boolToMlPred(rangeAddress(KVariable('ACCT_ID')))
-                  , boolToMlPred(rangeAddress(KVariable('CALLER_ID')))
-                  , boolToMlPred(rangeUInt256(KVariable('ACCT_BALANCE')))
-                  , boolToMlPred(rangeUInt256(KVariable('ACCT_NONCE')))
-                  , boolToMlPred(ltInt(sizeByteArray(KVariable('CALLDATA_CELL')), intToken(2 ** 256)))
+    constraints = [ mlEqualsTrue(rangeAddress(KVariable('ACCT_ID')))
+                  , mlEqualsTrue(rangeAddress(KVariable('CALLER_ID')))
+                  , mlEqualsTrue(rangeUInt256(KVariable('ACCT_BALANCE')))
+                  , mlEqualsTrue(rangeUInt256(KVariable('ACCT_NONCE')))
+                  , mlEqualsTrue(ltInt(sizeByteArray(KVariable('CALLDATA_CELL')), intToken(2 ** 256)))
                   ]
     return buildAssoc(KConstant('#Top'), '#And', [applyCellSubst(constrainedTerm, cellSubst)] + constraints)
 
@@ -519,67 +513,62 @@ def kevmSummarize( directory
     writtenStates   = []
 
     while len(frontier) > 0 and (maxBlocks is None or len(newClaims) < maxBlocks):
-        (initStateId, initState) = frontier.pop(0)
-        initState                = abstract(initState)
+        (initStateId, initState)     = frontier.pop(0)
+        initState                    = abstract(initState)
+        (initConfig, initConstraint) = splitConfigAndConstraints(initState)
+        initConstraints              = flattenLabel('#And', initConstraint)
+        if initStateId not in cfg['graph']:
+            cfg['graph'][initStateId] = []
         seenStates.append((initStateId, initState))
         if initStateId not in writtenStates:
             kevmWriteStateToFile(directory, contractName, str(initStateId), initState, symbolTable)
             writtenStates.append(initStateId)
-        claimId                                = contractName.upper() + '-GEN-' + str(initStateId) + '-TO-MAX' + str(maxDepth)
-        emptyClaim                             = buildEmptyClaim(initState, claimId)
-        ((finalDepth, finalState), nextStates) = kevmGetBasicBlockAndNextStates( directory
-                                                                               , mainFileName
-                                                                               , mainModuleName
-                                                                               , emptyClaim
-                                                                               , claimId
-                                                                               , symbolTable
-                                                                               , debug = debug
-                                                                               , maxDepth = maxDepth
-                                                                               )
-        finalStateId = nextStateId
-        nextStateId  = nextStateId + 1
-        basicBlockId = contractName.upper() + '-BASIC-BLOCK-' + str(initStateId) + '-TO-' + str(finalStateId)
-        if finalStateId not in writtenStates:
-            kevmWriteStateToFile(directory, contractName, str(finalStateId), finalState, symbolTable)
-            writtenStates.append(finalStateId)
-        cfg['graph'][initStateId] = [(finalStateId, basicBlockId, finalDepth)]
-        if isTerminal(finalState):
-            cfg['terminal'].append(finalStateId)
-        else:
-            if len(nextStates) == 0:
+        claimId                           = contractName.upper() + '-GEN-' + str(initStateId) + '-TO-MAX' + str(maxDepth)
+        (depth, nextStatesAndConstraints) = kevmGetBasicBlocks( directory
+                                                              , mainFileName
+                                                              , mainModuleName
+                                                              , initState
+                                                              , claimId
+                                                              , symbolTable
+                                                              , debug = debug
+                                                              , maxDepth = maxDepth
+                                                              )
+        for (finalState, newConstraint) in nextStatesAndConstraints:
+            finalStateId = nextStateId
+            nextStateId  = nextStateId + 1
+            basicBlockId = contractName.upper() + '-BASIC-BLOCK-' + str(initStateId) + '-TO-' + str(finalStateId)
+            cfg['graph'][initStateId].append((finalStateId, basicBlockId + ': ' + prettyPrintKast(newConstraint, symbolTable), depth))
+            if finalStateId not in writtenStates:
+                kevmWriteStateToFile(directory, contractName, str(finalStateId), finalState, symbolTable)
+                writtenStates.append(finalStateId)
+            if isTerminal(finalState):
+                cfg['terminal'].append(finalStateId)
+            elif len(nextStatesAndConstraints) == 1:
                 cfg['stuck'].append(finalStateId)
-            cfg['graph'][finalStateId] = []
-            for (i, (ns, newConstraint)) in enumerate(nextStates):
-                subsumed = False
-                for (j, seen) in seenStates:
-                    if subsumes(seen, ns):
-                        subsumed = True
-                        cfg['graph'][finalStateId].append((j, printConstraint(newConstraint, symbolTable), 1))
-                if not subsumed:
-                    stateId     = nextStateId
-                    nextStateId = nextStateId + 1
-                    if stateId not in writtenStates:
-                        kevmWriteStateToFile(directory, contractName, str(stateId), ns, symbolTable)
-                        writtenStates.append(stateId)
-                    cfg['graph'][finalStateId].append((stateId, printConstraint(newConstraint, symbolTable), 1))
-                    frontier.append((stateId, ns))
-        cfg['frontier'] = [i for (i, _) in frontier]
+            subsumed = False
+            for (j, seen) in seenStates:
+                if subsumes(seen, finalState):
+                    subsumed = True
+                    cfg['graph'][finalStateId].append((j, printConstraint(newConstraint, symbolTable), 0))
+            if not subsumed:
+                frontier.append((finalStateId, finalState))
+            cfg['frontier'] = [i for (i, _) in frontier]
 
-        newClaim = buildRule(basicBlockId, initState, finalState, claim = True)
-        newClaims.append(newClaim)
-        if verify:
-            kevmProveClaim( directory , mainFileName , mainModuleName , newClaim , basicBlockId , symbolTable , dieOnFail = True )
-            _notif('Verified claim: ' + basicBlockId)
-        newRule = buildRule(basicBlockId, initState, finalState, claim = False, priority = 35)
-        newRules.append(newRule)
+            newClaim = buildRule(basicBlockId, initState, finalState, claim = True)
+            newClaims.append(newClaim)
+            if verify:
+                kevmProveClaim(directory, mainFileName, mainModuleName, newClaim, basicBlockId, dieOnFail = True)
+                _notif('Verified claim: ' + basicBlockId)
+            newRule = buildRule(basicBlockId, initState, finalState, claim = False, priority = 35)
+            newRules.append(newRule)
 
-        with open(intermediateClaimsFile, 'w') as intermediate:
-            claimDefinition = makeDefinition(newClaims, intermediateClaimsModule, mainFileName, mainModuleName)
-            intermediate.write(_genFileTimestamp() + '\n')
-            intermediate.write(prettyPrintKast(claimDefinition, symbolTable) + '\n\n')
-            intermediate.write(writeCFG(cfg, graphvizFile = graphvizFile) + '\n')
-            intermediate.flush()
-            _notif('Wrote updated claims file: ' + intermediateClaimsFile)
+            with open(intermediateClaimsFile, 'w') as intermediate:
+                claimDefinition = makeDefinition(newClaims, intermediateClaimsModule, mainFileName, mainModuleName)
+                intermediate.write(_genFileTimestamp() + '\n')
+                intermediate.write(prettyPrintKast(claimDefinition, symbolTable) + '\n\n')
+                intermediate.write(writeCFG(cfg, graphvizFile = graphvizFile) + '\n')
+                intermediate.flush()
+                _notif('Wrote updated claims file: ' + intermediateClaimsFile)
 
     return (newRules, cfg)
 
