@@ -49,3 +49,9 @@ FROM runtimeverificationinc/kframework-evm-semantics:ubuntu-focal-COMMIT_ID
 ### From Source Build
 
 Follow the instructions in the [README file](https://github.com/kframework/evm-semantics) for building KEVM from source.
+
+### Dependencies
+
+Note that KEVM requires version 4.8.11 of the Z3 solver to be installed; follow
+the instructions in the [README
+file](https://github.com/kframework/evm-semantics) to do so.

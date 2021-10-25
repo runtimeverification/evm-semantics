@@ -51,8 +51,27 @@ The following are needed for building/running KEVM:
 -   GNU [Bison](https://www.gnu.org/software/bison/), [Flex](https://github.com/westes/flex), and [Autoconf](http://www.gnu.org/software/autoconf/).
 -   GNU [libmpfr](https://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
+-   [Z3](https://github.com/Z3Prover/z3) version 4.8.11
 
 For the exact dependencies check the Dockerfile.
+
+#### Installing Z3
+
+KEVM requires Z3 version 4.8.11, which you may need to install from a source
+build if your package manager supplies a different version. To do so, follow the
+instructions
+[here](https://github.com/Z3Prover/z3#building-z3-using-make-and-gccclang) after
+checking out the correct tag in the Z3 repository:
+
+```sh
+git clone https://github.com/Z3Prover/z3.git
+cd z3
+git checkout z3-4.8.11
+python scripts/mk_make.py
+cd build
+make
+sudo make install
+```
 
 #### Ubuntu
 
@@ -64,7 +83,7 @@ sudo apt-get install --yes                                                      
             libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev       \
             libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-10       \
             llvm-10-tools make maven netcat-openbsd openjdk-11-jdk pkg-config          \
-            protobuf-compiler python3 python-pygments rapidjson-dev time z3 zlib1g-dev
+            protobuf-compiler python3 python-pygments rapidjson-dev time zlib1g-dev
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
@@ -81,7 +100,7 @@ On ArchLinux:
 sudo pacman -S                                               \
     base base-devel boost clang cmake crypto++ curl git gmp  \
     gflags jdk-openjdk jemalloc libsecp256k1 lld llvm maven  \
-    mpfr protobuf python stack yaml-cpp z3 zlib
+    mpfr protobuf python stack yaml-cpp zlib
 ```
 
 #### MacOS
@@ -91,7 +110,7 @@ On OSX, using [Homebrew](https://brew.sh/), after installing the command line to
 ```sh
 brew tap homebrew/cask
 brew install --cask java
-brew install automake libtool gmp mpfr pkg-config maven z3 libffi openssl protobuf python
+brew install automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python
 make libsecp256k1
 ```
 
