@@ -573,7 +573,7 @@ def kevmSummarize( directory
                     frontier.append((finalStateId, finalState))
             cfg['frontier'] = [i for (i, _) in frontier]
             if i < len(nextStatesAndConstraints) - 1:
-                cfg['frontier'].append(initStateId)
+                cfg['frontier'].insert(0, initStateId)
 
             basicBlockId = contractName.upper() + '-BASIC-BLOCK-' + str(initStateId) + '-TO-' + str(finalStateId)
             newClaim     = buildRule(basicBlockId, initState, finalState, claim = True)
