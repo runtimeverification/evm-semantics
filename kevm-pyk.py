@@ -351,7 +351,7 @@ def kevmGetBasicBlocks(directory, mainFileName, mainModuleName, initConstrainedT
     for ns in nextStates:
         nsAndConstraint = flattenLabel('#And', ns)
         ns              = buildAssoc(KConstant('#Top'), '#And', dedupeClauses(nsAndConstraint + commonConstraints))
-        newConstraint   = buildAssoc(KConstant('#Top'), '#And', nsAndConstraint[1:])
+        newConstraint   = buildAssoc(KConstant('#Top'), '#And', dedupeClauses(nsAndConstraint[1:]))
         newStatesAndConstraints.append((ns, newConstraint))
 
     return (depth, newStatesAndConstraints)
