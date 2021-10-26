@@ -234,20 +234,26 @@ def kevmProve(mainFile, specFile, specModule, kevmArgs = [], teeOutput = False, 
         _fatal('Exiting...', exitCode = rc)
 
 def kevmUndoMacros(constraint):
-    def _undoMacroRule(rangeOp, rangeVal, numVars):
-        extraVars     = [ KVariable('#V' + str(i)) for i in range(numVars - 1) ]
-        extraVar      = KVariable('#V' + str(numVars - 1))
-        undoMacroRule = ( buildAssoc(KConstant('#Top'), '#And', [mlEqualsTrue(leInt(intToken(0), KVariable('#V')))] + extraVars + [mlEqualsTrue(ltInt(KVariable('#V'), intToken(rangeVal))), extraVar])
-                        , buildAssoc(KConstant('#Top'), '#And', [mlEqualsTrue(rangeOp(KVariable('#V')))]            + extraVars + [extraVar])
-                        )
-        return undoMacroRule
-    undoMacroRules = [ _undoMacroRule(rangeOp, rangeVal, numVars)
-                        for (rangeOp, rangeVal) in [(rangeUInt256, 2 ** 256), (rangeAddress, 2 ** 160)]
-                        for numVars             in [10,9,8,7,6,5,4,3,2,1]
-                     ]
-    for r in undoMacroRules:
-        constraint = rewriteAnywhereWith(r, constraint)
-    return buildAssoc(KConstant('#Top'), '#And', flattenLabel('#And', constraint))
+    constraints  = flattenLabel('#And', constraint)
+    replaceRules = []
+    for v in collectFreeVars(constraint):
+        le0   = mlEqualsTrue(leInt(intToken(0), KVariable(v)))
+        lt256 = mlEqualsTrue(ltInt(KVariable(v), intToken(2 ** 256)))
+        lt160 = mlEqualsTrue(ltInt(KVariable(v), intToken(2 ** 160)))
+        if le0 in constraints and lt256 in constraints:
+            constraints.append(mlEqualsTrue(rangeUInt256(KVariable(v))))
+            replaceRules.append((le0,   KConstant('#Top')))
+            replaceRules.append((lt256, KConstant('#Top')))
+        elif le0 in constraints and lt160 in constraints:
+            constraints.append(mlEqualsTrue(rangeAddress(KVariable(v))))
+            replaceRules.append((le0,   KConstant('#Top')))
+            replaceRules.append((lt160, KConstant('#Top')))
+    def _replacer(k):
+        for r in replaceRules:
+            k = replaceAnywhereWith(r, k)
+        return k
+    constraint = buildAssoc(KConstant('#Top'), '#And', [ _replacer(c) for c in constraints ])
+    return constraint
 
 def kevmSanitizeConfig(initConstrainedTerm):
 
