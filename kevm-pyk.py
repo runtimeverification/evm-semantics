@@ -479,13 +479,13 @@ def buildInitState(contractName, constrainedTerm):
     return buildAssoc(KConstant('#Top'), '#And', [applyCellSubst(constrainedTerm, cellSubst)] + constraints)
 
 def kevmWriteStateToFile(directory, contractName, stateId, state, symbolTable):
-    stateFileName = contractName.lower() + '-state-' + stateId
-    with open(directory + '/' + stateFileName + '.json', 'w') as f:
+    stateFileName = directory + '/' + contractName.lower() + '-state-' + stateId
+    with open(stateFileName + '.json', 'w') as f:
         f.write(json.dumps(state, indent = 2))
-    with open(directory + '/' + stateFileName + '.k', 'w') as f:
+    with open(stateFileName + '.k', 'w') as f:
         f.write(_genFileTimestamp() + '\n')
         f.write(prettyPrintKast(state, symbolTable))
-    _notif('Wrote state file: ' + stateFileName + '.{k,json}')
+    _notif('Wrote state files: ' + stateFileName + '.{k,json}')
 
 def kevmSummarize( directory
                  , initState
