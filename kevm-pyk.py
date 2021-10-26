@@ -348,6 +348,8 @@ def kevmGetBasicBlocks(directory, mainFileName, mainModuleName, initConstrainedT
 
     _notif('Found ' + str(len(nextStates)) + ' basic blocks for ' + claimId + ' at depth ' + str(depth) + '.')
 
+    (_, initConstraint) = splitConfigAndConstraints(initConstrainedTerm)
+    initConstraints     = flattenLabel('#And', initConstraint)
     nextStates          = [ abstractCell(ns, 'CALLVALUE_CELL') for ns in nextStates ]
     statesAndConstraint = flattenLabel('#And', propagateUpConstraints(buildAssoc(KConstant('#Bottom'), '#Or', nextStates)))
     nextStates          = flattenLabel('#Or', statesAndConstraint[0])
@@ -357,7 +359,7 @@ def kevmGetBasicBlocks(directory, mainFileName, mainModuleName, initConstrainedT
     for ns in nextStates:
         nsAndConstraint = flattenLabel('#And', ns)
         ns              = buildAssoc(KConstant('#Top'), '#And', dedupeClauses(nsAndConstraint + commonConstraints))
-        newConstraint   = buildAssoc(KConstant('#Top'), '#And', dedupeClauses(nsAndConstraint[1:]))
+        newConstraint   = buildAssoc(KConstant('#Top'), '#And', dedupeClauses([ c for c in nsAndConstraint[1:] if c not in initConstraints ]))
         newStatesAndConstraints.append((ns, newConstraint))
 
     return (depth, newStatesAndConstraints)
