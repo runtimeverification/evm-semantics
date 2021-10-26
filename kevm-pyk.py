@@ -238,7 +238,7 @@ def kevmUndoMacros(constraint):
         extraVars     = [ KVariable('#V' + str(i)) for i in range(numVars - 1) ]
         extraVar      = KVariable('#V' + str(numVars - 1))
         undoMacroRule = ( buildAssoc(KConstant('#Top'), '#And', [mlEqualsTrue(leInt(intToken(0), KVariable('#V')))] + extraVars + [mlEqualsTrue(ltInt(KVariable('#V'), intToken(rangeVal))), extraVar])
-                        , buildAssoc(KConstant('#Top'), '#And', [mlEqualsTrue(rangeUInt256(KVariable('#V')))]       + extraVars + [extraVar])
+                        , buildAssoc(KConstant('#Top'), '#And', [mlEqualsTrue(rangeOp(KVariable('#V')))]            + extraVars + [extraVar])
                         )
         return undoMacroRule
     undoMacroRules = [ _undoMacroRule(rangeOp, rangeVal, numVars)
