@@ -285,29 +285,31 @@ run_summarize() {
 
     init_state_json=${summary_dir}/${contract_spec_name}-init-state.json
 
-    gen_bin_runtime > "${verif_file_name}"
+    if ${summary_init}; then
+        gen_bin_runtime > "${verif_file_name}"
 
-    kevm_kompile_args=("${verif_file_name}")
-    kevm_kompile_args+=(--backend haskell --backend-dir "${summary_dir}")
-    kevm_kompile_args+=(--main-module "${verif_module_name}" --syntax-module "${verif_module_name}")
-    if [[ ! -z ${concrete_rules_file} ]]; then
-        if [[ -f ${concrete_rules_file} ]]; then
-            kevm_kompile_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
-        else
-            fatal "Concrete rules file doesn't exist: ${concrete_rules_file}"
+        kevm_kompile_args=("${verif_file_name}")
+        kevm_kompile_args+=(--backend haskell --backend-dir "${summary_dir}")
+        kevm_kompile_args+=(--main-module "${verif_module_name}" --syntax-module "${verif_module_name}")
+        if [[ ! -z ${concrete_rules_file} ]]; then
+            if [[ -f ${concrete_rules_file} ]]; then
+                kevm_kompile_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
+            else
+                fatal "Concrete rules file doesn't exist: ${concrete_rules_file}"
+            fi
         fi
+        notif "[$(date)] Kompiling ${verif_file_name}"
+        kevm kompile "${kevm_kompile_args[@]}"
+
+        gen_empty_spec "${contract_name}" > "${spec_file_name}"
+
+        notif "[$(date)] Generating initial state: ${spec_file_name} > ${init_state_json}"
+        $0 prove "${spec_file_name}"                         \
+            --backend haskell --backend-dir "${summary_dir}" \
+            --provex --spec-module "${spec_module_name}"     \
+            --depth 0 --output json                          \
+            > "${init_state_json}" || true
     fi
-    notif "[$(date)] Kompiling ${verif_file_name}"
-    kevm kompile "${kevm_kompile_args[@]}"
-
-    gen_empty_spec "${contract_name}" > "${spec_file_name}"
-
-    notif "[$(date)] Generating initial state: ${spec_file_name} > ${init_state_json}"
-    $0 prove "${spec_file_name}"                         \
-        --backend haskell --backend-dir "${summary_dir}" \
-        --provex --spec-module "${spec_module_name}"     \
-        --depth 0 --output json                          \
-        > "${init_state_json}" || true
 
     notif "[$(date)] Calling summarizer"
     python3 "${INSTALL_LIB}/kevm-pyk.py"                              \
@@ -424,6 +426,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--branching-allowed <max_branches>]
                                       [--haskell-backend-arg <haskell_backend_arg>]
                                       [--summary-dir <directory_name>]
+                                      [--no-init]
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <kore-prof arg> is an argument you want to pass to kore-prof.
@@ -463,6 +466,7 @@ pyk_omit_labels=
 max_counterexamples=
 branching_allowed=
 summary_dir=
+summary_init=true
 haskell_backend_command=(kore-exec)
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
@@ -493,6 +497,7 @@ while [[ $# -gt 0 ]]; do
         --schedule)            schedule="$2"                   ; shift 2 ;;
         --chainid)             chainid="$2"                    ; shift 2 ;;
         --summary-dir)         summary_dir="$2"                ; shift 2 ;;
+        --no-init)             summary_init=false              ; shift   ;;
         -p|--port)             kevm_port="$2"                  ; shift 2 ;;
         -h|--host|--hostname)  kevm_host="$2"                  ; shift 2 ;;
         *)                     args+=("$1")                    ; shift   ;;
