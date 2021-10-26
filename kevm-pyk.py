@@ -345,12 +345,12 @@ def kevmGetBasicBlocks(directory, mainFileName, mainModuleName, initConstrainedT
     nextStates          = [ abstractCell(ns, 'CALLVALUE_CELL') for ns in nextStates ]
     statesAndConstraint = flattenLabel('#And', propagateUpConstraints(buildAssoc(KConstant('#Bottom'), '#Or', nextStates)))
     nextStates          = flattenLabel('#Or', statesAndConstraint[0])
-    commonConstraint    = buildAssoc(KConstant('#Top'), '#And', statesAndConstraint[1:])
+    commonConstraints   = statesAndConstraint[1:]
 
     newStatesAndConstraints = []
     for ns in nextStates:
         nsAndConstraint = flattenLabel('#And', ns)
-        ns              = buildAssoc(KConstant('#Top'), '#And', nsAndConstraint + [commonConstraint])
+        ns              = buildAssoc(KConstant('#Top'), '#And', dedupeClauses(nsAndConstraint + commonConstraints))
         newConstraint   = buildAssoc(KConstant('#Top'), '#And', nsAndConstraint[1:])
         newStatesAndConstraints.append((ns, newConstraint))
 
