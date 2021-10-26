@@ -47,6 +47,9 @@ module LEMMAS
 
     rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
 
+    rule 0 <=Int #asWord(_)              => true                                      [simplification]
+    rule         #asWord(BA) <Int pow256 => true requires #sizeByteArray(BA) <=Int 32 [simplification]
+
   // ########################
   // Keccak
   // ########################

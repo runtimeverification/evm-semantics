@@ -16,6 +16,12 @@ endmodule
 module LEMMAS-SPEC
     imports VERIFICATION
 
+ // Arithmetic
+ // ----------
+
+    claim <k> runLemma( 1461501637330902918203684832716283019655932542975 &Int #lookup( ACCT_STORAGE , 0 ) &Int 1461501637330902918203684832716283019655932542975)
+           => doneLemma(1461501637330902918203684832716283019655932542975 &Int #lookup( ACCT_STORAGE , 0 )) ... </k>
+
  // bool2Word
  // ---------
 
@@ -127,6 +133,8 @@ module LEMMAS-SPEC
 
     claim <k> runLemma ( chop( #lookup(M, KEY)   ) ) => doneLemma( #lookup(M, KEY) ) ... </k>
     claim <k> runLemma ( chop( bool2Word(B:Bool) ) ) => doneLemma( bool2Word(B)    ) ... </k>
+
+    claim <k> runLemma(chop(#asWord(#range(LOCALMEM_CELL, 64, 32)))) => doneLemma(#asWord(#range(LOCALMEM_CELL, 64, 32))) ... </k>
 
  // #padToWidth simplification
  // --------------------------

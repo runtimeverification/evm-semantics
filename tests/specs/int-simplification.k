@@ -141,9 +141,10 @@ module INT-SIMPLIFICATION-COMMON
   // bit-and
   // ###########################################################################    
 
-    rule 0 &Int _ => 0 [simplification]
-    rule _ &Int 0 => 0 [simplification]
-    rule A &Int A => A [simplification]
+    rule 0 &Int _        => 0        [simplification]
+    rule _ &Int 0        => 0        [simplification]
+    rule A &Int A        => A        [simplification]
+    rule A &Int B &Int A => A &Int B [simplification]
 
   // ###########################################################################    
   // mod
