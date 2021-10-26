@@ -538,11 +538,10 @@ def kevmSummarize( directory
                                                               , maxDepth = maxDepth
                                                               , isTerminal = isTerminal
                                                               )
-        for (finalState, newConstraint) in nextStatesAndConstraints:
+        for (i, (finalState, newConstraint)) in enumerate(nextStatesAndConstraints):
             finalStateId = nextStateId
             nextStateId  = nextStateId + 1
-            basicBlockId = contractName.upper() + '-BASIC-BLOCK-' + str(initStateId) + '-TO-' + str(finalStateId)
-            cfg['graph'][initStateId].append((finalStateId, basicBlockId + ': ' + printConstraint(newConstraint, symbolTable), depth))
+            cfg['graph'][initStateId].append((finalStateId, printConstraint(newConstraint, symbolTable), depth))
             if finalStateId not in writtenStates:
                 kevmWriteStateToFile(directory, contractName, str(finalStateId), finalState, symbolTable)
                 writtenStates.append(finalStateId)
@@ -559,8 +558,11 @@ def kevmSummarize( directory
                 if not subsumed:
                     frontier.append((finalStateId, finalState))
             cfg['frontier'] = [i for (i, _) in frontier]
+            if i < len(nextStatesAndConstraints) - 1:
+                cfg['frontier'].append(initStateId)
 
-            newClaim = buildRule(basicBlockId, initState, finalState, claim = True)
+            basicBlockId = contractName.upper() + '-BASIC-BLOCK-' + str(initStateId) + '-TO-' + str(finalStateId)
+            newClaim     = buildRule(basicBlockId, initState, finalState, claim = True)
             newClaims.append(newClaim)
             if verify:
                 kevmProveClaim(directory, mainFileName, mainModuleName, newClaim, basicBlockId, symbolTable, dieOnFail = True)
