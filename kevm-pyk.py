@@ -277,7 +277,7 @@ def kevmSanitizeConfig(initConstrainedTerm):
     (state, constraint) = splitConfigAndConstraints(newConstrainedTerm)
     state               = removeGeneratedCells(state)
     constraint          = buildAssoc(KConstant('#Top'), '#And', dedupeClauses(flattenLabel('#And', constraint)))
-    constraint          = kevmUndoMacros(constraint, symbolTable)
+    constraint          = kevmUndoMacros(constraint)
     return buildAssoc(KConstant('#Top'), '#And', [state, constraint])
 
 def kevmProveClaim(directory, mainFileName, mainModuleName, claim, claimId, symbolTable, kevmArgs = [], teeOutput = False, dieOnFail = False, logFile = None):
@@ -309,7 +309,7 @@ def kevmProveClaim(directory, mainFileName, mainModuleName, claim, claimId, symb
         return buildAssoc(KConstant('#Bottom'), '#Or', finalStates)
 
 def kevmGetBasicBlocks(directory, mainFileName, mainModuleName, initConstrainedTerm, claimId, symbolTable, debug = False, maxDepth = 1000, isTerminal = None):
-    claim       = buildEmptyClaim(initConstrainedTerm, claimId, symbolTable)
+    claim       = buildEmptyClaim(initConstrainedTerm, claimId)
     logFileName = directory + '/' + claimId.lower() + '-debug.log'
     nextState   = kevmProveClaim( directory
                                 , mainFileName
@@ -337,7 +337,7 @@ def kevmGetBasicBlocks(directory, mainFileName, mainModuleName, initConstrainedT
 
     if isTerminal is not None and isTerminal(nextStates[0]):
         depth -= 1
-        nextState = kevmProveClaim(directory, mainFileName, mainModuleName, claim, claimId, kevmArgs = ['--depth', str(depth)], teeOutput = debug)
+        nextState = kevmProveClaim(directory, mainFileName, mainModuleName, claim, claimId, symbolTable, kevmArgs = ['--depth', str(depth)], teeOutput = debug)
         nextStates = flattenLabel('#Or', nextState)
 
     _notif('Found ' + str(len(nextStates)) + ' basic blocks for ' + claimId + ' at depth ' + str(depth) + '.')
@@ -422,7 +422,7 @@ def buildTerminal(constrainedTerm):
 
 def buildEmptyClaim(initConstrainedTerm, claimId):
     finalConstrainedTerm = buildTerminal(initConstrainedTerm)
-    return buildRule(claimId, initConstrainedTerm, finalConstrainedTerm, claim = True, keepVars = collectFreeVars(finalConstrainedTerm))
+    return buildRule(claimId, initConstrainedTerm, finalConstrainedTerm, claim = True, keepVars = collectFreeVars(initConstrainedTerm))
 
 def writeCFG(cfg, graphvizFile = None):
     states = set(list(cfg['graph'].keys()) + cfg['init'] + cfg['terminal'] + cfg['frontier'] + cfg['stuck'])
@@ -563,7 +563,7 @@ def kevmSummarize( directory
             newClaim = buildRule(basicBlockId, initState, finalState, claim = True)
             newClaims.append(newClaim)
             if verify:
-                kevmProveClaim(directory, mainFileName, mainModuleName, newClaim, basicBlockId, dieOnFail = True)
+                kevmProveClaim(directory, mainFileName, mainModuleName, newClaim, basicBlockId, symbolTable, dieOnFail = True)
                 _notif('Verified claim: ' + basicBlockId)
             newRule = buildRule(basicBlockId, initState, finalState, claim = False, priority = 35)
             newRules.append(newRule)
