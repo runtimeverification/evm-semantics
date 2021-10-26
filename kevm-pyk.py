@@ -243,7 +243,7 @@ def kevmUndoMacros(constraint):
         return undoMacroRule
     undoMacroRules = [ _undoMacroRule(rangeOp, rangeVal, numVars)
                         for (rangeOp, rangeVal) in [(rangeUInt256, 2 ** 256), (rangeAddress, 2 ** 160)]
-                        for numVars             in [6,5,4,3,2,1]
+                        for numVars             in [10,9,8,7,6,5,4,3,2,1]
                      ]
     for r in undoMacroRules:
         constraint = rewriteAnywhereWith(r, constraint)
