@@ -26,9 +26,9 @@ def removeGeneratedCells(constrainedTerm):
            )
     return rewriteAnywhereWith(rule, constrainedTerm)
 
-def makeDefinition(sents, specModuleName, mainFileName, mainModuleName):
-    module = KFlatModule(specModuleName, [mainModuleName], sents)
-    return KDefinition(specModuleName, [module], requires = [KRequire(mainFileName.split('/')[-1])])
+def makeDefinition(sents, specModuleName, requireNames, moduleNames):
+    module = KFlatModule(specModuleName, moduleNames, sents)
+    return KDefinition(specModuleName, [module], requires = [KRequire(name.split('/')[-1]) for name in moduleNames])
 
 def isAnonVariable(kast):
     return isKVariable(kast) and kast['name'].startswith('_')
@@ -308,7 +308,7 @@ def kevmProveClaim(directory, mainFileName, mainModuleName, claim, claimId, symb
     tmpClaim  = directory + '/' + claimId.lower() + '-spec.k'
     tmpModule = claimId.upper() + '-SPEC'
     with open(tmpClaim, 'w') as tc:
-        claimDefinition = makeDefinition([claim], tmpModule, mainFileName, mainModuleName)
+        claimDefinition = makeDefinition([claim], tmpModule, [mainFileName], [mainModuleName])
         tc.write(_genFileTimestamp() + '\n')
         tc.write(prettyPrintKast(claimDefinition, symbolTable) + '\n\n')
         tc.flush()
@@ -586,7 +586,7 @@ def kevmSummarize( directory
             newRules.append(newRule)
 
             with open(intermediateClaimsFile, 'w') as intermediate:
-                claimDefinition = makeDefinition(newClaims, intermediateClaimsModule, mainFileName, mainModuleName)
+                claimDefinition = makeDefinition(newClaims, intermediateClaimsModule, [mainFileName], [mainModuleName])
                 intermediate.write(_genFileTimestamp() + '\n')
                 intermediate.write(prettyPrintKast(claimDefinition, symbolTable) + '\n\n')
                 intermediate.write(writeCFG(cfg, graphvizFile = graphvizFile) + '\n')
@@ -649,7 +649,7 @@ def kevmPykMain(args, kompiled_dir):
                                          , startOffset = resumeFromState if resumeFromState is not None else 0
                                          , graphvizFile = graphvizFile
                                          )
-        summaryDefinition = makeDefinition(newRules, summaryRulesModule, mainFileName, mainModuleName)
+        summaryDefinition = makeDefinition(newRules, summaryRulesModule, ['edsl.md', 'lemmas/infinite-gas.k'], ['EDSL', 'INFINITE-GAS'])
 
         args['output'].write(_genFileTimestamp() + '\n')
         args['output'].write(prettyPrintKast(summaryDefinition, symbolTable) + '\n\n')

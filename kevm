@@ -198,7 +198,7 @@ view_klab() {
 }
 
 gen_bin_runtime() {
-    local file_basename module_name contract_bytecode contract bytecode
+    local file_basename module_name contract_bytecode contract bytecode include_file include_module
 
     file_basename="$(basename ${run_file%.bytecode})"
     module_name="$(echo ${file_basename} | tr '[:lower:]' '[:upper:]')"
@@ -210,11 +210,26 @@ gen_bin_runtime() {
     echo 'requires "lemmas/lemmas.k"'
     echo 'requires "lemmas/infinite-gas.k"'
     echo ''
+    if [[ ! -z ${include_summary_files} ]]; then
+        for include_file in $(echo ${include_summary_files} | tr ',' ' '); do
+            if [[ -f ${include_file} ]]; then
+                echo 'requires "'$(basename ${include_file})'"'
+            else
+                fatal "Included file does not exist: ${include_file}"
+            fi
+        done
+    fi
+    echo ''
     echo 'module '${module_name}'-VERIFICATION'
     echo '    imports EDSL'
     echo '    imports LEMMAS'
     echo '    imports INFINITE-GAS'
     echo '    imports '${module_name}'-BIN-RUNTIME'
+    if [[ ! -z ${include_summary_modules} ]]; then
+        for include_module in $(echo ${include_summary_modules} | tr ',' ' '); do
+            echo "    imports ${include_module}"
+        done
+    fi
     echo 'endmodule'
     echo ''
     echo 'module '"${module_name}"'-BIN-RUNTIME'
@@ -291,6 +306,16 @@ run_summarize() {
     init_state_json=${summary_dir}/${contract_spec_name}-init-state.json
 
     if ${summary_init}; then
+
+        if [[ ! -z ${include_summary_files} ]]; then
+            for include_file in $(echo ${include_summary_files} | tr ',' ' '); do
+                if [[ -f ${include_file} ]]; then
+                    cp ${include_file} ${summary_dir}/
+                else
+                    fatal "Included file does not exist: ${include_file}"
+                fi
+            done
+        fi
         gen_bin_runtime > "${verif_file_name}"
 
         kevm_kompile_args=("${verif_file_name}")
@@ -429,6 +454,8 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--branching-allowed <max_branches>]
                                       [--haskell-backend-arg <haskell_backend_arg>]
                                       [--summary-dir <directory_name>]
+                                      [--include-summary-files <comman_separated_k_files>]
+                                      [--include-summary-modules <comman_separated_modules>]
                                       [--no-init]
                  <K arg> is an argument you want to pass to K.
                  <interpreter arg> is an argument you want to pass to the derived interpreter.
@@ -471,6 +498,8 @@ branching_allowed=
 summary_dir=
 summary_init=true
 haskell_backend_command=(kore-exec)
+include_summary_files=
+include_summary_modules=
 [[ ! "$run_command" == 'prove' ]] || backend='java'
 [[ ! "$run_command" =~ klab*   ]] || backend='java'
 kevm_port='8545'
@@ -478,32 +507,34 @@ kevm_host='127.0.0.1'
 args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --debug)               debug=true ; args+=("$1")       ; shift   ;;
-        --dump)                dump=true                       ; shift   ;;
-        --no-unparse)          unparse=false                   ; shift   ;;
-        --debugger)            debugger=true                   ; shift   ;;
-        --profile)             profile=true                    ; shift   ;;
-        --profile-timeout)     profile_timeout="$2"            ; shift 2 ;;
-        --kore-prof-args)      kore_prof_args="$2"             ; shift 2 ;;
-        --bug-report)          bug_report=true                 ; shift   ;;
-        --backend)             backend="$2"                    ; shift 2 ;;
-        --backend-dir)         backend_dir="$2"                ; shift 2 ;;
-        --concrete-rules-file) concrete_rules_file="$2"        ; shift 2 ;;
-        --provex)              provex=true                     ; shift   ;;
-        --verif-module)        verif_module="$2"               ; shift 2 ;;
-        --pyk-minimize)        pyk_minimize=true               ; shift   ;;
-        --pyk-omit-labels)     pyk_omit_labels="$2"            ; shift 2 ;;
-        --max-counterexamples) max_counterexamples="$2"        ; shift 2 ;;
-        --branching-allowed)   branching_allowed="$2"          ; shift 2 ;;
-        --haskell-backend-arg) haskell_backend_command+=("$2") ; shift 2 ;;
-        --mode)                mode="$2"                       ; shift 2 ;;
-        --schedule)            schedule="$2"                   ; shift 2 ;;
-        --chainid)             chainid="$2"                    ; shift 2 ;;
-        --summary-dir)         summary_dir="$2"                ; shift 2 ;;
-        --no-init)             summary_init=false              ; shift   ;;
-        -p|--port)             kevm_port="$2"                  ; shift 2 ;;
-        -h|--host|--hostname)  kevm_host="$2"                  ; shift 2 ;;
-        *)                     args+=("$1")                    ; shift   ;;
+        --debug)                   debug=true ; args+=("$1")       ; shift   ;;
+        --dump)                    dump=true                       ; shift   ;;
+        --no-unparse)              unparse=false                   ; shift   ;;
+        --debugger)                debugger=true                   ; shift   ;;
+        --profile)                 profile=true                    ; shift   ;;
+        --profile-timeout)         profile_timeout="$2"            ; shift 2 ;;
+        --kore-prof-args)          kore_prof_args="$2"             ; shift 2 ;;
+        --bug-report)              bug_report=true                 ; shift   ;;
+        --backend)                 backend="$2"                    ; shift 2 ;;
+        --backend-dir)             backend_dir="$2"                ; shift 2 ;;
+        --concrete-rules-file)     concrete_rules_file="$2"        ; shift 2 ;;
+        --provex)                  provex=true                     ; shift   ;;
+        --verif-module)            verif_module="$2"               ; shift 2 ;;
+        --pyk-minimize)            pyk_minimize=true               ; shift   ;;
+        --pyk-omit-labels)         pyk_omit_labels="$2"            ; shift 2 ;;
+        --max-counterexamples)     max_counterexamples="$2"        ; shift 2 ;;
+        --branching-allowed)       branching_allowed="$2"          ; shift 2 ;;
+        --haskell-backend-arg)     haskell_backend_command+=("$2") ; shift 2 ;;
+        --mode)                    mode="$2"                       ; shift 2 ;;
+        --schedule)                schedule="$2"                   ; shift 2 ;;
+        --chainid)                 chainid="$2"                    ; shift 2 ;;
+        --summary-dir)             summary_dir="$2"                ; shift 2 ;;
+        --include-summary-files)   include_summary_files="$2"      ; shift 2 ;;
+        --include-summary-modules) include_summary_modules="$2"    ; shift 2 ;;
+        --no-init)                 summary_init=false              ; shift   ;;
+        -p|--port)                 kevm_port="$2"                  ; shift 2 ;;
+        -h|--host|--hostname)      kevm_host="$2"                  ; shift 2 ;;
+        *)                         args+=("$1")                    ; shift   ;;
     esac
 done
 
