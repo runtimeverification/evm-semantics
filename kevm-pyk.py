@@ -413,7 +413,7 @@ def abstract(constrainedTerm):
 
 def subsumes(constrainedTerm1, constrainedTerm2):
     # Could implement this with the search-final-state-matching check used for LLVM backend? Does it work with constraints?
-    if getCell(constrainedTerm1, 'PC_CELL') == getCell(constrainedTerm2, 'PC_CELL'):
+    if all([getCell(constrainedTerm1, cn) == getCell(constrainedTerm2, cn) for cn in ['PC_CELL', 'K_CELL']]):
         wordStack1 = getCell(constrainedTerm1, 'WORDSTACK_CELL')
         wordStack2 = getCell(constrainedTerm2, 'WORDSTACK_CELL')
         if match(wordStack1, wordStack2) is not None:
@@ -569,6 +569,8 @@ def kevmSummarize( directory
                 for (j, seen) in seenStates:
                     if subsumes(seen, finalState):
                         subsumed = True
+                        if finalStateId not in cfg['graph']:
+                            cfg['graph'][finalStateId] = []
                         cfg['graph'][finalStateId].append((j, printConstraint(newConstraint, symbolTable), 0))
                 if not subsumed:
                     frontier.append((finalStateId, finalState))
