@@ -6,6 +6,11 @@ shopt -s extglob
 notif() { echo "== $@" >&2 ; }
 fatal() { echo "[FATAL] $@" ; exit 1 ; }
 
+notif_exec() {
+    notif "[$(date)]: $@"
+    $@
+}
+
 check_k_install() {
     which kast &> /dev/null \
         || fatal "Must have K installed! See https://github.com/kframework/k/releases."
@@ -298,17 +303,15 @@ run_summarize() {
                 fatal "Concrete rules file doesn't exist: ${concrete_rules_file}"
             fi
         fi
-        notif "[$(date)] Kompiling ${verif_file_name}"
-        kevm kompile "${kevm_kompile_args[@]}"
+        notif_exec $0 kompile ${kevm_kompile_args[@]}
 
         gen_empty_spec "${contract_name}" > "${spec_file_name}"
 
-        notif "[$(date)] Generating initial state: ${spec_file_name} > ${init_state_json}"
-        $0 prove "${spec_file_name}"                         \
-            --backend haskell --backend-dir "${summary_dir}" \
-            --provex --spec-module "${spec_module_name}"     \
-            --depth 0 --output json                          \
-            > "${init_state_json}" || true
+        notif_exec $0 prove "${spec_file_name}"                         \
+                       --backend haskell --backend-dir "${summary_dir}" \
+                       --provex --spec-module "${spec_module_name}"     \
+                       --depth 0 --output json                          \
+                       > "${init_state_json}" || true
     fi
 
     notif "[$(date)] Calling summarizer"
