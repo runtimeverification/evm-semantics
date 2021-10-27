@@ -28,7 +28,7 @@ def removeGeneratedCells(constrainedTerm):
 
 def makeDefinition(sents, specModuleName, requireNames, moduleNames):
     module = KFlatModule(specModuleName, moduleNames, sents)
-    return KDefinition(specModuleName, [module], requires = [KRequire(name.split('/')[-1]) for name in moduleNames])
+    return KDefinition(specModuleName, [module], requires = [KRequire(name.split('/')[-1]) for name in requireNames])
 
 def isAnonVariable(kast):
     return isKVariable(kast) and kast['name'].startswith('_')

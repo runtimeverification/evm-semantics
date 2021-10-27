@@ -295,6 +295,8 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
 
+    rule ( maxUInt160 &Int X ) modInt pow160 => X modInt pow160 requires #rangeUInt(256, X) [simplification]
+
   // ########################
   // Buffer Reasoning
   // ########################
