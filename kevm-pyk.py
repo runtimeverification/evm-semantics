@@ -555,13 +555,14 @@ def kevmSummarize( directory
         for (i, (finalState, newConstraint)) in enumerate(nextStatesAndConstraints):
             finalStateId = nextStateId
             nextStateId  = nextStateId + 1
-            cfg['graph'][initStateId].append((finalStateId, printConstraint(newConstraint, symbolTable), depth))
             if finalStateId not in writtenStates:
                 kevmWriteStateToFile(directory, contractName, str(finalStateId), finalState, symbolTable)
                 writtenStates.append(finalStateId)
+
+            cfg['graph'][initStateId].append((finalStateId, printConstraint(newConstraint, symbolTable), depth))
             if isTerminal(finalState):
                 cfg['terminal'].append(finalStateId)
-            elif len(nextStatesAndConstraints) == 1:
+            elif len(nextStatesAndConstraints) == 1 and depth != maxDepth:
                 cfg['stuck'].append(finalStateId)
             else:
                 subsumed = False
