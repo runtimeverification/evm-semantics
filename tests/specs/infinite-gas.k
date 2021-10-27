@@ -97,8 +97,18 @@ module INFINITE-GAS-COMMON
     rule #gas(G) <=Int I *Int I' => false requires                     notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
     rule #gas(G) <=Int I /Int I' => false requires I' =/=Int 0 andBool notBool (#gas(G) <=Int I orBool #gas(G) <=Int I') [simplification]
 
-    rule 0 <=Int #memoryUsageUpdate(MU, START, WIDTH)              => true requires 0 <=Int MU       andBool 0 <=Int START       andBool 0     <=Int WIDTH   [simplification]
-    rule         #memoryUsageUpdate(MU, START, WIDTH) <Int #gas(G) => true requires MU  <Int #gas(G) andBool START  <Int #gas(G) andBool WIDTH  <Int #gas(G) [simplification]
+    rule 0 <=Int #memoryUsageUpdate(MU, START, WIDTH)              => true requires 0 <=Int MU      andBool 0 <=Int START       andBool 0     <=Int WIDTH   [simplification]
+    rule         #memoryUsageUpdate(MU, START, WIDTH) <Int #gas(G) => true requires MU <Int #gas(G) andBool START  <Int #gas(G) andBool WIDTH  <Int #gas(G) [simplification]
+
+    rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START1, WIDTH1), START2, WIDTH2) => #memoryUsageUpdate(MU, START1, WIDTH1)
+      requires #rangeUInt(256, MU) andBool 0 <Int WIDTH1 andBool 0 <Int WIDTH2
+       andBool START2 +Int WIDTH2 <=Int START1 +Int WIDTH1
+      [simplification]
+
+    rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START1, WIDTH1), START2, WIDTH2) => #memoryUsageUpdate(MU, START2, WIDTH2)
+      requires #rangeUInt(256, MU) andBool 0 <Int WIDTH1 andBool 0 <Int WIDTH2
+       andBool START1 +Int WIDTH1 <Int START2 +Int WIDTH2
+      [simplification]
 
     rule 0 <=Int Csload(_, _)       => true  [simplification]
     rule Csload(_, _) <Int #gas(_)  => true  [simplification]
