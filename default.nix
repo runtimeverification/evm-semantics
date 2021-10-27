@@ -15,13 +15,7 @@ let
 
   release = if release_ == null then pkgs.stdenv.isLinux else false;
 
-  kframework =
-    let
-      tag = lib.fileContents ./deps/k_release;
-      url = "https://github.com/kframework/k/releases/download/${tag}/release.nix";
-      args = import (builtins.fetchurl { inherit url; });
-      src = pkgs.fetchgit args;
-    in import src { inherit release; };
+  kframework = import ./deps/k/default.nix { inherit release; };
   inherit (kframework) k haskell-backend llvm-backend clang;
   llvmPackages = pkgs.llvmPackages_10;
 in

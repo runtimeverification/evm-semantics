@@ -7,6 +7,11 @@ execute_process(COMMAND dirname ${KOMPILE_PATH} OUTPUT_VARIABLE K_BIN
 set(K_LIB ${K_BIN}/../lib)
 list(APPEND CMAKE_MODULE_PATH "${K_LIB}/cmake/kframework")
 
+execute_process(COMMAND which llvm-kompile OUTPUT_VARIABLE LLVM_PATH
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND dirname ${LLVM_PATH} OUTPUT_VARIABLE LLVM_BIN
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 find_program(CMAKE_C_COMPILER clang-8)
 find_program(CMAKE_C_COMPILER clang-7)
 find_program(CMAKE_C_COMPILER clang)
@@ -45,10 +50,6 @@ if(UNIX AND NOT APPLE)
 	set(LINK_PROCPS procps)
 endif()
 
-execute_process(COMMAND which llvm-kompile OUTPUT_VARIABLE LLVM_PATH
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND dirname ${LLVM_PATH} OUTPUT_VARIABLE LLVM_BIN
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
 target_include_directories(kevm-vm
 	PUBLIC $ENV{PLUGIN_SUBMODULE}/plugin-c
 	PUBLIC $ENV{LOCAL_LIB}/proto

@@ -46,6 +46,50 @@ and to make a Docker Image based on it, use the following line in your `Dockerfi
 FROM runtimeverificationinc/kframework-evm-semantics:ubuntu-focal-COMMIT_ID
 ```
 
+### Nix
+
+#### Prerequisites
+
+It is safe to skip any of these dependencies that are already installed.
+
+Follow the instructions below.
+Perform all steps as your normal (non-root) user.
+You may find the same instructions and our public key at <https://runtimeverification.cachix.org>.
+To follow this instructions, you will need `curl` installed on your system <https://curl.haxx.se/download.html>.
+
+#### Nix
+
+Please pay careful attention to any additional instructions printed by the installer.
+Install Nix:
+
+```.sh
+# Linux and macOS < 10.15
+bash <(curl -L https://nixos.org/nix/install)
+
+# macOS 10.15 (See note below)
+bash <(curl -L https://nixos.org/nix/install) --darwin-use-unencrypted-nix-store-volume
+```
+
+For macOS 10.15, please refer to the [Nix manual](https://nixos.org/manual/nix/stable/#sect-macos-installation) for more information.
+
+#### Cachix
+
+Install Cachix and start using the binary cache:
+
+```.sh
+nix-env -iA cachix -f https://cachix.org/api/v1/install
+cachix use runtimeverification
+```
+
+#### Install with Nix
+
+```.sh
+git clone https://github.com/kframework/evm-semantics
+cd evm-semantics
+git submodule update --init --recursive deps
+nix-env -f . -i kevm
+```
+
 ### From Source Build
 
 Follow the instructions in the [README file](https://github.com/kframework/evm-semantics) for building KEVM from source.
