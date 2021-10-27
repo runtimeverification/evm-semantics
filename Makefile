@@ -49,7 +49,7 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
-        build build-java build-haskell build-llvm build-provex build-node build-kevm                                             \
+        build build-haskell build-llvm build-provex build-node build-kevm                                                        \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
         test-prove test-failing-prove                                                                                            \
@@ -176,14 +176,13 @@ kevm_files := abi.md              \
               serialization.md    \
               state-loader.md
 
-kevm_lemmas := infinite-gas.k                           \
-               lemmas.k                                 \
-               int-simplification.k                     \
-               erc20/abstract-semantics-segmented-gas.k \
-               erc20/evm-symbolic.k                     \
-               mcd/bin_runtime.k                        \
-               mcd/storage.k                            \
-               mcd/verification.k                       \
+kevm_lemmas := infinite-gas.k       \
+               lemmas.k             \
+               int-simplification.k \
+               erc20/evm-symbolic.k \
+               mcd/bin_runtime.k    \
+               mcd/storage.k        \
+               mcd/verification.k   \
                mcd/word-pack.k
 
 lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(kevm_lemmas))
@@ -191,8 +190,6 @@ lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(kevm_lemm
 kevm_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_files))
 
 includes := $(kevm_includes) $(lemma_includes) $(plugin_includes) $(plugin_c_includes)
-
-$(includes): $(KEVM_BIN)/kevm
 
 $(KEVM_INCLUDE)/kframework/%.md: %.md
 	@mkdir -p $(dir $@)
@@ -208,23 +205,6 @@ ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
 endif
 
-# Java
-
-java_dir           := java
-java_main_module   := ETHEREUM-SIMULATION
-java_syntax_module := $(java_main_module)
-java_main_file     := driver.md
-java_main_filename := $(basename $(notdir $(java_main_file)))
-java_kompiled      := $(java_dir)/$(java_main_filename)-kompiled/compiled.bin
-
-$(KEVM_LIB)/$(java_kompiled): $(kevm_includes) $(plugin_includes)
-	$(KOMPILE) --backend java                  \
-	    $(java_main_file) $(JAVA_KOMPILE_OPTS) \
-	    --directory $(KEVM_LIB)/$(java_dir)    \
-	    --main-module $(java_main_module)      \
-	    --syntax-module $(java_syntax_module)  \
-	    $(KOMPILE_OPTS)
-
 # Haskell
 
 haskell_dir            := haskell
@@ -238,7 +218,7 @@ ifeq ($(UNAME_S),Darwin)
 $(KEVM_LIB)/$(haskell_kompiled): $(libsecp256k1_out)
 endif
 
-$(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes) $(plugin_includes)
+$(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend haskell                     \
 	    $(haskell_main_file) $(HASKELL_KOMPILE_OPTS) \
 	    --directory $(KEVM_LIB)/$(haskell_dir)       \
@@ -259,7 +239,7 @@ ifeq ($(UNAME_S),Darwin)
 $(KEVM_LIB)/$(llvm_kompiled): $(libcryptopp_out)
 endif
 
-$(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
+$(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend llvm                 \
 	    $(llvm_main_file)                     \
 	    --directory $(KEVM_LIB)/$(llvm_dir)   \
@@ -279,7 +259,7 @@ node_kompiled      := $(node_dir)/build/kevm-vm
 export node_dir
 export node_main_filename
 
-$(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
+$(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend node                 \
 	    $(node_main_file)                     \
 	    --directory $(KEVM_LIB)/$(node_dir)   \
@@ -299,7 +279,6 @@ install_bins := kevm    \
 
 install_libs := $(haskell_kompiled)                                        \
                 $(llvm_kompiled)                                           \
-                $(java_kompiled)                                           \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
                 kore-json.py                                               \
                 kast-json.py                                               \
@@ -334,15 +313,14 @@ $(KEVM_LIB)/release.md: INSTALL.md
 
 build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
 
-build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py $(lemma_includes)
 build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
-build-java:    $(KEVM_LIB)/$(java_kompiled)    $(KEVM_LIB)/kast-json.py $(lemma_includes)
+build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
 build-node:    $(KEVM_LIB)/$(node_kompiled)
 build-kevm:    $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
-                            -not -path "$(KEVM_LIB)/llvm/driver-kompiled/dt/*"                 \
+                            -not -path "$(KEVM_LIB)/**/dt/*"                                   \
                             -not -path "$(KEVM_LIB)/kframework/share/kframework/pl-tutorial/*" \
                             -not -path "$(KEVM_LIB)/kframework/share/kframework/k-tutorial/*"  \
                         | sed 's|^$(KEVM_LIB)/||')

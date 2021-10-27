@@ -22,7 +22,7 @@ plugin_include=${INSTALL_LIB}/blockchain-k-plugin/include
 libff_dir=${INSTALL_LIB}/libff
 libcryptopp_dir=${INSTALL_LIB}/cryptopp
 
-export PATH="$install_k_bin:$INSTALL_BIN:$INSTALL_LIB:$PATH"
+export PATH="${INSTALL_BIN}:${INSTALL_LIB}:${install_k_bin}:${PATH}"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
