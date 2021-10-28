@@ -373,7 +373,6 @@ A cons-list is used for the EVM wordstack.
 -   `_:_` serves as the "cons" operator.
 
 ```k
-    syntax WordStack [flatPredicate]
     syntax WordStack ::= ".WordStack"      [smtlib(_dotWS)]
                        | Int ":" WordStack [klabel(_:_WS), smtlib(_WS_)]
  // --------------------------------------------------------------------

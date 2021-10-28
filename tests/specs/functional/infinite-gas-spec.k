@@ -33,6 +33,9 @@ module INFINITE-GAS-SPEC
 
     claim <k> runLemma(X +Int (0 -Int ABI_wad)) => doneLemma(X -Int ABI_wad) ... </k>
 
+    claim <k> runLemma(#memoryUsageUpdate(#memoryUsageUpdate(MEMORYUSED_CELL, 0, 32), 32, 32)) => doneLemma(#memoryUsageUpdate(MEMORYUSED_CELL, 32, 32)) ... </k>
+      requires #rangeUInt(256, MEMORYUSED_CELL)
+
  // Infinite Gas simplifications
  // ----------------------------
 
