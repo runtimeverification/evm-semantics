@@ -113,7 +113,7 @@ module SOLIDITY-CODE-SPEC
           <callData> #abiCallData("add", .TypedArgs) </callData>
           <k>          #execute   => #halt ...   </k>
           <output>     .ByteArray => ?_          </output>
-          <statusCode> ?_         => EVMC_REVERT </statusCode>
+          <statusCode> _          => EVMC_REVERT </statusCode>
 ```
 
 ### Add Positive Case
@@ -143,7 +143,7 @@ module SOLIDITY-CODE-SPEC
           <callData> #abiCallData("add", #uint256(X), #uint256(Y)) </callData>
           <k>          #execute   => #halt ...          </k>
           <output>     .ByteArray => #buf(32, X +Int Y) </output>
-          <statusCode> ?_         => EVMC_SUCCESS       </statusCode>
+          <statusCode> _          => EVMC_SUCCESS       </statusCode>
 
      requires #rangeUInt(256, X)
       andBool #rangeUInt(256, Y)
@@ -178,7 +178,7 @@ module SOLIDITY-CODE-SPEC
           <callData> #abiCallData("add", #uint256(X), #uint256(Y)) </callData>
           <k>          #execute   => #halt ...   </k>
           <output>     .ByteArray => ?_          </output>
-          <statusCode> ?_         => EVMC_REVERT </statusCode>
+          <statusCode> _          => EVMC_REVERT </statusCode>
 
      requires #rangeUInt(256, X)
       andBool #rangeUInt(256, Y)
@@ -213,7 +213,7 @@ module SOLIDITY-CODE-SPEC
           <callData> #abiCallData("badAdd", #uint256(X), #uint256(Y)) </callData>
           <k>          #execute   => #halt ...          </k>
           <output>     .ByteArray => ?_                 </output>
-          <statusCode> ?_         => EVMC_REVERT        </statusCode>
+          <statusCode> _          => EVMC_REVERT        </statusCode>
 
      requires #rangeUInt(256, X)
       andBool #rangeUInt(256, Y)
@@ -247,7 +247,7 @@ module SOLIDITY-CODE-SPEC
           <callData> #abiCallData("max", #uint256(X), #uint256(Y)) </callData>
           <k>          #execute   => #halt ...              </k>
           <output>     .ByteArray => #buf(32, maxInt(X, Y)) </output>
-          <statusCode> ?_         => EVMC_SUCCESS           </statusCode>
+          <statusCode> _          => EVMC_SUCCESS           </statusCode>
 
      requires #rangeUInt(256, X)
       andBool #rangeUInt(256, Y)
