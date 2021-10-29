@@ -422,7 +422,7 @@ tests/%.prove-legacy: tests/%
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
 	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
-	    --backend-dir tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
+	    --directory tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                 \

@@ -342,7 +342,7 @@ while [[ $# -gt 0 ]]; do
         --kore-prof-args)      kore_prof_args="$2"             ; shift 2 ;;
         --bug-report)          bug_report=true                 ; shift   ;;
         --backend)             backend="$2"                    ; shift 2 ;;
-        --backend-dir)         backend_dir="$2"                ; shift 2 ;;
+        --directory)           backend_dir="$2"                ; shift 2 ;;
         --concrete-rules-file) concrete_rules_file="$2"        ; shift 2 ;;
         --no-provex)           provex=false                    ; shift   ;;
         --verif-module)        verif_module="$2"               ; shift 2 ;;
