@@ -49,7 +49,7 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
-        build build-haskell build-llvm build-provex build-node build-kevm                                                        \
+        build build-haskell build-llvm build-provex build-vm build-kevm                                                        \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
         test-prove test-failing-prove                                                                                            \
@@ -327,7 +327,7 @@ build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%
 
 build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
-build-node:    $(KEVM_LIB)/$(node_kompiled)
+build-vm:      $(KEVM_LIB)/$(node_kompiled)
 build-kevm:    $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')

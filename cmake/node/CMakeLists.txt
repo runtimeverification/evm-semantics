@@ -9,7 +9,9 @@ execute_process(COMMAND which llvm-kompile OUTPUT_VARIABLE LLVM_PATH
 execute_process(COMMAND dirname ${LLVM_PATH} OUTPUT_VARIABLE LLVM_BIN
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(K_LIB ${K_BIN}/../lib)
+set(LLVM_LIB ${LLVM_BIN}/../lib)
 list(APPEND CMAKE_MODULE_PATH "${K_LIB}/cmake/kframework")
+list(APPEND CMAKE_MODULE_PATH "${LLVM_LIB}/cmake/kframework")
 include(LLVMKompilePrelude)
 project (KevmVm CXX)
 
