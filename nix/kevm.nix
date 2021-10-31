@@ -87,4 +87,7 @@ in
       cp -r .build/${builtins.placeholder "out"} $out
       ln -s ${kevm-vm}/bin/kevm-vm $out/bin/
     '';
+    passthru = {
+      inherit kevm-vm;
+    };
   }

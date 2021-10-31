@@ -15,8 +15,26 @@ let
 
   release = if release_ == null then pkgs.stdenv.isLinux else false;
 
-  kframework = import ./deps/k/default.nix { inherit release; };
-  inherit (kframework) k haskell-backend llvm-backend clang;
+  kframework =
+    let
+      tag = lib.fileContents ./deps/k_release;
+      url = "https://github.com/kframework/k/releases/download/${tag}/release.nix";
+      args = import (builtins.fetchurl { inherit url; });
+      src = pkgs.fetchgit args;
+    in import src { inherit release; };
+  #kframework = import ./../k { inherit pkgs release; };
+  inherit (kframework) k haskell-backend clang;
+  # The following llvm-backend directory is needed at build time by kevm, but it's missing
+  # from the llvm-backend nix package, so we override the postInstall phase to copy it in
+  # the nix store.
+  # NOTE: Move this to the llvm-backend repository?
+  llvm-backend = kframework.llvm-backend.overrideAttrs (old:
+    { postInstall = if old ? postInstall then old.postInstall else "" + ''
+        mkdir -p $out/lib/cmake/kframework
+        cp -r ../cmake/* $out/lib/cmake/kframework/;
+        '';
+    }
+  );
   llvmPackages = pkgs.llvmPackages_10;
 in
 
