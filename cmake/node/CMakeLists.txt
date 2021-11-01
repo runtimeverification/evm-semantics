@@ -45,6 +45,7 @@ target_include_directories(kevm-vm
 	PUBLIC $ENV{NODE_DIR}/vm/kevm
 	PUBLIC ${CMAKE_SOURCE_DIR}/..
 	PUBLIC $ENV{KEVM_LIB_ABS}/libff/include
+    PUBLIC ${K_LIB}/../include/kllvm
     PUBLIC ${LLVM_BIN}/../include/kllvm)
 target_compile_options(kevm-vm
 	PUBLIC $ENV{LLVM_KOMPILE_OPTS}
