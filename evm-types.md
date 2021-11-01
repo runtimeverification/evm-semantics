@@ -544,9 +544,9 @@ The local memory of execution is a byte-array (instead of a word-array).
 
 ```{.k .bytes}
     syntax ByteArray = Bytes
-    syntax ByteArray ::= ".ByteArray"
- // ---------------------------------
-    rule .ByteArray => .Bytes [macro]
+    syntax ByteArray ::= ".ByteArray" [macro]
+ // -----------------------------------------
+    rule .ByteArray => .Bytes
 
     syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
  // ---------------------------------------------------------------------------
@@ -591,9 +591,9 @@ The local memory of execution is a byte-array (instead of a word-array).
 
 ```{.k .nobytes}
     syntax ByteArray = WordStack
-    syntax ByteArray ::= ".ByteArray"
- // ---------------------------------
-    rule .ByteArray => .WordStack [macro]
+    syntax ByteArray ::= ".ByteArray" [macro]
+ // -----------------------------------------
+    rule .ByteArray => .WordStack
 
     syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
  // ---------------------------------------------------------------------------
