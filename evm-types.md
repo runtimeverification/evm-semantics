@@ -27,17 +27,17 @@ Some important numbers that are referred to often during execution.
 These can be used for pattern-matching on the LHS of rules as well (`macro` attribute expands all occurances of these in rules).
 
 ```k
-    syntax Int ::= "pow256" /* 2 ^Int 256 */ [macro]
-                 | "pow255" /* 2 ^Int 255 */ [macro]
-                 | "pow224" /* 2 ^Int 224 */ [macro]
-                 | "pow208" /* 2 ^Int 208 */ [macro]
-                 | "pow168" /* 2 ^Int 168 */ [macro]
-                 | "pow160" /* 2 ^Int 160 */ [macro]
-                 | "pow128" /* 2 ^Int 128 */ [macro]
-                 | "pow96"  /* 2 ^Int 96  */ [macro]
-                 | "pow48"  /* 2 ^Int 48  */ [macro]
-                 | "pow16"  /* 2 ^Int 16  */ [macro]
- // ----------------------------------------
+    syntax Int ::= "pow256" [macro] /* 2 ^Int 256 */
+                 | "pow255" [macro] /* 2 ^Int 255 */
+                 | "pow224" [macro] /* 2 ^Int 224 */
+                 | "pow208" [macro] /* 2 ^Int 208 */
+                 | "pow168" [macro] /* 2 ^Int 168 */
+                 | "pow160" [macro] /* 2 ^Int 160 */
+                 | "pow128" [macro] /* 2 ^Int 128 */
+                 | "pow96"  [macro] /* 2 ^Int 96  */
+                 | "pow48"  [macro] /* 2 ^Int 48  */
+                 | "pow16"  [macro] /* 2 ^Int 16  */
+ // ------------------------------------------------
     rule pow256 => 115792089237316195423570985008687907853269984665640564039457584007913129639936
     rule pow255 => 57896044618658097711785492504343953926634992332820282019728792003956564819968
     rule pow224 => 26959946667150639794667015087019630673637144422540572481103610249216
@@ -77,7 +77,7 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
                  | "maxSFixed128x10" [macro]
                  | "minUFixed128x10" [macro]
                  | "maxUFixed128x10" [macro]
- // --------------------------------
+ // ----------------------------------------
     rule minSInt128      => -170141183460469231731687303715884105728                                        /*  -2^127      */
     rule maxSInt128      =>  170141183460469231731687303715884105727                                        /*   2^127 - 1  */
     rule minSFixed128x10 => -1701411834604692317316873037158841057280000000000                              /* (-2^127    ) * 10^10 */
@@ -109,7 +109,7 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule maxUInt256      =>  115792089237316195423570985008687907853269984665640564039457584007913129639935 /*   2^256 - 1  */
 
     syntax Int ::= "eth" [macro]
- // --------------------
+ // ----------------------------
     rule eth => 1000000000000000000
 ```
 
@@ -123,7 +123,7 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
                   | #rangeUFixed  ( Int , Int , Int ) [macro]
                   | #rangeAddress ( Int )             [macro]
                   | #rangeBytes   ( Int , Int )       [macro]
- // -------------------------------------------
+ // ---------------------------------------------------------
     rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1
     rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      )
     rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      )
@@ -146,7 +146,7 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
                   | "#range" "(" Int "<"  Int "<=" Int ")" [macro]
                   | "#range" "(" Int "<=" Int "<"  Int ")" [macro]
                   | "#range" "(" Int "<=" Int "<=" Int ")" [macro]
- // ------------------------------------------------------
+ // --------------------------------------------------------------
     rule #range ( LB <  X <  UB ) => LB  <Int X andBool X  <Int UB
     rule #range ( LB <  X <= UB ) => LB  <Int X andBool X <=Int UB
     rule #range ( LB <= X <  UB ) => LB <=Int X andBool X  <Int UB
@@ -496,7 +496,7 @@ Most of EVM data is held in local memory.
     rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ] [concrete]
 
     syntax Memory ::= ".Memory" [macro]
- // ---------------------------
+ // -----------------------------------
     rule .Memory => .Bytes
 
     syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
@@ -519,7 +519,7 @@ Most of EVM data is held in local memory.
     rule [#rangeAux.rec]:  #range(WM,   END => END -Int 1, WIDTH => WIDTH -Int 1, WS => #lookupMemory(WM, END) : WS) requires 0 <Int WIDTH
 
     syntax Memory ::= ".Memory" [macro]
- // ---------------------------
+ // -----------------------------------
     rule .Memory => .Map
 
     syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
