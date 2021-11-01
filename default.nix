@@ -22,7 +22,6 @@ let
       args = import (builtins.fetchurl { inherit url; });
       src = pkgs.fetchgit args;
     in import src { inherit release; };
-  #kframework = import ./../k { inherit pkgs release; };
   inherit (kframework) k haskell-backend clang;
   # The following llvm-backend directory is needed at build time by kevm, but it's missing
   # from the llvm-backend nix package, so we override the postInstall phase to copy it in

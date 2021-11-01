@@ -62,10 +62,7 @@ in
   stdenv.mkDerivation {
     pname = "kevm";
     inherit version src;
-    nativeBuildInputs = [ protobuf k haskell-backend llvm-backend clang cmake which ];
-    buildInputs = [ cryptopp libff mpfr secp256k1  ];
 
-    dontConfigure = true;
     postPatch = ''
         sed -i kevm \
           -e "/^INSTALL_BIN=/ c INSTALL_BIN=\"$out/bin\"" \
@@ -83,11 +80,6 @@ in
       "SYSTEM_LIBCRYPTOPP=true"
     ];
     buildFlags = [ "build-kevm" ];
-    installPhase = ''
-      cp -r .build/${builtins.placeholder "out"} $out
-      ln -s ${kevm-vm}/bin/kevm-vm $out/bin/
-    '';
-    passthru = {
-      inherit kevm-vm;
-    };
+    postInstall = "ln -s ${kevm-vm}/bin/kevm-vm $out/bin/";
+    passthru = { inherit kevm-vm; };
   }
