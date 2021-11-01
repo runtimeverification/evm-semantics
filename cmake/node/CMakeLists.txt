@@ -48,7 +48,7 @@ target_include_directories(kevm-vm
     PUBLIC ${LLVM_BIN}/../include/kllvm)
 target_compile_options(kevm-vm
 	PUBLIC $ENV{LLVM_KOMPILE_OPTS}
-    PUBLIC -Wall) # FIXME: Bring back -werror
+    PUBLIC -Wall -Werror -Wno-unused-command-line-argument -Wno-unused-result)
 target_link_libraries(kevm-vm
 	ff protobuf gmp ${LINK_PROCPS} cryptopp secp256k1 crypto)
 include(LLVMKompile)
