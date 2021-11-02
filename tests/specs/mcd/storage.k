@@ -67,12 +67,12 @@ module DSS-STORAGE
                  | "#Jug.vow"                   [macro]
                  | "#Jug.base"                  [macro]
  // ---------------------------------------------------
-    rule #Jug.wards[A]       => #hashedLocation("Solidity", 0, A)g
-    rule #Jug.ilks[ILK].duty => #hashedLocation("Solidity", 1, ILK) +Int 0g
-    rule #Jug.ilks[ILK].rho  => #hashedLocation("Solidity", 1, ILK) +Int 1g
-    rule #Jug.vat            => 2g
-    rule #Jug.vow            => 3g
-    rule #Jug.base           => 4g
+    rule #Jug.wards[A]       => #hashedLocation("Solidity", 0, A)
+    rule #Jug.ilks[ILK].duty => #hashedLocation("Solidity", 1, ILK) +Int 0
+    rule #Jug.ilks[ILK].rho  => #hashedLocation("Solidity", 1, ILK) +Int 1
+    rule #Jug.vat            => 2
+    rule #Jug.vow            => 3
+    rule #Jug.base           => 4
 
  // ### Drip
  // --------
@@ -215,7 +215,7 @@ module DSS-STORAGE
                  | "#Flopper.kicks"                        [macro]
                  | "#Flopper.live"                         [macro]
                  | "#Flopper.vow"                          [macro]
- // -----------------------------
+ // --------------------------------------------------------------
     rule #Flopper.wards[A]            => #hashedLocation("Solidity", 0, A)
     rule #Flopper.bids[N].bid         => #hashedLocation("Solidity", 1, N) +Int 0
     rule #Flopper.bids[N].lot         => #hashedLocation("Solidity", 1, N) +Int 1
