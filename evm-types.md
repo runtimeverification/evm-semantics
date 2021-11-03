@@ -153,7 +153,7 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule #range ( LB <= X <= UB ) => LB <=Int X andBool X <=Int UB [macro]
 ```
 
--   `chop` interprets an integer modulo $2^256$.
+-   `chop` interprets an integer modulo `2^256`.
 
 ```k
     syntax Int ::= chop ( Int ) [function, functional, smtlib(chop)]
@@ -320,8 +320,8 @@ Bitwise logical operators are lifted from the integer versions.
     rule W0 >>sWord W1 => chop( (abs(W0) *Int sgn(W0)) >>Int W1 )
 ```
 
--   `bit` gets bit $N$ (0 being MSB).
--   `byte` gets byte $N$ (0 being the MSB).
+-   `bit` gets bit `N` (0 being MSB).
+-   `byte` gets byte `N` (0 being the MSB).
 
 ```k
     syntax Int ::= bit  ( Int , Int ) [function]
@@ -334,8 +334,8 @@ Bitwise logical operators are lifted from the integer versions.
     rule byte(N, W) => bitRangeInt(W , ( 31 -Int N) *Int 8 , 8) requires N >=Int 0 andBool N <Int  32
 ```
 
--   `#nBits` shifts in $N$ ones from the right.
--   `#nBytes` shifts in $N$ bytes of ones from the right.
+-   `#nBits` shifts in `N` ones from the right.
+-   `#nBytes` shifts in `N` bytes of ones from the right.
 -   `_<<Byte_` shifts an integer 8 bits to the left.
 -   `_>>Byte_` shifts an integer 8 bits to the right.
 
@@ -351,7 +351,7 @@ Bitwise logical operators are lifted from the integer versions.
     rule N >>Byte M => N >>Int (8 *Int M)
 ```
 
--   `signextend(N, W)` sign-extends from byte $N$ of $W$ (0 being MSB).
+-   `signextend(N, W)` sign-extends from byte `N` of `W` (0 being MSB).
 
 ```k
     syntax Int ::= signextend( Int , Int ) [function, functional]
@@ -384,8 +384,8 @@ A cons-list is used for the EVM wordstack.
     rule I : BS => Int2Bytes(1, I, BE) ++ BS requires I <Int 256
 ```
 
--   `#take(N , WS)` keeps the first $N$ elements of a `WordStack` (passing with zeros as needed).
--   `#drop(N , WS)` removes the first $N$ elements of a `WordStack`.
+-   `#take(N , WS)` keeps the first `N` elements of a `WordStack` (passing with zeros as needed).
+-   `#drop(N , WS)` removes the first `N` elements of a `WordStack`.
 
 ```k
     syntax WordStack ::= #take ( Int , WordStack ) [klabel(takeWordStack), function, functional]
@@ -420,8 +420,8 @@ A cons-list is used for the EVM wordstack.
 
 ### Element Access
 
--   `WS [ N ]` accesses element $N$ of $WS$.
--   `WS [ N := W ]` sets element $N$ of $WS$ to $W$ (padding with zeros as needed).
+-   `WS [ N ]` accesses element `N` of `WS`.
+-   `WS [ N := W ]` sets element `N` of `WS` to `W` (padding with zeros as needed).
 
 ```k
     syntax Int ::= WordStack "[" Int "]" [function, functional]
@@ -481,8 +481,8 @@ Local Memory
 
 Most of EVM data is held in local memory.
 
--   `WM [ N := WS ]` assigns a contiguous chunk of $WM$ to $WS$ starting at position $W$.
--   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
+-   `WM [ N := WS ]` assigns a contiguous chunk of `WM` to `WS` starting at position `W`.
+-   `#range(WM, START, WIDTH)` reads off `WIDTH` elements from `WM` beginning at position `START` (padding with zeros as needed).
 
 ```{.k .bytes}
     syntax Memory = Bytes
