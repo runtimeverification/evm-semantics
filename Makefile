@@ -6,9 +6,6 @@ UNAME_S := $(shell uname -s)
 DEPS_DIR      := deps
 BUILD_DIR     := .build
 NODE_DIR      := $(abspath node)
-SUBDEFN_DIR   := .
-DEFN_BASE_DIR := $(BUILD_DIR)/defn
-DEFN_DIR      := $(DEFN_BASE_DIR)/$(SUBDEFN_DIR)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 LOCAL_LIB     := $(BUILD_LOCAL)/lib
 LOCAL_BIN     := $(BUILD_LOCAL)/bin
@@ -438,7 +435,7 @@ tests/specs/%.provex: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/
 	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS)        \
 	    --provex --backend-dir tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
-tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes)
+tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                 \
 	    --directory tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
 	    --main-module $(KPROVE_MODULE)                                                                  \
