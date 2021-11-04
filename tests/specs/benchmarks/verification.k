@@ -20,6 +20,8 @@ module VERIFICATION-COMMON
     rule 0 <=Int #asWord(#ecrec(_   , _   , _   , _   ))                  => true                                                      [simplification]
     rule         #asWord(#ecrec(_   , _   , _   , _   )) <=Int maxUInt160 => true                                                      [simplification]
 
+    rule maxUInt8   &Int X => X requires #rangeUInt(8 , X)      [simplification]
+
 endmodule
 
 module VERIFICATION
