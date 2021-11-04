@@ -288,6 +288,8 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule N &Int maxUInt160 => N  requires #rangeUInt(160, N) [simplification]
     rule maxUInt160 &Int N => N  requires #rangeUInt(160, N) [simplification]
 
+    rule maxUInt8 &Int X => X requires #rangeUInt(8 , X)     [simplification]
+
     rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
 
   // ########################
