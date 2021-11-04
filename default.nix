@@ -26,7 +26,6 @@ let
   # The following llvm-backend directory is needed at build time by kevm, but it's missing
   # from the llvm-backend nix package, so we override the postInstall phase to copy it in
   # the nix store.
-  # NOTE: Move this to the llvm-backend repository?
   llvm-backend = kframework.llvm-backend.overrideAttrs (old:
     { postInstall = if old ? postInstall then old.postInstall else "" + ''
         mkdir -p $out/lib/cmake/kframework
@@ -61,8 +60,4 @@ let
     inherit k haskell-backend llvm-backend clang;
     inherit (pkgs.python2Packages) python;
   };
-  default =
-    {
-      inherit kevm;
-    };
-in default
+in { inherit kevm; }

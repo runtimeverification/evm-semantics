@@ -112,6 +112,7 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
 	    && make -s -j4                                                                                          \
 	    && make install DESTDIR=$(CURDIR)/$(BUILD_DIR)
+
 endif # ifndef SYSTEM_LIBFF
 
 $(protobuf_out): $(NODE_DIR)/proto/msg.proto
@@ -119,12 +120,14 @@ $(protobuf_out): $(NODE_DIR)/proto/msg.proto
 	protoc --cpp_out=$(LOCAL_LIB)/proto -I $(NODE_DIR) $(NODE_DIR)/proto/msg.proto
 
 ifndef SYSTEM_LIBCRYPTOPP
+
 libcryptopp_out  := $(KEVM_LIB)/cryptopp/lib/libcryptopp.a
 libcryptopp : $(libcryptopp_out)
 
 $(libcryptopp_out): $(PLUGIN_SUBMODULE)/deps/cryptopp/GNUmakefile
 	cd $(PLUGIN_SUBMODULE)/deps/cryptopp                            \
             && $(MAKE) install DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/cryptopp
+
 endif # SYSTEM_LIBCRYPTOPP
 
 # K Dependencies

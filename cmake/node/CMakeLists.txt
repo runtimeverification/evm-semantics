@@ -4,14 +4,15 @@ execute_process(COMMAND which kompile OUTPUT_VARIABLE KOMPILE_PATH
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND dirname ${KOMPILE_PATH} OUTPUT_VARIABLE K_BIN
     OUTPUT_STRIP_TRAILING_WHITESPACE)
+# LLVMKompilePrelude and LLVMKompile are located in the llvm-backend package when building
+# with nix.
 execute_process(COMMAND which llvm-kompile OUTPUT_VARIABLE LLVM_PATH
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND dirname ${LLVM_PATH} OUTPUT_VARIABLE LLVM_BIN
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 set(K_LIB ${K_BIN}/../lib)
 set(LLVM_LIB ${LLVM_BIN}/../lib)
-list(APPEND CMAKE_MODULE_PATH "${K_LIB}/cmake/kframework")
-list(APPEND CMAKE_MODULE_PATH "${LLVM_LIB}/cmake/kframework")
+list(APPEND CMAKE_MODULE_PATH "${K_LIB}/cmake/kframework" "${LLVM_LIB}/cmake/kframework")
 include(LLVMKompilePrelude)
 project (KevmVm CXX)
 
@@ -45,11 +46,11 @@ target_include_directories(kevm-vm
 	PUBLIC $ENV{NODE_DIR}/vm/kevm
 	PUBLIC ${CMAKE_SOURCE_DIR}/..
 	PUBLIC $ENV{KEVM_LIB_ABS}/libff/include
-    PUBLIC ${K_LIB}/../include/kllvm
-    PUBLIC ${LLVM_BIN}/../include/kllvm)
+	PUBLIC ${K_LIB}/../include/kllvm
+	PUBLIC ${LLVM_BIN}/../include/kllvm)
 target_compile_options(kevm-vm
 	PUBLIC $ENV{LLVM_KOMPILE_OPTS}
-    PUBLIC -Wall -Werror -Wno-unused-command-line-argument -Wno-unused-result)
+	PUBLIC -Wall -Werror -Wno-unused-command-line-argument -Wno-unused-result)
 target_link_libraries(kevm-vm
 	ff protobuf gmp ${LINK_PROCPS} cryptopp secp256k1 crypto)
 include(LLVMKompile)
