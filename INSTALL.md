@@ -87,7 +87,7 @@ cachix use runtimeverification
 git clone https://github.com/kframework/evm-semantics
 cd evm-semantics
 git submodule update --init --recursive deps
-nix-env -f . -i kevm
+make nix-install
 ```
 
 ### From Source Build

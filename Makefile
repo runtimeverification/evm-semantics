@@ -55,7 +55,7 @@ export PLUGIN_SUBMODULE
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         media media-pdf metropolis-theme                                                                                         \
-        install uninstall
+        install uninstall nix-install
 .SECONDARY:
 
 all: build
@@ -617,3 +617,12 @@ metropolis-theme: $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty
 
 $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
 	cd $(dir $@) && $(MAKE)
+
+# Nix
+
+nix-install: deps/k_release
+	nix-env -f . -i kevm
+
+deps/k_release:
+	git --git-dir=deps/k/.git tag --points-at HEAD > $@
+

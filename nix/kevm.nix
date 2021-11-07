@@ -14,14 +14,9 @@ let
     name = "evm-semantics";
     src = src';
     ignore = [
-      "*.nix"
-      "/.build"
-      "/deps/k"
-      "/deps/plugin/deps"
-      "/media"
-      "/nix"
-      "/package"
-      "/web"
+      "result*" "nix/" "*.nix" ".build"
+      "deps/k" "deps/plugin/deps" "deps/k_release"
+      "media" "package" "web"
     ];
   };
   mkEVM = target: f: stdenv.mkDerivation (f {
