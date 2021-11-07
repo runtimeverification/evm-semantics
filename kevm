@@ -3,8 +3,13 @@
 set -euo pipefail
 shopt -s extglob
 
-notif() { echo "== $@" >&2 ; }
-fatal() { echo "[FATAL] $@" ; exit 1 ; }
+notif() { echo "== [$(date)]: $@" >&2 ; }
+fatal() { notif "[FATAL] $@" ; exit 1 ; }
+
+notif_exec() {
+    notif "$@"
+    $@
+}
 
 check_k_install() {
     which kast &> /dev/null \
@@ -73,7 +78,7 @@ run_kompile() {
                    ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
-    kompile "${kompile_opts[@]}" "$@"
+    notif_exec kompile "${kompile_opts[@]}" "$@"
 }
 
 run_krun() {
@@ -95,7 +100,7 @@ run_krun() {
             parser='cat'
             ;;
     esac
-    krun --directory "$backend_dir"                   \
+    notif_exec krun --directory "$backend_dir"        \
          -cSCHEDULE="$cschedule" -pSCHEDULE="$parser" \
          -cMODE="$cmode"         -pMODE="$parser"     \
          -cCHAINID="$cchainid"   -pCHAINID="$parser"  \
@@ -162,14 +167,14 @@ run_prove() {
 
     if ${profile}; then
         timeout -s INT "${profile_timeout}" ${kprove} "${proof_args[@]}" "$@" || true
-        kore-prof "${eventlog_name}" ${kore_prof_args} > "${eventlog_name}.json"
+        notif_exec kore-prof "${eventlog_name}" ${kore_prof_args} > "${eventlog_name}.json"
     else
         if ${pyk_minimize}; then
             pyk_args=(${backend_dir}/*-kompiled minimize /dev/stdin)
             [[ -z "${pyk_omit_labels}" ]] || pyk_args+=(--omit-labels "${pyk_omit_labels}")
-            ${kprove} "${proof_args[@]}" "$@" --output json | kpyk "${pyk_args[@]}"
+            notif_exec ${kprove} "${proof_args[@]}" "$@" --output json | kpyk "${pyk_args[@]}"
         else
-            ${kprove} "${proof_args[@]}" "$@"
+            notif_exec ${kprove} "${proof_args[@]}" "$@"
         fi
     fi
 }
@@ -217,8 +222,7 @@ run_interpret() {
 
         llvm)    run_kast kore > "$kast"
                  if $debugger; then cmdprefix="gdb --args"; fi
-                 $cmdprefix "$interpreter" "$kast" -1 "$output" "$@" \
-                     || exit_status="$?"
+                 notif_exec $cmdprefix "$interpreter" "$kast" -1 "$output" "$@" || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "$0" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
                  fi
@@ -226,8 +230,7 @@ run_interpret() {
                  ;;
 
         haskell) run_kast kore > "$kast"
-                 kore-exec "$backend_dir/driver-kompiled/definition.kore" --pattern "$kast" --module ETHEREUM-SIMULATION --smt none --output "$output" \
-                     || exit_status="$?"
+                 notif_exec kore-exec "$backend_dir/driver-kompiled/definition.kore" --pattern "$kast" --module ETHEREUM-SIMULATION --smt none --output "$output" || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "$0" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
                  fi
