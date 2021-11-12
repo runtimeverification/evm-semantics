@@ -296,6 +296,8 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
 
            klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
     "
+    find /usr -name kompile
+    which kompile
     exit 0
 fi
 
