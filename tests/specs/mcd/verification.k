@@ -75,22 +75,6 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
     imports LEMMAS-MCD-COMMON
 
   // ########################
-  // Word Reasoning
-  // ########################
-  //Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
-  rule I                   ==Int bool2Word( B:Bool ) => bool2Word(B) ==Int I  [simplification, concrete(I)]
-  rule bool2Word( B:Bool ) ==Int I                   => B ==K word2Bool(I)    [simplification, concrete(I)]
-
-  rule bool2Word(A) |Int bool2Word(B) => bool2Word(A  orBool B) [simplification]
-  rule bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B) [simplification]
-
-  rule 1 |Int bool2Word(_B) => 1            [simplification]
-  rule 1 &Int bool2Word( B) => bool2Word(B) [simplification]
-
-  rule bool2Word(_B) |Int 1 => 1            [simplification]
-  rule bool2Word( B) &Int 1 => bool2Word(B) [simplification]
-
-  // ########################
   // Arithmetic
   // ########################
 
@@ -113,21 +97,6 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
     rule #range(M:Memory [ K <- V ]                        , START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)  requires K +Int 1                    ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START [concrete(K    , V     ), simplification]
     rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS')        ], START, WIDTH)  requires K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START
                                                                                                                                   andBool K +Int 1                    ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
-
-  // ########################
-  // Buffer Reasoning
-  // ########################
-
-  // Simplification of comparison between symbolic byte arrays
-    rule #buf(A, DATA_a) ==K #buf(B, DATA_b) => DATA_a ==Int DATA_b
-      requires A ==Int B [simplification]
-
-  // ########################
-  // Keccak
-  // ########################
-    rule keccak(EXP_A) ==Int keccak(EXP_B) => EXP_A ==K EXP_B [simplification]
-
-
 
 endmodule
 
@@ -297,16 +266,6 @@ module LEMMAS-MCD-COMMON
     // Tic ==K 0 andBool 0 ==K maxUInt48 &Int (#lookup(STORAGE, ADDR) /Int pow160) andBool Tic ==K maxUInt48 &Int (#lookup(STORAGE, ADDR) /Int pow160)
     // So we need this rule to do the structural simplification because the Java backend will not use this string of equalities to do the simplification directly.
     rule #WordPackAddrUInt48UInt48(ADDR, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) => #WordPackAddrUInt48UInt48(ADDR, 0, UINT48_2) requires maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) ==Int 0 [simplification]
-
-    // Simplification of operations using bool to word
-    rule bool2Word(A) |Int bool2Word(B) => bool2Word(A  orBool B) [simplification]
-    rule bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B) [simplification]
-
-    rule 1 |Int bool2Word(_B) => 1            [simplification]
-    rule 1 &Int bool2Word( B) => bool2Word(B) [simplification]
-
-    rule bool2Word(_B) |Int 1 => 1            [simplification]
-    rule bool2Word( B) &Int 1 => bool2Word(B) [simplification]
 
   // ########################
   // Map

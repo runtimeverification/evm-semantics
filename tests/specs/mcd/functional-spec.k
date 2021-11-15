@@ -93,18 +93,4 @@ module FUNCTIONAL-SPEC
       andBool #rangeUInt(256, B31) andBool #rangeUInt(256, B32)
       andBool #rangeUInt(256, B41)
 
-    claim <k> runLemma( #buf ( A , ABI_src ) ==K #buf ( B , ABI_dst ) ) => doneLemma(false) ... </k> 
-      requires ABI_src =/=Int ABI_dst 
-       andBool A ==Int B 
-
-    // Word Reasoning
-
-    claim <k> runLemma(bool2Word ( EXP_A ) |Int bool2Word ( EXP_B )) => doneLemma(bool2Word(EXP_A  orBool EXP_B)) ... </k> 
-    claim <k> runLemma(bool2Word ( EXP_A ) &Int bool2Word ( EXP_B )) => doneLemma(bool2Word(EXP_A  andBool EXP_B)) ... </k>
-
-    // Keccak
-
-    claim <k> runLemma( keccak ( EXP_A ) ==Int keccak ( EXP_B )) => doneLemma(false) ... </k>
-        requires EXP_A =/=K EXP_B
-
 endmodule
