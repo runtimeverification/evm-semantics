@@ -15,6 +15,14 @@ endmodule
 module FUNCTIONAL-SPEC
     imports FUNCTIONAL-SPEC-SYNTAX
    
+    claim <k> runLemma (#range ( B [ 128 := #ecrec ( #buf ( 32 , HASH ) , #buf ( 32 , SIGV ) , #buf ( 32 , SIGR ) , #buf ( 32 , SIGS ) ) ] [ 160 := #buf ( 32 , HASH ) ] [ 192 := #buf ( 32 , SIGV ) ] [ 224 := #buf ( 32 , SIGR ) ] [ 256 := #buf ( 32 , SIGS ) ] [ 160 := #padToWidth ( 32 , #asByteStack ( #asWord ( #ecrec ( #buf ( 32 , HASH ) , #buf ( 32 , SIGV ) , #buf ( 32 , SIGR ) , #buf ( 32 , SIGS ) ) ) ) ) ] , 160 , 32 )) => doneLemma (#buf(32, RECOVERED)) ... </k>
+      requires notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
+       andBool RECOVERED ==Int #asWord(#ecrec(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS)))
+       andBool #rangeUInt(256, HASH)
+       andBool #rangeUInt(8, SIGV)
+       andBool #rangeBytes(32, SIGR)
+       andBool #rangeBytes(32, SIGS)
+
     claim <k> runLemma ( #sizeByteArray ( #ecrec ( #buf ( 32 , HASH ) , #buf ( 32 , 255 &Int SIGV ) , #buf ( 32 , SIGR ) , #buf ( 32 , SIGS ) ) ) ) => doneLemma ( 0 ) ... </k>
       requires #rangeUInt(256, HASH)
        andBool #rangeUInt(8, SIGV)
