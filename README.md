@@ -118,7 +118,7 @@ make libsecp256k1
 The current recommendation is to use the homebrew version.
 
 If you are building on an Apple Silicon machine, ensure that your `PATH` is set
-up correctly before running `make k-deps`. You can do so using
+up correctly before running `make deps` or `make k-deps`. You can do so using
 [`direnv`](https://direnv.net/) by copying `macos-envrc` to `.envrc`, then
 running `direnv allow`.
 
