@@ -201,6 +201,47 @@ module ERC20-SPEC
        requires DECIMALS ==Int 255 &Int #lookup(ACCT_STORAGE,  #hashedLocation("Solidity", 3, .IntList))
 ```
 
+### Calling Decimals works
+
+-   Everything from `<mode>` to `<callValue>` is boilerplate.
+-   We are setting `<callData>` to `totalSupply()`.
+-   We ask the prover to show that in all cases, we will end in `EVMC_SUCCESS` (rollback) when this happens.
+-   The `<output>` cell specifies that we correctly lookup the `TS` value from the account storage.
+
+
+```k
+    claim [totalSupply]:
+          <mode>     NORMAL   </mode>
+          <schedule> ISTANBUL </schedule>
+
+          <callStack> .List                                 </callStack>
+          <program>   #binRuntime()                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
+
+          <id>         ACCTID      => ?_ </id>
+          <localMem>   .Memory     => ?_ </localMem>
+          <memoryUsed> 0           => ?_ </memoryUsed>
+          <wordStack>  .WordStack  => ?_ </wordStack>
+          <pc>         0           => ?_ </pc>
+          <endPC>      _           => ?_ </endPC>
+          <gas>        #gas(_VGAS) => ?_ </gas>
+          // <callValue>  _CALL_VALUE => ?_ </callValue>
+          <callValue>  0           => ?_ </callValue>
+
+          <callData> #abiCallData("totalSupply", .TypedArgs) </callData>
+          <k>          #execute   => #halt ...            </k>
+          <output>     .ByteArray => #buf(32, TS)         </output>
+          <statusCode> _          => EVMC_SUCCESS         </statusCode>
+
+          <account>
+            <acctID> ACCTID </acctID>
+            <storage> ACCT_STORAGE </storage>
+            ...
+          </account>
+
+       requires TS ==Int #lookup(ACCT_STORAGE,  #hashedLocation("Solidity", 2, .IntList))
+```
+
 Tests for deposit lemmas:
 
 ```k
