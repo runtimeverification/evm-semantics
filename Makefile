@@ -97,6 +97,10 @@ else
     LIBFF_CMAKE_FLAGS += -DWITH_PROCPS=OFF
 endif
 
+ifneq ($(APPLE_SILICON),)
+    LIBFF_CMAKE_FLAGS += -DCURVE=ALT_BN128 -DUSE_ASM=Off
+endif
+
 $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	@mkdir -p $(PLUGIN_SUBMODULE)/deps/libff/build
 	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                                     \
