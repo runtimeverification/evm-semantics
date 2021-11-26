@@ -145,7 +145,8 @@ module VERIFICATION
  // deposit lemmas
  // --------------
 
-    rule #range(_BA:ByteArray [ START := BA ], START, WIDTH) => BA requires #sizeByteArray(BA) ==Int WIDTH [simplification]
+    rule         255 &Int X <Int 256 => true requires 0 <=Int X [simplification, smt-lemma]
+    rule 0 <=Int 255 &Int X          => true requires 0 <=Int X [simplification, smt-lemma]
 
 endmodule
 ```
@@ -202,13 +203,9 @@ module ERC20-SPEC
 
 Tests for deposit lemmas:
 
-```
-//    claim <k> runLemma( #range (_:ByteArray [ 128 := #padToWidth ( 32 , #asByteStack ( 255 &Int #lookup ( ACCT_STORAGE , 3 ) ) ) ] , 128 , 32 ))
-//           => doneLemma(#padToWidth ( 32 , #asByteStack ( 255 &Int #lookup ( ACCT_STORAGE , 3 ) ) )) ... </k>
-
-//    claim <k> runLemma(#sizeByteArray(#padToWidth ( 32 , #asByteStack ( 255 &Int #lookup ( ACCT_STORAGE , 3 ) ) ))) => doneLemma(32) ... </k> requires #rangeUInt(8, #lookup(ACCT_STORAGE, 3))
-
-    claim <k> runLemma(255 &Int #lookup(ACCT_STORAGE, 3)) => doneLemma(#lookup(ACCT_STORAGE, 3)) ... </k> requries #rangeUInt(8, #lookup(ACCT_STORAGE, 3))
+```k
+    claim <k> runLemma( #range (_:ByteArray [ 128 := #padToWidth ( 32 , #asByteStack ( 255 &Int #lookup ( ACCT_STORAGE , 3 ) ) ) ] , 128 , 32 ))
+           => doneLemma(#padToWidth ( 32 , #asByteStack ( 255 &Int #lookup ( ACCT_STORAGE , 3 ) ) )) ... </k>
 ```
 
 ```k
