@@ -40,7 +40,7 @@ link_directories(AFTER SYSTEM
   $ENV{KEVM_LIB_ABS}/cryptopp/lib)
 
 if(APPLE)
-  link_directories(AFTER SYSTEM ${BREW_PREFIX}/opt/openssl/lib)
+  link_directories(AFTER SYSTEM "${BREW_PREFIX}/opt/openssl/lib")
 endif()
 
 add_executable(kevm-vm
@@ -61,7 +61,7 @@ endif()
 
 if (APPLE)
   target_include_directories(kevm-vm
-    PUBLIC ${BREW_PREFIX}/include)
+    PUBLIC "${BREW_PREFIX}/opt/openssl/include")
 endif()
 
 target_include_directories(kevm-vm
