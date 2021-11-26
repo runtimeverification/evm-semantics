@@ -168,7 +168,7 @@ module ERC20-SPEC
 -   We ask the prover to show that in all cases, we will end in `EVMC_SUCCESS` (rollback) when this happens.
 -   The `<output>` cell specifies that we correctly lookup the `DECIMALS` value from the account storage.
 
-```k
+```
     claim [decimals]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
@@ -209,7 +209,7 @@ module ERC20-SPEC
 -   The `<output>` cell specifies that we correctly lookup the `TS` value from the account storage.
 
 
-```k
+```
     claim [totalSupply]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
@@ -242,9 +242,100 @@ module ERC20-SPEC
        requires TS ==Int #lookup(ACCT_STORAGE,  #hashedLocation("Solidity", 2, .IntList))
 ```
 
-Tests for deposit lemmas:
+### Calling Approve works
+
+-   Everything from `<mode>` to `<substate>` is boilerplate.
+-   We are setting `<callData>` to `approve(SPENDER, AMOUNT)`.
+-   We ask the prover to show that in all cases, we will end in `EVMC_SUCCESS` (rollback) when SENDER or OWNER is not address(0), and that we will end in `EVMC_REVERT` when either one of them is.
+-   We take the OWNER from the `<caller>` cell, which is the `msg.sender`
+-   The `<output>` should be `#buf(32, bool2Word(True))` if the function does not revert 
+-   The storage locations for Allowance should be updated accordingly
+
+```
+    claim [approve.success]:
+          <mode>     NORMAL   </mode>
+          <schedule> ISTANBUL </schedule>
+
+          <callStack> .List                                 </callStack>
+          <program>   #binRuntime()                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
+          <static>    false                                 </static>
+
+          <id>         ACCTID      => ?_ </id>
+          <caller>     OWNER       => ?_ </caller>
+          <localMem>   .Memory     => ?_ </localMem>
+          <memoryUsed> 0           => ?_ </memoryUsed>
+          <wordStack>  .WordStack  => ?_ </wordStack>
+          <pc>         0           => ?_ </pc>
+          <endPC>      _           => ?_ </endPC>
+          <gas>        #gas(_VGAS) => ?_ </gas>
+          <callValue>  0           => ?_ </callValue>
+          <substate> _             => ?_ </substate>
+
+
+          <callData> #abiCallData("approve", #address(SPENDER), #uint256(AMOUNT)) </callData>
+          <k>          #execute   => #halt ...            </k>
+          <output>     .ByteArray => #buf(32, 1)          </output>
+          <statusCode> _          => EVMC_SUCCESS         </statusCode>
+
+          <account>
+            <acctID> ACCTID </acctID>
+            <storage> ACCT_STORAGE
+                   => ACCT_STORAGE [ALLOWANCE_KEY <- AMOUNT]
+            </storage>
+            ...
+          </account>
+
+       requires ALLOWANCE_KEY ==Int #hashedLocation("Solidity", 1, OWNER SPENDER .IntList)
+        andBool #rangeAddress(OWNER)
+        andBool #rangeAddress(SPENDER)
+        andBool #rangeUInt(256, AMOUNT)
+        andBool OWNER =/=Int 0
+        andBool SPENDER =/=Int 0
+```
 
 ```k
+    claim [approve.revert]:
+          <mode>     NORMAL   </mode>
+          <schedule> ISTANBUL </schedule>
+
+          <callStack> .List                                 </callStack>
+          <program>   #binRuntime()                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
+          <static>    false                                 </static>
+
+          <id>         ACCTID      => ?_ </id>
+          <caller>     OWNER       => ?_ </caller>
+          <localMem>   .Memory     => ?_ </localMem>
+          <memoryUsed> 0           => ?_ </memoryUsed>
+          <wordStack>  .WordStack  => ?_ </wordStack>
+          <pc>         0           => ?_ </pc>
+          <endPC>      _           => ?_ </endPC>
+          <gas>        #gas(_VGAS) => ?_ </gas>
+          <callValue>  0           => ?_ </callValue>
+          <substate> _             => ?_ </substate>
+
+          <callData> #abiCallData("approve", #address(SPENDER), #uint256(AMOUNT)) </callData>
+          <k>          #execute   => #halt ...   </k>
+          <output>     _          => ?_          </output>
+          <statusCode> _          => EVMC_REVERT </statusCode>
+
+          <account>
+            <acctID> ACCTID </acctID>
+            <storage> _ACCT_STORAGE </storage>
+            ...
+          </account>
+
+       requires #rangeAddress(OWNER)
+        andBool #rangeAddress(SPENDER)
+        andBool #rangeUInt(256, AMOUNT)
+        andBool (OWNER ==Int 0 orBool SPENDER ==Int 0)
+```
+
+
+Tests for deposit lemmas:
+
+```
     claim <k> runLemma( #range (_:ByteArray [ 128 := #padToWidth ( 32 , #asByteStack ( 255 &Int #lookup ( ACCT_STORAGE , 3 ) ) ) ] , 128 , 32 ))
            => doneLemma(#padToWidth ( 32 , #asByteStack ( 255 &Int #lookup ( ACCT_STORAGE , 3 ) ) )) ... </k>
 ```
