@@ -148,6 +148,16 @@ module VERIFICATION
     rule         255 &Int X <Int 256 => true requires 0 <=Int X [simplification, smt-lemma]
     rule 0 <=Int 255 &Int X          => true requires 0 <=Int X [simplification, smt-lemma]
 
+ // transferFrom lemmas
+ // -------------------
+
+    rule #getValue(#uint256(X)) => X requires #rangeUInt(256, X) [simplification]
+
+    rule BA:ByteArray [ START1 := BA1:ByteArray ] [ START2 := BA2:ByteArray ] => BA [ START2 := BA2 ] [ START1 := BA1 ] requires START2 +Int #sizeByteArray(BA2) <=Int START1 [simplification]
+
+    rule         maxUInt160 &Int X <Int pow160 => true requires 0 <=Int X [simplification, smt-lemma]
+    rule 0 <=Int maxUInt160 &Int X             => true requires 0 <=Int X [simplification, smt-lemma]
+
 endmodule
 ```
 
@@ -168,7 +178,7 @@ module ERC20-SPEC
 -   We ask the prover to show that in all cases, we will end in `EVMC_SUCCESS` (rollback) when this happens.
 -   The `<output>` cell specifies that we correctly lookup the `DECIMALS` value from the account storage.
 
-```
+```k
     claim [decimals]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
@@ -208,7 +218,7 @@ module ERC20-SPEC
 -   The `<output>` cell specifies that we correctly lookup the `TS` value from the account storage.
 
 
-```
+```k
     claim [totalSupply]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
@@ -249,7 +259,7 @@ module ERC20-SPEC
 -   The `<output>` should be `#buf(32, bool2Word(True))` if the function does not revert.
 -   The storage locations for Allowance should be updated accordingly.
 
-```
+```k
     claim [approve.success]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
@@ -292,7 +302,7 @@ module ERC20-SPEC
         andBool SPENDER =/=Int 0
 ```
 
-```
+```k
     claim [approve.revert]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
@@ -330,12 +340,63 @@ module ERC20-SPEC
         andBool (OWNER ==Int 0 orBool SPENDER ==Int 0)
 ```
 
-
-Tests for deposit lemmas:
+### TransferFrom
 
 ```
-    claim <k> runLemma( #range (_:ByteArray [ 128 := #padToWidth ( 32 , #asByteStack ( 255 &Int #lookup ( ACCT_STORAGE , 3 ) ) ) ] , 128 , 32 ))
-           => doneLemma(#padToWidth ( 32 , #asByteStack ( 255 &Int #lookup ( ACCT_STORAGE , 3 ) ) )) ... </k>
+    claim [transferFrom]:
+          <mode>     NORMAL   </mode>
+          <schedule> ISTANBUL </schedule>
+
+          <callStack> .List                                 </callStack>
+          <program>   #binRuntime()                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
+          <static>    false                                 </static>
+
+          <id>         ACCTID      => ?_ </id>
+          <caller>     SPENDER     => ?_ </caller>
+          <localMem>   .Memory     => ?_ </localMem>
+          <memoryUsed> 0           => ?_ </memoryUsed>
+          <wordStack>  .WordStack  => ?_ </wordStack>
+          <pc>         0           => ?_ </pc>
+          <endPC>      _           => ?_ </endPC>
+          <gas>        #gas(_VGAS) => ?_ </gas>
+          <callValue>  0           => ?_ </callValue>
+          <substate>   _           => ?_ </substate>
+
+          <callData> #abiCallData("transferFrom", #address(FROM_ID), #address(TO_ID), #uint256(AMOUNT)) </callData>
+          <k>          #execute   => #halt ...    </k>
+          <output>     .ByteArray => #buf(32, 1)  </output>
+          <statusCode> _          => EVMC_SUCCESS </statusCode>
+
+          <account>
+            <acctID> ACCTID </acctID>
+//            <storage> ACCT_STORAGE
+//                   => ACCT_STORAGE [ #hashedLocation("Solidity", 0, FROM_ID .IntList)         <- FROM_BALANCE -Int AMOUNT ]
+//                                   [ #hashedLocation("Solidity", 0, TO_ID   .IntList)         <- TO_BALANCE   +Int AMOUNT ]
+//                                   [ #hashedLocation("Solidity", 1, FROM_ID SPENDER .IntList) <- ALLOWANCE    -Int AMOUNT ]
+//            </storage>
+            <storage> ACCT_STORAGE => ACCT_STORAGE' </storage>
+            ...
+          </account>
+
+       requires FROM_BALANCE  ==Int #lookup(ACCT_STORAGE,  #hashedLocation("Solidity", 0, FROM_ID .IntList))
+        andBool TO_BALANCE    ==Int #lookup(ACCT_STORAGE,  #hashedLocation("Solidity", 0, TO_ID   .IntList))
+        andBool ALLOWANCE     ==Int #lookup(ACCT_STORAGE,  #hashedLocation("Solidity", 1, FROM_ID SPENDER .IntList))
+
+        andBool FROM_BALANCE' ==Int #lookup(ACCT_STORAGE', #hashedLocation("Solidity", 0, FROM_ID .IntList))
+        andBool TO_BALANCE'   ==Int #lookup(ACCT_STORAGE', #hashedLocation("Solidity", 0, TO_ID   .IntList))
+        andBool ALLOWANCE'    ==Int #lookup(ACCT_STORAGE', #hashedLocation("Solidity", 1, FROM_ID SPENDER .IntList))
+        andBool FROM_BALANCE' ==Int FROM_BALANCE -Int AMOUNT
+        andBool TO_BALANCE'   ==Int TO_BALANCE   +Int AMOUNT
+
+        andBool #rangeAddress(FROM_ID)
+        andBool #rangeAddress(TO_ID)
+        andBool #rangeUInt(256, AMOUNT)
+        andBool FROM_ID =/=Int 0
+        andBool TO_ID   =/=Int 0
+        andBool AMOUNT <=Int ALLOWANCE
+        andBool #rangeUInt(256, FROM_BALANCE -Int AMOUNT)
+        andBool #rangeUInt(256, TO_BALANCE   +Int AMOUNT)
 ```
 
 ```k
