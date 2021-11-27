@@ -161,7 +161,7 @@ module ERC20-SPEC
     imports VERIFICATION
 ```
 
-### Calling Decimals works
+### Calling decimals() works
 
 -   Everything from `<mode>` to `<callValue>` is boilerplate.
 -   We are setting `<callData>` to `decimals()`.
@@ -184,7 +184,6 @@ module ERC20-SPEC
           <pc>         0           => ?_ </pc>
           <endPC>      _           => ?_ </endPC>
           <gas>        #gas(_VGAS) => ?_ </gas>
-          // <callValue>  _CALL_VALUE => ?_ </callValue>
           <callValue>  0           => ?_ </callValue>
 
           <callData> #abiCallData("decimals", .TypedArgs) </callData>
@@ -201,7 +200,7 @@ module ERC20-SPEC
        requires DECIMALS ==Int 255 &Int #lookup(ACCT_STORAGE,  #hashedLocation("Solidity", 3, .IntList))
 ```
 
-### Calling Decimals works
+### Calling totalSupply() works
 
 -   Everything from `<mode>` to `<callValue>` is boilerplate.
 -   We are setting `<callData>` to `totalSupply()`.
@@ -225,7 +224,6 @@ module ERC20-SPEC
           <pc>         0           => ?_ </pc>
           <endPC>      _           => ?_ </endPC>
           <gas>        #gas(_VGAS) => ?_ </gas>
-          // <callValue>  _CALL_VALUE => ?_ </callValue>
           <callValue>  0           => ?_ </callValue>
 
           <callData> #abiCallData("totalSupply", .TypedArgs) </callData>
@@ -247,9 +245,9 @@ module ERC20-SPEC
 -   Everything from `<mode>` to `<substate>` is boilerplate.
 -   We are setting `<callData>` to `approve(SPENDER, AMOUNT)`.
 -   We ask the prover to show that in all cases, we will end in `EVMC_SUCCESS` (rollback) when SENDER or OWNER is not address(0), and that we will end in `EVMC_REVERT` when either one of them is.
--   We take the OWNER from the `<caller>` cell, which is the `msg.sender`
--   The `<output>` should be `#buf(32, bool2Word(True))` if the function does not revert 
--   The storage locations for Allowance should be updated accordingly
+-   We take the OWNER from the `<caller>` cell, which is the `msg.sender`.
+-   The `<output>` should be `#buf(32, bool2Word(True))` if the function does not revert.
+-   The storage locations for Allowance should be updated accordingly.
 
 ```
     claim [approve.success]:
@@ -294,7 +292,7 @@ module ERC20-SPEC
         andBool SPENDER =/=Int 0
 ```
 
-```k
+```
     claim [approve.revert]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
