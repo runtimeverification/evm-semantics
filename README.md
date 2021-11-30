@@ -117,6 +117,11 @@ make libsecp256k1
 **NOTE**: Previous versions of these instructions required the user to use either the homebrew version of `flex` or the xcode command line tools version, with the wrong option giving an error.
 The current recommendation is to use the homebrew version.
 
+If you are building on an Apple Silicon machine, ensure that your `PATH` is set
+up correctly before running `make deps` or `make k-deps`. You can do so using
+[`direnv`](https://direnv.net/) by copying `macos-envrc` to `.envrc`, then
+running `direnv allow`.
+
 #### Haskell Stack (all platforms)
 
 -   [Haskell Stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade).
@@ -146,6 +151,13 @@ If you don't need either the LLVM or Haskell backend, there are flags to skip th
 
 ```sh
 make k-deps SKIP_LLVM=true SKIP_HASKELL=true
+```
+
+On an Apple Silicon machine, an additional flag to `make` is required to
+correctly build the Haskell backend:
+
+```sh
+make k-deps APPLE_SILICON=true
 ```
 
 #### Blockchain Plugin
