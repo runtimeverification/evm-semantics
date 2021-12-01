@@ -279,7 +279,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--profile]
                                       [--profile-timeout <duration>]
                                       [--kore-prof-args \"<kore-prof arg>*\"]
-                                      [--provex]
+                                      [--no-provex]
                                       [--verif-module <verification_module>]
                                       [--pyk-minimize]
                                       [--pyk-omit-labels <comma_separated_labels>]
@@ -320,7 +320,7 @@ mode=NORMAL
 schedule=BERLIN
 chainid=1
 concrete_rules_file=
-provex=false
+provex=true
 verif_module=VERIFICATION
 pyk_minimize=false
 pyk_omit_labels=
@@ -344,7 +344,7 @@ while [[ $# -gt 0 ]]; do
         --backend)             backend="$2"                    ; shift 2 ;;
         --backend-dir)         backend_dir="$2"                ; shift 2 ;;
         --concrete-rules-file) concrete_rules_file="$2"        ; shift 2 ;;
-        --provex)              provex=true                     ; shift   ;;
+        --no-provex)           provex=false                    ; shift   ;;
         --verif-module)        verif_module="$2"               ; shift 2 ;;
         --pyk-minimize)        pyk_minimize=true               ; shift   ;;
         --pyk-omit-labels)     pyk_omit_labels="$2"            ; shift 2 ;;
