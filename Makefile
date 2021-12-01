@@ -417,7 +417,7 @@ tests/%.parse: tests/%
 
 tests/%.prove-legacy: tests/%
 	$(KEVM) prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) \
-	    --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
+	    --no-provex --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
