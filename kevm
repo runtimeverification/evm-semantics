@@ -296,6 +296,8 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
 
            klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
     "
+    find /usr -name kompile
+    which kompile
     exit 0
 fi
 
@@ -325,8 +327,7 @@ pyk_omit_labels=
 max_counterexamples=
 branching_allowed=
 haskell_backend_command=(kore-exec)
-[[ ! "$run_command" == 'prove' ]] || backend='java'
-[[ ! "$run_command" =~ klab*   ]] || backend='java'
+[[ ! "$run_command" == 'prove' ]] || backend='haskell'
 kevm_port='8545'
 kevm_host='127.0.0.1'
 args=()
@@ -399,6 +400,6 @@ case "$run_command-$backend" in
     interpret-@(llvm|haskell|java)    ) run_interpret "$@" ;;
     prove-@(java|haskell)             ) run_prove     "$@" ;;
     search-@(java|haskell)            ) run_search    "$@" ;;
-    klab-view-java                    ) view_klab     "$@" ;;
+    klab-view-*                       ) view_klab     "$@" ;;
     *) $0 help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac

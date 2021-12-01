@@ -345,7 +345,7 @@ uninstall:
 # -----
 
 TEST_CONCRETE_BACKEND := llvm
-TEST_SYMBOLIC_BACKEND := java
+TEST_SYMBOLIC_BACKEND := haskell
 
 TEST_OPTIONS :=
 CHECK        := git --no-pager diff --no-index --ignore-all-space -R
