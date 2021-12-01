@@ -148,16 +148,6 @@ module VERIFICATION
     rule         255 &Int X <Int 256 => true requires 0 <=Int X [simplification, smt-lemma]
     rule 0 <=Int 255 &Int X          => true requires 0 <=Int X [simplification, smt-lemma]
 
- // transferFrom lemmas
- // -------------------
-
-    rule #getValue(#uint256(X)) => X requires #rangeUInt(256, X) [simplification]
-
-    rule BA:ByteArray [ START1 := BA1:ByteArray ] [ START2 := BA2:ByteArray ] => BA [ START2 := BA2 ] [ START1 := BA1 ] requires START2 +Int #sizeByteArray(BA2) <=Int START1 [simplification]
-
-    rule         maxUInt160 &Int X <Int pow160 => true requires 0 <=Int X [simplification, smt-lemma]
-    rule 0 <=Int maxUInt160 &Int X             => true requires 0 <=Int X [simplification, smt-lemma]
-
 endmodule
 ```
 
