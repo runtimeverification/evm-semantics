@@ -3,7 +3,7 @@
 set -euo pipefail
 shopt -s extglob
 
-notif() { echo "== [$(date)]: $@" >&2 ; }
+notif() { echo "== $0 [$(date)]: $@" >&2 ; }
 fatal() { notif "[FATAL] $@" ; exit 1 ; }
 
 notif_exec() {
@@ -376,13 +376,13 @@ fi
 
 # get the run file
 run_file="$1" ; shift
-if [[ "$run_file" == '-' ]]; then
+if [[ "${run_file}" == '-' ]]; then
     tmp_input="$(mktemp)"
-    trap "rm -rf $tmp_input" INT TERM EXIT
-    cat - > "$tmp_input"
-    run_file="$tmp_input"
+    trap "rm -rf ${tmp_input}" INT TERM EXIT
+    cat - > "${tmp_input}"
+    run_file="${tmp_input}"
 fi
-[[ -f "$run_file" ]] || fatal "File does not exist: $run_file"
+[[ -f "${run_file}" ]] || fatal "File does not exist: ${run_file}"
 
 cMODE_kore="Lbl${mode}{}()"
 cSCHEDULE_kore="Lbl${schedule}'Unds'EVM{}()"
