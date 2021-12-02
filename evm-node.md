@@ -51,7 +51,7 @@ have been paid, and it may be to expensive to compute the hash of the init code.
       [priority(35)]
 
     rule <k> (. => #loadAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)))
-          ~> CREATE2 VALUE MEMSTART MEMWIDTH SALT
+          ~> CREATE2 _VALUE MEMSTART MEMWIDTH SALT
          ...
          </k>
          <id> ACCT </id>
@@ -343,7 +343,7 @@ This minimizes the amount of information which must be stored in the configurati
     rule warmStorage2Set( (ListItem(ACCT) => .List) _, STORAGE, RESULT => RESULT |Set warmStorage2SetAux(ACCT, Set2List({STORAGE[ACCT]}:>Set), .Set) )
 
     rule warmStorage2SetAux( _, .List, RESULT ) => RESULT
-    rule warmStorage2SetAux( ACCT, (ListItem(LOCATION) => .List) LOCATIONS, RESULT => RESULT |Set SetItem(storageLocation(ACCT, LOCATION)) )
+    rule warmStorage2SetAux( ACCT, (ListItem(LOCATION) => .List) _LOCATIONS, RESULT => RESULT |Set SetItem(storageLocation(ACCT, LOCATION)) )
 ```
 
 -   `contractBytes` takes the contents of the `<code>` cell and returns its binary representation as a String.
