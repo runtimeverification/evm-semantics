@@ -8,7 +8,7 @@ fatal() { notif "[FATAL] $@" ; exit 1 ; }
 
 notif_exec() {
     notif "$@"
-    $@
+    "$@"
 }
 
 check_k_install() {
