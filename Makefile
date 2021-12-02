@@ -222,7 +222,6 @@ endif
 $(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend haskell                     \
 	    $(haskell_main_file) $(HASKELL_KOMPILE_OPTS) \
-	    --directory $(KEVM_LIB)/$(haskell_dir)       \
 	    --main-module $(haskell_main_module)         \
 	    --syntax-module $(haskell_syntax_module)     \
 	    $(KOMPILE_OPTS)
@@ -243,7 +242,6 @@ endif
 $(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend llvm                 \
 	    $(llvm_main_file)                     \
-	    --directory $(KEVM_LIB)/$(llvm_dir)   \
 	    --main-module $(llvm_main_module)     \
 	    --syntax-module $(llvm_syntax_module) \
 	    $(KOMPILE_OPTS)
@@ -263,7 +261,6 @@ export node_main_filename
 $(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend node                 \
 	    $(node_main_file)                     \
-	    --directory $(KEVM_LIB)/$(node_dir)   \
 	    --main-module $(node_main_module)     \
 	    --syntax-module $(node_syntax_module) \
 	    $(KOMPILE_OPTS)
