@@ -42,6 +42,9 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 run_kompile() {
     local kompile_opts openssl_root
 
+    which kompile
+    notif_exec kompile --version
+
     kompile_opts=( "${run_file}" --directory "${backend_dir}" )
     kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
     kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN"                           )
@@ -78,6 +81,8 @@ run_kompile() {
                    ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
+    which kompile
+    notif_exec kompile --version
     notif_exec kompile "${kompile_opts[@]}" "$@"
 }
 
@@ -299,8 +304,6 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
 
            klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
     "
-    find /usr -name kompile
-    which kompile
     exit 0
 fi
 
