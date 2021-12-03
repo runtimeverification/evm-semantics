@@ -12,3 +12,4 @@
 /optimizer/*.k
 /optimizer/*.json
 /tests/specs/opcodes/evm-optimizations-spec.md
+.envrc
