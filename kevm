@@ -3,8 +3,13 @@
 set -euo pipefail
 shopt -s extglob
 
-notif() { echo "== $@" >&2 ; }
-fatal() { echo "[FATAL] $@" ; exit 1 ; }
+notif() { echo "== $0 [$(date)]: $@" >&2 ; }
+fatal() { notif "[FATAL] $@" ; exit 1 ; }
+
+notif_exec() {
+    notif "$@"
+    "$@"
+}
 
 check_k_install() {
     which kast &> /dev/null \
@@ -37,7 +42,7 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 run_kompile() {
     local kompile_opts openssl_root
 
-    kompile_opts=( "${run_file}" )
+    kompile_opts=( "${run_file}" --directory "${backend_dir}" )
     kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
     kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN"                           )
     kompile_opts+=( --emit-json                                                          )
@@ -73,7 +78,7 @@ run_kompile() {
                    ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
-    kompile "${kompile_opts[@]}" "$@"
+    notif_exec kompile "${kompile_opts[@]}" "$@"
 }
 
 run_krun() {
@@ -95,7 +100,7 @@ run_krun() {
             parser='cat'
             ;;
     esac
-    krun --directory "$backend_dir"                   \
+    notif_exec krun --directory "$backend_dir"        \
          -cSCHEDULE="$cschedule" -pSCHEDULE="$parser" \
          -cMODE="$cmode"         -pMODE="$parser"     \
          -cCHAINID="$cchainid"   -pCHAINID="$parser"  \
@@ -162,14 +167,14 @@ run_prove() {
 
     if ${profile}; then
         timeout -s INT "${profile_timeout}" ${kprove} "${proof_args[@]}" "$@" || true
-        kore-prof "${eventlog_name}" ${kore_prof_args} > "${eventlog_name}.json"
+        notif_exec kore-prof "${eventlog_name}" ${kore_prof_args} > "${eventlog_name}.json"
     else
         if ${pyk_minimize}; then
             pyk_args=(${backend_dir}/*-kompiled minimize /dev/stdin)
             [[ -z "${pyk_omit_labels}" ]] || pyk_args+=(--omit-labels "${pyk_omit_labels}")
-            ${kprove} "${proof_args[@]}" "$@" --output json | kpyk "${pyk_args[@]}"
+            notif_exec ${kprove} "${proof_args[@]}" "$@" --output json | kpyk "${pyk_args[@]}"
         else
-            ${kprove} "${proof_args[@]}" "$@"
+            notif_exec ${kprove} "${proof_args[@]}" "$@"
         fi
     fi
 }
@@ -217,8 +222,7 @@ run_interpret() {
 
         llvm)    run_kast kore > "$kast"
                  if $debugger; then cmdprefix="gdb --args"; fi
-                 $cmdprefix "$interpreter" "$kast" -1 "$output" "$@" \
-                     || exit_status="$?"
+                 notif_exec $cmdprefix "$interpreter" "$kast" -1 "$output" "$@" || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "$0" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
                  fi
@@ -226,8 +230,7 @@ run_interpret() {
                  ;;
 
         haskell) run_kast kore > "$kast"
-                 kore-exec "$backend_dir/driver-kompiled/definition.kore" --pattern "$kast" --module ETHEREUM-SIMULATION --smt none --output "$output" \
-                     || exit_status="$?"
+                 notif_exec kore-exec "$backend_dir/driver-kompiled/definition.kore" --pattern "$kast" --module ETHEREUM-SIMULATION --smt none --output "$output" || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "$0" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
                  fi
@@ -279,7 +282,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--profile]
                                       [--profile-timeout <duration>]
                                       [--kore-prof-args \"<kore-prof arg>*\"]
-                                      [--provex]
+                                      [--no-provex]
                                       [--verif-module <verification_module>]
                                       [--pyk-minimize]
                                       [--pyk-omit-labels <comma_separated_labels>]
@@ -320,15 +323,14 @@ mode=NORMAL
 schedule=BERLIN
 chainid=1
 concrete_rules_file=
-provex=false
+provex=true
 verif_module=VERIFICATION
 pyk_minimize=false
 pyk_omit_labels=
 max_counterexamples=
 branching_allowed=
 haskell_backend_command=(kore-exec)
-[[ ! "$run_command" == 'prove' ]] || backend='java'
-[[ ! "$run_command" =~ klab*   ]] || backend='java'
+[[ ! "$run_command" == 'prove' ]] || backend='haskell'
 kevm_port='8545'
 kevm_host='127.0.0.1'
 args=()
@@ -343,9 +345,9 @@ while [[ $# -gt 0 ]]; do
         --kore-prof-args)      kore_prof_args="$2"             ; shift 2 ;;
         --bug-report)          bug_report=true                 ; shift   ;;
         --backend)             backend="$2"                    ; shift 2 ;;
-        --backend-dir)         backend_dir="$2"                ; shift 2 ;;
+        --directory)           backend_dir="$2"                ; shift 2 ;;
         --concrete-rules-file) concrete_rules_file="$2"        ; shift 2 ;;
-        --provex)              provex=true                     ; shift   ;;
+        --no-provex)           provex=false                    ; shift   ;;
         --verif-module)        verif_module="$2"               ; shift 2 ;;
         --pyk-minimize)        pyk_minimize=true               ; shift   ;;
         --pyk-omit-labels)     pyk_omit_labels="$2"            ; shift 2 ;;
@@ -376,13 +378,13 @@ fi
 
 # get the run file
 run_file="$1" ; shift
-if [[ "$run_file" == '-' ]]; then
+if [[ "${run_file}" == '-' ]]; then
     tmp_input="$(mktemp)"
-    trap "rm -rf $tmp_input" INT TERM EXIT
-    cat - > "$tmp_input"
-    run_file="$tmp_input"
+    trap "rm -rf ${tmp_input}" INT TERM EXIT
+    cat - > "${tmp_input}"
+    run_file="${tmp_input}"
 fi
-[[ -f "$run_file" ]] || fatal "File does not exist: $run_file"
+[[ -f "${run_file}" ]] || fatal "File does not exist: ${run_file}"
 
 cMODE_kore="Lbl${mode}{}()"
 cSCHEDULE_kore="Lbl${schedule}'Unds'EVM{}()"
@@ -401,6 +403,6 @@ case "$run_command-$backend" in
     interpret-@(llvm|haskell|java)    ) run_interpret "$@" ;;
     prove-@(java|haskell)             ) run_prove     "$@" ;;
     search-@(java|haskell)            ) run_search    "$@" ;;
-    klab-view-java                    ) view_klab     "$@" ;;
+    klab-view-*                       ) view_klab     "$@" ;;
     *) $0 help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac

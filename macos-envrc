@@ -1,0 +1,7 @@
+# Copy this file to .envrc, then run `direnv allow` to automatically set
+# relevant environment variables when entering this directory.
+
+PATH_add `brew --prefix bison`/bin
+PATH_add `brew --prefix flex`/bin
+PATH_add `brew --prefix llvm`/bin
+PATH_add `brew --prefix openjdk`/bin

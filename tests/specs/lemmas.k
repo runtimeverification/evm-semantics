@@ -47,6 +47,9 @@ module LEMMAS
 
     rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
 
+    rule 0 <=Int #asWord(_WS)             => true [simplification]
+    rule         #asWord(_WS) <Int pow256 => true [simplification]
+
   // ########################
   // Keccak
   // ########################
@@ -242,9 +245,6 @@ module LEMMAS-JAVA [symbolic, kast]
     rule notBool  (X ==K 0) => X ==K 1  requires #rangeBool(X) [simplification]
     rule notBool  (X ==K 1) => X ==K 0  requires #rangeBool(X) [simplification]
     rule bool2Word(X ==K 1) => X        requires #rangeBool(X) [simplification]
-
-    rule 0 <=Int #asWord(_WS)             => true [simplification]
-    rule         #asWord(_WS) <Int pow256 => true [simplification]
 
     rule X <=Int maxUInt256 => X <Int pow256 [simplification]
     rule X <=Int maxUInt160 => X <Int pow160 [simplification]
