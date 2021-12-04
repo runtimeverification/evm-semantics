@@ -33,7 +33,7 @@ kevm kompile --backend haskell tests/specs/erc20/verification.k \
     --main-module VERIFICATION                                  \
     --syntax-module VERIFICATION                                \
     --concrete-rules-file tests/specs/erc20/concrete-rules.txt
-kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --backend haskell --format-failures --debugger \
+kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --backend haskell --format-failures \
     --directory tests/specs/erc20/verification/haskell
 
 kevm search tests/interactive/search/branching-invalid.evm "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>"  --backend haskell > tests/interactive/search/branching-invalid.evm.search-out
