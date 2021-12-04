@@ -1,6 +1,6 @@
 requires "evm.md"
 requires "edsl.md"
-requires "./int-simplification.k"
+requires "int-simplification.k"
 
 module LEMMAS
     imports INT-SIMPLIFICATION
@@ -46,6 +46,9 @@ module LEMMAS
     rule         #newAddr(_,_) <Int pow256 => true   [simplification]
 
     rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
+
+    rule 0 <=Int #asWord(_WS)             => true [simplification]
+    rule         #asWord(_WS) <Int pow256 => true [simplification]
 
   // ########################
   // Keccak
@@ -243,9 +246,6 @@ module LEMMAS-JAVA [symbolic, kast]
     rule notBool  (X ==K 1) => X ==K 0  requires #rangeBool(X) [simplification]
     rule bool2Word(X ==K 1) => X        requires #rangeBool(X) [simplification]
 
-    rule 0 <=Int #asWord(_WS)             => true [simplification]
-    rule         #asWord(_WS) <Int pow256 => true [simplification]
-
     rule X <=Int maxUInt256 => X <Int pow256 [simplification]
     rule X <=Int maxUInt160 => X <Int pow160 [simplification]
     rule X <=Int 255        => X <Int 256    [simplification]
@@ -287,6 +287,8 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule N &Int maxUInt160 => N  requires #rangeUInt(160, N) [simplification]
     rule maxUInt160 &Int N => N  requires #rangeUInt(160, N) [simplification]
+
+    rule maxUInt8 &Int X => X requires #rangeUInt(8 , X)     [simplification]
 
     rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
 

@@ -64,9 +64,9 @@ module LTL
     rule LTLderive(FORM1 \/ FORM2 , ES) => LTLderive(FORM1, ES) \/ LTLderive(FORM2, ES)
     rule LTLderive(FORM1 /\ FORM2 , ES) => LTLderive(FORM1, ES) /\ LTLderive(FORM2, ES)
 
-    syntax LTLFormula ::= LTLFormula "->" LTLFormula
- // ------------------------------------------------
-    rule FORM1 -> FORM2 => (~ FORM1) \/ FORM2 [macro]
+    syntax LTLFormula ::= LTLFormula "->" LTLFormula [macro]
+ // --------------------------------------------------------
+    rule FORM1 -> FORM2 => (~ FORM1) \/ FORM2
 
     syntax LTLFormula ::= "always"     LTLFormula
                         | "eventually" LTLFormula

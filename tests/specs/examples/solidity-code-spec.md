@@ -69,9 +69,9 @@ module VERIFICATION
        andBool notBool #rangeUInt(256, X +Int Y)
       [simplification]
 
-    syntax ByteArray ::= #binRuntime()
- // ----------------------------------
-    rule #binRuntime() => #parseByteStack("0x608060405234801561001057600080fd5b50600436106100415760003560e01c80636d5433e614610046578063771602f7146100925780638b9732a9146100de575b600080fd5b61007c6004803603604081101561005c57600080fd5b81019080803590602001909291908035906020019092919050505061012a565b6040518082815260200191505060405180910390f35b6100c8600480360360408110156100a857600080fd5b810190808035906020019092919080359060200190929190505050610146565b6040518082815260200191505060405180910390f35b610114600480360360408110156100f457600080fd5b810190808035906020019092919080359060200190929190505050610165565b6040518082815260200191505060405180910390f35b60008183101561013c57819050610140565b8290505b92915050565b60008082840190508381101561015b57600080fd5b8091505092915050565b6000808284019050809150509291505056fea26469706673582212209559057d4829a2bd8b086d1af32f7f49152dfbebda288916bb69b51644a37bbe64736f6c63430006070033") [macro]
+    syntax ByteArray ::= #binRuntime() [macro]
+ // ------------------------------------------
+    rule #binRuntime() => #parseByteStack("0x608060405234801561001057600080fd5b50600436106100415760003560e01c80636d5433e614610046578063771602f7146100925780638b9732a9146100de575b600080fd5b61007c6004803603604081101561005c57600080fd5b81019080803590602001909291908035906020019092919050505061012a565b6040518082815260200191505060405180910390f35b6100c8600480360360408110156100a857600080fd5b810190808035906020019092919080359060200190929190505050610146565b6040518082815260200191505060405180910390f35b610114600480360360408110156100f457600080fd5b810190808035906020019092919080359060200190929190505050610165565b6040518082815260200191505060405180910390f35b60008183101561013c57819050610140565b8290505b92915050565b60008082840190508381101561015b57600080fd5b8091505092915050565b6000808284019050809150509291505056fea26469706673582212209559057d4829a2bd8b086d1af32f7f49152dfbebda288916bb69b51644a37bbe64736f6c63430006070033")
 
 endmodule
 ```
@@ -113,7 +113,7 @@ module SOLIDITY-CODE-SPEC
           <callData> #abiCallData("add", .TypedArgs) </callData>
           <k>          #execute   => #halt ...   </k>
           <output>     .ByteArray => ?_          </output>
-          <statusCode> ?_         => EVMC_REVERT </statusCode>
+          <statusCode> _          => EVMC_REVERT </statusCode>
 ```
 
 ### Add Positive Case
@@ -143,7 +143,7 @@ module SOLIDITY-CODE-SPEC
           <callData> #abiCallData("add", #uint256(X), #uint256(Y)) </callData>
           <k>          #execute   => #halt ...          </k>
           <output>     .ByteArray => #buf(32, X +Int Y) </output>
-          <statusCode> ?_         => EVMC_SUCCESS       </statusCode>
+          <statusCode> _          => EVMC_SUCCESS       </statusCode>
 
      requires #rangeUInt(256, X)
       andBool #rangeUInt(256, Y)
@@ -178,7 +178,7 @@ module SOLIDITY-CODE-SPEC
           <callData> #abiCallData("add", #uint256(X), #uint256(Y)) </callData>
           <k>          #execute   => #halt ...   </k>
           <output>     .ByteArray => ?_          </output>
-          <statusCode> ?_         => EVMC_REVERT </statusCode>
+          <statusCode> _          => EVMC_REVERT </statusCode>
 
      requires #rangeUInt(256, X)
       andBool #rangeUInt(256, Y)
@@ -213,7 +213,7 @@ module SOLIDITY-CODE-SPEC
           <callData> #abiCallData("badAdd", #uint256(X), #uint256(Y)) </callData>
           <k>          #execute   => #halt ...          </k>
           <output>     .ByteArray => ?_                 </output>
-          <statusCode> ?_         => EVMC_REVERT        </statusCode>
+          <statusCode> _          => EVMC_REVERT        </statusCode>
 
      requires #rangeUInt(256, X)
       andBool #rangeUInt(256, Y)
@@ -247,7 +247,7 @@ module SOLIDITY-CODE-SPEC
           <callData> #abiCallData("max", #uint256(X), #uint256(Y)) </callData>
           <k>          #execute   => #halt ...              </k>
           <output>     .ByteArray => #buf(32, maxInt(X, Y)) </output>
-          <statusCode> ?_         => EVMC_SUCCESS           </statusCode>
+          <statusCode> _          => EVMC_SUCCESS           </statusCode>
 
      requires #rangeUInt(256, X)
       andBool #rangeUInt(256, Y)
