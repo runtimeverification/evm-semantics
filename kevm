@@ -3,6 +3,9 @@
 set -euo pipefail
 shopt -s extglob
 
+debug=false
+verbose=false
+
 notif() {
     if ${verbose}; then
         echo "== $0 [$(date)]: $@" >&2
@@ -316,8 +319,6 @@ if [[ "$run_command" == 'version' ]] || [[ "$run_command" == '--version' ]]; the
 fi
 
 backend="llvm"
-debug=false
-verbose=false
 dump=false
 unparse=true
 debugger=false
