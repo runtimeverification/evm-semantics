@@ -510,6 +510,7 @@ provex_definitions :=                                                           
                       tests/specs/bihu/verification/java/verification-kompiled/timestamp                           \
                       tests/specs/erc20/verification/haskell/verification-kompiled/timestamp                       \
                       tests/specs/erc20/verification/java/verification-kompiled/timestamp                          \
+                      tests/specs/examples/erc20-spec/haskell/erc20-spec-kompiled/timestamp                        \
                       tests/specs/examples/solidity-code-spec/haskell/solidity-code-spec-kompiled/timestamp        \
                       tests/specs/examples/solidity-code-spec/java/solidity-code-spec-kompiled/timestamp           \
                       tests/specs/examples/sum-to-n-spec/haskell/sum-to-n-spec-kompiled/timestamp                  \
