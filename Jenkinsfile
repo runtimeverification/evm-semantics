@@ -97,10 +97,10 @@ pipeline {
                     which kevm
                     kevm help
                     kevm version
-                    make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=llvm
-                    make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=haskell
-                    make -j4 test-parse              TEST_CONCRETE_BACKEND=llvm
-                    make -j4 test-failure            TEST_CONCRETE_BACKEND=llvm
+                    #make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=llvm
+                    #make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=haskell
+                    #make -j4 test-parse              TEST_CONCRETE_BACKEND=llvm
+                    #make -j4 test-failure            TEST_CONCRETE_BACKEND=llvm
                     make -j4 test-klab-prove         TEST_SYMBOLIC_BACKEND=java
                     make -j4 test-interactive-search TEST_SYMBOLIC_BACKEND=haskell
                   '''
