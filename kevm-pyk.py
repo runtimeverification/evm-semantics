@@ -10,6 +10,9 @@ sys.setrecursionlimit(15000000)
 
 ### KEVM instantiation of pyk
 
+stringToken   = lambda s: KToken('"' + s + '"', 'String')
+parseHexBytes = lambda s: KApply('#parseHexBytes(_)_SERIALIZATION_ByteArray_String', [s])
+
 def kevmSymbolTable(symbolTable):
     symbolTable['_orBool_']                                                  = paren(symbolTable['_orBool_'])
     symbolTable['_andBool_']                                                 = paren(symbolTable['_andBool_'])
@@ -62,16 +65,34 @@ kevmSolcArgs.add_argument('solc-output', type = argparse.FileType('r'), default 
 kevmSolcArgs.add_argument('contract-name', type = str, help = 'Name of contract to generate K helpers for.')
 
 def main(commandLineArgs):
-    returncode         = 0
-    args               = vars(commandLineArgs.parse_args())
-    kompiled_directory = args['directoryx']
-
-    kevm             = KPrint(kompiled_directory)
-    kevm.symbolTable = kevmSymbolTable(kevm.symbolTable)
+    args = vars(commandLineArgs.parse_args())
 
     if args['command'] == 'solc-to-k':
-        solcOutput = json.loads(args['solc-output'].read())['contracts'][args['sol'] + ':' + args['contract-name']]
-        notif('Solc Output: \n' + json.dumps(solcOutput, indent = 2))
+        kompiledDirectory = args['directoryx']
+        kevm              = KPrint(kompiledDirectory)
+        kevm.symbolTable  = kevmSymbolTable(kevm.symbolTable)
+
+        contractFile    = args['sol']
+        contractName    = args['contract-name']
+        contractJson    = json.loads(args['solc-output'].read())['contracts'][contractFile + ':' + contractName]
+        contractAbi     = contractJson['abi']
+        contractBin     = '0x' + contractJson['bin-runtime']
+        contractStorage = contractJson['storage-layout']
+
+        binRuntimeProduction = KProduction([KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(KSort('Contract')), KTerminal(')')], KSort('ByteArray'), att = KAtt({'klabel': 'binRuntime', 'macro': ''}))
+
+        contractProduction = KProduction([KTerminal(contractName)], KSort('Contract'), att = KAtt({'klabel': contractName}))
+        contractMacro      = KRule(KRewrite(KApply('binRuntime', [KConstant(contractName)]), parseHexBytes(stringToken(contractBin))))
+
+        binRuntimeModuleName = contractName.upper() + '-BIN-RUNTIME'
+        binRuntimeModule     = KFlatModule(binRuntimeModuleName, ['EDSL'], [binRuntimeProduction, contractProduction, contractMacro])
+        binRuntimeDefinition = KDefinition(binRuntimeModuleName, [binRuntimeModule], requires = [KRequire('edsl.md')])
+
+        kevm.symbolTable['binRuntime'] = lambda s: '#binRuntime(' + s + ')'
+        kevm.symbolTable[contractName] = lambda: contractName
+
+        sys.stdout.write(kevm.prettyPrint(binRuntimeDefinition) + '\n')
+        sys.stdout.flush()
 
 if __name__ == '__main__':
     main(kevmPykArgs)
