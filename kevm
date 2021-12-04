@@ -2,7 +2,6 @@
 
 set -euo pipefail
 shopt -s extglob
-set -x
 
 notif() { echo "== $0 [$(date)]: $@" >&2 ; }
 fatal() { notif "[FATAL] $@" ; exit 1 ; }
@@ -397,8 +396,6 @@ cCHAINID_kore="\dv{SortInt{}}(\"${chainid}\")"
 cMODE_kast="\`${mode}\`(.KList)"
 cSCHEDULE_kast="\`${schedule}_EVM\`(.KList)"
 cCHAINID_kast="#token(\"${chainid}\",\"Int\")"
-which kompile
-notif_exec kompile --version
 
 ! ${debug} || set -x
 
