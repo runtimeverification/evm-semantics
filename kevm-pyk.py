@@ -56,8 +56,10 @@ kevmPykArgs = argparse.ArgumentParser()
 kevmPykCommandParsers = kevmPykArgs.add_subparsers(dest = 'command')
 
 kevmSolcArgs = kevmPykCommandParsers.add_parser('solc-to-k', help = 'Output helper K definition for given JSON output from solc compiler.')
+kevmSolcArgs.add_argument('directoryx',  type = str, help = 'Path to *-kompiled directory to use.')
+kevmSolcArgs.add_argument('sol', type = str, help = 'Combined JSON output from solc compiler.')
 kevmSolcArgs.add_argument('solc-output', type = argparse.FileType('r'), default = '-', help = 'Combined JSON output from solc compiler.')
-kevmSolcArgs.add_argument('--directoryx',  type = str, help = 'Path to *-kompiled directory to use.')
+kevmSolcArgs.add_argument('contract-name', type = str, help = 'Name of contract to generate K helpers for.')
 
 def main(commandLineArgs):
     returncode         = 0
@@ -68,8 +70,8 @@ def main(commandLineArgs):
     kevm.symbolTable = kevmSymbolTable(kevm.symbolTable)
 
     if args['command'] == 'solc-to-k':
-        solcOutput = json.loads(args['solc-output'].read())
-        notif('Solc Output: \n' + json.dumps(solcOutput))
+        solcOutput = json.loads(args['solc-output'].read())['contracts'][args['sol'] + ':' + args['contract-name']]
+        notif('Solc Output: \n' + json.dumps(solcOutput, indent = 2))
 
 if __name__ == '__main__':
     main(kevmPykArgs)

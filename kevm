@@ -251,13 +251,14 @@ run_interpret() {
 }
 
 run_solc() {
-    local json_run_file
+    local contract_name json_run_file
 
+    contract_name="$1" ; shift
     json_run_file="${run_file}.json"
 
     which kevm-pyk.py
     notif_exec solc --combined-json abi,bin-runtime,storage-layout "$@" "${run_file}" > "${json_run_file}"
-    notif_exec kevm-pyk.py solc-to-k "${json_run_file}" --directoryx ${backend_dir}/*-kompiled
+    notif_exec kevm-pyk.py solc-to-k ${backend_dir}/*-kompiled "${run_file}" "${json_run_file}" "${contract_name}"
 }
 
 # Main
@@ -274,8 +275,8 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                $0 prove        [--backend (java|haskell)]                [--verbose|--debug]             <spec> <KEVM_arg>* <K arg>*
                $0 search       [--backend (java|haskell)]                [--verbose|--debug]             <pgm>  <pattern> <K arg>*
                $0 kompile      [--backend (java|llvm|haskell)]           [--verbose|--debug]             <main> <K arg>*
-               $0 klab-view                                              [--verbose|--debug]             <spec>
-               $0 solc                                                                       <sol>  <solc arg>*
+               $0 klab-view <spec>
+               $0 solc      <sol> <sol contract> <solc arg>*
 
                $0 [help|--help|version|--version]
 
@@ -317,6 +318,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                  <def_module> is the module to take as axioms when doing verification.
                  <duration> is a timeout specifier as for GNU timeout.
                  <sol> is a Solidity source code file.
+                 <sol contract> is the name of a Solidity contract provided in the <sol>.
                  <solc arg> are arguments to pass to solc.
 
            klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
