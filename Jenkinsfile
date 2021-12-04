@@ -15,7 +15,6 @@ pipeline {
       steps { script { currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}" } }
     }
     stage('Build and Test') {
-      when { branch 'master' }
       agent {
         dockerfile {
           additionalBuildArgs '--build-arg K_COMMIT="${K_VERSION}" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
@@ -50,10 +49,10 @@ pipeline {
       }
     }
     stage('Package') {
-      //when {
-      //  branch 'master'
-      //  beforeAgent true
-      //}
+      when {
+        branch 'master'
+        beforeAgent true
+      }
       post { failure { slackSend color: '#cb2431' , channel: '#kevm' , message: "Packaging Phase Failed: ${env.BUILD_URL}" } }
       stages {
         stage('Ubuntu Focal') {
@@ -102,7 +101,6 @@ pipeline {
           }
         }
         stage('DockerHub') {
-          when { branch 'master' }
           environment {
             DOCKERHUB_TOKEN   = credentials('rvdockerhub')
             FOCAL_VERSION_TAG = "ubuntu-focal-${env.SHORT_REV}"
