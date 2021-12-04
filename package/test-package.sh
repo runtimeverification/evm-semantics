@@ -32,15 +32,17 @@ kevm kompile --backend haskell tests/specs/erc20/verification.k \
     --directory tests/specs/erc20/verification/haskell          \
     --main-module VERIFICATION                                  \
     --syntax-module VERIFICATION                                \
-    --concrete-rules-file tests/specs/erc20/concrete-rules.txt
+    --concrete-rules-file tests/specs/erc20/concrete-rules.txt  \
+    --verbose
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --backend haskell --format-failures \
     --directory tests/specs/erc20/verification/haskell
 
-kevm kompile --backend java tests/specs/erc20/verification.k \
-    --directory tests/specs/erc20/verification/java          \
-    --main-module VERIFICATION                               \
-    --syntax-module VERIFICATION                             \
-    --concrete-rules-file tests/specs/erc20/concrete-rules.txt
+kevm kompile --backend java tests/specs/erc20/verification.k   \
+    --directory tests/specs/erc20/verification/java            \
+    --main-module VERIFICATION                                 \
+    --syntax-module VERIFICATION                               \
+    --concrete-rules-file tests/specs/erc20/concrete-rules.txt \
+    --debug
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --backend java --format-failures --debugger \
     --directory tests/specs/erc20/verification/java
 
