@@ -274,8 +274,8 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                $0 prove        [--backend (java|haskell)]                [--verbose|--debug]             <spec> <KEVM_arg>* <K arg>*
                $0 search       [--backend (java|haskell)]                [--verbose|--debug]             <pgm>  <pattern> <K arg>*
                $0 kompile      [--backend (java|llvm|haskell)]           [--verbose|--debug]             <main> <K arg>*
-               $0 klab-view <spec>
-               $0 solc      <sol> <sol contract> <solc arg>*
+               $0 klab-view                                              [--verbose|--debug]             <spec>
+               $0 solc-to-k                                              [--verbose|--debug]             <sol> <sol contract> <solc arg>*
 
                $0 [help|--help|version|--version]
 
@@ -286,7 +286,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
            $0 search    : Search for a K pattern in an EVM program execution
            $0 kompile   : Run kompile with arguments setup to include KEVM parameters as defaults
            $0 klab-view : View the statelog associated with a given program or spec
-           $0 solc      : Generate helper K modules for verifying a given contract
+           $0 solc-to-k : Generate helper K modules for verifying a given contract
 
            $0 help    : Display this help message.
            $0 version : Display the versions of KEVM, K, Kore, and Z3 in use.
@@ -425,6 +425,6 @@ case "$run_command-$backend" in
     prove-@(java|haskell)             ) run_prove     "$@" ;;
     search-@(java|haskell)            ) run_search    "$@" ;;
     klab-view-*                       ) view_klab     "$@" ;;
-    solc-*                            ) run_solc      "$@" ;;
+    solc-to-k-*                       ) run_solc      "$@" ;;
     *) $0 help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
