@@ -256,7 +256,6 @@ run_solc() {
     contract_name="$1" ; shift
     json_run_file="${run_file}.json"
 
-    which kevm-pyk.py
     notif_exec solc --combined-json abi,bin-runtime,storage-layout "$@" "${run_file}" > "${json_run_file}"
     notif_exec kevm-pyk.py solc-to-k ${backend_dir}/*-kompiled "${run_file}" "${json_run_file}" "${contract_name}"
 }

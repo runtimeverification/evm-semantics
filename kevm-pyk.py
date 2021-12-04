@@ -10,8 +10,8 @@ sys.setrecursionlimit(15000000)
 
 ### KEVM instantiation of pyk
 
-stringToken   = lambda s: KToken('"' + s + '"', 'String')
-parseHexBytes = lambda s: KApply('#parseHexBytes(_)_SERIALIZATION_ByteArray_String', [s])
+stringToken    = lambda s: KToken('"' + s + '"', 'String')
+parseByteStack = lambda s: KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
 
 def kevmSymbolTable(symbolTable):
     symbolTable['_orBool_']                                                  = paren(symbolTable['_orBool_'])
@@ -82,7 +82,7 @@ def main(commandLineArgs):
         binRuntimeProduction = KProduction([KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(KSort('Contract')), KTerminal(')')], KSort('ByteArray'), att = KAtt({'klabel': 'binRuntime', 'macro': ''}))
 
         contractProduction = KProduction([KTerminal(contractName)], KSort('Contract'), att = KAtt({'klabel': contractName}))
-        contractMacro      = KRule(KRewrite(KApply('binRuntime', [KConstant(contractName)]), parseHexBytes(stringToken(contractBin))))
+        contractMacro      = KRule(KRewrite(KApply('binRuntime', [KConstant(contractName)]), parseByteStack(stringToken(contractBin))))
 
         binRuntimeModuleName = contractName.upper() + '-BIN-RUNTIME'
         binRuntimeModule     = KFlatModule(binRuntimeModuleName, ['EDSL'], [binRuntimeProduction, contractProduction, contractMacro])

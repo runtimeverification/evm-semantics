@@ -423,6 +423,10 @@ tests/%.prove-legacy: tests/%
 	$(KEVM) prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) \
 	    --no-provex --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
+tests/specs/examples/erc20-spec/haskell/erc20-spec-kompiled/timestamp: tests/specs/examples/erc20-bin-runtime.k
+tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/erc20.sol
+	$(KEVM) solc $< ERC20 > $@
+
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
 	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
