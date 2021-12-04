@@ -28,14 +28,14 @@ kevm run tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json -
     || git --no-pager diff --no-index --ignore-all-space -R tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json.llvm-out tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json.expected
 rm -rf tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json.llvm-out
 
-kevm kompile --backend haskell tests/specs/erc20/verification.k \
-    --directory tests/specs/erc20/verification/haskell          \
-    --main-module VERIFICATION                                  \
-    --syntax-module VERIFICATION                                \
-    --concrete-rules-file tests/specs/erc20/concrete-rules.txt  \
+kevm kompile --backend haskell tests/specs/examples/erc20-spec.md \
+    --directory tests/specs/examples/erc20-spec/haskell           \
+    --main-module VERIFICATION                                    \
+    --syntax-module VERIFICATION                                  \
+    --concrete-rules-file tests/specs/examples/concrete-rules.txt \
     --verbose
-kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --backend haskell --format-failures \
-    --directory tests/specs/erc20/verification/haskell
+kevm prove tests/specs/examples/erc20-spec.md --backend haskell --format-failures  \
+    --directory tests/specs/examples/erc20-spec/haskell
 
 kevm kompile --backend java tests/specs/erc20/verification.k   \
     --directory tests/specs/erc20/verification/java            \
