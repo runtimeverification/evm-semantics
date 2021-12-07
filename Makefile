@@ -376,6 +376,7 @@ tests/specs/examples/solidity-code-spec%:    KPROVE_FILE   =  solidity-code-spec
 tests/specs/examples/erc20-spec%:            KPROVE_EXT    =  md
 tests/specs/examples/erc20-spec%:            KPROVE_FILE   =  erc20-spec
 tests/specs/examples/sum-to-n-spec%:         KPROVE_FILE   =  sum-to-n-spec
+tests/specs/examples/long-parse-time-spec%:  KPROVE_FILE   =  long-parse-time-spec
 tests/specs/functional/infinite-gas-spec%:   KPROVE_FILE   =  infinite-gas-spec
 tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_FILE   =  lemmas-no-smt-spec
 tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_OPTS   += --haskell-backend-command "kore-exec --smt=none"
