@@ -204,7 +204,7 @@ $(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
 	@mkdir -p $(dir $@)
 	install $< $@
 
-KOMPILE_OPTS = --debug -I $(INSTALL_INCLUDE)/kframework -I $(INSTALL_LIB)/blockchain-k-plugin/include/kframework
+KOMPILE_OPTS = -I $(INSTALL_INCLUDE)/kframework -I $(INSTALL_LIB)/blockchain-k-plugin/include/kframework
 
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
@@ -226,7 +226,6 @@ endif
 $(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend haskell                     \
 	    $(haskell_main_file) $(HASKELL_KOMPILE_OPTS) \
-	    --directory $(KEVM_LIB)/$(haskell_dir)       \
 	    --main-module $(haskell_main_module)         \
 	    --syntax-module $(haskell_syntax_module)     \
 	    $(KOMPILE_OPTS)
@@ -247,7 +246,6 @@ endif
 $(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend llvm                 \
 	    $(llvm_main_file)                     \
-	    --directory $(KEVM_LIB)/$(llvm_dir)   \
 	    --main-module $(llvm_main_module)     \
 	    --syntax-module $(llvm_syntax_module) \
 	    $(KOMPILE_OPTS)
@@ -267,7 +265,6 @@ export node_main_filename
 $(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend node                 \
 	    $(node_main_file)                     \
-	    --directory $(KEVM_LIB)/$(node_dir)   \
 	    --main-module $(node_main_module)     \
 	    --syntax-module $(node_syntax_module) \
 	    $(KOMPILE_OPTS)
@@ -349,7 +346,7 @@ uninstall:
 # -----
 
 TEST_CONCRETE_BACKEND := llvm
-TEST_SYMBOLIC_BACKEND := java
+TEST_SYMBOLIC_BACKEND := haskell
 
 TEST_OPTIONS :=
 CHECK        := git --no-pager diff --no-index --ignore-all-space -R
@@ -380,6 +377,8 @@ tests/specs/bihu/functional-spec%:           KPROVE_MODULE =  FUNCTIONAL-SPEC-SY
 tests/specs/erc20/functional-spec%:          KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
 tests/specs/examples/solidity-code-spec%:    KPROVE_EXT    =  md
 tests/specs/examples/solidity-code-spec%:    KPROVE_FILE   =  solidity-code-spec
+tests/specs/examples/erc20-spec%:            KPROVE_EXT    =  md
+tests/specs/examples/erc20-spec%:            KPROVE_FILE   =  erc20-spec
 tests/specs/examples/sum-to-n-spec%:         KPROVE_FILE   =  sum-to-n-spec
 tests/specs/functional/infinite-gas-spec%:   KPROVE_FILE   =  infinite-gas-spec
 tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_FILE   =  lemmas-no-smt-spec
@@ -419,14 +418,14 @@ tests/%.parse: tests/%
 	$(CHECK) $@-out $@-expected
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
-tests/%.prove: tests/%
+tests/%.prove-legacy: tests/%
 	$(KEVM) prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) \
-	    --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
+	    --no-provex --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 .SECONDEXPANSION:
-tests/specs/%.provex: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
-	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS)        \
-	    --provex --backend-dir tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
+tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
+	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
+	    --directory tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                 \
@@ -526,19 +525,19 @@ provex_definitions :=                                                           
 build-provex: $(provex_definitions)
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
-test-prove-benchmarks:    $(prove_benchmarks_tests:=.provex)
-test-prove-functional:    $(prove_functional_tests:=.provex)
-test-prove-opcodes:       $(prove_opcodes_tests:=.provex)
-test-prove-erc20:         $(prove_erc20_tests:=.provex)
-test-prove-bihu:          $(prove_bihu_tests:=.provex)
-test-prove-examples:      $(prove_examples_tests:=.provex)
-test-prove-mcd:           $(prove_mcd_tests:=.provex)
-test-prove-optimizations: $(prove_optimization_tests:=.provex)
+test-prove-benchmarks:    $(prove_benchmarks_tests:=.prove)
+test-prove-functional:    $(prove_functional_tests:=.prove)
+test-prove-opcodes:       $(prove_opcodes_tests:=.prove)
+test-prove-erc20:         $(prove_erc20_tests:=.prove)
+test-prove-bihu:          $(prove_bihu_tests:=.prove)
+test-prove-examples:      $(prove_examples_tests:=.prove)
+test-prove-mcd:           $(prove_mcd_tests:=.prove)
+test-prove-optimizations: $(prove_optimization_tests:=.prove)
 
 test-failing-prove: $(prove_failing_tests:=.prove)
 
 test-klab-prove: KPROVE_OPTS += --debugger
-test-klab-prove: $(smoke_tests_prove:=.provex)
+test-klab-prove: $(smoke_tests_prove:=.prove)
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/opcodes/evm-optimizations-spec.md: optimizations.md
