@@ -79,13 +79,15 @@ def main(commandLineArgs):
         contractBin     = '0x' + contractJson['bin-runtime']
         contractStorage = contractJson['storage-layout']
 
+        unknownBoolProduction = KProduction([KTerminal('unknownBool')], KSort('Bool'), att = KAtt({'klabel': 'unknownBool', 'symbol': '', 'no-evaluators': ''}))
+
         binRuntimeProduction = KProduction([KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(KSort('Contract')), KTerminal(')')], KSort('ByteArray'), att = KAtt({'klabel': 'binRuntime', 'macro': ''}))
 
         contractProduction = KProduction([KTerminal(contractName)], KSort('Contract'), att = KAtt({'klabel': contractName}))
         contractMacro      = KRule(KRewrite(KApply('binRuntime', [KConstant(contractName)]), parseByteStack(stringToken(contractBin))))
 
         binRuntimeModuleName = contractName.upper() + '-BIN-RUNTIME'
-        binRuntimeModule     = KFlatModule(binRuntimeModuleName, ['EDSL'], [binRuntimeProduction, contractProduction, contractMacro])
+        binRuntimeModule     = KFlatModule(binRuntimeModuleName, ['EDSL'], [unknownBoolProduction, binRuntimeProduction, contractProduction, contractMacro])
         binRuntimeDefinition = KDefinition(binRuntimeModuleName, [binRuntimeModule], requires = [KRequire('edsl.md')])
 
         kevm.symbolTable['binRuntime'] = lambda s: '#binRuntime(' + s + ')'
