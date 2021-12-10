@@ -97,6 +97,10 @@ else
     LIBFF_CMAKE_FLAGS += -DWITH_PROCPS=OFF
 endif
 
+ifneq ($(APPLE_SILICON),)
+    LIBFF_CMAKE_FLAGS += -DCURVE=ALT_BN128 -DUSE_ASM=Off
+endif
+
 $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	@mkdir -p $(PLUGIN_SUBMODULE)/deps/libff/build
 	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                                     \
@@ -373,6 +377,8 @@ tests/specs/bihu/functional-spec%:           KPROVE_MODULE =  FUNCTIONAL-SPEC-SY
 tests/specs/erc20/functional-spec%:          KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
 tests/specs/examples/solidity-code-spec%:    KPROVE_EXT    =  md
 tests/specs/examples/solidity-code-spec%:    KPROVE_FILE   =  solidity-code-spec
+tests/specs/examples/erc20-spec%:            KPROVE_EXT    =  md
+tests/specs/examples/erc20-spec%:            KPROVE_FILE   =  erc20-spec
 tests/specs/examples/sum-to-n-spec%:         KPROVE_FILE   =  sum-to-n-spec
 tests/specs/functional/infinite-gas-spec%:   KPROVE_FILE   =  infinite-gas-spec
 tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_FILE   =  lemmas-no-smt-spec

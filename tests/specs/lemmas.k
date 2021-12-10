@@ -292,6 +292,28 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
 
+    // ; Z3 version 4.8.12
+    // (set-option :smt.mbqi true)
+    //
+    // ; 2^256
+    // (declare-const pow256 Int)
+    // (assert (= pow256 115792089237316195423570985008687907853269984665640564039457584007913129639936))
+    //
+    // (define-fun chop ((x Int)) Int (mod x pow256))
+    // (define-fun range256 ((x Int)) Bool (and (>= x 0) (< x pow256)))
+
+    // (push)
+    // (assert (forall ((x Int) (y Int)) (=> (and (<= pow256 (+ x y)) (range256 x) (range256 y)) (= (< (chop (+ x y)) x) true))))
+    // (check-sat)
+    // (pop)
+    rule chop ( X +Int Y ) <Int X  => true   requires pow256 <=Int ( X +Int Y ) andBool #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
+
+    // (push)
+    // (assert (forall ((x Int) (y Int)) (=> (and (<= pow256 (+ x y)) (range256 x) (range256 y)) (= (<= x (chop (+ x y))) false))))
+    // (check-sat)
+    // (pop)
+    rule X <=Int chop ( X +Int Y ) => false  requires pow256 <=Int ( X +Int Y ) andBool #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
+
   // ########################
   // Buffer Reasoning
   // ########################

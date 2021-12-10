@@ -3,7 +3,17 @@
 set -euo pipefail
 shopt -s extglob
 
-notif() { echo "== $0 [$(date)]: $@" >&2 ; }
+debug=false
+verbose=false
+
+notif() {
+    if ${verbose}; then
+        echo "== $0 [$(date)]: $@" >&2
+    else
+        echo "== $0: $@" >&2
+    fi
+}
+
 fatal() { notif "[FATAL] $@" ; exit 1 ; }
 
 notif_exec() {
@@ -249,14 +259,14 @@ run_command="$1" ; shift
 
 if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     echo "
-        usage: $0 run          [--backend (llvm|java|haskell)]           <KEVM_arg>* <pgm>  <K arg>*
-               $0 interpret    [--backend (llvm)] [--debug|--no-unparse] <KEVM_arg>* <pgm>  <interpreter arg>*
-               $0 interpret    [--backend (java|haskell)] [--no-unparse] <KEVM_arg>* <pgm>
-               $0 kast         [--backend (llvm|java|haskell)]           <KEVM_arg>* <pgm>  <output format> <K arg>*
-               $0 prove        [--backend (java|haskell)]                            <spec> <KEVM_arg>* <K arg>*
-               $0 search       [--backend (java|haskell)]                            <pgm>  <pattern> <K arg>*
-               $0 kompile      [--backend (java|llvm|haskell)]                       <main> <K arg>*
-               $0 klab-view                                                          <spec>
+        usage: $0 run          [--backend (llvm|java|haskell)]           [--verbose|--debug] <KEVM_arg>* <pgm>  <K arg>*
+               $0 interpret    [--backend (llvm)]         [--no-unparse] [--verbose|--debug] <KEVM_arg>* <pgm>  <interpreter arg>*
+               $0 interpret    [--backend (java|haskell)] [--no-unparse] [--verbose|--debug] <KEVM_arg>* <pgm>
+               $0 kast         [--backend (llvm|java|haskell)]           [--verbose|--debug] <KEVM_arg>* <pgm>  <output format> <K arg>*
+               $0 prove        [--backend (java|haskell)]                [--verbose|--debug]             <spec> <KEVM_arg>* <K arg>*
+               $0 search       [--backend (java|haskell)]                [--verbose|--debug]             <pgm>  <pattern> <K arg>*
+               $0 kompile      [--backend (java|llvm|haskell)]           [--verbose|--debug]             <main> <K arg>*
+               $0 klab-view                                              [--verbose|--debug]             <spec>
 
                $0 [help|--help|version|--version]
 
@@ -309,7 +319,6 @@ if [[ "$run_command" == 'version' ]] || [[ "$run_command" == '--version' ]]; the
 fi
 
 backend="llvm"
-debug=false
 dump=false
 unparse=true
 debugger=false
@@ -334,7 +343,8 @@ kevm_host='127.0.0.1'
 args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --debug)               debug=true ; args+=("$1")       ; shift   ;;
+        --debug)               debug=true   ; args+=("$1")     ; shift   ;;
+        --verbose)             verbose=true ; args+=("$1")     ; shift   ;;
         --dump)                dump=true                       ; shift   ;;
         --no-unparse)          unparse=false                   ; shift   ;;
         --debugger)            debugger=true                   ; shift   ;;

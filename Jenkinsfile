@@ -25,7 +25,7 @@ pipeline {
         stage('Build') { steps { sh 'make build build-provex RELEASE=true -j6' } }
         stage('Test') {
           failFast true
-          options { timeout(time: 150, unit: 'MINUTES') }
+          options { timeout(time: 200, unit: 'MINUTES') }
           parallel {
             stage('Conformance (LLVM)') { steps {                                         sh 'make test-conformance -j4 TEST_CONCRETE_BACKEND=llvm'      } }
             stage('Proofs (Java)')      { steps { lock("kevm-java-${env.NODE_NAME}")    { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=java'    } } }
@@ -93,15 +93,7 @@ pipeline {
                     sudo DEBIAN_FRONTEND=noninteractive apt-get update
                     sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes ./kevm_${VERSION}_amd64.deb
-                    which kevm
-                    kevm help
-                    kevm version
-                    make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=llvm
-                    make -j4 test-interactive-run    TEST_CONCRETE_BACKEND=haskell
-                    make -j4 test-parse              TEST_CONCRETE_BACKEND=llvm
-                    make -j4 test-failure            TEST_CONCRETE_BACKEND=llvm
-                    make -j4 test-klab-prove         TEST_SYMBOLIC_BACKEND=java
-                    make -j4 test-interactive-search TEST_SYMBOLIC_BACKEND=haskell
+                    ./package/test-package.sh
                   '''
                 }
               }
