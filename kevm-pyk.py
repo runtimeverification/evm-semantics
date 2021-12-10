@@ -79,7 +79,7 @@ def main(commandLineArgs):
         contractBin     = '0x' + contractJson['bin-runtime']
         contractStorage = contractJson['storage-layout']
 
-        unknownBoolProduction = KProduction([KTerminal('unknownBool')], KSort('Bool'), att = KAtt({'klabel': 'unknownBool', 'symbol': '', 'no-evaluators': ''}))
+        unknownBoolProduction = KProduction([KTerminal('unknownBool')], KSort('Bool'), att = KAtt({'klabel': 'unknownBool', 'symbol': '', 'no-evaluators': '', 'function': '', 'functional': ''}))
 
         binRuntimeProduction = KProduction([KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(KSort('Contract')), KTerminal(')')], KSort('ByteArray'), att = KAtt({'klabel': 'binRuntime', 'macro': ''}))
 
