@@ -87,7 +87,7 @@ def main(commandLineArgs):
         contractMacro      = KRule(KRewrite(KApply('binRuntime', [KConstant(contractName)]), parseByteStack(stringToken(contractBin))))
 
         binRuntimeModuleName = contractName.upper() + '-BIN-RUNTIME'
-        binRuntimeModule     = KFlatModule(binRuntimeModuleName, ['EDSL'], [unknownBoolProduction, binRuntimeProduction, contractProduction, contractMacro])
+        binRuntimeModule     = KFlatModule(binRuntimeModuleName, [KImport('EDSL', True)], [unknownBoolProduction, binRuntimeProduction, contractProduction, contractMacro])
         binRuntimeDefinition = KDefinition(binRuntimeModuleName, [binRuntimeModule], requires = [KRequire('edsl.md')])
 
         kevm.symbolTable['binRuntime'] = lambda s: '#binRuntime(' + s + ')'
