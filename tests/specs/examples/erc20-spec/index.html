@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../../../../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/tests/specs/examples/erc20-spec/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../../../../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../../../../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../../../../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/kframework/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../../../../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../../../../">Homepage</a>
+      <a class="bd-toc-link" href="../../../../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h1 id="erc20-ish-verification">ERC20-ish Verification</h1>
+<pre class="language-k"><code><span class="token keyword">requires</span> <span class="token string">&quot;edsl.md&quot;</span>
+<span class="token keyword">requires</span> <span class="token string">&quot;optimizations.md&quot;</span>
+<span class="token keyword">requires</span> <span class="token string">&quot;lemmas/lemmas.k&quot;</span>
+<span class="token keyword">requires</span> <span class="token string">&quot;lemmas/infinite-gas.k&quot;</span>
+</code></pre>
+<h2 id="solidity-code">Solidity Code</h2>
+<p>File <code>test.sol</code> contains some code snippets we want to verify the functional correctness of:</p>
+<pre class="language-sol"><code><span class="token comment">// SPDX-License-Identifier: Just something to remove the warning</span>
+
+<span class="token keyword">pragma</span> <span class="token keyword">solidity</span> <span class="token operator">&gt;=</span><span class="token version number">0.6.0</span><span class="token punctuation">;</span>
+
+<span class="token keyword">contract</span> <span class="token class-name">ERC20</span> <span class="token punctuation">{</span>
+
+    <span class="token keyword">mapping</span><span class="token punctuation">(</span><span class="token builtin">address</span> <span class="token operator">=&gt;</span> <span class="token builtin">uint256</span><span class="token punctuation">)</span>                     <span class="token keyword">private</span> _balances<span class="token punctuation">;</span>
+    <span class="token keyword">mapping</span><span class="token punctuation">(</span><span class="token builtin">address</span> <span class="token operator">=&gt;</span> <span class="token keyword">mapping</span><span class="token punctuation">(</span><span class="token builtin">address</span> <span class="token operator">=&gt;</span> <span class="token builtin">uint256</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">private</span> _allowances<span class="token punctuation">;</span>
+
+    <span class="token builtin">uint256</span> <span class="token keyword">private</span> _totalSupply<span class="token punctuation">;</span>
+    <span class="token builtin">uint8</span> <span class="token keyword">private</span> _decimals<span class="token punctuation">;</span>
+    <span class="token builtin">string</span> <span class="token keyword">private</span> _name<span class="token punctuation">;</span>
+    <span class="token builtin">string</span> <span class="token keyword">private</span> _symbol<span class="token punctuation">;</span>
+
+    <span class="token keyword">constructor</span> <span class="token punctuation">(</span>
+        <span class="token builtin">string</span> <span class="token keyword">memory</span> name
+      <span class="token punctuation">,</span> <span class="token builtin">string</span> <span class="token keyword">memory</span> symbol
+      <span class="token punctuation">,</span> <span class="token builtin">address</span> initAccount
+      <span class="token punctuation">,</span> <span class="token builtin">uint256</span> initSupply
+      <span class="token punctuation">,</span> <span class="token builtin">uint8</span> decimals
+      <span class="token punctuation">)</span> <span class="token keyword">public</span> <span class="token punctuation">{</span>
+        _name <span class="token operator">=</span> name<span class="token punctuation">;</span>
+        _symbol <span class="token operator">=</span> symbol<span class="token punctuation">;</span>
+        _decimals <span class="token operator">=</span> decimals<span class="token punctuation">;</span>
+        <span class="token function">_mint</span><span class="token punctuation">(</span>initAccount<span class="token punctuation">,</span> initSupply<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">function</span> <span class="token function">name</span><span class="token punctuation">(</span><span class="token punctuation">)</span>        <span class="token keyword">public</span> <span class="token keyword">view</span> <span class="token keyword">returns</span> <span class="token punctuation">(</span><span class="token builtin">string</span> <span class="token keyword">memory</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token keyword">return</span> _name<span class="token punctuation">;</span>        <span class="token punctuation">}</span>
+    <span class="token keyword">function</span> <span class="token function">symbol</span><span class="token punctuation">(</span><span class="token punctuation">)</span>      <span class="token keyword">public</span> <span class="token keyword">view</span> <span class="token keyword">returns</span> <span class="token punctuation">(</span><span class="token builtin">string</span> <span class="token keyword">memory</span><span class="token punctuation">)</span> <span class="token punctuation">{</span> <span class="token keyword">return</span> _symbol<span class="token punctuation">;</span>      <span class="token punctuation">}</span>
+    <span class="token keyword">function</span> <span class="token function">decimals</span><span class="token punctuation">(</span><span class="token punctuation">)</span>    <span class="token keyword">public</span> <span class="token keyword">view</span> <span class="token keyword">returns</span> <span class="token punctuation">(</span><span class="token builtin">uint256</span><span class="token punctuation">)</span>       <span class="token punctuation">{</span> <span class="token keyword">return</span> _decimals<span class="token punctuation">;</span>    <span class="token punctuation">}</span>
+    <span class="token keyword">function</span> <span class="token function">totalSupply</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">public</span> <span class="token keyword">view</span> <span class="token keyword">returns</span> <span class="token punctuation">(</span><span class="token builtin">uint256</span><span class="token punctuation">)</span>       <span class="token punctuation">{</span> <span class="token keyword">return</span> _totalSupply<span class="token punctuation">;</span> <span class="token punctuation">}</span>
+
+    <span class="token keyword">function</span> <span class="token function">balanceOf</span><span class="token punctuation">(</span><span class="token builtin">address</span> account<span class="token punctuation">)</span> <span class="token keyword">external</span> <span class="token keyword">view</span> <span class="token keyword">returns</span> <span class="token punctuation">(</span><span class="token builtin">uint256</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> _balances<span class="token punctuation">[</span>account<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">function</span> <span class="token function">transfer</span><span class="token punctuation">(</span><span class="token builtin">address</span> to<span class="token punctuation">,</span> <span class="token builtin">uint256</span> amount<span class="token punctuation">)</span> <span class="token keyword">external</span> <span class="token keyword">returns</span> <span class="token punctuation">(</span><span class="token builtin">bool</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">_transfer</span><span class="token punctuation">(</span>msg<span class="token punctuation">.</span>sender<span class="token punctuation">,</span> to<span class="token punctuation">,</span> amount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">function</span> <span class="token function">allowance</span><span class="token punctuation">(</span><span class="token builtin">address</span> owner<span class="token punctuation">,</span> <span class="token builtin">address</span> spender<span class="token punctuation">)</span> <span class="token keyword">external</span> <span class="token keyword">view</span> <span class="token keyword">returns</span> <span class="token punctuation">(</span><span class="token builtin">uint256</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> _allowances<span class="token punctuation">[</span>owner<span class="token punctuation">]</span><span class="token punctuation">[</span>spender<span class="token punctuation">]</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">function</span> <span class="token function">approve</span><span class="token punctuation">(</span><span class="token builtin">address</span> spender<span class="token punctuation">,</span> <span class="token builtin">uint256</span> amount<span class="token punctuation">)</span> <span class="token keyword">external</span> <span class="token keyword">returns</span> <span class="token punctuation">(</span><span class="token builtin">bool</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">_approve</span><span class="token punctuation">(</span>msg<span class="token punctuation">.</span>sender<span class="token punctuation">,</span> spender<span class="token punctuation">,</span> amount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">function</span> <span class="token function">transferFrom</span><span class="token punctuation">(</span><span class="token builtin">address</span> <span class="token keyword">from</span><span class="token punctuation">,</span> <span class="token builtin">address</span> to<span class="token punctuation">,</span> <span class="token builtin">uint256</span> amount<span class="token punctuation">)</span> <span class="token keyword">external</span> <span class="token keyword">returns</span> <span class="token punctuation">(</span><span class="token builtin">bool</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">_transfer</span><span class="token punctuation">(</span><span class="token keyword">from</span><span class="token punctuation">,</span> to<span class="token punctuation">,</span> amount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token builtin">uint256</span> currentAllowance <span class="token operator">=</span> _allowances<span class="token punctuation">[</span><span class="token keyword">from</span><span class="token punctuation">]</span><span class="token punctuation">[</span>msg<span class="token punctuation">.</span>sender<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">require</span><span class="token punctuation">(</span>currentAllowance <span class="token operator">&gt;=</span> amount<span class="token punctuation">,</span> <span class="token string">&quot;ERC20: transfer amount exceeds allowance&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">_approve</span><span class="token punctuation">(</span><span class="token keyword">from</span><span class="token punctuation">,</span> msg<span class="token punctuation">.</span>sender<span class="token punctuation">,</span> currentAllowance <span class="token operator">-</span> amount<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">function</span> <span class="token function">_transfer</span><span class="token punctuation">(</span><span class="token builtin">address</span> <span class="token keyword">from</span><span class="token punctuation">,</span> <span class="token builtin">address</span> to<span class="token punctuation">,</span> <span class="token builtin">uint256</span> amount<span class="token punctuation">)</span> <span class="token keyword">internal</span> <span class="token punctuation">{</span>
+        <span class="token keyword">require</span><span class="token punctuation">(</span><span class="token keyword">from</span> <span class="token operator">!=</span> <span class="token builtin">address</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">&quot;ERC20: transfer from the zero address&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">require</span><span class="token punctuation">(</span>to <span class="token operator">!=</span> <span class="token builtin">address</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">&quot;ERC20: transfer to the zero address&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token builtin">uint256</span> toBalance   <span class="token operator">=</span> _balances<span class="token punctuation">[</span>to<span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token builtin">uint256</span> fromBalance <span class="token operator">=</span> _balances<span class="token punctuation">[</span><span class="token keyword">from</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+        <span class="token keyword">require</span><span class="token punctuation">(</span>fromBalance <span class="token operator">&gt;=</span> amount<span class="token punctuation">,</span> <span class="token string">&quot;ERC20: transfer amount exceeds balance&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token builtin">uint256</span> fromBalanceUpdated <span class="token operator">=</span> fromBalance <span class="token operator">-</span> amount<span class="token punctuation">;</span>
+        <span class="token builtin">uint256</span> toBalanceUpdated   <span class="token operator">=</span> toBalance   <span class="token operator">+</span> amount<span class="token punctuation">;</span>
+        _balances<span class="token punctuation">[</span><span class="token keyword">from</span><span class="token punctuation">]</span> <span class="token operator">=</span> fromBalanceUpdated<span class="token punctuation">;</span>
+        _balances<span class="token punctuation">[</span>to<span class="token punctuation">]</span>   <span class="token operator">=</span> toBalanceUpdated<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">function</span> <span class="token function">_approve</span><span class="token punctuation">(</span><span class="token builtin">address</span> owner<span class="token punctuation">,</span> <span class="token builtin">address</span> spender<span class="token punctuation">,</span> <span class="token builtin">uint256</span> amount<span class="token punctuation">)</span> <span class="token keyword">internal</span> <span class="token punctuation">{</span>
+        <span class="token keyword">require</span><span class="token punctuation">(</span>owner <span class="token operator">!=</span> <span class="token builtin">address</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">&quot;ERC20: approve from the zero address&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">require</span><span class="token punctuation">(</span>spender <span class="token operator">!=</span> <span class="token builtin">address</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">&quot;ERC20: approve to the zero address&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        _allowances<span class="token punctuation">[</span>owner<span class="token punctuation">]</span><span class="token punctuation">[</span>spender<span class="token punctuation">]</span> <span class="token operator">=</span> amount<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">function</span> <span class="token function">_mint</span><span class="token punctuation">(</span><span class="token builtin">address</span> account<span class="token punctuation">,</span> <span class="token builtin">uint256</span> amount<span class="token punctuation">)</span> <span class="token keyword">internal</span> <span class="token punctuation">{</span>
+        <span class="token keyword">require</span><span class="token punctuation">(</span>account <span class="token operator">!=</span> <span class="token builtin">address</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">&quot;ERC20: mint to the zero address&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">require</span><span class="token punctuation">(</span>_totalSupply <span class="token operator">&lt;=</span> _totalSupply <span class="token operator">+</span> amount<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//check overflow on totalSupply</span>
+        _totalSupply <span class="token operator">=</span> _totalSupply <span class="token operator">+</span> amount<span class="token punctuation">;</span>
+        _balances<span class="token punctuation">[</span>account<span class="token punctuation">]</span> <span class="token operator">=</span> _balances<span class="token punctuation">[</span>account<span class="token punctuation">]</span> <span class="token operator">+</span> amount<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">function</span> <span class="token function">_burn</span><span class="token punctuation">(</span><span class="token builtin">address</span> account<span class="token punctuation">,</span> <span class="token builtin">uint256</span> amount<span class="token punctuation">)</span> <span class="token keyword">internal</span> <span class="token punctuation">{</span>
+        <span class="token keyword">require</span><span class="token punctuation">(</span>account <span class="token operator">!=</span> <span class="token builtin">address</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token string">&quot;ERC20: burn from the zero address&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">require</span><span class="token punctuation">(</span>_balances<span class="token punctuation">[</span>account<span class="token punctuation">]</span> <span class="token operator">&gt;=</span> _balances<span class="token punctuation">[</span>account<span class="token punctuation">]</span> <span class="token operator">-</span> amount<span class="token punctuation">)</span><span class="token punctuation">;</span><span class="token comment">//check underflow on balances</span>
+        _totalSupply <span class="token operator">=</span> _totalSupply <span class="token operator">-</span> amount<span class="token punctuation">;</span>
+        _balances<span class="token punctuation">[</span>account<span class="token punctuation">]</span> <span class="token operator">=</span> _balances<span class="token punctuation">[</span>account<span class="token punctuation">]</span> <span class="token operator">-</span> amount<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>Run <code>solc tests/specs/examples/ERC20.sol --bin-runtime</code>:</p>
+<pre class="language-text"><code>======= tests/specs/examples/ERC20.sol:ERC20 =======
+Binary of the runtime part:
+608060405234801561001057600080fd5b50600436106100935760003560e01c8063313ce56711610066578063313ce5671461022557806370a082311461024357806395d89b411461029b578063a9059cbb1461031e578063dd62ed3e1461038457610093565b806306fdde0314610098578063095ea7b31461011b57806318160ddd1461018157806323b872dd1461019f575b600080fd5b6100a06103fc565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100e05780820151818401526020810190506100c5565b50505050905090810190601f16801561010d5780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6101676004803603604081101561013157600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291908035906020019092919050505061049e565b604051808215151515815260200191505060405180910390f35b6101896104b5565b6040518082815260200191505060405180910390f35b61020b600480360360608110156101b557600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803590602001909291905050506104bf565b604051808215151515815260200191505060405180910390f35b61022d6105bf565b6040518082815260200191505060405180910390f35b6102856004803603602081101561025957600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506105d9565b6040518082815260200191505060405180910390f35b6102a3610621565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156102e35780820151818401526020810190506102c8565b50505050905090810190601f1680156103105780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b61036a6004803603604081101561033457600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803590602001909291905050506106c3565b604051808215151515815260200191505060405180910390f35b6103e66004803603604081101561039a57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506106da565b6040518082815260200191505060405180910390f35b606060048054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156104945780601f1061046957610100808354040283529160200191610494565b820191906000526020600020905b81548152906001019060200180831161047757829003601f168201915b5050505050905090565b60006104ab338484610761565b6001905092915050565b6000600254905090565b60006104cc8484846108f3565b6000600160008673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020549050828110156105a6576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526028815260200180610be76028913960400191505060405180910390fd5b6105b38533858403610761565b60019150509392505050565b6000600360009054906101000a900460ff1660ff16905090565b60008060008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020549050919050565b606060058054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156106b95780601f1061068e576101008083540402835291602001916106b9565b820191906000526020600020905b81548152906001019060200180831161069c57829003601f168201915b5050505050905090565b60006106d03384846108f3565b6001905092915050565b6000600160008473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054905092915050565b600073ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff1614156107e7576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526024815260200180610c346024913960400191505060405180910390fd5b600073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff16141561086d576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526022815260200180610b9f6022913960400191505060405180910390fd5b80600160008573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002081905550505050565b600073ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff161415610979576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526025815260200180610c0f6025913960400191505060405180910390fd5b600073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff1614156109ff576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526023815260200180610b7c6023913960400191505060405180910390fd5b60008060008473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054905060008060008673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054905082811015610ade576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526026815260200180610bc16026913960400191505060405180910390fd5b6000838203905060008484019050816000808973ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002081905550806000808873ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020819055505050505050505056fe45524332303a207472616e7366657220746f20746865207a65726f206164647265737345524332303a20617070726f766520746f20746865207a65726f206164647265737345524332303a207472616e7366657220616d6f756e7420657863656564732062616c616e636545524332303a207472616e7366657220616d6f756e74206578636565647320616c6c6f77616e636545524332303a207472616e736665722066726f6d20746865207a65726f206164647265737345524332303a20617070726f76652066726f6d20746865207a65726f2061646472657373a2646970667358221220d9dbe8fd9e7d5689c52fd8b9b4de4db7247eaa892108b2173084639672f6bc1564736f6c63430006070033
+</code></pre>
+<h2 id="verification-module">Verification Module</h2>
+<p>Helper module for verification tasks.</p>
+<ul>
+<li>Define <code>#binRuntime()</code> as the compiled bytecode.</li>
+<li>Add any lemmas needed for our proofs.</li>
+<li>Import a large body of existing lemmas from KEVM.</li>
+</ul>
+<pre class="language-k"><code><span class="token keyword">module</span> VERIFICATION
+    <span class="token keyword">imports</span> EDSL
+    <span class="token keyword">imports</span> LEMMAS
+    <span class="token keyword">imports</span> INFINITE<span class="token operator">-</span>GAS
+    <span class="token keyword">imports</span> EVM<span class="token operator">-</span>OPTIMIZATIONS
+
+    <span class="token keyword">syntax</span> Step <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> ByteArray <span class="token operator">|</span> <span class="token keyword">Int</span>
+    <span class="token keyword">syntax</span> KItem <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> runLemma <span class="token punctuation">(</span> Step <span class="token punctuation">)</span> <span class="token operator">|</span> doneLemma <span class="token punctuation">(</span> Step <span class="token punctuation">)</span>
+ <span class="token comment">// -------------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> runLemma<span class="token punctuation">(</span>S<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> doneLemma<span class="token punctuation">(</span>S<span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">syntax</span> ByteArray <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #binRuntime<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+ <span class="token comment">// ------------------------------------------</span>
+    <span class="token keyword">rule</span> #binRuntime<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #parseByteStack<span class="token punctuation">(</span><span class="token string">&quot;0x608060405234801561001057600080fd5b50600436106100935760003560e01c8063313ce56711610066578063313ce5671461022557806370a082311461024357806395d89b411461029b578063a9059cbb1461031e578063dd62ed3e1461038457610093565b806306fdde0314610098578063095ea7b31461011b57806318160ddd1461018157806323b872dd1461019f575b600080fd5b6100a06103fc565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100e05780820151818401526020810190506100c5565b50505050905090810190601f16801561010d5780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6101676004803603604081101561013157600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291908035906020019092919050505061049e565b604051808215151515815260200191505060405180910390f35b6101896104b5565b6040518082815260200191505060405180910390f35b61020b600480360360608110156101b557600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803590602001909291905050506104bf565b604051808215151515815260200191505060405180910390f35b61022d6105bf565b6040518082815260200191505060405180910390f35b6102856004803603602081101561025957600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506105d9565b6040518082815260200191505060405180910390f35b6102a3610621565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156102e35780820151818401526020810190506102c8565b50505050905090810190601f1680156103105780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b61036a6004803603604081101561033457600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803590602001909291905050506106c3565b604051808215151515815260200191505060405180910390f35b6103e66004803603604081101561039a57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506106da565b6040518082815260200191505060405180910390f35b606060048054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156104945780601f1061046957610100808354040283529160200191610494565b820191906000526020600020905b81548152906001019060200180831161047757829003601f168201915b5050505050905090565b60006104ab338484610761565b6001905092915050565b6000600254905090565b60006104cc8484846108f3565b6000600160008673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020549050828110156105a6576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526028815260200180610be76028913960400191505060405180910390fd5b6105b38533858403610761565b60019150509392505050565b6000600360009054906101000a900460ff1660ff16905090565b60008060008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020549050919050565b606060058054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156106b95780601f1061068e576101008083540402835291602001916106b9565b820191906000526020600020905b81548152906001019060200180831161069c57829003601f168201915b5050505050905090565b60006106d03384846108f3565b6001905092915050565b6000600160008473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054905092915050565b600073ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff1614156107e7576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526024815260200180610c346024913960400191505060405180910390fd5b600073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff16141561086d576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526022815260200180610b9f6022913960400191505060405180910390fd5b80600160008573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002081905550505050565b600073ffffffffffffffffffffffffffffffffffffffff168373ffffffffffffffffffffffffffffffffffffffff161415610979576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526025815260200180610c0f6025913960400191505060405180910390fd5b600073ffffffffffffffffffffffffffffffffffffffff168273ffffffffffffffffffffffffffffffffffffffff1614156109ff576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526023815260200180610b7c6023913960400191505060405180910390fd5b60008060008473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054905060008060008673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054905082811015610ade576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526026815260200180610bc16026913960400191505060405180910390fd5b6000838203905060008484019050816000808973ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002081905550806000808873ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020819055505050505050505056fe45524332303a207472616e7366657220746f20746865207a65726f206164647265737345524332303a20617070726f766520746f20746865207a65726f206164647265737345524332303a207472616e7366657220616d6f756e7420657863656564732062616c616e636545524332303a207472616e7366657220616d6f756e74206578636565647320616c6c6f77616e636545524332303a207472616e736665722066726f6d20746865207a65726f206164647265737345524332303a20617070726f76652066726f6d20746865207a65726f2061646472657373a2646970667358221220d9dbe8fd9e7d5689c52fd8b9b4de4db7247eaa892108b2173084639672f6bc1564736f6c63430006070033&quot;</span><span class="token punctuation">)</span>
+
+ <span class="token comment">// decimals lemmas</span>
+ <span class="token comment">// ---------------</span>
+
+    <span class="token keyword">rule</span>         <span class="token number">255</span> <span class="token operator">&amp;</span><span class="token keyword">Int</span> X &lt;<span class="token keyword">Int</span> <span class="token number">256</span> <span class="token operator">=&gt;</span> <span class="token boolean">true</span> <span class="token keyword">requires</span> <span class="token number">0</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> X <span class="token punctuation">[</span>simplification<span class="token punctuation">,</span> smt<span class="token operator">-</span>lemma<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span> <span class="token number">0</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> <span class="token number">255</span> <span class="token operator">&amp;</span><span class="token keyword">Int</span> X          <span class="token operator">=&gt;</span> <span class="token boolean">true</span> <span class="token keyword">requires</span> <span class="token number">0</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> X <span class="token punctuation">[</span>simplification<span class="token punctuation">,</span> smt<span class="token operator">-</span>lemma<span class="token punctuation">]</span>
+
+<span class="token keyword">endmodule</span>
+</code></pre>
+<h2 id="k-specifications">K Specifications</h2>
+<p>Formal specifications (using KEVM) of the correctness properties for our Solidity code.</p>
+<pre class="language-k"><code><span class="token keyword">module</span> ERC20<span class="token operator">-</span>SPEC
+    <span class="token keyword">imports</span> VERIFICATION
+</code></pre>
+<h3 id="calling-decimals()-works">Calling decimals() works</h3>
+<ul>
+<li>Everything from <code>&lt;mode&gt;</code> to <code>&lt;callValue&gt;</code> is boilerplate.</li>
+<li>We are setting <code>&lt;callData&gt;</code> to <code>decimals()</code>.</li>
+<li>We ask the prover to show that in all cases, we will end in <code>EVMC_SUCCESS</code> (rollback) when this happens.</li>
+<li>The <code>&lt;output&gt;</code> cell specifies that we correctly lookup the <code>DECIMALS</code> value from the account storage.</li>
+</ul>
+<pre class="language-k"><code>    <span class="token keyword">claim</span> <span class="token punctuation">[</span>decimals<span class="token punctuation">]</span><span class="token punctuation">:</span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>mode</span><span class="token punctuation">&gt;</span></span>     NORMAL   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>mode</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>schedule</span><span class="token punctuation">&gt;</span></span> ISTANBUL <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>schedule</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callStack</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span>List                                 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callStack</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>program</span><span class="token punctuation">&gt;</span></span>   #binRuntime<span class="token punctuation">(</span><span class="token punctuation">)</span>                         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>program</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>jumpDests</span><span class="token punctuation">&gt;</span></span> #computeValidJumpDests<span class="token punctuation">(</span>#binRuntime<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>jumpDests</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>id</span><span class="token punctuation">&gt;</span></span>         ACCTID      <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>id</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>localMem</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span>Memory     <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>localMem</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>memoryUsed</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span>           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>memoryUsed</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>wordStack</span><span class="token punctuation">&gt;</span></span>  <span class="token punctuation">.</span>WordStack  <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>wordStack</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>pc</span><span class="token punctuation">&gt;</span></span>         <span class="token number">0</span>           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>pc</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>endPC</span><span class="token punctuation">&gt;</span></span>      _           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>endPC</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>gas</span><span class="token punctuation">&gt;</span></span>        #gas<span class="token punctuation">(</span>_VGAS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>gas</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callValue</span><span class="token punctuation">&gt;</span></span>  <span class="token number">0</span>           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callValue</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callData</span><span class="token punctuation">&gt;</span></span> #abiCallData<span class="token punctuation">(</span><span class="token string">&quot;decimals&quot;</span><span class="token punctuation">,</span> <span class="token punctuation">.</span>TypedArgs<span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callData</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>          #execute   <span class="token operator">=&gt;</span> #halt <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>output</span><span class="token punctuation">&gt;</span></span>     <span class="token punctuation">.</span>ByteArray <span class="token operator">=&gt;</span> #buf<span class="token punctuation">(</span><span class="token number">32</span><span class="token punctuation">,</span> DECIMALS<span class="token punctuation">)</span>   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>output</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>statusCode</span><span class="token punctuation">&gt;</span></span> _          <span class="token operator">=&gt;</span> EVMC_SUCCESS         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>statusCode</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span> ACCTID <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>storage</span><span class="token punctuation">&gt;</span></span> ACCT_STORAGE <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>storage</span><span class="token punctuation">&gt;</span></span>
+            <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+
+       <span class="token keyword">requires</span> DECIMALS_KEY <span class="token operator">==</span><span class="token keyword">Int</span> #hashedLocation<span class="token punctuation">(</span><span class="token string">&quot;Solidity&quot;</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token punctuation">.</span>IntList<span class="token punctuation">)</span>
+        andBool DECIMALS     <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token number">255</span> <span class="token operator">&amp;</span><span class="token keyword">Int</span> #lookup<span class="token punctuation">(</span>ACCT_STORAGE<span class="token punctuation">,</span> DECIMALS_KEY<span class="token punctuation">)</span>
+</code></pre>
+<h3 id="calling-totalsupply()-works">Calling totalSupply() works</h3>
+<ul>
+<li>Everything from <code>&lt;mode&gt;</code> to <code>&lt;callValue&gt;</code> is boilerplate.</li>
+<li>We are setting <code>&lt;callData&gt;</code> to <code>totalSupply()</code>.</li>
+<li>We ask the prover to show that in all cases, we will end in <code>EVMC_SUCCESS</code> (rollback) when this happens.</li>
+<li>The <code>&lt;output&gt;</code> cell specifies that we correctly lookup the <code>TS</code> value from the account storage.</li>
+</ul>
+<pre class="language-k"><code>    <span class="token keyword">claim</span> <span class="token punctuation">[</span>totalSupply<span class="token punctuation">]</span><span class="token punctuation">:</span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>mode</span><span class="token punctuation">&gt;</span></span>     NORMAL   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>mode</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>schedule</span><span class="token punctuation">&gt;</span></span> ISTANBUL <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>schedule</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callStack</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span>List                                 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callStack</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>program</span><span class="token punctuation">&gt;</span></span>   #binRuntime<span class="token punctuation">(</span><span class="token punctuation">)</span>                         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>program</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>jumpDests</span><span class="token punctuation">&gt;</span></span> #computeValidJumpDests<span class="token punctuation">(</span>#binRuntime<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>jumpDests</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>id</span><span class="token punctuation">&gt;</span></span>         ACCTID      <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>id</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>localMem</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span>Memory     <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>localMem</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>memoryUsed</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span>           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>memoryUsed</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>wordStack</span><span class="token punctuation">&gt;</span></span>  <span class="token punctuation">.</span>WordStack  <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>wordStack</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>pc</span><span class="token punctuation">&gt;</span></span>         <span class="token number">0</span>           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>pc</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>endPC</span><span class="token punctuation">&gt;</span></span>      _           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>endPC</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>gas</span><span class="token punctuation">&gt;</span></span>        #gas<span class="token punctuation">(</span>_VGAS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>gas</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callValue</span><span class="token punctuation">&gt;</span></span>  <span class="token number">0</span>           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callValue</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callData</span><span class="token punctuation">&gt;</span></span> #abiCallData<span class="token punctuation">(</span><span class="token string">&quot;totalSupply&quot;</span><span class="token punctuation">,</span> <span class="token punctuation">.</span>TypedArgs<span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callData</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>          #execute   <span class="token operator">=&gt;</span> #halt <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>               <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>output</span><span class="token punctuation">&gt;</span></span>     <span class="token punctuation">.</span>ByteArray <span class="token operator">=&gt;</span> #buf<span class="token punctuation">(</span><span class="token number">32</span><span class="token punctuation">,</span> TOTALSUPPLY<span class="token punctuation">)</span>   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>output</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>statusCode</span><span class="token punctuation">&gt;</span></span> _          <span class="token operator">=&gt;</span> EVMC_SUCCESS            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>statusCode</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span> ACCTID <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>storage</span><span class="token punctuation">&gt;</span></span> ACCT_STORAGE <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>storage</span><span class="token punctuation">&gt;</span></span>
+            <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+
+       <span class="token keyword">requires</span> TOTALSUPPLY_KEY <span class="token operator">==</span><span class="token keyword">Int</span> #hashedLocation<span class="token punctuation">(</span><span class="token string">&quot;Solidity&quot;</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token punctuation">.</span>IntList<span class="token punctuation">)</span>
+        andBool TOTALSUPPLY     <span class="token operator">==</span><span class="token keyword">Int</span> #lookup<span class="token punctuation">(</span>ACCT_STORAGE<span class="token punctuation">,</span>  TOTALSUPPLY_KEY<span class="token punctuation">)</span>
+</code></pre>
+<h3 id="calling-approve-works">Calling Approve works</h3>
+<ul>
+<li>Everything from <code>&lt;mode&gt;</code> to <code>&lt;substate&gt;</code> is boilerplate.</li>
+<li>We are setting <code>&lt;callData&gt;</code> to <code>approve(SPENDER, AMOUNT)</code>.</li>
+<li>We ask the prover to show that in all cases, we will end in <code>EVMC_SUCCESS</code> when <code>SENDER</code> or <code>OWNER</code> is not <code>address(0)</code>, and that we will end in <code>EVMC_REVERT</code> (rollback) when either one of them is.</li>
+<li>We take the OWNER from the <code>&lt;caller&gt;</code> cell, which is the <code>msg.sender</code>.</li>
+<li>The <code>&lt;output&gt;</code> should be <code>#buf(32, bool2Word(True))</code> if the function does not revert.</li>
+<li>The storage locations for Allowance should be updated accordingly.</li>
+</ul>
+<pre class="language-k"><code>    <span class="token keyword">claim</span> <span class="token punctuation">[</span>approve<span class="token punctuation">.</span>success<span class="token punctuation">]</span><span class="token punctuation">:</span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>mode</span><span class="token punctuation">&gt;</span></span>     NORMAL   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>mode</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>schedule</span><span class="token punctuation">&gt;</span></span> ISTANBUL <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>schedule</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callStack</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span>List                                 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callStack</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>program</span><span class="token punctuation">&gt;</span></span>   #binRuntime<span class="token punctuation">(</span><span class="token punctuation">)</span>                         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>program</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>jumpDests</span><span class="token punctuation">&gt;</span></span> #computeValidJumpDests<span class="token punctuation">(</span>#binRuntime<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>jumpDests</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>static</span><span class="token punctuation">&gt;</span></span>    <span class="token boolean">false</span>                                 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>static</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>id</span><span class="token punctuation">&gt;</span></span>         ACCTID      <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>id</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>caller</span><span class="token punctuation">&gt;</span></span>     OWNER       <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>caller</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>localMem</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span>Memory     <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>localMem</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>memoryUsed</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span>           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>memoryUsed</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>wordStack</span><span class="token punctuation">&gt;</span></span>  <span class="token punctuation">.</span>WordStack  <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>wordStack</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>pc</span><span class="token punctuation">&gt;</span></span>         <span class="token number">0</span>           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>pc</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>endPC</span><span class="token punctuation">&gt;</span></span>      _           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>endPC</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>gas</span><span class="token punctuation">&gt;</span></span>        #gas<span class="token punctuation">(</span>_VGAS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>gas</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callValue</span><span class="token punctuation">&gt;</span></span>  <span class="token number">0</span>           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callValue</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>substate</span><span class="token punctuation">&gt;</span></span> _             <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>substate</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callData</span><span class="token punctuation">&gt;</span></span> #abiCallData<span class="token punctuation">(</span><span class="token string">&quot;approve&quot;</span><span class="token punctuation">,</span> #address<span class="token punctuation">(</span>SPENDER<span class="token punctuation">)</span><span class="token punctuation">,</span> #uint256<span class="token punctuation">(</span>AMOUNT<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callData</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>          #execute   <span class="token operator">=&gt;</span> #halt <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>output</span><span class="token punctuation">&gt;</span></span>     <span class="token punctuation">.</span>ByteArray <span class="token operator">=&gt;</span> #buf<span class="token punctuation">(</span><span class="token number">32</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>output</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>statusCode</span><span class="token punctuation">&gt;</span></span> _          <span class="token operator">=&gt;</span> EVMC_SUCCESS         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>statusCode</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span> ACCTID <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>storage</span><span class="token punctuation">&gt;</span></span> ACCT_STORAGE <span class="token operator">=&gt;</span> ACCT_STORAGE <span class="token punctuation">[</span> ALLOWANCE_KEY &lt;<span class="token operator">-</span> AMOUNT <span class="token punctuation">]</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>storage</span><span class="token punctuation">&gt;</span></span>
+            <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+
+       <span class="token keyword">requires</span> ALLOWANCE_KEY <span class="token operator">==</span><span class="token keyword">Int</span> #hashedLocation<span class="token punctuation">(</span><span class="token string">&quot;Solidity&quot;</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> OWNER SPENDER <span class="token punctuation">.</span>IntList<span class="token punctuation">)</span>
+        andBool #rangeAddress<span class="token punctuation">(</span>OWNER<span class="token punctuation">)</span>
+        andBool #rangeAddress<span class="token punctuation">(</span>SPENDER<span class="token punctuation">)</span>
+        andBool #rangeUInt<span class="token punctuation">(</span><span class="token number">256</span><span class="token punctuation">,</span> AMOUNT<span class="token punctuation">)</span>
+        andBool OWNER <span class="token operator">=</span><span class="token operator">/</span><span class="token operator">=</span><span class="token keyword">Int</span> <span class="token number">0</span>
+        andBool SPENDER <span class="token operator">=</span><span class="token operator">/</span><span class="token operator">=</span><span class="token keyword">Int</span> <span class="token number">0</span>
+</code></pre>
+<pre class="language-k"><code>    <span class="token keyword">claim</span> <span class="token punctuation">[</span>approve<span class="token punctuation">.</span>revert<span class="token punctuation">]</span><span class="token punctuation">:</span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>mode</span><span class="token punctuation">&gt;</span></span>     NORMAL   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>mode</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>schedule</span><span class="token punctuation">&gt;</span></span> ISTANBUL <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>schedule</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callStack</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span>List                                 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callStack</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>program</span><span class="token punctuation">&gt;</span></span>   #binRuntime<span class="token punctuation">(</span><span class="token punctuation">)</span>                         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>program</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>jumpDests</span><span class="token punctuation">&gt;</span></span> #computeValidJumpDests<span class="token punctuation">(</span>#binRuntime<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>jumpDests</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>static</span><span class="token punctuation">&gt;</span></span>    <span class="token boolean">false</span>                                 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>static</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>id</span><span class="token punctuation">&gt;</span></span>         ACCTID      <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>id</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>caller</span><span class="token punctuation">&gt;</span></span>     OWNER       <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>caller</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>localMem</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span>Memory     <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>localMem</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>memoryUsed</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span>           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>memoryUsed</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>wordStack</span><span class="token punctuation">&gt;</span></span>  <span class="token punctuation">.</span>WordStack  <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>wordStack</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>pc</span><span class="token punctuation">&gt;</span></span>         <span class="token number">0</span>           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>pc</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>endPC</span><span class="token punctuation">&gt;</span></span>      _           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>endPC</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>gas</span><span class="token punctuation">&gt;</span></span>        #gas<span class="token punctuation">(</span>_VGAS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>gas</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callValue</span><span class="token punctuation">&gt;</span></span>  <span class="token number">0</span>           <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callValue</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>substate</span><span class="token punctuation">&gt;</span></span> _             <span class="token operator">=&gt;</span> <span class="token operator">?</span>_ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>substate</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callData</span><span class="token punctuation">&gt;</span></span> #abiCallData<span class="token punctuation">(</span><span class="token string">&quot;approve&quot;</span><span class="token punctuation">,</span> #address<span class="token punctuation">(</span>SPENDER<span class="token punctuation">)</span><span class="token punctuation">,</span> #uint256<span class="token punctuation">(</span>AMOUNT<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callData</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>          #execute   <span class="token operator">=&gt;</span> #halt <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>output</span><span class="token punctuation">&gt;</span></span>     _          <span class="token operator">=&gt;</span> <span class="token operator">?</span>_          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>output</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>statusCode</span><span class="token punctuation">&gt;</span></span> _          <span class="token operator">=&gt;</span> EVMC_REVERT <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>statusCode</span><span class="token punctuation">&gt;</span></span>
+
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span> ACCTID <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span>
+            <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>storage</span><span class="token punctuation">&gt;</span></span> _ACCT_STORAGE <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>storage</span><span class="token punctuation">&gt;</span></span>
+            <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+
+       <span class="token keyword">requires</span> #rangeAddress<span class="token punctuation">(</span>OWNER<span class="token punctuation">)</span>
+        andBool #rangeAddress<span class="token punctuation">(</span>SPENDER<span class="token punctuation">)</span>
+        andBool #rangeUInt<span class="token punctuation">(</span><span class="token number">256</span><span class="token punctuation">,</span> AMOUNT<span class="token punctuation">)</span>
+        andBool <span class="token punctuation">(</span>OWNER <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token number">0</span> orBool SPENDER <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token number">0</span><span class="token punctuation">)</span>
+</code></pre>
+<pre class="language-k"><code><span class="token keyword">endmodule</span>
+</code></pre>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<details style="padding:0.25rem 0;;padding-left: 0px;" open>
+            <summary class="bd-toc-link-wrapper">
+              <a href="#erc20-ish-verification" class="bd-toc-link">ERC20-ish Verification</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#solidity-code"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Solidity Code
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#verification-module"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Verification Module
+              </a></div><details style="padding:0.25rem 0;;padding-left: 8px;" open>
+            <summary class="bd-toc-link-wrapper">
+              <a href="#k-specifications" class="bd-toc-link">K Specifications</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#calling-decimals()-works"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Calling decimals() works
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#calling-totalsupply()-works"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Calling totalSupply() works
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#calling-approve-works"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Calling Approve works
+              </a></div>
+            </div>
+          </details>
+        
+            </div>
+          </details>
+        
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://goo.gl/maps/NYzr2iKpXMgEmQ2F6" target="_blank"
+            >102 E Main St #500, Urbana, IL 61801</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 text-md-right">
+        <p class="copyright">2021 © all rights reserved</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../../../../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
