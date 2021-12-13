@@ -8,6 +8,8 @@
 /pkg
 /src
 /tests/specs/**/*.prove.out
+/tests/specs/**/*.sol.json
+/tests/specs/**/*-bin-runtime.k
 /tests/vm/*.out
 /optimizer/*.k
 /optimizer/*.json
