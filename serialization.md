@@ -759,6 +759,25 @@ Tree Root Helper Functions
                                                 +String #rlpEncodeString( Hex2Raw( Keccak256("") ) )
                                               , 192
                                               )
+```
+
+### Transaction Envelopes
+
+```k
+    syntax TxType ::= ".TxType"
+                    | "Legacy"
+                    | "AccessList"
+ // ------------------------------
+
+    syntax Int ::= #dasmTxPrefix ( TxType ) [function]
+ // --------------------------------------------------
+    rule #dasmTxPrefix (Legacy)     => 0
+    rule #dasmTxPrefix (AccessList) => 1
+
+    syntax TxType ::= #asmTxPrefix ( Int ) [function]
+ // -------------------------------------------------
+    rule #asmTxPrefix (0) => Legacy
+    rule #asmTxPrefix (1) => AccessList
 
 endmodule
 ```
