@@ -154,7 +154,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <sigR>       .ByteArray </sigR>               // T_r
                 <sigS>       .ByteArray </sigS>               // T_s
                 <data>       .ByteArray </data>               // T_i/T_e
-                <txType>     0          </txType>
+                <txType>     .TxType    </txType>
                 <txAccess>   [ .JSONs ] </txAccess>
                 <txChainID>  0          </txChainID>
               </message>
