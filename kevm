@@ -34,12 +34,14 @@ INSTALL_LIB="$(dirname ${INSTALL_BIN})/lib/kevm"
 INSTALL_INCLUDE=${INSTALL_LIB}/include
 
 install_k_bin=${INSTALL_LIB}/kframework/bin
+install_k_lib=${INSTALL_LIB}/kframework/lib
 plugin_include=${INSTALL_LIB}/blockchain-k-plugin/include
 libff_dir=${INSTALL_LIB}/libff
 libcryptopp_dir=${INSTALL_LIB}/cryptopp
 
 export PATH="${INSTALL_BIN}:${INSTALL_LIB}:${install_k_bin}:${PATH}"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
+export PYTHONPATH="${PYTHONPATH:-}:${INSTALL_LIB}:${install_k_lib}/kframework:/usr/lib/kframework"
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
 
