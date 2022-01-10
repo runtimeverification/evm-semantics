@@ -353,7 +353,8 @@ pyk_omit_labels=
 max_counterexamples=
 branching_allowed=
 haskell_backend_command=(kore-exec)
-[[ ! "$run_command" == 'prove' ]] || backend='haskell'
+[[ ! "$run_command" == 'prove'     ]] || backend='haskell'
+[[ ! "$run_command" == 'solc-to-k' ]] || backend='haskell'
 kevm_port='8545'
 kevm_host='127.0.0.1'
 args=()
