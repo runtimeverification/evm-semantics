@@ -1693,6 +1693,7 @@ Precompiled Contracts
     rule #precompiledAccounts(PETERSBURG)        => #precompiledAccounts(CONSTANTINOPLE)
     rule #precompiledAccounts(ISTANBUL)          => #precompiledAccounts(PETERSBURG) SetItem(9)
     rule #precompiledAccounts(BERLIN)            => #precompiledAccounts(ISTANBUL)
+    rule #precompiledAccounts(LONDON)            => #precompiledAccounts(BERLIN)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -2385,8 +2386,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
-                          | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"
- // -----------------------------------------------------------------------------------------
+                          | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
+ // --------------------------------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -2491,6 +2492,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasselfbalance         << DEFAULT >> => false
     rule Ghaschainid             << DEFAULT >> => false
     rule Ghasaccesslist          << DEFAULT >> => false
+    rule Ghasbasefee             << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -2660,6 +2662,20 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasaccesslist << BERLIN >> => true
     rule SCHEDFLAG      << BERLIN >> => SCHEDFLAG << ISTANBUL >>
       requires notBool ( SCHEDFLAG ==K Ghasaccesslist )
+```
+
+### London Schedule
+
+```k
+    syntax Schedule ::= "LONDON" [klabel(LONDON_EVM), symbol, smtlib(schedule_LONDON)]
+ // ----------------------------------------------------------------------------------
+
+    rule SCHEDCONST < LONDON > => SCHEDCONST < BERLIN >
+
+    rule Ghasbasefee << LONDON >> => true
+    rule SCHEDFLAG   << LONDON >> => SCHEDFLAG << BERLIN >>
+      requires notBool ( SCHEDFLAG ==K Ghasbasefee )
+
 ```
 
 EVM Program Representations
