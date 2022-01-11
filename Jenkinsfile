@@ -86,7 +86,7 @@ pipeline {
               }
               options {
                 skipDefaultCheckout()
-                timeout(time: 25, unit: 'MINUTES')
+                timeout(time: 35, unit: 'MINUTES')
               }
               steps {
                 dir('focal-test') {
