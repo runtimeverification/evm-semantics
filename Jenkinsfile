@@ -82,7 +82,7 @@ pipeline {
               }
               options {
                 skipDefaultCheckout()
-                timeout(time: 25, unit: 'MINUTES')
+                timeout(time: 35, unit: 'MINUTES')
               }
               steps {
                 dir('focal-test') {
@@ -92,7 +92,10 @@ pipeline {
                     export KLAB_OUT=$(pwd)
                     sudo DEBIAN_FRONTEND=noninteractive apt-get update
                     sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes
+                    sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes software-properties-common
+                    sudo DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:ethereum/ethereum
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes ./kevm_${VERSION}_amd64.deb
+                    sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes solc
                     ./package/test-package.sh
                   '''
                 }
