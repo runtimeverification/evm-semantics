@@ -68,36 +68,18 @@ Address/Hash Helpers
     syntax Int ::= #blockHeaderHash( Int , Int , Int , Int , Int , Int , ByteArray , Int , Int , Int , Int , Int , ByteArray , Int , Int ) [function, klabel(blockHeaderHash), symbol]
                  | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderStr), symbol]
  // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-   rule #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
-         => #blockHeaderHash(#asWord(#parseByteStackRaw(HP)),
-                             #asWord(#parseByteStackRaw(HO)),
-                             #asWord(#parseByteStackRaw(HC)),
-                             #asWord(#parseByteStackRaw(HR)),
-                             #asWord(#parseByteStackRaw(HT)),
-                             #asWord(#parseByteStackRaw(HE)),
-                                     #parseByteStackRaw(HB) ,
-                             #asWord(#parseByteStackRaw(HD)),
-                             #asWord(#parseByteStackRaw(HI)),
-                             #asWord(#parseByteStackRaw(HL)),
-                             #asWord(#parseByteStackRaw(HG)),
-                             #asWord(#parseByteStackRaw(HS)),
-                                     #parseByteStackRaw(HX) ,
-                             #asWord(#parseByteStackRaw(HM)),
-                             #asWord(#parseByteStackRaw(HN)))
+   rule #blockHeaderHash(HP:String, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
+         => #parseHexWord( Keccak256( #rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN ] ) ) )
 
-    rule #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
-         => #parseHexWord(Keccak256(#rlpEncodeLength(         #rlpEncodeBytes(HP, 32)
-                                                      +String #rlpEncodeBytes(HO, 32)
-                                                      +String #rlpEncodeBytes(HC, 20)
-                                                      +String #rlpEncodeBytes(HR, 32)
-                                                      +String #rlpEncodeBytes(HT, 32)
-                                                      +String #rlpEncodeBytes(HE, 32)
-                                                      +String #rlpEncodeString(#unparseByteStack(HB))
-                                                      +String #rlpEncodeWordStack(HD : HI : HL : HG : HS : .WordStack)
-                                                      +String #rlpEncodeString(#unparseByteStack(HX))
-                                                      +String #rlpEncodeBytes(HM, 32)
-                                                      +String #rlpEncodeBytes(HN, 8),
-                                                    192)))
+    rule #blockHeaderHash(HP:Int, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
+         => #parseHexWord( Keccak256( #rlpEncode( [ #wordBytes(HP), #wordBytes(HO), #addrBytes(HC)
+                                                  , #wordBytes(HR), #wordBytes(HT), #wordBytes(HE)
+                                                  , HB, HD, HI, HL, HG, HS, HX
+                                                  , #wordBytes(HM), #padToWidth(8, #asByteStack(HN))
+                                                  ]
+                                                )
+                                    )
+                         )
 
 ```
 
@@ -110,49 +92,19 @@ Address/Hash Helpers
                     | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray, Int )                          [function]
  // --------------------------------------------------------------------------------------------------------------------------
     rule #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
-      => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
+      => Keccak256( #rlpEncodeTransaction( TN, TP, TG, TT, TV, TD, TW, TR, TS ) )
 
     // Hashing for legacy transactions
     rule #hashUnsignedTx(0, TN, TP, TG, TT, TV, TD, _CID, _TA)
-      => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
-                                      +String #rlpEncodeWord(TP)
-                                      +String #rlpEncodeWord(TG)
-                                      +String #rlpEncodeAccount(TT)
-                                      +String #rlpEncodeWord(TV)
-                                      +String #rlpEncodeString(#unparseByteStack(TD))
-                                    , 192
-                                    )
-                  )
+      => Keccak256( #rlpEncode([ TN, TP, TG, #addrBytes(TT), TV, TD ]) )
 
     // Hashing for EIP-2930: Optional access lists
     rule #hashUnsignedTx(1, TN, TP, TG, TT, TV, TD, CID, [TA])
-      => Keccak256(       #rlpEncodeBytes(1,1)
-                  +String #rlpEncodeLength(         #rlpEncodeWord(CID)
-                                            +String #rlpEncodeWord(TN)
-                                            +String #rlpEncodeWord(TP)
-                                            +String #rlpEncodeWord(TG)
-                                            +String #rlpEncodeAccount(TT)
-                                            +String #rlpEncodeWord(TV)
-                                            +String #rlpEncodeString(#unparseByteStack(TD))
-                                            +String #rlpEncodeAccessList([TA], "")
-                                          , 192
-                                          )
-                  )
+      => Keccak256( "\x01" +String #rlpEncode([ CID, TN, TP, TG, #addrBytes(TT), TV, TD, [TA] ]) )
 
     // Hashing for EIP-155: Simple replay attack protection
     rule #hashUnsignedTx(TN, TP, TG, TT, TV, TD, CID)
-      => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
-                                      +String #rlpEncodeWord(TP)
-                                      +String #rlpEncodeWord(TG)
-                                      +String #rlpEncodeAccount(TT)
-                                      +String #rlpEncodeWord(TV)
-                                      +String #rlpEncodeString(#unparseByteStack(TD))
-                                      +String #rlpEncodeWord(CID)
-                                      +String #rlpEncodeString("")
-                                      +String #rlpEncodeString("")
-                                    , 192
-                                    )
-                  )
+      => Keccak256( #rlpEncode([ TN, TP, TG, #addrBytes(TT), TV, TD, CID, "", "" ]) )
 ```
 
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
@@ -283,6 +235,13 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
     rule #unparseData( DATA, LENGTH ) => #unparseDataByteArray(#padToWidth(LENGTH,#asByteStack(DATA)))
 
     rule #unparseDataByteArray( DATA ) => replaceFirst(Base2String(#asInteger(#asByteStack(1) ++ DATA), 16), "1", "0x")
+
+    syntax ByteArray ::= #addrBytes( Account ) [function]
+                       | #wordBytes( Int )     [function]
+ // -----------------------------------------------------
+    rule #addrBytes(.Account) => .ByteArray
+    rule #addrBytes(ACCT)     => #padToWidth(20, #asByteStack(ACCT))
+    rule #wordBytes(WORD)     => #padToWidth(32, #asByteStack(WORD))
 ```
 
 String Helper Functions
@@ -312,12 +271,14 @@ Encoding
 -   `#rlpEncodeString` RLP encodes a single `String`.
 
 ```k
-    syntax String ::= #rlpEncodeWord ( Int )            [function]
-                    | #rlpEncodeBytes ( Int , Int )     [function]
-                    | #rlpEncodeWordStack ( WordStack ) [function]
-                    | #rlpEncodeString ( String )       [function]
-                    | #rlpEncodeAccount ( Account )     [function]
- // --------------------------------------------------------------
+    syntax String ::= #rlpEncodeWord ( Int )             [function]
+                    | #rlpEncodeBytes ( Int , Int )      [function]
+                    | #rlpEncodeWordStack ( WordStack )  [function]
+                    | #rlpEncodeString ( String )        [function]
+                    | #rlpEncodeAccount ( Account )      [function]
+                    | #rlpEncode ( JSON )                [function]
+                    | #rlpEncode ( JSONs, StringBuffer ) [function, klabel(#rlpEncodeJsonAux)]
+ // ------------------------------------------------------------------------------------------
     rule #rlpEncodeWord(0) => "\x80"
     rule #rlpEncodeWord(WORD) => chrChar(WORD) requires WORD >Int 0 andBool WORD <Int 128
     rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128) requires WORD >=Int 128
@@ -331,8 +292,15 @@ Encoding
     rule #rlpEncodeString(STR) => STR                        requires lengthString(STR) ==Int 1 andBool ordChar(substrString(STR, 0, 1)) <Int 128
     rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) [owise]
 
-    rule #rlpEncodeAccount(.Account) => "\x80"
-    rule #rlpEncodeAccount(ACCT)     => #rlpEncodeBytes(ACCT, 20) requires ACCT =/=K .Account
+    rule #rlpEncodeAccount(ACCT) => #rlpEncodeString(#unparseByteStack(#addrBytes(ACCT)))
+
+    syntax JSON ::= ByteArray
+    rule #rlpEncode( [ J:JSONs ] ) => #rlpEncodeLength( #rlpEncode(J, .StringBuffer) , 192 )
+    rule #rlpEncode( .JSONs                   , BUF ) => StringBuffer2String(BUF)
+    rule #rlpEncode( (J:Int,       REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncodeWord(J)                     )
+    rule #rlpEncode( (J:String,    REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncodeString(J)                   )
+    rule #rlpEncode( (J:ByteArray, REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncodeString(#unparseByteStack(J)))
+    rule #rlpEncode( ([ J ],       REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncode([ J ])                     )
 
     syntax String ::= #rlpEncodeLength ( String , Int )          [function]
                     | #rlpEncodeLength ( String , Int , String ) [function, klabel(#rlpEncodeLengthAux)]
@@ -344,17 +312,7 @@ Encoding
     syntax String ::= #rlpEncodeTransaction( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
  // -------------------------------------------------------------------------------------------------------------------------------
     rule [rlpTx]: #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS)
-               => #rlpEncodeLength(         #rlpEncodeWord(TN)
-                                    +String #rlpEncodeWord(TP)
-                                    +String #rlpEncodeWord(TG)
-                                    +String #rlpEncodeAccount(TT)
-                                    +String #rlpEncodeWord(TV)
-                                    +String #rlpEncodeString(#unparseByteStack(TD))
-                                    +String #rlpEncodeWord(TW)
-                                    +String #rlpEncodeString(#unparseByteStack(#asByteStack(#asWord(TR))))
-                                    +String #rlpEncodeString(#unparseByteStack(#asByteStack(#asWord(TS))))
-                                  , 192
-                                  )
+               => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD, TW, TR, TS ] )
 
     syntax String ::= #rlpEncodeFullAccount( Int, Int, Map, ByteArray ) [function]
  // ------------------------------------------------------------------------------
