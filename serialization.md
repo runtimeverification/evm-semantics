@@ -34,7 +34,7 @@ Address/Hash Helpers
     syntax Int ::= #newAddr ( Int , Int ) [function]
                  | #newAddr ( Int , Int , ByteArray ) [function, klabel(#newAddrCreate2)]
  // -------------------------------------------------------------------------------------
-    rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192))))
+    rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeAddress(ACCT) +String #rlpEncodeInt(NONCE), 192))))
     rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#padToWidth(20, #asByteStack(ACCT))) +String #unparseByteStack(#padToWidth(32, #asByteStack(SALT))) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE)))))))
 
     syntax Account ::= #sender ( Int , Int , Int , Int , Account , Int , String , Int , JSONs , Int , ByteArray, ByteArray )    [function]
@@ -271,32 +271,36 @@ Encoding
 -   `#rlpEncodeString` RLP encodes a single `String`.
 
 ```k
-    syntax String ::= #rlpEncodeWord ( Int )             [function]
-                    | #rlpEncodeBytes ( Int , Int )      [function]
+    syntax String ::= #rlpEncodeInt ( Int )              [function]
+                    | #rlpEncodeWord ( Int )             [function]
+                    | #rlpEncodeAddress ( Account )      [function]
+                    | #rlpEncodeBytes ( ByteArray )      [function]
                     | #rlpEncodeString ( String )        [function]
-                    | #rlpEncodeAccount ( Account )      [function]
                     | #rlpEncode ( JSON )                [function]
                     | #rlpEncode ( JSONs, StringBuffer ) [function, klabel(#rlpEncodeJsonAux)]
  // ------------------------------------------------------------------------------------------
-    rule #rlpEncodeWord(0) => "\x80"
-    rule #rlpEncodeWord(WORD) => chrChar(WORD) requires WORD >Int 0 andBool WORD <Int 128
-    rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128) requires WORD >=Int 128
+    rule #rlpEncodeInt(0) => "\x80"
+    rule #rlpEncodeInt(WORD) => chrChar(WORD) requires WORD >Int 0 andBool WORD <Int 128
+    rule #rlpEncodeInt(WORD) => #rlpEncodeBytes(#asByteStack(WORD)) requires WORD >=Int 128
 
-    rule #rlpEncodeBytes(WORD, LEN) => #rlpEncodeString(#unparseByteStack(#padToWidth(LEN, #asByteStack(WORD))))
+    rule #rlpEncodeWord(WORD) => #rlpEncodeBytes(#wordBytes(WORD))
+
+    rule #rlpEncodeAddress(ACCT) => #rlpEncodeBytes(#addrBytes(ACCT))
+
+    rule #rlpEncodeBytes(BYTES) => #rlpEncodeString(#unparseByteStack(BYTES))
 
     rule #rlpEncodeString(STR) => "\x80"                     requires lengthString(STR)  <Int 1
     rule #rlpEncodeString(STR) => STR                        requires lengthString(STR) ==Int 1 andBool ordChar(substrString(STR, 0, 1)) <Int 128
     rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) [owise]
 
-    rule #rlpEncodeAccount(ACCT) => #rlpEncodeString(#unparseByteStack(#addrBytes(ACCT)))
-
     syntax JSON ::= ByteArray
     rule #rlpEncode( [ J:JSONs ] ) => #rlpEncodeLength( #rlpEncode(J, .StringBuffer) , 192 )
+
     rule #rlpEncode( .JSONs                   , BUF ) => StringBuffer2String(BUF)
-    rule #rlpEncode( (J:Int,       REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncodeWord(J)                     )
-    rule #rlpEncode( (J:String,    REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncodeString(J)                   )
-    rule #rlpEncode( (J:ByteArray, REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncodeString(#unparseByteStack(J)))
-    rule #rlpEncode( ([ J ],       REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncode([ J ])                     )
+    rule #rlpEncode( (J:Int,       REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncodeInt(J)   )
+    rule #rlpEncode( (J:String,    REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncodeString(J))
+    rule #rlpEncode( (J:ByteArray, REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncodeBytes(J) )
+    rule #rlpEncode( ([ J ],       REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncode([ J ])  )
 
     syntax String ::= #rlpEncodeLength ( String , Int )          [function]
                     | #rlpEncodeLength ( String , Int , String ) [function, klabel(#rlpEncodeLengthAux)]
@@ -308,8 +312,8 @@ Encoding
     syntax String ::= #rlpEncodeFullAccount( Int, Int, Map, ByteArray ) [function]
  // ------------------------------------------------------------------------------
     rule [rlpAcct]: #rlpEncodeFullAccount( NONCE, BAL, STORAGE, CODE )
-                 => #rlpEncodeLength(         #rlpEncodeWord(NONCE)
-                                      +String #rlpEncodeWord(BAL)
+                 => #rlpEncodeLength(         #rlpEncodeInt(NONCE)
+                                      +String #rlpEncodeInt(BAL)
                                       +String #rlpEncodeString( Hex2Raw( Keccak256( #rlpEncodeMerkleTree( #storageRoot( STORAGE ) ) ) ) )
                                       +String #rlpEncodeString( Hex2Raw( Keccak256( #unparseByteStack( CODE ) ) ) )
                                     , 192
@@ -321,8 +325,8 @@ Encoding
                     | #rlpEncodeTopics  ( List, String )                 [function]
  // -------------------------------------------------------------------------------
     rule [rlpReceipt]: #rlpEncodeReceipt(RS, RG, RB, RL)
-                    => #rlpEncodeLength(         #rlpEncodeWord(RS)
-                                         +String #rlpEncodeWord(RG)
+                    => #rlpEncodeLength(         #rlpEncodeInt(RS)
+                                         +String #rlpEncodeInt(RG)
                                          +String #rlpEncodeString(#unparseByteStack(RB))
                                          +String #rlpEncodeLogs(RL)
                                        , 192
@@ -332,7 +336,7 @@ Encoding
 
     rule #rlpEncodeLogsAux( .List, OUT ) => #rlpEncodeLength(OUT,192)
     rule #rlpEncodeLogsAux( ( ListItem({ ACCT | TOPICS | DATA }) => .List ) _
-                          , ( OUT => OUT +String #rlpEncodeLength(         #rlpEncodeBytes(ACCT,20)
+                          , ( OUT => OUT +String #rlpEncodeLength(         #rlpEncodeAddress(ACCT)
                                                                    +String #rlpEncodeTopics(TOPICS,"")
                                                                    +String #rlpEncodeString(#unparseByteStack(DATA))
                                                                  , 192
@@ -342,7 +346,7 @@ Encoding
 
     rule #rlpEncodeTopics( .List, OUT ) => #rlpEncodeLength(OUT,192)
     rule #rlpEncodeTopics( ( ListItem( X:Int ) => .List ) _
-                         , ( OUT => OUT +String #rlpEncodeBytes(X,32) )
+                         , ( OUT => OUT +String #rlpEncodeWord(X) )
                          )
 
     syntax String ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
@@ -666,7 +670,7 @@ Tree Root Helper Functions
 
     rule #intMap2StorageMapAux( SMAP, _, .List ) => SMAP
     rule #intMap2StorageMapAux( SMAP, IMAP, ListItem(K) REST )
-      => #intMap2StorageMapAux( #padToWidth( 32, #asByteStack(K) ) |-> #rlpEncodeWord({IMAP[K]}:>Int) SMAP, IMAP, REST )
+      => #intMap2StorageMapAux( #padToWidth( 32, #asByteStack(K) ) |-> #rlpEncodeInt({IMAP[K]}:>Int) SMAP, IMAP, REST )
       requires {IMAP[K]}:>Int =/=Int 0
 
     rule #intMap2StorageMapAux( SMAP, IMAP, ListItem(K) REST )
@@ -692,8 +696,8 @@ Tree Root Helper Functions
 
     syntax String ::= "#emptyContractRLP" [function]
  // ------------------------------------------------
-    rule #emptyContractRLP => #rlpEncodeLength(         #rlpEncodeWord(0)
-                                                +String #rlpEncodeWord(0)
+    rule #emptyContractRLP => #rlpEncodeLength(         #rlpEncodeInt(0)
+                                                +String #rlpEncodeInt(0)
                                                 +String #rlpEncodeString( Hex2Raw( Keccak256("\x80") ) )
                                                 +String #rlpEncodeString( Hex2Raw( Keccak256("") ) )
                                               , 192
