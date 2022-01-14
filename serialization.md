@@ -92,7 +92,7 @@ Address/Hash Helpers
                     | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray, Int )                          [function]
  // --------------------------------------------------------------------------------------------------------------------------
     rule #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
-      => Keccak256( #rlpEncodeTransaction( TN, TP, TG, TT, TV, TD, TW, TR, TS ) )
+      => Keccak256( #rlpEncode([ TN, TP, TG, #addrBytes(TT), TV, TD, TW, TR, TS ]) )
 
     // Hashing for legacy transactions
     rule #hashUnsignedTx(0, TN, TP, TG, TT, TV, TD, _CID, _TA)
@@ -273,7 +273,6 @@ Encoding
 ```k
     syntax String ::= #rlpEncodeWord ( Int )             [function]
                     | #rlpEncodeBytes ( Int , Int )      [function]
-                    | #rlpEncodeWordStack ( WordStack )  [function]
                     | #rlpEncodeString ( String )        [function]
                     | #rlpEncodeAccount ( Account )      [function]
                     | #rlpEncode ( JSON )                [function]
@@ -284,9 +283,6 @@ Encoding
     rule #rlpEncodeWord(WORD) => #rlpEncodeLength(#unparseByteStack(#asByteStack(WORD)), 128) requires WORD >=Int 128
 
     rule #rlpEncodeBytes(WORD, LEN) => #rlpEncodeString(#unparseByteStack(#padToWidth(LEN, #asByteStack(WORD))))
-
-    rule #rlpEncodeWordStack(.WordStack) => ""
-    rule #rlpEncodeWordStack(W : WS)     => #rlpEncodeWord(W) +String #rlpEncodeWordStack(WS)
 
     rule #rlpEncodeString(STR) => "\x80"                     requires lengthString(STR)  <Int 1
     rule #rlpEncodeString(STR) => STR                        requires lengthString(STR) ==Int 1 andBool ordChar(substrString(STR, 0, 1)) <Int 128
@@ -308,11 +304,6 @@ Encoding
     rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR                                requires           lengthString(STR) <Int 56
     rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires notBool ( lengthString(STR) <Int 56 )
     rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
-
-    syntax String ::= #rlpEncodeTransaction( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
- // -------------------------------------------------------------------------------------------------------------------------------
-    rule [rlpTx]: #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS)
-               => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD, TW, TR, TS ] )
 
     syntax String ::= #rlpEncodeFullAccount( Int, Int, Map, ByteArray ) [function]
  // ------------------------------------------------------------------------------
@@ -394,16 +385,6 @@ Encoding
 
     rule #rlpMerkleH ( X ) => X
       requires notBool lengthString(X) >=Int 32
-
-    syntax String ::= #rlpEncodeJSONBytes ( JSONs , String ) [function]
- // -------------------------------------------------------------------
-    rule #rlpEncodeJSONBytes([ S:String, REST ], RESULT:String) => #rlpEncodeJSONBytes([REST], RESULT +String #rlpEncodeBytes(#asWord(#parseByteStackRaw(S)),32))
-    rule #rlpEncodeJSONBytes([.JSONs ], RESULT:String) => #rlpEncodeLength(RESULT, 192)
-
-    syntax String ::= #rlpEncodeAccessList ( JSONs , String ) [function]
- // --------------------------------------------------------------------
-    rule #rlpEncodeAccessList([[A, [S:JSONs]], REST], RESULT:String) => #rlpEncodeAccessList([REST], RESULT +String #rlpEncodeLength(#rlpEncodeAccount(#asAccount(#parseByteStackRaw(A))) +String #rlpEncodeJSONBytes([S],""), 192 ))
-    rule #rlpEncodeAccessList([.JSONs], RESULT:String) => #rlpEncodeLength(RESULT, 192)
 ```
 
 Decoding
