@@ -230,7 +230,7 @@ The `"rlp"` key loads the block information.
           ~> loadTransaction !ID { "data"  : TI   ,   "gasLimit" : TG   ,   "gasPrice" : TP
                                  , "nonce" : TN   ,   "r"        : TR   ,   "s"        : TS
                                  , "to"    : TT   ,   "v"        : TW   ,   "value"    : TV
-                                 , .JSONs
+                                 , "type"  : #dasmTxPrefix(Legacy)      , .JSONs
                                  }
           ~> load "transaction" : [ REST ]
           ...
@@ -247,7 +247,7 @@ The `"rlp"` key loads the block information.
           ~> load "transaction" : [ REST ]
           ...
          </k>
-    requires #asWord(#parseByteStackRaw(TYPE)) ==Int 1
+    requires #asWord(#parseByteStackRaw(TYPE)) ==Int #dasmTxPrefix(AccessList)
 
     syntax EthereumCommand ::= "loadTransaction" Int JSON
  // -----------------------------------------------------
@@ -282,7 +282,7 @@ The `"rlp"` key loads the block information.
          <message> <msgID> TXID </msgID> <sigS> _ => TS </sigS> ... </message>
 
     rule <k> loadTransaction TXID { "type" : T:Int, REST => REST } ... </k>
-         <message> <msgID> TXID </msgID> <txType> _ => T </txType> ... </message>
+         <message> <msgID> TXID </msgID> <txType> _ => #asmTxPrefix(T) </txType> ... </message>
 
     rule <k> loadTransaction TXID { "chainID" : TC:Int, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <txChainID> _ => TC </txChainID> ... </message>

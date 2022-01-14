@@ -264,7 +264,7 @@
             b""
           </data>
           <txType>
-            0
+            Legacy
           </txType>
           <txAccess>
             [ .JSONs ]
