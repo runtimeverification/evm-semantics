@@ -34,8 +34,8 @@ Address/Hash Helpers
     syntax Int ::= #newAddr ( Int , Int ) [function]
                  | #newAddr ( Int , Int , ByteArray ) [function, klabel(#newAddrCreate2)]
  // -------------------------------------------------------------------------------------
-    rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeAddress(ACCT) +String #rlpEncodeInt(NONCE), 192))))
-    rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#padToWidth(20, #asByteStack(ACCT))) +String #unparseByteStack(#padToWidth(32, #asByteStack(SALT))) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE)))))))
+    rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncode([#addrBytes(ACCT), NONCE]))))
+    rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#addrBytes(ACCT)) +String #unparseByteStack(#wordBytes(SALT)) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE)))))))
 
     syntax Account ::= #sender ( Int , Int , Int , Int , Account , Int , String , Int , JSONs , Int , ByteArray, ByteArray )    [function]
                      | #sender ( String , Int , String , String )                                                               [function, klabel(#senderAux) ]
@@ -670,7 +670,7 @@ Tree Root Helper Functions
 
     rule #intMap2StorageMapAux( SMAP, _, .List ) => SMAP
     rule #intMap2StorageMapAux( SMAP, IMAP, ListItem(K) REST )
-      => #intMap2StorageMapAux( #padToWidth( 32, #asByteStack(K) ) |-> #rlpEncodeInt({IMAP[K]}:>Int) SMAP, IMAP, REST )
+      => #intMap2StorageMapAux( #wordBytes(K) |-> #rlpEncodeInt({IMAP[K]}:>Int) SMAP, IMAP, REST )
       requires {IMAP[K]}:>Int =/=Int 0
 
     rule #intMap2StorageMapAux( SMAP, IMAP, ListItem(K) REST )
