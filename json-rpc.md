@@ -14,6 +14,7 @@ Some common functions and extensions of JSON are provided here.
 module JSON-EXT
     imports JSON
     imports STRING
+    imports BOOL
 ```
 
 -   `+JSONs` appends two JSON lists.

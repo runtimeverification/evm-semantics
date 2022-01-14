@@ -54,50 +54,17 @@ More information about how storage locations are defined in Solidity can be foun
 Specifically, `#hashedLocation` is defined as follows, capturing the storage layout schemes of Solidity and Vyper.
 
 ```k
-    syntax IntList ::= List{Int, ""}                             [klabel(intList)]
-    syntax Int     ::= #hashedLocation( String , Int , IntList ) [function]
- // -----------------------------------------------------------------------
-    rule #hashedLocation(_LANG, BASE, .IntList) => BASE
+    syntax Int ::= #hashedLocation( String , Int , IntList ) [function, klabel(hashLoc), smtlib(hashLoc)]
+ // -----------------------------------------------------------------------------------------------------
+    rule #hashedLocation(_LANG, BASE, .IntList      ) => BASE
+    rule #hashedLocation( LANG, BASE, OFFSET OFFSETS) => #hashedLocation(LANG, #hashedLocation(LANG, BASE, OFFSET .IntList), OFFSETS) requires OFFSETS =/=K .IntList
 
-    rule #hashedLocation("Vyper",    BASE, OFFSET OFFSETS) => #hashedLocation("Vyper",    keccakIntList(BASE OFFSET),       OFFSETS)
-    rule #hashedLocation("Solidity", BASE, OFFSET OFFSETS) => #hashedLocation("Solidity", keccakIntList(OFFSET BASE),       OFFSETS)
-    rule #hashedLocation("Array",    BASE, OFFSET OFFSETS) => #hashedLocation("Array",    keccakIntList(BASE) +Word OFFSET, OFFSETS)
+    rule #hashedLocation("Vyper",    BASE, OFFSET .IntList) => keccak(#bufStrict(32, BASE)   ++ #bufStrict(32, OFFSET)) requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET)
+    rule #hashedLocation("Solidity", BASE, OFFSET .IntList) => keccak(#bufStrict(32, OFFSET) ++ #bufStrict(32, BASE))   requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET)
+    rule #hashedLocation("Array",    BASE, OFFSET .IntList) => keccak(#bufStrict(32, BASE)) +Word OFFSET                requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET)
 
-    syntax Int ::= keccakIntList( IntList ) [function]
- // --------------------------------------------------
-    rule [keccakIntList]: keccakIntList(VS) => keccak(intList2ByteArray(VS))
-
-    syntax ByteArray ::= intList2ByteArray( IntList ) [function]
- // ------------------------------------------------------------
-    rule intList2ByteArray(.IntList) => .ByteArray
-    rule intList2ByteArray(V VS)     => #bufStrict(32, V) ++ intList2ByteArray(VS)
-      requires 0 <=Int V andBool V <Int pow256
-
-    syntax IntList ::= byteStack2IntList ( ByteArray )       [function]
-                     | byteStack2IntList ( ByteArray , Int ) [function]
+    syntax IntList ::= List{Int, ""} [klabel(intList), smtlib(intList)]
  // -------------------------------------------------------------------
-    rule byteStack2IntList ( WS ) => byteStack2IntList ( WS , #sizeByteArray(WS) /Int 32 )
-
-    // #sizeWordStack(WS) is not necessarily a multiple of 32.
-    rule byteStack2IntList ( WS , N )
-         => #asWord ( WS [ 0 .. bytesInNextInt(WS, N) ] ) byteStack2IntList ( #drop(bytesInNextInt(WS, N), WS) , N -Int 1 )
-         requires N >Int 0
-
-    rule byteStack2IntList ( _WS , 0 ) => .IntList
-
-    syntax Int ::= bytesInNextInt ( ByteArray , Int ) [function]
- // ------------------------------------------------------------
-    rule bytesInNextInt(WS, N) => #sizeByteArray(WS) -Int 32 *Int (N -Int 1)
-```
-
-Solidity stores values of type `bytes` and `string` in one slot if they are short enough.
-If the data is at most 31 bytes long, it is stored in the higher-order bytes (left aligned) and the lowest-order byte stores `2 * length`.
-
-```k
-    syntax Int ::= #packBytes ( ByteArray ) [function]
- // --------------------------------------------------
-    rule #packBytes( WS ) => #asInteger(#padRightToWidth(31, WS) ++ #asByteStack(2 *Int #sizeByteArray(WS)))
-      requires #sizeByteArray(WS) <=Int 31
 ```
 
 ```k

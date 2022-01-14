@@ -27,6 +27,11 @@ module FUNCTIONAL-SPEC
        andBool Art_i <=Int maxSInt256
        andBool #rangeSInt(256, Art_i *Int ABI_rate)
 
+    claim <k> runLemma(maxUInt48 &Int ABI_x <=Int maxUInt48 &Int ABI_x +Int ABI_y) => doneLemma(false) ... </k>
+      requires #rangeUInt(48, ABI_x)
+       andBool #rangeUInt(48, ABI_y)
+       andBool notBool #rangeUInt(48, ABI_x +Int ABI_y)
+
     // WordPack
 
     claim <k> runLemma((GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END)) modInt pow256) => doneLemma(GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END)) ... </k>
@@ -62,9 +67,6 @@ module FUNCTIONAL-SPEC
     // Memory operations
 
     claim <k> runLemma(#range(M:Memory [ 0 := #buf(4, X) ] [ 0 <- 10 ] [ 1 <- 11 ] [ 2 <- 12 ] [ 3 <- 13 ], 0, 4)) => doneLemma(10 : 11 : 12 : 13 : .ByteArray) ... </k>
-
-    claim <k> runLemma(M:Memory [ 128 := (B1 : B2 : B3 : B4 : _     : .ByteArray) ] [ 132 := BA':ByteArray ]) => doneLemma(M [ 128 := (B1 : B2 : B3 : B4 : .ByteArray) ] [ 132 := BA' ]) ... </k> requires #sizeByteArray(BA') ==Int 32
-    claim <k> runLemma(M:Memory [ 128 := (B1 : B2 : B3 : B4 : _ : _ : .ByteArray) ] [ 132 := BA':ByteArray ]) => doneLemma(M [ 128 := (B1 : B2 : B3 : B4 : .ByteArray) ] [ 132 := BA' ]) ... </k> requires #sizeByteArray(BA') ==Int 32
 
     claim <k> runLemma( M:Memory [ 132 := #buf(32, B11) ] [ 128 := (#buf(32, B21) ++ #buf(32, B22)) ] ) => doneLemma( M [ 128 := (#buf(32, B21) ++ #buf(32, B22)) ] ) ... </k>
       requires #rangeUInt(256, B11) andBool #rangeUInt(256, B21) andBool #rangeUInt(256, B22)

@@ -9,15 +9,14 @@ module VERIFICATION
  // ------------------------------------------
     rule <k> runMerkle( T ) => doneMerkle( T ) ... </k>
 
-    syntax MerkleTree ::= "#initTree"
- // ---------------------------------
+    syntax MerkleTree ::= "#initTree" [macro]
+ // -----------------------------------------
     rule #initTree => MerkleUpdateMap( .MerkleTree,
                                        .Map [ #parseByteStack( "de" )    <- "verb"     ]
                                             [ #parseByteStack( "def" )   <- "puppy"    ]
                                             [ #parseByteStack( "defe" )  <- "coin"     ]
                                             [ #parseByteStack( "becfe" ) <- "stallion" ]
                                      )
-      [macro]
 endmodule
 
 module MERKLE-SPEC

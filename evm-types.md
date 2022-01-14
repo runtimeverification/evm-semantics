@@ -10,9 +10,11 @@ module EVM-TYPES
     imports INT
     imports STRING
     imports COLLECTIONS
+    imports BOOL
+    imports K-EQUAL
 ```
 
-```{.k .concrete .bytes}
+```{.k .bytes}
     imports BYTES
 ```
 
@@ -25,126 +27,133 @@ Some important numbers that are referred to often during execution.
 These can be used for pattern-matching on the LHS of rules as well (`macro` attribute expands all occurances of these in rules).
 
 ```k
-    syntax Int ::= "pow256" /* 2 ^Int 256 */
-                 | "pow255" /* 2 ^Int 255 */
-                 | "pow208" /* 2 ^Int 208 */
-                 | "pow168" /* 2 ^Int 168 */
-                 | "pow160" /* 2 ^Int 160 */
-                 | "pow128" /* 2 ^Int 128 */
-                 | "pow96"  /* 2 ^Int 96  */
-                 | "pow48"  /* 2 ^Int 48  */
-                 | "pow16"  /* 2 ^Int 16  */
+    syntax Int ::= "pow256" [macro] /* 2 ^Int 256 */
+                 | "pow255" [macro] /* 2 ^Int 255 */
+                 | "pow224" [macro] /* 2 ^Int 224 */
+                 | "pow208" [macro] /* 2 ^Int 208 */
+                 | "pow168" [macro] /* 2 ^Int 168 */
+                 | "pow160" [macro] /* 2 ^Int 160 */
+                 | "pow128" [macro] /* 2 ^Int 128 */
+                 | "pow96"  [macro] /* 2 ^Int 96  */
+                 | "pow48"  [macro] /* 2 ^Int 48  */
+                 | "pow16"  [macro] /* 2 ^Int 16  */
+ // ------------------------------------------------
+    rule pow256 => 115792089237316195423570985008687907853269984665640564039457584007913129639936
+    rule pow255 => 57896044618658097711785492504343953926634992332820282019728792003956564819968
+    rule pow224 => 26959946667150639794667015087019630673637144422540572481103610249216
+    rule pow208 => 411376139330301510538742295639337626245683966408394965837152256
+    rule pow168 => 374144419156711147060143317175368453031918731001856
+    rule pow160 => 1461501637330902918203684832716283019655932542976
+    rule pow128 => 340282366920938463463374607431768211456
+    rule pow96  => 79228162514264337593543950336
+    rule pow48  => 281474976710656
+    rule pow16  => 65536
+
+    syntax Int ::= "minSInt128"      [macro]
+                 | "maxSInt128"      [macro]
+                 | "minUInt8"        [macro]
+                 | "maxUInt8"        [macro]
+                 | "minUInt16"       [macro]
+                 | "maxUInt16"       [macro]
+                 | "minUInt48"       [macro]
+                 | "maxUInt48"       [macro]
+                 | "minUInt96"       [macro]
+                 | "maxUInt96"       [macro]
+                 | "minUInt128"      [macro]
+                 | "maxUInt128"      [macro]
+                 | "minUInt160"      [macro]
+                 | "maxUInt160"      [macro]
+                 | "minUInt168"      [macro]
+                 | "maxUInt168"      [macro]
+                 | "minUInt208"      [macro]
+                 | "maxUInt208"      [macro]
+                 | "minUInt224"      [macro]
+                 | "maxUInt224"      [macro]
+                 | "minSInt256"      [macro]
+                 | "maxSInt256"      [macro]
+                 | "minUInt256"      [macro]
+                 | "maxUInt256"      [macro]
+                 | "minSFixed128x10" [macro]
+                 | "maxSFixed128x10" [macro]
+                 | "minUFixed128x10" [macro]
+                 | "maxUFixed128x10" [macro]
  // ----------------------------------------
-    rule pow256 => 115792089237316195423570985008687907853269984665640564039457584007913129639936 [macro]
-    rule pow255 => 57896044618658097711785492504343953926634992332820282019728792003956564819968  [macro]
-    rule pow208 => 411376139330301510538742295639337626245683966408394965837152256                [macro]
-    rule pow168 => 374144419156711147060143317175368453031918731001856                            [macro]
-    rule pow160 => 1461501637330902918203684832716283019655932542976                              [macro]
-    rule pow128 => 340282366920938463463374607431768211456                                        [macro]
-    rule pow96  => 79228162514264337593543950336                                                  [macro]
-    rule pow48  => 281474976710656                                                                [macro]
-    rule pow16  => 65536                                                                          [macro]
+    rule minSInt128      => -170141183460469231731687303715884105728                                        /*  -2^127      */
+    rule maxSInt128      =>  170141183460469231731687303715884105727                                        /*   2^127 - 1  */
+    rule minSFixed128x10 => -1701411834604692317316873037158841057280000000000                              /* (-2^127    ) * 10^10 */
+    rule maxSFixed128x10 =>  1701411834604692317316873037158841057270000000000                              /* ( 2^127 - 1) * 10^10 */
+    rule minSInt256      => -57896044618658097711785492504343953926634992332820282019728792003956564819968  /*  -2^255      */
+    rule maxSInt256      =>  57896044618658097711785492504343953926634992332820282019728792003956564819967  /*   2^255 - 1  */
 
-    syntax Int ::= "minSInt128"
-                 | "maxSInt128"
-                 | "minUInt8"
-                 | "maxUInt8"
-                 | "minUInt16"
-                 | "maxUInt16"
-                 | "minUInt48"
-                 | "maxUInt48"
-                 | "minUInt96"
-                 | "maxUInt96"
-                 | "minUInt128"
-                 | "maxUInt128"
-                 | "minUInt160"
-                 | "maxUInt160"
-                 | "minUInt168"
-                 | "maxUInt168"
-                 | "minUInt208"
-                 | "maxUInt208"
-                 | "minSInt256"
-                 | "maxSInt256"
-                 | "minUInt256"
-                 | "maxUInt256"
-                 | "minSFixed128x10"
-                 | "maxSFixed128x10"
-                 | "minUFixed128x10"
-                 | "maxUFixed128x10"
- // --------------------------------
-    rule minSInt128      => -170141183460469231731687303715884105728                                        [macro]  /*  -2^127      */
-    rule maxSInt128      =>  170141183460469231731687303715884105727                                        [macro]  /*   2^127 - 1  */
-    rule minSFixed128x10 => -1701411834604692317316873037158841057280000000000                              [macro]  /* (-2^127    ) * 10^10 */
-    rule maxSFixed128x10 =>  1701411834604692317316873037158841057270000000000                              [macro]  /* ( 2^127 - 1) * 10^10 */
-    rule minSInt256      => -57896044618658097711785492504343953926634992332820282019728792003956564819968  [macro]  /*  -2^255      */
-    rule maxSInt256      =>  57896044618658097711785492504343953926634992332820282019728792003956564819967  [macro]  /*   2^255 - 1  */
+    rule minUInt8        =>  0
+    rule maxUInt8        =>  255
+    rule minUInt16       =>  0
+    rule maxUInt16       =>  65535                                                                          /*   2^16 -  1  */
+    rule minUInt48       =>  0
+    rule maxUInt48       =>  281474976710655                                                                /*   2^48 -  1  */
+    rule minUInt96       =>  0
+    rule maxUInt96       =>  79228162514264337593543950335                                                  /*   2^96 -  1  */
+    rule minUInt128      =>  0
+    rule maxUInt128      =>  340282366920938463463374607431768211455                                        /*   2^128 - 1  */
+    rule minUFixed128x10 =>  0
+    rule maxUFixed128x10 =>  3402823669209384634633746074317682114550000000000                              /* ( 2^128 - 1) * 10^10 */
+    rule minUInt160      =>  0
+    rule maxUInt160      =>  1461501637330902918203684832716283019655932542975                              /*   2^160 - 1  */
+    rule minUInt168      =>  0
+    rule maxUInt168      =>  374144419156711147060143317175368453031918731001855                            /*   2^168 - 1  */
+    rule minUInt208      =>  0
+    rule maxUInt208      =>  411376139330301510538742295639337626245683966408394965837152255                /*   2^208 - 1  */
+    rule minUInt224      =>  0
+    rule maxUInt224      =>  26959946667150639794667015087019630673637144422540572481103610249215           /*   2^224 - 1  */
+    rule minUInt256      =>  0
+    rule maxUInt256      =>  115792089237316195423570985008687907853269984665640564039457584007913129639935 /*   2^256 - 1  */
 
-    rule minUInt8        =>  0                                                                              [macro]
-    rule maxUInt8        =>  255                                                                            [macro]
-    rule minUInt16       =>  0                                                                              [macro]
-    rule maxUInt16       =>  65535                                                                          [macro]  /*   2^16 -  1  */
-    rule minUInt48       =>  0                                                                              [macro]
-    rule maxUInt48       =>  281474976710655                                                                [macro]  /*   2^48 -  1  */
-    rule minUInt96       =>  0                                                                              [macro]
-    rule maxUInt96       =>  79228162514264337593543950335                                                  [macro]  /*   2^96 -  1  */
-    rule minUInt128      =>  0                                                                              [macro]
-    rule maxUInt128      =>  340282366920938463463374607431768211455                                        [macro]  /*   2^128 - 1  */
-    rule minUFixed128x10 =>  0                                                                              [macro]
-    rule maxUFixed128x10 =>  3402823669209384634633746074317682114550000000000                              [macro]  /* ( 2^128 - 1) * 10^10 */
-    rule minUInt160      =>  0                                                                              [macro]
-    rule maxUInt160      =>  1461501637330902918203684832716283019655932542975                              [macro]  /*   2^160 - 1  */
-    rule minUInt168      =>  0                                                                              [macro]
-    rule maxUInt168      =>  374144419156711147060143317175368453031918731001855                            [macro]  /*   2^168 - 1  */
-    rule minUInt208      =>  0                                                                              [macro]
-    rule maxUInt208      =>  411376139330301510538742295639337626245683966408394965837152255                [macro]  /*   2^208 - 1  */
-    rule minUInt256      =>  0                                                                              [macro]
-    rule maxUInt256      =>  115792089237316195423570985008687907853269984665640564039457584007913129639935 [macro]  /*   2^256 - 1  */
-
-    syntax Int ::= "eth"
- // --------------------
-    rule eth => 1000000000000000000 [macro]
+    syntax Int ::= "eth" [macro]
+ // ----------------------------
+    rule eth => 1000000000000000000
 ```
 
 -   Range of types
 
 ```k
-    syntax Bool ::= #rangeBool    ( Int )
-                  | #rangeSInt    ( Int , Int )
-                  | #rangeUInt    ( Int , Int )
-                  | #rangeSFixed  ( Int , Int , Int )
-                  | #rangeUFixed  ( Int , Int , Int )
-                  | #rangeAddress ( Int )
-                  | #rangeBytes   ( Int , Int )
- // -------------------------------------------
-    rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1                         [macro]
-    rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      ) [macro]
-    rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      ) [macro]
-    rule #rangeUInt    (   8 ,      X ) => #range ( minUInt8        <= X <  256             ) [macro]
-    rule #rangeUInt    (  16 ,      X ) => #range ( minUInt16       <= X <  pow16           ) [macro]
-    rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <  pow48           ) [macro]
-    rule #rangeUInt    (  96 ,      X ) => #range ( minUInt96       <= X <  pow96           ) [macro]
-    rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <  pow128          ) [macro]
-    rule #rangeUInt    ( 160 ,      X ) => #range ( minUInt160      <= X <  pow160          ) [macro]
-    rule #rangeUInt    ( 168 ,      X ) => #range ( minUInt168      <= X <  pow168          ) [macro]
-    rule #rangeUInt    ( 208 ,      X ) => #range ( minUInt208      <= X <  pow208          ) [macro]
-    rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <  pow256          ) [macro]
-    rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 ) [macro]
-    rule #rangeUFixed  ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 ) [macro]
-    rule #rangeAddress (            X ) => #range ( minUInt160      <= X <  pow160          ) [macro]
-    rule #rangeBytes   (   N ,      X ) => #range ( 0               <= X <  1 <<Byte N      ) [macro]
+    syntax Bool ::= #rangeBool    ( Int )             [macro]
+                  | #rangeSInt    ( Int , Int )       [macro]
+                  | #rangeUInt    ( Int , Int )       [macro]
+                  | #rangeSFixed  ( Int , Int , Int ) [macro]
+                  | #rangeUFixed  ( Int , Int , Int ) [macro]
+                  | #rangeAddress ( Int )             [macro]
+                  | #rangeBytes   ( Int , Int )       [macro]
+ // ---------------------------------------------------------
+    rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1
+    rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      )
+    rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      )
+    rule #rangeUInt    (   8 ,      X ) => #range ( minUInt8        <= X <  256             )
+    rule #rangeUInt    (  16 ,      X ) => #range ( minUInt16       <= X <  pow16           )
+    rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <  pow48           )
+    rule #rangeUInt    (  96 ,      X ) => #range ( minUInt96       <= X <  pow96           )
+    rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <  pow128          )
+    rule #rangeUInt    ( 160 ,      X ) => #range ( minUInt160      <= X <  pow160          )
+    rule #rangeUInt    ( 168 ,      X ) => #range ( minUInt168      <= X <  pow168          )
+    rule #rangeUInt    ( 208 ,      X ) => #range ( minUInt208      <= X <  pow208          )
+    rule #rangeUInt    ( 224 ,      X ) => #range ( minUInt224      <= X <  pow224          )
+    rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <  pow256          )
+    rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 )
+    rule #rangeUFixed  ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 )
+    rule #rangeAddress (            X ) => #range ( minUInt160      <= X <  pow160          )
+    rule #rangeBytes   (   N ,      X ) => #range ( 0               <= X <  1 <<Byte N      )
 
-    syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")"
-                  | "#range" "(" Int "<"  Int "<=" Int ")"
-                  | "#range" "(" Int "<=" Int "<"  Int ")"
-                  | "#range" "(" Int "<=" Int "<=" Int ")"
- // ------------------------------------------------------
-    rule #range ( LB <  X <  UB ) => LB  <Int X andBool X  <Int UB [macro]
-    rule #range ( LB <  X <= UB ) => LB  <Int X andBool X <=Int UB [macro]
-    rule #range ( LB <= X <  UB ) => LB <=Int X andBool X  <Int UB [macro]
-    rule #range ( LB <= X <= UB ) => LB <=Int X andBool X <=Int UB [macro]
+    syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")" [macro]
+                  | "#range" "(" Int "<"  Int "<=" Int ")" [macro]
+                  | "#range" "(" Int "<=" Int "<"  Int ")" [macro]
+                  | "#range" "(" Int "<=" Int "<=" Int ")" [macro]
+ // --------------------------------------------------------------
+    rule #range ( LB <  X <  UB ) => LB  <Int X andBool X  <Int UB
+    rule #range ( LB <  X <= UB ) => LB  <Int X andBool X <=Int UB
+    rule #range ( LB <= X <  UB ) => LB <=Int X andBool X  <Int UB
+    rule #range ( LB <= X <= UB ) => LB <=Int X andBool X <=Int UB
 ```
 
--   `chop` interprets an integer modulo $2^256$.
+-   `chop` interprets an integer modulo `2^256`.
 
 ```k
     syntax Int ::= chop ( Int ) [function, functional, smtlib(chop)]
@@ -198,11 +207,12 @@ NOTE: Here, we choose to add `I2 -Int 1` to the numerator beforing doing the div
 You could alternatively calculate `I1 modInt I2`, then add one to the normal integer division afterward depending on the result.
 
 ```k
-    syntax Int ::= Int "up/Int" Int [function]
- // ------------------------------------------
-    rule _I1 up/Int 0  => 0
-    rule  I1 up/Int 1  => I1
-    rule  I1 up/Int I2 => (I1 +Int (I2 -Int 1)) /Int I2 requires I2 >Int 1
+    syntax Int ::= Int "up/Int" Int [function, functional, smtlib(upDivInt)]
+ // ------------------------------------------------------------------------
+    rule              _I1 up/Int 0  => 0
+    rule              _I1 up/Int I2 => 0                             requires I2 <Int 0
+    rule               I1 up/Int 1  => I1
+    rule [upDivInt] :  I1 up/Int I2 => (I1 +Int (I2 -Int 1)) /Int I2 requires I2 >Int 1
 ```
 
 -   `log256Int` returns the log base 256 (floored) of an integer.
@@ -310,8 +320,8 @@ Bitwise logical operators are lifted from the integer versions.
     rule W0 >>sWord W1 => chop( (abs(W0) *Int sgn(W0)) >>Int W1 )
 ```
 
--   `bit` gets bit $N$ (0 being MSB).
--   `byte` gets byte $N$ (0 being the MSB).
+-   `bit` gets bit `N` (0 being MSB).
+-   `byte` gets byte `N` (0 being the MSB).
 
 ```k
     syntax Int ::= bit  ( Int , Int ) [function]
@@ -324,8 +334,8 @@ Bitwise logical operators are lifted from the integer versions.
     rule byte(N, W) => bitRangeInt(W , ( 31 -Int N) *Int 8 , 8) requires N >=Int 0 andBool N <Int  32
 ```
 
--   `#nBits` shifts in $N$ ones from the right.
--   `#nBytes` shifts in $N$ bytes of ones from the right.
+-   `#nBits` shifts in `N` ones from the right.
+-   `#nBytes` shifts in `N` bytes of ones from the right.
 -   `_<<Byte_` shifts an integer 8 bits to the left.
 -   `_>>Byte_` shifts an integer 8 bits to the right.
 
@@ -341,7 +351,7 @@ Bitwise logical operators are lifted from the integer versions.
     rule N >>Byte M => N >>Int (8 *Int M)
 ```
 
--   `signextend(N, W)` sign-extends from byte $N$ of $W$ (0 being MSB).
+-   `signextend(N, W)` sign-extends from byte `N` of `W` (0 being MSB).
 
 ```k
     syntax Int ::= signextend( Int , Int ) [function, functional]
@@ -363,7 +373,6 @@ A cons-list is used for the EVM wordstack.
 -   `_:_` serves as the "cons" operator.
 
 ```k
-    syntax WordStack [flatPredicate]
     syntax WordStack ::= ".WordStack"      [smtlib(_dotWS)]
                        | Int ":" WordStack [klabel(_:_WS), smtlib(_WS_)]
  // --------------------------------------------------------------------
@@ -372,11 +381,11 @@ A cons-list is used for the EVM wordstack.
 ```{.k .bytes}
     syntax Bytes ::= Int ":" Bytes [function]
  // -----------------------------------------
-    rule I : BS => Int2Bytes(1, I, BE) +Bytes BS requires I <Int 256
+    rule I : BS => Int2Bytes(1, I, BE) ++ BS requires I <Int 256
 ```
 
--   `#take(N , WS)` keeps the first $N$ elements of a `WordStack` (passing with zeros as needed).
--   `#drop(N , WS)` removes the first $N$ elements of a `WordStack`.
+-   `#take(N , WS)` keeps the first `N` elements of a `WordStack` (passing with zeros as needed).
+-   `#drop(N , WS)` removes the first `N` elements of a `WordStack`.
 
 ```k
     syntax WordStack ::= #take ( Int , WordStack ) [klabel(takeWordStack), function, functional]
@@ -396,10 +405,10 @@ A cons-list is used for the EVM wordstack.
 ```{.k .bytes}
     syntax Bytes ::= #take ( Int , Bytes ) [klabel(takeBytes), function, functional]
  // --------------------------------------------------------------------------------
-    rule #take(N, _BS:Bytes) => .Bytes                                          requires                                        notBool N >Int 0
-    rule #take(N,  BS:Bytes) => #padRightToWidth(N, .Bytes)                     requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
-    rule #take(N,  BS:Bytes) => BS +Bytes #take(N -Int lengthBytes(BS), .Bytes) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
-    rule #take(N,  BS:Bytes) => BS [ 0 .. N ]                                   requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
+    rule #take(N, _BS:Bytes) => .Bytes                                      requires                                        notBool N >Int 0
+    rule #take(N,  BS:Bytes) => #padRightToWidth(N, .Bytes)                 requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
+    rule #take(N,  BS:Bytes) => BS ++ #take(N -Int lengthBytes(BS), .Bytes) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
+    rule #take(N,  BS:Bytes) => BS [ 0 .. N ]                               requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
 
     syntax Bytes ::= #drop ( Int , Bytes ) [klabel(dropBytes), function, functional]
  // --------------------------------------------------------------------------------
@@ -411,8 +420,8 @@ A cons-list is used for the EVM wordstack.
 
 ### Element Access
 
--   `WS [ N ]` accesses element $N$ of $WS$.
--   `WS [ N := W ]` sets element $N$ of $WS$ to $W$ (padding with zeros as needed).
+-   `WS [ N ]` accesses element `N` of `WS`.
+-   `WS [ N := W ]` sets element `N` of `WS` to `W` (padding with zeros as needed).
 
 ```k
     syntax Int ::= WordStack "[" Int "]" [function, functional]
@@ -472,8 +481,8 @@ Local Memory
 
 Most of EVM data is held in local memory.
 
--   `WM [ N := WS ]` assigns a contiguous chunk of $WM$ to $WS$ starting at position $W$.
--   `#range(M, START, WIDTH)` reads off $WIDTH$ elements from $WM$ beginning at position $START$ (padding with zeros as needed).
+-   `WM [ N := WS ]` assigns a contiguous chunk of `WM` to `WS` starting at position `W`.
+-   `#range(WM, START, WIDTH)` reads off `WIDTH` elements from `WM` beginning at position `START` (padding with zeros as needed).
 
 ```{.k .bytes}
     syntax Memory = Bytes
@@ -486,9 +495,9 @@ Most of EVM data is held in local memory.
  // -------------------------------------------------------------------------
     rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ] [concrete]
 
-    syntax Memory ::= ".Memory"
- // ---------------------------
-    rule .Memory => .Bytes [macro]
+    syntax Memory ::= ".Memory" [macro]
+ // -----------------------------------
+    rule .Memory => .Bytes
 
     syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------
@@ -509,9 +518,9 @@ Most of EVM data is held in local memory.
     rule [#rangeAux.base]: #range( _,  _END, WIDTH, WS) => WS requires notBool 0 <Int WIDTH
     rule [#rangeAux.rec]:  #range(WM,   END => END -Int 1, WIDTH => WIDTH -Int 1, WS => #lookupMemory(WM, END) : WS) requires 0 <Int WIDTH
 
-    syntax Memory ::= ".Memory"
- // ---------------------------
-    rule .Memory => .Map [macro]
+    syntax Memory ::= ".Memory" [macro]
+ // -----------------------------------
+    rule .Memory => .Map
 
     syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
  // --------------------------------------------------------
@@ -535,9 +544,9 @@ The local memory of execution is a byte-array (instead of a word-array).
 
 ```{.k .bytes}
     syntax ByteArray = Bytes
-    syntax ByteArray ::= ".ByteArray"
- // ---------------------------------
-    rule .ByteArray => .Bytes [macro]
+    syntax ByteArray ::= ".ByteArray" [macro]
+ // -----------------------------------------
+    rule .ByteArray => .Bytes
 
     syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
  // ---------------------------------------------------------------------------
@@ -582,9 +591,9 @@ The local memory of execution is a byte-array (instead of a word-array).
 
 ```{.k .nobytes}
     syntax ByteArray = WordStack
-    syntax ByteArray ::= ".ByteArray"
- // ---------------------------------
-    rule .ByteArray => .WordStack [macro]
+    syntax ByteArray ::= ".ByteArray" [macro]
+ // -----------------------------------------
+    rule .ByteArray => .WordStack
 
     syntax Int ::= #asWord ( ByteArray ) [function, functional, smtlib(asWord)]
  // ---------------------------------------------------------------------------

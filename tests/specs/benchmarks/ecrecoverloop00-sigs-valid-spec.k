@@ -30,7 +30,7 @@ module ECRECOVERLOOP00-SIGS-VALID-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> #gas(_INITGAS, 0, 0) => ?_ </gas>
+          <gas> #gas(_VGAS) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
@@ -40,6 +40,8 @@ module ECRECOVERLOOP00-SIGS-VALID-SPEC
           <selfDestruct> _ </selfDestruct>
           <log> _ </log>
           <refund> _ </refund>
+          <accessedAccounts> _ => ?_ </accessedAccounts>
+          <accessedStorage> _ => ?_ </accessedStorage>
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin
@@ -118,8 +120,8 @@ _
      andBool #rangeUInt(128, BLOCK_NUM) // Solidity
 
      // Account address normality
-     andBool CONTRACT_ID >Int 0 andBool (notBool CONTRACT_ID in #precompiledAccounts(BYZANTIUM))
-     andBool CALLEE_ID   >Int 0 andBool (notBool CALLEE_ID   in #precompiledAccounts(BYZANTIUM))
+     andBool CONTRACT_ID >Int 0 andBool (notBool #isPrecompiledAccount(CONTRACT_ID, BYZANTIUM))
+     andBool CALLEE_ID   >Int 0 andBool (notBool #isPrecompiledAccount(CALLEE_ID  , BYZANTIUM))
 
      andBool #rangeUInt(256, CONTRACT_BAL)
      andBool #rangeUInt(256, CALLEE_BAL)
@@ -132,12 +134,8 @@ _
      andBool #rangeBytes(32, SIGR1)
      andBool #rangeBytes(32, SIGS0)
      andBool #rangeBytes(32, SIGS1)
-     andBool ECREC_DATA0 ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV0), #bytes32(SIGR0), #bytes32(SIGS0) )
-     andBool ECREC_DATA1 ==K #encodeArgs( #bytes32(HASH), #uint8(SIGV1), #bytes32(SIGR1), #bytes32(SIGS1) )
-     andBool RECOVERED0 ==Int #symEcrec( ECREC_DATA0 )
-     andBool RECOVERED1 ==Int #symEcrec( ECREC_DATA1 )
-     andBool notBool #ecrecEmpty( ECREC_DATA0 )
-     andBool notBool #ecrecEmpty( ECREC_DATA1 )
+     andBool notBool #ecrecEmpty( #bufStrict(32, HASH), #bufStrict(32, SIGV0), #bufStrict(32, SIGR0), #bufStrict(32, SIGS0) )
+     andBool notBool #ecrecEmpty( #bufStrict(32, HASH), #bufStrict(32, SIGV1), #bufStrict(32, SIGR1), #bufStrict(32, SIGS1) )
 
 endmodule
 

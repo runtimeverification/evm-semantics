@@ -37,6 +37,8 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <accessedAccounts> _ => ?_ </accessedAccounts>
+            <accessedStorage> _ => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -62,16 +64,7 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID)
-          SetItem(1)
-          SetItem(2)
-          SetItem(3)
-          SetItem(4)
-          SetItem(5)
-          SetItem(6)
-          SetItem(7)
-          SetItem(8)
-          SetItem(9) _ </activeAccounts>
+          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -80,78 +73,6 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.gem[ABI_ilk][ABI_src] <- Gem_src -Int ABI_wad ] [ #Vat.gem[ABI_ilk][ABI_dst] <- Gem_dst +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
-            </account>
-            <account>
-              <acctID> 1 </acctID>
-              <balance> ECREC_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 2 </acctID>
-              <balance> SHA256_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 3 </acctID>
-              <balance> RIP160_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 4 </acctID>
-              <balance> ID_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 5 </acctID>
-              <balance> MODEXP_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 6 </acctID>
-              <balance> ECADD_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 7 </acctID>
-              <balance> ECMUL_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 8 </acctID>
-              <balance> ECPAIRING_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 9 </acctID>
-              <balance> BLAKE2_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
             </account>
            ...
           </accounts>
@@ -167,15 +88,6 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
        andBool #rangeUInt(256, ACCT_ID_balance)
-       andBool #rangeUInt(256, ECREC_BAL)
-       andBool #rangeUInt(256, SHA256_BAL)
-       andBool #rangeUInt(256, RIP160_BAL)
-       andBool #rangeUInt(256, ID_BAL)
-       andBool #rangeUInt(256, MODEXP_BAL)
-       andBool #rangeUInt(256, ECADD_BAL)
-       andBool #rangeUInt(256, ECMUL_BAL)
-       andBool #rangeUInt(256, ECPAIRING_BAL)
-       andBool #rangeUInt(256, BLAKE2_BAL)
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
@@ -241,6 +153,8 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <accessedAccounts> _ => ?_ </accessedAccounts>
+            <accessedStorage> _ => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -266,16 +180,7 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID)
-          SetItem(1)
-          SetItem(2)
-          SetItem(3)
-          SetItem(4)
-          SetItem(5)
-          SetItem(6)
-          SetItem(7)
-          SetItem(8)
-          SetItem(9) _ </activeAccounts>
+          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -284,78 +189,6 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
-            </account>
-            <account>
-              <acctID> 1 </acctID>
-              <balance> ECREC_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 2 </acctID>
-              <balance> SHA256_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 3 </acctID>
-              <balance> RIP160_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 4 </acctID>
-              <balance> ID_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 5 </acctID>
-              <balance> MODEXP_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 6 </acctID>
-              <balance> ECADD_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 7 </acctID>
-              <balance> ECMUL_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 8 </acctID>
-              <balance> ECPAIRING_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 9 </acctID>
-              <balance> BLAKE2_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
             </account>
            ...
           </accounts>
@@ -371,15 +204,6 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
        andBool #rangeUInt(256, ACCT_ID_balance)
-       andBool #rangeUInt(256, ECREC_BAL)
-       andBool #rangeUInt(256, SHA256_BAL)
-       andBool #rangeUInt(256, RIP160_BAL)
-       andBool #rangeUInt(256, ID_BAL)
-       andBool #rangeUInt(256, MODEXP_BAL)
-       andBool #rangeUInt(256, ECADD_BAL)
-       andBool #rangeUInt(256, ECMUL_BAL)
-       andBool #rangeUInt(256, ECPAIRING_BAL)
-       andBool #rangeUInt(256, BLAKE2_BAL)
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
@@ -428,6 +252,8 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
+            <accessedAccounts> _ => ?_ </accessedAccounts>
+            <accessedStorage> _ => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -453,16 +279,7 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID)
-          SetItem(1)
-          SetItem(2)
-          SetItem(3)
-          SetItem(4)
-          SetItem(5)
-          SetItem(6)
-          SetItem(7)
-          SetItem(8)
-          SetItem(9) _ </activeAccounts>
+          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -471,78 +288,6 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
-            </account>
-            <account>
-              <acctID> 1 </acctID>
-              <balance> ECREC_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 2 </acctID>
-              <balance> SHA256_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 3 </acctID>
-              <balance> RIP160_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 4 </acctID>
-              <balance> ID_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 5 </acctID>
-              <balance> MODEXP_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 6 </acctID>
-              <balance> ECADD_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 7 </acctID>
-              <balance> ECMUL_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 8 </acctID>
-              <balance> ECPAIRING_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
-            </account>
-            <account>
-              <acctID> 9 </acctID>
-              <balance> BLAKE2_BAL </balance>
-              <code> .ByteArray </code>
-              <storage> _:Map </storage>
-              <origStorage> _ </origStorage>
-              <nonce> _ </nonce>
             </account>
            ...
           </accounts>
@@ -558,15 +303,6 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
        andBool #rangeAddress(ORIGIN_ID)
        andBool #rangeUInt(256, TIME)
        andBool #rangeUInt(256, ACCT_ID_balance)
-       andBool #rangeUInt(256, ECREC_BAL)
-       andBool #rangeUInt(256, SHA256_BAL)
-       andBool #rangeUInt(256, RIP160_BAL)
-       andBool #rangeUInt(256, ID_BAL)
-       andBool #rangeUInt(256, MODEXP_BAL)
-       andBool #rangeUInt(256, ECADD_BAL)
-       andBool #rangeUInt(256, ECMUL_BAL)
-       andBool #rangeUInt(256, ECPAIRING_BAL)
-       andBool #rangeUInt(256, BLAKE2_BAL)
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)

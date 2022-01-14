@@ -33,7 +33,7 @@ module TRANSFERFROM-SUCCESS-2-SPEC
           <wordStack> .WordStack => ?_ </wordStack>
           <localMem> .Memory => ?_ </localMem>
           <pc> 0 => ?_ </pc>
-          <gas> #gas(100000, 0, 0) => ?_ </gas>
+          <gas> #gas(_VGAS) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
           <callGas> _ => ?_ </callGas>
 
@@ -45,6 +45,8 @@ module TRANSFERFROM-SUCCESS-2-SPEC
           <selfDestruct> _ </selfDestruct>
           <log> _:List ( .List => ListItem(#abiEventLog(ACCT_ID, "Transfer", #indexed(#address(FROM_ID)), #indexed(#address(TO_ID)), #uint256(VALUE))) ) </log>
           <refund> _ => ?_ </refund> // TODO: more detail
+          <accessedAccounts> _ => ?_ </accessedAccounts>
+          <accessedStorage> _ => ?_ </accessedStorage>
         </substate>
 
         <gasPrice> _ </gasPrice>

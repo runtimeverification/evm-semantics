@@ -1,0 +1,24 @@
+requires "lemmas/infinite-gas.k"
+
+module OPTIMIZE
+    imports INT
+    imports EVM-OPTIMIZATIONS-LEMMAS
+    imports EVM
+    imports INFINITE-GAS
+endmodule
+
+module {MODULE}-SPEC
+    imports OPTIMIZE
+
+    claim <k> (#next [ {OPCODE} ] => #halt) ~> #execute ... </k>
+          <schedule> SCHED </schedule>
+          <program>  PGM   </program>
+          <pc>         PCOUNT       => PCOUNT +Int #widthOp({OPCODE}) </pc>
+          <wordStack>  {WORD_STACK} => ?_                             </wordStack>
+          <localMem>   LM           => ?_                             </localMem>
+          <gas>        #gas(GAVAIL) => ?_                             </gas>
+          <memoryUsed> MU           => ?_                             </memoryUsed>
+      requires #sizeWordStack({WORD_STACK}) +Int #stackDelta({OPCODE}) <=Int 1024
+       {EXTRA_REQUIRES}
+
+endmodule
