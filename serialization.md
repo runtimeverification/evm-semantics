@@ -321,8 +321,8 @@ Encoding
 
     syntax String ::= #rlpEncodeReceipt ( Int , Int , ByteArray , List ) [function]
                     | #rlpEncodeLogs    ( List )                         [function]
-                    | #rlpEncodeLogsAux ( List, String )                 [function]
-                    | #rlpEncodeTopics  ( List, String )                 [function]
+                    | #rlpEncodeLogsAux ( List, StringBuffer )           [function]
+                    | #rlpEncodeTopics  ( List, StringBuffer )           [function]
  // -------------------------------------------------------------------------------
     rule [rlpReceipt]: #rlpEncodeReceipt(RS, RG, RB, RL)
                     => #rlpEncodeLength(         #rlpEncodeInt(RS)
@@ -332,19 +332,19 @@ Encoding
                                        , 192
                                        )
 
-    rule #rlpEncodeLogs( LOGS ) => #rlpEncodeLogsAux( LOGS, "" )
+    rule #rlpEncodeLogs( LOGS ) => #rlpEncodeLogsAux( LOGS, .StringBuffer )
 
-    rule #rlpEncodeLogsAux( .List, OUT ) => #rlpEncodeLength(OUT,192)
+    rule #rlpEncodeLogsAux( .List, OUT ) => #rlpEncodeLength(StringBuffer2String(OUT),192)
     rule #rlpEncodeLogsAux( ( ListItem({ ACCT | TOPICS | DATA }) => .List ) _
                           , ( OUT => OUT +String #rlpEncodeLength(         #rlpEncodeAddress(ACCT)
-                                                                   +String #rlpEncodeTopics(TOPICS,"")
+                                                                   +String #rlpEncodeTopics(TOPICS,.StringBuffer)
                                                                    +String #rlpEncodeString(#unparseByteStack(DATA))
                                                                  , 192
                                                                  )
                             )
                           )
 
-    rule #rlpEncodeTopics( .List, OUT ) => #rlpEncodeLength(OUT,192)
+    rule #rlpEncodeTopics( .List, OUT ) => #rlpEncodeLength(StringBuffer2String(OUT),192)
     rule #rlpEncodeTopics( ( ListItem( X:Int ) => .List ) _
                          , ( OUT => OUT +String #rlpEncodeWord(X) )
                          )
