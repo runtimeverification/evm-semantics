@@ -1,6 +1,10 @@
 ARG K_COMMIT
 FROM runtimeverificationinc/kframework-k:ubuntu-focal-${K_COMMIT}
 
+RUN    apt-get update                                   \
+    && apt-get install --yes software-properties-common \
+    && add-apt-repository ppa:ethereum/ethereum
+
 RUN    apt-get update            \
     && apt-get upgrade --yes     \
     && apt-get install --yes     \
@@ -17,6 +21,7 @@ RUN    apt-get update            \
             libssl-dev           \
             libyaml-dev          \
             maven                \
+            solc                 \
             netcat-openbsd       \
             pkg-config           \
             protobuf-compiler    \

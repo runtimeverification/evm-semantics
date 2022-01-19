@@ -284,6 +284,7 @@ install_libs := $(haskell_kompiled)                                        \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
                 kore-json.py                                               \
                 kast-json.py                                               \
+                kevm-pyk.py                                                \
                 release.md                                                 \
                 version
 
@@ -318,7 +319,7 @@ build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%
 build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
 build-node:    $(KEVM_LIB)/$(node_kompiled)
-build-kevm:    $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes)
+build-kevm:    $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_LIB)/kevm-pyk.py
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
@@ -422,6 +423,10 @@ tests/%.prove-legacy: tests/%
 	$(KEVM) prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) \
 	    --no-provex --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
+tests/specs/examples/erc20-spec/haskell/erc20-spec-kompiled/timestamp: tests/specs/examples/erc20-bin-runtime.k
+tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kevm-pyk.py
+	$(KEVM) solc-to-k $< ERC20 > $@
+
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
 	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
@@ -505,6 +510,7 @@ provex_definitions :=                                                           
                       tests/specs/bihu/verification/java/verification-kompiled/timestamp                           \
                       tests/specs/erc20/verification/haskell/verification-kompiled/timestamp                       \
                       tests/specs/erc20/verification/java/verification-kompiled/timestamp                          \
+                      tests/specs/examples/erc20-spec/haskell/erc20-spec-kompiled/timestamp                        \
                       tests/specs/examples/solidity-code-spec/haskell/solidity-code-spec-kompiled/timestamp        \
                       tests/specs/examples/solidity-code-spec/java/solidity-code-spec-kompiled/timestamp           \
                       tests/specs/examples/sum-to-n-spec/haskell/sum-to-n-spec-kompiled/timestamp                  \
