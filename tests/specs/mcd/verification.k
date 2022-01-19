@@ -90,6 +90,9 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
 
     rule chop(X) ==Int 0 => X ==Int 0 requires #rangeSInt(256, X) [simplification]
 
+    rule bool2Word( X:Bool ) |Int bool2Word( Y:Bool ) => bool2Word(X orBool Y) [simplification]
+    rule bool2Word( X:Bool ) ==Int 0                  => notBool X             [simplification]
+
   // ########################
   // Map
   // ########################
