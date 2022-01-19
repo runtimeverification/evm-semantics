@@ -64,6 +64,16 @@ kevmSolcArgs.add_argument('sol', type = str, help = 'Combined JSON output from s
 kevmSolcArgs.add_argument('solc-output', type = argparse.FileType('r'), default = '-', help = 'Combined JSON output from solc compiler.')
 kevmSolcArgs.add_argument('contract-name', type = str, help = 'Name of contract to generate K helpers for.')
 
+def getContractBin(bin_runtime):
+    s = '0x' + bin_runtime
+    n = int(s, 16)
+    b = n.to_bytes((n.bit_length() + 7) // 8, byteorder = 'big', signed = False)
+    # strip all bytes after 'solc' at the end
+    idx = b.rfind(b'solc')
+    b = b[:idx+4] + b'\0'
+    n = int.from_bytes(b, byteorder='big', signed = False)
+    return hex(n)
+
 def main(commandLineArgs):
     args = vars(commandLineArgs.parse_args())
 
@@ -76,7 +86,7 @@ def main(commandLineArgs):
         contractName    = args['contract-name']
         contractJson    = json.loads(args['solc-output'].read())['contracts'][contractFile + ':' + contractName]
         contractAbi     = contractJson['abi']
-        contractBin     = '0x' + contractJson['bin-runtime']
+        contractBin     = getContractBin(contractJson['bin-runtime'])
         contractStorage = contractJson['storage-layout']
 
         unknownBoolProduction = KProduction([KTerminal('unknownBool')], KSort('Bool'), att = KAtt({'klabel': 'unknownBool', 'symbol': '', 'no-evaluators': '', 'function': '', 'functional': ''}))
