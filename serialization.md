@@ -245,8 +245,8 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
                        | #wordBytes( Int )     [function]
  // -----------------------------------------------------
     rule #addrBytes(.Account) => .ByteArray
-    rule #addrBytes(ACCT)     => #padToWidth(20, #asByteStack(ACCT))
-    rule #wordBytes(WORD)     => #padToWidth(32, #asByteStack(WORD))
+    rule #addrBytes(ACCT)     => #padToWidth(20, #asByteStack(ACCT)) requires #rangeAddress(ACCT)
+    rule #wordBytes(WORD)     => #padToWidth(32, #asByteStack(WORD)) requires #rangeUInt(256, WORD)
 ```
 
 String Helper Functions
