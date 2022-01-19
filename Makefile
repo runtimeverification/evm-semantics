@@ -379,29 +379,31 @@ test: test-conformance test-prove test-interactive test-parse test-kevm-pyk
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTESTS
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
-tests/specs/benchmarks/functional-spec%:     KPROVE_FILE   =  functional-spec
-tests/specs/benchmarks/functional-spec%:     KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/bihu/functional-spec%:           KPROVE_FILE   =  functional-spec
-tests/specs/bihu/functional-spec%:           KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/erc20/functional-spec%:          KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/examples/solidity-code-spec%:    KPROVE_EXT    =  md
-tests/specs/examples/solidity-code-spec%:    KPROVE_FILE   =  solidity-code-spec
-tests/specs/examples/erc20-spec%:            KPROVE_EXT    =  md
-tests/specs/examples/erc20-spec%:            KPROVE_FILE   =  erc20-spec
-tests/specs/examples/erc721-spec%:           KPROVE_EXT    =  md
-tests/specs/examples/erc721-spec%:           KPROVE_FILE   =  erc721-spec
-tests/specs/examples/sum-to-n-spec%:         KPROVE_FILE   =  sum-to-n-spec
-tests/specs/functional/infinite-gas-spec%:   KPROVE_FILE   =  infinite-gas-spec
-tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_FILE   =  lemmas-no-smt-spec
-tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_OPTS   += --haskell-backend-command "kore-exec --smt=none"
-tests/specs/functional/lemmas-spec%:         KPROVE_FILE   =  lemmas-spec
-tests/specs/functional/merkle-spec%:         KPROVE_FILE   =  merkle-spec
-tests/specs/functional/storageRoot-spec%:    KPROVE_FILE   =  storageRoot-spec
-tests/specs/mcd/functional-spec%:            KPROVE_FILE   =  functional-spec
-tests/specs/mcd/functional-spec%:            KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/opcodes/evm-optimizations-spec%: KPROVE_EXT    =  md
-tests/specs/opcodes/evm-optimizations-spec%: KPROVE_FILE   =  evm-optimizations-spec
-tests/specs/opcodes/evm-optimizations-spec%: KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
+tests/specs/benchmarks/functional-spec%:          KPROVE_FILE   =  functional-spec
+tests/specs/benchmarks/functional-spec%:          KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/bihu/functional-spec%:                KPROVE_FILE   =  functional-spec
+tests/specs/bihu/functional-spec%:                KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/erc20/functional-spec%:               KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/examples/solidity-code-spec%:         KPROVE_EXT    =  md
+tests/specs/examples/solidity-code-spec%:         KPROVE_FILE   =  solidity-code-spec
+tests/specs/examples/erc20-spec%:                 KPROVE_EXT    =  md
+tests/specs/examples/erc20-spec%:                 KPROVE_FILE   =  erc20-spec
+tests/specs/examples/erc721-spec%:                KPROVE_EXT    =  md
+tests/specs/examples/erc721-spec%:                KPROVE_FILE   =  erc721-spec
+tests/specs/examples/sum-to-n-spec%:              KPROVE_FILE   =  sum-to-n-spec
+tests/specs/examples/verification-workshop-spec%: KPROVE_EXT    =  md
+tests/specs/examples/verification-workshop-spec%: KPROVE_FILE   =  verification-workshop-spec
+tests/specs/functional/infinite-gas-spec%:        KPROVE_FILE   =  infinite-gas-spec
+tests/specs/functional/lemmas-no-smt-spec%:       KPROVE_FILE   =  lemmas-no-smt-spec
+tests/specs/functional/lemmas-no-smt-spec%:       KPROVE_OPTS   += --haskell-backend-command "kore-exec --smt=none"
+tests/specs/functional/lemmas-spec%:              KPROVE_FILE   =  lemmas-spec
+tests/specs/functional/merkle-spec%:              KPROVE_FILE   =  merkle-spec
+tests/specs/functional/storageRoot-spec%:         KPROVE_FILE   =  storageRoot-spec
+tests/specs/mcd/functional-spec%:                 KPROVE_FILE   =  functional-spec
+tests/specs/mcd/functional-spec%:                 KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/opcodes/evm-optimizations-spec%:      KPROVE_EXT    =  md
+tests/specs/opcodes/evm-optimizations-spec%:      KPROVE_FILE   =  evm-optimizations-spec
+tests/specs/opcodes/evm-optimizations-spec%:      KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
 
 tests/%.run: tests/%
 	$(KEVM) interpret $< $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                            \
@@ -440,6 +442,10 @@ tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_
 tests/specs/examples/erc721-spec/haskell/erc721-spec-kompiled/timestamp: tests/specs/examples/erc721-bin-runtime.k
 tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes)
 	$(KEVM) solc-to-k $< ERC721 > $@
+
+tests/specs/examples/verification-workshop-spec/haskell/verification-workshop-spec-kompiled/timestamp: tests/specs/examples/verification-workshop-bin-runtime.k
+tests/specs/examples/verification-workshop-bin-runtime.k: tests/specs/examples/verification-workshop.sol $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kevm-pyk.py
+	$(KEVM) solc-to-k $< MyContract > $@
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
