@@ -235,7 +235,12 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
     rule #unparseData( DATA, LENGTH ) => #unparseDataByteArray(#padToWidth(LENGTH,#asByteStack(DATA)))
 
     rule #unparseDataByteArray( DATA ) => replaceFirst(Base2String(#asInteger(#asByteStack(1) ++ DATA), 16), "1", "0x")
+```
 
+- `#addrBytes` Takes an Account and represents it as a 20-byte wide ByteArray (or an empty ByteArray for a null address)
+- `#wordBytes` Takes an Int and represents it as a 32-byte wide ByteArray
+
+```k
     syntax ByteArray ::= #addrBytes( Account ) [function]
                        | #wordBytes( Int )     [function]
  // -----------------------------------------------------
@@ -267,8 +272,13 @@ For details about RLP encoding, see the [YellowPaper Appendix B](http://gavwood.
 Encoding
 --------
 
--   `#rlpEncodeWord` RLP encodes a single EVM word.
--   `#rlpEncodeString` RLP encodes a single `String`.
+-   `#rlpEncodeInt` RLP encodes an arbitrary precision integer.
+-   `#rlpEncodeWord` RLP encodes a 256-bit wide EVM word.
+-   `#rlpEncodeAddress` RLP encodes a 160-bit wide Ethereum address (or the null address: .Account).
+-   `#rlpEncodeBytes` RLP encodes a ByteArray.
+-   `#rlpEncodeString` RLP encodes a String.
+-   `#rlpEncode( JSON )` can take a JSON array and make an rlp encoding. It must be a JSON array! JSON objects aren't supported.
+    example: `#rlpEncode( [ 0, 1, 1, "", #parseByteStack("0xef880") ] )`
 
 ```k
     syntax String ::= #rlpEncodeInt ( Int )              [function]
