@@ -12,7 +12,7 @@ contract MyContract {
         x = _x;
     }
 
-    function maxInt(uint256 a, uint256 b) public pure returns (uint256) {
+    function max(uint256 a, uint256 b) public pure returns (uint256) {
         if (a < b) {
             return b;
         }
