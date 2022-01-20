@@ -81,10 +81,10 @@ module ERC20-SPEC
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData> #abiCallData("decimals", .TypedArgs) </callData>
-          <k>          #execute   => #halt ...            </k>
-          <output>     .ByteArray => #buf(32, DECIMALS)   </output>
-          <statusCode> _          => EVMC_SUCCESS         </statusCode>
+          <callData>   ERC20.decimals()                 </callData>
+          <k>          #execute   => #halt ...          </k>
+          <output>     .ByteArray => #buf(32, DECIMALS) </output>
+          <statusCode> _          => EVMC_SUCCESS       </statusCode>
 
           <account>
             <acctID> ACCTID </acctID>
@@ -92,7 +92,7 @@ module ERC20-SPEC
             ...
           </account>
 
-       requires DECIMALS_KEY ==Int #hashedLocation("Solidity", 3, .IntList)
+       requires DECIMALS_KEY ==Int ERC20._decimals
         andBool DECIMALS     ==Int 255 &Int #lookup(ACCT_STORAGE, DECIMALS_KEY)
 ```
 
@@ -122,10 +122,10 @@ module ERC20-SPEC
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData> #abiCallData("totalSupply", .TypedArgs) </callData>
-          <k>          #execute   => #halt ...               </k>
-          <output>     .ByteArray => #buf(32, TOTALSUPPLY)   </output>
-          <statusCode> _          => EVMC_SUCCESS            </statusCode>
+          <callData>   ERC20.totalSupply()                 </callData>
+          <k>          #execute   => #halt ...             </k>
+          <output>     .ByteArray => #buf(32, TOTALSUPPLY) </output>
+          <statusCode> _          => EVMC_SUCCESS          </statusCode>
 
           <account>
             <acctID> ACCTID </acctID>
@@ -133,7 +133,7 @@ module ERC20-SPEC
             ...
           </account>
 
-       requires TOTALSUPPLY_KEY ==Int #hashedLocation("Solidity", 2, .IntList)
+       requires TOTALSUPPLY_KEY ==Int ERC20._totalSupply
         andBool TOTALSUPPLY     ==Int #lookup(ACCT_STORAGE,  TOTALSUPPLY_KEY)
 ```
 
@@ -167,10 +167,10 @@ module ERC20-SPEC
           <callValue>  0           => ?_ </callValue>
           <substate> _             => ?_ </substate>
 
-          <callData> #abiCallData("approve", #address(SPENDER), #uint256(AMOUNT)) </callData>
-          <k>          #execute   => #halt ...            </k>
-          <output>     .ByteArray => #buf(32, 1)          </output>
-          <statusCode> _          => EVMC_SUCCESS         </statusCode>
+          <callData>   ERC20.approve(SPENDER, AMOUNT) </callData>
+          <k>          #execute   => #halt ...        </k>
+          <output>     .ByteArray => #buf(32, 1)      </output>
+          <statusCode> _          => EVMC_SUCCESS     </statusCode>
 
           <account>
             <acctID> ACCTID </acctID>
@@ -178,7 +178,7 @@ module ERC20-SPEC
             ...
           </account>
 
-       requires ALLOWANCE_KEY ==Int #hashedLocation("Solidity", 1, OWNER SPENDER .IntList)
+       requires ALLOWANCE_KEY ==Int ERC20._allowances[OWNER][SPENDER]
         andBool #rangeAddress(OWNER)
         andBool #rangeAddress(SPENDER)
         andBool #rangeUInt(256, AMOUNT)
@@ -207,10 +207,10 @@ module ERC20-SPEC
           <callValue>  0           => ?_ </callValue>
           <substate> _             => ?_ </substate>
 
-          <callData> #abiCallData("approve", #address(SPENDER), #uint256(AMOUNT)) </callData>
-          <k>          #execute   => #halt ...   </k>
-          <output>     _          => ?_          </output>
-          <statusCode> _          => EVMC_REVERT </statusCode>
+          <callData>   ERC20.approve(SPENDER, AMOUNT) </callData>
+          <k>          #execute   => #halt ...        </k>
+          <output>     _          => ?_               </output>
+          <statusCode> _          => EVMC_REVERT      </statusCode>
 
           <account>
             <acctID> ACCTID </acctID>
