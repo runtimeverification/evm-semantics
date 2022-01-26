@@ -1,3 +1,4 @@
+tests/specs/bihu/functional-spec.k
 tests/specs/examples/erc20-spec.md
 tests/specs/functional/infinite-gas-spec.k
 tests/specs/functional/merkle-spec.k
