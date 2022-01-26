@@ -3,7 +3,18 @@
 set -euo pipefail
 shopt -s extglob
 
-notif() { echo "== $0 [$(date)]: $@" >&2 ; }
+debug=false
+verbose=false
+KEVM=kevm
+
+notif() {
+    if ${verbose}; then
+        echo "== ${KEVM} [$(date)]: $@" >&2
+    else
+        echo "== ${KEVM}: $@" >&2
+    fi
+}
+
 fatal() { notif "[FATAL] $@" ; exit 1 ; }
 
 notif_exec() {
@@ -23,12 +34,14 @@ INSTALL_LIB="$(dirname ${INSTALL_BIN})/lib/kevm"
 INSTALL_INCLUDE=${INSTALL_LIB}/include
 
 install_k_bin=${INSTALL_LIB}/kframework/bin
+install_k_lib=${INSTALL_LIB}/kframework/lib
 plugin_include=${INSTALL_LIB}/blockchain-k-plugin/include
 libff_dir=${INSTALL_LIB}/libff
 libcryptopp_dir=${INSTALL_LIB}/cryptopp
 
 export PATH="${INSTALL_BIN}:${INSTALL_LIB}:${install_k_bin}:${PATH}"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
+export PYTHONPATH="${PYTHONPATH:-}:${INSTALL_LIB}:${install_k_lib}/kframework:/usr/lib/kframework"
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
 
@@ -196,8 +209,6 @@ view_klab() {
     node --max-old-space-size=4096 --stack-size=$KLAB_NODE_STACK_SIZE $(dirname $(which klab))/../libexec/klab-debug "$klab_log"
 }
 
-# Dev Commands
-
 run_interpret() {
     local interpreter kast output output_text output_format exit_status cmdprefix
 
@@ -215,7 +226,7 @@ run_interpret() {
                  run_file="$kast"
                  run_krun --parser 'cat' --output kast > "$output" || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
-                     cat "$output" | "$0" kast --backend "$backend" - pretty --input "$output_format"
+                     cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format"
                  fi
                  exit "$exit_status"
                  ;;
@@ -224,7 +235,7 @@ run_interpret() {
                  if $debugger; then cmdprefix="gdb --args"; fi
                  notif_exec $cmdprefix "$interpreter" "$kast" -1 "$output" "$@" || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
-                     cat "$output" | "$0" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
+                     cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
                  fi
                  exit "$exit_status"
                  ;;
@@ -232,7 +243,7 @@ run_interpret() {
         haskell) run_kast kore > "$kast"
                  notif_exec kore-exec "$backend_dir/driver-kompiled/definition.kore" --pattern "$kast" --module ETHEREUM-SIMULATION --smt none --output "$output" || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
-                     cat "$output" | "$0" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
+                     cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
                  fi
                  exit "$exit_status"
                  ;;
@@ -242,6 +253,16 @@ run_interpret() {
     esac
 }
 
+run_solc() {
+    local contract_name json_run_file
+
+    contract_name="$1" ; shift
+    json_run_file="${run_file}.json"
+
+    notif_exec solc --combined-json abi,bin-runtime,storage-layout "${run_file}" > "${json_run_file}"
+    notif_exec python3 -m kevm_pyk solc-to-k "$@" ${backend_dir}/*-kompiled "${run_file}" "${json_run_file}" "${contract_name}"
+}
+
 # Main
 # ----
 
@@ -249,27 +270,29 @@ run_command="$1" ; shift
 
 if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     echo "
-        usage: $0 run          [--backend (llvm|java|haskell)]           <KEVM_arg>* <pgm>  <K arg>*
-               $0 interpret    [--backend (llvm)] [--debug|--no-unparse] <KEVM_arg>* <pgm>  <interpreter arg>*
-               $0 interpret    [--backend (java|haskell)] [--no-unparse] <KEVM_arg>* <pgm>
-               $0 kast         [--backend (llvm|java|haskell)]           <KEVM_arg>* <pgm>  <output format> <K arg>*
-               $0 prove        [--backend (java|haskell)]                            <spec> <KEVM_arg>* <K arg>*
-               $0 search       [--backend (java|haskell)]                            <pgm>  <pattern> <K arg>*
-               $0 kompile      [--backend (java|llvm|haskell)]                       <main> <K arg>*
-               $0 klab-view                                                          <spec>
+        usage: ${KEVM} run          [--backend (llvm|java|haskell)]           [--verbose|--debug] <KEVM_arg>* <pgm>  <K arg>*
+               ${KEVM} interpret    [--backend (llvm)]         [--no-unparse] [--verbose|--debug] <KEVM_arg>* <pgm>  <interpreter arg>*
+               ${KEVM} interpret    [--backend (java|haskell)] [--no-unparse] [--verbose|--debug] <KEVM_arg>* <pgm>
+               ${KEVM} kast         [--backend (llvm|java|haskell)]           [--verbose|--debug] <KEVM_arg>* <pgm>  <output format> <K arg>*
+               ${KEVM} prove        [--backend (java|haskell)]                [--verbose|--debug]             <spec> <KEVM_arg>* <K arg>*
+               ${KEVM} search       [--backend (java|haskell)]                [--verbose|--debug]             <pgm>  <pattern> <K arg>*
+               ${KEVM} kompile      [--backend (java|llvm|haskell)]           [--verbose|--debug]             <main> <K arg>*
+               ${KEVM} klab-view                                              [--verbose|--debug]             <spec>
+               ${KEVM} solc-to-k                                              [--verbose|--debug]             <sol> <sol contract> <solc arg>*
 
-               $0 [help|--help|version|--version]
+               ${KEVM} [help|--help|version|--version]
 
-           $0 run       : Run a single EVM program
-           $0 interpret : Run JSON EVM programs without K Frontend (external parser)
-           $0 kast      : Parse an EVM program and output it in a supported format
-           $0 prove     : Run an EVM K proof
-           $0 search    : Search for a K pattern in an EVM program execution
-           $0 kompile   : Run kompile with arguments setup to include KEVM parameters as defaults
-           $0 klab-view : View the statelog associated with a given program or spec
+           ${KEVM} run       : Run a single EVM program
+           ${KEVM} interpret : Run JSON EVM programs without K Frontend (external parser)
+           ${KEVM} kast      : Parse an EVM program and output it in a supported format
+           ${KEVM} prove     : Run an EVM K proof
+           ${KEVM} search    : Search for a K pattern in an EVM program execution
+           ${KEVM} kompile   : Run kompile with arguments setup to include KEVM parameters as defaults
+           ${KEVM} klab-view : View the statelog associated with a given program or spec
+           ${KEVM} solc-to-k : Generate helper K modules for verifying a given contract
 
-           $0 help    : Display this help message.
-           $0 version : Display the versions of KEVM, K, Kore, and Z3 in use.
+           ${KEVM} help    : Display this help message.
+           ${KEVM} version : Display the versions of KEVM, K, Kore, and Z3 in use.
 
            Note: <pgm> is a path to a file containing an EVM program/test.
                  <spec> is a K specification to be proved.
@@ -296,6 +319,9 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                  <pattern> is the configuration pattern to search for.
                  <def_module> is the module to take as axioms when doing verification.
                  <duration> is a timeout specifier as for GNU timeout.
+                 <sol> is a Solidity source code file.
+                 <sol contract> is the name of a Solidity contract provided in the <sol>.
+                 <solc arg> are arguments to pass to solc.
 
            klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
     "
@@ -309,7 +335,6 @@ if [[ "$run_command" == 'version' ]] || [[ "$run_command" == '--version' ]]; the
 fi
 
 backend="llvm"
-debug=false
 dump=false
 unparse=true
 debugger=false
@@ -328,13 +353,15 @@ pyk_omit_labels=
 max_counterexamples=
 branching_allowed=
 haskell_backend_command=(kore-exec)
-[[ ! "$run_command" == 'prove' ]] || backend='haskell'
+[[ ! "$run_command" == 'prove'     ]] || backend='haskell'
+[[ ! "$run_command" == 'solc-to-k' ]] || backend='haskell'
 kevm_port='8545'
 kevm_host='127.0.0.1'
 args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --debug)               debug=true ; args+=("$1")       ; shift   ;;
+        --debug)               debug=true   ; args+=("$1")     ; shift   ;;
+        --verbose)             verbose=true ; args+=("$1")     ; shift   ;;
         --dump)                dump=true                       ; shift   ;;
         --no-unparse)          unparse=false                   ; shift   ;;
         --debugger)            debugger=true                   ; shift   ;;
@@ -402,5 +429,6 @@ case "$run_command-$backend" in
     prove-@(java|haskell)             ) run_prove     "$@" ;;
     search-@(java|haskell)            ) run_search    "$@" ;;
     klab-view-*                       ) view_klab     "$@" ;;
-    *) $0 help ; fatal "Unknown command on backend: $run_command $backend" ;;
+    solc-to-k-*                       ) run_solc      "$@" ;;
+    *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac

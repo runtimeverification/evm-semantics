@@ -39,6 +39,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #uint8   ( Int )
                       | #int256  ( Int )
                       | #int128  ( Int )
+                      | #bytes4  ( Int )
                       | #bytes32 ( Int )
                       | #bool    ( Int )
                       | #bytes   ( ByteArray )
@@ -76,6 +77,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #typeName(     #uint8( _ )) => "uint8"
     rule #typeName(    #int256( _ )) => "int256"
     rule #typeName(    #int128( _ )) => "int128"
+    rule #typeName(    #bytes4( _ )) => "bytes4"
     rule #typeName(   #bytes32( _ )) => "bytes32"
     rule #typeName(      #bool( _ )) => "bool"
     rule #typeName(     #bytes( _ )) => "bytes"
