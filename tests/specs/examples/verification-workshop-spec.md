@@ -39,6 +39,8 @@ module VERIFICATION
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
 
+    rule chop(chop(X) +Int Y) => chop(X +Int Y) [simplification]
+
 endmodule
 ```
 
@@ -55,6 +57,8 @@ module VERIFICATION-WORKSHOP-SPEC
 ### Functional Lemmas
 
 ```k
+    claim <k> runLemma(chop(chop(chop(#sizeByteArray(CD) +Int 64) +Int 4) +Int -4) s<Word 64) => doneLemma(0) ... </k>
+      requires #rangeUInt(128, #sizeByteArray(ERC20.max(X, Y) ++ CD))
 ```
 
 ### Getter/Setter
@@ -144,7 +148,7 @@ module VERIFICATION-WORKSHOP-SPEC
           <static>     STATIC      => ?_ </static>
           <refund>     _           => ?_ </refund>
 
-          <callData>   MyContract.max(X, Y) ++ _CD                              </callData>
+          <callData>   MyContract.max(X, Y) ++ CD                               </callData>
           <k>          #execute   => #halt ...                                  </k>
           <output>     .ByteArray => #buf(32, #if X <Int Y #then Y #else X #fi) </output>
           <statusCode> _          => EVMC_SUCCESS                               </statusCode>
@@ -153,6 +157,7 @@ module VERIFICATION-WORKSHOP-SPEC
             <storage> ACCT_STORAGE </storage>
             ...
           </account>
+      requires #rangeUInt(128, #sizeByteArray(MyContract.max(X, Y) ++ CD))
 ```
 
 ```k
