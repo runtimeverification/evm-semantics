@@ -41,6 +41,11 @@ module VERIFICATION
 
     rule chop(chop(X) +Int Y) => chop(X +Int Y) [simplification]
 
+    rule BA:ByteArray [ START .. WIDTH1 ] [ 0 .. WIDTH2 ] => BA [ START .. WIDTH2 ]
+      requires 0 <=Int START
+       andBool WIDTH2 <=Int WIDTH1
+      [simplification]
+
 endmodule
 ```
 
@@ -59,6 +64,10 @@ module VERIFICATION-WORKSHOP-SPEC
 ```k
     claim <k> runLemma(chop(chop(chop(#sizeByteArray(CD) +Int 64) +Int 4) +Int -4) s<Word 64) => doneLemma(0) ... </k>
       requires #rangeUInt(128, #sizeByteArray(ERC20.max(X, Y) ++ CD))
+```
+
+```k
+    claim <k> runLemma(#asWord(CALLDATA_CELL:ByteArray [ 0 .. 32 ] [ 0 .. 4 ] )) => doneLemma(#asWord(CALLDATA_CELL [ 0 .. 4 ])) ... </k>
 ```
 
 ### Getter/Setter
