@@ -123,7 +123,7 @@ module VERIFICATION-WORKSHOP-SPEC
           <static>     STATIC      => ?_ </static>
           <refund>     _           => ?_ </refund>
 
-          <callData>   MyContract.setX(X) ++ _CD  </callData>
+          <callData>   MyContract.setX(X) ++ CD   </callData>
           <k>          #execute   => #halt ...    </k>
           <output>     .ByteArray => ?_           </output>
           <statusCode> _          => EVMC_SUCCESS </statusCode>
@@ -134,7 +134,8 @@ module VERIFICATION-WORKSHOP-SPEC
             </storage>
             ...
           </account>
-       requires notBool STATIC
+       requires #rangeUInt(128, #sizeByteArray(MyContract.setX(X) ++ CD))
+        andBool notBool STATIC
 ```
 
 ```k
