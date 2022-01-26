@@ -444,7 +444,7 @@ tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEV
 	$(KEVM) solc-to-k $< ERC721 > $@
 
 tests/specs/examples/verification-workshop-spec/haskell/verification-workshop-spec-kompiled/timestamp: tests/specs/examples/verification-workshop-bin-runtime.k
-tests/specs/examples/verification-workshop-bin-runtime.k: tests/specs/examples/verification-workshop.sol $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kevm-pyk.py
+tests/specs/examples/verification-workshop-bin-runtime.k: tests/specs/examples/verification-workshop.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes)
 	$(KEVM) solc-to-k $< MyContract > $@
 
 .SECONDEXPANSION:
