@@ -170,5 +170,39 @@ module VERIFICATION-WORKSHOP-SPEC
 ```
 
 ```k
+    claim [badCalldata]:
+          <mode>     NORMAL   </mode>
+          <schedule> ISTANBUL </schedule>
+
+          <callStack> .List                                           </callStack>
+          <program>   #binRuntime(MyContract)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(MyContract)) </jumpDests>
+
+          <id>         ACCTID      => ?_ </id>
+          <localMem>   .Memory     => ?_ </localMem>
+          <memoryUsed> 0           => ?_ </memoryUsed>
+          <wordStack>  .WordStack  => ?_ </wordStack>
+          <pc>         0           => ?_ </pc>
+          <endPC>      _           => ?_ </endPC>
+          <gas>        #gas(_VGAS) => ?_ </gas>
+          <callValue>  0           => ?_ </callValue>
+          <static>     STATIC      => ?_ </static>
+          <refund>     _           => ?_ </refund>
+
+          <callData>   CALLDATA_CELL             </callData>
+          <k>          #execute   => #halt ...   </k>
+          <output>     .ByteArray => ?_          </output>
+          <statusCode> _          => EVMC_REVERT </statusCode>
+          <account>
+            <acctID>  ACCTID       </acctID>
+            <storage> ACCT_STORAGE </storage>
+            ...
+          </account>
+       requires CALLDATA_CELL =/=K (MyContract.getX()    ++ CALLDATA_EXTRA)
+        andBool CALLDATA_CELL =/=K (MyContract.setX(X)   ++ CALLDATA_EXTRA)
+        andBool CALLDATA_CELL =/=K (MyContract.max(A, B) ++ CALLDATA_EXTRA)
+```
+
+```k
 endmodule
 ```
