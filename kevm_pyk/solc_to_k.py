@@ -109,13 +109,17 @@ def kevmSymbolTable(symbolTable):
 def generate_storage_sentences(contract_name, contract_sort, storage_layout):
     storage_sort = KSort(f'{contract_name}Storage')
     storage_sentence_pairs = _extract_storage_sentences(contract_name, storage_sort, storage_layout)
+
+    if not storage_sentence_pairs:
+        return []
+
     storage_productions, storage_rules = map(list, zip(*storage_sentence_pairs))
     storage_location_production = KProduction([KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(storage_sort)], KSort('Int'), att=KAtt({'klabel': f'storage_{contract_name}', 'macro': ''}))
     return storage_productions + [storage_location_production] + storage_rules
 
 
 def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
-    types = storage_layout['types']
+    types = storage_layout.get('types', [])  # 'types' is missing from storage_layout if storage_layout['storage'] == []
 
     def recur(syntax, lhs, rhs, var_idx, type_name):
         type_dict = types[type_name]
@@ -191,6 +195,10 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
 def generate_function_sentences(contract_name, contract_sort, abi):
     function_sort = KSort(f'{contract_name}Function')
     function_sentence_pairs = _extract_function_sentences(contract_name, function_sort, abi)
+
+    if not function_sentence_pairs:
+        return []
+
     function_productions, function_rules = map(list, zip(*function_sentence_pairs))
     function_call_data_production = KProduction([KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], KSort('ByteArray'), att=KAtt({'klabel': f'function_{contract_name}', 'function': ''}))
     return function_productions + [function_call_data_production] + function_rules
