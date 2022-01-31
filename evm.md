@@ -964,12 +964,13 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
 These operators make queries about the current execution state.
 
 ```k
-    syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT"
- // -------------------------------------------------------------
+    syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT" | "BASEFEE"
+ // -------------------------------------------------------------------------
     rule <k> PC       => PCOUNT ~> #push ... </k> <pc> PCOUNT </pc>
     rule <k> GAS      => GAVAIL ~> #push ... </k> <gas> GAVAIL </gas>
     rule <k> GASPRICE => GPRICE ~> #push ... </k> <gasPrice> GPRICE </gasPrice>
     rule <k> GASLIMIT => GLIMIT ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
+    rule <k> BASEFEE  => BFEE   ~> #push ... </k> <baseFeePerGas> BFEE </baseFeePerGas>
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY"
  // -------------------------------------------------------------------------
@@ -2105,6 +2106,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, NUMBER)         => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, DIFFICULTY)     => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, GASLIMIT)       => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BASEFEE)        => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, POP _)          => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, PC)             => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, MSIZE)          => Gbase < SCHED > ... </k>
@@ -2757,6 +2759,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  69,     _ ) => GASLIMIT
     rule #dasmOpCode(  70, SCHED ) => CHAINID     requires Ghaschainid     << SCHED >>
     rule #dasmOpCode(  71, SCHED ) => SELFBALANCE requires Ghasselfbalance << SCHED >>
+    rule #dasmOpCode(  72, SCHED ) => BASEFEE     requires Ghasbasefee     << SCHED >>
     rule #dasmOpCode(  80,     _ ) => POP
     rule #dasmOpCode(  81,     _ ) => MLOAD
     rule #dasmOpCode(  82,     _ ) => MSTORE
