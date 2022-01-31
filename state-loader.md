@@ -172,6 +172,7 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule #asScheduleString("ConstantinopleFix") => PETERSBURG
     rule #asScheduleString("Istanbul")          => ISTANBUL
     rule #asScheduleString("Berlin")            => BERLIN
+    rule #asScheduleString("London")            => LONDON
 ```
 
 The `"rlp"` key loads the block information.
