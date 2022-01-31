@@ -565,7 +565,8 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires notBool MINER in ACCTS
 
     rule <k> #finalizeTx(false) ... </k>
-         <gas> GAVAIL => G*(GAVAIL, GLIMIT, REFUND) </gas>
+         <schedule> SCHED </schedule>
+         <gas> GAVAIL => G*(GAVAIL, GLIMIT, REFUND, SCHED) </gas>
          <refund> REFUND => 0 </refund>
          <txPending> ListItem(MSGID:Int) ... </txPending>
          <message>
@@ -1693,6 +1694,7 @@ Precompiled Contracts
     rule #precompiledAccounts(PETERSBURG)        => #precompiledAccounts(CONSTANTINOPLE)
     rule #precompiledAccounts(ISTANBUL)          => #precompiledAccounts(PETERSBURG) SetItem(9)
     rule #precompiledAccounts(BERLIN)            => #precompiledAccounts(ISTANBUL)
+    rule #precompiledAccounts(LONDON)            => #precompiledAccounts(BERLIN)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -2342,9 +2344,9 @@ There are several helpers for calculating gas (most of them also specified in th
 ```
 
 ```k
-    syntax Int ::= "G*" "(" Int "," Int "," Int ")" [function]
- // ----------------------------------------------------------
-    rule G*(GAVAIL, GLIMIT, REFUND) => GAVAIL +Int minInt((GLIMIT -Int GAVAIL)/Int 2, REFUND)
+    syntax Int ::= "G*" "(" Int "," Int "," Int "," Schedule ")" [function]
+ // -----------------------------------------------------------------------
+    rule G*(GAVAIL, GLIMIT, REFUND, SCHED) => GAVAIL +Int minInt((GLIMIT -Int GAVAIL) /Int Rmaxquotient < SCHED >, REFUND)
 
     syntax Int ::= #multComplexity(Int)    [function]
                  | #newMultComplexity(Int) [function]
@@ -2404,7 +2406,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gtxdatazero"      | "Gtxdatanonzero"     | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
                            | "Gsha3word"        | "Gcopy"              | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
                            | "Gecadd"           | "Gecmul"             | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"     | "Gcoldsload"    | "Gcoldaccountaccess"
-                           | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"
+                           | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"           | "Rmaxquotient"
  // --------------------------------------------------------------------------------------------
 ```
 
@@ -2475,6 +2477,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gaccessliststoragekey < DEFAULT > => 0
     rule Gaccesslistaddress    < DEFAULT > => 0
+
+    rule Rmaxquotient < DEFAULT > => 2
 
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true
@@ -2660,6 +2664,24 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasaccesslist << BERLIN >> => true
     rule SCHEDFLAG      << BERLIN >> => SCHEDFLAG << ISTANBUL >>
       requires notBool ( SCHEDFLAG ==K Ghasaccesslist )
+```
+
+### London Schedule
+
+```k
+    syntax Schedule ::= "LONDON" [klabel(LONDON_EVM), symbol, smtlib(schedule_LONDON)]
+ // ----------------------------------------------------------------------------------
+    rule Rselfdestruct < LONDON > => 0
+    rule Rsstoreclear  < LONDON > => Gsstorereset < LONDON > +Int Gaccessliststoragekey < LONDON >
+    rule Rmaxquotient  < LONDON > => 5
+
+    rule SCHEDCONST    < LONDON > => SCHEDCONST < BERLIN >
+      requires notBool ( SCHEDCONST ==K Rselfdestruct
+                  orBool SCHEDCONST ==K Rsstoreclear
+                  orBool SCHEDCONST ==K Rmaxquotient
+                       )
+
+    rule SCHEDFLAG << LONDON >> => SCHEDFLAG << BERLIN >>
 ```
 
 EVM Program Representations
