@@ -37,20 +37,27 @@ Address/Hash Helpers
     rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncodeLength(#rlpEncodeBytes(ACCT, 20) +String #rlpEncodeWord(NONCE), 192))))
     rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#padToWidth(20, #asByteStack(ACCT))) +String #unparseByteStack(#padToWidth(32, #asByteStack(SALT))) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE)))))))
 
-    syntax Account ::= #sender ( Int , Int , Int , Int , Account , Int , String , Int , JSONs , Int , ByteArray, ByteArray )    [function]
-                     | #sender ( String , Int , String , String )                                                               [function, klabel(#senderAux) ]
-                     | #sender ( String )                                                                                       [function, klabel(#senderAux2)]
- // -----------------------------------------------------------------------------------------------------------------------------------------------------------
-    rule #sender(_, _, _, _, _, _, _, _, _, TW => TW +Int 27, _, _)
+    syntax Account ::= #sender ( Int , Int , Int , Int , Account , Int , String , Int , JSONs , Int , Int ,  Int , ByteArray, ByteArray ) [function]
+                     | #sender ( String , Int , String , String )                                                                         [function, klabel(#senderAux) ]
+                     | #sender ( String )                                                                                                 [function, klabel(#senderAux2)]
+ // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    rule #sender(_, _, _, _, _, _, _, _, _, _, _, TW => TW +Int 27, _, _)
       requires TW ==Int 0 orBool TW ==Int 1
 
-    rule #sender(TYPE, TN, TP, TG, TT, TV, TD, CID, TA, TW, TR, TS)
-      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TYPE, TN, TP, TG, TT, TV, #parseByteStackRaw(TD), CID, TA))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
-      requires TW ==Int 27 orBool TW ==Int 28
+    rule #sender(TYPE, TN, _TP, TG, TT, TV, TD, CID, TA, TF, TM, TW, TR, TS)
+      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TYPE, TN, TG, TT, TV, #parseByteStackRaw(TD), CID, TA, TF, TM))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+      requires (TW ==Int 27 orBool TW ==Int 28)
+       andBool TYPE ==Int #dasmTxPrefix(PriorityFee)
 
-    rule #sender(_TYPE, TN, TP, TG, TT, TV, TD, CID, _TA, TW, TR, TS)
+    rule #sender(TYPE, TN, TP, TG, TT, TV, TD, CID, TA, _TF, _TM, TW, TR, TS)
+      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TYPE, TN, TP, TG, TT, TV, #parseByteStackRaw(TD), CID, TA))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+      requires (TW ==Int 27 orBool TW ==Int 28)
+       andBool TYPE ==Int #dasmTxPrefix(AccessList)
+
+    rule #sender(TYPE, TN, TP, TG, TT, TV, TD, CID, _TA, _TF, _TM, TW, TR, TS)
       => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, #parseByteStackRaw(TD), CID))), 28 -Int (TW %Int 2), #unparseByteStack(TR), #unparseByteStack(TS))
-      requires TW ==Int CID *Int 2 +Int 35 orBool TW ==Int CID *Int 2 +Int 36
+      requires (TW ==Int CID *Int 2 +Int 35 orBool TW ==Int CID *Int 2 +Int 36)
+       andBool TYPE ==Int #dasmTxPrefix(Legacy)
 
     rule #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
 
@@ -67,7 +74,9 @@ Address/Hash Helpers
 ```k
     syntax Int ::= #blockHeaderHash( Int , Int , Int , Int , Int , Int , ByteArray , Int , Int , Int , Int , Int , ByteArray , Int , Int ) [function, klabel(blockHeaderHash), symbol]
                  | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderStr), symbol]
- // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                 | #blockHeaderHash( Int , Int , Int , Int , Int , Int , ByteArray , Int , Int , Int , Int , Int , ByteArray , Int , Int , Int) [function, klabel(blockHeaderHashBaseFee), symbol]
+                 | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderBaseFeeStr), symbol]
+ // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
    rule #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
          => #blockHeaderHash(#asWord(#parseByteStackRaw(HP)),
                              #asWord(#parseByteStackRaw(HO)),
@@ -99,6 +108,38 @@ Address/Hash Helpers
                                                       +String #rlpEncodeBytes(HN, 8),
                                                     192)))
 
+   rule #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)
+         => #blockHeaderHash(#asWord(#parseByteStackRaw(HP)),
+                             #asWord(#parseByteStackRaw(HO)),
+                             #asWord(#parseByteStackRaw(HC)),
+                             #asWord(#parseByteStackRaw(HR)),
+                             #asWord(#parseByteStackRaw(HT)),
+                             #asWord(#parseByteStackRaw(HE)),
+                                     #parseByteStackRaw(HB) ,
+                             #asWord(#parseByteStackRaw(HD)),
+                             #asWord(#parseByteStackRaw(HI)),
+                             #asWord(#parseByteStackRaw(HL)),
+                             #asWord(#parseByteStackRaw(HG)),
+                             #asWord(#parseByteStackRaw(HS)),
+                                     #parseByteStackRaw(HX) ,
+                             #asWord(#parseByteStackRaw(HM)),
+                             #asWord(#parseByteStackRaw(HN)),
+                             #asWord(#parseByteStackRaw(HF)))
+
+    rule #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)
+         => #parseHexWord(Keccak256(#rlpEncodeLength(         #rlpEncodeBytes(HP, 32)
+                                                      +String #rlpEncodeBytes(HO, 32)
+                                                      +String #rlpEncodeBytes(HC, 20)
+                                                      +String #rlpEncodeBytes(HR, 32)
+                                                      +String #rlpEncodeBytes(HT, 32)
+                                                      +String #rlpEncodeBytes(HE, 32)
+                                                      +String #rlpEncodeString(#unparseByteStack(HB))
+                                                      +String #rlpEncodeWordStack(HD : HI : HL : HG : HS : .WordStack)
+                                                      +String #rlpEncodeString(#unparseByteStack(HX))
+                                                      +String #rlpEncodeBytes(HM, 32)
+                                                      +String #rlpEncodeBytes(HN, 8)
+                                                      +String #rlpEncodeWordStack(HF : .WordStack),
+                                                    192)))
 ```
 
 - `#hashSignedTx` Takes transaction data. Returns the hash of the rlp-encoded transaction with R S and V.
@@ -108,12 +149,13 @@ Address/Hash Helpers
     syntax String ::= #hashSignedTx   ( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
                     | #hashUnsignedTx ( Int , Int , Int , Int , Account , Int , ByteArray , Int , JSONs )           [function]
                     | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray, Int )                          [function]
+                    | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray , Int , JSONs , Int , Int)      [function]
  // --------------------------------------------------------------------------------------------------------------------------
     rule #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
       => Keccak256( #rlpEncodeTransaction(TN, TP, TG, TT, TV, TD, TW, TR, TS) )
 
     // Hashing for legacy transactions
-    rule #hashUnsignedTx(0, TN, TP, TG, TT, TV, TD, _CID, _TA)
+    rule #hashUnsignedTx(TYPE, TN, TP, TG, TT, TV, TD, _CID, _TA)
       => Keccak256( #rlpEncodeLength(         #rlpEncodeWord(TN)
                                       +String #rlpEncodeWord(TP)
                                       +String #rlpEncodeWord(TG)
@@ -123,10 +165,11 @@ Address/Hash Helpers
                                     , 192
                                     )
                   )
+     requires TYPE ==Int #dasmTxPrefix(Legacy)
 
     // Hashing for EIP-2930: Optional access lists
-    rule #hashUnsignedTx(1, TN, TP, TG, TT, TV, TD, CID, [TA])
-      => Keccak256(       #rlpEncodeBytes(1,1)
+    rule #hashUnsignedTx(TYPE, TN, TP, TG, TT, TV, TD, CID, [TA])
+      => Keccak256(       #rlpEncodeBytes(#dasmTxPrefix(AccessList),1)
                   +String #rlpEncodeLength(         #rlpEncodeWord(CID)
                                             +String #rlpEncodeWord(TN)
                                             +String #rlpEncodeWord(TP)
@@ -138,6 +181,27 @@ Address/Hash Helpers
                                           , 192
                                           )
                   )
+     requires TYPE ==Int #dasmTxPrefix(AccessList)
+
+    // Hashing for EIP-1559: Priority Fee Transaction
+    // keccak256(0x02 || rlp([chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, destination, amount, data, access_list]))
+
+    rule #hashUnsignedTx(TYPE, TN, TG, TT, TV, TD, CID, [TA], TF, TM)
+      => Keccak256(       #rlpEncodeBytes(#dasmTxPrefix(PriorityFee),1)
+                  +String #rlpEncodeLength(         #rlpEncodeWord(CID)
+                                            +String #rlpEncodeWord(TN)
+                                            +String #rlpEncodeWord(TF)
+                                            +String #rlpEncodeWord(TM)
+                                            +String #rlpEncodeWord(TG)
+                                            +String #rlpEncodeAccount(TT)
+                                            +String #rlpEncodeWord(TV)
+                                            +String #rlpEncodeString(#unparseByteStack(TD))
+                                            +String #rlpEncodeAccessList([TA], "")
+
+                                          , 192
+                                          )
+                  )
+     requires TYPE ==Int #dasmTxPrefix(PriorityFee)
 
     // Hashing for EIP-155: Simple replay attack protection
     rule #hashUnsignedTx(TN, TP, TG, TT, TV, TD, CID)
@@ -767,17 +831,19 @@ Tree Root Helper Functions
     syntax TxType ::= ".TxType"
                     | "Legacy"
                     | "AccessList"
- // ------------------------------
+                    | "PriorityFee"
+// --------------------------------
 
     syntax Int ::= #dasmTxPrefix ( TxType ) [function]
  // --------------------------------------------------
-    rule #dasmTxPrefix (Legacy)     => 0
-    rule #dasmTxPrefix (AccessList) => 1
+    rule #dasmTxPrefix (Legacy)      => 0
+    rule #dasmTxPrefix (AccessList)  => 1
+    rule #dasmTxPrefix (PriorityFee) => 2
 
     syntax TxType ::= #asmTxPrefix ( Int ) [function]
  // -------------------------------------------------
     rule #asmTxPrefix (0) => Legacy
     rule #asmTxPrefix (1) => AccessList
-
+    rule #asmTxPrefix (2) => PriorityFee
 endmodule
 ```

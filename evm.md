@@ -106,6 +106,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <extraData>        .ByteArray </extraData>        // I_Hx
               <mixHash>          0          </mixHash>          // I_Hm
               <blockNonce>       0          </blockNonce>       // I_Hn
+              <baseFeePerGas>    0          </baseFeePerGas>    // I_Hf
 
               <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
             </block>
@@ -144,19 +145,21 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             <messages>
               <message multiplicity="*" type="Map">
-                <msgID>      0          </msgID>
-                <txNonce>    0          </txNonce>            // T_n
-                <txGasPrice> 0          </txGasPrice>         // T_p
-                <txGasLimit> 0          </txGasLimit>         // T_g
-                <to>         .Account   </to>                 // T_t
-                <value>      0          </value>              // T_v
-                <sigV>       0          </sigV>               // T_w
-                <sigR>       .ByteArray </sigR>               // T_r
-                <sigS>       .ByteArray </sigS>               // T_s
-                <data>       .ByteArray </data>               // T_i/T_e
-                <txType>     .TxType    </txType>
-                <txAccess>   [ .JSONs ] </txAccess>
-                <txChainID>  0          </txChainID>
+                <msgID>         0          </msgID>
+                <txNonce>       0          </txNonce>            // T_n
+                <txGasPrice>    0          </txGasPrice>         // T_p
+                <txGasLimit>    0          </txGasLimit>         // T_g
+                <to>            .Account   </to>                 // T_t
+                <value>         0          </value>              // T_v
+                <sigV>          0          </sigV>               // T_w
+                <sigR>          .ByteArray </sigR>               // T_r
+                <sigS>          .ByteArray </sigS>               // T_s
+                <data>          .ByteArray </data>               // T_i/T_e
+                <txType>        .TxType    </txType>
+                <txAccess>      [ .JSONs ] </txAccess>
+                <txChainID>     0          </txChainID>
+                <txPriorityFee> 0          </txPriorityFee>
+                <txMaxFee>      0          </txMaxFee>
               </message>
             </messages>
 
@@ -580,6 +583,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <coinbase> MINER </coinbase>
          <gas> GAVAIL </gas>
          <gasUsed> GUSED => GUSED +Int GLIMIT -Int GAVAIL </gasUsed>
+         <baseFeePerGas> BFEE </baseFeePerGas>
          <refund> 0 </refund>
          <account>
            <acctID> ORG </acctID>
@@ -588,7 +592,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          </account>
          <account>
            <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int GPRICE </balance>
+           <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int (GPRICE -Int BFEE) </balance>
            ...
          </account>
          <txPending> ListItem(TXID:Int) => .List ... </txPending>
