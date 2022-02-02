@@ -5,7 +5,7 @@ State Manager
 requires "evm.md"
 requires "asm.md"
 
-module STATE-LOADER
+module STATE-UTILS
     imports EVM
     imports EVM-ASSEMBLY
 

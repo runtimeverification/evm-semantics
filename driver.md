@@ -8,13 +8,13 @@ Actual execution of the EVM is defined in [the EVM file](../evm).
 requires "evm.md"
 requires "optimizations.md"
 requires "asm.md"
-requires "state-loader.md"
+requires "state-utils.md"
 
 module ETHEREUM-SIMULATION
     imports EVM
     imports EVM-OPTIMIZATIONS
     imports EVM-ASSEMBLY
-    imports STATE-LOADER
+    imports STATE-UTILS
 ```
 
 An Ethereum simulation is a list of Ethereum commands.
@@ -329,7 +329,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> run TESTID : { KEY : _ , REST } => run TESTID : { REST } ... </k> requires KEY in #discardKeys
 ```
 
--   `driver.md` specific handling of state-loader commands
+-   `driver.md` specific handling of state-utils commands
 
 ```k
     rule <k> load "account" : { ACCTID : ACCT } => loadAccount ACCTID ACCT ... </k>
