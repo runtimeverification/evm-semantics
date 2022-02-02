@@ -106,6 +106,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <extraData>        .ByteArray </extraData>        // I_Hx
               <mixHash>          0          </mixHash>          // I_Hm
               <blockNonce>       0          </blockNonce>       // I_Hn
+              <baseFee>          0          </baseFee>
 
               <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
             </block>
@@ -2389,7 +2390,7 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
-                          | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"
+                          | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
  // -----------------------------------------------------------------------------------------
 ```
 
@@ -2497,6 +2498,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasselfbalance         << DEFAULT >> => false
     rule Ghaschainid             << DEFAULT >> => false
     rule Ghasaccesslist          << DEFAULT >> => false
+    rule Ghasbasefee             << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -2683,7 +2685,9 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDCONST ==K Rmaxquotient
                        )
 
-    rule SCHEDFLAG << LONDON >> => SCHEDFLAG << BERLIN >>
+    rule Ghasbasefee << LONDON >> => true
+    rule SCHEDFLAG   << LONDON >> => SCHEDFLAG << BERLIN >>
+      requires notBool ( SCHEDFLAG ==K Ghasbasefee )
 ```
 
 EVM Program Representations
