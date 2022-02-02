@@ -72,12 +72,19 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> startTx => #finalizeBlock ... </k>
          <txPending> .List </txPending>
 
-    rule <k> startTx => loadTx( #TxSender(TXID) ) ... </k>
+    rule <k> startTx => loadTx( #sender( #getTxData(TXID), TW, TR, TS ) ) ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID>      TXID </msgID>
+           <sigV>       TW   </sigV>
+           <sigR>       TR   </sigR>
+           <sigS>       TS   </sigS>
+           ...
+         </message>
 
-    syntax Account ::= #TxSender( Int ) [function]
+    syntax TxData ::= #getTxData( Int ) [function]
  // ----------------------------------------------
-    rule [[ #TxSender( TXID ) => #sender( LegacyTxData(TN, TP, TG, TT, TV, DATA), TW, TR, TS ) ]]
+    rule [[ #getTxData( TXID ) => LegacyTxData(TN, TP, TG, TT, TV, DATA) ]]
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -86,15 +93,13 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <to>         TT   </to>
            <value>      TV   </value>
            <sigV>       TW   </sigV>
-           <sigR>       TR   </sigR>
-           <sigS>       TS   </sigS>
            <data>       DATA </data>
            <txType> Legacy </txType>
            ...
          </message>
       requires TW ==Int 0 orBool TW ==Int 1 orBool TW ==Int 27 orBool TW ==Int 28
 
-    rule [[ #TxSender( TXID ) => #sender( LegacyProtectedTxData(TN, TP, TG, TT, TV, DATA, CID), TW, TR, TS ) ]]
+    rule [[ #getTxData( TXID ) => LegacyProtectedTxData(TN, TP, TG, TT, TV, DATA, CID) ]]
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -103,8 +108,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <to>         TT   </to>
            <value>      TV   </value>
            <sigV>       TW   </sigV>
-           <sigR>       TR   </sigR>
-           <sigS>       TS   </sigS>
            <data>       DATA </data>
            <txChainID>  CID  </txChainID>
            <txType> Legacy </txType>
@@ -112,7 +115,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </message>
       requires notBool (TW ==Int 0 orBool TW ==Int 1 orBool TW ==Int 27 orBool TW ==Int 28)
 
-    rule [[ #TxSender( TXID ) => #sender( AccessListTxData(TN, TP, TG, TT, TV, DATA, CID, TA), TW, TR, TS ) ]]
+    rule [[ #getTxData( TXID ) => AccessListTxData(TN, TP, TG, TT, TV, DATA, CID, TA) ]]
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -120,9 +123,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <txGasLimit> TG   </txGasLimit>
            <to>         TT   </to>
            <value>      TV   </value>
-           <sigV>       TW   </sigV>
-           <sigR>       TR   </sigR>
-           <sigS>       TS   </sigS>
            <data>       DATA </data>
            <txChainID>  CID  </txChainID>
            <txAccess>   TA   </txAccess>
