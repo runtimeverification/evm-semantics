@@ -72,9 +72,14 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> startTx => #finalizeBlock ... </k>
          <txPending> .List </txPending>
 
-    rule <k> startTx => loadTx(#sender(#dasmTxPrefix(TYPE), TN, TP, TG, TT, TV, #unparseByteStack(DATA), CID, TA, TW, TR, TS)) ... </k>
-         <chainID> CID </chainID>
+    rule <k> startTx => loadTx( #TxSender(TXID) ) ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
+
+    syntax AcctExp ::= Account
+    syntax KResult ::= Account
+    syntax AcctExp ::= #TxSender( Int )
+ // -----------------------------------
+    rule <k> #TxSender( TXID ) => #sender( LegacyTxData(TN, TP, TG, TT, TV, DATA), TW, TR, TS ) ... </k>
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -86,14 +91,49 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <sigR>       TR   </sigR>
            <sigS>       TS   </sigS>
            <data>       DATA </data>
-           <txType>     TYPE </txType>
+           <txType> Legacy </txType>
+           ...
+         </message>
+      requires TW ==Int 0 orBool TW ==Int 1 orBool TW ==Int 27 orBool TW ==Int 28
+
+    rule <k> #TxSender( TXID ) => #sender( LegacyProtectedTxData(TN, TP, TG, TT, TV, DATA, CID), TW, TR, TS ) ... </k>
+         <message>
+           <msgID>      TXID </msgID>
+           <txNonce>    TN   </txNonce>
+           <txGasPrice> TP   </txGasPrice>
+           <txGasLimit> TG   </txGasLimit>
+           <to>         TT   </to>
+           <value>      TV   </value>
+           <sigV>       TW   </sigV>
+           <sigR>       TR   </sigR>
+           <sigS>       TS   </sigS>
+           <data>       DATA </data>
+           <txChainID>  CID  </txChainID>
+           <txType> Legacy </txType>
+           ...
+         </message>
+      requires notBool (TW ==Int 0 orBool TW ==Int 1 orBool TW ==Int 27 orBool TW ==Int 28)
+
+    rule <k> #TxSender( TXID ) => #sender( AccessListTxData(TN, TP, TG, TT, TV, DATA, CID, TA), TW, TR, TS ) ... </k>
+         <message>
+           <msgID>      TXID </msgID>
+           <txNonce>    TN   </txNonce>
+           <txGasPrice> TP   </txGasPrice>
+           <txGasLimit> TG   </txGasLimit>
+           <to>         TT   </to>
+           <value>      TV   </value>
+           <sigV>       TW   </sigV>
+           <sigR>       TR   </sigR>
+           <sigS>       TS   </sigS>
+           <data>       DATA </data>
            <txChainID>  CID  </txChainID>
            <txAccess>   TA   </txAccess>
+           <txType> AccessList </txType>
            ...
          </message>
 
-    syntax EthereumCommand ::= loadTx ( Account )
- // ---------------------------------------------
+    syntax EthereumCommand ::= loadTx ( AcctExp ) [strict]
+ // ------------------------------------------------------
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccounts(SCHED)
           ~> #loadAccessList(TA)
