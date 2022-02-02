@@ -82,54 +82,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            ...
          </message>
 
-    syntax TxData ::= #getTxData( Int ) [function]
- // ----------------------------------------------
-    rule [[ #getTxData( TXID ) => LegacyTxData(TN, TP, TG, TT, TV, DATA) ]]
-         <message>
-           <msgID>      TXID </msgID>
-           <txNonce>    TN   </txNonce>
-           <txGasPrice> TP   </txGasPrice>
-           <txGasLimit> TG   </txGasLimit>
-           <to>         TT   </to>
-           <value>      TV   </value>
-           <sigV>       TW   </sigV>
-           <data>       DATA </data>
-           <txType> Legacy </txType>
-           ...
-         </message>
-      requires TW ==Int 0 orBool TW ==Int 1 orBool TW ==Int 27 orBool TW ==Int 28
-
-    rule [[ #getTxData( TXID ) => LegacyProtectedTxData(TN, TP, TG, TT, TV, DATA, CID) ]]
-         <message>
-           <msgID>      TXID </msgID>
-           <txNonce>    TN   </txNonce>
-           <txGasPrice> TP   </txGasPrice>
-           <txGasLimit> TG   </txGasLimit>
-           <to>         TT   </to>
-           <value>      TV   </value>
-           <sigV>       TW   </sigV>
-           <data>       DATA </data>
-           <txChainID>  CID  </txChainID>
-           <txType> Legacy </txType>
-           ...
-         </message>
-      requires notBool (TW ==Int 0 orBool TW ==Int 1 orBool TW ==Int 27 orBool TW ==Int 28)
-
-    rule [[ #getTxData( TXID ) => AccessListTxData(TN, TP, TG, TT, TV, DATA, CID, TA) ]]
-         <message>
-           <msgID>      TXID </msgID>
-           <txNonce>    TN   </txNonce>
-           <txGasPrice> TP   </txGasPrice>
-           <txGasLimit> TG   </txGasLimit>
-           <to>         TT   </to>
-           <value>      TV   </value>
-           <data>       DATA </data>
-           <txChainID>  CID  </txChainID>
-           <txAccess>   TA   </txAccess>
-           <txType> AccessList </txType>
-           ...
-         </message>
-
     syntax EthereumCommand ::= loadTx ( Account )
  // ---------------------------------------------
     rule <k> loadTx(ACCTFROM)

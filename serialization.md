@@ -344,6 +344,17 @@ Encoding
                          , ( OUT => OUT +String #rlpEncodeWord(X) )
                          )
 
+    syntax String ::= #rlpEncodeTxData( TxData ) [function]
+ // -------------------------------------------------------
+    rule #rlpEncodeTxData( LegacyTxData( TN, TP, TG, TT, TV, TD ) )
+      => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD ] )
+
+    rule #rlpEncodeTxData( LegacyProtectedTxData( TN, TP, TG, TT, TV, TD, CID ) )
+      => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD, CID, "", "" ] )
+
+    rule #rlpEncodeTxData( AccessListTxData( TN, TP, TG, TT, TV, TD, CID, [TA] ) )
+      => #rlpEncode( [ CID, TN, TP, TG, #addrBytes(TT), TV, TD, [TA] ] )
+
     syntax String ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
  // ----------------------------------------------------------------
     rule #rlpEncodeMerkleTree ( .MerkleTree ) => "\x80"
@@ -697,41 +708,5 @@ Tree Root Helper Functions
                                                 +String #rlpEncodeString( Hex2Raw( Keccak256("") ) )
                                               , 192
                                               )
-```
-
-### Transaction Envelopes
-
-```k
-    syntax TxType ::= ".TxType"
-                    | "Legacy"
-                    | "AccessList"
- // ------------------------------
-
-    syntax Int ::= #dasmTxPrefix ( TxType ) [function]
- // --------------------------------------------------
-    rule #dasmTxPrefix (Legacy)     => 0
-    rule #dasmTxPrefix (AccessList) => 1
-
-    syntax TxType ::= #asmTxPrefix ( Int ) [function]
- // -------------------------------------------------
-    rule #asmTxPrefix (0) => Legacy
-    rule #asmTxPrefix (1) => AccessList
-
-    syntax TxData ::= LegacyTxData         ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray )
-                    | LegacyProtectedTxData( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray, chainId: Int )
-                    | AccessListTxData     ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray, chainId: Int, accessLists: JSONs )
- // ---------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    syntax String ::= #rlpEncodeTxData( TxData ) [function]
- // -------------------------------------------------------
-    rule #rlpEncodeTxData( LegacyTxData( TN, TP, TG, TT, TV, TD ) )
-      => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD ] )
-
-    rule #rlpEncodeTxData( LegacyProtectedTxData( TN, TP, TG, TT, TV, TD, CID ) )
-      => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD, CID, "", "" ] )
-
-    rule #rlpEncodeTxData( AccessListTxData( TN, TP, TG, TT, TV, TD, CID, [TA] ) )
-      => #rlpEncode( [ CID, TN, TP, TG, #addrBytes(TT), TV, TD, [TA] ] )
-
 endmodule
 ```

@@ -12,6 +12,7 @@ module EVM-TYPES
     imports COLLECTIONS
     imports BOOL
     imports K-EQUAL
+    imports JSON
 ```
 
 ```{.k .bytes}
@@ -694,6 +695,31 @@ This is a right cons-list of `SubstateLogEntry` (which contains the account ID a
  // ---------------------------------------------------------------------------------
 ```
 
+Transactions
+------------
+
+Productions related to transactions
+
 ```k
+    syntax TxType ::= ".TxType"
+                    | "Legacy"
+                    | "AccessList"
+ // ------------------------------
+
+    syntax Int ::= #dasmTxPrefix ( TxType ) [function]
+ // --------------------------------------------------
+    rule #dasmTxPrefix (Legacy)     => 0
+    rule #dasmTxPrefix (AccessList) => 1
+
+    syntax TxType ::= #asmTxPrefix ( Int ) [function]
+ // -------------------------------------------------
+    rule #asmTxPrefix (0) => Legacy
+    rule #asmTxPrefix (1) => AccessList
+
+    syntax TxData ::= LegacyTxData         ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray )
+                    | LegacyProtectedTxData( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray, chainId: Int )
+                    | AccessListTxData     ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray, chainId: Int, accessLists: JSONs )
+ // ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 endmodule
 ```
