@@ -75,11 +75,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> startTx => loadTx( #TxSender(TXID) ) ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
 
-    syntax AcctExp ::= Account
-    syntax KResult ::= Account
-    syntax AcctExp ::= #TxSender( Int )
- // -----------------------------------
-    rule <k> #TxSender( TXID ) => #sender( LegacyTxData(TN, TP, TG, TT, TV, DATA), TW, TR, TS ) ... </k>
+    syntax Account ::= #TxSender( Int ) [function]
+ // ----------------------------------------------
+    rule [[ #TxSender( TXID ) => #sender( LegacyTxData(TN, TP, TG, TT, TV, DATA), TW, TR, TS ) ]]
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -96,7 +94,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </message>
       requires TW ==Int 0 orBool TW ==Int 1 orBool TW ==Int 27 orBool TW ==Int 28
 
-    rule <k> #TxSender( TXID ) => #sender( LegacyProtectedTxData(TN, TP, TG, TT, TV, DATA, CID), TW, TR, TS ) ... </k>
+    rule [[ #TxSender( TXID ) => #sender( LegacyProtectedTxData(TN, TP, TG, TT, TV, DATA, CID), TW, TR, TS ) ]]
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -114,7 +112,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </message>
       requires notBool (TW ==Int 0 orBool TW ==Int 1 orBool TW ==Int 27 orBool TW ==Int 28)
 
-    rule <k> #TxSender( TXID ) => #sender( AccessListTxData(TN, TP, TG, TT, TV, DATA, CID, TA), TW, TR, TS ) ... </k>
+    rule [[ #TxSender( TXID ) => #sender( AccessListTxData(TN, TP, TG, TT, TV, DATA, CID, TA), TW, TR, TS ) ]]
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -132,8 +130,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            ...
          </message>
 
-    syntax EthereumCommand ::= loadTx ( AcctExp ) [strict]
- // ------------------------------------------------------
+    syntax EthereumCommand ::= loadTx ( Account )
+ // ---------------------------------------------
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccounts(SCHED)
           ~> #loadAccessList(TA)
