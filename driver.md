@@ -110,7 +110,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </message>
          <account>
            <acctID> ACCTFROM </acctID>
-           <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
+           <balance> BAL => BAL -Int (GLIMIT *Int #effectiveGasPrice(TXID)) </balance>
            <nonce> NONCE </nonce>
            ...
          </account>
@@ -143,7 +143,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </message>
          <account>
            <acctID> ACCTFROM </acctID>
-           <balance> BAL => BAL -Int (GLIMIT *Int GPRICE) </balance>
+           <balance> BAL => BAL -Int (GLIMIT *Int #effectiveGasPrice(TXID)) </balance>
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>

@@ -295,6 +295,7 @@ The `"rlp"` key loads the block information.
 ### Getting State
 
 - `#getTxData` will pull the parameters of TXID into an appropriate `TxData` symbol
+- `#effectiveGasPrice` will compute the gas price for TXID, as specified by EIP-1559
 
 ```k
     syntax TxData ::= #getTxData( Int ) [function]
@@ -358,6 +359,26 @@ The `"rlp"` key loads the block information.
            <txPriorityFee> TPF  </txPriorityFee>
            <txMaxFee>      TM   </txMaxFee>
            <txType> DynamicFee </txType>
+           ...
+         </message>
+
+    syntax Int ::= #effectiveGasPrice( Int ) [function]
+ // ---------------------------------------------------
+    rule [[ #effectiveGasPrice( TXID ) => #if        notBool Ghasbasefee << SCHED >>
+                                              orBool TXTYPE ==K Legacy
+                                              orBool TXTYPE ==K AccessList
+                                            #then GPRICE
+                                            #else BASEFEE +Int minInt(TPF, TM -Int BASEFEE)
+                                          #fi
+         ]]
+         <schedule> SCHED </schedule>
+         <baseFee> BASEFEE </baseFee>
+         <message>
+           <msgID>         TXID   </msgID>
+           <txGasPrice>    GPRICE </txGasPrice>
+           <txType>        TXTYPE </txType>
+           <txPriorityFee> TPF    </txPriorityFee>
+           <txMaxFee>      TM     </txMaxFee>
            ...
          </message>
 ```
