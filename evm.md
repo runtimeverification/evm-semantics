@@ -584,6 +584,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <coinbase> MINER </coinbase>
          <gas> GAVAIL </gas>
          <gasUsed> GUSED => GUSED +Int GLIMIT -Int GAVAIL </gasUsed>
+         <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
            <acctID> ORG </acctID>
@@ -599,7 +600,6 @@ After executing a transaction, it's necessary to have the effect of the substate
          <message>
            <msgID> TXID </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
-           <txGasPrice> GPRICE </txGasPrice>
            ...
          </message>
       requires ORG =/=Int MINER
@@ -609,6 +609,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <coinbase> ACCT </coinbase>
          <gas> GAVAIL </gas>
          <gasUsed> GUSED => GUSED +Int GLIMIT -Int GAVAIL </gasUsed>
+         <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
            <acctID> ACCT </acctID>
@@ -619,7 +620,6 @@ After executing a transaction, it's necessary to have the effect of the substate
          <message>
            <msgID> MsgId </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
-           <txGasPrice> GPRICE </txGasPrice>
            ...
          </message>
 
