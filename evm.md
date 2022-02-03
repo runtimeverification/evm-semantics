@@ -1551,8 +1551,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     syntax Bool ::= #isValidCode ( ByteArray , Schedule ) [function]
  // ----------------------------------------------------------------
-    rule #isValidCode(_   , SCHED) => true requires notBool Ghasbasefee << SCHED >>
-    rule #isValidCode(OUT , SCHED) => OUT[0] =/=Int reservedStartingByte < SCHED > requires Ghasbasefee << SCHED >>
+    rule #isValidCode(OUT , SCHED) => notBool Ghasrejectedfirstbyte << SCHED >> orBool OUT[0] =/=Int 239 requires #sizeByteArray(OUT) >Int 0
+    rule #isValidCode(OUT , SCHED) => true [owise]
 
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
@@ -1580,8 +1580,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <k> #mkCodeDeposit _ACCT => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
          <output> OUT => .ByteArray </output>
-      requires #sizeByteArray(OUT) >Int maxCodeSize < SCHED >
-       andBool #isValidCode(OUT, SCHED)
+      requires notBool ( #sizeByteArray(OUT) <=Int maxCodeSize < SCHED >
+                         andBool #isValidCode(OUT, SCHED)
+                       )
 
     rule <k> #finishCodeDeposit ACCT OUT
           => #popCallStack ~> #dropWorldState
@@ -2401,6 +2402,7 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
+                          | "Ghasrejectedfirstbyte"
  // -----------------------------------------------------------------------------------------
 ```
 
@@ -2419,7 +2421,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gtxdatazero"      | "Gtxdatanonzero"     | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
                            | "Gsha3word"        | "Gcopy"              | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
                            | "Gecadd"           | "Gecmul"             | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"     | "Gcoldsload"    | "Gcoldaccountaccess"
-                           | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"           | "Rmaxquotient"| "reservedStartingByte"
+                           | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"           | "Rmaxquotient"
  // -----------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -2492,7 +2494,6 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gaccesslistaddress    < DEFAULT > => 0
 
     rule Rmaxquotient         < DEFAULT > => 2
-    rule reservedStartingByte < DEFAULT > => 0
 
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true
@@ -2510,6 +2511,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaschainid             << DEFAULT >> => false
     rule Ghasaccesslist          << DEFAULT >> => false
     rule Ghasbasefee             << DEFAULT >> => false
+    rule Ghasrejectedfirstbyte   << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -2686,20 +2688,21 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "LONDON" [klabel(LONDON_EVM), symbol, smtlib(schedule_LONDON)]
  // ----------------------------------------------------------------------------------
-    rule Rselfdestruct        < LONDON > => 0
-    rule Rsstoreclear         < LONDON > => Gsstorereset < LONDON > +Int Gaccessliststoragekey < LONDON >
-    rule Rmaxquotient         < LONDON > => 5
-    rule reservedStartingByte < LONDON > => 239
+    rule Rselfdestruct < LONDON > => 0
+    rule Rsstoreclear  < LONDON > => Gsstorereset < LONDON > +Int Gaccessliststoragekey < LONDON >
+    rule Rmaxquotient  < LONDON > => 5
     rule SCHEDCONST    < LONDON > => SCHEDCONST < BERLIN >
       requires notBool ( SCHEDCONST ==K Rselfdestruct
                   orBool SCHEDCONST ==K Rsstoreclear
                   orBool SCHEDCONST ==K Rmaxquotient
-                  orBool SCHEDCONST ==K reservedStartingByte
                        )
 
-    rule Ghasbasefee << LONDON >> => true
-    rule SCHEDFLAG   << LONDON >> => SCHEDFLAG << BERLIN >>
-      requires notBool ( SCHEDFLAG ==K Ghasbasefee )
+    rule Ghasbasefee           << LONDON >> => true
+    rule Ghasrejectedfirstbyte << LONDON >> => true
+    rule SCHEDFLAG             << LONDON >> => SCHEDFLAG << BERLIN >>
+      requires notBool ( SCHEDFLAG ==K Ghasbasefee
+                  orBool SCHEDFLAG ==K Ghasrejectedfirstbyte
+                       )
 ```
 
 EVM Program Representations
