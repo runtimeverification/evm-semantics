@@ -1508,6 +1508,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
 -   `#create____` transfers the endowment to the new account and triggers the execution of the initialization code.
 -   `#codeDeposit_` checks the result of initialization code and whether the code deposit can be paid, indicating an error if not.
+-   `#isValidCode_` checks if the code returned by the execution of the initialization code begins with a reserved byte. [EIP-3541]
 
 ```k
     syntax InternalOp ::= "#create"   Int Int Int ByteArray
@@ -1548,6 +1549,11 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
 
+    syntax Bool ::= #isValidCode ( ByteArray , Schedule ) [function]
+ // ----------------------------------------------------------------
+    rule #isValidCode(_   , SCHED) => true requires notBool Ghasbasefee << SCHED >>
+    rule #isValidCode(OUT , SCHED) => OUT[0] =/=Int reservedStartingByte < SCHED > requires Ghasbasefee << SCHED >>
+
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
                    | "#finishCodeDeposit" Int ByteArray
@@ -1569,11 +1575,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <schedule> SCHED </schedule>
          <output> OUT => .ByteArray </output>
       requires #sizeByteArray(OUT) <=Int maxCodeSize < SCHED >
+       andBool #isValidCode(OUT, SCHED)
 
     rule <k> #mkCodeDeposit _ACCT => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
          <output> OUT => .ByteArray </output>
       requires #sizeByteArray(OUT) >Int maxCodeSize < SCHED >
+       andBool #isValidCode(OUT, SCHED)
 
     rule <k> #finishCodeDeposit ACCT OUT
           => #popCallStack ~> #dropWorldState
@@ -2411,8 +2419,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gtxdatazero"      | "Gtxdatanonzero"     | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
                            | "Gsha3word"        | "Gcopy"              | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
                            | "Gecadd"           | "Gecmul"             | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"     | "Gcoldsload"    | "Gcoldaccountaccess"
-                           | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"           | "Rmaxquotient"
- // --------------------------------------------------------------------------------------------
+                           | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"           | "Rmaxquotient"| "reservedStartingByte"
+ // -----------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
@@ -2483,7 +2491,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gaccessliststoragekey < DEFAULT > => 0
     rule Gaccesslistaddress    < DEFAULT > => 0
 
-    rule Rmaxquotient < DEFAULT > => 2
+    rule Rmaxquotient         < DEFAULT > => 2
+    rule reservedStartingByte < DEFAULT > => 0
 
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true
@@ -2677,14 +2686,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "LONDON" [klabel(LONDON_EVM), symbol, smtlib(schedule_LONDON)]
  // ----------------------------------------------------------------------------------
-    rule Rselfdestruct < LONDON > => 0
-    rule Rsstoreclear  < LONDON > => Gsstorereset < LONDON > +Int Gaccessliststoragekey < LONDON >
-    rule Rmaxquotient  < LONDON > => 5
-
+    rule Rselfdestruct        < LONDON > => 0
+    rule Rsstoreclear         < LONDON > => Gsstorereset < LONDON > +Int Gaccessliststoragekey < LONDON >
+    rule Rmaxquotient         < LONDON > => 5
+    rule reservedStartingByte < LONDON > => 239
     rule SCHEDCONST    < LONDON > => SCHEDCONST < BERLIN >
       requires notBool ( SCHEDCONST ==K Rselfdestruct
                   orBool SCHEDCONST ==K Rsstoreclear
                   orBool SCHEDCONST ==K Rmaxquotient
+                  orBool SCHEDCONST ==K reservedStartingByte
                        )
 
     rule Ghasbasefee << LONDON >> => true
