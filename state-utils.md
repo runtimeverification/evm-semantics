@@ -70,6 +70,7 @@ module STATE-UTILS
          <blockNonce>        _ => 0          </blockNonce>
          <ommerBlockHeaders> _ => [ .JSONs ] </ommerBlockHeaders>
          <blockhashes>       _ => .List      </blockhashes>
+         <baseFee>           _ => 0          </baseFee>
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
