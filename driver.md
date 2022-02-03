@@ -324,7 +324,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```k
     syntax Set ::= "#discardKeys" [function]
  // ----------------------------------------
-    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("callcreates") SetItem("sealEngine") )
+    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("callcreates") SetItem("sealEngine") SetItem("transactionSequence") SetItem("chainname"))
 
     rule <k> run TESTID : { KEY : _ , REST } => run TESTID : { REST } ... </k> requires KEY in #discardKeys
 ```
@@ -350,6 +350,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> loadTransaction _ { "data"       : (TI:String => #parseByteStackRaw(TI)), _                  } ... </k>
     rule <k> loadTransaction _ { "r"          : (TR:String => #padToWidth(32, #parseByteStackRaw(TR))), _ } ... </k>
     rule <k> loadTransaction _ { "s"          : (TS:String => #padToWidth(32, #parseByteStackRaw(TS))), _ } ... </k>
+    rule <k> loadTransaction _ { "maxPriorityFeePerGas" : (V:String => #asWord(#parseByteStackRaw(V))), _ } ... </k>
+    rule <k> loadTransaction _ { "maxFeePerGas"         : (V:String => #asWord(#parseByteStackRaw(V))), _ } ... </k>
 ```
 
 ### Checking State
@@ -460,7 +462,7 @@ Here we check the other post-conditions associated with an EVM test.
       requires KEY in ( SetItem("coinbase") SetItem("difficulty") SetItem("gasLimit") SetItem("gasUsed")
                         SetItem("mixHash") SetItem("nonce") SetItem("number") SetItem("parentHash")
                         SetItem("receiptTrie") SetItem("stateRoot") SetItem("timestamp")
-                        SetItem("transactionsTrie") SetItem("uncleHash")
+                        SetItem("transactionsTrie") SetItem("uncleHash") SetItem("baseFeePerGas")
                       )
 
     rule <k> check "blockHeader" : { "bloom"            : VALUE } => . ... </k> <logsBloom>        VALUE </logsBloom>
@@ -478,7 +480,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "blockHeader" : { "timestamp"        : VALUE } => . ... </k> <timestamp>        VALUE </timestamp>
     rule <k> check "blockHeader" : { "transactionsTrie" : VALUE } => . ... </k> <transactionsRoot> VALUE </transactionsRoot>
     rule <k> check "blockHeader" : { "uncleHash"        : VALUE } => . ... </k> <ommersHash>       VALUE </ommersHash>
-
+    rule <k> check "blockHeader" : { "baseFeePerGas"    : VALUE } => . ... </k> <baseFee>          VALUE </baseFee>
     rule <k> check "blockHeader" : { "hash": HASH:ByteArray } => . ...</k>
          <previousHash>     HP </previousHash>
          <ommersHash>       HO </ommersHash>
@@ -496,6 +498,25 @@ Here we check the other post-conditions associated with an EVM test.
          <mixHash>          HM </mixHash>
          <blockNonce>       HN </blockNonce>
       requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN) ==Int #asWord(HASH)
+
+    rule <k> check "blockHeader" : { "hash": HASH:ByteArray } => . ...</k>
+         <previousHash>     HP </previousHash>
+         <ommersHash>       HO </ommersHash>
+         <coinbase>         HC </coinbase>
+         <stateRoot>        HR </stateRoot>
+         <transactionsRoot> HT </transactionsRoot>
+         <receiptsRoot>     HE </receiptsRoot>
+         <logsBloom>        HB </logsBloom>
+         <difficulty>       HD </difficulty>
+         <number>           HI </number>
+         <gasLimit>         HL </gasLimit>
+         <gasUsed>          HG </gasUsed>
+         <timestamp>        HS </timestamp>
+         <extraData>        HX </extraData>
+         <mixHash>          HM </mixHash>
+         <blockNonce>       HN </blockNonce>
+         <baseFee>          HF </baseFee>
+      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF) ==Int #asWord(HASH)
 
     rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
  // ------------------------------------------------------------------------------------------------------------------------
@@ -519,7 +540,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : (_KEY : (VALUE:String    => #parseByteStack(VALUE))) ... </k>
     rule <k> check "transactions" : ("to" : (VALUE:ByteArray => #asAccount(VALUE)))      ... </k>
     rule <k> check "transactions" : ( KEY : (VALUE:ByteArray => #padToWidth(32, VALUE))) ... </k> requires KEY in (SetItem("r") SetItem("s")) andBool #sizeByteArray(VALUE) <Int 32
-    rule <k> check "transactions" : ( KEY : (VALUE:ByteArray => #asWord(VALUE)))         ... </k> requires KEY in (SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce") SetItem("v") SetItem("value") SetItem("chainId") SetItem("type"))
+    rule <k> check "transactions" : ( KEY : (VALUE:ByteArray => #asWord(VALUE)))         ... </k> requires KEY in (SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce") SetItem("v") SetItem("value") SetItem("chainId") SetItem("type") SetItem("maxFeePerGas") SetItem("maxPriorityFeePerGas"))
 
     rule <k> check "transactions" : "accessList" : [ ACCESSLIST , REST ] => check "transactions" : "accessList" : ACCESSLIST  ~> check "transactions" : "accessList" : [ REST ] ... </k>
     rule <k> check "transactions" : "accessList" : { "address" : V1 , "storageKeys": V2 , .JSONs } => check "transactions" : "accessList" : "address" : #parseHexWord(V1) : "storageKeys" : V2  ... </k>
@@ -540,8 +561,10 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ("value"    : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <value>      VALUE </value>      ... </message>
     rule <k> check "transactions" : ("chainId"  : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txChainID>  VALUE </txChainID>  ... </message>
     rule <k> check "transactions" : ("type"     : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txType>     TYPE  </txType>     ... </message> requires VALUE ==Int #dasmTxPrefix(TYPE)
+    rule <k> check "transactions" : ("maxFeePerGas"         : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxFee>  VALUE </txMaxFee>  ... </message>
+    rule <k> check "transactions" : ("maxPriorityFeePerGas" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee>  VALUE </txPriorityFee>  ... </message>
 
-    syntax Bool ::= isInAccessListStorage ( Int , JSON )    [function]
+syntax Bool ::= isInAccessListStorage ( Int , JSON )    [function]
                   | isInAccessList ( Account , Int , JSON ) [function]
  // ------------------------------------------------------------------
     rule isInAccessList(_   , _  , [.JSONs                     ]) => false

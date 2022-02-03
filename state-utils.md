@@ -131,7 +131,7 @@ Here we load the environmental information.
 
 ```k
     rule <k> load "env" : { KEY : ((VAL:String) => #parseWord(VAL)) } ... </k>
-      requires KEY in (SetItem("currentTimestamp") SetItem("currentGasLimit") SetItem("currentNumber") SetItem("currentDifficulty"))
+      requires KEY in (SetItem("currentTimestamp") SetItem("currentGasLimit") SetItem("currentNumber") SetItem("currentDifficulty") SetItem("currentBaseFee"))
     rule <k> load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) } ... </k>
       requires KEY in (SetItem("currentCoinbase") SetItem("previousHash"))
  // ----------------------------------------------------------------------
@@ -141,6 +141,7 @@ Here we load the environmental information.
     rule <k> load "env" : { "currentNumber"     : (NUM:Int)    } => . ... </k> <number>       _ => NUM    </number>
     rule <k> load "env" : { "previousHash"      : (HASH:Int)   } => . ... </k> <previousHash> _ => HASH   </previousHash>
     rule <k> load "env" : { "currentTimestamp"  : (TS:Int)     } => . ... </k> <timestamp>    _ => TS     </timestamp>
+    rule <k> load "env" : { "currentBaseFee"    : (BF:Int)     } => . ... </k> <baseFee>      _ => BF     </baseFee>
 
     syntax KItem ::= "loadCallState" JSON
  // -------------------------------------
@@ -203,8 +204,33 @@ The `"rlp"` key loads the block information.
          <blockNonce>        _ => #asWord(#parseByteStackRaw(HN)) </blockNonce>
          <ommerBlockHeaders> _ => BU                              </ommerBlockHeaders>
 
+    rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , .JSONs ] , BT , BU , .JSONs ]
+          => load "transaction" : BT
+         ...
+         </k>
+         <previousHash>      _ => #asWord(#parseByteStackRaw(HP)) </previousHash>
+         <ommersHash>        _ => #asWord(#parseByteStackRaw(HO)) </ommersHash>
+         <coinbase>          _ => #asWord(#parseByteStackRaw(HC)) </coinbase>
+         <stateRoot>         _ => #asWord(#parseByteStackRaw(HR)) </stateRoot>
+         <transactionsRoot>  _ => #asWord(#parseByteStackRaw(HT)) </transactionsRoot>
+         <receiptsRoot>      _ => #asWord(#parseByteStackRaw(HE)) </receiptsRoot>
+         <logsBloom>         _ => #parseByteStackRaw(HB)          </logsBloom>
+         <difficulty>        _ => #asWord(#parseByteStackRaw(HD)) </difficulty>
+         <number>            _ => #asWord(#parseByteStackRaw(HI)) </number>
+         <gasLimit>          _ => #asWord(#parseByteStackRaw(HL)) </gasLimit>
+         <gasUsed>           _ => #asWord(#parseByteStackRaw(HG)) </gasUsed>
+         <timestamp>         _ => #asWord(#parseByteStackRaw(HS)) </timestamp>
+         <extraData>         _ => #parseByteStackRaw(HX)          </extraData>
+         <mixHash>           _ => #asWord(#parseByteStackRaw(HM)) </mixHash>
+         <blockNonce>        _ => #asWord(#parseByteStackRaw(HN)) </blockNonce>
+         <baseFee>           _ => #asWord(#parseByteStackRaw(HF)) </baseFee>
+         <ommerBlockHeaders> _ => BU                              </ommerBlockHeaders>
+
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhashes>
+
+    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, .JSONs ], _, _, .JSONs ] => .K ... </k>
+         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhashes>
 
     syntax EthereumCommand ::= "mkTX" Int
  // -------------------------------------
@@ -229,10 +255,11 @@ The `"rlp"` key loads the block information.
 
     rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST ]
           => mkTX !ID:Int
-          ~> loadTransaction !ID { "data"  : TI   ,   "gasLimit" : TG   ,   "gasPrice" : TP
-                                 , "nonce" : TN   ,   "r"        : TR   ,   "s"        : TS
-                                 , "to"    : TT   ,   "v"        : TW   ,   "value"    : TV
-                                 , "type"  : #dasmTxPrefix(Legacy)      , .JSONs
+          ~> loadTransaction !ID { "data"  : TI   ,   "gasLimit" : TG   ,   "gasPrice"             : TP
+                                 , "nonce" : TN   ,   "r"        : TR   ,   "s"                    : TS
+                                 , "to"    : TT   ,   "v"        : TW   ,   "value"                : TV
+                                 , "type"  : #dasmTxPrefix(Legacy)      ,   "maxPriorityFeePerGas" : TP
+                                 , "maxFeePerGas": TP                   , .JSONs
                                  }
           ~> load "transaction" : [ REST ]
           ...
@@ -240,16 +267,31 @@ The `"rlp"` key loads the block information.
 
     rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TG, TT, TV, TI, TA, TY , TR, TS ]] , REST ]
           => mkTX !ID:Int
-          ~> loadTransaction !ID { "data"       : TI   ,   "gasLimit" : TG   ,   "gasPrice" : TP
-                                 , "nonce"      : TN   ,   "r"        : TR   ,   "s"        : TS
-                                 , "to"         : TT   ,   "v"        : TY   ,   "value"    : TV
-                                 , "accessList" : TA   ,   "type"     : TYPE ,   "chainID"  : TC
+          ~> loadTransaction !ID { "data"       : TI   ,   "gasLimit" : TG   ,   "gasPrice"  : TP
+                                 , "nonce"      : TN   ,   "r"        : TR   ,   "s"         : TS
+                                 , "to"         : TT   ,   "v"        : TY   ,   "value"     : TV
+                                 , "accessList" : TA   ,   "type"     : TYPE ,   "chainID"   : TC
+                                 , "maxPriorityFeePerGas" : TP               , "maxFeePerGas": TP
                                  , .JSONs
                                  }
           ~> load "transaction" : [ REST ]
           ...
          </k>
     requires #asWord(#parseByteStackRaw(TYPE)) ==Int #dasmTxPrefix(AccessList)
+
+
+    rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, TY , TR, TS ]] , REST ]
+          => mkTX !ID:Int
+          ~> loadTransaction !ID { "data"         : TI   ,   "gasLimit" : TG   ,   "maxPriorityFeePerGas" : TP
+                                 , "nonce"        : TN   ,   "r"        : TR   ,   "s"                    : TS
+                                 , "to"           : TT   ,   "v"        : TY   ,   "value"                : TV
+                                 , "accessList"   : TA   ,   "type"     : TYPE ,   "chainID"              : TC
+                                 , "maxFeePerGas" : TF   , .JSONs
+                                 }
+          ~> load "transaction" : [ REST ]
+          ...
+         </k>
+    requires #asWord(#parseByteStackRaw(TYPE)) ==Int #dasmTxPrefix(DynamicFee)
 
     syntax EthereumCommand ::= "loadTransaction" Int JSON
  // -----------------------------------------------------
@@ -291,6 +333,12 @@ The `"rlp"` key loads the block information.
 
     rule <k> loadTransaction TXID { "accessList" : [TA:JSONs], REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <txAccess> _ => [TA] </txAccess> ... </message>
+
+    rule <k> loadTransaction TXID { "maxPriorityFeePerGas" : TP:Int, REST => REST } ... </k>
+         <message> <msgID> TXID </msgID> <txPriorityFee> _ => TP </txPriorityFee> ... </message>
+
+    rule <k> loadTransaction TXID { "maxFeePerGas" : TF:Int, REST => REST } ... </k>
+         <message> <msgID> TXID </msgID> <txMaxFee> _ => TF </txMaxFee> ... </message>
 ```
 
 ### Getting State
