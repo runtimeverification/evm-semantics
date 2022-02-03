@@ -580,6 +580,7 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires REFUND =/=Int 0
 
     rule <k> #finalizeTx(false => true) ... </k>
+         <baseFee> BFEE </baseFee>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
          <gas> GAVAIL </gas>
@@ -593,7 +594,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          </account>
          <account>
            <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int GPRICE </balance>
+           <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int (GPRICE -Int BFEE) </balance>
            ...
          </account>
          <txPending> ListItem(TXID:Int) => .List ... </txPending>
@@ -605,6 +606,7 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires ORG =/=Int MINER
 
     rule <k> #finalizeTx(false => true) ... </k>
+         <baseFee> BFEE </baseFee>
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
          <gas> GAVAIL </gas>
@@ -613,7 +615,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <refund> 0 </refund>
          <account>
            <acctID> ACCT </acctID>
-           <balance> BAL => BAL +Int GLIMIT *Int GPRICE </balance>
+           <balance> BAL => BAL +Int GLIMIT *Int (GPRICE -Int BFEE) </balance>
            ...
          </account>
          <txPending> ListItem(MsgId:Int) => .List ... </txPending>
