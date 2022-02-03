@@ -92,7 +92,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          ...
          </k>
          <schedule> SCHED </schedule>
-         <gasPrice> _ => GPRICE </gasPrice>
+         <gasPrice> _ => #effectiveGasPrice(TXID) </gasPrice>
          <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
@@ -100,7 +100,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID     </msgID>
-           <txGasPrice> GPRICE   </txGasPrice>
            <txGasLimit> GLIMIT   </txGasLimit>
            <to>         .Account </to>
            <value>      VALUE    </value>
@@ -125,7 +124,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          ...
          </k>
          <schedule> SCHED </schedule>
-         <gasPrice> _ => GPRICE </gasPrice>
+         <gasPrice> _ => #effectiveGasPrice(TXID) </gasPrice>
          <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
@@ -133,7 +132,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID   </msgID>
-           <txGasPrice> GPRICE </txGasPrice>
            <txGasLimit> GLIMIT </txGasLimit>
            <to>         ACCTTO </to>
            <value>      VALUE  </value>
