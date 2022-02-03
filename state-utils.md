@@ -369,11 +369,11 @@ The `"rlp"` key loads the block information.
                                               orBool TXTYPE ==K Legacy
                                               orBool TXTYPE ==K AccessList
                                             #then GPRICE
-                                            #else BASEFEE +Int minInt(TPF, TM -Int BASEFEE)
+                                            #else BFEE +Int minInt(TPF, TM -Int BFEE)
                                           #fi
          ]]
          <schedule> SCHED </schedule>
-         <baseFee> BASEFEE </baseFee>
+         <baseFee> BFEE </baseFee>
          <message>
            <msgID>         TXID   </msgID>
            <txGasPrice>    GPRICE </txGasPrice>
