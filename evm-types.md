@@ -716,10 +716,13 @@ Productions related to transactions
     rule #asmTxPrefix (0) => Legacy
     rule #asmTxPrefix (1) => AccessList
 
-    syntax TxData ::= LegacyTxData         ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray )
-                    | LegacyProtectedTxData( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray, chainId: Int )
-                    | AccessListTxData     ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray, chainId: Int, accessLists: JSONs )
- // ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+    syntax TxData ::= LegacyTx | AccessListTx
+ // -----------------------------------------
+
+    syntax LegacyTx     ::= LegacyTxData         ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray )
+                          | LegacyProtectedTxData( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray, chainId: Int )
+    syntax AccessListTx ::= AccessListTxData     ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray, chainId: Int, accessLists: JSONs )
+ // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 endmodule
 ```

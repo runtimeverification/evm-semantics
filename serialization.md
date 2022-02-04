@@ -88,8 +88,8 @@ Address/Hash Helpers
     rule #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
       => Keccak256( #rlpEncode([ TN, TP, TG, #addrBytes(TT), TV, TD, TW, TR, TS ]) )
 
-    rule #hashTxData( TXDATA )                           => Keccak256( #rlpEncodeTxData(TXDATA) ) [owise]
-    rule #hashTxData( AccessListTxData(...) #as TXDATA ) => Keccak256( "\x01" +String #rlpEncodeTxData(TXDATA) )
+    rule #hashTxData( TXDATA ) => Keccak256(                #rlpEncodeTxData(TXDATA) ) requires isLegacyTx    (TXDATA)
+    rule #hashTxData( TXDATA ) => Keccak256( "\x01" +String #rlpEncodeTxData(TXDATA) ) requires isAccessListTx(TXDATA)
 ```
 
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
