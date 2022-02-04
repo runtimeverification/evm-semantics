@@ -322,7 +322,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```k
     syntax Set ::= "#discardKeys" [function]
  // ----------------------------------------
-    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("callcreates") SetItem("sealEngine") SetItem("transactionSequence") SetItem("chainname"))
+    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("callcreates") SetItem("sealEngine") SetItem("transactionSequence") SetItem("chainname") )
 
     rule <k> run TESTID : { KEY : _ , REST } => run TESTID : { REST } ... </k> requires KEY in #discardKeys
 ```
@@ -495,26 +495,9 @@ Here we check the other post-conditions associated with an EVM test.
          <extraData>        HX </extraData>
          <mixHash>          HM </mixHash>
          <blockNonce>       HN </blockNonce>
-      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN) ==Int #asWord(HASH)
-
-    rule <k> check "blockHeader" : { "hash": HASH:ByteArray } => . ...</k>
-         <previousHash>     HP </previousHash>
-         <ommersHash>       HO </ommersHash>
-         <coinbase>         HC </coinbase>
-         <stateRoot>        HR </stateRoot>
-         <transactionsRoot> HT </transactionsRoot>
-         <receiptsRoot>     HE </receiptsRoot>
-         <logsBloom>        HB </logsBloom>
-         <difficulty>       HD </difficulty>
-         <number>           HI </number>
-         <gasLimit>         HL </gasLimit>
-         <gasUsed>          HG </gasUsed>
-         <timestamp>        HS </timestamp>
-         <extraData>        HX </extraData>
-         <mixHash>          HM </mixHash>
-         <blockNonce>       HN </blockNonce>
          <baseFee>          HF </baseFee>
-      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF) ==Int #asWord(HASH)
+      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)     ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF) ==Int #asWord(HASH)
 
     rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
  // ------------------------------------------------------------------------------------------------------------------------
@@ -559,10 +542,12 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ("value"    : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <value>      VALUE </value>      ... </message>
     rule <k> check "transactions" : ("chainId"  : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txChainID>  VALUE </txChainID>  ... </message>
     rule <k> check "transactions" : ("type"     : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txType>     TYPE  </txType>     ... </message> requires VALUE ==Int #dasmTxPrefix(TYPE)
-    rule <k> check "transactions" : ("maxFeePerGas"         : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxFee>  VALUE </txMaxFee>  ... </message>
-    rule <k> check "transactions" : ("maxPriorityFeePerGas" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee>  VALUE </txPriorityFee>  ... </message>
+    rule <k> check "transactions" : ("maxFeePerGas"
+                                                : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxFee>   VALUE </txMaxFee>   ... </message>
+    rule <k> check "transactions" : ("maxPriorityFeePerGas"
+                                                : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee> VALUE </txPriorityFee>  ... </message>
 
-syntax Bool ::= isInAccessListStorage ( Int , JSON )    [function]
+    syntax Bool ::= isInAccessListStorage ( Int , JSON )    [function]
                   | isInAccessList ( Account , Int , JSON ) [function]
  // ------------------------------------------------------------------
     rule isInAccessList(_   , _  , [.JSONs                     ]) => false

@@ -1553,8 +1553,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     syntax Bool ::= #isValidCode ( ByteArray , Schedule ) [function]
  // ----------------------------------------------------------------
-    rule #isValidCode(OUT , SCHED) => notBool Ghasrejectedfirstbyte << SCHED >> orBool OUT[0] =/=Int 239 requires #sizeByteArray(OUT) >Int 0
-    rule #isValidCode(OUT , SCHED) => true [owise]
+    rule #isValidCode( OUT ,  SCHED) => notBool Ghasrejectedfirstbyte << SCHED >> orBool OUT[0] =/=Int 239 requires #sizeByteArray(OUT) >Int 0
+    rule #isValidCode(_OUT , _SCHED) => true [owise]
 
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
