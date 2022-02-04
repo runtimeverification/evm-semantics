@@ -1553,8 +1553,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     syntax Bool ::= #isValidCode ( ByteArray , Schedule ) [function]
  // ----------------------------------------------------------------
-    rule #isValidCode(OUT , SCHED) => notBool Ghasrejectedfirstbyte << SCHED >> orBool OUT[0] =/=Int 239 requires #sizeByteArray(OUT) >Int 0
-    rule #isValidCode(OUT , SCHED) => true [owise]
+    rule #isValidCode( OUT ,  SCHED) => notBool Ghasrejectedfirstbyte << SCHED >> orBool OUT[0] =/=Int 239 requires #sizeByteArray(OUT) >Int 0
+    rule #isValidCode(_OUT , _SCHED) => true [owise]
 
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
@@ -2424,7 +2424,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gsha3word"        | "Gcopy"              | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
                            | "Gecadd"           | "Gecmul"             | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"     | "Gcoldsload"    | "Gcoldaccountaccess"
                            | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"           | "Rmaxquotient"
- // -----------------------------------------------------------------------------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
@@ -2495,7 +2495,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gaccessliststoragekey < DEFAULT > => 0
     rule Gaccesslistaddress    < DEFAULT > => 0
 
-    rule Rmaxquotient         < DEFAULT > => 2
+    rule Rmaxquotient < DEFAULT > => 2
 
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true

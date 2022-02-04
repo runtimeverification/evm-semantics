@@ -413,12 +413,13 @@ The `"rlp"` key loads the block information.
 
     syntax Int ::= #effectiveGasPrice( Int ) [function]
  // ---------------------------------------------------
-    rule [[ #effectiveGasPrice( TXID ) => #if        notBool Ghasbasefee << SCHED >>
-                                              orBool TXTYPE ==K Legacy
-                                              orBool TXTYPE ==K AccessList
-                                            #then GPRICE
-                                            #else BFEE +Int minInt(TPF, TM -Int BFEE)
-                                          #fi
+    rule [[ #effectiveGasPrice( TXID )
+         => #if notBool Ghasbasefee << SCHED >>
+                orBool TXTYPE ==K Legacy
+                orBool TXTYPE ==K AccessList
+              #then GPRICE
+              #else BFEE +Int minInt(TPF, TM -Int BFEE)
+            #fi
          ]]
          <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
