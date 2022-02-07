@@ -441,6 +441,9 @@ tests/specs/examples/erc721-spec/haskell/erc721-spec-kompiled/timestamp: tests/s
 tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes)
 	$(KEVM) solc-to-k $< ERC721 > $@
 
+tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes)
+	$(KEVM) solc-to-k $< Empty > $@
+
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
 	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
@@ -580,7 +583,8 @@ test-failure: $(failure_tests:=.run-expected)
 
 # kevm_pyk Tests
 
-kevm_pyk_tests := tests/specs/examples/erc20-bin-runtime.k \
+kevm_pyk_tests := tests/specs/examples/empty-bin-runtime.k \
+                  tests/specs/examples/erc20-bin-runtime.k \
                   tests/specs/examples/erc721-bin-runtime.k
 
 test-kevm-pyk: $(kevm_pyk_tests)
