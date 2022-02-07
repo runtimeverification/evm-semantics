@@ -59,6 +59,7 @@ module STATICLOOP00-A0LT10-SPEC
           <extraData> _ </extraData>
           <mixHash> _ </mixHash>
           <blockNonce> _ </blockNonce>
+          <baseFee> _ </baseFee>
           <ommerBlockHeaders> _ </ommerBlockHeaders>
         </block>
       </evm>
