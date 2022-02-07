@@ -37,20 +37,16 @@ Address/Hash Helpers
     rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncode([#addrBytes(ACCT), NONCE]))))
     rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#addrBytes(ACCT)) +String #unparseByteStack(#wordBytes(SALT)) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE)))))))
 
-    syntax Account ::= #sender ( Int , Int , Int , Int , Account , Int , String , Int , JSONs , Int , ByteArray, ByteArray )    [function]
-                     | #sender ( String , Int , String , String )                                                               [function, klabel(#senderAux) ]
-                     | #sender ( String )                                                                                       [function, klabel(#senderAux2)]
- // -----------------------------------------------------------------------------------------------------------------------------------------------------------
-    rule #sender(_, _, _, _, _, _, _, _, _, TW => TW +Int 27, _, _)
+    syntax Account ::= #sender ( TxData , Int , ByteArray , ByteArray ) [function, klabel(#senderTxData)]
+                     | #sender ( String , Int , String , String )       [function, klabel(#senderAux)   ]
+                     | #sender ( String )                               [function, klabel(#senderAux2)  ]
+ // -----------------------------------------------------------------------------------------------------
+    rule #sender(_:TxData, TW => TW +Int 27, _, _)
       requires TW ==Int 0 orBool TW ==Int 1
 
-    rule #sender(TYPE, TN, TP, TG, TT, TV, TD, CID, TA, TW, TR, TS)
-      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TYPE, TN, TP, TG, TT, TV, #parseByteStackRaw(TD), CID, TA))), TW, #unparseByteStack(TR), #unparseByteStack(TS))
-      requires TW ==Int 27 orBool TW ==Int 28
-
-    rule #sender(_TYPE, TN, TP, TG, TT, TV, TD, CID, _TA, TW, TR, TS)
-      => #sender(#unparseByteStack(#parseHexBytes(#hashUnsignedTx(TN, TP, TG, TT, TV, #parseByteStackRaw(TD), CID))), 28 -Int (TW %Int 2), #unparseByteStack(TR), #unparseByteStack(TS))
-      requires TW ==Int CID *Int 2 +Int 35 orBool TW ==Int CID *Int 2 +Int 36
+    rule #sender(TXDATA, TW, TR, TS)
+      => #sender(Hex2Raw(#hashTxData(TXDATA)), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+      requires TW =/=Int 0 andBool TW =/=Int 1
 
     rule #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
 
@@ -84,27 +80,16 @@ Address/Hash Helpers
 ```
 
 - `#hashSignedTx` Takes transaction data. Returns the hash of the rlp-encoded transaction with R S and V.
-- `#hashUnsignedTx` Returns the hash of the rlp-encoded transaction without R S or V.
 
 ```k
-    syntax String ::= #hashSignedTx   ( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
-                    | #hashUnsignedTx ( Int , Int , Int , Int , Account , Int , ByteArray , Int , JSONs )           [function]
-                    | #hashUnsignedTx ( Int , Int , Int , Account , Int , ByteArray, Int )                          [function]
- // --------------------------------------------------------------------------------------------------------------------------
+    syntax String ::= #hashSignedTx( Int , Int , Int , Account , Int , ByteArray , Int , ByteArray , ByteArray ) [function]
+                    | #hashTxData  ( TxData )                                                                    [function]
+ // -----------------------------------------------------------------------------------------------------------------------
     rule #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
       => Keccak256( #rlpEncode([ TN, TP, TG, #addrBytes(TT), TV, TD, TW, TR, TS ]) )
 
-    // Hashing for legacy transactions
-    rule #hashUnsignedTx(0, TN, TP, TG, TT, TV, TD, _CID, _TA)
-      => Keccak256( #rlpEncode([ TN, TP, TG, #addrBytes(TT), TV, TD ]) )
-
-    // Hashing for EIP-2930: Optional access lists
-    rule #hashUnsignedTx(1, TN, TP, TG, TT, TV, TD, CID, [TA])
-      => Keccak256( "\x01" +String #rlpEncode([ CID, TN, TP, TG, #addrBytes(TT), TV, TD, [TA] ]) )
-
-    // Hashing for EIP-155: Simple replay attack protection
-    rule #hashUnsignedTx(TN, TP, TG, TT, TV, TD, CID)
-      => Keccak256( #rlpEncode([ TN, TP, TG, #addrBytes(TT), TV, TD, CID, "", "" ]) )
+    rule #hashTxData( TXDATA ) => Keccak256(                #rlpEncodeTxData(TXDATA) ) requires isLegacyTx    (TXDATA)
+    rule #hashTxData( TXDATA ) => Keccak256( "\x01" +String #rlpEncodeTxData(TXDATA) ) requires isAccessListTx(TXDATA)
 ```
 
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
@@ -358,6 +343,17 @@ Encoding
     rule #rlpEncodeTopics( ( ListItem( X:Int ) => .List ) _
                          , ( OUT => OUT +String #rlpEncodeWord(X) )
                          )
+
+    syntax String ::= #rlpEncodeTxData( TxData ) [function]
+ // -------------------------------------------------------
+    rule #rlpEncodeTxData( LegacyTxData( TN, TP, TG, TT, TV, TD ) )
+      => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD ] )
+
+    rule #rlpEncodeTxData( LegacyProtectedTxData( TN, TP, TG, TT, TV, TD, CID ) )
+      => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD, CID, "", "" ] )
+
+    rule #rlpEncodeTxData( AccessListTxData( TN, TP, TG, TT, TV, TD, CID, [TA] ) )
+      => #rlpEncode( [ CID, TN, TP, TG, #addrBytes(TT), TV, TD, [TA] ] )
 
     syntax String ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
  // ----------------------------------------------------------------
@@ -712,25 +708,5 @@ Tree Root Helper Functions
                                                 +String #rlpEncodeString( Hex2Raw( Keccak256("") ) )
                                               , 192
                                               )
-```
-
-### Transaction Envelopes
-
-```k
-    syntax TxType ::= ".TxType"
-                    | "Legacy"
-                    | "AccessList"
- // ------------------------------
-
-    syntax Int ::= #dasmTxPrefix ( TxType ) [function]
- // --------------------------------------------------
-    rule #dasmTxPrefix (Legacy)     => 0
-    rule #dasmTxPrefix (AccessList) => 1
-
-    syntax TxType ::= #asmTxPrefix ( Int ) [function]
- // -------------------------------------------------
-    rule #asmTxPrefix (0) => Legacy
-    rule #asmTxPrefix (1) => AccessList
-
 endmodule
 ```

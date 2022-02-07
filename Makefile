@@ -180,7 +180,7 @@ kevm_files := abi.md              \
               network.md          \
               optimizations.md    \
               serialization.md    \
-              state-loader.md
+              state-utils.md
 
 kevm_lemmas := infinite-gas.k       \
                lemmas.k             \
