@@ -8,13 +8,13 @@ Actual execution of the EVM is defined in [the EVM file](../evm).
 requires "evm.md"
 requires "optimizations.md"
 requires "asm.md"
-requires "state-loader.md"
+requires "state-utils.md"
 
 module ETHEREUM-SIMULATION
     imports EVM
     imports EVM-OPTIMIZATIONS
     imports EVM-ASSEMBLY
-    imports STATE-LOADER
+    imports STATE-UTILS
 ```
 
 An Ethereum simulation is a list of Ethereum commands.
@@ -72,23 +72,13 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> startTx => #finalizeBlock ... </k>
          <txPending> .List </txPending>
 
-    rule <k> startTx => loadTx(#sender(#dasmTxPrefix(TYPE), TN, TP, TG, TT, TV, #unparseByteStack(DATA), CID, TA, TW, TR, TS)) ... </k>
-         <chainID> CID </chainID>
+    rule <k> startTx => loadTx( #sender( #getTxData(TXID), TW, TR, TS ) ) ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
            <msgID>      TXID </msgID>
-           <txNonce>    TN   </txNonce>
-           <txGasPrice> TP   </txGasPrice>
-           <txGasLimit> TG   </txGasLimit>
-           <to>         TT   </to>
-           <value>      TV   </value>
            <sigV>       TW   </sigV>
            <sigR>       TR   </sigR>
            <sigS>       TS   </sigS>
-           <data>       DATA </data>
-           <txType>     TYPE </txType>
-           <txChainID>  CID  </txChainID>
-           <txAccess>   TA   </txAccess>
            ...
          </message>
 
@@ -339,7 +329,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> run TESTID : { KEY : _ , REST } => run TESTID : { REST } ... </k> requires KEY in #discardKeys
 ```
 
--   `driver.md` specific handling of state-loader commands
+-   `driver.md` specific handling of state-utils commands
 
 ```k
     rule <k> load "account" : { ACCTID : ACCT } => loadAccount ACCTID ACCT ... </k>
