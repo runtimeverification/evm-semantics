@@ -344,6 +344,22 @@ The `"rlp"` key loads the block information.
            <txType> AccessList </txType>
            ...
          </message>
+
+    rule [[ #getTxData( TXID ) => DynamicFeeTxData(TN, TPF, TM, TG, TT, TV, DATA, CID, TA) ]]
+         <message>
+           <msgID>         TXID </msgID>
+           <txNonce>       TN   </txNonce>
+           <txGasLimit>    TG   </txGasLimit>
+           <to>            TT   </to>
+           <value>         TV   </value>
+           <data>          DATA </data>
+           <txChainID>     CID  </txChainID>
+           <txAccess>      TA   </txAccess>
+           <txPriorityFee> TPF  </txPriorityFee>
+           <txMaxFee>      TM   </txMaxFee>
+           <txType> DynamicFee </txType>
+           ...
+         </message>
 ```
 
 ### Block Identifiers

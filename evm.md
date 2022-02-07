@@ -144,19 +144,21 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             <messages>
               <message multiplicity="*" type="Map">
-                <msgID>      0          </msgID>
-                <txNonce>    0          </txNonce>            // T_n
-                <txGasPrice> 0          </txGasPrice>         // T_p
-                <txGasLimit> 0          </txGasLimit>         // T_g
-                <to>         .Account   </to>                 // T_t
-                <value>      0          </value>              // T_v
-                <sigV>       0          </sigV>               // T_w
-                <sigR>       .ByteArray </sigR>               // T_r
-                <sigS>       .ByteArray </sigS>               // T_s
-                <data>       .ByteArray </data>               // T_i/T_e
-                <txType>     .TxType    </txType>
-                <txAccess>   [ .JSONs ] </txAccess>
-                <txChainID>  0          </txChainID>
+                <msgID>         0          </msgID>
+                <txNonce>       0          </txNonce>    // T_n
+                <txGasPrice>    0          </txGasPrice> // T_p
+                <txGasLimit>    0          </txGasLimit> // T_g
+                <to>            .Account   </to>         // T_t
+                <value>         0          </value>      // T_v
+                <sigV>          0          </sigV>       // T_w
+                <sigR>          .ByteArray </sigR>       // T_r
+                <sigS>          .ByteArray </sigS>       // T_s
+                <data>          .ByteArray </data>       // T_i/T_e
+                <txType>        .TxType    </txType>
+                <txAccess>      [ .JSONs ] </txAccess>
+                <txChainID>     0          </txChainID>
+                <txPriorityFee> 0          </txPriorityFee>
+                <txMaxFee>      0          </txMaxFee>
               </message>
             </messages>
 
