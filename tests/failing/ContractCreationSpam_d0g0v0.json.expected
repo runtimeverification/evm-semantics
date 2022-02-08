@@ -151,6 +151,9 @@
         <blockNonce>
           0
         </blockNonce>
+        <baseFee>
+          0
+        </baseFee>
         <ommerBlockHeaders>
           [ .JSONs ]
         </ommerBlockHeaders>
@@ -272,6 +275,12 @@
           <txChainID>
             1
           </txChainID>
+          <txPriorityFee>
+            1
+          </txPriorityFee>
+          <txMaxFee>
+            1
+          </txMaxFee>
         </message>
       </messages>
     </network>
