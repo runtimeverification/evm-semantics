@@ -206,7 +206,7 @@ def generate_function_sentences(contract_name, contract_sort, abi, hashes):
     for h in hashes:
         f_name   = h.split('(')[0]
         hash_int = int(hashes[h], 16)
-        abi_function_selector_rewrite = KRewrite(KToken(f'selector("{f_name}")', function_sort['name']), KToken(str(hash_int), 'Int'))
+        abi_function_selector_rewrite = KRewrite(KToken(f'selector("{f_name}")', 'Int'), KToken(str(hash_int), 'Int'))
         abi_function_selector_rules.append(KRule(abi_function_selector_rewrite))
 
     function_productions, function_rules = map(list, zip(*function_sentence_pairs))
