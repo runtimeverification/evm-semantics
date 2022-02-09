@@ -25,19 +25,19 @@ Utilities
 ### Important Powers
 
 Some important numbers that are referred to often during execution.
-These can be used for pattern-matching on the LHS of rules as well (`macro` attribute expands all occurances of these in rules).
+These can be used for pattern-matching on the LHS of rules as well (`alias` attribute expands all occurances of these in rules).
 
 ```k
-    syntax Int ::= "pow256" [macro] /* 2 ^Int 256 */
-                 | "pow255" [macro] /* 2 ^Int 255 */
-                 | "pow224" [macro] /* 2 ^Int 224 */
-                 | "pow208" [macro] /* 2 ^Int 208 */
-                 | "pow168" [macro] /* 2 ^Int 168 */
-                 | "pow160" [macro] /* 2 ^Int 160 */
-                 | "pow128" [macro] /* 2 ^Int 128 */
-                 | "pow96"  [macro] /* 2 ^Int 96  */
-                 | "pow48"  [macro] /* 2 ^Int 48  */
-                 | "pow16"  [macro] /* 2 ^Int 16  */
+    syntax Int ::= "pow256" [alias] /* 2 ^Int 256 */
+                 | "pow255" [alias] /* 2 ^Int 255 */
+                 | "pow224" [alias] /* 2 ^Int 224 */
+                 | "pow208" [alias] /* 2 ^Int 208 */
+                 | "pow168" [alias] /* 2 ^Int 168 */
+                 | "pow160" [alias] /* 2 ^Int 160 */
+                 | "pow128" [alias] /* 2 ^Int 128 */
+                 | "pow96"  [alias] /* 2 ^Int 96  */
+                 | "pow48"  [alias] /* 2 ^Int 48  */
+                 | "pow16"  [alias] /* 2 ^Int 16  */
  // ------------------------------------------------
     rule pow256 => 115792089237316195423570985008687907853269984665640564039457584007913129639936
     rule pow255 => 57896044618658097711785492504343953926634992332820282019728792003956564819968
@@ -50,34 +50,34 @@ These can be used for pattern-matching on the LHS of rules as well (`macro` attr
     rule pow48  => 281474976710656
     rule pow16  => 65536
 
-    syntax Int ::= "minSInt128"      [macro]
-                 | "maxSInt128"      [macro]
-                 | "minUInt8"        [macro]
-                 | "maxUInt8"        [macro]
-                 | "minUInt16"       [macro]
-                 | "maxUInt16"       [macro]
-                 | "minUInt48"       [macro]
-                 | "maxUInt48"       [macro]
-                 | "minUInt96"       [macro]
-                 | "maxUInt96"       [macro]
-                 | "minUInt128"      [macro]
-                 | "maxUInt128"      [macro]
-                 | "minUInt160"      [macro]
-                 | "maxUInt160"      [macro]
-                 | "minUInt168"      [macro]
-                 | "maxUInt168"      [macro]
-                 | "minUInt208"      [macro]
-                 | "maxUInt208"      [macro]
-                 | "minUInt224"      [macro]
-                 | "maxUInt224"      [macro]
-                 | "minSInt256"      [macro]
-                 | "maxSInt256"      [macro]
-                 | "minUInt256"      [macro]
-                 | "maxUInt256"      [macro]
-                 | "minSFixed128x10" [macro]
-                 | "maxSFixed128x10" [macro]
-                 | "minUFixed128x10" [macro]
-                 | "maxUFixed128x10" [macro]
+    syntax Int ::= "minSInt128"      [alias]
+                 | "maxSInt128"      [alias]
+                 | "minUInt8"        [alias]
+                 | "maxUInt8"        [alias]
+                 | "minUInt16"       [alias]
+                 | "maxUInt16"       [alias]
+                 | "minUInt48"       [alias]
+                 | "maxUInt48"       [alias]
+                 | "minUInt96"       [alias]
+                 | "maxUInt96"       [alias]
+                 | "minUInt128"      [alias]
+                 | "maxUInt128"      [alias]
+                 | "minUInt160"      [alias]
+                 | "maxUInt160"      [alias]
+                 | "minUInt168"      [alias]
+                 | "maxUInt168"      [alias]
+                 | "minUInt208"      [alias]
+                 | "maxUInt208"      [alias]
+                 | "minUInt224"      [alias]
+                 | "maxUInt224"      [alias]
+                 | "minSInt256"      [alias]
+                 | "maxSInt256"      [alias]
+                 | "minUInt256"      [alias]
+                 | "maxUInt256"      [alias]
+                 | "minSFixed128x10" [alias]
+                 | "maxSFixed128x10" [alias]
+                 | "minUFixed128x10" [alias]
+                 | "maxUFixed128x10" [alias]
  // ----------------------------------------
     rule minSInt128      => -170141183460469231731687303715884105728                                        /*  -2^127      */
     rule maxSInt128      =>  170141183460469231731687303715884105727                                        /*   2^127 - 1  */
