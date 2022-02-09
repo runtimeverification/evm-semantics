@@ -328,9 +328,6 @@
           <data>
             b""
           </data>
-          <txType>
-            Legacy
-          </txType>
           <txAccess>
             [ .JSONs ]
           </txAccess>
@@ -343,6 +340,9 @@
           <txMaxFee>
             1
           </txMaxFee>
+          <txType>
+            Legacy
+          </txType>
         </message>
       </messages>
     </network>
