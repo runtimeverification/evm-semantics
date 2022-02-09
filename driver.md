@@ -337,19 +337,19 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> loadAccount _ { "code"    : ((CODE:String)     => #parseByteStack(CODE)),  _ } ... </k>
     rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONs } => #parseMap({ STORAGE })), _ } ... </k>
 
-    rule <k> loadTransaction _ { "type"       : (TT:String => #asWord(#parseByteStackRaw(TT))), _         } ... </k>
-    rule <k> loadTransaction _ { "chainID"    : (TC:String => #asWord(#parseByteStackRaw(TC))), _         } ... </k>
-    rule <k> loadTransaction _ { "gasLimit"   : (TG:String => #asWord(#parseByteStackRaw(TG))), _         } ... </k>
-    rule <k> loadTransaction _ { "gasPrice"   : (TP:String => #asWord(#parseByteStackRaw(TP))), _         } ... </k>
-    rule <k> loadTransaction _ { "nonce"      : (TN:String => #asWord(#parseByteStackRaw(TN))), _         } ... </k>
-    rule <k> loadTransaction _ { "v"          : (TW:String => #asWord(#parseByteStackRaw(TW))), _         } ... </k>
-    rule <k> loadTransaction _ { "value"      : (TV:String => #asWord(#parseByteStackRaw(TV))), _         } ... </k>
-    rule <k> loadTransaction _ { "to"         : (TT:String => #asAccount(#parseByteStackRaw(TT))), _      } ... </k>
-    rule <k> loadTransaction _ { "data"       : (TI:String => #parseByteStackRaw(TI)), _                  } ... </k>
-    rule <k> loadTransaction _ { "r"          : (TR:String => #padToWidth(32, #parseByteStackRaw(TR))), _ } ... </k>
-    rule <k> loadTransaction _ { "s"          : (TS:String => #padToWidth(32, #parseByteStackRaw(TS))), _ } ... </k>
-    rule <k> loadTransaction _ { "maxPriorityFeePerGas" : (V:String => #asWord(#parseByteStackRaw(V))), _ } ... </k>
-    rule <k> loadTransaction _ { "maxFeePerGas"         : (V:String => #asWord(#parseByteStackRaw(V))), _ } ... </k>
+    rule <k> loadTransaction _ { "type"                 : (TT:String => #asWord(#parseByteStackRaw(TT))), _         } ... </k>
+    rule <k> loadTransaction _ { "chainID"              : (TC:String => #asWord(#parseByteStackRaw(TC))), _         } ... </k>
+    rule <k> loadTransaction _ { "gasLimit"             : (TG:String => #asWord(#parseByteStackRaw(TG))), _         } ... </k>
+    rule <k> loadTransaction _ { "gasPrice"             : (TP:String => #asWord(#parseByteStackRaw(TP))), _         } ... </k>
+    rule <k> loadTransaction _ { "nonce"                : (TN:String => #asWord(#parseByteStackRaw(TN))), _         } ... </k>
+    rule <k> loadTransaction _ { "v"                    : (TW:String => #asWord(#parseByteStackRaw(TW))), _         } ... </k>
+    rule <k> loadTransaction _ { "value"                : (TV:String => #asWord(#parseByteStackRaw(TV))), _         } ... </k>
+    rule <k> loadTransaction _ { "to"                   : (TT:String => #asAccount(#parseByteStackRaw(TT))), _      } ... </k>
+    rule <k> loadTransaction _ { "data"                 : (TI:String => #parseByteStackRaw(TI)), _                  } ... </k>
+    rule <k> loadTransaction _ { "r"                    : (TR:String => #padToWidth(32, #parseByteStackRaw(TR))), _ } ... </k>
+    rule <k> loadTransaction _ { "s"                    : (TS:String => #padToWidth(32, #parseByteStackRaw(TS))), _ } ... </k>
+    rule <k> loadTransaction _ { "maxPriorityFeePerGas" : (V:String  => #asWord(#parseByteStackRaw(V))), _          } ... </k>
+    rule <k> loadTransaction _ { "maxFeePerGas"         : (V:String  => #asWord(#parseByteStackRaw(V))), _          } ... </k>
 ```
 
 ### Checking State
@@ -532,21 +532,19 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : "accessList" : [ .JSONs ] => . ... </k>
 
     rule <k> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : KEY        => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txAccess> TA </txAccess> ... </message> requires isInAccessList(ADDR, KEY, TA)
-    rule <k> check "transactions" : ("data"     : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <data>       VALUE </data>       ... </message>
-    rule <k> check "transactions" : ("gasLimit" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasLimit> VALUE </txGasLimit> ... </message>
-    rule <k> check "transactions" : ("gasPrice" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasPrice> VALUE </txGasPrice> ... </message>
-    rule <k> check "transactions" : ("nonce"    : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txNonce>    VALUE </txNonce>    ... </message>
-    rule <k> check "transactions" : ("r"        : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigR>       VALUE </sigR>       ... </message>
-    rule <k> check "transactions" : ("s"        : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigS>       VALUE </sigS>       ... </message>
-    rule <k> check "transactions" : ("to"       : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <to>         VALUE </to>         ... </message>
-    rule <k> check "transactions" : ("v"        : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV>       VALUE </sigV>       ... </message>
-    rule <k> check "transactions" : ("value"    : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <value>      VALUE </value>      ... </message>
-    rule <k> check "transactions" : ("chainId"  : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txChainID>  VALUE </txChainID>  ... </message>
-    rule <k> check "transactions" : ("type"     : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txType>     TYPE  </txType>     ... </message> requires VALUE ==Int #dasmTxPrefix(TYPE)
-    rule <k> check "transactions" : ("maxFeePerGas"
-                                                : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxFee>   VALUE </txMaxFee>   ... </message>
-    rule <k> check "transactions" : ("maxPriorityFeePerGas"
-                                                : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee> VALUE </txPriorityFee>  ... </message>
+    rule <k> check "transactions" : ("data"                 : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <data>          VALUE </data>           ... </message>
+    rule <k> check "transactions" : ("gasLimit"             : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasLimit>    VALUE </txGasLimit>     ... </message>
+    rule <k> check "transactions" : ("gasPrice"             : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasPrice>    VALUE </txGasPrice>     ... </message>
+    rule <k> check "transactions" : ("nonce"                : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txNonce>       VALUE </txNonce>        ... </message>
+    rule <k> check "transactions" : ("r"                    : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigR>          VALUE </sigR>           ... </message>
+    rule <k> check "transactions" : ("s"                    : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigS>          VALUE </sigS>           ... </message>
+    rule <k> check "transactions" : ("to"                   : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <to>            VALUE </to>             ... </message>
+    rule <k> check "transactions" : ("v"                    : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV>          VALUE </sigV>           ... </message>
+    rule <k> check "transactions" : ("value"                : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <value>         VALUE </value>          ... </message>
+    rule <k> check "transactions" : ("chainId"              : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txChainID>     VALUE </txChainID>      ... </message>
+    rule <k> check "transactions" : ("type"                 : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txType>        TYPE  </txType>         ... </message> requires VALUE ==Int #dasmTxPrefix(TYPE)
+    rule <k> check "transactions" : ("maxFeePerGas"         : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxFee>      VALUE </txMaxFee>       ... </message>
+    rule <k> check "transactions" : ("maxPriorityFeePerGas" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee> VALUE </txPriorityFee>  ... </message>
 
     syntax Bool ::= isInAccessListStorage ( Int , JSON )    [function]
                   | isInAccessList ( Account , Int , JSON ) [function]

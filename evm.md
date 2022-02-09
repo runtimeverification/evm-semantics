@@ -146,20 +146,20 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <messages>
               <message multiplicity="*" type="Map">
                 <msgID>         0          </msgID>
-                <txNonce>       0          </txNonce>    // T_n
-                <txGasPrice>    0          </txGasPrice> // T_p
-                <txGasLimit>    0          </txGasLimit> // T_g
-                <to>            .Account   </to>         // T_t
-                <value>         0          </value>      // T_v
-                <sigV>          0          </sigV>       // T_w
-                <sigR>          .ByteArray </sigR>       // T_r
-                <sigS>          .ByteArray </sigS>       // T_s
-                <data>          .ByteArray </data>       // T_i/T_e
-                <txType>        .TxType    </txType>
-                <txAccess>      [ .JSONs ] </txAccess>
-                <txChainID>     0          </txChainID>
+                <txNonce>       0          </txNonce>       // T_n
+                <txGasPrice>    0          </txGasPrice>    // T_p
+                <txGasLimit>    0          </txGasLimit>    // T_g
+                <to>            .Account   </to>            // T_t
+                <value>         0          </value>         // T_v
+                <sigV>          0          </sigV>          // T_w
+                <sigR>          .ByteArray </sigR>          // T_r
+                <sigS>          .ByteArray </sigS>          // T_s
+                <data>          .ByteArray </data>          // T_i/T_e
+                <txAccess>      [ .JSONs ] </txAccess>      // T_a
+                <txChainID>     0          </txChainID>     // T_c
                 <txPriorityFee> 0          </txPriorityFee>
                 <txMaxFee>      0          </txMaxFee>
+                <txType>        .TxType    </txType>
               </message>
             </messages>
 
@@ -1554,7 +1554,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax Bool ::= #isValidCode ( ByteArray , Schedule ) [function]
  // ----------------------------------------------------------------
     rule #isValidCode( OUT ,  SCHED) => notBool Ghasrejectedfirstbyte << SCHED >> orBool OUT[0] =/=Int 239 requires #sizeByteArray(OUT) >Int 0
-    rule #isValidCode(_OUT , _SCHED) => true [owise]
+    rule #isValidCode(_OUT , _SCHED) => true                                                               [owise]
 
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
@@ -1576,15 +1576,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
          <schedule> SCHED </schedule>
          <output> OUT => .ByteArray </output>
-      requires #sizeByteArray(OUT) <=Int maxCodeSize < SCHED >
-       andBool #isValidCode(OUT, SCHED)
+      requires #sizeByteArray(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED)
 
     rule <k> #mkCodeDeposit _ACCT => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
          <output> OUT => .ByteArray </output>
-      requires notBool ( #sizeByteArray(OUT) <=Int maxCodeSize < SCHED >
-                         andBool #isValidCode(OUT, SCHED)
-                       )
+      requires notBool ( #sizeByteArray(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED) )
 
     rule <k> #finishCodeDeposit ACCT OUT
           => #popCallStack ~> #dropWorldState
@@ -2405,7 +2402,7 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
                           | "Ghasrejectedfirstbyte"
- // -----------------------------------------------------------------------------------------
+ // -----------------------------------------------
 ```
 
 ### Schedule Constants
