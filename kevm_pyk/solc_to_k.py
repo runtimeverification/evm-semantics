@@ -201,7 +201,7 @@ def generate_function_sentences(contract_name, contract_sort, abi, hashes):
     if not function_sentence_pairs:
         return []
 
-    abi_function_selector = KProduction([KTerminal('selector'), KTerminal('('), KNonTerminal(KSort('String')), KTerminal(')')], KSort('Int'), att=KAtt({'klabel': 'abi_selector', 'alias': ''}))
+    abi_function_selector_production = KProduction([KTerminal('selector'), KTerminal('('), KNonTerminal(KSort('String')), KTerminal(')')], KSort('Int'), att=KAtt({'klabel': 'abi_selector', 'alias': ''}))
     abi_function_selector_rules = []
     for h in hashes:
         f_name   = h.split('(')[0]
@@ -210,7 +210,7 @@ def generate_function_sentences(contract_name, contract_sort, abi, hashes):
         abi_function_selector_rules.append(KRule(abi_function_selector_rewrite))
 
     function_productions, function_rules = map(list, zip(*function_sentence_pairs))
-    return [function_call_data_production] + function_productions + function_rules + [abi_function_selector] + abi_function_selector_rules
+    return [function_call_data_production] + function_productions + function_rules + [abi_function_selector_production] + abi_function_selector_rules
 
 
 def _extract_function_sentences(contract_name, function_sort, abi):
