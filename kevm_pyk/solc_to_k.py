@@ -229,10 +229,10 @@ def _extract_function_sentences(contract_name, function_sort, abi):
     def extract_lhs(name, input_names):
         # TODO: add structure to LHS:
         # generate (uncurried) unparser, function name, and list of arguments
-        return KToken(f'{contract_name}.{name}(' + ', '.join(input_names) + ')', None)
+        return KToken(f'{contract_name}.{name}(' + ', '.join(input_names) + ')', 'ByteArray')
 
     def extract_rhs(name, input_names, input_types):
-        args = [KApply(input_type, [KVariable(input_name)]) for input_name, input_type in zip(input_names, input_types)] or [KToken('.TypedArgs', None)]
+        args = [KApply(input_type, [KVariable(input_name)]) for input_name, input_type in zip(input_names, input_types)] or [KToken('.TypedArgs', 'TypedArgs')]
         return KApply('abiCallData', [_stringToken(name)] + args)
 
     def extract_ensures(input_names, input_types):
