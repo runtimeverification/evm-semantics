@@ -14,6 +14,7 @@ def solc_to_k(*, command: str, kompiled_directory: str, contract_file: str, cont
     contract_json = json.loads(solc_output.read())['contracts'][contract_file + ':' + contract_name]
     storage_layout = contract_json['storage-layout']
     abi = contract_json['abi']
+    hashes = contract_json['hashes']
     bin_runtime = '0x' + contract_json['bin-runtime']
 
     # TODO: add check to kevm:
@@ -23,7 +24,7 @@ def solc_to_k(*, command: str, kompiled_directory: str, contract_file: str, cont
     contract_sort = KSort(f'{contract_name}Contract')
 
     storage_sentences = generate_storage_sentences(contract_name, contract_sort, storage_layout) if generate_storage else []
-    function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
+    function_sentences = generate_function_sentences(contract_name, contract_sort, abi, hashes)
 
     unknownBoolProduction = KProduction([KTerminal('unknownBool')], KSort('Bool'), att=KAtt({'klabel': 'unknownBool', 'symbol': '', 'no-evaluators': '', 'function': '', 'functional': ''}))
 
@@ -192,16 +193,24 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
     return recur_struct([], f'{contract_name}', _intToken('0'), 0, storage, gen_dot=False)
 
 
-def generate_function_sentences(contract_name, contract_sort, abi):
+def generate_function_sentences(contract_name, contract_sort, abi, hashes):
     function_sort = KSort(f'{contract_name}Function')
+    function_call_data_production = KProduction([KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], KSort('ByteArray'), att=KAtt({'klabel': f'function_{contract_name}', 'function': ''}))
     function_sentence_pairs = _extract_function_sentences(contract_name, function_sort, abi)
 
     if not function_sentence_pairs:
         return []
 
+    abi_function_selector = KProduction([KTerminal('selector'), KTerminal('('), KNonTerminal(KSort('String')), KTerminal(')')], KSort('Int'), att=KAtt({'klabel': 'abi_selector', 'alias': ''}))
+    abi_function_selector_rules = []
+    for h in hashes:
+        f_name   = h.split('(')[0]
+        hash_int = int(hashes[h], 16)
+        abi_function_selector_rewrite = KRewrite(KToken(f'selector("{f_name}")', function_sort['name']), KToken(str(hash_int), 'Int'))
+        abi_function_selector_rules.append(KRule(abi_function_selector_rewrite))
+
     function_productions, function_rules = map(list, zip(*function_sentence_pairs))
-    function_call_data_production = KProduction([KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], KSort('ByteArray'), att=KAtt({'klabel': f'function_{contract_name}', 'function': ''}))
-    return function_productions + [function_call_data_production] + function_rules
+    return [function_call_data_production] + function_productions + function_rules + [abi_function_selector] + abi_function_selector_rules
 
 
 def _extract_function_sentences(contract_name, function_sort, abi):
