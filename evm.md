@@ -106,6 +106,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <extraData>        .ByteArray </extraData>        // I_Hx
               <mixHash>          0          </mixHash>          // I_Hm
               <blockNonce>       0          </blockNonce>       // I_Hn
+              <baseFee>          0          </baseFee>
 
               <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
             </block>
@@ -144,19 +145,21 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             <messages>
               <message multiplicity="*" type="Map">
-                <msgID>      0          </msgID>
-                <txNonce>    0          </txNonce>            // T_n
-                <txGasPrice> 0          </txGasPrice>         // T_p
-                <txGasLimit> 0          </txGasLimit>         // T_g
-                <to>         .Account   </to>                 // T_t
-                <value>      0          </value>              // T_v
-                <sigV>       0          </sigV>               // T_w
-                <sigR>       .ByteArray </sigR>               // T_r
-                <sigS>       .ByteArray </sigS>               // T_s
-                <data>       .ByteArray </data>               // T_i/T_e
-                <txType>     .TxType    </txType>
-                <txAccess>   [ .JSONs ] </txAccess>
-                <txChainID>  0          </txChainID>
+                <msgID>         0          </msgID>
+                <txNonce>       0          </txNonce>       // T_n
+                <txGasPrice>    0          </txGasPrice>    // T_p
+                <txGasLimit>    0          </txGasLimit>    // T_g
+                <to>            .Account   </to>            // T_t
+                <value>         0          </value>         // T_v
+                <sigV>          0          </sigV>          // T_w
+                <sigR>          .ByteArray </sigR>          // T_r
+                <sigS>          .ByteArray </sigS>          // T_s
+                <data>          .ByteArray </data>          // T_i/T_e
+                <txAccess>      [ .JSONs ] </txAccess>      // T_a
+                <txChainID>     0          </txChainID>     // T_c
+                <txPriorityFee> 0          </txPriorityFee>
+                <txMaxFee>      0          </txMaxFee>
+                <txType>        .TxType    </txType>
               </message>
             </messages>
 
@@ -565,7 +568,8 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires notBool MINER in ACCTS
 
     rule <k> #finalizeTx(false) ... </k>
-         <gas> GAVAIL => G*(GAVAIL, GLIMIT, REFUND) </gas>
+         <schedule> SCHED </schedule>
+         <gas> GAVAIL => G*(GAVAIL, GLIMIT, REFUND, SCHED) </gas>
          <refund> REFUND => 0 </refund>
          <txPending> ListItem(MSGID:Int) ... </txPending>
          <message>
@@ -576,10 +580,12 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires REFUND =/=Int 0
 
     rule <k> #finalizeTx(false => true) ... </k>
+         <baseFee> BFEE </baseFee>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
          <gas> GAVAIL </gas>
          <gasUsed> GUSED => GUSED +Int GLIMIT -Int GAVAIL </gasUsed>
+         <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
            <acctID> ORG </acctID>
@@ -588,34 +594,34 @@ After executing a transaction, it's necessary to have the effect of the substate
          </account>
          <account>
            <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int GPRICE </balance>
+           <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int (GPRICE -Int BFEE) </balance>
            ...
          </account>
          <txPending> ListItem(TXID:Int) => .List ... </txPending>
          <message>
            <msgID> TXID </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
-           <txGasPrice> GPRICE </txGasPrice>
            ...
          </message>
       requires ORG =/=Int MINER
 
     rule <k> #finalizeTx(false => true) ... </k>
+         <baseFee> BFEE </baseFee>
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
          <gas> GAVAIL </gas>
          <gasUsed> GUSED => GUSED +Int GLIMIT -Int GAVAIL </gasUsed>
+         <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
            <acctID> ACCT </acctID>
-           <balance> BAL => BAL +Int GLIMIT *Int GPRICE </balance>
+           <balance> BAL => BAL +Int GLIMIT *Int (GPRICE -Int BFEE) </balance>
            ...
          </account>
          <txPending> ListItem(MsgId:Int) => .List ... </txPending>
          <message>
            <msgID> MsgId </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
-           <txGasPrice> GPRICE </txGasPrice>
            ...
          </message>
 
@@ -960,12 +966,13 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
 These operators make queries about the current execution state.
 
 ```k
-    syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT"
- // -------------------------------------------------------------
+    syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT" | "BASEFEE"
+ // -------------------------------------------------------------------------
     rule <k> PC       => PCOUNT ~> #push ... </k> <pc> PCOUNT </pc>
     rule <k> GAS      => GAVAIL ~> #push ... </k> <gas> GAVAIL </gas>
     rule <k> GASPRICE => GPRICE ~> #push ... </k> <gasPrice> GPRICE </gasPrice>
     rule <k> GASLIMIT => GLIMIT ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
+    rule <k> BASEFEE  => BFEE   ~> #push ... </k> <baseFee> BFEE </baseFee>
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY"
  // -------------------------------------------------------------------------
@@ -1503,6 +1510,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
 -   `#create____` transfers the endowment to the new account and triggers the execution of the initialization code.
 -   `#codeDeposit_` checks the result of initialization code and whether the code deposit can be paid, indicating an error if not.
+-   `#isValidCode_` checks if the code returned by the execution of the initialization code begins with a reserved byte. [EIP-3541]
 
 ```k
     syntax InternalOp ::= "#create"   Int Int Int ByteArray
@@ -1543,6 +1551,11 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
 
+    syntax Bool ::= #isValidCode ( ByteArray , Schedule ) [function]
+ // ----------------------------------------------------------------
+    rule #isValidCode( OUT ,  SCHED) => Ghasrejectedfirstbyte << SCHED >> impliesBool OUT[0] =/=Int 239 requires #sizeByteArray(OUT) >Int 0
+    rule #isValidCode(_OUT , _SCHED) => true                                                            [owise]
+
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
                    | "#finishCodeDeposit" Int ByteArray
@@ -1563,12 +1576,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
          <schedule> SCHED </schedule>
          <output> OUT => .ByteArray </output>
-      requires #sizeByteArray(OUT) <=Int maxCodeSize < SCHED >
+      requires #sizeByteArray(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED)
 
     rule <k> #mkCodeDeposit _ACCT => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
          <output> OUT => .ByteArray </output>
-      requires #sizeByteArray(OUT) >Int maxCodeSize < SCHED >
+      requires notBool ( #sizeByteArray(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED) )
 
     rule <k> #finishCodeDeposit ACCT OUT
           => #popCallStack ~> #dropWorldState
@@ -1693,6 +1706,7 @@ Precompiled Contracts
     rule #precompiledAccounts(PETERSBURG)        => #precompiledAccounts(CONSTANTINOPLE)
     rule #precompiledAccounts(ISTANBUL)          => #precompiledAccounts(PETERSBURG) SetItem(9)
     rule #precompiledAccounts(BERLIN)            => #precompiledAccounts(ISTANBUL)
+    rule #precompiledAccounts(LONDON)            => #precompiledAccounts(BERLIN)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -2100,6 +2114,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, NUMBER)         => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, DIFFICULTY)     => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, GASLIMIT)       => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BASEFEE)        => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, POP _)          => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, PC)             => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, MSIZE)          => Gbase < SCHED > ... </k>
@@ -2342,9 +2357,9 @@ There are several helpers for calculating gas (most of them also specified in th
 ```
 
 ```k
-    syntax Int ::= "G*" "(" Int "," Int "," Int ")" [function]
- // ----------------------------------------------------------
-    rule G*(GAVAIL, GLIMIT, REFUND) => GAVAIL +Int minInt((GLIMIT -Int GAVAIL)/Int 2, REFUND)
+    syntax Int ::= "G*" "(" Int "," Int "," Int "," Schedule ")" [function]
+ // -----------------------------------------------------------------------
+    rule G*(GAVAIL, GLIMIT, REFUND, SCHED) => GAVAIL +Int minInt((GLIMIT -Int GAVAIL) /Int Rmaxquotient < SCHED >, REFUND)
 
     syntax Int ::= #multComplexity(Int)    [function]
                  | #newMultComplexity(Int) [function]
@@ -2385,8 +2400,9 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
-                          | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"
- // -----------------------------------------------------------------------------------------
+                          | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
+                          | "Ghasrejectedfirstbyte"
+ // -----------------------------------------------
 ```
 
 ### Schedule Constants
@@ -2404,8 +2420,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gtxdatazero"      | "Gtxdatanonzero"     | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
                            | "Gsha3word"        | "Gcopy"              | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
                            | "Gecadd"           | "Gecmul"             | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"     | "Gcoldsload"    | "Gcoldaccountaccess"
-                           | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"
- // --------------------------------------------------------------------------------------------
+                           | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"           | "Rmaxquotient"
+ // -----------------------------------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
@@ -2476,6 +2492,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gaccessliststoragekey < DEFAULT > => 0
     rule Gaccesslistaddress    < DEFAULT > => 0
 
+    rule Rmaxquotient < DEFAULT > => 2
+
     rule Gselfdestructnewaccount << DEFAULT >> => false
     rule Gstaticcalldepth        << DEFAULT >> => true
     rule Gemptyisnonexistent     << DEFAULT >> => false
@@ -2491,6 +2509,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasselfbalance         << DEFAULT >> => false
     rule Ghaschainid             << DEFAULT >> => false
     rule Ghasaccesslist          << DEFAULT >> => false
+    rule Ghasbasefee             << DEFAULT >> => false
+    rule Ghasrejectedfirstbyte   << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -2662,6 +2682,28 @@ A `ScheduleConst` is a constant determined by the fee schedule.
       requires notBool ( SCHEDFLAG ==K Ghasaccesslist )
 ```
 
+### London Schedule
+
+```k
+    syntax Schedule ::= "LONDON" [klabel(LONDON_EVM), symbol, smtlib(schedule_LONDON)]
+ // ----------------------------------------------------------------------------------
+    rule Rselfdestruct < LONDON > => 0
+    rule Rsstoreclear  < LONDON > => Gsstorereset < LONDON > +Int Gaccessliststoragekey < LONDON >
+    rule Rmaxquotient  < LONDON > => 5
+    rule SCHEDCONST    < LONDON > => SCHEDCONST < BERLIN >
+      requires notBool ( SCHEDCONST ==K Rselfdestruct
+                  orBool SCHEDCONST ==K Rsstoreclear
+                  orBool SCHEDCONST ==K Rmaxquotient
+                       )
+
+    rule Ghasbasefee           << LONDON >> => true
+    rule Ghasrejectedfirstbyte << LONDON >> => true
+    rule SCHEDFLAG             << LONDON >> => SCHEDFLAG << BERLIN >>
+      requires notBool ( SCHEDFLAG ==K Ghasbasefee
+                  orBool SCHEDFLAG ==K Ghasrejectedfirstbyte
+                       )
+```
+
 EVM Program Representations
 ===========================
 
@@ -2737,6 +2779,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  69,     _ ) => GASLIMIT
     rule #dasmOpCode(  70, SCHED ) => CHAINID     requires Ghaschainid     << SCHED >>
     rule #dasmOpCode(  71, SCHED ) => SELFBALANCE requires Ghasselfbalance << SCHED >>
+    rule #dasmOpCode(  72, SCHED ) => BASEFEE     requires Ghasbasefee     << SCHED >>
     rule #dasmOpCode(  80,     _ ) => POP
     rule #dasmOpCode(  81,     _ ) => MLOAD
     rule #dasmOpCode(  82,     _ ) => MSTORE

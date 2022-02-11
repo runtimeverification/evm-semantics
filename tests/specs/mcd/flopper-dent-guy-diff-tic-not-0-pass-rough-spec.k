@@ -59,6 +59,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <extraData> _ </extraData>
             <mixHash> _ </mixHash>
             <blockNonce> _ </blockNonce>
+            <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
           </block>
         </evm>
@@ -255,6 +256,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <extraData> _ </extraData>
             <mixHash> _ </mixHash>
             <blockNonce> _ </blockNonce>
+            <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
           </block>
         </evm>
@@ -354,6 +356,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <extraData> _ </extraData>
             <mixHash> _ </mixHash>
             <blockNonce> _ </blockNonce>
+            <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
           </block>
         </evm>
@@ -453,6 +456,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <extraData> _ </extraData>
             <mixHash> _ </mixHash>
             <blockNonce> _ </blockNonce>
+            <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
           </block>
         </evm>
