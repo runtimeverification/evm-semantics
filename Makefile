@@ -277,12 +277,20 @@ $(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_o
 # Installing
 # ----------
 
+kevm_pyk_files := __init__.py  \
+                  __main__.py  \
+                  solc_to_k.py \
+                  utils.py
+
+kevm_pyk_includes := $(patsubst %, kevm_pyk/%, $(kevm_pyk_files))
+
 install_bins := kevm    \
                 kevm-vm
 
 install_libs := $(haskell_kompiled)                                        \
                 $(llvm_kompiled)                                           \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
+                $(kevm_pyk_includes)                                       \
                 kore-json.py                                               \
                 kast-json.py                                               \
                 release.md                                                 \
@@ -291,13 +299,6 @@ install_libs := $(haskell_kompiled)                                        \
 build_bins := $(install_bins)
 
 build_libs := $(install_libs)
-
-kevm_pyk_files := __init__.py  \
-                  __main__.py  \
-                  solc_to_k.py \
-                  utils.py
-
-kevm_pyk_includes := $(patsubst %, $(KEVM_LIB)/kevm_pyk/%, $(kevm_pyk_files))
 
 $(KEVM_BIN)/kevm: kevm
 	@mkdir -p $(dir $@)
