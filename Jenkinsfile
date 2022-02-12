@@ -98,6 +98,9 @@ pipeline {
                     sudo DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:ethereum/ethereum
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes ./kevm_${VERSION}_amd64.deb
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes solc
+
+                    # make sure we're using package installed kevm_pyk for testing
+                    rm -rf kevm_pyk
                     ./package/test-package.sh
                   '''
                 }

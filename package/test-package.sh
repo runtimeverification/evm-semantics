@@ -6,9 +6,6 @@ which kevm
 kevm help
 kevm version
 
-# make sure we're using package installed kevm_pyk for testing
-rm -rf kevm_pyk
-
 kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json --backend llvm \
     --mode VMTESTS --schedule DEFAULT --chainid 1                                                          \
     > tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json.llvm-out          \
