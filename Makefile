@@ -282,7 +282,7 @@ kevm_pyk_files := __init__.py  \
                   solc_to_k.py \
                   utils.py
 
-kevm_pyk_includes := $(patsubst %, kevm_pyk/%, $(kevm_pyk_files))
+kevm_pyk_includes := $(patsubst %, $(KEVM_LIB)/kevm_pyk/%, $(kevm_pyk_files))
 
 install_bins := kevm    \
                 kevm-vm
@@ -290,7 +290,7 @@ install_bins := kevm    \
 install_libs := $(haskell_kompiled)                                        \
                 $(llvm_kompiled)                                           \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
-                $(kevm_pyk_includes)                                       \
+                $(patsubst %, kevm_pyk/%, $(kevm_pyk_files))               \
                 kore-json.py                                               \
                 kast-json.py                                               \
                 release.md                                                 \
