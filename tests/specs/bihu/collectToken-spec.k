@@ -69,6 +69,7 @@ module COLLECTTOKEN-SPEC
           <extraData> _ </extraData>
           <mixHash> _ </mixHash>
           <blockNonce> _ </blockNonce>
+          <baseFee> _ </baseFee>
           <ommerBlockHeaders> _ </ommerBlockHeaders>
         </block>
       </evm>
@@ -183,6 +184,7 @@ ensures ?VALUE ==Int @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int BA
         <extraData> _ </extraData>
         <mixHash> _ </mixHash>
         <blockNonce> _ </blockNonce>
+        <baseFee> _ </baseFee>
 
         <ommerBlockHeaders> _ </ommerBlockHeaders>
         <blockhashes> _ </blockhashes>
@@ -288,6 +290,7 @@ andBool GASCAP >=Int ((293 *Int (YEARCOUNT -Int INDEX)) +Int 26)
         <extraData> _ </extraData>
         <mixHash> _ </mixHash>
         <blockNonce> _ </blockNonce>
+        <baseFee> _ </baseFee>
 
         <ommerBlockHeaders> _ </ommerBlockHeaders>
         <blockhashes> _ </blockhashes>

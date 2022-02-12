@@ -59,6 +59,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
             <extraData> _ </extraData>
             <mixHash> _ </mixHash>
             <blockNonce> _ </blockNonce>
+            <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
           </block>
         </evm>
@@ -233,6 +234,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
             <extraData> _ </extraData>
             <mixHash> _ </mixHash>
             <blockNonce> _ </blockNonce>
+            <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
           </block>
         </evm>
@@ -342,6 +344,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
             <extraData> _ </extraData>
             <mixHash> _ </mixHash>
             <blockNonce> _ </blockNonce>
+            <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
           </block>
         </evm>
