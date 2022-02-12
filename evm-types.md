@@ -704,24 +704,30 @@ Productions related to transactions
     syntax TxType ::= ".TxType"
                     | "Legacy"
                     | "AccessList"
+                    | "DynamicFee"
  // ------------------------------
 
     syntax Int ::= #dasmTxPrefix ( TxType ) [function]
  // --------------------------------------------------
     rule #dasmTxPrefix (Legacy)     => 0
     rule #dasmTxPrefix (AccessList) => 1
+    rule #dasmTxPrefix (DynamicFee) => 2
 
     syntax TxType ::= #asmTxPrefix ( Int ) [function]
  // -------------------------------------------------
     rule #asmTxPrefix (0) => Legacy
     rule #asmTxPrefix (1) => AccessList
+    rule #asmTxPrefix (2) => DynamicFee
 
-    syntax TxData ::= LegacyTx | AccessListTx
- // -----------------------------------------
+    syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx
+ // --------------------------------------------------------
 
     syntax LegacyTx     ::= LegacyTxData         ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray )
                           | LegacyProtectedTxData( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray, chainId: Int )
     syntax AccessListTx ::= AccessListTxData     ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray, chainId: Int, accessLists: JSONs )
+    syntax DynamicFeeTx ::= DynamicFeeTxData     ( nonce : Int , priorityGasFee : Int       , maxGasFee : Int ,    gasLimit :   Int , to : Account
+                                                 , value : Int , data :           ByteArray , chainId   : Int , accessLists : JSONs
+                                                 )
  // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 endmodule

@@ -59,6 +59,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <extraData> _ </extraData>
             <mixHash> _ </mixHash>
             <blockNonce> _ </blockNonce>
+            <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
           </block>
         </evm>
@@ -219,6 +220,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <extraData> _ </extraData>
             <mixHash> _ </mixHash>
             <blockNonce> _ </blockNonce>
+            <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
           </block>
         </evm>
@@ -321,6 +323,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <extraData> _ </extraData>
             <mixHash> _ </mixHash>
             <blockNonce> _ </blockNonce>
+            <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
           </block>
         </evm>
@@ -420,6 +423,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <extraData> _ </extraData>
             <mixHash> _ </mixHash>
             <blockNonce> _ </blockNonce>
+            <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
           </block>
         </evm>
