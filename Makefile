@@ -308,7 +308,7 @@ $(KEVM_BIN)/kevm-vm: $(KEVM_LIB)/$(node_kompiled)
 	@mkdir -p $(dir $@)
 	install $< $@
 
-$(KEVM_LIB)/%.py: %.py
+$(KEVM_LIB)/%.py: scripts/%.py
 	@mkdir -p $(dir $@)
 	install $< $@
 
