@@ -319,7 +319,7 @@ def _evm_base_sort(type_label: str):
     if type_label == 'bytes':
         return KSort('ByteArray')
 
-    raise ValueError(f'EVM base sort unkwnown for: {type_label}')
+    raise ValueError(f'EVM base sort unknown for: {type_label}')
 
 
 def _range_predicate(term, type_label: str):
