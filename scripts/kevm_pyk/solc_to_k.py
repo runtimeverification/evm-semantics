@@ -41,6 +41,7 @@ def solc_to_k(*, command: str, kompiled_directory: str, contract_file: str, cont
                                     + storage_sentences
                                     + function_sentences
                                     + [binRuntimeProduction, contractMacro]
+                                    + function_selector_alias_sentences
                                   )
     binRuntimeDefinition = KDefinition(binRuntimeModuleName, [binRuntimeModule], requires=[KRequire('edsl.md')])
 
