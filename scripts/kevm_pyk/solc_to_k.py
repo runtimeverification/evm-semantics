@@ -27,8 +27,6 @@ def solc_to_k(*, command: str, kompiled_directory: str, contract_file: str, cont
     function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
 
-    unknownBoolProduction = KProduction([KTerminal('unknownBool')], KSort('Bool'), att=KAtt({'klabel': 'unknownBool', 'symbol': '', 'no-evaluators': '', 'function': '', 'functional': ''}))
-
     binRuntimeProduction = KProduction([KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(contract_sort), KTerminal(')')], KSort('ByteArray'), att=KAtt({'klabel': 'binRuntime', 'macro': ''}))
 
     contractProduction = KProduction([KTerminal(contract_name)], contract_sort, att=KAtt({'klabel': f'contract_{contract_name}'}))
@@ -37,7 +35,7 @@ def solc_to_k(*, command: str, kompiled_directory: str, contract_file: str, cont
     binRuntimeModuleName = contract_name.upper() + '-BIN-RUNTIME'
     binRuntimeModule = KFlatModule( binRuntimeModuleName
                                   , [KImport('EDSL', True)]
-                                  ,   [unknownBoolProduction, contractProduction]
+                                  ,   [contractProduction]
                                     + storage_sentences
                                     + function_sentences
                                     + [binRuntimeProduction, contractMacro]
