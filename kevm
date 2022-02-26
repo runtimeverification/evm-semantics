@@ -183,7 +183,7 @@ run_prove() {
         notif_exec kore-prof "${eventlog_name}" ${kore_prof_args} > "${eventlog_name}.json"
     else
         if ${pyk_minimize}; then
-            pyk_args=(${backend_dir}/*-kompiled minimize /dev/stdin)
+            pyk_args=(${backend_dir}/*-kompiled print /dev/stdin --minimize)
             [[ -z "${pyk_omit_labels}" ]] || pyk_args+=(--omit-labels "${pyk_omit_labels}")
             notif_exec ${kprove} "${proof_args[@]}" "$@" --output json | kpyk "${pyk_args[@]}"
         else
