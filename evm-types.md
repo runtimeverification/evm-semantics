@@ -117,13 +117,13 @@ These can be used for pattern-matching on the LHS of rules as well (`alias` attr
 -   Range of types
 
 ```k
-    syntax Bool ::= #rangeBool    ( Int )             [macro]
-                  | #rangeSInt    ( Int , Int )       [macro]
-                  | #rangeUInt    ( Int , Int )       [macro]
-                  | #rangeSFixed  ( Int , Int , Int ) [macro]
-                  | #rangeUFixed  ( Int , Int , Int ) [macro]
-                  | #rangeAddress ( Int )             [macro]
-                  | #rangeBytes   ( Int , Int )       [macro]
+    syntax Bool ::= #rangeBool    ( Int )             [alias]
+                  | #rangeSInt    ( Int , Int )       [alias]
+                  | #rangeUInt    ( Int , Int )       [alias]
+                  | #rangeSFixed  ( Int , Int , Int ) [alias]
+                  | #rangeUFixed  ( Int , Int , Int ) [alias]
+                  | #rangeAddress ( Int )             [alias]
+                  | #rangeBytes   ( Int , Int )       [alias]
  // ---------------------------------------------------------
     rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1
     rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      )

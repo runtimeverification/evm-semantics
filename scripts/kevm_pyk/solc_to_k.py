@@ -27,7 +27,7 @@ def solc_to_k(*, command: str, kompiled_directory: str, contract_file: str, cont
     function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
 
-    binRuntimeProduction = KProduction([KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(contract_sort), KTerminal(')')], KSort('ByteArray'), att=KAtt({'klabel': 'binRuntime', 'macro': ''}))
+    binRuntimeProduction = KProduction([KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(contract_sort), KTerminal(')')], KSort('ByteArray'), att=KAtt({'klabel': 'binRuntime', 'alias': ''}))
 
     contractProduction = KProduction([KTerminal(contract_name)], contract_sort, att=KAtt({'klabel': f'contract_{contract_name}'}))
     contractMacro = KRule(KRewrite(KApply('binRuntime', [KConstant(contract_name)]), _parseByteStack(_stringToken(bin_runtime))))
@@ -115,7 +115,7 @@ def generate_storage_sentences(contract_name, contract_sort, storage_layout):
         return []
 
     storage_productions, storage_rules = map(list, zip(*storage_sentence_pairs))
-    storage_location_production = KProduction([KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(storage_sort)], KSort('Int'), att=KAtt({'klabel': f'storage_{contract_name}', 'macro': ''}))
+    storage_location_production = KProduction([KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(storage_sort)], KSort('Int'), att=KAtt({'klabel': f'storage_{contract_name}', 'alias': ''}))
     return storage_productions + [storage_location_production] + storage_rules
 
 
