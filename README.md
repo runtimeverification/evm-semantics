@@ -73,6 +73,10 @@ make
 sudo make install
 ```
 
+On macOS, it is easiest to install Z3 from Homebrew. If you do wish to install
+from source, make sure to install it to an appropriate prefix (e.g. `/usr/local`
+on Intel machines).
+
 #### Ubuntu
 
 On Ubuntu >= 18.04 (for example):
@@ -108,9 +112,7 @@ sudo pacman -S                                               \
 On OSX, using [Homebrew](https://brew.sh/), after installing the command line tools package:
 
 ```sh
-brew tap homebrew/cask
-brew install --cask java
-brew install automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python
+brew install java automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python
 make libsecp256k1
 ```
 
