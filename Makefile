@@ -62,7 +62,7 @@ export PLUGIN_SUBMODULE
 all: build
 
 clean:
-	rm -rf $(KEVM_BIN) $(KEVM_LIB)
+	rm -rf $(KEVM_BIN) $(KEVM_LIB) $(PYK_VENV_DIR)
 
 distclean:
 	rm -rf $(BUILD_DIR)
@@ -274,6 +274,20 @@ $(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_o
 	@mkdir -p $(dir $@)
 	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) && $(MAKE)
 
+
+# pyk virtualenv
+# --------------
+
+PYK_VENV_DIR := venv
+PYK_VENV     := $(PYK_VENV_DIR)/pyvenv.cfg
+ACTIVATE_PYK := . venv/bin/activate
+
+$(PYK_VENV):
+	   virtualenv -p python3.8 venv                \
+	&& $(ACTIVATE_PYK)                             \
+	&& pip install -e $(K_SUBMODULE)/k-distribution/src/main/scripts/lib/pyk
+
+
 # Installing
 # ----------
 
@@ -435,15 +449,15 @@ tests/%.prove-legacy: tests/%
 	    --no-provex --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 tests/specs/examples/erc20-spec/haskell/erc20-spec-kompiled/timestamp: tests/specs/examples/erc20-bin-runtime.k
-tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes)
-	$(KEVM) solc-to-k $< ERC20 > $@
+tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes) $(PYK_VENV)
+	$(ACTIVATE_PYK) && $(KEVM) solc-to-k $< ERC20 > $@
 
 tests/specs/examples/erc721-spec/haskell/erc721-spec-kompiled/timestamp: tests/specs/examples/erc721-bin-runtime.k
-tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes)
-	$(KEVM) solc-to-k $< ERC721 > $@
+tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes) $(PYK_VENV)
+	$(ACTIVATE_PYK) && $(KEVM) solc-to-k $< ERC721 > $@
 
-tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes)
-	$(KEVM) solc-to-k $< Empty > $@
+tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes) $(PYK_VENV)
+	$(ACTIVATE_PYK) && $(KEVM) solc-to-k $< Empty > $@
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
