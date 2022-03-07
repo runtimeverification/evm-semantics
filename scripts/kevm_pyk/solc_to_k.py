@@ -47,7 +47,7 @@ def solc_to_k(*, command: str, kompiled_directory: str, contract_file: str, cont
     binRuntimeProduction = KProduction(KSort('ByteArray'), [KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(contract_sort), KTerminal(')')], att=KAtt({'klabel': 'binRuntime', 'alias': ''}))
 
     contractProduction = KProduction(contract_sort, [KTerminal(contract_name)], att=KAtt({'klabel': f'contract_{contract_name}'}))
-    contractMacro = KRule(KRewrite(KApply('binRuntime', [KConstant(contract_name)]), _parseByteStack(_stringToken(bin_runtime))))
+    contractMacro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_name)]), _parseByteStack(_stringToken(bin_runtime))))
 
     binRuntimeModuleName = contract_name.upper() + '-BIN-RUNTIME'
     binRuntimeModule = KFlatModule( binRuntimeModuleName 
