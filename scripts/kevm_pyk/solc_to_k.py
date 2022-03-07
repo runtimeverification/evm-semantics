@@ -44,9 +44,9 @@ def solc_to_k(*, command: str, kompiled_directory: str, contract_file: str, cont
     function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
 
-    binRuntimeProduction = KProduction([KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(contract_sort), KTerminal(')')], KSort('ByteArray'), att=KAtt({'klabel': 'binRuntime', 'alias': ''}))
+    binRuntimeProduction = KProduction(KSort('ByteArray'), [KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(contract_sort), KTerminal(')')], att=KAtt({'klabel': 'binRuntime', 'alias': ''}))
 
-    contractProduction = KProduction([KTerminal(contract_name)], contract_sort, att=KAtt({'klabel': f'contract_{contract_name}'}))
+    contractProduction = KProduction(contract_sort, [KTerminal(contract_name)], att=KAtt({'klabel': f'contract_{contract_name}'}))
     contractMacro = KRule(KRewrite(KApply('binRuntime', [KConstant(contract_name)]), _parseByteStack(_stringToken(bin_runtime))))
 
     binRuntimeModuleName = contract_name.upper() + '-BIN-RUNTIME'
@@ -132,7 +132,7 @@ def generate_storage_sentences(contract_name, contract_sort, storage_layout):
         return []
 
     storage_productions, storage_rules = map(list, zip(*storage_sentence_pairs))
-    storage_location_production = KProduction([KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(storage_sort)], KSort('Int'), att=KAtt({'klabel': f'storage_{contract_name}', 'alias': ''}))
+    storage_location_production = KProduction(KSort('Int'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(storage_sort)], att=KAtt({'klabel': f'storage_{contract_name}', 'alias': ''}))
     return storage_productions + [storage_location_production] + storage_rules
 
 
@@ -173,7 +173,7 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
         # #hashedLocation(L, #hashedLocation(L, B, X), Y) => #hashedLocation(L, B, X Y)
         # 0 +Int X => X
         # X +Int 0 => X
-        return [(KProduction(syntax, storage_sort),
+        return [(KProduction(storage_sort, syntax),
                  KRule(KRewrite(KToken(lhs, None), rhs)))]
 
     def recur_struct(syntax, lhs, rhs, var_idx, members, gen_dot=True):
@@ -212,7 +212,7 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
 
 def generate_function_sentences(contract_name, contract_sort, abi):
     function_sort = KSort(f'{contract_name}Function')
-    function_call_data_production = KProduction([KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], KSort('ByteArray'), att=KAtt({'klabel': f'function_{contract_name}', 'function': ''}))
+    function_call_data_production = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], att=KAtt({'klabel': f'function_{contract_name}', 'function': ''}))
     function_sentence_pairs = _extract_function_sentences(contract_name, function_sort, abi)
 
     if not function_sentence_pairs:
@@ -223,7 +223,7 @@ def generate_function_sentences(contract_name, contract_sort, abi):
 
 
 def generate_function_selector_alias_sentences(contract_name, contract_sort, hashes):
-    abi_function_selector_production = KProduction([KTerminal('selector'), KTerminal('('), KNonTerminal(KSort('String')), KTerminal(')')], KSort('Int'), att=KAtt({'klabel': 'abi_selector', 'alias': ''}))
+    abi_function_selector_production = KProduction(KSort('Int'), [KTerminal('selector'), KTerminal('('), KNonTerminal(KSort('String')), KTerminal(')')], att=KAtt({'klabel': 'abi_selector', 'alias': ''}))
     abi_function_selector_rules = []
     for h in hashes:
         f_name   = h.split('(')[0]
@@ -245,7 +245,7 @@ def _extract_function_sentences(contract_name, function_sort, abi):
         items += intersperse(input_nonterminals, KTerminal(','))
 
         items.append(KTerminal(')'))
-        return KProduction(items, function_sort)
+        return KProduction(function_sort, items)
 
     def extract_rule(name, inputs):
         input_names = normalize_input_names([input_dict['name'] for input_dict in inputs])
