@@ -50,13 +50,13 @@ def solc_to_k(*, command: str, kompiled_directory: str, contract_file: str, cont
     contractMacro = KRule(KRewrite(KApply('binRuntime', [KConstant(contract_name)]), _parseByteStack(_stringToken(bin_runtime))))
 
     binRuntimeModuleName = contract_name.upper() + '-BIN-RUNTIME'
-    binRuntimeModule = KFlatModule( binRuntimeModuleName
-                                  , [KImport('EDSL', True)]
+    binRuntimeModule = KFlatModule( binRuntimeModuleName 
                                   ,   [contractProduction]
                                     + storage_sentences
                                     + function_sentences
                                     + [binRuntimeProduction, contractMacro]
                                     + function_selector_alias_sentences
+                                  , [KImport('EDSL', True)]
                                   )
     binRuntimeDefinition = KDefinition(binRuntimeModuleName, [binRuntimeModule], requires=[KRequire('edsl.md')])
 
