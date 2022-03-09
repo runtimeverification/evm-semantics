@@ -2,6 +2,7 @@ import functools
 import json
 
 from pyk.kast import (
+    TRUE,
     KApply,
     KAtt,
     KDefinition,
@@ -265,7 +266,7 @@ def _extract_function_sentences(contract_name, function_sort, abi):
         opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(input_names, input_types)]
         conjuncts = [opt_conjunct for opt_conjunct in opt_conjuncts if opt_conjunct is not None]
         if len(conjuncts) == 0:
-            return None
+            return TRUE
 
         return functools.reduce(lambda x, y: KApply('_andBool_', [x, y]), conjuncts)
 
