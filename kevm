@@ -41,7 +41,7 @@ libcryptopp_dir=${INSTALL_LIB}/cryptopp
 
 export PATH="${INSTALL_BIN}:${INSTALL_LIB}:${install_k_bin}:${PATH}"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
-export PYTHONPATH="${PYTHONPATH:-}:${INSTALL_LIB}:${install_k_lib}/kframework:/usr/lib/kframework"
+export PYTHONPATH="${INSTALL_LIB}${PYTHONPATH:+:$PYTHONPATH}"
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
 
