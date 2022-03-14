@@ -29,18 +29,18 @@ check_k_install() {
         || fatal "Must have K installed! See https://github.com/kframework/k/releases."
 }
 
-INSTALL_BIN="$(cd $(dirname $0) && pwd)"
-INSTALL_LIB="$(dirname ${INSTALL_BIN})/lib/kevm"
+INSTALL_BIN="$(cd "$(dirname "$0")" && pwd)"
+INSTALL_LIB="$(dirname "${INSTALL_BIN}")/lib/kevm"
 INSTALL_INCLUDE=${INSTALL_LIB}/include
 
-install_k_bin=${INSTALL_LIB}/kframework/bin
-install_k_lib=${INSTALL_LIB}/kframework/lib
-plugin_include=${INSTALL_LIB}/blockchain-k-plugin/include
-libff_dir=${INSTALL_LIB}/libff
-libcryptopp_dir=${INSTALL_LIB}/cryptopp
+install_k_bin="${INSTALL_LIB}/kframework/bin"
+install_k_lib="${INSTALL_LIB}/kframework/lib"
+plugin_include="${INSTALL_LIB}/blockchain-k-plugin/include"
+libff_dir="${INSTALL_LIB}/libff"
+libcryptopp_dir="${INSTALL_LIB}/cryptopp"
 
 export PATH="${INSTALL_BIN}:${INSTALL_LIB}:${install_k_bin}:${PATH}"
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}:/usr/local/lib"
 export PYTHONPATH="${INSTALL_LIB}${PYTHONPATH:+:$PYTHONPATH}"
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
@@ -62,7 +62,7 @@ run_kompile() {
 
     if [[ ! -z ${concrete_rules_file} ]]; then
         if [[ -f ${concrete_rules_file} ]]; then
-            kompile_opts+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
+            kompile_opts+=(--concrete-rules "$(cat "${concrete_rules_file}" | tr '\n' ',')")
         else
             fatal "Concrete rules file doesn't exist: ${concrete_rules_file}"
         fi
@@ -85,8 +85,8 @@ run_kompile() {
                    elif [[ "$(uname -s)" == 'Darwin' ]]; then
                        openssl_root="$(brew --prefix openssl)"
                        brew_root="$(brew --prefix)"
-                       kompile_opts+=( -ccopt -I${brew_root}/include -ccopt -L/${brew_root}/lib -ccopt -I${openssl_root}/include -ccopt -L${openssl_root}/lib )
-                       kompile_opts+=( -ccopt -I${libcryptopp_dir}/include -ccopt -L/${libcryptopp_dir}/lib )
+                       kompile_opts+=( -ccopt "-I${brew_root}/include" -ccopt "-L/${brew_root}/lib" -ccopt "-I${openssl_root}/include" -ccopt "-L${openssl_root}/lib" )
+                       kompile_opts+=( -ccopt "-I${libcryptopp_dir}/include" -ccopt "-L/${libcryptopp_dir}/lib" )
                    fi
                    ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
@@ -149,7 +149,7 @@ run_prove() {
       ${provex} || proof_args+=(--def-module "$verif_module")
 
     ! ${debug}                        || proof_args+=(--debug)
-    [[ ! -f ${concrete_rules_file} ]] || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
+    [[ ! -f "${concrete_rules_file}" ]] || proof_args+=(--concrete-rules "$(cat "${concrete_rules_file"} | tr '\n' ',')")
 
     case "${backend}" in
         haskell) ! ${bug_report}                 || haskell_backend_command+=(--bug-report "${bug_report_name}")
