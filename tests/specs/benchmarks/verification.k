@@ -35,12 +35,6 @@ module VERIFICATION
     rule M:Map [ K1 <- V1 ] [ K2 <- V2 ] => M [ K2 <- V2 ] [ K1 <- V1 ]  requires K2  <Int K1 [simplification]
 
   // ########################
-  // Gas Calculation
-  // ########################
-
-    rule Rsstore(_BYZANTIUM, NEW, _CURR, _ORIG) => 0  requires NEW =/=Int 0 [simplification]
-
-  // ########################
   // ABI Encoding
   // ########################
 
@@ -56,10 +50,6 @@ module VERIFICATION
   // Memory Usage
   // ########################
 
-    rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START0, WIDTH0), START1, WIDTH1) => #memoryUsageUpdate(MU, START0, WIDTH0) requires START1 +Int WIDTH1 <=Int START0 +Int WIDTH0 andBool 0  <Int WIDTH0 andBool 0 <=Int WIDTH1 [simplification]
-    rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START0, WIDTH0), START1, WIDTH1) => #memoryUsageUpdate(MU, START1, WIDTH1) requires START0 +Int WIDTH0  <Int START1 +Int WIDTH1 andBool 0 <=Int WIDTH0 andBool 0  <Int WIDTH1 [simplification]
-
-    rule 0 <=Int #memoryUsageUpdate(_MU, _START, _WIDTH) => true [simplification]
 
   // ########################
   // Buffer Reasoning
