@@ -46,7 +46,7 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
-        build build-haskell build-llvm build-provex build-node build-kevm                                                        \
+        build build-haskell build-llvm build-provex build-node build-kevm build-kevm-pyk                                         \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
         test-prove test-failing-prove                                                                                            \
@@ -54,6 +54,7 @@ export PLUGIN_SUBMODULE
         test-prove-mcd test-klab-prove                                                                                           \
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
+        test-kevm-pyk                                                                                                            \
         media media-pdf metropolis-theme                                                                                         \
         install uninstall
 .SECONDARY:
@@ -61,7 +62,7 @@ export PLUGIN_SUBMODULE
 all: build
 
 clean:
-	rm -rf $(KEVM_BIN) $(KEVM_LIB)
+	rm -rf $(KEVM_BIN) $(KEVM_LIB) $(PYK_VENV_DIR)
 
 distclean:
 	rm -rf $(BUILD_DIR)
@@ -95,6 +96,10 @@ else ifeq ($(UNAME_S),Darwin)
     LIBFF_CMAKE_FLAGS += -DWITH_PROCPS=OFF -DOPENSSL_ROOT_DIR=$(shell brew --prefix openssl)
 else
     LIBFF_CMAKE_FLAGS += -DWITH_PROCPS=OFF
+endif
+
+ifneq ($(APPLE_SILICON),)
+    LIBFF_CMAKE_FLAGS += -DCURVE=ALT_BN128 -DUSE_ASM=Off
 endif
 
 $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
@@ -175,7 +180,7 @@ kevm_files := abi.md              \
               network.md          \
               optimizations.md    \
               serialization.md    \
-              state-loader.md
+              state-utils.md
 
 kevm_lemmas := infinite-gas.k       \
                lemmas.k             \
@@ -269,8 +274,29 @@ $(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_o
 	@mkdir -p $(dir $@)
 	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) && $(MAKE)
 
+
+# pyk virtualenv
+# --------------
+
+PYK_VENV_DIR := venv
+PYK_VENV     := $(PYK_VENV_DIR)/pyvenv.cfg
+ACTIVATE_PYK := . venv/bin/activate
+
+$(PYK_VENV):
+	   virtualenv -p python3.8 venv                \
+	&& $(ACTIVATE_PYK)                             \
+	&& pip install -e $(K_SUBMODULE)/k-distribution/src/main/scripts/lib/pyk
+
+
 # Installing
 # ----------
+
+kevm_pyk_files := __init__.py  \
+                  __main__.py  \
+                  solc_to_k.py \
+                  utils.py
+
+kevm_pyk_includes := $(patsubst %, $(KEVM_LIB)/kevm_pyk/%, $(kevm_pyk_files))
 
 install_bins := kevm    \
                 kevm-vm
@@ -278,6 +304,7 @@ install_bins := kevm    \
 install_libs := $(haskell_kompiled)                                        \
                 $(llvm_kompiled)                                           \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
+                $(patsubst %, kevm_pyk/%, $(kevm_pyk_files))               \
                 kore-json.py                                               \
                 kast-json.py                                               \
                 release.md                                                 \
@@ -295,7 +322,7 @@ $(KEVM_BIN)/kevm-vm: $(KEVM_LIB)/$(node_kompiled)
 	@mkdir -p $(dir $@)
 	install $< $@
 
-$(KEVM_LIB)/%.py: %.py
+$(KEVM_LIB)/%.py: scripts/%.py
 	@mkdir -p $(dir $@)
 	install $< $@
 
@@ -311,10 +338,11 @@ $(KEVM_LIB)/release.md: INSTALL.md
 
 build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
 
-build-llvm:    $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
-build-haskell: $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
-build-node:    $(KEVM_LIB)/$(node_kompiled)
-build-kevm:    $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes)
+build-llvm:     $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
+build-haskell:  $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
+build-node:     $(KEVM_LIB)/$(node_kompiled)
+build-kevm:     $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes) $(kevm_pyk_includes)
+build-kevm-pyk: $(kevm_pyk_includes)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
@@ -348,7 +376,7 @@ TEST_OPTIONS :=
 CHECK        := git --no-pager diff --no-index --ignore-all-space -R
 
 KEVM_MODE     := NORMAL
-KEVM_SCHEDULE := BERLIN
+KEVM_SCHEDULE := LONDON
 KEVM_CHAINID  := 1
 
 KPROVE_MODULE  = VERIFICATION
@@ -358,8 +386,8 @@ KPROVE_OPTS   ?=
 
 KEEP_OUTPUTS := false
 
-test-all: test-all-conformance test-prove test-interactive test-parse
-test: test-conformance test-prove test-interactive test-parse
+test-all: test-all-conformance test-prove test-interactive test-parse test-kevm-pyk
+test: test-conformance test-prove test-interactive test-parse test-kevm-pyk
 
 # Generic Test Harnesses
 
@@ -375,6 +403,8 @@ tests/specs/examples/solidity-code-spec%:    KPROVE_EXT    =  md
 tests/specs/examples/solidity-code-spec%:    KPROVE_FILE   =  solidity-code-spec
 tests/specs/examples/erc20-spec%:            KPROVE_EXT    =  md
 tests/specs/examples/erc20-spec%:            KPROVE_FILE   =  erc20-spec
+tests/specs/examples/erc721-spec%:           KPROVE_EXT    =  md
+tests/specs/examples/erc721-spec%:           KPROVE_FILE   =  erc721-spec
 tests/specs/examples/sum-to-n-spec%:         KPROVE_FILE   =  sum-to-n-spec
 tests/specs/functional/infinite-gas-spec%:   KPROVE_FILE   =  infinite-gas-spec
 tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_FILE   =  lemmas-no-smt-spec
@@ -417,6 +447,17 @@ tests/%.parse: tests/%
 tests/%.prove-legacy: tests/%
 	$(KEVM) prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) \
 	    --no-provex --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
+
+tests/specs/examples/erc20-spec/haskell/erc20-spec-kompiled/timestamp: tests/specs/examples/erc20-bin-runtime.k
+tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes) $(PYK_VENV)
+	$(ACTIVATE_PYK) && $(KEVM) solc-to-k $< ERC20 > $@
+
+tests/specs/examples/erc721-spec/haskell/erc721-spec-kompiled/timestamp: tests/specs/examples/erc721-bin-runtime.k
+tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes) $(PYK_VENV)
+	$(ACTIVATE_PYK) && $(KEVM) solc-to-k $< ERC721 > $@
+
+tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes) $(PYK_VENV)
+	$(ACTIVATE_PYK) && $(KEVM) solc-to-k $< Empty > $@
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
@@ -501,6 +542,8 @@ provex_definitions :=                                                           
                       tests/specs/bihu/verification/java/verification-kompiled/timestamp                           \
                       tests/specs/erc20/verification/haskell/verification-kompiled/timestamp                       \
                       tests/specs/erc20/verification/java/verification-kompiled/timestamp                          \
+                      tests/specs/examples/erc20-spec/haskell/erc20-spec-kompiled/timestamp                        \
+                      tests/specs/examples/erc721-spec/haskell/erc721-spec-kompiled/timestamp                      \
                       tests/specs/examples/solidity-code-spec/haskell/solidity-code-spec-kompiled/timestamp        \
                       tests/specs/examples/solidity-code-spec/java/solidity-code-spec-kompiled/timestamp           \
                       tests/specs/examples/sum-to-n-spec/haskell/sum-to-n-spec-kompiled/timestamp                  \
@@ -552,6 +595,14 @@ test-parse: $(parse_tests:=.parse)
 failure_tests:=$(wildcard tests/failing/*.json)
 
 test-failure: $(failure_tests:=.run-expected)
+
+# kevm_pyk Tests
+
+kevm_pyk_tests := tests/specs/examples/empty-bin-runtime.k \
+                  tests/specs/examples/erc20-bin-runtime.k \
+                  tests/specs/examples/erc721-bin-runtime.k
+
+test-kevm-pyk: $(kevm_pyk_tests)
 
 # Interactive Tests
 

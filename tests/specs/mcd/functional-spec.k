@@ -32,6 +32,14 @@ module FUNCTIONAL-SPEC
        andBool #rangeUInt(48, ABI_y)
        andBool notBool #rangeUInt(48, ABI_x +Int ABI_y)
 
+    claim <k> runLemma(bool2Word(ABI_src:Int ==Int CALLER_ID:Int) |Int bool2Word(X)) => doneLemma(bool2Word(ABI_src ==Int CALLER_ID orBool X)) ... </k>
+      requires #rangeUInt(256, ABI_src)
+       andBool #rangeUInt(256, CALLER_ID)
+
+    claim <k> runLemma(bool2Word(ABI_src ==Int CALLER_ID orBool X) ==Int 0) => doneLemma(notBool(ABI_src ==Int CALLER_ID orBool X)) ... </k>
+      requires #rangeUInt(256, ABI_src)
+       andBool #rangeUInt(256, CALLER_ID)
+
     // WordPack
 
     claim <k> runLemma((GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END)) modInt pow256) => doneLemma(GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END)) ... </k>

@@ -32,7 +32,7 @@ These additional files extend the semantics to make the repository more useful:
 -   [abi.md](abi.md) defines the [Contract ABI Specification](https://docs.soliditylang.org/en/v0.8.1/abi-spec.html) for use in proofs and easy contract/function specification.
 -   [hashed-locations.md](hashed-locations.md) defines the `#hashedLocation` abstraction which makes it easier to specify Solidity-generate storage layouts.
 -   [edsl.md](edsl.md) combines the previous three abstractions for ease-of-use.
--   [state-loader.md](state-loader.md) provides functionality for EVM initialization and setup.
+-   [state-utils.md](state-utils.md) provides functionality for EVM initialization, setup, and querying.
 -   [driver.md](driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
 
 Installing/Building
@@ -73,6 +73,10 @@ make
 sudo make install
 ```
 
+On macOS, it is easiest to install Z3 from Homebrew. If you do wish to install
+from source, make sure to install it to an appropriate prefix (e.g. `/usr/local`
+on Intel machines).
+
 #### Ubuntu
 
 On Ubuntu >= 18.04 (for example):
@@ -108,9 +112,7 @@ sudo pacman -S                                               \
 On OSX, using [Homebrew](https://brew.sh/), after installing the command line tools package:
 
 ```sh
-brew tap homebrew/cask
-brew install --cask java
-brew install automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python
+brew install java automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python
 make libsecp256k1
 ```
 

@@ -1,6 +1,10 @@
 ARG K_COMMIT
 FROM runtimeverificationinc/kframework-k:ubuntu-focal-${K_COMMIT}
 
+RUN    apt-get update                                   \
+    && apt-get install --yes software-properties-common \
+    && add-apt-repository ppa:ethereum/ethereum
+
 RUN    apt-get update            \
     && apt-get upgrade --yes     \
     && apt-get install --yes     \
@@ -17,14 +21,18 @@ RUN    apt-get update            \
             libssl-dev           \
             libyaml-dev          \
             maven                \
+            solc                 \
             netcat-openbsd       \
             pkg-config           \
             protobuf-compiler    \
             python3              \
+            python3-pip          \
             python-pygments      \
             rapidjson-dev        \
             z3                   \
             zlib1g-dev
+
+RUN pip3 install virtualenv
 
 RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.11 \
     && cd z3                                                         \
