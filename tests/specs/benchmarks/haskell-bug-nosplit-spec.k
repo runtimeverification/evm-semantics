@@ -5,7 +5,7 @@ module HASKELL-BUG-NOSPLIT-SPEC
 
   // fn-execute-sig1-invalid
   claim
-    <k> (JUMPI 559 bool2Word ( 0 <Int maxUInt160 &Int #asWord ( #range ( #buf ( 95 , 1 ) [ 128 := #buf ( 32 , SIGV0 ) ++ #buf ( 32 , SIGV1 ) ] [ 192 := #buf ( 32 , SIGR0 ) ++ #buf ( 32 , SIGR1 ) ] [ 256 := #buf ( 32 , SIGS0 ) ++ #buf ( 32 , SIGS1 ) ] [ 320 := #buf ( 32 , 0 ) ] [ 320 := #ecrec ( #buf ( 32 , HASH ) , #buf ( 32 , SIGV0 ) , #buf ( 32 , SIGR0 ) , #buf ( 32 , SIGS0 ) ) [ 0 .. minInt ( 32 , #sizeByteArray ( #ecrec ( #buf ( 32 , HASH ) , #buf ( 32 , SIGV0 ) , #buf ( 32 , SIGR0 ) , #buf ( 32 , SIGS0 ) ) ) ) ] ] , 320 , 32 ) ) ) => #halt) ~> _ </k>
+    <k> (JUMPI 559 bool2Word ( 0 <Int HASH ) => #halt) ~> _ </k>
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
