@@ -85,12 +85,12 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // Immutable during a single transaction
             // -------------------------------------
 
-            <gasPrice> 0        </gasPrice>                   // I_p
-            <origin>   .Account </origin>                     // I_o
+//            <gasPrice> 0        </gasPrice>                   // I_p
+//            <origin>   .Account </origin>                     // I_o
 
             // I_H* (block information)
-            <blockhashes> .List </blockhashes>
-            <block>
+//            <blockhashes> .List </blockhashes>
+/*            <block>
               <previousHash>     0          </previousHash>     // I_Hp
               <ommersHash>       0          </ommersHash>       // I_Ho
               <coinbase>         0          </coinbase>         // I_Hc
@@ -110,7 +110,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
               <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
             </block>
-
+*/
           </evm>
 
           // Ethereum Network
@@ -140,10 +140,10 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // Transactions Record
             // -------------------
 
-            <txOrder>   .List </txOrder>
-            <txPending> .List </txPending>
+//            <txOrder>   .List </txOrder>
+//            <txPending> .List </txPending>
 
-            <messages>
+/*            <messages>
               <message multiplicity="*" type="Map">
                 <msgID>         0          </msgID>
                 <txNonce>       0          </txNonce>       // T_n
@@ -162,7 +162,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <txType>        .TxType    </txType>
               </message>
             </messages>
-
+*/
           </network>
 
         </ethereum>

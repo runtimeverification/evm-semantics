@@ -43,10 +43,10 @@ module HASKELL-BUG-NOSPLIT-SPEC
           <accessedAccounts> _ => ?_ </accessedAccounts>
           <accessedStorage> _ => ?_ </accessedStorage>
         </substate>
-        <gasPrice> _ </gasPrice>
-        <origin> _ </origin> // tx.origin
-        <blockhashes> _BLOCK_HASHES </blockhashes> // block.blockhash
-        <block>
+//        <gasPrice> _ </gasPrice>
+//        <origin> _ </origin> // tx.origin
+//        <blockhashes> _BLOCK_HASHES </blockhashes> // block.blockhash
+/*        <block>
           <previousHash> _ </previousHash>
           <ommersHash> _ </ommersHash>
           <coinbase> _ </coinbase> // block.coinbase
@@ -65,7 +65,7 @@ module HASKELL-BUG-NOSPLIT-SPEC
           <baseFee> _ </baseFee>
           <ommerBlockHeaders> _ </ommerBlockHeaders>
         </block>
-      </evm>
+*/      </evm>
       <network>
         <chainID> _ </chainID>
 
@@ -110,15 +110,15 @@ _
 
           ...
         </accounts>
-        <txOrder> _ </txOrder>
-        <txPending> _ </txPending>
-        <messages> _ </messages>
+//        <txOrder> _ </txOrder>
+//        <txPending> _ </txPending>
+        //<messages> _ </messages>
       </network>
     </ethereum>
     requires #rangeAddress(CONTRACT_ID)
      andBool #rangeAddress(CALLEE_ID)
-     andBool #rangeUInt(256, NOW)
-     andBool #rangeUInt(128, BLOCK_NUM) // Solidity
+     //andBool #rangeUInt(256, NOW)
+     //andBool #rangeUInt(128, BLOCK_NUM) // Solidity
 
      // Account address normality
      andBool CONTRACT_ID >Int 0 andBool (notBool #isPrecompiledAccount(CONTRACT_ID, BYZANTIUM))
