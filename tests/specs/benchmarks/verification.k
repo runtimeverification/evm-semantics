@@ -84,9 +84,6 @@ module VERIFICATION
     rule 0 <=Int X |Int Y             => true  requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
     rule         X |Int Y <Int pow256 => true  requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
 
-    rule 0 <=Int #blockhash(_, _, _, _)             => true [simplification]
-    rule         #blockhash(_, _, _, _) <Int pow256 => true [simplification]
-
     rule 0 <=Int X xorInt maxUInt256             => true  requires #rangeUInt(256, X) [simplification]
     rule         X xorInt maxUInt256 <Int pow256 => true  requires #rangeUInt(256, X) [simplification]
 
