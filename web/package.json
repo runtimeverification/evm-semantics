@@ -21,7 +21,7 @@
     "k-web-theme": "file:k-web-theme"
   },
   "bugs": {
-    "url": "https://github.com/kframework/runtimeverification/issues"
+    "url": "https://github.com/runtimeverification/evm-semantics/issues"
   },
-  "homepage": "https://github.com/kframework/runtimeverification/#readme"
+  "homepage": "https://github.com/runtimeverification/evm-semantics/#readme"
 }
