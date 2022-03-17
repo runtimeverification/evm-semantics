@@ -5,7 +5,7 @@
 	ignore = untracked
 [submodule "deps/k"]
 	path = deps/k
-	url = https://github.com/kframework/k
+	url = https://github.com/runtimeverification/k
 	ignore = untracked
 [submodule "deps/plugin"]
 	path = deps/plugin
