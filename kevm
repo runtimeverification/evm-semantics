@@ -152,7 +152,7 @@ run_prove() {
 
     case "${backend}" in
         haskell) ! ${bug_report}                 || haskell_backend_command+=(--bug-report "${bug_report_name}")
-                 ! ${profile}                    || haskell_backend_command+=(+RTS -l -ol${eventlog_name} -RTS)
+                 ! ${profile_haskell}            || haskell_backend_command+=(+RTS -l -ol${eventlog_name} -RTS)
                  [[ -z ${max_counterexamples} ]] || haskell_backend_command+=(--max-counterexamples ${max_counterexamples})
                  [[ -z ${branching_allowed}   ]] || haskell_backend_command+=(--breadth ${branching_allowed})
 
@@ -177,7 +177,7 @@ run_prove() {
         *)       fatal "Unknown backend for proving! ${backend}" ;;
     esac
 
-    if ${profile}; then
+    if ${profile_haskell}; then
         timeout -s INT "${profile_timeout}" ${kprove} "${proof_args[@]}" "$@" || true
         execute kore-prof "${eventlog_name}" ${kore_prof_args} > "${eventlog_name}.json"
     else
@@ -301,7 +301,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--chainid NNN]
                                       [--concrete-rules-file <concrete_rules_file>]
                                       [--bug-report]
-                                      [--profile]
+                                      [--profile-haskell]
                                       [--profile-timeout <duration>]
                                       [--kore-prof-args \"<kore-prof arg>*\"]
                                       [--no-provex]
@@ -337,7 +337,7 @@ backend="llvm"
 dump=false
 unparse=true
 debugger=false
-profile=false
+profile_haskell=false
 profile_timeout="0"
 kore_prof_args=""
 bug_report=false
@@ -364,7 +364,7 @@ while [[ $# -gt 0 ]]; do
         --dump)                dump=true                       ; shift   ;;
         --no-unparse)          unparse=false                   ; shift   ;;
         --debugger)            debugger=true                   ; shift   ;;
-        --profile)             profile=true                    ; shift   ;;
+        --profile-haskell)     profile_haskell=true            ; shift   ;;
         --profile-timeout)     profile_timeout="$2"            ; shift 2 ;;
         --kore-prof-args)      kore_prof_args="$2"             ; shift 2 ;;
         --bug-report)          bug_report=true                 ; shift   ;;
@@ -390,12 +390,12 @@ done
 [[ "${#args[@]}" -le 0 ]] || set -- "${args[@]}"
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
-! $profile  || [[ "$backend" == haskell ]]         || fatal "Option --profile only usable with --backend haskell!"
-[[ $profile_timeout = "0" ]] || $profile           || fatal "Option --profile-timeout only usable with --profile!"
-[[ $kore_prof_args = "" ]]   || $profile           || fatal "Option --kore-prof-args only usable with --profile!"
+! $profile_haskell || [[ "$backend" == haskell ]] || fatal "Option --profile-haskell only usable with --backend haskell!"
+[[ $profile_timeout = "0" ]] || $profile          || fatal "Option --profile-timeout only usable with --profile-haskell!"
+[[ $kore_prof_args = "" ]]   || $profile          || fatal "Option --kore-prof-args only usable with --profile-haskell!"
 if ${pyk_minimize}; then
-    ! ${debugger} || fatal "Option --pyk-minimize not usable with --debugger!"
-    ! ${profile}  || fatal "Option --pyk-minimize not usable with --profile!"
+    ! ${debugger}        || fatal "Option --pyk-minimize not usable with --debugger!"
+    ! ${profile_haskell} || fatal "Option --pyk-minimize not usable with --profile-haskell!"
 elif [[ ! -z ${pyk_omit_labels} ]]; then
     fatal "Option --pyk-label-omit only usable with --pyk-minimize!"
 fi
