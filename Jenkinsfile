@@ -112,7 +112,7 @@ pipeline {
             DOCKERHUB_TOKEN   = credentials('rvdockerhub')
             FOCAL_VERSION_TAG = "ubuntu-focal-${env.SHORT_REV}"
             FOCAL_BRANCH_TAG  = "ubuntu-focal-${env.BRANCH_NAME}"
-            DOCKERHUB_REPO    = "runtimeverificationinc/kframework-evm-semantics"
+            DOCKERHUB_REPO    = "runtimeverificationinc/runtimeverification-evm-semantics"
           }
           stages {
             stage('Build Image') {
@@ -161,7 +161,7 @@ pipeline {
             dir('focal')  { unstash 'focal'  }
             sshagent(['rv-jenkins-github']) {
               sh '''
-                git clone 'ssh://github.com/kframework/evm-semantics.git' kevm-release
+                git clone 'ssh://github.com/runtimeverification/evm-semantics.git' kevm-release
                 cd kevm-release
                 git fetch --all
 
@@ -187,10 +187,10 @@ pipeline {
         }
         stage('Update Dependents') {
           steps {
-            build job: 'DevOps/master', propagate: false, wait: false                                            \
-                , parameters: [ booleanParam ( name: 'UPDATE_DEPS'         , value: true                       ) \
-                              , string       ( name: 'UPDATE_DEPS_REPO'    , value: 'kframework/evm-semantics' ) \
-                              , string       ( name: 'UPDATE_DEPS_VERSION' , value: "${env.LONG_REV}")           \
+            build job: 'DevOps/master', propagate: false, wait: false                                                     \
+                , parameters: [ booleanParam ( name: 'UPDATE_DEPS'         , value: true                       )          \
+                              , string       ( name: 'UPDATE_DEPS_REPO'    , value: 'runtimeverification/evm-semantics' ) \
+                              , string       ( name: 'UPDATE_DEPS_VERSION' , value: "${env.LONG_REV}")                    \
                               ]
           }
         }
@@ -199,7 +199,7 @@ pipeline {
             sshagent(['rv-jenkins-github']) {
               dir("kevm-${env.VERSION}-jello-paper") {
                 sh '''
-                  git clone 'ssh://github.com/kframework/evm-semantics.git'
+                  git clone 'ssh://github.com/runtimeverification/evm-semantics.git'
                   cd evm-semantics
                   git checkout -B gh-pages origin/master
                   git submodule update --init --recursive -- ./web
