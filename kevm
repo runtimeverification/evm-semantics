@@ -4,22 +4,21 @@ set -euo pipefail
 shopt -s extglob
 
 debug=false
-verbose=false
+profile=false
 KEVM=kevm
 
-notif() {
-    if ${verbose}; then
-        echo "== ${KEVM} [$(date)]: $@" >&2
-    else
-        echo "== ${KEVM}: $@" >&2
-    fi
-}
+notif() { echo "== ${TOOL_NAME}: $*" >&2 ; }
 
-fatal() { notif "[FATAL] $@" ; exit 1 ; }
+fatal() { notif "[FATAL] $*" ; exit 1 ; }
 
-notif_exec() {
-    notif "$@"
-    "$@"
+execute () {
+    (   if ${profile}; then
+            TIMEFORMAT="%lR %lU %lS $*"
+            time "$@"
+        else
+            "$@"
+        fi
+    )
 }
 
 check_k_install() {
@@ -91,7 +90,7 @@ run_kompile() {
                    ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
-    notif_exec kompile "${kompile_opts[@]}" "$@"
+    execute kompile "${kompile_opts[@]}" "$@"
 }
 
 run_krun() {
@@ -113,7 +112,7 @@ run_krun() {
             parser='cat'
             ;;
     esac
-    notif_exec krun --directory "$backend_dir"        \
+    execute krun --directory "$backend_dir"           \
          -cSCHEDULE="$cschedule" -pSCHEDULE="$parser" \
          -cMODE="$cmode"         -pMODE="$parser"     \
          -cCHAINID="$cchainid"   -pCHAINID="$parser"  \
@@ -180,14 +179,14 @@ run_prove() {
 
     if ${profile}; then
         timeout -s INT "${profile_timeout}" ${kprove} "${proof_args[@]}" "$@" || true
-        notif_exec kore-prof "${eventlog_name}" ${kore_prof_args} > "${eventlog_name}.json"
+        execute kore-prof "${eventlog_name}" ${kore_prof_args} > "${eventlog_name}.json"
     else
         if ${pyk_minimize}; then
             pyk_args=(${backend_dir}/*-kompiled print /dev/stdin --minimize)
             [[ -z "${pyk_omit_labels}" ]] || pyk_args+=(--omit-labels "${pyk_omit_labels}")
-            notif_exec ${kprove} "${proof_args[@]}" "$@" --output json | kpyk "${pyk_args[@]}"
+            execute ${kprove} "${proof_args[@]}" "$@" --output json | kpyk "${pyk_args[@]}"
         else
-            notif_exec ${kprove} "${proof_args[@]}" "$@"
+            execute ${kprove} "${proof_args[@]}" "$@"
         fi
     fi
 }
@@ -233,7 +232,7 @@ run_interpret() {
 
         llvm)    run_kast kore > "$kast"
                  if $debugger; then cmdprefix="gdb --args"; fi
-                 notif_exec $cmdprefix "$interpreter" "$kast" -1 "$output" "$@" || exit_status="$?"
+                 execute $cmdprefix "$interpreter" "$kast" -1 "$output" "$@" || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
                  fi
@@ -241,7 +240,7 @@ run_interpret() {
                  ;;
 
         haskell) run_kast kore > "$kast"
-                 notif_exec kore-exec "$backend_dir/driver-kompiled/definition.kore" --pattern "$kast" --module ETHEREUM-SIMULATION --smt none --output "$output" || exit_status="$?"
+                 execute kore-exec "$backend_dir/driver-kompiled/definition.kore" --pattern "$kast" --module ETHEREUM-SIMULATION --smt none --output "$output" || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
                  fi
@@ -259,8 +258,8 @@ run_solc() {
     contract_name="$1" ; shift
     json_run_file="${run_file}.json"
 
-    notif_exec solc --combined-json abi,bin-runtime,storage-layout,hashes "${run_file}" > "${json_run_file}"
-    notif_exec python3 -m kevm_pyk solc-to-k "$@" ${backend_dir}/*-kompiled "${run_file}" "${json_run_file}" "${contract_name}"
+    execute solc --combined-json abi,bin-runtime,storage-layout,hashes "${run_file}" > "${json_run_file}"
+    execute python3 -m kevm_pyk solc-to-k "$@" ${backend_dir}/*-kompiled "${run_file}" "${json_run_file}" "${contract_name}"
 }
 
 # Main
@@ -270,15 +269,15 @@ run_command="$1" ; shift
 
 if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     echo "
-        usage: ${KEVM} run          [--backend (llvm|java|haskell)]           [--verbose|--debug] <KEVM_arg>* <pgm>  <K arg>*
-               ${KEVM} interpret    [--backend (llvm)]         [--no-unparse] [--verbose|--debug] <KEVM_arg>* <pgm>  <interpreter arg>*
-               ${KEVM} interpret    [--backend (java|haskell)] [--no-unparse] [--verbose|--debug] <KEVM_arg>* <pgm>
-               ${KEVM} kast         [--backend (llvm|java|haskell)]           [--verbose|--debug] <KEVM_arg>* <pgm>  <output format> <K arg>*
-               ${KEVM} prove        [--backend (java|haskell)]                [--verbose|--debug]             <spec> <KEVM_arg>* <K arg>*
-               ${KEVM} search       [--backend (java|haskell)]                [--verbose|--debug]             <pgm>  <pattern> <K arg>*
-               ${KEVM} kompile      [--backend (java|llvm|haskell)]           [--verbose|--debug]             <main> <K arg>*
-               ${KEVM} klab-view                                              [--verbose|--debug]             <spec>
-               ${KEVM} solc-to-k                                              [--verbose|--debug]             <sol> <sol contract> <solc arg>*
+        usage: ${KEVM} run          [--backend (llvm|java|haskell)]           [--profile|--debug] <KEVM_arg>* <pgm>  <K arg>*
+               ${KEVM} interpret    [--backend (llvm)]         [--no-unparse] [--profile|--debug] <KEVM_arg>* <pgm>  <interpreter arg>*
+               ${KEVM} interpret    [--backend (java|haskell)] [--no-unparse] [--profile|--debug] <KEVM_arg>* <pgm>
+               ${KEVM} kast         [--backend (llvm|java|haskell)]           [--profile|--debug] <KEVM_arg>* <pgm>  <output format> <K arg>*
+               ${KEVM} prove        [--backend (java|haskell)]                [--profile|--debug]             <spec> <KEVM_arg>* <K arg>*
+               ${KEVM} search       [--backend (java|haskell)]                [--profile|--debug]             <pgm>  <pattern> <K arg>*
+               ${KEVM} kompile      [--backend (java|llvm|haskell)]           [--profile|--debug]             <main> <K arg>*
+               ${KEVM} klab-view                                              [--profile|--debug]             <spec>
+               ${KEVM} solc-to-k                                              [--profile|--debug]             <sol> <sol contract> <solc arg>*
 
                ${KEVM} [help|--help|version|--version]
 
@@ -361,7 +360,7 @@ args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --debug)               debug=true   ; args+=("$1")     ; shift   ;;
-        --verbose)             verbose=true ; args+=("$1")     ; shift   ;;
+        --profile)             profile=true ; args+=("$1")     ; shift   ;;
         --dump)                dump=true                       ; shift   ;;
         --no-unparse)          unparse=false                   ; shift   ;;
         --debugger)            debugger=true                   ; shift   ;;
