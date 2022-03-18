@@ -7,7 +7,7 @@ debug=false
 profile=false
 KEVM=kevm
 
-notif() { echo "== ${TOOL_NAME}: $*" >&2 ; }
+notif() { echo "== ${KEVM}: $*" >&2 ; }
 
 fatal() { notif "[FATAL] $*" ; exit 1 ; }
 
