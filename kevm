@@ -391,8 +391,8 @@ done
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
 ! $profile_haskell || [[ "$backend" == haskell ]] || fatal "Option --profile-haskell only usable with --backend haskell!"
-[[ $profile_timeout = "0" ]] || $profile          || fatal "Option --profile-timeout only usable with --profile-haskell!"
-[[ $kore_prof_args = "" ]]   || $profile          || fatal "Option --kore-prof-args only usable with --profile-haskell!"
+[[ $profile_timeout = "0" ]] || $profile_haskell  || fatal "Option --profile-timeout only usable with --profile-haskell!"
+[[ $kore_prof_args = "" ]]   || $profile_haskell  || fatal "Option --kore-prof-args only usable with --profile-haskell!"
 if ${pyk_minimize}; then
     ! ${debugger}        || fatal "Option --pyk-minimize not usable with --debugger!"
     ! ${profile_haskell} || fatal "Option --pyk-minimize not usable with --profile-haskell!"
