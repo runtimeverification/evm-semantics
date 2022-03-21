@@ -283,8 +283,8 @@ PYK_VENV     := $(PYK_VENV_DIR)/pyvenv.cfg
 ACTIVATE_PYK := . venv/bin/activate
 
 $(PYK_VENV):
-	   virtualenv -p python3.8 venv                \
-	&& $(ACTIVATE_PYK)                             \
+	   virtualenv -p python3.8 --pip 22.0.4 venv                             \
+	&& $(ACTIVATE_PYK)                                                       \
 	&& pip install -e $(K_SUBMODULE)/k-distribution/src/main/scripts/lib/pyk
 
 
