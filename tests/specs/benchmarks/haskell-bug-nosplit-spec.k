@@ -69,7 +69,8 @@ module HASKELL-BUG-NOSPLIT-SPEC
       <network>
         <chainID> _ </chainID>
 
-        <activeAccounts> SetItem(CONTRACT_ID) SetItem(CALLEE_ID) SetItem(1) _:Set </activeAccounts>
+        //Causes 3-rd path on branching due to #Ceil issues
+        //<activeAccounts> SetItem(CONTRACT_ID) SetItem(CALLEE_ID) SetItem(1) _:Set </activeAccounts>
         <accounts>
           <account>
             <acctID> CONTRACT_ID </acctID>
