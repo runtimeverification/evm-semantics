@@ -125,7 +125,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // Accounts Record
             // ---------------
 
-            <activeAccounts> .Set </activeAccounts>
+            //<activeAccounts> .Set </activeAccounts>
             <accounts>
               <account multiplicity="*" type="Map">
                 <acctID>      0                      </acctID>
@@ -232,16 +232,16 @@ The `interimStates` cell stores a list of previous world states.
     syntax InternalOp ::= "#pushWorldState"
  // ---------------------------------------
     rule <k> #pushWorldState => .K ... </k>
-         <interimStates> (.List => ListItem({ ACCTDATA | ACCTS | SUBSTATE })) ... </interimStates>
-         <activeAccounts> ACCTS    </activeAccounts>
+         <interimStates> (.List => ListItem({ ACCTDATA | .Set | SUBSTATE })) ... </interimStates>
+         //<activeAccounts> ACCTS    </activeAccounts>
          <accounts>       ACCTDATA </accounts>
          <substate>       SUBSTATE </substate>
 
     syntax InternalOp ::= "#popWorldState"
  // --------------------------------------
     rule <k> #popWorldState => .K ... </k>
-         <interimStates> (ListItem({ ACCTDATA | ACCTS | SUBSTATE }) => .List) ... </interimStates>
-         <activeAccounts> _ => ACCTS    </activeAccounts>
+         <interimStates> (ListItem({ ACCTDATA | .Set | SUBSTATE }) => .List) ... </interimStates>
+         //<activeAccounts> _ => ACCTS    </activeAccounts>
          <accounts>       _ => ACCTDATA </accounts>
          <substate>       _ => SUBSTATE </substate>
 
@@ -556,16 +556,16 @@ After executing a transaction, it's necessary to have the effect of the substate
     syntax InternalOp ::= #finalizeTx ( Bool )
                         | #deleteAccounts ( List )
  // ----------------------------------------------
-    rule <k> #finalizeTx(true) => #finalizeStorage(Set2List(ACCTS)) ... </k>
+    rule <k> #finalizeTx(true) => #finalizeStorage(Set2List(.Set)) ... </k>
          <selfDestruct> .Set </selfDestruct>
-         <activeAccounts> ACCTS </activeAccounts>
+         //<activeAccounts> ACCTS </activeAccounts>
          <accessedAccounts> _ => .Set </accessedAccounts>
          <accessedStorage> _ => .Map </accessedStorage>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
          <coinbase> MINER </coinbase>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool MINER in ACCTS
+         //<activeAccounts> ACCTS </activeAccounts>
+      //requires notBool MINER in ACCTS
 
     rule <k> #finalizeTx(false) ... </k>
          <schedule> SCHED </schedule>
@@ -630,7 +630,7 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires size(ACCTS) >Int 0
 
     rule <k> #deleteAccounts(ListItem(ACCT) ACCTS) => #deleteAccounts(ACCTS) ... </k>
-         <activeAccounts> ... (SetItem(ACCT) => .Set) </activeAccounts>
+         //<activeAccounts> ... (SetItem(ACCT) => .Set) </activeAccounts>
          <accounts>
            ( <account>
                <acctID> ACCT </acctID>
@@ -674,8 +674,8 @@ After executing a transaction, it's necessary to have the effect of the substate
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeBlock ... </k>
          <coinbase> MINER </coinbase>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool MINER in ACCTS
+         //<activeAccounts> ACCTS </activeAccounts>
+      //requires notBool MINER in ACCTS
 
     rule <k> #rewardOmmers(.JSONs) => . ... </k>
     rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
@@ -756,12 +756,12 @@ These are just used by the other operators for shuffling local execution state a
                         | "#newFreshAccount" Int
  // --------------------------------------------
     rule <k> #newAccount ACCT => #newExistingAccount ACCT ... </k>
-         <activeAccounts> ACCTS:Set </activeAccounts>
-      requires ACCT in ACCTS
+         //<activeAccounts> ACCTS:Set </activeAccounts>
+      //requires ACCT in ACCTS
 
-    rule <k> #newAccount ACCT => #newFreshAccount ACCT ... </k>
-         <activeAccounts> ACCTS:Set </activeAccounts>
-      requires notBool ACCT in ACCTS
+    //rule <k> #newAccount ACCT => #newFreshAccount ACCT ... </k>
+         //<activeAccounts> ACCTS:Set </activeAccounts>
+      //requires notBool ACCT in ACCTS
 
     rule <k> #newExistingAccount ACCT => #end EVMC_ACCOUNT_ALREADY_EXISTS ... </k>
          <account>
@@ -784,7 +784,7 @@ These are just used by the other operators for shuffling local execution state a
       requires #sizeByteArray(WS) ==Int 0
 
     rule <k> #newFreshAccount ACCT => . ... </k>
-         <activeAccounts> ... (.Set => SetItem(ACCT)) ... </activeAccounts>
+         //<activeAccounts> ... (.Set => SetItem(ACCT)) ... </activeAccounts>
          <accounts>
            ( .Bag
           => <account>
@@ -831,17 +831,17 @@ These are just used by the other operators for shuffling local execution state a
       requires VALUE >Int ORIGFROM
 
     rule <k> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
+         //<activeAccounts> ACCTS </activeAccounts>
          <schedule> SCHED </schedule>
       requires ACCTFROM =/=K ACCTTO
-       andBool notBool ACCTTO in ACCTS
+       //andBool notBool ACCTTO in ACCTS
        andBool (VALUE >Int 0 orBool notBool Gemptyisnonexistent << SCHED >>)
 
     rule <k> #transferFunds ACCTFROM ACCTTO 0 => . ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
+         //<activeAccounts> ACCTS </activeAccounts>
          <schedule> SCHED </schedule>
       requires ACCTFROM =/=K ACCTTO
-       andBool notBool ACCTTO in ACCTS
+       //andBool notBool ACCTTO in ACCTS
        andBool Gemptyisnonexistent << SCHED >>
 ```
 
@@ -1166,8 +1166,8 @@ For now, I assume that they instantiate an empty account and use the empty data.
          </account>
 
     rule <k> BALANCE ACCT => 0 ~> #push ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+         //<activeAccounts> ACCTS </activeAccounts>
+      //requires notBool ACCT in ACCTS
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
@@ -1179,8 +1179,8 @@ For now, I assume that they instantiate an empty account and use the empty data.
          </account>
 
     rule <k> EXTCODESIZE ACCT => 0 ~> #push ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+         //<activeAccounts> ACCTS </activeAccounts>
+      //requires notBool ACCT in ACCTS
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
@@ -1205,8 +1205,8 @@ For now, I assume that they instantiate an empty account and use the empty data.
        requires #accountEmpty(CODE, NONCE, BAL)
 
     rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+         //<activeAccounts> ACCTS </activeAccounts>
+      //requires notBool ACCT in ACCTS
 ```
 
 TODO: What should happen in the case that the account doesn't exist with `EXTCODECOPY`?
@@ -1224,8 +1224,8 @@ Should we pad zeros (for the copied "program")?
          </account>
 
     rule <k> EXTCODECOPY ACCT _MEMSTART _PGMSTART _WIDTH => . ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+         //<activeAccounts> ACCTS </activeAccounts>
+      //requires notBool ACCT in ACCTS
 ```
 
 ### Account Storage Operations
@@ -1308,8 +1308,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #callWithCode ACCTFROM ACCTTO ACCTCODE .ByteArray VALUE APPVALUE ARGS STATIC
          ...
          </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCTCODE in ACCTS
+         //<activeAccounts> ACCTS </activeAccounts>
+      //requires notBool ACCTCODE in ACCTS
 
     rule <k> #callWithCode ACCTFROM ACCTTO ACCTCODE BYTES VALUE APPVALUE ARGS STATIC
           => #pushCallStack ~> #pushWorldState
@@ -2309,8 +2309,8 @@ There are several helpers for calculating gas (most of them also specified in th
     syntax BExp ::= #accountNonexistent ( Int )
  // -------------------------------------------
     rule <k> #accountNonexistent(ACCT) => true ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+         //<activeAccounts> ACCTS </activeAccounts>
+      //requires notBool ACCT in ACCTS
 
     rule <k> #accountNonexistent(ACCT) => #accountEmpty(CODE, NONCE, BAL) andBool Gemptyisnonexistent << SCHED >> ... </k>
          <schedule> SCHED </schedule>
