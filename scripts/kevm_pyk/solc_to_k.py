@@ -35,12 +35,13 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
     return json.loads(subprocess_res.stdout)
 
 
-def solc_to_k(*, command: str, kompiled_directory: str, contract_file: str, contract_name: str, solc_output, generate_storage: bool):
+def solc_to_k(*, command: str, kompiled_directory: str, contract_file: Path, contract_name: str, generate_storage: bool):
     assert command == 'solc-to-k'
     kevm = KPrint(kompiled_directory)
     kevm.symbolTable = kevmSymbolTable(kevm.symbolTable)
 
-    contract_json = json.loads(solc_output.read())['contracts'][contract_file + ':' + contract_name]
+    solc_json = solc_compile(contract_file)
+    contract_json = solc_json['contracts'][f'{contract_file}:{contract_name}']
     storage_layout = contract_json['storage-layout']
     abi = contract_json['abi']
     hashes = contract_json['hashes']

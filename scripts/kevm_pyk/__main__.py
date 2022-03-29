@@ -33,8 +33,7 @@ def create_argument_parser():
 
     solc_to_k_subparser = command_parser.add_parser('solc-to-k', help='Output helper K definition for given JSON output from solc compiler.')
     solc_to_k_subparser.add_argument('kompiled_directory', type=str, help='Path to *-kompiled directory to use.')
-    solc_to_k_subparser.add_argument('contract_file', type=str, help='Path to contract file.')
-    solc_to_k_subparser.add_argument('solc_output', type=argparse.FileType('r'), default='-', help='Combined JSON output from solc compiler.')
+    solc_to_k_subparser.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_subparser.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
     solc_to_k_subparser.add_argument('--no-storage-slots', dest='generate_storage', default=True, action='store_false', help='Do not generate productions and rules for accessing storage slots')
 
