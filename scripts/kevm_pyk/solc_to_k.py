@@ -1,5 +1,8 @@
 import functools
 import json
+import subprocess
+from pathlib import Path
+from typing import Any, Dict
 
 from pyk.kast import (
     TRUE,
@@ -22,6 +25,14 @@ from pyk.kast import (
 from pyk.ktool import KPrint
 
 from .utils import intersperse
+
+
+def solc_compile(contract_file: Path) -> Dict[str, Any]:
+    subprocess_res = subprocess.run([
+        'solc', '--combined-json', 'abi,bin-runtime,storage-layout,hashes', str(contract_file),
+    ], check=True, capture_output=True)
+
+    return json.loads(subprocess_res.stdout)
 
 
 def solc_to_k(*, command: str, kompiled_directory: str, contract_file: str, contract_name: str, solc_output, generate_storage: bool):
