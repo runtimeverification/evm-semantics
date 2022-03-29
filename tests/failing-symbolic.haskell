@@ -1,4 +1,3 @@
-tests/specs/benchmarks/ecrecoverloop00-sig1-invalid-spec.k
 tests/specs/bihu/collectToken-spec.k
 tests/specs/bihu/forwardToHotWallet-success-1-spec.k
 tests/specs/bihu/forwardToHotWallet-success-2-spec.k
