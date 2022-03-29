@@ -35,9 +35,8 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
     return json.loads(subprocess_res.stdout)
 
 
-def solc_to_k(*, command: str, kompiled_directory: str, contract_file: Path, contract_name: str, generate_storage: bool):
-    assert command == 'solc-to-k'
-    kevm = KPrint(kompiled_directory)
+def solc_to_k(kompiled_directory: Path, contract_file: Path, contract_name: str, generate_storage: bool):
+    kevm = KPrint(str(kompiled_directory))
     kevm.symbolTable = kevmSymbolTable(kevm.symbolTable)
 
     solc_json = solc_compile(contract_file)
