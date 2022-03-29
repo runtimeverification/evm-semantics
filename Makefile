@@ -45,24 +45,6 @@ PLUGIN_SOURCE    := $(KEVM_INCLUDE)/kframework/blockchain-k-plugin/krypto.md
 export PLUGIN_SUBMODULE
 
 
-# virtualenv
-# --------------
-
-VENV_DIR := venv
-VENV     := $(VENV_DIR)/pyvenv.cfg
-ACTIVATE := . venv/bin/activate
-
-$(VENV_DIR): $(VENV)
-	@echo $(ACTIVATE)
-
-$(VENV):
-	   virtualenv --python python3.8 venv \
-	&& $(ACTIVATE)                        \
-	&& cd kevm_pyk                        \
-	&& pip install -r requirements.txt    \
-	&& pip install . --no-deps
-
-
 .PHONY: all clean distclean                                                                                                      \
         deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
         build build-haskell build-llvm build-provex build-node build-kevm build-kevm-pyk                                         \
@@ -73,7 +55,7 @@ $(VENV):
         test-prove-mcd test-klab-prove                                                                                           \
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
-        test-kevm-pyk $(VENV_DIR)                                                                                                \
+        test-kevm-pyk                                                                                                            \
         media media-pdf metropolis-theme                                                                                         \
         install uninstall
 .SECONDARY:
@@ -456,15 +438,21 @@ tests/%.prove-legacy: tests/%
 	    --no-provex --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
 tests/specs/examples/erc20-spec/haskell/erc20-spec-kompiled/timestamp: tests/specs/examples/erc20-bin-runtime.k
-tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes) $(VENV)
-	$(ACTIVATE) && $(KEVM) solc-to-k $< ERC20 > $@
+tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) $(VENV)
+	$(MAKE) -C ./kevm_pyk venv-prod &&     \
+	. ./kevm_pyk/venv-prod/bin/activate && \
+	$(KEVM) solc-to-k $< ERC20 > $@
 
 tests/specs/examples/erc721-spec/haskell/erc721-spec-kompiled/timestamp: tests/specs/examples/erc721-bin-runtime.k
-tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes) $(VENV)
-	$(ACTIVATE) && $(KEVM) solc-to-k $< ERC721 > $@
+tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) $(VENV)
+	$(MAKE) -C ./kevm_pyk venv-prod &&     \
+	. ./kevm_pyk/venv-prod/bin/activate && \
+	$(KEVM) solc-to-k $< ERC721 > $@
 
-tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes) $(VENV)
-	$(ACTIVATE) && $(KEVM) solc-to-k $< Empty > $@
+tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) $(VENV)
+	$(MAKE) -C ./kevm_pyk venv-prod &&     \
+	. ./kevm_pyk/venv-prod/bin/activate && \
+	$(KEVM) solc-to-k $< Empty > $@
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
