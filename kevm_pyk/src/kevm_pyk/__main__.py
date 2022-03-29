@@ -4,7 +4,7 @@ import sys
 
 from pyk.cli_utils import dir_path, file_path
 
-from .solc_to_k import solc_to_k, solc_compile
+from .solc_to_k import solc_compile, solc_to_k
 
 
 def main():

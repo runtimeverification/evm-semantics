@@ -310,7 +310,7 @@ def _extract_function_sentences(contract_name, function_sort, abi):
 
 
 def _parseByteStack(s: str):
-    return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
+    return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])  # type: ignore
 
 
 def _stringToken(s: str):
