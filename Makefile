@@ -47,7 +47,7 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
-        build build-haskell build-llvm build-provex build-node build-kevm build-kevm-pyk                                         \
+        build build-haskell build-llvm build-provex build-node build-kevm                                                        \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
         test-prove test-failing-prove                                                                                            \
@@ -280,20 +280,12 @@ $(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_o
 # Installing
 # ----------
 
-kevm_pyk_files := __init__.py  \
-                  __main__.py  \
-                  solc_to_k.py \
-                  utils.py
-
-kevm_pyk_includes := $(patsubst %, $(KEVM_LIB)/kevm_pyk/%, $(kevm_pyk_files))
-
 install_bins := kevm    \
                 kevm-vm
 
 install_libs := $(haskell_kompiled)                                        \
                 $(llvm_kompiled)                                           \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
-                $(patsubst %, kevm_pyk/%, $(kevm_pyk_files))               \
                 kore-json.py                                               \
                 kast-json.py                                               \
                 release.md                                                 \
@@ -330,8 +322,7 @@ build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%
 build-llvm:     $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-haskell:  $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
 build-node:     $(KEVM_LIB)/$(node_kompiled)
-build-kevm:     $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes) $(kevm_pyk_includes)
-build-kevm-pyk: $(kevm_pyk_includes)
+build-kevm:     $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
