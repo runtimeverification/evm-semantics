@@ -285,7 +285,7 @@ ACTIVATE_PYK := . venv/bin/activate
 $(PYK_VENV):
 	   virtualenv -p python3.8 venv                \
 	&& $(ACTIVATE_PYK)                             \
-	&& pip install -e $(K_SUBMODULE)/k-distribution/src/main/scripts/lib/pyk
+	&& pip install -e $(K_SUBMODULE)/pyk
 
 
 # Installing
