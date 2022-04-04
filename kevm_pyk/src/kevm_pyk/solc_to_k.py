@@ -23,8 +23,7 @@ from pyk.kast import (
     paren,
 )
 from pyk.ktool import KPrint
-
-from .utils import intersperse
+from pyk.utils import intersperse
 
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
