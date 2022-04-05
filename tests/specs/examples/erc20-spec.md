@@ -56,15 +56,41 @@ module ERC20-SPEC
     imports VERIFICATION
 ```
 
-### Calling decimals() works
+```
+    claim [ERC20.name]:
+          <mode>     NORMAL   </mode>
+          <schedule> ISTANBUL </schedule>
 
--   Everything from `<mode>` to `<callValue>` is boilerplate.
--   We are setting `<callData>` to `decimals()`.
--   We ask the prover to show that in all cases, we will end in `EVMC_SUCCESS` (rollback) when this happens.
--   The `<output>` cell specifies that we correctly lookup the `DECIMALS` value from the account storage.
+          <callStack> .List                                      </callStack>
+          <program>   #binRuntime(ERC20)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(ERC20)) </jumpDests>
 
-```k
-    claim [decimals]:
+          <id>         ACCTID      => ?_ </id>
+          <localMem>   .Memory     => ?_ </localMem>
+          <memoryUsed> 0           => ?_ </memoryUsed>
+          <wordStack>  .WordStack  => ?_ </wordStack>
+          <pc>         0           => ?_ </pc>
+          <endPC>      _           => ?_ </endPC>
+          <gas>        #gas(_VGAS) => ?_ </gas>
+          <callValue>  0           => ?_ </callValue>
+
+          <callData>   ERC20.name()                 </callData>
+          <k>          #execute   => #halt ...      </k>
+          <output>     .ByteArray => #buf(32, NAME) </output>
+          <statusCode> _          => EVMC_SUCCESS   </statusCode>
+
+          <account>
+            <acctID> ACCTID </acctID>
+            <storage> ACCT_STORAGE </storage>
+            ...
+          </account>
+
+       requires NAME_KEY ==Int ERC20._name
+        andBool NAME     ==Int #lookup(ACCT_STORAGE, NAME_KEY)
+```
+
+```
+    claim [ERC20.decimals]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
 
@@ -96,16 +122,8 @@ module ERC20-SPEC
         andBool DECIMALS     ==Int 255 &Int #lookup(ACCT_STORAGE, DECIMALS_KEY)
 ```
 
-### Calling totalSupply() works
-
--   Everything from `<mode>` to `<callValue>` is boilerplate.
--   We are setting `<callData>` to `totalSupply()`.
--   We ask the prover to show that in all cases, we will end in `EVMC_SUCCESS` (rollback) when this happens.
--   The `<output>` cell specifies that we correctly lookup the `TS` value from the account storage.
-
-
-```k
-    claim [totalSupply]:
+```
+    claim [ERC20.totalSupply]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
 
@@ -137,17 +155,89 @@ module ERC20-SPEC
         andBool TOTALSUPPLY     ==Int #lookup(ACCT_STORAGE,  TOTALSUPPLY_KEY)
 ```
 
-### Calling Approve works
+```
+    claim [ERC20.balanceOf]:
+          <mode>     NORMAL   </mode>
+          <schedule> ISTANBUL </schedule>
 
--   Everything from `<mode>` to `<substate>` is boilerplate.
--   We are setting `<callData>` to `approve(SPENDER, AMOUNT)`.
--   We ask the prover to show that in all cases, we will end in `EVMC_SUCCESS` when `SENDER` or `OWNER` is not `address(0)`, and that we will end in `EVMC_REVERT` (rollback) when either one of them is.
--   We take the OWNER from the `<caller>` cell, which is the `msg.sender`.
--   The `<output>` should be `#buf(32, bool2Word(True))` if the function does not revert.
--   The storage locations for Allowance should be updated accordingly.
+          <callStack> .List                                      </callStack>
+          <program>   #binRuntime(ERC20)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(ERC20)) </jumpDests>
+
+          <id>         ACCTID      => ?_ </id>
+          <localMem>   .Memory     => ?_ </localMem>
+          <memoryUsed> 0           => ?_ </memoryUsed>
+          <wordStack>  .WordStack  => ?_ </wordStack>
+          <pc>         0           => ?_ </pc>
+          <endPC>      _           => ?_ </endPC>
+          <gas>        #gas(_VGAS) => ?_ </gas>
+          <callValue>  0           => ?_ </callValue>
+
+          <callData>   ERC20.balanceOf(ACCOUNT)          </callData>
+          <k>          #execute   => #halt ...           </k>
+          <output>     .ByteArray => #buf(32, BALANCEOF) </output>
+          <statusCode> _          => EVMC_SUCCESS        </statusCode>
+
+          <account>
+            <acctID> ACCTID </acctID>
+            <storage> ACCT_STORAGE </storage>
+            ...
+          </account>
+
+       requires BALANCEOF_KEY ==Int ERC20._balances[ACCOUNT]
+        andBool BALANCEOF     ==Int #lookup(ACCT_STORAGE, BALANCEOF_KEY)
+```
 
 ```k
-    claim [approve.success]:
+    claim [ERC20.transfer.success.1]:
+          <mode>     NORMAL   </mode>
+          <schedule> ISTANBUL </schedule>
+
+          <callStack> .List                                      </callStack>
+          <program>   #binRuntime(ERC20)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(ERC20)) </jumpDests>
+          <static>    false                                      </static>
+
+          <id>         ACCTID      => ?_ </id>
+          <caller>     OWNER       => ?_ </caller>
+          <localMem>   .Memory     => ?_ </localMem>
+          <memoryUsed> 0           => ?_ </memoryUsed>
+          <wordStack>  .WordStack  => ?_ </wordStack>
+          <pc>         0           => ?_ </pc>
+          <endPC>      _           => ?_ </endPC>
+          <gas>        #gas(_VGAS) => ?_ </gas>
+          <callValue>  0           => ?_ </callValue>
+          <substate> _             => ?_ </substate>
+
+          <callData>   ERC20.transfer(TO, AMOUNT) </callData>
+          <k>          #execute   => #halt ...    </k>
+          <output>     .ByteArray => #buf(32, 1)  </output>
+          <statusCode> _          => EVMC_SUCCESS </statusCode>
+
+          <account>
+            <acctID> ACCTID </acctID>
+            <storage> ACCT_STORAGE => ?ACCT_STORAGE </storage>
+            ...
+          </account>
+
+       requires FROM_KEY    ==Int ERC20._balances[OWNER]
+        andBool FROM_BEFORE ==Int #lookup(ACCT_STORAGE, FROM_KEY)
+        andBool FROM_AFTER  ==Int #lookup(?ACCT_STORAGE, FROM_KEY)
+        andBool TO_KEY    ==Int ERC20._balances[TO]
+        andBool TO_BEFORE ==Int #lookup(ACCT_STORAGE, TO_KEY)
+        andBool TO_AFTER  ==Int #lookup(?ACCT_STORAGE, TO_KEY)
+        andBool FROM_AFTER  ==Int FROM_BEFORE -Int AMOUNT
+        andBool FROM_BEFORE ==Int FROM_AFTER  +Int AMOUNT
+
+        andBool #rangeAddress(OWNER)
+        andBool #rangeAddress(SPENDER)
+        andBool #rangeUInt(256, AMOUNT)
+        andBool OWNER =/=Int 0
+        andBool SPENDER =/=Int 0
+```
+
+```
+    claim [ERC20.approve.success]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
 
@@ -186,8 +276,8 @@ module ERC20-SPEC
         andBool SPENDER =/=Int 0
 ```
 
-```k
-    claim [approve.revert]:
+```
+    claim [ERC20.approve.revert]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
 
