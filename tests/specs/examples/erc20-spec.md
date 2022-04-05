@@ -221,19 +221,20 @@ module ERC20-SPEC
           </account>
 
        requires FROM_KEY    ==Int ERC20._balances[OWNER]
+        andBool TO_KEY      ==Int ERC20._balances[TO]
         andBool FROM_BEFORE ==Int #lookup(ACCT_STORAGE, FROM_KEY)
-        andBool FROM_AFTER  ==Int #lookup(?ACCT_STORAGE, FROM_KEY)
-        andBool TO_KEY    ==Int ERC20._balances[TO]
-        andBool TO_BEFORE ==Int #lookup(ACCT_STORAGE, TO_KEY)
-        andBool TO_AFTER  ==Int #lookup(?ACCT_STORAGE, TO_KEY)
-        andBool FROM_AFTER  ==Int FROM_BEFORE -Int AMOUNT
-        andBool FROM_BEFORE ==Int FROM_AFTER  +Int AMOUNT
+        andBool TO_BEFORE   ==Int #lookup(ACCT_STORAGE, TO_KEY)
 
         andBool #rangeAddress(OWNER)
         andBool #rangeAddress(SPENDER)
         andBool #rangeUInt(256, AMOUNT)
         andBool OWNER =/=Int 0
         andBool SPENDER =/=Int 0
+
+        ensures ?FROM_AFTER  ==Int #lookup(?ACCT_STORAGE, FROM_KEY)
+        andBool ?TO_AFTER    ==Int #lookup(?ACCT_STORAGE, TO_KEY)
+        andBool ?FROM_AFTER  ==Int FROM_BEFORE -Int AMOUNT
+        andBool ?TO_AFTER    ==Int TO_BEFORE   +Int AMOUNT
 ```
 
 ```
