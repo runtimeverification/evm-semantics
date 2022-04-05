@@ -238,6 +238,39 @@ module ERC20-SPEC
 ```
 
 ```
+    claim [ERC20.allowance]:
+          <mode>     NORMAL   </mode>
+          <schedule> ISTANBUL </schedule>
+
+          <callStack> .List                                      </callStack>
+          <program>   #binRuntime(ERC20)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(ERC20)) </jumpDests>
+
+          <id>         ACCTID      => ?_ </id>
+          <localMem>   .Memory     => ?_ </localMem>
+          <memoryUsed> 0           => ?_ </memoryUsed>
+          <wordStack>  .WordStack  => ?_ </wordStack>
+          <pc>         0           => ?_ </pc>
+          <endPC>      _           => ?_ </endPC>
+          <gas>        #gas(_VGAS) => ?_ </gas>
+          <callValue>  0           => ?_ </callValue>
+
+          <callData>   ERC20.allowance(ACCOUNT, SPENDER) </callData>
+          <k>          #execute   => #halt ...           </k>
+          <output>     .ByteArray => #buf(32, ALLOWANCE) </output>
+          <statusCode> _          => EVMC_SUCCESS        </statusCode>
+
+          <account>
+            <acctID> ACCTID </acctID>
+            <storage> ACCT_STORAGE </storage>
+            ...
+          </account>
+
+       requires ALLOWANCE_KEY ==Int ERC20._allowances[ACCOUNT][SPENDER]
+        andBool ALLOWANCE     ==Int #lookup(ACCT_STORAGE, ALLOWANCE_KEY)
+```
+
+```
     claim [ERC20.approve.success]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
@@ -313,6 +346,56 @@ module ERC20-SPEC
         andBool #rangeAddress(SPENDER)
         andBool #rangeUInt(256, AMOUNT)
         andBool (OWNER ==Int 0 orBool SPENDER ==Int 0)
+```
+
+```
+    claim [ERC20.transferFrom.success.1]:
+          <mode>     NORMAL   </mode>
+          <schedule> ISTANBUL </schedule>
+
+          <callStack> .List                                      </callStack>
+          <program>   #binRuntime(ERC20)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(ERC20)) </jumpDests>
+          <static>    false                                      </static>
+
+          <id>         ACCTID      => ?_ </id>
+          <caller>     OWNER       => ?_ </caller>
+          <localMem>   .Memory     => ?_ </localMem>
+          <memoryUsed> 0           => ?_ </memoryUsed>
+          <wordStack>  .WordStack  => ?_ </wordStack>
+          <pc>         0           => ?_ </pc>
+          <endPC>      _           => ?_ </endPC>
+          <gas>        #gas(_VGAS) => ?_ </gas>
+          <callValue>  0           => ?_ </callValue>
+          <substate> _             => ?_ </substate>
+
+          <callData>   ERC20.transferFrom(FROM, TO, AMOUNT) </callData>
+          <k>          #execute   => #halt ...              </k>
+          <output>     .ByteArray => #buf(32, 1)            </output>
+          <statusCode> _          => EVMC_SUCCESS           </statusCode>
+
+          <account>
+            <acctID> ACCTID </acctID>
+            <storage> ACCT_STORAGE => ?ACCT_STORAGE </storage>
+            ...
+          </account>
+
+       requires FROM_KEY    ==Int ERC20._balances[FROM]
+        andBool TO_KEY      ==Int ERC20._balances[TO]
+        andBool FROM_BEFORE ==Int #lookup(ACCT_STORAGE, FROM_KEY)
+        andBool TO_BEFORE   ==Int #lookup(ACCT_STORAGE, TO_KEY)
+
+        andBool #rangeAddress(OWNER)
+        andBool #rangeAddress(SPENDER)
+        andBool #rangeUInt(256, AMOUNT)
+        andBool OWNER =/=Int 0
+        andBool SPENDER =/=Int 0
+        andBool TO =/=Int 0
+
+        ensures ?FROM_AFTER  ==Int #lookup(?ACCT_STORAGE, FROM_KEY)
+        andBool ?TO_AFTER    ==Int #lookup(?ACCT_STORAGE, TO_KEY)
+        andBool ?FROM_AFTER  ==Int FROM_BEFORE -Int AMOUNT
+        andBool ?TO_AFTER    ==Int TO_BEFORE   +Int AMOUNT
 ```
 
 ```k
