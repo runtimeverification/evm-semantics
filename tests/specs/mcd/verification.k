@@ -93,6 +93,12 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
     rule bool2Word( X:Bool ) |Int bool2Word( Y:Bool ) => bool2Word(X orBool Y) [simplification]
     rule bool2Word( X:Bool ) ==Int 0                  => notBool X             [simplification]
 
+    rule chop ( X -Int Y ) => X -Int (Y +Int pow256)
+      requires #rangeUInt(256, X)
+       andBool #rangeSInt(256, Y)
+       andBool Y <=Int 0
+       andBool notBool #rangeUInt(256, X -Int Y) [simplification]
+
   // ########################
   // Map
   // ########################
