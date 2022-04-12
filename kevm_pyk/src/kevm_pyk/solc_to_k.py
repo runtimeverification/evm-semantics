@@ -1,5 +1,8 @@
 import functools
 import json
+import subprocess
+from pathlib import Path
+from typing import Any, Dict
 
 from pyk.kast import (
     TRUE,
@@ -20,16 +23,23 @@ from pyk.kast import (
     paren,
 )
 from pyk.ktool import KPrint
+from pyk.utils import intersperse
 
-from .utils import intersperse
+
+def solc_compile(contract_file: Path) -> Dict[str, Any]:
+    subprocess_res = subprocess.run([
+        'solc', '--combined-json', 'abi,bin-runtime,storage-layout,hashes', str(contract_file),
+    ], check=True, capture_output=True)
+
+    return json.loads(subprocess_res.stdout)
 
 
-def solc_to_k(*, command: str, kompiled_directory: str, contract_file: str, contract_name: str, solc_output, generate_storage: bool):
-    assert command == 'solc-to-k'
-    kevm = KPrint(kompiled_directory)
+def solc_to_k(kompiled_directory: Path, contract_file: Path, contract_name: str, generate_storage: bool):
+    kevm = KPrint(str(kompiled_directory))
     kevm.symbolTable = kevmSymbolTable(kevm.symbolTable)
 
-    contract_json = json.loads(solc_output.read())['contracts'][contract_file + ':' + contract_name]
+    solc_json = solc_compile(contract_file)
+    contract_json = solc_json['contracts'][f'{contract_file}:{contract_name}']
     storage_layout = contract_json['storage-layout']
     abi = contract_json['abi']
     hashes = contract_json['hashes']
@@ -299,7 +309,7 @@ def _extract_function_sentences(contract_name, function_sort, abi):
 
 
 def _parseByteStack(s: str):
-    return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
+    return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])  # type: ignore
 
 
 def _stringToken(s: str):

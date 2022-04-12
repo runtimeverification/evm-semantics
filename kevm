@@ -40,7 +40,6 @@ libcryptopp_dir=${INSTALL_LIB}/cryptopp
 
 export PATH="${INSTALL_BIN}:${INSTALL_LIB}:${install_k_bin}:${PATH}"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
-export PYTHONPATH="${INSTALL_LIB}${PYTHONPATH:+:$PYTHONPATH}"
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
 
@@ -258,8 +257,7 @@ run_solc() {
     contract_name="$1" ; shift
     json_run_file="${run_file}.json"
 
-    execute solc --combined-json abi,bin-runtime,storage-layout,hashes "${run_file}" > "${json_run_file}"
-    execute python3 -m kevm_pyk solc-to-k "$@" ${backend_dir}/*-kompiled "${run_file}" "${json_run_file}" "${contract_name}"
+    execute python3 -m kevm_pyk solc-to-k "$@" ${backend_dir}/*-kompiled "${run_file}" "${contract_name}"
 }
 
 # Main
