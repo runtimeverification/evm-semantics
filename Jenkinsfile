@@ -28,8 +28,8 @@ pipeline {
           options { timeout(time: 200, unit: 'MINUTES') }
           parallel {
             stage('Conformance (LLVM)') { steps {                                         sh 'make test-conformance -j4 TEST_CONCRETE_BACKEND=llvm'      } }
-            stage('Proofs (Java)')      { steps { lock("kevm-java-${env.NODE_NAME}")    { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=java'    } } }
-            stage('Proofs (Haskell)')   { steps { lock("kevm-haskell-${env.NODE_NAME}") { sh 'make test-prove       -j5 TEST_SYMBOLIC_BACKEND=haskell' } } }
+            stage('Proofs (Java)')      { steps { lock("kevm-java-${env.NODE_NAME}")    { sh 'make test-prove       -j2 TEST_SYMBOLIC_BACKEND=java'    } } }
+            stage('Proofs (Haskell)')   { steps { lock("kevm-haskell-${env.NODE_NAME}") { sh 'make test-prove       -j7 TEST_SYMBOLIC_BACKEND=haskell' } } }
           }
         }
         stage('Test Interactive') {
