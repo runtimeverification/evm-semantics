@@ -430,20 +430,17 @@ tests/%.prove-legacy: tests/%
 
 tests/specs/examples/erc20-spec/haskell/erc20-spec-kompiled/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) $(VENV)
-	$(MAKE) -C ./kevm_pyk venv-prod &&     \
-	. ./kevm_pyk/venv-prod/bin/activate && \
-	$(KEVM) solc-to-k $< ERC20 > $@
+	$(MAKE) -C ./kevm_pyk venv-prod
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC20 > $@
 
 tests/specs/examples/erc721-spec/haskell/erc721-spec-kompiled/timestamp: tests/specs/examples/erc721-bin-runtime.k
 tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) $(VENV)
-	$(MAKE) -C ./kevm_pyk venv-prod &&     \
-	. ./kevm_pyk/venv-prod/bin/activate && \
-	$(KEVM) solc-to-k $< ERC721 > $@
+	$(MAKE) -C ./kevm_pyk venv-prod
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC721 > $@
 
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) $(VENV)
-	$(MAKE) -C ./kevm_pyk venv-prod &&     \
-	. ./kevm_pyk/venv-prod/bin/activate && \
-	$(KEVM) solc-to-k $< Empty > $@
+	$(MAKE) -C ./kevm_pyk venv-prod
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty > $@
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
