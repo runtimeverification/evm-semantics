@@ -44,9 +44,10 @@ PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
 PLUGIN_SOURCE    := $(KEVM_INCLUDE)/kframework/blockchain-k-plugin/krypto.md
 export PLUGIN_SUBMODULE
 
+
 .PHONY: all clean distclean                                                                                                      \
         deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
-        build build-haskell build-llvm build-provex build-node build-kevm build-kevm-pyk                                         \
+        build build-haskell build-llvm build-provex build-node build-kevm                                                        \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
         test-prove test-failing-prove                                                                                            \
@@ -62,7 +63,7 @@ export PLUGIN_SUBMODULE
 all: build
 
 clean:
-	rm -rf $(KEVM_BIN) $(KEVM_LIB) $(PYK_VENV_DIR)
+	rm -rf $(KEVM_BIN) $(KEVM_LIB)
 
 distclean:
 	rm -rf $(BUILD_DIR)
@@ -218,7 +219,8 @@ haskell_main_module    := ETHEREUM-SIMULATION
 haskell_syntax_module  := $(haskell_main_module)
 haskell_main_file      := driver.md
 haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
-haskell_kompiled       := $(haskell_dir)/$(haskell_main_filename)-kompiled/definition.kore
+haskell_kompiled_dir   := $(haskell_dir)/$(haskell_main_filename)-kompiled
+haskell_kompiled       := $(haskell_kompiled_dir)/definition.kore
 
 ifeq ($(UNAME_S),Darwin)
 $(KEVM_LIB)/$(haskell_kompiled): $(libsecp256k1_out)
@@ -275,28 +277,8 @@ $(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_o
 	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) && $(MAKE)
 
 
-# pyk virtualenv
-# --------------
-
-PYK_VENV_DIR := venv
-PYK_VENV     := $(PYK_VENV_DIR)/pyvenv.cfg
-ACTIVATE_PYK := . venv/bin/activate
-
-$(PYK_VENV):
-	   virtualenv -p python3.8 venv                \
-	&& $(ACTIVATE_PYK)                             \
-	&& pip install -e $(K_SUBMODULE)/pyk
-
-
 # Installing
 # ----------
-
-kevm_pyk_files := __init__.py  \
-                  __main__.py  \
-                  solc_to_k.py \
-                  utils.py
-
-kevm_pyk_includes := $(patsubst %, $(KEVM_LIB)/kevm_pyk/%, $(kevm_pyk_files))
 
 install_bins := kevm    \
                 kevm-vm
@@ -304,7 +286,6 @@ install_bins := kevm    \
 install_libs := $(haskell_kompiled)                                        \
                 $(llvm_kompiled)                                           \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
-                $(patsubst %, kevm_pyk/%, $(kevm_pyk_files))               \
                 kore-json.py                                               \
                 kast-json.py                                               \
                 release.md                                                 \
@@ -341,8 +322,7 @@ build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%
 build-llvm:     $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-haskell:  $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
 build-node:     $(KEVM_LIB)/$(node_kompiled)
-build-kevm:     $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes) $(kevm_pyk_includes)
-build-kevm-pyk: $(kevm_pyk_includes)
+build-kevm:     $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
@@ -448,16 +428,24 @@ tests/%.prove-legacy: tests/%
 	$(KEVM) prove $< --verif-module $(KPROVE_MODULE) $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) \
 	    --no-provex --format-failures $(KPROVE_OPTS) --concrete-rules-file $(dir $@)concrete-rules.txt
 
+
+# solc-to-k
+# ---------
+
+kevm-pyk-venv:
+	$(MAKE) -C ./kevm_pyk venv-prod
+
 tests/specs/examples/erc20-spec/haskell/erc20-spec-kompiled/timestamp: tests/specs/examples/erc20-bin-runtime.k
-tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes) $(PYK_VENV)
-	$(ACTIVATE_PYK) && $(KEVM) solc-to-k $< ERC20 > $@
+tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC20 > $@
 
 tests/specs/examples/erc721-spec/haskell/erc721-spec-kompiled/timestamp: tests/specs/examples/erc721-bin-runtime.k
-tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes) $(PYK_VENV)
-	$(ACTIVATE_PYK) && $(KEVM) solc-to-k $< ERC721 > $@
+tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC721 > $@
 
-tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) $(kevm_pyk_includes) $(PYK_VENV)
-	$(ACTIVATE_PYK) && $(KEVM) solc-to-k $< Empty > $@
+tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty > $@
+
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
