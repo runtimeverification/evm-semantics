@@ -52,6 +52,6 @@ Follow the instructions in the [README file](https://github.com/runtimeverificat
 
 ### Dependencies
 
-Note that KEVM requires version 4.8.11 of the Z3 solver to be installed; follow
+Note that KEVM requires version 4.8.15 of the Z3 solver to be installed; follow
 the instructions in the [README
 file](https://github.com/runtimeverification/evm-semantics) to do so.
