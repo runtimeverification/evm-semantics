@@ -51,13 +51,13 @@ The following are needed for building/running KEVM:
 -   GNU [Bison](https://www.gnu.org/software/bison/), [Flex](https://github.com/westes/flex), and [Autoconf](http://www.gnu.org/software/autoconf/).
 -   GNU [libmpfr](https://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
--   [Z3](https://github.com/Z3Prover/z3) version 4.8.11
+-   [Z3](https://github.com/Z3Prover/z3) version 4.8.15
 
 For the exact dependencies check the Dockerfile.
 
 #### Installing Z3
 
-KEVM requires Z3 version 4.8.11, which you may need to install from a source
+KEVM requires Z3 version 4.8.15, which you may need to install from a source
 build if your package manager supplies a different version. To do so, follow the
 instructions
 [here](https://github.com/Z3Prover/z3#building-z3-using-make-and-gccclang) after
@@ -66,7 +66,7 @@ checking out the correct tag in the Z3 repository:
 ```sh
 git clone https://github.com/Z3Prover/z3.git
 cd z3
-git checkout z3-4.8.11
+git checkout z3-4.8.15
 python scripts/mk_make.py
 cd build
 make
