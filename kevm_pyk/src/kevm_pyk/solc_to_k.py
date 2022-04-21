@@ -20,9 +20,8 @@ from pyk.kast import (
     KTerminal,
     KToken,
     KVariable,
-    paren,
 )
-from pyk.ktool import KPrint
+from pyk.ktool import KPrint, paren
 from pyk.utils import intersperse
 
 
