@@ -446,6 +446,13 @@ tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEV
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty > $@
 
+tests/gen-spec/vat-spec.k.check: tests/gen-spec/verification-kompiled/timestamp kevm-pyk-venv
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec tests/gen-spec/verification-kompiled > $@.out
+	$(CHECK) $@.out $@.expected
+
+tests/gen-spec/verification-kompiled/timestamp: tests/gen-spec/verification.k
+	$(KOMPILE) --backend haskell --directory tests/gen-spec $< --main-module VERIFICATION
+
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
@@ -590,7 +597,8 @@ test-failure: $(failure_tests:=.run-expected)
 
 kevm_pyk_tests := tests/specs/examples/empty-bin-runtime.k \
                   tests/specs/examples/erc20-bin-runtime.k \
-                  tests/specs/examples/erc721-bin-runtime.k
+                  tests/specs/examples/erc721-bin-runtime.k \
+                  tests/gen-spec/vat-spec.k.check
 
 test-kevm-pyk: $(kevm_pyk_tests)
 
