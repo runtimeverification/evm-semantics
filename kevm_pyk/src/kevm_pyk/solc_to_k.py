@@ -17,13 +17,23 @@ from pyk.kast import (
     KRequire,
     KRewrite,
     KRule,
+    KSequence,
     KSort,
     KTerminal,
     KToken,
     KVariable,
 )
+from pyk.kastManip import buildRule, substitute
 from pyk.ktool import KPrint, paren
+from pyk.prelude import intToken
 from pyk.utils import intersperse
+
+from .utils import (
+    abstract_cell_vars,
+    build_empty_configuration_cell,
+    infGas,
+    kevmAccountCell,
+)
 
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
@@ -39,11 +49,43 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
 
 def gen_spec_modules(kompiled_directory: Path):
     kevm = KPrint(str(kompiled_directory))
+    kevm.symbolTable = kevmSymbolTable(kevm.symbolTable)
     production_labels = [prod.klabel for module in kevm.definition.modules for prod in module.productions if prod.klabel is not None]
-    contract_function_labels = ['function_' + prod_label[9:] for prod_label in production_labels if prod_label.startswith('contract_')]
+    contract_names = [prod_label[9:] for prod_label in production_labels if prod_label.startswith('contract_')]
+    contract_function_labels = ['function_' + contract_name for contract_name in contract_names]
     top_level_rules = [rule for module in kevm.definition.modules for rule in module.rules if type(rule.body) is KRewrite]
     contract_function_signatures = [rule.body.lhs for rule in top_level_rules if type(rule.body.lhs) is KApply and rule.body.lhs.label in contract_function_labels]
-    return '\n'.join([kevm.prettyPrint(cfs) for cfs in contract_function_signatures])
+    spec_modules = []
+    for contract_name in contract_names:
+        empty_config = build_empty_configuration_cell(kevm.definition, KSort('KevmCell'))
+        program = KApply('binRuntime', [KApply('contract_' + contract_name)])
+        account_cell = kevmAccountCell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
+        init_subst = { 'MODE_CELL': KToken('NORMAL', 'Mode'),
+                       'SCHEDULE_CELL': KToken('LONDON_EVM', 'Schedule'),
+                       'CALLSTACK_CELL': KApply('.List'),
+                       'CALLDEPTH_CELL': intToken(0),
+                       'PROGRAM_CELL': program,
+                       'JUMPDESTS_CELL': KApply('#computeValidJumpDests', [program]),
+                       'ORIGIN_CELL': KVariable('ORIGIN_ID'),
+                       'ID_CELL': KVariable('ACCT_ID'),
+                       'CALLER_CELL': KVariable('CALLER_ID'),
+                       'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
+                       'MEMORYUSED_CELL': intToken(0),
+                       'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
+                       'PC_CELL': intToken(0),
+                       'GAS_CELL': infGas(KVariable('VGAS')),
+                       'K_CELL': KSequence([KApply('#execute_EVM_KItem'), KVariable('CONTINUATION')]),
+                       'ACCOUNTS_CELL': KApply('_AccountCellMap_', [account_cell, KVariable('ACCOUNTS')]),
+                     }
+        final_subst = {'K_CELL': KSequence([KApply('#halt_EVM_KItem'), KVariable('CONTINUATION')])}
+        init_term = substitute(empty_config, init_subst)
+        final_term = abstract_cell_vars(substitute(empty_config, final_subst))
+        rule, var_map = buildRule(contract_name.lower() + '-spec', init_term, final_term, claim=True)
+        contract_module = KFlatModule(contract_name.upper() + '-SPEC', [rule], [KImport('VERIFICATION')])
+        spec_modules.append(contract_module)
+    all_specs_module = KFlatModule('ALL-SPECS', [], [KImport(module.name) for module in spec_modules])
+    spec_defn = KDefinition('ALL-SPECS', spec_modules + [all_specs_module], [KRequire('verification.k')])
+    return kevm.prettyPrint(spec_defn)
 
 
 def solc_to_k(kompiled_directory: Path, contract_file: Path, contract_name: str, generate_storage: bool):
