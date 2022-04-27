@@ -26,7 +26,7 @@ def main():
         print(res)
 
     elif args.command == 'gen-spec-modules':
-        res = gen_spec_modules(args.kompiled_directory)
+        res = gen_spec_modules(args.kompiled_directory, args.spec_module_name)
         print(res)
 
     else:
@@ -48,6 +48,7 @@ def create_argument_parser():
 
     gen_spec_modules_subparser = command_parser.add_parser('gen-spec-modules', help='Output helper K definition for given JSON output from solc compiler.')
     gen_spec_modules_subparser.add_argument('kompiled_directory', type=dir_path, help='Path to kompiled JSON definition to generate specs for.')
+    gen_spec_modules_subparser.add_argument('spec_module_name', type=str, help='Name of module containing all the generated specs.')
 
     return parser
 
