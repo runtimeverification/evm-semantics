@@ -451,7 +451,7 @@ tests/gen-spec/mcd-spec.k.check: tests/gen-spec/verification-kompiled/timestamp 
 	$(CHECK) $@.out $@.expected
 
 tests/gen-spec/verification-kompiled/timestamp: tests/gen-spec/verification.k
-	$(KOMPILE) --backend haskell --directory tests/gen-spec $< --main-module VERIFICATION
+	$(KOMPILE) --backend haskell --directory tests/gen-spec $< --main-module MCD-VERIFICATION
 
 
 .SECONDEXPANSION:
