@@ -49,11 +49,11 @@ module GEMJOIN-BIN-RUNTIME
     rule  ( GemJoin.dec() => #abiCallData("dec", .TypedArgs) )
       
     
-    rule  ( GemJoin.deny(USR) => #abiCallData("deny", #address(USR)) )
+    rule  ( GemJoin.deny(USR) => #abiCallData("deny", #address( USR )) )
        ensures #rangeAddress(USR)
       
     
-    rule  ( GemJoin.exit(USR, WAD) => #abiCallData("exit", #address(USR), #uint256(WAD)) )
+    rule  ( GemJoin.exit(USR, WAD) => #abiCallData("exit", #address( USR ), #uint256( WAD )) )
        ensures ( #rangeAddress(USR)
        andBool ( #rangeUInt(256, WAD)
                ))
@@ -65,7 +65,7 @@ module GEMJOIN-BIN-RUNTIME
     rule  ( GemJoin.ilk() => #abiCallData("ilk", .TypedArgs) )
       
     
-    rule  ( GemJoin.join(USR, WAD) => #abiCallData("join", #address(USR), #uint256(WAD)) )
+    rule  ( GemJoin.join(USR, WAD) => #abiCallData("join", #address( USR ), #uint256( WAD )) )
        ensures ( #rangeAddress(USR)
        andBool ( #rangeUInt(256, WAD)
                ))
@@ -74,14 +74,14 @@ module GEMJOIN-BIN-RUNTIME
     rule  ( GemJoin.live() => #abiCallData("live", .TypedArgs) )
       
     
-    rule  ( GemJoin.rely(USR) => #abiCallData("rely", #address(USR)) )
+    rule  ( GemJoin.rely(USR) => #abiCallData("rely", #address( USR )) )
        ensures #rangeAddress(USR)
       
     
     rule  ( GemJoin.vat() => #abiCallData("vat", .TypedArgs) )
       
     
-    rule  ( GemJoin.wards(V0) => #abiCallData("wards", #address(V0)) )
+    rule  ( GemJoin.wards(V0) => #abiCallData("wards", #address( V0 )) )
        ensures #rangeAddress(V0)
       
     

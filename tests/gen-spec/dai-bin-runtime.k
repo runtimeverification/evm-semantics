@@ -86,23 +86,23 @@ module DAI-BIN-RUNTIME
     rule  ( Dai.PERMIT_TYPEHASH() => #abiCallData("PERMIT_TYPEHASH", .TypedArgs) )
       
     
-    rule  ( Dai.allowance(V0, V1) => #abiCallData("allowance", #address(V0), #address(V1)) )
+    rule  ( Dai.allowance(V0, V1) => #abiCallData("allowance", #address( V0 ), #address( V1 )) )
        ensures ( #rangeAddress(V0)
        andBool ( #rangeAddress(V1)
                ))
       
     
-    rule  ( Dai.approve(SPENDER, VALUE) => #abiCallData("approve", #address(SPENDER), #uint256(VALUE)) )
+    rule  ( Dai.approve(SPENDER, VALUE) => #abiCallData("approve", #address( SPENDER ), #uint256( VALUE )) )
        ensures ( #rangeAddress(SPENDER)
        andBool ( #rangeUInt(256, VALUE)
                ))
       
     
-    rule  ( Dai.balanceOf(V0) => #abiCallData("balanceOf", #address(V0)) )
+    rule  ( Dai.balanceOf(V0) => #abiCallData("balanceOf", #address( V0 )) )
        ensures #rangeAddress(V0)
       
     
-    rule  ( Dai.burn(FROM, VALUE) => #abiCallData("burn", #address(FROM), #uint256(VALUE)) )
+    rule  ( Dai.burn(FROM, VALUE) => #abiCallData("burn", #address( FROM ), #uint256( VALUE )) )
        ensures ( #rangeAddress(FROM)
        andBool ( #rangeUInt(256, VALUE)
                ))
@@ -111,26 +111,26 @@ module DAI-BIN-RUNTIME
     rule  ( Dai.decimals() => #abiCallData("decimals", .TypedArgs) )
       
     
-    rule  ( Dai.decreaseAllowance(SPENDER, SUBTRACTEDVALUE) => #abiCallData("decreaseAllowance", #address(SPENDER), #uint256(SUBTRACTEDVALUE)) )
+    rule  ( Dai.decreaseAllowance(SPENDER, SUBTRACTEDVALUE) => #abiCallData("decreaseAllowance", #address( SPENDER ), #uint256( SUBTRACTEDVALUE )) )
        ensures ( #rangeAddress(SPENDER)
        andBool ( #rangeUInt(256, SUBTRACTEDVALUE)
                ))
       
     
-    rule  ( Dai.deny(USR) => #abiCallData("deny", #address(USR)) )
+    rule  ( Dai.deny(USR) => #abiCallData("deny", #address( USR )) )
        ensures #rangeAddress(USR)
       
     
     rule  ( Dai.deploymentChainId() => #abiCallData("deploymentChainId", .TypedArgs) )
       
     
-    rule  ( Dai.increaseAllowance(SPENDER, ADDEDVALUE) => #abiCallData("increaseAllowance", #address(SPENDER), #uint256(ADDEDVALUE)) )
+    rule  ( Dai.increaseAllowance(SPENDER, ADDEDVALUE) => #abiCallData("increaseAllowance", #address( SPENDER ), #uint256( ADDEDVALUE )) )
        ensures ( #rangeAddress(SPENDER)
        andBool ( #rangeUInt(256, ADDEDVALUE)
                ))
       
     
-    rule  ( Dai.mint(TO, VALUE) => #abiCallData("mint", #address(TO), #uint256(VALUE)) )
+    rule  ( Dai.mint(TO, VALUE) => #abiCallData("mint", #address( TO ), #uint256( VALUE )) )
        ensures ( #rangeAddress(TO)
        andBool ( #rangeUInt(256, VALUE)
                ))
@@ -139,11 +139,11 @@ module DAI-BIN-RUNTIME
     rule  ( Dai.name() => #abiCallData("name", .TypedArgs) )
       
     
-    rule  ( Dai.nonces(V0) => #abiCallData("nonces", #address(V0)) )
+    rule  ( Dai.nonces(V0) => #abiCallData("nonces", #address( V0 )) )
        ensures #rangeAddress(V0)
       
     
-    rule  ( Dai.permit(OWNER, SPENDER, VALUE, DEADLINE, V, R, S) => #abiCallData("permit", #address(OWNER), #address(SPENDER), #uint256(VALUE), #uint256(DEADLINE), uint8 ( V ), #bytes32(R), #bytes32(S)) )
+    rule  ( Dai.permit(OWNER, SPENDER, VALUE, DEADLINE, V, R, S) => #abiCallData("permit", #address( OWNER ), #address( SPENDER ), #uint256( VALUE ), #uint256( DEADLINE ), #uint8( V ), #bytes32( R ), #bytes32( S )) )
        ensures ( #rangeAddress(OWNER)
        andBool ( #rangeAddress(SPENDER)
        andBool ( #rangeUInt(256, VALUE)
@@ -154,7 +154,7 @@ module DAI-BIN-RUNTIME
                )))))))
       
     
-    rule  ( Dai.rely(USR) => #abiCallData("rely", #address(USR)) )
+    rule  ( Dai.rely(USR) => #abiCallData("rely", #address( USR )) )
        ensures #rangeAddress(USR)
       
     
@@ -164,13 +164,13 @@ module DAI-BIN-RUNTIME
     rule  ( Dai.totalSupply() => #abiCallData("totalSupply", .TypedArgs) )
       
     
-    rule  ( Dai.transfer(TO, VALUE) => #abiCallData("transfer", #address(TO), #uint256(VALUE)) )
+    rule  ( Dai.transfer(TO, VALUE) => #abiCallData("transfer", #address( TO ), #uint256( VALUE )) )
        ensures ( #rangeAddress(TO)
        andBool ( #rangeUInt(256, VALUE)
                ))
       
     
-    rule  ( Dai.transferFrom(FROM, TO, VALUE) => #abiCallData("transferFrom", #address(FROM), #address(TO), #uint256(VALUE)) )
+    rule  ( Dai.transferFrom(FROM, TO, VALUE) => #abiCallData("transferFrom", #address( FROM ), #address( TO ), #uint256( VALUE )) )
        ensures ( #rangeAddress(FROM)
        andBool ( #rangeAddress(TO)
        andBool ( #rangeUInt(256, VALUE)
@@ -180,7 +180,7 @@ module DAI-BIN-RUNTIME
     rule  ( Dai.version() => #abiCallData("version", .TypedArgs) )
       
     
-    rule  ( Dai.wards(V0) => #abiCallData("wards", #address(V0)) )
+    rule  ( Dai.wards(V0) => #abiCallData("wards", #address( V0 )) )
        ensures #rangeAddress(V0)
       
     

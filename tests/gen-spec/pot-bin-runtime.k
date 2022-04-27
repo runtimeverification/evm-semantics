@@ -94,7 +94,7 @@ module POT-BIN-RUNTIME
     rule  ( Pot.chi() => #abiCallData("chi", .TypedArgs) )
       
     
-    rule  ( Pot.deny(USR) => #abiCallData("deny", #address(USR)) )
+    rule  ( Pot.deny(USR) => #abiCallData("deny", #address( USR )) )
        ensures #rangeAddress(USR)
       
     
@@ -104,34 +104,34 @@ module POT-BIN-RUNTIME
     rule  ( Pot.dsr() => #abiCallData("dsr", .TypedArgs) )
       
     
-    rule  ( Pot.exit(WAD) => #abiCallData("exit", #uint256(WAD)) )
+    rule  ( Pot.exit(WAD) => #abiCallData("exit", #uint256( WAD )) )
        ensures #rangeUInt(256, WAD)
       
     
-    rule  ( Pot.file(WHAT, DATA) => #abiCallData("file", #bytes32(WHAT), #uint256(DATA)) )
+    rule  ( Pot.file(WHAT, DATA) => #abiCallData("file", #bytes32( WHAT ), #uint256( DATA )) )
        ensures ( #rangeUInt(256, WHAT)
        andBool ( #rangeUInt(256, DATA)
                ))
       
     
-    rule  ( Pot.file(WHAT, DATA) => #abiCallData("file", #bytes32(WHAT), #address(DATA)) )
+    rule  ( Pot.file(WHAT, DATA) => #abiCallData("file", #bytes32( WHAT ), #address( DATA )) )
        ensures ( #rangeUInt(256, WHAT)
        andBool ( #rangeAddress(DATA)
                ))
       
     
-    rule  ( Pot.join(WAD) => #abiCallData("join", #uint256(WAD)) )
+    rule  ( Pot.join(WAD) => #abiCallData("join", #uint256( WAD )) )
        ensures #rangeUInt(256, WAD)
       
     
     rule  ( Pot.live() => #abiCallData("live", .TypedArgs) )
       
     
-    rule  ( Pot.pie(V0) => #abiCallData("pie", #address(V0)) )
+    rule  ( Pot.pie(V0) => #abiCallData("pie", #address( V0 )) )
        ensures #rangeAddress(V0)
       
     
-    rule  ( Pot.rely(USR) => #abiCallData("rely", #address(USR)) )
+    rule  ( Pot.rely(USR) => #abiCallData("rely", #address( USR )) )
        ensures #rangeAddress(USR)
       
     
@@ -144,7 +144,7 @@ module POT-BIN-RUNTIME
     rule  ( Pot.vow() => #abiCallData("vow", .TypedArgs) )
       
     
-    rule  ( Pot.wards(V0) => #abiCallData("wards", #address(V0)) )
+    rule  ( Pot.wards(V0) => #abiCallData("wards", #address( V0 )) )
        ensures #rangeAddress(V0)
       
     

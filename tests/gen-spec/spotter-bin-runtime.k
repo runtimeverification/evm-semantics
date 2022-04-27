@@ -63,31 +63,31 @@ module SPOTTER-BIN-RUNTIME
     rule  ( Spotter.cage() => #abiCallData("cage", .TypedArgs) )
       
     
-    rule  ( Spotter.deny(USR) => #abiCallData("deny", #address(USR)) )
+    rule  ( Spotter.deny(USR) => #abiCallData("deny", #address( USR )) )
        ensures #rangeAddress(USR)
       
     
-    rule  ( Spotter.file(ILK, WHAT, DATA) => #abiCallData("file", #bytes32(ILK), #bytes32(WHAT), #uint256(DATA)) )
+    rule  ( Spotter.file(ILK, WHAT, DATA) => #abiCallData("file", #bytes32( ILK ), #bytes32( WHAT ), #uint256( DATA )) )
        ensures ( #rangeUInt(256, ILK)
        andBool ( #rangeUInt(256, WHAT)
        andBool ( #rangeUInt(256, DATA)
                )))
       
     
-    rule  ( Spotter.file(WHAT, DATA) => #abiCallData("file", #bytes32(WHAT), #uint256(DATA)) )
+    rule  ( Spotter.file(WHAT, DATA) => #abiCallData("file", #bytes32( WHAT ), #uint256( DATA )) )
        ensures ( #rangeUInt(256, WHAT)
        andBool ( #rangeUInt(256, DATA)
                ))
       
     
-    rule  ( Spotter.file(ILK, WHAT, DATA) => #abiCallData("file", #bytes32(ILK), #bytes32(WHAT), #address(DATA)) )
+    rule  ( Spotter.file(ILK, WHAT, DATA) => #abiCallData("file", #bytes32( ILK ), #bytes32( WHAT ), #address( DATA )) )
        ensures ( #rangeUInt(256, ILK)
        andBool ( #rangeUInt(256, WHAT)
        andBool ( #rangeAddress(DATA)
                )))
       
     
-    rule  ( Spotter.ilks(V0) => #abiCallData("ilks", #bytes32(V0)) )
+    rule  ( Spotter.ilks(V0) => #abiCallData("ilks", #bytes32( V0 )) )
        ensures #rangeUInt(256, V0)
       
     
@@ -97,18 +97,18 @@ module SPOTTER-BIN-RUNTIME
     rule  ( Spotter.par() => #abiCallData("par", .TypedArgs) )
       
     
-    rule  ( Spotter.poke(ILK) => #abiCallData("poke", #bytes32(ILK)) )
+    rule  ( Spotter.poke(ILK) => #abiCallData("poke", #bytes32( ILK )) )
        ensures #rangeUInt(256, ILK)
       
     
-    rule  ( Spotter.rely(USR) => #abiCallData("rely", #address(USR)) )
+    rule  ( Spotter.rely(USR) => #abiCallData("rely", #address( USR )) )
        ensures #rangeAddress(USR)
       
     
     rule  ( Spotter.vat() => #abiCallData("vat", .TypedArgs) )
       
     
-    rule  ( Spotter.wards(V0) => #abiCallData("wards", #address(V0)) )
+    rule  ( Spotter.wards(V0) => #abiCallData("wards", #address( V0 )) )
        ensures #rangeAddress(V0)
       
     

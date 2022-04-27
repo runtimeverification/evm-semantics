@@ -63,42 +63,42 @@ module JUG-BIN-RUNTIME
     rule  ( Jug.base() => #abiCallData("base", .TypedArgs) )
       
     
-    rule  ( Jug.deny(USR) => #abiCallData("deny", #address(USR)) )
+    rule  ( Jug.deny(USR) => #abiCallData("deny", #address( USR )) )
        ensures #rangeAddress(USR)
       
     
-    rule  ( Jug.drip(ILK) => #abiCallData("drip", #bytes32(ILK)) )
+    rule  ( Jug.drip(ILK) => #abiCallData("drip", #bytes32( ILK )) )
        ensures #rangeUInt(256, ILK)
       
     
-    rule  ( Jug.file(ILK, WHAT, DATA) => #abiCallData("file", #bytes32(ILK), #bytes32(WHAT), #uint256(DATA)) )
+    rule  ( Jug.file(ILK, WHAT, DATA) => #abiCallData("file", #bytes32( ILK ), #bytes32( WHAT ), #uint256( DATA )) )
        ensures ( #rangeUInt(256, ILK)
        andBool ( #rangeUInt(256, WHAT)
        andBool ( #rangeUInt(256, DATA)
                )))
       
     
-    rule  ( Jug.file(WHAT, DATA) => #abiCallData("file", #bytes32(WHAT), #uint256(DATA)) )
+    rule  ( Jug.file(WHAT, DATA) => #abiCallData("file", #bytes32( WHAT ), #uint256( DATA )) )
        ensures ( #rangeUInt(256, WHAT)
        andBool ( #rangeUInt(256, DATA)
                ))
       
     
-    rule  ( Jug.file(WHAT, DATA) => #abiCallData("file", #bytes32(WHAT), #address(DATA)) )
+    rule  ( Jug.file(WHAT, DATA) => #abiCallData("file", #bytes32( WHAT ), #address( DATA )) )
        ensures ( #rangeUInt(256, WHAT)
        andBool ( #rangeAddress(DATA)
                ))
       
     
-    rule  ( Jug.ilks(V0) => #abiCallData("ilks", #bytes32(V0)) )
+    rule  ( Jug.ilks(V0) => #abiCallData("ilks", #bytes32( V0 )) )
        ensures #rangeUInt(256, V0)
       
     
-    rule  ( Jug.init(ILK) => #abiCallData("init", #bytes32(ILK)) )
+    rule  ( Jug.init(ILK) => #abiCallData("init", #bytes32( ILK )) )
        ensures #rangeUInt(256, ILK)
       
     
-    rule  ( Jug.rely(USR) => #abiCallData("rely", #address(USR)) )
+    rule  ( Jug.rely(USR) => #abiCallData("rely", #address( USR )) )
        ensures #rangeAddress(USR)
       
     
@@ -108,7 +108,7 @@ module JUG-BIN-RUNTIME
     rule  ( Jug.vow() => #abiCallData("vow", .TypedArgs) )
       
     
-    rule  ( Jug.wards(V0) => #abiCallData("wards", #address(V0)) )
+    rule  ( Jug.wards(V0) => #abiCallData("wards", #address( V0 )) )
        ensures #rangeAddress(V0)
       
     

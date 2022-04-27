@@ -20,13 +20,13 @@ module DAIJOIN-BIN-RUNTIME
     rule  ( DaiJoin.dai() => #abiCallData("dai", .TypedArgs) )
       
     
-    rule  ( DaiJoin.exit(USR, WAD) => #abiCallData("exit", #address(USR), #uint256(WAD)) )
+    rule  ( DaiJoin.exit(USR, WAD) => #abiCallData("exit", #address( USR ), #uint256( WAD )) )
        ensures ( #rangeAddress(USR)
        andBool ( #rangeUInt(256, WAD)
                ))
       
     
-    rule  ( DaiJoin.join(USR, WAD) => #abiCallData("join", #address(USR), #uint256(WAD)) )
+    rule  ( DaiJoin.join(USR, WAD) => #abiCallData("join", #address( USR ), #uint256( WAD )) )
        ensures ( #rangeAddress(USR)
        andBool ( #rangeUInt(256, WAD)
                ))

@@ -161,14 +161,14 @@ module VAT-BIN-RUNTIME
     
     syntax VatFunction ::= "wards" "(" Int ")" 
     
-    rule  ( Vat.Art(ILK) => #abiCallData("Art", #bytes32(ILK)) )
+    rule  ( Vat.Art(ILK) => #abiCallData("Art", #bytes32( ILK )) )
        ensures #rangeUInt(256, ILK)
       
     
     rule  ( Vat.Line() => #abiCallData("Line", .TypedArgs) )
       
     
-    rule  ( Vat.art(ILK, URN) => #abiCallData("art", #bytes32(ILK), #address(URN)) )
+    rule  ( Vat.art(ILK, URN) => #abiCallData("art", #bytes32( ILK ), #address( URN )) )
        ensures ( #rangeUInt(256, ILK)
        andBool ( #rangeAddress(URN)
                ))
@@ -177,41 +177,41 @@ module VAT-BIN-RUNTIME
     rule  ( Vat.cage() => #abiCallData("cage", .TypedArgs) )
       
     
-    rule  ( Vat.can(V0, V1) => #abiCallData("can", #address(V0), #address(V1)) )
+    rule  ( Vat.can(V0, V1) => #abiCallData("can", #address( V0 ), #address( V1 )) )
        ensures ( #rangeAddress(V0)
        andBool ( #rangeAddress(V1)
                ))
       
     
-    rule  ( Vat.dai(V0) => #abiCallData("dai", #address(V0)) )
+    rule  ( Vat.dai(V0) => #abiCallData("dai", #address( V0 )) )
        ensures #rangeAddress(V0)
       
     
     rule  ( Vat.debt() => #abiCallData("debt", .TypedArgs) )
       
     
-    rule  ( Vat.deny(USR) => #abiCallData("deny", #address(USR)) )
+    rule  ( Vat.deny(USR) => #abiCallData("deny", #address( USR )) )
        ensures #rangeAddress(USR)
       
     
-    rule  ( Vat.dust(ILK) => #abiCallData("dust", #bytes32(ILK)) )
+    rule  ( Vat.dust(ILK) => #abiCallData("dust", #bytes32( ILK )) )
        ensures #rangeUInt(256, ILK)
       
     
-    rule  ( Vat.file(ILK, WHAT, DATA) => #abiCallData("file", #bytes32(ILK), #bytes32(WHAT), #uint256(DATA)) )
+    rule  ( Vat.file(ILK, WHAT, DATA) => #abiCallData("file", #bytes32( ILK ), #bytes32( WHAT ), #uint256( DATA )) )
        ensures ( #rangeUInt(256, ILK)
        andBool ( #rangeUInt(256, WHAT)
        andBool ( #rangeUInt(256, DATA)
                )))
       
     
-    rule  ( Vat.file(WHAT, DATA) => #abiCallData("file", #bytes32(WHAT), #uint256(DATA)) )
+    rule  ( Vat.file(WHAT, DATA) => #abiCallData("file", #bytes32( WHAT ), #uint256( DATA )) )
        ensures ( #rangeUInt(256, WHAT)
        andBool ( #rangeUInt(256, DATA)
                ))
       
     
-    rule  ( Vat.flux(ILK, SRC, DST, WAD) => #abiCallData("flux", #bytes32(ILK), #address(SRC), #address(DST), #uint256(WAD)) )
+    rule  ( Vat.flux(ILK, SRC, DST, WAD) => #abiCallData("flux", #bytes32( ILK ), #address( SRC ), #address( DST ), #uint256( WAD )) )
        ensures ( #rangeUInt(256, ILK)
        andBool ( #rangeAddress(SRC)
        andBool ( #rangeAddress(DST)
@@ -219,14 +219,14 @@ module VAT-BIN-RUNTIME
                ))))
       
     
-    rule  ( Vat.fold(I, U, RATE_) => #abiCallData("fold", #bytes32(I), #address(U), #int256(RATE_)) )
+    rule  ( Vat.fold(I, U, RATE_) => #abiCallData("fold", #bytes32( I ), #address( U ), #int256( RATE_ )) )
        ensures ( #rangeUInt(256, I)
        andBool ( #rangeAddress(U)
        andBool ( #rangeSInt(256, RATE_)
                )))
       
     
-    rule  ( Vat.fork(ILK, SRC, DST, DINK, DART) => #abiCallData("fork", #bytes32(ILK), #address(SRC), #address(DST), #int256(DINK), #int256(DART)) )
+    rule  ( Vat.fork(ILK, SRC, DST, DINK, DART) => #abiCallData("fork", #bytes32( ILK ), #address( SRC ), #address( DST ), #int256( DINK ), #int256( DART )) )
        ensures ( #rangeUInt(256, ILK)
        andBool ( #rangeAddress(SRC)
        andBool ( #rangeAddress(DST)
@@ -235,7 +235,7 @@ module VAT-BIN-RUNTIME
                )))))
       
     
-    rule  ( Vat.frob(I, U, V, W, DINK, DART) => #abiCallData("frob", #bytes32(I), #address(U), #address(V), #address(W), #int256(DINK), #int256(DART)) )
+    rule  ( Vat.frob(I, U, V, W, DINK, DART) => #abiCallData("frob", #bytes32( I ), #address( U ), #address( V ), #address( W ), #int256( DINK ), #int256( DART )) )
        ensures ( #rangeUInt(256, I)
        andBool ( #rangeAddress(U)
        andBool ( #rangeAddress(V)
@@ -245,13 +245,13 @@ module VAT-BIN-RUNTIME
                ))))))
       
     
-    rule  ( Vat.gem(V0, V1) => #abiCallData("gem", #bytes32(V0), #address(V1)) )
+    rule  ( Vat.gem(V0, V1) => #abiCallData("gem", #bytes32( V0 ), #address( V1 )) )
        ensures ( #rangeUInt(256, V0)
        andBool ( #rangeAddress(V1)
                ))
       
     
-    rule  ( Vat.grab(I, U, V, W, DINK, DART) => #abiCallData("grab", #bytes32(I), #address(U), #address(V), #address(W), #int256(DINK), #int256(DART)) )
+    rule  ( Vat.grab(I, U, V, W, DINK, DART) => #abiCallData("grab", #bytes32( I ), #address( U ), #address( V ), #address( W ), #int256( DINK ), #int256( DART )) )
        ensures ( #rangeUInt(256, I)
        andBool ( #rangeAddress(U)
        andBool ( #rangeAddress(V)
@@ -261,77 +261,77 @@ module VAT-BIN-RUNTIME
                ))))))
       
     
-    rule  ( Vat.heal(RAD) => #abiCallData("heal", #uint256(RAD)) )
+    rule  ( Vat.heal(RAD) => #abiCallData("heal", #uint256( RAD )) )
        ensures #rangeUInt(256, RAD)
       
     
-    rule  ( Vat.hope(USR) => #abiCallData("hope", #address(USR)) )
+    rule  ( Vat.hope(USR) => #abiCallData("hope", #address( USR )) )
        ensures #rangeAddress(USR)
       
     
-    rule  ( Vat.ilks(V0) => #abiCallData("ilks", #bytes32(V0)) )
+    rule  ( Vat.ilks(V0) => #abiCallData("ilks", #bytes32( V0 )) )
        ensures #rangeUInt(256, V0)
       
     
-    rule  ( Vat.init(ILK) => #abiCallData("init", #bytes32(ILK)) )
+    rule  ( Vat.init(ILK) => #abiCallData("init", #bytes32( ILK )) )
        ensures #rangeUInt(256, ILK)
       
     
-    rule  ( Vat.ink(ILK, URN) => #abiCallData("ink", #bytes32(ILK), #address(URN)) )
+    rule  ( Vat.ink(ILK, URN) => #abiCallData("ink", #bytes32( ILK ), #address( URN )) )
        ensures ( #rangeUInt(256, ILK)
        andBool ( #rangeAddress(URN)
                ))
       
     
-    rule  ( Vat.line(ILK) => #abiCallData("line", #bytes32(ILK)) )
+    rule  ( Vat.line(ILK) => #abiCallData("line", #bytes32( ILK )) )
        ensures #rangeUInt(256, ILK)
       
     
     rule  ( Vat.live() => #abiCallData("live", .TypedArgs) )
       
     
-    rule  ( Vat.move(SRC, DST, RAD) => #abiCallData("move", #address(SRC), #address(DST), #uint256(RAD)) )
+    rule  ( Vat.move(SRC, DST, RAD) => #abiCallData("move", #address( SRC ), #address( DST ), #uint256( RAD )) )
        ensures ( #rangeAddress(SRC)
        andBool ( #rangeAddress(DST)
        andBool ( #rangeUInt(256, RAD)
                )))
       
     
-    rule  ( Vat.nope(USR) => #abiCallData("nope", #address(USR)) )
+    rule  ( Vat.nope(USR) => #abiCallData("nope", #address( USR )) )
        ensures #rangeAddress(USR)
       
     
-    rule  ( Vat.rate(ILK) => #abiCallData("rate", #bytes32(ILK)) )
+    rule  ( Vat.rate(ILK) => #abiCallData("rate", #bytes32( ILK )) )
        ensures #rangeUInt(256, ILK)
       
     
-    rule  ( Vat.rely(USR) => #abiCallData("rely", #address(USR)) )
+    rule  ( Vat.rely(USR) => #abiCallData("rely", #address( USR )) )
        ensures #rangeAddress(USR)
       
     
-    rule  ( Vat.sin(V0) => #abiCallData("sin", #address(V0)) )
+    rule  ( Vat.sin(V0) => #abiCallData("sin", #address( V0 )) )
        ensures #rangeAddress(V0)
       
     
-    rule  ( Vat.slip(ILK, USR, WAD) => #abiCallData("slip", #bytes32(ILK), #address(USR), #int256(WAD)) )
+    rule  ( Vat.slip(ILK, USR, WAD) => #abiCallData("slip", #bytes32( ILK ), #address( USR ), #int256( WAD )) )
        ensures ( #rangeUInt(256, ILK)
        andBool ( #rangeAddress(USR)
        andBool ( #rangeSInt(256, WAD)
                )))
       
     
-    rule  ( Vat.spot(ILK) => #abiCallData("spot", #bytes32(ILK)) )
+    rule  ( Vat.spot(ILK) => #abiCallData("spot", #bytes32( ILK )) )
        ensures #rangeUInt(256, ILK)
       
     
-    rule  ( Vat.suck(U, V, RAD) => #abiCallData("suck", #address(U), #address(V), #uint256(RAD)) )
+    rule  ( Vat.suck(U, V, RAD) => #abiCallData("suck", #address( U ), #address( V ), #uint256( RAD )) )
        ensures ( #rangeAddress(U)
        andBool ( #rangeAddress(V)
        andBool ( #rangeUInt(256, RAD)
                )))
       
     
-    rule  ( Vat.urns(V0, V1) => #abiCallData("urns", #bytes32(V0), #address(V1)) )
+    rule  ( Vat.urns(V0, V1) => #abiCallData("urns", #bytes32( V0 ), #address( V1 )) )
        ensures ( #rangeUInt(256, V0)
        andBool ( #rangeAddress(V1)
                ))
@@ -340,7 +340,7 @@ module VAT-BIN-RUNTIME
     rule  ( Vat.vice() => #abiCallData("vice", .TypedArgs) )
       
     
-    rule  ( Vat.wards(V0) => #abiCallData("wards", #address(V0)) )
+    rule  ( Vat.wards(V0) => #abiCallData("wards", #address( V0 )) )
        ensures #rangeAddress(V0)
       
     
