@@ -37,6 +37,15 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
     return json.loads(subprocess_res.stdout)
 
 
+def gen_spec_modules(kompiled_directory: Path):
+    kevm = KPrint(str(kompiled_directory))
+    production_labels = [prod.klabel for module in kevm.definition.modules for prod in module.productions if prod.klabel is not None]
+    contract_function_labels = ['function_' + prod_label[9:] for prod_label in production_labels if prod_label.startswith('contract_')]
+    top_level_rules = [rule for module in kevm.definition.modules for rule in module.rules if type(rule.body) is KRewrite]
+    contract_function_signatures = [rule.body.lhs for rule in top_level_rules if type(rule.body.lhs) is KApply and rule.body.lhs.label in contract_function_labels]
+    return '\n'.join([kevm.prettyPrint(cfs) for cfs in contract_function_signatures])
+
+
 def solc_to_k(kompiled_directory: Path, contract_file: Path, contract_name: str, generate_storage: bool):
     kevm = KPrint(str(kompiled_directory))
     kevm.symbolTable = kevmSymbolTable(kevm.symbolTable)
@@ -60,7 +69,7 @@ def solc_to_k(kompiled_directory: Path, contract_file: Path, contract_name: str,
 
     binRuntimeProduction = KProduction(KSort('ByteArray'), [KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(contract_sort), KTerminal(')')], att=KAtt({'klabel': 'binRuntime', 'alias': ''}))
 
-    contractProduction = KProduction(contract_sort, [KTerminal(contract_name)], att=KAtt({'klabel': f'contract_{contract_name}'}))
+    contractProduction = KProduction(contract_sort, [KTerminal(contract_name)], att=KAtt({'klabel': f'contract_{contract_name}', 'symbol': ''}))
     contractMacro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_name)]), _parseByteStack(_stringToken(bin_runtime))))
 
     binRuntimeModuleName = contract_name.upper() + '-BIN-RUNTIME'
@@ -223,7 +232,7 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
 
 def generate_function_sentences(contract_name, contract_sort, abi):
     function_sort = KSort(f'{contract_name}Function')
-    function_call_data_production = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], att=KAtt({'klabel': f'function_{contract_name}', 'function': ''}))
+    function_call_data_production = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], att=KAtt({'klabel': f'function_{contract_name}', 'symbol': '', 'function': ''}))
     function_sentence_pairs = _extract_function_sentences(contract_name, function_sort, abi)
 
     if not function_sentence_pairs:
