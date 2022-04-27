@@ -109,16 +109,15 @@ def solc_to_k(kompiled_directory: Path, contract_file: Path, contract_name: str,
     function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
 
-    binRuntimeProduction = KProduction(KSort('ByteArray'), [KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(contract_sort), KTerminal(')')], att=KAtt({'klabel': 'binRuntime', 'symbol': '', 'alias': ''}))
-
+    contractSubsort = KProduction(KSort('Contract'), [KNonTerminal(contract_sort)])
     contractProduction = KProduction(contract_sort, [KTerminal(contract_name)], att=KAtt({'klabel': f'contract_{contract_name}', 'symbol': ''}))
     contractMacro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_name)]), _parseByteStack(_stringToken(bin_runtime))))
 
     binRuntimeModuleName = contract_name.upper() + '-BIN-RUNTIME'
     binRuntimeModule = KFlatModule(
         binRuntimeModuleName,
-        [contractProduction] + storage_sentences + function_sentences + [binRuntimeProduction, contractMacro] + function_selector_alias_sentences,
-        [KImport('EDSL', True)],
+        [contractSubsort, contractProduction] + storage_sentences + function_sentences + [contractMacro] + function_selector_alias_sentences,
+        [KImport('BIN-RUNTIME', True)],
     )
     binRuntimeDefinition = KDefinition(binRuntimeModuleName, [binRuntimeModule], requires=[KRequire('edsl.md')])
 
