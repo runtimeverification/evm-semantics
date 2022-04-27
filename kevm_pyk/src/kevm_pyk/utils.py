@@ -65,10 +65,6 @@ def abiAddress(a: KInner) -> KApply:
     return KApply('#address(_)_EVM-ABI_TypedArg_Int', [a])
 
 
-def abiUInt256(i: KInner) -> KApply:
-    return KApply('#uint256(_)_EVM-ABI_TypedArg_Int', [i])
-
-
 def abiBool(b: KInner) -> KApply:
     return KApply('#bool(_)_EVM-ABI_TypedArg_Int', [b])
 
