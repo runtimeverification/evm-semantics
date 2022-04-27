@@ -1,14 +1,24 @@
 requires "lemmas/lemmas.k"
 requires "lemmas/infinite-gas.k"
 
-requires "vat-bin-runtime.k"
+requires "dai-bin-runtime.k"
+requires "daijoin-bin-runtime.k"
+requires "gemjoin-bin-runtime.k"
+requires "jug-bin-runtime.k"
 requires "pot-bin-runtime.k"
+requires "spotter-bin-runtime.k"
+requires "vat-bin-runtime.k"
 
-module VERIFICATION
+module MCD-VERIFICATION
     imports LEMMAS
     imports INFINITE-GAS
 
-    imports VAT-BIN-RUNTIME
+    imports DAI-BIN-RUNTIME
+    imports DAIJOIN-BIN-RUNTIME
+    imports GEMJOIN-BIN-RUNTIME
+    imports JUG-BIN-RUNTIME
     imports POT-BIN-RUNTIME
+    imports SPOTTER-BIN-RUNTIME
+    imports VAT-BIN-RUNTIME
 
 endmodule
