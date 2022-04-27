@@ -390,7 +390,7 @@ def _check_supported_key_type(type_label: str) -> None:
 
 
 def _evm_base_sort(type_label: str):
-    if type_label in {'address', 'bool', 'bytes4', 'bytes32', 'int256', 'uint256'}:
+    if type_label in {'address', 'bool', 'bytes4', 'bytes32', 'int256', 'uint256', 'uint8'}:
         return KSort('Int')
 
     if type_label == 'bytes':
@@ -410,6 +410,8 @@ def _range_predicate(term, type_label: str):
         return KApply('rangeUInt', [_intToken('256'), term])
     if type_label == 'int256':
         return KApply('rangeSInt', [_intToken('256'), term])
+    if type_label == 'uint8':
+        return KApply('rangeUInt', [_intToken('8'), term])
     if type_label == 'bytes':
         return None
 
