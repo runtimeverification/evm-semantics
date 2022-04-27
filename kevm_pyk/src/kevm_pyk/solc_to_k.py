@@ -198,7 +198,7 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
             if member_offset != 0:
                 raise ValueError(f'Unsupported nonzero offset for variable: {member_label}')
 
-            new_syntax = syntax + [KTerminal(f'{"." if gen_dot else ""}{member_label}')]
+            new_syntax = syntax + ([KTerminal('.')] if gen_dot else []) + [KTerminal(member_label)]
             new_lhs = f'{lhs}.{member_label}'
             new_rhs = KApply('_+Int_', [rhs, _intToken(member_slot)])
             res += recur(new_syntax, new_lhs, new_rhs, var_idx, member_type_name)
