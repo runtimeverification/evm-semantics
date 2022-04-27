@@ -446,7 +446,7 @@ tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEV
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty > $@
 
-tests/gen-spec/vat-spec.k.check: tests/gen-spec/verification-kompiled/timestamp kevm-pyk-venv
+tests/gen-spec/mcd-spec.k.check: tests/gen-spec/verification-kompiled/timestamp kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec tests/gen-spec/verification-kompiled > $@.out
 	$(CHECK) $@.out $@.expected
 
@@ -598,7 +598,7 @@ test-failure: $(failure_tests:=.run-expected)
 kevm_pyk_tests := tests/specs/examples/empty-bin-runtime.k \
                   tests/specs/examples/erc20-bin-runtime.k \
                   tests/specs/examples/erc721-bin-runtime.k \
-                  tests/gen-spec/vat-spec.k.check
+                  tests/gen-spec/mcd-spec.k.check
 
 test-kevm-pyk: $(kevm_pyk_tests)
 
