@@ -47,13 +47,13 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
     return json.loads(subprocess_res.stdout)
 
 
-def gen_spec_modules(kompiled_directory: Path):
+def gen_spec_modules(kompiled_directory: Path) -> str:
     kevm = KPrint(str(kompiled_directory))
     kevm.symbolTable = kevmSymbolTable(kevm.symbolTable)
-    production_labels = [prod.klabel for module in kevm.definition.modules for prod in module.productions if prod.klabel is not None]
+    production_labels = [prod.klabel for module in kevm.definition for prod in module.productions if prod.klabel is not None]
     contract_names = [prod_label[9:] for prod_label in production_labels if prod_label.startswith('contract_')]
     contract_function_labels = ['function_' + contract_name for contract_name in contract_names]
-    top_level_rules = [rule for module in kevm.definition.modules for rule in module.rules if type(rule.body) is KRewrite]
+    top_level_rules = [rule for module in kevm.definition for rule in module.rules if type(rule.body) is KRewrite]
     contract_function_signatures = [rule.body.lhs for rule in top_level_rules if type(rule.body.lhs) is KApply and rule.body.lhs.label in contract_function_labels]
     spec_modules = []
     for contract_name in contract_names:

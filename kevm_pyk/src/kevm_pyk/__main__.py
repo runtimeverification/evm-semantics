@@ -26,10 +26,8 @@ def main():
         print(res)
 
     elif args.command == 'gen-spec-modules':
-        res = gen_spec_modules(
-            kompiled_directory=args.kompiled_directory
-        )
-        print(str(res))
+        res = gen_spec_modules(args.kompiled_directory)
+        print(res)
 
     else:
         assert False
