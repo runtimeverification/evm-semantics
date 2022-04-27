@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict
 
+from pyk.cli_utils import fatal
 from pyk.kast import (
     TRUE,
     KApply,
@@ -28,7 +29,10 @@ from pyk.utils import intersperse
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
     subprocess_res = subprocess.run([
         'solc', '--combined-json', 'abi,bin-runtime,storage-layout,hashes', str(contract_file),
-    ], check=True, capture_output=True)
+    ], capture_output=True)
+
+    if subprocess_res.returncode != 0:
+        fatal(f'solc error:\n{subprocess_res.stderr.decode()}')
 
     return json.loads(subprocess_res.stdout)
 
