@@ -31,21 +31,21 @@ which denotes (indeed, is translated to) the following byte array:
 where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of `2835717307`, the first four bytes of the hash value of the `transfer` function signature, `keccak256("transfer(address,unit256)")`, and `T1 : ... : T32` and `V1 : ... : V32` are the byte-array representations of `TO` and `VALUE` respectively.
 
 ```k
-    syntax TypedArg ::= #uint160 ( Int )
-                      | #address ( Int )
-                      | #uint256 ( Int )
-                      | #uint48  ( Int )
-                      | #uint16  ( Int )
-                      | #uint8   ( Int )
-                      | #int256  ( Int )
-                      | #int128  ( Int )
-                      | #bytes4  ( Int )
-                      | #bytes32 ( Int )
-                      | #bool    ( Int )
-                      | #bytes   ( ByteArray )
-                      | #string  ( String )
-                      | #array   ( TypedArg , Int , TypedArgs )
- // -----------------------------------------------------------
+    syntax TypedArg ::= #uint160 ( Int )                        [klabel(abi_type_uint160), symbol]
+                      | #address ( Int )                        [klabel(abi_type_address), symbol]
+                      | #uint256 ( Int )                        [klabel(abi_type_uint256), symbol]
+                      | #uint48  ( Int )                        [klabel(abi_type_uint48),  symbol]
+                      | #uint16  ( Int )                        [klabel(abi_type_uint16),  symbol]
+                      | #uint8   ( Int )                        [klabel(abi_type_uint8),   symbol]
+                      | #int256  ( Int )                        [klabel(abi_type_int256),  symbol]
+                      | #int128  ( Int )                        [klabel(abi_type_int128),  symbol]
+                      | #bytes4  ( Int )                        [klabel(abi_type_bytes4),  symbol]
+                      | #bytes32 ( Int )                        [klabel(abi_type_bytes32), symbol]
+                      | #bool    ( Int )                        [klabel(abi_type_bool),    symbol]
+                      | #bytes   ( ByteArray )                  [klabel(abi_type_bytes),   symbol]
+                      | #string  ( String )                     [klabel(abi_type_string),  symbol]
+                      | #array   ( TypedArg , Int , TypedArgs ) [klabel(abi_type_array),   symbol]
+ // ----------------------------------------------------------------------------------------------
 
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
  // ------------------------------------------------------------
