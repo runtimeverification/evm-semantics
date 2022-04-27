@@ -379,7 +379,7 @@ def _typed_arg_unparser(type_label: str):
 
 def _check_supported_value_type(type_label: str) -> None:
     supported_value_types = {'address', 'bool', 'bytes32', 'uint8', 'int256', 'string', 'uint256'}
-    if type_label not in supported_value_types:
+    if type_label not in supported_value_types and not type_label.startswith('contract '):
         raise ValueError(f'Unsupported value type: {type_label}')
 
 
