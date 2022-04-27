@@ -67,7 +67,7 @@ def solc_to_k(kompiled_directory: Path, contract_file: Path, contract_name: str,
     function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
 
-    binRuntimeProduction = KProduction(KSort('ByteArray'), [KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(contract_sort), KTerminal(')')], att=KAtt({'klabel': 'binRuntime', 'alias': ''}))
+    binRuntimeProduction = KProduction(KSort('ByteArray'), [KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(contract_sort), KTerminal(')')], att=KAtt({'klabel': 'binRuntime', 'symbol': '', 'alias': ''}))
 
     contractProduction = KProduction(contract_sort, [KTerminal(contract_name)], att=KAtt({'klabel': f'contract_{contract_name}', 'symbol': ''}))
     contractMacro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_name)]), _parseByteStack(_stringToken(bin_runtime))))
