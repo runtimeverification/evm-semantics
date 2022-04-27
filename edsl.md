@@ -23,8 +23,8 @@ module BIN-RUNTIME
     imports EDSL
 
     syntax Contract
-    syntax ByteArray ::= #binRuntime ( Contract ) [alias, klabel(binRuntime), symbol]
- // ---------------------------------------------------------------------------------
+    syntax ByteArray ::= #binRuntime ( Contract ) [alias, klabel(binRuntime), symbol, function, no-evaluators]
+ // ----------------------------------------------------------------------------------------------------------
 
 endmodule
 ```
