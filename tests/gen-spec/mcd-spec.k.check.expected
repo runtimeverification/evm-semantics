@@ -1,7 +1,7 @@
 requires "verification.k"
 
 module VAT-SPEC
-    imports public VERIFICATION
+    imports public MCD-VERIFICATION
     
     claim [vat-spec]: <kevm>
            <k>
@@ -197,7 +197,7 @@ module VAT-SPEC
 endmodule
 
 module JUG-SPEC
-    imports public VERIFICATION
+    imports public MCD-VERIFICATION
     
     claim [jug-spec]: <kevm>
            <k>
@@ -393,7 +393,7 @@ module JUG-SPEC
 endmodule
 
 module DAIJOIN-SPEC
-    imports public VERIFICATION
+    imports public MCD-VERIFICATION
     
     claim [daijoin-spec]: <kevm>
            <k>
@@ -589,7 +589,7 @@ module DAIJOIN-SPEC
 endmodule
 
 module DAI-SPEC
-    imports public VERIFICATION
+    imports public MCD-VERIFICATION
     
     claim [dai-spec]: <kevm>
            <k>
@@ -785,7 +785,7 @@ module DAI-SPEC
 endmodule
 
 module GEMJOIN-SPEC
-    imports public VERIFICATION
+    imports public MCD-VERIFICATION
     
     claim [gemjoin-spec]: <kevm>
            <k>
@@ -981,7 +981,7 @@ module GEMJOIN-SPEC
 endmodule
 
 module POT-SPEC
-    imports public VERIFICATION
+    imports public MCD-VERIFICATION
     
     claim [pot-spec]: <kevm>
            <k>
@@ -1177,7 +1177,7 @@ module POT-SPEC
 endmodule
 
 module SPOTTER-SPEC
-    imports public VERIFICATION
+    imports public MCD-VERIFICATION
     
     claim [spotter-spec]: <kevm>
            <k>
@@ -1372,7 +1372,7 @@ module SPOTTER-SPEC
 
 endmodule
 
-module ALL-SPECS
+module MCD-CLAIMS
     imports public VAT-SPEC
     imports public JUG-SPEC
     imports public DAIJOIN-SPEC
