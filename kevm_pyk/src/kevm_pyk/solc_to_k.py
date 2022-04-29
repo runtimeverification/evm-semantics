@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict
 
+from pyk.cli_utils import fatal
 from pyk.kast import (
     TRUE,
     KApply,
@@ -16,21 +17,80 @@ from pyk.kast import (
     KRequire,
     KRewrite,
     KRule,
+    KSequence,
     KSort,
     KTerminal,
     KToken,
     KVariable,
 )
+from pyk.kastManip import buildRule, substitute
 from pyk.ktool import KPrint, paren
+from pyk.prelude import intToken
 from pyk.utils import intersperse
+
+from .utils import (
+    abstract_cell_vars,
+    build_empty_configuration_cell,
+    infGas,
+    kevmAccountCell,
+)
 
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
     subprocess_res = subprocess.run([
         'solc', '--combined-json', 'abi,bin-runtime,storage-layout,hashes', str(contract_file),
-    ], check=True, capture_output=True)
+    ], capture_output=True)
+
+    if subprocess_res.returncode != 0:
+        fatal(f'solc error:\n{subprocess_res.stderr.decode()}')
 
     return json.loads(subprocess_res.stdout)
+
+
+def gen_claims_for_contract(kevm: KPrint, contract_name: str) -> str:
+    empty_config = build_empty_configuration_cell(kevm.definition, KSort('KevmCell'))
+    program = KApply('binRuntime', [KApply('contract_' + contract_name)])
+    account_cell = kevmAccountCell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
+    init_subst = { 'MODE_CELL': KToken('NORMAL', 'Mode'),
+                   'SCHEDULE_CELL': KToken('LONDON_EVM', 'Schedule'),
+                   'CALLSTACK_CELL': KApply('.List'),
+                   'CALLDEPTH_CELL': intToken(0),
+                   'PROGRAM_CELL': program,
+                   'JUMPDESTS_CELL': KApply('#computeValidJumpDests', [program]),
+                   'ORIGIN_CELL': KVariable('ORIGIN_ID'),
+                   'ID_CELL': KVariable('ACCT_ID'),
+                   'CALLER_CELL': KVariable('CALLER_ID'),
+                   'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
+                   'MEMORYUSED_CELL': intToken(0),
+                   'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
+                   'PC_CELL': intToken(0),
+                   'GAS_CELL': infGas(KVariable('VGAS')),
+                   'K_CELL': KSequence([KApply('#execute_EVM_KItem'), KVariable('CONTINUATION')]),
+                   'ACCOUNTS_CELL': KApply('_AccountCellMap_', [account_cell, KVariable('ACCOUNTS')]),
+                 }
+    final_subst = {'K_CELL': KSequence([KApply('#halt_EVM_KItem'), KVariable('CONTINUATION')])}
+    init_term = substitute(empty_config, init_subst)
+    final_term = abstract_cell_vars(substitute(empty_config, final_subst))
+    claim, _ = buildRule(contract_name.lower() + '-spec', init_term, final_term, claim=True)
+    return [claim]
+
+
+def gen_spec_modules(kompiled_directory: Path, spec_module_name: str) -> str:
+    kevm = KPrint(str(kompiled_directory))
+    kevm.symbolTable = kevmSymbolTable(kevm.symbolTable)
+    production_labels = [prod.klabel for module in kevm.definition for prod in module.productions if prod.klabel is not None]
+    contract_names = [prod_label[9:] for prod_label in production_labels if prod_label.startswith('contract_')]
+    contract_function_labels = ['function_' + contract_name for contract_name in contract_names]
+    top_level_rules = [rule for module in kevm.definition for rule in module.rules if type(rule.body) is KRewrite]
+    contract_function_signatures = [rule.body.lhs for rule in top_level_rules if type(rule.body.lhs) is KApply and rule.body.lhs.label in contract_function_labels]
+    modules = []
+    for contract_name in contract_names:
+        claims = gen_claims_for_contract(kevm, contract_name)
+        spec_module = KFlatModule(contract_name.upper() + '-SPEC', claims, [KImport(kevm.definition.main_module_name)])
+        modules.append(spec_module)
+    spec_module = KFlatModule(spec_module_name, [], [KImport(module.name) for module in modules])
+    spec_defn = KDefinition(spec_module_name, modules + [spec_module], [KRequire('verification.k')])
+    return kevm.prettyPrint(spec_defn)
 
 
 def solc_to_k(kompiled_directory: Path, contract_file: Path, contract_name: str, generate_storage: bool):
@@ -54,16 +114,15 @@ def solc_to_k(kompiled_directory: Path, contract_file: Path, contract_name: str,
     function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
 
-    binRuntimeProduction = KProduction(KSort('ByteArray'), [KTerminal('#binRuntime'), KTerminal('('), KNonTerminal(contract_sort), KTerminal(')')], att=KAtt({'klabel': 'binRuntime', 'alias': ''}))
-
-    contractProduction = KProduction(contract_sort, [KTerminal(contract_name)], att=KAtt({'klabel': f'contract_{contract_name}'}))
-    contractMacro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_name)]), _parseByteStack(_stringToken(bin_runtime))))
+    contract_subsort = KProduction(KSort('Contract'), [KNonTerminal(contract_sort)])
+    contract_production = KProduction(contract_sort, [KTerminal(contract_name)], att=KAtt({'klabel': f'contract_{contract_name}', 'symbol': ''}))
+    contract_macro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_name)]), _parseByteStack(_stringToken(bin_runtime))))
 
     binRuntimeModuleName = contract_name.upper() + '-BIN-RUNTIME'
     binRuntimeModule = KFlatModule(
         binRuntimeModuleName,
-        [contractProduction] + storage_sentences + function_sentences + [binRuntimeProduction, contractMacro] + function_selector_alias_sentences,
-        [KImport('EDSL', True)],
+        [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences,
+        [KImport('BIN-RUNTIME', True)],
     )
     binRuntimeDefinition = KDefinition(binRuntimeModuleName, [binRuntimeModule], requires=[KRequire('edsl.md')])
 
@@ -194,7 +253,7 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
             if member_offset != 0:
                 raise ValueError(f'Unsupported nonzero offset for variable: {member_label}')
 
-            new_syntax = syntax + [KTerminal(f'{"." if gen_dot else ""}{member_label}')]
+            new_syntax = syntax + ([KTerminal('.')] if gen_dot else []) + [KTerminal(member_label)]
             new_lhs = f'{lhs}.{member_label}'
             new_rhs = KApply('_+Int_', [rhs, _intToken(member_slot)])
             res += recur(new_syntax, new_lhs, new_rhs, var_idx, member_type_name)
@@ -219,7 +278,7 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
 
 def generate_function_sentences(contract_name, contract_sort, abi):
     function_sort = KSort(f'{contract_name}Function')
-    function_call_data_production = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], att=KAtt({'klabel': f'function_{contract_name}', 'function': ''}))
+    function_call_data_production = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], att=KAtt({'klabel': f'function_{contract_name}', 'symbol': '', 'function': ''}))
     function_sentence_pairs = _extract_function_sentences(contract_name, function_sort, abi)
 
     if not function_sentence_pairs:
@@ -268,7 +327,7 @@ def _extract_function_sentences(contract_name, function_sort, abi):
         return KToken(f'{contract_name}.{name}(' + ', '.join(input_names) + ')', 'ByteArray')
 
     def extract_rhs(name, input_names, input_types):
-        args = [KApply(input_type, [KVariable(input_name)]) for input_name, input_type in zip(input_names, input_types)] or [KToken('.TypedArgs', 'TypedArgs')]
+        args = [KApply('abi_type_' + input_type, [KVariable(input_name)]) for input_name, input_type in zip(input_names, input_types)] or [KToken('.TypedArgs', 'TypedArgs')]
         return KApply('abiCallData', [_stringToken(name)] + args)
 
     def extract_ensures(input_names, input_types):
@@ -325,7 +384,7 @@ def _typed_arg_unparser(type_label: str):
 
 def _check_supported_value_type(type_label: str) -> None:
     supported_value_types = {'address', 'bool', 'bytes32', 'uint8', 'int256', 'string', 'uint256'}
-    if type_label not in supported_value_types:
+    if type_label not in supported_value_types and not type_label.startswith('contract '):
         raise ValueError(f'Unsupported value type: {type_label}')
 
 
@@ -336,7 +395,7 @@ def _check_supported_key_type(type_label: str) -> None:
 
 
 def _evm_base_sort(type_label: str):
-    if type_label in {'address', 'bool', 'bytes4', 'bytes32', 'int256', 'uint256'}:
+    if type_label in {'address', 'bool', 'bytes4', 'bytes32', 'int256', 'uint256', 'uint8'}:
         return KSort('Int')
 
     if type_label == 'bytes':
@@ -356,6 +415,8 @@ def _range_predicate(term, type_label: str):
         return KApply('rangeUInt', [_intToken('256'), term])
     if type_label == 'int256':
         return KApply('rangeSInt', [_intToken('256'), term])
+    if type_label == 'uint8':
+        return KApply('rangeUInt', [_intToken('8'), term])
     if type_label == 'bytes':
         return None
 

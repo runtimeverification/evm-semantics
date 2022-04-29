@@ -10,6 +10,8 @@
 /tests/specs/**/*.prove.out
 /tests/specs/**/*.sol.json
 /tests/specs/**/*-bin-runtime.k
+/tests/gen-spec/*.out
+/tests/gen-spec/*.sol
 /tests/vm/*.out
 /optimizer/*.k
 /optimizer/*.json

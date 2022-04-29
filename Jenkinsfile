@@ -33,18 +33,14 @@ pipeline {
           }
         }
         stage('Test Interactive') {
-          failFast true
           options { timeout(time: 35, unit: 'MINUTES') }
           parallel {
-            stage('LLVM krun')      { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'           } }
-            stage('Haskell krun')   { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=haskell'        } }
-            stage('LLVM Kast')      { steps { sh 'make test-parse TEST_CONCRETE_BACKEND=llvm'                     } }
-            stage('Failing tests')  { steps { sh 'make test-failure TEST_CONCRETE_BACKEND=llvm'                   } }
-            stage('Java KLab')      { steps { sh 'make test-klab-prove TEST_SYMBOLIC_BACKEND=java'                } }
-            stage('Haskell Search') { steps { sh 'make test-interactive-search TEST_SYMBOLIC_BACKEND=haskell -j4' } }
-            stage('KEVM VM')        { steps { sh 'make test-node'                                                 } }
-            stage('KEVM pyk')       { steps { sh 'make test-kevm-pyk'                                             } }
-            stage('KEVM help')      { steps { sh './kevm help'                                                    } }
+            stage('LLVM krun')      { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm' } }
+            stage('LLVM Kast')      { steps { sh 'make test-parse TEST_CONCRETE_BACKEND=llvm'           } }
+            stage('Failing tests')  { steps { sh 'make test-failure TEST_CONCRETE_BACKEND=llvm'         } }
+            stage('KEVM VM')        { steps { sh 'make test-node'                                       } }
+            stage('KEVM pyk')       { steps { sh 'make test-kevm-pyk'                                   } }
+            stage('KEVM help')      { steps { sh './kevm help'                                          } }
           }
         }
       }
