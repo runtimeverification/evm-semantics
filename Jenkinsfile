@@ -33,7 +33,6 @@ pipeline {
           }
         }
         stage('Test Interactive') {
-          failFast true
           options { timeout(time: 35, unit: 'MINUTES') }
           parallel {
             stage('LLVM krun')      { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'           } }
