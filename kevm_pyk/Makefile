@@ -29,7 +29,7 @@ $(VENV_PROD):
 	   virtualenv -p python3.8 $(VENV_PROD_DIR) \
 	&& $(ACTIVATE_PROD)                         \
 	&& pip install -r requirements/base.txt     \
-	&& pip install . --no-deps
+	&& pip install --editable . --no-deps
 
 $(VENV_PROD_DIR): $(VENV_PROD)
 	@echo $(ACTIVATE_PROD)
