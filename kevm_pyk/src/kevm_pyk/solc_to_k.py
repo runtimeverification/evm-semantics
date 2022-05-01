@@ -25,7 +25,7 @@ from pyk.kast import (
 )
 from pyk.kastManip import buildRule, substitute
 from pyk.ktool import KPrint, paren
-from pyk.prelude import intToken
+from pyk.prelude import intToken, stringToken
 from pyk.utils import intersperse
 
 from .utils import (
@@ -116,7 +116,7 @@ def solc_to_k(kompiled_directory: Path, contract_file: Path, contract_name: str,
 
     contract_subsort = KProduction(KSort('Contract'), [KNonTerminal(contract_sort)])
     contract_production = KProduction(contract_sort, [KTerminal(contract_name)], att=KAtt({'klabel': f'contract_{contract_name}', 'symbol': ''}))
-    contract_macro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_name)]), _parseByteStack(_stringToken(bin_runtime))))
+    contract_macro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_name)]), _parseByteStack(stringToken(bin_runtime))))
 
     binRuntimeModuleName = contract_name.upper() + '-BIN-RUNTIME'
     binRuntimeModule = KFlatModule(
@@ -255,7 +255,7 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
 
             new_syntax = syntax + ([KTerminal('.')] if gen_dot else []) + [KTerminal(member_label)]
             new_lhs = f'{lhs}.{member_label}'
-            new_rhs = KApply('_+Int_', [rhs, _intToken(member_slot)])
+            new_rhs = KApply('_+Int_', [rhs, intToken(member_slot)])
             res += recur(new_syntax, new_lhs, new_rhs, var_idx, member_type_name)
         return res
 
@@ -268,12 +268,12 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
 
         new_syntax = syntax + [KTerminal('['), KNonTerminal(key_sort), KTerminal(']')]
         new_lhs = f'{lhs}[V{var_idx}]'
-        new_rhs = KApply('hashedLocation', [_stringToken('Solidity'), rhs, KVariable(f'V{var_idx}')])
+        new_rhs = KApply('hashedLocation', [stringToken('Solidity'), rhs, KVariable(f'V{var_idx}')])
         new_type_name = value_type_name
         return recur(new_syntax, new_lhs, new_rhs, var_idx + 1, new_type_name)
 
     storage = storage_layout['storage']
-    return recur_struct([], f'{contract_name}', _intToken('0'), 0, storage, gen_dot=False)
+    return recur_struct([], f'{contract_name}', intToken('0'), 0, storage, gen_dot=False)
 
 
 def generate_function_sentences(contract_name, contract_sort, abi):
@@ -289,14 +289,13 @@ def generate_function_sentences(contract_name, contract_sort, abi):
 
 
 def generate_function_selector_alias_sentences(contract_name, contract_sort, hashes):
-    abi_function_selector_production = KProduction(KSort('Int'), [KTerminal('selector'), KTerminal('('), KNonTerminal(KSort('String')), KTerminal(')')], att=KAtt({'klabel': 'abi_selector', 'alias': ''}))
     abi_function_selector_rules = []
     for h in hashes:
         f_name = h.split('(')[0]
         hash_int = int(hashes[h], 16)
-        abi_function_selector_rewrite = KRewrite(KToken(f'selector("{f_name}")', 'Int'), KToken(str(hash_int), 'Int'))
+        abi_function_selector_rewrite = KRewrite(KApply('abi_selector', [stringToken(f'{f_name}')]), intToken(hash_int))
         abi_function_selector_rules.append(KRule(abi_function_selector_rewrite))
-    return [abi_function_selector_production] + abi_function_selector_rules
+    return abi_function_selector_rules
 
 
 def _extract_function_sentences(contract_name, function_sort, abi):
@@ -328,7 +327,7 @@ def _extract_function_sentences(contract_name, function_sort, abi):
 
     def extract_rhs(name, input_names, input_types):
         args = [KApply('abi_type_' + input_type, [KVariable(input_name)]) for input_name, input_type in zip(input_names, input_types)] or [KToken('.TypedArgs', 'TypedArgs')]
-        return KApply('abiCallData', [_stringToken(name)] + args)
+        return KApply('abiCallData', [stringToken(name)] + args)
 
     def extract_ensures(input_names, input_types):
         opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(input_names, input_types)]
@@ -370,14 +369,6 @@ def _parseByteStack(s: str):
     return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])  # type: ignore
 
 
-def _stringToken(s: str):
-    return KToken('"' + s + '"', 'String')
-
-
-def _intToken(s: str):
-    return KToken(s, 'Int')
-
-
 def _typed_arg_unparser(type_label: str):
     return lambda x: '#' + type_label + '(' + x + ')'
 
@@ -410,13 +401,13 @@ def _range_predicate(term, type_label: str):
     if type_label == 'bool':
         return KApply('rangeBool', [term])
     if type_label == 'bytes4':
-        return KApply('rangeBytes', [_intToken('4'), term])
+        return KApply('rangeBytes', [intToken('4'), term])
     if type_label in {'bytes32', 'uint256'}:
-        return KApply('rangeUInt', [_intToken('256'), term])
+        return KApply('rangeUInt', [intToken('256'), term])
     if type_label == 'int256':
-        return KApply('rangeSInt', [_intToken('256'), term])
+        return KApply('rangeSInt', [intToken('256'), term])
     if type_label == 'uint8':
-        return KApply('rangeUInt', [_intToken('8'), term])
+        return KApply('rangeUInt', [intToken('8'), term])
     if type_label == 'bytes':
         return None
 
