@@ -149,6 +149,7 @@ def solc_to_k(kompiled_directory: Path, contract_file: Path, contract_name: str,
 # KEVM instantiation of pyk
 
 def kevmSymbolTable(symbolTable):
+    symbolTable['abi_selector']                                              = lambda a: 'selector(' + a + ')'                                     # noqa
     symbolTable['_orBool_']                                                  = paren(symbolTable['_orBool_'])                                      # noqa
     symbolTable['_andBool_']                                                 = paren(symbolTable['_andBool_'])                                     # noqa
     symbolTable['notBool_']                                                  = paren(symbolTable['notBool_'])                                      # noqa
