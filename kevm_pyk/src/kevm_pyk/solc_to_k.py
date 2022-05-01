@@ -52,7 +52,7 @@ def gen_claims_for_contract(kevm: KPrint, contract_name: str) -> str:
     program = KApply('binRuntime', [KApply('contract_' + contract_name)])
     account_cell = kevmAccountCell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
     init_subst = { 'MODE_CELL': KToken('NORMAL', 'Mode'),
-                   'SCHEDULE_CELL': KToken('LONDON_EVM', 'Schedule'),
+                   'SCHEDULE_CELL': KApply('LONDON_EVM'),
                    'CALLSTACK_CELL': KApply('.List'),
                    'CALLDEPTH_CELL': intToken(0),
                    'PROGRAM_CELL': program,
