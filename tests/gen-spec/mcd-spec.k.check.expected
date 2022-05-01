@@ -15,7 +15,7 @@ module VAT-SPEC
              ( NORMAL => ?_MODE_CELL_acd26fc5 )
            </mode>
            <schedule>
-             ( LONDON_EVM => ?_SCHEDULE_CELL_acd26fc5 )
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
            </schedule>
            <ethereum>
              <evm>
@@ -211,7 +211,7 @@ module JUG-SPEC
              ( NORMAL => ?_MODE_CELL_acd26fc5 )
            </mode>
            <schedule>
-             ( LONDON_EVM => ?_SCHEDULE_CELL_acd26fc5 )
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
            </schedule>
            <ethereum>
              <evm>
@@ -407,7 +407,7 @@ module DAIJOIN-SPEC
              ( NORMAL => ?_MODE_CELL_acd26fc5 )
            </mode>
            <schedule>
-             ( LONDON_EVM => ?_SCHEDULE_CELL_acd26fc5 )
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
            </schedule>
            <ethereum>
              <evm>
@@ -603,7 +603,7 @@ module DAI-SPEC
              ( NORMAL => ?_MODE_CELL_acd26fc5 )
            </mode>
            <schedule>
-             ( LONDON_EVM => ?_SCHEDULE_CELL_acd26fc5 )
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
            </schedule>
            <ethereum>
              <evm>
@@ -799,7 +799,7 @@ module GEMJOIN-SPEC
              ( NORMAL => ?_MODE_CELL_acd26fc5 )
            </mode>
            <schedule>
-             ( LONDON_EVM => ?_SCHEDULE_CELL_acd26fc5 )
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
            </schedule>
            <ethereum>
              <evm>
@@ -995,7 +995,7 @@ module POT-SPEC
              ( NORMAL => ?_MODE_CELL_acd26fc5 )
            </mode>
            <schedule>
-             ( LONDON_EVM => ?_SCHEDULE_CELL_acd26fc5 )
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
            </schedule>
            <ethereum>
              <evm>
@@ -1191,7 +1191,7 @@ module SPOTTER-SPEC
              ( NORMAL => ?_MODE_CELL_acd26fc5 )
            </mode>
            <schedule>
-             ( LONDON_EVM => ?_SCHEDULE_CELL_acd26fc5 )
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
            </schedule>
            <ethereum>
              <evm>
