@@ -199,7 +199,7 @@ def generate_storage_sentences(contract_name, contract_sort, storage_layout):
         return []
 
     storage_productions, storage_rules = map(list, zip(*storage_sentence_pairs))
-    storage_location_production = KProduction(KSort('Int'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(storage_sort)], att=KAtt({'klabel': f'storage_{contract_name}', 'alias': ''}))
+    storage_location_production = KProduction(KSort('Int'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(storage_sort)], att=KAtt({'klabel': f'storage_{contract_name}', 'macro': ''}))
     return storage_productions + [storage_location_production] + storage_rules
 
 
