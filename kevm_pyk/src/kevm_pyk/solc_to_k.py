@@ -2,16 +2,18 @@ import functools
 import json
 import subprocess
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from pyk.cli_utils import fatal
 from pyk.kast import (
     TRUE,
     KApply,
     KAtt,
+    KClaim,
     KDefinition,
     KFlatModule,
     KImport,
+    KInner,
     KNonTerminal,
     KProduction,
     KRequire,
@@ -47,7 +49,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
     return json.loads(subprocess_res.stdout)
 
 
-def gen_claims_for_contract(kevm: KPrint, contract_name: str) -> str:
+def gen_claims_for_contract(kevm: KPrint, contract_name: str) -> List[KClaim]:
     empty_config = build_empty_configuration_cell(kevm.definition, KSort('KevmCell'))
     program = KApply('binRuntime', [KApply('contract_' + contract_name)])
     account_cell = kevmAccountCell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
@@ -73,6 +75,7 @@ def gen_claims_for_contract(kevm: KPrint, contract_name: str) -> str:
     init_term = substitute(empty_config, init_subst)
     final_term = abstract_cell_vars(substitute(empty_config, final_subst))
     claim, _ = buildRule(contract_name.lower(), init_term, final_term, claim=True)
+    assert isinstance(claim, KClaim)
     return [claim]
 
 
@@ -81,8 +84,6 @@ def gen_spec_modules(kompiled_directory: Path, spec_module_name: str) -> str:
     kevm.symbolTable = kevmSymbolTable(kevm.symbolTable)
     production_labels = [prod.klabel for module in kevm.definition for prod in module.productions if prod.klabel is not None]
     contract_names = [prod_label[9:] for prod_label in production_labels if prod_label.startswith('contract_')]
-    contract_function_labels = ['function_' + contract_name for contract_name in contract_names]
-    top_level_rules = [rule for module in kevm.definition for rule in module.rules if type(rule.body) is KRewrite]
     claims = [claim for name in contract_names for claim in gen_claims_for_contract(kevm, name)]
     spec_module = KFlatModule(spec_module_name, claims, [KImport(kevm.definition.main_module_name)])
     spec_defn = KDefinition(spec_module_name, [spec_module], [KRequire('verification.k')])
@@ -362,8 +363,8 @@ def _extract_function_sentences(contract_name, function_sort, abi):
     return res
 
 
-def _parseByteStack(s: str):
-    return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])  # type: ignore
+def _parseByteStack(s: KInner):
+    return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
 
 
 def _typed_arg_unparser(type_label: str):
@@ -398,13 +399,13 @@ def _range_predicate(term, type_label: str):
     if type_label == 'bool':
         return KApply('rangeBool', [term])
     if type_label == 'bytes4':
-        return KApply('rangeBytes', [intToken('4'), term])
+        return KApply('rangeBytes', [intToken(4), term])
     if type_label in {'bytes32', 'uint256'}:
-        return KApply('rangeUInt', [intToken('256'), term])
+        return KApply('rangeUInt', [intToken(256), term])
     if type_label == 'int256':
-        return KApply('rangeSInt', [intToken('256'), term])
+        return KApply('rangeSInt', [intToken(256), term])
     if type_label == 'uint8':
-        return KApply('rangeUInt', [intToken('8'), term])
+        return KApply('rangeUInt', [intToken(8), term])
     if type_label == 'bytes':
         return None
 
