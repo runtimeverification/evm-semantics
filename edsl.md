@@ -26,5 +26,8 @@ module BIN-RUNTIME
     syntax ByteArray ::= #binRuntime ( Contract ) [alias, klabel(binRuntime), symbol, function, no-evaluators]
  // ----------------------------------------------------------------------------------------------------------
 
+    syntax Int ::= selector ( String ) [alias, klabel(abi_selector), symbol, function, no-evaluators]
+ // -------------------------------------------------------------------------------------------------
+
 endmodule
 ```

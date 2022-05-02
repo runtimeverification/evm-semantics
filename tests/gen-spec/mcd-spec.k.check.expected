@@ -1,9 +1,9 @@
 requires "verification.k"
 
-module VAT-SPEC
+module MCD-SPEC
     imports public MCD-VERIFICATION
     
-    claim [vat-spec]: <kevm>
+    claim [vat]: <kevm>
            <k>
              ( #execute => #halt )
              ~> CONTINUATION
@@ -15,7 +15,7 @@ module VAT-SPEC
              ( NORMAL => ?_MODE_CELL_acd26fc5 )
            </mode>
            <schedule>
-             ( LONDON_EVM => ?_SCHEDULE_CELL_acd26fc5 )
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
            </schedule>
            <ethereum>
              <evm>
@@ -192,14 +192,9 @@ module VAT-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(vat-spec)]
-
-endmodule
-
-module JUG-SPEC
-    imports public MCD-VERIFICATION
+      [label(vat)]
     
-    claim [jug-spec]: <kevm>
+    claim [jug]: <kevm>
            <k>
              ( #execute => #halt )
              ~> CONTINUATION
@@ -211,7 +206,7 @@ module JUG-SPEC
              ( NORMAL => ?_MODE_CELL_acd26fc5 )
            </mode>
            <schedule>
-             ( LONDON_EVM => ?_SCHEDULE_CELL_acd26fc5 )
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
            </schedule>
            <ethereum>
              <evm>
@@ -388,14 +383,9 @@ module JUG-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(jug-spec)]
-
-endmodule
-
-module DAIJOIN-SPEC
-    imports public MCD-VERIFICATION
+      [label(jug)]
     
-    claim [daijoin-spec]: <kevm>
+    claim [daijoin]: <kevm>
            <k>
              ( #execute => #halt )
              ~> CONTINUATION
@@ -407,7 +397,7 @@ module DAIJOIN-SPEC
              ( NORMAL => ?_MODE_CELL_acd26fc5 )
            </mode>
            <schedule>
-             ( LONDON_EVM => ?_SCHEDULE_CELL_acd26fc5 )
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
            </schedule>
            <ethereum>
              <evm>
@@ -584,14 +574,9 @@ module DAIJOIN-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(daijoin-spec)]
-
-endmodule
-
-module DAI-SPEC
-    imports public MCD-VERIFICATION
+      [label(daijoin)]
     
-    claim [dai-spec]: <kevm>
+    claim [dai]: <kevm>
            <k>
              ( #execute => #halt )
              ~> CONTINUATION
@@ -603,7 +588,7 @@ module DAI-SPEC
              ( NORMAL => ?_MODE_CELL_acd26fc5 )
            </mode>
            <schedule>
-             ( LONDON_EVM => ?_SCHEDULE_CELL_acd26fc5 )
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
            </schedule>
            <ethereum>
              <evm>
@@ -780,14 +765,9 @@ module DAI-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(dai-spec)]
-
-endmodule
-
-module GEMJOIN-SPEC
-    imports public MCD-VERIFICATION
+      [label(dai)]
     
-    claim [gemjoin-spec]: <kevm>
+    claim [gemjoin]: <kevm>
            <k>
              ( #execute => #halt )
              ~> CONTINUATION
@@ -799,7 +779,7 @@ module GEMJOIN-SPEC
              ( NORMAL => ?_MODE_CELL_acd26fc5 )
            </mode>
            <schedule>
-             ( LONDON_EVM => ?_SCHEDULE_CELL_acd26fc5 )
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
            </schedule>
            <ethereum>
              <evm>
@@ -976,14 +956,9 @@ module GEMJOIN-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(gemjoin-spec)]
-
-endmodule
-
-module POT-SPEC
-    imports public MCD-VERIFICATION
+      [label(gemjoin)]
     
-    claim [pot-spec]: <kevm>
+    claim [pot]: <kevm>
            <k>
              ( #execute => #halt )
              ~> CONTINUATION
@@ -995,7 +970,7 @@ module POT-SPEC
              ( NORMAL => ?_MODE_CELL_acd26fc5 )
            </mode>
            <schedule>
-             ( LONDON_EVM => ?_SCHEDULE_CELL_acd26fc5 )
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
            </schedule>
            <ethereum>
              <evm>
@@ -1172,14 +1147,9 @@ module POT-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(pot-spec)]
-
-endmodule
-
-module SPOTTER-SPEC
-    imports public MCD-VERIFICATION
+      [label(pot)]
     
-    claim [spotter-spec]: <kevm>
+    claim [spotter]: <kevm>
            <k>
              ( #execute => #halt )
              ~> CONTINUATION
@@ -1191,7 +1161,7 @@ module SPOTTER-SPEC
              ( NORMAL => ?_MODE_CELL_acd26fc5 )
            </mode>
            <schedule>
-             ( LONDON_EVM => ?_SCHEDULE_CELL_acd26fc5 )
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
            </schedule>
            <ethereum>
              <evm>
@@ -1368,19 +1338,6 @@ module SPOTTER-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(spotter-spec)]
-
-endmodule
-
-module MCD-CLAIMS
-    imports public VAT-SPEC
-    imports public JUG-SPEC
-    imports public DAIJOIN-SPEC
-    imports public DAI-SPEC
-    imports public GEMJOIN-SPEC
-    imports public POT-SPEC
-    imports public SPOTTER-SPEC
-    
-    
+      [label(spotter)]
 
 endmodule
