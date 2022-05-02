@@ -83,13 +83,11 @@ def gen_spec_modules(kompiled_directory: Path, spec_module_name: str) -> str:
     contract_function_labels = ['function_' + contract_name for contract_name in contract_names]
     top_level_rules = [rule for module in kevm.definition for rule in module.rules if type(rule.body) is KRewrite]
     contract_function_signatures = [rule.body.lhs for rule in top_level_rules if type(rule.body.lhs) is KApply and rule.body.lhs.label in contract_function_labels]
-    modules = []
+    claims = []
     for contract_name in contract_names:
-        claims = gen_claims_for_contract(kevm, contract_name)
-        spec_module = KFlatModule(contract_name.upper() + '-SPEC', claims, [KImport(kevm.definition.main_module_name)])
-        modules.append(spec_module)
-    spec_module = KFlatModule(spec_module_name, [], [KImport(module.name) for module in modules])
-    spec_defn = KDefinition(spec_module_name, modules + [spec_module], [KRequire('verification.k')])
+        claims.extend(gen_claims_for_contract(kevm, contract_name))
+    spec_module = KFlatModule(spec_module_name, claims, [KImport(kevm.definition.main_module_name)])
+    spec_defn = KDefinition(spec_module_name, [spec_module], [KRequire('verification.k')])
     return kevm.prettyPrint(spec_defn)
 
 
