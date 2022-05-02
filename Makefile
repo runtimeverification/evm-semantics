@@ -447,7 +447,7 @@ tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty > $@
 
 tests/gen-spec/mcd-spec.k.check: tests/gen-spec/verification-kompiled/timestamp kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec tests/gen-spec/verification-kompiled MCD-CLAIMS > $@.out
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec tests/gen-spec/verification-kompiled MCD-SPEC > $@.out
 	$(CHECK) $@.out $@.expected
 
 tests/gen-spec/verification-kompiled/timestamp: tests/gen-spec/verification.k
