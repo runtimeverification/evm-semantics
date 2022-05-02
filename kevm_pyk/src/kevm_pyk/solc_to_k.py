@@ -71,7 +71,7 @@ def gen_claims_for_contract(kevm: KPrint, contract_name: str) -> str:
     final_subst = {'K_CELL': KSequence([KApply('#halt_EVM_KItem'), KVariable('CONTINUATION')])}
     init_term = substitute(empty_config, init_subst)
     final_term = abstract_cell_vars(substitute(empty_config, final_subst))
-    claim, _ = buildRule(contract_name.lower() + '-spec', init_term, final_term, claim=True)
+    claim, _ = buildRule(contract_name.lower(), init_term, final_term, claim=True)
     return [claim]
 
 

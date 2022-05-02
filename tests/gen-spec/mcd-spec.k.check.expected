@@ -3,7 +3,7 @@ requires "verification.k"
 module MCD-SPEC
     imports public MCD-VERIFICATION
     
-    claim [vat-spec]: <kevm>
+    claim [vat]: <kevm>
            <k>
              ( #execute => #halt )
              ~> CONTINUATION
@@ -192,9 +192,9 @@ module MCD-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(vat-spec)]
+      [label(vat)]
     
-    claim [jug-spec]: <kevm>
+    claim [jug]: <kevm>
            <k>
              ( #execute => #halt )
              ~> CONTINUATION
@@ -383,9 +383,9 @@ module MCD-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(jug-spec)]
+      [label(jug)]
     
-    claim [daijoin-spec]: <kevm>
+    claim [daijoin]: <kevm>
            <k>
              ( #execute => #halt )
              ~> CONTINUATION
@@ -574,9 +574,9 @@ module MCD-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(daijoin-spec)]
+      [label(daijoin)]
     
-    claim [dai-spec]: <kevm>
+    claim [dai]: <kevm>
            <k>
              ( #execute => #halt )
              ~> CONTINUATION
@@ -765,9 +765,9 @@ module MCD-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(dai-spec)]
+      [label(dai)]
     
-    claim [gemjoin-spec]: <kevm>
+    claim [gemjoin]: <kevm>
            <k>
              ( #execute => #halt )
              ~> CONTINUATION
@@ -956,9 +956,9 @@ module MCD-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(gemjoin-spec)]
+      [label(gemjoin)]
     
-    claim [pot-spec]: <kevm>
+    claim [pot]: <kevm>
            <k>
              ( #execute => #halt )
              ~> CONTINUATION
@@ -1147,9 +1147,9 @@ module MCD-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(pot-spec)]
+      [label(pot)]
     
-    claim [spotter-spec]: <kevm>
+    claim [spotter]: <kevm>
            <k>
              ( #execute => #halt )
              ~> CONTINUATION
@@ -1338,6 +1338,6 @@ module MCD-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(spotter-spec)]
+      [label(spotter)]
 
 endmodule
