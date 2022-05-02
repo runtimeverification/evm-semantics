@@ -51,23 +51,24 @@ def gen_claims_for_contract(kevm: KPrint, contract_name: str) -> str:
     empty_config = build_empty_configuration_cell(kevm.definition, KSort('KevmCell'))
     program = KApply('binRuntime', [KApply('contract_' + contract_name)])
     account_cell = kevmAccountCell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
-    init_subst = { 'MODE_CELL': KToken('NORMAL', 'Mode'),
-                   'SCHEDULE_CELL': KApply('LONDON_EVM'),
-                   'CALLSTACK_CELL': KApply('.List'),
-                   'CALLDEPTH_CELL': intToken(0),
-                   'PROGRAM_CELL': program,
-                   'JUMPDESTS_CELL': KApply('#computeValidJumpDests', [program]),
-                   'ORIGIN_CELL': KVariable('ORIGIN_ID'),
-                   'ID_CELL': KVariable('ACCT_ID'),
-                   'CALLER_CELL': KVariable('CALLER_ID'),
-                   'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
-                   'MEMORYUSED_CELL': intToken(0),
-                   'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
-                   'PC_CELL': intToken(0),
-                   'GAS_CELL': infGas(KVariable('VGAS')),
-                   'K_CELL': KSequence([KApply('#execute_EVM_KItem'), KVariable('CONTINUATION')]),
-                   'ACCOUNTS_CELL': KApply('_AccountCellMap_', [account_cell, KVariable('ACCOUNTS')]),
-                 }
+    init_subst = {
+        'MODE_CELL': KToken('NORMAL', 'Mode'),
+        'SCHEDULE_CELL': KApply('LONDON_EVM'),
+        'CALLSTACK_CELL': KApply('.List'),
+        'CALLDEPTH_CELL': intToken(0),
+        'PROGRAM_CELL': program,
+        'JUMPDESTS_CELL': KApply('#computeValidJumpDests', [program]),
+        'ORIGIN_CELL': KVariable('ORIGIN_ID'),
+        'ID_CELL': KVariable('ACCT_ID'),
+        'CALLER_CELL': KVariable('CALLER_ID'),
+        'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
+        'MEMORYUSED_CELL': intToken(0),
+        'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
+        'PC_CELL': intToken(0),
+        'GAS_CELL': infGas(KVariable('VGAS')),
+        'K_CELL': KSequence([KApply('#execute_EVM_KItem'), KVariable('CONTINUATION')]),
+        'ACCOUNTS_CELL': KApply('_AccountCellMap_', [account_cell, KVariable('ACCOUNTS')]),
+    }
     final_subst = {'K_CELL': KSequence([KApply('#halt_EVM_KItem'), KVariable('CONTINUATION')])}
     init_term = substitute(empty_config, init_subst)
     final_term = abstract_cell_vars(substitute(empty_config, final_subst))
@@ -82,10 +83,7 @@ def gen_spec_modules(kompiled_directory: Path, spec_module_name: str) -> str:
     contract_names = [prod_label[9:] for prod_label in production_labels if prod_label.startswith('contract_')]
     contract_function_labels = ['function_' + contract_name for contract_name in contract_names]
     top_level_rules = [rule for module in kevm.definition for rule in module.rules if type(rule.body) is KRewrite]
-    contract_function_signatures = [rule.body.lhs for rule in top_level_rules if type(rule.body.lhs) is KApply and rule.body.lhs.label in contract_function_labels]
-    claims = []
-    for contract_name in contract_names:
-        claims.extend(gen_claims_for_contract(kevm, contract_name))
+    claims = [claim for name in contract_names for claim in gen_claims_for_contract(kevm, name)]
     spec_module = KFlatModule(spec_module_name, claims, [KImport(kevm.definition.main_module_name)])
     spec_defn = KDefinition(spec_module_name, [spec_module], [KRequire('verification.k')])
     return kevm.prettyPrint(spec_defn)
