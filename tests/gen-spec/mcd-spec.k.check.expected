@@ -1,6 +1,6 @@
 requires "verification.k"
 
-module VAT-SPEC
+module MCD-SPEC
     imports public MCD-VERIFICATION
     
     claim [vat-spec]: <kevm>
@@ -193,11 +193,6 @@ module VAT-SPEC
            </ethereum>
          </kevm>
       [label(vat-spec)]
-
-endmodule
-
-module JUG-SPEC
-    imports public MCD-VERIFICATION
     
     claim [jug-spec]: <kevm>
            <k>
@@ -389,11 +384,6 @@ module JUG-SPEC
            </ethereum>
          </kevm>
       [label(jug-spec)]
-
-endmodule
-
-module DAIJOIN-SPEC
-    imports public MCD-VERIFICATION
     
     claim [daijoin-spec]: <kevm>
            <k>
@@ -585,11 +575,6 @@ module DAIJOIN-SPEC
            </ethereum>
          </kevm>
       [label(daijoin-spec)]
-
-endmodule
-
-module DAI-SPEC
-    imports public MCD-VERIFICATION
     
     claim [dai-spec]: <kevm>
            <k>
@@ -781,11 +766,6 @@ module DAI-SPEC
            </ethereum>
          </kevm>
       [label(dai-spec)]
-
-endmodule
-
-module GEMJOIN-SPEC
-    imports public MCD-VERIFICATION
     
     claim [gemjoin-spec]: <kevm>
            <k>
@@ -977,11 +957,6 @@ module GEMJOIN-SPEC
            </ethereum>
          </kevm>
       [label(gemjoin-spec)]
-
-endmodule
-
-module POT-SPEC
-    imports public MCD-VERIFICATION
     
     claim [pot-spec]: <kevm>
            <k>
@@ -1173,11 +1148,6 @@ module POT-SPEC
            </ethereum>
          </kevm>
       [label(pot-spec)]
-
-endmodule
-
-module SPOTTER-SPEC
-    imports public MCD-VERIFICATION
     
     claim [spotter-spec]: <kevm>
            <k>
@@ -1369,18 +1339,5 @@ module SPOTTER-SPEC
            </ethereum>
          </kevm>
       [label(spotter-spec)]
-
-endmodule
-
-module MCD-CLAIMS
-    imports public VAT-SPEC
-    imports public JUG-SPEC
-    imports public DAIJOIN-SPEC
-    imports public DAI-SPEC
-    imports public GEMJOIN-SPEC
-    imports public POT-SPEC
-    imports public SPOTTER-SPEC
-    
-    
 
 endmodule
