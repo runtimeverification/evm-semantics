@@ -263,7 +263,6 @@ node_main_filename := $(basename $(notdir $(node_main_file)))
 node_kore          := $(node_dir)/definition.kore
 node_kompiled      := $(node_dir)/build/kevm-vm
 export node_dir
-export node_main_filename
 
 $(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend node                 \

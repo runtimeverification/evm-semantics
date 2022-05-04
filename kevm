@@ -181,7 +181,7 @@ run_prove() {
         execute kore-prof "${eventlog_name}" ${kore_prof_args} > "${eventlog_name}.json"
     else
         if ${pyk_minimize}; then
-            pyk_args=(${backend_dir}/*-kompiled print /dev/stdin --minimize)
+            pyk_args=(${backend_dir} print /dev/stdin --minimize)
             [[ -z "${pyk_omit_labels}" ]] || pyk_args+=(--omit-labels "${pyk_omit_labels}")
             execute ${kprove} "${proof_args[@]}" "$@" --output json | kpyk "${pyk_args[@]}"
         else
@@ -210,7 +210,7 @@ view_klab() {
 run_interpret() {
     local interpreter kast output output_text output_format exit_status cmdprefix
 
-    interpreter="$backend_dir/driver-kompiled/interpreter"
+    interpreter="$backend_dir/interpreter"
     kast="$(mktemp)"
     output="$(mktemp)"
     output_text="$(mktemp)"
@@ -239,7 +239,7 @@ run_interpret() {
                  ;;
 
         haskell) run_kast kore > "$kast"
-                 execute kore-exec "$backend_dir/driver-kompiled/definition.kore" --pattern "$kast" --module ETHEREUM-SIMULATION --smt none --output "$output" || exit_status="$?"
+                 execute kore-exec "$backend_dir/definition.kore" --pattern "$kast" --module ETHEREUM-SIMULATION --smt none --output "$output" || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
                  fi
@@ -257,11 +257,11 @@ run_solc() {
     contract_name="$1" ; shift
     json_run_file="${run_file}.json"
 
-    execute python3 -m kevm_pyk solc-to-k "$@" ${backend_dir}/*-kompiled "${run_file}" "${contract_name}"
+    execute python3 -m kevm_pyk ${backend_dir} solc-to-k "$@" "${run_file}" "${contract_name}"
 }
 
 run_gen_spec() {
-    execute python3 -m kevm_pyk gen-spec-modules "$@"
+    execute python3 -m kevm_pyk ${backend_dir} gen-spec-modules "$@"
 }
 
 # Main
