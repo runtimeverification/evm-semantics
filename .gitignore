@@ -16,6 +16,8 @@
 /tests/gen-spec/*.out
 /tests/gen-spec/*.sol
 /tests/specs/**/*-bin-runtime.k
+/tests/specs/**/haskell
+/tests/specs/**/java
 /tests/specs/opcodes/evm-optimizations-spec.md
 /tests/specs/**/*.prove.out
 /tests/specs/**/*.sol.json
