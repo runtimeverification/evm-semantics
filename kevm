@@ -53,7 +53,7 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 run_kompile() {
     local kompile_opts openssl_root
 
-    kompile_opts=( "${run_file}" --directory "${backend_dir}" )
+    kompile_opts=( "${run_file}" --output-definition "${backend_dir}" )
     kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
     kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN"                           )
     kompile_opts+=( --emit-json                                                          )
@@ -111,7 +111,7 @@ run_krun() {
             parser='cat'
             ;;
     esac
-    execute krun --directory "$backend_dir"           \
+    execute krun --definition "$backend_dir"          \
          -cSCHEDULE="$cschedule" -pSCHEDULE="$parser" \
          -cMODE="$cmode"         -pMODE="$parser"     \
          -cCHAINID="$cchainid"   -pCHAINID="$parser"  \
@@ -124,9 +124,9 @@ run_kast() {
     output_mode="${1:-kore}" ; shift
 
     case "$run_file-$output_mode" in
-        *.json-kast) execute kast-json.py "$run_file" "$cSCHEDULE_kast" "$cMODE_kast" "$cCHAINID_kast"          ;;
-        *.json-kore) execute kore-json.py "$run_file" "$cSCHEDULE_kore" "$cMODE_kore" "$cCHAINID_kore"          ;;
-        *)           check_k_install ; kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@" ;;
+        *.json-kast) execute kast-json.py "$run_file" "$cSCHEDULE_kast" "$cMODE_kast" "$cCHAINID_kast"           ;;
+        *.json-kore) execute kore-json.py "$run_file" "$cSCHEDULE_kore" "$cMODE_kore" "$cCHAINID_kore"           ;;
+        *)           check_k_install ; kast --definition "$backend_dir" "$run_file" --output "$output_mode" "$@" ;;
     esac
 }
 
@@ -140,7 +140,7 @@ run_prove() {
     eventlog_name="${run_file}.eventlog"
 
     kprove=kprove
-    proof_args=(--directory "${backend_dir}" "${run_file}")
+    proof_args=(--definition "${backend_dir}" "${run_file}")
     proof_args+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
 
     ! ${provex} || kprove=kprovex
@@ -373,7 +373,7 @@ while [[ $# -gt 0 ]]; do
         --kore-prof-args)      kore_prof_args="$2"             ; shift 2 ;;
         --bug-report)          bug_report=true                 ; shift   ;;
         --backend)             backend="$2"                    ; shift 2 ;;
-        --directory)           backend_dir="$2"                ; shift 2 ;;
+        --definition)          backend_dir="$2"                ; shift 2 ;;
         --concrete-rules-file) concrete_rules_file="$2"        ; shift 2 ;;
         --no-provex)           provex=false                    ; shift   ;;
         --verif-module)        verif_module="$2"               ; shift 2 ;;

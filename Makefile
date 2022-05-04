@@ -451,20 +451,20 @@ tests/gen-spec/mcd-spec.k.check: tests/gen-spec/verification-kompiled/timestamp 
 	$(CHECK) $@.out $@.expected
 
 tests/gen-spec/verification-kompiled/timestamp: tests/gen-spec/verification.k
-	$(KOMPILE) --backend haskell --directory tests/gen-spec $< --main-module MCD-VERIFICATION
+	$(KOMPILE) --backend haskell --definition tests/gen-spec/verification-kompiled $< --main-module MCD-VERIFICATION
 
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
 	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
-	    --directory tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
+	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                 \
-	    --directory tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
-	    --main-module $(KPROVE_MODULE)                                                                  \
-	    --syntax-module $(KPROVE_MODULE)                                                                \
-	    --concrete-rules-file tests/specs/$(firstword $(subst /, ,$*))/concrete-rules.txt               \
+	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                  \
+	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
+	    --main-module $(KPROVE_MODULE)                                                                   \
+	    --syntax-module $(KPROVE_MODULE)                                                                 \
+	    --concrete-rules-file tests/specs/$(firstword $(subst /, ,$*))/concrete-rules.txt                \
 	    $(KOMPILE_OPTS)
 
 tests/%.search: tests/%
