@@ -257,11 +257,11 @@ run_solc() {
     contract_name="$1" ; shift
     json_run_file="${run_file}.json"
 
-    execute python3 -m kevm_pyk ${backend_dir} solc-to-k "$@" "${run_file}" "${contract_name}"
+    execute python3 -m kevm_pyk solc-to-k ${backend_dir} "$@" "${run_file}" "${contract_name}"
 }
 
 run_gen_spec() {
-    execute python3 -m kevm_pyk ${backend_dir} gen-spec-modules "$@"
+    execute python3 -m kevm_pyk gen-spec-modules ${backend_dir} "$@"
 }
 
 # Main
