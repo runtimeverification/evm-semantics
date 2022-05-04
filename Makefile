@@ -445,12 +445,12 @@ tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEV
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty > $@
 
-tests/gen-spec/mcd-spec.k.check: tests/gen-spec/timestamp kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec tests/gen-spec MCD-SPEC > $@.out
+tests/gen-spec/mcd-spec.k.check: tests/gen-spec/kompiled/timestamp kevm-pyk-venv
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec MCD-SPEC --definition tests/gen-spec/kompiled > $@.out
 	$(CHECK) $@.out $@.expected
 
-tests/gen-spec/timestamp: tests/gen-spec/verification.k
-	$(KOMPILE) --backend haskell --definition tests/gen-spec $< --main-module MCD-VERIFICATION
+tests/gen-spec/kompiled/timestamp: tests/gen-spec/verification.k
+	$(KOMPILE) --backend haskell --definition tests/gen-spec/kompiled $< --main-module MCD-VERIFICATION
 
 
 .SECONDEXPANSION:
