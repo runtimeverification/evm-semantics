@@ -219,7 +219,7 @@ haskell_main_module    := EDSL
 haskell_syntax_module  := $(haskell_main_module)
 haskell_main_file      := edsl.md
 haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
-haskell_kompiled_dir   := $(haskell_dir)/$(haskell_main_filename)-kompiled
+haskell_kompiled_dir   := $(haskell_dir)
 haskell_kompiled       := $(haskell_kompiled_dir)/definition.kore
 
 ifeq ($(UNAME_S),Darwin)
@@ -240,7 +240,7 @@ llvm_main_module   := ETHEREUM-SIMULATION
 llvm_syntax_module := $(llvm_main_module)
 llvm_main_file     := driver.md
 llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
-llvm_kompiled      := $(llvm_dir)/$(llvm_main_filename)-kompiled/interpreter
+llvm_kompiled      := $(llvm_dir)/interpreter
 
 ifeq ($(UNAME_S),Darwin)
 $(KEVM_LIB)/$(llvm_kompiled): $(libcryptopp_out)
@@ -260,7 +260,7 @@ node_main_module   := EVM-NODE
 node_syntax_module := $(node_main_module)
 node_main_file     := evm-node.md
 node_main_filename := $(basename $(notdir $(node_main_file)))
-node_kore          := $(node_dir)/$(node_main_filename)-kompiled/definition.kore
+node_kore          := $(node_dir)/definition.kore
 node_kompiled      := $(node_dir)/build/kevm-vm
 export node_dir
 export node_main_filename
@@ -435,31 +435,31 @@ tests/%.prove-legacy: tests/%
 kevm-pyk-venv:
 	$(MAKE) -C ./kevm_pyk venv-prod
 
-tests/specs/examples/erc20-spec/haskell/erc20-spec-kompiled/timestamp: tests/specs/examples/erc20-bin-runtime.k
+tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC20 > $@
 
-tests/specs/examples/erc721-spec/haskell/erc721-spec-kompiled/timestamp: tests/specs/examples/erc721-bin-runtime.k
+tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
 tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC721 > $@
 
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty > $@
 
-tests/gen-spec/mcd-spec.k.check: tests/gen-spec/verification-kompiled/timestamp kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec tests/gen-spec/verification-kompiled MCD-SPEC > $@.out
+tests/gen-spec/mcd-spec.k.check: tests/gen-spec/timestamp kevm-pyk-venv
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec tests/gen-spec MCD-SPEC > $@.out
 	$(CHECK) $@.out $@.expected
 
-tests/gen-spec/verification-kompiled/timestamp: tests/gen-spec/verification.k
-	$(KOMPILE) --backend haskell --definition tests/gen-spec/verification-kompiled $< --main-module MCD-VERIFICATION
+tests/gen-spec/timestamp: tests/gen-spec/verification.k
+	$(KOMPILE) --backend haskell --definition tests/gen-spec $< --main-module MCD-VERIFICATION
 
 
 .SECONDEXPANSION:
-tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/$$(KPROVE_FILE)-kompiled/timestamp
+tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
 	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) --format-failures $(KPROVE_OPTS) \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
-tests/specs/%-kompiled/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
+tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                  \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
 	    --main-module $(KPROVE_MODULE)                                                                   \
@@ -528,36 +528,36 @@ prove_mcd_tests          := $(filter-out $(prove_skip_tests), $(wildcard $(prove
 prove_optimization_tests := $(filter-out $(prove_skip_tests), tests/specs/opcodes/evm-optimizations-spec.md)
 
 ## best-effort list of provex kompiled definitions to produce ahead of time
-provex_definitions :=                                                                                              \
-                      tests/specs/benchmarks/functional-spec/haskell/functional-spec-kompiled/timestamp            \
-                      tests/specs/benchmarks/functional-spec/java/functional-spec-kompiled/timestamp               \
-                      tests/specs/benchmarks/verification/haskell/verification-kompiled/timestamp                  \
-                      tests/specs/benchmarks/verification/java/verification-kompiled/timestamp                     \
-                      tests/specs/bihu/functional-spec/haskell/functional-spec-kompiled/timestamp                  \
-                      tests/specs/bihu/functional-spec/java/functional-spec-kompiled/timestamp                     \
-                      tests/specs/bihu/verification/haskell/verification-kompiled/timestamp                        \
-                      tests/specs/bihu/verification/java/verification-kompiled/timestamp                           \
-                      tests/specs/erc20/verification/haskell/verification-kompiled/timestamp                       \
-                      tests/specs/erc20/verification/java/verification-kompiled/timestamp                          \
-                      tests/specs/examples/erc20-spec/haskell/erc20-spec-kompiled/timestamp                        \
-                      tests/specs/examples/erc721-spec/haskell/erc721-spec-kompiled/timestamp                      \
-                      tests/specs/examples/solidity-code-spec/haskell/solidity-code-spec-kompiled/timestamp        \
-                      tests/specs/examples/solidity-code-spec/java/solidity-code-spec-kompiled/timestamp           \
-                      tests/specs/examples/sum-to-n-spec/haskell/sum-to-n-spec-kompiled/timestamp                  \
-                      tests/specs/examples/sum-to-n-spec/java/sum-to-n-spec-kompiled/timestamp                     \
-                      tests/specs/functional/infinite-gas-spec/haskell/infinite-gas-spec-kompiled/timestamp        \
-                      tests/specs/functional/lemmas-no-smt-spec/haskell/lemmas-no-smt-spec-kompiled/timestamp      \
-                      tests/specs/functional/lemmas-no-smt-spec/java/lemmas-no-smt-spec-kompiled/timestamp         \
-                      tests/specs/functional/lemmas-spec/haskell/lemmas-spec-kompiled/timestamp                    \
-                      tests/specs/functional/lemmas-spec/java/lemmas-spec-kompiled/timestamp                       \
-                      tests/specs/functional/merkle-spec/haskell/merkle-spec-kompiled/timestamp                    \
-                      tests/specs/functional/storageRoot-spec/haskell/storageRoot-spec-kompiled/timestamp          \
-                      tests/specs/mcd/functional-spec/haskell/functional-spec-kompiled/timestamp                   \
-                      tests/specs/mcd/functional-spec/java/functional-spec-kompiled/timestamp                      \
-                      tests/specs/mcd/verification/haskell/verification-kompiled/timestamp                         \
-                      tests/specs/mcd/verification/java/verification-kompiled/timestamp                            \
-                      tests/specs/opcodes/evm-optimizations-spec/haskell/evm-optimizations-spec-kompiled/timestamp \
-                      tests/specs/opcodes/verification/java/verification-kompiled/timestamp
+provex_definitions :=                                                              \
+                      tests/specs/benchmarks/functional-spec/haskell/timestamp     \
+                      tests/specs/benchmarks/functional-spec/java/timestamp        \
+                      tests/specs/benchmarks/verification/haskell/timestamp        \
+                      tests/specs/benchmarks/verification/java/timestamp           \
+                      tests/specs/bihu/functional-spec/haskell/timestamp           \
+                      tests/specs/bihu/functional-spec/java/timestamp              \
+                      tests/specs/bihu/verification/haskell/timestamp              \
+                      tests/specs/bihu/verification/java/timestamp                 \
+                      tests/specs/erc20/verification/haskell/timestamp             \
+                      tests/specs/erc20/verification/java/timestamp                \
+                      tests/specs/examples/erc20-spec/haskell/timestamp            \
+                      tests/specs/examples/erc721-spec/haskell/timestamp           \
+                      tests/specs/examples/solidity-code-spec/haskell/timestamp    \
+                      tests/specs/examples/solidity-code-spec/java/timestamp       \
+                      tests/specs/examples/sum-to-n-spec/haskell/timestamp         \
+                      tests/specs/examples/sum-to-n-spec/java/timestamp            \
+                      tests/specs/functional/infinite-gas-spec/haskell/timestamp   \
+                      tests/specs/functional/lemmas-no-smt-spec/haskell/timestamp  \
+                      tests/specs/functional/lemmas-no-smt-spec/java/timestamp     \
+                      tests/specs/functional/lemmas-spec/haskell/timestamp         \
+                      tests/specs/functional/lemmas-spec/java/timestamp            \
+                      tests/specs/functional/merkle-spec/haskell/timestamp         \
+                      tests/specs/functional/storageRoot-spec/haskell/timestamp    \
+                      tests/specs/mcd/functional-spec/haskell/timestamp            \
+                      tests/specs/mcd/functional-spec/java/timestamp               \
+                      tests/specs/mcd/verification/haskell/timestamp               \
+                      tests/specs/mcd/verification/java/timestamp                  \
+                      tests/specs/opcodes/evm-optimizations-spec/haskell/timestamp \
+                      tests/specs/opcodes/verification/java/timestamp
 build-provex: $(provex_definitions)
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
