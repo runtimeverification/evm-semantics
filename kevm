@@ -261,7 +261,7 @@ run_solc() {
 }
 
 run_gen_spec() {
-    execute python3 -m kevm_pyk gen-spec-modules "${backend_dir}" "${run_file}" "$@"
+    execute python3 -m kevm_pyk gen-spec-modules "${backend_dir}" "$@"
 }
 
 # Main
@@ -279,8 +279,8 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                ${KEVM} search       [--backend (java|haskell)]                [--profile|--debug]             <pgm>  <pattern> <K arg>*
                ${KEVM} kompile      [--backend (java|llvm|haskell)]           [--profile|--debug]             <main> <K arg>*
                ${KEVM} klab-view                                              [--profile|--debug]             <spec>
-               ${KEVM} solc-to-k                                              [--profile|--debug]             <sol> <sol contract> <solc arg>*
-               ${KEVM} gen-spec                                               [--profile|--debug]
+               ${KEVM} solc-to-k                                              [--profile|--debug]             <sol-file> <contract-name> <solc-arg>*
+               ${KEVM} gen-spec                                               [--profile|--debug]             <module-name>
 
                ${KEVM} [help|--help|version|--version]
 
