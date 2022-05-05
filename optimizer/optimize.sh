@@ -5,7 +5,7 @@ set -euo pipefail
 export PATH=$(pwd)/.build/usr/bin:$PATH
 export PYTHONPATH=$(pwd)/.build/usr/lib/kevm/kframework/lib/kframework
 
-kevm_json_defn=$(pwd)/.build/usr/lib/kevm/haskell/driver-kompiled/compiled.json
+kevm_json_defn=$(pwd)/.build/usr/lib/kevm/haskell/compiled.json
 
 notif() { echo "$@" >&2 ; }
 
