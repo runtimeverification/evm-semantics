@@ -53,7 +53,7 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 run_kompile() {
     local kompile_opts openssl_root
 
-    kompile_opts=( "${run_file}" --directory "${backend_dir}" )
+    kompile_opts=( "${run_file}" --output-definition "${backend_dir}" )
     kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
     kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN"                           )
     kompile_opts+=( --emit-json                                                          )
@@ -111,7 +111,7 @@ run_krun() {
             parser='cat'
             ;;
     esac
-    execute krun --directory "$backend_dir"           \
+    execute krun --definition "$backend_dir"          \
          -cSCHEDULE="$cschedule" -pSCHEDULE="$parser" \
          -cMODE="$cmode"         -pMODE="$parser"     \
          -cCHAINID="$cchainid"   -pCHAINID="$parser"  \
@@ -124,9 +124,9 @@ run_kast() {
     output_mode="${1:-kore}" ; shift
 
     case "$run_file-$output_mode" in
-        *.json-kast) execute kast-json.py "$run_file" "$cSCHEDULE_kast" "$cMODE_kast" "$cCHAINID_kast"          ;;
-        *.json-kore) execute kore-json.py "$run_file" "$cSCHEDULE_kore" "$cMODE_kore" "$cCHAINID_kore"          ;;
-        *)           check_k_install ; kast --directory "$backend_dir" "$run_file" --output "$output_mode" "$@" ;;
+        *.json-kast) execute kast-json.py "$run_file" "$cSCHEDULE_kast" "$cMODE_kast" "$cCHAINID_kast"           ;;
+        *.json-kore) execute kore-json.py "$run_file" "$cSCHEDULE_kore" "$cMODE_kore" "$cCHAINID_kore"           ;;
+        *)           check_k_install ; kast --definition "$backend_dir" "$run_file" --output "$output_mode" "$@" ;;
     esac
 }
 
@@ -140,7 +140,7 @@ run_prove() {
     eventlog_name="${run_file}.eventlog"
 
     kprove=kprove
-    proof_args=(--directory "${backend_dir}" "${run_file}")
+    proof_args=(--definition "${backend_dir}" "${run_file}")
     proof_args+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
 
     ! ${provex} || kprove=kprovex
@@ -181,7 +181,7 @@ run_prove() {
         execute kore-prof "${eventlog_name}" ${kore_prof_args} > "${eventlog_name}.json"
     else
         if ${pyk_minimize}; then
-            pyk_args=(${backend_dir}/*-kompiled print /dev/stdin --minimize)
+            pyk_args=(${backend_dir} print /dev/stdin --minimize)
             [[ -z "${pyk_omit_labels}" ]] || pyk_args+=(--omit-labels "${pyk_omit_labels}")
             execute ${kprove} "${proof_args[@]}" "$@" --output json | kpyk "${pyk_args[@]}"
         else
@@ -210,7 +210,7 @@ view_klab() {
 run_interpret() {
     local interpreter kast output output_text output_format exit_status cmdprefix
 
-    interpreter="$backend_dir/driver-kompiled/interpreter"
+    interpreter="$backend_dir/interpreter"
     kast="$(mktemp)"
     output="$(mktemp)"
     output_text="$(mktemp)"
@@ -239,7 +239,7 @@ run_interpret() {
                  ;;
 
         haskell) run_kast kore > "$kast"
-                 execute kore-exec "$backend_dir/driver-kompiled/definition.kore" --pattern "$kast" --module ETHEREUM-SIMULATION --smt none --output "$output" || exit_status="$?"
+                 execute kore-exec "$backend_dir/definition.kore" --pattern "$kast" --module ETHEREUM-SIMULATION --smt none --output "$output" || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
                  fi
@@ -257,11 +257,11 @@ run_solc() {
     contract_name="$1" ; shift
     json_run_file="${run_file}.json"
 
-    execute python3 -m kevm_pyk solc-to-k "$@" ${backend_dir}/*-kompiled "${run_file}" "${contract_name}"
+    execute python3 -m kevm_pyk solc-to-k "${backend_dir}" "${run_file}" "${contract_name}" "$@"
 }
 
 run_gen_spec() {
-    execute python3 -m kevm_pyk gen-spec-modules "$@"
+    execute python3 -m kevm_pyk gen-spec-modules "${backend_dir}" "$@"
 }
 
 # Main
@@ -279,8 +279,8 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                ${KEVM} search       [--backend (java|haskell)]                [--profile|--debug]             <pgm>  <pattern> <K arg>*
                ${KEVM} kompile      [--backend (java|llvm|haskell)]           [--profile|--debug]             <main> <K arg>*
                ${KEVM} klab-view                                              [--profile|--debug]             <spec>
-               ${KEVM} solc-to-k                                              [--profile|--debug]             <sol> <sol contract> <solc arg>*
-               ${KEVM} gen-spec                                               [--profile|--debug]             <kompiled-dir>
+               ${KEVM} solc-to-k                                              [--profile|--debug]             <sol-file> <contract-name> <solc-arg>*
+               ${KEVM} gen-spec                                               [--profile|--debug]             <module-name>
 
                ${KEVM} [help|--help|version|--version]
 
@@ -373,7 +373,7 @@ while [[ $# -gt 0 ]]; do
         --kore-prof-args)      kore_prof_args="$2"             ; shift 2 ;;
         --bug-report)          bug_report=true                 ; shift   ;;
         --backend)             backend="$2"                    ; shift 2 ;;
-        --directory)           backend_dir="$2"                ; shift 2 ;;
+        --definition)          backend_dir="$2"                ; shift 2 ;;
         --concrete-rules-file) concrete_rules_file="$2"        ; shift 2 ;;
         --no-provex)           provex=false                    ; shift   ;;
         --verif-module)        verif_module="$2"               ; shift 2 ;;
