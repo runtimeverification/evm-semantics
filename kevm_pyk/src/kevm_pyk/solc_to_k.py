@@ -79,8 +79,8 @@ def gen_claims_for_contract(kevm: KPrint, contract_name: str) -> List[KClaim]:
     return [claim]
 
 
-def gen_spec_modules(kompiled_directory: Path, spec_module_name: str) -> str:
-    kevm = KPrint(str(kompiled_directory))
+def gen_spec_modules(definition_dir: Path, spec_module_name: str) -> str:
+    kevm = KPrint(str(definition_dir))
     kevm.symbolTable = kevmSymbolTable(kevm.symbolTable)
     production_labels = [prod.klabel for module in kevm.definition for prod in module.productions if prod.klabel is not None]
     contract_names = [prod_label[9:] for prod_label in production_labels if prod_label.startswith('contract_')]
@@ -90,8 +90,8 @@ def gen_spec_modules(kompiled_directory: Path, spec_module_name: str) -> str:
     return kevm.prettyPrint(spec_defn)
 
 
-def solc_to_k(kompiled_directory: Path, contract_file: Path, contract_name: str, generate_storage: bool):
-    kevm = KPrint(str(kompiled_directory))
+def solc_to_k(definition_dir: Path, contract_file: Path, contract_name: str, generate_storage: bool):
+    kevm = KPrint(str(definition_dir))
     kevm.symbolTable = kevmSymbolTable(kevm.symbolTable)
 
     solc_json = solc_compile(contract_file)

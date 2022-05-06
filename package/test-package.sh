@@ -24,19 +24,19 @@ rm -rf tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json.llv
 
 kevm solc-to-k tests/specs/examples/ERC20.sol ERC20 > tests/specs/examples/erc20-bin-runtime.k
 kevm kompile --backend haskell tests/specs/examples/erc20-spec.md \
-    --directory tests/specs/examples/erc20-spec/haskell           \
+    --definition tests/specs/examples/erc20-spec/haskell          \
     --main-module VERIFICATION                                    \
     --syntax-module VERIFICATION                                  \
     --concrete-rules-file tests/specs/examples/concrete-rules.txt \
     --verbose
 kevm prove tests/specs/examples/erc20-spec.md --backend haskell --format-failures  \
-    --directory tests/specs/examples/erc20-spec/haskell
+    --definition tests/specs/examples/erc20-spec/haskell
 
 kevm kompile --backend java tests/specs/erc20/verification.k   \
-    --directory tests/specs/erc20/verification/java            \
+    --definition tests/specs/erc20/verification/java           \
     --main-module VERIFICATION                                 \
     --syntax-module VERIFICATION                               \
     --concrete-rules-file tests/specs/erc20/concrete-rules.txt \
     --debug
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --backend java --format-failures --debugger \
-    --directory tests/specs/erc20/verification/java
+    --definition tests/specs/erc20/verification/java
