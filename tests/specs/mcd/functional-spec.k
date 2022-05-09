@@ -40,6 +40,9 @@ module FUNCTIONAL-SPEC
       requires #rangeUInt(256, ABI_src)
        andBool #rangeUInt(256, CALLER_ID)
 
+    claim <k> runLemma ( chop( A -Int B ) <=Int A  ) => doneLemma ( false ) ... </k>
+      requires #rangeUInt(256, A) andBool #rangeUInt(256, B) andBool A -Int B <Int 0
+
     // WordPack
 
     claim <k> runLemma((GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END)) modInt pow256) => doneLemma(GAL |Int (maskWordPackAddrUInt48UInt48_1 &Int GUY_TIC_END)) ... </k>

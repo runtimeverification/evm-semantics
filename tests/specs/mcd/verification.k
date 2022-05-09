@@ -78,7 +78,7 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
   // Arithmetic
   // ########################
 
-    rule chop(Y) => Y +Int pow256 requires #rangeSInt(256, Y) andBool Y <Int 0 [simplification]
+    rule chop(Y) => Y +Int pow256 requires #range( 0 -Int maxUInt256 <= Y < 0 ) [simplification]
 
     rule maxUInt48 &Int X <=Int maxUInt48 &Int X +Int Y => false
       requires #rangeUInt(48, X)
