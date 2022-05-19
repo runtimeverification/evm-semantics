@@ -53,6 +53,15 @@ module WORD-PACK-HASKELL [kore]
     andBool #rangeUInt(256, ADDR_UINT48_UINT48)
       [simplification]
 
+
+    rule     #WordPackAddrUInt48UInt48Prop(ADDR_UINT48_UINT48, ADDR, UINT48_1, UINT48_2)
+          => true
+     ensures ADDR     ==Int maxUInt160 &Int  ADDR_UINT48_UINT48
+     andBool UINT48_1 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160)
+     andBool UINT48_2 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208)
+     andBool #rangeUInt(256, ADDR_UINT48_UINT48)
+       [simplification]
+
     rule    UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2)
          => UINT48_1 ==Int maxUInt48 &Int  UINT48_UINT48
     andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
@@ -78,6 +87,9 @@ module WORD-PACK-COMMON
     syntax Int ::= #WordPackUInt48UInt48     (       Int , Int ) [function, no-evaluators, smtlib(WordPackUInt48UInt48)]
                  | #WordPackAddrUInt48UInt48 ( Int , Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt48UInt48)]
                  | #WordPackAddrUInt8        (       Int , Int ) [function, no-evaluators, smtlib(WordPackAddrUInt8)]
+
+    syntax Bool ::= #WordPackAddrUInt48UInt48Prop ( Int , Int , Int, Int ) [function, smtlib(WordPackAddrUInt48UInt48Bool)]
+
  // -----------------------------------------------------------------------------------------------------------------
     // rule #WordPackUInt48UInt48     (            UINT48_1 , UINT48_2 ) => UINT48_2 *Int pow48 +Int UINT48_1                        requires #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2)
     // rule #WordPackAddrUInt48UInt48 (     ADDR , UINT48_1 , UINT48_2 ) => UINT48_2 *Int pow208 +Int UINT48_1 *Int pow160 +Int ADDR requires #rangeAddress(ADDR) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2)

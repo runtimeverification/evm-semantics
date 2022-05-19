@@ -116,7 +116,7 @@ module FLIPPER-BIDS-PASS-ROUGH-SPEC
 
        andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].bid) ==Int Bid
        andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].lot) ==Int Lot
-       andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].guy_tic_end) ==Int #WordPackAddrUInt48UInt48(Guy, Tic, End)
+       andBool #WordPackAddrUInt48UInt48Prop(#lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].guy_tic_end), Guy, Tic, End)
        andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].usr) ==Int Usr
        andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].gal) ==Int Gal
        andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].tab) ==Int Tab
