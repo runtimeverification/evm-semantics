@@ -82,7 +82,7 @@ def gen_spec_modules(definition_dir: Path, spec_module_name: str) -> str:
     kevm = KPrint(str(definition_dir))
     kevm.symbol_table = kevmSymbolTable(kevm.symbol_table)
     production_labels = [prod.klabel for module in kevm.definition for prod in module.productions if prod.klabel is not None]
-    contract_names = [prod_label[9:] for prod_label in production_labels if prod_label.startswith('contract_')]
+    contract_names = [prod_label.name[9:] for prod_label in production_labels if prod_label.name.startswith('contract_')]
     claims = [claim for name in contract_names for claim in gen_claims_for_contract(kevm, name)]
     spec_module = KFlatModule(spec_module_name, claims, [KImport(kevm.definition.main_module_name)])
     spec_defn = KDefinition(spec_module_name, [spec_module], [KRequire('verification.k')])
