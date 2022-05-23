@@ -20,6 +20,9 @@ RUN    apt-get update            \
             libsecp256k1-dev     \
             libssl-dev           \
             libyaml-dev          \
+            llvm-12              \
+            llvm-12-dev          \
+            llvm-12-tools        \
             maven                \
             solc                 \
             netcat-openbsd       \
