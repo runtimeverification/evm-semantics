@@ -1,6 +1,5 @@
 from typing import List
 
-from pyk.cli_utils import fatal
 from pyk.kast import (
     KApply,
     KInner,
@@ -113,7 +112,7 @@ def get_productions(definition):
 def get_production_for_klabel(definition, klabel):
     productions = [prod for prod in get_productions(definition) if prod.klabel and prod.klabel == klabel]
     if len(productions) != 1:
-        fatal(f'Expected 1 production for label {klabel}, not {productions}.')
+        raise ValueError(f'Expected 1 production for label {klabel}, not {productions}.')
     return productions[0]
 
 
@@ -125,7 +124,7 @@ def get_label_for_cell_sorts(definition, sort):
             if type(first_arg) is KTerminal and not (first_arg.value.startswith('project:') or first_arg.value.startswith('init') or first_arg.value.startswith('get')):
                 productions.append(production)
     if len(productions) != 1:
-        fatal(f'Expected 1 production for sort {sort}, not {productions}!')
+        raise ValueError(f'Expected 1 production for sort {sort}, not {productions}!')
     return productions[0].klabel
 
 
@@ -145,5 +144,5 @@ def build_empty_configuration_cell(definition, sort):
                 args.append(KVariable(sort.name[0:-4].upper() + '_CELL'))
     if num_nonterminals > 1 and num_freshvars > 0:
         sort_name = sort.name
-        fatal(f'Found mixed cell and non-cell arguments to cell constructor for {sort_name}!')
+        raise ValueError(f'Found mixed cell and non-cell arguments to cell constructor for {sort_name}!')
     return KApply(label, args)
