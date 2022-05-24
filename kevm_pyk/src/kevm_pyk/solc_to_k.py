@@ -4,7 +4,6 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict, List
 
-from pyk.cli_utils import fatal
 from pyk.kast import (
     TRUE,
     KApply,
@@ -44,7 +43,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
     ], capture_output=True)
 
     if subprocess_res.returncode != 0:
-        fatal(f'solc error:\n{subprocess_res.stderr.decode()}')
+        raise ValueError(f'solc error:\n{subprocess_res.stderr.decode()}')
 
     return json.loads(subprocess_res.stdout)
 
@@ -81,18 +80,18 @@ def gen_claims_for_contract(kevm: KPrint, contract_name: str) -> List[KClaim]:
 
 def gen_spec_modules(definition_dir: Path, spec_module_name: str) -> str:
     kevm = KPrint(str(definition_dir))
-    kevm.symbolTable = kevmSymbolTable(kevm.symbolTable)
+    kevm.symbol_table = kevmSymbolTable(kevm.symbol_table)
     production_labels = [prod.klabel for module in kevm.definition for prod in module.productions if prod.klabel is not None]
-    contract_names = [prod_label[9:] for prod_label in production_labels if prod_label.startswith('contract_')]
+    contract_names = [prod_label.name[9:] for prod_label in production_labels if prod_label.name.startswith('contract_')]
     claims = [claim for name in contract_names for claim in gen_claims_for_contract(kevm, name)]
     spec_module = KFlatModule(spec_module_name, claims, [KImport(kevm.definition.main_module_name)])
     spec_defn = KDefinition(spec_module_name, [spec_module], [KRequire('verification.k')])
-    return kevm.prettyPrint(spec_defn)
+    return kevm.pretty_print(spec_defn)
 
 
 def solc_to_k(definition_dir: Path, contract_file: Path, contract_name: str, generate_storage: bool):
     kevm = KPrint(str(definition_dir))
-    kevm.symbolTable = kevmSymbolTable(kevm.symbolTable)
+    kevm.symbol_table = kevmSymbolTable(kevm.symbol_table)
 
     solc_json = solc_compile(contract_file)
     contract_json = solc_json['contracts'][f'{contract_file}:{contract_name}']
@@ -123,67 +122,50 @@ def solc_to_k(definition_dir: Path, contract_file: Path, contract_name: str, gen
     )
     binRuntimeDefinition = KDefinition(binRuntimeModuleName, [binRuntimeModule], requires=[KRequire('edsl.md')])
 
-    kevm.symbolTable['hashedLocation'] = lambda lang, base, offset: '#hashedLocation(' + lang + ', ' + base + ', ' + offset + ')'  # noqa
-    kevm.symbolTable['abiCallData']    = lambda fname, *args: '#abiCallData(' + fname + "".join(", " + arg for arg in args) + ')'  # noqa
-    kevm.symbolTable['address']        = _typed_arg_unparser('address')                                                            # noqa
-    kevm.symbolTable['bool']           = _typed_arg_unparser('bool')                                                               # noqa
-    kevm.symbolTable['bytes']          = _typed_arg_unparser('bytes')                                                              # noqa
-    kevm.symbolTable['bytes4']         = _typed_arg_unparser('bytes4')                                                             # noqa
-    kevm.symbolTable['bytes32']        = _typed_arg_unparser('bytes32')                                                            # noqa
-    kevm.symbolTable['int256']         = _typed_arg_unparser('int256')                                                             # noqa
-    kevm.symbolTable['uint256']        = _typed_arg_unparser('uint256')                                                            # noqa
-    kevm.symbolTable['rangeAddress']   = lambda t: '#rangeAddress(' + t + ')'                                                      # noqa
-    kevm.symbolTable['rangeBool']      = lambda t: '#rangeBool(' + t + ')'                                                         # noqa
-    kevm.symbolTable['rangeBytes']     = lambda n, t: '#rangeBytes(' + n + ', ' + t + ')'                                          # noqa
-    kevm.symbolTable['rangeUInt']      = lambda n, t: '#rangeUInt(' + n + ', ' + t + ')'                                           # noqa
-    kevm.symbolTable['rangeSInt']      = lambda n, t: '#rangeSInt(' + n + ', ' + t + ')'                                           # noqa
-    kevm.symbolTable['binRuntime']     = lambda s: '#binRuntime(' + s + ')'                                                        # noqa
-    kevm.symbolTable[contract_name]    = lambda: contract_name                                                                     # noqa
+    kevm.symbol_table['hashedLocation'] = lambda lang, base, offset: '#hashedLocation(' + lang + ', ' + base + ', ' + offset + ')'  # noqa
+    kevm.symbol_table['abiCallData']    = lambda fname, *args: '#abiCallData(' + fname + "".join(", " + arg for arg in args) + ')'  # noqa
+    kevm.symbol_table['address']        = _typed_arg_unparser('address')                                                            # noqa
+    kevm.symbol_table['bool']           = _typed_arg_unparser('bool')                                                               # noqa
+    kevm.symbol_table['bytes']          = _typed_arg_unparser('bytes')                                                              # noqa
+    kevm.symbol_table['bytes4']         = _typed_arg_unparser('bytes4')                                                             # noqa
+    kevm.symbol_table['bytes32']        = _typed_arg_unparser('bytes32')                                                            # noqa
+    kevm.symbol_table['int256']         = _typed_arg_unparser('int256')                                                             # noqa
+    kevm.symbol_table['uint256']        = _typed_arg_unparser('uint256')                                                            # noqa
+    kevm.symbol_table['rangeAddress']   = lambda t: '#rangeAddress(' + t + ')'                                                      # noqa
+    kevm.symbol_table['rangeBool']      = lambda t: '#rangeBool(' + t + ')'                                                         # noqa
+    kevm.symbol_table['rangeBytes']     = lambda n, t: '#rangeBytes(' + n + ', ' + t + ')'                                          # noqa
+    kevm.symbol_table['rangeUInt']      = lambda n, t: '#rangeUInt(' + n + ', ' + t + ')'                                           # noqa
+    kevm.symbol_table['rangeSInt']      = lambda n, t: '#rangeSInt(' + n + ', ' + t + ')'                                           # noqa
+    kevm.symbol_table['binRuntime']     = lambda s: '#binRuntime(' + s + ')'                                                        # noqa
+    kevm.symbol_table[contract_name]    = lambda: contract_name                                                                     # noqa
 
-    return kevm.prettyPrint(binRuntimeDefinition) + '\n'
+    return kevm.pretty_print(binRuntimeDefinition) + '\n'
 
 
 # KEVM instantiation of pyk
 
-def kevmSymbolTable(symbolTable):
-    symbolTable['abi_selector']                                              = lambda a: 'selector(' + a + ')'                                     # noqa
-    symbolTable['_orBool_']                                                  = paren(symbolTable['_orBool_'])                                      # noqa
-    symbolTable['_andBool_']                                                 = paren(symbolTable['_andBool_'])                                     # noqa
-    symbolTable['notBool_']                                                  = paren(symbolTable['notBool_'])                                      # noqa
-    symbolTable['_/Int_']                                                    = paren(symbolTable['_/Int_'])                                        # noqa
-    symbolTable['#Or']                                                       = paren(symbolTable['#Or'])                                           # noqa
-    symbolTable['#And']                                                      = paren(symbolTable['#And'])                                          # noqa
-    symbolTable['_Set_']                                                     = paren(symbolTable['_Set_'])                                         # noqa
-    symbolTable['_|->_']                                                     = paren(symbolTable['_|->_'])                                         # noqa
-    symbolTable['_Map_']                                                     = paren(lambda m1, m2: m1 + '\n' + m2)                                # noqa
-    symbolTable['_AccountCellMap_']                                          = paren(lambda a1, a2: a1 + '\n' + a2)                                # noqa
-    symbolTable['AccountCellMapItem']                                        = lambda k, v: v                                                      # noqa
-    symbolTable['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray']             = lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]'      # noqa
-    symbolTable['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int']             = lambda m, s, w: '(' + m + ' [ ' + s + ' .. ' + w + ' ]):ByteArray'  # noqa
-    symbolTable['_<Word__EVM-TYPES_Int_Int_Int']                             = paren(lambda a1, a2: '(' + a1 + ') <Word ('  + a2 + ')')            # noqa
-    symbolTable['_>Word__EVM-TYPES_Int_Int_Int']                             = paren(lambda a1, a2: '(' + a1 + ') >Word ('  + a2 + ')')            # noqa
-    symbolTable['_<=Word__EVM-TYPES_Int_Int_Int']                            = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')            # noqa
-    symbolTable['_>=Word__EVM-TYPES_Int_Int_Int']                            = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')            # noqa
-    symbolTable['_==Word__EVM-TYPES_Int_Int_Int']                            = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')            # noqa
-    symbolTable['_s<Word__EVM-TYPES_Int_Int_Int']                            = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')            # noqa
-    symbolTable['EVMC_UNDEFINED_INSTRUCTION_NETWORK_ExceptionalStatusCode']  = lambda: 'EVMC_UNDEFINED_INSTRUCTION'                                # noqa
-    symbolTable['EVMC_SUCCESS_NETWORK_EndStatusCode']                        = lambda: 'EVMC_SUCCESS'                                              # noqa
-    symbolTable['EVMC_STATIC_MODE_VIOLATION_NETWORK_ExceptionalStatusCode']  = lambda: 'EVMC_STATIC_MODE_VIOLATION'                                # noqa
-    symbolTable['EVMC_STACK_UNDERFLOW_NETWORK_ExceptionalStatusCode']        = lambda: 'EVMC_STACK_UNDERFLOW'                                      # noqa
-    symbolTable['EVMC_STACK_OVERFLOW_NETWORK_ExceptionalStatusCode']         = lambda: 'EVMC_STACK_OVERFLOW'                                       # noqa
-    symbolTable['EVMC_REVERT_NETWORK_EndStatusCode']                         = lambda: 'EVMC_REVERT'                                               # noqa
-    symbolTable['EVMC_REJECTED_NETWORK_StatusCode']                          = lambda: 'EVMC_REJECTED'                                             # noqa
-    symbolTable['EVMC_PRECOMPILE_FAILURE_NETWORK_ExceptionalStatusCode']     = lambda: 'EVMC_PRECOMPILE_FAILURE'                                   # noqa
-    symbolTable['EVMC_OUT_OF_GAS_NETWORK_ExceptionalStatusCode']             = lambda: 'EVMC_OUT_OF_GAS'                                           # noqa
-    symbolTable['EVMC_INVALID_MEMORY_ACCESS_NETWORK_ExceptionalStatusCode']  = lambda: 'EVMC_INVALID_MEMORY_ACCESS'                                # noqa
-    symbolTable['EVMC_INVALID_INSTRUCTION_NETWORK_ExceptionalStatusCode']    = lambda: 'EVMC_INVALID_INSTRUCTION'                                  # noqa
-    symbolTable['EVMC_INTERNAL_ERROR_NETWORK_StatusCode']                    = lambda: 'EVMC_INTERNAL_ERROR'                                       # noqa
-    symbolTable['EVMC_FAILURE_NETWORK_ExceptionalStatusCode']                = lambda: 'EVMC_FAILURE'                                              # noqa
-    symbolTable['EVMC_CALL_DEPTH_EXCEEDED_NETWORK_ExceptionalStatusCode']    = lambda: 'EVMC_CALL_DEPTH_EXCEEDED'                                  # noqa
-    symbolTable['EVMC_BALANCE_UNDERFLOW_NETWORK_ExceptionalStatusCode']      = lambda: 'EVMC_BALANCE_UNDERFLOW'                                    # noqa
-    symbolTable['EVMC_BAD_JUMP_DESTINATION_NETWORK_ExceptionalStatusCode']   = lambda: 'EVMC_BAD_JUMP_DESTINATION'                                 # noqa
-    symbolTable['EVMC_ACCOUNT_ALREADY_EXISTS_NETWORK_ExceptionalStatusCode'] = lambda: 'EVMC_ACCOUNT_ALREADY_EXISTS'                               # noqa
-    return symbolTable
+def kevmSymbolTable(symbol_table):
+    symbol_table['abi_selector']                                  = lambda a: 'selector(' + a + ')'                                     # noqa
+    symbol_table['_orBool_']                                      = paren(symbol_table['_orBool_'])                                     # noqa
+    symbol_table['_andBool_']                                     = paren(symbol_table['_andBool_'])                                    # noqa
+    symbol_table['notBool_']                                      = paren(symbol_table['notBool_'])                                     # noqa
+    symbol_table['_/Int_']                                        = paren(symbol_table['_/Int_'])                                       # noqa
+    symbol_table['#Or']                                           = paren(symbol_table['#Or'])                                          # noqa
+    symbol_table['#And']                                          = paren(symbol_table['#And'])                                         # noqa
+    symbol_table['_Set_']                                         = paren(symbol_table['_Set_'])                                        # noqa
+    symbol_table['_|->_']                                         = paren(symbol_table['_|->_'])                                        # noqa
+    symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)                                # noqa
+    symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)                                # noqa
+    symbol_table['AccountCellMapItem']                            = lambda k, v: v                                                      # noqa
+    symbol_table['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray'] = lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]'      # noqa
+    symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = lambda m, s, w: '(' + m + ' [ ' + s + ' .. ' + w + ' ]):ByteArray'  # noqa
+    symbol_table['_<Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') <Word ('  + a2 + ')')            # noqa
+    symbol_table['_>Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') >Word ('  + a2 + ')')            # noqa
+    symbol_table['_<=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')            # noqa
+    symbol_table['_>=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')            # noqa
+    symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')            # noqa
+    symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')            # noqa
+    return symbol_table
 
 
 # Helpers
