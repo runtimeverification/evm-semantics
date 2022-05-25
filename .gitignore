@@ -13,7 +13,7 @@
 /package/src
 /pkg
 /src
-/tests/**/*.debuglog
+/tests/**/*.debug-log
 /tests/gen-spec/*.out
 /tests/gen-spec/*.sol
 /tests/specs/**/*-bin-runtime.k
