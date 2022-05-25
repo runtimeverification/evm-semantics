@@ -139,11 +139,11 @@ run_prove() {
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
     eventlog_name="${run_file}.eventlog"
 
-    kprove=kprove
+    kprove=kprove-legacy
     proof_args=(--definition "${backend_dir}" "${run_file}")
     proof_args+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
 
-    ! ${provex} || kprove=kprovex
+    ! ${provex} || kprove=kprove
       ${provex} || proof_args+=(--def-module "$verif_module")
 
     ! ${debug}                        || proof_args+=(--debug)
