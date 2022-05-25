@@ -353,7 +353,6 @@ tests/specs/erc20/ds/transfer-success-2-spec.k
 tests/specs/erc20/hkg/transferFrom-failure-1-spec.k
 tests/specs/erc20/hkg/transferFrom-success-1-spec.k
 tests/specs/examples/erc20-spec.md
-tests/specs/examples/erc721-spec.md
 tests/specs/mcd/dstoken-approve-fail-rough-spec.k
 tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
 tests/specs/mcd/vat-flux-diff-pass-rough-spec.k
