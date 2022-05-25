@@ -25,16 +25,11 @@ from pyk.kast import (
     KVariable,
 )
 from pyk.kastManip import buildRule, substitute
-from pyk.ktool import KPrint, paren
 from pyk.prelude import intToken, stringToken
 from pyk.utils import intersperse
 
-from .utils import (
-    abstract_cell_vars,
-    build_empty_configuration_cell,
-    infGas,
-    kevmAccountCell,
-)
+from .kevm import KEVM
+from .utils import abstract_cell_vars, infGas, kevmAccountCell
 
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
@@ -48,8 +43,8 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
     return json.loads(subprocess_res.stdout)
 
 
-def gen_claims_for_contract(kevm: KPrint, contract_name: str) -> List[KClaim]:
-    empty_config = build_empty_configuration_cell(kevm.definition, KSort('KevmCell'))
+def gen_claims_for_contract(kevm: KEVM, contract_name: str) -> List[KClaim]:
+    empty_config = kevm.empty_config()
     program = KApply('binRuntime', [KApply('contract_' + contract_name)])
     account_cell = kevmAccountCell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
     init_subst = {
@@ -78,9 +73,7 @@ def gen_claims_for_contract(kevm: KPrint, contract_name: str) -> List[KClaim]:
     return [claim]
 
 
-def gen_spec_modules(definition_dir: Path, spec_module_name: str) -> str:
-    kevm = KPrint(str(definition_dir))
-    kevm.symbol_table = kevmSymbolTable(kevm.symbol_table)
+def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> str:
     production_labels = [prod.klabel for module in kevm.definition for prod in module.productions if prod.klabel is not None]
     contract_names = [prod_label.name[9:] for prod_label in production_labels if prod_label.name.startswith('contract_')]
     claims = [claim for name in contract_names for claim in gen_claims_for_contract(kevm, name)]
@@ -89,9 +82,7 @@ def gen_spec_modules(definition_dir: Path, spec_module_name: str) -> str:
     return kevm.pretty_print(spec_defn)
 
 
-def solc_to_k(definition_dir: Path, contract_file: Path, contract_name: str, generate_storage: bool):
-    kevm = KPrint(str(definition_dir))
-    kevm.symbol_table = kevmSymbolTable(kevm.symbol_table)
+def solc_to_k(kevm: KEVM, contract_file: Path, contract_name: str, generate_storage: bool):
 
     solc_json = solc_compile(contract_file)
     contract_json = solc_json['contracts'][f'{contract_file}:{contract_name}']
@@ -140,32 +131,6 @@ def solc_to_k(definition_dir: Path, contract_file: Path, contract_name: str, gen
     kevm.symbol_table[contract_name]    = lambda: contract_name                                                                     # noqa
 
     return kevm.pretty_print(binRuntimeDefinition) + '\n'
-
-
-# KEVM instantiation of pyk
-
-def kevmSymbolTable(symbol_table):
-    symbol_table['abi_selector']                                  = lambda a: 'selector(' + a + ')'                                     # noqa
-    symbol_table['_orBool_']                                      = paren(symbol_table['_orBool_'])                                     # noqa
-    symbol_table['_andBool_']                                     = paren(symbol_table['_andBool_'])                                    # noqa
-    symbol_table['notBool_']                                      = paren(symbol_table['notBool_'])                                     # noqa
-    symbol_table['_/Int_']                                        = paren(symbol_table['_/Int_'])                                       # noqa
-    symbol_table['#Or']                                           = paren(symbol_table['#Or'])                                          # noqa
-    symbol_table['#And']                                          = paren(symbol_table['#And'])                                         # noqa
-    symbol_table['_Set_']                                         = paren(symbol_table['_Set_'])                                        # noqa
-    symbol_table['_|->_']                                         = paren(symbol_table['_|->_'])                                        # noqa
-    symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)                                # noqa
-    symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)                                # noqa
-    symbol_table['AccountCellMapItem']                            = lambda k, v: v                                                      # noqa
-    symbol_table['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray'] = lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]'      # noqa
-    symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = lambda m, s, w: '(' + m + ' [ ' + s + ' .. ' + w + ' ]):ByteArray'  # noqa
-    symbol_table['_<Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') <Word ('  + a2 + ')')            # noqa
-    symbol_table['_>Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') >Word ('  + a2 + ')')            # noqa
-    symbol_table['_<=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')            # noqa
-    symbol_table['_>=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')            # noqa
-    symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')            # noqa
-    symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')            # noqa
-    return symbol_table
 
 
 # Helpers
