@@ -47,7 +47,7 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
-        build build-haskell build-llvm build-prove build-node build-kevm                                                        \
+        build build-haskell build-llvm build-prove build-node build-kevm                                                         \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
         test-prove test-failing-prove                                                                                            \
