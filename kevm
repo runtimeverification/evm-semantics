@@ -48,6 +48,13 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 # Runners
 # -------
 
+run_kevm_pyk() {
+    pyk_args=(--definition "${backend_dir}")
+    pyk_args+=(-I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework")
+    ! ${debug} || pyk_args+=(--debug)
+    execute python3 -m kevm_pyk "${pyk_args[@]}" "$@"
+}
+
 # User Commands
 
 run_kompile() {
@@ -139,10 +146,13 @@ run_prove() {
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
     eventlog_name="${run_file}.eventlog"
 
-    proof_args=(--definition "${backend_dir}" "${run_file}")
-    proof_args+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
+    proof_args=("${run_file}")
+    if ! ${pyk_prove}; then
+        proof_args+=(--definition "${backend_dir}")
+        proof_args+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
+        ! ${debug} || proof_args+=(--debug)
+    fi
 
-    ! ${debug}                        || proof_args+=(--debug)
     [[ ! -f ${concrete_rules_file} ]] || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
 
     case "${backend}" in
@@ -155,7 +165,8 @@ run_prove() {
                  [[ ${#haskell_backend_command[@]} -le 1 ]] || proof_args+=(--haskell-backend-command "${haskell_backend_command[*]}")
                  ;;
 
-        java)    if ${debugger}; then
+        java)    proof_args+=(--format-failures)
+                 if ${debugger}; then
                      omit_cells='<substate> <jumpDests> <program> <code> <callGas> <touchedAccounts> <interimStates> <callStack> <callData> <block> <txOrder> <txPending> <messages>'
                      omit_labels='#mkCall________EVM #callWithCode_________EVM #create_____EVM #mkCreate_____EVM #newAddrCreate2 #finishCodeDeposit___EVM'
                      klab_log="$(basename "${run_file%-spec.k}").k"
@@ -176,10 +187,8 @@ run_prove() {
         timeout -s INT "${profile_timeout}" ${kprove} "${proof_args[@]}" "$@" || true
         execute kore-prof "${eventlog_name}" ${kore_prof_args} > "${eventlog_name}.json"
     else
-        if ${pyk_minimize}; then
-            pyk_args=(${backend_dir} print /dev/stdin --minimize)
-            [[ -z "${pyk_omit_labels}" ]] || pyk_args+=(--omit-labels "${pyk_omit_labels}")
-            execute kprove "${proof_args[@]}" "$@" --output json | kpyk "${pyk_args[@]}"
+        if ${pyk_prove}; then
+            run_kevm_pyk prove "${proof_args[@]}" "$@"
         else
             execute kprove "${proof_args[@]}" "$@"
         fi
@@ -245,10 +254,6 @@ run_interpret() {
         *)      fatal "Bad backend for interpreter: '$backend'"
                 ;;
     esac
-}
-
-run_kevm_pyk() {
-    execute python3 -m kevm_pyk --definition "${backend_dir}" "$@"
 }
 
 run_solc() {
@@ -347,8 +352,7 @@ schedule=LONDON
 chainid=1
 concrete_rules_file=
 verif_module=VERIFICATION
-pyk_minimize=false
-pyk_omit_labels=
+pyk_prove=false
 max_counterexamples=
 branching_allowed=
 haskell_backend_command=(kore-exec)
@@ -359,7 +363,7 @@ kevm_host='127.0.0.1'
 args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --debug)               debug=true   ; args+=("$1")     ; shift   ;;
+        --debug)               debug=true                      ; shift   ;;
         --profile)             profile=true ; args+=("$1")     ; shift   ;;
         --dump)                dump=true                       ; shift   ;;
         --no-unparse)          unparse=false                   ; shift   ;;
@@ -372,8 +376,7 @@ while [[ $# -gt 0 ]]; do
         --definition)          backend_dir="$2"                ; shift 2 ;;
         --concrete-rules-file) concrete_rules_file="$2"        ; shift 2 ;;
         --verif-module)        verif_module="$2"               ; shift 2 ;;
-        --pyk-minimize)        pyk_minimize=true               ; shift   ;;
-        --pyk-omit-labels)     pyk_omit_labels="$2"            ; shift 2 ;;
+        --pyk-prove)           pyk_prove=true                  ; shift   ;;
         --max-counterexamples) max_counterexamples="$2"        ; shift 2 ;;
         --branching-allowed)   branching_allowed="$2"          ; shift 2 ;;
         --haskell-backend-arg) haskell_backend_command+=("$2") ; shift 2 ;;
@@ -392,11 +395,9 @@ backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 ! $profile_haskell || [[ "$backend" == haskell ]] || fatal "Option --profile-haskell only usable with --backend haskell!"
 [[ $profile_timeout = "0" ]] || $profile_haskell  || fatal "Option --profile-timeout only usable with --profile-haskell!"
 [[ $kore_prof_args = "" ]]   || $profile_haskell  || fatal "Option --kore-prof-args only usable with --profile-haskell!"
-if ${pyk_minimize}; then
-    ! ${debugger}        || fatal "Option --pyk-minimize not usable with --debugger!"
-    ! ${profile_haskell} || fatal "Option --pyk-minimize not usable with --profile-haskell!"
-elif [[ ! -z ${pyk_omit_labels} ]]; then
-    fatal "Option --pyk-label-omit only usable with --pyk-minimize!"
+if ${pyk_prove}; then
+    ! ${debugger}        || fatal "Option --pyk-prove not usable with --debugger!"
+    ! ${profile_haskell} || fatal "Option --pyk-prove not usable with --profile-haskell!"
 fi
 
 # get the run file
