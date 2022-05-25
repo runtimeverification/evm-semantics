@@ -139,12 +139,8 @@ run_prove() {
     bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
     eventlog_name="${run_file}.eventlog"
 
-    kprove=kprove
     proof_args=(--definition "${backend_dir}" "${run_file}")
     proof_args+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
-
-    ! ${provex} || kprove=kprovex
-      ${provex} || proof_args+=(--def-module "$verif_module")
 
     ! ${debug}                        || proof_args+=(--debug)
     [[ ! -f ${concrete_rules_file} ]] || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
@@ -183,9 +179,9 @@ run_prove() {
         if ${pyk_minimize}; then
             pyk_args=(${backend_dir} print /dev/stdin --minimize)
             [[ -z "${pyk_omit_labels}" ]] || pyk_args+=(--omit-labels "${pyk_omit_labels}")
-            execute ${kprove} "${proof_args[@]}" "$@" --output json | kpyk "${pyk_args[@]}"
+            execute kprove "${proof_args[@]}" "$@" --output json | kpyk "${pyk_args[@]}"
         else
-            execute ${kprove} "${proof_args[@]}" "$@"
+            execute kprove "${proof_args[@]}" "$@"
         fi
     fi
 }
@@ -308,7 +304,6 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--profile-haskell]
                                       [--profile-timeout <duration>]
                                       [--kore-prof-args \"<kore-prof arg>*\"]
-                                      [--no-provex]
                                       [--verif-module <verification_module>]
                                       [--pyk-minimize]
                                       [--pyk-omit-labels <comma_separated_labels>]
@@ -349,7 +344,6 @@ mode=NORMAL
 schedule=LONDON
 chainid=1
 concrete_rules_file=
-provex=true
 verif_module=VERIFICATION
 pyk_minimize=false
 pyk_omit_labels=
@@ -375,7 +369,6 @@ while [[ $# -gt 0 ]]; do
         --backend)             backend="$2"                    ; shift 2 ;;
         --definition)          backend_dir="$2"                ; shift 2 ;;
         --concrete-rules-file) concrete_rules_file="$2"        ; shift 2 ;;
-        --no-provex)           provex=false                    ; shift   ;;
         --verif-module)        verif_module="$2"               ; shift 2 ;;
         --pyk-minimize)        pyk_minimize=true               ; shift   ;;
         --pyk-omit-labels)     pyk_omit_labels="$2"            ; shift 2 ;;
