@@ -45,7 +45,7 @@ def prove(kevm: KEVM, args) -> str:
     prove_args = []
     for inc in args.includes:
         prove_args.extend(['-I', inc])
-    final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=[])
+    final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, rule_profile=spec_file.with_suffix('.rule-profile'))
     return kevm.pretty_print(final_state)
 
 
