@@ -9,7 +9,7 @@ from .utils import build_empty_configuration_cell
 class KEVM(KProve):
 
     def __init__(self, kompiled_directory, main_file_name=None, use_directory=None):
-        super().__init__(kompiled_directory, main_file_name=None, use_directory=use_directory)
+        super().__init__(kompiled_directory, main_file_name=main_file_name, use_directory=use_directory)
         KEVM._patch_symbol_table(self.symbol_table)
 
     def empty_config(self, top_cell: KSort = KSort('GeneratedTopCell')) -> KInner:
