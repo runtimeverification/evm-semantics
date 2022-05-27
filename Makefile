@@ -450,7 +450,7 @@ tests/gen-spec/kompiled/timestamp: tests/gen-spec/verification.k
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS) \
+	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS) \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
@@ -596,6 +596,7 @@ kevm_pyk_tests := tests/specs/examples/empty-bin-runtime.k \
                   tests/specs/bihu/functional-spec.k.prove
 
 test-kevm-pyk: KPROVE_OPTS += --pyk-prove
+test-kevm-pyk: KEVM = . ./kevm_pyk/venv-prod/bin/activate && kevm
 test-kevm-pyk: $(kevm_pyk_tests)
 
 # Interactive Tests
