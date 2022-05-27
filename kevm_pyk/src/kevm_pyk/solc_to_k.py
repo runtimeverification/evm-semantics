@@ -28,8 +28,8 @@ from pyk.kastManip import buildRule, substitute
 from pyk.prelude import intToken, stringToken
 from pyk.utils import intersperse
 
-from .kevm import KEVM
-from .utils import abstract_cell_vars, infGas, kevmAccountCell
+from .kevm import KEVM, inf_gas, kevm_account_cell
+from .utils import abstract_cell_vars
 
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
@@ -46,7 +46,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
 def gen_claims_for_contract(kevm: KEVM, contract_name: str) -> List[KClaim]:
     empty_config = kevm.empty_config()
     program = KApply('binRuntime', [KApply('contract_' + contract_name)])
-    account_cell = kevmAccountCell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
+    account_cell = kevm_account_cell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
     init_subst = {
         'MODE_CELL': KToken('NORMAL', 'Mode'),
         'SCHEDULE_CELL': KApply('LONDON_EVM'),
@@ -61,7 +61,7 @@ def gen_claims_for_contract(kevm: KEVM, contract_name: str) -> List[KClaim]:
         'MEMORYUSED_CELL': intToken(0),
         'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
         'PC_CELL': intToken(0),
-        'GAS_CELL': infGas(KVariable('VGAS')),
+        'GAS_CELL': inf_gas(KVariable('VGAS')),
         'K_CELL': KSequence([KApply('#execute_EVM_KItem'), KVariable('CONTINUATION')]),
         'ACCOUNTS_CELL': KApply('_AccountCellMap_', [account_cell, KVariable('ACCOUNTS')]),
     }
