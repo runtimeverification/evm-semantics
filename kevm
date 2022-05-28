@@ -61,11 +61,6 @@ run_kevm_pyk() {
 run_kompile() {
     local kompile_opts openssl_root
 
-    kompile_opts=( "${run_file}" --output-definition "${backend_dir}" )
-    kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
-    kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN"                           )
-    kompile_opts+=( --emit-json                                                          )
-
     if [[ ! -z ${concrete_rules_file} ]]; then
         if [[ -f ${concrete_rules_file} ]]; then
             kompile_opts+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
@@ -74,12 +69,22 @@ run_kompile() {
         fi
     fi
 
+    if ${pyk} && [[ "${backend}" != haskell ]]; then
+        fatal "Command kompile with option --pyk only available for --backend haskell."
+    fi
+
+    kompile_opts=( "${run_file}" )
+    ${pyk} || kompile_opts+=( --output-definition "${backend_dir}" )
+    ${pyk} || kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
+    ${pyk} || kompile_opts+=( --emit-json )
+    kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN" )
+
     case "${backend}" in
-        haskell)   kompile_opts+=( --md-selector 'k & ! nobytes & ! node' --backend haskell)        ;;
-        java)      kompile_opts+=( --md-selector 'k & ! bytes   & ! node' --backend java )          ;;
+        haskell)   kompile_opts+=( --md-selector 'k & ! nobytes & ! node')                          ;;
+        java)      kompile_opts+=( --md-selector 'k & ! bytes   & ! node')                          ;;
         llvm)      kompile_opts+=( --md-selector 'k & ! nobytes & ! node' )                         ;;&
         node)      kompile_opts+=( --md-selector 'k & ! nobytes & ! standalone' --no-llvm-kompile ) ;;&
-        llvm|node) kompile_opts+=( --backend llvm )
+        llvm|node) backend=llvm
                    kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
                    kompile_opts+=( -ccopt ${plugin_include}/c/plugin_util.cpp                                    )
                    kompile_opts+=( -ccopt ${plugin_include}/c/crypto.cpp                                         )
@@ -97,7 +102,14 @@ run_kompile() {
                    ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
-    execute kompile "${kompile_opts[@]}" "$@"
+
+    ${pyk} || kompile_opts+=( --backend ${backend} )
+
+    if ${pyk}; then
+        run_kevm_pyk kompile "${kompile_opts[@]}" "$@"
+    else
+        execute kompile "${kompile_opts[@]}" "$@"
+    fi
 }
 
 run_krun() {
