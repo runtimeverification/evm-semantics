@@ -595,8 +595,10 @@ kevm_pyk_tests := tests/specs/examples/empty-bin-runtime.k \
                   tests/gen-spec/mcd-spec.k.check           \
                   tests/specs/bihu/functional-spec.k.prove
 
-test-kevm-pyk: KPROVE_OPTS += --pyk-prove
+test-kevm-pyk: KPROVE_OPTS  += --pyk
+test-kevm-pyk: KOMPILE_OPTS += --pyk
 test-kevm-pyk: KEVM = . ./kevm_pyk/venv-prod/bin/activate && kevm
+test-kevm-pyk: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile
 test-kevm-pyk: $(kevm_pyk_tests)
 
 # Interactive Tests
