@@ -24,7 +24,7 @@ from pyk.kast import (
     KToken,
     KVariable,
 )
-from pyk.kastManip import buildRule, substitute
+from pyk.kastManip import buildRule, remove_generated_cells, substitute
 from pyk.prelude import intToken, stringToken
 from pyk.utils import intersperse
 
@@ -44,7 +44,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
 
 
 def gen_claims_for_contract(kevm: KEVM, contract_name: str) -> List[KClaim]:
-    empty_config = kevm.empty_config()
+    empty_config = remove_generated_cells(kevm.empty_config())
     program = KApply('binRuntime', [KApply('contract_' + contract_name)])
     account_cell = kevm_account_cell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
     init_subst = {
