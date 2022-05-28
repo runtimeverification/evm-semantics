@@ -49,6 +49,7 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 # -------
 
 run_kevm_pyk() {
+    local pyk_args
     pyk_args=(--definition "${backend_dir}")
     pyk_args+=(-I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework")
     ! ${debug} || pyk_args+=(--debug)
@@ -139,7 +140,7 @@ run_kast() {
 
 run_prove() {
     local def_module run_dir proof_args bug_report_name \
-          eventlog_name kprove omit_cells omit_labels klab_log pyk_args
+          eventlog_name kprove omit_cells omit_labels klab_log
 
     check_k_install
 
@@ -147,7 +148,7 @@ run_prove() {
     eventlog_name="${run_file}.eventlog"
 
     proof_args=("${run_file}")
-    if ! ${pyk_prove}; then
+    if ! ${pyk}; then
         proof_args+=(--definition "${backend_dir}")
         proof_args+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
         ! ${debug} || proof_args+=(--debug)
@@ -187,7 +188,7 @@ run_prove() {
         timeout -s INT "${profile_timeout}" ${kprove} "${proof_args[@]}" "$@" || true
         execute kore-prof "${eventlog_name}" ${kore_prof_args} > "${eventlog_name}.json"
     else
-        if ${pyk_prove}; then
+        if ${pyk}; then
             run_kevm_pyk prove "${proof_args[@]}" "$@"
         else
             execute kprove "${proof_args[@]}" "$@"
@@ -352,7 +353,7 @@ schedule=LONDON
 chainid=1
 concrete_rules_file=
 verif_module=VERIFICATION
-pyk_prove=false
+pyk=false
 max_counterexamples=
 branching_allowed=
 haskell_backend_command=(kore-exec)
@@ -376,7 +377,7 @@ while [[ $# -gt 0 ]]; do
         --definition)          backend_dir="$2"                ; shift 2 ;;
         --concrete-rules-file) concrete_rules_file="$2"        ; shift 2 ;;
         --verif-module)        verif_module="$2"               ; shift 2 ;;
-        --pyk-prove)           pyk_prove=true                  ; shift   ;;
+        --pyk)                 pyk=true                        ; shift   ;;
         --max-counterexamples) max_counterexamples="$2"        ; shift 2 ;;
         --branching-allowed)   branching_allowed="$2"          ; shift 2 ;;
         --haskell-backend-arg) haskell_backend_command+=("$2") ; shift 2 ;;
@@ -395,9 +396,9 @@ backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 ! $profile_haskell || [[ "$backend" == haskell ]] || fatal "Option --profile-haskell only usable with --backend haskell!"
 [[ $profile_timeout = "0" ]] || $profile_haskell  || fatal "Option --profile-timeout only usable with --profile-haskell!"
 [[ $kore_prof_args = "" ]]   || $profile_haskell  || fatal "Option --kore-prof-args only usable with --profile-haskell!"
-if ${pyk_prove}; then
-    ! ${debugger}        || fatal "Option --pyk-prove not usable with --debugger!"
-    ! ${profile_haskell} || fatal "Option --pyk-prove not usable with --profile-haskell!"
+if ${pyk}; then
+    ! ${debugger}        || fatal "Option --pyk not usable with --debugger!"
+    ! ${profile_haskell} || fatal "Option --pyk not usable with --profile-haskell!"
 fi
 
 # get the run file
