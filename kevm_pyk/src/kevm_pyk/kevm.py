@@ -1,11 +1,18 @@
-from typing import Any, Dict, List
+import logging
+import sys
+from pathlib import Path
+from subprocess import CalledProcessError
+from typing import Any, Dict, Final, List, Optional
 
+from pyk.cli_utils import run_process
 from pyk.kast import KApply, KInner, KSort
 from pyk.kastManip import flattenLabel, getCell
 from pyk.ktool import KProve, paren
 from pyk.prelude import intToken, stringToken
 
-from .utils import build_empty_configuration_cell
+from .utils import add_include_arg, build_empty_configuration_cell
+
+_LOGGER: Final = logging.getLogger(__name__)
 
 # KEVM helpers
 
@@ -91,6 +98,32 @@ class KEVM(KProve):
 
     def empty_config(self, top_cell: KSort = KSort('GeneratedTopCell')) -> KInner:
         return build_empty_configuration_cell(self.definition, top_cell)
+
+    @staticmethod
+    def kompile(
+        definition_dir: Path,
+        main_file_name: Path,
+        includes: List[str] = [],
+        main_module_name: Optional[str] = None,
+        syntax_module_name: Optional[str] = None,
+        md_selector: Optional[str] = None,
+        hook_namespaces: Optional[List[str]] = None,
+    ) -> 'KEVM':
+        command = ['kompile', '--output-definition', str(definition_dir), str(main_file_name)]
+        command += ['--emit-json', '--backend', 'haskell']
+        command += ['--main-module', main_module_name] if main_module_name else []
+        command += ['--syntax-module', syntax_module_name] if syntax_module_name else []
+        command += ['--md-selector', md_selector] if md_selector else []
+        command += ['--hook-namespaces', ' '.join(hook_namespaces)] if hook_namespaces else []
+        command += add_include_arg(includes)
+        try:
+            run_process(command, _LOGGER)
+        except CalledProcessError as err:
+            sys.stderr.write(f'\nkompile stdout:\n{err.stdout}\n')
+            sys.stderr.write(f'\nkompile stderr:\n{err.stderr}\n')
+            sys.stderr.write(f'\nkompile returncode:\n{err.returncode}\n')
+            raise
+        return KEVM(definition_dir, main_file_name=main_file_name)
 
     @staticmethod
     def _patch_symbol_table(symbol_table: Dict[str, Any]) -> None:

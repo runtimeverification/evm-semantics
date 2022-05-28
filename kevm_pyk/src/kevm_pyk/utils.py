@@ -8,6 +8,10 @@ from pyk.kastManip import (
 )
 
 
+def add_include_arg(includes):
+    return [arg for include in includes for arg in ['-I', include]]
+
+
 def abstract_cell_vars(cterm):
     state, _ = splitConfigAndConstraints(cterm)
     config, subst = splitConfigFrom(state)
