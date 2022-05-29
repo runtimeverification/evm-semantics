@@ -36,6 +36,7 @@ def main():
                 syntax_module_name=args.syntax_module,
                 md_selector=args.md_selector,
                 hook_namespaces=args.hook_namespaces.split(' '),
+                concrete_rules_file=args.concrete_rules_file,
             )
 
         else:
@@ -74,6 +75,7 @@ def create_argument_parser():
     kompile_subparser.add_argument('--syntax-module', type=str, help='Name of the syntax module.')
     kompile_subparser.add_argument('--md-selector', type=str, help='Code selector expression to use when reading markdown.')
     kompile_subparser.add_argument('--hook-namespaces', type=str, help='Hook namespaces. What more can I say?')
+    kompile_subparser.add_argument('--concrete-rules-file', type=str, help='List of rules to only evaluate if arguments are fully concrete.')
 
     prove_subparser = command_parser.add_parser('prove', help='Run KEVM proof.')
     prove_subparser.add_argument('spec_file', type=file_path, help='Path to spec file.')

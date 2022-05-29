@@ -61,14 +61,6 @@ run_kevm_pyk() {
 run_kompile() {
     local kompile_opts openssl_root
 
-    if [[ ! -z ${concrete_rules_file} ]]; then
-        if [[ -f ${concrete_rules_file} ]]; then
-            kompile_opts+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
-        else
-            fatal "Concrete rules file doesn't exist: ${concrete_rules_file}"
-        fi
-    fi
-
     if ${pyk} && [[ "${backend}" != haskell ]]; then
         fatal "Command kompile with option --pyk only available for --backend haskell."
     fi
@@ -78,6 +70,15 @@ run_kompile() {
     ${pyk} || kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
     ${pyk} || kompile_opts+=( --emit-json )
     kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN" )
+
+    if [[ ! -z ${concrete_rules_file} ]]; then
+        if [[ -f ${concrete_rules_file} ]]; then
+              ${pyk} || kompile_opts+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
+            ! ${pyk} || kompile_opts+=(--concrete-rules-file "${concrete_rules_file}")
+        else
+            fatal "Concrete rules file doesn't exist: ${concrete_rules_file}"
+        fi
+    fi
 
     case "${backend}" in
         haskell)   kompile_opts+=( --md-selector 'k & ! nobytes & ! node')                          ;;

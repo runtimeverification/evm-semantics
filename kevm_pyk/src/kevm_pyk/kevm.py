@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 from pathlib import Path
 from subprocess import CalledProcessError
@@ -108,6 +109,7 @@ class KEVM(KProve):
         syntax_module_name: Optional[str] = None,
         md_selector: Optional[str] = None,
         hook_namespaces: Optional[List[str]] = None,
+        concrete_rules_file: Optional[Path] = None,
     ) -> 'KEVM':
         command = ['kompile', '--output-definition', str(definition_dir), str(main_file_name)]
         command += ['--emit-json', '--backend', 'haskell']
@@ -116,12 +118,17 @@ class KEVM(KProve):
         command += ['--md-selector', md_selector] if md_selector else []
         command += ['--hook-namespaces', ' '.join(hook_namespaces)] if hook_namespaces else []
         command += add_include_arg(includes)
+        if concrete_rules_file and os.path.exists(concrete_rules_file):
+            with open(concrete_rules_file, 'r') as crf:
+                concrete_rules = ','.join(crf.read().split('\n'))
+                command += ['--concrete-rules', concrete_rules]
         try:
             run_process(command, _LOGGER)
         except CalledProcessError as err:
             sys.stderr.write(f'\nkompile stdout:\n{err.stdout}\n')
             sys.stderr.write(f'\nkompile stderr:\n{err.stderr}\n')
             sys.stderr.write(f'\nkompile returncode:\n{err.returncode}\n')
+            sys.stderr.flush()
             raise
         return KEVM(definition_dir, main_file_name=main_file_name)
 
