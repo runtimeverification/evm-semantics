@@ -22,29 +22,25 @@ pipeline {
         }
       }
       stages {
-        stage('Build') { steps { sh 'make build build-provex RELEASE=true -j6' } }
+        stage('Build') { steps { sh 'make build build-prove RELEASE=true -j6' } }
         stage('Test') {
           failFast true
           options { timeout(time: 200, unit: 'MINUTES') }
           parallel {
             stage('Conformance (LLVM)') { steps {                                         sh 'make test-conformance -j4 TEST_CONCRETE_BACKEND=llvm'      } }
-            stage('Proofs (Java)')      { steps { lock("kevm-java-${env.NODE_NAME}")    { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=java'    } } }
-            stage('Proofs (Haskell)')   { steps { lock("kevm-haskell-${env.NODE_NAME}") { sh 'make test-prove       -j5 TEST_SYMBOLIC_BACKEND=haskell' } } }
+            stage('Proofs (Java)')      { steps { lock("kevm-java-${env.NODE_NAME}")    { sh 'make test-prove       -j2 TEST_SYMBOLIC_BACKEND=java'    } } }
+            stage('Proofs (Haskell)')   { steps { lock("kevm-haskell-${env.NODE_NAME}") { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=haskell' } } }
           }
         }
         stage('Test Interactive') {
-          failFast true
           options { timeout(time: 35, unit: 'MINUTES') }
           parallel {
-            stage('LLVM krun')      { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'           } }
-            stage('Haskell krun')   { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=haskell'        } }
-            stage('LLVM Kast')      { steps { sh 'make test-parse TEST_CONCRETE_BACKEND=llvm'                     } }
-            stage('Failing tests')  { steps { sh 'make test-failure TEST_CONCRETE_BACKEND=llvm'                   } }
-            stage('Java KLab')      { steps { sh 'make test-klab-prove TEST_SYMBOLIC_BACKEND=java'                } }
-            stage('Haskell Search') { steps { sh 'make test-interactive-search TEST_SYMBOLIC_BACKEND=haskell -j4' } }
-            stage('KEVM VM')        { steps { sh 'make test-node'                                                 } }
-            stage('KEVM pyk')       { steps { sh 'make test-kevm-pyk'                                             } }
-            stage('KEVM help')      { steps { sh './kevm help'                                                    } }
+            stage('LLVM krun')      { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm' } }
+            stage('LLVM Kast')      { steps { sh 'make test-parse TEST_CONCRETE_BACKEND=llvm'           } }
+            stage('Failing tests')  { steps { sh 'make test-failure TEST_CONCRETE_BACKEND=llvm'         } }
+            stage('KEVM VM')        { steps { sh 'make test-node'                                       } }
+            stage('KEVM pyk')       { steps { sh 'make test-kevm-pyk'                                   } }
+            stage('KEVM help')      { steps { sh './kevm help'                                          } }
           }
         }
       }
@@ -98,7 +94,7 @@ pipeline {
                     sudo DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:ethereum/ethereum
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes ./kevm_${VERSION}_amd64.deb
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes solc
-                    pip3 install deps/k/pyk
+                    pip3 install ./kevm_pyk
 
                     ./package/test-package.sh
                   '''
