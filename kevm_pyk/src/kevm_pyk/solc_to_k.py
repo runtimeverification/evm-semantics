@@ -1,9 +1,11 @@
 import functools
 import json
-import subprocess
+import logging
 from pathlib import Path
-from typing import Any, Dict, List
+from subprocess import CalledProcessError
+from typing import Any, Dict, Final, List
 
+from pyk.cli_utils import run_process
 from pyk.kast import (
     TRUE,
     KApply,
@@ -36,16 +38,39 @@ from .utils import (
     kevmAccountCell,
 )
 
+_LOGGER: Final = logging.getLogger(__name__)
+
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
-    subprocess_res = subprocess.run([
-        'solc', '--combined-json', 'abi,bin-runtime,storage-layout,hashes', str(contract_file),
-    ], capture_output=True)
+    args = {
+        'language': 'Solidity',
+        'sources': {
+            contract_file.name: {
+                'urls': [
+                    str(contract_file),
+                ],
+            },
+        },
+        'settings': {
+            'outputSelection': {
+                '*': {
+                    '*': [
+                        'abi',
+                        'storageLayout',
+                        'evm.methodIdentifiers',
+                        'evm.deployedBytecode.object',
+                    ],
+                },
+            },
+        },
+    }
 
-    if subprocess_res.returncode != 0:
-        raise ValueError(f'solc error:\n{subprocess_res.stderr.decode()}')
+    try:
+        process_res = run_process(['solc', '--standard-json'], _LOGGER, input=json.dumps(args))
+    except CalledProcessError as err:
+        raise RuntimeError('solc error', err.stdout, err.stderr)
 
-    return json.loads(subprocess_res.stdout)
+    return json.loads(process_res.stdout)
 
 
 def gen_claims_for_contract(kevm: KPrint, contract_name: str) -> List[KClaim]:
@@ -94,11 +119,11 @@ def solc_to_k(definition_dir: Path, contract_file: Path, contract_name: str, gen
     kevm.symbol_table = kevmSymbolTable(kevm.symbol_table)
 
     solc_json = solc_compile(contract_file)
-    contract_json = solc_json['contracts'][f'{contract_file}:{contract_name}']
-    storage_layout = contract_json['storage-layout']
+    contract_json = solc_json['contracts'][contract_file.name][contract_name]
+    storage_layout = contract_json['storageLayout']
     abi = contract_json['abi']
-    hashes = contract_json['hashes']
-    bin_runtime = '0x' + contract_json['bin-runtime']
+    hashes = contract_json['evm']['methodIdentifiers']
+    bin_runtime = '0x' + contract_json['evm']['deployedBytecode']['object']
 
     # TODO: add check to kevm:
     # solc version should be >=0.8.0 due to:
