@@ -22,29 +22,25 @@ pipeline {
         }
       }
       stages {
-        stage('Build') { steps { sh 'make build build-provex RELEASE=true -j6' } }
+        stage('Build') { steps { sh 'make build build-prove RELEASE=true -j6' } }
         stage('Test') {
           failFast true
           options { timeout(time: 200, unit: 'MINUTES') }
           parallel {
             stage('Conformance (LLVM)') { steps {                                         sh 'make test-conformance -j4 TEST_CONCRETE_BACKEND=llvm'      } }
-            stage('Proofs (Java)')      { steps { lock("kevm-java-${env.NODE_NAME}")    { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=java'    } } }
-            stage('Proofs (Haskell)')   { steps { lock("kevm-haskell-${env.NODE_NAME}") { sh 'make test-prove       -j5 TEST_SYMBOLIC_BACKEND=haskell' } } }
+            stage('Proofs (Java)')      { steps { lock("kevm-java-${env.NODE_NAME}")    { sh 'make test-prove       -j2 TEST_SYMBOLIC_BACKEND=java'    } } }
+            stage('Proofs (Haskell)')   { steps { lock("kevm-haskell-${env.NODE_NAME}") { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=haskell' } } }
           }
         }
         stage('Test Interactive') {
-          failFast true
           options { timeout(time: 35, unit: 'MINUTES') }
           parallel {
-            stage('LLVM krun')      { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'           } }
-            stage('Haskell krun')   { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=haskell'        } }
-            stage('LLVM Kast')      { steps { sh 'make test-parse TEST_CONCRETE_BACKEND=llvm'                     } }
-            stage('Failing tests')  { steps { sh 'make test-failure TEST_CONCRETE_BACKEND=llvm'                   } }
-            stage('Java KLab')      { steps { sh 'make test-klab-prove TEST_SYMBOLIC_BACKEND=java'                } }
-            stage('Haskell Search') { steps { sh 'make test-interactive-search TEST_SYMBOLIC_BACKEND=haskell -j4' } }
-            stage('KEVM VM')        { steps { sh 'make test-node'                                                 } }
-            stage('KEVM pyk')       { steps { sh 'make test-kevm-pyk'                                             } }
-            stage('KEVM help')      { steps { sh './kevm help'                                                    } }
+            stage('LLVM krun')      { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm' } }
+            stage('LLVM Kast')      { steps { sh 'make test-parse TEST_CONCRETE_BACKEND=llvm'           } }
+            stage('Failing tests')  { steps { sh 'make test-failure TEST_CONCRETE_BACKEND=llvm'         } }
+            stage('KEVM VM')        { steps { sh 'make test-node'                                       } }
+            stage('KEVM pyk')       { steps { sh 'make test-kevm-pyk'                                   } }
+            stage('KEVM help')      { steps { sh './kevm help'                                          } }
           }
         }
       }
@@ -94,9 +90,11 @@ pipeline {
                     sudo DEBIAN_FRONTEND=noninteractive apt-get update
                     sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade --yes
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes software-properties-common
+                    sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes python3-pip
                     sudo DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:ethereum/ethereum
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes ./kevm_${VERSION}_amd64.deb
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes solc
+                    pip3 install ./kevm_pyk
 
                     ./package/test-package.sh
                   '''
@@ -110,7 +108,7 @@ pipeline {
             DOCKERHUB_TOKEN   = credentials('rvdockerhub')
             FOCAL_VERSION_TAG = "ubuntu-focal-${env.SHORT_REV}"
             FOCAL_BRANCH_TAG  = "ubuntu-focal-${env.BRANCH_NAME}"
-            DOCKERHUB_REPO    = "runtimeverificationinc/kframework-evm-semantics"
+            DOCKERHUB_REPO    = "runtimeverificationinc/runtimeverification-evm-semantics"
           }
           stages {
             stage('Build Image') {
@@ -159,7 +157,7 @@ pipeline {
             dir('focal')  { unstash 'focal'  }
             sshagent(['rv-jenkins-github']) {
               sh '''
-                git clone 'ssh://github.com/kframework/evm-semantics.git' kevm-release
+                git clone 'ssh://github.com/runtimeverification/evm-semantics.git' kevm-release
                 cd kevm-release
                 git fetch --all
 
@@ -185,10 +183,10 @@ pipeline {
         }
         stage('Update Dependents') {
           steps {
-            build job: 'DevOps/master', propagate: false, wait: false                                            \
-                , parameters: [ booleanParam ( name: 'UPDATE_DEPS'         , value: true                       ) \
-                              , string       ( name: 'UPDATE_DEPS_REPO'    , value: 'kframework/evm-semantics' ) \
-                              , string       ( name: 'UPDATE_DEPS_VERSION' , value: "${env.LONG_REV}")           \
+            build job: 'DevOps/master', propagate: false, wait: false                                                     \
+                , parameters: [ booleanParam ( name: 'UPDATE_DEPS'         , value: true                       )          \
+                              , string       ( name: 'UPDATE_DEPS_REPO'    , value: 'runtimeverification/evm-semantics' ) \
+                              , string       ( name: 'UPDATE_DEPS_VERSION' , value: "${env.LONG_REV}")                    \
                               ]
           }
         }
@@ -197,7 +195,7 @@ pipeline {
             sshagent(['rv-jenkins-github']) {
               dir("kevm-${env.VERSION}-jello-paper") {
                 sh '''
-                  git clone 'ssh://github.com/kframework/evm-semantics.git'
+                  git clone 'ssh://github.com/runtimeverification/evm-semantics.git'
                   cd evm-semantics
                   git checkout -B gh-pages origin/master
                   git submodule update --init --recursive -- ./web
