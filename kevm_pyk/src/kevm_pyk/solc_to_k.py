@@ -153,6 +153,7 @@ def solc_to_k(kevm: KEVM, contract_file: Path, contract_name: str, generate_stor
     kevm.symbol_table['rangeUInt']      = lambda n, t: '#rangeUInt(' + n + ', ' + t + ')'                                           # noqa
     kevm.symbol_table['rangeSInt']      = lambda n, t: '#rangeSInt(' + n + ', ' + t + ')'                                           # noqa
     kevm.symbol_table['binRuntime']     = lambda s: '#binRuntime(' + s + ')'                                                        # noqa
+    kevm.symbol_table['abi_selector']   = lambda s: 'selector(' + s + ')'                                                           # noqa
     kevm.symbol_table[contract_name]    = lambda: contract_name                                                                     # noqa
 
     return kevm.pretty_print(binRuntimeDefinition) + '\n'
