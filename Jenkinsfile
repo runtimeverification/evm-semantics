@@ -22,7 +22,9 @@ pipeline {
         }
       }
       stages {
-        stage('Build') { steps { sh 'make build build-prove RELEASE=true -j6' } }
+        // Must come before build/prove for proper testing
+        stage('Build Pyk') { steps { sh 'make test-kevm-pyk -j3'                  } }
+        stage('Build')     { steps { sh 'make build build-prove RELEASE=true -j6' } }
         stage('Test') {
           failFast true
           options { timeout(time: 200, unit: 'MINUTES') }
@@ -35,12 +37,11 @@ pipeline {
         stage('Test Interactive') {
           options { timeout(time: 35, unit: 'MINUTES') }
           parallel {
-            stage('LLVM krun')      { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm' } }
-            stage('LLVM Kast')      { steps { sh 'make test-parse TEST_CONCRETE_BACKEND=llvm'           } }
-            stage('Failing tests')  { steps { sh 'make test-failure TEST_CONCRETE_BACKEND=llvm'         } }
-            stage('KEVM VM')        { steps { sh 'make test-node'                                       } }
-            stage('KEVM pyk')       { steps { sh 'make test-kevm-pyk'                                   } }
-            stage('KEVM help')      { steps { sh './kevm help'                                          } }
+            stage('LLVM krun')     { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm' } }
+            stage('LLVM Kast')     { steps { sh 'make test-parse TEST_CONCRETE_BACKEND=llvm'           } }
+            stage('Failing tests') { steps { sh 'make test-failure TEST_CONCRETE_BACKEND=llvm'         } }
+            stage('KEVM VM')       { steps { sh 'make test-node'                                       } }
+            stage('KEVM help')     { steps { sh './kevm help'                                          } }
           }
         }
       }
