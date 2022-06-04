@@ -5,6 +5,7 @@ shopt -s extglob
 
 debug=false
 profile=false
+verbose=false
 KEVM=kevm
 
 notif() { echo "== ${KEVM}: $*" >&2 ; }
@@ -52,8 +53,8 @@ run_kevm_pyk() {
     local pyk_args
     pyk_args=(--definition "${backend_dir}")
     pyk_args+=(-I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework")
-    ! ${debug} || pyk_args+=(--debug)
-    execute python3 -m kevm_pyk "${pyk_args[@]}" "$@"
+    ! ${verbose} || pyk_args+=(--verbose)
+    execute python3 -m kevm_pyk "$@" "${pyk_args[@]}"
 }
 
 # User Commands
@@ -378,6 +379,7 @@ args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --debug)               debug=true                      ; shift   ;;
+        --verbose)             verbose=true                    ; shift   ;;
         --profile)             profile=true ; args+=("$1")     ; shift   ;;
         --dump)                dump=true                       ; shift   ;;
         --no-unparse)          unparse=false                   ; shift   ;;
