@@ -599,7 +599,7 @@ test-kevm-pyk: KPROVE_OPTS  += --pyk --verbose
 test-kevm-pyk: KOMPILE_OPTS += --pyk --verbose
 test-kevm-pyk: KEVM = . ./kevm_pyk/venv-prod/bin/activate && kevm
 test-kevm-pyk: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile
-test-kevm-pyk: $(kevm_pyk_tests)
+test-kevm-pyk: $(kevm_pyk_tests) kevm-pyk-venv
 	wc -l tests/specs/bihu/functional-spec.rule-profile
 
 # Interactive Tests
