@@ -11,7 +11,7 @@ from pyk.kastManip import flattenLabel, getCell
 from pyk.ktool import KProve, paren
 from pyk.prelude import intToken, stringToken
 
-from .utils import add_include_arg, build_empty_configuration_cell
+from .utils import add_include_arg, build_empty_config_cell
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -98,7 +98,7 @@ class KEVM(KProve):
         KEVM._patch_symbol_table(self.symbol_table)
 
     def empty_config(self, top_cell: KSort = KSort('GeneratedTopCell')) -> KInner:
-        return build_empty_configuration_cell(self.definition, top_cell)
+        return build_empty_config_cell(self.definition, top_cell)
 
     @staticmethod
     def kompile(
