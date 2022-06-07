@@ -13,6 +13,8 @@
 /package/src
 /pkg
 /src
+/tests/**/*.debug-log
+/tests/**/*.rule-profile
 /tests/gen-spec/*.out
 /tests/gen-spec/*.sol
 /tests/specs/**/*-bin-runtime.k
