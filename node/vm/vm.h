@@ -52,7 +52,7 @@ struct accesslist {
   blockheader h;
   set addresses;
   set storage;
-  runvm* runvm;
+  runvm* runvm_ptr;
 };
 
 struct storageloc {

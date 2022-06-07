@@ -56,13 +56,14 @@ Cls* send_query(VMQuery q, Cls* output) {
   std::string buf;
   q.SerializeToString(&buf);
   uint32_t len = htonl(buf.size());
+  int ignored __attribute__((unused));
   fwrite((char *)&len, 4, 1, vm_out_chan);
   fwrite(buf.c_str(), 1, buf.length(), vm_out_chan);
   fflush(vm_out_chan);
-  (void)fread((char *)&len, 4, 1, vm_in_chan);
+  ignored = fread((char *)&len, 4, 1, vm_in_chan);
   len = ntohl(len);
   std::string buf2(len, '\000');
-  (void)fread(&buf2[0], 1, len, vm_in_chan);
+  ignored = fread(&buf2[0], 1, len, vm_in_chan);
   output->ParseFromString(buf2);
   std::cerr << output->DebugString() << std::endl;
   return output;
