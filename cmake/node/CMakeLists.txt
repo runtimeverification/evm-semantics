@@ -76,7 +76,7 @@ target_include_directories(kevm-vm
 	PUBLIC ${K_LIB}/../include/kllvm)
 target_compile_options(kevm-vm
 	PUBLIC $ENV{LLVM_KOMPILE_OPTS}
-	PUBLIC -Wall -Werror)
+	PUBLIC -Wall -Werror -Wno-unused-result)
 target_link_libraries(kevm-vm
 	ff protobuf gmp ${LINK_PROCPS} cryptopp secp256k1 crypto)
 

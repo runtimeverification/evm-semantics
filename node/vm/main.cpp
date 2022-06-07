@@ -41,7 +41,6 @@ int main(int argc, char **argv) {
   }
 
   int sock = init(port, host);
-  int ignored __attribute__((unused));
 
   sockaddr_in peer;
   while(1) {
@@ -64,21 +63,22 @@ int main(int argc, char **argv) {
       return 1;
     }
     vm_out_chan = of;
-    ignored = fread((char *)&len, 4, 1, _if);
+
+    fread((char *)&len, 4, 1, _if);
     len = ntohl(len);
     std::string buf(len, '\000');
-    ignored = fread(&buf[0], 1, len, _if);
+    fread(&buf[0], 1, len, _if);
     Hello h;
     bool success = h.ParseFromString(buf);
     if (success && h.version() == "2.2") {
       while(1) {
-        ignored = fread((char *)&len, 4, 1, _if);
+        fread((char *)&len, 4, 1, _if);
         if (feof(_if)) {
           break;
         }
         len = ntohl(len);
         std::string buf2(len, '\000');
-        ignored = fread(&buf2[0], len, 1, _if);
+        fread(&buf2[0], len, 1, _if);
         if (feof(_if)) {
           break;
         }
