@@ -64,21 +64,21 @@ int main(int argc, char **argv) {
     }
     vm_out_chan = of;
 
-    fread((char *)&len, 4, 1, _if);
+    (void)fread((char *)&len, 4, 1, _if);
     len = ntohl(len);
     std::string buf(len, '\000');
-    fread(&buf[0], 1, len, _if);
+    (void)fread(&buf[0], 1, len, _if);
     Hello h;
     bool success = h.ParseFromString(buf);
     if (success && h.version() == "2.2") {
       while(1) {
-        fread((char *)&len, 4, 1, _if);
+        (void)fread((char *)&len, 4, 1, _if);
         if (feof(_if)) {
           break;
         }
         len = ntohl(len);
         std::string buf2(len, '\000');
-        fread(&buf2[0], len, 1, _if);
+        (void)fread(&buf2[0], len, 1, _if);
         if (feof(_if)) {
           break;
         }
