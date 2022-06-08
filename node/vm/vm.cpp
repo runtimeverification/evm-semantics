@@ -129,7 +129,7 @@ block* make_accesslist(AccessListData accessList, runvm *runvmsymbol) {
   res->h = getBlockHeaderForSymbol(tag);
   res->addresses = addresses;
   res->storage = storages;
-  res->runvm = runvmsymbol;
+  res->runvm_ptr = runvmsymbol;
   return (block *)res;
 }
 
@@ -302,7 +302,7 @@ CallResult run_transaction(CallContext ctx) {
   bool error = get_error(extracted->status);
   auto selfdestruct = set_to_zs(&extracted->selfdestruct);
   auto touched = set_to_zs(&extracted->touched);
-  auto accounts = k_to_accts(&extracted->accounts->data);
+  auto accounts = k_to_accts(&extracted->accounts_ptr->data);
   auto logs = k_to_logs(&extracted->logs);
 
   CallResult result;
