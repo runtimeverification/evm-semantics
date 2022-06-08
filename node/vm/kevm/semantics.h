@@ -41,7 +41,7 @@ struct tx_result {
   mpz_ptr status;
   set selfdestruct;
   list logs;
-  accounts* accounts; 
+  accounts* accounts_ptr; 
   set touched;
   string* statuscode;
 };
