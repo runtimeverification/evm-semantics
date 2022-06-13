@@ -435,6 +435,8 @@ module LEMMAS-MCD-COMMON
        andBool #rangeUInt(48, Y)
        andBool notBool (X +Int Y <Int pow48) [simplification]
 
+    rule maxUInt48 &Int X => X requires #rangeUInt(48, X) [simplification]
+
     rule 0 <=Int X |Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
     rule 0 <=Int X &Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
 
@@ -459,6 +461,9 @@ module LEMMAS-MCD-COMMON
 
     rule chop(X +Int pow256)  => chop(X)        [simplification]
     rule chop(chop(X) *Int Y) => chop(X *Int Y) [simplification]
+
+    // specific rule for the flopper-file proofs, however generalisable
+    rule chop ( (maxUInt48 &Int X) *Int pow48) => (maxUInt48 &Int X) *Int pow48  [simplification]
 
     rule (I1 +Int I2) -Int I1 => I2 [simplification]
 
