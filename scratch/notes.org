@@ -1,0 +1,502 @@
+* Working with EVM proofs
+** DONE Setup
+*** DONE Preparation: building evm-semantics
+ - Z3 version mismatch: have 4.8.12, evm-semantics readme sez 4.8.15
+   - postponing z3 build/install, will try what I have first
+   - K framework appears to work fine with the installed z3, though.
+ - a few of the requirements listed in the readme are unavailable on
+   Ubuntu Jammy: clang-10, lld-10, llvm-10-tools
+   - used clang-14, lld-13 (default lld), llvm-14-tools)
+ - Using K framework from the build next door (brought in with direnv)
+ - make build
+ - then using .build/usr/bin in path (direnv)
+*** DONE following instructions, hacking a way through
+ - runs fail with _kevm: line 19: kprove: command not found_
+ - hacking around the problem:
+   - added a custom script dir containing a _kprove_ that calls
+     _kprovex_ or _kprove-legacy_ (used _kprovex_) from K
+     - BTW soft-linking does not work, kprovex
+ - able to run as instructed in the ticket (_make test-prove_ with
+   timing)
+   - all but one proof executions return 0
+
+*** DONE Second iteration: build with git submodules
+*Should use the dependencies to stay consistent*, and not use _kprovex_
+- build (_make k-deps build_)
+- ran test-prove (all successful)
+- ran test-failing-prove (the actual target)
+
+** IN_PROGRESS Task: Pick a proof and make it succeed
+*** Advice
+- should be a proof in mid-range runtime (~10min)
+- proof should be from dir.s `erc20` or `mcd`
+- typical source of issues: missing lemmas to simplify
+  - unevaluated function calls, or trivial properties of built-in
+    functions needed to reach a desired RHS
+- setup:
+  - verification.k = all simplification lemmas
+  - functional-spec.k = "unit tests" for all lemmas (to test a lemma
+    in isolation, on terms from the proof that should simplify)
+- Need to understand the EVM spec and implementation to come up with
+  lemmas
+- Useful first activity: Capture state at branch points (using kore
+  repl and pipes/redirection)
+*** QUESTION Pick target: tests/specs/mcd/flopper-file-pass-rough-spec.k
+- Output on test run:
+  #+BEGIN_EXAMPLE
+1 1170.18 1192.06 38.22 2803500KB timeout 3000 kevm prove tests/specs/mcd/flopper-file-pass-rough-spec.k --backend haskell --format-failures --definition tests/specs/mcd/verification/haskell
+  #+END_EXAMPLE
+**** QUESTION This file has only one claim, many others have two (or even more). Why?
+**** DONE re-run after latest updates
+
+#+BEGIN_EXAMPLE
+$ ./profile log timeout 3000 \
+    kevm prove tests/specs/mcd/flopper-file-pass-rough-spec.k \
+      --backend haskell \
+      --format-failures \
+      --definition tests/specs/mcd/verification/haskell
+#+END_EXAMPLE
+- ran for ~15min (overhead for -j4 noticeable)
+
+#+BEGIN_EXAMPLE
+evm-semantics-with-deps/scratch$ kevm prove ../tests/specs/mcd/flopper-file-pass-rough-spec.k  --backend haskell --format-failures --definition ../tests/specs/mcd/verification/haskell --debugger
+#+END_EXAMPLE
+
+*** QUESTION Use repl to capture states at branch points (and end state)
+- tricky: _konfig_ alias not working as provided, needs --definition
+  option (should inherit from kprove if possible)
+- funny, *QQ: after _exit_ I am getting a load of additional output*
+  (what looks like a config dump, and some warnings from the compiler)
+
+  #+BEGIN_EXAMPLE
+evm-semantics-with-deps/scratch$ kevm prove ../tests/specs/mcd/flopper-file-pass-rough-spec.k  --backend haskell --format-failures --definition ../tests/specs/mcd/verification/haskell --debugger
+Welcome to the Kore Repl! Use 'help' to get started.
+
+Kore (0)> exit
+    #Ceil ( SetItem ( ACCT_ID:Int )
+    _Gen38 )
+  #And
+    #Not ( {
+      4
+    #Equals
+      keccak ( #buf ( 32 , CALLER_ID ) ++ b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
+    } )
+  #And
+...
+  #And
+    <kevm>
+      <k>
+        #execute ~> CONTINUATION ~> .
+      </k>
+      <exit-code>
+        1
+      </exit-code>
+      <mode>
+...
+  #And
+    {
+      true
+    #Equals
+      maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) <Int pow48
+    }
+#Implies
+  #wAF ( #Exists ?_Gen9 . #Exists ?_Gen10 . #Exists ?_Gen7 . #Exists ?_Gen8 . #Exists ?_Gen11 . #Exists ?_Gen20 . #Exists ?_Gen18 . #Exists ?_Gen39 . #Exists ?_Gen2 . #Exists ?_Gen16 . #Exists ?_Gen6 . #Exists ?_Gen15 . #Exists ?_Gen13 . #Exists ?_Gen5 . <kevm>
+    <k>
+      #halt ~> CONTINUATION ~> .
+    </k>
+    <exit-code>
+      1
+    </exit-code>
+    <mode>
+      NORMAL
+    </mode>
+    <schedule>
+      ISTANBUL
+    </schedule>
+    <ethereum>
+      <evm>
+...
+        <messages>
+          _Gen42
+        </messages>
+      </network>
+    </ethereum>
+  </kevm> )
+[Warning] Compiler: Variable 'VGas' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/home/jost/work/RV/code/evm-semantics-with-deps/tests/specs/mcd/flopper-file-pass-rough-spec.k)
+	Location(30,24,30,28)
+	30 |	            <gas> #gas(VGas) => ?_ </gas>
+	   .	                       ^~~~
+  #+END_EXAMPLE
+- *QQ: How to use the omit list?*
+- proof graph completely extracted (interactively, two attempts
+  because ^C)
+- four red nodes ( <== four options for ABI_what ?)
+- all nodes fail because of side conditions
+- *QQ: How do the other nodes come about?*
+
+*** DONE Reading the claim
+- claim is about `Flopper_bin_runtime` changing the state when
+  _#executed_'d (and ending in _#halt_)
+- most importantly, network.accounts.account(ACCT_ID).storage is changed:
+
+  #+begin_example
+    <storage>
+      ACCT_ID_STORAGE
+        =>
+      ACCT_ID_STORAGE
+        [ #Flopper.beg <- (#if ABI_what ==Int #string2Word("beg") #then ABI_data #else Beg #fi) ]
+        [ #Flopper.pad <- (#if ABI_what ==Int #string2Word("pad") #then ABI_data #else Pad #fi) ]
+        [ #Flopper.ttl_tau <-
+             (#if ABI_what ==Int #string2Word("ttl")
+                #then #WordPackUInt48UInt48(ABI_data, Tau)
+              #else (#if ABI_what ==Int #string2Word("tau")
+                #then #WordPackUInt48UInt48(Ttl, ABI_data)
+              #else #WordPackUInt48UInt48(Ttl, Tau) #fi) #fi) ]
+    </storage>
+  #+end_example
+  - where _ABI_what_ <- { beg, pad, ttl, tau } as per side conditions.
+  - Beg, Pad, Ttl, Tau are the prior values in the #Flopper thing
+  - Ttl and Tau are in the same #Flopper thing but set separately.
+- *QQ: What is the _#Flopper_ thing, and where does the
+  Flopper_bin_runtime come from?*
+
+*** IN_PROGRESS Analyse stuck states
+- side conditions are failing.
+
+**** IN_PROGRESS stuck state 1091:
+- takes one of the four cases for _ABI_what_. Values beg,pad,ttl,tau
+  are encoded but could be recovered. From the side conditions (top of
+  file):
+  #+BEGIN_EXAMPLE
+#And
+  #Not ( {
+    ABI_what
+  #Equals
+    44505821594576442305943786526067189028800094342624099485940320344354850865152
+  } )
+#And
+  #Not ( {
+    ABI_what
+  #Equals
+    50831113381244017834160629274459250484386129340111898844856005057409758265344
+  } )
+#And
+  #Not ( {
+    ABI_what
+  #Equals
+    52673990083778647014426308045781012712597814653424946781269281625551751086080
+  } )
+#And
+  #+END_EXAMPLE
+***** TODO Which side condition is failing?
+- have to go through individually, replicating the unification
+***** IN_PROGRESS Comparing end state to target by hand
+#+BEGIN_EXAMPLE
+<storage>
+  ACCT_ID_STORAGE [ 6 <- chop ( ( maxUInt48 &Int ABI_data ) *Int pow48 ) |Int maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ]
+</storage>
+#+END_EXAMPLE
+- Does this mean store at ID 6 the ABI_data in the first 48 bit and
+  the prior value in the last 48 bit? Yes.
+- quite possibly this is the "ttl" case. Yes.
+  - See ./storage.k@227:    rule #Flopper.ttl_tau => 6
+- *Hypothesis:* _chop ( maxUInt48 &Int ABI_data) *Int pow48_ ... is a problem here
+  - maybe not the only one
+  - we have (in requirements) that ABI_data is < 48 bytes
+    - One lemma could be maxUInt48 &Int X => X requires #rangeUInt(48, X)
+    - Where is this function/symbol defined, btw?
+  - What is _chop_ doing again?
+  - How does this |Int connect with the EVM data structure?
+**** DONE re-run and capture states properly this time
+**** IN_PROGRESS Analyse stuck state 2056
+- ACCT_ID_STORAGE [ 4 <- ABI_data:Int ]
+  - appears straightforward in this execution branch, no obfuscation
+  - storage.k@225: rule #Flopper.beg => 4
+- Error message at each branch failure is:
+  #+BEGIN_EXAMPLE
+kore-repl: [586564758] Warning (WarnStuckClaimState):
+    (InfoReachability) while checking the implication:
+    The configuration's term unifies with the destination's term, but the implication check between the conditions has failed. Location: /home/jost/work/RV/code/evm-semantics-with-deps/tests/specs/mcd/flopper-file-pass-rough-spec.k:8:7-126:52
+  #+END_EXAMPLE
+
+*** DONE Try separate proofs to determine the problem
+- cases _beg_ and _pad_ go through without problem (the _#if_
+  expression does not cause problems in and by itself)
+- case with tau yields this (top of the output after failure):
+  #+BEGIN_EXAMPLE
+  #Not ( #Ceil ( #WordPackUInt48UInt48 ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) , ABI_data ) )
+  #And
+    {
+      ACCT_ID_STORAGE [ 6 <- #WordPackUInt48UInt48 ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) , ABI_data ) ]
+    #Equals
+      ACCT_ID_STORAGE [ 6 <- chop ( ( maxUInt48 &Int ABI_data ) *Int pow48 ) |Int maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 )
+ ]
+    } )
+  #+END_EXAMPLE
+- similar for the case with ttl
+  #+BEGIN_EXAMPLE
+  #Not ( #Ceil ( #WordPackUInt48UInt48 ( ABI_data , #lookup ( ACCT_ID_STORAGE , 6 ) /Int pow48 ) )
+  #And
+    {
+      ACCT_ID_STORAGE [ 6 <- #WordPackUInt48UInt48 ( ABI_data , #lookup ( ACCT_ID_STORAGE , 6 ) /Int pow48 ) ]
+    #Equals
+      ACCT_ID_STORAGE [ 6 <- maxUInt48 &Int ABI_data |Int 115792089237316195423570985008687907853269984665640564039457583726438152929280
+                             &Int #lookup ( ACCT_ID_STORAGE , 6 ) ]
+    } )
+  #+END_EXAMPLE
+  - Good to know for that one:
+    #+BEGIN_EXAMPLE
+Text.Printf> printf "%x\n" 115792089237316195423570985008687907853269984665640564039457583726438152929280
+ffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000
+    #+END_EXAMPLE
+    Also see tests/specs/mcd/word-pack.k
+
+- Caused by implementation mismatch for WordPack implementation?
+  (vs. existing proof lemmas, introducing the |Int) ???
+
+
+*** OBSOLETE adapt properties for #WordPack (following Sam's PR)
+- instead of rewriting an equality into conditions, introduce
+  conditions via _ensures_
+- for UInt48UInt48 in my case, other cases exist.
+- needs to be ported to Java back-end, or proof marked as failing.
+- *DID NOT RESOLVE THE PROBLEM* (no change to remaining proof to
+  discharge) but might retain the change
+
+*** OBSOLETE Try a rule to rewrite #WordPack(x,y) => x |Int (y *Int pow48)
+- this rule made the rewrite engine *loop*
+  #+BEGIN_EXAMPLE
++    rule    #WordPackUInt48UInt48 ( UINT48_1 , UINT48_2 )
++         => UINT48_2 *Int pow48 |Int UINT48_1
++      requires #rangeUInt(48, UINT48_1)
++       andBool #rangeUInt(48, UINT48_2)
++      [simplification]
+  #+END_EXAMPLE
+
+
+*** IN_PROGRESS Analyse last steps before the proof is stuck
+- to determine the construction of what is left to discharge
+  - how does the |Int get introduced?
+**** DONE captured interesting states between 1000 and 1088 (failing)
+- turns out the expression occurs in the <gas> cell, inside Csstore
+**** DONE inspect earlier states for where the expression is introduced
+- looks like this came from a _read_ from storage
+  - Csstore is an EVM cost calculation (depending on "schedule" in
+    different ways) computing the overall cost of "SSTORE"
+  - The term inside the argument to Csstore is more interesting
+  - This term is being built gradually using XInt operations and the
+    word stack of the machine. States 701 - 800.
+  - i.e., we are observing the internals of the #wordPack
+    implementation in the compiled program at hand.
+**** DONE Hand-match the final state with the goal
+- and check which invariants cannot match there.
+- last state was saved before, also in kore format
+
+**** DONE come up with lemmas to align the terms that should be equal
+
+- General rule for redundant masking to 48 bits
+  +    rule maxUInt48 &Int X => X requires #rangeUInt(48, X) [simplification]
+
+- Specific rule to get rid of the `chop` call (redundant masking to 256 bits)
+  +    // specific rule for the flopper-file proofs, however generalisable
+  +    rule chop ( (maxUInt48 &Int X) *Int pow48) => (maxUInt48 &Int X) *Int pow48  [simplification]
+
+- A more general rule did not make the proof pass
+  +    rule chop ( X ) => X requires rangeUInt(256, X)  [simplification]
+  certainly because one would need to teach the prover that
+   0 <= (maxUInt48 &Int X) *Int pow48 < 2^256
+
+
+**** DONE Remaining problem: unmodified values for beg and pad cases
+
+#+BEGIN_EXAMPLE
+  #Not ( #Ceil ( #WordPackUInt48UInt48 ( ABI_data , #lookup ( ACCT_ID_STORAGE , 6 ) /Int pow48 ) )
+  #And
+    #Ceil ( #WordPackUInt48UInt48 ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) , #lookup ( ACCT_ID_STORAGE , 6 ) /Int pow48 ) )
+  #And
+    #Ceil ( #WordPackUInt48UInt48 ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) , ABI_data ) )
+  #And
+    {
+      ACCT_ID_STORAGE [ 4 <- ABI_data:Int ] [ 6 <- #WordPackUInt48UInt48 ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) , #lookup ( ACCT_ID_STORAGE , 6 ) /Int pow48 ) ]
+    #Equals
+      ACCT_ID_STORAGE [ 4 <- ABI_data:Int ]
+    } )
+#+END_EXAMPLE
+
+- Additional rule to rewrite redundant word-pack calls
+  + rule   #WordPackUInt48UInt48(...X , ...X ) => X requires #rangeUInt(96, X) [simplification]
+
+**** TODO Remaining problem: failure to prove when combining cases
+- Failure message
+  #+BEGIN_EXAMPLE
+$ time kevm prove flopper-file-beg-pad.k --backend haskell --format-failures --definition ../tests/specs/mcd/verification/haskell
+kore-exec: [780913179] Warning (WarnStuckClaimState):
+    (InfoReachability) while checking the implication:
+    The configuration's term unifies with the destination's term, but the implication check between the conditions has failed. Location: /home/jost/work/RV/code/evm-semantics-with-deps/scratch/flopper-file-beg-pad.k:8:7-127:52
+  #Ceil ( SetItem ( ACCT_ID:Int )
+  _Gen38 )
+#And
+  #Not ( #Ceil ( #WordPackUInt48UInt48 ( ABI_data , #lookup ( ACCT_ID_STORAGE , 6 ) /Int pow48 ) )
+      #And
+         #Ceil ( #WordPackUInt48UInt48 ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) , ABI_data ) ) )
+#And
+  ...
+  #+END_EXAMPLE
+- when combining ttl and tau cases, the #Not(#Ceil ..) and #Ceil swap position
+- adding `maxUInt48 &Int ABI_Data to the #if-cascade in the account
+  storage cell changes the error but still yields the same problem
+  (#Ceil.. #And #Not(#Ceil..))
+- inspecing the beg-pad case further, I find in the _other_ branch:
+#+BEGIN_EXAMPLE
+  #Ceil ( SetItem ( ACCT_ID:Int )
+  _Gen38 )
+#And
+  #Not ( #Ceil ( #WordPackUInt48UInt48 ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) , maxUInt48 &Int ABI_data ) )
+       #And
+         #Ceil ( #WordPackUInt48UInt48 ( maxUInt48 &Int ABI_data , #lookup ( ACCT_ID_STORAGE , 6 ) /Int pow48 ) )
+       #And
+         {
+           ACCT_ID_STORAGE [ 5 <- #if ABI_what ==Int 50831113381244017834160629274459250484386129340111898844856005057409758265344 #then ABI_data #else #lookup ( ACCT_ID_STORAGE , 5 ) #fi ]
+         #Equals
+           ACCT_ID_STORAGE [ 5 <- ABI_data:Int ]
+         } )
+#And
+  ...
+#And
+  #Not ( {
+    ABI_what
+  #Equals
+    44505821594576442305943786526067189028800094342624099485940320344354850865152
+  } )
+#And
+  ...
+#And
+  {
+    true
+  #Equals
+    ABI_what ==Int 44505821594576442305943786526067189028800094342624099485940320344354850865152
+     orBool
+    ABI_what ==Int 50831113381244017834160629274459250484386129340111898844856005057409758265344
+  }
+#And
+  ...
+#+END_EXAMPLE
+- Meaning
+  #+BEGIN_EXAMPLE
+"... #And ABI_what != "beg" #And ... #And (true #Equals (ABI_what ==Int "beg" orBool ABI_what ==Int "pad"))
+  #+END_EXAMPLE
+- the "beg" branch does _not_ retain the _orBool_ condition but this
+  "pad" branch does
+  - condition disappears _at the branch point_, without stating a rule
+    for simplification *How can simplifications be inspected?*
+
+**** DONE Try with a minimal example => worked.
+- simple config structure
+- symbolic input variable for ABI_what:Int
+- result cell with an if
+- branch point in the "program" similar to if/then/else exec
+
+**** QUESTION try adding a simplification rule like the above
+- attempt to rewrite the condition:
+  #+BEGIN_EXAMPLE
+    rule (X ==Int A orBool X ==Int B) => X ==Int B
+      requires X =/=Int A  [simplification]
+  #+END_EXAMPLE
+- adding this rule makes kore-exec eat the entire RAM without using z3
+
+**** DONE try a variant that states the A || B in the requirements
+  #+BEGIN_EXAMPLE
+    rule (X ==Int A orBool X ==Int B) => X ==Int B
+      requires X =/=Int A andBool (X ==Int A orBool X ==Int B) [simplification]
+  #+END_EXAMPLE
+- *this also loops.*
+
+**** TODO try the simplification rule above with a functional-spec case
+- minimising the case that loops / or debugging it
+  - Loops in the debugger even before the prompt appears (if it
+   applies anywhere in the file - tested with functional-spec.k)
+  - Interestingly, *a test in functional-spec.k goes through without
+    this rule.* (and does not loop)
+
+*** IN_PROGRESS Another problem, the `maxUInt48 &Int X => X if X < pow48` rule
+    - this rule makes one of the tests in functional-spec.k fail.
+    - The Haskell backend and the java backend have different rules
+      (with and without the `maxUInt48 &Int`) in verification.k
+    - trying which one of the separate cases fails without this
+      simplification
+      - ttl failing
+        #+BEGIN_EXAMPLE
+  #Not ( #Ceil ( #WordPackUInt48UInt48 ( ABI_data , #lookup ( ACCT_ID_STORAGE , 6 ) /Int pow48 ) )
+  #And
+    {
+      ACCT_ID_STORAGE [ 6 <- #WordPackUInt48UInt48 ( ABI_data , #lookup ( ACCT_ID_STORAGE , 6 ) /Int pow48 ) ]
+    #Equals
+      ACCT_ID_STORAGE [ 6 <- maxUInt48 &Int ABI_data |Int 115792089237316195423570985008687907853269984665640564039457583726438152929280 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ]
+    } )
+       #+END_EXAMPLE
+      - tau failing
+        #+BEGIN_EXAMPLE
+  #Not ( #Ceil ( #WordPackUInt48UInt48 ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) , ABI_data ) )
+  #And
+    {
+      ACCT_ID_STORAGE [ 6 <- #WordPackUInt48UInt48 ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) , ABI_data ) ]
+    #Equals
+      ACCT_ID_STORAGE [ 6 <- ( maxUInt48 &Int ABI_data ) *Int pow48 |Int maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ]
+    } )
+        #+END_EXAMPLE
+
+** TODO Task: Pick a proof that times out, profile the run
+- the running program is `kore-repl`, a Haskell binary
+- Invocation (from `ps` output):
+    #+BEGIN_EXAMPLE
+kore-repl \
+    /home/jost/work/RV/code/evm-semantics-with-deps/scratch/./../tests/specs/mcd/verification/haskell/definition.kore \
+    --module VERIFICATION \
+    --prove /home/jost/work/RV/code/evm-semantics-with-deps/scratch/./.kprove-2022-06-03-14-24-41-352-0f4aae20-77b8-496b-a553-fde1193de53c/spec.kore \
+    --spec-module FLOPPER-FILE-PASS-ROUGH-SPEC \
+    --output /home/jost/work/RV/code/evm-semantics-with-deps/scratch/./.kprove-2022-06-03-14-24-41-352-0f4aae20-77b8-496b-a553-fde1193de53c/result.kore
+    #+END_EXAMPLE
+- the `spec.kore` appears to be the same in all invocations (but a
+  fresh work dir is created each time)
+
+
+* Notes
+** Command parsing in proof repl
+*** TODO exits immediately when pressing ^C.
+    Unfortunate if a lot of state has been built up. It leaves a
+    working directory (.kprove-<TIMESTAMP>-<UUID-something>) behind
+    when interrupted.
+*** attempts to parse an empty string as a command when enter is pressed
+*** does not react to ^D in input.
+** TODO save-session should save intermediate proof state
+- only saves the sequence of commands used
+- not even all of them, all `graph` invocations are missing
+- nevertheless pipes and redirects are retained (might overwrite
+  files)
+** TODO repo Makefile setup does not clean up proof artefacts
+- _make clean deps build_ left the _tests/specs/mcd/verification_
+  behind with stale files (after a change to word-pack.k)
+- _make build-prove_ builds (or rebuilds) the files (uses timestamp)
+  More precisely _make tests/specs/mcd/verification/haskell/timestamp_
+** OBSOLETE interesting output
+when compiled files are changed between compiling and invoking the prover:
+After editing _verification.k_, I am getting
+#+BEGIN_EXAMPLE
+$ kevm prove tests/specs/mcd/flopper-file-pass-rough-spec.k --backend haskell --format-failures --definition tests/specs/mcd/verification/haskell
+[Error] Outer Parser: Module LEMMAS-MCD-COMMON previously declared at
+Source(/home/jost/work/RV/code/evm-semantics-with-deps/tests/specs/mcd/verification.k)
+and Location(170,1,482,10)
+	Source(/home/jost/work/RV/code/evm-semantics-with-deps/tests/specs/mcd/verification.k)
+	Location(170,1,476,10)
+	    .	v~~~~~~~~~~~~~~~~~~~~~~~
+	170 |	module LEMMAS-MCD-COMMON
+	    |		...
+	476 |	endmodule
+	    .	~~~~~~~~^
+[Error] Outer Parser: Had 1 outer parsing errors.
+#+END_EXAMPLE
+** TODO `omit` should provide better instructions
+- maybe in general more instruction should be provided
+** TODO Maybe add a general option to pass all output through the pretty-printer (kast)?

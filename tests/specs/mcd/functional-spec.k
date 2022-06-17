@@ -111,4 +111,10 @@ module FUNCTIONAL-SPEC
       andBool #rangeUInt(256, B31) andBool #rangeUInt(256, B32)
       andBool #rangeUInt(256, B41)
 
+    claim <k> runLemma(X ==Int #string2Word("beg") orBool X ==Int #string2Word("pad"))
+          => doneLemma(X ==Int #string2Word("pad"))
+          ...
+          </k>
+      requires X =/=Int #string2Word("beg")
+
 endmodule

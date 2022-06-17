@@ -435,7 +435,7 @@ module LEMMAS-MCD-COMMON
        andBool #rangeUInt(48, Y)
        andBool notBool (X +Int Y <Int pow48) [simplification]
 
-    rule maxUInt48 &Int X => X requires #rangeUInt(48, X) [simplification]
+    // rule maxUInt48 &Int X => X requires #rangeUInt(48, X) [simplification]
 
     rule 0 <=Int X |Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
     rule 0 <=Int X &Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
@@ -472,5 +472,9 @@ module LEMMAS-MCD-COMMON
     rule M:Map [ K1 <- _ ] [ K2 <- V2 ] [ K3 <- V3 ] [ K1 <- V4 ] => M [ K1 <- V4 ] [ K2 <- V2 ] [ K3 <- V3 ] requires K1 =/=Int K2 andBool K1 =/=Int K3 [simplification]
 
     rule chop(X *Int (Y +Int pow256)) => chop(X *Int Y) [simplification]
+
+    // rule (X ==Int A orBool X ==Int B) => X ==Int B
+    //   requires X =/=Int A
+    //    andBool (X ==Int A orBool X ==Int B) [simplification]
 
 endmodule
