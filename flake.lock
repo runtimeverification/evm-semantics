@@ -93,8 +93,9 @@
         "type": "github"
       },
       "original": {
-        "id": "flake-utils",
-        "type": "indirect"
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
       }
     },
     "flake-utils_2": {
@@ -147,7 +148,6 @@
     },
     "haskell-backend": {
       "inputs": {
-        "flake-utils": "flake-utils",
         "haskell-nix": "haskell-nix",
         "nixpkgs": [
           "k",
@@ -158,17 +158,16 @@
         "z3-src": "z3-src"
       },
       "locked": {
-        "lastModified": 1654517608,
-        "narHash": "sha256-sYIzlvfcxcRwZsUac3/XQDf4gdYmCkoajwMNI7G4dO0=",
+        "lastModified": 1655383426,
+        "narHash": "sha256-VgsxCDkKC1ubi8rYA7eWMhBCrwn6wvhafgejEY/XQQM=",
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "3bab611b2286dc3be4ce93c37e21581c68a1a8de",
+        "rev": "8623518f30cf98e2cf8f32c35bbb64119a2d1f0d",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "3bab611b2286dc3be4ce93c37e21581c68a1a8de",
         "type": "github"
       }
     },
@@ -272,11 +271,7 @@
     },
     "k": {
       "inputs": {
-        "flake-utils": [
-          "k",
-          "haskell-backend",
-          "flake-utils"
-        ],
+        "flake-utils": "flake-utils",
         "haskell-backend": "haskell-backend",
         "llvm-backend": "llvm-backend",
         "mavenix": "mavenix_2",
@@ -287,13 +282,18 @@
         ]
       },
       "locked": {
-        "narHash": "sha256-gETSoBQIwciysTGao/x6IzZ8a6IW0AniqU8FfyMi83s=",
-        "path": "/home/sam/git/k",
-        "type": "path"
+        "lastModified": 1655468712,
+        "narHash": "sha256-90C0WaD3svy+XfW2kgvsOSXWKxAD6pTBw2XGGtLbHe0=",
+        "owner": "runtimeverification",
+        "repo": "k",
+        "rev": "96856a68512a89f649ea3d307e2b708ef1e7354c",
+        "type": "github"
       },
       "original": {
-        "path": "/home/sam/git/k",
-        "type": "path"
+        "owner": "runtimeverification",
+        "repo": "k",
+        "rev": "96856a68512a89f649ea3d307e2b708ef1e7354c",
+        "type": "github"
       }
     },
     "llvm-backend": {
@@ -309,11 +309,11 @@
         "utils": "utils_2"
       },
       "locked": {
-        "lastModified": 1654611451,
-        "narHash": "sha256-T4rV5uz9Eh05WnX/it/e4QqQBKcizO9z33tmUPnammU=",
+        "lastModified": 1655328587,
+        "narHash": "sha256-Gtmghg292qm2H2QBOWpxEZ0K2bD51jRhwhqi8Hbhmf4=",
         "owner": "runtimeverification",
         "repo": "llvm-backend",
-        "rev": "549e2e4e0a9fe279db7c56071b6f771e0278452b",
+        "rev": "8243ca9e201f9be793b57ddfb54cc77043a14dd4",
         "type": "github"
       },
       "original": {
