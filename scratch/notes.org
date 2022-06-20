@@ -406,19 +406,19 @@ kore-exec: [780913179] Warning (WarnStuckClaimState):
   #+END_EXAMPLE
 - adding this rule makes kore-exec eat the entire RAM without using z3
 
+**** DONE try the simplification rule above with a functional-spec case
+ - minimising the case that loops / or debugging it
+   - Loops in the debugger even before the prompt appears (if it
+    applies anywhere in the file - tested with functional-spec.k)
+   - Interestingly, *a test in functional-spec.k goes through without
+     this rule.* (and does not loop)
+
 **** DONE try a variant that states the A || B in the requirements
   #+BEGIN_EXAMPLE
     rule (X ==Int A orBool X ==Int B) => X ==Int B
       requires X =/=Int A andBool (X ==Int A orBool X ==Int B) [simplification]
   #+END_EXAMPLE
 - *this also loops.*
-
-**** TODO try the simplification rule above with a functional-spec case
-- minimising the case that loops / or debugging it
-  - Loops in the debugger even before the prompt appears (if it
-   applies anywhere in the file - tested with functional-spec.k)
-  - Interestingly, *a test in functional-spec.k goes through without
-    this rule.* (and does not loop)
 
 *** IN_PROGRESS Another problem, the `maxUInt48 &Int X => X if X < pow48` rule
     - this rule makes one of the tests in functional-spec.k fail.
