@@ -420,7 +420,7 @@ kore-exec: [780913179] Warning (WarnStuckClaimState):
   #+END_EXAMPLE
 - *this also loops.*
 
-*** IN_PROGRESS Another problem, the `maxUInt48 &Int X => X if X < pow48` rule
+*** DONE Another problem, the `maxUInt48 &Int X => X if X < pow48` rule
     - this rule makes one of the tests in functional-spec.k fail.
     - The Haskell backend and the java backend have different rules
       (with and without the `maxUInt48 &Int`) in verification.k
@@ -446,6 +446,11 @@ kore-exec: [780913179] Warning (WarnStuckClaimState):
       ACCT_ID_STORAGE [ 6 <- ( maxUInt48 &Int ABI_data ) *Int pow48 |Int maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ]
     } )
         #+END_EXAMPLE
+
+Solved by merging the JAVA and HASKELL versoins of the rule (HASKELL
+had the _maxUInt48 &Int_ which JAVA did not have), the
+functional-spec.k claim now goes through and hopefully the proof will
+succeed, too.
 
 ** TODO Task: Pick a proof that times out, profile the run
 - the running program is `kore-repl`, a Haskell binary

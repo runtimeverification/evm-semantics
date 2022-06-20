@@ -80,11 +80,6 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
 
     rule chop(Y) => Y +Int pow256 requires #range( 0 -Int maxUInt256 <= Y < 0 ) [simplification]
 
-    rule maxUInt48 &Int X <=Int maxUInt48 &Int X +Int Y => false
-      requires #rangeUInt(48, X)
-       andBool #rangeUInt(48, Y)
-       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
-
     rule sgn(chop(X)) ==Int  1 => 0 <=Int X requires #rangeSInt(256, X) [simplification]
     rule sgn(chop(X)) ==Int -1 => X  <Int 0 requires #rangeSInt(256, X) [simplification]
 
@@ -146,11 +141,6 @@ module LEMMAS-MCD-JAVA [symbolic, kast]
   // ########################
   // Arithmetic
   // ########################
-
-    rule X <=Int maxUInt48 &Int X +Int Y => false
-      requires #rangeUInt(48, X)
-       andBool #rangeUInt(48, Y)
-       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
 
     rule sgn(chop(X)) ==K  1 => 0 <=Int X requires #rangeSInt(256, X) [simplification]
     rule sgn(chop(X)) ==K -1 => X  <Int 0 requires #rangeSInt(256, X) [simplification]
@@ -430,12 +420,17 @@ module LEMMAS-MCD-COMMON
 
     rule chop(X +Int chop(Y)) => chop(X +Int Y) [simplification]
 
+    rule X <=Int maxUInt48 &Int X +Int Y => false
+      requires #rangeUInt(48, X)
+       andBool #rangeUInt(48, Y)
+       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
+
     rule maxUInt48 &Int (X +Int Y) <Int X => true
       requires #rangeUInt(48, X)
        andBool #rangeUInt(48, Y)
        andBool notBool (X +Int Y <Int pow48) [simplification]
 
-    // rule maxUInt48 &Int X => X requires #rangeUInt(48, X) [simplification]
+    rule maxUInt48 &Int X => X requires #rangeUInt(48, X) [simplification]
 
     rule 0 <=Int X |Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
     rule 0 <=Int X &Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
