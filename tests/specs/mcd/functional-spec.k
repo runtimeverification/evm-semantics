@@ -75,9 +75,21 @@ module FUNCTIONAL-SPEC
     claim <k> runLemma(maxUInt48 &Int ((CALLER_ID |Int (maskWordPackAddrUInt48UInt48_1 &Int #lookup(M, KX))) /Int pow208)) => doneLemma(maxUInt48 &Int (#lookup(M, KX) /Int pow208)) ... </k>
       requires #rangeAddress(CALLER_ID)
 
-    // FIXME JB add a claim about equalising the ttl and tau effects here
+    claim [wordpack4848-update-lo-bits]:
+        <k> runLemma( #WordPackUInt48UInt48 ( ABI_data , #lookup ( ACCT_ID_STORAGE , 6 ) /Int pow48 ))
+         => doneLemma( maxUInt48 &Int ABI_data |Int maskWordPackUInt48UInt48_2 &Int #lookup ( ACCT_ID_STORAGE , 6 ) )
+        ... </k>
+      requires #lookup ( ACCT_ID_STORAGE , 6 ) /Int pow48 <Int pow48
+       andBool #rangeUInt(48, ABI_data)
 
-    claim // [wordpackNoop]
+    claim [wordpack4848-update-hi-bits]:
+        <k> runLemma( #WordPackUInt48UInt48 ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) , ABI_data ) )
+         => doneLemma( (maxUInt48 &Int ABI_data ) *Int pow48 |Int maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) )
+        ... </k>
+      requires #lookup ( ACCT_ID_STORAGE , 6 ) /Int pow48 <Int pow48
+       andBool #rangeUInt(48, ABI_data)
+
+    claim [wordpack4848Noop]:
         <k> runLemma( #WordPackUInt48UInt48 ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) , #lookup ( ACCT_ID_STORAGE , 6 ) /Int pow48 ) )
           => doneLemma( #lookup ( ACCT_ID_STORAGE , 6 ) ) ... </k>
       requires  #lookup ( ACCT_ID_STORAGE , 6 ) /Int pow48 <Int pow48
