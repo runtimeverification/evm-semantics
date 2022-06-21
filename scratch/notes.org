@@ -467,7 +467,44 @@ rule { true #Equals A orBool B } => { true #Equals A } #Or { true #Equals B } [s
 - note "anywhere" to indicate this is a matching logic rule
 - check whether the rule is actually true (using set theory)
 - rule does not fire on the target side condition (config still has orBool)
-***** TODO investigate super-linear complexity of orBool
+**** QUESTION Another attempt, removing the WordPack expressions:
+- removing the unnecessary _#WordPack_ expressions from the proof for
+  beg V pad, we get a seemingly _wrong_ thing:
+  #+BEGIN_EXAMPLE
+The configuration's term unifies with the destination's term, but the implication check
+between the conditions has failed. Location: /home/jost/work/RV/
+...
+  #Not ( {
+    ABI_what
+  #Equals
+    44505821594576442305943786526067189028800094342624099485940320344354850865152
+  } )
+#And
+...
+#And
+  #Not ( {
+    ACCT_ID_STORAGE [ 5 <- #if ABI_what ==Int 50831113381244017834160629274459250484386129340111898844856005057409758265344
+                           #then ABI_data
+                           #else #lookup ( ACCT_ID_STORAGE , 5 )
+                           #fi ]
+  #Equals
+    ACCT_ID_STORAGE [ 5 <- ABI_data:Int ]
+  } )
+#And
+...
+#And
+  {
+    true
+  #Equals
+    ABI_what ==Int 44505821594576442305943786526067189028800094342624099485940320344354850865152
+      orBool
+    ABI_what ==Int 50831113381244017834160629274459250484386129340111898844856005057409758265344
+  }
+...
+  #+END_EXAMPLE
+
+
+*** TODO investigate super-linear complexity of orBool
 - simple transition system with branch count varying, test timings for branch count
 
 ** TODO Task: Pick a proof that times out, profile the run
