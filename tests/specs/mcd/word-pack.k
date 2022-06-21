@@ -96,7 +96,9 @@ module WORD-PACK-COMMON
     rule (UINT48_2 *Int pow48) |Int (maxUInt48                  &Int UINT48_UINT48) => #WordPackUInt48UInt48( maxUInt48 &Int UINT48_UINT48 , UINT48_2                               ) requires #rangeUInt(96, UINT48_UINT48) andBool #rangeUInt(48, UINT48_2) [simplification]
 
     // an unchanged X packed as two UInt48 replicates itself
-    rule #WordPackUInt48UInt48(maxUInt48 &Int X , X /Int pow48 ) => X requires #rangeUInt( 48, X /Int pow48 ) [simplification]
+    rule #WordPackUInt48UInt48(maxUInt48 &Int X , X /Int pow48 ) => X
+      requires #rangeUInt( 48, X /Int pow48 )
+       andBool X >=Int 0 [simplification]
 
     syntax Int ::= "maskWordPackAddrUInt48UInt48_1" [macro] // 0xFFFFFFFFFFFFFFFFFFFFFFFF0000000000000000000000000000000000000000
                  | "maskWordPackAddrUInt48UInt48_2" [macro] // 0xFFFFFFFFFFFF000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
