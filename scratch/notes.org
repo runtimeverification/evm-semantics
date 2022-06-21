@@ -452,6 +452,22 @@ had the _maxUInt48 &Int_ which JAVA did not have), the
 functional-spec.k claim now goes through and hopefully the proof will
 succeed, too.
 
+*** TODO Follow-up work on the proofs
+
+***** Source code for the proof
+https://github.com/makerdao/dss/blob/master/src/flop.sol#L110
+
+***** DONE add a X >=Int 0 to the wordpack simplification (noop) rule
+- because X might not be >= 0 if X /Int pow48 is
+
+***** TODO try a more general rule with simple boolean variables for simplification
+***** TODO try a simplification rule that splits the orBool into #Or
+rule { true #Equals A orBool B } => { true #Equals A } #Or { true #Equals B } [simplification, anywhere]
+- note "anywhere" to indicate this is a matching logic rule
+- check whether the rule is actually true (using set theory)
+***** TODO investigate super-linear complexity of orBool
+- simple transition system with branch count varying, test timings for branch count
+
 ** TODO Task: Pick a proof that times out, profile the run
 - the running program is `kore-repl`, a Haskell binary
 - Invocation (from `ps` output):
