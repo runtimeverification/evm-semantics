@@ -3,14 +3,6 @@ requires "verification.k"
 module FLIPPER-BIDS-PASS-ROUGH-SPEC
     imports VERIFICATION
 
-    // ByteArray concat cancel from left
-    rule { BA1:ByteArray ++ BA2:ByteArray #Equals BA1:ByteArray ++ BA3:ByteArray } => { BA2 #Equals BA3 } [simplification, anywhere]
-    
-    // ByteArray concat cancel from left with leading buffers of same length
-    rule { #buf(BX:Int, BY:Int):ByteArray ++ BA1:ByteArray #Equals #buf(BX:Int, BZ:Int):ByteArray ++ BA2:ByteArray } => 
-         { BY #Equals BZ } #And { BA1 #Equals BA2 } 
-         requires #rangeUInt(BX *Int 8, BY) andBool #rangeUInt(BX *Int 8, BZ) [simplification, anywhere]
-
     // Deconstruction of #WordPackAddrUInt48UInt48 at the meta-logic level
     rule    { #WordPackAddrUInt48UInt48(A:Int, B:Int, C:Int) #Equals D:Int }
          => { A #Equals maxUInt160 &Int  D              }
