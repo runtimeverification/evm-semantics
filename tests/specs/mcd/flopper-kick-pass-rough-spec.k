@@ -3,10 +3,6 @@ requires "verification.k"
 module FLOPPER-KICK-PASS-ROUGH-SPEC
     imports VERIFICATION
 
-    // Map simplification
-    rule { M:Map [ K1:Int <- V1:Int ] [ K2:Int <- V21:Int ] #Equals  M:Map [ K1:Int <- V1:Int ] [ K2:Int <- V22:Int ] } => 
-         { V21 #Equals V22 } [simplification, anywhere]
-
     // Flopper_kick
     claim [Flopper.kick.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
