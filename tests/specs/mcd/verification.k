@@ -472,4 +472,5 @@ module LEMMAS-MCD-COMMON
     //   requires X =/=Int A
     //    andBool (X ==Int A orBool X ==Int B) [simplification]
 
+    rule { M:Map [ K <- V1 ] #Equals M [ K <- V2 ] } => { V1 #Equals V2 } [simplification, anywhere]
 endmodule
