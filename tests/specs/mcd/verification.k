@@ -320,6 +320,8 @@ module LEMMAS-MCD-COMMON
        andBool K1 +Int #sizeByteArray(BUF11) <=Int K2 +Int #sizeByteArray(BUF2)
       [simplification]
 
+    rule { M:Map [ K <- V1 ] #Equals M [ K <- V2 ] } => { V1 #Equals V2 } [simplification, anywhere]
+
   // ########################
   // Arithmetic
   // ########################
@@ -457,7 +459,6 @@ module LEMMAS-MCD-COMMON
     rule chop(X +Int pow256)  => chop(X)        [simplification]
     rule chop(chop(X) *Int Y) => chop(X *Int Y) [simplification]
 
-    // specific rule for the flopper-file proofs, however generalisable
     rule chop ( (maxUInt48 &Int X) *Int pow48) => (maxUInt48 &Int X) *Int pow48  [simplification]
 
     rule (I1 +Int I2) -Int I1 => I2 [simplification]
@@ -468,9 +469,4 @@ module LEMMAS-MCD-COMMON
 
     rule chop(X *Int (Y +Int pow256)) => chop(X *Int Y) [simplification]
 
-    // rule (X ==Int A orBool X ==Int B) => X ==Int B
-    //   requires X =/=Int A
-    //    andBool (X ==Int A orBool X ==Int B) [simplification]
-
-    rule { M:Map [ K <- V1 ] #Equals M [ K <- V2 ] } => { V1 #Equals V2 } [simplification, anywhere]
 endmodule
