@@ -117,9 +117,11 @@ andBool PAUSED ==Int 0                                     // notPaused
 andBool CALLER_ID ==Int WITHDRAWER                         // onlyWithdrawer
 andBool AMOUNT >Int 0                                      // require(_amount > 0);
 andBool NOW >Int LASTWITHDRAWTIME +Word (24 *Int 3600)     // require(_time > (lastWithdrawTime + 24 hours));
+andBool NOW >Int 0                                         
 // NOTE: +Word instead of +Int
 andBool AMOUNT <=Int WITHDRAWLIMIT // if (amount > withdrawLimit) { ... }
-ensures  ?RET_VAL ==Int AMOUNT
+ensures
+  ?RET_VAL ==Int AMOUNT
 
 
 
