@@ -502,7 +502,25 @@ between the conditions has failed. Location: /home/jost/work/RV/
   }
 ...
   #+END_EXAMPLE
-
+**** DONE Try a rule that lifts values out of maps for #Equals
+rule { M:Map [K <- V1] #Equals M [K <- V2]} => { V1 #Equals V2} [simplification, anywhere]
+- this makes the beg-pad case combination pass.
+- the full proof still fails, with _#Not(#Ceil... #And #Ceil..._ in
+  the CLI output.
+  - Debugger repl shows a stuck case for tau where the nested #ifs are
+    not resolved (but not inside a Map expression any more).
+  - other cases (beg,pad,ttl) appear to have worked (except for the
+    #Not(#Ceil) thing getting in the way)
+- also tried to run ttl and tau cases in combination, similar result
+  (see below)
+- also ran the beg/pad/ttl cases in a triple combination: *Failed*
+  - same diagnosis, the nested #if is not resolved in the ttl case,
+    despite side conditions (together) hinting at the possibility.
+**** TODO investigate the _error_ call reporting "#Not(#Ceil ..) in a stuck state"
+- captured an error message (in the debugger) that reports having
+  found a #Not(#Ceil..) in a stuck configuration.
+- seen twice while running in the debugger (ttl/tau and whole proof)
+  - will chase the error call and try to trace back
 
 *** TODO investigate super-linear complexity of orBool
 - simple transition system with branch count varying, test timings for branch count
