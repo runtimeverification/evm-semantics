@@ -179,11 +179,27 @@ module LEMMAS-MCD-COMMON
     rule (W0 : WS) [ 0     .. WIDTH ] => W0 : (WS [ 0 .. WIDTH -Int 1 ])  requires 0 <Int WIDTH [simplification]
     rule (_  : WS) [ START .. WIDTH ] => WS [ START -Int 1 .. WIDTH ]     requires 0 <Int START [simplification]
 
-    // ### cat-exhaustiveness
-
     rule WS [ START .. WIDTH ] [ 0 .. WIDTH' ]  => WS [ START .. WIDTH' ]  requires WIDTH' <=Int WIDTH [simplification]
 
+    // Buffer equality specialized to buffer length 32
+    rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray } => { BY #Equals BZ }
+         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
+
+    // ### cat-exhaustiveness
+
     rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 ) [simplification]
+
+    rule { BA1:ByteArray ++ BA2:ByteArray #Equals BA1:ByteArray ++ BA3:ByteArray } => { BA2 #Equals BA3 } [simplification]
+
+    // Note: simplifications below are specialized to buffer length 32
+
+    rule { #buf(32, BY:Int):ByteArray ++ BA1:ByteArray #Equals #buf(32, BZ:Int):ByteArray ++ BA2:ByteArray } => 
+         { BY #Equals BZ } #And { BA1 #Equals BA2 } 
+         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
+
+    rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray ++ BA2:ByteArray } => 
+         { BY #Equals BZ } #And { .ByteArray #Equals BA2 } 
+         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
 
   // ########################
   // Word Reasoning
