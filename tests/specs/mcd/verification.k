@@ -469,4 +469,9 @@ module LEMMAS-MCD-COMMON
 
     rule chop(X *Int (Y +Int pow256)) => chop(X *Int Y) [simplification]
 
+    rule A orBool B => B requires notBool A [simplification]
+
+    rule { true #Equals A orBool B } => { true #Equals A } #Or { true #Equals B } [ simplification, anywhere ]
+
+
 endmodule
