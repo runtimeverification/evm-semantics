@@ -19,6 +19,7 @@ endmodule
 
 module LEMMAS-MCD-SYNTAX
     imports LEMMAS
+    imports ML-SYNTAX
 
   // ########################
   // Constants
