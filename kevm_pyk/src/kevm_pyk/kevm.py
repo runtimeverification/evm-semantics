@@ -3,7 +3,7 @@ import os
 import sys
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, List, Optional
+from typing import Any, Dict, Final, List, Mapping, Optional
 
 from pyk.cli_utils import run_process
 from pyk.kast import KApply, KInner, KSort
