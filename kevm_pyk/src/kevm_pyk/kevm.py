@@ -110,6 +110,7 @@ class KEVM(KProve):
         md_selector: Optional[str] = None,
         hook_namespaces: Optional[List[str]] = None,
         concrete_rules_file: Optional[Path] = None,
+        env: Optional[Mapping[str, str]] = None,
     ) -> 'KEVM':
         command = ['kompile', '--output-definition', str(definition_dir), str(main_file_name)]
         command += ['--emit-json', '--backend', 'haskell']
@@ -123,7 +124,7 @@ class KEVM(KProve):
                 concrete_rules = ','.join(crf.read().split('\n'))
                 command += ['--concrete-rules', concrete_rules]
         try:
-            run_process(command, _LOGGER)
+            run_process(command, _LOGGER, env=env)
         except CalledProcessError as err:
             sys.stderr.write(f'\nkompile stdout:\n{err.stdout}\n')
             sys.stderr.write(f'\nkompile stderr:\n{err.stderr}\n')
