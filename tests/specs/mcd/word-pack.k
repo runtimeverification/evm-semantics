@@ -46,26 +46,113 @@ endmodule
 module WORD-PACK-HASKELL [kore]
     imports WORD-PACK-COMMON
 
-    rule    ADDR_UINT48_UINT48 ==Int #WordPackAddrUInt48UInt48(ADDR, UINT48_1, UINT48_2)
-         => ADDR     ==Int maxUInt160 &Int  ADDR_UINT48_UINT48
-    andBool UINT48_1 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160)
-    andBool UINT48_2 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208)
-    andBool #rangeUInt(256, ADDR_UINT48_UINT48)
-      [simplification]
+    rule       ADDR_UINT48_UINT48:Int ==Int #WordPackAddrUInt48UInt48(ADDR:Int, UINT48_1:Int, UINT48_2:Int) 
+            => ADDR     ==Int maxUInt160 &Int  ADDR_UINT48_UINT48              
+       andBool UINT48_1 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160)
+       andBool UINT48_2 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208)
+       andBool #rangeUInt(256, ADDR_UINT48_UINT48)
+       andBool #rangeUInt(160, ADDR)
+       andBool #rangeUInt(48, UINT48_1)
+       andBool #rangeUInt(48, UINT48_2)
+       [simplification]
 
-    rule    UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2)
-         => UINT48_1 ==Int maxUInt48 &Int  UINT48_UINT48
-    andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
-    andBool #rangeUInt(96, UINT48_UINT48)
-      [simplification]
+    rule       #WordPackAddrUInt48UInt48(ADDR:Int, UINT48_1:Int, UINT48_2:Int) ==Int ADDR_UINT48_UINT48:Int
+            => ADDR     ==Int maxUInt160 &Int  ADDR_UINT48_UINT48              
+       andBool UINT48_1 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160)
+       andBool UINT48_2 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208)
+       andBool #rangeUInt(256, ADDR_UINT48_UINT48)
+       andBool #rangeUInt(160, ADDR)
+       andBool #rangeUInt(48, UINT48_1)
+       andBool #rangeUInt(48, UINT48_2)
+       [simplification]
+
+    rule    { ADDR_UINT48_UINT48:Int #Equals #WordPackAddrUInt48UInt48(ADDR:Int, UINT48_1:Int, UINT48_2:Int) }
+         => { ADDR     #Equals maxUInt160 &Int  ADDR_UINT48_UINT48              }
+       #And { UINT48_1 #Equals maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160) }
+       #And { UINT48_2 #Equals maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208) }
+       #And { #rangeUInt(256, ADDR_UINT48_UINT48) }
+       #And { #rangeUInt(160, ADDR) }
+       #And { #rangeUInt(48, UINT48_1) }
+       #And { #rangeUInt(48, UINT48_2) }
+       [simplification]
+
+    rule    { #WordPackAddrUInt48UInt48(ADDR:Int, UINT48_1:Int, UINT48_2:Int) #Equals ADDR_UINT48_UINT48:Int }
+         => { ADDR     #Equals maxUInt160 &Int  ADDR_UINT48_UINT48              }
+       #And { UINT48_1 #Equals maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160) }
+       #And { UINT48_2 #Equals maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208) }
+       #And { #rangeUInt(256, ADDR_UINT48_UINT48) }
+       #And { #rangeUInt(160, ADDR) }
+       #And { #rangeUInt(48, UINT48_1) }
+       #And { #rangeUInt(48, UINT48_2) }
+       [simplification]
+
+    rule       UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2)
+            => UINT48_1 ==Int maxUInt48 &Int  UINT48_UINT48
+       andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
+       andBool (0 <=Int UINT48_UINT48) andBool (UINT48_UINT48 <Int pow96)
+       andBool (0 <=Int UINT48_1) andBool (UINT48_1 <Int pow48)
+       andBool (0 <=Int UINT48_2) andBool (UINT48_2 <Int pow48)
+       [simplification]
+
+    rule       #WordPackUInt48UInt48(UINT48_1, UINT48_2) ==Int UINT48_UINT48
+            => UINT48_1 ==Int maxUInt48 &Int  UINT48_UINT48
+       andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
+       andBool (0 <=Int UINT48_UINT48) andBool (UINT48_UINT48 <Int pow96)
+       andBool (0 <=Int UINT48_1) andBool (UINT48_1 <Int pow48)
+       andBool (0 <=Int UINT48_2) andBool (UINT48_2 <Int pow48)
+               [simplification]
+
+    rule    { UINT48_UINT48 #Equals #WordPackUInt48UInt48(UINT48_1, UINT48_2) }
+         => { UINT48_1 #Equals maxUInt48 &Int  UINT48_UINT48 }
+       #And { UINT48_2 #Equals maxUInt48 &Int (UINT48_UINT48 /Int pow48) }
+       #And { 0 <=Int UINT48_UINT48 } #And { UINT48_UINT48 <Int pow96 }
+       #And { 0 <=Int UINT48_1 } #And { UINT48_1 <Int pow48 }
+       #And { 0 <=Int UINT48_2 } #And { UINT48_2 <Int pow48 }
+       [simplification]
+
+    rule    { #WordPackUInt48UInt48(UINT48_1, UINT48_2) #Equals UINT48_UINT48}
+         => { UINT48_1 #Equals maxUInt48 &Int  UINT48_UINT48 }
+       #And { UINT48_2 #Equals maxUInt48 &Int (UINT48_UINT48 /Int pow48) }
+       #And { 0 <=Int UINT48_UINT48 } #And { UINT48_UINT48 <Int pow96 }
+       #And { 0 <=Int UINT48_1 } #And { UINT48_1 <Int pow48 }
+       #And { 0 <=Int UINT48_2 } #And { UINT48_2 <Int pow48 }
+       [simplification]
 
     rule    ADDR_UINT8 ==Int #WordPackAddrUInt8(ADDR, UINT8)
          => ADDR  ==Int maxUInt160 &Int  ADDR_UINT8
     andBool UINT8 ==Int maxUInt8   &Int (ADDR_UINT8 /Int pow160)
     andBool #rangeUInt(168, ADDR_UINT8)
-      [simplification]
+    andBool #rangeUInt(160, ADDR)
+    andBool #rangeUInt(  8, UINT8)
+    [simplification]
+
+    rule    #WordPackAddrUInt8(ADDR, UINT8) ==Int ADDR_UINT8
+         => ADDR  ==Int maxUInt160 &Int  ADDR_UINT8
+    andBool UINT8 ==Int maxUInt8   &Int (ADDR_UINT8 /Int pow160)
+    andBool #rangeUInt(168, ADDR_UINT8)
+    andBool #rangeUInt(160, ADDR)
+    andBool #rangeUInt(  8, UINT8)
+    [simplification]
+
+    rule    { #WordPackAddrUInt8(ADDR, UINT8) #Equals ADDR_UINT8 }
+         => { ADDR  #Equals maxUInt160 &Int  ADDR_UINT8 }
+       #And { UINT8 #Equals maxUInt8   &Int (ADDR_UINT8 /Int pow160) }
+       #And { #rangeUInt(168, ADDR_UINT8) }
+       #And { #rangeUInt(160, ADDR) }
+       #And { #rangeUInt(  8, UINT8) }
+       [simplification]
+
+    rule    { ADDR_UINT8 #Equals #WordPackAddrUInt8(ADDR, UINT8) }
+         => { ADDR  #Equals maxUInt160 &Int  ADDR_UINT8 }
+       #And { UINT8 #Equals maxUInt8   &Int (ADDR_UINT8 /Int pow160) }
+       #And { #rangeUInt(168, ADDR_UINT8) }
+       #And { #rangeUInt(160, ADDR) }
+       #And { #rangeUInt(  8, UINT8) }
+       [simplification]
 
     rule maxUInt48 &Int (X /Int pow48) => X /Int pow48 requires #rangeUInt(96, X) [simplification]
+    rule maxUInt48 &Int _ /Int C => 0 requires C >Int maxUInt48 [simplification]
+    rule A /Int pow48 => 0 requires #rangeUInt(48, A) [simplification]
 
     rule X |Int 0 => X requires 0 <=Int X [simplification]
     rule 0 &Int X => 0 requires 0 <=Int X [simplification]

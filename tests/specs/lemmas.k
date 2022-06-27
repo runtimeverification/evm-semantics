@@ -17,7 +17,7 @@ module LEMMAS
 
     // chop range & simplification
     rule chop(I) => I requires #rangeUInt( 256 , I ) [simplification]
-    rule 0 <=Int chop(_V)             => true        [simplification]
+    rule 0 <=Int chop(_V)             => true        [simplification, smt-lemma]
     rule         chop(_V) <Int pow256 => true        [simplification]
 
   // ########################

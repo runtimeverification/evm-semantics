@@ -355,4 +355,13 @@ tests/specs/erc20/hkg/transferFrom-success-1-spec.k
 tests/specs/examples/erc20-spec.md
 tests/specs/mcd/dstoken-approve-fail-rough-spec.k
 tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
+tests/specs/mcd/end-cash-pass-rough-spec.k
+tests/specs/mcd/end-pack-pass-rough-spec.k
+tests/specs/mcd/flapper-yank-pass-rough-spec.k
+tests/specs/mcd/flipper-bids-pass-rough-spec.k
+tests/specs/mcd/gemjoin-exit-pass-rough-spec.k
+tests/specs/mcd/pot-join-pass-rough-spec.k
 tests/specs/mcd/vat-flux-diff-pass-rough-spec.k
+tests/specs/mcd/vat-fold-pass-rough-spec.k
+tests/specs/mcd/vat-fork-diff-pass-rough-spec.k
+tests/specs/mcd/vat-slip-pass-rough-spec.k

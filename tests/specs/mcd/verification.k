@@ -19,6 +19,7 @@ endmodule
 
 module LEMMAS-MCD-SYNTAX
     imports LEMMAS
+    imports ML-SYNTAX
 
   // ########################
   // Constants
@@ -130,6 +131,14 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
        andBool Y <=Int 0
        andBool notBool #rangeUInt(256, X -Int Y) [simplification]
 
+    rule { chop(X) #Equals chop(Y) } => { X #Equals Y }
+         requires #rangeSInt(256, X) andBool #rangeSInt(256, Y)
+         [simplification]
+
+    rule { chop ( X ) #Equals chop ( Y ) } => 
+         { X #Equals Y } #And { Y <=Int 0 }
+         requires (minSInt256 <=Int X) andBool (X <=Int 0) andBool #rangeSInt(256, Y) [simplification]
+
   // ########################
   // Map
   // ########################
@@ -179,11 +188,26 @@ module LEMMAS-MCD-COMMON
     rule (W0 : WS) [ 0     .. WIDTH ] => W0 : (WS [ 0 .. WIDTH -Int 1 ])  requires 0 <Int WIDTH [simplification]
     rule (_  : WS) [ START .. WIDTH ] => WS [ START -Int 1 .. WIDTH ]     requires 0 <Int START [simplification]
 
-    // ### cat-exhaustiveness
-
     rule WS [ START .. WIDTH ] [ 0 .. WIDTH' ]  => WS [ START .. WIDTH' ]  requires WIDTH' <=Int WIDTH [simplification]
 
+    // ### cat-exhaustiveness
+
     rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 ) [simplification]
+
+    rule { BA1:ByteArray ++ BA2:ByteArray #Equals BA1:ByteArray ++ BA3:ByteArray } => { BA2 #Equals BA3 } [simplification]
+
+    rule { BA1:ByteArray ++ (BA2:ByteArray ++ BA3:ByteArray) #Equals BA4:ByteArray ++ BA3 } => { (BA1 ++ BA2) #Equals BA4 } [simplification]
+
+    rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray } => { BY #Equals BZ }
+         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
+
+    rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray ++ BA2:ByteArray } => 
+         { BY #Equals BZ } #And { .ByteArray #Equals BA2 } 
+         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
+
+    rule { #buf(32, BY:Int):ByteArray ++ BA1:ByteArray #Equals #buf(32, BZ:Int):ByteArray ++ BA2:ByteArray } => 
+         { BY #Equals BZ } #And { BA1 #Equals BA2 } 
+         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
 
   // ########################
   // Word Reasoning
@@ -327,8 +351,15 @@ module LEMMAS-MCD-COMMON
 
     rule M:Memory [ K1 := (BUF11 ++ BUF12) ] [ K2 := BUF2 ] => M [ K1 +Int #sizeByteArray(BUF11) := BUF12 ] [ K2 := BUF2 ]
       requires K2 <=Int K1
-       andBool K1 +Int #sizeByteArray(BUF11) <=Int K2 +Int #sizeByteArray(BUF2)
+      andBool K1 +Int #sizeByteArray(BUF11) <=Int K2 +Int #sizeByteArray(BUF2)
       [simplification]
+
+    rule { (M:Map [K <- V1]) #Equals (M [K <- V2]) } => { V1 #Equals V2 }
+         [simplification]
+        
+    rule { M:Map [K <- V1] #Equals M } => 
+         { K in_keys(M) } #And { V1 #Equals #lookup (M, K) }
+         [simplification]
 
   // ########################
   // Arithmetic
