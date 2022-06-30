@@ -139,6 +139,9 @@ class KEVM(KProve):
         symbol_table['_impliesBool_']                                 = paren(symbol_table['_impliesBool_'])                                # noqa
         symbol_table['notBool_']                                      = paren(symbol_table['notBool_'])                                     # noqa
         symbol_table['_/Int_']                                        = paren(symbol_table['_/Int_'])                                       # noqa
+        symbol_table['_*Int_']                                        = paren(symbol_table['_*Int_'])                                       # noqa
+        symbol_table['_-Int_']                                        = paren(symbol_table['_-Int_'])                                       # noqa
+        symbol_table['_+Int_']                                        = paren(symbol_table['_+Int_'])                                       # noqa
         symbol_table['#Or']                                           = paren(symbol_table['#Or'])                                          # noqa
         symbol_table['#And']                                          = paren(symbol_table['#And'])                                         # noqa
         symbol_table['#Implies']                                      = paren(symbol_table['#Implies'])                                     # noqa
