@@ -140,12 +140,38 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
          requires (minSInt256 <=Int X) andBool (X <=Int 0) andBool #rangeSInt(256, Y) [simplification]
 
   // ########################
+  // Buffer Reasoning
+  // ########################
+
+    rule { BA1:ByteArray ++ BA2:ByteArray #Equals BA1:ByteArray ++ BA3:ByteArray } => { BA2 #Equals BA3 } [simplification]
+
+    rule { BA1:ByteArray ++ (BA2:ByteArray ++ BA3:ByteArray) #Equals BA4:ByteArray ++ BA3 } => { (BA1 ++ BA2) #Equals BA4 } [simplification]
+
+    rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray } => { BY #Equals BZ }
+         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
+
+    rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray ++ BA2:ByteArray } => 
+         { true #Equals (BY ==Int BZ) andBool (.ByteArray ==K BA2) } 
+         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
+
+    rule { #buf(32, BY:Int):ByteArray ++ BA1:ByteArray #Equals #buf(32, BZ:Int):ByteArray ++ BA2:ByteArray } => 
+         { true #Equals (BY ==Int BZ) andBool (BA1 ==K BA2) } 
+         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
+
+  // ########################
   // Map
   // ########################
 
     rule #range(M:Memory [ K <- V ]                        , START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)  requires K +Int 1                    ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START [concrete(K    , V     ), simplification]
     rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS')        ], START, WIDTH)  requires K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START
                                                                                                                                   andBool K +Int 1                    ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
+
+    rule { (M:Map [K <- V1]) #Equals (M [K <- V2]) } => { V1 #Equals V2 }
+         [simplification]
+        
+    rule { M:Map [K <- V1] #Equals M } => 
+         { true #Equals K in_keys(M) andBool V1 ==K #lookup (M, K) }
+         [simplification]
 
 endmodule
 
@@ -193,21 +219,6 @@ module LEMMAS-MCD-COMMON
     // ### cat-exhaustiveness
 
     rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 ) [simplification]
-
-    rule { BA1:ByteArray ++ BA2:ByteArray #Equals BA1:ByteArray ++ BA3:ByteArray } => { BA2 #Equals BA3 } [simplification]
-
-    rule { BA1:ByteArray ++ (BA2:ByteArray ++ BA3:ByteArray) #Equals BA4:ByteArray ++ BA3 } => { (BA1 ++ BA2) #Equals BA4 } [simplification]
-
-    rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray } => { BY #Equals BZ }
-         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
-
-    rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray ++ BA2:ByteArray } => 
-         { true #Equals (BY ==Int BZ) andBool (.ByteArray ==K BA2) } 
-         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
-
-    rule { #buf(32, BY:Int):ByteArray ++ BA1:ByteArray #Equals #buf(32, BZ:Int):ByteArray ++ BA2:ByteArray } => 
-         { true #Equals (BY ==Int BZ) andBool (BA1 ==K BA2) } 
-         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
 
   // ########################
   // Word Reasoning
@@ -353,13 +364,6 @@ module LEMMAS-MCD-COMMON
       requires K2 <=Int K1
       andBool K1 +Int #sizeByteArray(BUF11) <=Int K2 +Int #sizeByteArray(BUF2)
       [simplification]
-
-    rule { (M:Map [K <- V1]) #Equals (M [K <- V2]) } => { V1 #Equals V2 }
-         [simplification]
-        
-    rule { M:Map [K <- V1] #Equals M } => 
-         { true #Equals K in_keys(M) andBool V1 ==K #lookup (M, K) }
-         [simplification]
 
   // ########################
   // Arithmetic

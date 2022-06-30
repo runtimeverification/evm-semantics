@@ -61,12 +61,6 @@ module LEMMAS
     rule 0 <=Int keccak( _ )             => true [simplification]
     rule         keccak( _ ) <Int pow256 => true [simplification]
 
-    rule { I:Int #Equals keccak(_) } => #Bottom requires 0 <=Int I andBool I <Int 10 [simplification]
-
-    rule { I1:Int #Equals keccak(_) +Int I2 } => #Bottom 
-      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10 
-      [simplification]
-
     rule #lookup( M:Map [ keccak(_) <- _ ], I:Int ) => #lookup( M , I )
       requires 0 <=Int I andBool I <Int 10
       [simplification]
@@ -334,6 +328,16 @@ module LEMMAS-HASKELL [symbolic, kore]
     // (check-sat)
     // (pop)
     rule X <=Int chop ( X +Int Y ) => false  requires pow256 <=Int ( X +Int Y ) andBool #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
+
+  // ########################
+  // Keccak
+  // ########################
+
+    rule { I:Int #Equals keccak(_) } => #Bottom requires 0 <=Int I andBool I <Int 10 [simplification]
+
+    rule { I1:Int #Equals keccak(_) +Int I2 } => #Bottom 
+      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10 
+      [simplification]
 
   // ########################
   // Buffer Reasoning
