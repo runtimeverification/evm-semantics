@@ -123,8 +123,4 @@ module FLOPPER-FILE-PASS-ROUGH-SPEC
        andBool #Flopper.beg =/=Int #Flopper.pad
        andBool #Flopper.beg =/=Int #Flopper.ttl_tau
        andBool #Flopper.pad =/=Int #Flopper.ttl_tau
-
-       andBool #Flopper.beg in_keys(ACCT_ID_STORAGE)
-       andBool #Flopper.pad in_keys(ACCT_ID_STORAGE)
-       andBool #Flopper.ttl_tau in_keys(ACCT_ID_STORAGE)
 endmodule

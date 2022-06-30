@@ -18,7 +18,7 @@ module FUNCTIONAL-SPEC
     //
     // NEW LEMMAS 
     //
-    claim <k> runLemma(TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) ++ b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" ) +Int 1 <- #lookup ( ACCT_ID_STORAGE , 5 ) *Int #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) ++ b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" ) +Int 1 ) /Int 1000000000000000000 ] , 6 ) /Int pow48 ) <Int pow48)
+    claim <k> runLemma(TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) ++ X ) +Int 1 <- #lookup ( ACCT_ID_STORAGE , 5 ) *Int #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) ++ X ) +Int 1 ) /Int 1000000000000000000 ] , 6 ) /Int pow48 ) <Int pow48)
           => doneLemma(true) ... </k>
         requires #lookup(ACCT_ID_STORAGE, 6) ==Int #WordPackUInt48UInt48(_, Tau)
         andBool #rangeUInt(48, TIME +Int Tau)
