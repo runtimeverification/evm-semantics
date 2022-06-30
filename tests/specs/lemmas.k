@@ -69,10 +69,6 @@ module LEMMAS
       requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10 
       [simplification]
 
-    rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true 
-      requires I1 =/=Int I2 
-      [simplification]
-
   // ########################
   // Buffer Reasoning
   // ########################
@@ -103,6 +99,10 @@ module LEMMAS
     rule (BUF1 ++  BUF2)[START .. WIDTH] =>  BUF2[START -Int #sizeByteArray(BUF1) .. WIDTH                          ]                                                              requires                        #sizeByteArray(BUF1) <=Int START                                                             [simplification]
     rule (BUF1 ++  _   )[START .. WIDTH] =>  BUF1[START                           .. WIDTH                          ]                                                              requires START +Int WIDTH <=Int #sizeByteArray(BUF1)                       andBool 0 <=Int START andBool 0 <=Int WIDTH       [simplification]
     rule (BUF1 ++  BUF2)[START .. WIDTH] => (BUF1[START                           .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])  requires                        #sizeByteArray(BUF1) <Int START +Int WIDTH andBool #range(0 <= START < #sizeByteArray(BUF1)) [simplification]
+
+    rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true 
+      requires I1 =/=Int I2 
+      [simplification]
 
     // sizeByteArray
 
@@ -363,6 +363,14 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule BA:ByteArray   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                       [simplification, concrete(BA)]
     rule #buf(32, DATA) ==K BA:ByteArray   =>          DATA  ==Int #asInteger(BA) requires #sizeByteArray(BA) <=Int 32 [simplification, concrete(BA)]
 
+  // ########################
+  // Map Reasoning
+  // ########################
+
+    rule { M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] #Equals M:Map [ I2 <- V2 ] [ I1 <- V1 ] } => #Top
+      requires I1 =/=Int I2 
+      [simplification]
+      
   // ########################
   // Boolean Logic
   // ########################
