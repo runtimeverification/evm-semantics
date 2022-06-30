@@ -1,6 +1,6 @@
 from pyk.kast import KApply, KNonTerminal, KTerminal, KVariable
 from pyk.kastManip import (
-    abstractTermSafely,
+    abstract_term_safely,
     isAnonVariable,
     splitConfigAndConstraints,
     splitConfigFrom,
@@ -17,7 +17,7 @@ def abstract_cell_vars(cterm):
     config, subst = splitConfigFrom(state)
     for s in subst:
         if type(subst[s]) is KVariable and not isAnonVariable(subst[s]):
-            subst[s] = abstractTermSafely(KVariable('_'), baseName=s)
+            subst[s] = abstract_term_safely(KVariable('_'), base_name=s)
     return substitute(config, subst)
 
 
