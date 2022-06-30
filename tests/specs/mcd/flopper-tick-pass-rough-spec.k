@@ -92,21 +92,37 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
-       
+
        andBool (#rangeUInt(256, ABI_id)
+       andBool (#rangeUInt(256, Pad)
+       andBool (#rangeUInt(48, Ttl)
+       andBool (#rangeUInt(48, Tau)
+       andBool (#rangeUInt(256, Lot)
+       andBool (#rangeAddress(Guy)
+       andBool (#rangeUInt(48, Tic)
+       andBool (#rangeUInt(48, End)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Guy))
        andBool ((#rangeUInt(48, TIME))
+       andBool (#rangeUInt(256, Junk_0)
+       andBool (#rangeUInt(256, Junk_1)
+       andBool (#rangeUInt(256, Junk_2)
+       andBool (#rangeUInt(256, Junk_3)
        andBool (((VCallValue ==Int 0))
        andBool (((Tic ==Int 0))
        andBool (((End <Int TIME))
        andBool (((Pad *Int Lot <=Int maxUInt256))
-       andBool ((#rangeUInt(48, TIME +Int Tau)))))))))))
+       andBool ((#rangeUInt(48, TIME +Int Tau))))))))))))))))))))))
 
        andBool #lookup(ACCT_ID_STORAGE, #Flopper.pad) ==Int Pad
        andBool #lookup(ACCT_ID_STORAGE, #Flopper.ttl_tau) ==Int #WordPackUInt48UInt48(Ttl, Tau)
        andBool #lookup(ACCT_ID_STORAGE, #Flopper.bids[ABI_id].lot) ==Int Lot
        andBool #lookup(ACCT_ID_STORAGE, #Flopper.bids[ABI_id].guy_tic_end) ==Int #WordPackAddrUInt48UInt48(Guy, Tic, End)
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.pad) ==Int Junk_0
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.ttl_tau) ==Int Junk_1
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.bids[ABI_id].lot) ==Int Junk_2
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.bids[ABI_id].guy_tic_end) ==Int Junk_3
+       andBool #Flopper.pad =/=Int #Flopper.ttl_tau
        andBool #Flopper.pad =/=Int #Flopper.bids[ABI_id].lot
        andBool #Flopper.pad =/=Int #Flopper.bids[ABI_id].guy_tic_end
        andBool #Flopper.ttl_tau =/=Int #Flopper.bids[ABI_id].lot

@@ -19,7 +19,6 @@ endmodule
 
 module LEMMAS-MCD-SYNTAX
     imports LEMMAS
-    imports ML-SYNTAX
 
   // ########################
   // Constants
@@ -80,11 +79,6 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
   // ########################
 
     rule chop(Y) => Y +Int pow256 requires #range( 0 -Int maxUInt256 <= Y < 0 ) [simplification]
-
-    rule X <=Int maxUInt48 &Int X +Int Y => false
-      requires #rangeUInt(48, X)
-       andBool #rangeUInt(48, Y)
-       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
 
     rule sgn(chop(X)) ==Int  1 => 0 <=Int X requires #rangeSInt(256, X) [simplification]
     rule sgn(chop(X)) ==Int -1 => X  <Int 0 requires #rangeSInt(256, X) [simplification]
@@ -181,11 +175,6 @@ module LEMMAS-MCD-JAVA [symbolic, kast]
   // ########################
   // Arithmetic
   // ########################
-
-    rule X <=Int maxUInt48 &Int X +Int Y => false
-      requires #rangeUInt(48, X)
-       andBool #rangeUInt(48, Y)
-       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
 
     rule sgn(chop(X)) ==K  1 => 0 <=Int X requires #rangeSInt(256, X) [simplification]
     rule sgn(chop(X)) ==K -1 => X  <Int 0 requires #rangeSInt(256, X) [simplification]
@@ -368,6 +357,11 @@ module LEMMAS-MCD-COMMON
   // ########################
   // Arithmetic
   // ########################
+
+    rule X <=Int maxUInt48 &Int X +Int Y => false
+      requires #rangeUInt(48, X)
+       andBool #rangeUInt(48, Y)
+       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
 
     rule chop(N +Int M) <Int N => true  requires #rangeUInt(256, N)
                                          andBool #rangeUInt(256, M)

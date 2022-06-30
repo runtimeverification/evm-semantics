@@ -98,8 +98,13 @@ module FLOPPER-KICK-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, ABI_bid)
        andBool (#rangeUInt(256, Live)
        andBool (#rangeUInt(256, Kicks)
+       andBool (#rangeUInt(48, Ttl)
+       andBool (#rangeUInt(48, Tau)
        andBool (#rangeUInt(256, Old_lot)
        andBool (#rangeUInt(256, Old_bid)
+       andBool (#rangeAddress(Old_guy)
+       andBool (#rangeUInt(48, Old_tic)
+       andBool (#rangeUInt(48, Old_end)
        andBool (#rangeUInt(256, Ward)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Old_guy))
@@ -115,7 +120,7 @@ module FLOPPER-KICK-PASS-ROUGH-SPEC
        andBool ((((Live ==Int 1)))
        andBool ((((VCallValue ==Int 0)))
        andBool (((#rangeUInt(256, Kicks +Int 1)))
-       andBool ((#rangeUInt(48, TIME +Int Tau)))))))))))))))))))))))))
+       andBool ((#rangeUInt(48, TIME +Int Tau))))))))))))))))))))))))))))))
 
        andBool #lookup(ACCT_ID_STORAGE, #Flopper.wards[CALLER_ID]) ==Int Ward
        andBool #lookup(ACCT_ID_STORAGE, #Flopper.live) ==Int Live

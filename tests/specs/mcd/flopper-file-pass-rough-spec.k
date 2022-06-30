@@ -95,19 +95,34 @@ module FLOPPER-FILE-PASS-ROUGH-SPEC
 
        andBool (#rangeBytes(32, ABI_what)
        andBool (#rangeUInt(256, ABI_data)
+       andBool (#rangeUInt(256, May)
+       andBool (#rangeUInt(256, Beg)
+       andBool (#rangeUInt(256, Pad)
+       andBool (#rangeUInt(48, Ttl)
+       andBool (#rangeUInt(48, Tau)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool (#rangeUInt(256, Junk_0)
+       andBool (#rangeUInt(256, Junk_1)
+       andBool (#rangeUInt(256, Junk_2)
+       andBool (#rangeUInt(256, Junk_3)
        andBool ((May ==Int 1)
        andBool ((VCallValue ==Int 0)
-       andBool (((ABI_what ==Int #string2Word("beg")) orBool (ABI_what ==Int #string2Word("pad")) orBool (ABI_what ==Int #string2Word("ttl")) orBool (ABI_what ==Int #string2Word("tau")))))))))
+       andBool (((ABI_what ==Int #string2Word("beg")) orBool (ABI_what ==Int #string2Word("pad")) orBool (ABI_what ==Int #string2Word("ttl")) orBool (ABI_what ==Int #string2Word("tau"))))))))))))))))))
 
        andBool #lookup(ACCT_ID_STORAGE, #Flopper.wards[CALLER_ID]) ==Int May
        andBool #lookup(ACCT_ID_STORAGE, #Flopper.beg) ==Int Beg
        andBool #lookup(ACCT_ID_STORAGE, #Flopper.pad) ==Int Pad
        andBool #lookup(ACCT_ID_STORAGE, #Flopper.ttl_tau) ==Int #WordPackUInt48UInt48(Ttl, Tau)
-
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.wards[CALLER_ID]) ==Int Junk_0
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.beg) ==Int Junk_1
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.pad) ==Int Junk_2
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.ttl_tau) ==Int Junk_3
        andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.beg
        andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.pad
        andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.ttl_tau
+       andBool #Flopper.beg =/=Int #Flopper.pad
+       andBool #Flopper.beg =/=Int #Flopper.ttl_tau
+       andBool #Flopper.pad =/=Int #Flopper.ttl_tau
 
        andBool #Flopper.beg in_keys(ACCT_ID_STORAGE)
        andBool #Flopper.pad in_keys(ACCT_ID_STORAGE)
