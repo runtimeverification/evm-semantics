@@ -15,6 +15,24 @@ endmodule
 module FUNCTIONAL-SPEC
     imports FUNCTIONAL-SPEC-SYNTAX
 
+    //
+    // NEW LEMMAS 
+    //
+    claim <k> runLemma(TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) ++ b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" ) +Int 1 <- #lookup ( ACCT_ID_STORAGE , 5 ) *Int #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) ++ b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" ) +Int 1 ) /Int 1000000000000000000 ] , 6 ) /Int pow48 ) <Int pow48)
+          => doneLemma(true) ... </k>
+        requires #lookup(ACCT_ID_STORAGE, 6) ==Int #WordPackUInt48UInt48(_, Tau)
+        andBool #rangeUInt(48, TIME +Int Tau)
+
+    claim <k> runLemma( (maxUInt48 &Int W1) +Int (maxUInt160 &Int W2) )
+          => doneLemma( X +Int Y ) ... </k>
+          requires (W1 ==Int #WordPackUInt48UInt48(X, _))
+           andBool (W2 ==Int #WordPackAddrUInt48UInt48(Y, _, _))
+
+    claim <k> runLemma( ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) ++ b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" ) +Int 1 <- ABI_lot:Int ] [ keccak ( #buf ( 32 , ABI_id ) ++ b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" ) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) ++ b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" ) +Int 2 ) /Int pow208 ) ]
+                          ==K
+                        ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) ++ b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" ) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) ++ b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" ) +Int 2 ) /Int pow208 ) ] [ keccak ( #buf ( 32 , ABI_id ) ++ b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" ) +Int 1 <- ABI_lot:Int ]) => doneLemma(true)
+              ... </k>
+
     // Arithmetic
 
     claim <k> runLemma((X +Int pow256) -Int chop(Y)) => doneLemma(X -Int Y) ... </k>

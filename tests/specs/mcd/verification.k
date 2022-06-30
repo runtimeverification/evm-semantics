@@ -81,7 +81,7 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
 
     rule chop(Y) => Y +Int pow256 requires #range( 0 -Int maxUInt256 <= Y < 0 ) [simplification]
 
-    rule maxUInt48 &Int X <=Int maxUInt48 &Int X +Int Y => false
+    rule X <=Int maxUInt48 &Int X +Int Y => false
       requires #rangeUInt(48, X)
        andBool #rangeUInt(48, Y)
        andBool notBool #rangeUInt(48, X +Int Y) [simplification]
@@ -135,8 +135,8 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
          requires #rangeSInt(256, X) andBool #rangeSInt(256, Y)
          [simplification]
 
-    rule { chop ( X ) #Equals chop ( Y ) } => 
-         { X #Equals Y } #And { Y <=Int 0 }
+    rule { chop ( X:Int ) #Equals chop ( Y:Int ) } => 
+         { true #Equals X ==Int Y andBool Y <=Int 0 }
          requires (minSInt256 <=Int X) andBool (X <=Int 0) andBool #rangeSInt(256, Y) [simplification]
 
   // ########################
@@ -202,11 +202,11 @@ module LEMMAS-MCD-COMMON
          requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
 
     rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray ++ BA2:ByteArray } => 
-         { BY #Equals BZ } #And { .ByteArray #Equals BA2 } 
+         { true #Equals (BY ==Int BZ) andBool (.ByteArray ==K BA2) } 
          requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
 
     rule { #buf(32, BY:Int):ByteArray ++ BA1:ByteArray #Equals #buf(32, BZ:Int):ByteArray ++ BA2:ByteArray } => 
-         { BY #Equals BZ } #And { BA1 #Equals BA2 } 
+         { true #Equals (BY ==Int BZ) andBool (BA1 ==K BA2) } 
          requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
 
   // ########################
@@ -358,7 +358,7 @@ module LEMMAS-MCD-COMMON
          [simplification]
         
     rule { M:Map [K <- V1] #Equals M } => 
-         { K in_keys(M) } #And { V1 #Equals #lookup (M, K) }
+         { true #Equals K in_keys(M) andBool V1 ==K #lookup (M, K) }
          [simplification]
 
   // ########################

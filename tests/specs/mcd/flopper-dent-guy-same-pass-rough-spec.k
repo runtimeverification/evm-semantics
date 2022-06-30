@@ -99,13 +99,8 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Live)
        andBool (#rangeAddress(Vat)
        andBool (#rangeUInt(256, Beg)
-       andBool (#rangeUInt(48, Ttl)
-       andBool (#rangeUInt(48, Tau)
        andBool (#rangeUInt(256, Bid)
        andBool (#rangeUInt(256, Lot)
-       andBool (#rangeAddress(Guy)
-       andBool (#rangeUInt(48, Tic)
-       andBool (#rangeUInt(48, End)
        andBool ((#sizeByteArray(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Vat))
        andBool ((#notPrecompileAddress(Guy))
@@ -128,7 +123,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
        andBool (((Lot *Int #Wad <=Int maxUInt256))
        andBool (((Beg *Int ABI_lot <=Int Lot *Int #Wad))
        andBool (((VCallValue ==Int 0))
-       andBool ((#rangeUInt(48, TIME +Int Ttl))))))))))))))))))))))))))))))))))))))
+       andBool ((#rangeUInt(48, TIME +Int Ttl)))))))))))))))))))))))))))))))))
 
        andBool #lookup(ACCT_ID_STORAGE, #Flopper.live) ==Int Live
        andBool #lookup(ACCT_ID_STORAGE, #Flopper.vat) ==Int Vat

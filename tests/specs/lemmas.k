@@ -20,6 +20,9 @@ module LEMMAS
     rule 0 <=Int chop(_V)             => true        [simplification, smt-lemma]
     rule         chop(_V) <Int pow256 => true        [simplification]
 
+    rule chop ( ( maxUInt48 &Int X:Int ) *Int Y:Int ) => ( maxUInt48 &Int X:Int ) *Int Y
+      requires 0 <=Int X andBool 0 <=Int Y andBool Y <=Int pow208 [simplification]
+
   // ########################
   // Set Reasoning
   // ########################
@@ -57,6 +60,24 @@ module LEMMAS
     //Required for #Ceil(#buf)
     rule 0 <=Int keccak( _ )             => true [simplification]
     rule         keccak( _ ) <Int pow256 => true [simplification]
+
+    rule { I:Int #Equals keccak(_) } => #Bottom requires 0 <=Int I andBool I <Int 10 [simplification]
+
+    rule { I1:Int #Equals keccak(_) +Int I2 } => #Bottom 
+      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10 
+      [simplification]
+
+    rule #lookup( M:Map [ keccak(_) <- _ ], I:Int ) => #lookup( M , I )
+      requires 0 <=Int I andBool I <Int 10
+      [simplification]
+
+    rule #lookup( M:Map [ keccak(_) +Int I1:Int <- _ ], I2:Int ) => #lookup( M , I2 )
+      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10 
+      [simplification]
+
+    rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true 
+      requires I1 =/=Int I2 
+      [simplification]
 
   // ########################
   // Buffer Reasoning
@@ -335,5 +356,9 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
 
     rule B ==Bool false => notBool B [simplification]
+
+    rule X:Int ==Int A:Int orBool X ==Int B:Int orBool X ==Int C:Int orBool X ==Int D:Int => X ==Int D
+         requires X =/=Int A andBool X =/=Int B andBool X =/=Int C
+         [simplification]
 
 endmodule
