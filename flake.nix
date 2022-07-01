@@ -15,11 +15,12 @@
         pkgs.k
         pkgs.llvm-backend
         pkgs.autoconf
+        pkgs.automake
+        pkgs.libtool
         pkgs.cmake
         pkgs.clang
         pkgs.llvmPackages.llvm
         pkgs.cryptopp.dev
-        pkgs.elfutils
         pkgs.gmp
         pkgs.graphviz
         pkgs.mpfr
@@ -35,10 +36,13 @@
       ];
 
       overlay = final: prev: {
+
+        solc = prev.callPackage ./solc.nix { };
+        
         kevm = prev.stdenv.mkDerivation {
           pname = "kevm";
           version = self.rev or "dirty";
-          buildInputs = buildInputs prev;
+          buildInputs = buildInputs final;
 
           src = prev.stdenv.mkDerivation {
             name = "kevm-${self.rev or "dirty"}-src";
@@ -62,14 +66,20 @@
 
           dontUseCmakeConfigure = true;
 
+          patches = [ ./nix.patch ];
+
           postPatch = ''
             substituteInPlace cmake/node/CMakeLists.txt \
                 --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${prev.k}/lib)'
           '';
 
+          buildFlags = prev.lib.optional (prev.stdenv.isAarch64 && prev.stdenv.isDarwin) "APPLE_SILICON=true";
+          preBuild = ''
+              make plugin-deps
+            '';
+
           buildPhase = ''
-            make plugin-deps
-            make build
+            make build ${prev.lib.optionalString (prev.stdenv.isAarch64 && prev.stdenv.isDarwin) "APPLE_SILICON=true"} 
           '';
           installPhase = ''
             mkdir -p $out
