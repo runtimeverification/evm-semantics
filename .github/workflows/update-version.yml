@@ -19,6 +19,7 @@ jobs:
       - name: 'Update pyk Version'
         run: |
           K_COMMIT="$(cd deps/k && git tag --points-at HEAD | cut --characters=2-)"
-          ./kevm_pyk/set-version.sh ${K_COMMIT}
+          echo "${K_COMMIT}"
+          ./kevm_pyk/set-version.sh "${K_COMMIT}"
           git add kevm_pyk/setup.cfg
           ! git commit -m "kevm_pyk/setup.cfg: update version to ${K_COMMIT}" || git push
