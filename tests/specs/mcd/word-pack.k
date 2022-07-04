@@ -22,6 +22,61 @@ endmodule
 module WORD-PACK-JAVA [kast]
     imports WORD-PACK-COMMON
 
+    //
+    // #WordPack decomposition
+    // 
+    rule       ADDR_UINT48_UINT48:Int ==Int #WordPackAddrUInt48UInt48(ADDR:Int, UINT48_1:Int, UINT48_2:Int) 
+            => ADDR     ==Int maxUInt160 &Int  ADDR_UINT48_UINT48              
+       andBool UINT48_1 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160)
+       andBool UINT48_2 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208)
+       andBool #rangeUInt(256, ADDR_UINT48_UINT48)
+       andBool #rangeUInt(160, ADDR)
+       andBool #rangeUInt(48, UINT48_1)
+       andBool #rangeUInt(48, UINT48_2)
+       [simplification]
+
+    rule       #WordPackAddrUInt48UInt48(ADDR:Int, UINT48_1:Int, UINT48_2:Int) ==Int ADDR_UINT48_UINT48:Int
+            => ADDR     ==Int maxUInt160 &Int  ADDR_UINT48_UINT48              
+       andBool UINT48_1 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160)
+       andBool UINT48_2 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208)
+       andBool #rangeUInt(256, ADDR_UINT48_UINT48)
+       andBool #rangeUInt(160, ADDR)
+       andBool #rangeUInt(48, UINT48_1)
+       andBool #rangeUInt(48, UINT48_2)
+       [simplification]
+
+    rule       UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2)
+            => UINT48_1 ==Int maxUInt48 &Int  UINT48_UINT48
+       andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
+       andBool #rangeUInt(96, UINT48_UINT48)
+       andBool #rangeUInt(48, UINT48_1) 
+       andBool #rangeUInt(48, UINT48_2)
+       [simplification]
+
+    rule       #WordPackUInt48UInt48(UINT48_1, UINT48_2) ==Int UINT48_UINT48
+            => UINT48_1 ==Int maxUInt48 &Int  UINT48_UINT48
+       andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
+       andBool #rangeUInt(96, UINT48_UINT48)
+       andBool #rangeUInt(48, UINT48_1) 
+       andBool #rangeUInt(48, UINT48_2)
+       [simplification]
+
+    rule    ADDR_UINT8 ==Int #WordPackAddrUInt8(ADDR, UINT8)
+            => ADDR  ==Int maxUInt160 &Int  ADDR_UINT8
+       andBool UINT8 ==Int maxUInt8   &Int (ADDR_UINT8 /Int pow160)
+       andBool #rangeUInt(168, ADDR_UINT8) 
+       andBool #rangeUInt(160, ADDR)
+       andBool #rangeUInt(8, UINT8)
+       [simplification]
+
+    rule    #WordPackAddrUInt8(ADDR, UINT8) ==Int ADDR_UINT8
+            => ADDR  ==Int maxUInt160 &Int  ADDR_UINT8
+       andBool UINT8 ==Int maxUInt8   &Int (ADDR_UINT8 /Int pow160)
+       andBool #rangeUInt(168, ADDR_UINT8) 
+       andBool #rangeUInt(160, ADDR)
+       andBool #rangeUInt(8, UINT8)
+       [simplification]
+
 endmodule
 
 module WORD-PACK-HASKELL [kore]
@@ -32,10 +87,10 @@ module WORD-PACK-HASKELL [kore]
                         ADDR   ==Int maxUInt160 &Int  ADDR_UINT48_UINT48              
               andBool UINT48_1 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160)
               andBool UINT48_2 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208)
-              andBool (0 <=Int ADDR_UINT48_UINT48) andBool (ADDR_UINT48_UINT48 <Int pow256)
-              andBool (0 <=Int ADDR)               andBool (ADDR               <Int pow160) 
-              andBool (0 <=Int UINT48_1)           andBool (UINT48_1           <Int pow48)
-              andBool (0 <=Int UINT48_2)           andBool (UINT48_2           <Int pow48)
+              andBool #rangeUInt(256, ADDR_UINT48_UINT48)
+              andBool #rangeUInt(160, ADDR)
+              andBool #rangeUInt(48, UINT48_1)
+              andBool #rangeUInt(48, UINT48_2)
             ) }
             [simplification]
 
@@ -44,10 +99,10 @@ module WORD-PACK-HASKELL [kore]
                         ADDR   ==Int maxUInt160 &Int  ADDR_UINT48_UINT48              
               andBool UINT48_1 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160)
               andBool UINT48_2 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208)
-              andBool (0 <=Int ADDR_UINT48_UINT48) andBool (ADDR_UINT48_UINT48 <Int pow256)
-              andBool (0 <=Int ADDR)               andBool (ADDR               <Int pow160) 
-              andBool (0 <=Int UINT48_1)           andBool (UINT48_1           <Int pow48)
-              andBool (0 <=Int UINT48_2)           andBool (UINT48_2           <Int pow48)
+              andBool #rangeUInt(256, ADDR_UINT48_UINT48)
+              andBool #rangeUInt(160, ADDR)
+              andBool #rangeUInt(48, UINT48_1) 
+              andBool #rangeUInt(48, UINT48_2)
             ) }
             [simplification]
 
@@ -55,9 +110,9 @@ module WORD-PACK-HASKELL [kore]
          => { true #Equals ( 
                       UINT48_1 ==Int maxUInt48 &Int  UINT48_UINT48
               andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
-              andBool (0 <=Int UINT48_UINT48) andBool (UINT48_UINT48 <Int pow96)
-              andBool (0 <=Int UINT48_1)      andBool (UINT48_1 <Int pow48)
-              andBool (0 <=Int UINT48_2)      andBool (UINT48_2 <Int pow48) 
+              andBool #rangeUInt(96, UINT48_UINT48)
+              andBool #rangeUInt(48, UINT48_1) 
+              andBool #rangeUInt(48, UINT48_2)
             ) }
             [simplification]
 
@@ -65,9 +120,9 @@ module WORD-PACK-HASKELL [kore]
          => { true #Equals ( 
                       UINT48_1 ==Int maxUInt48 &Int  UINT48_UINT48
               andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
-              andBool (0 <=Int UINT48_UINT48) andBool (UINT48_UINT48 <Int pow96)
-              andBool (0 <=Int UINT48_1)      andBool (UINT48_1 <Int pow48)
-              andBool (0 <=Int UINT48_2)      andBool (UINT48_2 <Int pow48) 
+              andBool #rangeUInt(96, UINT48_UINT48)
+              andBool #rangeUInt(48, UINT48_1) 
+              andBool #rangeUInt(48, UINT48_2)
             ) }
             [simplification]
 
@@ -75,9 +130,9 @@ module WORD-PACK-HASKELL [kore]
          => { true #Equals ( 
                       ADDR  ==Int maxUInt160 &Int  ADDR_UINT8
               andBool UINT8 ==Int maxUInt8   &Int (ADDR_UINT8 /Int pow160)
-              andBool (0 <=Int ADDR_UINT8) andBool (ADDR_UINT8 <Int pow168)
-              andBool (0 <=Int ADDR)       andBool (ADDR       <Int pow160) 
-              andBool (0 <=Int UINT8)      andBool (UINT8      <Int 256)
+              andBool #rangeUInt(168, ADDR_UINT8) 
+              andBool #rangeUInt(160, ADDR)
+              andBool #rangeUInt(8, UINT8)
             ) }
             [simplification]
 
@@ -85,9 +140,9 @@ module WORD-PACK-HASKELL [kore]
          => { true #Equals ( 
                       ADDR  ==Int maxUInt160 &Int  ADDR_UINT8
               andBool UINT8 ==Int maxUInt8   &Int (ADDR_UINT8 /Int pow160)
-              andBool (0 <=Int ADDR_UINT8) andBool (ADDR_UINT8 <Int pow168)
-              andBool (0 <=Int ADDR)       andBool (ADDR       <Int pow160) 
-              andBool (0 <=Int UINT8)      andBool (UINT8      <Int 256)
+              andBool #rangeUInt(168, ADDR_UINT8) 
+              andBool #rangeUInt(160, ADDR)
+              andBool #rangeUInt(8, UINT8)
             ) }
             [simplification]
 
@@ -95,23 +150,16 @@ module WORD-PACK-HASKELL [kore]
     // #WordPack definedness
     //
     rule #Ceil ( #WordPackAddrUInt48UInt48(ADDR, UINT48_1, UINT48_2) ) => 
-       { true #Equals (
-          (0 <=Int ADDR)     andBool (ADDR     <Int pow160) andBool
-          (0 <=Int UINT48_1) andBool (UINT48_1 <Int pow48)  andBool
-          (0 <=Int UINT48_2) andBool (UINT48_2 <Int pow48)
-         ) } [simplification]
+       { true 
+           #Equals 
+         #rangeUInt(160, ADDR) andBool #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2)
+       } [simplification]
 
     rule #Ceil ( #WordPackUInt48UInt48(UINT48_1, UINT48_2) ) =>        
-       { true #Equals (
-          (0 <=Int UINT48_1) andBool (UINT48_1 <Int pow48) andBool
-          (0 <=Int UINT48_2) andBool (UINT48_2 <Int pow48)
-         ) } [simplification]
+       { true #Equals #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) } [simplification]
 
     rule #Ceil ( #WordPackAddrUInt8(ADDR, UINT8) ) =>
-      { true #Equals (
-         (0 <=Int ADDR)  andBool (ADDR  <Int pow160) andBool 
-         (0 <=Int UINT8) andBool (UINT8 <Int 256)
-        ) } [simplification]
+      { true #Equals #rangeUInt(160, ADDR) andBool #rangeUInt(8, UINT8) ) } [simplification]
 
     rule X |Int 0 => X requires 0 <=Int X [simplification]
     rule 0 &Int X => 0 requires 0 <=Int X [simplification]
@@ -157,61 +205,6 @@ module WORD-PACK-COMMON
     rule (UINT48_1 *Int pow160) |Int (maskWordPackAddrUInt48UInt48_2 &Int ADDR_UINT48_UINT48) => #WordPackAddrUInt48UInt48(maxUInt160 &Int ADDR_UINT48_UINT48, UINT48_1, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow208)) requires #rangeUInt(256, ADDR_UINT48_UINT48) andBool #rangeUInt(48, UINT48_1) [simplification]
 
     rule maxUInt48 &Int (maskWordPackUInt48UInt48_2 &Int A) => 0 requires 0 <=Int A [simplification]
-
-    //
-    // #WordPack decomposition
-    // 
-    rule       ADDR_UINT48_UINT48:Int ==Int #WordPackAddrUInt48UInt48(ADDR:Int, UINT48_1:Int, UINT48_2:Int) 
-            => ADDR     ==Int maxUInt160 &Int  ADDR_UINT48_UINT48              
-       andBool UINT48_1 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160)
-       andBool UINT48_2 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208)
-       andBool (0 <=Int ADDR_UINT48_UINT48) andBool (ADDR_UINT48_UINT48 <Int pow256)
-       andBool (0 <=Int ADDR)               andBool (ADDR     <Int pow160) 
-       andBool (0 <=Int UINT48_1)           andBool (UINT48_1 <Int pow48)
-       andBool (0 <=Int UINT48_2)           andBool (UINT48_2 <Int pow48)
-       [simplification]
-
-    rule       #WordPackAddrUInt48UInt48(ADDR:Int, UINT48_1:Int, UINT48_2:Int) ==Int ADDR_UINT48_UINT48:Int
-            => ADDR     ==Int maxUInt160 &Int  ADDR_UINT48_UINT48              
-       andBool UINT48_1 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow160)
-       andBool UINT48_2 ==Int maxUInt48  &Int (ADDR_UINT48_UINT48 /Int pow208)
-       andBool (0 <=Int ADDR_UINT48_UINT48) andBool (ADDR_UINT48_UINT48 <Int pow256)
-       andBool (0 <=Int ADDR)               andBool (ADDR               <Int pow160) 
-       andBool (0 <=Int UINT48_1)           andBool (UINT48_1           <Int pow48)
-       andBool (0 <=Int UINT48_2)           andBool (UINT48_2           <Int pow48)
-       [simplification]
-
-    rule       UINT48_UINT48 ==Int #WordPackUInt48UInt48(UINT48_1, UINT48_2)
-            => UINT48_1 ==Int maxUInt48 &Int  UINT48_UINT48
-       andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
-       andBool (0 <=Int UINT48_UINT48) andBool (UINT48_UINT48 <Int pow96)
-       andBool (0 <=Int UINT48_1)      andBool (UINT48_1 <Int pow48)
-       andBool (0 <=Int UINT48_2)      andBool (UINT48_2 <Int pow48)
-       [simplification]
-
-    rule       #WordPackUInt48UInt48(UINT48_1, UINT48_2) ==Int UINT48_UINT48
-            => UINT48_1 ==Int maxUInt48 &Int  UINT48_UINT48
-       andBool UINT48_2 ==Int maxUInt48 &Int (UINT48_UINT48 /Int pow48)
-       andBool (0 <=Int UINT48_UINT48) andBool (UINT48_UINT48 <Int pow96)
-       andBool (0 <=Int UINT48_1)      andBool (UINT48_1 <Int pow48)
-       andBool (0 <=Int UINT48_2)      andBool (UINT48_2 <Int pow48)
-               [simplification]
-
-    rule    ADDR_UINT8 ==Int #WordPackAddrUInt8(ADDR, UINT8)
-         => ADDR  ==Int maxUInt160 &Int  ADDR_UINT8
-    andBool UINT8 ==Int maxUInt8   &Int (ADDR_UINT8 /Int pow160)
-    andBool (0 <=Int ADDR_UINT8) andBool (ADDR_UINT8 <Int pow168)
-    andBool (0 <=Int ADDR)       andBool (ADDR       <Int pow160) 
-    andBool (0 <=Int UINT8)      andBool (UINT8      <Int 256) 
-    [simplification]
-
-    rule    #WordPackAddrUInt8(ADDR, UINT8) ==Int ADDR_UINT8
-         => ADDR  ==Int maxUInt160 &Int  ADDR_UINT8
-    andBool UINT8 ==Int maxUInt8   &Int (ADDR_UINT8 /Int pow160)
-    andBool (0 <=Int ADDR_UINT8) andBool (ADDR_UINT8 <Int pow168)
-    andBool (0 <=Int ADDR)       andBool (ADDR       <Int pow160) 
-    andBool (0 <=Int UINT8)      andBool (UINT8      <Int 256)
-    [simplification]
 
     //
     // #WordPack components
