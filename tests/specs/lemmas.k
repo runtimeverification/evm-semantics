@@ -377,4 +377,12 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule B ==Bool false => notBool B [simplification]
 
+  // ########################
+  // More Word Reasoning
+  // ########################
+
+  rule maxUInt8   &Int X <Int 256    => true requires 0 <=Int X [simplification, smt-lemma]
+  rule maxUInt48  &Int X <Int pow48  => true requires 0 <=Int X [simplification, smt-lemma]
+  rule maxUInt160 &Int X <Int pow160 => true requires 0 <=Int X [simplification, smt-lemma]
+
 endmodule
