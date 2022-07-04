@@ -3,7 +3,7 @@
 set -euxo pipefail
 
 cd deps/k
-git fetch --tags
+git fetch origin 'refs/tags/*:refs/tags/*'
 K_COMMIT="$(cd deps/k && git tag --points-at HEAD | cut --characters=2-)"
 cd ../..
 
