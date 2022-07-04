@@ -1,0 +1,33 @@
+name: 'Update Version'
+on:
+  pull_request:
+  workflow_dispatch:
+# Stop in progress workflows on the same branch and same workflow to use latest committed code
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-pr:
+    name: 'Test PR'
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: 'Set up Docker'
+        run: |
+          K_COMMIT="$(cd deps/k && git tag --points-at HEAD | cut --characters=2-)"
+          docker build . --file Dockerfile --tag runtimeverification/evm-semantics-ci --build-arg K_COMMIT="${K_COMMIT}" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
+          docker run --name evm-semantics-ci --rm --detach --workdir /home/user/checkout --user user:user --interactive --volume "$(pwd):/home/user/checkout" runtimeverification/evm-semantics-ci:latest sleep infinity
+      - name: 'Update pyk Version'
+        run: |
+          K_COMMIT="$(cd deps/k && git tag --points-at HEAD | cut --characters=2-)"
+          docker exec evm-semantics-ci /bin/bash -c "./kevm_pyk/set-version.sh ${K_COMMIT}"
+          git push
+      - name: 'Tear down Docker'
+        if: always()
+        run: |
+          docker stop evm-semantics-ci || true && docker rm evm-semantics-ci || true
+
