@@ -12,9 +12,10 @@ jobs:
     name: 'Update kevm_pyk Version'
     runs-on: [self-hosted, linux]
     steps:
-      - name: 'Check out code'
+      - name: 'Checkout and Update'
         uses: actions/checkout@v3
         with:
           submodules: recursive
-      - name: 'Update pyk Version'
-        run: /bin/bash ./kevm_pyk/set-version.sh
+        run: |
+            ./kevm_pyk/set-version.sh
+            git push
