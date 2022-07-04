@@ -19,4 +19,8 @@ jobs:
       - name: 'Update pyk Version'
         run: |
           /bin/bash ./kevm_pyk/set-version.sh
+          git config user.name devops
+          git config user.email devops@runtimeverification.com
+          git add kevm_pyk/setup.cfg
+          git commit -m "kevm_pyk/setup.cfg: update version to ${K_COMMIT}" || true
           git push
