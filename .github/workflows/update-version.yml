@@ -17,9 +17,4 @@ jobs:
         with:
           submodules: recursive
       - name: 'Update pyk Version'
-        run: |
-          K_COMMIT="$(cd deps/k && git tag --points-at HEAD | cut --characters=2-)"
-          echo "${K_COMMIT}"
-          ./kevm_pyk/set-version.sh "${K_COMMIT}"
-          git add kevm_pyk/setup.cfg
-          ! git commit -m "kevm_pyk/setup.cfg: update version to ${K_COMMIT}" || git push
+        run: /bin/bash ./kevm_pyk/set-version.sh
