@@ -39,12 +39,12 @@
         "cpp-httplib": "cpp-httplib",
         "cryptopp": "cryptopp",
         "flake-utils": [
-          "k",
+          "k-framework",
           "flake-utils"
         ],
         "libff": "libff",
         "nixpkgs": [
-          "k",
+          "k-framework",
           "nixpkgs"
         ],
         "secp256k1": "secp256k1",
@@ -249,7 +249,7 @@
       "inputs": {
         "haskell-nix": "haskell-nix",
         "nixpkgs": [
-          "k",
+          "k-framework",
           "haskell-backend",
           "haskell-nix",
           "nixpkgs-unstable"
@@ -284,7 +284,7 @@
         "hydra": "hydra",
         "nix-tools": "nix-tools",
         "nixpkgs": [
-          "k",
+          "k-framework",
           "haskell-backend",
           "haskell-nix",
           "nixpkgs-unstable"
@@ -330,7 +330,7 @@
       "inputs": {
         "nix": "nix",
         "nixpkgs": [
-          "k",
+          "k-framework",
           "haskell-backend",
           "haskell-nix",
           "hydra",
@@ -368,7 +368,7 @@
         "type": "github"
       }
     },
-    "k": {
+    "k-framework": {
       "inputs": {
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
@@ -376,7 +376,7 @@
         "llvm-backend": "llvm-backend",
         "mavenix": "mavenix_2",
         "nixpkgs": [
-          "k",
+          "k-framework",
           "haskell-backend",
           "nixpkgs"
         ]
@@ -418,7 +418,7 @@
         "immer-src": "immer-src",
         "mavenix": "mavenix",
         "nixpkgs": [
-          "k",
+          "k-framework",
           "haskell-backend",
           "nixpkgs"
         ],
@@ -690,12 +690,12 @@
       "inputs": {
         "blockchain-k-plugin": "blockchain-k-plugin",
         "flake-utils": [
-          "k",
+          "k-framework",
           "flake-utils"
         ],
-        "k": "k",
+        "k-framework": "k-framework",
         "nixpkgs": [
-          "k",
+          "k-framework",
           "nixpkgs"
         ]
       }

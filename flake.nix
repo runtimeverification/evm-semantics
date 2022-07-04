@@ -2,46 +2,42 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    k.url =
-      "github:runtimeverification/k/b7a3996ccfb985fcd9c0de0fc167862aaa55c6f1";
-    nixpkgs.follows = "k/nixpkgs";
-    flake-utils.follows = "k/flake-utils";
-    blockchain-k-plugin.url =
-      "github:runtimeverification/blockchain-k-plugin/8fdc74e3caf254aa3952393dbb0368d2c98c321a";
-    blockchain-k-plugin.inputs.flake-utils.follows = "k/flake-utils";
-    blockchain-k-plugin.inputs.nixpkgs.follows = "k/nixpkgs";
+    k-framework.url = "github:runtimeverification/k/b7a3996ccfb985fcd9c0de0fc167862aaa55c6f1";
+    nixpkgs.follows = "k-framework/nixpkgs";
+    flake-utils.follows = "k-framework/flake-utils";
+    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/8fdc74e3caf254aa3952393dbb0368d2c98c321a";
+    blockchain-k-plugin.inputs.flake-utils.follows = "k-framework/flake-utils";
+    blockchain-k-plugin.inputs.nixpkgs.follows = "k-framework/nixpkgs";
   };
-  outputs = { self, k, nixpkgs, flake-utils, blockchain-k-plugin }:
+  outputs = { self, k-framework, nixpkgs, flake-utils, blockchain-k-plugin }:
     let
-      buildInputs = pkgs:
-        with pkgs;
-        [
-          k
-          llvm-backend
-          autoconf
-          cmake
-          clang
-          llvmPackages.llvm
-          cryptopp.dev
-          gmp
-          graphviz
-          mpfr
-          openssl.dev
-          pkg-config
-          procps
-          protobuf
-          python38
-          secp256k1
-          solc
-          time
-          virtualenv
-        ] ++ lib.optional (!stdenv.isDarwin) elfutils
+      buildInputs = pkgs: with pkgs; [
+        k
+        llvm-backend
+        autoconf
+        cmake
+        clang
+        llvmPackages.llvm
+        cryptopp.dev
+        gmp
+        graphviz
+        mpfr
+        openssl.dev
+        pkg-config
+        procps
+        protobuf
+        python38
+        secp256k1
+        solc
+        time
+        virtualenv
+      ] ++ lib.optional (! stdenv.isDarwin) elfutils
         ++ lib.optionals stdenv.isDarwin [ automake libtool ];
 
       overlay = final: prev: {
 
-        solc = prev.callPackage ./solc.nix { };
-
+        solc = prev.callPackage ./nix/solc.nix { };
+        
         kevm = prev.stdenv.mkDerivation {
           pname = "kevm";
           version = self.rev or "dirty";
@@ -69,19 +65,16 @@
 
           dontUseCmakeConfigure = true;
 
-          patches = [ ./nix.patch ];
-
-          postPatch = ''
-            substituteInPlace cmake/node/CMakeLists.txt \
+          prePatch = ''
+            substituteInPlace ./cmake/node/CMakeLists.txt \
                 --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${prev.k}/lib)'
           '';
+          patches = [ ./nix/kevm.patch ];
 
-          buildFlags =
-            prev.lib.optional (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
-            "APPLE_SILICON=true";
+          buildFlags = prev.lib.optional (prev.stdenv.isAarch64 && prev.stdenv.isDarwin) "APPLE_SILICON=true";
           preBuild = ''
-            make plugin-deps
-          '';
+              make plugin-deps
+            '';
 
           installPhase = ''
             mkdir -p $out
@@ -95,27 +88,25 @@
       "x86_64-darwin"
       "aarch64-linux"
       "aarch64-darwin"
-    ] (system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [
-            (final: prev: { llvm-backend-release = false; })
-            k.overlay
-            blockchain-k-plugin.overlay
-            overlay
-          ];
-        };
-      in {
-        defaultPackage = pkgs.kevm;
-
-        devShell = pkgs.mkShell { buildInputs = buildInputs pkgs; };
-
-      }) // {
-        overlay = nixpkgs.lib.composeManyExtensions [
-          k.overlay
+    ] (system: let
+          pkgs = import nixpkgs {
+        inherit system;
+        overlays = [
+          (final: prev: { llvm-backend-release = false; })
+          k-framework.overlay
           blockchain-k-plugin.overlay
           overlay
         ];
-      };
+      }; in {
+      defaultPackage = pkgs.kevm;
+
+      devShell = pkgs.mkShell { buildInputs = buildInputs pkgs; };
+
+    }) // {
+      overlay = nixpkgs.lib.composeManyExtensions [
+        k-framework.overlay
+        blockchain-k-plugin.overlay
+        overlay
+      ];
+    };
 }
