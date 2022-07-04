@@ -8,12 +8,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  update-kevm-pyk:
+  test-pr:
     name: 'Update kevm_pyk Version'
     runs-on: [self-hosted, linux]
     steps:
-      - name: 'Update kevm_pyk Version'
+      - name: 'Check out code'
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: 'Update pyk Version'
         run: |
-            ./kevm_pyk/set-version.sh
-            git push
+          /bin/bash ./kevm_pyk/set-version.sh
+          git push
