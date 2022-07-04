@@ -1,5 +1,8 @@
 name: 'Update Version'
 on:
+  push:
+    branches:
+      - '_update-deps_runtimeverification_k'
   pull_request:
   workflow_dispatch:
 # Stop in progress workflows on the same branch and same workflow to use latest committed code
@@ -23,4 +26,4 @@ jobs:
           git config user.email devops@runtimeverification.com
           git add kevm_pyk/setup.cfg
           git commit -m "kevm_pyk/setup.cfg: update version to ${K_COMMIT}" || true
-          git push
+          git push "HEAD:_update-deps_runtimeverification_k'
