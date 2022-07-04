@@ -159,7 +159,7 @@ module WORD-PACK-HASKELL [kore]
        { true #Equals #rangeUInt(48, UINT48_1) andBool #rangeUInt(48, UINT48_2) } [simplification]
 
     rule #Ceil ( #WordPackAddrUInt8(ADDR, UINT8) ) =>
-      { true #Equals #rangeUInt(160, ADDR) andBool #rangeUInt(8, UINT8) ) } [simplification]
+      { true #Equals #rangeUInt(160, ADDR) andBool #rangeUInt(8, UINT8) } [simplification]
 
     rule X |Int 0 => X requires 0 <=Int X [simplification]
     rule 0 &Int X => 0 requires 0 <=Int X [simplification]
