@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - '_update-deps_runtimeverification_k'
-  pull_request:
   workflow_dispatch:
 # Stop in progress workflows on the same branch and same workflow to use latest committed code
 concurrency:
