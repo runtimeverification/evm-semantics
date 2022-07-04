@@ -9,7 +9,7 @@ concurrency:
 
 jobs:
   test-pr:
-    name: 'Test PR'
+    name: 'Update kevm_pyk Version'
     runs-on: [self-hosted, linux]
     steps:
       - name: 'Check out code'
