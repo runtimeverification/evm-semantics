@@ -12,7 +12,8 @@ jobs:
     name: 'Update kevm_pyk Version'
     runs-on: [self-hosted, linux]
     steps:
-      - uses: actions/checkout@v3
+      - name: 'Update kevm_pyk Version'
+        uses: actions/checkout@v3
         run: |
             ./kevm_pyk/set-version.sh
             git push
