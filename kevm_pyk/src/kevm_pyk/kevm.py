@@ -18,6 +18,30 @@ _LOGGER: Final = logging.getLogger(__name__)
 # KEVM helpers
 
 
+def kevm_halt() -> KInner:
+    return KApply('#halt_EVM_KItem')
+
+
+def kevm_execute() -> KInner:
+    return KApply('#execute_EVM_KItem')
+
+
+def kevm_jumpi() -> KInner:
+    return KApply('JUMPI_EVM_BinStackOp')
+
+
+def kevm_jump() -> KInner:
+    return KApply('JUMP_EVM_UnStackOp')
+
+
+def kevm_jumpi_applied(pc: KInner, cond: KInner) -> KInner:
+    return KApply('____EVM_InternalOp_BinStackOp_Int_Int', [kevm_jumpi(), pc, cond])
+
+
+def kevm_jump_applied(pc: KInner) -> KInner:
+    return KApply('___EVM_InternalOp_UnStackOp_Int', [kevm_jump(), pc])
+
+
 def pow256():
     return KApply('pow256_EVM-TYPES_Int', [])
 
@@ -36,6 +60,10 @@ def rangeAddress(i: KInner) -> KApply:
 
 def rangeBool(i: KInner) -> KApply:
     return KApply('#rangeBool(_)_EVM-TYPES_Bool_Int', [i])
+
+
+def bool2Word(cond: KInner) -> KInner:
+    return KApply('bool2Word(_)_EVM-TYPES_Int_Bool', [cond])
 
 
 def sizeByteArray(ba: KInner) -> KApply:
