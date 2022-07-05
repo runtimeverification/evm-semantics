@@ -88,28 +88,28 @@ class KEVM(KProve):
         symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')            # noqa
 
     @staticmethod
-    def kevm_halt() -> KInner:
+    def halt() -> KInner:
         return KApply('#halt_EVM_KItem')
 
     @staticmethod
-    def kevm_execute() -> KInner:
+    def execute() -> KInner:
         return KApply('#execute_EVM_KItem')
 
     @staticmethod
-    def kevm_jumpi() -> KInner:
+    def jumpi() -> KInner:
         return KApply('JUMPI_EVM_BinStackOp')
 
     @staticmethod
-    def kevm_jump() -> KInner:
+    def jump() -> KInner:
         return KApply('JUMP_EVM_UnStackOp')
 
     @staticmethod
-    def kevm_jumpi_applied(pc: KInner, cond: KInner) -> KInner:
-        return KApply('____EVM_InternalOp_BinStackOp_Int_Int', [KEVM.kevm_jumpi(), pc, cond])
+    def jumpi_applied(pc: KInner, cond: KInner) -> KInner:
+        return KApply('____EVM_InternalOp_BinStackOp_Int_Int', [KEVM.jumpi(), pc, cond])
 
     @staticmethod
-    def kevm_jump_applied(pc: KInner) -> KInner:
-        return KApply('___EVM_InternalOp_UnStackOp_Int', [KEVM.kevm_jump(), pc])
+    def jump_applied(pc: KInner) -> KInner:
+        return KApply('___EVM_InternalOp_UnStackOp_Int', [KEVM.jump(), pc])
 
     @staticmethod
     def pow256():
@@ -173,7 +173,7 @@ class KEVM(KProve):
         return KApply('_++__EVM-TYPES_ByteArray_ByteArray_ByteArray', [b1, b2])
 
     @staticmethod
-    def kevm_account_cell(id: KInner, balance: KInner, code: KInner, storage: KInner, origStorage: KInner, nonce: KInner) -> KApply:
+    def account_cell(id: KInner, balance: KInner, code: KInner, storage: KInner, origStorage: KInner, nonce: KInner) -> KApply:
         return KApply('<account>', [KApply('<acctID>', [id]),
                                     KApply('<balance>', [balance]),
                                     KApply('<code>', [code]),
@@ -182,5 +182,5 @@ class KEVM(KProve):
                                     KApply('<nonce>', [nonce])])
 
     @staticmethod
-    def kevm_wordstack_len(constrainedTerm: KInner) -> int:
+    def wordstack_len(constrainedTerm: KInner) -> int:
         return len(flattenLabel('_:__EVM-TYPES_WordStack_Int_WordStack', getCell(constrainedTerm, 'WORDSTACK_CELL')))

@@ -71,7 +71,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
 def gen_claims_for_contract(kevm: KEVM, contract_name: str) -> List[KClaim]:
     empty_config = remove_generated_cells(kevm.empty_config())
     program = KApply('binRuntime', [KApply('contract_' + contract_name)])
-    account_cell = KEVM.kevm_account_cell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
+    account_cell = KEVM.account_cell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
     init_subst = {
         'MODE_CELL': KToken('NORMAL', 'Mode'),
         'SCHEDULE_CELL': KApply('LONDON_EVM'),
