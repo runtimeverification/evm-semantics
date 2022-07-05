@@ -136,7 +136,7 @@ class KEVM(KProve):
         return KApply('bool2Word(_)_EVM-TYPES_Int_Bool', [cond])
 
     @staticmethod
-    def size_byte_array(ba: KInner) -> KApply:
+    def size_bytearray(ba: KInner) -> KApply:
         return KApply('#sizeByteArray(_)_EVM-TYPES_Int_ByteArray', [ba])
 
     @staticmethod
