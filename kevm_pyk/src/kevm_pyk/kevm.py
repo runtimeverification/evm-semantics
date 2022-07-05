@@ -144,7 +144,7 @@ class KEVM(KProve):
         return KApply('infGas', [g])
 
     @staticmethod
-    def compute_valid_jump_dests(p: KInner) -> KApply:
+    def compute_valid_jumpdests(p: KInner) -> KApply:
         return KApply('#computeValidJumpDests(_)_EVM_Set_ByteArray', [p])
 
     @staticmethod
