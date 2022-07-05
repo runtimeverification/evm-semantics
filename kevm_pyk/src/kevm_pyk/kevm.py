@@ -165,7 +165,7 @@ class KEVM(KProve):
         return KApply('#bool(_)_EVM-ABI_TypedArg_Int', [b])
 
     @staticmethod
-    def empty_typed_args() -> KApply:
+    def empty_typedargs() -> KApply:
         return KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
 
     @staticmethod
