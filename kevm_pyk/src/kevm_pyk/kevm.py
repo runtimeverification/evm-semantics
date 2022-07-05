@@ -116,27 +116,27 @@ class KEVM(KProve):
         return KApply('pow256_EVM-TYPES_Int', [])
 
     @staticmethod
-    def rangeUInt160(i: KInner) -> KApply:
+    def range_uint_160(i: KInner) -> KApply:
         return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(160), i])
 
     @staticmethod
-    def rangeUInt256(i: KInner) -> KApply:
+    def range_uint_256(i: KInner) -> KApply:
         return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(256), i])
 
     @staticmethod
-    def rangeAddress(i: KInner) -> KApply:
+    def range_address(i: KInner) -> KApply:
         return KApply('#rangeAddress(_)_EVM-TYPES_Bool_Int', [i])
 
     @staticmethod
-    def rangeBool(i: KInner) -> KApply:
+    def range_bool(i: KInner) -> KApply:
         return KApply('#rangeBool(_)_EVM-TYPES_Bool_Int', [i])
 
     @staticmethod
-    def bool2Word(cond: KInner) -> KInner:
+    def bool_2_word(cond: KInner) -> KInner:
         return KApply('bool2Word(_)_EVM-TYPES_Int_Bool', [cond])
 
     @staticmethod
-    def sizeByteArray(ba: KInner) -> KApply:
+    def size_byte_array(ba: KInner) -> KApply:
         return KApply('#sizeByteArray(_)_EVM-TYPES_Int_ByteArray', [ba])
 
     @staticmethod
@@ -144,32 +144,32 @@ class KEVM(KProve):
         return KApply('infGas', [g])
 
     @staticmethod
-    def computeValidJumpDests(p: KInner) -> KApply:
+    def compute_valid_jump_dests(p: KInner) -> KApply:
         return KApply('#computeValidJumpDests(_)_EVM_Set_ByteArray', [p])
 
     @staticmethod
-    def binRuntime(c: KInner) -> KApply:
+    def bin_runtime(c: KInner) -> KApply:
         return KApply('#binRuntime', [c])
 
     @staticmethod
-    def abiCallData(n: str, args: List[KInner]):
+    def abi_call_data(n: str, args: List[KInner]):
         token: KInner = stringToken(n)
         return KApply('#abiCallData', [token] + args)
 
     @staticmethod
-    def abiAddress(a: KInner) -> KApply:
+    def abi_address(a: KInner) -> KApply:
         return KApply('#address(_)_EVM-ABI_TypedArg_Int', [a])
 
     @staticmethod
-    def abiBool(b: KInner) -> KApply:
+    def abi_bool(b: KInner) -> KApply:
         return KApply('#bool(_)_EVM-ABI_TypedArg_Int', [b])
 
     @staticmethod
-    def emptyTypedArgs() -> KApply:
+    def empty_typed_args() -> KApply:
         return KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
 
     @staticmethod
-    def bytesAppend(b1: KInner, b2: KInner) -> KApply:
+    def bytes_append(b1: KInner, b2: KInner) -> KApply:
         return KApply('_++__EVM-TYPES_ByteArray_ByteArray_ByteArray', [b1, b2])
 
     @staticmethod
