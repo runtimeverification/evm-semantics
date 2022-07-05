@@ -15,106 +15,6 @@ from .utils import add_include_arg, build_empty_config_cell
 
 _LOGGER: Final = logging.getLogger(__name__)
 
-# KEVM helpers
-
-
-def kevm_halt() -> KInner:
-    return KApply('#halt_EVM_KItem')
-
-
-def kevm_execute() -> KInner:
-    return KApply('#execute_EVM_KItem')
-
-
-def kevm_jumpi() -> KInner:
-    return KApply('JUMPI_EVM_BinStackOp')
-
-
-def kevm_jump() -> KInner:
-    return KApply('JUMP_EVM_UnStackOp')
-
-
-def kevm_jumpi_applied(pc: KInner, cond: KInner) -> KInner:
-    return KApply('____EVM_InternalOp_BinStackOp_Int_Int', [kevm_jumpi(), pc, cond])
-
-
-def kevm_jump_applied(pc: KInner) -> KInner:
-    return KApply('___EVM_InternalOp_UnStackOp_Int', [kevm_jump(), pc])
-
-
-def pow256():
-    return KApply('pow256_EVM-TYPES_Int', [])
-
-
-def rangeUInt160(i: KInner) -> KApply:
-    return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(160), i])
-
-
-def rangeUInt256(i: KInner) -> KApply:
-    return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(256), i])
-
-
-def rangeAddress(i: KInner) -> KApply:
-    return KApply('#rangeAddress(_)_EVM-TYPES_Bool_Int', [i])
-
-
-def rangeBool(i: KInner) -> KApply:
-    return KApply('#rangeBool(_)_EVM-TYPES_Bool_Int', [i])
-
-
-def bool2Word(cond: KInner) -> KInner:
-    return KApply('bool2Word(_)_EVM-TYPES_Int_Bool', [cond])
-
-
-def sizeByteArray(ba: KInner) -> KApply:
-    return KApply('#sizeByteArray(_)_EVM-TYPES_Int_ByteArray', [ba])
-
-
-def inf_gas(g: KInner) -> KApply:
-    return KApply('infGas', [g])
-
-
-def computeValidJumpDests(p: KInner) -> KApply:
-    return KApply('#computeValidJumpDests(_)_EVM_Set_ByteArray', [p])
-
-
-def binRuntime(c: KInner) -> KApply:
-    return KApply('#binRuntime', [c])
-
-
-def abiCallData(n: str, args: List[KInner]):
-    token: KInner = stringToken(n)
-    return KApply('#abiCallData', [token] + args)
-
-
-def abiAddress(a: KInner) -> KApply:
-    return KApply('#address(_)_EVM-ABI_TypedArg_Int', [a])
-
-
-def abiBool(b: KInner) -> KApply:
-    return KApply('#bool(_)_EVM-ABI_TypedArg_Int', [b])
-
-
-def emptyTypedArgs() -> KApply:
-    return KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
-
-
-def bytesAppend(b1: KInner, b2: KInner) -> KApply:
-    return KApply('_++__EVM-TYPES_ByteArray_ByteArray_ByteArray', [b1, b2])
-
-
-def kevm_account_cell(id: KInner, balance: KInner, code: KInner, storage: KInner, origStorage: KInner, nonce: KInner) -> KApply:
-    return KApply('<account>', [KApply('<acctID>', [id]),
-                                KApply('<balance>', [balance]),
-                                KApply('<code>', [code]),
-                                KApply('<storage>', [storage]),
-                                KApply('<origStorage>', [origStorage]),
-                                KApply('<nonce>', [nonce])])
-
-
-def kevm_wordstack_len(constrainedTerm: KInner) -> int:
-    return len(flattenLabel('_:__EVM-TYPES_WordStack_Int_WordStack', getCell(constrainedTerm, 'WORDSTACK_CELL')))
-
 
 # KEVM class
 
@@ -186,3 +86,101 @@ class KEVM(KProve):
         symbol_table['_>=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')            # noqa
         symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')            # noqa
         symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')            # noqa
+
+    @staticmethod
+    def kevm_halt() -> KInner:
+        return KApply('#halt_EVM_KItem')
+
+    @staticmethod
+    def kevm_execute() -> KInner:
+        return KApply('#execute_EVM_KItem')
+
+    @staticmethod
+    def kevm_jumpi() -> KInner:
+        return KApply('JUMPI_EVM_BinStackOp')
+
+    @staticmethod
+    def kevm_jump() -> KInner:
+        return KApply('JUMP_EVM_UnStackOp')
+
+    @staticmethod
+    def kevm_jumpi_applied(pc: KInner, cond: KInner) -> KInner:
+        return KApply('____EVM_InternalOp_BinStackOp_Int_Int', [KEVM.kevm_jumpi(), pc, cond])
+
+    @staticmethod
+    def kevm_jump_applied(pc: KInner) -> KInner:
+        return KApply('___EVM_InternalOp_UnStackOp_Int', [KEVM.kevm_jump(), pc])
+
+    @staticmethod
+    def pow256():
+        return KApply('pow256_EVM-TYPES_Int', [])
+
+    @staticmethod
+    def rangeUInt160(i: KInner) -> KApply:
+        return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(160), i])
+
+    @staticmethod
+    def rangeUInt256(i: KInner) -> KApply:
+        return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(256), i])
+
+    @staticmethod
+    def rangeAddress(i: KInner) -> KApply:
+        return KApply('#rangeAddress(_)_EVM-TYPES_Bool_Int', [i])
+
+    @staticmethod
+    def rangeBool(i: KInner) -> KApply:
+        return KApply('#rangeBool(_)_EVM-TYPES_Bool_Int', [i])
+
+    @staticmethod
+    def bool2Word(cond: KInner) -> KInner:
+        return KApply('bool2Word(_)_EVM-TYPES_Int_Bool', [cond])
+
+    @staticmethod
+    def sizeByteArray(ba: KInner) -> KApply:
+        return KApply('#sizeByteArray(_)_EVM-TYPES_Int_ByteArray', [ba])
+
+    @staticmethod
+    def inf_gas(g: KInner) -> KApply:
+        return KApply('infGas', [g])
+
+    @staticmethod
+    def computeValidJumpDests(p: KInner) -> KApply:
+        return KApply('#computeValidJumpDests(_)_EVM_Set_ByteArray', [p])
+
+    @staticmethod
+    def binRuntime(c: KInner) -> KApply:
+        return KApply('#binRuntime', [c])
+
+    @staticmethod
+    def abiCallData(n: str, args: List[KInner]):
+        token: KInner = stringToken(n)
+        return KApply('#abiCallData', [token] + args)
+
+    @staticmethod
+    def abiAddress(a: KInner) -> KApply:
+        return KApply('#address(_)_EVM-ABI_TypedArg_Int', [a])
+
+    @staticmethod
+    def abiBool(b: KInner) -> KApply:
+        return KApply('#bool(_)_EVM-ABI_TypedArg_Int', [b])
+
+    @staticmethod
+    def emptyTypedArgs() -> KApply:
+        return KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
+
+    @staticmethod
+    def bytesAppend(b1: KInner, b2: KInner) -> KApply:
+        return KApply('_++__EVM-TYPES_ByteArray_ByteArray_ByteArray', [b1, b2])
+
+    @staticmethod
+    def kevm_account_cell(id: KInner, balance: KInner, code: KInner, storage: KInner, origStorage: KInner, nonce: KInner) -> KApply:
+        return KApply('<account>', [KApply('<acctID>', [id]),
+                                    KApply('<balance>', [balance]),
+                                    KApply('<code>', [code]),
+                                    KApply('<storage>', [storage]),
+                                    KApply('<origStorage>', [origStorage]),
+                                    KApply('<nonce>', [nonce])])
+
+    @staticmethod
+    def kevm_wordstack_len(constrainedTerm: KInner) -> int:
+        return len(flattenLabel('_:__EVM-TYPES_WordStack_Int_WordStack', getCell(constrainedTerm, 'WORDSTACK_CELL')))
