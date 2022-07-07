@@ -212,6 +212,21 @@
         "type": "github"
       }
     },
+    "flake-utils_3": {
+      "locked": {
+        "lastModified": 1656928814,
+        "narHash": "sha256-RIFfgBuKz6Hp89yRr7+NR5tzIAbn52h8vT6vXkYjZoM=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "7e2a3b3dfd9af950a856d66b0a7d01e3c18aa249",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "ghc-8.6.5-iohk": {
       "flake": false,
       "locked": {
@@ -379,20 +394,21 @@
           "k-framework",
           "haskell-backend",
           "nixpkgs"
-        ]
+        ],
+        "pynixify": "pynixify"
       },
       "locked": {
-        "lastModified": 1656687650,
-        "narHash": "sha256-ev8PZWS1xIkGd5Y1XiF1Vzq+hfMhtV6bkh7Xh3OHO2Y=",
+        "lastModified": 1657210042,
+        "narHash": "sha256-UkW9moyOo7qvUiyB3f8xMtr2ny17MASOog5eagpKFj0=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "b7a3996ccfb985fcd9c0de0fc167862aaa55c6f1",
+        "rev": "3cf3d2556a5eaf94299b57a1874c451283c249f6",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "b7a3996ccfb985fcd9c0de0fc167862aaa55c6f1",
+        "rev": "3cf3d2556a5eaf94299b57a1874c451283c249f6",
         "type": "github"
       }
     },
@@ -652,6 +668,20 @@
         "type": "indirect"
       }
     },
+    "nixpkgs_4": {
+      "locked": {
+        "lastModified": 1656847440,
+        "narHash": "sha256-9LRlUrdU+TNAAp393hqDaKnwBssLLkxpRQEAzLSC2pM=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "d63774ae64431366be4d1f2aede50e52204c7d6c",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "type": "indirect"
+      }
+    },
     "old-ghc-nix": {
       "flake": false,
       "locked": {
@@ -666,6 +696,25 @@
         "owner": "angerman",
         "ref": "master",
         "repo": "old-ghc-nix",
+        "type": "github"
+      }
+    },
+    "pynixify": {
+      "inputs": {
+        "flake-utils": "flake-utils_3",
+        "nixpkgs": "nixpkgs_4"
+      },
+      "locked": {
+        "lastModified": 1657037286,
+        "narHash": "sha256-6qBJHtsmIbMPMzy34u5OD3kF7A5QsgIDbPUjNUy/ox8=",
+        "owner": "goodlyrottenapple",
+        "repo": "pynixify",
+        "rev": "a0648c1fcd73bd75247b564e84cb3175b16d79d2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "goodlyrottenapple",
+        "repo": "pynixify",
         "type": "github"
       }
     },
@@ -697,6 +746,10 @@
         "nixpkgs": [
           "k-framework",
           "nixpkgs"
+        ],
+        "pynixify": [
+          "k-framework",
+          "pynixify"
         ]
       }
     },
