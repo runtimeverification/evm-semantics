@@ -166,6 +166,7 @@ run_prove() {
         proof_args+=(--definition "${backend_dir}")
         proof_args+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
         ! ${debug} || proof_args+=(--debug)
+        ! ${bug_report} || proof_args+=(--bug-report)
     fi
 
     [[ ! -f ${concrete_rules_file} ]] || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
