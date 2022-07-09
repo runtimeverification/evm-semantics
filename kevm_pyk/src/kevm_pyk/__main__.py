@@ -64,7 +64,7 @@ def main():
                 for de in args.debug_equations:
                     haskell_args += ['--debug-equation', de]
                 if args.bug_report:
-                    haskell_args += ['--bug-report', spec_file.with_suffix('')]
+                    haskell_args += ['--bug-report', str(spec_file.with_suffix(''))]
                 final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args, rule_profile=spec_file.with_suffix('.rule-profile'))
                 print(kevm.pretty_print(final_state) + '\n')
 
@@ -99,7 +99,7 @@ def create_argument_parser():
     prove_subparser = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_options])
     prove_subparser.add_argument('spec_file', type=file_path, help='Path to spec file.')
     prove_subparser.add_argument('--spec-module', type=str, help='Name of the specification module.')
-    prove_subparser.add_argument('--debug-equations', type=list_of(str, delim=','), help='Comma-separate list of equations to debug.')
+    prove_subparser.add_argument('--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.')
     prove_subparser.add_argument('--bug-report', default=False, action='store_true', help='Generate a haskell-backend bug report for the execution.')
 
     solc_subparser = command_parser.add_parser('compile', help='Generate combined JSON with solc compilation results.')
