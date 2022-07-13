@@ -109,7 +109,6 @@ def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> str:
 
 def solc_to_k(kevm: KEVM, contract_json: Dict, contract_file_name: str, contract_name: str, generate_storage: bool, foundry: bool):
 
-    storage_layout = contract_json['storageLayout']
     abi = contract_json['abi']
     hashes = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
     bin_runtime = '0x' + contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object']
@@ -120,7 +119,10 @@ def solc_to_k(kevm: KEVM, contract_json: Dict, contract_file_name: str, contract
 
     contract_sort = KSort(f'{contract_name}Contract')
 
-    storage_sentences = generate_storage_sentences(contract_name, contract_sort, storage_layout) if generate_storage else []
+    storage_sentences = []
+    if generate_storage:
+        storage_layout = contract_json['storageLayout']
+        storage_sentences = generate_storage_sentences(contract_name, contract_sort, storage_layout)
     function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
 
