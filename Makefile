@@ -432,8 +432,11 @@ kevm-pyk-venv:
 tests/gen-spec/foundry/out:
 	cd $(dir $@) && forge build --extra-output storageLayout --extra-output abi --extra-output evm.methodIdentifiers --extra-output evm.deployedBytecode.object
 
-tests/gen-spec/foundry/bin-runtime.k: tests/gen-spec/foundry/out $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
+tests/gen-spec/foundry/bin-runtime.k.out: tests/gen-spec/foundry/out $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) foundry-to-k $< > $@
+
+tests/gen-spec/foundry/bin-runtime.k.check: tests/gen-spec/foundry/bin-runtime.k.out
+	$(CHECK) tests/gen-spec/foundry/bin-runtime.k.out tests/gen-spec/foundry/bin-runtime.k.expected
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
@@ -452,7 +455,6 @@ tests/gen-spec/mcd-spec.k.check: tests/gen-spec/kompiled/timestamp kevm-pyk-venv
 
 tests/gen-spec/kompiled/timestamp: tests/gen-spec/verification.k $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend haskell --definition tests/gen-spec/kompiled $< --main-module MCD-VERIFICATION
-
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
