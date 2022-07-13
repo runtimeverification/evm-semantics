@@ -63,7 +63,7 @@ def main():
                     _LOGGER.info(f'Processing contract file: {f}')
                     with open(f, 'r') as cjson:
                         contract_json = json.loads(cjson.read())
-                        res = solc_to_k(kevm, contract_json, 'NONAME', 'NONAME', args.generate_storage, foundry = True)
+                        res = solc_to_k(kevm, contract_json, 'NONAME', 'NONAME', args.generate_storage, foundry=True)
                         print(res)
 
             elif args.command == 'gen-spec-modules':
