@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import sys
+import tempfile
 from typing import Final
 
 from pyk.cli_utils import file_path
@@ -49,8 +50,12 @@ def main():
             kevm = KEVM(args.definition_dir)
 
             if args.command == 'solc-to-k':
-                res = solc_to_k(kevm, args.contract_file, args.contract_name, args.generate_storage)
-                print(res)
+                solc_json = solc_compile(args.contract_file)
+                with tempfile.NamedTemporaryFile(mode='w') as tmp_json:
+                    tmp_json.write(json.dumps(solc_json) + '\n')
+                    tmp_json.flush()
+                    res = solc_to_k(kevm, tmp_json.name, args.contract_file.name, args.contract_name, args.generate_storage)
+                    print(res)
 
             elif args.command == 'gen-spec-modules':
                 res = gen_spec_modules(kevm, args.spec_module_name)
