@@ -16,6 +16,7 @@
 /tests/**/*.debug-log
 /tests/gen-spec/foundry/cache
 /tests/gen-spec/foundry/out
+/tests/gen-spec/foundry/*.out
 /tests/gen-spec/*.out
 /tests/gen-spec/*.sol
 /tests/**/*.rule-profile
