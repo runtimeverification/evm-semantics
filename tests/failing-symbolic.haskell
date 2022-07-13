@@ -2,7 +2,6 @@ tests/specs/benchmarks/ecrecoverloop00-sig1-invalid-spec.k
 tests/specs/bihu/collectToken-spec.k
 tests/specs/bihu/forwardToHotWallet-success-1-spec.k
 tests/specs/bihu/forwardToHotWallet-success-2-spec.k
-tests/specs/mcd/dstoken-burn-self-fail-rough-spec.k
 tests/specs/mcd/end-cash-pass-rough-spec.k
 tests/specs/mcd/end-pack-pass-rough-spec.k
 tests/specs/mcd/flapper-tend-guy-diff-pass-rough-spec.k
@@ -18,10 +17,8 @@ tests/specs/mcd/pot-join-pass-rough-spec.k
 tests/specs/mcd/vat-fold-pass-rough-spec.k
 tests/specs/mcd/vat-fork-diff-pass-rough-spec.k
 tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-spec.k
-tests/specs/mcd/vat-move-diff-rough-spec.k
 tests/specs/mcd/vat-slip-pass-rough-spec.k
-tests/specs/mcd/vat-subui-fail-rough-spec.k
 tests/specs/mcd/vow-cage-deficit-pass-rough-spec.k
 tests/specs/mcd/vow-cage-surplus-pass-rough-spec.k
-tests/specs/mcd/vow-flog-fail-rough-spec.k
 tests/specs/opcodes/create-spec.k
+tests/specs/examples/erc721-spec.md

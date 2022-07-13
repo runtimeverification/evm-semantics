@@ -78,7 +78,7 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
   // Arithmetic
   // ########################
 
-    rule chop(Y) => Y +Int pow256 requires #rangeSInt(256, Y) andBool Y <Int 0 [simplification]
+    rule chop(Y) => Y +Int pow256 requires #range( 0 -Int maxUInt256 <= Y < 0 ) [simplification]
 
     rule maxUInt48 &Int X <=Int maxUInt48 &Int X +Int Y => false
       requires #rangeUInt(48, X)
@@ -92,6 +92,43 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
 
     rule bool2Word( X:Bool ) |Int bool2Word( Y:Bool ) => bool2Word(X orBool Y) [simplification]
     rule bool2Word( X:Bool ) ==Int 0                  => notBool X             [simplification]
+
+    // ### vat-subui-fail-rough
+    //
+    // Via Z3 4.8.7
+    // (declare-const pow256 Int)
+    // (assert (= pow256 115792089237316195423570985008687907853269984665640564039457584007913129639936))
+    //
+    // ; 2^255
+    // (declare-const pow255 Int)
+    // (assert (= pow255 57896044618658097711785492504343953926634992332820282019728792003956564819968))
+    //
+    // ; chop
+    // (define-fun chop ((x Int)) Int (mod x pow256))
+    //
+    // ; uint256
+    // (define-fun uint256 ((x Int)) Bool (and (>= x 0) (< x pow256)))
+    //
+    // ; sint256
+    // (define-fun sint256 ((x Int)) Bool (and (>= x (- pow255)) (< x pow255)))
+    //
+    // ;;;; proof
+    //
+    // (declare-const x Int)
+    // (declare-const y Int)
+    //
+    // (assert (uint256 x))
+    // (assert (sint256 y))
+    // (assert (<= y 0))
+    // (assert (not (uint256 (- x y))))
+    //
+    // (assert (not (= (chop (- x y)) (- x (+ y pow256)))))
+    // (check-sat)
+    rule chop ( X -Int Y ) => X -Int (Y +Int pow256)
+      requires #rangeUInt(256, X)
+       andBool #rangeSInt(256, Y)
+       andBool Y <=Int 0
+       andBool notBool #rangeUInt(256, X -Int Y) [simplification]
 
   // ########################
   // Map

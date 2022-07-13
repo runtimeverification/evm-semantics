@@ -20,18 +20,24 @@ RUN    apt-get update            \
             libsecp256k1-dev     \
             libssl-dev           \
             libyaml-dev          \
+            llvm-12              \
+            llvm-12-dev          \
+            llvm-12-tools        \
             maven                \
             solc                 \
             netcat-openbsd       \
             pkg-config           \
             protobuf-compiler    \
             python3              \
+            python3-pip          \
             python-pygments      \
             rapidjson-dev        \
             z3                   \
             zlib1g-dev
 
-RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.11 \
+RUN pip3 install virtualenv
+
+RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.15 \
     && cd z3                                                         \
     && python scripts/mk_make.py                                     \
     && cd build                                                      \

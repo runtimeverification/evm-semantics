@@ -18,4 +18,16 @@ module EDSL
     imports EVM-ABI
     imports EVM-OPTIMIZATIONS
 endmodule
+
+module BIN-RUNTIME
+    imports EDSL
+
+    syntax Contract
+    syntax ByteArray ::= #binRuntime ( Contract ) [alias, klabel(binRuntime), symbol, function, no-evaluators]
+ // ----------------------------------------------------------------------------------------------------------
+
+    syntax Int ::= selector ( String ) [alias, klabel(abi_selector), symbol, function, no-evaluators]
+ // -------------------------------------------------------------------------------------------------
+
+endmodule
 ```

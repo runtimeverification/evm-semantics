@@ -1,0 +1,3 @@
+../deps/k/pyk
+tabulate == 0.8.6
+types-tabulate == 0.8.6
