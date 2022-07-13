@@ -1,0 +1,3 @@
+[default]
+src = 'src'
+out = 'out'

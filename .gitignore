@@ -14,9 +14,11 @@
 /pkg
 /src
 /tests/**/*.debug-log
-/tests/**/*.rule-profile
+/tests/gen-spec/foundry/cache
+/tests/gen-spec/foundry/out
 /tests/gen-spec/*.out
 /tests/gen-spec/*.sol
+/tests/**/*.rule-profile
 /tests/specs/**/*-bin-runtime.k
 /tests/specs/**/haskell
 /tests/specs/**/java
