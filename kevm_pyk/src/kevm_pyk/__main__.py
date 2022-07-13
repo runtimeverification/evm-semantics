@@ -57,12 +57,13 @@ def main():
                 print(res)
 
             elif args.command == 'foundry-to-k':
+                # forge build --extra-output storageLayout --extra-output abi --extra-output evm.methodIdentifiers --extra-output evm.deployedBytecode.object
                 path_glob = str(args.out) + '/**/*.json'
                 for f in map(Path, glob.glob(path_glob)):
                     _LOGGER.info(f'Processing contract file: {f}')
                     with open(f, 'r') as cjson:
                         contract_json = json.loads(cjson.read())
-                        res = solc_to_k(kevm, contract_json, 'NONAME', 'NONAME', args.generate_storage)
+                        res = solc_to_k(kevm, contract_json, 'NONAME', 'NONAME', args.generate_storage, foundry = True)
                         print(res)
 
             elif args.command == 'gen-spec-modules':
