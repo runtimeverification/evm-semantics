@@ -107,12 +107,12 @@ def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> str:
     return kevm.pretty_print(spec_defn)
 
 
-def solc_to_k(kevm: KEVM, contract_json: Dict, contract_file_name: str, contract_name: str, generate_storage: bool):
+def solc_to_k(kevm: KEVM, contract_json: Dict, contract_file_name: str, contract_name: str, generate_storage: bool, foundry: bool):
 
     storage_layout = contract_json['storageLayout']
     abi = contract_json['abi']
-    hashes = contract_json['evm']['methodIdentifiers']
-    bin_runtime = '0x' + contract_json['evm']['deployedBytecode']['object']
+    hashes = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
+    bin_runtime = '0x' + contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object']
 
     # TODO: add check to kevm:
     # solc version should be >=0.8.0 due to:
