@@ -279,6 +279,12 @@ run_solc() {
     run_kevm_pyk solc-to-k "${run_file}" "${contract_name}" "$@"
 }
 
+run_foundry() {
+    local contract_name
+
+    run_kevm_pyk foundry-to-k "$@"
+}
+
 run_gen_spec() {
     run_kevm_pyk gen-spec-modules "$@"
 }
@@ -418,7 +424,7 @@ if ${pyk}; then
 fi
 
 # get the run file
-if [[ "${run_command}" != 'gen-spec' ]]; then
+if [[ "${run_command}" != 'gen-spec' ]] && [[ "${run_command}" != 'foundry-to-k' ]]; then
     run_file="$1" ; shift
     if [[ "${run_file}" == '-' ]]; then
         tmp_input="$(mktemp)"
@@ -448,6 +454,7 @@ case "$run_command-$backend" in
     search-@(java|haskell)            ) run_search    "$@" ;;
     klab-view-*                       ) view_klab     "$@" ;;
     solc-to-k-*                       ) run_solc      "$@" ;;
+    foundry-to-k-*                    ) run_foundry   "$@" ;;
     gen-spec-*                        ) run_gen_spec  "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac

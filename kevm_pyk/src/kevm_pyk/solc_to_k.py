@@ -107,10 +107,8 @@ def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> str:
     return kevm.pretty_print(spec_defn)
 
 
-def solc_to_k(kevm: KEVM, solc_output: Path, contract_file_name: str, contract_name: str, generate_storage: bool):
+def solc_to_k(kevm: KEVM, contract_json: Dict, contract_file_name: str, contract_name: str, generate_storage: bool):
 
-    with open(solc_output, 'r') as so:
-        contract_json = json.loads(so.read())['contracts'][contract_file_name][contract_name]
     storage_layout = contract_json['storageLayout']
     abi = contract_json['abi']
     hashes = contract_json['evm']['methodIdentifiers']

@@ -1,11 +1,12 @@
 import argparse
+import glob
 import json
 import logging
 import sys
-import tempfile
+from pathlib import Path
 from typing import Final
 
-from pyk.cli_utils import file_path
+from pyk.cli_utils import dir_path, file_path
 
 from .kevm import KEVM
 from .solc_to_k import gen_spec_modules, solc_compile, solc_to_k
@@ -29,7 +30,7 @@ def main():
         res = solc_compile(args.contract_file)
         print(json.dumps(res))
 
-    elif args.command in ['solc-to-k', 'gen-spec-modules', 'kompile', 'prove']:
+    elif args.command in ['solc-to-k', 'foundry-to-k', 'gen-spec-modules', 'kompile', 'prove']:
 
         if 'definition_dir' not in args:
             raise ValueError(f'Must provide --definition argument to {args.command}!')
@@ -51,11 +52,18 @@ def main():
 
             if args.command == 'solc-to-k':
                 solc_json = solc_compile(args.contract_file)
-                with tempfile.NamedTemporaryFile(mode='w') as tmp_json:
-                    tmp_json.write(json.dumps(solc_json) + '\n')
-                    tmp_json.flush()
-                    res = solc_to_k(kevm, tmp_json.name, args.contract_file.name, args.contract_name, args.generate_storage)
-                    print(res)
+                contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
+                res = solc_to_k(kevm, contract_json, args.contract_file.name, args.contract_name, args.generate_storage)
+                print(res)
+
+            elif args.command == 'foundry-to-k':
+                path_glob = str(args.out) + '/**/*.json'
+                for f in map(Path, glob.glob(path_glob)):
+                    _LOGGER.info(f'Processing contract file: {f}')
+                    with open(f, 'r') as cjson:
+                        contract_json = json.loads(cjson.read())
+                        res = solc_to_k(kevm, contract_json, 'NONAME', 'NONAME', args.generate_storage)
+                        print(res)
 
             elif args.command == 'gen-spec-modules':
                 res = gen_spec_modules(kevm, args.spec_module_name)
@@ -114,6 +122,10 @@ def create_argument_parser():
     solc_to_k_subparser.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_subparser.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
     solc_to_k_subparser.add_argument('--no-storage-slots', dest='generate_storage', default=True, action='store_false', help='Do not generate productions and rules for accessing storage slots')
+
+    foundry_to_k_subparser = command_parser.add_parser('foundry-to-k', help='Output helper K definition for given JSON output from solc compiler that Foundry produces.', parents=[shared_options])
+    foundry_to_k_subparser.add_argument('out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_to_k_subparser.add_argument('--no-storage-slots', dest='generate_storage', default=True, action='store_false', help='Do not generate productions and rules for accessing storage slots')
 
     gen_spec_modules_subparser = command_parser.add_parser('gen-spec-modules', help='Output helper K definition for given JSON output from solc compiler.', parents=[shared_options])
     gen_spec_modules_subparser.add_argument('spec_module_name', type=str, help='Name of module containing all the generated specs.')
