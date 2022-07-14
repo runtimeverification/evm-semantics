@@ -136,27 +136,8 @@ def solc_to_k(kevm: KEVM, contract_json: Dict, contract_name: str, generate_stor
         [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences,
         [KImport('BIN-RUNTIME', True)],
     )
-    binRuntimeDefinition = KDefinition(binRuntimeModuleName, [binRuntimeModule], requires=[KRequire('edsl.md')])
 
-    kevm.symbol_table['hashedLocation'] = lambda lang, base, offset: '#hashedLocation(' + lang + ', ' + base + ', ' + offset + ')'  # noqa
-    kevm.symbol_table['abiCallData']    = lambda fname, *args: '#abiCallData(' + fname + "".join(", " + arg for arg in args) + ')'  # noqa
-    kevm.symbol_table['address']        = _typed_arg_unparser('address')                                                            # noqa
-    kevm.symbol_table['bool']           = _typed_arg_unparser('bool')                                                               # noqa
-    kevm.symbol_table['bytes']          = _typed_arg_unparser('bytes')                                                              # noqa
-    kevm.symbol_table['bytes4']         = _typed_arg_unparser('bytes4')                                                             # noqa
-    kevm.symbol_table['bytes32']        = _typed_arg_unparser('bytes32')                                                            # noqa
-    kevm.symbol_table['int256']         = _typed_arg_unparser('int256')                                                             # noqa
-    kevm.symbol_table['uint256']        = _typed_arg_unparser('uint256')                                                            # noqa
-    kevm.symbol_table['rangeAddress']   = lambda t: '#rangeAddress(' + t + ')'                                                      # noqa
-    kevm.symbol_table['rangeBool']      = lambda t: '#rangeBool(' + t + ')'                                                         # noqa
-    kevm.symbol_table['rangeBytes']     = lambda n, t: '#rangeBytes(' + n + ', ' + t + ')'                                          # noqa
-    kevm.symbol_table['rangeUInt']      = lambda n, t: '#rangeUInt(' + n + ', ' + t + ')'                                           # noqa
-    kevm.symbol_table['rangeSInt']      = lambda n, t: '#rangeSInt(' + n + ', ' + t + ')'                                           # noqa
-    kevm.symbol_table['binRuntime']     = lambda s: '#binRuntime(' + s + ')'                                                        # noqa
-    kevm.symbol_table['abi_selector']   = lambda s: 'selector(' + s + ')'                                                           # noqa
-    kevm.symbol_table[contract_name]    = lambda: contract_name                                                                     # noqa
-
-    return kevm.pretty_print(binRuntimeDefinition) + '\n'
+    return binRuntimeModule
 
 
 # Helpers
@@ -338,10 +319,6 @@ def _extract_function_sentences(contract_name, function_sort, abi):
 
 def _parseByteStack(s: KInner):
     return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
-
-
-def _typed_arg_unparser(type_label: str):
-    return lambda x: '#' + type_label + '(' + x + ')'
 
 
 def _check_supported_value_type(type_label: str) -> None:

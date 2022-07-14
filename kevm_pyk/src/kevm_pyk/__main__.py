@@ -3,9 +3,10 @@ import glob
 import json
 import logging
 import sys
-from typing import Final
+from typing import Final, List
 
 from pyk.cli_utils import dir_path, file_path
+from pyk.kast import KDefinition, KFlatModule, KImport, KRequire
 
 from .kevm import KEVM
 from .solc_to_k import gen_spec_modules, solc_compile, solc_to_k
@@ -16,6 +17,10 @@ _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
 def main():
+
+    def _typed_arg_unparser(type_label: str):
+        return lambda x: '#' + type_label + '(' + x + ')'
+
     sys.setrecursionlimit(15000000)
     parser = create_argument_parser()
     args = parser.parse_args()
@@ -49,23 +54,49 @@ def main():
         else:
             kevm = KEVM(args.definition_dir)
 
+            kevm.symbol_table['hashedLocation'] = lambda lang, base, offset: '#hashedLocation(' + lang + ', ' + base + ', ' + offset + ')'  # noqa
+            kevm.symbol_table['abiCallData']    = lambda fname, *args: '#abiCallData(' + fname + "".join(", " + arg for arg in args) + ')'  # noqa
+            kevm.symbol_table['address']        = _typed_arg_unparser('address')                                                            # noqa
+            kevm.symbol_table['bool']           = _typed_arg_unparser('bool')                                                               # noqa
+            kevm.symbol_table['bytes']          = _typed_arg_unparser('bytes')                                                              # noqa
+            kevm.symbol_table['bytes4']         = _typed_arg_unparser('bytes4')                                                             # noqa
+            kevm.symbol_table['bytes32']        = _typed_arg_unparser('bytes32')                                                            # noqa
+            kevm.symbol_table['int256']         = _typed_arg_unparser('int256')                                                             # noqa
+            kevm.symbol_table['uint256']        = _typed_arg_unparser('uint256')                                                            # noqa
+            kevm.symbol_table['rangeAddress']   = lambda t: '#rangeAddress(' + t + ')'                                                      # noqa
+            kevm.symbol_table['rangeBool']      = lambda t: '#rangeBool(' + t + ')'                                                         # noqa
+            kevm.symbol_table['rangeBytes']     = lambda n, t: '#rangeBytes(' + n + ', ' + t + ')'                                          # noqa
+            kevm.symbol_table['rangeUInt']      = lambda n, t: '#rangeUInt(' + n + ', ' + t + ')'                                           # noqa
+            kevm.symbol_table['rangeSInt']      = lambda n, t: '#rangeSInt(' + n + ', ' + t + ')'                                           # noqa
+            kevm.symbol_table['binRuntime']     = lambda s: '#binRuntime(' + s + ')'                                                        # noqa
+            kevm.symbol_table['abi_selector']   = lambda s: 'selector(' + s + ')'                                                           # noqa
+
             if args.command == 'solc-to-k':
                 solc_json = solc_compile(args.contract_file)
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
-                res = solc_to_k(kevm, contract_json, args.contract_name, args.generate_storage)
-                print(res)
+                contract_module = solc_to_k(kevm, contract_json, args.contract_name, args.generate_storage)
+                bin_runtime_definition = KDefinition(contract_module.name, [contract_module], requires=[KRequire('edsl.md')])
+                kevm.symbol_table[args.contract_name] = lambda: contract_name
+                return kevm.pretty_print(bin_runtime_definition) + '\n'
 
             elif args.command == 'foundry-to-k':
                 # forge build --extra-output storageLayout --extra-output abi --extra-output evm.methodIdentifiers --extra-output evm.deployedBytecode.object
                 path_glob = str(args.out) + '/**/*.json'
+                modules: List[KFlatModule] = []
                 for json_file in glob.glob(path_glob):
                     _LOGGER.info(f'Processing contract file: {json_file}')
                     contract_name = json_file.split('/')[-1]
                     contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
                     with open(json_file, 'r') as cjson:
                         contract_json = json.loads(cjson.read())
-                        res = solc_to_k(kevm, contract_json, contract_name, args.generate_storage, foundry=True)
-                        print(res)
+                        module = solc_to_k(kevm, contract_json, contract_name, args.generate_storage, foundry=True)
+                        kevm.symbol_table[contract_name] = lambda: contract_name
+                        _LOGGER.info(f'Produced contract module: {module.name}')
+                        modules.append(module)
+                main_module = KFlatModule(args.main_module, [], [KImport(module.name) for module in modules])
+                modules.append(main_module)
+                bin_runtime_definition = KDefinition(main_module.name, modules, requires=[KRequire('edsl.md')])
+                return kevm.pretty_print(bin_runtime_definition) + '\n'
 
             elif args.command == 'gen-spec-modules':
                 res = gen_spec_modules(kevm, args.spec_module_name)
@@ -127,6 +158,7 @@ def create_argument_parser():
 
     foundry_to_k_subparser = command_parser.add_parser('foundry-to-k', help='Output helper K definition for given JSON output from solc compiler that Foundry produces.', parents=[shared_options])
     foundry_to_k_subparser.add_argument('out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_to_k_subparser.add_argument('--main-module', default='VERIFICATION', type=str, help='Name of the main module.')
     foundry_to_k_subparser.add_argument('--no-storage-slots', dest='generate_storage', default=True, action='store_false', help='Do not generate productions and rules for accessing storage slots')
 
     gen_spec_modules_subparser = command_parser.add_parser('gen-spec-modules', help='Output helper K definition for given JSON output from solc compiler.', parents=[shared_options])
