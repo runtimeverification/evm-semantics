@@ -9,7 +9,7 @@ from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KDefinition, KFlatModule, KImport, KRequire
 
 from .kevm import KEVM
-from .solc_to_k import gen_spec_modules, solc_compile, solc_to_k
+from .solc_to_k import contract_to_k, gen_spec_modules, solc_compile
 from .utils import add_include_arg
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -74,7 +74,7 @@ def main():
             if args.command == 'solc-to-k':
                 solc_json = solc_compile(args.contract_file)
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
-                contract_module = solc_to_k(kevm, contract_json, args.contract_name, args.generate_storage)
+                contract_module = contract_to_k(contract_json, args.contract_name, args.generate_storage)
                 bin_runtime_definition = KDefinition(contract_module.name, [contract_module], requires=[KRequire('edsl.md')])
                 kevm.symbol_table[args.contract_name] = lambda: args.contract_name
                 print(kevm.pretty_print(bin_runtime_definition) + '\n')
@@ -88,7 +88,7 @@ def main():
                     contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
                     with open(json_file, 'r') as cjson:
                         contract_json = json.loads(cjson.read())
-                        module = solc_to_k(kevm, contract_json, contract_name, args.generate_storage, foundry=True)
+                        module = contract_to_k(contract_json, contract_name, args.generate_storage, foundry=True)
                         kevm.symbol_table[contract_name] = lambda: contract_name
                         _LOGGER.info(f'Produced contract module: {module.name}')
                         modules.append(module)
