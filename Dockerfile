@@ -1,5 +1,12 @@
 ARG K_COMMIT
+FROM ghcr.io/foundry-rs/foundry:nightly-3c49efe58ca4bdeec4729490501da06914446405 as FOUNDRY
+
+ARG K_COMMIT
 FROM runtimeverificationinc/kframework-k:ubuntu-focal-${K_COMMIT}
+
+COPY --from=FOUNDRY /usr/local/bin/forge /usr/local/bin/forge
+COPY --from=FOUNDRY /usr/local/bin/anvil /usr/local/bin/anvil
+COPY --from=FOUNDRY /usr/local/bin/cast /usr/local/bin/cast
 
 RUN    apt-get update                                   \
     && apt-get install --yes software-properties-common \
