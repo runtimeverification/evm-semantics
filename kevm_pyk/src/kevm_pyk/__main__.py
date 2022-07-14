@@ -54,8 +54,9 @@ def main():
             if args.command == 'solc-to-k':
                 solc_json = solc_compile(args.contract_file)
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
-                contract_module = contract_to_k(contract_json, args.contract_name, args.generate_storage)
+                contract_module, contract_claims_module = contract_to_k(contract_json, args.contract_name, args.generate_storage)
                 modules = [contract_module]
+                modules += [contract_claims_module] if contract_claims_module else []
                 bin_runtime_definition = KDefinition(contract_module.name, modules, requires=[KRequire('edsl.md')])
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
                 KEVM._patch_symbol_table(_kprint.symbol_table)
@@ -64,7 +65,7 @@ def main():
             elif args.command == 'foundry-to-k':
                 path_glob = str(args.out) + '/**/*.json'
                 modules: List[KFlatModule] = []
-                contract_names: List[str] = []
+                claims_modules: List[KFlatModule] = []
                 # Must sort to get consistent output order on different platforms.
                 for json_file in sorted(glob.glob(path_glob)):
                     _LOGGER.info(f'Processing contract file: {json_file}')
@@ -72,13 +73,14 @@ def main():
                     contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
                     with open(json_file, 'r') as cjson:
                         contract_json = json.loads(cjson.read())
-                        module = contract_to_k(contract_json, contract_name, args.generate_storage, foundry=True)
-                        contract_names.append(contract_name)
+                        module, claims_module = contract_to_k(contract_json, contract_name, args.generate_storage, foundry=True)
                         _LOGGER.info(f'Produced contract module: {module.name}')
                         modules.append(module)
+                        if claims_module:
+                            claims_modules.append(claims_module)
                 main_module = KFlatModule(args.main_module, [], [KImport(module.name) for module in modules])
                 modules.append(main_module)
-                bin_runtime_definition = KDefinition(main_module.name, modules, requires=[KRequire('edsl.md')])
+                bin_runtime_definition = KDefinition(main_module.name, modules + claims_modules, requires=[KRequire('edsl.md')])
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
                 KEVM._patch_symbol_table(_kprint.symbol_table)
                 print(_kprint.pretty_print(bin_runtime_definition) + '\n')

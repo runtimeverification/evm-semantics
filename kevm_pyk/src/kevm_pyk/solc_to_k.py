@@ -3,7 +3,7 @@ import json
 import logging
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, List, Tuple
+from typing import Any, Dict, Final, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
@@ -115,7 +115,7 @@ def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> Tuple[KDefinition, Li
     return spec_defn, contract_names
 
 
-def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, foundry: bool = False) -> KFlatModule:
+def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
     abi = contract_json['abi']
     hashes = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
@@ -139,7 +139,7 @@ def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: boo
     sentences = [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences
     module = KFlatModule(module_name, sentences, [KImport('EDSL')])
 
-    return module
+    return module, None
 
 
 # Helpers
