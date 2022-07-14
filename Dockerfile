@@ -60,12 +60,10 @@ RUN groupadd -g $GROUP_ID user && useradd -m -u $USER_ID -s /bin/sh -g user user
 USER user:user
 WORKDIR /home/user
 
-RUN curl -L https://foundry.paradigm.xyz | bash && foundryup --version nightly-16b4ef693624368e02e3501dd137214faf9bbe76 || true
-
 RUN curl -L https://github.com/github/hub/releases/download/v2.14.0/hub-linux-amd64-2.14.0.tgz -o /home/user/hub.tgz
 RUN cd /home/user && tar xzf hub.tgz
 
-ENV PATH=/home/user/hub-linux-amd64-2.14.0/bin:/home/user/.foundry/bin:$PATH
+ENV PATH=/home/user/hub-linux-amd64-2.14.0/bin:$PATH
 
 RUN    git config --global user.email 'admin@runtimeverification.com' \
     && git config --global user.name  'RV Jenkins'                    \
