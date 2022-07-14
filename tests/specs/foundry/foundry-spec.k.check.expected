@@ -39,10 +39,10 @@ module FOUNDRY-SPEC
                </touchedAccounts>
                <callState>
                  <program>
-                   ( #binRuntime ( ContractTest ) => ?_PROGRAM_CELL_acd26fc5 )
+                   ( #binRuntime ( ContractTest )  => ?_PROGRAM_CELL_acd26fc5 )
                  </program>
                  <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime ( ContractTest ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                   ( #computeValidJumpDests ( #binRuntime ( ContractTest )  ) => ?_JUMPDESTS_CELL_acd26fc5 )
                  </jumpDests>
                  <id>
                    ( ACCT_ID => ?_ID_CELL_acd26fc5 )
@@ -230,10 +230,10 @@ module FOUNDRY-SPEC
                </touchedAccounts>
                <callState>
                  <program>
-                   ( #binRuntime ( Contract ) => ?_PROGRAM_CELL_acd26fc5 )
+                   ( #binRuntime ( Contract )  => ?_PROGRAM_CELL_acd26fc5 )
                  </program>
                  <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime ( Contract ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                   ( #computeValidJumpDests ( #binRuntime ( Contract )  ) => ?_JUMPDESTS_CELL_acd26fc5 )
                  </jumpDests>
                  <id>
                    ( ACCT_ID => ?_ID_CELL_acd26fc5 )
