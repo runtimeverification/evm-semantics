@@ -76,7 +76,7 @@ def main():
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
                 contract_module = solc_to_k(kevm, contract_json, args.contract_name, args.generate_storage)
                 bin_runtime_definition = KDefinition(contract_module.name, [contract_module], requires=[KRequire('edsl.md')])
-                kevm.symbol_table[args.contract_name] = lambda: contract_name
+                kevm.symbol_table[args.contract_name] = lambda: args.contract_name
                 return kevm.pretty_print(bin_runtime_definition) + '\n'
 
             elif args.command == 'foundry-to-k':
