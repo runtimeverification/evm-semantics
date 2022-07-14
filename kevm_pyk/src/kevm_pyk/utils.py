@@ -1,7 +1,16 @@
-from pyk.kast import KApply, KNonTerminal, KTerminal, KVariable
+from pyk.kast import (
+    KApply,
+    KDefinition,
+    KInner,
+    KNonTerminal,
+    KSort,
+    KTerminal,
+    KVariable,
+)
 from pyk.kastManip import (
     abstract_term_safely,
     isAnonVariable,
+    remove_generated_cells,
     split_config_and_constraints,
     splitConfigFrom,
     substitute,
@@ -44,21 +53,25 @@ def get_label_for_cell_sorts(definition, sort):
     return productions[0].klabel
 
 
-def kdefinition_empty_config(definition, sort):
-    label = get_label_for_cell_sorts(definition, sort)
-    production = get_production_for_klabel(definition, label)
-    args = []
-    num_nonterminals = 0
-    num_freshvars = 0
-    for p_item in production.items:
-        if type(p_item) is KNonTerminal:
-            num_nonterminals += 1
-            if p_item.sort.name.endswith('Cell'):
-                args.append(kdefinition_empty_config(definition, p_item.sort))
-            else:
-                num_freshvars += 1
-                args.append(KVariable(sort.name[0:-4].upper() + '_CELL'))
-    if num_nonterminals > 1 and num_freshvars > 0:
-        sort_name = sort.name
-        raise ValueError(f'Found mixed cell and non-cell arguments to cell constructor for {sort_name}!')
-    return KApply(label, args)
+def kdefinition_empty_config(definition: KDefinition, sort: KSort) -> KInner:
+
+    def _kdefinition_empty_config(_sort):
+        label = get_label_for_cell_sorts(definition, _sort)
+        production = get_production_for_klabel(definition, label)
+        args = []
+        num_nonterminals = 0
+        num_freshvars = 0
+        for p_item in production.items:
+            if type(p_item) is KNonTerminal:
+                num_nonterminals += 1
+                if p_item.sort.name.endswith('Cell'):
+                    args.append(_kdefinition_empty_config(p_item.sort))
+                else:
+                    num_freshvars += 1
+                    args.append(KVariable(_sort.name[0:-4].upper() + '_CELL'))
+        if num_nonterminals > 1 and num_freshvars > 0:
+            sort_name = sort.name
+            raise ValueError(f'Found mixed cell and non-cell arguments to cell constructor for {sort_name}!')
+        return KApply(label, args)
+
+    return remove_generated_cells(_kdefinition_empty_config(sort))
