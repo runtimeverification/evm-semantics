@@ -80,7 +80,6 @@ def main():
                 return kevm.pretty_print(bin_runtime_definition) + '\n'
 
             elif args.command == 'foundry-to-k':
-                # forge build --extra-output storageLayout --extra-output abi --extra-output evm.methodIdentifiers --extra-output evm.deployedBytecode.object
                 path_glob = str(args.out) + '/**/*.json'
                 modules: List[KFlatModule] = []
                 for json_file in glob.glob(path_glob):
