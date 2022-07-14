@@ -276,7 +276,7 @@ run_solc() {
     local contract_name
 
     contract_name="$1" ; shift
-    run_kevm_pyk solc-to-k "${run_file}" "${contract_name}" "$@"
+    run_kevm_pyk solc-to-k "${run_file}" "${contract_name}" --definition "${backend_dir}" "$@"
 }
 
 run_foundry() {

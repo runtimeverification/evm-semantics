@@ -7,7 +7,7 @@ module CONTRACT-BIN-RUNTIME
     
     syntax ContractContract ::= "Contract" [klabel(contract_Contract), symbol()]
     
-    rule  ( #binRuntime(Contract) => #parseByteStack ( "0x0x6080604052600080fdfea2646970667358221220febf745518acc26f684d27983160459fa2f213f0d4664cb72e4e8885a5fc079664736f6c634300080f0033" ) )
+    rule  ( #binRuntime(ContractTest) => #parseByteStack ( "0x0x6080604052600080fdfea2646970667358221220febf745518acc26f684d27983160459fa2f213f0d4664cb72e4e8885a5fc079664736f6c634300080f0033" ) )
       
 
 endmodule
@@ -47,6 +47,14 @@ module CONTRACTTEST-BIN-RUNTIME
     
     rule  ( selector("test_2") => 2308879516 )
       
+
+endmodule
+
+module VERIFICATION
+    imports public CONTRACT-BIN-RUNTIME
+    imports public CONTRACTTEST-BIN-RUNTIME
+    
+    
 
 endmodule
 
