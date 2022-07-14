@@ -442,14 +442,14 @@ tests/specs/foundry/foundry-spec.k.check: tests/specs/foundry/verification/haske
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC20 > $@
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC20 --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@
 
 tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
 tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC721 > $@
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC721 --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@
 
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty > $@
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@
 
 tests/gen-spec/mcd-spec.k.check: tests/gen-spec/kompiled/timestamp kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec MCD-SPEC --definition tests/gen-spec/kompiled > $@.out
