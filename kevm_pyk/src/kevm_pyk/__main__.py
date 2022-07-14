@@ -77,7 +77,7 @@ def main():
                 contract_module = solc_to_k(kevm, contract_json, args.contract_name, args.generate_storage)
                 bin_runtime_definition = KDefinition(contract_module.name, [contract_module], requires=[KRequire('edsl.md')])
                 kevm.symbol_table[args.contract_name] = lambda: args.contract_name
-                return kevm.pretty_print(bin_runtime_definition) + '\n'
+                print(kevm.pretty_print(bin_runtime_definition) + '\n')
 
             elif args.command == 'foundry-to-k':
                 path_glob = str(args.out) + '/**/*.json'
@@ -95,7 +95,7 @@ def main():
                 main_module = KFlatModule(args.main_module, [], [KImport(module.name) for module in modules])
                 modules.append(main_module)
                 bin_runtime_definition = KDefinition(main_module.name, modules, requires=[KRequire('edsl.md')])
-                return kevm.pretty_print(bin_runtime_definition) + '\n'
+                print(kevm.pretty_print(bin_runtime_definition) + '\n')
 
             elif args.command == 'gen-spec-modules':
                 res = gen_spec_modules(kevm, args.spec_module_name)
