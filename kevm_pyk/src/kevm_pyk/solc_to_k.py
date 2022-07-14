@@ -37,6 +37,11 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
+
+    # TODO: add check to kevm:
+    # solc version should be >=0.8.0 due to:
+    # https://github.com/ethereum/solidity/issues/10276
+
     args = {
         'language': 'Solidity',
         'sources': {
@@ -107,15 +112,11 @@ def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> str:
     return kevm.pretty_print(spec_defn)
 
 
-def solc_to_k(kevm: KEVM, contract_json: Dict, contract_name: str, generate_storage: bool, foundry: bool = False):
+def solc_to_k(kevm: KEVM, contract_json: Dict, contract_name: str, generate_storage: bool, foundry: bool = False) -> KFlatModule:
 
     abi = contract_json['abi']
     hashes = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
     bin_runtime = '0x' + (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
-
-    # TODO: add check to kevm:
-    # solc version should be >=0.8.0 due to:
-    # https://github.com/ethereum/solidity/issues/10276
 
     contract_sort = KSort(f'{contract_name}Contract')
 
@@ -130,14 +131,14 @@ def solc_to_k(kevm: KEVM, contract_json: Dict, contract_name: str, generate_stor
     contract_production = KProduction(contract_sort, [KTerminal(contract_name)], att=KAtt({'klabel': f'contract_{contract_name}', 'symbol': ''}))
     contract_macro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_name)]), _parseByteStack(stringToken(bin_runtime))))
 
-    binRuntimeModuleName = contract_name.upper() + '-BIN-RUNTIME'
-    binRuntimeModule = KFlatModule(
-        binRuntimeModuleName,
+    module_name = contract_name.upper() + '-BIN-RUNTIME'
+    module = KFlatModule(
+        module_name,
         [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences,
         [KImport('BIN-RUNTIME', True)],
     )
 
-    return binRuntimeModule
+    return module
 
 
 # Helpers
