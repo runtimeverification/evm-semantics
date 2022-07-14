@@ -435,7 +435,7 @@ tests/gen-spec/foundry/out:
 	cd $(dir $@) && forge build --extra-output storageLayout --extra-output abi --extra-output evm.methodIdentifiers --extra-output evm.deployedBytecode.object
 
 tests/gen-spec/foundry/bin-runtime.k.out: tests/gen-spec/foundry/out $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) foundry-to-k $< --verbose > $@
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) foundry-to-k $< --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@
 
 tests/gen-spec/foundry/bin-runtime.k.check: tests/gen-spec/foundry/bin-runtime.k.out
 	$(CHECK) tests/gen-spec/foundry/bin-runtime.k.out tests/gen-spec/foundry/bin-runtime.k.expected
