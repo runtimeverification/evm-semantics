@@ -73,8 +73,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
     return json.loads(process_res.stdout)
 
 
-def gen_claims_for_contract(defn: KDefinition, contract_name: str) -> List[KClaim]:
-    empty_config = kdefinition_empty_config(defn, Sorts.GENERATED_TOP_CELL)
+def gen_claims_for_contract(empty_config: KInner, contract_name: str) -> List[KClaim]:
     program = KApply('binRuntime', [KApply('contract_' + contract_name)])
     account_cell = KEVM.account_cell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
     init_subst = {
@@ -106,7 +105,8 @@ def gen_claims_for_contract(defn: KDefinition, contract_name: str) -> List[KClai
 def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> str:
     production_labels = [prod.klabel for module in kevm.definition for prod in module.productions if prod.klabel is not None]
     contract_names = [prod_label.name[9:] for prod_label in production_labels if prod_label.name.startswith('contract_')]
-    claims = [claim for name in contract_names for claim in gen_claims_for_contract(kevm.definition, name)]
+    empty_config = kdefinition_empty_config(kevm.definition, Sorts.GENERATED_TOP_CELL)
+    claims = [claim for name in contract_names for claim in gen_claims_for_contract(empty_config, name)]
     spec_module = KFlatModule(spec_module_name, claims, [KImport(kevm.definition.main_module_name)])
     spec_defn = KDefinition(spec_module_name, [spec_module], [KRequire('verification.k')])
     return kevm.pretty_print(spec_defn)
