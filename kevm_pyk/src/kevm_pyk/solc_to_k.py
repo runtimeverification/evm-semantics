@@ -21,6 +21,7 @@ from pyk.kast import (
     KRequire,
     KRewrite,
     KRule,
+    KSentence,
     KSequence,
     KSort,
     KTerminal,
@@ -125,7 +126,8 @@ def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: boo
     if generate_storage:
         storage_layout = contract_json['storageLayout']
         storage_sentences = generate_storage_sentences(contract_name, contract_sort, storage_layout)
-    function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
+    function_call_data_production, function_productions, function_rules = generate_function_sentences(contract_name, contract_sort, abi)
+    function_sentences = [function_call_data_production] + function_productions + function_rules
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
 
     contract_subsort = KProduction(KSort('Contract'), [KNonTerminal(contract_sort)])
@@ -230,16 +232,19 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
     return recur_struct([], f'{contract_name}', intToken('0'), 0, storage, gen_dot=False)
 
 
-def generate_function_sentences(contract_name, contract_sort, abi):
+def generate_function_sentences(contract_name: str, contract_sort: KSort, abi):
     function_sort = KSort(f'{contract_name}Function')
-    function_call_data_production = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], att=KAtt({'symbol': '', 'function': ''}), klabel=KLabel(f'function_{contract_name}'))
+    function_call_data_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], att=KAtt({'symbol': '', 'function': ''}), klabel=KLabel(f'function_{contract_name}'))
     function_sentence_pairs = _extract_function_sentences(contract_name, function_sort, abi)
 
-    if not function_sentence_pairs:
-        return []
+    function_productions: List[KSentence] = []
+    function_rules: List[KSentence] = []
+    for f_prod, f_rule in function_sentence_pairs:
+        function_productions.append(f_prod)
+        function_rules.append(f_rule)
 
-    function_productions, function_rules = map(list, zip(*function_sentence_pairs))
-    return [function_call_data_production] + function_productions + function_rules
+    function_sentences = function_productions + function_rules
+    return [function_call_data_production] + function_sentences if function_sentences else []
 
 
 def generate_function_selector_alias_sentences(contract_name, contract_sort, hashes):
@@ -252,7 +257,7 @@ def generate_function_selector_alias_sentences(contract_name, contract_sort, has
     return abi_function_selector_rules
 
 
-def _extract_function_sentences(contract_name, function_sort, abi):
+def _extract_function_sentences(contract_name, function_sort, abi) -> List[Tuple[KProduction, KRule]]:
     def extract_production(name, inputs):
         input_types = [input_dict['type'] for input_dict in inputs]
 
