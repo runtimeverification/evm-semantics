@@ -16,6 +16,7 @@ from pyk.kast import (
     KFlatModule,
     KImport,
     KInner,
+    KLabel,
     KNonTerminal,
     KProduction,
     KRequire,
@@ -232,7 +233,7 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
 
 def generate_function_sentences(contract_name, contract_sort, abi):
     function_sort = KSort(f'{contract_name}Function')
-    function_call_data_production = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], att=KAtt({'klabel': f'function_{contract_name}', 'symbol': '', 'function': ''}))
+    function_call_data_production = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], att=KAtt({'symbol': '', 'function': ''}), klabel=KLabel(f'function_{contract_name}'))
     function_sentence_pairs = _extract_function_sentences(contract_name, function_sort, abi)
 
     if not function_sentence_pairs:
@@ -264,7 +265,7 @@ def _extract_function_sentences(contract_name, function_sort, abi):
         items += intersperse(input_nonterminals, KTerminal(','))
 
         items.append(KTerminal(')'))
-        return KProduction(function_sort, items)
+        return KProduction(function_sort, items, klabel=KLabel(f'{contract_name}_function_{name}'))
 
     def extract_rule(name, inputs):
         input_names = normalize_input_names([input_dict['name'] for input_dict in inputs])
