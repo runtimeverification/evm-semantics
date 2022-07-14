@@ -44,7 +44,7 @@ def get_label_for_cell_sorts(definition, sort):
     return productions[0].klabel
 
 
-def build_empty_config_cell(definition, sort):
+def kdefinition_empty_config(definition, sort):
     label = get_label_for_cell_sorts(definition, sort)
     production = get_production_for_klabel(definition, label)
     args = []
@@ -54,7 +54,7 @@ def build_empty_config_cell(definition, sort):
         if type(p_item) is KNonTerminal:
             num_nonterminals += 1
             if p_item.sort.name.endswith('Cell'):
-                args.append(build_empty_config_cell(definition, p_item.sort))
+                args.append(kdefinition_empty_config(definition, p_item.sort))
             else:
                 num_freshvars += 1
                 args.append(KVariable(sort.name[0:-4].upper() + '_CELL'))

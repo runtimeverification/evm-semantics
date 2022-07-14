@@ -6,12 +6,12 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.kast import KApply, KInner, KSort
+from pyk.kast import KApply, KInner
 from pyk.kastManip import flattenLabel, getCell
 from pyk.ktool import KProve, paren
 from pyk.prelude import intToken, stringToken
 
-from .utils import add_include_arg, build_empty_config_cell
+from .utils import add_include_arg
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -24,9 +24,6 @@ class KEVM(KProve):
     def __init__(self, kompiled_directory, main_file_name=None, use_directory=None):
         super().__init__(kompiled_directory, main_file_name=main_file_name, use_directory=use_directory)
         KEVM._patch_symbol_table(self.symbol_table)
-
-    def empty_config(self, top_cell: KSort = KSort('GeneratedTopCell')) -> KInner:
-        return build_empty_config_cell(self.definition, top_cell)
 
     @staticmethod
     def kompile(
