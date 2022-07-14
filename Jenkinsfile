@@ -24,7 +24,6 @@ pipeline {
       stages {
         // Must come before build/prove for proper testing
         stage('Check Pyk Version')  { steps { sh 'bash ./kevm_pyk/test-version.sh ${K_VERSION}' } }
-        stage('Install Foundry')    { steps { sh 'bash -c "curl -L https://foundry.paradigm.xyz | bash && foundryup --version nightly"' } }
         stage('Setup Pyk')          { steps { sh 'make kevm-pyk-venv'                           } }
         stage('Build and Test Pyk') { steps { sh 'make test-kevm-pyk -j2'                       } }
         stage('Build')              { steps { sh 'make build build-prove RELEASE=true -j2'      } }
