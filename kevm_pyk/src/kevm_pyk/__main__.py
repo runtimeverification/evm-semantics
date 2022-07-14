@@ -54,6 +54,9 @@ def main():
         else:
             kevm = KEVM(args.definition_dir)
 
+            kevm.symbol_table['binRuntime'] = lambda c: '#binRuntime ( ' + c + ' ) '
+            kevm.symbol_table['abi_selector'] = lambda s: 'selector ( ' + s + ' ) '
+
             if args.command == 'solc-to-k':
                 solc_json = solc_compile(args.contract_file)
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
