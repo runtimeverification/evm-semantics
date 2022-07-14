@@ -438,6 +438,10 @@ tests/gen-spec/foundry/bin-runtime.k.out: tests/gen-spec/foundry/out $(KEVM_LIB)
 tests/gen-spec/foundry/bin-runtime.k.check: tests/gen-spec/foundry/bin-runtime.k.out
 	$(CHECK) tests/gen-spec/foundry/bin-runtime.k.out tests/gen-spec/foundry/bin-runtime.k.expected
 
+tests/specs/foundry/foundry-spec.k.check: tests/specs/foundry/verification/haskell/timestamp kevm-pyk-venv
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec FOUNDRY-SPEC --definition tests/specs/foundry/verification/haskell > $@.out
+	$(CHECK) $@.out $@.expected
+
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC20 > $@
@@ -597,12 +601,14 @@ test-failure: $(failure_tests:=.run-expected)
 
 # kevm_pyk Tests
 
-kevm_pyk_tests := tests/specs/examples/empty-bin-runtime.k   \
+kevm_pyk_tests :=                                            \
+                  tests/gen-spec/foundry/bin-runtime.k.check \
+                  tests/gen-spec/mcd-spec.k.check            \
+                  tests/specs/bihu/functional-spec.k.prove   \
+                  tests/specs/examples/empty-bin-runtime.k   \
                   tests/specs/examples/erc20-bin-runtime.k   \
                   tests/specs/examples/erc721-bin-runtime.k  \
-                  tests/gen-spec/mcd-spec.k.check            \
-                  tests/gen-spec/foundry/bin-runtime.k.check \
-                  tests/specs/bihu/functional-spec.k.prove
+                  tests/specs/foundry/foundry-spec.k.check
 
 test-kevm-pyk: KPROVE_OPTS  += --pyk --verbose
 test-kevm-pyk: KOMPILE_OPTS += --pyk --verbose
