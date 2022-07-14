@@ -12,8 +12,6 @@ module CONTRACT-BIN-RUNTIME
 
 endmodule
 
-requires "edsl.md"
-
 module CONTRACTTEST-BIN-RUNTIME
     imports public BIN-RUNTIME
     
