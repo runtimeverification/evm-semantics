@@ -107,7 +107,7 @@ def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> str:
     return kevm.pretty_print(spec_defn)
 
 
-def solc_to_k(kevm: KEVM, contract_json: Dict, contract_file_name: str, contract_name: str, generate_storage: bool, foundry: bool = False):
+def solc_to_k(kevm: KEVM, contract_json: Dict, contract_name: str, generate_storage: bool, foundry: bool = False):
 
     abi = contract_json['abi']
     hashes = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']

@@ -3,7 +3,6 @@ import glob
 import json
 import logging
 import sys
-from pathlib import Path
 from typing import Final
 
 from pyk.cli_utils import dir_path, file_path
@@ -53,17 +52,19 @@ def main():
             if args.command == 'solc-to-k':
                 solc_json = solc_compile(args.contract_file)
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
-                res = solc_to_k(kevm, contract_json, args.contract_file.name, args.contract_name, args.generate_storage)
+                res = solc_to_k(kevm, contract_json, args.contract_name, args.generate_storage)
                 print(res)
 
             elif args.command == 'foundry-to-k':
                 # forge build --extra-output storageLayout --extra-output abi --extra-output evm.methodIdentifiers --extra-output evm.deployedBytecode.object
                 path_glob = str(args.out) + '/**/*.json'
-                for f in map(Path, glob.glob(path_glob)):
-                    _LOGGER.info(f'Processing contract file: {f}')
-                    with open(f, 'r') as cjson:
+                for json_file in glob.glob(path_glob):
+                    _LOGGER.info(f'Processing contract file: {json_file}')
+                    contract_name = json_file.split('/')[-1]
+                    contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
+                    with open(json_file, 'r') as cjson:
                         contract_json = json.loads(cjson.read())
-                        res = solc_to_k(kevm, contract_json, 'NONAME', 'NONAME', args.generate_storage, foundry=True)
+                        res = solc_to_k(kevm, contract_json, contract_name, args.generate_storage, foundry=True)
                         print(res)
 
             elif args.command == 'gen-spec-modules':
