@@ -177,14 +177,14 @@ kevm_files := abi.md              \
               evm-types.md        \
               evm-node.md         \
               hashed-locations.md \
+              infinite-gas.md     \
               json-rpc.md         \
               network.md          \
               optimizations.md    \
               serialization.md    \
               state-utils.md
 
-kevm_lemmas := infinite-gas.k       \
-               lemmas.k             \
+kevm_lemmas := lemmas.k             \
                int-simplification.k \
                erc20/evm-symbolic.k \
                mcd/bin_runtime.k    \
