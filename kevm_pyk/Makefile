@@ -14,7 +14,7 @@ all: check-code-style
 
 VENV_DEV_DIR := venv-dev
 VENV_DEV     := $(VENV_DEV_DIR)/pyvenv.cfg
-ACTIVATE_DEV := . $(MAKEFILE_DIR)/$(VENV_DEV_DIR)/bin/activate
+ACTIVATE_DEV := . $(MAKEFILE_DIR)$(VENV_DEV_DIR)/bin/activate
 
 $(VENV_DEV):
 	   virtualenv -p python3.8 $(VENV_DEV_DIR) \
@@ -27,7 +27,7 @@ $(VENV_DEV_DIR): $(VENV_DEV)
 
 VENV_PROD_DIR := venv-prod
 VENV_PROD     := $(VENV_PROD_DIR)/pyvenv.cfg
-ACTIVATE_PROD := . $(MAKEFILE_DIR)/$(VENV_PROD_DIR)/bin/activate
+ACTIVATE_PROD := . $(MAKEFILE_DIR)$(VENV_PROD_DIR)/bin/activate
 
 $(VENV_PROD):
 	   virtualenv -p python3.8 $(VENV_PROD_DIR) \
