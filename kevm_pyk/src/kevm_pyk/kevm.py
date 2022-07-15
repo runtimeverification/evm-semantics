@@ -149,9 +149,9 @@ class KEVM(KProve):
         return KApply('#binRuntime', [c])
 
     @staticmethod
-    def abi_calldata(n: str, args: List[KInner]):
-        token: KInner = stringToken(n)
-        return KApply('#abiCallData', [token] + args)
+    def abi_calldata(name: str, args: List[KInner]):
+        token: KInner = stringToken(name)
+        return KApply('#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [token] + args)
 
     @staticmethod
     def abi_address(a: KInner) -> KApply:
