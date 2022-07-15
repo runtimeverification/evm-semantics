@@ -131,9 +131,10 @@ def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: boo
     function_sentences = [function_call_data_production] + function_productions + function_rules
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
 
+    contract_klabel = KLabel(f'contract_{contract_name}')
     contract_subsort = KProduction(KSort('Contract'), [KNonTerminal(contract_sort)])
-    contract_production = KProduction(contract_sort, [KTerminal(contract_name)], att=KAtt({'klabel': f'contract_{contract_name}', 'symbol': ''}))
-    contract_macro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_name)]), KEVM.parse_bytestack(stringToken(bin_runtime))))
+    contract_production = KProduction(contract_sort, [KTerminal(contract_name)], klabel=contract_klabel)
+    contract_macro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_klabel)]), KEVM.parse_bytestack(stringToken(bin_runtime))))
 
     module_name = contract_name.upper() + '-BIN-RUNTIME'
     module = KFlatModule(
