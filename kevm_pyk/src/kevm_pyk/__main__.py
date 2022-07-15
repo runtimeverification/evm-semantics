@@ -57,6 +57,7 @@ def main():
                 contract_module, contract_claims_module = contract_to_k(contract_json, args.contract_name, args.generate_storage)
                 modules = [contract_module]
                 modules += [contract_claims_module] if contract_claims_module else []
+                modules = [_m for _m in modules if _m not in kevm.definition.modules]
                 bin_runtime_definition = KDefinition(contract_module.name, modules, requires=[KRequire('edsl.md')])
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
                 KEVM._patch_symbol_table(_kprint.symbol_table)
