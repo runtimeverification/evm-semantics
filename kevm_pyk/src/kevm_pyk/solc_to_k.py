@@ -29,7 +29,7 @@ from pyk.kast import (
     KToken,
     KVariable,
 )
-from pyk.kastManip import build_rule, substitute
+from pyk.kastManip import abstract_term_safely, build_rule, substitute
 from pyk.prelude import Sorts, intToken, stringToken
 from pyk.utils import intersperse
 
@@ -76,7 +76,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
     return json.loads(process_res.stdout)
 
 
-def gen_claims_for_contract(empty_config: KInner, contract_name: str) -> List[KClaim]:
+def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_cells: List[KInner] = None) -> List[KClaim]:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
     init_subst = {
@@ -98,11 +98,17 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str) -> List[KC
         'ACCOUNTS_CELL': KApply('_AccountCellMap_', [account_cell, KVariable('ACCOUNTS')]),
     }
     final_subst = {'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')])}
-    init_term = CTerm(substitute(empty_config, init_subst))
-    final_term = CTerm(abstract_cell_vars(substitute(empty_config, final_subst)))
-    claim, _ = build_rule(contract_name.lower(), init_term, final_term, claim=True)
-    assert isinstance(claim, KClaim)
-    return [claim]
+    init_term = substitute(empty_config, init_subst)
+    init_terms = [(contract_name.lower(), init_term)]
+    if calldata_cells:
+        init_terms = [(f'{contract_name.lower()}-{i}', substitute(init_term, {'CALLDATA_CELL': cd})) for i, cd in enumerate(calldata_cells)]
+    final_term = abstract_cell_vars(substitute(empty_config, final_subst))
+    claims: List[KClaim] = []
+    for claim_id, i_term in init_terms:
+        claim, _ = build_rule(claim_id, CTerm(i_term), CTerm(final_term), claim=True)
+        assert isinstance(claim, KClaim)
+        claims.append(claim)
+    return claims
 
 
 def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> Tuple[KDefinition, List[str]]:
@@ -115,7 +121,7 @@ def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> Tuple[KDefinition, Li
     return spec_defn, contract_names
 
 
-def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:
+def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, empty_config: KInner, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
     abi = contract_json['abi']
     hashes = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
@@ -140,8 +146,16 @@ def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: boo
     module = KFlatModule(module_name, sentences, [KImport('EDSL')])
 
     claims_module: Optional[KFlatModule] = None
-    function_test_productions = [prod for prod in module.functions if type(prod.items[0]) is KTerminal and prod.items[0].value.startswith('test')]
-    claims_module = KFlatModule(module_name + '-SPEC', [], [KImport(module_name)]) if function_test_productions else None
+    function_test_productions = [prod for prod in module.syntax_productions if prod.sort == KSort(f'{contract_name}Function')]
+    function_test_calldatas = []
+    for ftp in function_test_productions:
+        klabel = ftp.klabel
+        assert isinstance(klabel, KLabel)
+        args = [abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name='V') for pi in ftp.items if type(pi) is KNonTerminal]
+        calldata: KInner = KApply(klabel, args)
+        function_test_calldatas.append(calldata)
+    claims = gen_claims_for_contract(empty_config, contract_name, calldata_cells=function_test_calldatas)
+    claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(module_name)]) if function_test_productions else None
 
     return module, claims_module
 
