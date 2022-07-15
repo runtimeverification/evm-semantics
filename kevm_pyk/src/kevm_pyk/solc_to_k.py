@@ -234,7 +234,7 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
 
 def generate_function_sentences(contract_name: str, contract_sort: KSort, abi):
     function_sort = KSort(f'{contract_name}Function')
-    function_call_data_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], att=KAtt({'symbol': '', 'function': ''}), klabel=KLabel(f'function_{contract_name}'))
+    function_call_data_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], klabel=KLabel(f'function_{contract_name}'), att=KAtt({'function': ''}))
     function_sentence_pairs = _extract_function_sentences(contract_name, function_sort, abi)
 
     function_productions: List[KSentence] = []
