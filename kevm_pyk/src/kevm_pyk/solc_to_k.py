@@ -132,7 +132,7 @@ def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: boo
 
     contract_subsort = KProduction(KSort('Contract'), [KNonTerminal(contract_sort)])
     contract_production = KProduction(contract_sort, [KTerminal(contract_name)], att=KAtt({'klabel': f'contract_{contract_name}', 'symbol': ''}))
-    contract_macro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_name)]), _parseByteStack(stringToken(bin_runtime))))
+    contract_macro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_name)]), KEVM.parse_bytestack(stringToken(bin_runtime))))
 
     module_name = contract_name.upper() + '-BIN-RUNTIME'
     module = KFlatModule(
@@ -322,10 +322,6 @@ def _extract_function_sentences(contract_name, function_sort, abi) -> List[Tuple
         inputs = func_dict['inputs']
         res.append((extract_production(name, inputs), extract_rule(name, inputs)))
     return res
-
-
-def _parseByteStack(s: KInner):
-    return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
 
 
 def _check_supported_value_type(type_label: str) -> None:

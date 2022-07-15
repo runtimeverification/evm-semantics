@@ -181,3 +181,7 @@ class KEVM(KProve):
     @staticmethod
     def wordstack_len(constrainedTerm: KInner) -> int:
         return len(flattenLabel('_:__EVM-TYPES_WordStack_Int_WordStack', getCell(constrainedTerm, 'WORDSTACK_CELL')))
+
+    @staticmethod
+    def parse_bytestack(s: KInner):
+        return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
