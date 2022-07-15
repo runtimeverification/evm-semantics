@@ -1,4 +1,4 @@
-requires "../infinite-gas.k"
+requires "infinite-gas.md"
 
 module VERIFICATION
     imports INFINITE-GAS

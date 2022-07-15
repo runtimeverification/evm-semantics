@@ -1,7 +1,6 @@
 requires "../lemmas.k"
 requires "bin_runtime.k"
 requires "storage.k"
-requires "../infinite-gas.k"
 requires "word-pack.k"
 
 module VERIFICATION
@@ -169,7 +168,6 @@ endmodule
 
 module LEMMAS-MCD-COMMON
     imports LEMMAS-MCD-SYNTAX
-    imports INFINITE-GAS
     imports WORD-PACK
 
   // ########################

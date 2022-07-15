@@ -1,9 +1,7 @@
-requires "../infinite-gas.k"
 requires "../lemmas.k"
 
 module VERIFICATION-COMMON
     imports LEMMAS
-    imports INFINITE-GAS
 
   // ########################
   // Ecrecover
