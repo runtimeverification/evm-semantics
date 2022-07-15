@@ -3,7 +3,7 @@ import json
 import logging
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, List
+from typing import Any, Dict, Final, List, Tuple
 
 from pyk.cli_utils import run_process
 from pyk.kast import (
@@ -33,7 +33,7 @@ from pyk.prelude import Sorts, intToken, stringToken
 from pyk.utils import intersperse
 
 from .kevm import KEVM
-from .utils import abstract_cell_vars, kdefinition_empty_config
+from .utils import KDefinition_empty_config, abstract_cell_vars
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -107,14 +107,14 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str) -> List[KC
 def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> str:
     production_labels = [prod.klabel for module in kevm.definition for prod in module.productions if prod.klabel is not None]
     contract_names = [prod_label.name[9:] for prod_label in production_labels if prod_label.name.startswith('contract_')]
-    empty_config = kdefinition_empty_config(kevm.definition, Sorts.GENERATED_TOP_CELL)
+    empty_config = KDefinition_empty_config(kevm.definition, Sorts.GENERATED_TOP_CELL)
     claims = [claim for name in contract_names for claim in gen_claims_for_contract(empty_config, name)]
     spec_module = KFlatModule(spec_module_name, claims, [KImport(kevm.definition.main_module_name)])
     spec_defn = KDefinition(spec_module_name, [spec_module], [KRequire('verification.k')])
     return kevm.pretty_print(spec_defn)
 
 
-def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, foundry: bool = False) -> KFlatModule:
+def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, empty_config: KInner, foundry: bool = False) -> KFlatModule:
 
     abi = contract_json['abi']
     hashes = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
