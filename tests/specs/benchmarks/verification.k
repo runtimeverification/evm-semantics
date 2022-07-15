@@ -10,7 +10,7 @@ module VERIFICATION-COMMON
   // ########################
 
     //Symbolic predicate representing whether output of #ecrec is empty. No implementation.
-    syntax Bool ::= #ecrecEmpty( ByteArray , ByteArray , ByteArray , ByteArray ) [function, no-evaluators]
+    syntax Bool ::= #ecrecEmpty( ByteArray , ByteArray , ByteArray , ByteArray ) [function, no-evaluators, smtlib(ecrecEmpty)]
  // ------------------------------------------------------------------------------------------------------
     rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
     rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 0  requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
@@ -148,6 +148,17 @@ module VERIFICATION-HASKELL [symbolic, kore]
     rule BA1 ++ (BA2 ++ BA3) => (BA1 ++ BA2) ++ BA3 [concrete(BA1, BA2), simplification]
 
     rule maxUInt160 &Int Y => Y requires 0 <=Int Y andBool Y <=Int maxUInt160 [simplification]
+
+    rule ( #sizeByteArray(#ecrec( _, _, _, _ )) <=Int 32 ) => true  [simplification]
+
+    rule MEM [ K1 := BUF1:ByteArray                 ] [ K2 := #ecrec(HASH, SIGV, SIGR, SIGS) ] 
+      => MEM [ K2 := #ecrec(HASH, SIGV, SIGR, SIGS) ] [ K1 := BUF1                           ] 
+        requires (32 <=Int K1 -Int K2) andBool (K2 <Int K1) [simplification]
+
+    rule ( maxUInt160 &Int #asWord ( padLeftBytes( #ecrec(HASH, SIGV, SIGR, SIGS), N, 0 ) ) ) => #asWord ( padLeftBytes( #ecrec(HASH, SIGV, SIGR, SIGS), N, 0 ) )
+      requires #asWord(#ecrec(HASH, SIGV, SIGR, SIGS)) <=Int maxUInt160 [simplification]
+
+    rule 0 <Int #asWord ( padLeftBytes ( #ecrec( HASH, SIGV, SIGR, SIGS ), _, 0 ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
 
 endmodule
 

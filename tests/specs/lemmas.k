@@ -367,6 +367,13 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule BA:ByteArray   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                       [simplification, concrete(BA)]
     rule #buf(32, DATA) ==K BA:ByteArray   =>          DATA  ==Int #asInteger(BA) requires #sizeByteArray(BA) <=Int 32 [simplification, concrete(BA)]
 
+    rule #range( M [ N1 := BUF1:ByteArray ] [ N2 := BUF2:ByteArray ] [ N3 := BUF3:ByteArray ], L, K ) => 
+         #range( M                          [ N2 := BUF2           ] [ N3 := BUF3           ], L, K )
+      requires N1 +Int #sizeByteArray(BUF1) <=Int L [simplification]
+
+    rule #range ( M [ N := BUF:ByteArray ], N, K ) => padLeftBytes(BUF, K, 0)
+      requires (#sizeByteArray(BUF) <=Int K) andBool M [ N .. K ] ==K padLeftBytes(.ByteArray, K, 0) [simplification]
+
   // ########################
   // Map Reasoning
   // ########################

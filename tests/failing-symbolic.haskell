@@ -1,4 +1,3 @@
-tests/specs/benchmarks/ecrecoverloop00-sig1-invalid-spec.k
 tests/specs/bihu/collectToken-spec.k
 tests/specs/mcd/flapper-tend-guy-diff-pass-rough-spec.k
 tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-spec.k
