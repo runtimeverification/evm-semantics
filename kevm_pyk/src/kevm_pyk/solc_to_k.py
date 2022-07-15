@@ -282,7 +282,7 @@ def _extract_function_sentences(contract_name, function_sort, abi):
 
     def extract_rhs(name, input_names, input_types):
         args = [KApply('abi_type_' + input_type, [KVariable(input_name)]) for input_name, input_type in zip(input_names, input_types)] or [KToken('.TypedArgs', 'TypedArgs')]
-        return KApply('abiCallData', [stringToken(name)] + args)
+        return KEVM.abi_calldata(name, args)
 
     def extract_ensures(input_names, input_types):
         opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(input_names, input_types)]
