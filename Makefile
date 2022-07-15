@@ -605,8 +605,7 @@ kevm_pyk_tests :=                                            \
                   tests/specs/bihu/functional-spec.k.prove   \
                   tests/specs/examples/empty-bin-runtime.k   \
                   tests/specs/examples/erc20-bin-runtime.k   \
-                  tests/specs/examples/erc721-bin-runtime.k  \
-                  tests/specs/foundry/foundry-spec.k.check
+                  tests/specs/examples/erc721-bin-runtime.k
 
 test-kevm-pyk: KPROVE_OPTS  += --pyk --verbose
 test-kevm-pyk: KOMPILE_OPTS += --pyk --verbose
