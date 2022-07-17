@@ -24,6 +24,7 @@ module VERIFICATION
     imports VERIFICATION-COMMON
     imports VERIFICATION-JAVA
     imports VERIFICATION-HASKELL
+    imports INFINITE-GAS-JAVA-EXTRA
 
   // ########################
   // Map Reasoning

@@ -13,6 +13,7 @@ endmodule
 module LEMMAS-MCD
     imports LEMMAS-MCD-HASKELL
     imports LEMMAS-MCD-JAVA
+    imports INFINITE-GAS-JAVA-EXTRA
 
 endmodule
 
