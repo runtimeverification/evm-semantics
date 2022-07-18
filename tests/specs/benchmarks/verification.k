@@ -1,9 +1,7 @@
-requires "../infinite-gas.k"
 requires "../lemmas.k"
 
 module VERIFICATION-COMMON
     imports LEMMAS
-    imports INFINITE-GAS
 
   // ########################
   // Ecrecover
@@ -26,6 +24,7 @@ module VERIFICATION
     imports VERIFICATION-COMMON
     imports VERIFICATION-JAVA
     imports VERIFICATION-HASKELL
+    imports INFINITE-GAS-JAVA-EXTRA
 
   // ########################
   // Map Reasoning

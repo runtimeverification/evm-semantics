@@ -1,13 +1,11 @@
 requires "edsl.md"
 requires "evm-symbolic.k"
-requires "../infinite-gas.k"
 requires "../lemmas.k"
 
 module VERIFICATION
     imports VERIFICATION-JAVA
     imports VERIFICATION-HASKELL
     imports LEMMAS
-    imports INFINITE-GAS
 
 endmodule
 

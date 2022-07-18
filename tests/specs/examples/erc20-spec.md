@@ -5,7 +5,6 @@ ERC20-ish Verification
 requires "edsl.md"
 requires "optimizations.md"
 requires "lemmas/lemmas.k"
-requires "lemmas/infinite-gas.k"
 ```
 
 Solidity Code
@@ -28,7 +27,6 @@ requires "erc20-bin-runtime.k"
 module VERIFICATION
     imports EDSL
     imports LEMMAS
-    imports INFINITE-GAS
     imports EVM-OPTIMIZATIONS
     imports ERC20-BIN-RUNTIME
 
