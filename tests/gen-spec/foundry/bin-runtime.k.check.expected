@@ -5,7 +5,7 @@ module CONTRACT-BIN-RUNTIME
     
     syntax Contract ::= ContractContract 
     
-    syntax ContractContract ::= "Contract" [klabel(contract_Contract), symbol()]
+    syntax ContractContract ::= "Contract" [klabel(contract_Contract)]
     
     rule  ( #binRuntime ( Contract ) => #parseByteStack ( "0x0x6080604052600080fdfea2646970667358221220febf745518acc26f684d27983160459fa2f213f0d4664cb72e4e8885a5fc079664736f6c634300080f0033" ) )
       
@@ -17,7 +17,7 @@ module CONTRACTTEST-BIN-RUNTIME
     
     syntax Contract ::= ContractTestContract 
     
-    syntax ContractTestContract ::= "ContractTest" [klabel(contract_ContractTest), symbol()]
+    syntax ContractTestContract ::= "ContractTest" [klabel(contract_ContractTest)]
     
     syntax ByteArray ::= ContractTestContract "." ContractTestFunction [function(), klabel(function_ContractTest)]
     
