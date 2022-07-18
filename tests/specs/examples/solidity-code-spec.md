@@ -5,7 +5,6 @@ Solidity Verification Example
 requires "edsl.md"
 requires "optimizations.md"
 requires "lemmas/lemmas.k"
-requires "lemmas/infinite-gas.k"
 ```
 
 Solidity Code
@@ -58,7 +57,6 @@ Helper module for verification tasks.
 module VERIFICATION
     imports EDSL
     imports LEMMAS
-    imports INFINITE-GAS
     imports EVM-OPTIMIZATIONS
 
     rule #getValue(#uint256(X)) => X requires #rangeUInt(256, X) [simplification]
