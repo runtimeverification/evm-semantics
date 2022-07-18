@@ -139,7 +139,7 @@ def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: boo
     module = KFlatModule(
         module_name,
         [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences,
-        [KImport('BIN-RUNTIME', True)],
+        [KImport('EDSL', True)],
     )
 
     return module

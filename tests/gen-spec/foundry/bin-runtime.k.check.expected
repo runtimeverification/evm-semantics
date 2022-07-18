@@ -1,7 +1,7 @@
 requires "edsl.md"
 
 module CONTRACT-BIN-RUNTIME
-    imports public BIN-RUNTIME
+    imports public EDSL
     
     syntax Contract ::= ContractContract 
     
@@ -13,7 +13,7 @@ module CONTRACT-BIN-RUNTIME
 endmodule
 
 module CONTRACTTEST-BIN-RUNTIME
-    imports public BIN-RUNTIME
+    imports public EDSL
     
     syntax Contract ::= ContractTestContract 
     
