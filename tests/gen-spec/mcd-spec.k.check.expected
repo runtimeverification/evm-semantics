@@ -6,7 +6,7 @@ module MCD-SPEC
     claim [vat]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -197,7 +197,7 @@ module MCD-SPEC
     claim [jug]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -388,7 +388,7 @@ module MCD-SPEC
     claim [daijoin]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -579,7 +579,7 @@ module MCD-SPEC
     claim [dai]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -770,7 +770,7 @@ module MCD-SPEC
     claim [gemjoin]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -961,7 +961,7 @@ module MCD-SPEC
     claim [pot]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -1152,7 +1152,7 @@ module MCD-SPEC
     claim [spotter]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )

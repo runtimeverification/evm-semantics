@@ -6,7 +6,7 @@ module FOUNDRY-SPEC
     claim [contracttest]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -197,7 +197,7 @@ module FOUNDRY-SPEC
     claim [contract]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
