@@ -154,6 +154,10 @@ class KEVM(KProve):
         return KApply('#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [token] + args)
 
     @staticmethod
+    def abi_selector(name: str):
+        return KApply('abi_selector', [stringToken(name)])
+
+    @staticmethod
     def abi_address(a: KInner) -> KApply:
         return KApply('#address(_)_EVM-ABI_TypedArg_Int', [a])
 

@@ -254,7 +254,7 @@ def generate_function_selector_alias_sentences(contract_name, contract_sort, has
     for h in hashes:
         f_name = h.split('(')[0]
         hash_int = int(hashes[h], 16)
-        abi_function_selector_rewrite = KRewrite(KApply('abi_selector', [stringToken(f'{f_name}')]), intToken(hash_int))
+        abi_function_selector_rewrite = KRewrite(KEVM.abi_selector(f_name), intToken(hash_int))
         abi_function_selector_rules.append(KRule(abi_function_selector_rewrite))
     return abi_function_selector_rules
 
