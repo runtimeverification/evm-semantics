@@ -1,7 +1,7 @@
 requires "edsl.md"
 
 module GEMJOIN-BIN-RUNTIME
-    imports public BIN-RUNTIME
+    imports public EDSL
     
     syntax Contract ::= GemJoinContract 
     

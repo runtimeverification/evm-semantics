@@ -1,7 +1,7 @@
 requires "edsl.md"
 
 module JUG-BIN-RUNTIME
-    imports public BIN-RUNTIME
+    imports public EDSL
     
     syntax Contract ::= JugContract 
     
