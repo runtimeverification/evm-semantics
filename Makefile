@@ -451,13 +451,6 @@ tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEV
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@
 
-tests/gen-spec/mcd-spec.k.check: tests/gen-spec/kompiled/timestamp kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec MCD-SPEC --verbose --definition tests/gen-spec/kompiled > $@.out
-	$(CHECK) $@.out $@.expected
-
-tests/gen-spec/kompiled/timestamp: tests/gen-spec/verification.k $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend haskell --definition tests/gen-spec/kompiled $< --main-module MCD-VERIFICATION
-
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
 	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS) \
@@ -599,12 +592,11 @@ test-failure: $(failure_tests:=.run-expected)
 
 # kevm_pyk Tests
 
-kevm_pyk_tests :=                                            \
-                  tests/gen-spec/foundry/bin-runtime.k.check \
-                  tests/gen-spec/mcd-spec.k.check            \
-                  tests/specs/bihu/functional-spec.k.prove   \
-                  tests/specs/examples/empty-bin-runtime.k   \
-                  tests/specs/examples/erc20-bin-runtime.k   \
+kevm_pyk_tests :=                                           \
+                  tests/gen-spec/foundry/foundry.k.check    \
+                  tests/specs/bihu/functional-spec.k.prove  \
+                  tests/specs/examples/empty-bin-runtime.k  \
+                  tests/specs/examples/erc20-bin-runtime.k  \
                   tests/specs/examples/erc721-bin-runtime.k
 
 test-kevm-pyk: KPROVE_OPTS  += --pyk --verbose
