@@ -102,8 +102,10 @@ def main():
                 print(kevm.pretty_print(bin_runtime_definition) + '\n')
 
             elif args.command == 'gen-spec-modules':
-                res = gen_spec_modules(kevm, args.spec_module_name)
-                print(res)
+                defn, contract_names = gen_spec_modules(kevm, args.spec_module_name)
+                for cname in contract_names:
+                    kevm.symbol_table[cname] = lambda: cname
+                print(kevm.pretty_print(defn) + '\n')
 
             elif args.command == 'prove':
                 spec_file = args.spec_file

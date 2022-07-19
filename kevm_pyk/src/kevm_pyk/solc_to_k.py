@@ -105,16 +105,14 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str) -> List[KC
     return [claim]
 
 
-def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> str:
+def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> Tuple[KDefinition, List[str]]:
     production_labels = [prod.klabel for module in kevm.definition for prod in module.productions if prod.klabel is not None]
     contract_names = [prod_label.name[9:] for prod_label in production_labels if prod_label.name.startswith('contract_')]
     empty_config = KDefinition_empty_config(kevm.definition, Sorts.GENERATED_TOP_CELL)
-    for contract_name in contract_names:
-        claims.extend(gen_claims_for_contract(empty_config, contract_name)
-        kevm.symbol_table[contract_name] = lambda: contract_name
+    claims = [claim for contract_name in contract_names for claim in gen_claims_for_contract(empty_config, contract_name)]
     spec_module = KFlatModule(spec_module_name, claims, [KImport(kevm.definition.main_module_name)])
     spec_defn = KDefinition(spec_module_name, [spec_module], [KRequire('verification.k')])
-    return kevm.pretty_print(spec_defn)
+    return spec_defn, contract_names
 
 
 def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, empty_config: KInner, foundry: bool = False) -> KFlatModule:
