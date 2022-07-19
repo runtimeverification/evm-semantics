@@ -6,6 +6,7 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, List
 
 from pyk.cli_utils import run_process
+from pyk.cterm import CTerm
 from pyk.kast import (
     TRUE,
     KApply,
@@ -26,17 +27,22 @@ from pyk.kast import (
     KToken,
     KVariable,
 )
-from pyk.kastManip import buildRule, remove_generated_cells, substitute
+from pyk.kastManip import build_rule, remove_generated_cells, substitute
 from pyk.prelude import intToken, stringToken
 from pyk.utils import intersperse
 
-from .kevm import KEVM, inf_gas, kevm_account_cell
+from .kevm import KEVM
 from .utils import abstract_cell_vars
 
 _LOGGER: Final = logging.getLogger(__name__)
 
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
+
+    # TODO: add check to kevm:
+    # solc version should be >=0.8.0 due to:
+    # https://github.com/ethereum/solidity/issues/10276
+
     args = {
         'language': 'Solidity',
         'sources': {
@@ -71,7 +77,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
 def gen_claims_for_contract(kevm: KEVM, contract_name: str) -> List[KClaim]:
     empty_config = remove_generated_cells(kevm.empty_config())
     program = KApply('binRuntime', [KApply('contract_' + contract_name)])
-    account_cell = kevm_account_cell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
+    account_cell = KEVM.account_cell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
     init_subst = {
         'MODE_CELL': KToken('NORMAL', 'Mode'),
         'SCHEDULE_CELL': KApply('LONDON_EVM'),
@@ -86,14 +92,14 @@ def gen_claims_for_contract(kevm: KEVM, contract_name: str) -> List[KClaim]:
         'MEMORYUSED_CELL': intToken(0),
         'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
         'PC_CELL': intToken(0),
-        'GAS_CELL': inf_gas(KVariable('VGAS')),
+        'GAS_CELL': KEVM.inf_gas(KVariable('VGAS')),
         'K_CELL': KSequence([KApply('#execute_EVM_KItem'), KVariable('CONTINUATION')]),
         'ACCOUNTS_CELL': KApply('_AccountCellMap_', [account_cell, KVariable('ACCOUNTS')]),
     }
     final_subst = {'K_CELL': KSequence([KApply('#halt_EVM_KItem'), KVariable('CONTINUATION')])}
-    init_term = substitute(empty_config, init_subst)
-    final_term = abstract_cell_vars(substitute(empty_config, final_subst))
-    claim, _ = buildRule(contract_name.lower(), init_term, final_term, claim=True)
+    init_term = CTerm(substitute(empty_config, init_subst))
+    final_term = CTerm(abstract_cell_vars(substitute(empty_config, final_subst)))
+    claim, _ = build_rule(contract_name.lower(), init_term, final_term, claim=True)
     assert isinstance(claim, KClaim)
     return [claim]
 
@@ -107,22 +113,18 @@ def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> str:
     return kevm.pretty_print(spec_defn)
 
 
-def solc_to_k(kevm: KEVM, contract_file: Path, contract_name: str, generate_storage: bool):
+def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, foundry: bool = False) -> KFlatModule:
 
-    solc_json = solc_compile(contract_file)
-    contract_json = solc_json['contracts'][contract_file.name][contract_name]
-    storage_layout = contract_json['storageLayout']
     abi = contract_json['abi']
-    hashes = contract_json['evm']['methodIdentifiers']
-    bin_runtime = '0x' + contract_json['evm']['deployedBytecode']['object']
-
-    # TODO: add check to kevm:
-    # solc version should be >=0.8.0 due to:
-    # https://github.com/ethereum/solidity/issues/10276
+    hashes = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
+    bin_runtime = '0x' + (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
 
     contract_sort = KSort(f'{contract_name}Contract')
 
-    storage_sentences = generate_storage_sentences(contract_name, contract_sort, storage_layout) if generate_storage else []
+    storage_sentences = []
+    if generate_storage:
+        storage_layout = contract_json['storageLayout']
+        storage_sentences = generate_storage_sentences(contract_name, contract_sort, storage_layout)
     function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
 
@@ -130,33 +132,14 @@ def solc_to_k(kevm: KEVM, contract_file: Path, contract_name: str, generate_stor
     contract_production = KProduction(contract_sort, [KTerminal(contract_name)], att=KAtt({'klabel': f'contract_{contract_name}', 'symbol': ''}))
     contract_macro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_name)]), _parseByteStack(stringToken(bin_runtime))))
 
-    binRuntimeModuleName = contract_name.upper() + '-BIN-RUNTIME'
-    binRuntimeModule = KFlatModule(
-        binRuntimeModuleName,
+    module_name = contract_name.upper() + '-BIN-RUNTIME'
+    module = KFlatModule(
+        module_name,
         [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences,
         [KImport('BIN-RUNTIME', True)],
     )
-    binRuntimeDefinition = KDefinition(binRuntimeModuleName, [binRuntimeModule], requires=[KRequire('edsl.md')])
 
-    kevm.symbol_table['hashedLocation'] = lambda lang, base, offset: '#hashedLocation(' + lang + ', ' + base + ', ' + offset + ')'  # noqa
-    kevm.symbol_table['abiCallData']    = lambda fname, *args: '#abiCallData(' + fname + "".join(", " + arg for arg in args) + ')'  # noqa
-    kevm.symbol_table['address']        = _typed_arg_unparser('address')                                                            # noqa
-    kevm.symbol_table['bool']           = _typed_arg_unparser('bool')                                                               # noqa
-    kevm.symbol_table['bytes']          = _typed_arg_unparser('bytes')                                                              # noqa
-    kevm.symbol_table['bytes4']         = _typed_arg_unparser('bytes4')                                                             # noqa
-    kevm.symbol_table['bytes32']        = _typed_arg_unparser('bytes32')                                                            # noqa
-    kevm.symbol_table['int256']         = _typed_arg_unparser('int256')                                                             # noqa
-    kevm.symbol_table['uint256']        = _typed_arg_unparser('uint256')                                                            # noqa
-    kevm.symbol_table['rangeAddress']   = lambda t: '#rangeAddress(' + t + ')'                                                      # noqa
-    kevm.symbol_table['rangeBool']      = lambda t: '#rangeBool(' + t + ')'                                                         # noqa
-    kevm.symbol_table['rangeBytes']     = lambda n, t: '#rangeBytes(' + n + ', ' + t + ')'                                          # noqa
-    kevm.symbol_table['rangeUInt']      = lambda n, t: '#rangeUInt(' + n + ', ' + t + ')'                                           # noqa
-    kevm.symbol_table['rangeSInt']      = lambda n, t: '#rangeSInt(' + n + ', ' + t + ')'                                           # noqa
-    kevm.symbol_table['binRuntime']     = lambda s: '#binRuntime(' + s + ')'                                                        # noqa
-    kevm.symbol_table['abi_selector']   = lambda s: 'selector(' + s + ')'                                                           # noqa
-    kevm.symbol_table[contract_name]    = lambda: contract_name                                                                     # noqa
-
-    return kevm.pretty_print(binRuntimeDefinition) + '\n'
+    return module
 
 
 # Helpers
@@ -338,10 +321,6 @@ def _extract_function_sentences(contract_name, function_sort, abi):
 
 def _parseByteStack(s: KInner):
     return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
-
-
-def _typed_arg_unparser(type_label: str):
-    return lambda x: '#' + type_label + '(' + x + ')'
 
 
 def _check_supported_value_type(type_label: str) -> None:

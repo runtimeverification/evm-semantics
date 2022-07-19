@@ -6,7 +6,7 @@ module MCD-SPEC
     claim [vat]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -39,10 +39,10 @@ module MCD-SPEC
                </touchedAccounts>
                <callState>
                  <program>
-                   ( #binRuntime( Vat ) => ?_PROGRAM_CELL_acd26fc5 )
+                   ( #binRuntime(Vat) => ?_PROGRAM_CELL_acd26fc5 )
                  </program>
                  <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime( Vat ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                   ( #computeValidJumpDests ( #binRuntime(Vat) ) => ?_JUMPDESTS_CELL_acd26fc5 )
                  </jumpDests>
                  <id>
                    ( ACCT_ID => ?_ID_CELL_acd26fc5 )
@@ -66,7 +66,7 @@ module MCD-SPEC
                    ( 0 => ?_PC_CELL_acd26fc5 )
                  </pc>
                  <gas>
-                   ( #gas( _VGAS ) => ?_GAS_CELL_acd26fc5 )
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
                  </gas>
                  <memoryUsed>
                    ( 0 => ?_MEMORYUSED_CELL_acd26fc5 )
@@ -174,7 +174,7 @@ module MCD-SPEC
                      ACCT_ID
                    </acctID>
                    <code>
-                     #binRuntime( Vat )
+                     #binRuntime(Vat)
                    </code>
                    ...
                  </account>
@@ -197,7 +197,7 @@ module MCD-SPEC
     claim [jug]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -230,10 +230,10 @@ module MCD-SPEC
                </touchedAccounts>
                <callState>
                  <program>
-                   ( #binRuntime( Jug ) => ?_PROGRAM_CELL_acd26fc5 )
+                   ( #binRuntime(Jug) => ?_PROGRAM_CELL_acd26fc5 )
                  </program>
                  <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime( Jug ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                   ( #computeValidJumpDests ( #binRuntime(Jug) ) => ?_JUMPDESTS_CELL_acd26fc5 )
                  </jumpDests>
                  <id>
                    ( ACCT_ID => ?_ID_CELL_acd26fc5 )
@@ -257,7 +257,7 @@ module MCD-SPEC
                    ( 0 => ?_PC_CELL_acd26fc5 )
                  </pc>
                  <gas>
-                   ( #gas( _VGAS ) => ?_GAS_CELL_acd26fc5 )
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
                  </gas>
                  <memoryUsed>
                    ( 0 => ?_MEMORYUSED_CELL_acd26fc5 )
@@ -365,7 +365,7 @@ module MCD-SPEC
                      ACCT_ID
                    </acctID>
                    <code>
-                     #binRuntime( Jug )
+                     #binRuntime(Jug)
                    </code>
                    ...
                  </account>
@@ -388,7 +388,7 @@ module MCD-SPEC
     claim [daijoin]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -421,10 +421,10 @@ module MCD-SPEC
                </touchedAccounts>
                <callState>
                  <program>
-                   ( #binRuntime( DaiJoin ) => ?_PROGRAM_CELL_acd26fc5 )
+                   ( #binRuntime(DaiJoin) => ?_PROGRAM_CELL_acd26fc5 )
                  </program>
                  <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime( DaiJoin ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                   ( #computeValidJumpDests ( #binRuntime(DaiJoin) ) => ?_JUMPDESTS_CELL_acd26fc5 )
                  </jumpDests>
                  <id>
                    ( ACCT_ID => ?_ID_CELL_acd26fc5 )
@@ -448,7 +448,7 @@ module MCD-SPEC
                    ( 0 => ?_PC_CELL_acd26fc5 )
                  </pc>
                  <gas>
-                   ( #gas( _VGAS ) => ?_GAS_CELL_acd26fc5 )
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
                  </gas>
                  <memoryUsed>
                    ( 0 => ?_MEMORYUSED_CELL_acd26fc5 )
@@ -556,7 +556,7 @@ module MCD-SPEC
                      ACCT_ID
                    </acctID>
                    <code>
-                     #binRuntime( DaiJoin )
+                     #binRuntime(DaiJoin)
                    </code>
                    ...
                  </account>
@@ -579,7 +579,7 @@ module MCD-SPEC
     claim [dai]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -612,10 +612,10 @@ module MCD-SPEC
                </touchedAccounts>
                <callState>
                  <program>
-                   ( #binRuntime( Dai ) => ?_PROGRAM_CELL_acd26fc5 )
+                   ( #binRuntime(Dai) => ?_PROGRAM_CELL_acd26fc5 )
                  </program>
                  <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime( Dai ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                   ( #computeValidJumpDests ( #binRuntime(Dai) ) => ?_JUMPDESTS_CELL_acd26fc5 )
                  </jumpDests>
                  <id>
                    ( ACCT_ID => ?_ID_CELL_acd26fc5 )
@@ -639,7 +639,7 @@ module MCD-SPEC
                    ( 0 => ?_PC_CELL_acd26fc5 )
                  </pc>
                  <gas>
-                   ( #gas( _VGAS ) => ?_GAS_CELL_acd26fc5 )
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
                  </gas>
                  <memoryUsed>
                    ( 0 => ?_MEMORYUSED_CELL_acd26fc5 )
@@ -747,7 +747,7 @@ module MCD-SPEC
                      ACCT_ID
                    </acctID>
                    <code>
-                     #binRuntime( Dai )
+                     #binRuntime(Dai)
                    </code>
                    ...
                  </account>
@@ -770,7 +770,7 @@ module MCD-SPEC
     claim [gemjoin]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -803,10 +803,10 @@ module MCD-SPEC
                </touchedAccounts>
                <callState>
                  <program>
-                   ( #binRuntime( GemJoin ) => ?_PROGRAM_CELL_acd26fc5 )
+                   ( #binRuntime(GemJoin) => ?_PROGRAM_CELL_acd26fc5 )
                  </program>
                  <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime( GemJoin ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                   ( #computeValidJumpDests ( #binRuntime(GemJoin) ) => ?_JUMPDESTS_CELL_acd26fc5 )
                  </jumpDests>
                  <id>
                    ( ACCT_ID => ?_ID_CELL_acd26fc5 )
@@ -830,7 +830,7 @@ module MCD-SPEC
                    ( 0 => ?_PC_CELL_acd26fc5 )
                  </pc>
                  <gas>
-                   ( #gas( _VGAS ) => ?_GAS_CELL_acd26fc5 )
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
                  </gas>
                  <memoryUsed>
                    ( 0 => ?_MEMORYUSED_CELL_acd26fc5 )
@@ -938,7 +938,7 @@ module MCD-SPEC
                      ACCT_ID
                    </acctID>
                    <code>
-                     #binRuntime( GemJoin )
+                     #binRuntime(GemJoin)
                    </code>
                    ...
                  </account>
@@ -961,7 +961,7 @@ module MCD-SPEC
     claim [pot]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -994,10 +994,10 @@ module MCD-SPEC
                </touchedAccounts>
                <callState>
                  <program>
-                   ( #binRuntime( Pot ) => ?_PROGRAM_CELL_acd26fc5 )
+                   ( #binRuntime(Pot) => ?_PROGRAM_CELL_acd26fc5 )
                  </program>
                  <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime( Pot ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                   ( #computeValidJumpDests ( #binRuntime(Pot) ) => ?_JUMPDESTS_CELL_acd26fc5 )
                  </jumpDests>
                  <id>
                    ( ACCT_ID => ?_ID_CELL_acd26fc5 )
@@ -1021,7 +1021,7 @@ module MCD-SPEC
                    ( 0 => ?_PC_CELL_acd26fc5 )
                  </pc>
                  <gas>
-                   ( #gas( _VGAS ) => ?_GAS_CELL_acd26fc5 )
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
                  </gas>
                  <memoryUsed>
                    ( 0 => ?_MEMORYUSED_CELL_acd26fc5 )
@@ -1129,7 +1129,7 @@ module MCD-SPEC
                      ACCT_ID
                    </acctID>
                    <code>
-                     #binRuntime( Pot )
+                     #binRuntime(Pot)
                    </code>
                    ...
                  </account>
@@ -1152,7 +1152,7 @@ module MCD-SPEC
     claim [spotter]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -1185,10 +1185,10 @@ module MCD-SPEC
                </touchedAccounts>
                <callState>
                  <program>
-                   ( #binRuntime( Spotter ) => ?_PROGRAM_CELL_acd26fc5 )
+                   ( #binRuntime(Spotter) => ?_PROGRAM_CELL_acd26fc5 )
                  </program>
                  <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime( Spotter ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                   ( #computeValidJumpDests ( #binRuntime(Spotter) ) => ?_JUMPDESTS_CELL_acd26fc5 )
                  </jumpDests>
                  <id>
                    ( ACCT_ID => ?_ID_CELL_acd26fc5 )
@@ -1212,7 +1212,7 @@ module MCD-SPEC
                    ( 0 => ?_PC_CELL_acd26fc5 )
                  </pc>
                  <gas>
-                   ( #gas( _VGAS ) => ?_GAS_CELL_acd26fc5 )
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
                  </gas>
                  <memoryUsed>
                    ( 0 => ?_MEMORYUSED_CELL_acd26fc5 )
@@ -1320,7 +1320,7 @@ module MCD-SPEC
                      ACCT_ID
                    </acctID>
                    <code>
-                     #binRuntime( Spotter )
+                     #binRuntime(Spotter)
                    </code>
                    ...
                  </account>
