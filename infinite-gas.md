@@ -1,17 +1,16 @@
-requires "evm.md"
-requires "./int-simplification.k"
+KEVM Infinite Gas
+=================
 
- //
- // Infinite Gas
- // Here we use the construct `#gas` to represent positive infinity, while tracking the gas formula through execution.
- // This allows (i) computing final gas used, and (ii) never stopping because of out-of-gas.
- // Note that the argument to `#gas(_)` is just metadata tracking the current gas usage, and is not meant to be compared to other values.
- // As such, any `#gas(G)` and `#gas(G')` are the _same_ positive infinite, regardless of the values `G` and `G'`.
- // In particular, this means that `#gas(_) <Int #gas(_) => false`, and `#gas(_) <=Int #gas(_) => true`, regardless of the values contained in the `#gas(_)`.
- //
+Here we use the construct `#gas` to represent positive infinity, while tracking the gas formula through execution.
+This allows (i) computing final gas used, and (ii) never stopping because of out-of-gas.
+Note that the argument to `#gas(_)` is just metadata tracking the current gas usage, and is not meant to be compared to other values.
+As such, any `#gas(G)` and `#gas(G')` are the _same_ positive infinite, regardless of the values `G` and `G'`.
+In particular, this means that `#gas(_) <Int #gas(_) => false`, and `#gas(_) <=Int #gas(_) => true`, regardless of the values contained in the `#gas(_)`.
+
+```k
+requires "evm.md"
 
 module INFINITE-GAS
-    imports INT-SIMPLIFICATION
     imports INFINITE-GAS-JAVA
     imports INFINITE-GAS-HASKELL
 endmodule
@@ -27,11 +26,6 @@ module INFINITE-GAS-JAVA [kast]
     //       rules in lemmas.k by organizing them into int-simplification.k
     rule C1 +Int S2 => S2 +Int C1 requires #isConcrete(C1) andBool notBool #isConcrete(S2) [simplification]
 
-    rule S1 +Int (S2 +Int I3) => (S1 +Int S2) +Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
-    rule S1 +Int (S2 -Int I3) => (S1 +Int S2) -Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
-    rule S1 -Int (S2 +Int I3) => (S1 -Int S2) -Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
-    rule S1 -Int (S2 -Int I3) => (S1 -Int S2) +Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
-
     rule S1 +Int (C2 -Int S3) => (S1 -Int S3) +Int C2 requires #isConcrete(C2) andBool (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S3)) [simplification]
     rule S1 -Int (C2 -Int S3) => (S1 +Int S3) -Int C2 requires #isConcrete(C2) andBool (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S3)) [simplification]
 
@@ -44,6 +38,19 @@ module INFINITE-GAS-JAVA [kast]
     rule (S1 +Int C2) -Int C3 => S1 +Int (C2 -Int C3) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
     rule (S1 -Int C2) +Int C3 => S1 +Int (C3 -Int C2) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
     rule (S1 -Int C2) -Int C3 => S1 -Int (C2 +Int C3) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
+endmodule
+
+module INFINITE-GAS-JAVA-EXTRA [kast]
+    imports INFINITE-GAS-JAVA
+
+    // These lemmas conflict with a lemma in `bihu` proofs about `chop(I1 + (I2 - I3))`.
+    // Because these are just for Java backend, we pull them out and re-include them where they are needed (`mcd` and `benchmarks`).
+    // When Java backend is removed, we can delete this module anyway.
+
+    rule S1 +Int (S2 +Int I3) => (S1 +Int S2) +Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
+    rule S1 +Int (S2 -Int I3) => (S1 +Int S2) -Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
+    rule S1 -Int (S2 +Int I3) => (S1 -Int S2) -Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
+    rule S1 -Int (S2 -Int I3) => (S1 -Int S2) +Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
 endmodule
 
 module INFINITE-GAS-HASKELL [kore]
@@ -150,3 +157,4 @@ module INFINITE-GAS-COMMON
     rule Csload(_, _) <=Int #gas(_) => true  [simplification]
 
 endmodule
+```

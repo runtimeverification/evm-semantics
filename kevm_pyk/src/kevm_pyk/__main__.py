@@ -82,7 +82,8 @@ def main():
             elif args.command == 'foundry-to-k':
                 path_glob = str(args.out) + '/**/*.json'
                 modules: List[KFlatModule] = []
-                for json_file in glob.glob(path_glob):
+                # Must sort to get consistent output order on different platforms.
+                for json_file in sorted(glob.glob(path_glob)):
                     _LOGGER.info(f'Processing contract file: {json_file}')
                     contract_name = json_file.split('/')[-1]
                     contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name

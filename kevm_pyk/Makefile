@@ -3,6 +3,10 @@
         check-code-style isort check-isort check-flake8 check-mypy
 
 
+MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+MAKEFILE_DIR  := $(dir $(MAKEFILE_PATH))
+
+
 all: check-code-style
 
 
@@ -10,7 +14,7 @@ all: check-code-style
 
 VENV_DEV_DIR := venv-dev
 VENV_DEV     := $(VENV_DEV_DIR)/pyvenv.cfg
-ACTIVATE_DEV := . $(VENV_DEV_DIR)/bin/activate
+ACTIVATE_DEV := . $(MAKEFILE_DIR)$(VENV_DEV_DIR)/bin/activate
 
 $(VENV_DEV):
 	   virtualenv -p python3.8 $(VENV_DEV_DIR) \
@@ -23,7 +27,7 @@ $(VENV_DEV_DIR): $(VENV_DEV)
 
 VENV_PROD_DIR := venv-prod
 VENV_PROD     := $(VENV_PROD_DIR)/pyvenv.cfg
-ACTIVATE_PROD := . $(VENV_PROD_DIR)/bin/activate
+ACTIVATE_PROD := . $(MAKEFILE_DIR)$(VENV_PROD_DIR)/bin/activate
 
 $(VENV_PROD):
 	   virtualenv -p python3.8 $(VENV_PROD_DIR) \

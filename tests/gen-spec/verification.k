@@ -1,5 +1,4 @@
 requires "lemmas/lemmas.k"
-requires "lemmas/infinite-gas.k"
 
 requires "dai-bin-runtime.k"
 requires "daijoin-bin-runtime.k"

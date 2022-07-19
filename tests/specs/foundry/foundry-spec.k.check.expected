@@ -6,7 +6,7 @@ module FOUNDRY-SPEC
     claim [contracttest]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -66,7 +66,7 @@ module FOUNDRY-SPEC
                    ( 0 => ?_PC_CELL_acd26fc5 )
                  </pc>
                  <gas>
-                   ( infGas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
                  </gas>
                  <memoryUsed>
                    ( 0 => ?_MEMORYUSED_CELL_acd26fc5 )
@@ -197,7 +197,7 @@ module FOUNDRY-SPEC
     claim [contract]: <kevm>
            <k>
              ( #execute => #halt )
-             ~> CONTINUATION
+             ~> _CONTINUATION
            </k>
            <exit-code>
              ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
@@ -257,7 +257,7 @@ module FOUNDRY-SPEC
                    ( 0 => ?_PC_CELL_acd26fc5 )
                  </pc>
                  <gas>
-                   ( infGas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
                  </gas>
                  <memoryUsed>
                    ( 0 => ?_MEMORYUSED_CELL_acd26fc5 )
