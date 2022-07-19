@@ -30,7 +30,7 @@ contract SafeTest is Test {
         assertEq(preBalance + 1 ether, postBalance);
     }
 
-    function testWithdrawFuzz(uint256 amount) public {
+    function testWithdrawFuzz(uint96 amount) public {
         safe = new Safe();
         payable(address(safe)).transfer(amount);
         uint256 preBalance = address(this).balance;
