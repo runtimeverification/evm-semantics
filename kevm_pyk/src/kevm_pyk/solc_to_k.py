@@ -77,7 +77,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
 
 
 def gen_claims_for_contract(empty_config: KInner, contract_name: str) -> List[KClaim]:
-    program = KApply('binRuntime', [KApply('contract_' + contract_name)])
+    program = KApply('binRuntime', [KApply(f'contract_{contract_name}')])
     account_cell = KEVM.account_cell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
     init_subst = {
         'MODE_CELL': KToken('NORMAL', 'Mode'),
@@ -136,11 +136,8 @@ def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: boo
     contract_macro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_klabel)]), KEVM.parse_bytestack(stringToken(bin_runtime))))
 
     module_name = contract_name.upper() + '-BIN-RUNTIME'
-    module = KFlatModule(
-        module_name,
-        [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences,
-        [KImport('EDSL', True)],
-    )
+    sentences = [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences
+    module = KFlatModule(module_name, sentences, [KImport('EDSL')])
 
     return module
 
