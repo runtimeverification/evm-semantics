@@ -429,15 +429,15 @@ tests/%.parse: tests/%
 kevm-pyk-venv:
 	$(MAKE) -C ./kevm_pyk venv-prod
 
-tests/gen-spec/foundry/out:
+tests/foundry/out:
 	cd $(dir $@) && forge build --extra-output storageLayout --extra-output abi --extra-output evm.methodIdentifiers --extra-output evm.deployedBytecode.object
 
-tests/gen-spec/foundry/bin-runtime.k.check: tests/gen-spec/foundry/out tests/specs/foundry/verification/haskell/timestamp kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) foundry-to-k $< --verbose --definition tests/specs/foundry/verification/haskell > $@.out
+tests/foundry/bin-runtime.k.check: tests/foundry/out $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) foundry-to-k $< --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@.out
 	$(CHECK) $@.out $@.expected
 
-tests/specs/foundry/foundry-spec.k.check: tests/specs/foundry/verification/haskell/timestamp kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec FOUNDRY-SPEC --verbose --definition tests/specs/foundry/verification/haskell > $@.out
+tests/specs/foundry/foundry-spec.k.check: $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec FOUNDRY-SPEC --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@.out
 	$(CHECK) $@.out $@.expected
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
@@ -593,7 +593,7 @@ test-failure: $(failure_tests:=.run-expected)
 # kevm_pyk Tests
 
 kevm_pyk_tests :=                                           \
-                  tests/gen-spec/foundry/foundry.k.check    \
+                  tests/foundry/bin-runtime.k.check         \
                   tests/specs/bihu/functional-spec.k.prove  \
                   tests/specs/examples/empty-bin-runtime.k  \
                   tests/specs/examples/erc20-bin-runtime.k  \
