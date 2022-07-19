@@ -136,11 +136,8 @@ def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: boo
     contract_macro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_klabel)]), KEVM.parse_bytestack(stringToken(bin_runtime))))
 
     module_name = contract_name.upper() + '-BIN-RUNTIME'
-    module = KFlatModule(
-        module_name,
-        [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences,
-        [KImport('EDSL', True)],
-    )
+    sentences = [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences
+    module = KFlatModule(module_name, sentences, [KImport('EDSL')])
 
     return module
 
