@@ -15,7 +15,7 @@ from pyk.kastManip import (
     abstract_term_safely,
     isAnonVariable,
     remove_generated_cells,
-    splitConfigAndConstraints,
+    split_config_and_constraints,
     splitConfigFrom,
     substitute,
 )
@@ -68,7 +68,7 @@ def add_include_arg(includes):
 
 
 def abstract_cell_vars(cterm):
-    state, _ = splitConfigAndConstraints(cterm)
+    state, _ = split_config_and_constraints(cterm)
     config, subst = splitConfigFrom(state)
     for s in subst:
         if type(subst[s]) is KVariable and not isAnonVariable(subst[s]):

@@ -6,6 +6,7 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, List, Tuple
 
 from pyk.cli_utils import run_process
+from pyk.cterm import CTerm
 from pyk.kast import (
     TRUE,
     KApply,
@@ -28,7 +29,7 @@ from pyk.kast import (
     KToken,
     KVariable,
 )
-from pyk.kastManip import buildRule, substitute
+from pyk.kastManip import build_rule, substitute
 from pyk.prelude import Sorts, intToken, stringToken
 from pyk.utils import intersperse
 
@@ -97,9 +98,9 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str) -> List[KC
         'ACCOUNTS_CELL': KApply('_AccountCellMap_', [account_cell, KVariable('ACCOUNTS')]),
     }
     final_subst = {'K_CELL': KSequence([KApply('#halt_EVM_KItem'), KVariable('CONTINUATION')])}
-    init_term = substitute(empty_config, init_subst)
-    final_term = abstract_cell_vars(substitute(empty_config, final_subst))
-    claim, _ = buildRule(contract_name.lower(), init_term, final_term, claim=True)
+    init_term = CTerm(substitute(empty_config, init_subst))
+    final_term = CTerm(abstract_cell_vars(substitute(empty_config, final_subst)))
+    claim, _ = build_rule(contract_name.lower(), init_term, final_term, claim=True)
     assert isinstance(claim, KClaim)
     return [claim]
 
