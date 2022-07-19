@@ -79,7 +79,8 @@ def main():
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
                 contract_module = contract_to_k(contract_json, args.contract_name, args.generate_storage, empty_config)
                 bin_runtime_definition = KDefinition(contract_module.name, [contract_module], requires=[KRequire('edsl.md')])
-                kevm.symbol_table[args.contract_name] = lambda: args.contract_name
+                clabel = f'contract_{args.contract_name}'
+                kevm.symbol_table[clabel] = lambda: args.contract_name
                 print(kevm.pretty_print(bin_runtime_definition) + '\n')
 
             elif args.command == 'foundry-to-k':
@@ -93,7 +94,8 @@ def main():
                     with open(json_file, 'r') as cjson:
                         contract_json = json.loads(cjson.read())
                         module = contract_to_k(contract_json, contract_name, args.generate_storage, empty_config, foundry=True)
-                        kevm.symbol_table[contract_name] = lambda: contract_name
+                        clabel = f'contract_{contract_name}'
+                        kevm.symbol_table[clabel] = lambda: contract_name
                         _LOGGER.info(f'Produced contract module: {module.name}')
                         modules.append(module)
                 main_module = KFlatModule(args.main_module, [], [KImport(module.name) for module in modules])
