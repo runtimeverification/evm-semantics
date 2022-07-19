@@ -127,8 +127,7 @@ def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: boo
     if generate_storage:
         storage_layout = contract_json['storageLayout']
         storage_sentences = generate_storage_sentences(contract_name, contract_sort, storage_layout)
-    function_call_data_production, function_productions, function_rules = generate_function_sentences(contract_name, contract_sort, abi)
-    function_sentences = [function_call_data_production] + function_productions + function_rules
+    function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
 
     contract_klabel = KLabel(f'contract_{contract_name}')
