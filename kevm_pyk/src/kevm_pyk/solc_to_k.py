@@ -115,7 +115,7 @@ def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> Tuple[KDefinition, Li
     return spec_defn, contract_names
 
 
-def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, empty_config: KInner, foundry: bool = False) -> KFlatModule:
+def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, foundry: bool = False) -> KFlatModule:
 
     abi = contract_json['abi']
     hashes = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']

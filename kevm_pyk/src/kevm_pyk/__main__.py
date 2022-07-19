@@ -7,11 +7,10 @@ from typing import Any, Dict, Final, List
 
 from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KDefinition, KFlatModule, KImport, KRequire
-from pyk.prelude import Sorts
 
 from .kevm import KEVM
 from .solc_to_k import contract_to_k, gen_spec_modules, solc_compile
-from .utils import KDefinition_empty_config, add_include_arg
+from .utils import add_include_arg
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -76,12 +75,10 @@ def main():
         else:
             kevm = KEVM(args.definition_dir)
 
-            empty_config = KDefinition_empty_config(kevm.definition, Sorts.GENERATED_TOP_CELL)
-
             if args.command == 'solc-to-k':
                 solc_json = solc_compile(args.contract_file)
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
-                contract_module = contract_to_k(contract_json, args.contract_name, args.generate_storage, empty_config)
+                contract_module = contract_to_k(contract_json, args.contract_name, args.generate_storage)
                 bin_runtime_definition = KDefinition(contract_module.name, [contract_module], requires=[KRequire('edsl.md')])
                 _make_unparsing(kevm.symbol_table, [args.contract_name])
                 print(kevm.pretty_print(bin_runtime_definition) + '\n')
@@ -98,7 +95,7 @@ def main():
                     contract_names.append(contract_name)
                     with open(json_file, 'r') as cjson:
                         contract_json = json.loads(cjson.read())
-                        module = contract_to_k(contract_json, contract_name, args.generate_storage, empty_config, foundry=True)
+                        module = contract_to_k(contract_json, contract_name, args.generate_storage, foundry=True)
                         _LOGGER.info(f'Produced contract module: {module.name}')
                         modules.append(module)
                 main_module = KFlatModule(args.main_module, [], [KImport(module.name) for module in modules])
