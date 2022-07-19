@@ -28,7 +28,7 @@ def KPrint_make_unparsing(_self: KPrint, extra_modules: List[KFlatModule] = []) 
     modules = list(_self.definition.modules) + extra_modules
     main_module = KFlatModule('UNPARSING', [], [KImport(_m.name) for _m in modules])
     defn = KDefinition('UNPARSING', [main_module] + modules)
-    kprint = KPrint(_self.kompiled_directory)
+    kprint = KPrint(str(_self.kompiled_directory))
     kprint.definition = defn
     kprint.symbol_table = build_symbol_table(kprint.definition, opinionated=True)
     kprint.definition_hash = hash_str(kprint.definition)
