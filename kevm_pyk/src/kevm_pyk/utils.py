@@ -2,7 +2,9 @@ from pyk.kast import (
     KApply,
     KDefinition,
     KInner,
+    KLabel,
     KNonTerminal,
+    KProduction,
     KSort,
     KTerminal,
     KVariable,
@@ -39,6 +41,13 @@ def KDefinition_empty_config(definition: KDefinition, sort: KSort) -> KInner:
         return KApply(label, args)
 
     return remove_generated_cells(_kdefinition_empty_config(sort))
+
+
+def KDefinition_production_for_label(definition: KDefinition, klabel: KLabel) -> KProduction:
+    productions = [prod for prod in definition.syntax_productions if prod.klabel == klabel]
+    if len(productions) != 1:
+        raise ValueError(f'Did not find unique production for klabel {klabel}: {productions}')
+    return productions[0]
 
 
 def add_include_arg(includes):
