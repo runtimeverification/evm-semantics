@@ -3,7 +3,7 @@ import glob
 import json
 import logging
 import sys
-from typing import Final, List
+from typing import Any, Dict, Final, List
 
 from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KDefinition, KFlatModule, KImport, KRequire
@@ -18,6 +18,27 @@ _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
 def main():
+
+    def _make_unparsing(symbol_table: Dict[str, Any], contract_names: List[str]) -> None:
+        symbol_table['hashedLocation'] = lambda lang, base, offset: '#hashedLocation(' + lang + ', ' + base + ', ' + offset + ')'  # noqa
+        symbol_table['abiCallData']    = lambda fname, *args: '#abiCallData(' + fname + "".join(", " + arg for arg in args) + ')'  # noqa
+        symbol_table['address']        = _typed_arg_unparser('address')                                                            # noqa
+        symbol_table['bool']           = _typed_arg_unparser('bool')                                                               # noqa
+        symbol_table['bytes']          = _typed_arg_unparser('bytes')                                                              # noqa
+        symbol_table['bytes4']         = _typed_arg_unparser('bytes4')                                                             # noqa
+        symbol_table['bytes32']        = _typed_arg_unparser('bytes32')                                                            # noqa
+        symbol_table['int256']         = _typed_arg_unparser('int256')                                                             # noqa
+        symbol_table['uint256']        = _typed_arg_unparser('uint256')                                                            # noqa
+        symbol_table['rangeAddress']   = lambda t: '#rangeAddress(' + t + ')'                                                      # noqa
+        symbol_table['rangeBool']      = lambda t: '#rangeBool(' + t + ')'                                                         # noqa
+        symbol_table['rangeBytes']     = lambda n, t: '#rangeBytes(' + n + ', ' + t + ')'                                          # noqa
+        symbol_table['rangeUInt']      = lambda n, t: '#rangeUInt(' + n + ', ' + t + ')'                                           # noqa
+        symbol_table['rangeSInt']      = lambda n, t: '#rangeSInt(' + n + ', ' + t + ')'                                           # noqa
+        symbol_table['binRuntime']     = lambda s: '#binRuntime(' + s + ')'                                                        # noqa
+        symbol_table['abi_selector']   = lambda s: 'selector(' + s + ')'                                                           # noqa
+        for cname in contract_names:
+            clabel = f'contract_{cname}'
+            symbol_table[clabel] = lambda: cname
 
     def _typed_arg_unparser(type_label: str):
         return lambda x: '#' + type_label + '(' + x + ')'
@@ -55,23 +76,6 @@ def main():
         else:
             kevm = KEVM(args.definition_dir)
 
-            kevm.symbol_table['hashedLocation'] = lambda lang, base, offset: '#hashedLocation(' + lang + ', ' + base + ', ' + offset + ')'  # noqa
-            kevm.symbol_table['abiCallData']    = lambda fname, *args: '#abiCallData(' + fname + "".join(", " + arg for arg in args) + ')'  # noqa
-            kevm.symbol_table['address']        = _typed_arg_unparser('address')                                                            # noqa
-            kevm.symbol_table['bool']           = _typed_arg_unparser('bool')                                                               # noqa
-            kevm.symbol_table['bytes']          = _typed_arg_unparser('bytes')                                                              # noqa
-            kevm.symbol_table['bytes4']         = _typed_arg_unparser('bytes4')                                                             # noqa
-            kevm.symbol_table['bytes32']        = _typed_arg_unparser('bytes32')                                                            # noqa
-            kevm.symbol_table['int256']         = _typed_arg_unparser('int256')                                                             # noqa
-            kevm.symbol_table['uint256']        = _typed_arg_unparser('uint256')                                                            # noqa
-            kevm.symbol_table['rangeAddress']   = lambda t: '#rangeAddress(' + t + ')'                                                      # noqa
-            kevm.symbol_table['rangeBool']      = lambda t: '#rangeBool(' + t + ')'                                                         # noqa
-            kevm.symbol_table['rangeBytes']     = lambda n, t: '#rangeBytes(' + n + ', ' + t + ')'                                          # noqa
-            kevm.symbol_table['rangeUInt']      = lambda n, t: '#rangeUInt(' + n + ', ' + t + ')'                                           # noqa
-            kevm.symbol_table['rangeSInt']      = lambda n, t: '#rangeSInt(' + n + ', ' + t + ')'                                           # noqa
-            kevm.symbol_table['binRuntime']     = lambda s: '#binRuntime(' + s + ')'                                                        # noqa
-            kevm.symbol_table['abi_selector']   = lambda s: 'selector(' + s + ')'                                                           # noqa
-
             empty_config = KDefinition_empty_config(kevm.definition, Sorts.GENERATED_TOP_CELL)
 
             if args.command == 'solc-to-k':
@@ -79,35 +83,33 @@ def main():
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
                 contract_module = contract_to_k(contract_json, args.contract_name, args.generate_storage, empty_config)
                 bin_runtime_definition = KDefinition(contract_module.name, [contract_module], requires=[KRequire('edsl.md')])
-                clabel = f'contract_{args.contract_name}'
-                kevm.symbol_table[clabel] = lambda: args.contract_name
+                _make_unparsing(kevm.symbol_table, [args.contract_name])
                 print(kevm.pretty_print(bin_runtime_definition) + '\n')
 
             elif args.command == 'foundry-to-k':
                 path_glob = str(args.out) + '/**/*.json'
                 modules: List[KFlatModule] = []
+                contract_names: List[str] = []
                 # Must sort to get consistent output order on different platforms.
                 for json_file in sorted(glob.glob(path_glob)):
                     _LOGGER.info(f'Processing contract file: {json_file}')
                     contract_name = json_file.split('/')[-1]
                     contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
+                    contract_names.append(contract_name)
                     with open(json_file, 'r') as cjson:
                         contract_json = json.loads(cjson.read())
                         module = contract_to_k(contract_json, contract_name, args.generate_storage, empty_config, foundry=True)
-                        clabel = f'contract_{contract_name}'
-                        kevm.symbol_table[clabel] = lambda: contract_name
                         _LOGGER.info(f'Produced contract module: {module.name}')
                         modules.append(module)
                 main_module = KFlatModule(args.main_module, [], [KImport(module.name) for module in modules])
                 modules.append(main_module)
                 bin_runtime_definition = KDefinition(main_module.name, modules, requires=[KRequire('edsl.md')])
+                _make_unparsing(kevm.symbol_table, contract_names)
                 print(kevm.pretty_print(bin_runtime_definition) + '\n')
 
             elif args.command == 'gen-spec-modules':
                 defn, contract_names = gen_spec_modules(kevm, args.spec_module_name)
-                for cname in contract_names:
-                    clabel = f'contract_{contract_name}'
-                    kevm.symbol_table[clabel] = lambda: cname
+                _make_unparsing(kevm.symbol_table, contract_names)
                 print(kevm.pretty_print(defn) + '\n')
 
             elif args.command == 'prove':
