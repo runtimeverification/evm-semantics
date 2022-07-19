@@ -104,7 +104,8 @@ def main():
             elif args.command == 'gen-spec-modules':
                 defn, contract_names = gen_spec_modules(kevm, args.spec_module_name)
                 for cname in contract_names:
-                    kevm.symbol_table[cname] = lambda: cname
+                    clabel = f'contract_{contract_name}'
+                    kevm.symbol_table[clabel] = lambda: cname
                 print(kevm.pretty_print(defn) + '\n')
 
             elif args.command == 'prove':
