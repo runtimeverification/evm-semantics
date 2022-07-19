@@ -17,15 +17,25 @@ contract SafeTest is Test {
     // when withdrawing
     receive() external payable {}
 
-    function setUp() public {
-        safe = new Safe();
-    }
+    //function setUp() public {
+    //    safe = new Safe();
+    //}
 
     function testWithdraw() public {
+        safe = new Safe();
         payable(address(safe)).transfer(1 ether);
         uint256 preBalance = address(this).balance;
         safe.withdraw();
         uint256 postBalance = address(this).balance;
         assertEq(preBalance + 1 ether, postBalance);
+    }
+
+    function testWithdrawFuzz(uint256 amount) public {
+        safe = new Safe();
+        payable(address(safe)).transfer(amount);
+        uint256 preBalance = address(this).balance;
+        safe.withdraw();
+        uint256 postBalance = address(this).balance;
+        assertEq(preBalance + amount, postBalance);
     }
 }
