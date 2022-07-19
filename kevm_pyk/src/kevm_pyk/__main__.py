@@ -55,22 +55,23 @@ def main():
         else:
             kevm = KEVM(args.definition_dir)
 
-            kevm.symbol_table['hashedLocation'] = lambda lang, base, offset: '#hashedLocation(' + lang + ', ' + base + ', ' + offset + ')'  # noqa
-            kevm.symbol_table['abiCallData']    = lambda fname, *args: '#abiCallData(' + fname + "".join(", " + arg for arg in args) + ')'  # noqa
-            kevm.symbol_table['address']        = _typed_arg_unparser('address')                                                            # noqa
-            kevm.symbol_table['bool']           = _typed_arg_unparser('bool')                                                               # noqa
-            kevm.symbol_table['bytes']          = _typed_arg_unparser('bytes')                                                              # noqa
-            kevm.symbol_table['bytes4']         = _typed_arg_unparser('bytes4')                                                             # noqa
-            kevm.symbol_table['bytes32']        = _typed_arg_unparser('bytes32')                                                            # noqa
-            kevm.symbol_table['int256']         = _typed_arg_unparser('int256')                                                             # noqa
-            kevm.symbol_table['uint256']        = _typed_arg_unparser('uint256')                                                            # noqa
-            kevm.symbol_table['rangeAddress']   = lambda t: '#rangeAddress(' + t + ')'                                                      # noqa
-            kevm.symbol_table['rangeBool']      = lambda t: '#rangeBool(' + t + ')'                                                         # noqa
-            kevm.symbol_table['rangeBytes']     = lambda n, t: '#rangeBytes(' + n + ', ' + t + ')'                                          # noqa
-            kevm.symbol_table['rangeUInt']      = lambda n, t: '#rangeUInt(' + n + ', ' + t + ')'                                           # noqa
-            kevm.symbol_table['rangeSInt']      = lambda n, t: '#rangeSInt(' + n + ', ' + t + ')'                                           # noqa
-            kevm.symbol_table['binRuntime']     = lambda s: '#binRuntime(' + s + ')'                                                        # noqa
-            kevm.symbol_table['abi_selector']   = lambda s: 'selector(' + s + ')'                                                           # noqa
+            kevm.symbol_table['hashedLocation']                 = lambda lang, base, offset: '#hashedLocation(' + lang + ', ' + base + ', ' + offset + ')'  # noqa
+            kevm.symbol_table['abiCallData']                    = lambda fname, *args: '#abiCallData(' + fname + "".join(", " + arg for arg in args) + ')'  # noqa
+            kevm.symbol_table['address']                        = _typed_arg_unparser('address')                                                            # noqa
+            kevm.symbol_table['bool']                           = _typed_arg_unparser('bool')                                                               # noqa
+            kevm.symbol_table['bytes']                          = _typed_arg_unparser('bytes')                                                              # noqa
+            kevm.symbol_table['bytes4']                         = _typed_arg_unparser('bytes4')                                                             # noqa
+            kevm.symbol_table['bytes32']                        = _typed_arg_unparser('bytes32')                                                            # noqa
+            kevm.symbol_table['int256']                         = _typed_arg_unparser('int256')                                                             # noqa
+            kevm.symbol_table['uint256']                        = _typed_arg_unparser('uint256')                                                            # noqa
+            kevm.symbol_table['rangeAddress']                   = lambda t: '#rangeAddress(' + t + ')'                                                      # noqa
+            kevm.symbol_table['rangeBool']                      = lambda t: '#rangeBool(' + t + ')'                                                         # noqa
+            kevm.symbol_table['rangeBytes']                     = lambda n, t: '#rangeBytes(' + n + ', ' + t + ')'                                          # noqa
+            kevm.symbol_table['rangeUInt']                      = lambda n, t: '#rangeUInt(' + n + ', ' + t + ')'                                           # noqa
+            kevm.symbol_table['rangeSInt']                      = lambda n, t: '#rangeSInt(' + n + ', ' + t + ')'                                           # noqa
+            kevm.symbol_table['binRuntime']                     = lambda s: '#binRuntime(' + s + ')'                                                        # noqa
+            kevm.symbol_table['abi_selector']                   = lambda s: 'selector(' + s + ')'                                                           # noqa
+            kevm.symbol_table[f'contract_{args.contract_name}'] = lambda: args.contract_name                                                                # noqa
 
             empty_config = KDefinition_empty_config(kevm.definition, Sorts.GENERATED_TOP_CELL)
 
