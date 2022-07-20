@@ -432,7 +432,7 @@ kevm-pyk-venv:
 tests/foundry/out:
 	cd $(dir $@) && forge build --extra-output storageLayout --extra-output abi --extra-output evm.methodIdentifiers --extra-output evm.deployedBytecode.object
 
-tests/foundry/bin-runtime.k.check: tests/foundry/out $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
+tests/foundry/foundry.k.check: tests/foundry/out $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) foundry-to-k $< --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@.out
 	$(CHECK) $@.out $@.expected
 
@@ -589,7 +589,7 @@ test-failure: $(failure_tests:=.run-expected)
 # kevm_pyk Tests
 
 kevm_pyk_tests :=                                           \
-                  tests/foundry/bin-runtime.k.check         \
+                  tests/foundry/foundry.k.check             \
                   tests/specs/bihu/functional-spec.k.prove  \
                   tests/specs/examples/empty-bin-runtime.k  \
                   tests/specs/examples/erc20-bin-runtime.k  \
