@@ -109,7 +109,7 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
                    ( _CALLER_ID => ?_CALLER_CELL_acd26fc5 )
                  </caller>
                  <callData>
-                   ( setUp ( ) => ?_CALLDATA_CELL_acd26fc5 )
+                   ( ContractTest . setUp ( ) => ?_CALLDATA_CELL_acd26fc5 )
                  </callData>
                  <callValue>
                    ( _CALLVALUE_CELL => ?_CALLVALUE_CELL_acd26fc5 )
@@ -300,7 +300,7 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
                    ( _CALLER_ID => ?_CALLER_CELL_acd26fc5 )
                  </caller>
                  <callData>
-                   ( test_1 ( ) => ?_CALLDATA_CELL_acd26fc5 )
+                   ( ContractTest . test_1 ( ) => ?_CALLDATA_CELL_acd26fc5 )
                  </callData>
                  <callValue>
                    ( _CALLVALUE_CELL => ?_CALLVALUE_CELL_acd26fc5 )
@@ -491,7 +491,7 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
                    ( _CALLER_ID => ?_CALLER_CELL_acd26fc5 )
                  </caller>
                  <callData>
-                   ( test_2 ( ) => ?_CALLDATA_CELL_acd26fc5 )
+                   ( ContractTest . test_2 ( ) => ?_CALLDATA_CELL_acd26fc5 )
                  </callData>
                  <callValue>
                    ( _CALLVALUE_CELL => ?_CALLVALUE_CELL_acd26fc5 )
