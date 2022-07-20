@@ -9,7 +9,7 @@ module VERIFICATION-COMMON
 
     //Symbolic predicate representing whether output of #ecrec is empty. No implementation.
     syntax Bool ::= #ecrecEmpty( ByteArray , ByteArray , ByteArray , ByteArray ) [function, no-evaluators, smtlib(ecrecEmpty)]
- // ------------------------------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------------------------------------------------------
     rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
     rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 0  requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
 
