@@ -161,6 +161,10 @@ class KEVM(KProve):
         return KApply('#binRuntime', [c])
 
     @staticmethod
+    def hashed_location(compiler: str, base: KInner, offset: KInner) -> KApply:
+        return KApply('#hashedLocation(_,_,_)_HASHED-LOCATIONS_Int_String_Int_IntList', [stringToken(compiler), base, offset])
+
+    @staticmethod
     def abi_calldata(name: str, args: List[KInner]) -> KApply:
         token: KInner = stringToken(name)
         return KApply('#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [token] + args)
@@ -176,6 +180,10 @@ class KEVM(KProve):
     @staticmethod
     def abi_bool(b: KInner) -> KApply:
         return KApply('#bool(_)_EVM-ABI_TypedArg_Int', [b])
+
+    @staticmethod
+    def abi_type(type: str, value: KInner) -> KApply:
+        return KApply('abi_type_' + type, [value])
 
     @staticmethod
     def empty_typedargs() -> KApply:

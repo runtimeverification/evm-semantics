@@ -77,7 +77,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
 
 
 def gen_claims_for_contract(empty_config: KInner, contract_name: str) -> List[KClaim]:
-    program = KApply('binRuntime', [KApply(f'contract_{contract_name}')])
+    program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
     init_subst = {
         'MODE_CELL': KToken('NORMAL', 'Mode'),
@@ -85,7 +85,7 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str) -> List[KC
         'CALLSTACK_CELL': KApply('.List'),
         'CALLDEPTH_CELL': intToken(0),
         'PROGRAM_CELL': program,
-        'JUMPDESTS_CELL': KApply('#computeValidJumpDests', [program]),
+        'JUMPDESTS_CELL': KEVM.compute_valid_jumpdests(program),
         'ORIGIN_CELL': KVariable('ORIGIN_ID'),
         'ID_CELL': KVariable('ACCT_ID'),
         'CALLER_CELL': KVariable('CALLER_ID'),
@@ -94,10 +94,10 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str) -> List[KC
         'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
         'PC_CELL': intToken(0),
         'GAS_CELL': KEVM.inf_gas(KVariable('VGAS')),
-        'K_CELL': KSequence([KApply('#execute_EVM_KItem'), KVariable('CONTINUATION')]),
+        'K_CELL': KSequence([KEVM.execute(), KVariable('CONTINUATION')]),
         'ACCOUNTS_CELL': KApply('_AccountCellMap_', [account_cell, KVariable('ACCOUNTS')]),
     }
-    final_subst = {'K_CELL': KSequence([KApply('#halt_EVM_KItem'), KVariable('CONTINUATION')])}
+    final_subst = {'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')])}
     init_term = CTerm(substitute(empty_config, init_subst))
     final_term = CTerm(abstract_cell_vars(substitute(empty_config, final_subst)))
     claim, _ = build_rule(contract_name.lower(), init_term, final_term, claim=True)
@@ -133,7 +133,7 @@ def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: boo
     contract_klabel = KLabel(f'contract_{contract_name}')
     contract_subsort = KProduction(KSort('Contract'), [KNonTerminal(contract_sort)])
     contract_production = KProduction(contract_sort, [KTerminal(contract_name)], klabel=contract_klabel)
-    contract_macro = KRule(KRewrite(KApply('binRuntime', [KApply(contract_klabel)]), KEVM.parse_bytestack(stringToken(bin_runtime))))
+    contract_macro = KRule(KRewrite(KEVM.bin_runtime(KApply(contract_klabel)), KEVM.parse_bytestack(stringToken(bin_runtime))))
 
     module_name = contract_name.upper() + '-BIN-RUNTIME'
     sentences = [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences
@@ -222,7 +222,7 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
 
         new_syntax = syntax + [KTerminal('['), KNonTerminal(key_sort), KTerminal(']')]
         new_lhs = f'{lhs}[V{var_idx}]'
-        new_rhs = KApply('hashedLocation', [stringToken('Solidity'), rhs, KVariable(f'V{var_idx}')])
+        new_rhs = KEVM.hashed_location('Solidity', rhs, KVariable(f'V{var_idx}'))
         new_type_name = value_type_name
         return recur(new_syntax, new_lhs, new_rhs, var_idx + 1, new_type_name)
 
@@ -283,7 +283,7 @@ def _extract_function_sentences(contract_name, function_sort, abi) -> List[Tuple
         return KToken(f'{contract_name}.{name}(' + ', '.join(input_names) + ')', 'ByteArray')
 
     def extract_rhs(name, input_names, input_types):
-        args = [KApply('abi_type_' + input_type, [KVariable(input_name)]) for input_name, input_type in zip(input_names, input_types)] or [KToken('.TypedArgs', 'TypedArgs')]
+        args = [KEVM.abi_type(input_type, KVariable(input_name)) for input_name, input_type in zip(input_names, input_types)] or [KToken('.TypedArgs', 'TypedArgs')]
         return KEVM.abi_calldata(name, args)
 
     def extract_ensures(input_names, input_types):
