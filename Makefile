@@ -429,6 +429,9 @@ tests/%.parse: tests/%
 kevm-pyk-venv:
 	$(MAKE) -C ./kevm_pyk venv-prod
 
+tests/foundry/%: KEVM = . ./kevm_pyk/venv-prod/bin/activate && kevm
+tests/foundry/%: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile
+
 tests/foundry/out:
 	cd $(dir $@) && forge build --extra-output storageLayout --extra-output abi --extra-output evm.methodIdentifiers --extra-output evm.deployedBytecode.object
 
@@ -437,6 +440,16 @@ tests/foundry/foundry.k: tests/foundry/out $(KEVM_LIB)/$(haskell_kompiled) kevm-
 
 tests/foundry/foundry.k.check: tests/foundry/foundry.k
 	$(CHECK) $< $@.expected
+
+tests/foundry/foundry.k.prove: tests/foundry/kompiled/timestamp
+	$(KEVM) prove tests/foundry/foundry.k --pyk --backend haskell --definition tests/foundry/kompiled \
+	    $(TEST_OPTIONS) --spec-module CONTRACTTEST-BIN-RUNTIME-SPEC
+
+tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
+	$(KOMPILE) $< --pyk --backend haskell --definition tests/foundry/kompiled \
+	    --main-module VERIFICATION --syntax-module VERIFICATION               \
+	    --concrete-rules-file tests/foundry/concrete-rules.txt                \
+	    $(KOMPILE_OPTS)
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
@@ -591,7 +604,7 @@ test-failure: $(failure_tests:=.run-expected)
 # kevm_pyk Tests
 
 kevm_pyk_tests :=                                           \
-                  tests/foundry/foundry.k.check             \
+                  tests/foundry/foundry.k.prove             \
                   tests/specs/bihu/functional-spec.k.prove  \
                   tests/specs/examples/empty-bin-runtime.k  \
                   tests/specs/examples/erc20-bin-runtime.k  \
