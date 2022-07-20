@@ -18,9 +18,6 @@ _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 def main():
 
-    def _typed_arg_unparser(type_label: str):
-        return lambda x: '#' + type_label + '(' + x + ')'
-
     sys.setrecursionlimit(15000000)
     parser = create_argument_parser()
     args = parser.parse_args()
