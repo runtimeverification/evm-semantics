@@ -432,9 +432,11 @@ kevm-pyk-venv:
 tests/foundry/out:
 	cd $(dir $@) && forge build --extra-output storageLayout --extra-output abi --extra-output evm.methodIdentifiers --extra-output evm.deployedBytecode.object
 
-tests/foundry/foundry.k.check: tests/foundry/out $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) foundry-to-k $< --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@.out
-	$(CHECK) $@.out $@.expected
+tests/foundry/foundry.k: tests/foundry/out $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) foundry-to-k $< --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@
+
+tests/foundry/foundry.k.check: tests/foundry/foundry.k
+	$(CHECK) $< $@.expected
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
