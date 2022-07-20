@@ -12,14 +12,12 @@ from pyk.kast import (
     KApply,
     KAtt,
     KClaim,
-    KDefinition,
     KFlatModule,
     KImport,
     KInner,
     KLabel,
     KNonTerminal,
     KProduction,
-    KRequire,
     KRewrite,
     KRule,
     KSentence,
@@ -30,11 +28,11 @@ from pyk.kast import (
     KVariable,
 )
 from pyk.kastManip import abstract_term_safely, build_rule, substitute
-from pyk.prelude import Sorts, intToken, stringToken
+from pyk.prelude import intToken, stringToken
 from pyk.utils import intersperse
 
 from .kevm import KEVM
-from .utils import KDefinition_empty_config, abstract_cell_vars
+from .utils import abstract_cell_vars
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -109,16 +107,6 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
         assert isinstance(claim, KClaim)
         claims.append(claim)
     return claims
-
-
-def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> Tuple[KDefinition, List[str]]:
-    production_labels = [prod.klabel for module in kevm.definition for prod in module.productions if prod.klabel is not None]
-    contract_names = [prod_label.name[9:] for prod_label in production_labels if prod_label.name.startswith('contract_')]
-    empty_config = KDefinition_empty_config(kevm.definition, Sorts.GENERATED_TOP_CELL)
-    claims = [claim for contract_name in contract_names for claim in gen_claims_for_contract(empty_config, contract_name)]
-    spec_module = KFlatModule(spec_module_name, claims, [KImport(kevm.definition.main_module_name)])
-    spec_defn = KDefinition(spec_module_name, [spec_module], [KRequire('verification.k')])
-    return spec_defn, contract_names
 
 
 def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, empty_config: KInner, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:

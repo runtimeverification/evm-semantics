@@ -10,7 +10,7 @@ from pyk.kast import KDefinition, KFlatModule, KImport, KRequire
 from pyk.prelude import Sorts
 
 from .kevm import KEVM
-from .solc_to_k import contract_to_k, gen_spec_modules, solc_compile
+from .solc_to_k import contract_to_k, solc_compile
 from .utils import (
     KDefinition_empty_config,
     KPrint_make_unparsing,
@@ -36,7 +36,7 @@ def main():
         res = solc_compile(args.contract_file)
         print(json.dumps(res))
 
-    elif args.command in ['solc-to-k', 'foundry-to-k', 'gen-spec-modules', 'kompile', 'prove']:
+    elif args.command in ['solc-to-k', 'foundry-to-k', 'kompile', 'prove']:
 
         if 'definition_dir' not in args:
             raise ValueError(f'Must provide --definition argument to {args.command}!')
@@ -91,12 +91,6 @@ def main():
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
                 KEVM._patch_symbol_table(_kprint.symbol_table)
                 print(_kprint.pretty_print(bin_runtime_definition) + '\n')
-
-            elif args.command == 'gen-spec-modules':
-                defn, contract_names = gen_spec_modules(kevm, args.spec_module_name)
-                _kprint = KPrint_make_unparsing(kevm, extra_modules=list(defn.modules))
-                KEVM._patch_symbol_table(_kprint.symbol_table)
-                print(_kprint.pretty_print(defn) + '\n')
 
             elif args.command == 'prove':
                 spec_file = args.spec_file
@@ -156,9 +150,6 @@ def create_argument_parser():
     foundry_to_k_subparser.add_argument('out', type=dir_path, help='Path to Foundry output directory.')
     foundry_to_k_subparser.add_argument('--main-module', default='VERIFICATION', type=str, help='Name of the main module.')
     foundry_to_k_subparser.add_argument('--no-storage-slots', dest='generate_storage', default=True, action='store_false', help='Do not generate productions and rules for accessing storage slots')
-
-    gen_spec_modules_subparser = command_parser.add_parser('gen-spec-modules', help='Output helper K definition for given JSON output from solc compiler.', parents=[shared_options])
-    gen_spec_modules_subparser.add_argument('spec_module_name', type=str, help='Name of module containing all the generated specs.')
 
     return parser
 
