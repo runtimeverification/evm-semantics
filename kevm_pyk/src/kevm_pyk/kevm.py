@@ -113,6 +113,10 @@ class KEVM(KProve):
         return KApply('pow256_EVM-TYPES_Int', [])
 
     @staticmethod
+    def range_uint8(i: KInner) -> KApply:
+        return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(8), i])
+
+    @staticmethod
     def range_uint160(i: KInner) -> KApply:
         return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(160), i])
 
@@ -121,12 +125,20 @@ class KEVM(KProve):
         return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(256), i])
 
     @staticmethod
+    def range_sint256(i: KInner) -> KApply:
+        return KApply('#rangeSInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(256), i])
+
+    @staticmethod
     def range_address(i: KInner) -> KApply:
         return KApply('#rangeAddress(_)_EVM-TYPES_Bool_Int', [i])
 
     @staticmethod
     def range_bool(i: KInner) -> KApply:
         return KApply('#rangeBool(_)_EVM-TYPES_Bool_Int', [i])
+
+    @staticmethod
+    def range_bytes(width: KInner, ba: KInner) -> KApply:
+        return KApply('#rangeBytes(_,_)_EVM-TYPES_Bool_Int_Int', [width, ba])
 
     @staticmethod
     def bool_2_word(cond: KInner) -> KApply:

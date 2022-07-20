@@ -346,17 +346,17 @@ def _evm_base_sort(type_label: str):
 
 def _range_predicate(term, type_label: str):
     if type_label == 'address':
-        return KApply('rangeAddress', [term])
+        return KEVM.range_address(term)
     if type_label == 'bool':
-        return KApply('rangeBool', [term])
+        return KEVM.range_bool(term)
     if type_label == 'bytes4':
-        return KApply('rangeBytes', [intToken(4), term])
+        return KEVM.range_bytes(intToken(4), term)
     if type_label in {'bytes32', 'uint256'}:
-        return KApply('rangeUInt', [intToken(256), term])
+        return KEVM.range_uint256(term)
     if type_label == 'int256':
-        return KApply('rangeSInt', [intToken(256), term])
+        return KEVM.range_sint256(term)
     if type_label == 'uint8':
-        return KApply('rangeUInt', [intToken(8), term])
+        return KEVM.range_uint8(term)
     if type_label == 'bytes':
         return None
 
