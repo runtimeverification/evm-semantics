@@ -436,10 +436,6 @@ tests/foundry/bin-runtime.k.check: tests/foundry/out $(KEVM_LIB)/$(haskell_kompi
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) foundry-to-k $< --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@.out
 	$(CHECK) $@.out $@.expected
 
-tests/specs/foundry/foundry-spec.k.check: $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec FOUNDRY-SPEC --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@.out
-	$(CHECK) $@.out $@.expected
-
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC20 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@
