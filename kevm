@@ -229,7 +229,7 @@ view_klab() {
 }
 
 run_interpret() {
-    local interpreter kast output output_text output_format exit_status cmdprefix
+    local interpreter kast output output_text output_format exit_status cmdprefix kore_exec_args bug_report_name
 
     interpreter="$backend_dir/interpreter"
     kast="$(mktemp)"
@@ -260,7 +260,10 @@ run_interpret() {
                  ;;
 
         haskell) run_kast kore > "$kast"
-                 execute kore-exec "$backend_dir/definition.kore" --pattern "$kast" --module ETHEREUM-SIMULATION --smt none --output "$output" || exit_status="$?"
+                 kore_exec_args=(--module ETHEREUM-SIMULATION --smt none)
+                 bug_report_name="kevm-bug-$(basename "${run_file%.json}")"
+                 ! ${bug_report} || kore_exec_args+=(--bug-report ${bug_report_name})
+                 execute kore-exec "$backend_dir/definition.kore" --pattern "${kast}" --output "${output}" "${kore_exec_args[@]}" || exit_status="$?"
                  if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
                  fi
