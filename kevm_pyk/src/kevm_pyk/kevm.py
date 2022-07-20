@@ -85,31 +85,31 @@ class KEVM(KProve):
         symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')            # noqa
 
     @staticmethod
-    def halt() -> KInner:
+    def halt() -> KApply:
         return KApply('#halt_EVM_KItem')
 
     @staticmethod
-    def execute() -> KInner:
+    def execute() -> KApply:
         return KApply('#execute_EVM_KItem')
 
     @staticmethod
-    def jumpi() -> KInner:
+    def jumpi() -> KApply:
         return KApply('JUMPI_EVM_BinStackOp')
 
     @staticmethod
-    def jump() -> KInner:
+    def jump() -> KApply:
         return KApply('JUMP_EVM_UnStackOp')
 
     @staticmethod
-    def jumpi_applied(pc: KInner, cond: KInner) -> KInner:
+    def jumpi_applied(pc: KInner, cond: KInner) -> KApply:
         return KApply('____EVM_InternalOp_BinStackOp_Int_Int', [KEVM.jumpi(), pc, cond])
 
     @staticmethod
-    def jump_applied(pc: KInner) -> KInner:
+    def jump_applied(pc: KInner) -> KApply:
         return KApply('___EVM_InternalOp_UnStackOp_Int', [KEVM.jump(), pc])
 
     @staticmethod
-    def pow256():
+    def pow256() -> KApply:
         return KApply('pow256_EVM-TYPES_Int', [])
 
     @staticmethod
@@ -129,7 +129,7 @@ class KEVM(KProve):
         return KApply('#rangeBool(_)_EVM-TYPES_Bool_Int', [i])
 
     @staticmethod
-    def bool_2_word(cond: KInner) -> KInner:
+    def bool_2_word(cond: KInner) -> KApply:
         return KApply('bool2Word(_)_EVM-TYPES_Int_Bool', [cond])
 
     @staticmethod
@@ -149,12 +149,12 @@ class KEVM(KProve):
         return KApply('#binRuntime', [c])
 
     @staticmethod
-    def abi_calldata(name: str, args: List[KInner]):
+    def abi_calldata(name: str, args: List[KInner]) -> KApply:
         token: KInner = stringToken(name)
         return KApply('#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [token] + args)
 
     @staticmethod
-    def abi_selector(name: str):
+    def abi_selector(name: str) -> KApply:
         return KApply('abi_selector', [stringToken(name)])
 
     @staticmethod
@@ -187,5 +187,5 @@ class KEVM(KProve):
         return len(flattenLabel('_:__EVM-TYPES_WordStack_Int_WordStack', getCell(constrainedTerm, 'WORDSTACK_CELL')))
 
     @staticmethod
-    def parse_bytestack(s: KInner):
+    def parse_bytestack(s: KInner) -> KApply:
         return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
