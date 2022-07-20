@@ -64,7 +64,9 @@ def main():
                 modules = [contract_module]
                 modules += [contract_claims_module] if contract_claims_module else []
                 modules = [_m for _m in modules if _m not in kevm.definition.modules]
-                bin_runtime_definition = KDefinition(contract_module.name, modules, requires=[KRequire('edsl.md')])
+                main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
+                modules.append(main_module)
+                bin_runtime_definition = KDefinition(args.main_module, modules, requires=[KRequire(req) for req in ['edsl.md'] + args.requires])
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
                 KEVM._patch_symbol_table(_kprint.symbol_table)
                 print(_kprint.pretty_print(bin_runtime_definition) + '\n')
@@ -85,9 +87,9 @@ def main():
                         modules.append(module)
                         if claims_module:
                             claims_modules.append(claims_module)
-                main_module = KFlatModule(args.main_module, [], [KImport(module.name) for module in modules])
+                main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
                 modules.append(main_module)
-                bin_runtime_definition = KDefinition(main_module.name, modules + claims_modules, requires=[KRequire('edsl.md')])
+                bin_runtime_definition = KDefinition(main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + args.requires])
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
                 KEVM._patch_symbol_table(_kprint.symbol_table)
                 print(_kprint.pretty_print(bin_runtime_definition) + '\n')
@@ -141,15 +143,18 @@ def create_argument_parser():
     solc_subparser = command_parser.add_parser('compile', help='Generate combined JSON with solc compilation results.')
     solc_subparser.add_argument('contract_file', type=file_path, help='Path to contract file.')
 
-    solc_to_k_subparser = command_parser.add_parser('solc-to-k', help='Output helper K definition for given JSON output from solc compiler.', parents=[shared_options])
+    k_gen_options = argparse.ArgumentParser(add_help=False)
+    k_gen_options.add_argument('--no-storage-slots', dest='generate_storage', default=True, action='store_false', help='Do not generate productions and rules for accessing storage slots')
+    k_gen_options.add_argument('--main-module', default='VERIFICATION', type=str, help='Name of the main module.')
+    k_gen_options.add_argument('--require', dest='requires', default=[], action='append', help='Extra K requires to include in generated output.')
+    k_gen_options.add_argument('--module-import', dest='imports', default=[], action='append', help='Extra modules to import into generated main module.')
+
+    solc_to_k_subparser = command_parser.add_parser('solc-to-k', help='Output helper K definition for given JSON output from solc compiler.', parents=[shared_options, k_gen_options])
     solc_to_k_subparser.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_subparser.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
-    solc_to_k_subparser.add_argument('--no-storage-slots', dest='generate_storage', default=True, action='store_false', help='Do not generate productions and rules for accessing storage slots')
 
-    foundry_to_k_subparser = command_parser.add_parser('foundry-to-k', help='Output helper K definition for given JSON output from solc compiler that Foundry produces.', parents=[shared_options])
+    foundry_to_k_subparser = command_parser.add_parser('foundry-to-k', help='Output helper K definition for given JSON output from solc compiler that Foundry produces.', parents=[shared_options, k_gen_options])
     foundry_to_k_subparser.add_argument('out', type=dir_path, help='Path to Foundry output directory.')
-    foundry_to_k_subparser.add_argument('--main-module', default='VERIFICATION', type=str, help='Name of the main module.')
-    foundry_to_k_subparser.add_argument('--no-storage-slots', dest='generate_storage', default=True, action='store_false', help='Do not generate productions and rules for accessing storage slots')
 
     return parser
 

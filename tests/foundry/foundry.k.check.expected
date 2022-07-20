@@ -1,4 +1,5 @@
 requires "edsl.md"
+requires "lemmas/int-implification.k"
 
 module CONTRACT-BIN-RUNTIME
     imports public EDSL
@@ -53,6 +54,7 @@ endmodule
 module VERIFICATION
     imports public CONTRACT-BIN-RUNTIME
     imports public CONTRACTTEST-BIN-RUNTIME
+    imports public INT-SIMPLIFICATION
     
     
 
