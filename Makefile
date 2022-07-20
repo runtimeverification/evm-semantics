@@ -437,22 +437,22 @@ tests/gen-spec/foundry/bin-runtime.k.check: tests/gen-spec/foundry/out tests/spe
 	$(CHECK) $@.out $@.expected
 
 tests/specs/foundry/foundry-spec.k.check: tests/specs/foundry/verification/haskell/timestamp kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec FOUNDRY-SPEC --definition tests/specs/foundry/verification/haskell > $@.out
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec FOUNDRY-SPEC --verbose --definition tests/specs/foundry/verification/haskell > $@.out
 	$(CHECK) $@.out $@.expected
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC20 --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC20 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@
 
 tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
 tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC721 --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC721 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@
 
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) > $@
 
 tests/gen-spec/mcd-spec.k.check: tests/gen-spec/kompiled/timestamp kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec MCD-SPEC --definition tests/gen-spec/kompiled > $@.out
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec MCD-SPEC --verbose --definition tests/gen-spec/kompiled > $@.out
 	$(CHECK) $@.out $@.expected
 
 tests/gen-spec/kompiled/timestamp: tests/gen-spec/verification.k $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
