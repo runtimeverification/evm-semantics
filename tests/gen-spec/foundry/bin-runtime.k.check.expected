@@ -1,19 +1,19 @@
 requires "edsl.md"
 
 module CONTRACT-BIN-RUNTIME
-    imports public BIN-RUNTIME
+    imports public EDSL
     
     syntax Contract ::= ContractContract 
     
     syntax ContractContract ::= "Contract" [klabel(contract_Contract)]
     
-    rule  ( #binRuntime(Contract) => #parseByteStack ( "0x0x6080604052600080fdfea2646970667358221220febf745518acc26f684d27983160459fa2f213f0d4664cb72e4e8885a5fc079664736f6c634300080f0033" ) )
+    rule  ( #binRuntime ( Contract ) => #parseByteStack ( "0x0x6080604052600080fdfea2646970667358221220febf745518acc26f684d27983160459fa2f213f0d4664cb72e4e8885a5fc079664736f6c634300080f0033" ) )
       
 
 endmodule
 
 module CONTRACTTEST-BIN-RUNTIME
-    imports public BIN-RUNTIME
+    imports public EDSL
     
     syntax Contract ::= ContractTestContract 
     
@@ -36,16 +36,16 @@ module CONTRACTTEST-BIN-RUNTIME
     rule  ( ContractTest.test_2() => #abiCallData ( "test_2" , .TypedArgs ) )
       
     
-    rule  ( #binRuntime(ContractTest) => #parseByteStack ( "0x0x6080604052348015600f57600080fd5b5060043610603c5760003560e01c80630a9254e4146041578063663bc990146041578063899eb49c146043575b600080fd5b005b6041604b565b565b6049634e487b7160e01b600052600160045260246000fdfea264697066735822122088b9c698d4d8963d9636778228b7adb6c08b645395e41f0e34b84090ec109da464736f6c634300080f0033" ) )
+    rule  ( #binRuntime ( ContractTest ) => #parseByteStack ( "0x0x6080604052348015600f57600080fd5b5060043610603c5760003560e01c80630a9254e4146041578063663bc990146041578063899eb49c146043575b600080fd5b005b6041604b565b565b6049634e487b7160e01b600052600160045260246000fdfea264697066735822122088b9c698d4d8963d9636778228b7adb6c08b645395e41f0e34b84090ec109da464736f6c634300080f0033" ) )
       
     
-    rule  ( selector("setUp") => 177362148 )
+    rule  ( selector ( "setUp" ) => 177362148 )
       
     
-    rule  ( selector("test_1") => 1715194256 )
+    rule  ( selector ( "test_1" ) => 1715194256 )
       
     
-    rule  ( selector("test_2") => 2308879516 )
+    rule  ( selector ( "test_2" ) => 2308879516 )
       
 
 endmodule

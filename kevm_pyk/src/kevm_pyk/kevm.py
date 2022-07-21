@@ -113,6 +113,10 @@ class KEVM(KProve):
         return KApply('pow256_EVM-TYPES_Int', [])
 
     @staticmethod
+    def range_uint8(i: KInner) -> KApply:
+        return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(8), i])
+
+    @staticmethod
     def range_uint160(i: KInner) -> KApply:
         return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(160), i])
 
@@ -121,12 +125,20 @@ class KEVM(KProve):
         return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(256), i])
 
     @staticmethod
+    def range_sint256(i: KInner) -> KApply:
+        return KApply('#rangeSInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(256), i])
+
+    @staticmethod
     def range_address(i: KInner) -> KApply:
         return KApply('#rangeAddress(_)_EVM-TYPES_Bool_Int', [i])
 
     @staticmethod
     def range_bool(i: KInner) -> KApply:
         return KApply('#rangeBool(_)_EVM-TYPES_Bool_Int', [i])
+
+    @staticmethod
+    def range_bytes(width: KInner, ba: KInner) -> KApply:
+        return KApply('#rangeBytes(_,_)_EVM-TYPES_Bool_Int_Int', [width, ba])
 
     @staticmethod
     def bool_2_word(cond: KInner) -> KApply:
@@ -149,6 +161,10 @@ class KEVM(KProve):
         return KApply('#binRuntime', [c])
 
     @staticmethod
+    def hashed_location(compiler: str, base: KInner, offset: KInner) -> KApply:
+        return KApply('#hashedLocation(_,_,_)_HASHED-LOCATIONS_Int_String_Int_IntList', [stringToken(compiler), base, offset])
+
+    @staticmethod
     def abi_calldata(name: str, args: List[KInner]) -> KApply:
         token: KInner = stringToken(name)
         return KApply('#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [token] + args)
@@ -164,6 +180,10 @@ class KEVM(KProve):
     @staticmethod
     def abi_bool(b: KInner) -> KApply:
         return KApply('#bool(_)_EVM-ABI_TypedArg_Int', [b])
+
+    @staticmethod
+    def abi_type(type: str, value: KInner) -> KApply:
+        return KApply('abi_type_' + type, [value])
 
     @staticmethod
     def empty_typedargs() -> KApply:
