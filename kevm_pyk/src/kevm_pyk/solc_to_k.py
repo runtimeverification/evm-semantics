@@ -97,9 +97,10 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     }
     final_subst = {'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')])}
     init_term = substitute(empty_config, init_subst)
-    init_terms = [(contract_name.lower(), init_term)]
     if calldata_cells:
         init_terms = [(f'{contract_name.lower()}-{i}', substitute(init_term, {'CALLDATA_CELL': cd})) for i, cd in enumerate(calldata_cells)]
+    else:
+        init_terms = [(contract_name.lower(), init_term)]
     final_term = abstract_cell_vars(substitute(empty_config, final_subst))
     claims: List[KClaim] = []
     for claim_id, i_term in init_terms:
@@ -139,7 +140,7 @@ def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: boo
     function_test_calldatas = []
     for ftp in function_test_productions:
         klabel = ftp.klabel
-        assert isinstance(klabel, KLabel)
+        assert klabel is not None
         if klabel.name.startswith(f'{contract_name}_function_test'):
             args = [abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name='V') for pi in ftp.items if type(pi) is KNonTerminal]
             calldata: KInner = KApply(contract_function_application_label, [KApply(contract_klabel), KApply(klabel, args)])
