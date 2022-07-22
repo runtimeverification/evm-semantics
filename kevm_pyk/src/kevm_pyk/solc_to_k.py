@@ -144,8 +144,9 @@ def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: boo
             args = [abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name='V') for pi in ftp.items if type(pi) is KNonTerminal]
             calldata: KInner = KApply(contract_function_application_label, [KApply(contract_klabel), KApply(klabel, args)])
             function_test_calldatas.append(calldata)
-    claims = gen_claims_for_contract(empty_config, contract_name, calldata_cells=function_test_calldatas)
-    claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(module_name)]) if function_test_productions else None
+    if function_test_calldatas:
+        claims = gen_claims_for_contract(empty_config, contract_name, calldata_cells=function_test_calldatas)
+        claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(module_name)])
 
     return module, claims_module
 
