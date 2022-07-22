@@ -28,7 +28,7 @@ module VERIFICATION
     imports EDSL
     imports LEMMAS
     imports EVM-OPTIMIZATIONS
-    imports ERC721-BIN-RUNTIME
+    imports ERC721-VERIFICATION
 
     syntax Step ::= ByteArray | Int | Bool
     syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )

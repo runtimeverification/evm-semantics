@@ -7,10 +7,15 @@ from typing import Final, List
 
 from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KDefinition, KFlatModule, KImport, KRequire
+from pyk.prelude import Sorts
 
 from .kevm import KEVM
-from .solc_to_k import contract_to_k, gen_spec_modules, solc_compile
-from .utils import KPrint_make_unparsing, add_include_arg
+from .solc_to_k import contract_to_k, solc_compile
+from .utils import (
+    KDefinition_empty_config,
+    KPrint_make_unparsing,
+    add_include_arg,
+)
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -31,7 +36,7 @@ def main():
         res = solc_compile(args.contract_file)
         print(json.dumps(res))
 
-    elif args.command in ['solc-to-k', 'foundry-to-k', 'gen-spec-modules', 'kompile', 'prove']:
+    elif args.command in {'solc-to-k', 'foundry-to-k', 'kompile', 'prove'}:
 
         if 'definition_dir' not in args:
             raise ValueError(f'Must provide --definition argument to {args.command}!')
@@ -50,13 +55,17 @@ def main():
 
         else:
             kevm = KEVM(args.definition_dir)
+            empty_config = KDefinition_empty_config(kevm.definition, Sorts.GENERATED_TOP_CELL)
 
             if args.command == 'solc-to-k':
                 solc_json = solc_compile(args.contract_file)
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
-                contract_module = contract_to_k(contract_json, args.contract_name, args.generate_storage)
+                contract_module, contract_claims_module = contract_to_k(contract_json, args.contract_name, args.generate_storage, empty_config)
                 modules = [contract_module]
-                bin_runtime_definition = KDefinition(contract_module.name, modules, requires=[KRequire('edsl.md')])
+                claims_modules = [contract_claims_module] if contract_claims_module else []
+                main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
+                modules.append(main_module)
+                bin_runtime_definition = KDefinition(args.main_module, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + args.requires])
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
                 KEVM._patch_symbol_table(_kprint.symbol_table)
                 print(_kprint.pretty_print(bin_runtime_definition) + '\n')
@@ -64,7 +73,7 @@ def main():
             elif args.command == 'foundry-to-k':
                 path_glob = str(args.out) + '/**/*.json'
                 modules: List[KFlatModule] = []
-                contract_names: List[str] = []
+                claims_modules: List[KFlatModule] = []
                 # Must sort to get consistent output order on different platforms.
                 for json_file in sorted(glob.glob(path_glob)):
                     _LOGGER.info(f'Processing contract file: {json_file}')
@@ -72,22 +81,17 @@ def main():
                     contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
                     with open(json_file, 'r') as cjson:
                         contract_json = json.loads(cjson.read())
-                        module = contract_to_k(contract_json, contract_name, args.generate_storage, foundry=True)
-                        contract_names.append(contract_name)
+                        module, claims_module = contract_to_k(contract_json, contract_name, args.generate_storage, empty_config, foundry=True)
                         _LOGGER.info(f'Produced contract module: {module.name}')
                         modules.append(module)
-                main_module = KFlatModule(args.main_module, [], [KImport(module.name) for module in modules])
+                        if claims_module:
+                            claims_modules.append(claims_module)
+                main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
                 modules.append(main_module)
-                bin_runtime_definition = KDefinition(main_module.name, modules, requires=[KRequire('edsl.md')])
+                bin_runtime_definition = KDefinition(main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + args.requires])
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
                 KEVM._patch_symbol_table(_kprint.symbol_table)
                 print(_kprint.pretty_print(bin_runtime_definition) + '\n')
-
-            elif args.command == 'gen-spec-modules':
-                defn, contract_names = gen_spec_modules(kevm, args.spec_module_name)
-                _kprint = KPrint_make_unparsing(kevm, extra_modules=list(defn.modules))
-                KEVM._patch_symbol_table(_kprint.symbol_table)
-                print(_kprint.pretty_print(defn) + '\n')
 
             elif args.command == 'prove':
                 spec_file = args.spec_file
@@ -138,18 +142,18 @@ def create_argument_parser():
     solc_subparser = command_parser.add_parser('compile', help='Generate combined JSON with solc compilation results.')
     solc_subparser.add_argument('contract_file', type=file_path, help='Path to contract file.')
 
-    solc_to_k_subparser = command_parser.add_parser('solc-to-k', help='Output helper K definition for given JSON output from solc compiler.', parents=[shared_options])
+    k_gen_options = argparse.ArgumentParser(add_help=False)
+    k_gen_options.add_argument('--no-storage-slots', dest='generate_storage', default=True, action='store_false', help='Do not generate productions and rules for accessing storage slots')
+    k_gen_options.add_argument('--main-module', default='VERIFICATION', type=str, help='Name of the main module.')
+    k_gen_options.add_argument('--require', dest='requires', default=[], action='append', help='Extra K requires to include in generated output.')
+    k_gen_options.add_argument('--module-import', dest='imports', default=[], action='append', help='Extra modules to import into generated main module.')
+
+    solc_to_k_subparser = command_parser.add_parser('solc-to-k', help='Output helper K definition for given JSON output from solc compiler.', parents=[shared_options, k_gen_options])
     solc_to_k_subparser.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_subparser.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
-    solc_to_k_subparser.add_argument('--no-storage-slots', dest='generate_storage', default=True, action='store_false', help='Do not generate productions and rules for accessing storage slots')
 
-    foundry_to_k_subparser = command_parser.add_parser('foundry-to-k', help='Output helper K definition for given JSON output from solc compiler that Foundry produces.', parents=[shared_options])
+    foundry_to_k_subparser = command_parser.add_parser('foundry-to-k', help='Output helper K definition for given JSON output from solc compiler that Foundry produces.', parents=[shared_options, k_gen_options])
     foundry_to_k_subparser.add_argument('out', type=dir_path, help='Path to Foundry output directory.')
-    foundry_to_k_subparser.add_argument('--main-module', default='VERIFICATION', type=str, help='Name of the main module.')
-    foundry_to_k_subparser.add_argument('--no-storage-slots', dest='generate_storage', default=True, action='store_false', help='Do not generate productions and rules for accessing storage slots')
-
-    gen_spec_modules_subparser = command_parser.add_parser('gen-spec-modules', help='Output helper K definition for given JSON output from solc compiler.', parents=[shared_options])
-    gen_spec_modules_subparser.add_argument('spec_module_name', type=str, help='Name of module containing all the generated specs.')
 
     return parser
 

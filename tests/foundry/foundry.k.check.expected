@@ -1,9 +1,69 @@
-requires "verification.k"
+requires "edsl.md"
+requires "lemmas/int-simplification.k"
 
-module FOUNDRY-SPEC
-    imports public VERIFICATION
+module TOKEN-BIN-RUNTIME
+    imports public EDSL
     
-    claim [contracttest]: <kevm>
+    syntax Contract ::= TokenContract 
+    
+    syntax TokenContract ::= "Token" [klabel(contract_Token)]
+    
+    rule  ( #binRuntime ( Token ) => #parseByteStack ( "0x0x6080604052600080fdfea2646970667358221220ddb16a0f80ab3f1bd7e49c95c6c63a7b3741e5f92cfe779a00352f4dd54bc93b64736f6c634300080f0033" ) )
+      
+
+endmodule
+
+module TOKENTEST-BIN-RUNTIME
+    imports public EDSL
+    
+    syntax Contract ::= TokenTestContract 
+    
+    syntax TokenTestContract ::= "TokenTest" [klabel(contract_TokenTest)]
+    
+    syntax ByteArray ::= TokenTestContract "." TokenTestFunction [function(), klabel(function_TokenTest)]
+    
+    syntax TokenTestFunction ::= "setUp" "(" ")" [klabel(TokenTest_function_setUp)]
+    
+    syntax TokenTestFunction ::= "test_1" "(" ")" [klabel(TokenTest_function_test_1)]
+    
+    syntax TokenTestFunction ::= "test_2" "(" ")" [klabel(TokenTest_function_test_2)]
+    
+    rule  ( TokenTest.setUp() => #abiCallData ( "setUp" , .TypedArgs ) )
+      
+    
+    rule  ( TokenTest.test_1() => #abiCallData ( "test_1" , .TypedArgs ) )
+      
+    
+    rule  ( TokenTest.test_2() => #abiCallData ( "test_2" , .TypedArgs ) )
+      
+    
+    rule  ( #binRuntime ( TokenTest ) => #parseByteStack ( "0x0x6080604052348015600f57600080fd5b5060043610603c5760003560e01c80630a9254e4146041578063663bc990146041578063899eb49c146043575b600080fd5b005b6041604b565b565b6049634e487b7160e01b600052600160045260246000fdfea26469706673582212209b875e818f6af138d9e1b829d2ea3da072b0872740c57fd0a09db03e6513d72c64736f6c634300080f0033" ) )
+      
+    
+    rule  ( selector ( "setUp" ) => 177362148 )
+      
+    
+    rule  ( selector ( "test_1" ) => 1715194256 )
+      
+    
+    rule  ( selector ( "test_2" ) => 2308879516 )
+      
+
+endmodule
+
+module VERIFICATION
+    imports public TOKEN-BIN-RUNTIME
+    imports public TOKENTEST-BIN-RUNTIME
+    imports public INT-SIMPLIFICATION
+    
+    
+
+endmodule
+
+module TOKENTEST-BIN-RUNTIME-SPEC
+    imports public TOKENTEST-BIN-RUNTIME
+    
+    claim [tokentest-0]: <kevm>
            <k>
              ( #execute => #halt )
              ~> _CONTINUATION
@@ -39,10 +99,10 @@ module FOUNDRY-SPEC
                </touchedAccounts>
                <callState>
                  <program>
-                   ( #binRuntime ( ContractTest ) => ?_PROGRAM_CELL_acd26fc5 )
+                   ( #binRuntime ( TokenTest ) => ?_PROGRAM_CELL_acd26fc5 )
                  </program>
                  <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime ( ContractTest ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                   ( #computeValidJumpDests ( #binRuntime ( TokenTest ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
                  </jumpDests>
                  <id>
                    ( ACCT_ID => ?_ID_CELL_acd26fc5 )
@@ -51,7 +111,7 @@ module FOUNDRY-SPEC
                    ( _CALLER_ID => ?_CALLER_CELL_acd26fc5 )
                  </caller>
                  <callData>
-                   ( _CALLDATA_CELL => ?_CALLDATA_CELL_acd26fc5 )
+                   ( TokenTest . test_1 ( ) => ?_CALLDATA_CELL_acd26fc5 )
                  </callData>
                  <callValue>
                    ( _CALLVALUE_CELL => ?_CALLVALUE_CELL_acd26fc5 )
@@ -174,7 +234,7 @@ module FOUNDRY-SPEC
                      ACCT_ID
                    </acctID>
                    <code>
-                     #binRuntime ( ContractTest )
+                     #binRuntime ( TokenTest )
                    </code>
                    ...
                  </account>
@@ -192,9 +252,9 @@ module FOUNDRY-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(contracttest)]
+      [label(tokentest-0)]
     
-    claim [contract]: <kevm>
+    claim [tokentest-1]: <kevm>
            <k>
              ( #execute => #halt )
              ~> _CONTINUATION
@@ -230,10 +290,10 @@ module FOUNDRY-SPEC
                </touchedAccounts>
                <callState>
                  <program>
-                   ( #binRuntime ( Contract ) => ?_PROGRAM_CELL_acd26fc5 )
+                   ( #binRuntime ( TokenTest ) => ?_PROGRAM_CELL_acd26fc5 )
                  </program>
                  <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime ( Contract ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                   ( #computeValidJumpDests ( #binRuntime ( TokenTest ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
                  </jumpDests>
                  <id>
                    ( ACCT_ID => ?_ID_CELL_acd26fc5 )
@@ -242,7 +302,7 @@ module FOUNDRY-SPEC
                    ( _CALLER_ID => ?_CALLER_CELL_acd26fc5 )
                  </caller>
                  <callData>
-                   ( _CALLDATA_CELL => ?_CALLDATA_CELL_acd26fc5 )
+                   ( TokenTest . test_2 ( ) => ?_CALLDATA_CELL_acd26fc5 )
                  </callData>
                  <callValue>
                    ( _CALLVALUE_CELL => ?_CALLVALUE_CELL_acd26fc5 )
@@ -365,7 +425,7 @@ module FOUNDRY-SPEC
                      ACCT_ID
                    </acctID>
                    <code>
-                     #binRuntime ( Contract )
+                     #binRuntime ( TokenTest )
                    </code>
                    ...
                  </account>
@@ -383,7 +443,7 @@ module FOUNDRY-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(contract)]
+      [label(tokentest-1)]
 
 endmodule
 
