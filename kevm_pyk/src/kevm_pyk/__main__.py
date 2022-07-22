@@ -36,7 +36,7 @@ def main():
         res = solc_compile(args.contract_file)
         print(json.dumps(res))
 
-    elif args.command in ['solc-to-k', 'foundry-to-k', 'kompile', 'prove']:
+    elif args.command in {'solc-to-k', 'foundry-to-k', 'kompile', 'prove'}:
 
         if 'definition_dir' not in args:
             raise ValueError(f'Must provide --definition argument to {args.command}!')
