@@ -1,13 +1,14 @@
-pragma solidity 0.8.10;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
 contract ContractBTest is Test {
-    uint256 testNumber = 42;
+    uint256 testNumber;
 
-    //function setUp() public {
-    //    testNumber = 42;
-    //}
+    function setUp() public {
+        testNumber = 42;
+    }
 
     function testNumberIs42() public {
         assertEq(testNumber, 42);

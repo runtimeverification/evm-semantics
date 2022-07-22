@@ -1,14 +1,8 @@
-pragma solidity 0.8.10;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-
-contract Safe {
-    receive() external payable {}
-
-    function withdraw() external {
-        payable(msg.sender).transfer(address(this).balance);
-    }
-}
+import "src/Safe.sol";
 
 contract SafeTest is Test {
     Safe safe;
@@ -17,12 +11,11 @@ contract SafeTest is Test {
     // when withdrawing
     receive() external payable {}
 
-    //function setUp() public {
-    //    safe = new Safe();
-    //}
+    function setUp() public {
+        safe = new Safe();
+    }
 
     function testWithdraw() public {
-        safe = new Safe();
         payable(address(safe)).transfer(1 ether);
         uint256 preBalance = address(this).balance;
         safe.withdraw();
@@ -31,7 +24,7 @@ contract SafeTest is Test {
     }
 
     function testWithdrawFuzz(uint96 amount) public {
-        safe = new Safe();
+        vm.assume(amount > 0.1 ether);
         payable(address(safe)).transfer(amount);
         uint256 preBalance = address(this).balance;
         safe.withdraw();
