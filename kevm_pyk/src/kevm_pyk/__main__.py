@@ -62,11 +62,10 @@ def main():
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
                 contract_module, contract_claims_module = contract_to_k(contract_json, args.contract_name, args.generate_storage, empty_config)
                 modules = [contract_module]
-                modules += [contract_claims_module] if contract_claims_module else []
-                modules = [_m for _m in modules if _m not in kevm.definition.modules]
+                claims_modules = [contract_claims_module] if contract_claims_module else []
                 main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
                 modules.append(main_module)
-                bin_runtime_definition = KDefinition(args.main_module, modules, requires=[KRequire(req) for req in ['edsl.md'] + args.requires])
+                bin_runtime_definition = KDefinition(args.main_module, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + args.requires])
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
                 KEVM._patch_symbol_table(_kprint.symbol_table)
                 print(_kprint.pretty_print(bin_runtime_definition) + '\n')
