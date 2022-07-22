@@ -1,43 +1,43 @@
 requires "edsl.md"
-requires "lemmas/int-implification.k"
+requires "lemmas/int-simplification.k"
 
-module CONTRACT-BIN-RUNTIME
+module TOKEN-BIN-RUNTIME
     imports public EDSL
     
-    syntax Contract ::= ContractContract 
+    syntax Contract ::= TokenContract 
     
-    syntax ContractContract ::= "Contract" [klabel(contract_Contract)]
+    syntax TokenContract ::= "Token" [klabel(contract_Token)]
     
-    rule  ( #binRuntime ( Contract ) => #parseByteStack ( "0x0x6080604052600080fdfea2646970667358221220febf745518acc26f684d27983160459fa2f213f0d4664cb72e4e8885a5fc079664736f6c634300080f0033" ) )
+    rule  ( #binRuntime ( Token ) => #parseByteStack ( "0x0x6080604052600080fdfea2646970667358221220ddb16a0f80ab3f1bd7e49c95c6c63a7b3741e5f92cfe779a00352f4dd54bc93b64736f6c634300080f0033" ) )
       
 
 endmodule
 
-module CONTRACTTEST-BIN-RUNTIME
+module TOKENTEST-BIN-RUNTIME
     imports public EDSL
     
-    syntax Contract ::= ContractTestContract 
+    syntax Contract ::= TokenTestContract 
     
-    syntax ContractTestContract ::= "ContractTest" [klabel(contract_ContractTest)]
+    syntax TokenTestContract ::= "TokenTest" [klabel(contract_TokenTest)]
     
-    syntax ByteArray ::= ContractTestContract "." ContractTestFunction [function(), klabel(function_ContractTest)]
+    syntax ByteArray ::= TokenTestContract "." TokenTestFunction [function(), klabel(function_TokenTest)]
     
-    syntax ContractTestFunction ::= "setUp" "(" ")" [klabel(ContractTest_function_setUp)]
+    syntax TokenTestFunction ::= "setUp" "(" ")" [klabel(TokenTest_function_setUp)]
     
-    syntax ContractTestFunction ::= "test_1" "(" ")" [klabel(ContractTest_function_test_1)]
+    syntax TokenTestFunction ::= "test_1" "(" ")" [klabel(TokenTest_function_test_1)]
     
-    syntax ContractTestFunction ::= "test_2" "(" ")" [klabel(ContractTest_function_test_2)]
+    syntax TokenTestFunction ::= "test_2" "(" ")" [klabel(TokenTest_function_test_2)]
     
-    rule  ( ContractTest.setUp() => #abiCallData ( "setUp" , .TypedArgs ) )
+    rule  ( TokenTest.setUp() => #abiCallData ( "setUp" , .TypedArgs ) )
       
     
-    rule  ( ContractTest.test_1() => #abiCallData ( "test_1" , .TypedArgs ) )
+    rule  ( TokenTest.test_1() => #abiCallData ( "test_1" , .TypedArgs ) )
       
     
-    rule  ( ContractTest.test_2() => #abiCallData ( "test_2" , .TypedArgs ) )
+    rule  ( TokenTest.test_2() => #abiCallData ( "test_2" , .TypedArgs ) )
       
     
-    rule  ( #binRuntime ( ContractTest ) => #parseByteStack ( "0x0x6080604052348015600f57600080fd5b5060043610603c5760003560e01c80630a9254e4146041578063663bc990146041578063899eb49c146043575b600080fd5b005b6041604b565b565b6049634e487b7160e01b600052600160045260246000fdfea264697066735822122088b9c698d4d8963d9636778228b7adb6c08b645395e41f0e34b84090ec109da464736f6c634300080f0033" ) )
+    rule  ( #binRuntime ( TokenTest ) => #parseByteStack ( "0x0x6080604052348015600f57600080fd5b5060043610603c5760003560e01c80630a9254e4146041578063663bc990146041578063899eb49c146043575b600080fd5b005b6041604b565b565b6049634e487b7160e01b600052600160045260246000fdfea26469706673582212209b875e818f6af138d9e1b829d2ea3da072b0872740c57fd0a09db03e6513d72c64736f6c634300080f0033" ) )
       
     
     rule  ( selector ( "setUp" ) => 177362148 )
@@ -52,18 +52,18 @@ module CONTRACTTEST-BIN-RUNTIME
 endmodule
 
 module VERIFICATION
-    imports public CONTRACT-BIN-RUNTIME
-    imports public CONTRACTTEST-BIN-RUNTIME
+    imports public TOKEN-BIN-RUNTIME
+    imports public TOKENTEST-BIN-RUNTIME
     imports public INT-SIMPLIFICATION
     
     
 
 endmodule
 
-module CONTRACTTEST-BIN-RUNTIME-SPEC
-    imports public CONTRACTTEST-BIN-RUNTIME
+module TOKENTEST-BIN-RUNTIME-SPEC
+    imports public TOKENTEST-BIN-RUNTIME
     
-    claim [contracttest-0]: <kevm>
+    claim [tokentest-0]: <kevm>
            <k>
              ( #execute => #halt )
              ~> _CONTINUATION
@@ -99,10 +99,10 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
                </touchedAccounts>
                <callState>
                  <program>
-                   ( #binRuntime ( ContractTest ) => ?_PROGRAM_CELL_acd26fc5 )
+                   ( #binRuntime ( TokenTest ) => ?_PROGRAM_CELL_acd26fc5 )
                  </program>
                  <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime ( ContractTest ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                   ( #computeValidJumpDests ( #binRuntime ( TokenTest ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
                  </jumpDests>
                  <id>
                    ( ACCT_ID => ?_ID_CELL_acd26fc5 )
@@ -111,7 +111,7 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
                    ( _CALLER_ID => ?_CALLER_CELL_acd26fc5 )
                  </caller>
                  <callData>
-                   ( ContractTest . setUp ( ) => ?_CALLDATA_CELL_acd26fc5 )
+                   ( TokenTest . setUp ( ) => ?_CALLDATA_CELL_acd26fc5 )
                  </callData>
                  <callValue>
                    ( _CALLVALUE_CELL => ?_CALLVALUE_CELL_acd26fc5 )
@@ -234,7 +234,7 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
                      ACCT_ID
                    </acctID>
                    <code>
-                     #binRuntime ( ContractTest )
+                     #binRuntime ( TokenTest )
                    </code>
                    ...
                  </account>
@@ -252,9 +252,9 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(contracttest-0)]
+      [label(tokentest-0)]
     
-    claim [contracttest-1]: <kevm>
+    claim [tokentest-1]: <kevm>
            <k>
              ( #execute => #halt )
              ~> _CONTINUATION
@@ -290,10 +290,10 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
                </touchedAccounts>
                <callState>
                  <program>
-                   ( #binRuntime ( ContractTest ) => ?_PROGRAM_CELL_acd26fc5 )
+                   ( #binRuntime ( TokenTest ) => ?_PROGRAM_CELL_acd26fc5 )
                  </program>
                  <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime ( ContractTest ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                   ( #computeValidJumpDests ( #binRuntime ( TokenTest ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
                  </jumpDests>
                  <id>
                    ( ACCT_ID => ?_ID_CELL_acd26fc5 )
@@ -302,7 +302,7 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
                    ( _CALLER_ID => ?_CALLER_CELL_acd26fc5 )
                  </caller>
                  <callData>
-                   ( ContractTest . test_1 ( ) => ?_CALLDATA_CELL_acd26fc5 )
+                   ( TokenTest . test_1 ( ) => ?_CALLDATA_CELL_acd26fc5 )
                  </callData>
                  <callValue>
                    ( _CALLVALUE_CELL => ?_CALLVALUE_CELL_acd26fc5 )
@@ -425,7 +425,7 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
                      ACCT_ID
                    </acctID>
                    <code>
-                     #binRuntime ( ContractTest )
+                     #binRuntime ( TokenTest )
                    </code>
                    ...
                  </account>
@@ -443,9 +443,9 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(contracttest-1)]
+      [label(tokentest-1)]
     
-    claim [contracttest-2]: <kevm>
+    claim [tokentest-2]: <kevm>
            <k>
              ( #execute => #halt )
              ~> _CONTINUATION
@@ -481,10 +481,10 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
                </touchedAccounts>
                <callState>
                  <program>
-                   ( #binRuntime ( ContractTest ) => ?_PROGRAM_CELL_acd26fc5 )
+                   ( #binRuntime ( TokenTest ) => ?_PROGRAM_CELL_acd26fc5 )
                  </program>
                  <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime ( ContractTest ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                   ( #computeValidJumpDests ( #binRuntime ( TokenTest ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
                  </jumpDests>
                  <id>
                    ( ACCT_ID => ?_ID_CELL_acd26fc5 )
@@ -493,7 +493,7 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
                    ( _CALLER_ID => ?_CALLER_CELL_acd26fc5 )
                  </caller>
                  <callData>
-                   ( ContractTest . test_2 ( ) => ?_CALLDATA_CELL_acd26fc5 )
+                   ( TokenTest . test_2 ( ) => ?_CALLDATA_CELL_acd26fc5 )
                  </callData>
                  <callValue>
                    ( _CALLVALUE_CELL => ?_CALLVALUE_CELL_acd26fc5 )
@@ -616,7 +616,7 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
                      ACCT_ID
                    </acctID>
                    <code>
-                     #binRuntime ( ContractTest )
+                     #binRuntime ( TokenTest )
                    </code>
                    ...
                  </account>
@@ -634,7 +634,7 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
              </network>
            </ethereum>
          </kevm>
-      [label(contracttest-2)]
+      [label(tokentest-2)]
 
 endmodule
 

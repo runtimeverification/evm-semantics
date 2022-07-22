@@ -445,7 +445,7 @@ tests/foundry/foundry.k.check: tests/foundry/foundry.k
 
 tests/foundry/foundry.k.prove: tests/foundry/kompiled/timestamp
 	$(KEVM) prove tests/foundry/foundry.k --pyk --backend haskell --definition tests/foundry/kompiled \
-	    $(TEST_OPTIONS) --spec-module CONTRACTTEST-BIN-RUNTIME-SPEC
+	    $(TEST_OPTIONS) --spec-module TOKENTEST-BIN-RUNTIME-SPEC
 
 tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
 	$(KOMPILE) $< --pyk --backend haskell --definition tests/foundry/kompiled \
@@ -607,6 +607,7 @@ test-failure: $(failure_tests:=.run-expected)
 
 kevm_pyk_tests :=                                           \
                   tests/foundry/foundry.k.prove             \
+                  tests/foundry/foundry.k.check             \
                   tests/specs/bihu/functional-spec.k.prove  \
                   tests/specs/examples/empty-bin-runtime.k  \
                   tests/specs/examples/erc20-bin-runtime.k  \
