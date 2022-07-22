@@ -6,12 +6,12 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.kast import KApply, KInner, KSort
+from pyk.kast import KApply, KInner
 from pyk.kastManip import flattenLabel, getCell
 from pyk.ktool import KProve, paren
 from pyk.prelude import intToken, stringToken
 
-from .utils import add_include_arg, build_empty_config_cell
+from .utils import add_include_arg
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -24,9 +24,6 @@ class KEVM(KProve):
     def __init__(self, kompiled_directory, main_file_name=None, use_directory=None):
         super().__init__(kompiled_directory, main_file_name=main_file_name, use_directory=use_directory)
         KEVM._patch_symbol_table(self.symbol_table)
-
-    def empty_config(self, top_cell: KSort = KSort('GeneratedTopCell')) -> KInner:
-        return build_empty_config_cell(self.definition, top_cell)
 
     @staticmethod
     def kompile(
@@ -88,32 +85,36 @@ class KEVM(KProve):
         symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')            # noqa
 
     @staticmethod
-    def halt() -> KInner:
+    def halt() -> KApply:
         return KApply('#halt_EVM_KItem')
 
     @staticmethod
-    def execute() -> KInner:
+    def execute() -> KApply:
         return KApply('#execute_EVM_KItem')
 
     @staticmethod
-    def jumpi() -> KInner:
+    def jumpi() -> KApply:
         return KApply('JUMPI_EVM_BinStackOp')
 
     @staticmethod
-    def jump() -> KInner:
+    def jump() -> KApply:
         return KApply('JUMP_EVM_UnStackOp')
 
     @staticmethod
-    def jumpi_applied(pc: KInner, cond: KInner) -> KInner:
+    def jumpi_applied(pc: KInner, cond: KInner) -> KApply:
         return KApply('____EVM_InternalOp_BinStackOp_Int_Int', [KEVM.jumpi(), pc, cond])
 
     @staticmethod
-    def jump_applied(pc: KInner) -> KInner:
+    def jump_applied(pc: KInner) -> KApply:
         return KApply('___EVM_InternalOp_UnStackOp_Int', [KEVM.jump(), pc])
 
     @staticmethod
-    def pow256():
+    def pow256() -> KApply:
         return KApply('pow256_EVM-TYPES_Int', [])
+
+    @staticmethod
+    def range_uint8(i: KInner) -> KApply:
+        return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(8), i])
 
     @staticmethod
     def range_uint160(i: KInner) -> KApply:
@@ -124,6 +125,10 @@ class KEVM(KProve):
         return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(256), i])
 
     @staticmethod
+    def range_sint256(i: KInner) -> KApply:
+        return KApply('#rangeSInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(256), i])
+
+    @staticmethod
     def range_address(i: KInner) -> KApply:
         return KApply('#rangeAddress(_)_EVM-TYPES_Bool_Int', [i])
 
@@ -132,7 +137,11 @@ class KEVM(KProve):
         return KApply('#rangeBool(_)_EVM-TYPES_Bool_Int', [i])
 
     @staticmethod
-    def bool_2_word(cond: KInner) -> KInner:
+    def range_bytes(width: KInner, ba: KInner) -> KApply:
+        return KApply('#rangeBytes(_,_)_EVM-TYPES_Bool_Int_Int', [width, ba])
+
+    @staticmethod
+    def bool_2_word(cond: KInner) -> KApply:
         return KApply('bool2Word(_)_EVM-TYPES_Int_Bool', [cond])
 
     @staticmethod
@@ -152,9 +161,17 @@ class KEVM(KProve):
         return KApply('#binRuntime', [c])
 
     @staticmethod
-    def abi_calldata(n: str, args: List[KInner]):
-        token: KInner = stringToken(n)
-        return KApply('#abiCallData', [token] + args)
+    def hashed_location(compiler: str, base: KInner, offset: KInner) -> KApply:
+        return KApply('#hashedLocation(_,_,_)_HASHED-LOCATIONS_Int_String_Int_IntList', [stringToken(compiler), base, offset])
+
+    @staticmethod
+    def abi_calldata(name: str, args: List[KInner]) -> KApply:
+        token: KInner = stringToken(name)
+        return KApply('#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [token] + args)
+
+    @staticmethod
+    def abi_selector(name: str) -> KApply:
+        return KApply('abi_selector', [stringToken(name)])
 
     @staticmethod
     def abi_address(a: KInner) -> KApply:
@@ -163,6 +180,10 @@ class KEVM(KProve):
     @staticmethod
     def abi_bool(b: KInner) -> KApply:
         return KApply('#bool(_)_EVM-ABI_TypedArg_Int', [b])
+
+    @staticmethod
+    def abi_type(type: str, value: KInner) -> KApply:
+        return KApply('abi_type_' + type, [value])
 
     @staticmethod
     def empty_typedargs() -> KApply:
@@ -184,3 +205,7 @@ class KEVM(KProve):
     @staticmethod
     def wordstack_len(constrainedTerm: KInner) -> int:
         return len(flattenLabel('_:__EVM-TYPES_WordStack_Int_WordStack', getCell(constrainedTerm, 'WORDSTACK_CELL')))
+
+    @staticmethod
+    def parse_bytestack(s: KInner) -> KApply:
+        return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])

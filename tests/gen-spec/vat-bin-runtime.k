@@ -1,7 +1,7 @@
 requires "edsl.md"
 
 module VAT-BIN-RUNTIME
-    imports public BIN-RUNTIME
+    imports public EDSL
     
     syntax Contract ::= VatContract 
     

@@ -10,7 +10,6 @@ requires "vat-bin-runtime.k"
 
 module MCD-VERIFICATION
     imports LEMMAS
-    imports INFINITE-GAS
 
     imports DAI-BIN-RUNTIME
     imports DAIJOIN-BIN-RUNTIME
