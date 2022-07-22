@@ -1,6 +1,10 @@
+from typing import List
+
 from pyk.kast import (
     KApply,
     KDefinition,
+    KFlatModule,
+    KImport,
     KInner,
     KLabel,
     KNonTerminal,
@@ -17,6 +21,24 @@ from pyk.kastManip import (
     splitConfigFrom,
     substitute,
 )
+from pyk.ktool import KPrint
+from pyk.ktool.kprint import build_symbol_table
+from pyk.utils import hash_str
+
+
+def KPrint_make_unparsing(_self: KPrint, extra_modules: List[KFlatModule] = []) -> KPrint:
+    modules = list(_self.definition.modules) + extra_modules
+    main_module = KFlatModule('UNPARSING', [], [KImport(_m.name) for _m in modules])
+    defn = KDefinition('UNPARSING', [main_module] + modules)
+    kprint = KPrint(str(_self.kompiled_directory))
+    kprint.definition = defn
+    kprint.symbol_table = build_symbol_table(kprint.definition, opinionated=True)
+    kprint.definition_hash = hash_str(kprint.definition)
+    return kprint
+
+
+def KDefinition_module_names(_self: KDefinition) -> List[str]:
+    return [_m.name for _m in _self.modules]
 
 
 def KDefinition_empty_config(definition: KDefinition, sort: KSort) -> KInner:
