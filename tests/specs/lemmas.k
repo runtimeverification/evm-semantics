@@ -65,14 +65,6 @@ module LEMMAS
     rule 0 <=Int keccak( _ )             => true [simplification]
     rule         keccak( _ ) <Int pow256 => true [simplification]
 
-    rule #lookup( M:Map [ keccak(_) <- _ ], I:Int ) => #lookup( M , I )
-      requires 0 <=Int I andBool I <Int 10
-      [simplification]
-
-    rule #lookup( M:Map [ keccak(_) +Int I1:Int <- _ ], I2:Int ) => #lookup( M , I2 )
-      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10 
-      [simplification]
-
   // ########################
   // Buffer Reasoning
   // ########################
@@ -104,8 +96,8 @@ module LEMMAS
     rule (BUF1 ++  _   )[START .. WIDTH] =>  BUF1[START                           .. WIDTH                          ]                                                              requires START +Int WIDTH <=Int #sizeByteArray(BUF1)                       andBool 0 <=Int START andBool 0 <=Int WIDTH       [simplification]
     rule (BUF1 ++  BUF2)[START .. WIDTH] => (BUF1[START                           .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])  requires                        #sizeByteArray(BUF1) <Int START +Int WIDTH andBool #range(0 <= START < #sizeByteArray(BUF1)) [simplification]
 
-    rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true 
-      requires I1 =/=Int I2 
+    rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true
+      requires I1 =/=Int I2
       [simplification]
 
     // sizeByteArray
@@ -202,7 +194,7 @@ module LEMMAS-JAVA [symbolic, kast]
   // Arithmetic
   // ########################
 
-    // TODO: figure out how to safely override these with associativity rules 
+    // TODO: figure out how to safely override these with associativity rules
     //       from infinite-gas.k
 
     // 2 terms
@@ -211,7 +203,7 @@ module LEMMAS-JAVA [symbolic, kast]
     rule I +Int B => B +Int I          requires #isConcrete(I) andBool (notBool #isConcrete(B)) [simplification]
     // converting -Int to +Int for concrete values.
     rule A -Int I => A +Int (0 -Int I) requires #isConcrete(I) andBool (notBool #isConcrete(A)) [simplification]
-    
+
     // 3 terms
 
     // symbolic first: A, J, K
@@ -292,7 +284,7 @@ module LEMMAS-HASKELL [symbolic, kore]
   // Word Reasoning
   // ########################
 
-    rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)]) 
+    rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)])
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
        andBool #sizeByteArray(BUF) >=Int log256Int(D) [simplification]
 
@@ -342,16 +334,6 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule X <=Int chop ( X +Int Y ) => false  requires pow256 <=Int ( X +Int Y ) andBool #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
 
   // ########################
-  // Keccak
-  // ########################
-
-    rule { I:Int #Equals keccak(_) } => #Bottom requires 0 <=Int I andBool I <Int 10 [simplification]
-
-    rule { I1:Int #Equals keccak(_) +Int I2 } => #Bottom 
-      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10 
-      [simplification]
-
-  // ########################
   // Buffer Reasoning
   // ########################
 
@@ -367,7 +349,7 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule BA:ByteArray   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                       [simplification, concrete(BA)]
     rule #buf(32, DATA) ==K BA:ByteArray   =>          DATA  ==Int #asInteger(BA) requires #sizeByteArray(BA) <=Int 32 [simplification, concrete(BA)]
 
-    rule #range( M [ N1 := BUF1:ByteArray ] [ N2 := BUF2:ByteArray ] [ N3 := BUF3:ByteArray ], L, K ) => 
+    rule #range( M [ N1 := BUF1:ByteArray ] [ N2 := BUF2:ByteArray ] [ N3 := BUF3:ByteArray ], L, K ) =>
          #range( M                          [ N2 := BUF2           ] [ N3 := BUF3           ], L, K )
       requires N1 +Int #sizeByteArray(BUF1) <=Int L [simplification]
 
@@ -379,9 +361,9 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
 
     rule { M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] #Equals M:Map [ I2 <- V2 ] [ I1 <- V1 ] } => #Top
-      requires I1 =/=Int I2 
+      requires I1 =/=Int I2
       [simplification]
-      
+
   // ########################
   // Boolean Logic
   // ########################
