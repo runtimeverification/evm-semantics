@@ -519,9 +519,10 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : [ TRANSACTION , REST ] => check "transactions" : TRANSACTION   ~> check "transactions" : [ REST ] ... </k>
     rule <k> check "transactions" : { KEY : VALUE , REST } => check "transactions" : (KEY : VALUE) ~> check "transactions" : { REST } ... </k>
 
-    rule <k> check "transactions" : (_KEY : (VALUE:String    => #parseByteStack(VALUE))) ... </k>
-    rule <k> check "transactions" : ("to" : (VALUE:ByteArray => #asAccount(VALUE)))      ... </k>
-    rule <k> check "transactions" : ( KEY : (VALUE:ByteArray => #padToWidth(32, VALUE))) ... </k> requires KEY in (SetItem("r") SetItem("s")) andBool #sizeByteArray(VALUE) <Int 32
+    rule <k> check "transactions" : ("sender" : (VALUE:ByteArray => #asAccount(VALUE)))      ... </k>
+    rule <k> check "transactions" : (_KEY     : (VALUE:String    => #parseByteStack(VALUE))) ... </k>
+    rule <k> check "transactions" : ("to"     : (VALUE:ByteArray => #asAccount(VALUE)))      ... </k>
+    rule <k> check "transactions" : ( KEY     : (VALUE:ByteArray => #padToWidth(32, VALUE))) ... </k> requires KEY in (SetItem("r") SetItem("s")) andBool #sizeByteArray(VALUE) <Int 32
     rule <k> check "transactions" : ( KEY : (VALUE:ByteArray => #asWord(VALUE)))         ... </k> requires KEY in (SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce") SetItem("v") SetItem("value") SetItem("chainId") SetItem("type") SetItem("maxFeePerGas") SetItem("maxPriorityFeePerGas"))
     rule <k> check "transactions" : ("type" : (VALUE:Int => #asmTxPrefix(VALUE)))        ... </k>
 
@@ -546,6 +547,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ("type"                 : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txType>        VALUE </txType>         ... </message>
     rule <k> check "transactions" : ("maxFeePerGas"         : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxFee>      VALUE </txMaxFee>       ... </message>
     rule <k> check "transactions" : ("maxPriorityFeePerGas" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee> VALUE </txPriorityFee>  ... </message>
+    rule <k> check "transactions" : ("sender"               : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV> TW </sigV> <sigR> TR </sigR> <sigS> TS </sigS> ... </message> requires  #sender( #getTxData(TXID), TW, TR, TS ) ==K VALUE
 
     syntax Bool ::= isInAccessListStorage ( Int , JSON )    [function]
                   | isInAccessList ( Account , Int , JSON ) [function]
