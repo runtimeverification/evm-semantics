@@ -27,12 +27,12 @@ from pyk.kast import (
     KToken,
     KVariable,
 )
-from pyk.kastManip import abstract_term_safely, build_rule, substitute
+from pyk.kastManip import abstract_term_safely, substitute
 from pyk.prelude import intToken, stringToken
 from pyk.utils import intersperse
 
 from .kevm import KEVM
-from .utils import abstract_cell_vars
+from .utils import abstract_cell_vars, build_claim
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -104,7 +104,7 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     final_term = abstract_cell_vars(substitute(empty_config, final_subst))
     claims: List[KClaim] = []
     for claim_id, i_term in init_terms:
-        claim, _ = build_rule(claim_id, CTerm(i_term), CTerm(final_term), claim=True)
+        claim, _ = build_claim(claim_id, CTerm(i_term), CTerm(final_term))
         assert isinstance(claim, KClaim)
         claims.append(claim)
     return claims

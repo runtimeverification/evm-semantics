@@ -1,7 +1,9 @@
-from typing import List
+from typing import Dict, List, Optional, Tuple
 
+from pyk.cterm import CTerm
 from pyk.kast import (
     KApply,
+    KClaim,
     KDefinition,
     KFlatModule,
     KImport,
@@ -15,6 +17,7 @@ from pyk.kast import (
 )
 from pyk.kastManip import (
     abstract_term_safely,
+    build_rule,
     isAnonVariable,
     remove_generated_cells,
     split_config_and_constraints,
@@ -24,6 +27,17 @@ from pyk.kastManip import (
 from pyk.ktool import KPrint
 from pyk.ktool.kprint import build_symbol_table
 from pyk.utils import hash_str
+
+
+def build_claim(
+    claim_id: str,
+    init_cterm: CTerm,
+    final_cterm: CTerm,
+    keep_vars: Optional[List[str]] = None
+) -> Tuple[KClaim, Dict[str, KVariable]]:
+    rule, var_map = build_rule(claim_id, init_cterm, final_cterm, claim=True, keep_vars=keep_vars)
+    claim = KClaim(rule.body, requires=rule.requires, ensures=rule.ensures, att=rule.att)
+    return claim, var_map
 
 
 def KPrint_make_unparsing(_self: KPrint, extra_modules: List[KFlatModule] = []) -> KPrint:
