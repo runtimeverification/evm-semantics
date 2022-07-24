@@ -66,6 +66,14 @@ class Contract:
     def sort_method(self) -> KSort:
         return KSort(f'{self.name}Method')
 
+    @property
+    def klabel(self) -> KLabel:
+        return KLabel(f'contract_{self.name}')
+
+    @property
+    def klabel_method(self) -> KLabel:
+        return KLabel(f'method_{self.name}')
+
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
 
@@ -150,7 +158,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
 
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract)
 
-    contract_klabel = KLabel(f'contract_{contract_name}')
+    contract_klabel = contract.klabel
     contract_subsort = KProduction(KSort('Contract'), [KNonTerminal(contract_sort)])
     contract_production = KProduction(contract_sort, [KTerminal(contract_name)], klabel=contract_klabel)
     contract_macro = KRule(KRewrite(KEVM.bin_runtime(KApply(contract_klabel)), KEVM.parse_bytestack(stringToken(bin_runtime))))
@@ -161,7 +169,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
 
     claims_module: Optional[KFlatModule] = None
     function_test_productions = [prod for prod in module.syntax_productions if prod.sort == KSort(f'{contract_name}Method')]
-    contract_function_application_label = KLabel(f'function_{contract_name}')
+    contract_function_application_label = contract.klabel_method
     function_test_calldatas = []
     for ftp in function_test_productions:
         klabel = ftp.klabel
@@ -283,11 +291,10 @@ def _extract_storage_sentences(contract: Contract):
 
 
 def generate_function_sentences(contract: Contract):
-    contract_name = contract.name
     contract_sort = contract.sort
     function_sort = contract.sort_method
 
-    function_call_data_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], klabel=KLabel(f'function_{contract_name}'), att=KAtt({'function': ''}))
+    function_call_data_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], klabel=contract.klabel_method, att=KAtt({'function': ''}))
     function_sentence_pairs = _extract_function_sentences(contract)
 
     function_productions: List[KSentence] = []
