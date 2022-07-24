@@ -110,7 +110,7 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     return claims
 
 
-def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, empty_config: KInner, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:
+def contract_to_k(contract_json: Dict, contract_name: str, empty_config: KInner, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
     abi = contract_json['abi']
     hashes = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
@@ -118,10 +118,8 @@ def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: boo
 
     contract_sort = KSort(f'{contract_name}Contract')
 
-    storage_sentences = []
-    if generate_storage:
-        storage_layout = contract_json['storageLayout']
-        storage_sentences = generate_storage_sentences(contract_name, contract_sort, storage_layout)
+    storage_layout = contract_json['storageLayout']
+    storage_sentences = generate_storage_sentences(contract_name, contract_sort, storage_layout)
     function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
 
@@ -203,8 +201,7 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
         # #hashedLocation(L, #hashedLocation(L, B, X), Y) => #hashedLocation(L, B, X Y)
         # 0 +Int X => X
         # X +Int 0 => X
-        return [(KProduction(storage_sort, syntax),
-                 KRule(KRewrite(KToken(lhs, None), rhs)))]
+        return [(KProduction(storage_sort, syntax), KRule(KRewrite(KToken(lhs, None), rhs)))]
 
     def recur_struct(syntax, lhs, rhs, var_idx, members, gen_dot=True):
         res = []
