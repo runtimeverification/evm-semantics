@@ -54,6 +54,18 @@ class Contract:
         self.method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
 
+    @property
+    def sort(self) -> KSort:
+        return KSort(f'{self.name}Contract')
+
+    @property
+    def sort_storage(self) -> KSort:
+        return KSort(f'{self.name}Storage')
+
+    @property
+    def sort_method(self) -> KSort:
+        return KSort(f'{self.name}Method')
+
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
 
@@ -130,16 +142,13 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
 def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
     contract_name = contract.name
-    abi = contract.abi
-    hashes = contract.method_identifiers
     bin_runtime = contract.bytecode
+    contract_sort = contract.sort
 
-    contract_sort = KSort(f'{contract_name}Contract')
+    storage_sentences = generate_storage_sentences(contract)
+    function_sentences = generate_function_sentences(contract)
 
-    storage_layout = contract.storage
-    storage_sentences = generate_storage_sentences(contract_name, contract_sort, storage_layout)
-    function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
-    function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
+    function_selector_alias_sentences = generate_function_selector_alias_sentences(contract)
 
     contract_klabel = KLabel(f'contract_{contract_name}')
     contract_subsort = KProduction(KSort('Contract'), [KNonTerminal(contract_sort)])
@@ -151,7 +160,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
     module = KFlatModule(module_name, sentences, [KImport('EDSL')])
 
     claims_module: Optional[KFlatModule] = None
-    function_test_productions = [prod for prod in module.syntax_productions if prod.sort == KSort(f'{contract_name}Function')]
+    function_test_productions = [prod for prod in module.syntax_productions if prod.sort == KSort(f'{contract_name}Method')]
     contract_function_application_label = KLabel(f'function_{contract_name}')
     function_test_calldatas = []
     for ftp in function_test_productions:
@@ -170,19 +179,35 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
 
 # Helpers
 
-def generate_storage_sentences(contract_name, contract_sort, storage_layout):
-    storage_sort = KSort(f'{contract_name}Storage')
-    storage_sentence_pairs = _extract_storage_sentences(contract_name, storage_sort, storage_layout)
+def generate_storage_sentences(contract: Contract):
+    contract_name = contract.name
+    contract_sort = contract.sort
+    storage_sort = contract.sort_storage
+
+    storage_sentence_pairs = _extract_storage_sentences(contract)
 
     if not storage_sentence_pairs:
         return []
 
     storage_productions, storage_rules = map(list, zip(*storage_sentence_pairs))
     storage_location_production = KProduction(KSort('Int'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(storage_sort)], att=KAtt({'klabel': f'storage_{contract_name}', 'macro': ''}))
-    return storage_productions + [storage_location_production] + storage_rules
+    fin_list = []
+    for sp in storage_productions:
+        assert type(sp) is KSentence
+        fin_list.append(sp)
+    assert type(storage_location_production) is KSentence
+    fin_list.append(storage_location_production)
+    for sr in storage_rules:
+        assert type(sr) is KSentence
+        fin_list.append(sr)
+    return fin_list
 
 
-def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
+def _extract_storage_sentences(contract: Contract):
+    contract_name = contract.name
+    storage_sort = contract.sort_storage
+    storage_layout = contract.storage
+
     types = storage_layout.get('types', [])  # 'types' is missing from storage_layout if storage_layout['storage'] == []
 
     def recur(syntax, lhs, rhs, var_idx, type_name):
@@ -254,13 +279,16 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
         return recur(new_syntax, new_lhs, new_rhs, var_idx + 1, new_type_name)
 
     storage = storage_layout['storage']
-    return recur_struct([], f'{contract_name}', intToken('0'), 0, storage, gen_dot=False)
+    return recur_struct([], f'{contract_name}', intToken(0), 0, storage, gen_dot=False)
 
 
-def generate_function_sentences(contract_name: str, contract_sort: KSort, abi):
-    function_sort = KSort(f'{contract_name}Function')
+def generate_function_sentences(contract: Contract):
+    contract_name = contract.name
+    contract_sort = contract.sort
+    function_sort = contract.sort_method
+
     function_call_data_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], klabel=KLabel(f'function_{contract_name}'), att=KAtt({'function': ''}))
-    function_sentence_pairs = _extract_function_sentences(contract_name, function_sort, abi)
+    function_sentence_pairs = _extract_function_sentences(contract)
 
     function_productions: List[KSentence] = []
     function_rules: List[KSentence] = []
@@ -272,7 +300,9 @@ def generate_function_sentences(contract_name: str, contract_sort: KSort, abi):
     return [function_call_data_production] + function_sentences if function_sentences else []
 
 
-def generate_function_selector_alias_sentences(contract_name, contract_sort, hashes):
+def generate_function_selector_alias_sentences(contract: Contract):
+    hashes = contract.method_identifiers
+
     abi_function_selector_rules = []
     for h in hashes:
         f_name = h.split('(')[0]
@@ -282,7 +312,11 @@ def generate_function_selector_alias_sentences(contract_name, contract_sort, has
     return abi_function_selector_rules
 
 
-def _extract_function_sentences(contract_name, function_sort, abi) -> List[Tuple[KProduction, KRule]]:
+def _extract_function_sentences(contract: Contract) -> List[Tuple[KProduction, KRule]]:
+    contract_name = contract.name
+    function_sort = contract.sort_method
+    abi = contract.abi
+
     def extract_production(name, inputs):
         input_types = [input_dict['type'] for input_dict in inputs]
 
