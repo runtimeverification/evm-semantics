@@ -1,9 +1,10 @@
 import functools
 import json
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, List, Optional, Tuple
+from typing import Any, Dict, Final, List, Optional, Tuple, final
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
@@ -35,6 +36,21 @@ from .kevm import KEVM
 from .utils import abstract_cell_vars, build_claim
 
 _LOGGER: Final = logging.getLogger(__name__)
+
+
+@final
+@dataclass
+class SolcContract:
+    abi: Dict
+    storage: Dict
+    method_identifiers: Dict
+    bytecode: Dict
+
+    def __init__(self, contract_json: Dict, foundry: bool = False) -> None:
+        self.abi = contract_json['abi']
+        self.storage = contract_json['storageLayout']
+        self.method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
+        self.bytecode = '0x' + (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
 
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
