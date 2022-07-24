@@ -159,9 +159,9 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract)
 
     contract_klabel = contract.klabel
-    contract_subsort = KProduction(KSort('Contract'), [KNonTerminal(contract_sort)])
-    contract_production = KProduction(contract_sort, [KTerminal(contract_name)], klabel=contract_klabel)
-    contract_macro = KRule(KRewrite(KEVM.bin_runtime(KApply(contract_klabel)), KEVM.parse_bytestack(stringToken(bin_runtime))))
+    contract_subsort: KSentence = KProduction(KSort('Contract'), [KNonTerminal(contract_sort)])
+    contract_production: KSentence = KProduction(contract_sort, [KTerminal(contract_name)], klabel=contract_klabel)
+    contract_macro: KSentence = KRule(KRewrite(KEVM.bin_runtime(KApply(contract_klabel)), KEVM.parse_bytestack(stringToken(bin_runtime))))
 
     module_name = contract_name.upper() + '-BIN-RUNTIME'
     sentences = [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences
@@ -187,7 +187,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
 
 # Helpers
 
-def generate_storage_sentences(contract: Contract):
+def generate_storage_sentences(contract: Contract) -> List[KSentence]:
     contract_name = contract.name
     contract_sort = contract.sort
     storage_sort = contract.sort_storage
@@ -290,7 +290,7 @@ def _extract_storage_sentences(contract: Contract):
     return recur_struct([], f'{contract_name}', intToken(0), 0, storage, gen_dot=False)
 
 
-def generate_function_sentences(contract: Contract):
+def generate_function_sentences(contract: Contract) -> List[KSentence]:
     contract_sort = contract.sort
     function_sort = contract.sort_method
 
