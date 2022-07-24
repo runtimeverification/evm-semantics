@@ -40,17 +40,19 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 @final
 @dataclass
-class SolcContract:
+class Contract:
+    name: str
     abi: Dict
     storage: Dict
     method_identifiers: Dict
-    bytecode: Dict
+    bytecode: str
 
-    def __init__(self, contract_json: Dict, foundry: bool = False) -> None:
+    def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
+        self.name = contract_name
         self.abi = contract_json['abi']
         self.storage = contract_json['storageLayout']
         self.method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
-        self.bytecode = '0x' + (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
+        self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
 
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
@@ -125,15 +127,16 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     return claims
 
 
-def contract_to_k(contract_json: Dict, contract_name: str, empty_config: KInner, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:
+def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
-    abi = contract_json['abi']
-    hashes = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
-    bin_runtime = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
+    contract_name = contract.name
+    abi = contract.abi
+    hashes = contract.method_identifiers
+    bin_runtime = contract.bytecode
 
     contract_sort = KSort(f'{contract_name}Contract')
 
-    storage_layout = contract_json['storageLayout']
+    storage_layout = contract.storage
     storage_sentences = generate_storage_sentences(contract_name, contract_sort, storage_layout)
     function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
