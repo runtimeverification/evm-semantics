@@ -3,7 +3,7 @@ import json
 import logging
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, List, Tuple
+from typing import Any, Dict, Final, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
@@ -12,14 +12,12 @@ from pyk.kast import (
     KApply,
     KAtt,
     KClaim,
-    KDefinition,
     KFlatModule,
     KImport,
     KInner,
     KLabel,
     KNonTerminal,
     KProduction,
-    KRequire,
     KRewrite,
     KRule,
     KSentence,
@@ -29,12 +27,12 @@ from pyk.kast import (
     KToken,
     KVariable,
 )
-from pyk.kastManip import build_rule, substitute
-from pyk.prelude import Sorts, intToken, stringToken
+from pyk.kastManip import abstract_term_safely, build_rule, substitute
+from pyk.prelude import intToken, stringToken
 from pyk.utils import intersperse
 
 from .kevm import KEVM
-from .utils import KDefinition_empty_config, abstract_cell_vars
+from .utils import abstract_cell_vars
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -76,7 +74,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
     return json.loads(process_res.stdout)
 
 
-def gen_claims_for_contract(empty_config: KInner, contract_name: str) -> List[KClaim]:
+def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_cells: List[KInner] = None) -> List[KClaim]:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
     init_subst = {
@@ -98,24 +96,21 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str) -> List[KC
         'ACCOUNTS_CELL': KApply('_AccountCellMap_', [account_cell, KVariable('ACCOUNTS')]),
     }
     final_subst = {'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')])}
-    init_term = CTerm(substitute(empty_config, init_subst))
-    final_term = CTerm(abstract_cell_vars(substitute(empty_config, final_subst)))
-    claim, _ = build_rule(contract_name.lower(), init_term, final_term, claim=True)
-    assert isinstance(claim, KClaim)
-    return [claim]
+    init_term = substitute(empty_config, init_subst)
+    if calldata_cells:
+        init_terms = [(f'{contract_name.lower()}-{i}', substitute(init_term, {'CALLDATA_CELL': cd})) for i, cd in enumerate(calldata_cells)]
+    else:
+        init_terms = [(contract_name.lower(), init_term)]
+    final_term = abstract_cell_vars(substitute(empty_config, final_subst))
+    claims: List[KClaim] = []
+    for claim_id, i_term in init_terms:
+        claim, _ = build_rule(claim_id, CTerm(i_term), CTerm(final_term), claim=True)
+        assert isinstance(claim, KClaim)
+        claims.append(claim)
+    return claims
 
 
-def gen_spec_modules(kevm: KEVM, spec_module_name: str) -> Tuple[KDefinition, List[str]]:
-    production_labels = [prod.klabel for module in kevm.definition for prod in module.productions if prod.klabel is not None]
-    contract_names = [prod_label.name[9:] for prod_label in production_labels if prod_label.name.startswith('contract_')]
-    empty_config = KDefinition_empty_config(kevm.definition, Sorts.GENERATED_TOP_CELL)
-    claims = [claim for contract_name in contract_names for claim in gen_claims_for_contract(empty_config, contract_name)]
-    spec_module = KFlatModule(spec_module_name, claims, [KImport(kevm.definition.main_module_name)])
-    spec_defn = KDefinition(spec_module_name, [spec_module], [KRequire('verification.k')])
-    return spec_defn, contract_names
-
-
-def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, foundry: bool = False) -> KFlatModule:
+def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, empty_config: KInner, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
     abi = contract_json['abi']
     hashes = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
@@ -139,7 +134,22 @@ def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: boo
     sentences = [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences
     module = KFlatModule(module_name, sentences, [KImport('EDSL')])
 
-    return module
+    claims_module: Optional[KFlatModule] = None
+    function_test_productions = [prod for prod in module.syntax_productions if prod.sort == KSort(f'{contract_name}Function')]
+    contract_function_application_label = KLabel(f'function_{contract_name}')
+    function_test_calldatas = []
+    for ftp in function_test_productions:
+        klabel = ftp.klabel
+        assert klabel is not None
+        if klabel.name.startswith(f'{contract_name}_function_test'):
+            args = [abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name='V') for pi in ftp.items if type(pi) is KNonTerminal]
+            calldata: KInner = KApply(contract_function_application_label, [KApply(contract_klabel), KApply(klabel, args)])
+            function_test_calldatas.append(calldata)
+    if function_test_calldatas:
+        claims = gen_claims_for_contract(empty_config, contract_name, calldata_cells=function_test_calldatas)
+        claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(module_name)])
+
+    return module, claims_module
 
 
 # Helpers
