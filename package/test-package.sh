@@ -22,14 +22,16 @@ kevm run tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json -
     || git --no-pager diff --no-index --ignore-all-space -R tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json.llvm-out tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json.expected
 rm -rf tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json.llvm-out
 
+# solc-to-k
 kevm solc-to-k tests/specs/examples/ERC20.sol ERC20 --main-module ERC20-VERIFICATION > tests/specs/examples/erc20-bin-runtime.k
+
 kevm kompile --backend haskell tests/specs/examples/erc20-spec.md \
     --definition tests/specs/examples/erc20-spec/haskell          \
     --main-module VERIFICATION                                    \
     --syntax-module VERIFICATION                                  \
     --concrete-rules-file tests/specs/examples/concrete-rules.txt \
     --verbose
-kevm prove tests/specs/examples/erc20-spec.md --backend haskell --format-failures  \
+kevm prove tests/specs/examples/erc20-spec.md --backend haskell \
     --definition tests/specs/examples/erc20-spec/haskell
 
 kevm kompile --backend java tests/specs/erc20/verification.k   \
