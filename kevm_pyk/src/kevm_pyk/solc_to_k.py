@@ -201,12 +201,12 @@ def generate_storage_sentences(contract: Contract):
     storage_location_production = KProduction(KSort('Int'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(storage_sort)], att=KAtt({'klabel': f'storage_{contract_name}', 'macro': ''}))
     fin_list = []
     for sp in storage_productions:
-        assert type(sp) is KSentence
+        assert isinstance(sp, KSentence)
         fin_list.append(sp)
-    assert type(storage_location_production) is KSentence
+    assert isinstance(storage_location_production, KSentence)
     fin_list.append(storage_location_production)
     for sr in storage_rules:
-        assert type(sr) is KSentence
+        assert isinstance(sr, KSentence)
         fin_list.append(sr)
     return fin_list
 
