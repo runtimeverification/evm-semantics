@@ -62,6 +62,36 @@ class Contract(Container['Contract.Method']):
             items_after: List[KProductionItem] = [KTerminal(')')]
             return KProduction(method_sort, items_before + items_args + items_after, klabel=KLabel(f'{contract_name}_function_{self.name}'))
 
+        def rule(self, contract_name: str) -> KRule:
+
+            def _normalize_input_names(input_names: List[str]) -> List[str]:
+                if not input_names:
+                    return []
+                head, *_ = input_names
+                if head == '':
+                    assert all(input_name == '' for input_name in input_names)
+                    return [f'V{i}' for i, _ in enumerate(input_names)]
+                assert all(input_name != '' for input_name in input_names)
+                res = [input_name.lstrip('_').upper() for input_name in input_names]
+                if len(res) != len(set(res)):
+                    raise RuntimeError(f"Some arguments only differ in capitalization or a '_' prefix for: {contract_name}.{self.name}")
+                return res
+
+            input_names = _normalize_input_names([input_dict['name'] for input_dict in self.abi['inputs']])
+            input_types = [input_dict['type'] for input_dict in self.abi['inputs']]
+            # TODO: add structure to LHS:
+            # generate (uncurried) unparser, function name, and list of arguments
+            lhs = KToken(f'{contract_name}.{self.name}(' + ', '.join(input_names) + ')', 'ByteArray')
+            args: List[KInner] = [KEVM.abi_type(input_type, KVariable(input_name)) for input_name, input_type in zip(input_names, input_types)] or [KToken('.TypedArgs', 'TypedArgs')]
+            rhs = KEVM.abi_calldata(self.name, args)
+            opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(input_names, input_types)]
+            conjuncts = [opt_conjunct for opt_conjunct in opt_conjuncts if opt_conjunct is not None]
+            if len(conjuncts) == 0:
+                ensures = TRUE
+            else:
+                ensures = functools.reduce(lambda x, y: KApply('_andBool_', [x, y]), conjuncts)
+            return KRule(KRewrite(lhs, rhs), ensures=ensures)
+
     name: str
     storage: Dict
     method_identifiers: Dict
@@ -344,42 +374,7 @@ def generate_function_selector_alias_sentences(contract: Contract):
 
 
 def _extract_function_sentences(contract: Contract) -> List[Tuple[KProduction, KRule]]:
-
-    def extract_rule(name, inputs):
-        input_names = normalize_input_names([input_dict['name'] for input_dict in inputs])
-        input_types = [input_dict['type'] for input_dict in inputs]
-        # TODO: add structure to LHS:
-        # generate (uncurried) unparser, function name, and list of arguments
-        lhs = KToken(f'{contract.name}.{name}(' + ', '.join(input_names) + ')', 'ByteArray')
-        args = [KEVM.abi_type(input_type, KVariable(input_name)) for input_name, input_type in zip(input_names, input_types)] or [KToken('.TypedArgs', 'TypedArgs')]
-        rhs = KEVM.abi_calldata(name, args)
-        opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(input_names, input_types)]
-        conjuncts = [opt_conjunct for opt_conjunct in opt_conjuncts if opt_conjunct is not None]
-        if len(conjuncts) == 0:
-            ensures = TRUE
-        else:
-            ensures = functools.reduce(lambda x, y: KApply('_andBool_', [x, y]), conjuncts)
-        return KRule(KRewrite(lhs, rhs), ensures=ensures)
-
-    def normalize_input_names(input_names):
-        if not input_names:
-            return []
-        head, *_ = input_names
-        if head == '':
-            assert all(input_name == '' for input_name in input_names)
-            return [f'V{i}' for i, _ in enumerate(input_names)]
-        assert all(input_name != '' for input_name in input_names)
-        res = [input_dict['name'].lstrip('_').upper() for input_dict in inputs]
-        if len(res) != len(set(res)):
-            raise RuntimeError(f"Some arguments only differ in capitalization or a '_' prefix for: {name}")
-        return res
-
-    res = []
-    for method in contract.methods:
-        name = method.name
-        inputs = method.abi['inputs']
-        res.append((method.production(contract.name, contract.sort_method), extract_rule(name, inputs)))
-    return res
+    return [(method.production(contract.name, contract.sort_method), method.rule(contract.name)) for method in contract.methods]
 
 
 def _check_supported_value_type(type_label: str) -> None:
