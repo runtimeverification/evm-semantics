@@ -80,10 +80,22 @@ class Contract():
                 ensures = functools.reduce(lambda x, y: KApply('_andBool_', [x, y]), conjuncts)
             return KRule(KRewrite(lhs, rhs), ensures=ensures)
 
+    @dataclass
+    class Field:
+        name: str
+        slot: int
+        type: str
+
+        def __init__(self, name: str, slot: int, type: str) -> None:
+            self.name = name
+            self.slot = slot
+            self.type = type
+
     name: str
     storage: Dict
     bytecode: str
     methods: List[Method]
+    fields: List[Field]
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
 
@@ -102,14 +114,19 @@ class Contract():
             mname = msig.split('(')[0]
             mid = int(method_identifiers[msig], 16)
             self.methods.append(Contract.Method(mname, mid, _get_method_abi(mname)))
+        self.fields = []
+        for storage in contract_json['storageLayout']['storage']:
+            if storage['offset'] != 0:
+                raise ValueError(f'Unsupported nonzero offset for contract {self.name} storage slot: {storage["label"]}')
+            self.fields.append(Contract.Field(storage['label'], int(storage['slot']), storage['type']))
 
     @property
     def sort(self) -> KSort:
         return KSort(f'{self.name}Contract')
 
     @property
-    def sort_storage(self) -> KSort:
-        return KSort(f'{self.name}Storage')
+    def sort_field(self) -> KSort:
+        return KSort(f'{self.name}Field')
 
     @property
     def sort_method(self) -> KSort:
@@ -250,7 +267,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
 
 def generate_storage_sentences(contract: Contract) -> List[KSentence]:
     contract_name = contract.name
-    storage_sort = contract.sort_storage
+    storage_sort = contract.sort_field
 
     storage_sentence_pairs = _extract_storage_sentences(contract)
 
@@ -273,7 +290,7 @@ def generate_storage_sentences(contract: Contract) -> List[KSentence]:
 
 def _extract_storage_sentences(contract: Contract):
     contract_name = contract.name
-    storage_sort = contract.sort_storage
+    storage_sort = contract.sort_field
     storage_layout = contract.storage
 
     types = storage_layout.get('types', [])  # 'types' is missing from storage_layout if storage_layout['storage'] == []
