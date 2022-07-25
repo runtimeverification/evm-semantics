@@ -45,13 +45,11 @@ class Contract(Container['Contract.Method']):
     class Method:
         name: str
         id: int
-        signature: str
         abi: Dict
 
-        def __init__(self, name: str, id: int, signature: str, abi: Dict) -> None:
+        def __init__(self, name: str, id: int, abi: Dict) -> None:
             self.name = name
             self.id = id
-            self.signature = signature
             self.abi = abi
 
         @property
@@ -118,7 +116,7 @@ class Contract(Container['Contract.Method']):
         for msig in self.method_identifiers:
             mname = msig.split('(')[0]
             mid = int(self.method_identifiers[msig], 16)
-            self.methods.append(Contract.Method(mname, mid, msig, _get_method_abi(mname)))
+            self.methods.append(Contract.Method(mname, mid, _get_method_abi(mname)))
 
     @property
     def sort(self) -> KSort:
