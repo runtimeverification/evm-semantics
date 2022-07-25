@@ -136,6 +136,17 @@ class Contract(Container['Contract.Method']):
     def klabel_method(self) -> KLabel:
         return KLabel(f'method_{self.name}')
 
+    @property
+    def method_sentences(self) -> List[KSentence]:
+        res: List[KSentence] = []
+        for mprod in [method.production(self.name, self.sort_method) for method in self.methods]:
+            assert isinstance(mprod, KSentence)
+            res.append(mprod)
+        for mrule in [method.rule(self.name) for method in self.methods]:
+            assert isinstance(mrule, KSentence)
+            res.append(mrule)
+        return res
+
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
 
@@ -351,17 +362,8 @@ def _extract_storage_sentences(contract: Contract):
 
 
 def generate_function_sentences(contract: Contract) -> List[KSentence]:
-
     function_call_data_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(contract.sort), KTerminal('.'), KNonTerminal(contract.sort_method)], klabel=contract.klabel_method, att=KAtt({'function': ''}))
-    function_sentence_pairs = _extract_function_sentences(contract)
-
-    function_productions: List[KSentence] = []
-    function_rules: List[KSentence] = []
-    for f_prod, f_rule in function_sentence_pairs:
-        function_productions.append(f_prod)
-        function_rules.append(f_rule)
-
-    function_sentences = function_productions + function_rules
+    function_sentences = contract.method_sentences
     return [function_call_data_production] + function_sentences if function_sentences else []
 
 
@@ -371,10 +373,6 @@ def generate_function_selector_alias_sentences(contract: Contract):
         abi_function_selector_rewrite = KRewrite(KEVM.abi_selector(method.name), intToken(method.id))
         abi_function_selector_rules.append(KRule(abi_function_selector_rewrite))
     return abi_function_selector_rules
-
-
-def _extract_function_sentences(contract: Contract) -> List[Tuple[KProduction, KRule]]:
-    return [(method.production(contract.name, contract.sort_method), method.rule(contract.name)) for method in contract.methods]
 
 
 def _check_supported_value_type(type_label: str) -> None:
