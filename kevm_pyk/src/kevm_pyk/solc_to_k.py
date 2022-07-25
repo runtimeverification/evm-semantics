@@ -45,14 +45,14 @@ class Contract(Container['Contract.Method']):
     class Method:
         name: str
         id: int
+        arg_names: List[str]
         arg_types: List[str]
-        abi: Dict
 
         def __init__(self, name: str, id: int, abi: Dict) -> None:
             self.name = name
             self.id = id
-            self.abi = abi
-            self.arg_types = [arg['type'] for arg in abi['inputs']]
+            self.arg_names = [f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])]
+            self.arg_types = [input['type'] for input in abi['inputs']]
 
         @property
         def selector_alias_rule(self) -> KRule:
@@ -66,27 +66,12 @@ class Contract(Container['Contract.Method']):
             return KProduction(method_sort, items_before + items_args + items_after, klabel=KLabel(f'{contract_name}_function_{self.name}'))
 
         def rule(self, contract_name: str) -> KRule:
-
-            def _normalize_input_names(input_names: List[str]) -> List[str]:
-                if not input_names:
-                    return []
-                head, *_ = input_names
-                if head == '':
-                    assert all(input_name == '' for input_name in input_names)
-                    return [f'V{i}' for i, _ in enumerate(input_names)]
-                assert all(input_name != '' for input_name in input_names)
-                res = [input_name.lstrip('_').upper() for input_name in input_names]
-                if len(res) != len(set(res)):
-                    raise RuntimeError(f"Some arguments only differ in capitalization or a '_' prefix for: {contract_name}.{self.name}")
-                return res
-
-            input_names = _normalize_input_names([input_dict['name'] for input_dict in self.abi['inputs']])
             # TODO: add structure to LHS:
             # generate (uncurried) unparser, function name, and list of arguments
-            lhs = KToken(f'{contract_name}.{self.name}(' + ', '.join(input_names) + ')', 'ByteArray')
-            args: List[KInner] = [KEVM.abi_type(input_type, KVariable(input_name)) for input_name, input_type in zip(input_names, self.arg_types)] or [KToken('.TypedArgs', 'TypedArgs')]
+            lhs = KToken(f'{contract_name}.{self.name}(' + ', '.join(self.arg_names) + ')', 'ByteArray')
+            args: List[KInner] = [KEVM.abi_type(input_type, KVariable(input_name)) for input_name, input_type in zip(self.arg_names, self.arg_types)] or [KToken('.TypedArgs', 'TypedArgs')]
             rhs = KEVM.abi_calldata(self.name, args)
-            opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(input_names, self.arg_types)]
+            opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(self.arg_names, self.arg_types)]
             conjuncts = [opt_conjunct for opt_conjunct in opt_conjuncts if opt_conjunct is not None]
             if len(conjuncts) == 0:
                 ensures = TRUE
