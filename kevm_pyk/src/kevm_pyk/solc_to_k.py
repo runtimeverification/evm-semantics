@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Container, Dict, Final, List, Optional, Tuple
+from typing import Any, Dict, Final, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
@@ -39,7 +39,8 @@ from .utils import abstract_cell_vars, build_claim
 _LOGGER: Final = logging.getLogger(__name__)
 
 
-class Contract(Container['Contract.Method']):
+@dataclass
+class Contract():
 
     @dataclass
     class Method:
