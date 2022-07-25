@@ -154,10 +154,7 @@ module VERIFICATION-HASKELL [symbolic, kore]
       => MEM [ K2 := #ecrec(HASH, SIGV, SIGR, SIGS) ] [ K1 := BUF1                           ] 
         requires (32 <=Int K1 -Int K2) andBool (K2 <Int K1) [simplification]
 
-    rule ( maxUInt160 &Int #asWord ( padLeftBytes( #ecrec(HASH, SIGV, SIGR, SIGS), N, 0 ) ) ) => #asWord ( padLeftBytes( #ecrec(HASH, SIGV, SIGR, SIGS), N, 0 ) )
-      requires #asWord(#ecrec(HASH, SIGV, SIGR, SIGS)) <=Int maxUInt160 [simplification]
-
-    rule 0 <Int #asWord ( padLeftBytes ( #ecrec( HASH, SIGV, SIGR, SIGS ), _, 0 ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
+    rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
 
 endmodule
 

@@ -371,8 +371,10 @@ module LEMMAS-HASKELL [symbolic, kore]
          #range( M                          [ N2 := BUF2           ] [ N3 := BUF3           ], L, K )
       requires N1 +Int #sizeByteArray(BUF1) <=Int L [simplification]
 
-    rule #range ( M [ N := BUF:ByteArray ], N, K ) => padLeftBytes(BUF, K, 0)
-      requires (#sizeByteArray(BUF) <=Int K) andBool M [ N .. K ] ==K padLeftBytes(.ByteArray, K, 0) [simplification]
+    rule #range ( M [ N := BUF:ByteArray ], N, K ) => #padToWidth(K, BUF)
+      requires ( #sizeByteArray( BUF ) <=Int K ) andBool ( M [ N .. K ] ==K #padToWidth( K, .ByteArray ) ) [simplification]
+
+    rule #asWord( #padToWidth ( _, BUF ) ) => #asWord( BUF ) [simplification]
 
   // ########################
   // Map Reasoning
