@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, List, Optional, Tuple, final
+from typing import Any, Container, Dict, Final, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
@@ -38,14 +38,25 @@ from .utils import abstract_cell_vars, build_claim
 _LOGGER: Final = logging.getLogger(__name__)
 
 
-@final
-@dataclass
-class Contract:
+class Contract(Container['Contract.Method']):
+
+    @dataclass
+    class Method:
+        name: str
+        id: int
+        signature: str
+
+        def __init__(self, name: str, id: int, signature: str) -> None:
+            self.name = name
+            self.id = id
+            self.signature = signature
+
     name: str
     abi: Dict
     storage: Dict
     method_identifiers: Dict
     bytecode: str
+    methods: List[Method]
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
         self.name = contract_name
@@ -53,6 +64,11 @@ class Contract:
         self.storage = contract_json['storageLayout']
         self.method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
+        self.methods = []
+        for msig in self.method_identifiers:
+            mname = msig.split('(')[0]
+            mid = int(self.method_identifiers[msig], 16)
+            self.methods.append(Contract.Method(mname, mid, msig))
 
     @property
     def sort(self) -> KSort:
@@ -308,13 +324,9 @@ def generate_function_sentences(contract: Contract) -> List[KSentence]:
 
 
 def generate_function_selector_alias_sentences(contract: Contract):
-    hashes = contract.method_identifiers
-
     abi_function_selector_rules = []
-    for h in hashes:
-        f_name = h.split('(')[0]
-        hash_int = int(hashes[h], 16)
-        abi_function_selector_rewrite = KRewrite(KEVM.abi_selector(f_name), intToken(hash_int))
+    for method in contract.methods:
+        abi_function_selector_rewrite = KRewrite(KEVM.abi_selector(method.name), intToken(method.id))
         abi_function_selector_rules.append(KRule(abi_function_selector_rewrite))
     return abi_function_selector_rules
 
