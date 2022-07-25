@@ -14,11 +14,10 @@
 /pkg
 /src
 /tests/**/*.debug-log
-/tests/gen-spec/foundry/cache
-/tests/gen-spec/foundry/*.out
-/tests/gen-spec/foundry/out
-/tests/gen-spec/*.out
-/tests/gen-spec/*.sol
+/tests/foundry/cache
+/tests/foundry/*.out
+/tests/foundry/out
+/tests/foundry/foundry.k
 /tests/**/*.rule-profile
 /tests/specs/**/*-bin-runtime.k
 /tests/specs/foundry/*.out
