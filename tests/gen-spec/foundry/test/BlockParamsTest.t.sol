@@ -25,4 +25,10 @@ contract BlockParamsTest is Test {
         assertEq(block.chainid, newChainId);
     }
 
+    function testCoinBase() public {
+        address coinBase = 0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8;
+        vm.coinbase(coinBase);
+        assertEq(block.coinbase, coinBase);
+    }
+
 }
