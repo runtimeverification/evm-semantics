@@ -180,6 +180,7 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
             return recur_value(syntax, lhs, rhs, type_label)
 
         if encoding == 'mapping':
+            # TODO: Make less hacky once this is addressed: https://github.com/foundry-rs/foundry/issues/2462
             type_contents = '('.join(type_name.split('(')[1:])[0:-1]
             key_type_name, *rest = type_contents.split(',')
             value_type_name = ','.join(rest)
