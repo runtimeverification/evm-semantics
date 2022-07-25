@@ -19,6 +19,7 @@ from pyk.kast import (
     KLabel,
     KNonTerminal,
     KProduction,
+    KProductionItem,
     KRewrite,
     KRule,
     KSentence,
@@ -52,6 +53,14 @@ class Contract(Container['Contract.Method']):
             self.id = id
             self.signature = signature
             self.abi = abi
+
+        def production(self, contract_name: str, method_sort: KSort) -> KProduction:
+            input_types = [_input['type'] for _input in self.abi['inputs']]
+            input_nonterminals = (KNonTerminal(_evm_base_sort(input_type)) for input_type in input_types)
+            items_before: List[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
+            items_args: List[KProductionItem] = list(intersperse(input_nonterminals, KTerminal(',')))
+            items_after: List[KProductionItem] = [KTerminal(')')]
+            return KProduction(method_sort, items_before + items_args + items_after, klabel=KLabel(f'{contract_name}_function_{self.name}'))
 
     name: str
     storage: Dict
@@ -174,7 +183,6 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
 
     contract_name = contract.name
     bin_runtime = contract.bytecode
-    contract_sort = contract.sort
 
     storage_sentences = generate_storage_sentences(contract)
     function_sentences = generate_function_sentences(contract)
@@ -182,8 +190,8 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract)
 
     contract_klabel = contract.klabel
-    contract_subsort: KSentence = KProduction(KSort('Contract'), [KNonTerminal(contract_sort)])
-    contract_production: KSentence = KProduction(contract_sort, [KTerminal(contract_name)], klabel=contract_klabel)
+    contract_subsort: KSentence = KProduction(KSort('Contract'), [KNonTerminal(contract.sort)])
+    contract_production: KSentence = KProduction(contract.sort, [KTerminal(contract_name)], klabel=contract_klabel)
     contract_macro: KSentence = KRule(KRewrite(KEVM.bin_runtime(KApply(contract_klabel)), KEVM.parse_bytestack(stringToken(bin_runtime))))
 
     module_name = contract_name.upper() + '-BIN-RUNTIME'
@@ -212,7 +220,6 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
 
 def generate_storage_sentences(contract: Contract) -> List[KSentence]:
     contract_name = contract.name
-    contract_sort = contract.sort
     storage_sort = contract.sort_storage
 
     storage_sentence_pairs = _extract_storage_sentences(contract)
@@ -221,7 +228,7 @@ def generate_storage_sentences(contract: Contract) -> List[KSentence]:
         return []
 
     storage_productions, storage_rules = map(list, zip(*storage_sentence_pairs))
-    storage_location_production = KProduction(KSort('Int'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(storage_sort)], att=KAtt({'klabel': f'storage_{contract_name}', 'macro': ''}))
+    storage_location_production = KProduction(KSort('Int'), [KNonTerminal(contract.sort), KTerminal('.'), KNonTerminal(storage_sort)], att=KAtt({'klabel': f'storage_{contract_name}', 'macro': ''}))
     fin_list = []
     for sp in storage_productions:
         assert isinstance(sp, KSentence)
@@ -314,10 +321,8 @@ def _extract_storage_sentences(contract: Contract):
 
 
 def generate_function_sentences(contract: Contract) -> List[KSentence]:
-    contract_sort = contract.sort
-    function_sort = contract.sort_method
 
-    function_call_data_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(contract_sort), KTerminal('.'), KNonTerminal(function_sort)], klabel=contract.klabel_method, att=KAtt({'function': ''}))
+    function_call_data_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(contract.sort), KTerminal('.'), KNonTerminal(contract.sort_method)], klabel=contract.klabel_method, att=KAtt({'function': ''}))
     function_sentence_pairs = _extract_function_sentences(contract)
 
     function_productions: List[KSentence] = []
@@ -340,20 +345,6 @@ def generate_function_selector_alias_sentences(contract: Contract):
 
 def _extract_function_sentences(contract: Contract) -> List[Tuple[KProduction, KRule]]:
     contract_name = contract.name
-    function_sort = contract.sort_method
-
-    def extract_production(name, inputs):
-        input_types = [input_dict['type'] for input_dict in inputs]
-
-        items = []
-        items.append(KTerminal(name))
-        items.append(KTerminal('('))
-
-        input_nonterminals = (KNonTerminal(_evm_base_sort(input_type)) for input_type in input_types)
-        items += intersperse(input_nonterminals, KTerminal(','))
-
-        items.append(KTerminal(')'))
-        return KProduction(function_sort, items, klabel=KLabel(f'{contract_name}_function_{name}'))
 
     def extract_rule(name, inputs):
         input_names = normalize_input_names([input_dict['name'] for input_dict in inputs])
@@ -401,7 +392,7 @@ def _extract_function_sentences(contract: Contract) -> List[Tuple[KProduction, K
     for method in contract.methods:
         name = method.name
         inputs = method.abi['inputs']
-        res.append((extract_production(name, inputs), extract_rule(name, inputs)))
+        res.append((method.production(contract.name, contract.sort_method), extract_rule(name, inputs)))
     return res
 
 
