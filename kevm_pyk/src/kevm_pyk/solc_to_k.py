@@ -54,6 +54,10 @@ class Contract(Container['Contract.Method']):
             self.signature = signature
             self.abi = abi
 
+        @property
+        def selector_alias_rule(self) -> KRule:
+            return KRule(KRewrite(KEVM.abi_selector(self.name), intToken(self.id)))
+
         def production(self, contract_name: str, method_sort: KSort) -> KProduction:
             input_types = [_input['type'] for _input in self.abi['inputs']]
             input_nonterminals = (KNonTerminal(_evm_base_sort(input_type)) for input_type in input_types)
@@ -138,13 +142,17 @@ class Contract(Container['Contract.Method']):
 
     @property
     def method_sentences(self) -> List[KSentence]:
-        res: List[KSentence] = []
+        method_application_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)], klabel=self.klabel_method, att=KAtt({'function': ''}))
+        res = [method_application_production]
         for mprod in [method.production(self.name, self.sort_method) for method in self.methods]:
             assert isinstance(mprod, KSentence)
             res.append(mprod)
         for mrule in [method.rule(self.name) for method in self.methods]:
             assert isinstance(mrule, KSentence)
             res.append(mrule)
+        for malias in [method.selector_alias_rule for method in self.methods]:
+            assert isinstance(malias, KSentence)
+            res.append(malias)
         return res
 
 
@@ -226,9 +234,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
     bin_runtime = contract.bytecode
 
     storage_sentences = generate_storage_sentences(contract)
-    function_sentences = generate_function_sentences(contract)
-
-    function_selector_alias_sentences = generate_function_selector_alias_sentences(contract)
+    function_sentences = contract.method_sentences
 
     contract_klabel = contract.klabel
     contract_subsort: KSentence = KProduction(KSort('Contract'), [KNonTerminal(contract.sort)])
@@ -236,7 +242,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
     contract_macro: KSentence = KRule(KRewrite(KEVM.bin_runtime(KApply(contract_klabel)), KEVM.parse_bytestack(stringToken(bin_runtime))))
 
     module_name = contract_name.upper() + '-BIN-RUNTIME'
-    sentences = [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences
+    sentences = [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro]
     module = KFlatModule(module_name, sentences, [KImport('EDSL')])
 
     claims_module: Optional[KFlatModule] = None
@@ -359,20 +365,6 @@ def _extract_storage_sentences(contract: Contract):
 
     storage = storage_layout['storage']
     return recur_struct([], f'{contract_name}', intToken(0), 0, storage, gen_dot=False)
-
-
-def generate_function_sentences(contract: Contract) -> List[KSentence]:
-    function_call_data_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(contract.sort), KTerminal('.'), KNonTerminal(contract.sort_method)], klabel=contract.klabel_method, att=KAtt({'function': ''}))
-    function_sentences = contract.method_sentences
-    return [function_call_data_production] + function_sentences if function_sentences else []
-
-
-def generate_function_selector_alias_sentences(contract: Contract):
-    abi_function_selector_rules = []
-    for method in contract.methods:
-        abi_function_selector_rewrite = KRewrite(KEVM.abi_selector(method.name), intToken(method.id))
-        abi_function_selector_rules.append(KRule(abi_function_selector_rewrite))
-    return abi_function_selector_rules
 
 
 def _check_supported_value_type(type_label: str) -> None:
