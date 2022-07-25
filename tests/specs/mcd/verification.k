@@ -129,7 +129,7 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
          requires #rangeSInt(256, X) andBool #rangeSInt(256, Y)
          [simplification]
 
-    rule { chop ( X:Int ) #Equals chop ( Y:Int ) } => 
+    rule { chop ( X:Int ) #Equals chop ( Y:Int ) } =>
          { true #Equals X ==Int Y andBool Y <=Int 0 }
          requires (minSInt256 <=Int X) andBool (X <=Int 0) andBool #rangeSInt(256, Y) [simplification]
 
@@ -144,12 +144,12 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
     rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray } => { BY #Equals BZ }
          requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
 
-    rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray ++ BA2:ByteArray } => 
-         { true #Equals (BY ==Int BZ) andBool (.ByteArray ==K BA2) } 
+    rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray ++ BA2:ByteArray } =>
+         { true #Equals (BY ==Int BZ) andBool (.ByteArray ==K BA2) }
          requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
 
-    rule { #buf(32, BY:Int):ByteArray ++ BA1:ByteArray #Equals #buf(32, BZ:Int):ByteArray ++ BA2:ByteArray } => 
-         { true #Equals (BY ==Int BZ) andBool (BA1 ==K BA2) } 
+    rule { #buf(32, BY:Int):ByteArray ++ BA1:ByteArray #Equals #buf(32, BZ:Int):ByteArray ++ BA2:ByteArray } =>
+         { true #Equals (BY ==Int BZ) andBool (BA1 ==K BA2) }
          requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
 
   // ########################
@@ -162,8 +162,8 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
 
     rule { (M:Map [K <- V1]) #Equals (M [K <- V2]) } => { V1 #Equals V2 }
          [simplification]
-        
-    rule { M:Map [K <- V1] #Equals M } => 
+
+    rule { M:Map [K <- V1] #Equals M } =>
          { true #Equals K in_keys(M) andBool V1 ==K #lookup (M, K) }
          [simplification]
 
@@ -207,6 +207,24 @@ module LEMMAS-MCD-COMMON
     // ### cat-exhaustiveness
 
     rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 ) [simplification]
+
+  // ########################
+  // Keccak
+  // ########################
+
+    rule { I:Int #Equals keccak(_) } => #Bottom requires 0 <=Int I andBool I <Int 10 [simplification]
+
+    rule { I1:Int #Equals keccak(_) +Int I2 } => #Bottom
+      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10
+      [simplification]
+
+    rule #lookup( M:Map [ keccak(_) <- _ ], I:Int ) => #lookup( M , I )
+      requires 0 <=Int I andBool I <Int 10
+      [simplification]
+
+    rule #lookup( M:Map [ keccak(_) +Int I1:Int <- _ ], I2:Int ) => #lookup( M , I2 )
+      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10
+      [simplification]
 
   // ########################
   // Word Reasoning
