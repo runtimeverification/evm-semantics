@@ -344,45 +344,31 @@ def generate_function_selector_alias_sentences(contract: Contract):
 
 
 def _extract_function_sentences(contract: Contract) -> List[Tuple[KProduction, KRule]]:
-    contract_name = contract.name
 
     def extract_rule(name, inputs):
         input_names = normalize_input_names([input_dict['name'] for input_dict in inputs])
         input_types = [input_dict['type'] for input_dict in inputs]
-        lhs = extract_lhs(name, input_names)
-        rhs = extract_rhs(name, input_names, input_types)
-        ensures = extract_ensures(input_names, input_types)
-        return KRule(KRewrite(lhs, rhs), ensures=ensures)
-
-    def extract_lhs(name, input_names):
         # TODO: add structure to LHS:
         # generate (uncurried) unparser, function name, and list of arguments
-        return KToken(f'{contract_name}.{name}(' + ', '.join(input_names) + ')', 'ByteArray')
-
-    def extract_rhs(name, input_names, input_types):
+        lhs = KToken(f'{contract.name}.{name}(' + ', '.join(input_names) + ')', 'ByteArray')
         args = [KEVM.abi_type(input_type, KVariable(input_name)) for input_name, input_type in zip(input_names, input_types)] or [KToken('.TypedArgs', 'TypedArgs')]
-        return KEVM.abi_calldata(name, args)
-
-    def extract_ensures(input_names, input_types):
+        rhs = KEVM.abi_calldata(name, args)
         opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(input_names, input_types)]
         conjuncts = [opt_conjunct for opt_conjunct in opt_conjuncts if opt_conjunct is not None]
         if len(conjuncts) == 0:
-            return TRUE
-
-        return functools.reduce(lambda x, y: KApply('_andBool_', [x, y]), conjuncts)
+            ensures = TRUE
+        else:
+            ensures = functools.reduce(lambda x, y: KApply('_andBool_', [x, y]), conjuncts)
+        return KRule(KRewrite(lhs, rhs), ensures=ensures)
 
     def normalize_input_names(input_names):
         if not input_names:
             return []
-
         head, *_ = input_names
-
         if head == '':
             assert all(input_name == '' for input_name in input_names)
             return [f'V{i}' for i, _ in enumerate(input_names)]
-
         assert all(input_name != '' for input_name in input_names)
-
         res = [input_dict['name'].lstrip('_').upper() for input_dict in inputs]
         if len(res) != len(set(res)):
             raise RuntimeError(f"Some arguments only differ in capitalization or a '_' prefix for: {name}")
