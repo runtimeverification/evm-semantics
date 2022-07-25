@@ -12,16 +12,12 @@ contract Prank {
     }
 
     function add(uint256 value) external {
-        if (msg.sender != owner) {
-            revert Unauthorized();
-        }
+        require(msg.sender == owner, "Only owner");
         count += value;
     }
 
     function subtract(uint256 value) external {
-        if (tx.origin != address(0)) {
-            revert Unauthorized();
-        }
+        require(tx.origin == address(0));
         require(count >= value);
         count -= value;
     }

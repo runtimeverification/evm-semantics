@@ -1,6 +1,8 @@
-pragma solidity 0.8.10;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
+import "src/EmitContract.sol";
 
 contract EmitContractTest is Test {
     event Transfer(address indexed from, address indexed to, uint256 amount);
@@ -25,12 +27,13 @@ contract EmitContractTest is Test {
         // The event we get
         emitter.t();
     }
-}
 
-contract ExpectEmit {
-    event Transfer(address indexed from, address indexed to, uint256 amount);
-
-    function t() public {
-        emit Transfer(msg.sender, address(1337), 1337);
+    function testExpectEmitCheckEmitter() public {
+        ExpectEmit emitter = new ExpectEmit();
+        vm.expectEmit(true, true, false, true, address(emitter));
+        // The event we expect
+        emit Transfer(address(this), address(1337), 1337);
+        // The event we get
+        emitter.t();
     }
 }

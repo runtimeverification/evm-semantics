@@ -23,7 +23,7 @@ contract PrankTest is Test {
     }
 
     function testAddStartPrank(uint256 x) public {
-        vm.expectRevert(Unauthorized.selector);
+        vm.expectRevert(bytes("Only owner"));
         vm.startPrank(address(0));
         prankContract.add(x);
         assertEq(prankContract.count(), 0);
@@ -34,6 +34,12 @@ contract PrankTest is Test {
         assertEq(prankContract.count(), 0);
         prankContract.add(x);
         assertEq(prankContract.count(), x);
+    }
+
+    function testSubtractFail(uint256 x) public {
+        vm.expectRevert();
+        prankContract.subtract(x);
+        assertEq(prankContract.count(), 0);
     }
 
     function testSubtractAsTxOrigin(uint256 addValue, uint256 subValue) public {
