@@ -180,8 +180,9 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
             return recur_value(syntax, lhs, rhs, type_label)
 
         if encoding == 'mapping':
-            key_type_name = type_dict['label'].split('(')[0].split(' ')[0]
-            value_type_name = type_dict['value']
+            type_contents = '('.join(type_name.split('(')[1:])[0:-1]
+            key_type_name, *rest = type_contents.split(',')
+            value_type_name = ','.join(rest)
             return recur_mapping(syntax, lhs, rhs, var_idx, key_type_name, value_type_name)
 
         if encoding == 'bytes':
