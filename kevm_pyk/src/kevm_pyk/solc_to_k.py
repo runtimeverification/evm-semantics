@@ -45,22 +45,29 @@ class Contract(Container['Contract.Method']):
         name: str
         id: int
         signature: str
+        abi: Dict
 
-        def __init__(self, name: str, id: int, signature: str) -> None:
+        def __init__(self, name: str, id: int, signature: str, abi: Dict) -> None:
             self.name = name
             self.id = id
             self.signature = signature
+            self.abi = abi
 
     name: str
-    abi: Dict
     storage: Dict
     method_identifiers: Dict
     bytecode: str
     methods: List[Method]
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
+
+        def _get_method_abi(_mname: str) -> Dict:
+            for _method in contract_json['abi']:
+                if _method['type'] == 'function' and _method['name'] == _mname:
+                    return _method
+            raise ValueError(f'Method not found in abi: {_mname}')
+
         self.name = contract_name
-        self.abi = contract_json['abi']
         self.storage = contract_json['storageLayout']
         self.method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
@@ -68,7 +75,7 @@ class Contract(Container['Contract.Method']):
         for msig in self.method_identifiers:
             mname = msig.split('(')[0]
             mid = int(self.method_identifiers[msig], 16)
-            self.methods.append(Contract.Method(mname, mid, msig))
+            self.methods.append(Contract.Method(mname, mid, msig, _get_method_abi(mname)))
 
     @property
     def sort(self) -> KSort:
@@ -334,7 +341,6 @@ def generate_function_selector_alias_sentences(contract: Contract):
 def _extract_function_sentences(contract: Contract) -> List[Tuple[KProduction, KRule]]:
     contract_name = contract.name
     function_sort = contract.sort_method
-    abi = contract.abi
 
     def extract_production(name, inputs):
         input_types = [input_dict['type'] for input_dict in inputs]
@@ -392,12 +398,9 @@ def _extract_function_sentences(contract: Contract) -> List[Tuple[KProduction, K
         return res
 
     res = []
-    for func_dict in abi:
-        if func_dict['type'] != 'function':
-            continue
-
-        name = func_dict['name']
-        inputs = func_dict['inputs']
+    for method in contract.methods:
+        name = method.name
+        inputs = method.abi['inputs']
         res.append((extract_production(name, inputs), extract_rule(name, inputs)))
     return res
 
