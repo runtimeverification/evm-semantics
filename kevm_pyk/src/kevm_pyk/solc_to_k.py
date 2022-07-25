@@ -82,7 +82,6 @@ class Contract():
 
     name: str
     storage: Dict
-    method_identifiers: Dict
     bytecode: str
     methods: List[Method]
 
@@ -96,12 +95,12 @@ class Contract():
 
         self.name = contract_name
         self.storage = contract_json['storageLayout']
-        self.method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
+        method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
         self.methods = []
-        for msig in self.method_identifiers:
+        for msig in method_identifiers:
             mname = msig.split('(')[0]
-            mid = int(self.method_identifiers[msig], 16)
+            mid = int(method_identifiers[msig], 16)
             self.methods.append(Contract.Method(mname, mid, _get_method_abi(mname)))
 
     @property
