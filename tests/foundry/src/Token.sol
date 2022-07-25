@@ -7,6 +7,15 @@ contract Token {
     mapping(address => mapping(address => uint256)) allowances;
     string name;
 
+    struct Foo {
+        uint256 bar;
+        address baz;
+        uint48 boo;
+        uint48 frob;
+    }
+
+    mapping(address => Foo) foos;
+
     function _move(address src, address dst, uint256 amount) internal {
         balances[src] = balances[src] - amount;
         balances[dst] = balances[dst] + amount;
