@@ -45,20 +45,21 @@ class Contract(Container['Contract.Method']):
     class Method:
         name: str
         id: int
+        arg_types: List[str]
         abi: Dict
 
         def __init__(self, name: str, id: int, abi: Dict) -> None:
             self.name = name
             self.id = id
             self.abi = abi
+            self.arg_types = [arg['type'] for arg in abi['inputs']]
 
         @property
         def selector_alias_rule(self) -> KRule:
             return KRule(KRewrite(KEVM.abi_selector(self.name), intToken(self.id)))
 
         def production(self, contract_name: str, method_sort: KSort) -> KProduction:
-            input_types = [_input['type'] for _input in self.abi['inputs']]
-            input_nonterminals = (KNonTerminal(_evm_base_sort(input_type)) for input_type in input_types)
+            input_nonterminals = (KNonTerminal(_evm_base_sort(input_type)) for input_type in self.arg_types)
             items_before: List[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
             items_args: List[KProductionItem] = list(intersperse(input_nonterminals, KTerminal(',')))
             items_after: List[KProductionItem] = [KTerminal(')')]
@@ -80,13 +81,12 @@ class Contract(Container['Contract.Method']):
                 return res
 
             input_names = _normalize_input_names([input_dict['name'] for input_dict in self.abi['inputs']])
-            input_types = [input_dict['type'] for input_dict in self.abi['inputs']]
             # TODO: add structure to LHS:
             # generate (uncurried) unparser, function name, and list of arguments
             lhs = KToken(f'{contract_name}.{self.name}(' + ', '.join(input_names) + ')', 'ByteArray')
-            args: List[KInner] = [KEVM.abi_type(input_type, KVariable(input_name)) for input_name, input_type in zip(input_names, input_types)] or [KToken('.TypedArgs', 'TypedArgs')]
+            args: List[KInner] = [KEVM.abi_type(input_type, KVariable(input_name)) for input_name, input_type in zip(input_names, self.arg_types)] or [KToken('.TypedArgs', 'TypedArgs')]
             rhs = KEVM.abi_calldata(self.name, args)
-            opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(input_names, input_types)]
+            opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(input_names, self.arg_types)]
             conjuncts = [opt_conjunct for opt_conjunct in opt_conjuncts if opt_conjunct is not None]
             if len(conjuncts) == 0:
                 ensures = TRUE
