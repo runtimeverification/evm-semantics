@@ -195,7 +195,7 @@ class Contract():
         for malias in [method.selector_alias_rule for method in self.methods]:
             assert isinstance(malias, KSentence)
             res.append(malias)
-        return res
+        return res if len(res) > 1 else []
 
     @property
     def field_sentences(self) -> List[KSentence]:
@@ -207,7 +207,7 @@ class Contract():
         for frule in [field.rule(KApply(self.klabel), self.klabel_field) for field in self.fields]:
             assert isinstance(frule, KSentence)
             res.append(frule)
-        return res
+        return res if len(res) > 1 else []
 
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
@@ -306,7 +306,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
     for ftp in function_test_productions:
         klabel = ftp.klabel
         assert klabel is not None
-        if klabel.name.startswith(f'{contract_name}_function_test'):
+        if klabel.name.startswith(f'method_{contract_name}_test'):
             args = [abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name='V') for pi in ftp.items if type(pi) is KNonTerminal]
             calldata: KInner = KApply(contract_function_application_label, [KApply(contract_klabel), KApply(klabel, args)])
             function_test_calldatas.append(calldata)
