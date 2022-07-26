@@ -85,11 +85,31 @@ class Contract():
         name: str
         slot: int
         type: str
+        sort: KSort
+        klabel: KLabel
 
-        def __init__(self, name: str, slot: int, type: str) -> None:
+        def __init__(self, name: str, slot: int, type: str, contract_name: str, field_sort: KSort) -> None:
             self.name = name
             self.slot = slot
             self.type = type
+            self.sort = field_sort
+            self.klabel = KLabel(f'field_{contract_name}_{self.name}')
+
+        @property
+        def production(self) -> KProduction:
+            if self.type in {'t_address', 't_bool', 't_bytes4', 't_bytes32', 't_uint256', 't_int256', 't_uint8'}:
+                syntax = [KTerminal(self.name)]
+            else:
+                raise ValueError(f'Unsupported type for encoding in sort {self.sort}: {self.type}')
+            return KProduction(self.sort, syntax, klabel=self.klabel)
+
+        def rule(self, contract: KInner, application_label: KLabel) -> KRule:
+            if self.type in {'t_address', 't_bool', 't_bytes4', 't_bytes32', 't_uint256', 't_int256', 't_uint8'}:
+                lhs_field = KApply(self.klabel)
+                rhs_loc = intToken(self.slot)
+            else:
+                raise ValueError(f'Unsupported type for encoding in sort {self.sort}: {self.type}')
+            return KRule(KRewrite(KApply(application_label, [contract, lhs_field]), rhs_loc))
 
     name: str
     storage: Dict
@@ -118,7 +138,7 @@ class Contract():
         for storage in contract_json['storageLayout']['storage']:
             if storage['offset'] != 0:
                 raise ValueError(f'Unsupported nonzero offset for contract {self.name} storage slot: {storage["label"]}')
-            self.fields.append(Contract.Field(storage['label'], int(storage['slot']), storage['type']))
+            self.fields.append(Contract.Field(storage['label'], int(storage['slot']), storage['type'], self.name, self.sort_field))
 
     @property
     def sort(self) -> KSort:
@@ -141,6 +161,10 @@ class Contract():
         return KLabel(f'method_{self.name}')
 
     @property
+    def klabel_field(self) -> KLabel:
+        return KLabel(f'field_{self.name}')
+
+    @property
     def method_sentences(self) -> List[KSentence]:
         method_application_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)], klabel=self.klabel_method, att=KAtt({'function': ''}))
         res = [method_application_production]
@@ -153,6 +177,18 @@ class Contract():
         for malias in [method.selector_alias_rule for method in self.methods]:
             assert isinstance(malias, KSentence)
             res.append(malias)
+        return res
+
+    @property
+    def field_sentences(self) -> List[KSentence]:
+        field_access_production: KSentence = KProduction(KSort('Int'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_field)], klabel=self.klabel_field, att=KAtt({'macro': ''}))
+        res = [field_access_production]
+        for fprod in [field.production for field in self.fields]:
+            assert isinstance(fprod, KSentence)
+            res.append(fprod)
+        for frule in [field.rule(KApply(self.klabel), self.klabel_field) for field in self.fields]:
+            assert isinstance(frule, KSentence)
+            res.append(frule)
         return res
 
 
@@ -233,7 +269,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
     contract_name = contract.name
     bin_runtime = contract.bytecode
 
-    storage_sentences = generate_storage_sentences(contract)
+    field_sentences = contract.field_sentences
     function_sentences = contract.method_sentences
 
     contract_klabel = contract.klabel
@@ -242,7 +278,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
     contract_macro: KSentence = KRule(KRewrite(KEVM.bin_runtime(KApply(contract_klabel)), KEVM.parse_bytestack(stringToken(bin_runtime))))
 
     module_name = contract_name.upper() + '-BIN-RUNTIME'
-    sentences = [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro]
+    sentences = [contract_subsort, contract_production] + field_sentences + function_sentences + [contract_macro]
     module = KFlatModule(module_name, sentences, [KImport('EDSL')])
 
     claims_module: Optional[KFlatModule] = None
@@ -264,29 +300,6 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
 
 
 # Helpers
-
-def generate_storage_sentences(contract: Contract) -> List[KSentence]:
-    contract_name = contract.name
-    storage_sort = contract.sort_field
-
-    storage_sentence_pairs = _extract_storage_sentences(contract)
-
-    if not storage_sentence_pairs:
-        return []
-
-    storage_productions, storage_rules = map(list, zip(*storage_sentence_pairs))
-    storage_location_production = KProduction(KSort('Int'), [KNonTerminal(contract.sort), KTerminal('.'), KNonTerminal(storage_sort)], att=KAtt({'klabel': f'storage_{contract_name}', 'macro': ''}))
-    fin_list = []
-    for sp in storage_productions:
-        assert isinstance(sp, KSentence)
-        fin_list.append(sp)
-    assert isinstance(storage_location_production, KSentence)
-    fin_list.append(storage_location_production)
-    for sr in storage_rules:
-        assert isinstance(sr, KSentence)
-        fin_list.append(sr)
-    return fin_list
-
 
 def _extract_storage_sentences(contract: Contract):
     contract_name = contract.name
