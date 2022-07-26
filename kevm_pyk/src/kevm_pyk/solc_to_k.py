@@ -105,7 +105,6 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     claims: List[KClaim] = []
     for claim_id, i_term in init_terms:
         claim, _ = build_claim(claim_id, CTerm(i_term), CTerm(final_term))
-        assert isinstance(claim, KClaim)
         claims.append(claim)
     return claims
 
