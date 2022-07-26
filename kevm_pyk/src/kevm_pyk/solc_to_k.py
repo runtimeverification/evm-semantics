@@ -30,7 +30,7 @@ from pyk.kast import (
     KVariable,
 )
 from pyk.kastManip import abstract_term_safely, substitute
-from pyk.prelude import intToken, stringToken
+from pyk.prelude import Sorts, intToken, stringToken
 from pyk.utils import intersperse
 
 from .kevm import KEVM
@@ -104,17 +104,24 @@ class Contract():
             while True:
                 if curr_type in self._base_types:
                     break
+                elif curr_type.startswith('t_mapping'):
+                    type_contents = '('.join(curr_type.split('(')[1:])[0:-1]
+                    key_type, *rest = type_contents.split(',')
+                    curr_type = ','.join(rest)
+                    if key_type in self._base_types:
+                        syntax.extend([KTerminal('['), KNonTerminal(Sorts.INT), KTerminal(']')])
+                    else:
+                        raise ValueError(f'Unsupported key type for mapping in field {self.sort}: {key_type}')
                 else:
-                    raise ValueError(f'Unsupported type for encoding in sort {self.sort}: {self.type}')
+                    raise ValueError(f'Unsupported type for encoding in field {self.sort}: {self.type}')
             return KProduction(self.sort, syntax, klabel=self.klabel)
 
         def rule(self, contract: KInner, application_label: KLabel) -> KRule:
-            if self.type in self._base_types:
-                lhs_field = KApply(self.klabel)
-                rhs_loc = intToken(self.slot)
-            else:
-                raise ValueError(f'Unsupported type for encoding in sort {self.sort}: {self.type}')
-            return KRule(KRewrite(KApply(application_label, [contract, lhs_field]), rhs_loc))
+            non_terminal_prods = [pitem for pitem in self.production.items if type(pitem) is KNonTerminal]
+            var_names: List[KInner] = [KVariable(f'V{i}') for i, _ in enumerate(non_terminal_prods)]
+            lhs = KApply(application_label, [contract, KApply(self.klabel, var_names)])
+            rhs = KEVM.hashed_location('Solidity', intToken(self.slot), KEVM.intlist(var_names))
+            return KRule(KRewrite(lhs, rhs))
 
     name: str
     storage: Dict
