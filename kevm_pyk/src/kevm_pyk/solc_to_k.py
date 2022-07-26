@@ -46,31 +46,37 @@ class Contract():
     class Method:
         name: str
         id: int
+        sort: KSort
         arg_names: List[str]
         arg_types: List[str]
+        contract_name: str
 
-        def __init__(self, name: str, id: int, abi: Dict) -> None:
+        def __init__(self, name: str, id: int, abi: Dict, contract_name: str, sort: KSort) -> None:
             self.name = name
             self.id = id
             self.arg_names = [f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])]
             self.arg_types = [input['type'] for input in abi['inputs']]
+            self.contract_name = contract_name
+            self.sort = sort
 
         @property
         def selector_alias_rule(self) -> KRule:
             return KRule(KRewrite(KEVM.abi_selector(self.name), intToken(self.id)))
 
-        def production(self, contract_name: str, method_sort: KSort) -> KProduction:
+        @property
+        def production(self) -> KProduction:
             input_nonterminals = (KNonTerminal(_evm_base_sort(input_type)) for input_type in self.arg_types)
             items_before: List[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
             items_args: List[KProductionItem] = list(intersperse(input_nonterminals, KTerminal(',')))
             items_after: List[KProductionItem] = [KTerminal(')')]
-            return KProduction(method_sort, items_before + items_args + items_after, klabel=KLabel(f'{contract_name}_function_{self.name}'))
+            return KProduction(self.sort, items_before + items_args + items_after, klabel=KLabel(f'method_{self.contract_name}_{self.name}'))
 
-        def rule(self, contract_name: str) -> KRule:
-            # TODO: add structure to LHS:
-            # generate (uncurried) unparser, function name, and list of arguments
-            lhs = KToken(f'{contract_name}.{self.name}(' + ', '.join(self.arg_names) + ')', 'ByteArray')
-            args: List[KInner] = [KEVM.abi_type(input_type, KVariable(input_name)) for input_name, input_type in zip(self.arg_names, self.arg_types)] or [KToken('.TypedArgs', 'TypedArgs')]
+        def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule:
+            arg_vars = [KVariable(aname) for aname in self.arg_names]
+            prod_label = self.production.klabel
+            assert prod_label is not None
+            lhs = KApply(application_label, [contract, KApply(prod_label, arg_vars)])
+            args: List[KInner] = [KEVM.abi_type(input_type, KVariable(input_name)) for input_type, input_name in zip(self.arg_types, self.arg_names)]
             rhs = KEVM.abi_calldata(self.name, args)
             opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(self.arg_names, self.arg_types)]
             conjuncts = [opt_conjunct for opt_conjunct in opt_conjuncts if opt_conjunct is not None]
@@ -145,7 +151,7 @@ class Contract():
         for msig in method_identifiers:
             mname = msig.split('(')[0]
             mid = int(method_identifiers[msig], 16)
-            self.methods.append(Contract.Method(mname, mid, _get_method_abi(mname)))
+            self.methods.append(Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method))
         self.fields = []
         for storage in contract_json['storageLayout']['storage']:
             if storage['offset'] != 0:
@@ -180,10 +186,10 @@ class Contract():
     def method_sentences(self) -> List[KSentence]:
         method_application_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)], klabel=self.klabel_method, att=KAtt({'function': ''}))
         res = [method_application_production]
-        for mprod in [method.production(self.name, self.sort_method) for method in self.methods]:
+        for mprod in [method.production for method in self.methods]:
             assert isinstance(mprod, KSentence)
             res.append(mprod)
-        for mrule in [method.rule(self.name) for method in self.methods]:
+        for mrule in [method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods]:
             assert isinstance(mrule, KSentence)
             res.append(mrule)
         for malias in [method.selector_alias_rule for method in self.methods]:
@@ -312,97 +318,6 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
 
 
 # Helpers
-
-def _extract_storage_sentences(contract: Contract):
-    contract_name = contract.name
-    storage_sort = contract.sort_field
-    storage_layout = contract.storage
-
-    types = storage_layout.get('types', [])  # 'types' is missing from storage_layout if storage_layout['storage'] == []
-
-    def recur(syntax, lhs, rhs, var_idx, type_name):
-        type_dict = types[type_name]
-        encoding = type_dict['encoding']
-
-        if encoding == 'inplace':
-            members = type_dict.get('members')
-            if members:
-                return recur_struct(syntax, lhs, rhs, var_idx, members)
-
-            type_label = type_dict['label']
-            return recur_value(syntax, lhs, rhs, type_label)
-
-        if encoding == 'mapping':
-            # TODO: Make less hacky once this is addressed: https://github.com/foundry-rs/foundry/issues/2462
-            type_contents = '('.join(type_name.split('(')[1:])[0:-1]
-            key_type_name, *rest = type_contents.split(',')
-            value_type_name = ','.join(rest)
-            return recur_mapping(syntax, lhs, rhs, var_idx, key_type_name, value_type_name)
-
-        if encoding == 'bytes':
-            type_label = type_dict['label']
-            assert type_label in {'bytes', 'string'}
-            return recur_value(syntax, lhs, rhs, type_label)
-
-        raise ValueError(f'Unsupported encoding: {encoding}')
-
-    def recur_value(syntax, lhs, rhs, type_label):
-        _check_supported_value_type(type_label)
-
-        # TODO: add structure to LHS:
-        # generate (uncurried) unparser, function name, and list of arguments
-
-        # TODO: simplify RHS:
-        # #hashedLocation(L, #hashedLocation(L, B, X), Y) => #hashedLocation(L, B, X Y)
-        # 0 +Int X => X
-        # X +Int 0 => X
-        return [(KProduction(storage_sort, syntax), KRule(KRewrite(KToken(lhs, None), rhs)))]
-
-    def recur_struct(syntax, lhs, rhs, var_idx, members, gen_dot=True):
-        res = []
-        for member in members:
-            member_label = member['label']
-            member_slot = member['slot']
-            member_offset = member['offset']
-            member_type_name = member['type']
-
-            if member_offset != 0:
-                raise ValueError(f'Unsupported nonzero offset for variable: {member_label}')
-
-            new_syntax = syntax + ([KTerminal('.')] if gen_dot else []) + [KTerminal(member_label)]
-            new_lhs = f'{lhs}.{member_label}'
-            new_rhs = KApply('_+Int_', [rhs, intToken(member_slot)])
-            res += recur(new_syntax, new_lhs, new_rhs, var_idx, member_type_name)
-        return res
-
-    def recur_mapping(syntax, lhs, rhs, var_idx, key_type_name, value_type_name):
-        key_type_dict = types[key_type_name]
-        key_type_label = key_type_dict['label']
-
-        _check_supported_key_type(key_type_label)
-        key_sort = _evm_base_sort(key_type_label)
-
-        new_syntax = syntax + [KTerminal('['), KNonTerminal(key_sort), KTerminal(']')]
-        new_lhs = f'{lhs}[V{var_idx}]'
-        new_rhs = KEVM.hashed_location('Solidity', rhs, KVariable(f'V{var_idx}'))
-        new_type_name = value_type_name
-        return recur(new_syntax, new_lhs, new_rhs, var_idx + 1, new_type_name)
-
-    storage = storage_layout['storage']
-    return recur_struct([], f'{contract_name}', intToken(0), 0, storage, gen_dot=False)
-
-
-def _check_supported_value_type(type_label: str) -> None:
-    supported_value_types = {'address', 'bool', 'bytes32', 'uint8', 'int256', 'string', 'uint256'}
-    if type_label not in supported_value_types and not type_label.startswith('contract '):
-        raise ValueError(f'Unsupported value type: {type_label}')
-
-
-def _check_supported_key_type(type_label: str) -> None:
-    supported_key_types = {'address', 'bytes32', 'int256', 'uint256'}
-    if type_label not in supported_key_types:
-        raise ValueError(f'Unsupported key type: {type_label}')
-
 
 def _evm_base_sort(type_label: str):
     if type_label in {'address', 'bool', 'bytes4', 'bytes32', 'int256', 'uint256', 'uint8'}:

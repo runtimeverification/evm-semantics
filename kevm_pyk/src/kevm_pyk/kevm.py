@@ -166,8 +166,7 @@ class KEVM(KProve):
 
     @staticmethod
     def abi_calldata(name: str, args: List[KInner]) -> KApply:
-        token: KInner = stringToken(name)
-        return KApply('#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [token] + args)
+        return KApply('#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
 
     @staticmethod
     def abi_selector(name: str) -> KApply:
@@ -215,4 +214,11 @@ class KEVM(KProve):
         res = KApply('.List{"___HASHED-LOCATIONS_IntList_Int_IntList"}_IntList')
         for i in reversed(ints):
             res = KApply('___HASHED-LOCATIONS_IntList_Int_IntList', [i, res])
+        return res
+
+    @staticmethod
+    def typed_args(args: List[KInner]) -> KApply:
+        res = KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
+        for i in reversed(args):
+            res = KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [i, res])
         return res
