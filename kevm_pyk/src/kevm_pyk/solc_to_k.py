@@ -114,7 +114,7 @@ def contract_to_k(contract_json: Dict, contract_name: str, empty_config: KInner,
 
     abi = contract_json['abi']
     hashes = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
-    bin_runtime = '0x' + (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
+    bin_runtime = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
 
     contract_sort = KSort(f'{contract_name}Contract')
 
