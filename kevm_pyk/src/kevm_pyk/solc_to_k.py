@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, List, Optional, Tuple
+from typing import Any, Dict, Final, List, Optional, Set, Tuple
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
@@ -87,8 +87,10 @@ class Contract():
         type: str
         sort: KSort
         klabel: KLabel
+        _base_types: Set[str]
 
         def __init__(self, name: str, slot: int, type: str, contract_name: str, field_sort: KSort) -> None:
+            self._base_types = {'t_address', 't_bool', 't_bytes4', 't_bytes32', 't_uint256', 't_int256', 't_uint8'}
             self.name = name
             self.slot = slot
             self.type = type
@@ -97,14 +99,17 @@ class Contract():
 
         @property
         def production(self) -> KProduction:
-            if self.type in {'t_address', 't_bool', 't_bytes4', 't_bytes32', 't_uint256', 't_int256', 't_uint8'}:
-                syntax = [KTerminal(self.name)]
-            else:
-                raise ValueError(f'Unsupported type for encoding in sort {self.sort}: {self.type}')
+            syntax: List[KProductionItem] = [KTerminal(self.name)]
+            curr_type = self.type
+            while True:
+                if curr_type in self._base_types:
+                    break
+                else:
+                    raise ValueError(f'Unsupported type for encoding in sort {self.sort}: {self.type}')
             return KProduction(self.sort, syntax, klabel=self.klabel)
 
         def rule(self, contract: KInner, application_label: KLabel) -> KRule:
-            if self.type in {'t_address', 't_bool', 't_bytes4', 't_bytes32', 't_uint256', 't_int256', 't_uint8'}:
+            if self.type in self._base_types:
                 lhs_field = KApply(self.klabel)
                 rhs_loc = intToken(self.slot)
             else:
