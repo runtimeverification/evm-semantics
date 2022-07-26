@@ -8,37 +8,37 @@ module TOKEN-BIN-RUNTIME
     
     syntax TokenContract ::= "Token" [klabel(contract_Token)]
     
-    syntax TokenStorage ::= "x" 
+    syntax Int ::= TokenContract "." TokenField [macro(), klabel(field_Token)]
     
-    syntax TokenStorage ::= "balances" "[" Int "]" 
+    syntax TokenField ::= "x" [klabel(field_Token_x)]
     
-    syntax TokenStorage ::= "allowances" "[" Int "]" "[" Int "]" 
+    syntax TokenField ::= "balances" "[" Int "]" [klabel(field_Token_balances)]
     
-    syntax Int ::= TokenContract "." TokenStorage [klabel(storage_Token), macro()]
+    syntax TokenField ::= "allowances" "[" Int "]" "[" Int "]" [klabel(field_Token_allowances)]
     
-    rule  ( Token.x => ( 0 +Int 0 ) )
+    rule  ( Token . x => #hashedLocation ( "Solidity" , 0 , .IntList ) )
       
     
-    rule  ( Token.balances[V0] => #hashedLocation ( "Solidity" , ( 0 +Int 1 ) , V0 ) )
+    rule  ( Token . balances [ V0 ] => #hashedLocation ( "Solidity" , 1 , V0  .IntList ) )
       
     
-    rule  ( Token.allowances[V0][V1] => #hashedLocation ( "Solidity" , #hashedLocation ( "Solidity" , ( 0 +Int 2 ) , V0 ) , V1 ) )
+    rule  ( Token . allowances [ V0 ] [ V1 ] => #hashedLocation ( "Solidity" , 2 , V0  V1  .IntList ) )
       
     
-    syntax ByteArray ::= TokenContract "." TokenFunction [function(), klabel(function_Token)]
+    syntax ByteArray ::= TokenContract "." TokenMethod [function(), klabel(method_Token)]
     
-    syntax TokenFunction ::= "transfer" "(" Int "," Int ")" [klabel(Token_function_transfer)]
+    syntax TokenMethod ::= "transfer" "(" Int "," Int ")" [klabel(method_Token_transfer)]
     
-    rule  ( Token.transfer(DST, AMOUNT) => #abiCallData ( "transfer" , #address ( DST ) ) )
-       ensures ( #rangeAddress ( DST )
-       andBool ( #rangeUInt ( 256 , AMOUNT )
+    rule  ( Token . transfer ( V0_dst , V1_amount ) => #abiCallData ( "transfer" , #address ( V0_dst ) , #uint256 ( V1_amount ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_dst )
+       andBool ( #rangeUInt ( 256 , V1_amount )
                ))
       
     
-    rule  ( #binRuntime ( Token ) => #parseByteStack ( "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c8063a9059cbb14610030575b600080fd5b61004361003e3660046100c9565b610045565b005b610050338383610054565b5050565b6001600160a01b038316600090815260016020526040902054610078908290610117565b6001600160a01b0380851660009081526001602052604080822093909355908416815220546100a890829061012e565b6001600160a01b039092166000908152600160205260409020919091555050565b600080604083850312156100dc57600080fd5b82356001600160a01b03811681146100f357600080fd5b946020939093013593505050565b634e487b7160e01b600052601160045260246000fd5b60008282101561012957610129610101565b500390565b6000821982111561014157610141610101565b50019056fea2646970667358221220b62843366da5edfd5da325453c515649fc34eacb5d6f301a8041bf13ef61d33b64736f6c634300080f0033" ) )
+    rule  ( selector ( "transfer" ) => 2835717307 )
       
     
-    rule  ( selector ( "transfer" ) => 2835717307 )
+    rule  ( #binRuntime ( Token ) => #parseByteStack ( "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c8063a9059cbb14610030575b600080fd5b61004361003e3660046100c9565b610045565b005b610050338383610054565b5050565b6001600160a01b038316600090815260016020526040902054610078908290610117565b6001600160a01b0380851660009081526001602052604080822093909355908416815220546100a890829061012e565b6001600160a01b039092166000908152600160205260409020919091555050565b600080604083850312156100dc57600080fd5b82356001600160a01b03811681146100f357600080fd5b946020939093013593505050565b634e487b7160e01b600052601160045260246000fd5b60008282101561012957610129610101565b500390565b6000821982111561014157610141610101565b50019056fea26469706673582212201726561e52ddd7e888cc80ac2089d0b90b3a99fa702f465698904af7e36b5f1d64736f6c634300080f0033" ) )
       
 
 endmodule
@@ -50,24 +50,21 @@ module TOKENTEST-BIN-RUNTIME
     
     syntax TokenTestContract ::= "TokenTest" [klabel(contract_TokenTest)]
     
-    syntax ByteArray ::= TokenTestContract "." TokenTestFunction [function(), klabel(function_TokenTest)]
+    syntax ByteArray ::= TokenTestContract "." TokenTestMethod [function(), klabel(method_TokenTest)]
     
-    syntax TokenTestFunction ::= "setUp" "(" ")" [klabel(TokenTest_function_setUp)]
+    syntax TokenTestMethod ::= "setUp" "(" ")" [klabel(method_TokenTest_setUp)]
     
-    syntax TokenTestFunction ::= "test_1" "(" ")" [klabel(TokenTest_function_test_1)]
+    syntax TokenTestMethod ::= "test_1" "(" ")" [klabel(method_TokenTest_test_1)]
     
-    syntax TokenTestFunction ::= "test_2" "(" ")" [klabel(TokenTest_function_test_2)]
+    syntax TokenTestMethod ::= "test_2" "(" ")" [klabel(method_TokenTest_test_2)]
     
-    rule  ( TokenTest.setUp() => #abiCallData ( "setUp" , .TypedArgs ) )
+    rule  ( TokenTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
     
-    rule  ( TokenTest.test_1() => #abiCallData ( "test_1" , .TypedArgs ) )
+    rule  ( TokenTest . test_1 ( ) => #abiCallData ( "test_1" , .TypedArgs ) )
       
     
-    rule  ( TokenTest.test_2() => #abiCallData ( "test_2" , .TypedArgs ) )
-      
-    
-    rule  ( #binRuntime ( TokenTest ) => #parseByteStack ( "0x6080604052348015600f57600080fd5b5060043610603c5760003560e01c80630a9254e4146041578063663bc990146041578063899eb49c146043575b600080fd5b005b6041604b565b565b6049634e487b7160e01b600052600160045260246000fdfea26469706673582212209b875e818f6af138d9e1b829d2ea3da072b0872740c57fd0a09db03e6513d72c64736f6c634300080f0033" ) )
+    rule  ( TokenTest . test_2 ( ) => #abiCallData ( "test_2" , .TypedArgs ) )
       
     
     rule  ( selector ( "setUp" ) => 177362148 )
@@ -77,6 +74,9 @@ module TOKENTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_2" ) => 2308879516 )
+      
+    
+    rule  ( #binRuntime ( TokenTest ) => #parseByteStack ( "0x6080604052348015600f57600080fd5b5060043610603c5760003560e01c80630a9254e4146041578063663bc990146041578063899eb49c146043575b600080fd5b005b6041604b565b565b6049634e487b7160e01b600052600160045260246000fdfea26469706673582212209b875e818f6af138d9e1b829d2ea3da072b0872740c57fd0a09db03e6513d72c64736f6c634300080f0033" ) )
       
 
 endmodule
