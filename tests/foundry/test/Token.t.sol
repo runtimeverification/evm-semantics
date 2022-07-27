@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-contract ContractTest {
+contract TokenTest {
     function setUp() public {}
 
     function test_1() public pure {

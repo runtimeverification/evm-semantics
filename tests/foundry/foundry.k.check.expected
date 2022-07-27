@@ -1,388 +1,479 @@
-requires "verification.k"
+requires "edsl.md"
+requires "lemmas/int-simplification.k"
 
-module FOUNDRY-SPEC
-    imports public VERIFICATION
+module TOKEN-BIN-RUNTIME
+    imports public EDSL
     
-    claim [contracttest]: <kevm>
-           <k>
-             ( #execute => #halt )
-             ~> _CONTINUATION
-           </k>
-           <exit-code>
-             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
-           </exit-code>
-           <mode>
-             ( NORMAL => ?_MODE_CELL_acd26fc5 )
-           </mode>
-           <schedule>
-             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
-           </schedule>
-           <ethereum>
-             <evm>
-               <output>
-                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_acd26fc5 )
-               </output>
-               <statusCode>
-                 ( _STATUSCODE_CELL => ?_STATUSCODE_CELL_acd26fc5 )
-               </statusCode>
-               <endPC>
-                 ( _ENDPC_CELL => ?_ENDPC_CELL_acd26fc5 )
-               </endPC>
-               <callStack>
-                 ( .List => ?_CALLSTACK_CELL_acd26fc5 )
-               </callStack>
-               <interimStates>
-                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_acd26fc5 )
-               </interimStates>
-               <touchedAccounts>
-                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_acd26fc5 )
-               </touchedAccounts>
-               <callState>
-                 <program>
-                   ( #binRuntime(ContractTest) => ?_PROGRAM_CELL_acd26fc5 )
-                 </program>
-                 <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime(ContractTest) ) => ?_JUMPDESTS_CELL_acd26fc5 )
-                 </jumpDests>
-                 <id>
-                   ( ACCT_ID => ?_ID_CELL_acd26fc5 )
-                 </id>
-                 <caller>
-                   ( _CALLER_ID => ?_CALLER_CELL_acd26fc5 )
-                 </caller>
-                 <callData>
-                   ( _CALLDATA_CELL => ?_CALLDATA_CELL_acd26fc5 )
-                 </callData>
-                 <callValue>
-                   ( _CALLVALUE_CELL => ?_CALLVALUE_CELL_acd26fc5 )
-                 </callValue>
-                 <wordStack>
-                   ( .WordStack => ?_WORDSTACK_CELL_acd26fc5 )
-                 </wordStack>
-                 <localMem>
-                   ( .Memory => ?_LOCALMEM_CELL_acd26fc5 )
-                 </localMem>
-                 <pc>
-                   ( 0 => ?_PC_CELL_acd26fc5 )
-                 </pc>
-                 <gas>
-                   ( #gas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
-                 </gas>
-                 <memoryUsed>
-                   ( 0 => ?_MEMORYUSED_CELL_acd26fc5 )
-                 </memoryUsed>
-                 <callGas>
-                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_acd26fc5 )
-                 </callGas>
-                 <static>
-                   ( _STATIC_CELL => ?_STATIC_CELL_acd26fc5 )
-                 </static>
-                 <callDepth>
-                   ( 0 => ?_CALLDEPTH_CELL_acd26fc5 )
-                 </callDepth>
-               </callState>
-               <substate>
-                 <selfDestruct>
-                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_acd26fc5 )
-                 </selfDestruct>
-                 <log>
-                   ( _LOG_CELL => ?_LOG_CELL_acd26fc5 )
-                 </log>
-                 <refund>
-                   ( _REFUND_CELL => ?_REFUND_CELL_acd26fc5 )
-                 </refund>
-                 <accessedAccounts>
-                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_acd26fc5 )
-                 </accessedAccounts>
-                 <accessedStorage>
-                   ( _ACCESSEDSTORAGE_CELL => ?_ACCESSEDSTORAGE_CELL_acd26fc5 )
-                 </accessedStorage>
-               </substate>
-               <gasPrice>
-                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_acd26fc5 )
-               </gasPrice>
-               <origin>
-                 ( _ORIGIN_ID => ?_ORIGIN_CELL_acd26fc5 )
-               </origin>
-               <blockhashes>
-                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_acd26fc5 )
-               </blockhashes>
-               <block>
-                 <previousHash>
-                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_acd26fc5 )
-                 </previousHash>
-                 <ommersHash>
-                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_acd26fc5 )
-                 </ommersHash>
-                 <coinbase>
-                   ( _COINBASE_CELL => ?_COINBASE_CELL_acd26fc5 )
-                 </coinbase>
-                 <stateRoot>
-                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_acd26fc5 )
-                 </stateRoot>
-                 <transactionsRoot>
-                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_acd26fc5 )
-                 </transactionsRoot>
-                 <receiptsRoot>
-                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_acd26fc5 )
-                 </receiptsRoot>
-                 <logsBloom>
-                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_acd26fc5 )
-                 </logsBloom>
-                 <difficulty>
-                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_acd26fc5 )
-                 </difficulty>
-                 <number>
-                   ( _NUMBER_CELL => ?_NUMBER_CELL_acd26fc5 )
-                 </number>
-                 <gasLimit>
-                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_acd26fc5 )
-                 </gasLimit>
-                 <gasUsed>
-                   ( _GASUSED_CELL => ?_GASUSED_CELL_acd26fc5 )
-                 </gasUsed>
-                 <timestamp>
-                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_acd26fc5 )
-                 </timestamp>
-                 <extraData>
-                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_acd26fc5 )
-                 </extraData>
-                 <mixHash>
-                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_acd26fc5 )
-                 </mixHash>
-                 <blockNonce>
-                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_acd26fc5 )
-                 </blockNonce>
-                 <baseFee>
-                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_acd26fc5 )
-                 </baseFee>
-                 <ommerBlockHeaders>
-                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_acd26fc5 )
-                 </ommerBlockHeaders>
-               </block>
-             </evm>
-             <network>
-               <chainID>
-                 ( _CHAINID_CELL => ?_CHAINID_CELL_acd26fc5 )
-               </chainID>
-               <activeAccounts>
-                 ( _ACTIVEACCOUNTS_CELL => ?_ACTIVEACCOUNTS_CELL_acd26fc5 )
-               </activeAccounts>
-               <accounts>
-                 ( ( <account>
-                   <acctID>
-                     ACCT_ID
-                   </acctID>
-                   <code>
-                     #binRuntime(ContractTest)
-                   </code>
-                   ...
-                 </account>
-                 _ACCOUNTS ) => ?_ACCOUNTS_CELL_acd26fc5 )
-               </accounts>
-               <txOrder>
-                 ( _TXORDER_CELL => ?_TXORDER_CELL_acd26fc5 )
-               </txOrder>
-               <txPending>
-                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_acd26fc5 )
-               </txPending>
-               <messages>
-                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_acd26fc5 )
-               </messages>
-             </network>
-           </ethereum>
-         </kevm>
-      [label(contracttest)]
+    syntax Contract ::= TokenContract 
     
-    claim [contract]: <kevm>
-           <k>
-             ( #execute => #halt )
-             ~> _CONTINUATION
-           </k>
-           <exit-code>
-             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
-           </exit-code>
-           <mode>
-             ( NORMAL => ?_MODE_CELL_acd26fc5 )
-           </mode>
-           <schedule>
-             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
-           </schedule>
-           <ethereum>
-             <evm>
-               <output>
-                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_acd26fc5 )
-               </output>
-               <statusCode>
-                 ( _STATUSCODE_CELL => ?_STATUSCODE_CELL_acd26fc5 )
-               </statusCode>
-               <endPC>
-                 ( _ENDPC_CELL => ?_ENDPC_CELL_acd26fc5 )
-               </endPC>
-               <callStack>
-                 ( .List => ?_CALLSTACK_CELL_acd26fc5 )
-               </callStack>
-               <interimStates>
-                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_acd26fc5 )
-               </interimStates>
-               <touchedAccounts>
-                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_acd26fc5 )
-               </touchedAccounts>
-               <callState>
-                 <program>
-                   ( #binRuntime(Contract) => ?_PROGRAM_CELL_acd26fc5 )
-                 </program>
-                 <jumpDests>
-                   ( #computeValidJumpDests ( #binRuntime(Contract) ) => ?_JUMPDESTS_CELL_acd26fc5 )
-                 </jumpDests>
-                 <id>
-                   ( ACCT_ID => ?_ID_CELL_acd26fc5 )
-                 </id>
-                 <caller>
-                   ( _CALLER_ID => ?_CALLER_CELL_acd26fc5 )
-                 </caller>
-                 <callData>
-                   ( _CALLDATA_CELL => ?_CALLDATA_CELL_acd26fc5 )
-                 </callData>
-                 <callValue>
-                   ( _CALLVALUE_CELL => ?_CALLVALUE_CELL_acd26fc5 )
-                 </callValue>
-                 <wordStack>
-                   ( .WordStack => ?_WORDSTACK_CELL_acd26fc5 )
-                 </wordStack>
-                 <localMem>
-                   ( .Memory => ?_LOCALMEM_CELL_acd26fc5 )
-                 </localMem>
-                 <pc>
-                   ( 0 => ?_PC_CELL_acd26fc5 )
-                 </pc>
-                 <gas>
-                   ( #gas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
-                 </gas>
-                 <memoryUsed>
-                   ( 0 => ?_MEMORYUSED_CELL_acd26fc5 )
-                 </memoryUsed>
-                 <callGas>
-                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_acd26fc5 )
-                 </callGas>
-                 <static>
-                   ( _STATIC_CELL => ?_STATIC_CELL_acd26fc5 )
-                 </static>
-                 <callDepth>
-                   ( 0 => ?_CALLDEPTH_CELL_acd26fc5 )
-                 </callDepth>
-               </callState>
-               <substate>
-                 <selfDestruct>
-                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_acd26fc5 )
-                 </selfDestruct>
-                 <log>
-                   ( _LOG_CELL => ?_LOG_CELL_acd26fc5 )
-                 </log>
-                 <refund>
-                   ( _REFUND_CELL => ?_REFUND_CELL_acd26fc5 )
-                 </refund>
-                 <accessedAccounts>
-                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_acd26fc5 )
-                 </accessedAccounts>
-                 <accessedStorage>
-                   ( _ACCESSEDSTORAGE_CELL => ?_ACCESSEDSTORAGE_CELL_acd26fc5 )
-                 </accessedStorage>
-               </substate>
-               <gasPrice>
-                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_acd26fc5 )
-               </gasPrice>
-               <origin>
-                 ( _ORIGIN_ID => ?_ORIGIN_CELL_acd26fc5 )
-               </origin>
-               <blockhashes>
-                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_acd26fc5 )
-               </blockhashes>
-               <block>
-                 <previousHash>
-                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_acd26fc5 )
-                 </previousHash>
-                 <ommersHash>
-                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_acd26fc5 )
-                 </ommersHash>
-                 <coinbase>
-                   ( _COINBASE_CELL => ?_COINBASE_CELL_acd26fc5 )
-                 </coinbase>
-                 <stateRoot>
-                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_acd26fc5 )
-                 </stateRoot>
-                 <transactionsRoot>
-                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_acd26fc5 )
-                 </transactionsRoot>
-                 <receiptsRoot>
-                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_acd26fc5 )
-                 </receiptsRoot>
-                 <logsBloom>
-                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_acd26fc5 )
-                 </logsBloom>
-                 <difficulty>
-                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_acd26fc5 )
-                 </difficulty>
-                 <number>
-                   ( _NUMBER_CELL => ?_NUMBER_CELL_acd26fc5 )
-                 </number>
-                 <gasLimit>
-                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_acd26fc5 )
-                 </gasLimit>
-                 <gasUsed>
-                   ( _GASUSED_CELL => ?_GASUSED_CELL_acd26fc5 )
-                 </gasUsed>
-                 <timestamp>
-                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_acd26fc5 )
-                 </timestamp>
-                 <extraData>
-                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_acd26fc5 )
-                 </extraData>
-                 <mixHash>
-                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_acd26fc5 )
-                 </mixHash>
-                 <blockNonce>
-                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_acd26fc5 )
-                 </blockNonce>
-                 <baseFee>
-                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_acd26fc5 )
-                 </baseFee>
-                 <ommerBlockHeaders>
-                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_acd26fc5 )
-                 </ommerBlockHeaders>
-               </block>
-             </evm>
-             <network>
-               <chainID>
-                 ( _CHAINID_CELL => ?_CHAINID_CELL_acd26fc5 )
-               </chainID>
-               <activeAccounts>
-                 ( _ACTIVEACCOUNTS_CELL => ?_ACTIVEACCOUNTS_CELL_acd26fc5 )
-               </activeAccounts>
-               <accounts>
-                 ( ( <account>
-                   <acctID>
-                     ACCT_ID
-                   </acctID>
-                   <code>
-                     #binRuntime(Contract)
-                   </code>
-                   ...
-                 </account>
-                 _ACCOUNTS ) => ?_ACCOUNTS_CELL_acd26fc5 )
-               </accounts>
-               <txOrder>
-                 ( _TXORDER_CELL => ?_TXORDER_CELL_acd26fc5 )
-               </txOrder>
-               <txPending>
-                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_acd26fc5 )
-               </txPending>
-               <messages>
-                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_acd26fc5 )
-               </messages>
-             </network>
-           </ethereum>
-         </kevm>
-      [label(contract)]
+    syntax TokenContract ::= "Token" [klabel(contract_Token)]
+    
+    syntax TokenStorage ::= "x" 
+    
+    syntax TokenStorage ::= "balances" "[" Int "]" 
+    
+    syntax TokenStorage ::= "allowances" "[" Int "]" "[" Int "]" 
+    
+    syntax Int ::= TokenContract "." TokenStorage [klabel(storage_Token), macro()]
+    
+    rule  ( Token.x => ( 0 +Int 0 ) )
+      
+    
+    rule  ( Token.balances[V0] => #hashedLocation ( "Solidity" , ( 0 +Int 1 ) , V0 ) )
+      
+    
+    rule  ( Token.allowances[V0][V1] => #hashedLocation ( "Solidity" , #hashedLocation ( "Solidity" , ( 0 +Int 2 ) , V0 ) , V1 ) )
+      
+    
+    syntax ByteArray ::= TokenContract "." TokenFunction [function(), klabel(function_Token)]
+    
+    syntax TokenFunction ::= "transfer" "(" Int "," Int ")" [klabel(Token_function_transfer)]
+    
+    rule  ( Token.transfer(DST, AMOUNT) => #abiCallData ( "transfer" , #address ( DST ) ) )
+       ensures ( #rangeAddress ( DST )
+       andBool ( #rangeUInt ( 256 , AMOUNT )
+               ))
+      
+    
+    rule  ( #binRuntime ( Token ) => #parseByteStack ( "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c8063a9059cbb14610030575b600080fd5b61004361003e3660046100c9565b610045565b005b610050338383610054565b5050565b6001600160a01b038316600090815260016020526040902054610078908290610117565b6001600160a01b0380851660009081526001602052604080822093909355908416815220546100a890829061012e565b6001600160a01b039092166000908152600160205260409020919091555050565b600080604083850312156100dc57600080fd5b82356001600160a01b03811681146100f357600080fd5b946020939093013593505050565b634e487b7160e01b600052601160045260246000fd5b60008282101561012957610129610101565b500390565b6000821982111561014157610141610101565b50019056fea2646970667358221220b62843366da5edfd5da325453c515649fc34eacb5d6f301a8041bf13ef61d33b64736f6c634300080f0033" ) )
+      
+    
+    rule  ( selector ( "transfer" ) => 2835717307 )
+      
 
 endmodule
+
+module TOKENTEST-BIN-RUNTIME
+    imports public EDSL
+    
+    syntax Contract ::= TokenTestContract 
+    
+    syntax TokenTestContract ::= "TokenTest" [klabel(contract_TokenTest)]
+    
+    syntax ByteArray ::= TokenTestContract "." TokenTestFunction [function(), klabel(function_TokenTest)]
+    
+    syntax TokenTestFunction ::= "setUp" "(" ")" [klabel(TokenTest_function_setUp)]
+    
+    syntax TokenTestFunction ::= "test_1" "(" ")" [klabel(TokenTest_function_test_1)]
+    
+    syntax TokenTestFunction ::= "test_2" "(" ")" [klabel(TokenTest_function_test_2)]
+    
+    rule  ( TokenTest.setUp() => #abiCallData ( "setUp" , .TypedArgs ) )
+      
+    
+    rule  ( TokenTest.test_1() => #abiCallData ( "test_1" , .TypedArgs ) )
+      
+    
+    rule  ( TokenTest.test_2() => #abiCallData ( "test_2" , .TypedArgs ) )
+      
+    
+    rule  ( #binRuntime ( TokenTest ) => #parseByteStack ( "0x6080604052348015600f57600080fd5b5060043610603c5760003560e01c80630a9254e4146041578063663bc990146041578063899eb49c146043575b600080fd5b005b6041604b565b565b6049634e487b7160e01b600052600160045260246000fdfea26469706673582212209b875e818f6af138d9e1b829d2ea3da072b0872740c57fd0a09db03e6513d72c64736f6c634300080f0033" ) )
+      
+    
+    rule  ( selector ( "setUp" ) => 177362148 )
+      
+    
+    rule  ( selector ( "test_1" ) => 1715194256 )
+      
+    
+    rule  ( selector ( "test_2" ) => 2308879516 )
+      
+
+endmodule
+
+module VERIFICATION
+    imports public TOKEN-BIN-RUNTIME
+    imports public TOKENTEST-BIN-RUNTIME
+    imports public INT-SIMPLIFICATION
+    
+    
+
+endmodule
+
+module TOKENTEST-BIN-RUNTIME-SPEC
+    imports public TOKENTEST-BIN-RUNTIME
+    
+    claim [tokentest-0]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_acd26fc5 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_acd26fc5 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE_CELL => ?_STATUSCODE_CELL_acd26fc5 )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_acd26fc5 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_acd26fc5 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_acd26fc5 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_acd26fc5 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( TokenTest ) => ?_PROGRAM_CELL_acd26fc5 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( TokenTest ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                 </jumpDests>
+                 <id>
+                   ( ACCT_ID => ?_ID_CELL_acd26fc5 )
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_acd26fc5 )
+                 </caller>
+                 <callData>
+                   ( TokenTest . test_1 ( ) => ?_CALLDATA_CELL_acd26fc5 )
+                 </callData>
+                 <callValue>
+                   ( _CALLVALUE_CELL => ?_CALLVALUE_CELL_acd26fc5 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_acd26fc5 )
+                 </wordStack>
+                 <localMem>
+                   ( .Memory => ?_LOCALMEM_CELL_acd26fc5 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_acd26fc5 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_acd26fc5 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_acd26fc5 )
+                 </callGas>
+                 <static>
+                   ( _STATIC_CELL => ?_STATIC_CELL_acd26fc5 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_acd26fc5 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_acd26fc5 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_acd26fc5 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_acd26fc5 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_acd26fc5 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( _ACCESSEDSTORAGE_CELL => ?_ACCESSEDSTORAGE_CELL_acd26fc5 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_acd26fc5 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_acd26fc5 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_acd26fc5 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_acd26fc5 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_acd26fc5 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_acd26fc5 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_acd26fc5 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_acd26fc5 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_acd26fc5 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_acd26fc5 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_acd26fc5 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_acd26fc5 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_acd26fc5 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_acd26fc5 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_acd26fc5 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_acd26fc5 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_acd26fc5 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_acd26fc5 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_acd26fc5 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_acd26fc5 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_acd26fc5 )
+               </chainID>
+               <activeAccounts>
+                 ( _ACTIVEACCOUNTS_CELL => ?_ACTIVEACCOUNTS_CELL_acd26fc5 )
+               </activeAccounts>
+               <accounts>
+                 ( ( <account>
+                   <acctID>
+                     ACCT_ID
+                   </acctID>
+                   <code>
+                     #binRuntime ( TokenTest )
+                   </code>
+                   ...
+                 </account>
+                 _ACCOUNTS ) => ?_ACCOUNTS_CELL_acd26fc5 )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_acd26fc5 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_acd26fc5 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_acd26fc5 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      [label(tokentest-0)]
+    
+    claim [tokentest-1]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_acd26fc5 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_acd26fc5 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_acd26fc5 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_acd26fc5 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE_CELL => ?_STATUSCODE_CELL_acd26fc5 )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_acd26fc5 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_acd26fc5 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_acd26fc5 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_acd26fc5 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( TokenTest ) => ?_PROGRAM_CELL_acd26fc5 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( TokenTest ) ) => ?_JUMPDESTS_CELL_acd26fc5 )
+                 </jumpDests>
+                 <id>
+                   ( ACCT_ID => ?_ID_CELL_acd26fc5 )
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_acd26fc5 )
+                 </caller>
+                 <callData>
+                   ( TokenTest . test_2 ( ) => ?_CALLDATA_CELL_acd26fc5 )
+                 </callData>
+                 <callValue>
+                   ( _CALLVALUE_CELL => ?_CALLVALUE_CELL_acd26fc5 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_acd26fc5 )
+                 </wordStack>
+                 <localMem>
+                   ( .Memory => ?_LOCALMEM_CELL_acd26fc5 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_acd26fc5 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_acd26fc5 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_acd26fc5 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_acd26fc5 )
+                 </callGas>
+                 <static>
+                   ( _STATIC_CELL => ?_STATIC_CELL_acd26fc5 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_acd26fc5 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_acd26fc5 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_acd26fc5 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_acd26fc5 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_acd26fc5 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( _ACCESSEDSTORAGE_CELL => ?_ACCESSEDSTORAGE_CELL_acd26fc5 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_acd26fc5 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_acd26fc5 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_acd26fc5 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_acd26fc5 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_acd26fc5 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_acd26fc5 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_acd26fc5 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_acd26fc5 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_acd26fc5 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_acd26fc5 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_acd26fc5 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_acd26fc5 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_acd26fc5 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_acd26fc5 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_acd26fc5 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_acd26fc5 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_acd26fc5 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_acd26fc5 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_acd26fc5 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_acd26fc5 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_acd26fc5 )
+               </chainID>
+               <activeAccounts>
+                 ( _ACTIVEACCOUNTS_CELL => ?_ACTIVEACCOUNTS_CELL_acd26fc5 )
+               </activeAccounts>
+               <accounts>
+                 ( ( <account>
+                   <acctID>
+                     ACCT_ID
+                   </acctID>
+                   <code>
+                     #binRuntime ( TokenTest )
+                   </code>
+                   ...
+                 </account>
+                 _ACCOUNTS ) => ?_ACCOUNTS_CELL_acd26fc5 )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_acd26fc5 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_acd26fc5 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_acd26fc5 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      [label(tokentest-1)]
+
+endmodule
+
