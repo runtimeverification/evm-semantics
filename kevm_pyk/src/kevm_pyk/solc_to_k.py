@@ -183,6 +183,18 @@ class Contract():
         return KLabel(f'field_{self.name}')
 
     @property
+    def subsort(self) -> KProduction:
+        return KProduction(KSort('Contract'), [KNonTerminal(self.sort)])
+
+    @property
+    def production(self) -> KProduction:
+        return KProduction(self.sort, [KTerminal(self.name)], klabel=self.klabel)
+
+    @property
+    def macro_bin_runtime(self) -> KRule:
+        return KRule(KRewrite(KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken(self.bytecode))))
+
+    @property
     def method_sentences(self) -> List[KSentence]:
         method_application_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)], klabel=self.klabel_method, att=KAtt({'function': ''}))
         res = [method_application_production]
@@ -208,6 +220,10 @@ class Contract():
             assert isinstance(frule, KSentence)
             res.append(frule)
         return res if len(res) > 1 else []
+
+    @property
+    def sentences(self) -> List[KSentence]:
+        return [self.subsort, self.production, self.macro_bin_runtime] + self.field_sentences + self.method_sentences
 
 
 def solc_compile(contract_file: Path) -> Dict[str, Any]:
@@ -285,18 +301,9 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
 def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
     contract_name = contract.name
-    bin_runtime = contract.bytecode
 
-    field_sentences = contract.field_sentences
-    function_sentences = contract.method_sentences
-
-    contract_klabel = contract.klabel
-    contract_subsort: KSentence = KProduction(KSort('Contract'), [KNonTerminal(contract.sort)])
-    contract_production: KSentence = KProduction(contract.sort, [KTerminal(contract_name)], klabel=contract_klabel)
-    contract_macro: KSentence = KRule(KRewrite(KEVM.bin_runtime(KApply(contract_klabel)), KEVM.parse_bytestack(stringToken(bin_runtime))))
-
+    sentences = contract.sentences
     module_name = contract_name.upper() + '-BIN-RUNTIME'
-    sentences = [contract_subsort, contract_production] + field_sentences + function_sentences + [contract_macro]
     module = KFlatModule(module_name, sentences, [KImport('EDSL')])
 
     claims_module: Optional[KFlatModule] = None
@@ -308,7 +315,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
         assert klabel is not None
         if klabel.name.startswith(f'method_{contract_name}_test'):
             args = [abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name='V') for pi in ftp.items if type(pi) is KNonTerminal]
-            calldata: KInner = KApply(contract_function_application_label, [KApply(contract_klabel), KApply(klabel, args)])
+            calldata: KInner = KApply(contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)])
             function_test_calldatas.append(calldata)
     if function_test_calldatas:
         claims = gen_claims_for_contract(empty_config, contract_name, calldata_cells=function_test_calldatas)
