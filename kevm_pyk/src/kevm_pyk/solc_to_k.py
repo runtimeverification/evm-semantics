@@ -27,12 +27,12 @@ from pyk.kast import (
     KToken,
     KVariable,
 )
-from pyk.kastManip import abstract_term_safely, build_rule, substitute
+from pyk.kastManip import abstract_term_safely, substitute
 from pyk.prelude import intToken, stringToken
 from pyk.utils import intersperse
 
 from .kevm import KEVM
-from .utils import abstract_cell_vars
+from .utils import abstract_cell_vars, build_claim
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -104,24 +104,21 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     final_term = abstract_cell_vars(substitute(empty_config, final_subst))
     claims: List[KClaim] = []
     for claim_id, i_term in init_terms:
-        claim, _ = build_rule(claim_id, CTerm(i_term), CTerm(final_term), claim=True)
-        assert isinstance(claim, KClaim)
+        claim, _ = build_claim(claim_id, CTerm(i_term), CTerm(final_term))
         claims.append(claim)
     return claims
 
 
-def contract_to_k(contract_json: Dict, contract_name: str, generate_storage: bool, empty_config: KInner, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:
+def contract_to_k(contract_json: Dict, contract_name: str, empty_config: KInner, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
     abi = contract_json['abi']
     hashes = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
-    bin_runtime = '0x' + (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
+    bin_runtime = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
 
     contract_sort = KSort(f'{contract_name}Contract')
 
-    storage_sentences = []
-    if generate_storage:
-        storage_layout = contract_json['storageLayout']
-        storage_sentences = generate_storage_sentences(contract_name, contract_sort, storage_layout)
+    storage_layout = contract_json['storageLayout']
+    storage_sentences = generate_storage_sentences(contract_name, contract_sort, storage_layout)
     function_sentences = generate_function_sentences(contract_name, contract_sort, abi)
     function_selector_alias_sentences = generate_function_selector_alias_sentences(contract_name, contract_sort, hashes)
 
@@ -182,8 +179,10 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
             return recur_value(syntax, lhs, rhs, type_label)
 
         if encoding == 'mapping':
-            key_type_name = type_dict['key']
-            value_type_name = type_dict['value']
+            # TODO: Make less hacky once this is addressed: https://github.com/foundry-rs/foundry/issues/2462
+            type_contents = '('.join(type_name.split('(')[1:])[0:-1]
+            key_type_name, *rest = type_contents.split(',')
+            value_type_name = ','.join(rest)
             return recur_mapping(syntax, lhs, rhs, var_idx, key_type_name, value_type_name)
 
         if encoding == 'bytes':
@@ -203,8 +202,7 @@ def _extract_storage_sentences(contract_name, storage_sort, storage_layout):
         # #hashedLocation(L, #hashedLocation(L, B, X), Y) => #hashedLocation(L, B, X Y)
         # 0 +Int X => X
         # X +Int 0 => X
-        return [(KProduction(storage_sort, syntax),
-                 KRule(KRewrite(KToken(lhs, None), rhs)))]
+        return [(KProduction(storage_sort, syntax), KRule(KRewrite(KToken(lhs, None), rhs)))]
 
     def recur_struct(syntax, lhs, rhs, var_idx, members, gen_dot=True):
         res = []
