@@ -96,7 +96,7 @@ class Contract():
         _base_types: Set[str]
 
         def __init__(self, name: str, slot: int, type: str, contract_name: str, field_sort: KSort) -> None:
-            self._base_types = {'t_address', 't_bool', 't_bytes4', 't_bytes32', 't_uint256', 't_int256', 't_uint8'}
+            self._base_types = {'t_address', 't_bool', 't_bytes4', 't_bytes32', 't_uint256', 't_int256', 't_uint8', 't_string_storage'}
             self.name = name
             self.slot = slot
             self.type = type
