@@ -8,7 +8,37 @@ module TOKEN-BIN-RUNTIME
     
     syntax TokenContract ::= "Token" [klabel(contract_Token)]
     
-    rule  ( #binRuntime ( Token ) => #parseByteStack ( "0x0x6080604052600080fdfea2646970667358221220ddb16a0f80ab3f1bd7e49c95c6c63a7b3741e5f92cfe779a00352f4dd54bc93b64736f6c634300080f0033" ) )
+    syntax TokenStorage ::= "x" 
+    
+    syntax TokenStorage ::= "balances" "[" Int "]" 
+    
+    syntax TokenStorage ::= "allowances" "[" Int "]" "[" Int "]" 
+    
+    syntax Int ::= TokenContract "." TokenStorage [klabel(storage_Token), macro()]
+    
+    rule  ( Token.x => ( 0 +Int 0 ) )
+      
+    
+    rule  ( Token.balances[V0] => #hashedLocation ( "Solidity" , ( 0 +Int 1 ) , V0 ) )
+      
+    
+    rule  ( Token.allowances[V0][V1] => #hashedLocation ( "Solidity" , #hashedLocation ( "Solidity" , ( 0 +Int 2 ) , V0 ) , V1 ) )
+      
+    
+    syntax ByteArray ::= TokenContract "." TokenFunction [function(), klabel(function_Token)]
+    
+    syntax TokenFunction ::= "transfer" "(" Int "," Int ")" [klabel(Token_function_transfer)]
+    
+    rule  ( Token.transfer(DST, AMOUNT) => #abiCallData ( "transfer" , #address ( DST ) ) )
+       ensures ( #rangeAddress ( DST )
+       andBool ( #rangeUInt ( 256 , AMOUNT )
+               ))
+      
+    
+    rule  ( #binRuntime ( Token ) => #parseByteStack ( "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c8063a9059cbb14610030575b600080fd5b61004361003e3660046100c9565b610045565b005b610050338383610054565b5050565b6001600160a01b038316600090815260016020526040902054610078908290610117565b6001600160a01b0380851660009081526001602052604080822093909355908416815220546100a890829061012e565b6001600160a01b039092166000908152600160205260409020919091555050565b600080604083850312156100dc57600080fd5b82356001600160a01b03811681146100f357600080fd5b946020939093013593505050565b634e487b7160e01b600052601160045260246000fd5b60008282101561012957610129610101565b500390565b6000821982111561014157610141610101565b50019056fea2646970667358221220b62843366da5edfd5da325453c515649fc34eacb5d6f301a8041bf13ef61d33b64736f6c634300080f0033" ) )
+      
+    
+    rule  ( selector ( "transfer" ) => 2835717307 )
       
 
 endmodule
@@ -37,7 +67,7 @@ module TOKENTEST-BIN-RUNTIME
     rule  ( TokenTest.test_2() => #abiCallData ( "test_2" , .TypedArgs ) )
       
     
-    rule  ( #binRuntime ( TokenTest ) => #parseByteStack ( "0x0x6080604052348015600f57600080fd5b5060043610603c5760003560e01c80630a9254e4146041578063663bc990146041578063899eb49c146043575b600080fd5b005b6041604b565b565b6049634e487b7160e01b600052600160045260246000fdfea26469706673582212209b875e818f6af138d9e1b829d2ea3da072b0872740c57fd0a09db03e6513d72c64736f6c634300080f0033" ) )
+    rule  ( #binRuntime ( TokenTest ) => #parseByteStack ( "0x6080604052348015600f57600080fd5b5060043610603c5760003560e01c80630a9254e4146041578063663bc990146041578063899eb49c146043575b600080fd5b005b6041604b565b565b6049634e487b7160e01b600052600160045260246000fdfea26469706673582212209b875e818f6af138d9e1b829d2ea3da072b0872740c57fd0a09db03e6513d72c64736f6c634300080f0033" ) )
       
     
     rule  ( selector ( "setUp" ) => 177362148 )
