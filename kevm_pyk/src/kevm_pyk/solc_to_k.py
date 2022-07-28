@@ -4,7 +4,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, List, Optional, Set, Tuple
+from typing import Any, Dict, Final, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
@@ -94,10 +94,8 @@ class Contract():
         sort: KSort
         klabel: KLabel
         types: Dict
-        _base_types: Set[str]
 
         def __init__(self, name: str, slot: int, type: str, contract_name: str, field_sort: KSort, types: Dict) -> None:
-            self._base_types = {'t_address', 't_bool', 't_bytes4', 't_bytes32', 't_uint256', 't_int256', 't_uint8', 't_string_storage'}
             self.name = name
             self.slot = slot
             self.type = type
