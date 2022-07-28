@@ -161,8 +161,11 @@ class KEVM(KProve):
         return KApply('#binRuntime', [c])
 
     @staticmethod
-    def hashed_location(compiler: str, base: KInner, offset: KInner) -> KApply:
-        return KApply('#hashedLocation(_,_,_)_HASHED-LOCATIONS_Int_String_Int_IntList', [stringToken(compiler), base, offset])
+    def hashed_location(compiler: str, base: KInner, offset: KInner, member_offset: int = 0) -> KApply:
+        location = KApply('#hashedLocation(_,_,_)_HASHED-LOCATIONS_Int_String_Int_IntList', [stringToken(compiler), base, offset])
+        if member_offset > 0:
+            location = KApply('_+Int_', [location, intToken(member_offset)])
+        return location
 
     @staticmethod
     def abi_calldata(name: str, args: List[KInner]) -> KApply:
