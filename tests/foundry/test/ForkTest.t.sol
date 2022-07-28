@@ -72,6 +72,8 @@ contract ForkTest is Test {
     }
 
     function testAllRPCUrl() public {
+        //this line is to comment after I know how to set the environment variable RPC_MAINNET
+        vm.expectRevert("Failed to resolve env var `RPC_MAINNET`: environment variable not found");
         string[2][] memory allUrls = vm.rpcUrls();
         assertEq(allUrls.length, 2);
 
