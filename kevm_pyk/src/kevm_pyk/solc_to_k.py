@@ -34,7 +34,7 @@ from pyk.prelude import Sorts, intToken, stringToken
 from pyk.utils import intersperse
 
 from .kevm import KEVM
-from .utils import abstract_cell_vars, build_claim
+from .utils import abstract_cell_vars, build_claim, check_and_append_sentences
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -203,27 +203,17 @@ class Contract():
     def method_sentences(self) -> List[KSentence]:
         method_application_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)], klabel=self.klabel_method, att=KAtt({'function': ''}))
         res = [method_application_production]
-        for mprod in [method.production for method in self.methods]:
-            assert isinstance(mprod, KSentence)
-            res.append(mprod)
-        for mrule in [method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods]:
-            assert isinstance(mrule, KSentence)
-            res.append(mrule)
-        for malias in [method.selector_alias_rule for method in self.methods]:
-            assert isinstance(malias, KSentence)
-            res.append(malias)
+        check_and_append_sentences(res, [method.production for method in self.methods])
+        check_and_append_sentences(res, [method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods])
+        check_and_append_sentences(res, [method.selector_alias_rule for method in self.methods])
         return res if len(res) > 1 else []
 
     @property
     def field_sentences(self) -> List[KSentence]:
         field_access_production: KSentence = KProduction(KSort('Int'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_field)], klabel=self.klabel_field, att=KAtt({'macro': ''}))
         res = [field_access_production]
-        for fprod in [field.production for field in self.fields]:
-            assert isinstance(fprod, KSentence)
-            res.append(fprod)
-        for frule in [field.rule(KApply(self.klabel), self.klabel_field) for field in self.fields]:
-            assert isinstance(frule, KSentence)
-            res.append(frule)
+        check_and_append_sentences(res, [field.production for field in self.fields])
+        check_and_append_sentences(res, [field.rule(KApply(self.klabel), self.klabel_field) for field in self.fields])
         return res if len(res) > 1 else []
 
     @property
