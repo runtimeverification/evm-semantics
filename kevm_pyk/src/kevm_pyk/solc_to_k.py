@@ -133,7 +133,6 @@ class Contract():
             return KRule(KRewrite(lhs, rhs))
 
     name: str
-    storage: Dict
     bytecode: str
     methods: Tuple[Method, ...]
     fields: Tuple[Field, ...]
@@ -147,7 +146,6 @@ class Contract():
             raise ValueError(f'Method not found in abi: {_mname}')
 
         self.name = contract_name
-        self.storage = contract_json['storageLayout']
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
         method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
         _methods = []
