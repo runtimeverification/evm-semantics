@@ -166,6 +166,40 @@
         "type": "github"
       }
     },
+    "ethereum-legacytests": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1633533576,
+        "narHash": "sha256-43lkAi6Z492pbHV+jySYXzvNtoGEGsndnBkxfYgmqFM=",
+        "owner": "ethereum",
+        "repo": "legacytests",
+        "rev": "d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ethereum",
+        "repo": "legacytests",
+        "rev": "d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7",
+        "type": "github"
+      }
+    },
+    "ethereum-tests": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1637090666,
+        "narHash": "sha256-B3fMpp/dpnwtCQzxI45kptJVwIM/kMo9hptcMP2B5n0=",
+        "owner": "ethereum",
+        "repo": "tests",
+        "rev": "6401889dec4eee58e808fd178fb2c7f628a3e039",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ethereum",
+        "repo": "tests",
+        "rev": "6401889dec4eee58e808fd178fb2c7f628a3e039",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -247,11 +281,11 @@
     "hackage": {
       "flake": false,
       "locked": {
-        "lastModified": 1653527723,
-        "narHash": "sha256-xwcRjUkfrMHFGsfueiDleCGBvZO93cnCcBXq84r4ukw=",
+        "lastModified": 1654823898,
+        "narHash": "sha256-75XxIB6XOIxmhxyX7SJ6sA1WAg4xh6GJO0KjTvi3+LQ=",
         "owner": "input-output-hk",
         "repo": "hackage.nix",
-        "rev": "5f70e4d7b85eacad77b56356fdb9e072600d4355",
+        "rev": "f0a8972ca2724c5ac5cd829050b2b3c02a04ba41",
         "type": "github"
       },
       "original": {
@@ -272,11 +306,11 @@
         "z3-src": "z3-src"
       },
       "locked": {
-        "lastModified": 1655383426,
-        "narHash": "sha256-VgsxCDkKC1ubi8rYA7eWMhBCrwn6wvhafgejEY/XQQM=",
+        "lastModified": 1657516429,
+        "narHash": "sha256-BIXK6fSID7uvNMu9xet5gRhXDhxP3Bmae6A+4lc44z8=",
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "8623518f30cf98e2cf8f32c35bbb64119a2d1f0d",
+        "rev": "ed2175d804fcf29d96b9aa020a9cef082e7da859",
         "type": "github"
       },
       "original": {
@@ -312,11 +346,11 @@
         "stackage": "stackage"
       },
       "locked": {
-        "lastModified": 1653551535,
-        "narHash": "sha256-ybcO2FPoeIq3YWV83qqksY5N0Tj7XEH9s+41+4dypRo=",
+        "lastModified": 1654824048,
+        "narHash": "sha256-qSjPdxa+WdDgG1W7GhGEtS6gH8UqchB0KrpE6hlOFnU=",
         "owner": "input-output-hk",
         "repo": "haskell.nix",
-        "rev": "1b0eac78c61b425ad382427b25a4450c8d6f6771",
+        "rev": "75b545a7937db878e4d301ecb171f6ac9040bb91",
         "type": "github"
       },
       "original": {
@@ -398,17 +432,16 @@
         "pynixify": "pynixify"
       },
       "locked": {
-        "lastModified": 1657210042,
-        "narHash": "sha256-UkW9moyOo7qvUiyB3f8xMtr2ny17MASOog5eagpKFj0=",
+        "lastModified": 1658140335,
+        "narHash": "sha256-UnBMZQYB3ecf5oCy80SPoY3ky4PydkLwnzd0cx242rU=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "3cf3d2556a5eaf94299b57a1874c451283c249f6",
+        "rev": "ee884e8d0dbe3a46e1d046a93baf0ae6a3a393cb",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "3cf3d2556a5eaf94299b57a1874c451283c249f6",
         "type": "github"
       }
     },
@@ -442,11 +475,11 @@
         "utils": "utils_2"
       },
       "locked": {
-        "lastModified": 1655328587,
-        "narHash": "sha256-Gtmghg292qm2H2QBOWpxEZ0K2bD51jRhwhqi8Hbhmf4=",
+        "lastModified": 1657022727,
+        "narHash": "sha256-C7UiBy0WFJjF3D+7uYT7VcUoT/F1z3IpzqTFSyxJ+X4=",
         "owner": "runtimeverification",
         "repo": "llvm-backend",
-        "rev": "8243ca9e201f9be793b57ddfb54cc77043a14dd4",
+        "rev": "60478d66beba786090c444bb4300706cbc83a8a3",
         "type": "github"
       },
       "original": {
@@ -738,6 +771,8 @@
     "root": {
       "inputs": {
         "blockchain-k-plugin": "blockchain-k-plugin",
+        "ethereum-legacytests": "ethereum-legacytests",
+        "ethereum-tests": "ethereum-tests",
         "flake-utils": [
           "k-framework",
           "flake-utils"
@@ -773,11 +808,11 @@
     "stackage": {
       "flake": false,
       "locked": {
-        "lastModified": 1653528073,
-        "narHash": "sha256-Dayoam3gs12s3YRku/feC5/krQohhPI9eMz7VJ7nnHA=",
+        "lastModified": 1654823991,
+        "narHash": "sha256-uaa/v4SnWBCihr9jOrjJsJF5Ifteom2JEteVWCz0j2M=",
         "owner": "input-output-hk",
         "repo": "stackage.nix",
-        "rev": "90e9b98503e76938e259a73cbe0498c14036a295",
+        "rev": "98529daae8cf6c38955b49f71f4538e270d8c8af",
         "type": "github"
       },
       "original": {

@@ -177,14 +177,14 @@ kevm_files := abi.md              \
               evm-types.md        \
               evm-node.md         \
               hashed-locations.md \
-              infinite-gas.md     \
               json-rpc.md         \
               network.md          \
               optimizations.md    \
               serialization.md    \
               state-utils.md
 
-kevm_lemmas := lemmas.k             \
+kevm_lemmas := infinite-gas.k       \
+               lemmas.k             \
                int-simplification.k \
                erc20/evm-symbolic.k \
                mcd/bin_runtime.k    \
@@ -429,40 +429,24 @@ tests/%.parse: tests/%
 kevm-pyk-venv:
 	$(MAKE) -C ./kevm_pyk venv-prod
 
-tests/foundry/%: KEVM = . ./kevm_pyk/venv-prod/bin/activate && kevm
-tests/foundry/%: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile
-
-tests/foundry/out:
-	cd $(dir $@) && forge build
-
-tests/foundry/foundry.k: tests/foundry/out $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	$(KEVM) foundry-to-k $< --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
-	     --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION      \
-	     > $@
-
-tests/foundry/foundry.k.check: tests/foundry/foundry.k
-	$(CHECK) $< $@.expected
-
-tests/foundry/foundry.k.prove: tests/foundry/kompiled/timestamp
-	$(KEVM) prove tests/foundry/foundry.k --pyk --backend haskell --definition tests/foundry/kompiled \
-	    $(TEST_OPTIONS) --spec-module TOKENTEST-BIN-RUNTIME-SPEC
-
-tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
-	$(KOMPILE) $< --pyk --backend haskell --definition tests/foundry/kompiled \
-	    --main-module VERIFICATION --syntax-module VERIFICATION               \
-	    --concrete-rules-file tests/foundry/concrete-rules.txt                \
-	    $(KOMPILE_OPTS)
-
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC20 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC20 > $@
 
 tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
 tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC721 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC721 > $@
 
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty > $@
+
+tests/gen-spec/mcd-spec.k.check: tests/gen-spec/kompiled/timestamp kevm-pyk-venv
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) gen-spec MCD-SPEC --definition tests/gen-spec/kompiled > $@.out
+	$(CHECK) $@.out $@.expected
+
+tests/gen-spec/kompiled/timestamp: tests/gen-spec/verification.k $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
+	$(KOMPILE) --backend haskell --definition tests/gen-spec/kompiled $< --main-module MCD-VERIFICATION
+
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
@@ -605,13 +589,11 @@ test-failure: $(failure_tests:=.run-expected)
 
 # kevm_pyk Tests
 
-kevm_pyk_tests :=                                           \
-                  tests/foundry/foundry.k.prove             \
-                  tests/foundry/foundry.k.check             \
-                  tests/specs/bihu/functional-spec.k.prove  \
-                  tests/specs/examples/empty-bin-runtime.k  \
+kevm_pyk_tests := tests/specs/examples/empty-bin-runtime.k  \
                   tests/specs/examples/erc20-bin-runtime.k  \
-                  tests/specs/examples/erc721-bin-runtime.k
+                  tests/specs/examples/erc721-bin-runtime.k \
+                  tests/gen-spec/mcd-spec.k.check           \
+                  tests/specs/bihu/functional-spec.k.prove
 
 test-kevm-pyk: KPROVE_OPTS  += --pyk --verbose
 test-kevm-pyk: KOMPILE_OPTS += --pyk --verbose
