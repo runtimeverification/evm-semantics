@@ -47,15 +47,15 @@ class Contract():
         name: str
         id: int
         sort: KSort
-        arg_names: List[str]
-        arg_types: List[str]
+        arg_names: Tuple[str, ...]
+        arg_types: Tuple[str, ...]
         contract_name: str
 
         def __init__(self, name: str, id: int, abi: Dict, contract_name: str, sort: KSort) -> None:
             self.name = name
             self.id = id
-            self.arg_names = [f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])]
-            self.arg_types = [input['type'] for input in abi['inputs']]
+            self.arg_names = tuple([f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])])
+            self.arg_types = tuple([input['type'] for input in abi['inputs']])
             self.contract_name = contract_name
             self.sort = sort
 
