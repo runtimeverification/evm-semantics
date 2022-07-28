@@ -135,8 +135,8 @@ class Contract():
     name: str
     storage: Dict
     bytecode: str
-    methods: List[Method]
-    fields: List[Field]
+    methods: Tuple[Method, ...]
+    fields: Tuple[Field, ...]
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
 
@@ -150,16 +150,18 @@ class Contract():
         self.storage = contract_json['storageLayout']
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
         method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
-        self.methods = []
+        _methods = []
         for msig in method_identifiers:
             mname = msig.split('(')[0]
             mid = int(method_identifiers[msig], 16)
-            self.methods.append(Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method))
-        self.fields = []
+            _methods.append(Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method))
+        self.methods = tuple(_methods)
+        _fields = []
         for storage in contract_json['storageLayout']['storage']:
             if storage['offset'] != 0:
                 raise ValueError(f'Unsupported nonzero offset for contract {self.name} storage slot: {storage["label"]}')
-            self.fields.append(Contract.Field(storage['label'], int(storage['slot']), storage['type'], self.name, self.sort_field, contract_json['storageLayout']['types']))
+            _fields.append(Contract.Field(storage['label'], int(storage['slot']), storage['type'], self.name, self.sort_field, contract_json['storageLayout']['types']))
+        self.fields = tuple(_fields)
 
     @property
     def sort(self) -> KSort:
