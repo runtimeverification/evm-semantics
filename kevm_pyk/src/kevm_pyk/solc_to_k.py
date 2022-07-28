@@ -31,7 +31,7 @@ from pyk.kast import (
 )
 from pyk.kastManip import abstract_term_safely, substitute
 from pyk.prelude import Sorts, intToken, stringToken
-from pyk.utils import intersperse
+from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM
 from .utils import abstract_cell_vars, build_claim, check_and_append_sentences
@@ -93,7 +93,7 @@ class Contract():
         type: str
         sort: KSort
         klabel: KLabel
-        types: Dict
+        types: FrozenDict
 
         def __init__(self, name: str, slot: int, type: str, contract_name: str, field_sort: KSort, types: Dict) -> None:
             self.name = name
@@ -101,7 +101,7 @@ class Contract():
             self.type = type
             self.sort = field_sort
             self.klabel = KLabel(f'field_{contract_name}_{self.name}')
-            self.types = types
+            self.types = FrozenDict(types)
 
         def _direct_placement(self, type: str) -> bool:
             return self.types[type]['encoding'] in {'inplace', 'bytes'} and int(self.types[type]['numberOfBytes']) <= 32
