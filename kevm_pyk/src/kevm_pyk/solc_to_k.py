@@ -73,9 +73,9 @@ class Contract():
 
         def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
-            prod_label = self.production.klabel
-            assert prod_label is not None
-            lhs = KApply(application_label, [contract, KApply(prod_label, arg_vars)])
+            prod_klabel = self.production.klabel
+            assert prod_klabel is not None
+            lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
             args: List[KInner] = [KEVM.abi_type(input_type, KVariable(input_name)) for input_type, input_name in zip(self.arg_types, self.arg_names)]
             rhs = KEVM.abi_calldata(self.name, args)
             opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(self.arg_names, self.arg_types)]
@@ -124,10 +124,9 @@ class Contract():
                 elif self.types[curr_type]['encoding'] == 'mapping':
                     key_type = self.types[curr_type]['key']
                     curr_type = self.types[curr_type]['value']
-                    if self._direct_placement(key_type):
-                        syntax.extend([KTerminal('['), KNonTerminal(Sorts.INT), KTerminal(']')])
-                    else:
+                    if not self._direct_placement(key_type):
                         raise ValueError(f'Unsupported key type for mapping in field {self.sort}: {key_type}')
+                    syntax.extend([KTerminal('['), KNonTerminal(Sorts.INT), KTerminal(']')])
                 else:
                     raise ValueError(f'Unsupported type for encoding in field {self.sort}: {curr_type}')
             return prods
