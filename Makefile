@@ -435,6 +435,7 @@ tests/foundry/%: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile
 
 tests/foundry/out:
 	cd $(dir $@) && forge build
+	cd $(dir $@) && forge test
 
 tests/foundry/foundry.k: tests/foundry/out $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	$(KEVM) foundry-to-k $< --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
