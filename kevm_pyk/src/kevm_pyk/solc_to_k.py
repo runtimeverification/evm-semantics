@@ -111,18 +111,18 @@ class Contract():
             syntax: List[KProductionItem] = [KTerminal(self.name)]
             curr_type = self.type
             while True:
-                type = self.types[curr_type]
                 if self._direct_placement(curr_type):
                     break
-                elif type['encoding'] == 'mapping':
-                    key_type = type['key']
-                    curr_type = type['value']
+                elif self.types[curr_type]['encoding'] == 'mapping':
+                    key_type = self.types[curr_type]['key']
+                    curr_type = self.types[curr_type]['value']
                     if self._direct_placement(key_type):
                         syntax.extend([KTerminal('['), KNonTerminal(Sorts.INT), KTerminal(']')])
                     else:
                         raise ValueError(f'Unsupported key type for mapping in field {self.sort}: {key_type}')
                 else:
-                    raise ValueError(f'Unsupported type for encoding in field {self.sort}: {self.type}')
+
+                    raise ValueError(f'Unsupported type for encoding in field {self.sort}: {curr_type}')
             return KProduction(self.sort, syntax, klabel=self.klabel)
 
         def rule(self, contract: KInner, application_label: KLabel) -> KRule:
