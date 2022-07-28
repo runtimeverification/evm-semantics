@@ -1280,19 +1280,21 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
+           <nonce> NONCE </nonce>
            ...
          </account>
          <callGas> GCALL </callGas>
-      requires VALUE >Int BAL orBool CD >=Int 1024
+      requires VALUE >Int BAL orBool CD >=Int 1024 orBool notBool #rangeNonce(NONCE)
 
      rule <k> #checkCall ACCT VALUE => . ... </k>
          <callDepth> CD </callDepth>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
+           <nonce> NONCE </nonce>
            ...
          </account>
-      requires notBool (VALUE >Int BAL orBool CD >=Int 1024)
+      requires notBool (VALUE >Int BAL orBool CD >=Int 1024 orBool notBool #rangeNonce(NONCE))
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO ACCTCODE CODE VALUE APPVALUE ARGS STATIC
