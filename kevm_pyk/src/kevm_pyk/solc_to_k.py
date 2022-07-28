@@ -93,28 +93,33 @@ class Contract():
         type: str
         sort: KSort
         klabel: KLabel
+        types: Dict
         _base_types: Set[str]
 
-        def __init__(self, name: str, slot: int, type: str, contract_name: str, field_sort: KSort) -> None:
+        def __init__(self, name: str, slot: int, type: str, contract_name: str, field_sort: KSort, types: Dict) -> None:
             self._base_types = {'t_address', 't_bool', 't_bytes4', 't_bytes32', 't_uint256', 't_int256', 't_uint8', 't_string_storage'}
             self.name = name
             self.slot = slot
             self.type = type
             self.sort = field_sort
             self.klabel = KLabel(f'field_{contract_name}_{self.name}')
+            self.types = types
+
+        def _direct_placement(self, type: str) -> bool:
+            return self.types[type]['encoding'] in {'inplace', 'bytes'} and int(self.types[type]['numberOfBytes']) <= 32
 
         @property
         def production(self) -> KProduction:
             syntax: List[KProductionItem] = [KTerminal(self.name)]
             curr_type = self.type
             while True:
-                if curr_type in self._base_types:
+                type = self.types[curr_type]
+                if self._direct_placement(curr_type):
                     break
-                elif curr_type.startswith('t_mapping'):
-                    type_contents = '('.join(curr_type.split('(')[1:])[0:-1]
-                    key_type, *rest = type_contents.split(',')
-                    curr_type = ','.join(rest)
-                    if key_type in self._base_types:
+                elif type['encoding'] == 'mapping':
+                    key_type = type['key']
+                    curr_type = type['value']
+                    if self._direct_placement(key_type):
                         syntax.extend([KTerminal('['), KNonTerminal(Sorts.INT), KTerminal(']')])
                     else:
                         raise ValueError(f'Unsupported key type for mapping in field {self.sort}: {key_type}')
@@ -156,7 +161,7 @@ class Contract():
         for storage in contract_json['storageLayout']['storage']:
             if storage['offset'] != 0:
                 raise ValueError(f'Unsupported nonzero offset for contract {self.name} storage slot: {storage["label"]}')
-            self.fields.append(Contract.Field(storage['label'], int(storage['slot']), storage['type'], self.name, self.sort_field))
+            self.fields.append(Contract.Field(storage['label'], int(storage['slot']), storage['type'], self.name, self.sort_field, contract_json['storageLayout']['types']))
 
     @property
     def sort(self) -> KSort:
