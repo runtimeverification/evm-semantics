@@ -80,7 +80,7 @@ class Contract():
             rhs = KEVM.abi_calldata(self.name, args)
             opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(self.arg_names, self.arg_types)]
             conjuncts = [opt_conjunct for opt_conjunct in opt_conjuncts if opt_conjunct is not None]
-            if len(conjuncts) == 0:
+            if not conjuncts:
                 ensures = TRUE
             else:
                 ensures = functools.reduce(lambda x, y: KApply('_andBool_', [x, y]), conjuncts)
