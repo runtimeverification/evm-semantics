@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 from pyk.cterm import CTerm
 from pyk.kast import (
@@ -11,6 +11,7 @@ from pyk.kast import (
     KLabel,
     KNonTerminal,
     KProduction,
+    KSentence,
     KSort,
     KTerminal,
     KVariable,
@@ -27,6 +28,12 @@ from pyk.kastManip import (
 from pyk.ktool import KPrint
 from pyk.ktool.kprint import build_symbol_table
 from pyk.utils import hash_str
+
+
+def check_and_append_sentences(sents: List[KSentence], _sents: Iterable) -> None:
+    for sent in _sents:
+        assert isinstance(sent, KSentence)
+        sents.append(sent)
 
 
 def build_claim(
