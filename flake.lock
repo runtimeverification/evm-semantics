@@ -785,7 +785,20 @@
         "pynixify": [
           "k-framework",
           "pynixify"
-        ]
+        ],
+        "rv-utils": "rv-utils"
+      }
+    },
+    "rv-utils": {
+      "locked": {
+        "lastModified": 1659022943,
+        "narHash": "sha256-WyyxlvfSQjy3hlJmfgKRPZa0xuupH05f62NBJnpzLOc=",
+        "path": "/Users/sam/git/rv-nix-tools",
+        "type": "path"
+      },
+      "original": {
+        "path": "/Users/sam/git/rv-nix-tools",
+        "type": "path"
       }
     },
     "secp256k1": {
