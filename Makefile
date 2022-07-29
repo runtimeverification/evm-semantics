@@ -176,6 +176,7 @@ kevm_files := abi.md              \
               evm.md              \
               evm-types.md        \
               evm-node.md         \
+              foundry.md          \
               hashed-locations.md \
               infinite-gas.md     \
               json-rpc.md         \

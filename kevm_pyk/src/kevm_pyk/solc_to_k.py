@@ -129,7 +129,7 @@ def contract_to_k(contract_json: Dict, contract_name: str, empty_config: KInner,
 
     module_name = contract_name.upper() + '-BIN-RUNTIME'
     sentences = [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences
-    module = KFlatModule(module_name, sentences, [KImport('EDSL')])
+    module = KFlatModule(module_name, sentences, [KImport('EDSL')]) if not foundry else KFlatModule(module_name, sentences, [KImport('FOUNDRY')])
 
     claims_module: Optional[KFlatModule] = None
     function_test_productions = [prod for prod in module.syntax_productions if prod.sort == KSort(f'{contract_name}Function')]

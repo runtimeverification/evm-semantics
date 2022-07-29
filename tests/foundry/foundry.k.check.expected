@@ -1,8 +1,8 @@
-requires "edsl.md"
+requires "foundry.md"
 requires "lemmas/int-simplification.k"
 
 module TOKEN-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     
     syntax Contract ::= TokenContract 
     
@@ -44,7 +44,7 @@ module TOKEN-BIN-RUNTIME
 endmodule
 
 module TOKENTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     
     syntax Contract ::= TokenTestContract 
     
