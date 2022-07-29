@@ -19,7 +19,6 @@ jobs:
         with:
           # Check out pull request HEAD instead of merge commit.
           ref: ${{ github.event.pull_request.head.sha }}
-          submodules: recursive
 
       - name: 'Install Nix'
         uses: cachix/install-nix-action@v15
