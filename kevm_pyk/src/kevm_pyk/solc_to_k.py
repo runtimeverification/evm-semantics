@@ -34,7 +34,7 @@ from pyk.prelude import Sorts, intToken, stringToken
 from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM
-from .utils import abstract_cell_vars, build_claim, check_and_append_sentences
+from .utils import abstract_cell_vars, build_claim
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -211,18 +211,18 @@ class Contract():
     @property
     def method_sentences(self) -> List[KSentence]:
         method_application_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)], klabel=self.klabel_method, att=KAtt({'function': ''}))
-        res = [method_application_production]
-        check_and_append_sentences(res, [method.production for method in self.methods])
-        check_and_append_sentences(res, [method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods])
-        check_and_append_sentences(res, [method.selector_alias_rule for method in self.methods])
+        res: List[KSentence] = [method_application_production]
+        res.extend(method.production for method in self.methods)
+        res.extend(method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods)
+        res.extend(method.selector_alias_rule for method in self.methods)
         return res if len(res) > 1 else []
 
     @property
     def field_sentences(self) -> List[KSentence]:
         field_access_production: KSentence = KProduction(KSort('Int'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_field)], klabel=self.klabel_field, att=KAtt({'macro': ''}))
-        res = [field_access_production]
-        check_and_append_sentences(res, [prod for field in self.fields for prod in field.productions])
-        check_and_append_sentences(res, [rule for field in self.fields for rule in field.rules(KApply(self.klabel), self.klabel_field)])
+        res: List[KSentence] = [field_access_production]
+        res.extend(prod for field in self.fields for prod in field.productions)
+        res.extend(rule for field in self.fields for rule in field.rules(KApply(self.klabel), self.klabel_field))
         return res if len(res) > 1 else []
 
     @property
