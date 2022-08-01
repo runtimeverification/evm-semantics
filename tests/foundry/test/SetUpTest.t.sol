@@ -19,7 +19,7 @@ contract SetUpTest is Test {
     
     uint256 counter = 0;
 
-    constructor () public {
+    constructor () {
         counter = 100;
     }
 
