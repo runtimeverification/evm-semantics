@@ -17,7 +17,7 @@ git --no-pager diff --no-index --ignore-all-space -R tests/interactive/log3_MaxT
 rm -rf tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
 
 # This test currently segfaults on M1 Macs
-if [[ "${APPLE_SILICON:-false}" == "true" ]]; then
+if [ "${APPLE_SILICON:-false}" == "false" ]; then
     kevm run tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json --backend llvm \
         --mode NORMAL --schedule BERLIN --chainid 1                                               \
         > tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json.llvm-out          \
@@ -34,10 +34,10 @@ kevm kompile --backend haskell tests/specs/examples/erc20-spec.md \
     --concrete-rules-file tests/specs/examples/concrete-rules.txt \
     --verbose
 # This test is probably too long for public Github runner and currently seems broken
-if [[ "${NIX:-false}" == "true" ]]; then
+if [ "${NIX:-false}" == "false" ]; then
 kevm prove tests/specs/examples/erc20-spec.md --backend haskell --format-failures  \
     --definition tests/specs/examples/erc20-spec/haskell
-fi
+
 
 kevm kompile --backend java tests/specs/erc20/verification.k   \
     --definition tests/specs/erc20/verification/java           \
@@ -47,3 +47,4 @@ kevm kompile --backend java tests/specs/erc20/verification.k   \
     --debug
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --backend java --format-failures --debugger \
     --definition tests/specs/erc20/verification/java
+fi
