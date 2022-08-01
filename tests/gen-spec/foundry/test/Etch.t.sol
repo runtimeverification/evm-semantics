@@ -2,14 +2,14 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "src/Contract.sol";
+import "src/Token.sol";
 
 contract EmitContractTest is Test {
 
-    Contract awesomeContract;
+    Token awesomeContract;
 
     function setUp() public{
-        awesomeContract = new Contract();
+        awesomeContract = new Token();
     }
 
     function testEtch() public {
