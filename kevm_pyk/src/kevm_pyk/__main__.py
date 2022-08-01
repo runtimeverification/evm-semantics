@@ -10,7 +10,7 @@ from pyk.kast import KDefinition, KFlatModule, KImport, KRequire
 from pyk.prelude import Sorts
 
 from .kevm import KEVM
-from .solc_to_k import contract_to_k, solc_compile
+from .solc_to_k import Contract, contract_to_k, solc_compile
 from .utils import (
     KDefinition_empty_config,
     KPrint_make_unparsing,
@@ -60,7 +60,8 @@ def main():
             if args.command == 'solc-to-k':
                 solc_json = solc_compile(args.contract_file)
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
-                contract_module, contract_claims_module = contract_to_k(contract_json, args.contract_name, empty_config)
+                contract = Contract(args.contract_name, contract_json, foundry=False)
+                contract_module, contract_claims_module = contract_to_k(contract, empty_config)
                 modules = [contract_module]
                 claims_modules = [contract_claims_module] if contract_claims_module else []
                 main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
@@ -81,7 +82,8 @@ def main():
                     contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
                     with open(json_file, 'r') as cjson:
                         contract_json = json.loads(cjson.read())
-                        module, claims_module = contract_to_k(contract_json, contract_name, empty_config, foundry=True)
+                        contract = Contract(contract_name, contract_json, foundry=True)
+                        module, claims_module = contract_to_k(contract, empty_config, foundry=True)
                         _LOGGER.info(f'Produced contract module: {module.name}')
                         modules.append(module)
                         if claims_module:
