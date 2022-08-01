@@ -5,13 +5,13 @@ import "forge-std/Test.sol";
 
 contract FilesTest is Test {
     
-    function testReadWriteFile() public {
-        string memory contents = vm.readFile("./test/file.txt");
-        vm.writeFile("./test/filecopy.txt", contents);
-        string memory contentsCopy = vm.readFile("./test/filecopy.txt");
-
-        assertEq(contents, contentsCopy);
-    }
+//    function testReadWriteFile() public {
+//        string memory contents = vm.readFile("./test/file.txt");
+//        vm.writeFile("./test/filecopy.txt", contents);
+//        string memory contentsCopy = vm.readFile("./test/filecopy.txt");
+//
+//        assertEq(contents, contentsCopy);
+//    }
 
     function testReadWriteLine() public {
         string memory line = vm.readLine("./test/file.txt");

@@ -15,9 +15,10 @@
 /src
 /tests/**/*.debug-log
 /tests/foundry/cache
+/tests/foundry/foundry.k
 /tests/foundry/*.out
 /tests/foundry/out
-/tests/foundry/foundry.k
+/tests/foundry/test/filecopy.txt
 /tests/**/*.rule-profile
 /tests/specs/**/*-bin-runtime.k
 /tests/specs/foundry/*.out
