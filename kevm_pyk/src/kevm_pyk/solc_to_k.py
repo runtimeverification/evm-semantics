@@ -89,16 +89,16 @@ class Contract():
     @dataclass
     class Field:
         name: str
-        slot: int
         type: str
+        slot: int
         sort: KSort
         klabel: KLabel
         types: FrozenDict
 
-        def __init__(self, name: str, slot: int, type: str, contract_name: str, field_sort: KSort, types: Dict) -> None:
+        def __init__(self, name: str, type: str, slot: int, contract_name: str, field_sort: KSort, types: Dict) -> None:
             self.name = name
-            self.slot = slot
             self.type = type
+            self.slot = slot
             self.sort = field_sort
             self.klabel = KLabel(f'field_{contract_name}_{self.name}')
             self.types = FrozenDict(types)
@@ -167,9 +167,7 @@ class Contract():
         self.methods = tuple(_methods)
         _fields = []
         for storage in contract_json['storageLayout']['storage']:
-            if storage['offset'] != 0:
-                raise ValueError(f'Unsupported nonzero offset for contract {self.name} storage slot: {storage["label"]}')
-            _fields.append(Contract.Field(storage['label'], int(storage['slot']), storage['type'], self.name, self.sort_field, contract_json['storageLayout']['types']))
+            _fields.append(Contract.Field(storage['label'], storage['type'], int(storage['slot']), self.name, self.sort_field, contract_json['storageLayout']['types']))
         self.fields = tuple(_fields)
 
     @property
