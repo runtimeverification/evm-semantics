@@ -167,6 +167,16 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
          { true #Equals K in_keys(M) andBool V1 ==K #lookup (M, K) }
          [simplification]
 
+  // ########################
+  // Keccak
+  // ########################
+
+    rule { I:Int #Equals keccak(_) } => #Bottom requires 0 <=Int I andBool I <Int 10 [simplification]
+
+    rule { I1:Int #Equals keccak(_) +Int I2 } => #Bottom
+      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10
+      [simplification]
+
 endmodule
 
 module LEMMAS-MCD-JAVA [symbolic, kast]
@@ -211,12 +221,6 @@ module LEMMAS-MCD-COMMON
   // ########################
   // Keccak
   // ########################
-
-    rule { I:Int #Equals keccak(_) } => #Bottom requires 0 <=Int I andBool I <Int 10 [simplification]
-
-    rule { I1:Int #Equals keccak(_) +Int I2 } => #Bottom
-      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10
-      [simplification]
 
     rule #lookup( M:Map [ keccak(_) <- _ ], I:Int ) => #lookup( M , I )
       requires 0 <=Int I andBool I <Int 10
