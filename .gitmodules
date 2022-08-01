@@ -18,6 +18,6 @@
 [submodule "web/k-web-theme"]
 	path = web/k-web-theme
 	url = https://github.com/runtimeverification/k-web-theme
-[submodule "tests/foundry/lib/forge-std"]
-	path = tests/foundry/lib/forge-std
+[submodule "tests/foundry/lib"]
+	path = tests/foundry/lib
 	url = https://github.com/foundry-rs/forge-std
