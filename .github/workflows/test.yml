@@ -35,5 +35,8 @@ jobs:
           extraPullNames: kore
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
 
-      - name: Test
-        run: GC_DONT_GC=1 nix run .#kevm-test
+      # - name: Check submodules
+      #   run: GC_DONT_GC=1 nix run .#check-submodules
+
+      - name: Test KEVM
+        run: GC_DONT_GC=1 nix build .#kevm-test
