@@ -379,7 +379,7 @@ module LEMMAS-MCD-COMMON
   // Arithmetic
   // ########################
 
-    rule X <=Int maxUInt48 &Int X +Int Y => false
+    rule X <=Int maxUInt48 &Int (X +Int Y) => false
       requires #rangeUInt(48, X)
        andBool #rangeUInt(48, Y)
        andBool notBool #rangeUInt(48, X +Int Y) [simplification]
@@ -516,7 +516,6 @@ module LEMMAS-MCD-COMMON
 
     rule M:Map [ K1 <- _ ] [ K2 <- V2 ] [ K3 <- V3 ] [ K1 <- V4 ] => M [ K1 <- V4 ] [ K2 <- V2 ] [ K3 <- V3 ] requires K1 =/=Int K2 andBool K1 =/=Int K3 [simplification]
 
-    rule chop(X *Int (Y +Int pow256)) => chop(X *Int Y) [simplification]
     rule chop(X *Int (Y +Int pow256)) => chop(X *Int Y) [simplification]
 
 endmodule
