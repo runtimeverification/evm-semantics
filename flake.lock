@@ -51,11 +51,11 @@
         "xbyak": "xbyak"
       },
       "locked": {
-        "lastModified": 1656687523,
-        "narHash": "sha256-XapLiUTC0bA764+Mq82QINTO0NJpTDoKveeBtQ/PgVY=",
+        "lastModified": 1657203079,
+        "narHash": "sha256-PhrAl0czygXsAnNiBzkSPwapnDGoGWbd/fDtcBSUyRM=",
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "8fdc74e3caf254aa3952393dbb0368d2c98c321a",
+        "rev": "3010915ef37b0e614528821a7c8717c797a365a6",
         "type": "github"
       },
       "original": {
@@ -791,14 +791,17 @@
     },
     "rv-utils": {
       "locked": {
-        "lastModified": 1659022943,
-        "narHash": "sha256-WyyxlvfSQjy3hlJmfgKRPZa0xuupH05f62NBJnpzLOc=",
-        "path": "/Users/sam/git/rv-nix-tools",
-        "type": "path"
+        "lastModified": 1659349707,
+        "narHash": "sha256-+RwJvYwRS4In+pl8R5Uz+R/yZ5yO5SAa7X6UR+eSC2U=",
+        "owner": "runtimeverification",
+        "repo": "rv-nix-tools",
+        "rev": "7026604726c5247ceb6e7a1a7532302a58e7e2bf",
+        "type": "github"
       },
       "original": {
-        "path": "/Users/sam/git/rv-nix-tools",
-        "type": "path"
+        "owner": "runtimeverification",
+        "repo": "rv-nix-tools",
+        "type": "github"
       }
     },
     "secp256k1": {
