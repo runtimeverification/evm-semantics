@@ -445,7 +445,7 @@ tests/foundry/foundry.k.check: tests/foundry/foundry.k
 	$(CHECK) $< $@.expected
 
 tests/foundry/foundry.k.prove: tests/foundry/kompiled/timestamp
-	$(KEVM) prove tests/foundry/foundry.k --pyk --backend haskell --definition tests/foundry/kompiled \
+	$(KEVM) prove tests/foundry/foundry.k --backend haskell --definition tests/foundry/kompiled \
 	    $(TEST_OPTIONS) --spec-module TOKENTEST-BIN-RUNTIME-SPEC
 
 tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
@@ -614,7 +614,7 @@ kevm_pyk_tests :=                                           \
                   tests/specs/examples/erc20-bin-runtime.k  \
                   tests/specs/examples/erc721-bin-runtime.k
 
-test-kevm-pyk: KPROVE_OPTS  += --pyk --verbose
+#test-kevm-pyk: KPROVE_OPTS  += --pyk --verbose
 test-kevm-pyk: KOMPILE_OPTS += --pyk --verbose
 test-kevm-pyk: KEVM = . ./kevm_pyk/venv-prod/bin/activate && kevm
 test-kevm-pyk: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile

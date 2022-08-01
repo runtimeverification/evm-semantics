@@ -28,7 +28,7 @@ from pyk.kast import (
     KVariable,
 )
 from pyk.kastManip import abstract_term_safely, substitute
-from pyk.prelude import intToken, stringToken
+from pyk.prelude import intToken, mlEqualsTrue, stringToken
 from pyk.utils import intersperse
 
 from .kevm import KEVM
@@ -101,10 +101,11 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
         init_terms = [(f'{contract_name.lower()}-{i}', substitute(init_term, {'CALLDATA_CELL': cd})) for i, cd in enumerate(calldata_cells)]
     else:
         init_terms = [(contract_name.lower(), init_term)]
-    final_term = abstract_cell_vars(substitute(empty_config, final_subst))
+    final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst)))
+    final_cterm = final_cterm.add_constraint(mlEqualsTrue(KEVM.foundry_success()))
     claims: List[KClaim] = []
     for claim_id, i_term in init_terms:
-        claim, _ = build_claim(claim_id, CTerm(i_term), CTerm(final_term))
+        claim, _ = build_claim(claim_id, CTerm(i_term), final_cterm)
         claims.append(claim)
     return claims
 
@@ -129,7 +130,7 @@ def contract_to_k(contract_json: Dict, contract_name: str, empty_config: KInner,
 
     module_name = contract_name.upper() + '-BIN-RUNTIME'
     sentences = [contract_subsort, contract_production] + storage_sentences + function_sentences + [contract_macro] + function_selector_alias_sentences
-    imported_modules = KImport('FOUNDRY') if foundry else KImport('EDSL')
+    imported_modules = KImport('EDSL')
     module = KFlatModule(module_name, sentences, [imported_modules])
 
 

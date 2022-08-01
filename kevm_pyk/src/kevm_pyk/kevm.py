@@ -209,3 +209,7 @@ class KEVM(KProve):
     @staticmethod
     def parse_bytestack(s: KInner) -> KApply:
         return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
+
+    @staticmethod
+    def foundry_success() -> KApply:
+        return KApply('foundry_success')

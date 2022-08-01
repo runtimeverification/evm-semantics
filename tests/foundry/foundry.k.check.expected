@@ -1,8 +1,8 @@
-requires "foundry.md"
+requires "edsl.md"
 requires "lemmas/int-simplification.k"
 
 module TOKEN-BIN-RUNTIME
-    imports public FOUNDRY
+    imports public EDSL
     
     syntax Contract ::= TokenContract 
     
@@ -44,7 +44,7 @@ module TOKEN-BIN-RUNTIME
 endmodule
 
 module TOKENTEST-BIN-RUNTIME
-    imports public FOUNDRY
+    imports public EDSL
     
     syntax Contract ::= TokenTestContract 
     
@@ -282,6 +282,7 @@ module TOKENTEST-BIN-RUNTIME-SPEC
              </network>
            </ethereum>
          </kevm>
+       ensures foundry_success ( )
       [label(tokentest-0)]
     
     claim [tokentest-1]: <kevm>
@@ -473,6 +474,7 @@ module TOKENTEST-BIN-RUNTIME-SPEC
              </network>
            </ethereum>
          </kevm>
+       ensures foundry_success ( )
       [label(tokentest-1)]
 
 endmodule
