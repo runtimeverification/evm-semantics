@@ -5,7 +5,7 @@
     k-framework.url = "github:runtimeverification/k";
     nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
-    rv-utils.url = "path:/Users/sam/git/rv-nix-tools";
+    rv-utils.url = "github:runtimeverification/rv-nix-tools";
     pynixify.follows = "k-framework/pynixify";
     blockchain-k-plugin.url =
       "github:runtimeverification/blockchain-k-plugin/8fdc74e3caf254aa3952393dbb0368d2c98c321a";
@@ -148,7 +148,7 @@
               cp -rv ${ethereum-tests}/* tests/ethereum-tests/
               cp -rv ${ethereum-legacytests}/* tests/ethereum-tests/LegacyTests/
               chmod -R u+w tests
-              ${prev.lib.optionalString (prev.stdenv.isAarch64 && prev.stdenv.isDarwin) "APPLE_SILICON=true"} NIX=true package/test-package.sh
+              APPLE_SILICON=${if prev.stdenv.isAarch64 && prev.stdenv.isDarwin then "true" else "false"} NIX=true package/test-package.sh
             '';
 
             installPhase = ''
