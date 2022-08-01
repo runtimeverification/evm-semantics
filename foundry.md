@@ -1,5 +1,5 @@
 Foundry Specifications
-========================
+======================
 
 ### Overview
 
@@ -8,12 +8,27 @@ This file describes the KEVM specification of the Foundry testing framework, whi
 
 ```k
 requires "edsl.md"
-
 module FOUNDRY
+    imports EDSL
+    imports FOUNDRY-SUCCESS
+    imports FOUNDRY-CHEAT-CODES
+endmodule
+```
+Foundry Success Predicate
+-------------------------
+```k
+module FOUNDRY-SUCCESS
+    imports EVM
+    syntax Bool ::= "foundry_success" "(" ")" [function]
+ // --------------------------------------------
+    rule foundry_success() => false
+endmodule
+```
+Foundry Cheat Codes
+-------------------
+```k
+module FOUNDRY-CHEAT-CODES
     imports EDSL
 endmodule
 ```
-
-Foundry Success Predicate
--------------
 
