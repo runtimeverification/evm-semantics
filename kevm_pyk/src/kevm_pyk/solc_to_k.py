@@ -118,17 +118,17 @@ class Contract():
                 elif self.types[curr_type]['encoding'] == 'inplace' and curr_type.startswith('t_struct'):
                     for _m in self.types[curr_type]['members']:
                         if not self._direct_placement(_m['type']):
-                            raise ValueError(f'Unsupported type as struct member in field {self.sort}: {_m["type"]}')
+                            raise ValueError(f'Unsupported type as struct member in field {self.name} of contract {self.sort}: {_m["type"]}')
                         prods.append(KProduction(self.sort, syntax + [KTerminal('.'), KTerminal(_m["label"])], klabel=KLabel(f'{self.klabel.name}_{_m["label"]}')))
                     break
                 elif self.types[curr_type]['encoding'] == 'mapping':
                     key_type = self.types[curr_type]['key']
                     curr_type = self.types[curr_type]['value']
                     if not self._direct_placement(key_type):
-                        raise ValueError(f'Unsupported key type for mapping in field {self.sort}: {key_type}')
+                        raise ValueError(f'Unsupported key type for mapping in field {self.name} of contract {self.sort}: {key_type}')
                     syntax.extend([KTerminal('['), KNonTerminal(Sorts.INT), KTerminal(']')])
                 else:
-                    raise ValueError(f'Unsupported type for encoding in field {self.sort}: {curr_type}')
+                    raise ValueError(f'Unsupported type for encoding in field {self.name} of contract {self.sort}: {curr_type}')
             return prods
 
         def rules(self, contract: KInner, application_label: KLabel) -> List[KRule]:
