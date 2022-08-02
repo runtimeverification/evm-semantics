@@ -6,13 +6,9 @@ import "forge-std/Test.sol";
 contract FfiTest is Test {
     
     function setUp() public{
-        //string memory key = "FOO";
-        //string memory val = "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a72756e74696d6556617200000000000000000000000000000000000000000000";
-        //vm.setEnv(key, val);
-        //string[] memory inputs = new string[](3);
-        //inputs[0] = "bash";
-        //inputs[1] = "-c";
-        //inputs[1] = "export FOO=0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000a72756e74696d655661720000000000000000000000000000000000000000000";
+        string memory key = "FOO";
+        string memory val = "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a72756e74696d6556617200000000000000000000000000000000000000000000";
+        vm.setEnv(key, val);
     }
 
     function testffi() public {
@@ -52,7 +48,7 @@ contract FfiTest is Test {
     function testFFIScript2() public {
         string[] memory inputs = new string[](2);
         inputs[0] = "bash";
-        inputs[1] = "test/myscript.sh";
+        inputs[1] = "test/script.sh";
 
         bytes memory res = vm.ffi(inputs);
         string memory output = abi.decode(res, (string));
