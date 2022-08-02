@@ -109,10 +109,6 @@ class Contract():
             _methods.append(Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method))
         self.methods = tuple(_methods)
         _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
-        if 'types' in contract_json['storageLayout'] and contract_json['storageLayout']['types']:
-            for _t, _v in contract_json['storageLayout']['types'].items():
-                if _t.startswith('t_struct'):
-                    _fields_list.extend((_m['label'], _m['slot']) for _m in _v['members'])
         _fields = {}
         for _l, _s in _fields_list:
             if _l in _fields:
