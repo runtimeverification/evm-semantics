@@ -172,7 +172,7 @@ class Contract():
         for field, offset in self.fields.items():
             klabel = KLabel(self.klabel_field.name + f'_{field}')
             prods.append(KProduction(self.sort_field, [KTerminal(field)], klabel=klabel, att=KAtt({'symbol': ''})))
-            rule_lhs = KApply(KLabel('contract_access_loc'), [KApply(KLabel('contract_access_field'), [KApply(self.klabel), KApply(klabel)])])
+            rule_lhs = KEVM.loc([KApply(KLabel('contract_access_field'), [KApply(self.klabel), KApply(klabel)])])
             rule_rhs = intToken(offset)
             rules.append(KRule(KRewrite(rule_lhs, rule_rhs)))
         return prods + rules
