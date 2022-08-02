@@ -13,18 +13,23 @@ module FOUNDRY
     imports FOUNDRY-CHEAT-CODES
 endmodule
 ```
+
 Foundry Success Predicate
 -------------------------
+
 ```k
 module FOUNDRY-SUCCESS
     imports EVM
+
     syntax Bool ::= "foundry_success" "(" ")" [function, klabel(foundry_success), symbol]
- // --------------------------------------------
+ // -------------------------------------------------------------------------------------
     rule foundry_success() => false
 endmodule
 ```
+
 Foundry Cheat Codes
 -------------------
+
 ```k
 module FOUNDRY-CHEAT-CODES
     imports EVM
