@@ -70,3 +70,20 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
 ```k
 endmodule
 ```
+
+```k
+module SOLIDITY-FIELDS
+    imports HASHED-LOCATIONS
+
+    syntax Contract
+    syntax Field
+    syntax ContractAccess ::= Contract
+                            | ContractAccess "." Field   [klabel(contract_access_field), symbol]
+                            | ContractAccess "[" Int "]" [klabel(contract_access_index), symbol]
+ // --------------------------------------------------------------------------------------------
+
+    syntax Int ::= #offset ( ContractAccess ) [macro, klabel(contract_field_offset), symbol]
+ // ----------------------------------------------------------------------------------------
+
+endmodule
+```
