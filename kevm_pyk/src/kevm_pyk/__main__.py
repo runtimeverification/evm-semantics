@@ -11,11 +11,7 @@ from pyk.prelude import Sorts
 
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_k, solc_compile
-from .utils import (
-    KDefinition_empty_config,
-    KPrint_make_unparsing,
-    add_include_arg,
-)
+from .utils import KPrint_make_unparsing, add_include_arg
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -55,7 +51,7 @@ def main():
 
         else:
             kevm = KEVM(args.definition_dir)
-            empty_config = KDefinition_empty_config(kevm.definition, Sorts.GENERATED_TOP_CELL)
+            empty_config = kevm.definition.empty_config(Sorts.GENERATED_TOP_CELL)
 
             if args.command == 'solc-to-k':
                 solc_json = solc_compile(args.contract_file)
