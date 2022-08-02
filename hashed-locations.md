@@ -82,8 +82,5 @@ module SOLIDITY-FIELDS
                             | ContractAccess "[" Int "]" [klabel(contract_access_index), symbol]
  // --------------------------------------------------------------------------------------------
 
-    syntax Int ::= #offset ( ContractAccess ) [macro, klabel(contract_field_offset), symbol]
- // ----------------------------------------------------------------------------------------
-
 endmodule
 ```

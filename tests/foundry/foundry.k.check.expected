@@ -8,50 +8,28 @@ module TOKEN-BIN-RUNTIME
     
     syntax TokenContract ::= "Token" [klabel(contract_Token)]
     
-    rule  ( #binRuntime ( Token ) => #parseByteStack ( "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c8063a9059cbb14610030575b600080fd5b61004361003e3660046100c9565b610045565b005b610050338383610054565b5050565b6001600160a01b038316600090815260016020526040902054610078908290610117565b6001600160a01b0380851660009081526001602052604080822093909355908416815220546100a890829061012e565b6001600160a01b039092166000908152600160205260409020919091555050565b600080604083850312156100dc57600080fd5b82356001600160a01b03811681146100f357600080fd5b946020939093013593505050565b634e487b7160e01b600052601160045260246000fd5b60008282101561012957610129610101565b500390565b6000821982111561014157610141610101565b50019056fea264697066735822122099123615db5c56cfbe9db8e89f9a468439257c4d1afe9c7addba9dc854fdd3ac64736f6c634300080f0033" ) )
+    rule  ( #binRuntime ( Token ) => #parseByteStack ( "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c8063a9059cbb14610030575b600080fd5b61004361003e3660046100c9565b610045565b005b610050338383610054565b5050565b6001600160a01b038316600090815260016020526040902054610078908290610117565b6001600160a01b0380851660009081526001602052604080822093909355908416815220546100a890829061012e565b6001600160a01b039092166000908152600160205260409020919091555050565b600080604083850312156100dc57600080fd5b82356001600160a01b03811681146100f357600080fd5b946020939093013593505050565b634e487b7160e01b600052601160045260246000fd5b60008282101561012957610129610101565b500390565b6000821982111561014157610141610101565b50019056fea264697066735822122088dc0f5a84c1dd7230ae57422ec83386ce9cfd3cfda8e6acdfa7b179b039456364736f6c634300080f0033" ) )
       
     
-    syntax Int ::= TokenContract "." TokenField [macro(), klabel(field_Token)]
+    syntax TokenField ::= "x" [symbol(), klabel(field_Token_x)]
     
-    syntax TokenField ::= "x" [klabel(field_Token_x)]
+    syntax TokenField ::= "balances" [symbol(), klabel(field_Token_balances)]
     
-    syntax TokenField ::= "balances" "[" Int "]" [klabel(field_Token_balances)]
+    syntax TokenField ::= "allowances" [symbol(), klabel(field_Token_allowances)]
     
-    syntax TokenField ::= "allowances" "[" Int "]" "[" Int "]" [klabel(field_Token_allowances)]
+    syntax TokenField ::= "name" [symbol(), klabel(field_Token_name)]
     
-    syntax TokenField ::= "name" [klabel(field_Token_name)]
+    syntax TokenField ::= "foos" [symbol(), klabel(field_Token_foos)]
     
-    syntax TokenField ::= "foos" "[" Int "]" "." "bar" [klabel(field_Token_foos_bar)]
+    syntax TokenField ::= "bar" [symbol(), klabel(field_Token_bar)]
     
-    syntax TokenField ::= "foos" "[" Int "]" "." "baz" [klabel(field_Token_foos_baz)]
+    syntax TokenField ::= "baz" [symbol(), klabel(field_Token_baz)]
     
-    syntax TokenField ::= "foos" "[" Int "]" "." "boo" [klabel(field_Token_foos_boo)]
+    syntax TokenField ::= "boo" [symbol(), klabel(field_Token_boo)]
     
-    syntax TokenField ::= "foos" "[" Int "]" "." "frob" [klabel(field_Token_foos_frob)]
+    syntax TokenField ::= "frob" [symbol(), klabel(field_Token_frob)]
     
-    rule  ( Token . x => #hashedLocation ( "Solidity" , 0 , .IntList ) )
-      
-    
-    rule  ( Token . balances [ V0 ] => #hashedLocation ( "Solidity" , 1 , V0  .IntList ) )
-      
-    
-    rule  ( Token . allowances [ V0 ] [ V1 ] => #hashedLocation ( "Solidity" , 2 , V0  V1  .IntList ) )
-      
-    
-    rule  ( Token . name => #hashedLocation ( "Solidity" , 3 , .IntList ) )
-      
-    
-    rule  ( Token . foos [ V0 ] . bar => #hashedLocation ( "Solidity" , 4 , V0  .IntList ) )
-      
-    
-    rule  ( Token . foos [ V0 ] . baz => ( #hashedLocation ( "Solidity" , 4 , V0  .IntList ) +Int 1 ) )
-      
-    
-    rule  ( Token . foos [ V0 ] . boo => ( #hashedLocation ( "Solidity" , 4 , V0  .IntList ) +Int 2 ) )
-      
-    
-    rule  ( Token . foos [ V0 ] . frob => ( #hashedLocation ( "Solidity" , 4 , V0  .IntList ) +Int 3 ) )
-      
+    syntax TokenField ::= "bills" [symbol(), klabel(field_Token_bills)]
     
     syntax ByteArray ::= TokenContract "." TokenMethod [function(), klabel(method_Token)]
     

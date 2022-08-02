@@ -30,7 +30,7 @@ from pyk.kast import (
     KVariable,
 )
 from pyk.kastManip import abstract_term_safely, substitute
-from pyk.prelude import Sorts, intToken, stringToken
+from pyk.prelude import intToken, stringToken
 from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM
@@ -109,14 +109,15 @@ class Contract():
             _methods.append(Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method))
         self.methods = tuple(_methods)
         _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
-        for _t, _v in contract_json['storageLayout']['types'].items():
-            if _t.startswith('t_struct'):
-                _fields_list.extend((_m['label'], _m['slot']) for _m in _v['members'])
+        if 'types' in contract_json['storageLayout'] and contract_json['storageLayout']['types']:
+            for _t, _v in contract_json['storageLayout']['types'].items():
+                if _t.startswith('t_struct'):
+                    _fields_list.extend((_m['label'], _m['slot']) for _m in _v['members'])
         _fields = {}
-        for l, s in _fields_list:
-            if l in _fields:
-                raise ValueError(f'Found duplicate field access key on contract {self.name}: {l}')
-            _fields[l] = s
+        for _l, _s in _fields_list:
+            if _l in _fields:
+                raise ValueError(f'Found duplicate field access key on contract {self.name}: {_l}')
+            _fields[_l] = _s
         self.fields = FrozenDict(_fields)
 
     @property
@@ -148,6 +149,10 @@ class Contract():
         return KProduction(KSort('Contract'), [KNonTerminal(self.sort)])
 
     @property
+    def subsort_field(self) -> KProduction:
+        return KProduction(KSort('Field'), [KNonTerminal(self.sort_field)])
+
+    @property
     def production(self) -> KProduction:
         return KProduction(self.sort, [KTerminal(self.name)], klabel=self.klabel)
 
@@ -166,11 +171,10 @@ class Contract():
 
     @property
     def field_sentences(self) -> List[KSentence]:
-        field_access_production: KSentence = KProduction(KSort('Int'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_field)], klabel=self.klabel_field, att=KAtt({'macro': ''}))
-        res: List[KSentence] = [field_access_production]
+        res: List[KSentence] = []
         for field, offset in self.fields.items():
             klabel = KLabel(self.klabel_field.name + f'_{field}')
-            res.append(KProduction(KSort('Field'), [KTerminal(field)], klabel=klabel, att=KAtt({'token': ''})))
+            res.append(KProduction(self.sort_field, [KTerminal(field)], klabel=klabel, att=KAtt({'symbol': ''})))
         return res
 
     @property
