@@ -175,6 +175,8 @@ class Contract():
             rule_lhs = KEVM.loc(KApply(KLabel('contract_access_field'), [KApply(self.klabel), KApply(klabel)]))
             rule_rhs = intToken(offset)
             rules.append(KRule(KRewrite(rule_lhs, rule_rhs)))
+        if len(prods) == 1 and not rules:
+            return []
         return prods + rules
 
     @property
