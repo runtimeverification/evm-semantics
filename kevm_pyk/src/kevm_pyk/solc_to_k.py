@@ -86,67 +86,10 @@ class Contract():
                 ensures = functools.reduce(lambda x, y: KApply('_andBool_', [x, y]), conjuncts)
             return KRule(KRewrite(lhs, rhs), ensures=ensures)
 
-    @dataclass
-    class Field:
-        name: str
-        type: str
-        slot: int
-        sort: KSort
-        klabel: KLabel
-        types: FrozenDict
-
-        def __init__(self, name: str, type: str, slot: int, contract_name: str, field_sort: KSort, types: Dict) -> None:
-            self.name = name
-            self.type = type
-            self.slot = slot
-            self.sort = field_sort
-            self.klabel = KLabel(f'field_{contract_name}_{self.name}')
-            self.types = FrozenDict(types)
-
-        def _direct_placement(self, type: str) -> bool:
-            return self.types[type]['encoding'] in {'inplace', 'bytes'} and int(self.types[type]['numberOfBytes']) <= 32
-
-        @property
-        def productions(self) -> List[KProduction]:
-            prods: List[KProduction] = []
-            syntax: List[KProductionItem] = [KTerminal(self.name)]
-            curr_type = self.type
-            while True:
-                if self._direct_placement(curr_type):
-                    prods.append(KProduction(self.sort, syntax, klabel=self.klabel))
-                    break
-                elif self.types[curr_type]['encoding'] == 'inplace' and curr_type.startswith('t_struct'):
-                    for _m in self.types[curr_type]['members']:
-                        if not self._direct_placement(_m['type']):
-                            raise ValueError(f'Unsupported type as struct member in field {self.name} of contract {self.sort}: {_m["type"]}')
-                        prods.append(KProduction(self.sort, syntax + [KTerminal('.'), KTerminal(_m["label"])], klabel=KLabel(f'{self.klabel.name}_{_m["label"]}')))
-                    break
-                elif self.types[curr_type]['encoding'] == 'mapping':
-                    key_type = self.types[curr_type]['key']
-                    curr_type = self.types[curr_type]['value']
-                    if not self._direct_placement(key_type):
-                        raise ValueError(f'Unsupported key type for mapping in field {self.name} of contract {self.sort}: {key_type}')
-                    syntax.extend([KTerminal('['), KNonTerminal(Sorts.INT), KTerminal(']')])
-                else:
-                    raise ValueError(f'Unsupported type for encoding in field {self.name} of contract {self.sort}: {curr_type}')
-            return prods
-
-        def rules(self, contract: KInner, application_label: KLabel) -> List[KRule]:
-            rules: List[KRule] = []
-            for mid, prod in enumerate(self.productions):
-                non_terminal_prods = [pitem for pitem in prod.items if type(pitem) is KNonTerminal]
-                var_names: List[KInner] = [KVariable(f'V{i}') for i, _ in enumerate(non_terminal_prods)]
-                prod_klabel = prod.klabel
-                assert prod_klabel is not None
-                lhs = KApply(application_label, [contract, KApply(prod_klabel, var_names)])
-                rhs = KEVM.hashed_location('Solidity', intToken(self.slot), KEVM.intlist(var_names), member_offset=mid)
-                rules.append(KRule(KRewrite(lhs, rhs)))
-            return rules
-
     name: str
     bytecode: str
     methods: Tuple[Method, ...]
-    fields: Tuple[Field, ...]
+    fields: FrozenDict
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
 
@@ -165,10 +108,16 @@ class Contract():
             mid = int(method_identifiers[msig], 16)
             _methods.append(Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method))
         self.methods = tuple(_methods)
-        _fields = []
-        for storage in contract_json['storageLayout']['storage']:
-            _fields.append(Contract.Field(storage['label'], storage['type'], int(storage['slot']), self.name, self.sort_field, contract_json['storageLayout']['types']))
-        self.fields = tuple(_fields)
+        _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
+        for _t, _v in contract_json['storageLayout']['types'].items():
+            if _t.startswith('t_struct'):
+                _fields_list.extend((_m['label'], _m['slot']) for _m in _v['members'])
+        _fields = {}
+        for l, s in _fields_list:
+            if l in _fields:
+                raise ValueError(f'Found duplicate field access key on contract {self.name}: {l}')
+            _fields[l] = s
+        self.fields = FrozenDict(_fields)
 
     @property
     def sort(self) -> KSort:
@@ -219,9 +168,10 @@ class Contract():
     def field_sentences(self) -> List[KSentence]:
         field_access_production: KSentence = KProduction(KSort('Int'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_field)], klabel=self.klabel_field, att=KAtt({'macro': ''}))
         res: List[KSentence] = [field_access_production]
-        res.extend(prod for field in self.fields for prod in field.productions)
-        res.extend(rule for field in self.fields for rule in field.rules(KApply(self.klabel), self.klabel_field))
-        return res if len(res) > 1 else []
+        for field, offset in self.fields.items():
+            klabel = KLabel(self.klabel_field.name + f'_{field}')
+            res.append(KProduction(KSort('Field'), [KTerminal(field)], klabel=klabel, att=KAtt({'token': ''})))
+        return res
 
     @property
     def sentences(self) -> List[KSentence]:
