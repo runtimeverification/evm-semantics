@@ -309,8 +309,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
 
     sentences = contract.sentences
     module_name = contract_name.upper() + '-BIN-RUNTIME'
-    imported_modules = KImport('EDSL')
-    module = KFlatModule(module_name, sentences, [imported_modules])
+    module = KFlatModule(module_name, sentences, [KImport('EDSL')])
 
     claims_module: Optional[KFlatModule] = None
     function_test_productions = [prod for prod in module.syntax_productions if prod.sort == KSort(f'{contract_name}Method')]
