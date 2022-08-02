@@ -167,11 +167,15 @@ class Contract():
 
     @property
     def field_sentences(self) -> List[KSentence]:
-        res: List[KSentence] = []
+        prods: List[KSentence] = [self.subsort_field]
+        rules: List[KSentence] = []
         for field, offset in self.fields.items():
             klabel = KLabel(self.klabel_field.name + f'_{field}')
-            res.append(KProduction(self.sort_field, [KTerminal(field)], klabel=klabel, att=KAtt({'symbol': ''})))
-        return res
+            prods.append(KProduction(self.sort_field, [KTerminal(field)], klabel=klabel, att=KAtt({'symbol': ''})))
+            rule_lhs = KApply(KLabel('contract_access_loc'), [KApply(KLabel('contract_access_field'), [KApply(self.klabel), KApply(klabel)])])
+            rule_rhs = intToken(offset)
+            rules.append(KRule(KRewrite(rule_lhs, rule_rhs)))
+        return prods + rules
 
     @property
     def sentences(self) -> List[KSentence]:
