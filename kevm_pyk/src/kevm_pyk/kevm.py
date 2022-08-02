@@ -229,4 +229,3 @@ class KEVM(KProve):
         for i in reversed(args):
             res = KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [i, res])
         return res
-

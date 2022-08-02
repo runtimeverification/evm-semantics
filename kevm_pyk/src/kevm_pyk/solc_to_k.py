@@ -30,7 +30,7 @@ from pyk.kast import (
     KVariable,
 )
 from pyk.kastManip import abstract_term_safely, substitute
-from pyk.prelude import intToken, mlEqualsTrue, Sorts, stringToken
+from pyk.prelude import Sorts, intToken, mlEqualsTrue, stringToken
 from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM
