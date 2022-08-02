@@ -6,8 +6,7 @@ import sys
 from typing import Final, List
 
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KDefinition, KFlatModule, KImport, KRequire
-from pyk.prelude import Sorts
+from pyk.kast import KDefinition, KFlatModule, KImport, KRequire, KSort
 
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_k, solc_compile
@@ -51,7 +50,7 @@ def main():
 
         else:
             kevm = KEVM(args.definition_dir)
-            empty_config = kevm.definition.empty_config(Sorts.GENERATED_TOP_CELL)
+            empty_config = kevm.definition.empty_config(KSort('KevmCell'))
 
             if args.command == 'solc-to-k':
                 solc_json = solc_compile(args.contract_file)
