@@ -353,10 +353,23 @@ module LEMMAS-HASKELL [symbolic, kore]
          #range( M                          [ N2 := BUF2           ] [ N3 := BUF3           ], L, K )
       requires N1 +Int #sizeByteArray(BUF1) <=Int L [simplification]
 
-    rule #range ( M [ N := BUF:ByteArray ], N, K ) => #padToWidth(K, BUF)
-      requires ( #sizeByteArray( BUF ) <=Int K ) andBool ( M [ N .. K ] ==K #padToWidth( K, .ByteArray ) ) [simplification]
+    rule #range ( M [ N := BUF:ByteArray ], N, K ) => #range( #range( M, N, K ) [ 0 := BUF ], 0, K ) 
+      requires N >Int 0 [simplification]
+
+    rule #range ( M [ N := BUF:ByteArray ], 0, K ) => M [ N := BUF ]
+      requires (#sizeByteArray( M ) ==Int K andBool #sizeByteArray( BUF ) <=Int K)
+        orBool (#sizeByteArray( M ) <=Int K andBool #sizeByteArray( BUF ) ==Int K)  [simplification]
+
+    rule M [ 0 := BUF:ByteArray ] => #padRightToWidth( #sizeByteArray( M ), BUF )
+      requires M ==K #padToWidth( #sizeByteArray( M ), .ByteArray ) 
+      andBool  #sizeByteArray( BUF ) <=Int #sizeByteArray( M )  [simplification]
 
     rule #asWord( #padToWidth ( _, BUF ) ) => #asWord( BUF ) [simplification]
+
+    rule #range ( padRightBytes ( BUF:ByteArray, K, 0 ), 0, K ) => #padRightToWidth ( K, BUF ) [simplification]
+
+    rule #range (#padToWidth(K, BUF:ByteArray), 0, K) => #padToWidth(K, BUF)  [simplification]
+
 
   // ########################
   // Map Reasoning

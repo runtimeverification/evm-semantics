@@ -152,7 +152,12 @@ module VERIFICATION-HASKELL [symbolic, kore]
 
     rule MEM [ K1 := BUF1:ByteArray                 ] [ K2 := #ecrec(HASH, SIGV, SIGR, SIGS) ] 
       => MEM [ K2 := #ecrec(HASH, SIGV, SIGR, SIGS) ] [ K1 := BUF1                           ] 
-        requires (32 <=Int K1 -Int K2) andBool (K2 <Int K1) [simplification]
+        requires (32 <=Int K1 -Int K2) [simplification]
+
+    
+    // #ecrec(_) will either be 32 bytes, in which case there is no padding, or 0 bytes, in which case padding
+    // on the left is equivalent to padding on the right.
+    rule padRightBytes ( #ecrec( HASH, SIGV, SIGR, SIGS ), 32, 0 ) => #padToWidth (32, #ecrec( HASH, SIGV, SIGR, SIGS ) )  [simplification]
 
     rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
 
