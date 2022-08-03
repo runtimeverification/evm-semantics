@@ -54,6 +54,13 @@ module ERC20-SPEC
     imports VERIFICATION
 ```
 
+### Functional Claims
+
+```k
+    claim <k> runLemma(#bufStrict(32, #loc(ERC20._allowances[OWNER]))) => doneLemma(#buf(32, keccak(#buf(32, OWNER) ++ #buf(32, 1)))) ... </k>
+      requires #rangeAddress(OWNER)
+```
+
 ### Calling decimals() works
 
 -   Everything from `<mode>` to `<callValue>` is boilerplate.
