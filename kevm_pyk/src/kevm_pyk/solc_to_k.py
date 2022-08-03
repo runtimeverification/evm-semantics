@@ -29,12 +29,12 @@ from pyk.kast import (
     KToken,
     KVariable,
 )
-from pyk.kastManip import abstract_term_safely, substitute
+from pyk.kastManip import abstract_term_safely, build_claim, substitute
 from pyk.prelude import Sorts, intToken, mlEqualsTrue, stringToken
 from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM
-from .utils import abstract_cell_vars, build_claim
+from .utils import abstract_cell_vars
 
 _LOGGER: Final = logging.getLogger(__name__)
 
