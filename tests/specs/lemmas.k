@@ -115,14 +115,6 @@ module LEMMAS
 
     rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeByteArray(WS) -Int (M /Int 8) ])  requires 0 <=Int M andBool M modInt 8 ==Int 0 [simplification]
 
-  // ########################
-  // Boolean Logic
-  // ########################
-
-    rule X:Int ==Int A:Int orBool X ==Int B:Int orBool X ==Int C:Int orBool X ==Int D:Int => X ==Int D
-         requires X =/=Int A andBool X =/=Int B andBool X =/=Int C
-         [simplification]
-
 endmodule
 
 module LEMMAS-JAVA [symbolic, kast]

@@ -87,9 +87,13 @@ module FUNCTIONAL-SPEC
 
     claim <k> runLemma( ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 1 <- ABI_lot:Int ] [ keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 2 ) /Int pow208 ) ]
                           ==K
-                        ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 2 ) /Int pow208 ) ] [ keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 1 <- ABI_lot:Int ]) 
+                        ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 2 ) /Int pow208 ) ] [ keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 1 <- ABI_lot:Int ])
            => doneLemma(true)
               ... </k>
+
+    claim <k> runLemma(#lookup( M:Map [ keccak(_) <- _ ], I:Int ))
+           => doneLemma(#lookup( M , I )) ... </k>
+      requires 0 <=Int I andBool I <Int 10
 
     // Memory operations
 

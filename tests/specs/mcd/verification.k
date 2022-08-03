@@ -129,10 +129,6 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
          requires #rangeSInt(256, X) andBool #rangeSInt(256, Y)
          [simplification]
 
-    rule { chop ( X:Int ) #Equals chop ( Y:Int ) } =>
-         { true #Equals X ==Int Y andBool Y <=Int 0 }
-         requires (minSInt256 <=Int X) andBool (X <=Int 0) andBool #rangeSInt(256, Y) [simplification]
-
   // ########################
   // Buffer Reasoning
   // ########################
@@ -164,18 +160,8 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
          [simplification]
 
     rule { M:Map [K <- V1] #Equals M } =>
-         { true #Equals K in_keys(M) andBool V1 ==K #lookup (M, K) }
+         { true #Equals K in_keys(M) andBool V1 ==K #lookup(M, K) }
          [simplification]
-
-  // ########################
-  // Keccak
-  // ########################
-
-    rule { I:Int #Equals keccak(_) } => #Bottom requires 0 <=Int I andBool I <Int 10 [simplification]
-
-    rule { I1:Int #Equals keccak(_) +Int I2 } => #Bottom
-      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10
-      [simplification]
 
 endmodule
 
@@ -222,13 +208,9 @@ module LEMMAS-MCD-COMMON
   // Keccak
   // ########################
 
-    rule #lookup( M:Map [ keccak(_) <- _ ], I:Int ) => #lookup( M , I )
-      requires 0 <=Int I andBool I <Int 10
-      [simplification]
-
-    rule #lookup( M:Map [ keccak(_) +Int I1:Int <- _ ], I2:Int ) => #lookup( M , I2 )
-      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10
-      [simplification]
+    rule keccak(_) ==Int I => false requires 0 <=Int I andBool I <Int 10 [simplification]
+    rule keccak(_) +Int I1 ==Int I2 => false
+      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10 [simplification]
 
   // ########################
   // Word Reasoning
@@ -517,5 +499,13 @@ module LEMMAS-MCD-COMMON
     rule M:Map [ K1 <- _ ] [ K2 <- V2 ] [ K3 <- V3 ] [ K1 <- V4 ] => M [ K1 <- V4 ] [ K2 <- V2 ] [ K3 <- V3 ] requires K1 =/=Int K2 andBool K1 =/=Int K3 [simplification]
 
     rule chop(X *Int (Y +Int pow256)) => chop(X *Int Y) [simplification]
+
+  // ########################
+  // Boolean Logic
+  // ########################
+
+    rule X:Int ==Int A:Int orBool X ==Int B:Int orBool X ==Int C:Int orBool X ==Int D:Int => X ==Int D
+         requires X =/=Int A andBool X =/=Int B andBool X =/=Int C
+         [simplification]
 
 endmodule
