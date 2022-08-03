@@ -385,6 +385,8 @@ tests/specs/examples/erc20-spec%:            KPROVE_EXT    =  md
 tests/specs/examples/erc20-spec%:            KPROVE_FILE   =  erc20-spec
 tests/specs/examples/erc721-spec%:           KPROVE_EXT    =  md
 tests/specs/examples/erc721-spec%:           KPROVE_FILE   =  erc721-spec
+tests/specs/examples/storage-spec%:          KPROVE_EXT    =  md
+tests/specs/examples/storage-spec%:          KPROVE_FILE   =  storage-spec
 tests/specs/examples/sum-to-n-spec%:         KPROVE_FILE   =  sum-to-n-spec
 tests/specs/functional/infinite-gas-spec%:   KPROVE_FILE   =  infinite-gas-spec
 tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_FILE   =  lemmas-no-smt-spec
@@ -462,6 +464,10 @@ tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_
 tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
 tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC721 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
+
+tests/specs/examples/storage-spec/haskell/timestamp: tests/specs/examples/storage-bin-runtime.k
+tests/specs/examples/storage-bin-runtime.k: tests/specs/examples/Storage.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
+	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Storage --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module STORAGE-VERIFICATION > $@
 
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
@@ -553,6 +559,7 @@ prove_definitions :=                                                            
                      tests/specs/erc20/verification/java/timestamp                \
                      tests/specs/examples/erc20-spec/haskell/timestamp            \
                      tests/specs/examples/erc721-spec/haskell/timestamp           \
+                     tests/specs/examples/storage-spec/haskell/timestamp          \
                      tests/specs/examples/solidity-code-spec/haskell/timestamp    \
                      tests/specs/examples/solidity-code-spec/java/timestamp       \
                      tests/specs/examples/sum-to-n-spec/haskell/timestamp         \
