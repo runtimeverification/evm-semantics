@@ -292,6 +292,7 @@ module TOKENTEST-BIN-RUNTIME-SPEC
              </network>
            </ethereum>
          </kevm>
+       ensures foundry_success ( )
       [label(tokentest-0)]
     
     claim [tokentest-1]: <kevm>
@@ -483,6 +484,7 @@ module TOKENTEST-BIN-RUNTIME-SPEC
              </network>
            </ethereum>
          </kevm>
+       ensures foundry_success ( )
       [label(tokentest-1)]
 
 endmodule

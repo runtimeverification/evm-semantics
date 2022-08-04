@@ -217,6 +217,10 @@ class KEVM(KProve):
         return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
 
     @staticmethod
+    def foundry_success() -> KApply:
+        return KApply('foundry_success')
+
+    @staticmethod
     def intlist(ints: List[KInner]) -> KApply:
         res = KApply('.List{"___HASHED-LOCATIONS_IntList_Int_IntList"}_IntList')
         for i in reversed(ints):

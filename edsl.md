@@ -12,6 +12,7 @@ requires "hashed-locations.md"
 requires "abi.md"
 requires "infinite-gas.md"
 requires "optimizations.md"
+requires "foundry.md"
 
 module EDSL
     imports BUF
@@ -21,6 +22,7 @@ module EDSL
     imports EVM-OPTIMIZATIONS
     imports INFINITE-GAS
     imports BIN-RUNTIME
+    imports FOUNDRY
 endmodule
 
 module BIN-RUNTIME
