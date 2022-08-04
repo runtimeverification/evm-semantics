@@ -82,13 +82,13 @@ module SOLIDITY-FIELDS
                             | ContractAccess "[" Int "]" [klabel(contract_access_index), symbol]
  // --------------------------------------------------------------------------------------------
 
-    syntax Int ::= #loc ( ContractAccess ) [macro, klabel(contract_access_loc), symbol]
- // -----------------------------------------------------------------------------------
+    syntax Int ::= #loc ( ContractAccess ) [function, klabel(contract_access_loc), symbol]
+ // --------------------------------------------------------------------------------------
     rule #loc(_:Contract) => 0
     rule #loc(C [ I ])    => #hash(#loc(C), I)
 
-    syntax Int ::= #hash ( Int , Int ) [macro, klabel(contract_access_hash), symbol]
- // --------------------------------------------------------------------------------
+    syntax Int ::= #hash ( Int , Int ) [function, klabel(contract_access_hash), symbol]
+ // -----------------------------------------------------------------------------------
     rule #hash(I1, I2) => keccak(#bufStrict(32, I2) ++ #bufStrict(32, I1))
 
 endmodule
