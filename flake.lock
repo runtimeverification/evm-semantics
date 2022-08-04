@@ -432,11 +432,11 @@
         "pynixify": "pynixify"
       },
       "locked": {
-        "lastModified": 1658140335,
-        "narHash": "sha256-UnBMZQYB3ecf5oCy80SPoY3ky4PydkLwnzd0cx242rU=",
+        "lastModified": 1659466106,
+        "narHash": "sha256-gRXFvHJ1m+wZ+FBUCEPO7QJAA1zkNJgiermXIX+MTiE=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "ee884e8d0dbe3a46e1d046a93baf0ae6a3a393cb",
+        "rev": "71fadc7c8d466fbe58b5666f7ab5a369c9fe20cb",
         "type": "github"
       },
       "original": {
@@ -738,11 +738,11 @@
         "nixpkgs": "nixpkgs_4"
       },
       "locked": {
-        "lastModified": 1657037286,
-        "narHash": "sha256-6qBJHtsmIbMPMzy34u5OD3kF7A5QsgIDbPUjNUy/ox8=",
+        "lastModified": 1658931565,
+        "narHash": "sha256-yVl+89bhiN39vutoZmHMu5dPRc6l8eiF6eoTvOpjXzA=",
         "owner": "goodlyrottenapple",
         "repo": "pynixify",
-        "rev": "a0648c1fcd73bd75247b564e84cb3175b16d79d2",
+        "rev": "1347b6782c7b7951303d6bc378f21df8ac606fec",
         "type": "github"
       },
       "original": {
