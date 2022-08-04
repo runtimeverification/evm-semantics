@@ -176,6 +176,7 @@ kevm_files := abi.md              \
               evm.md              \
               evm-types.md        \
               evm-node.md         \
+              foundry.md          \
               hashed-locations.md \
               infinite-gas.md     \
               json-rpc.md         \
@@ -606,7 +607,7 @@ test-failure: $(failure_tests:=.run-expected)
 # kevm_pyk Tests
 
 kevm_pyk_tests :=                                           \
-                  tests/foundry/foundry.k.prove             \
+                  tests/foundry/kompiled/timestamp          \
                   tests/foundry/foundry.k.check             \
                   tests/specs/bihu/functional-spec.k.prove  \
                   tests/specs/examples/empty-bin-runtime.k  \
