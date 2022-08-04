@@ -15,13 +15,13 @@ jobs:
     name: 'Update kevm_pyk Version'
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          git config user.name devops
-          git config user.email devops@runtimeverification.com
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
           submodules: recursive
+      - run: |
+          git config user.name devops
+          git config user.email devops@runtimeverification.com
       - name: 'Install Nix'
         uses: cachix/install-nix-action@v15
         with:
