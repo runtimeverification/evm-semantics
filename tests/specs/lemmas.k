@@ -348,6 +348,9 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule #range ( M [ N := BUF:ByteArray ], N, K ) => #range( #range( M, N, K ) [ 0 := BUF ], 0, K ) 
       requires N >Int 0 [simplification]
 
+    rule #range ( M, N, K ) => #range( #drop(N, M), 0, K ) 
+      requires N >Int 0 [simplification]
+
     rule #range ( M [ N := BUF:ByteArray ], 0, K ) => M [ N := BUF ]
       requires (#sizeByteArray( M ) ==Int K andBool #sizeByteArray( BUF ) <=Int K)
         orBool (#sizeByteArray( M ) <=Int K andBool #sizeByteArray( BUF ) ==Int K)  [simplification]
@@ -362,6 +365,11 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule #range (#padToWidth(K, BUF:ByteArray), 0, K) => #padToWidth(K, BUF)  [simplification]
 
+    rule #range ( b"", _, _) => b"" [simplification]
+
+    rule #range ( #buf( N, DATA ), 0, N ) => #buf( N, DATA )  [simplification]
+
+    rule b"" [ 0 := #buf ( N, DATA ) ] => #buf ( N, DATA )  [simplification]
 
   // ########################
   // Map Reasoning
