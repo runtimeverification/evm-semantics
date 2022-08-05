@@ -1,4 +1,3 @@
-import functools
 import json
 import logging
 from dataclasses import dataclass
@@ -9,7 +8,6 @@ from typing import Any, Dict, Final, List, Optional, Tuple
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
 from pyk.kast import (
-    TRUE,
     KApply,
     KAtt,
     KClaim,
@@ -30,7 +28,7 @@ from pyk.kast import (
     KVariable,
 )
 from pyk.kastManip import abstract_term_safely, build_claim, substitute
-from pyk.prelude import intToken, mlEqualsTrue, stringToken
+from pyk.prelude import Bool, intToken, mlEqualsTrue, stringToken
 from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM
@@ -80,10 +78,7 @@ class Contract():
             rhs = KEVM.abi_calldata(self.name, args)
             opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(self.arg_names, self.arg_types)]
             conjuncts = [opt_conjunct for opt_conjunct in opt_conjuncts if opt_conjunct is not None]
-            if not conjuncts:
-                ensures = TRUE
-            else:
-                ensures = functools.reduce(lambda x, y: KApply('_andBool_', [x, y]), conjuncts)
+            ensures = Bool.andBool(opt_conjuncts)
             return KRule(KRewrite(lhs, rhs), ensures=ensures)
 
     name: str
