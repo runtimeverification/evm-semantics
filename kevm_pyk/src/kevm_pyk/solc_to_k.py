@@ -303,11 +303,11 @@ def _range_predicate(term, type_label: str):
     if type_label == 'bytes4':
         return KEVM.range_bytes(intToken(4), term)
     if type_label in {'bytes32', 'uint256'}:
-        return KEVM.range_uint256(term)
+        return KEVM.range_uint(256, term)
     if type_label == 'int256':
-        return KEVM.range_sint256(term)
+        return KEVM.range_sint(256, term)
     if type_label == 'uint8':
-        return KEVM.range_uint8(term)
+        return KEVM.range_uint(8, term)
     if type_label == 'bytes':
         return None
 
