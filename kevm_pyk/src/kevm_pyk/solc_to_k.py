@@ -29,12 +29,12 @@ from pyk.kast import (
     KToken,
     KVariable,
 )
-from pyk.kastManip import abstract_term_safely, substitute
-from pyk.prelude import Sorts, intToken, stringToken
+from pyk.kastManip import abstract_term_safely, build_claim, substitute
+from pyk.prelude import Sorts, intToken, mlEqualsTrue, stringToken
 from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM
-from .utils import abstract_cell_vars, build_claim, check_and_append_sentences
+from .utils import abstract_cell_vars
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -73,9 +73,9 @@ class Contract():
 
         def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
-            prod_label = self.production.klabel
-            assert prod_label is not None
-            lhs = KApply(application_label, [contract, KApply(prod_label, arg_vars)])
+            prod_klabel = self.production.klabel
+            assert prod_klabel is not None
+            lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
             args: List[KInner] = [KEVM.abi_type(input_type, KVariable(input_name)) for input_type, input_name in zip(self.arg_types, self.arg_names)]
             rhs = KEVM.abi_calldata(self.name, args)
             opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(self.arg_names, self.arg_types)]
@@ -107,30 +107,41 @@ class Contract():
             return self.types[type]['encoding'] in {'inplace', 'bytes'} and int(self.types[type]['numberOfBytes']) <= 32
 
         @property
-        def production(self) -> KProduction:
+        def productions(self) -> List[KProduction]:
+            prods: List[KProduction] = []
             syntax: List[KProductionItem] = [KTerminal(self.name)]
             curr_type = self.type
             while True:
-                type = self.types[curr_type]
                 if self._direct_placement(curr_type):
+                    prods.append(KProduction(self.sort, syntax, klabel=self.klabel))
                     break
-                elif type['encoding'] == 'mapping':
-                    key_type = type['key']
-                    curr_type = type['value']
-                    if self._direct_placement(key_type):
-                        syntax.extend([KTerminal('['), KNonTerminal(Sorts.INT), KTerminal(']')])
-                    else:
+                elif self.types[curr_type]['encoding'] == 'inplace' and curr_type.startswith('t_struct'):
+                    for _m in self.types[curr_type]['members']:
+                        if not self._direct_placement(_m['type']):
+                            raise ValueError(f'Unsupported type as struct member in field {self.sort}: {_m["type"]}')
+                        prods.append(KProduction(self.sort, syntax + [KTerminal('.'), KTerminal(_m["label"])], klabel=KLabel(f'{self.klabel.name}_{_m["label"]}')))
+                    break
+                elif self.types[curr_type]['encoding'] == 'mapping':
+                    key_type = self.types[curr_type]['key']
+                    curr_type = self.types[curr_type]['value']
+                    if not self._direct_placement(key_type):
                         raise ValueError(f'Unsupported key type for mapping in field {self.sort}: {key_type}')
+                    syntax.extend([KTerminal('['), KNonTerminal(Sorts.INT), KTerminal(']')])
                 else:
-                    raise ValueError(f'Unsupported type for encoding in field {self.sort}: {self.type}')
-            return KProduction(self.sort, syntax, klabel=self.klabel)
+                    raise ValueError(f'Unsupported type for encoding in field {self.sort}: {curr_type}')
+            return prods
 
-        def rule(self, contract: KInner, application_label: KLabel) -> KRule:
-            non_terminal_prods = [pitem for pitem in self.production.items if type(pitem) is KNonTerminal]
-            var_names: List[KInner] = [KVariable(f'V{i}') for i, _ in enumerate(non_terminal_prods)]
-            lhs = KApply(application_label, [contract, KApply(self.klabel, var_names)])
-            rhs = KEVM.hashed_location('Solidity', intToken(self.slot), KEVM.intlist(var_names))
-            return KRule(KRewrite(lhs, rhs))
+        def rules(self, contract: KInner, application_label: KLabel) -> List[KRule]:
+            rules: List[KRule] = []
+            for mid, prod in enumerate(self.productions):
+                non_terminal_prods = [pitem for pitem in prod.items if type(pitem) is KNonTerminal]
+                var_names: List[KInner] = [KVariable(f'V{i}') for i, _ in enumerate(non_terminal_prods)]
+                prod_klabel = prod.klabel
+                assert prod_klabel is not None
+                lhs = KApply(application_label, [contract, KApply(prod_klabel, var_names)])
+                rhs = KEVM.hashed_location('Solidity', intToken(self.slot), KEVM.intlist(var_names), member_offset=mid)
+                rules.append(KRule(KRewrite(lhs, rhs)))
+            return rules
 
     name: str
     bytecode: str
@@ -200,18 +211,18 @@ class Contract():
     @property
     def method_sentences(self) -> List[KSentence]:
         method_application_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)], klabel=self.klabel_method, att=KAtt({'function': ''}))
-        res = [method_application_production]
-        check_and_append_sentences(res, [method.production for method in self.methods])
-        check_and_append_sentences(res, [method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods])
-        check_and_append_sentences(res, [method.selector_alias_rule for method in self.methods])
+        res: List[KSentence] = [method_application_production]
+        res.extend(method.production for method in self.methods)
+        res.extend(method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods)
+        res.extend(method.selector_alias_rule for method in self.methods)
         return res if len(res) > 1 else []
 
     @property
     def field_sentences(self) -> List[KSentence]:
         field_access_production: KSentence = KProduction(KSort('Int'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_field)], klabel=self.klabel_field, att=KAtt({'macro': ''}))
-        res = [field_access_production]
-        check_and_append_sentences(res, [field.production for field in self.fields])
-        check_and_append_sentences(res, [field.rule(KApply(self.klabel), self.klabel_field) for field in self.fields])
+        res: List[KSentence] = [field_access_production]
+        res.extend(prod for field in self.fields for prod in field.productions)
+        res.extend(rule for field in self.fields for rule in field.rules(KApply(self.klabel), self.klabel_field))
         return res if len(res) > 1 else []
 
     @property
@@ -283,10 +294,11 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
         init_terms = [(f'{contract_name.lower()}-{i}', substitute(init_term, {'CALLDATA_CELL': cd})) for i, cd in enumerate(calldata_cells)]
     else:
         init_terms = [(contract_name.lower(), init_term)]
-    final_term = abstract_cell_vars(substitute(empty_config, final_subst))
+    final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst)))
+    final_cterm = final_cterm.add_constraint(mlEqualsTrue(KEVM.foundry_success()))
     claims: List[KClaim] = []
     for claim_id, i_term in init_terms:
-        claim, _ = build_claim(claim_id, CTerm(i_term), CTerm(final_term))
+        claim, _ = build_claim(claim_id, CTerm(i_term), final_cterm)
         claims.append(claim)
     return claims
 

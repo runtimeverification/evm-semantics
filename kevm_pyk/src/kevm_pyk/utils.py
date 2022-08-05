@@ -1,26 +1,9 @@
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import List
 
-from pyk.cterm import CTerm
-from pyk.kast import (
-    KApply,
-    KClaim,
-    KDefinition,
-    KFlatModule,
-    KImport,
-    KInner,
-    KLabel,
-    KNonTerminal,
-    KProduction,
-    KSentence,
-    KSort,
-    KTerminal,
-    KVariable,
-)
+from pyk.kast import KDefinition, KFlatModule, KImport, KTerminal, KVariable
 from pyk.kastManip import (
     abstract_term_safely,
-    build_rule,
     isAnonVariable,
-    remove_generated_cells,
     split_config_and_constraints,
     splitConfigFrom,
     substitute,
@@ -28,23 +11,6 @@ from pyk.kastManip import (
 from pyk.ktool import KPrint
 from pyk.ktool.kprint import build_symbol_table
 from pyk.utils import hash_str
-
-
-def check_and_append_sentences(sents: List[KSentence], _sents: Iterable) -> None:
-    for sent in _sents:
-        assert isinstance(sent, KSentence)
-        sents.append(sent)
-
-
-def build_claim(
-    claim_id: str,
-    init_cterm: CTerm,
-    final_cterm: CTerm,
-    keep_vars: Optional[List[str]] = None
-) -> Tuple[KClaim, Dict[str, KVariable]]:
-    rule, var_map = build_rule(claim_id, init_cterm, final_cterm, claim=True, keep_vars=keep_vars)
-    claim = KClaim(rule.body, requires=rule.requires, ensures=rule.ensures, att=rule.att)
-    return claim, var_map
 
 
 def KPrint_make_unparsing(_self: KPrint, extra_modules: List[KFlatModule] = []) -> KPrint:
@@ -56,41 +22,6 @@ def KPrint_make_unparsing(_self: KPrint, extra_modules: List[KFlatModule] = []) 
     kprint.symbol_table = build_symbol_table(kprint.definition, opinionated=True)
     kprint.definition_hash = hash_str(kprint.definition)
     return kprint
-
-
-def KDefinition_module_names(_self: KDefinition) -> List[str]:
-    return [_m.name for _m in _self.modules]
-
-
-def KDefinition_empty_config(definition: KDefinition, sort: KSort) -> KInner:
-
-    def _kdefinition_empty_config(_sort):
-        label = get_label_for_cell_sorts(definition, _sort)
-        production = get_production_for_klabel(definition, label)
-        args = []
-        num_nonterminals = 0
-        num_freshvars = 0
-        for p_item in production.items:
-            if type(p_item) is KNonTerminal:
-                num_nonterminals += 1
-                if p_item.sort.name.endswith('Cell'):
-                    args.append(_kdefinition_empty_config(p_item.sort))
-                else:
-                    num_freshvars += 1
-                    args.append(KVariable(_sort.name[0:-4].upper() + '_CELL'))
-        if num_nonterminals > 1 and num_freshvars > 0:
-            sort_name = sort.name
-            raise ValueError(f'Found mixed cell and non-cell arguments to cell constructor for {sort_name}!')
-        return KApply(label, args)
-
-    return remove_generated_cells(_kdefinition_empty_config(sort))
-
-
-def KDefinition_production_for_label(definition: KDefinition, klabel: KLabel) -> KProduction:
-    productions = [prod for prod in definition.syntax_productions if prod.klabel == klabel]
-    if len(productions) != 1:
-        raise ValueError(f'Did not find unique production for klabel {klabel}: {productions}')
-    return productions[0]
 
 
 def add_include_arg(includes):
