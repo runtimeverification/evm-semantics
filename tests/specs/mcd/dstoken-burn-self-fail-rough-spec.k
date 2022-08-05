@@ -73,7 +73,7 @@ module DSTOKEN-BURN-SELF-FAIL-ROUGH-SPEC
               <code> DSToken_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_DSToken => ?_ </nonce>
+              <nonce> Nonce_DSToken => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -92,6 +92,7 @@ module DSTOKEN-BURN-SELF-FAIL-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_DSToken)
 
        andBool (#rangeAddress(ABI_src)
        andBool (#rangeUInt(256, ABI_wad)

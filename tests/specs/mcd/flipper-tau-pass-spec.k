@@ -73,7 +73,7 @@ module FLIPPER-TAU-PASS-SPEC
               <code> Flipper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Flipper => ?_ </nonce>
+              <nonce> Nonce_Flipper => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -101,5 +101,6 @@ module FLIPPER-TAU-PASS-SPEC
 
        andBool #lookup(ACCT_ID_STORAGE, #Flipper.ttl_tau) ==Int #WordPackUInt48UInt48(Ttl, Tau)
        andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.ttl_tau) ==Int Junk_0
+       andBool #rangeNonce(Nonce_Flipper)
 
 endmodule

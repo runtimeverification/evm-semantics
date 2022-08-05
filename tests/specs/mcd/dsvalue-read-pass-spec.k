@@ -73,7 +73,7 @@ module DSVALUE-READ-PASS-SPEC
               <code> DSValue_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_DSValue => ?_ </nonce>
+              <nonce> Nonce_DSValue => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -108,5 +108,6 @@ module DSVALUE-READ-PASS-SPEC
        andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSValue.owner_has) ==Int Junk_0
        andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSValue.val) ==Int Junk_1
        andBool #DSValue.owner_has =/=Int #DSValue.val
+       andBool #rangeNonce(Nonce_DSValue)
 
 endmodule

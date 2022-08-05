@@ -73,7 +73,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
               <code> Dai_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Dai => ?_ </nonce>
+              <nonce> Nonce_Dai => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -92,6 +92,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Dai)
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)

@@ -73,7 +73,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
               <code> Cat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Cat.vow <- ABI_data ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Cat => ?_ </nonce>
+              <nonce> Nonce_Cat => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -92,6 +92,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Cat)
 
        andBool (#rangeBytes(32, ABI_what)
        andBool (#rangeAddress(ABI_data)

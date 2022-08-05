@@ -73,7 +73,7 @@ module FLOPPER-CAGE-PASS-SPEC
               <code> Flopper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flopper.live <- 0 ] [ #Flopper.vow <- CALLER_ID ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Flopper => ?_ </nonce>
+              <nonce> Nonce_Flopper => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -92,6 +92,7 @@ module FLOPPER-CAGE-PASS-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Flopper)
 
        andBool (#rangeUInt(256, Ward)
        andBool (#rangeUInt(256, Live)

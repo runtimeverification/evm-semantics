@@ -73,7 +73,7 @@ module VAT-SUBUI-FAIL-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -97,6 +97,7 @@ module VAT-SUBUI-FAIL-ROUGH-SPEC
        andBool (#rangeSInt(256, ABI_y)
        andBool ((#sizeWordStack(WS) <=Int 1015)
        andBool (#rangeUInt(256, VMemoryUsed)))))
+       andBool #rangeNonce(Nonce_Vat)
 
 
        andBool notBool (

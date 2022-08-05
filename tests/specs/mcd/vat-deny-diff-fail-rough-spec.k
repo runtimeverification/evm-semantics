@@ -73,7 +73,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -92,6 +92,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Vat)
 
        andBool (#rangeAddress(ABI_usr)
        andBool (#rangeUInt(256, May)
