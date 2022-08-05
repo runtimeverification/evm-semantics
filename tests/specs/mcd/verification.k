@@ -160,10 +160,6 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
     rule { (M:Map [K <- V1]) #Equals (M [K <- V2]) } => { V1 #Equals V2 }
          [simplification]
 
-    rule { M:Map [K <- V1] #Equals M } =>
-         { true #Equals K in_keys(M) andBool V1 ==K #lookup(M, K) }
-         [simplification]
-
 endmodule
 
 module LEMMAS-MCD-JAVA [symbolic, kast]
