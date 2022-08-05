@@ -286,13 +286,14 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
 # Helpers
 
 def _evm_base_sort(type_label: str):
-    if type_label in {'address', 'bool', 'bytes4', 'bytes32', 'int256', 'uint256', 'uint8'}:
+    if type_label in {'address', 'bool', 'bytes4', 'bytes32', 'int256', 'uint256', 'uint8', 'uint64', 'uint96', 'uint32'}:
         return KSort('Int')
 
-    if type_label == 'bytes':
+    if type_label in {'bytes', 'string'}:
         return KSort('ByteArray')
 
-    raise ValueError(f'EVM base sort unknown for: {type_label}')
+    _LOGGER.warning(f'Using generic sort K for type: {type_label}')
+    return KSort('K')
 
 
 def _range_predicate(term, type_label: str):
@@ -308,7 +309,14 @@ def _range_predicate(term, type_label: str):
         return KEVM.range_sint(256, term)
     if type_label == 'uint8':
         return KEVM.range_uint(8, term)
-    if type_label == 'bytes':
+    if type_label == 'uint64':
+        return KEVM.range_uint(64, term)
+    if type_label == 'uint96':
+        return KEVM.range_uint(96, term)
+    if type_label == 'uint32':
+        return KEVM.range_uint(32, term)
+    if type_label in {'bytes', 'string'}:
         return None
 
-    raise ValueError(f'Range predicate unknown for: {type_label}')
+    _LOGGER.warning(f'Unknown range predicate for type: {type_label}')
+    return None
