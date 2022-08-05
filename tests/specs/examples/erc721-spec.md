@@ -104,7 +104,7 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
             ...
           </account>
 
-       requires NAME_KEY             ==Int ERC721._name
+       requires NAME_KEY             ==Int #loc(ERC721._name)
         andBool NAME                 ==Int #lookup(ACCT_STORAGE, NAME_KEY)
         andBool NAME &Int 1          ==Int 0
         andBool NAME /Int 2 &Int 127  <Int 32
@@ -139,7 +139,7 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
             ...
           </account>
 
-       requires NAME_KEY    ==Int ERC721._name
+       requires NAME_KEY    ==Int #loc(ERC721._name)
         andBool NAME        ==Int #lookup(ACCT_STORAGE, NAME_KEY)
         andBool NAME &Int 1 ==Int 0
         andBool 32          <=Int NAME /Int 2 &Int 127
