@@ -29,12 +29,12 @@ from pyk.kast import (
     KToken,
     KVariable,
 )
-from pyk.kastManip import abstract_term_safely, substitute
-from pyk.prelude import Sorts, intToken, stringToken
+from pyk.kastManip import abstract_term_safely, build_claim, substitute
+from pyk.prelude import Sorts, intToken, mlEqualsTrue, stringToken
 from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM
-from .utils import abstract_cell_vars, build_claim
+from .utils import abstract_cell_vars
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -294,10 +294,11 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
         init_terms = [(f'{contract_name.lower()}-{i}', substitute(init_term, {'CALLDATA_CELL': cd})) for i, cd in enumerate(calldata_cells)]
     else:
         init_terms = [(contract_name.lower(), init_term)]
-    final_term = abstract_cell_vars(substitute(empty_config, final_subst))
+    final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst)))
+    final_cterm = final_cterm.add_constraint(mlEqualsTrue(KEVM.foundry_success()))
     claims: List[KClaim] = []
     for claim_id, i_term in init_terms:
-        claim, _ = build_claim(claim_id, CTerm(i_term), CTerm(final_term))
+        claim, _ = build_claim(claim_id, CTerm(i_term), final_cterm)
         claims.append(claim)
     return claims
 

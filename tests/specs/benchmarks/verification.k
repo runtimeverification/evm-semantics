@@ -127,8 +127,6 @@ module VERIFICATION
     // X &Int (NOT 31)
     rule X &Int 115792089237316195423570985008687907853269984665640564039457584007913129639904 => (X /Int 32) *Int 32  requires 0 <=Int X [simplification]
 
-    rule #ceil32(X) => X  requires X modInt 32 ==Int 0 [simplification]
-
     rule X +Int Y <Int pow256 => true  requires X <=Int pow16 andBool Y <Int pow16 [simplification]
 
     rule X <=Int #ceil32(X)     => true   requires 0 <=Int X                       [simplification]
