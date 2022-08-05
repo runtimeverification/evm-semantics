@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 import "src/EmitContract.sol";
 
-contract SignTest is Test {
+contract RecordLogsTest is Test {
     ExpectEmit emitter;
 
     function setUp() public {

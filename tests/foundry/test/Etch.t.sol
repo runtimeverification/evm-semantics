@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 import "src/Token.sol";
 
-contract EmitContractTest is Test {
+contract EtchTest is Test {
 
     Token awesomeContract;
 
