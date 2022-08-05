@@ -435,6 +435,14 @@ tests/foundry/%: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile
 tests/foundry/out:
 	cd $(dir $@) && forge build
 
+tests/foundry/clean:
+	rm -rf tests/foundry/cache
+	rm -rf tests/foundry/kompiled
+	rm -rf tests/foundry/out
+	rm -f  tests/foundry/foundry.debug-log
+	rm -f  tests/foundry/foundry.k
+	rm -f  tests/foundry/foundry.rule-profile
+
 tests/foundry/foundry.k: tests/foundry/out $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	$(KEVM) foundry-to-k $< --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
 	     --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION      \
