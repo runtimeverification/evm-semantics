@@ -117,16 +117,20 @@ class Contract():
         self.fields = FrozenDict(_fields)
 
     @property
+    def name_upper(self) -> str:
+        return self.name[0:1].upper() + self.name[1:]
+
+    @property
     def sort(self) -> KSort:
-        return KSort(f'{self.name}Contract')
+        return KSort(f'{self.name_upper}Contract')
 
     @property
     def sort_field(self) -> KSort:
-        return KSort(f'{self.name}Field')
+        return KSort(f'{self.name_upper}Field')
 
     @property
     def sort_method(self) -> KSort:
-        return KSort(f'{self.name}Method')
+        return KSort(f'{self.name_upper}Method')
 
     @property
     def klabel(self) -> KLabel:
