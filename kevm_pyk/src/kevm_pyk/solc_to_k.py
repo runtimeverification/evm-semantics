@@ -69,16 +69,20 @@ class Contract():
             items_after: List[KProductionItem] = [KTerminal(')')]
             return KProduction(self.sort, items_before + items_args + items_after, klabel=KLabel(f'method_{self.contract_name}_{self.name}'))
 
-        def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule:
+        def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> Optional[KRule]:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
             prod_klabel = self.production.klabel
             assert prod_klabel is not None
             lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
             args: List[KInner] = [KEVM.abi_type(input_type, KVariable(input_name)) for input_type, input_name in zip(self.arg_types, self.arg_names)]
             rhs = KEVM.abi_calldata(self.name, args)
-            opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(self.arg_names, self.arg_types)]
-            conjuncts = [opt_conjunct for opt_conjunct in opt_conjuncts if opt_conjunct is not None]
-            ensures = Bool.andBool(opt_conjuncts)
+            conjuncts: List[KInner] = []
+            for input_name, input_type in zip(self.arg_names, self.arg_types):
+                rp = _range_predicate(KVariable(input_name), input_type)
+                if rp is None:
+                    _LOGGER.warning(f'Unsupported ABI type for method {contract_name}.{prod_klabel.name}, will not generate calldata sugar: {input_type}')
+                    return None
+            ensures = Bool.andBool(conjuncts)
             return KRule(KRewrite(lhs, rhs), ensures=ensures)
 
     name: str
@@ -160,7 +164,8 @@ class Contract():
         method_application_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)], klabel=self.klabel_method, att=KAtt({'function': ''}))
         res: List[KSentence] = [method_application_production]
         res.extend(method.production for method in self.methods)
-        res.extend(method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods)
+        method_rules = (method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods)
+        res.extend(rule for rule in method_rules if rule)
         res.extend(method.selector_alias_rule for method in self.methods)
         return res if len(res) > 1 else []
 
