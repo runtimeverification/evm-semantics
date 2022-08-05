@@ -7,7 +7,7 @@ from typing import Any, Dict, Final, List, Optional
 
 from pyk.cli_utils import run_process
 from pyk.kast import KApply, KInner
-from pyk.kastManip import flattenLabel, getCell
+from pyk.kastManip import flatten_label, getCell
 from pyk.ktool import KProve, paren
 from pyk.prelude import intToken, stringToken
 
@@ -206,7 +206,7 @@ class KEVM(KProve):
 
     @staticmethod
     def wordstack_len(constrainedTerm: KInner) -> int:
-        return len(flattenLabel('_:__EVM-TYPES_WordStack_Int_WordStack', getCell(constrainedTerm, 'WORDSTACK_CELL')))
+        return len(flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', getCell(constrainedTerm, 'WORDSTACK_CELL')))
 
     @staticmethod
     def parse_bytestack(s: KInner) -> KApply:
