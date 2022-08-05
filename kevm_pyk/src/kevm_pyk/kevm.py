@@ -168,6 +168,10 @@ class KEVM(KProve):
         return location
 
     @staticmethod
+    def loc(accessor: KInner) -> KApply:
+        return KApply('contract_access_loc', [accessor])
+
+    @staticmethod
     def abi_calldata(name: str, args: List[KInner]) -> KApply:
         return KApply('#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
 

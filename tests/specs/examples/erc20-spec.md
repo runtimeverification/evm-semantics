@@ -54,6 +54,13 @@ module ERC20-SPEC
     imports VERIFICATION
 ```
 
+### Functional Claims
+
+```k
+    claim <k> runLemma(#bufStrict(32, #loc(ERC20._allowances[OWNER]))) => doneLemma(#buf(32, keccak(#buf(32, OWNER) ++ #buf(32, 1)))) ... </k>
+      requires #rangeAddress(OWNER)
+```
+
 ### Calling decimals() works
 
 -   Everything from `<mode>` to `<callValue>` is boilerplate.
@@ -90,7 +97,7 @@ module ERC20-SPEC
             ...
           </account>
 
-       requires DECIMALS_KEY ==Int ERC20._decimals
+       requires DECIMALS_KEY ==Int #loc(ERC20._decimals)
         andBool DECIMALS     ==Int 255 &Int #lookup(ACCT_STORAGE, DECIMALS_KEY)
 ```
 
@@ -131,7 +138,7 @@ module ERC20-SPEC
             ...
           </account>
 
-       requires TOTALSUPPLY_KEY ==Int ERC20._totalSupply
+       requires TOTALSUPPLY_KEY ==Int #loc(ERC20._totalSupply)
         andBool TOTALSUPPLY     ==Int #lookup(ACCT_STORAGE,  TOTALSUPPLY_KEY)
 ```
 
@@ -176,7 +183,7 @@ module ERC20-SPEC
             ...
           </account>
 
-       requires ALLOWANCE_KEY ==Int ERC20._allowances[OWNER][SPENDER]
+       requires ALLOWANCE_KEY ==Int #loc(ERC20._allowances[OWNER][SPENDER])
         andBool #rangeAddress(OWNER)
         andBool #rangeAddress(SPENDER)
         andBool #rangeUInt(256, AMOUNT)

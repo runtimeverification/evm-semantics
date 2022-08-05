@@ -12,6 +12,7 @@ contract Token {
         address baz;
         uint48 boo;
         uint48 frob;
+        uint48[] bills;
     }
 
     mapping(address => Foo) foos;
