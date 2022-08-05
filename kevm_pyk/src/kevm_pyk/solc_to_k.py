@@ -288,8 +288,11 @@ def _evm_base_sort(type_label: str):
     if type_label in {'address', 'bool', 'bytes4', 'bytes32', 'int256', 'uint256', 'uint8', 'uint64', 'uint96', 'uint32'}:
         return KSort('Int')
 
-    if type_label in {'bytes', 'string'}:
+    if type_label == 'bytes':
         return KSort('ByteArray')
+
+    if type_label == 'string':
+        return KSort('String')
 
     _LOGGER.warning(f'Using generic sort K for type: {type_label}')
     return KSort('K')
@@ -315,7 +318,7 @@ def _range_predicate(term, type_label: str):
     if type_label == 'uint32':
         return KEVM.range_uint(32, term)
     if type_label in {'bytes', 'string'}:
-        return None
+        return Bool.true
 
     _LOGGER.warning(f'Unknown range predicate for type: {type_label}')
     return None
