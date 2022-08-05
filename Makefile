@@ -56,7 +56,7 @@ export PLUGIN_SUBMODULE
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         test-kevm-pyk                                                                                                            \
-		foundry-clean																											 \
+        foundry-clean																											 \
         media media-pdf metropolis-theme                                                                                         \
         install uninstall
 .SECONDARY:
