@@ -161,13 +161,15 @@ class KEVM(KProve):
         return KApply('#binRuntime', [c])
 
     @staticmethod
-    def hashed_location(compiler: str, base: KInner, offset: KInner) -> KApply:
-        return KApply('#hashedLocation(_,_,_)_HASHED-LOCATIONS_Int_String_Int_IntList', [stringToken(compiler), base, offset])
+    def hashed_location(compiler: str, base: KInner, offset: KInner, member_offset: int = 0) -> KApply:
+        location = KApply('#hashedLocation(_,_,_)_HASHED-LOCATIONS_Int_String_Int_IntList', [stringToken(compiler), base, offset])
+        if member_offset > 0:
+            location = KApply('_+Int_', [location, intToken(member_offset)])
+        return location
 
     @staticmethod
     def abi_calldata(name: str, args: List[KInner]) -> KApply:
-        token: KInner = stringToken(name)
-        return KApply('#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [token] + args)
+        return KApply('#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
 
     @staticmethod
     def abi_selector(name: str) -> KApply:
@@ -209,3 +211,21 @@ class KEVM(KProve):
     @staticmethod
     def parse_bytestack(s: KInner) -> KApply:
         return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
+
+    @staticmethod
+    def foundry_success() -> KApply:
+        return KApply('foundry_success')
+
+    @staticmethod
+    def intlist(ints: List[KInner]) -> KApply:
+        res = KApply('.List{"___HASHED-LOCATIONS_IntList_Int_IntList"}_IntList')
+        for i in reversed(ints):
+            res = KApply('___HASHED-LOCATIONS_IntList_Int_IntList', [i, res])
+        return res
+
+    @staticmethod
+    def typed_args(args: List[KInner]) -> KApply:
+        res = KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
+        for i in reversed(args):
+            res = KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [i, res])
+        return res

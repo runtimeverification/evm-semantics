@@ -13,7 +13,7 @@ These may be useful for learning KEVM and K (newest to oldest):
 -   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
 -   [KEVM Paper at CSF'18/FLoC](http://fsl.cs.illinois.edu/index.php/KEVM:_A_Complete_Semantics_of_the_Ethereum_Virtual_Machine).
 
-To get support for KEVM, please join our [Riot Room](https://riot.im/app/#/room/#k:matrix.org).
+To get support for KEVM, please join our [Discord Channel](https://discord.gg/EZtNj7gt).
 
 Repository Structure
 --------------------
