@@ -73,7 +73,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <code> End_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #End.bag[CALLER_ID] <- Bag +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_End => ?_ </nonce>
+              <nonce> Nonce_End => ?_ </nonce>
             </account>
             <account>
               <acctID> Vat </acctID>
@@ -81,7 +81,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> Vat_STORAGE => Vat_STORAGE [ #Vat.dai[CALLER_ID] <- Dai -Int ABI_wad *Int #Ray ] [ #Vat.dai[Vow] <- Joy +Int ABI_wad *Int #Ray ] </storage>
               <origStorage> Vat_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -100,6 +100,8 @@ module END-PACK-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_End)
+       andBool #rangeNonce(Nonce_Vat)
 
        andBool (#rangeUInt(256, ABI_wad)
        andBool (#rangeAddress(Vat)
@@ -230,7 +232,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <code> End_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_End => ?_ </nonce>
+              <nonce> Nonce_End => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -249,6 +251,7 @@ module END-PACK-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_End)
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)
@@ -330,7 +333,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <code> End_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_End => ?_ </nonce>
+              <nonce> Nonce_End => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -349,6 +352,7 @@ module END-PACK-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_End)
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)
@@ -430,7 +434,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ] [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -449,6 +453,7 @@ module END-PACK-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Vat)
 
        andBool (#rangeAddress(ABI_src)
        andBool (#rangeAddress(ABI_dst)

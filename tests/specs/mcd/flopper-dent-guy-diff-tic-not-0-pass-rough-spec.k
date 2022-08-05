@@ -73,7 +73,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
               <code> Flopper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flopper.bids[ABI_id].lot <- ABI_lot ] [ #Flopper.bids[ABI_id].guy_tic_end <- #WordPackAddrUInt48UInt48(CALLER_ID, TIME +Int Ttl, End) ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Flopper => ?_ </nonce>
+              <nonce> Nonce_Flopper => ?_ </nonce>
             </account>
             <account>
               <acctID> Vat </acctID>
@@ -81,7 +81,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> Vat_STORAGE => Vat_STORAGE [ #Vat.dai[CALLER_ID] <- Dai_a -Int ABI_bid ] [ #Vat.dai[Guy] <- Dai_g +Int ABI_bid ] </storage>
               <origStorage> Vat_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -196,6 +196,8 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
        andBool #Vat.can[CALLER_ID][ACCT_ID] =/=Int #Vat.dai[CALLER_ID]
        andBool #Vat.can[CALLER_ID][ACCT_ID] =/=Int #Vat.dai[Guy]
        andBool #Vat.dai[CALLER_ID] =/=Int #Vat.dai[Guy]
+       andBool #rangeNonce(Nonce_Flopper)
+       andBool #rangeNonce(Nonce_Vat)
 
     // Flopper_muluu
     claim [Flopper.muluu.pass]:
@@ -270,7 +272,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
               <code> Flopper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Flopper => ?_ </nonce>
+              <nonce> Nonce_Flopper => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -295,6 +297,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
        andBool ((#sizeWordStack(WS) <=Int 1000)
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x *Int ABI_y)))))))
+       andBool #rangeNonce(Nonce_Flopper)
 
 
     [trusted, matching(infGas)]
@@ -370,7 +373,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
               <code> Flopper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Flopper => ?_ </nonce>
+              <nonce> Nonce_Flopper => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -395,7 +398,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
        andBool ((#sizeWordStack(WS) <=Int 100)
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(48, ABI_x +Int ABI_y)))))))
-
+       andBool #rangeNonce(Nonce_Flopper)
 
     [trusted, matching(infGas)]
 
@@ -470,7 +473,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ] [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -515,6 +518,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
        andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_src]
        andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_dst]
        andBool #Vat.dai[ABI_src] =/=Int #Vat.dai[ABI_dst]
+       andBool #rangeNonce(Nonce_Vat)
     [trusted, matching(infGas)]
 
 

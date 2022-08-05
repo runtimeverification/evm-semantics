@@ -73,7 +73,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
               <code> Flapper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flapper.bids[ABI_id].bid <- 0 ] [ #Flapper.bids[ABI_id].lot <- 0 ] [ #Flapper.bids[ABI_id].guy_tic_end <- 0 ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Flapper => ?_ </nonce>
+              <nonce> Nonce_Flapper => ?_ </nonce>
             </account>
             <account>
               <acctID> DSToken </acctID>
@@ -81,7 +81,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
               <code> DSToken_bin_runtime </code>
               <storage> DSToken_STORAGE => DSToken_STORAGE [ #DSToken.balances[ACCT_ID] <- Gem_a -Int Bid ] [ #DSToken.balances[Guy] <- Gem_g +Int Bid ] </storage>
               <origStorage> DSToken_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_DSToken => ?_ </nonce>
+              <nonce> Nonce_DSToken => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -166,6 +166,8 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
        andBool #DSToken.balances[ACCT_ID] =/=Int #DSToken.balances[Guy]
        andBool #DSToken.balances[ACCT_ID] =/=Int #DSToken.owner_stopped
        andBool #DSToken.balances[Guy] =/=Int #DSToken.owner_stopped
+       andBool #rangeNonce(Nonce_Flapper)
+       andBool #rangeNonce(Nonce_DSToken)
 
     // DSToken_move
     claim [DSToken.move.pass]:
@@ -240,7 +242,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
               <code> DSToken_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #DSToken.allowance[ABI_src][CALLER_ID] <- #if (ABI_src ==Int CALLER_ID orBool Allowance ==Int maxUInt256) #then Allowance #else Allowance -Int ABI_wad #fi ] [ #DSToken.balances[ABI_src] <- Gem_s -Int ABI_wad ] [ #DSToken.balances[ABI_dst] <- Gem_d +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_DSToken => ?_ </nonce>
+              <nonce> Nonce_DSToken => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -296,6 +298,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
        andBool #DSToken.balances[ABI_src] =/=Int #DSToken.balances[ABI_dst]
        andBool #DSToken.balances[ABI_src] =/=Int #DSToken.owner_stopped
        andBool #DSToken.balances[ABI_dst] =/=Int #DSToken.owner_stopped
+       andBool #rangeNonce(Nonce_DSToken)
     [trusted, matching(infGas)]
 
 

@@ -73,7 +73,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
               <code> Flapper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flapper.bids[ABI_id].bid <- ABI_bid ]  [ #Flapper.bids[ABI_id].guy_tic_end <- #WordPackAddrUInt48UInt48(CALLER_ID, TIME +Int Ttl, End) ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Flapper => ?_ </nonce>
+              <nonce> Nonce_Flapper => ?_ </nonce>
             </account>
             <account>
               <acctID> DSToken </acctID>
@@ -81,7 +81,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
               <code> DSToken_bin_runtime </code>
               <storage> DSToken_STORAGE => DSToken_STORAGE [ #DSToken.allowance[CALLER_ID][ACCT_ID] <- #if (Allowed ==Int maxUInt256) #then Allowed #else Allowed -Int ABI_bid #fi ] [ #DSToken.balances[CALLER_ID] <- Gem_u -Int ABI_bid ] [ #DSToken.balances[Guy] <- Gem_g +Int Bid ] [ #DSToken.balances[ACCT_ID] <- Gem_a +Int (ABI_bid -Int Bid) ] </storage>
               <origStorage> DSToken_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_DSToken => ?_ </nonce>
+              <nonce> Nonce_DSToken => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -100,6 +100,8 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Flapper)
+       andBool #rangeNonce(Nonce_DSToken)
 
        andBool (#rangeUInt(256, ABI_id)
        andBool (#rangeUInt(256, ABI_lot)
@@ -286,7 +288,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
               <code> Flapper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Flapper => ?_ </nonce>
+              <nonce> Nonce_Flapper => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -305,6 +307,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Flapper)
 
        andBool (#rangeUInt(48, ABI_x)
        andBool (#rangeUInt(48, ABI_y)
@@ -389,7 +392,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
               <code> Flapper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Flapper => ?_ </nonce>
+              <nonce> Nonce_Flapper => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -408,6 +411,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Flapper)
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)
@@ -492,7 +496,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
               <code> DSToken_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #DSToken.allowance[ABI_src][CALLER_ID] <- #if (ABI_src ==Int CALLER_ID orBool Allowance ==Int maxUInt256) #then Allowance #else Allowance -Int ABI_wad #fi ] [ #DSToken.balances[ABI_src] <- Gem_s -Int ABI_wad ] [ #DSToken.balances[ABI_dst] <- Gem_d +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_DSToken => ?_ </nonce>
+              <nonce> Nonce_DSToken => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -511,6 +515,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_DSToken)
 
        andBool (#rangeAddress(ABI_src)
        andBool (#rangeAddress(ABI_dst)
