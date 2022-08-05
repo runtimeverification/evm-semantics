@@ -12,7 +12,7 @@ contract BroadcastTest is Test {
         ACCOUNT_A = 0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8;
         ACCOUNT_B = 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D;
     }
-    
+
     function testDeploy() public {
         vm.broadcast(ACCOUNT_A);
         TestNumber test = new TestNumber(10);
@@ -30,7 +30,7 @@ contract BroadcastTest is Test {
 
         // will trigger a transaction
         test.t(1);
-    
+
         vm.stopBroadcast();
     }
 

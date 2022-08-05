@@ -18,7 +18,7 @@ contract StoreTest is Test {
         vm.record();
         myStore = new Store();
     }
-    
+
     function testAccesses() public {
         (bytes32[] memory reads, bytes32[] memory writes) = vm.accesses(address(myStore));
         assertEq(reads.length, 1);

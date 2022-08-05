@@ -6,7 +6,7 @@ import "src/EmitContract.sol";
 
 contract SignTest is Test {
     ExpectEmit emitter;
-    
+
     function setUp() public {
         emitter = new ExpectEmit();
         vm.recordLogs();

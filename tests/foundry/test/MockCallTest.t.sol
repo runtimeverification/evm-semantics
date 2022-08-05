@@ -6,7 +6,7 @@ import "src/MyToken.sol";
 import "src/MyIERC20.sol";
 
 
-contract MockCallTest is Test {    
+contract MockCallTest is Test {
     function setUp() public{}
 
     function testMockCall() public {

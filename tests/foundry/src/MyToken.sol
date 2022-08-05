@@ -6,9 +6,9 @@ contract MyToken{
     mapping (address => uint256) public balances;
 
     constructor(address sometoken) {
-        token = sometoken; 
+        token = sometoken;
     }
-    
+
     function balanceOf(address user) external view returns (uint256) {
         return balances[user];
     }

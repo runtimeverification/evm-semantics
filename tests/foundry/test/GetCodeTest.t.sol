@@ -5,10 +5,10 @@ import "forge-std/Test.sol";
 import "src/MyToken.sol";
 
 
-contract GetCodeTest is Test { 
+contract GetCodeTest is Test {
     MyToken myToken;
 
-       
+
     function setUp() public{
         myToken = new MyToken(address(1234));
     }
