@@ -56,6 +56,7 @@ export PLUGIN_SUBMODULE
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         test-kevm-pyk                                                                                                            \
+        foundry-clean																											 \
         media media-pdf metropolis-theme                                                                                         \
         install uninstall
 .SECONDARY:
@@ -429,6 +430,14 @@ tests/%.parse: tests/%
 
 kevm-pyk-venv:
 	$(MAKE) -C ./kevm_pyk venv-prod
+
+foundry-clean:
+	rm -rf tests/foundry/cache
+	rm -rf tests/foundry/kompiled
+	rm -rf tests/foundry/out
+	rm -f  tests/foundry/foundry.debug-log
+	rm -f  tests/foundry/foundry.k
+	rm -f  tests/foundry/foundry.rule-profile
 
 tests/foundry/%: KEVM = . ./kevm_pyk/venv-prod/bin/activate && kevm
 tests/foundry/%: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile
