@@ -73,15 +73,16 @@ class Contract():
             arg_vars = [KVariable(aname) for aname in self.arg_names]
             prod_klabel = self.production.klabel
             assert prod_klabel is not None
-            lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
-            args: List[KInner] = [KEVM.abi_type(input_type, KVariable(input_name)) for input_type, input_name in zip(self.arg_types, self.arg_names)]
-            rhs = KEVM.abi_calldata(self.name, args)
+            args: List[KInner] = []
             conjuncts: List[KInner] = []
             for input_name, input_type in zip(self.arg_names, self.arg_types):
+                args.append(KEVM.abi_type(input_type, KVariable(input_name)))
                 rp = _range_predicate(KVariable(input_name), input_type)
                 if rp is None:
                     _LOGGER.warning(f'Unsupported ABI type for method {contract_name}.{prod_klabel.name}, will not generate calldata sugar: {input_type}')
                     return None
+            lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
+            rhs = KEVM.abi_calldata(self.name, args)
             ensures = Bool.andBool(conjuncts)
             return KRule(KRewrite(lhs, rhs), ensures=ensures)
 
