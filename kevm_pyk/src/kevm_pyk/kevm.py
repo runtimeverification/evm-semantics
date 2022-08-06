@@ -8,7 +8,7 @@ from typing import Any, Dict, Final, List, Optional
 from pyk.cli_utils import run_process
 from pyk.kast import KApply, KInner
 from pyk.kastManip import flatten_label, getCell
-from pyk.ktool import KProve, paren
+from pyk.ktool import KProve, KRun, paren
 from pyk.prelude import intToken, stringToken
 
 from .utils import add_include_arg
@@ -19,10 +19,14 @@ _LOGGER: Final = logging.getLogger(__name__)
 # KEVM class
 
 
-class KEVM(KProve):
+class KEVM(KProve, KRun):
 
-    def __init__(self, definition_dir, main_file=None, use_directory=None):
-        super().__init__(definition_dir, main_file=main_file, use_directory=use_directory)
+    def __init__(self, definition_dir: Path, main_file: Optional[Path] = None, use_directory: Optional[Path] = None) -> None:
+        # I'm going for the simplest version here, we can change later if there is an advantage.
+        # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
+        # Note that they say using `super` supports dependency injection, but I have never liked dependency injection anyway.
+        KProve.__init__(self, definition_dir, use_directory=use_directory, main_file=main_file)
+        KRun.__init__(self, definition_dir, use_directory=use_directory)
         KEVM._patch_symbol_table(self.symbol_table)
 
     @staticmethod
