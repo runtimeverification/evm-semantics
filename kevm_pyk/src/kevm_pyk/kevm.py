@@ -21,8 +21,8 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 class KEVM(KProve):
 
-    def __init__(self, kompiled_directory, main_file=None, use_directory=None):
-        super().__init__(kompiled_directory, main_file=main_file, use_directory=use_directory)
+    def __init__(self, definition_dir, main_file=None, use_directory=None):
+        super().__init__(definition_dir, main_file=main_file, use_directory=use_directory)
         KEVM._patch_symbol_table(self.symbol_table)
 
     @staticmethod
