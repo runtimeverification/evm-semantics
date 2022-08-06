@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - '_update-deps_runtimeverification_k'
+      - '_update-deps_runtimeverification_blockchain-k-plugin'
   workflow_dispatch:
 # Stop in progress workflows on the same branch and same workflow to use latest committed code
 concurrency:
@@ -12,21 +13,41 @@ concurrency:
 jobs:
   test-pr:
     name: 'Update kevm_pyk Version'
-    runs-on: [self-hosted, linux]
+    runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
           submodules: recursive
-      - name: 'Update pyk Version'
+      - run: |
+          git config user.name devops
+          git config user.email devops@runtimeverification.com
+      - name: 'Install Nix'
+        uses: cachix/install-nix-action@v15
+        with:
+          extra_nix_config: |
+            substituters = http://cache.nixos.org https://cache.iog.io
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+      - name: 'Install Cachix'
+        uses: cachix/cachix-action@v10
+        with:
+          name: runtimeverification
+          extraPullNames: kore
+          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
+      - name: 'Update pyk'
+        if: github.ref == 'refs/heads/_update-deps_runtimeverification_k'
         run: |
           cd deps/k
           git fetch origin 'refs/tags/*:refs/tags/*'
           K_COMMIT="$(git tag --points-at HEAD | cut --characters=2-)"
           cd ../..
           cat kevm_pyk/setup.cfg.tmpl | sed 's/\${K_COMMIT}/'"${K_COMMIT}"'/' > kevm_pyk/setup.cfg
-          git config user.name devops
-          git config user.email devops@runtimeverification.com
           git add kevm_pyk/setup.cfg
           git commit -m "kevm_pyk/setup.cfg: update version to ${K_COMMIT}" || true
-          git push origin "HEAD:_update-deps_runtimeverification_k"
+      - name: 'Update nix flake inputs'
+        run: |
+          nix run .#update-from-submodules
+          git add flake.lock
+          git commit -m "sync flake.lock to submodules" || true
+      - run: |
+          git push
