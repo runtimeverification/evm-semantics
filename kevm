@@ -240,16 +240,6 @@ run_interpret() {
     cmdprefix=
     output_format='kore'
     case "$backend" in
-        java)    run_kast kast > "$kast"
-                 output_format='kast'
-                 run_file="$kast"
-                 run_krun --parser 'cat' --output kast > "$output" || exit_status="$?"
-                 if ${unparse} || [[ "$exit_status" != '0' ]]; then
-                     cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format"
-                 fi
-                 exit "$exit_status"
-                 ;;
-
         llvm)    run_kast kore > "$kast"
                  ! ${debugger} || krun_args+=(--debugger)
                  run_file="${kast}"
@@ -297,8 +287,7 @@ run_command="$1" ; shift
 if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     echo "
         usage: ${KEVM} run          [--backend (llvm|java|haskell)]           [--profile|--debug] <KEVM_arg>* <pgm>  <K arg>*
-               ${KEVM} interpret    [--backend (llvm)]         [--no-unparse] [--profile|--debug] <KEVM_arg>* <pgm>  <interpreter arg>*
-               ${KEVM} interpret    [--backend (java|haskell)] [--no-unparse] [--profile|--debug] <KEVM_arg>* <pgm>
+               ${KEVM} interpret    [--backend (llvm|haskell)] [--no-unparse] [--profile|--debug] <KEVM_arg>* <pgm>  <K arg>*
                ${KEVM} kast         [--backend (llvm|java|haskell)]           [--profile|--debug] <KEVM_arg>* <pgm>  <output format> <K arg>*
                ${KEVM} prove        [--backend (java|haskell)]                [--profile|--debug]             <spec> <KEVM_arg>* <K arg>*
                ${KEVM} search       [--backend (java|haskell)]                [--profile|--debug]             <pgm>  <pattern> <K arg>*
@@ -449,7 +438,7 @@ case "$run_command-$backend" in
     kompile-@(java|llvm|haskell|node) ) run_kompile   "$@" ;;
     run-@(java|llvm|haskell)          ) run_krun      "$@" ;;
     kast-@(java|llvm|haskell)         ) run_kast      "$@" ;;
-    interpret-@(llvm|haskell|java)    ) run_interpret "$@" ;;
+    interpret-@(llvm|haskell)         ) run_interpret "$@" ;;
     prove-@(java|haskell)             ) run_prove     "$@" ;;
     search-@(java|haskell)            ) run_search    "$@" ;;
     klab-view-*                       ) view_klab     "$@" ;;
