@@ -251,8 +251,9 @@ run_interpret() {
                  ;;
 
         llvm)    run_kast kore > "$kast"
-                 if $debugger; then cmdprefix="gdb --args"; fi
-                 execute $cmdprefix "$interpreter" "$kast" -1 "$output" "$@" || exit_status="$?"
+                 ! ${debugger} || krun_args+=(--debugger)
+                 run_file="${kast}"
+                 run_krun --parser cat --no-expand-macros --term --output kore "$@" > "${output}"
                  if ${unparse} || [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
                  fi
