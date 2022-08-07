@@ -57,7 +57,8 @@ export PLUGIN_SUBMODULE
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         test-kevm-pyk foundry-out foundry-clean                                                                                  \
         media media-pdf metropolis-theme                                                                                         \
-        install uninstall
+        install uninstall                                                                                                        \
+        venv venv-dev venv-clean
 .SECONDARY:
 
 all: build
@@ -427,8 +428,17 @@ tests/%.parse: tests/%
 # solc-to-k
 # ---------
 
-kevm-pyk-venv:
+venv-clean:
+	rm -rf ./kevm_pyk/venv-dev
+	rm -rf ./kevm_pyk/venv-prod
+	rm -rf $(KEVM_LIB)/kframework/lib/python3.8
+	rm -rf $(K_SUBMODULE)/pyk/build
+
+venv:
 	$(MAKE) -C ./kevm_pyk venv-prod
+
+venv-dev:
+	$(MAKE) -C ./kevm_pyk
 
 foundry-clean:
 	rm -rf tests/foundry/cache
