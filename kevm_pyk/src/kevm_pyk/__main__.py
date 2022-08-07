@@ -35,7 +35,7 @@ def main():
     elif args.command == 'gst-to-kore':
         gst_to_kore(args.input_file, sys.stdout, args.schedule, args.mode, args.chainid)
 
-    elif args.command in {'solc-to-k', 'foundry-to-k', 'kompile', 'prove'}:
+    elif args.command in {'solc-to-k', 'foundry-to-k', 'kompile', 'prove', 'run'}:
 
         if 'definition_dir' not in args:
             raise ValueError(f'Must provide --definition argument to {args.command}!')
@@ -106,6 +106,9 @@ def main():
                 final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args, rule_profile=spec_file.with_suffix('.rule-profile'))
                 print(kevm.pretty_print(final_state) + '\n')
 
+            elif args.command == 'run':
+                raise NotImplementedError('Coming soon')
+
     else:
         assert False
 
@@ -118,7 +121,9 @@ def create_argument_parser():
         return parse
 
     shared_args = argparse.ArgumentParser(add_help=False)
-    shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose debugging information.')
+    shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
+    shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
+    shared_args.add_argument('--profile', default=False, action='store_true', help='Coarse process-level profiling.')
     shared_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
     shared_args.add_argument('-I', type=str, dest='includes', default=[], action='append', help='Directories to lookup K definitions in.')
 
@@ -144,6 +149,14 @@ def create_argument_parser():
     prove_args.add_argument('--spec-module', type=str, help='Name of the specification module.')
     prove_args.add_argument('--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.')
     prove_args.add_argument('--bug-report', default=False, action='store_true', help='Generate a haskell-backend bug report for the execution.')
+
+    run_args = command_parser.add_parser('run', help='Run KEVM proof.', parents=[shared_args, evm_chain_args])
+    run_args.add_argument('input_file', type=file_path, help='Path to input file.')
+    run_args.add_argument('--term', default=False, action='store_true', help='<input_file> is the entire term to execute.')
+    run_args.add_argument('--parser', type=str, help='Parser to use for $PGM.')
+    run_args.add_argument('--output', type=str, help='Output format to use, one of [pretty|program|kast|binary|json|latex|kore|none].')
+    run_args.add_argument('--expand-macros', dest='expand_macros', default=True, action='store_true', help='Expand macros on the input term before execution.')
+    run_args.add_argument('--no-expand-macros', dest='expand_macros', action='store_false', help='Do not expand macros on the input term before execution.')
 
     solc_args = command_parser.add_parser('compile', help='Generate combined JSON with solc compilation results.')
     solc_args.add_argument('contract_file', type=file_path, help='Path to contract file.')

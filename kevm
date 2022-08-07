@@ -115,7 +115,7 @@ run_kompile() {
 }
 
 run_krun() {
-    local cschedule cmode cchainid parser
+    local cschedule cmode cchainid parser krun_args
 
     check_k_install
 
@@ -133,11 +133,23 @@ run_krun() {
             parser='cat'
             ;;
     esac
-    execute krun --definition "$backend_dir"          \
-         -cSCHEDULE="$cschedule" -pSCHEDULE="$parser" \
-         -cMODE="$cmode"         -pMODE="$parser"     \
-         -cCHAINID="$cchainid"   -pCHAINID="$parser"  \
-         "$run_file" "$@"
+
+    krun_args=(--definition "${backend_dir}" "${run_file}")
+    if ! ${pyk}; then
+        krun_args+=(-cSCHEDULE="${cschedule}" -pSCHEDULE="${parser}")
+        krun_args+=(-cMODE="${cmode}" -pMODE="${parser}")
+        krun_args+=(-cCHAINID="${cchainid}" -pCHAINID="${parser}")
+    else
+        krun_args+=(--schedule ${schedule})
+        krun_args+=(--mode ${mode})
+        krun_args+=(--chainid ${chainid})
+    fi
+
+    if ! ${pyk}; then
+        execute krun "${krun_args[@]}" "$@"
+    else
+        run_kevm_pyk run "${krun_args[@]}" "$@"
+    fi
 }
 
 run_kast() {
