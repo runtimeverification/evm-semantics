@@ -244,7 +244,7 @@ run_interpret() {
                  output_format='kast'
                  run_file="$kast"
                  run_krun --parser 'cat' --output kast > "$output" || exit_status="$?"
-                 if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
+                 if ${unparse} || [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format"
                  fi
                  exit "$exit_status"
@@ -253,7 +253,7 @@ run_interpret() {
         llvm)    run_kast kore > "$kast"
                  if $debugger; then cmdprefix="gdb --args"; fi
                  execute $cmdprefix "$interpreter" "$kast" -1 "$output" "$@" || exit_status="$?"
-                 if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
+                 if ${unparse} || [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
                  fi
                  exit "$exit_status"
@@ -264,7 +264,7 @@ run_interpret() {
                  bug_report_name="kevm-bug-$(basename "${run_file%.json}")"
                  ! ${bug_report} || kore_exec_args+=(--bug-report ${bug_report_name})
                  execute kore-exec "$backend_dir/definition.kore" --pattern "${kast}" --output "${output}" "${kore_exec_args[@]}" || exit_status="$?"
-                 if [[ "$unparse" == 'true' ]] && [[ "$exit_status" != '0' ]]; then
+                 if ${unparse} || [[ "$exit_status" != '0' ]]; then
                      cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
                  fi
                  exit "$exit_status"
@@ -387,6 +387,7 @@ while [[ $# -gt 0 ]]; do
         --profile)             profile=true ; args+=("$1")     ; shift   ;;
         --dump)                dump=true                       ; shift   ;;
         --no-unparse)          unparse=false                   ; shift   ;;
+        --unparse)             unparse=true                    ; shift   ;;
         --debugger)            debugger=true                   ; shift   ;;
         --profile-haskell)     profile_haskell=true            ; shift   ;;
         --profile-timeout)     profile_timeout="$2"            ; shift 2 ;;
