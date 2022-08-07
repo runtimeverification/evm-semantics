@@ -52,7 +52,7 @@ class KEVM(KProve, KRun):
                 concrete_rules = ','.join(crf.read().split('\n'))
                 command += ['--concrete-rules', concrete_rules]
         try:
-            run_process(command, _LOGGER)
+            run_process(command, logger=_LOGGER)
         except CalledProcessError as err:
             sys.stderr.write(f'\nkompile stdout:\n{err.stdout}\n')
             sys.stderr.write(f'\nkompile stderr:\n{err.stderr}\n')
