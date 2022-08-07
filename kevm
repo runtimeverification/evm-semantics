@@ -229,41 +229,27 @@ view_klab() {
 }
 
 run_interpret() {
-    local interpreter kast output output_text output_format exit_status cmdprefix kore_exec_args bug_report_name
+    local kast output exit_status krun_args bug_report_name
 
-    interpreter="$backend_dir/interpreter"
     kast="$(mktemp)"
     output="$(mktemp)"
-    output_text="$(mktemp)"
-    trap "rm -rf $kast $output $output_text" INT TERM EXIT
+    trap "rm -rf ${kast} ${output}" INT TERM EXIT
     exit_status=0
-    cmdprefix=
-    output_format='kore'
-    case "$backend" in
-        llvm)    run_kast kore > "$kast"
-                 ! ${debugger} || krun_args+=(--debugger)
-                 run_file="${kast}"
-                 run_krun --parser cat --no-expand-macros --term --output kore "$@" > "${output}"
-                 if ${unparse} || [[ "$exit_status" != '0' ]]; then
-                     cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
-                 fi
-                 exit "$exit_status"
-                 ;;
-
-        haskell) run_kast kore > "$kast"
-                 kore_exec_args=(--module ETHEREUM-SIMULATION --smt none)
-                 bug_report_name="kevm-bug-$(basename "${run_file%.json}")"
-                 ! ${bug_report} || kore_exec_args+=(--bug-report ${bug_report_name})
-                 execute kore-exec "$backend_dir/definition.kore" --pattern "${kast}" --output "${output}" "${kore_exec_args[@]}" || exit_status="$?"
-                 if ${unparse} || [[ "$exit_status" != '0' ]]; then
-                     cat "$output" | "${KEVM}" kast --backend "$backend" - pretty --input "$output_format" --sort GeneratedTopCell
-                 fi
-                 exit "$exit_status"
-                 ;;
-
-        *)      fatal "Bad backend for interpreter: '$backend'"
-                ;;
-    esac
+    run_kast kore > ${kast}
+    run_file="${kast}"
+    krun_args=(--term --parser cat --no-expand-macros --output kore)
+    ! ${debugger} || krun_args+=(--debugger)
+    if [[ ${backend} == haskell ]]; then
+        haskell_backend_command+=(--smt none)
+        bug_report_name="kevm-bug-$(basename "${run_file%.json}")"
+        ! ${bug_report} || haskell_backend_command+=(--bug-report ${bug_report_name})
+        krun_args+=(--haskell-backend-command "${haskell_backend_command[@]}")
+    fi
+    run_krun "${krun_args[@]}" "$@" > "${output}"
+    if ${unparse} || [[ "${exit_status}" != '0' ]]; then
+        cat "${output}" | "${KEVM}" kast --backend "${backend}" - pretty --input kore --sort GeneratedTopCell
+    fi
+    exit "${exit_status}"
 }
 
 run_solc() {
@@ -327,7 +313,6 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--branching-allowed <max_branches>]
                                       [--haskell-backend-arg <haskell_backend_arg>]
                  <K arg> is an argument you want to pass to K.
-                 <interpreter arg> is an argument you want to pass to the derived interpreter.
                  <kore-prof arg> is an argument you want to pass to kore-prof.
                  <output format> is the format for Kast to output the term in.
                  <pattern> is the configuration pattern to search for.
