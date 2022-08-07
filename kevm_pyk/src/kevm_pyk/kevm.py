@@ -21,14 +21,14 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 class KEVM(KProve):
 
-    def __init__(self, kompiled_directory, main_file_name=None, use_directory=None):
-        super().__init__(kompiled_directory, main_file_name=main_file_name, use_directory=use_directory)
+    def __init__(self, kompiled_directory, main_file=None, use_directory=None):
+        super().__init__(kompiled_directory, main_file=main_file, use_directory=use_directory)
         KEVM._patch_symbol_table(self.symbol_table)
 
     @staticmethod
     def kompile(
         definition_dir: Path,
-        main_file_name: Path,
+        main_file: Path,
         includes: List[str] = [],
         main_module_name: Optional[str] = None,
         syntax_module_name: Optional[str] = None,
@@ -36,7 +36,7 @@ class KEVM(KProve):
         hook_namespaces: Optional[List[str]] = None,
         concrete_rules_file: Optional[Path] = None,
     ) -> 'KEVM':
-        command = ['kompile', '--output-definition', str(definition_dir), str(main_file_name)]
+        command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
         command += ['--emit-json', '--backend', 'haskell']
         command += ['--main-module', main_module_name] if main_module_name else []
         command += ['--syntax-module', syntax_module_name] if syntax_module_name else []
@@ -55,7 +55,7 @@ class KEVM(KProve):
             sys.stderr.write(f'\nkompile returncode:\n{err.returncode}\n')
             sys.stderr.flush()
             raise
-        return KEVM(definition_dir, main_file_name=main_file_name)
+        return KEVM(definition_dir, main_file=main_file)
 
     @staticmethod
     def _patch_symbol_table(symbol_table: Dict[str, Any]) -> None:
