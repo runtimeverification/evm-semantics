@@ -245,7 +245,7 @@ run_interpret() {
         ! ${bug_report} || haskell_backend_command+=(--bug-report ${bug_report_name})
         krun_args+=(--haskell-backend-command "${haskell_backend_command[@]}")
     fi
-    run_krun "${krun_args[@]}" "$@" > "${output}"
+    run_krun "${krun_args[@]}" "$@" > "${output}" || exit_status="$?"
     if ${unparse} || [[ "${exit_status}" != '0' ]]; then
         cat "${output}" | "${KEVM}" kast --backend "${backend}" - pretty --input kore --sort GeneratedTopCell
     fi
