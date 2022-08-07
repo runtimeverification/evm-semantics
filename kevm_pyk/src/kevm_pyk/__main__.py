@@ -8,6 +8,7 @@ from typing import Final, List
 from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KDefinition, KFlatModule, KImport, KRequire, KSort
 
+from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_k, solc_compile
 from .utils import KPrint_make_unparsing, add_include_arg
@@ -30,6 +31,9 @@ def main():
     if args.command == 'compile':
         res = solc_compile(args.contract_file)
         print(json.dumps(res))
+
+    elif args.command == 'gst-to-kore':
+        gst_to_kore(args.input_file, sys.stdout, args.schedule, args.mode, args.chainid)
 
     elif args.command in {'solc-to-k', 'foundry-to-k', 'kompile', 'prove'}:
 
@@ -118,6 +122,11 @@ def create_argument_parser():
     shared_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
     shared_args.add_argument('-I', type=str, dest='includes', default=[], action='append', help='Directories to lookup K definitions in.')
 
+    evm_chain_args = argparse.ArgumentParser(add_help=False)
+    evm_chain_args.add_argument('--schedule', type=str, default='LONDON', help='KEVM Schedule to use for execution. One of [DEFAULT|FRONTIER|HOMESTEAD|TANGERINE_WHISTLE|SPURIOUS_DRAGON|BYZANTIUM|CONSTANTINOPLE|PETERSBURG|ISTANBUL|BERLIN|LONDON].')
+    evm_chain_args.add_argument('--chainid', type=int, default=1, help='Chain ID to use for execution.')
+    evm_chain_args.add_argument('--mode', type=str, default='NORMAL', help='Execution mode to use. One of [NORMAL|VMTESTS].')
+
     parser = argparse.ArgumentParser(prog='python3 -m kevm_pyk')
 
     command_parser = parser.add_subparsers(dest='command', required=True)
@@ -138,6 +147,9 @@ def create_argument_parser():
 
     solc_args = command_parser.add_parser('compile', help='Generate combined JSON with solc compilation results.')
     solc_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
+
+    gst_to_kore_args = command_parser.add_parser('gst-to-kore', help='Convert a GeneralStateTest to Kore for compsumption by KEVM.', parents=[shared_args, evm_chain_args])
+    gst_to_kore_args.add_argument('input_file', type=file_path, help='Path to GST.')
 
     k_gen_args = argparse.ArgumentParser(add_help=False)
     k_gen_args.add_argument('--main-module', default='VERIFICATION', type=str, help='Name of the main module.')
