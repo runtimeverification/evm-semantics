@@ -240,10 +240,11 @@ run_interpret() {
     krun_args=(--term --parser cat --no-expand-macros --output kore)
     ! ${debugger} || krun_args+=(--debugger)
     if [[ ${backend} == haskell ]]; then
+        KORE_EXEC_OPTS="${KORE_EXEC_OPTS:-} --smt none"
         haskell_backend_command+=(--smt none)
         bug_report_name="kevm-bug-$(basename "${run_file%.json}")"
-        ! ${bug_report} || haskell_backend_command+=(--bug-report ${bug_report_name})
-        krun_args+=(--haskell-backend-command "${haskell_backend_command[@]}")
+        ! ${bug_report} || KORE_EXEC_OPTS="${KORE_EXEC_OPTS} --bug-report ${bug_report_name}"
+        export KORE_EXEC_OPTS
     fi
     run_krun "${krun_args[@]}" "$@" > "${output}" || exit_status="$?"
     if ${unparse} || [[ "${exit_status}" != '0' ]]; then
