@@ -427,7 +427,7 @@ tests/%.parse: tests/%
 	$(CHECK) $@-out $@-expected
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
-tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json
+tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json $(KEVM_BIN)/kevm
 	$(PYK_ACTIVATE) && $(KEVM) kast $< kore $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
 	$(CHECK) tests/interactive/$*.gst-to-kore.out tests/interactive/$*.gst-to-kore.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/interactive/$*.gst-to-kore.out
