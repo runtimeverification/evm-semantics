@@ -344,7 +344,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <code> Vow_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vow => ?_ </nonce>
+              <nonce> Nonce_Vow </nonce>
             </account>
            ...
           </accounts>
@@ -444,7 +444,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>
@@ -546,7 +546,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat</nonce>
             </account>
            ...
           </accounts>
@@ -565,13 +565,13 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Vat)
 
        andBool (#rangeAddress(ABI_usr)
        andBool (#rangeUInt(256, Rad)
        andBool (#sizeByteArray(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool ((VCallValue ==Int 0))))))
-       andBool #rangeNonce(Nonce_Vat)
 
        andBool #lookup(ACCT_ID_STORAGE, #Vat.sin[ABI_usr]) ==Int Rad
        andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.sin[ABI_usr]) ==Int Junk_0
@@ -648,7 +648,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.sin[CALLER_ID] <- Sin -Int ABI_rad ] [ #Vat.dai[CALLER_ID] <- Dai -Int ABI_rad ] [ #Vat.vice <- Vice  -Int ABI_rad ] [ #Vat.debt <- Debt  -Int ABI_rad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>
@@ -780,7 +780,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> Vat_STORAGE => Vat_STORAGE [ #Vat.dai[ACCT_ID] <- Dai_a -Int ABI_rad ] [ #Vat.dai[CALLER_ID] <- Dai_u +Int ABI_rad ] </storage>
               <origStorage> Vat_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>
@@ -918,7 +918,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <code> Flopper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flopper.live <- 0 ] [ #Flopper.vow <- CALLER_ID ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Flopper => ?_ </nonce>
+              <nonce> Nonce_Flopper </nonce>
             </account>
            ...
           </accounts>

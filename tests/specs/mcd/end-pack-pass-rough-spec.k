@@ -81,7 +81,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> Vat_STORAGE => Vat_STORAGE [ #Vat.dai[CALLER_ID] <- Dai -Int ABI_wad *Int #Ray ] [ #Vat.dai[Vow] <- Joy +Int ABI_wad *Int #Ray ] </storage>
               <origStorage> Vat_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>
@@ -232,7 +232,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <code> End_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_End => ?_ </nonce>
+              <nonce> Nonce_End </nonce>
             </account>
            ...
           </accounts>
@@ -333,7 +333,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <code> End_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_End => ?_ </nonce>
+              <nonce> Nonce_End </nonce>
             </account>
            ...
           </accounts>
@@ -434,7 +434,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ] [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>

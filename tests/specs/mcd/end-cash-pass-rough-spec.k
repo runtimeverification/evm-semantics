@@ -227,7 +227,7 @@ module END-CASH-PASS-ROUGH-SPEC
               <code> End_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_End => ?_ </nonce>
+              <nonce> Nonce_End </nonce>
             </account>
            ...
           </accounts>
@@ -331,7 +331,7 @@ module END-CASH-PASS-ROUGH-SPEC
               <code> End_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_End => ?_ </nonce>
+              <nonce> Nonce_End </nonce>
             </account>
            ...
           </accounts>
@@ -432,7 +432,7 @@ module END-CASH-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.gem[ABI_ilk][ABI_src] <- Gem_src -Int ABI_wad ] [ #Vat.gem[ABI_ilk][ABI_dst] <- Gem_dst +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>
