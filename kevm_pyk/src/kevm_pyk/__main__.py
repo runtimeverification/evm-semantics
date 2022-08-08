@@ -3,10 +3,12 @@ import glob
 import json
 import logging
 import sys
+from pathlib import Path
 from typing import Final, List
 
 from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KDefinition, KFlatModule, KImport, KRequire, KSort
+from pyk.ktool import _krun
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
@@ -107,7 +109,17 @@ def main():
                 print(kevm.pretty_print(final_state) + '\n')
 
             elif args.command == 'run':
-                raise NotImplementedError('Coming soon')
+                input_file = args.input_file
+                krun_args = []
+                if args.term:
+                    krun_args += ['--term']
+                if args.parser is not None:
+                    krun_args += ['--parser', args.parser]
+                if not args.expand_macros:
+                    krun_args += ['--no-expand-macros']
+                krun_result = _krun(kevm.definition_dir, Path(input_file), output=args.output, check=False, depth=args.depth, args=krun_args)
+                print(krun_result.stdout)
+                sys.exit(krun_result.returncode)
 
     else:
         assert False
@@ -152,9 +164,10 @@ def create_argument_parser():
 
     run_args = command_parser.add_parser('run', help='Run KEVM proof.', parents=[shared_args, evm_chain_args])
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
+    run_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
     run_args.add_argument('--term', default=False, action='store_true', help='<input_file> is the entire term to execute.')
-    run_args.add_argument('--parser', type=str, help='Parser to use for $PGM.')
-    run_args.add_argument('--output', type=str, help='Output format to use, one of [pretty|program|kast|binary|json|latex|kore|none].')
+    run_args.add_argument('--parser', default=None, type=str, help='Parser to use for $PGM.')
+    run_args.add_argument('--output', default='pretty', type=str, help='Output format to use, one of [pretty|program|kast|binary|json|latex|kore|none].')
     run_args.add_argument('--expand-macros', dest='expand_macros', default=True, action='store_true', help='Expand macros on the input term before execution.')
     run_args.add_argument('--no-expand-macros', dest='expand_macros', action='store_false', help='Do not expand macros on the input term before execution.')
 
