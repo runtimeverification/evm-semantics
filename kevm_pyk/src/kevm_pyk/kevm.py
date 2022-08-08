@@ -6,7 +6,7 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.kast import KApply, KInner
+from pyk.kast import KApply, KInner, KToken
 from pyk.kastManip import flattenLabel, getCell
 from pyk.ktool import KProve, paren
 from pyk.prelude import intToken, stringToken
@@ -74,6 +74,7 @@ class KEVM(KProve):
         symbol_table['_|->_']                                         = paren(symbol_table['_|->_'])                                        # noqa
         symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)                                # noqa
         symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)                                # noqa
+        symbol_table['.AccountCellMap']                               = lambda: ''                                                          # noqa
         symbol_table['AccountCellMapItem']                            = lambda k, v: v                                                      # noqa
         symbol_table['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray'] = lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]'      # noqa
         symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = lambda m, s, w: '(' + m + ' [ ' + s + ' .. ' + w + ' ]):ByteArray'  # noqa
@@ -229,3 +230,23 @@ class KEVM(KProve):
         for i in reversed(args):
             res = KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [i, res])
         return res
+
+    # address(uint160(uint256(keccak256("foundry default caller"))))
+    @staticmethod
+    def foundry_account() -> KApply:
+        return KEVM.account_cell(intToken(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38), # Hardcoded for now
+                                 intToken(0),
+                                 KApply('.ByteArray_EVM-TYPES_ByteArray'),
+                                 KApply('.Map'),
+                                 KApply('.Map'),
+                                 intToken(0))
+
+
+    @staticmethod
+    def accounts(accts: List[KInner]) -> KApply:
+        accounts = KApply('.AccountCellMap')
+        if not accts:
+            return accounts
+        for i in reversed(accts):
+            accounts = KApply('_AccountCellMap_', [i, accounts])
+        return accounts

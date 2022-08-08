@@ -286,7 +286,9 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
         'PC_CELL': intToken(0),
         'GAS_CELL': KEVM.inf_gas(KVariable('VGAS')),
         'K_CELL': KSequence([KEVM.execute(), KVariable('CONTINUATION')]),
-        'ACCOUNTS_CELL': KApply('_AccountCellMap_', [account_cell, KVariable('ACCOUNTS')]),
+        # KApply('_AccountCellMap_', [account_cell, KVariable('ACCOUNTS')]),
+        # KEVM.accounts([account_cell, KEVM.foundry_account()])
+        'ACCOUNTS_CELL': KEVM.accounts([account_cell, KEVM.foundry_account()])
     }
     final_subst = {'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')])}
     init_term = substitute(empty_config, init_subst)

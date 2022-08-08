@@ -293,7 +293,27 @@ module TOKENTEST-BIN-RUNTIME-SPEC
                    </code>
                    ...
                  </account>
-                 _ACCOUNTS ) => ?_ACCOUNTS_CELL_c89e25d9 )
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                  ) ) => ?_ACCOUNTS_CELL_c89e25d9 )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -485,7 +505,27 @@ module TOKENTEST-BIN-RUNTIME-SPEC
                    </code>
                    ...
                  </account>
-                 _ACCOUNTS ) => ?_ACCOUNTS_CELL_c89e25d9 )
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                  ) ) => ?_ACCOUNTS_CELL_c89e25d9 )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
