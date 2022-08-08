@@ -55,8 +55,7 @@ export PLUGIN_SUBMODULE
         test-prove-mcd test-klab-prove                                                                                           \
         test-parse test-failure                                                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
-        test-kevm-pyk                                                                                                            \
-        foundry-clean																											 \
+        test-kevm-pyk foundry-out foundry-clean                                                                                  \
         media media-pdf metropolis-theme                                                                                         \
         install uninstall
 .SECONDARY:
@@ -442,10 +441,16 @@ foundry-clean:
 tests/foundry/%: KEVM = . ./kevm_pyk/venv-prod/bin/activate && kevm
 tests/foundry/%: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile
 
-tests/foundry/out:
-	cd $(dir $@) && forge build
+foundry_out := tests/foundry/out
 
-tests/foundry/foundry.k: tests/foundry/out $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
+foundry-out: $(foundry_out)
+
+$(foundry_out):
+	rm -rf tests/foundry/out
+	cd $(dir $@) && forge build
+	cd $(dir $@) && forge test --ffi
+
+tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	$(KEVM) foundry-to-k $< --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
 	     --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION      \
 	     > $@

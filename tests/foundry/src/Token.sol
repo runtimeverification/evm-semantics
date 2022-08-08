@@ -6,12 +6,16 @@ contract Token {
     mapping(address => uint256) balances;
     mapping(address => mapping(address => uint256)) allowances;
     string name;
+    uint64 y;
+    uint96 z;
+    uint32 a;
 
     struct Foo {
         uint256 bar;
         address baz;
         uint48 boo;
         uint48 frob;
+        uint48[] bills;
     }
 
     mapping(address => Foo) foos;

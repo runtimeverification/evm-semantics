@@ -1,4 +1,3 @@
-import functools
 import json
 import logging
 from dataclasses import dataclass
@@ -9,7 +8,6 @@ from typing import Any, Dict, Final, List, Optional, Tuple
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
 from pyk.kast import (
-    TRUE,
     KApply,
     KAtt,
     KClaim,
@@ -30,7 +28,7 @@ from pyk.kast import (
     KVariable,
 )
 from pyk.kastManip import abstract_term_safely, build_claim, substitute
-from pyk.prelude import Sorts, intToken, mlEqualsTrue, stringToken
+from pyk.prelude import Bool, intToken, mlEqualsTrue, stringToken
 from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM
@@ -71,82 +69,27 @@ class Contract():
             items_after: List[KProductionItem] = [KTerminal(')')]
             return KProduction(self.sort, items_before + items_args + items_after, klabel=KLabel(f'method_{self.contract_name}_{self.name}'))
 
-        def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule:
+        def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> Optional[KRule]:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
             prod_klabel = self.production.klabel
             assert prod_klabel is not None
+            args: List[KInner] = []
+            conjuncts: List[KInner] = []
+            for input_name, input_type in zip(self.arg_names, self.arg_types):
+                args.append(KEVM.abi_type(input_type, KVariable(input_name)))
+                rp = _range_predicate(KVariable(input_name), input_type)
+                if rp is None:
+                    _LOGGER.warning(f'Unsupported ABI type for method {contract_name}.{prod_klabel.name}, will not generate calldata sugar: {input_type}')
+                    return None
             lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
-            args: List[KInner] = [KEVM.abi_type(input_type, KVariable(input_name)) for input_type, input_name in zip(self.arg_types, self.arg_names)]
             rhs = KEVM.abi_calldata(self.name, args)
-            opt_conjuncts = [_range_predicate(KVariable(input_name), input_type) for input_name, input_type in zip(self.arg_names, self.arg_types)]
-            conjuncts = [opt_conjunct for opt_conjunct in opt_conjuncts if opt_conjunct is not None]
-            if not conjuncts:
-                ensures = TRUE
-            else:
-                ensures = functools.reduce(lambda x, y: KApply('_andBool_', [x, y]), conjuncts)
+            ensures = Bool.andBool(conjuncts)
             return KRule(KRewrite(lhs, rhs), ensures=ensures)
-
-    @dataclass
-    class Field:
-        name: str
-        slot: int
-        type: str
-        sort: KSort
-        klabel: KLabel
-        types: FrozenDict
-
-        def __init__(self, name: str, slot: int, type: str, contract_name: str, field_sort: KSort, types: Dict) -> None:
-            self.name = name
-            self.slot = slot
-            self.type = type
-            self.sort = field_sort
-            self.klabel = KLabel(f'field_{contract_name}_{self.name}')
-            self.types = FrozenDict(types)
-
-        def _direct_placement(self, type: str) -> bool:
-            return self.types[type]['encoding'] in {'inplace', 'bytes'} and int(self.types[type]['numberOfBytes']) <= 32
-
-        @property
-        def productions(self) -> List[KProduction]:
-            prods: List[KProduction] = []
-            syntax: List[KProductionItem] = [KTerminal(self.name)]
-            curr_type = self.type
-            while True:
-                if self._direct_placement(curr_type):
-                    prods.append(KProduction(self.sort, syntax, klabel=self.klabel))
-                    break
-                elif self.types[curr_type]['encoding'] == 'inplace' and curr_type.startswith('t_struct'):
-                    for _m in self.types[curr_type]['members']:
-                        if not self._direct_placement(_m['type']):
-                            raise ValueError(f'Unsupported type as struct member in field {self.sort}: {_m["type"]}')
-                        prods.append(KProduction(self.sort, syntax + [KTerminal('.'), KTerminal(_m["label"])], klabel=KLabel(f'{self.klabel.name}_{_m["label"]}')))
-                    break
-                elif self.types[curr_type]['encoding'] == 'mapping':
-                    key_type = self.types[curr_type]['key']
-                    curr_type = self.types[curr_type]['value']
-                    if not self._direct_placement(key_type):
-                        raise ValueError(f'Unsupported key type for mapping in field {self.sort}: {key_type}')
-                    syntax.extend([KTerminal('['), KNonTerminal(Sorts.INT), KTerminal(']')])
-                else:
-                    raise ValueError(f'Unsupported type for encoding in field {self.sort}: {curr_type}')
-            return prods
-
-        def rules(self, contract: KInner, application_label: KLabel) -> List[KRule]:
-            rules: List[KRule] = []
-            for mid, prod in enumerate(self.productions):
-                non_terminal_prods = [pitem for pitem in prod.items if type(pitem) is KNonTerminal]
-                var_names: List[KInner] = [KVariable(f'V{i}') for i, _ in enumerate(non_terminal_prods)]
-                prod_klabel = prod.klabel
-                assert prod_klabel is not None
-                lhs = KApply(application_label, [contract, KApply(prod_klabel, var_names)])
-                rhs = KEVM.hashed_location('Solidity', intToken(self.slot), KEVM.intlist(var_names), member_offset=mid)
-                rules.append(KRule(KRewrite(lhs, rhs)))
-            return rules
 
     name: str
     bytecode: str
     methods: Tuple[Method, ...]
-    fields: Tuple[Field, ...]
+    fields: FrozenDict
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
 
@@ -165,24 +108,29 @@ class Contract():
             mid = int(method_identifiers[msig], 16)
             _methods.append(Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method))
         self.methods = tuple(_methods)
-        _fields = []
-        for storage in contract_json['storageLayout']['storage']:
-            if storage['offset'] != 0:
-                raise ValueError(f'Unsupported nonzero offset for contract {self.name} storage slot: {storage["label"]}')
-            _fields.append(Contract.Field(storage['label'], int(storage['slot']), storage['type'], self.name, self.sort_field, contract_json['storageLayout']['types']))
-        self.fields = tuple(_fields)
+        _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
+        _fields = {}
+        for _l, _s in _fields_list:
+            if _l in _fields:
+                raise ValueError(f'Found duplicate field access key on contract {self.name}: {_l}')
+            _fields[_l] = _s
+        self.fields = FrozenDict(_fields)
+
+    @property
+    def name_upper(self) -> str:
+        return self.name[0:1].upper() + self.name[1:]
 
     @property
     def sort(self) -> KSort:
-        return KSort(f'{self.name}Contract')
+        return KSort(f'{self.name_upper}Contract')
 
     @property
     def sort_field(self) -> KSort:
-        return KSort(f'{self.name}Field')
+        return KSort(f'{self.name_upper}Field')
 
     @property
     def sort_method(self) -> KSort:
-        return KSort(f'{self.name}Method')
+        return KSort(f'{self.name_upper}Method')
 
     @property
     def klabel(self) -> KLabel:
@@ -201,6 +149,10 @@ class Contract():
         return KProduction(KSort('Contract'), [KNonTerminal(self.sort)])
 
     @property
+    def subsort_field(self) -> KProduction:
+        return KProduction(KSort('Field'), [KNonTerminal(self.sort_field)])
+
+    @property
     def production(self) -> KProduction:
         return KProduction(self.sort, [KTerminal(self.name)], klabel=self.klabel)
 
@@ -213,17 +165,24 @@ class Contract():
         method_application_production: KSentence = KProduction(KSort('ByteArray'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)], klabel=self.klabel_method, att=KAtt({'function': ''}))
         res: List[KSentence] = [method_application_production]
         res.extend(method.production for method in self.methods)
-        res.extend(method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods)
+        method_rules = (method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods)
+        res.extend(rule for rule in method_rules if rule)
         res.extend(method.selector_alias_rule for method in self.methods)
         return res if len(res) > 1 else []
 
     @property
     def field_sentences(self) -> List[KSentence]:
-        field_access_production: KSentence = KProduction(KSort('Int'), [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_field)], klabel=self.klabel_field, att=KAtt({'macro': ''}))
-        res: List[KSentence] = [field_access_production]
-        res.extend(prod for field in self.fields for prod in field.productions)
-        res.extend(rule for field in self.fields for rule in field.rules(KApply(self.klabel), self.klabel_field))
-        return res if len(res) > 1 else []
+        prods: List[KSentence] = [self.subsort_field]
+        rules: List[KSentence] = []
+        for field, slot in self.fields.items():
+            klabel = KLabel(self.klabel_field.name + f'_{field}')
+            prods.append(KProduction(self.sort_field, [KTerminal(field)], klabel=klabel, att=KAtt({'symbol': ''})))
+            rule_lhs = KEVM.loc(KApply(KLabel('contract_access_field'), [KApply(self.klabel), KApply(klabel)]))
+            rule_rhs = intToken(slot)
+            rules.append(KRule(KRewrite(rule_lhs, rule_rhs)))
+        if len(prods) == 1 and not rules:
+            return []
+        return prods + rules
 
     @property
     def sentences(self) -> List[KSentence]:
@@ -334,13 +293,17 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
 # Helpers
 
 def _evm_base_sort(type_label: str):
-    if type_label in {'address', 'bool', 'bytes4', 'bytes32', 'int256', 'uint256', 'uint8'}:
+    if type_label in {'address', 'bool', 'bytes4', 'bytes32', 'int256', 'uint256', 'uint8', 'uint64', 'uint96', 'uint32'}:
         return KSort('Int')
 
     if type_label == 'bytes':
         return KSort('ByteArray')
 
-    raise ValueError(f'EVM base sort unknown for: {type_label}')
+    if type_label == 'string':
+        return KSort('String')
+
+    _LOGGER.warning(f'Using generic sort K for type: {type_label}')
+    return KSort('K')
 
 
 def _range_predicate(term, type_label: str):
@@ -351,12 +314,19 @@ def _range_predicate(term, type_label: str):
     if type_label == 'bytes4':
         return KEVM.range_bytes(intToken(4), term)
     if type_label in {'bytes32', 'uint256'}:
-        return KEVM.range_uint256(term)
+        return KEVM.range_uint(256, term)
     if type_label == 'int256':
-        return KEVM.range_sint256(term)
+        return KEVM.range_sint(256, term)
     if type_label == 'uint8':
-        return KEVM.range_uint8(term)
-    if type_label == 'bytes':
-        return None
+        return KEVM.range_uint(8, term)
+    if type_label == 'uint64':
+        return KEVM.range_uint(64, term)
+    if type_label == 'uint96':
+        return KEVM.range_uint(96, term)
+    if type_label == 'uint32':
+        return KEVM.range_uint(32, term)
+    if type_label in {'bytes', 'string'}:
+        return Bool.true
 
-    raise ValueError(f'Range predicate unknown for: {type_label}')
+    _LOGGER.warning(f'Unknown range predicate for type: {type_label}')
+    return None

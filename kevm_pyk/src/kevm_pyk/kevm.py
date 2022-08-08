@@ -114,20 +114,12 @@ class KEVM(KProve):
         return KApply('pow256_EVM-TYPES_Int', [])
 
     @staticmethod
-    def range_uint8(i: KInner) -> KApply:
-        return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(8), i])
+    def range_uint(width: int, i: KInner) -> KApply:
+        return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(width), i])
 
     @staticmethod
-    def range_uint160(i: KInner) -> KApply:
-        return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(160), i])
-
-    @staticmethod
-    def range_uint256(i: KInner) -> KApply:
-        return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(256), i])
-
-    @staticmethod
-    def range_sint256(i: KInner) -> KApply:
-        return KApply('#rangeSInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(256), i])
+    def range_sint(width: int, i: KInner) -> KApply:
+        return KApply('#rangeSInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(width), i])
 
     @staticmethod
     def range_address(i: KInner) -> KApply:
@@ -167,6 +159,10 @@ class KEVM(KProve):
         if member_offset > 0:
             location = KApply('_+Int_', [location, intToken(member_offset)])
         return location
+
+    @staticmethod
+    def loc(accessor: KInner) -> KApply:
+        return KApply('contract_access_loc', [accessor])
 
     @staticmethod
     def abi_calldata(name: str, args: List[KInner]) -> KApply:
