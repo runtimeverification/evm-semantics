@@ -448,6 +448,7 @@ foundry-out: $(foundry_out)
 $(foundry_out):
 	rm -rf tests/foundry/out
 	cd $(dir $@) && forge build
+	cd $(dir $@) && forge test --ffi
 
 tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
 	$(KEVM) foundry-to-k $< --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
