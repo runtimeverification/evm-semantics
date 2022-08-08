@@ -336,40 +336,29 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule #range(M [ N := BUF:ByteArray ], L, K) => BUF [ L -Int N .. minInt(K, #sizeByteArray(BUF) -Int (L -Int N)) ] ++ #range(M, N +Int #sizeByteArray(BUF), K -Int minInt(K, #sizeByteArray(BUF) -Int (L -Int N)))  requires K  >Int 0 andBool L <Int N +Int #sizeByteArray(BUF) andBool L >=Int N                          [simplification]
     rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, K)                                                                                                                                                     requires K  >Int 0                                           andBool L >=Int N +Int #sizeByteArray(BUF) [simplification]
 
+
+    rule #range(M [ N := BUF:ByteArray ], N, K ) => 
+      BUF ++ #range( M, N +Int minInt(K, #sizeByteArray(BUF)), K -Int minInt (K, #sizeByteArray(BUF)))  
+      requires K >Int 0 [simplification]
+
+
     rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma, simplification]
 
     rule BA:ByteArray   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                       [simplification, concrete(BA)]
     rule #buf(32, DATA) ==K BA:ByteArray   =>          DATA  ==Int #asInteger(BA) requires #sizeByteArray(BA) <=Int 32 [simplification, concrete(BA)]
 
-    rule #range( M [ N1 := BUF1:ByteArray ] [ N2 := BUF2:ByteArray ] [ N3 := BUF3:ByteArray ], L, K ) =>
-         #range( M                          [ N2 := BUF2           ] [ N3 := BUF3           ], L, K )
+    rule #range( M [ N1 := BUF1:ByteArray ] [ N2 := BUF2:ByteArray ], L, K ) =>
+         #range( M                          [ N2 := BUF2           ], L, K )
       requires N1 +Int #sizeByteArray(BUF1) <=Int L [simplification]
 
-    rule #range ( M [ N := BUF:ByteArray ], N, K ) => #range( #range( M, N, K ) [ 0 := BUF ], 0, K ) 
-      requires N >Int 0 [simplification]
+    rule #range (M, N1 +Int N2, K ) => #range( #range( M, N2, #sizeByteArray(M) -Int N2 ), N1, K ) 
+      [simplification, concrete(N2), concrete(M)]
 
-    rule #range ( M, N, K ) => #range( #drop(N, M), 0, K ) 
-      requires N >Int 0 [simplification]
+    rule 0 <Int #asWord (BUF ++ #range( M, #sizeByteArray(BUF), LEN -Int #sizeByteArray(BUF) )) => #sizeByteArray(BUF) ==Int LEN
+      requires M ==K #padToWidth(LEN, .ByteArray) [simplification]
 
-    rule #range ( M [ N := BUF:ByteArray ], 0, K ) => M [ N := BUF ]
-      requires (#sizeByteArray( M ) ==Int K andBool #sizeByteArray( BUF ) <=Int K)
-        orBool (#sizeByteArray( M ) <=Int K andBool #sizeByteArray( BUF ) ==Int K)  [simplification]
-
-    rule M [ 0 := BUF:ByteArray ] => #padRightToWidth( #sizeByteArray( M ), BUF )
-      requires M ==K #padToWidth( #sizeByteArray( M ), .ByteArray ) 
-      andBool  #sizeByteArray( BUF ) <=Int #sizeByteArray( M )  [simplification]
-
-    rule #asWord( #padToWidth ( _, BUF ) ) => #asWord( BUF ) [simplification]
-
-    rule #range ( padRightBytes ( BUF:ByteArray, K, 0 ), 0, K ) => #padRightToWidth ( K, BUF ) [simplification]
-
-    rule #range (#padToWidth(K, BUF:ByteArray), 0, K) => #padToWidth(K, BUF)  [simplification]
-
-    rule #range ( b"", _, _) => b"" [simplification]
-
-    rule #range ( #buf( N, DATA ), 0, N ) => #buf( N, DATA )  [simplification]
-
-    rule b"" [ 0 := #buf ( N, DATA ) ] => #buf ( N, DATA )  [simplification]
+    rule maxUInt160 &Int #asWord (BUF ++ #range( M, #sizeByteArray(BUF), LEN -Int #sizeByteArray(BUF) )) => #asWord (BUF ++ #range( M, #sizeByteArray(BUF), LEN -Int #sizeByteArray(BUF) ))
+      requires #asWord(BUF) <=Int maxUInt160 [simplification]
 
   // ########################
   // Map Reasoning

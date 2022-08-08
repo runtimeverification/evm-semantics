@@ -146,16 +146,11 @@ module VERIFICATION-HASKELL [symbolic, kore]
 
     rule maxUInt160 &Int Y => Y requires 0 <=Int Y andBool Y <=Int maxUInt160 [simplification]
 
-    rule ( #sizeByteArray(#ecrec( _, _, _, _ )) <=Int 32 ) => true  [simplification]
+    rule ( #sizeByteArray(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 0  ) =>           #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )  [simplification]
+    rule ( #sizeByteArray(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 32 ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )) [simplification]
 
-    rule MEM [ K1 := BUF1:ByteArray                 ] [ K2 := #ecrec(HASH, SIGV, SIGR, SIGS) ]
-      => MEM [ K2 := #ecrec(HASH, SIGV, SIGR, SIGS) ] [ K1 := BUF1                           ]
-        requires (32 <=Int K1 -Int K2) [simplification]
-
-
-    // #ecrec(_) will either be 32 bytes, in which case there is no padding, or 0 bytes, in which case padding
-    // on the left is equivalent to padding on the right.
-    rule padRightBytes ( #ecrec( HASH, SIGV, SIGR, SIGS ), 32, 0 ) => #padToWidth (32, #ecrec( HASH, SIGV, SIGR, SIGS ) )  [simplification]
+    rule ( #sizeByteArray(#ecrec( _, _, _, _ )) <=Int K ) => true  
+      requires K >=Int 32 [simplification]
 
     rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
 
