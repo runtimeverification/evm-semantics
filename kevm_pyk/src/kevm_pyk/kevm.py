@@ -6,7 +6,7 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.kast import KApply, KInner, KToken
+from pyk.kast import KApply, KInner
 from pyk.kastManip import flattenLabel, getCell
 from pyk.ktool import KProve, paren
 from pyk.prelude import intToken, stringToken
@@ -230,13 +230,12 @@ class KEVM(KProve):
     # address(uint160(uint256(keccak256("foundry default caller"))))
     @staticmethod
     def foundry_account() -> KApply:
-        return KEVM.account_cell(intToken(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38), # Hardcoded for now
+        return KEVM.account_cell(intToken(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38),  # Hardcoded for now
                                  intToken(0),
                                  KApply('.ByteArray_EVM-TYPES_ByteArray'),
                                  KApply('.Map'),
                                  KApply('.Map'),
                                  intToken(0))
-
 
     @staticmethod
     def accounts(accts: List[KInner]) -> KApply:
