@@ -1,7 +1,11 @@
 import json
+import logging
 from collections import OrderedDict
 from io import TextIOWrapper
 from pathlib import Path
+from typing import Final
+
+_LOGGER: Final = logging.getLogger(__name__)
 
 
 def schedule_to_kore(schedule: str) -> str:
@@ -97,3 +101,5 @@ def gst_to_kore(gst_file: Path, out_stream: TextIOWrapper, schedule: str, mode: 
     out_stream.write('))\n')
     out_stream.write('\n')
     out_stream.flush()
+
+    _LOGGER.info('Finished writing kore.')
