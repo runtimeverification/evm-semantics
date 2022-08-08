@@ -145,16 +145,18 @@ run_kast() {
 
     output_mode="${1:-kore}" ; shift
 
-    case "$run_file-$output_mode" in
-        *.json-kast) execute kast-json.py "$run_file" "$cSCHEDULE_kast" "$cMODE_kast" "$cCHAINID_kast"                          ;;
+    case "${run_file}-${output_mode}" in
+        *.json-kast) execute kast-json.py "${run_file}" "${cSCHEDULE_kast}" "${cMODE_kast}" "${cCHAINID_kast}"
+                     ;;
         *.json-kore) if ! ${pyk}; then
-                         execute kore-json.py "$run_file" "$cSCHEDULE_kore" "$cMODE_kore" "$cCHAINID_kore"
+                         execute kore-json.py "${run_file}" "${cSCHEDULE_kore}" "${cMODE_kore}" "${cCHAINID_kore}"
                      else
                          check_k_install
-                         run_kevm_pyk gst-to-kore "$run_file" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@"
+                         run_kevm_pyk gst-to-kore "${run_file}" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@"
                      fi
                      ;;
-        *)           check_k_install ; kast --definition "$backend_dir" "$run_file" --output "$output_mode" "$@"                ;;
+        *)           check_k_install ; kast --definition "${backend_dir}" "${run_file}" --output "${output_mode}" "$@"
+                     ;;
     esac
 }
 
