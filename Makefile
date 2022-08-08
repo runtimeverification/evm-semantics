@@ -365,6 +365,8 @@ KPROVE_FILE    = verification
 KPROVE_EXT     = k
 KPROVE_OPTS   ?=
 
+KAST_OPTS ?=
+
 KEEP_OUTPUTS := false
 
 test-all: test-all-conformance test-prove test-interactive test-parse test-kevm-pyk
@@ -424,6 +426,11 @@ tests/%.parse: tests/%
 	$(KEVM) kast $< kast $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND) > $@-out
 	$(CHECK) $@-out $@-expected
 	$(KEEP_OUTPUTS) || rm -rf $@-out
+
+tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json
+	$(PYK_ACTIVATE) && $(KEVM) kast $< kore $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
+	$(CHECK) tests/interactive/$*.gst-to-kore.out tests/interactive/$*.gst-to-kore.expected
+	$(KEEP_OUTPUTS) || rm -rf tests/interactive/$*.gst-to-kore.out
 
 # solc-to-k
 # ---------
@@ -632,16 +639,18 @@ test-failure: $(failure_tests:=.run-expected)
 
 # kevm_pyk Tests
 
-kevm_pyk_tests :=                                           \
-                  tests/foundry/kompiled/timestamp          \
-                  tests/foundry/foundry.k.check             \
-                  tests/specs/bihu/functional-spec.k.prove  \
-                  tests/specs/examples/empty-bin-runtime.k  \
-                  tests/specs/examples/erc20-bin-runtime.k  \
+kevm_pyk_tests :=                                                         \
+                  tests/interactive/vmLogTest/log3.json.gst-to-kore.check \
+                  tests/foundry/kompiled/timestamp                        \
+                  tests/foundry/foundry.k.check                           \
+                  tests/specs/bihu/functional-spec.k.prove                \
+                  tests/specs/examples/empty-bin-runtime.k                \
+                  tests/specs/examples/erc20-bin-runtime.k                \
                   tests/specs/examples/erc721-bin-runtime.k
 
 test-kevm-pyk: KPROVE_OPTS  += --pyk --verbose
 test-kevm-pyk: KOMPILE_OPTS += --pyk --verbose
+test-kevm-pyk: KAST_OPTS += --pyk --verbose
 test-kevm-pyk: KEVM = $(PYK_ACTIVATE) && kevm
 test-kevm-pyk: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 test-kevm-pyk: $(kevm_pyk_tests)
