@@ -428,6 +428,8 @@ tests/%.parse: tests/%
 # solc-to-k
 # ---------
 
+PYK_ACTIVATE = . ./kevm_pyk/venv-prod/bin/activate
+
 venv-clean:
 	rm -rf ./kevm_pyk/venv-dev
 	rm -rf ./kevm_pyk/venv-prod
@@ -448,8 +450,8 @@ foundry-clean:
 	rm -f  tests/foundry/foundry.k
 	rm -f  tests/foundry/foundry.rule-profile
 
-tests/foundry/%: KEVM = . ./kevm_pyk/venv-prod/bin/activate && kevm
-tests/foundry/%: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile
+tests/foundry/%: KEVM = $(PYK_ACTIVATE) && kevm
+tests/foundry/%: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 
 foundry_out := tests/foundry/out
 
@@ -480,14 +482,14 @@ tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC20 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
+	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< ERC20 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
 
 tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
 tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC721 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
+	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< ERC721 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
 
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
+	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< Empty --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
@@ -640,8 +642,8 @@ kevm_pyk_tests :=                                           \
 
 test-kevm-pyk: KPROVE_OPTS  += --pyk --verbose
 test-kevm-pyk: KOMPILE_OPTS += --pyk --verbose
-test-kevm-pyk: KEVM = . ./kevm_pyk/venv-prod/bin/activate && kevm
-test-kevm-pyk: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile
+test-kevm-pyk: KEVM = $(PYK_ACTIVATE) && kevm
+test-kevm-pyk: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 test-kevm-pyk: $(kevm_pyk_tests)
 	wc -l tests/specs/bihu/functional-spec.rule-profile
 
