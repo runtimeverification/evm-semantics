@@ -73,7 +73,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ] [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>
@@ -189,8 +189,8 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>
@@ -288,8 +288,8 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>

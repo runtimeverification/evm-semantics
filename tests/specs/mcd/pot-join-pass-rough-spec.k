@@ -73,7 +73,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
               <code> Pot_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Pot.pie[CALLER_ID] <- Pie_u +Int ABI_wad ] [ #Pot.Pie <- Pie_tot +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Pot => ?_ </nonce>
+              <nonce> Nonce_Pot </nonce>
             </account>
             <account>
               <acctID> Vat </acctID>
@@ -81,7 +81,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> Vat_STORAGE => Vat_STORAGE [ #Vat.dai[CALLER_ID] <- Dai_u -Int Chi *Int ABI_wad ] [ #Vat.dai[ACCT_ID] <- Dai_p +Int Chi *Int ABI_wad ] </storage>
               <origStorage> Vat_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>
@@ -235,8 +235,8 @@ module POT-JOIN-PASS-ROUGH-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> Pot_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Pot => ?_ </nonce>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
+              <nonce> Nonce_Pot </nonce>
             </account>
            ...
           </accounts>
@@ -339,8 +339,8 @@ module POT-JOIN-PASS-ROUGH-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> Pot_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Pot => ?_ </nonce>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
+              <nonce> Nonce_Pot </nonce>
             </account>
            ...
           </accounts>
@@ -441,7 +441,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ] [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>

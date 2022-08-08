@@ -72,8 +72,8 @@ module END-SUBUU-PASS-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> End_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_End => ?_ </nonce>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
+              <nonce> _Nonce_End => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -92,7 +92,6 @@ module END-SUBUU-PASS-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
-       andBool #rangeNonce(Nonce_End)
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)

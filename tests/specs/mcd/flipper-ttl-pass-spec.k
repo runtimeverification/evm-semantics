@@ -73,7 +73,7 @@ module FLIPPER-TTL-PASS-SPEC
               <code> Flipper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Flipper => ?_ </nonce>
+              <nonce> _Nonce_Flipper => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -92,7 +92,6 @@ module FLIPPER-TTL-PASS-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
-       andBool #rangeNonce(Nonce_Flipper)
 
        andBool (#rangeUInt(48, Ttl)
        andBool (#rangeUInt(48, Tau)
