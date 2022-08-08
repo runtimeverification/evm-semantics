@@ -26,7 +26,7 @@ def gst_to_kore(gst_file: Path, out_stream: TextIOWrapper, schedule: str, mode: 
 
     def print_int(_data):
         out_stream.write('\\dv{SortInt{}}("')
-        out_stream.write(_data)
+        out_stream.write(str(_data))
         out_stream.write('")')
 
     def print_string(_data):
