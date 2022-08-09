@@ -41,6 +41,8 @@ module VERIFICATION
     rule         255 &Int X <Int 256 => true requires 0 <=Int X [simplification, smt-lemma]
     rule 0 <=Int 255 &Int X          => true requires 0 <=Int X [simplification, smt-lemma]
 
+    rule bool2Word ( notBool WORD ==Int 0 ) => WORD           [simplification]
+
 endmodule
 ```
 
@@ -57,7 +59,7 @@ module STORAGE-SPEC
 ### Functional Claims
 
 ```k
-    claim <k> runLemma(#bufStrict(32, #loc(Storage.myBool))) => doneLemma(#buf(32, keccak(#buf(32, OWNER) ++ #buf(32, 1)))) ... </k>
+    claim <k> runLemma(#bufStrict(32, #loc(Storage . myBool))) => doneLemma(#buf(32,0)) ... </k>
 ```
 
 ### Calling myBool() works
@@ -96,8 +98,8 @@ module STORAGE-SPEC
             ...
           </account>
 
-       requires MYBOOL_KEY ==Int #loc(Storage.myBool)
-        andBool MYBOOL     ==Int 255 &Int #lookup(ACCT_STORAGE, MYBOOL)
+       requires MYBOOL_KEY ==Int #loc(Storage . myBool)
+        andBool MYBOOL     ==Int 255 &Int #lookup(ACCT_STORAGE, MYBOOL_KEY)
 ```
 
 ```k
