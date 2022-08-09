@@ -3,7 +3,7 @@ import logging
 from collections import OrderedDict
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Final
+from typing import Any, Callable, Final
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -25,28 +25,25 @@ def gst_to_kore(gst_file: Path, out_stream: TextIOWrapper, schedule: str, mode: 
     with open(gst_file) as data_file:
         data = json.load(data_file, object_pairs_hook=OrderedDict)
 
-    def escape(_data):
-        return _data.encode('unicode_escape')
-
-    def print_int(_data):
+    def print_int(_data: int) -> None:
         out_stream.write('\\dv{SortInt{}}("')
         out_stream.write(str(_data))
         out_stream.write('")')
 
-    def print_string(_data):
+    def print_string(_data: str) -> None:
         out_stream.write('\\dv{SortString{}}(')
         out_stream.write(json.dumps(_data))
         out_stream.write(')')
 
-    def print_k_config_var(_data):
+    def print_k_config_var(_data: str) -> None:
         out_stream.write('\\dv{SortKConfigVar{}}("$' + _data + '")')
 
-    def print_sort_injection(s1, s2, _data, printer):
+    def print_sort_injection(s1: str, s2: str, _data: Any, printer: Callable[[Any], None]) -> None:
         out_stream.write('inj{Sort' + s1 + '{}, ' + 'Sort' + s2 + '{}}(')
         printer(_data)
         out_stream.write(')')
 
-    def print_kast(_data, sort='JSON'):
+    def print_kast(_data: Any, sort='JSON'):
         if isinstance(_data, list):
             out_stream.write('LblJSONList{}(')
             for elem in _data:
@@ -74,16 +71,13 @@ def gst_to_kore(gst_file: Path, out_stream: TextIOWrapper, schedule: str, mode: 
         elif isinstance(_data, int):
             print_sort_injection('Int', sort, _data, print_int)
         else:
-            out_stream.write(type(_data))
+            out_stream.write(str(type(_data)))
             raise AssertionError
 
-    def print_klabel(s):
-        out_stream.write('Lbl' + s.replace('_', '\'Unds\'').replace('`', '').replace('(.KList)', '{}') + '()')
-
-    def print_direct(s):
+    def print_direct(s: str) -> None:
         out_stream.write(s)
 
-    def print_config_map_entry(k, v, vsort, vprint):
+    def print_config_map_entry(k: str, v: str, vsort: str, vprint: Callable[[Any], None]) -> None:
         out_stream.write('Lbl\'UndsPipe\'-\'-GT-Unds\'{}(')
         print_sort_injection('KConfigVar', 'KItem', k, print_k_config_var)
         out_stream.write(',')
