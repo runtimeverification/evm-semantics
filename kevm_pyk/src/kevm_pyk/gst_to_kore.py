@@ -43,7 +43,7 @@ def gst_to_kore(gst_file: Path, out_stream: TextIOWrapper, schedule: str, mode: 
         printer(_data)
         out_stream.write(')')
 
-    def _print_kast(_data: Any, sort='JSON'):
+    def _print_kast(_data: Any, sort='JSON') -> None:
         if isinstance(_data, list):
             out_stream.write('LblJSONList{}(')
             for elem in _data:
