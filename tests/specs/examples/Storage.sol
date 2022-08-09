@@ -72,6 +72,18 @@ contract Storage {
 
     string public myString;
     bytes public myBytes;
+
+    uint128[] myUint128s;
+    uint64[5] myUint64s;
+
+    struct Foo {
+        uint128 myUint128;
+        uint8[] myUint8Array;
+    }
+
+    Foo myFoo;
+    Foo[] myFoos;
+
     constructor () {
         myBool = true;
         myUint128 = 100;
