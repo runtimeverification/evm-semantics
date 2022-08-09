@@ -73,7 +73,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
               <code> Vow_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vow.live <- 0 ] [ #Vow.Sin <- 0 ] [ #Vow.Ash <- 0 ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vow => ?_ </nonce>
+              <nonce> Nonce_Vow </nonce>
             </account>
             <account>
               <acctID> Vat </acctID>
@@ -342,7 +342,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> Vow_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vow </nonce>
             </account>
            ...
@@ -771,7 +771,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
               <code> Flapper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flapper.live <- 0 ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Flapper => ?_ </nonce>
+              <nonce> Nonce_Flapper </nonce>
             </account>
             <account>
               <acctID> Vat </acctID>

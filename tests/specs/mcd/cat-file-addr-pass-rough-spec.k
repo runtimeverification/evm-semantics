@@ -73,7 +73,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
               <code> Cat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Cat.vow <- ABI_data ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Cat => ?_ </nonce>
+              <nonce> Nonce_Cat </nonce>
             </account>
            ...
           </accounts>

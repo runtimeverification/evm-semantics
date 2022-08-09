@@ -73,7 +73,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <code> Vow_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vow.live <- 0 ] [ #Vow.Sin <- 0 ] [ #Vow.Ash <- 0 ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vow => ?_ </nonce>
+              <nonce> Nonce_Vow </nonce>
             </account>
             <account>
               <acctID> Vat </acctID>
@@ -81,7 +81,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> Vat_STORAGE => Vat_STORAGE [ #Vat.dai[Flapper] <- 0 ] [ #Vat.dai[ACCT_ID] <- (Dai_v +Int Dai_f) -Int Sin_v ] [ #Vat.sin[ACCT_ID] <- 0 ] [ #Vat.vice <- Vice -Int Sin_v ] [ #Vat.debt <- Debt -Int Sin_v ] </storage>
               <origStorage> Vat_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
             <account>
               <acctID> Flapper </acctID>
@@ -89,7 +89,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <code> Flapper_bin_runtime </code>
               <storage> Flapper_STORAGE => Flapper_STORAGE [ #Flapper.live <- 0 ] </storage>
               <origStorage> Flapper_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Flapper => ?_ </nonce>
+              <nonce> Nonce_Flapper </nonce>
             </account>
             <account>
               <acctID> Flopper </acctID>
@@ -97,7 +97,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <code> Flopper_bin_runtime </code>
               <storage> Flopper_STORAGE => Flopper_STORAGE [ #Flopper.live <- 0 ] [ #Flopper.vow <- ACCT_ID ] </storage>
               <origStorage> Flopper_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Flopper => ?_ </nonce>
+              <nonce> Nonce_Flopper </nonce>
             </account>
            ...
           </accounts>
@@ -343,7 +343,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> Vow_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vow </nonce>
             </account>
            ...
@@ -772,7 +772,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
               <code> Flapper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flapper.live <- 0 ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Flapper => ?_ </nonce>
+              <nonce> Nonce_Flapper </nonce>
             </account>
             <account>
               <acctID> Vat </acctID>

@@ -78,7 +78,7 @@ module VAT-SUBUI-PASS-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
             </account>
            ...

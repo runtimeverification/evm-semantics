@@ -73,7 +73,7 @@ module FLIPPER-TAU-PASS-SPEC
               <code> Flipper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Flipper => ?_ </nonce>
+              <nonce> Nonce_Flipper </nonce>
             </account>
            ...
           </accounts>

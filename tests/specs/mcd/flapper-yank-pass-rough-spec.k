@@ -73,7 +73,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
               <code> Flapper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flapper.bids[ABI_id].bid <- 0 ] [ #Flapper.bids[ABI_id].lot <- 0 ] [ #Flapper.bids[ABI_id].guy_tic_end <- 0 ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Flapper => ?_ </nonce>
+              <nonce> Nonce_Flapper </nonce>
             </account>
             <account>
               <acctID> DSToken </acctID>
@@ -81,7 +81,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
               <code> DSToken_bin_runtime </code>
               <storage> DSToken_STORAGE => DSToken_STORAGE [ #DSToken.balances[ACCT_ID] <- Gem_a -Int Bid ] [ #DSToken.balances[Guy] <- Gem_g +Int Bid ] </storage>
               <origStorage> DSToken_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_DSToken => ?_ </nonce>
+              <nonce> Nonce_DSToken </nonce>
             </account>
            ...
           </accounts>
@@ -242,7 +242,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
               <code> DSToken_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #DSToken.allowance[ABI_src][CALLER_ID] <- #if (ABI_src ==Int CALLER_ID orBool Allowance ==Int maxUInt256) #then Allowance #else Allowance -Int ABI_wad #fi ] [ #DSToken.balances[ABI_src] <- Gem_s -Int ABI_wad ] [ #DSToken.balances[ABI_dst] <- Gem_d +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_DSToken => ?_ </nonce>
+              <nonce> Nonce_DSToken </nonce>
             </account>
            ...
           </accounts>

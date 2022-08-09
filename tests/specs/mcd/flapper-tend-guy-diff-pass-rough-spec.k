@@ -73,7 +73,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
               <code> Flapper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flapper.bids[ABI_id].bid <- ABI_bid ]  [ #Flapper.bids[ABI_id].guy_tic_end <- #WordPackAddrUInt48UInt48(CALLER_ID, TIME +Int Ttl, End) ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Flapper => ?_ </nonce>
+              <nonce> Nonce_Flapper </nonce>
             </account>
             <account>
               <acctID> DSToken </acctID>
@@ -287,7 +287,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> Flapper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Flapper </nonce>
             </account>
            ...
@@ -391,7 +391,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> Flapper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Flapper </nonce>
             </account>
            ...

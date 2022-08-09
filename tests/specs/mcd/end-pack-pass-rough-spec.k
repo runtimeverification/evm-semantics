@@ -73,7 +73,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <code> End_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #End.bag[CALLER_ID] <- Bag +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_End => ?_ </nonce>
+              <nonce> Nonce_End </nonce>
             </account>
             <account>
               <acctID> Vat </acctID>
@@ -231,7 +231,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> End_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_End </nonce>
             </account>
            ...
@@ -332,7 +332,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> End_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_End </nonce>
             </account>
            ...

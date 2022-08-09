@@ -73,7 +73,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
               <code> Pot_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Pot.pie[CALLER_ID] <- Pie_u +Int ABI_wad ] [ #Pot.Pie <- Pie_tot +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Pot => ?_ </nonce>
+              <nonce> Nonce_Pot </nonce>
             </account>
             <account>
               <acctID> Vat </acctID>

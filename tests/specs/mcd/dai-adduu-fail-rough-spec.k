@@ -73,7 +73,7 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
               <code> Dai_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Dai => ?_ </nonce>
+              <nonce> Nonce_Dai </nonce>
             </account>
            ...
           </accounts>

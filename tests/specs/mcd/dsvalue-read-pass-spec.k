@@ -73,7 +73,7 @@ module DSVALUE-READ-PASS-SPEC
               <code> DSValue_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_DSValue => ?_ </nonce>
+              <nonce> Nonce_DSValue </nonce>
             </account>
            ...
           </accounts>

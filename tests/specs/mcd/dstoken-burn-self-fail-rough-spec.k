@@ -73,7 +73,7 @@ module DSTOKEN-BURN-SELF-FAIL-ROUGH-SPEC
               <code> DSToken_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_DSToken => ?_ </nonce>
+              <nonce> Nonce_DSToken </nonce>
             </account>
            ...
           </accounts>
