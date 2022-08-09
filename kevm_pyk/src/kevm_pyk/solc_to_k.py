@@ -247,11 +247,12 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
         'K_CELL': KSequence([KEVM.execute(), KVariable('CONTINUATION')]),
         # KApply('_AccountCellMap_', [account_cell, KVariable('ACCOUNTS')]),
         # KEVM.accounts([account_cell, KEVM.foundry_account()])
-        'ACCOUNTS_CELL': KEVM.accounts([account_cell,
-                                        KEVM.account_CALLER(),
-                                        KEVM.account_TEST_CONTRACT_ADDRESS(),
-                                        KEVM.account_CHEATCODE_ADDRESS(),
-                                        KEVM.account_HARDHAT_CONSOLE_ADDRESS()])
+        'ACCOUNTS_CELL': KEVM.accounts([
+            account_cell,
+            KEVM.account_CALLER(),
+            KEVM.account_TEST_CONTRACT_ADDRESS(),
+            KEVM.account_CHEATCODE_ADDRESS(),
+            KEVM.account_HARDHAT_CONSOLE_ADDRESS()])
     }
     final_subst = {'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')])}
     init_term = substitute(empty_config, init_subst)

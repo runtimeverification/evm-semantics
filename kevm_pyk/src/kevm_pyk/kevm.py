@@ -210,6 +210,10 @@ class KEVM(KProve):
         return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
 
     @staticmethod
+    def bytearray_empty():
+        return KApply('.ByteArray_EVM-TYPES_ByteArray')
+
+    @staticmethod
     def foundry_success() -> KApply:
         return KApply('foundry_success')
 
@@ -232,7 +236,7 @@ class KEVM(KProve):
     def account_CALLER() -> KApply:
         return KEVM.account_cell(intToken(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38),  # Hardcoded for now
                                  intToken(0),
-                                 KApply('.ByteArray_EVM-TYPES_ByteArray'),
+                                 KEVM.bytearray_empty(),
                                  KApply('.Map'),
                                  KApply('.Map'),
                                  intToken(0))
@@ -241,7 +245,7 @@ class KEVM(KProve):
     def account_TEST_CONTRACT_ADDRESS() -> KApply:
         return KEVM.account_cell(intToken(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84),
                                  intToken(0),
-                                 KApply('.ByteArray_EVM-TYPES_ByteArray'),
+                                 KEVM.bytearray_empty(),
                                  KApply('.Map'),
                                  KApply('.Map'),
                                  intToken(0))
@@ -252,7 +256,7 @@ class KEVM(KProve):
     def account_CHEATCODE_ADDRESS() -> KApply:
         return KEVM.account_cell(intToken(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D),  # Hardcoded for now
                                  intToken(0),
-                                 KApply('.ByteArray_EVM-TYPES_ByteArray'),
+                                 KEVM.bytearray_empty(),
                                  KApply('.Map'),
                                  KApply('.Map'),
                                  intToken(0))
@@ -263,7 +267,7 @@ class KEVM(KProve):
     def account_HARDHAT_CONSOLE_ADDRESS() -> KApply:
         return KEVM.account_cell(intToken(0x000000000000000000636F6e736F6c652e6c6f67),
                                  intToken(0),
-                                 KApply('.ByteArray_EVM-TYPES_ByteArray'),
+                                 KEVM.bytearray_empty(),
                                  KApply('.Map'),
                                  KApply('.Map'),
                                  intToken(0))
