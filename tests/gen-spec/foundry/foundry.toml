@@ -1,5 +1,0 @@
-[profile.default]
-src = 'src'
-out = 'out'
-rpc_endpoints = { optimism = "https://optimism.alchemyapi.io/v2/...", mainnet = "${RPC_MAINNET}" }
-
