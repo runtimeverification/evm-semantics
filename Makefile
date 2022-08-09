@@ -57,7 +57,8 @@ export PLUGIN_SUBMODULE
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         test-kevm-pyk foundry-out foundry-clean                                                                                  \
         media media-pdf metropolis-theme                                                                                         \
-        install uninstall
+        install uninstall                                                                                                        \
+        venv venv-dev venv-clean
 .SECONDARY:
 
 all: build
@@ -364,6 +365,8 @@ KPROVE_FILE    = verification
 KPROVE_EXT     = k
 KPROVE_OPTS   ?=
 
+KAST_OPTS ?=
+
 KEEP_OUTPUTS := false
 
 test-all: test-all-conformance test-prove test-interactive test-parse test-kevm-pyk
@@ -424,11 +427,27 @@ tests/%.parse: tests/%
 	$(CHECK) $@-out $@-expected
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
+tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json $(KEVM_BIN)/kevm
+	$(PYK_ACTIVATE) && $(KEVM) kast $< kore $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
+	$(CHECK) tests/interactive/$*.gst-to-kore.out tests/interactive/$*.gst-to-kore.expected
+	$(KEEP_OUTPUTS) || rm -rf tests/interactive/$*.gst-to-kore.out
+
 # solc-to-k
 # ---------
 
-kevm-pyk-venv:
+PYK_ACTIVATE = . ./kevm_pyk/venv-prod/bin/activate
+
+venv-clean:
+	rm -rf ./kevm_pyk/venv-dev
+	rm -rf ./kevm_pyk/venv-prod
+	rm -rf $(KEVM_LIB)/kframework/lib/python3.8
+	rm -rf $(K_SUBMODULE)/pyk/build
+
+venv:
 	$(MAKE) -C ./kevm_pyk venv-prod
+
+venv-dev:
+	$(MAKE) -C ./kevm_pyk
 
 foundry-clean:
 	rm -rf tests/foundry/cache
@@ -438,8 +457,8 @@ foundry-clean:
 	rm -f  tests/foundry/foundry.k
 	rm -f  tests/foundry/foundry.rule-profile
 
-tests/foundry/%: KEVM = . ./kevm_pyk/venv-prod/bin/activate && kevm
-tests/foundry/%: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile
+tests/foundry/%: KEVM = $(PYK_ACTIVATE) && kevm
+tests/foundry/%: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 
 foundry_out := tests/foundry/out
 
@@ -450,7 +469,7 @@ $(foundry_out):
 	cd $(dir $@) && forge build
 	cd $(dir $@) && forge test --ffi
 
-tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
+tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
 	$(KEVM) foundry-to-k $< --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
 	     --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION      \
 	     > $@
@@ -469,15 +488,15 @@ tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
 	    $(KOMPILE_OPTS)
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
-tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC20 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
+tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< ERC20 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
 
 tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
-tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC721 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
+tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< ERC721 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
 
-tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
+tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< Empty --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
@@ -620,18 +639,20 @@ test-failure: $(failure_tests:=.run-expected)
 
 # kevm_pyk Tests
 
-kevm_pyk_tests :=                                           \
-                  tests/foundry/kompiled/timestamp          \
-                  tests/foundry/foundry.k.check             \
-                  tests/specs/bihu/functional-spec.k.prove  \
-                  tests/specs/examples/empty-bin-runtime.k  \
-                  tests/specs/examples/erc20-bin-runtime.k  \
+kevm_pyk_tests :=                                                         \
+                  tests/interactive/vmLogTest/log3.json.gst-to-kore.check \
+                  tests/foundry/kompiled/timestamp                        \
+                  tests/foundry/foundry.k.check                           \
+                  tests/specs/bihu/functional-spec.k.prove                \
+                  tests/specs/examples/empty-bin-runtime.k                \
+                  tests/specs/examples/erc20-bin-runtime.k                \
                   tests/specs/examples/erc721-bin-runtime.k
 
 test-kevm-pyk: KPROVE_OPTS  += --pyk --verbose
 test-kevm-pyk: KOMPILE_OPTS += --pyk --verbose
-test-kevm-pyk: KEVM = . ./kevm_pyk/venv-prod/bin/activate && kevm
-test-kevm-pyk: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile
+test-kevm-pyk: KAST_OPTS += --pyk --verbose
+test-kevm-pyk: KEVM = $(PYK_ACTIVATE) && kevm
+test-kevm-pyk: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 test-kevm-pyk: $(kevm_pyk_tests)
 	wc -l tests/specs/bihu/functional-spec.rule-profile
 
