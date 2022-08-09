@@ -150,6 +150,7 @@ These can be used for pattern-matching on the LHS of rules as well (`alias` attr
     rule #rangeAddress (            X ) => #range ( minUInt160      <= X <  pow160          )
     rule #rangeBytes   (   N ,      X ) => #range ( 0               <= X <  1 <<Byte N      )
     rule #rangeNonce   (   X          ) => #range ( 0               <= X < maxUInt64        )
+
     syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")" [macro]
                   | "#range" "(" Int "<"  Int "<=" Int ")" [macro]
                   | "#range" "(" Int "<=" Int "<"  Int ")" [macro]
