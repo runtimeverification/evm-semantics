@@ -229,8 +229,39 @@ class KEVM(KProve):
 
     # address(uint160(uint256(keccak256("foundry default caller"))))
     @staticmethod
-    def foundry_account() -> KApply:
+    def account_CALLER() -> KApply:
         return KEVM.account_cell(intToken(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38),  # Hardcoded for now
+                                 intToken(0),
+                                 KApply('.ByteArray_EVM-TYPES_ByteArray'),
+                                 KApply('.Map'),
+                                 KApply('.Map'),
+                                 intToken(0))
+
+    @staticmethod
+    def account_TEST_CONTRACT_ADDRESS() -> KApply:
+        return KEVM.account_cell(intToken(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84),
+                                 intToken(0),
+                                 KApply('.ByteArray_EVM-TYPES_ByteArray'),
+                                 KApply('.Map'),
+                                 KApply('.Map'),
+                                 intToken(0))
+
+    # Same address as the one used in DappTools's HEVM
+    # address(bytes20(uint160(uint256(keccak256('hevm cheat code')))))
+    @staticmethod
+    def account_CHEATCODE_ADDRESS() -> KApply:
+        return KEVM.account_cell(intToken(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D),  # Hardcoded for now
+                                 intToken(0),
+                                 KApply('.ByteArray_EVM-TYPES_ByteArray'),
+                                 KApply('.Map'),
+                                 KApply('.Map'),
+                                 intToken(0))
+
+    # Hardhat console address (0x000000000000000000636F6e736F6c652e6c6f67)
+    # https://github.com/nomiclabs/hardhat/blob/master/packages/hardhat-core/console.sol
+    @staticmethod
+    def account_HARDHAT_CONSOLE_ADDRESS() -> KApply:
+        return KEVM.account_cell(intToken(0x000000000000000000636F6e736F6c652e6c6f67),
                                  intToken(0),
                                  KApply('.ByteArray_EVM-TYPES_ByteArray'),
                                  KApply('.Map'),
