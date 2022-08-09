@@ -30,7 +30,7 @@ module FOUNDRY-ACCOUNTS
 
     rule TEST_CONTRACT_ADDRESS() => #token("0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84", "Int")
 
-    rule (CHEATCODE_ADDRESS) => #parseByteStack("0x7109709ECfa91a80626fF3989D68f67F5b1DD12D", "Int")
+    rule CHEATCODE_ADDRESS () => #parseByteStack("0x7109709ECfa91a80626fF3989D68f67F5b1DD12D")
 
 endmodule
 ```
