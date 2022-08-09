@@ -94,6 +94,7 @@ module CREATE-SPEC
        andBool 0 <=Int CALL_DEPTH andBool CALL_DEPTH <Int 1023
        andBool #rangeUInt(256, VALUE)
        andBool #rangeUInt(256, BAL)
+       andBool #rangeNonce(NONCE)
        andBool BAL >=Int VALUE
        andBool notBool (#newAddr(ACCT_ID, NONCE) in (SetItem(ACCT_ID) ACCTS))
        andBool ACCT_ID =/=Int #newAddr(ACCT_ID, NONCE)

@@ -74,7 +74,7 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
             <code> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b600060016000540160008190555060005490509056fea165627a7a7230582084ad795d13123f60bc7fd2a18dba66eb8d320ddea8765847f2ae5982179470600029") </code>
             <storage> S => S [ #hashedLocation("Solidity", 0, .IntList) <- N0 +Int 1 ] </storage>
             <origStorage> _OS => ?_OS </origStorage>
-            <nonce> _ </nonce>
+            <nonce> CONTRACT_NONCE </nonce>
           </account>
 
           <account>
@@ -87,7 +87,7 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
             <origStorage>
                 _
             </origStorage>
-            <nonce> _ </nonce>
+            <nonce> CALLEE_NONCE </nonce>
           </account>
 
           <account>
@@ -119,6 +119,8 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
 
      andBool #rangeUInt(256, CONTRACT_BAL)
      andBool #rangeUInt(256, CALLEE_BAL)
+     andBool #rangeNonce(CONTRACT_NONCE)
+     andBool #rangeNonce(CALLEE_NONCE)
      andBool #range(0 <= CD < 1024)
      andBool #rangeAddress(MSG_SENDER)
      andBool #range(0 <= N0        < pow256)

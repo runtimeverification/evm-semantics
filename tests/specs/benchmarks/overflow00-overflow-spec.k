@@ -78,7 +78,7 @@ _
             <origStorage>
 _
             </origStorage>
-            <nonce> _ </nonce>
+            <nonce> CONTRACT_NONCE </nonce>
           </account>
 
           <account>
@@ -91,7 +91,7 @@ _
             <origStorage>
                 _
             </origStorage>
-            <nonce> _ </nonce>
+            <nonce> CALLEE_NONCE </nonce>
           </account>
 
           <account>
@@ -123,6 +123,8 @@ _
 
      andBool #rangeUInt(256, CONTRACT_BAL)
      andBool #rangeUInt(256, CALLEE_BAL)
+     andBool #rangeNonce(CONTRACT_NONCE)
+     andBool #rangeNonce(CALLEE_NONCE)
      andBool #range(0 <= CD < 1024)
      andBool #rangeAddress(MSG_SENDER)
      andBool A0 ==Int pow256 -Int 1
