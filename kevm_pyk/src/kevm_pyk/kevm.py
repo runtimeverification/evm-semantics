@@ -6,7 +6,7 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.kast import KApply, KInner
+from pyk.kast import KApply, KInner, KToken
 from pyk.kastManip import flatten_label, getCell
 from pyk.ktool import KProve, paren
 from pyk.prelude import intToken, stringToken
@@ -256,7 +256,7 @@ class KEVM(KProve):
     def account_CHEATCODE_ADDRESS() -> KApply:
         return KEVM.account_cell(intToken(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D),  # Hardcoded for now
                                  intToken(0),
-                                 KEVM.bytearray_empty(),
+                                 KToken('b"\\x00"', 'Bytes'),
                                  KApply('.Map'),
                                  KApply('.Map'),
                                  intToken(0))
