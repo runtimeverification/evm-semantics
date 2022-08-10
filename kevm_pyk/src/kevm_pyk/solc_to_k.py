@@ -101,18 +101,27 @@ class Contract():
 
         self.name = contract_name
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
-        method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
+        try:
+            method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
+        except KeyError:
+            _LOGGER.error(f'\'methodIdentifiers\' not found on contract {self.name}')
+            method_identifiers = []
         _methods = []
         for msig in method_identifiers:
             mname = msig.split('(')[0]
             mid = int(method_identifiers[msig], 16)
             _methods.append(Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method))
         self.methods = tuple(_methods)
-        _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
+        try:
+            _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
+        except KeyError:
+            _LOGGER.error(f'\'storageLocation\' not found on contract {self.name}')
+            _fields_list = []
         _fields = {}
         for _l, _s in _fields_list:
             if _l in _fields:
-                raise ValueError(f'Found duplicate field access key on contract {self.name}: {_l}')
+                _LOGGER.error(f'Found duplicate field access key on contract {self.name}: {_l}')
+                continue
             _fields[_l] = _s
         self.fields = FrozenDict(_fields)
 
