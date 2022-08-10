@@ -78,7 +78,7 @@ _
             <origStorage>
 _
             </origStorage>
-            <nonce> _ </nonce>
+            <nonce> CONTRACT_NONCE </nonce>
           </account>
 
           <account>
@@ -91,7 +91,7 @@ _
             <origStorage>
                 _
             </origStorage>
-            <nonce> _ </nonce>
+            <nonce> CALLEE_NONCE </nonce>
           </account>
 
           <account>
@@ -124,6 +124,8 @@ _
      andBool #rangeUInt(256, CONTRACT_BAL)
      andBool #rangeUInt(256, CALLEE_BAL)
      andBool #range(0 <= CD < 1024)
+     andBool #rangeNonce(CONTRACT_NONCE)
+     andBool #rangeNonce(CALLEE_NONCE)
      andBool #rangeAddress(MSG_SENDER)
      andBool #rangeUInt(256, HASH)
      andBool #rangeUInt(8, SIGV)
@@ -131,6 +133,5 @@ _
      andBool #rangeBytes(32, SIGS)
      andBool RECOVERED ==Int #asWord(#ecrec(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS)))
      andBool notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
-
 endmodule
 
