@@ -48,6 +48,7 @@ class Contract():
         arg_names: Tuple[str, ...]
         arg_types: Tuple[str, ...]
         contract_name: str
+        payable: bool
 
         def __init__(self, name: str, id: int, abi: Dict, contract_name: str, sort: KSort) -> None:
             self.name = name
@@ -56,6 +57,8 @@ class Contract():
             self.arg_types = tuple([input['type'] for input in abi['inputs']])
             self.contract_name = contract_name
             self.sort = sort
+            # TODO: Check that we're handling all state mutability cases
+            self.payable = abi['stateMutability'] == 'payable'
 
         @property
         def selector_alias_rule(self) -> KRule:
@@ -90,6 +93,7 @@ class Contract():
     name: str
     bytecode: str
     methods: Tuple[Method, ...]
+    test_methods: Tuple[Method, ...]
     fields: FrozenDict
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
@@ -104,11 +108,16 @@ class Contract():
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
         method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
         _methods = []
+        _test_methods = []
         for msig in method_identifiers:
             mname = msig.split('(')[0]
             mid = int(method_identifiers[msig], 16)
-            _methods.append(Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method))
+            _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
+            _methods.append(_m)
+            if mname.startswith('test'):
+                _test_methods.append(_m)
         self.methods = tuple(_methods)
+        self.test_methods = tuple(_test_methods)
         _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
         _fields = {}
         for _l, _s in _fields_list:
@@ -227,7 +236,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
     return json.loads(process_res.stdout)
 
 
-def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_cells: List[KInner] = None) -> List[KClaim]:
+def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[KInner, KInner]] = None) -> List[KClaim]:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
     init_subst = {
@@ -258,7 +267,7 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     final_subst = {'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')])}
     init_term = substitute(empty_config, init_subst)
     if calldata_cells:
-        init_terms = [(f'{contract_name.lower()}-{i}', substitute(init_term, {'CALLDATA_CELL': cd})) for i, cd in enumerate(calldata_cells)]
+        init_terms = [(f'{contract_name.lower()}-{i}', substitute(init_term, {'CALLDATA_CELL': cd, 'CALLVALUE_CELL': cv})) for i, (cd, cv) in enumerate(calldata_cells)]
     else:
         init_terms = [(contract_name.lower(), init_term)]
     final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst)))
@@ -279,16 +288,15 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
     module = KFlatModule(module_name, sentences, [KImport('EDSL')])
 
     claims_module: Optional[KFlatModule] = None
-    function_test_productions = [prod for prod in module.syntax_productions if prod.sort == KSort(f'{contract_name}Method')]
     contract_function_application_label = contract.klabel_method
     function_test_calldatas = []
-    for ftp in function_test_productions:
-        klabel = ftp.klabel
+    for tm in contract.test_methods:
+        klabel = tm.production.klabel
         assert klabel is not None
-        if klabel.name.startswith(f'method_{contract_name}_test'):
-            args = [abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name='V') for pi in ftp.items if type(pi) is KNonTerminal]
-            calldata: KInner = KApply(contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)])
-            function_test_calldatas.append(calldata)
+        args = [abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}') for name in tm.arg_names]
+        calldata: KInner = KApply(contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)])
+        callvalue: KInner = intToken(0) if not tm.payable else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
+        function_test_calldatas.append((calldata, callvalue))
     if function_test_calldatas:
         claims = gen_claims_for_contract(empty_config, contract_name, calldata_cells=function_test_calldatas)
         claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(module_name)])
