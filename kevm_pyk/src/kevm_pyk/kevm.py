@@ -8,7 +8,8 @@ from typing import Any, Dict, Final, List, Optional
 from pyk.cli_utils import run_process
 from pyk.kast import KApply, KInner
 from pyk.kastManip import flatten_label, getCell
-from pyk.ktool import KProve, KRun, paren
+from pyk.ktool import KProve, KRun
+from pyk.ktool.kprint import paren
 from pyk.prelude import intToken, stringToken
 
 from .utils import add_include_arg

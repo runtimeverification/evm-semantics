@@ -8,7 +8,7 @@ from typing import Final, List
 
 from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KDefinition, KFlatModule, KImport, KRequire, KSort
-from pyk.ktool import _krun
+from pyk.ktool.krun import _krun
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
