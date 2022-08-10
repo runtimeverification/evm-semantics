@@ -16,7 +16,7 @@ in stdenv.mkDerivation {
   name = "kevm-profile";
   inherit src;
   preferLocalBuild = true;
-  buildInputs = [ kevm which ];
+  buildInputs = [ kevm ];
   buildPhase = ''
     mkdir -p .build/usr
     cp -r ${kevm}/* .build/usr/
