@@ -6,7 +6,7 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.kast import KApply, KInner, KToken
+from pyk.kast import KApply, KInner, KToken, KVariable
 from pyk.kastManip import flatten_label, getCell
 from pyk.ktool import KProve, paren
 from pyk.prelude import intToken, stringToken
@@ -242,10 +242,14 @@ class KEVM(KProve):
                                  intToken(0))
 
     @staticmethod
+    def address_TEST_CONTRACT() -> KToken:
+        return intToken(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84)
+
+    @staticmethod
     def account_TEST_CONTRACT_ADDRESS() -> KApply:
-        return KEVM.account_cell(intToken(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84),
+        return KEVM.account_cell(KEVM.address_TEST_CONTRACT(),
                                  intToken(0),
-                                 KEVM.bytearray_empty(),
+                                 KVariable('TEST_CODE'),
                                  KApply('.Map'),
                                  KApply('.Map'),
                                  intToken(0))

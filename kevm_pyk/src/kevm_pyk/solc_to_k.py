@@ -238,7 +238,12 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
 
 def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[KInner, KInner]] = None) -> List[KClaim]:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
-    account_cell = KEVM.account_cell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
+    account_cell = KEVM.account_cell(KEVM.address_TEST_CONTRACT(),
+                                     KVariable('ACCT_BALANCE'),
+                                     program,
+                                     KVariable('ACCT_STORAGE'),
+                                     KVariable('ACCT_ORIGSTORAGE'),
+                                     KVariable('ACCT_NONCE'))
     init_subst = {
         'MODE_CELL': KToken('NORMAL', 'Mode'),
         'SCHEDULE_CELL': KApply('LONDON_EVM'),
@@ -261,7 +266,7 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
         'ACCOUNTS_CELL': KEVM.accounts([
             account_cell,
             KEVM.account_CALLER(),
-            KEVM.account_TEST_CONTRACT_ADDRESS(),
+            # KEVM.account_TEST_CONTRACT_ADDRESS(),
             KEVM.account_CHEATCODE_ADDRESS(),
             KEVM.account_HARDHAT_CONSOLE_ADDRESS()])
     }
