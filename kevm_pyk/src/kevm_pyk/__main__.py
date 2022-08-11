@@ -74,11 +74,15 @@ def main():
                 path_glob = str(args.out) + '/**/*.json'
                 modules: List[KFlatModule] = []
                 claims_modules: List[KFlatModule] = []
+                counter: int = 0
                 # Must sort to get consistent output order on different platforms.
                 for json_file in sorted(glob.glob(path_glob)):
                     _LOGGER.info(f'Processing contract file: {json_file}')
                     contract_name = json_file.split('/')[-1]
                     contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
+                    if(contract_name.upper() in [module.name.split('-')[0] for module in modules]):
+                        counter += 1
+                        contract_name += str(counter)
                     with open(json_file, 'r') as cjson:
                         contract_json = json.loads(cjson.read())
                         contract = Contract(contract_name, contract_json, foundry=True)
