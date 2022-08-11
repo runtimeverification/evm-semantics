@@ -74,7 +74,7 @@ module STORAGEVAR03-SPEC
             <code> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b6000600560008190555060001515608257600080fd5b9056fea165627a7a723058206c2e2e763fa3e914d5806ac22d4cf3bd0ff53cd57740965d5e5d05934668a9110029") </code>
             <storage> _S => ?_S </storage>
             <origStorage> _OS </origStorage>
-            <nonce> _ </nonce>
+            <nonce> CONTRACT_NONCE </nonce>
           </account>
 
           <account>
@@ -87,7 +87,7 @@ module STORAGEVAR03-SPEC
             <origStorage>
                 _
             </origStorage>
-            <nonce> _ </nonce>
+            <nonce> CALLEE_NONCE </nonce>
           </account>
 
           <account>
@@ -119,6 +119,8 @@ module STORAGEVAR03-SPEC
 
      andBool #rangeUInt(256, CONTRACT_BAL)
      andBool #rangeUInt(256, CALLEE_BAL)
+     andBool #rangeNonce(CONTRACT_NONCE)
+     andBool #rangeNonce(CALLEE_NONCE)
      andBool #range(0 <= CD < 1024)
      andBool #rangeAddress(MSG_SENDER)
 

@@ -73,7 +73,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
               <code> GemJoin_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_GemJoin => ?_ </nonce>
+              <nonce> Nonce_GemJoin </nonce>
             </account>
             <account>
               <acctID> Vat </acctID>
@@ -81,7 +81,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> Vat_STORAGE => Vat_STORAGE [ #Vat.gem[Ilk][CALLER_ID] <- Wad -Int ABI_wad ] </storage>
               <origStorage> Vat_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
             <account>
               <acctID> DSToken </acctID>
@@ -89,7 +89,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
               <code> DSToken_bin_runtime </code>
               <storage> DSToken_STORAGE => DSToken_STORAGE [ #DSToken.balances[ACCT_ID] <- Bal_adapter -Int ABI_wad ] [ #DSToken.balances[ABI_usr] <- Bal_usr     +Int ABI_wad ] </storage>
               <origStorage> DSToken_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_DSToken => ?_ </nonce>
+              <nonce> Nonce_DSToken </nonce>
             </account>
            ...
           </accounts>
@@ -108,6 +108,9 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_GemJoin)
+       andBool #rangeNonce(Nonce_Vat)
+       andBool #rangeNonce(Nonce_DSToken)
 
        andBool (#rangeAddress(ABI_usr)
        andBool (#rangeUInt(256, ABI_wad)
@@ -248,7 +251,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.gem[ABI_ilk][ABI_usr] <- Gem +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>
@@ -267,6 +270,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Vat)
 
        andBool (#rangeBytes(32, ABI_ilk)
        andBool (#rangeAddress(ABI_usr)
@@ -358,7 +362,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
               <code> DSToken_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #DSToken.balances[CALLER_ID] <- Gem_c -Int ABI_wad ] [ #DSToken.balances[ABI_usr] <- Gem_u +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_DSToken => ?_ </nonce>
+              <nonce> Nonce_DSToken </nonce>
             </account>
            ...
           </accounts>
@@ -377,6 +381,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_DSToken)
 
        andBool (#rangeAddress(ABI_usr)
        andBool (#rangeUInt(256, ABI_wad)

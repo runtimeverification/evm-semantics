@@ -660,7 +660,7 @@ test-kevm-pyk: KOMPILE_OPTS += --pyk --verbose
 test-kevm-pyk: KAST_OPTS += --pyk --verbose
 test-kevm-pyk: KEVM = $(PYK_ACTIVATE) && kevm
 test-kevm-pyk: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
-test-kevm-pyk: $(kevm_pyk_tests)
+test-kevm-pyk: $(kevm_pyk_tests) venv
 	wc -l tests/specs/bihu/functional-spec.rule-profile
 
 # Interactive Tests
