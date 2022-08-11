@@ -120,7 +120,7 @@ class Contract():
         _fields = {}
         for _l, _s in _fields_list:
             if _l in _fields:
-                _LOGGER.error(f'Found duplicate field access key on contract {self.name}: {_l}')
+                _LOGGER.warning(f'Found duplicate field access key on contract {self.name}: {_l}')
                 continue
             _fields[_l] = _s
         self.fields = FrozenDict(_fields)
