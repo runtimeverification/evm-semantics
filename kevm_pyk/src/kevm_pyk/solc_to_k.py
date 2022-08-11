@@ -101,22 +101,22 @@ class Contract():
 
         self.name = contract_name
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
-        try:
-            method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
-        except KeyError:
-            _LOGGER.error(f'\'methodIdentifiers\' not found on contract {self.name}')
-            method_identifiers = []
+        if 'methodIdentifiers' not in contract_json or not(foundry or 'methodIdentifiers' in contract_json['evm']):
+            _LOGGER.warning(f'\'methodIdentifiers\' not found on contract {self.name}')
+            _method_identifiers = []
+        else:
+            _method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
         _methods = []
-        for msig in method_identifiers:
+        for msig in _method_identifiers:
             mname = msig.split('(')[0]
-            mid = int(method_identifiers[msig], 16)
+            mid = int(_method_identifiers[msig], 16)
             _methods.append(Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method))
         self.methods = tuple(_methods)
-        try:
-            _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
-        except KeyError:
-            _LOGGER.error(f'\'storageLocation\' not found on contract {self.name}')
+        if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
+            _LOGGER.warning(f'\'storageLocation\' not found on contract {self.name}')
             _fields_list = []
+        else:
+            _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
         _fields = {}
         for _l, _s in _fields_list:
             if _l in _fields:
