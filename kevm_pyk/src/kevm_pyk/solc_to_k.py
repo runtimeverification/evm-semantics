@@ -102,7 +102,7 @@ class Contract():
         self.name = contract_name
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
         if 'methodIdentifiers' not in contract_json or not(foundry or 'methodIdentifiers' in contract_json['evm']):
-            _LOGGER.warning(f'\'methodIdentifiers\' not found on contract {self.name}')
+            _LOGGER.warning(f'Could not find member \'methodIdentifiers\' while processing contract: {self.name}')
             self.methods = ()
         else:
             _method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
@@ -113,7 +113,7 @@ class Contract():
                 _methods.append(Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method))
             self.methods = tuple(_methods)
         if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
-            _LOGGER.warning(f'\'storageLocation\' not found on contract {self.name}')
+            _LOGGER.warning(f'Could not find member \'storageLayout\' while processing contract: {self.name}')
             self.fields = FrozenDict({})
         else:
             _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
