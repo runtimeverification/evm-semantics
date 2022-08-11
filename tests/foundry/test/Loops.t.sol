@@ -2,8 +2,9 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
+import "ds-math/math.sol";
 
-contract LoopsTest is Test {
+contract LoopsTest is Test, DSMath {
     function setUp() public {}
 
     function sumToN(uint256 n) internal pure returns (uint256) {
@@ -126,4 +127,30 @@ contract LoopsTest is Test {
         assertTrue(isSorted);
     }
 
+    function sqrt(uint x) internal pure returns (uint y) {
+        if (x == 0) {
+            y = 0;
+        } else {
+            uint z = x;
+            while (true) {
+                y = z;
+                z = add(wdiv(x, z), z) / 2;
+                if (y == z) {
+                    break;
+                }
+            }
+        }
+    }
+
+    function testSqrt(uint x) public {
+        uint res = sqrt(x);
+        uint sqr = wmul(res, res);
+        uint err;
+        if (sqr > x) {
+            err = sqr - x;
+        } else {
+            err = sqr - res;
+        }
+        assertTrue(err < x / 100);
+    }
 }
