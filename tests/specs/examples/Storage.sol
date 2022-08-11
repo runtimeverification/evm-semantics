@@ -91,4 +91,8 @@ contract Storage {
         myString = "foo";
     }
 
+    function setMyBool(bool newBool) public {
+        myBool = newBool;
+    }
+
 }

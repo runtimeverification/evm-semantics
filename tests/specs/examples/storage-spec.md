@@ -102,6 +102,46 @@ module STORAGE-SPEC
         andBool MYBOOL     ==Int 255 &Int #lookup(ACCT_STORAGE, MYBOOL_KEY)
 ```
 
+
+```k
+    claim [setMyBool]:
+          <mode>     NORMAL   </mode>
+          <schedule> ISTANBUL </schedule>
+
+          <callStack> .List                                        </callStack>
+          <program>   #binRuntime(Storage)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(Storage)) </jumpDests>
+          <static>    false                                        </static>
+
+          <id>         ACCTID      => ?_ </id>
+          <localMem>   .Memory     => ?_ </localMem>
+          <memoryUsed> 0           => ?_ </memoryUsed>
+          <wordStack>  .WordStack  => ?_ </wordStack>
+          <pc>         0           => ?_ </pc>
+          <endPC>      _           => ?_ </endPC>
+          <gas>        #gas(_VGAS) => ?_ </gas>
+          <callValue>  0           => ?_ </callValue>
+
+          <callData>   Storage.setMyBool(NEW_VAL)       </callData>
+          <k>          #execute   => #halt ...          </k>
+          <output>     .ByteArray                       </output>
+          <statusCode> _          => EVMC_SUCCESS       </statusCode>
+
+          <account>
+            <acctID> ACCTID </acctID>
+            <storage> ACCT_STORAGE => ACCT_STORAGE [ MYBOOL_KEY <- NEW_STORAGE_CONTENT ] </storage>
+            ...
+          </account>
+
+          <refund> _ => ?_ </refund>
+
+       requires #rangeBool(NEW_VAL)
+        andBool MYBOOL_KEY          ==Int #loc(Storage . myBool)
+        andBool OLD_STORAGE_CONTENT ==Int #lookup ( ACCT_STORAGE , MYBOOL_KEY )
+        andBool NEW_STORAGE_CONTENT ==Int NEW_VAL |Int ((~Word 255) &Int OLD_STORAGE_CONTENT) 
+
+```
+
 ```k
 endmodule
 ```
