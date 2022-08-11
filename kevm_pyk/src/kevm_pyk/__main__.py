@@ -71,7 +71,7 @@ def main():
                 print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
             elif args.command == 'foundry-to-k':
-                path_glob = str(args.out) + '/**/*.json'
+                path_glob = str(args.out) + '/*.t.sol/*.json'
                 modules: List[KFlatModule] = []
                 claims_modules: List[KFlatModule] = []
                 counter: int = 0
