@@ -214,8 +214,8 @@ class KEVM(KProve):
         return KApply('.ByteArray_EVM-TYPES_ByteArray')
 
     @staticmethod
-    def foundry_success() -> KApply:
-        return KApply('foundry_success')
+    def foundry_success(s: KInner, dst: KInner) -> KApply:
+        return KApply('foundry_success ', [s, dst])
 
     @staticmethod
     def intlist(ints: List[KInner]) -> KApply:

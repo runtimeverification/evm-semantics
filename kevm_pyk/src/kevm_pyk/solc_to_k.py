@@ -242,6 +242,7 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     init_subst = {
         'MODE_CELL': KToken('NORMAL', 'Mode'),
         'SCHEDULE_CELL': KApply('LONDON_EVM'),
+        'STATUSCODE_CELL': KVariable('STATUSCODE'),
         'CALLSTACK_CELL': KApply('.List'),
         'CALLDEPTH_CELL': intToken(0),
         'PROGRAM_CELL': program,
@@ -264,14 +265,20 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
             KEVM.account_CHEATCODE_ADDRESS(),
             KEVM.account_HARDHAT_CONSOLE_ADDRESS()])
     }
-    final_subst = {'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')])}
+    final_subst = {
+        'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')]),
+        'STATUSCODE_CELL': KVariable('STATUSCODE_FINAL')
+    }
     init_term = substitute(empty_config, init_subst)
     if calldata_cells:
         init_terms = [(f'{contract_name.lower()}-{i}', substitute(init_term, {'CALLDATA_CELL': cd, 'CALLVALUE_CELL': cv})) for i, (cd, cv) in enumerate(calldata_cells)]
     else:
         init_terms = [(contract_name.lower(), init_term)]
-    final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst)))
-    final_cterm = final_cterm.add_constraint(mlEqualsTrue(KEVM.foundry_success()))
+    final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')]))
+    # statuscode_init = KVariable('STATUSCODE_FINAL')
+    # final_cterm = CTerm(setCell(final_cterm.config, 'STATUSCODE_CELL', statuscode_init))
+    check_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
+    final_cterm = final_cterm.add_constraint(mlEqualsTrue(KEVM.foundry_success(KVariable('STATUSCODE_FINAL'), check_dst)))
     claims: List[KClaim] = []
     for claim_id, i_term in init_terms:
         claim, _ = build_claim(claim_id, CTerm(i_term), final_cterm)
@@ -285,7 +292,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
 
     sentences = contract.sentences
     module_name = contract_name.upper() + '-BIN-RUNTIME'
-    module = KFlatModule(module_name, sentences, [KImport('EDSL')])
+    module = KFlatModule(module_name, sentences, [KImport('EDSL'), KImport('INT-SIMPLIFICATION'), KImport('LEMMAS')])
 
     claims_module: Optional[KFlatModule] = None
     contract_function_application_label = contract.klabel_method

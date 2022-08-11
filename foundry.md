@@ -51,12 +51,10 @@ module FOUNDRY-SUCCESS
     imports EVM
     imports FOUNDRY-ACCOUNTS
 
-    syntax Bool ::= "foundry_success" "(" StatusCode "," ByteArray "," Int ")" [function, klabel(foundry_success), symbol]
+    syntax Bool ::= "foundry_success" "(" StatusCode "," Int ")" [function, klabel(foundry_success), symbol]
  // -------------------------------------------------------------------------------------
-    rule foundry_success(EVMC_SUCCESS, _, 0) => true
-    //requires STATUS =/=K EVMC_REVERT
-    //   andBool
-    rule foundry_success(_, _, _) => false [owise]
+    rule foundry_success(EVMC_SUCCESS, 0) => true
+    rule foundry_success(_, _)            => false [owise]
  
     //rule foundry_success() => false [owise]
 
