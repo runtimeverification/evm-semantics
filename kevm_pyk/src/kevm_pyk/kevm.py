@@ -49,6 +49,8 @@ class KEVM(KProve, KRun):
         command += ['--md-selector', md_selector] if md_selector else []
         command += ['--hook-namespaces', ' '.join(hook_namespaces)] if hook_namespaces else []
         command += add_include_arg(includes)
+        if emit_json:
+            command += ['--emit-json']
         if concrete_rules_file and os.path.exists(concrete_rules_file):
             with open(concrete_rules_file, 'r') as crf:
                 concrete_rules = ','.join(crf.read().split('\n'))
