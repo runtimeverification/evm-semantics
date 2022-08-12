@@ -101,20 +101,29 @@ class Contract():
 
         self.name = contract_name
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
-        method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
-        _methods = []
-        for msig in method_identifiers:
-            mname = msig.split('(')[0]
-            mid = int(method_identifiers[msig], 16)
-            _methods.append(Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method))
-        self.methods = tuple(_methods)
-        _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
-        _fields = {}
-        for _l, _s in _fields_list:
-            if _l in _fields:
-                raise ValueError(f'Found duplicate field access key on contract {self.name}: {_l}')
-            _fields[_l] = _s
-        self.fields = FrozenDict(_fields)
+        if 'methodIdentifiers' not in contract_json or not(foundry or 'methodIdentifiers' in contract_json['evm']):
+            _LOGGER.warning(f'Could not find member \'methodIdentifiers\' while processing contract: {self.name}')
+            self.methods = ()
+        else:
+            _method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
+            _methods = []
+            for msig in _method_identifiers:
+                mname = msig.split('(')[0]
+                mid = int(_method_identifiers[msig], 16)
+                _methods.append(Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method))
+            self.methods = tuple(_methods)
+        if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
+            _LOGGER.warning(f'Could not find member \'storageLayout\' while processing contract: {self.name}')
+            self.fields = FrozenDict({})
+        else:
+            _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
+            _fields = {}
+            for _l, _s in _fields_list:
+                if _l in _fields:
+                    _LOGGER.warning(f'Found duplicate field access key on contract {self.name}: {_l}')
+                    continue
+                _fields[_l] = _s
+            self.fields = FrozenDict(_fields)
 
     @property
     def name_upper(self) -> str:

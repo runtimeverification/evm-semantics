@@ -73,7 +73,7 @@ module VOW-FESS-FAIL-ROUGH-SPEC
               <code> Vow_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vow => ?_ </nonce>
+              <nonce> Nonce_Vow => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -92,6 +92,7 @@ module VOW-FESS-FAIL-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Vow)
 
        andBool (#rangeUInt(256, ABI_tab)
        andBool (#rangeUInt(256, May)
@@ -190,7 +191,7 @@ module VOW-FESS-FAIL-ROUGH-SPEC
               <code> Vow_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vow => ?_ </nonce>
+              <nonce> Nonce_Vow => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -209,6 +210,7 @@ module VOW-FESS-FAIL-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Vow)
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)
