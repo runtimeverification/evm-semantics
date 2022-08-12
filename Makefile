@@ -478,13 +478,13 @@ tests/foundry/foundry.k.check: tests/foundry/foundry.k
 	$(CHECK) $< $@.expected
 
 tests/foundry/foundry.k.prove: tests/foundry/kompiled/timestamp
-	$(KEVM) prove tests/foundry/foundry.k --pyk --backend haskell --definition tests/foundry/kompiled \
+	$(KEVM) prove tests/foundry/foundry.k --backend haskell --definition tests/foundry/kompiled \
 	    $(TEST_OPTIONS) --spec-module TOKENTEST-BIN-RUNTIME-SPEC
 
 tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
-	$(KOMPILE) $< --pyk --backend haskell --definition tests/foundry/kompiled \
-	    --main-module VERIFICATION --syntax-module VERIFICATION               \
-	    --concrete-rules-file tests/foundry/concrete-rules.txt                \
+	$(KOMPILE) $< --backend haskell --definition tests/foundry/kompiled \
+	    --main-module VERIFICATION --syntax-module VERIFICATION         \
+	    --concrete-rules-file tests/foundry/concrete-rules.txt          \
 	    $(KOMPILE_OPTS)
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
@@ -639,18 +639,20 @@ test-failure: $(failure_tests:=.run-expected)
 
 # kevm_pyk Tests
 
-kevm_pyk_tests :=                                                         \
-                  tests/interactive/vmLogTest/log3.json.gst-to-kore.check \
-                  tests/foundry/kompiled/timestamp                        \
-                  tests/foundry/foundry.k.check                           \
-                  tests/specs/bihu/functional-spec.k.prove                \
-                  tests/specs/examples/empty-bin-runtime.k                \
-                  tests/specs/examples/erc20-bin-runtime.k                \
+kevm_pyk_tests :=                                                                                              \
+                  tests/interactive/vmLogTest/log3.json.gst-to-kore.check                                      \
+                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add.json.run \
+                  tests/foundry/kompiled/timestamp                                                             \
+                  tests/foundry/foundry.k.check                                                                \
+                  tests/specs/bihu/functional-spec.k.prove                                                     \
+                  tests/specs/examples/empty-bin-runtime.k                                                     \
+                  tests/specs/examples/erc20-bin-runtime.k                                                     \
                   tests/specs/examples/erc721-bin-runtime.k
 
 test-kevm-pyk: KPROVE_OPTS  += --pyk --verbose
 test-kevm-pyk: KOMPILE_OPTS += --pyk --verbose
 test-kevm-pyk: KAST_OPTS += --pyk --verbose
+test-kevm-pyk: TEST_OPTIONS += --pyk --verbose
 test-kevm-pyk: KEVM = $(PYK_ACTIVATE) && kevm
 test-kevm-pyk: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 test-kevm-pyk: $(kevm_pyk_tests) venv
