@@ -292,7 +292,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
             function_test_calldatas.append(calldata)
     if function_test_calldatas:
         claims = gen_claims_for_contract(empty_config, contract_name, calldata_cells=function_test_calldatas)
-        claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(module_name)])
+        claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport('VERIFICATION'), KImport(module_name)])
 
     return module, claims_module
 
