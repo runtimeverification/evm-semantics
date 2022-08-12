@@ -6,10 +6,10 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.kast import KApply, KInner, KToken, KVariable
+from pyk.kast import KApply, KInner, KLabel, KToken, KVariable
 from pyk.kastManip import flatten_label, getCell
 from pyk.ktool import KProve, paren
-from pyk.prelude import intToken, stringToken
+from pyk.prelude import build_assoc, intToken, stringToken
 
 from .utils import add_include_arg
 
@@ -236,13 +236,8 @@ class KEVM(KProve):
         return res
 
     @staticmethod
-    def accounts(accts: List[KInner]) -> KApply:
-        accounts = KApply('.AccountCellMap')
-        if not accts:
-            return accounts
-        for i in reversed(accts):
-            accounts = KApply('_AccountCellMap_', [i, accounts])
-        return accounts
+    def accounts(accts: List[KInner]) -> KInner:
+        return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), accts)
 
 
 class Foundry:
