@@ -235,6 +235,18 @@ class KEVM(KProve):
             res = KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [i, res])
         return res
 
+    @staticmethod
+    def accounts(accts: List[KInner]) -> KApply:
+        accounts = KApply('.AccountCellMap')
+        if not accts:
+            return accounts
+        for i in reversed(accts):
+            accounts = KApply('_AccountCellMap_', [i, accounts])
+        return accounts
+
+
+class Foundry:
+
     # address(uint160(uint256(keccak256("foundry default caller"))))
     @staticmethod
     def account_CALLER() -> KApply:
@@ -251,7 +263,7 @@ class KEVM(KProve):
 
     @staticmethod
     def account_TEST_CONTRACT_ADDRESS() -> KApply:
-        return KEVM.account_cell(KEVM.address_TEST_CONTRACT(),
+        return KEVM.account_cell(Foundry.address_TEST_CONTRACT(),
                                  intToken(0),
                                  KVariable('TEST_CODE'),
                                  KApply('.Map'),
@@ -266,7 +278,7 @@ class KEVM(KProve):
     # address(bytes20(uint160(uint256(keccak256('hevm cheat code')))))
     @staticmethod
     def account_CHEATCODE_ADDRESS(store_var: KInner) -> KApply:
-        return KEVM.account_cell(KEVM.address_CHEATCODE(),  # Hardcoded for now
+        return KEVM.account_cell(Foundry.address_CHEATCODE(),  # Hardcoded for now
                                  intToken(0),
                                  KToken('b"\\x00"', 'Bytes'),
                                  store_var,
@@ -283,12 +295,3 @@ class KEVM(KProve):
                                  KApply('.Map'),
                                  KApply('.Map'),
                                  intToken(0))
-
-    @staticmethod
-    def accounts(accts: List[KInner]) -> KApply:
-        accounts = KApply('.AccountCellMap')
-        if not accts:
-            return accounts
-        for i in reversed(accts):
-            accounts = KApply('_AccountCellMap_', [i, accounts])
-        return accounts
