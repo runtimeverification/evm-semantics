@@ -2379,6 +2379,7 @@ module VERIFICATION
 endmodule
 
 module BLOCKPARAMSTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public BLOCKPARAMSTEST-BIN-RUNTIME
     
     claim [blockparamstest-0]: <kevm>
@@ -3344,6 +3345,7 @@ module BLOCKPARAMSTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module BROADCASTTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public BROADCASTTEST-BIN-RUNTIME
     
     claim [broadcasttest-0]: <kevm>
@@ -3541,6 +3543,7 @@ module BROADCASTTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module CONTRACTTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public CONTRACTTEST-BIN-RUNTIME
     
     claim [contracttest-0]: <kevm>
@@ -3738,6 +3741,7 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module CONTRACTBTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public CONTRACTBTEST-BIN-RUNTIME
     
     claim [contractbtest-0]: <kevm>
@@ -4319,6 +4323,7 @@ module CONTRACTBTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module DEALTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public DEALTEST-BIN-RUNTIME
     
     claim [dealtest-0]: <kevm>
@@ -4516,6 +4521,7 @@ module DEALTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module EMITCONTRACTTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public EMITCONTRACTTEST-BIN-RUNTIME
     
     claim [emitcontracttest-0]: <kevm>
@@ -5097,6 +5103,7 @@ module EMITCONTRACTTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module ENVTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public ENVTEST-BIN-RUNTIME
     
     claim [envtest-0]: <kevm>
@@ -7790,6 +7797,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module ETCHTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public ETCHTEST-BIN-RUNTIME
     
     claim [etchtest-0]: <kevm>
@@ -7987,6 +7995,7 @@ module ETCHTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module FFITEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public FFITEST-BIN-RUNTIME
     
     claim [ffitest-0]: <kevm>
@@ -8760,6 +8769,7 @@ module FFITEST-BIN-RUNTIME-SPEC
 endmodule
 
 module FILESTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public FILESTEST-BIN-RUNTIME
     
     claim [filestest-0]: <kevm>
@@ -9341,6 +9351,7 @@ module FILESTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module GETCODETEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public GETCODETEST-BIN-RUNTIME
     
     claim [getcodetest-0]: <kevm>
@@ -9538,6 +9549,7 @@ module GETCODETEST-BIN-RUNTIME-SPEC
 endmodule
 
 module MOCKCALLTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public MOCKCALLTEST-BIN-RUNTIME
     
     claim [mockcalltest-0]: <kevm>
@@ -10119,6 +10131,7 @@ module MOCKCALLTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module NONCETEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public NONCETEST-BIN-RUNTIME
     
     claim [noncetest-0]: <kevm>
@@ -10316,6 +10329,7 @@ module NONCETEST-BIN-RUNTIME-SPEC
 endmodule
 
 module OWNERUPONLYTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public OWNERUPONLYTEST-BIN-RUNTIME
     
     claim [owneruponlytest-0]: <kevm>
@@ -10897,6 +10911,7 @@ module OWNERUPONLYTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module PRANKTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public PRANKTEST-BIN-RUNTIME
     
     claim [pranktest-0]: <kevm>
@@ -12054,6 +12069,7 @@ module PRANKTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module RECORDLOGSTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public RECORDLOGSTEST-BIN-RUNTIME
     
     claim [recordlogstest-0]: <kevm>
@@ -12251,6 +12267,7 @@ module RECORDLOGSTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module SAFETEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public SAFETEST-BIN-RUNTIME
     
     claim [safetest-0]: <kevm>
@@ -12640,6 +12657,7 @@ module SAFETEST-BIN-RUNTIME-SPEC
 endmodule
 
 module SETUPTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public SETUPTEST-BIN-RUNTIME
     
     claim [setuptest-0]: <kevm>
@@ -13029,6 +13047,7 @@ module SETUPTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module SIGNTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public SIGNTEST-BIN-RUNTIME
     
     claim [signtest-0]: <kevm>
@@ -13226,6 +13245,7 @@ module SIGNTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module SNAPSHOTTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public SNAPSHOTTEST-BIN-RUNTIME
     
     claim [snapshottest-0]: <kevm>
@@ -13423,6 +13443,7 @@ module SNAPSHOTTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module STORETEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public STORETEST-BIN-RUNTIME
     
     claim [storetest-0]: <kevm>
@@ -13812,6 +13833,7 @@ module STORETEST-BIN-RUNTIME-SPEC
 endmodule
 
 module TOSTRINGTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public TOSTRINGTEST-BIN-RUNTIME
     
     claim [tostringtest-0]: <kevm>
@@ -14969,6 +14991,7 @@ module TOSTRINGTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module TOKENTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
     imports public TOKENTEST-BIN-RUNTIME
     
     claim [tokentest-0]: <kevm>
