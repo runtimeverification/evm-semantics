@@ -66,10 +66,9 @@ run_kompile() {
         fatal "Command kompile with option --pyk only available for --backend haskell."
     fi
 
-    kompile_opts=( "${run_file}" )
+    kompile_opts=( "${run_file}" --emit-json )
     ${pyk} || kompile_opts+=( --output-definition "${backend_dir}" )
     ${pyk} || kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
-    ${pyk} || kompile_opts+=( --emit-json )
     kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN" )
 
     if [[ ! -z ${concrete_rules_file} ]]; then
