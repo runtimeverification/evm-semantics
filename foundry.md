@@ -92,7 +92,7 @@ First we have some helpers in K which can:
     rule <k> #assert(false) => . ... </k>
          <account>
              <acctID> #address(FoundryCheat) </acctID>
-             <storage> ... #loc(FoundryCheat . Failed) |-> (_ => 1) ... </storage>
+             <storage> STORAGE => STORAGE [ #loc(FoundryCheat . Failed) <- 1 ] </storage>
              ...
          </account>
 ```
