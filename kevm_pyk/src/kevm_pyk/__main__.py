@@ -117,7 +117,9 @@ def main():
                     krun_args += ['--parser', args.parser]
                 if not args.expand_macros:
                     krun_args += ['--no-expand-macros']
-                krun_result = _krun(kevm.definition_dir, Path(input_file), output=args.output, check=False, depth=args.depth, args=krun_args)
+                # TODO: These are inlined into _krun
+                krun_args += ['--output', args.output]
+                krun_result = _krun(kevm.definition_dir, Path(input_file), depth=args.depth, args=krun_args)
                 print(krun_result.stdout)
                 sys.exit(krun_result.returncode)
 
