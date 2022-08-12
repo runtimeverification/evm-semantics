@@ -46,6 +46,7 @@ def main():
             kevm = KEVM.kompile(
                 args.definition_dir,
                 args.main_file,
+                emit_json=args.emit_json,
                 includes=args.includes,
                 main_module_name=args.main_module,
                 syntax_module_name=args.syntax_module,
@@ -157,6 +158,8 @@ def create_argument_parser():
     kompile_args.add_argument('--md-selector', type=str, help='Code selector expression to use when reading markdown.')
     kompile_args.add_argument('--hook-namespaces', type=str, help='Hook namespaces. What more can I say?')
     kompile_args.add_argument('--concrete-rules-file', type=str, help='List of rules to only evaluate if arguments are fully concrete.')
+    kompile_args.add_argument('--emit-json', dest='emit_json', default=True, action='store_true', help='Emit JSON definition after compilation.')
+    kompile_args.add_argument('--no-emit-json', dest='emit_json', action='store_false', help='Do not JSON definition after compilation.')
 
     prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args])
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')

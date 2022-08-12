@@ -34,6 +34,7 @@ class KEVM(KProve, KRun):
     def kompile(
         definition_dir: Path,
         main_file: Path,
+        emit_json: bool = True,
         includes: List[str] = [],
         main_module_name: Optional[str] = None,
         syntax_module_name: Optional[str] = None,
@@ -42,7 +43,7 @@ class KEVM(KProve, KRun):
         concrete_rules_file: Optional[Path] = None,
     ) -> 'KEVM':
         command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
-        command += ['--emit-json', '--backend', 'haskell']
+        command += ['--backend', 'haskell']
         command += ['--main-module', main_module_name] if main_module_name else []
         command += ['--syntax-module', syntax_module_name] if syntax_module_name else []
         command += ['--md-selector', md_selector] if md_selector else []
