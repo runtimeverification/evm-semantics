@@ -291,11 +291,10 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     else:
         init_terms = [(contract_name.lower(), init_term)]
     final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')]))
-    # final_cterm = CTerm(setCell(final_cterm.config, 'STATUSCODE_CELL', KVariable('STATUSCODE_FINAL')))
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
     dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
-    final_cterm = final_cterm.add_constraint(mlEqualsTrue(KEVM.foundry_success(KVariable('STATUSCODE_FINAL'), dst_failed_post)))
+    final_cterm = final_cterm.add_constraint(mlEqualsTrue(Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post)))
     claims: List[KClaim] = []
     for claim_id, i_term in init_terms:
         i_cterm = CTerm(i_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
