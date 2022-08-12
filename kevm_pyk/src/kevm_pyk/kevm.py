@@ -265,11 +265,11 @@ class KEVM(KProve):
     # Same address as the one used in DappTools's HEVM
     # address(bytes20(uint160(uint256(keccak256('hevm cheat code')))))
     @staticmethod
-    def account_CHEATCODE_ADDRESS() -> KApply:
+    def account_CHEATCODE_ADDRESS(store_var: KInner) -> KApply:
         return KEVM.account_cell(KEVM.address_CHEATCODE(),  # Hardcoded for now
                                  intToken(0),
                                  KToken('b"\\x00"', 'Bytes'),
-                                 KVariable('CHEATCODE_STORAGE'),
+                                 store_var,
                                  KApply('.Map'),
                                  intToken(0))
 
