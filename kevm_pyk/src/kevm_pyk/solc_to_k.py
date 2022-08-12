@@ -106,23 +106,32 @@ class Contract():
 
         self.name = contract_name
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
-        method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
+        if 'methodIdentifiers' not in contract_json or not(foundry or 'methodIdentifiers' in contract_json['evm']):
+            _LOGGER.warning(f'Could not find member \'methodIdentifiers\' while processing contract: {self.name}')
+            self.methods = ()
+        else:
+            _method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
         _methods = []
         _test_methods = []
-        for msig in method_identifiers:
+        for msig in _method_identifiers:
             mname = msig.split('(')[0]
-            mid = int(method_identifiers[msig], 16)
+            mid = int(_method_identifiers[msig], 16)
             _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
             _methods.append(_m)
             if mname.startswith('test'):
                 _test_methods.append(_m)
         self.methods = tuple(_methods)
         self.test_methods = tuple(_test_methods)
-        _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
-        _fields = {}
+        if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
+            _LOGGER.warning(f'Could not find member \'storageLayout\' while processing contract: {self.name}')
+            self.fields = FrozenDict({})
+        else:
+            _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
+            _fields = {}
         for _l, _s in _fields_list:
             if _l in _fields:
-                raise ValueError(f'Found duplicate field access key on contract {self.name}: {_l}')
+                _LOGGER.warning(f'Found duplicate field access key on contract {self.name}: {_l}')
+                continue
             _fields[_l] = _s
         self.fields = FrozenDict(_fields)
 
@@ -316,7 +325,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
         function_test_calldatas.append((calldata, callvalue))
     if function_test_calldatas:
         claims = gen_claims_for_contract(empty_config, contract_name, calldata_cells=function_test_calldatas)
-        claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(module_name)])
+        claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport('VERIFICATION'), KImport(module_name)])
 
     return module, claims_module
 
