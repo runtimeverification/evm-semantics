@@ -38,6 +38,7 @@ module FOUNDRY-ACCOUNTS
 
 endmodule
 ```
+
 The Foundry success predicate performs the same checks that the `is_success` function from Foundry in `evm/src/executor/mod.rs`.
 These checks are:
 - The call to the test contract has not reverted

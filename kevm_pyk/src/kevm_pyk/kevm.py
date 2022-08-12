@@ -165,6 +165,10 @@ class KEVM(KProve):
         return KApply('contract_access_loc', [accessor])
 
     @staticmethod
+    def lookup(map: KInner, key: KInner):
+        return KApply('#lookup', [map, key])
+
+    @staticmethod
     def abi_calldata(name: str, args: List[KInner]) -> KApply:
         return KApply('#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
 
@@ -254,14 +258,18 @@ class KEVM(KProve):
                                  KApply('.Map'),
                                  intToken(0))
 
+    @staticmethod
+    def address_CHEATCODE() -> KToken:
+        return intToken(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D)
+
     # Same address as the one used in DappTools's HEVM
     # address(bytes20(uint160(uint256(keccak256('hevm cheat code')))))
     @staticmethod
     def account_CHEATCODE_ADDRESS() -> KApply:
-        return KEVM.account_cell(intToken(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D),  # Hardcoded for now
+        return KEVM.account_cell(KEVM.address_CHEATCODE(),  # Hardcoded for now
                                  intToken(0),
                                  KToken('b"\\x00"', 'Bytes'),
-                                 KApply('.Map'),
+                                 KVariable('CHEATCODE_STORAGE'),
                                  KApply('.Map'),
                                  intToken(0))
 

@@ -253,7 +253,7 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
         'PROGRAM_CELL': program,
         'JUMPDESTS_CELL': KEVM.compute_valid_jumpdests(program),
         'ORIGIN_CELL': KVariable('ORIGIN_ID'),
-        'ID_CELL': KVariable('ACCT_ID'),
+        'ID_CELL': KEVM.address_TEST_CONTRACT(),
         'CALLER_CELL': KVariable('CALLER_ID'),
         'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
         'MEMORYUSED_CELL': intToken(0),
@@ -282,11 +282,13 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')]))
     # statuscode_init = KVariable('STATUSCODE_FINAL')
     # final_cterm = CTerm(setCell(final_cterm.config, 'STATUSCODE_CELL', statuscode_init))
-    check_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
-    final_cterm = final_cterm.add_constraint(mlEqualsTrue(KEVM.foundry_success(KVariable('STATUSCODE_FINAL'), check_dst)))
+    # key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
+    dst_failed = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess')))
+    final_cterm = final_cterm.add_constraint(mlEqualsTrue(KEVM.foundry_success(KVariable('STATUSCODE_FINAL'), dst_failed)))
     claims: List[KClaim] = []
     for claim_id, i_term in init_terms:
-        claim, _ = build_claim(claim_id, CTerm(i_term), final_cterm)
+        i_cterm = CTerm(i_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed, KToken('0', 'Int')])))
+        claim, _ = build_claim(claim_id, i_cterm, final_cterm)
         claims.append(claim)
     return claims
 
