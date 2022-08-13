@@ -9,8 +9,6 @@ from pyk.kastManip import (
     substitute,
 )
 from pyk.ktool import KPrint
-from pyk.ktool.kprint import build_symbol_table
-from pyk.utils import hash_str
 
 
 def KPrint_make_unparsing(_self: KPrint, extra_modules: List[KFlatModule] = []) -> KPrint:
@@ -18,9 +16,8 @@ def KPrint_make_unparsing(_self: KPrint, extra_modules: List[KFlatModule] = []) 
     main_module = KFlatModule('UNPARSING', [], [KImport(_m.name) for _m in modules])
     defn = KDefinition('UNPARSING', [main_module] + modules)
     kprint = KPrint(_self.definition_dir)
-    kprint.definition = defn
-    kprint.symbol_table = build_symbol_table(kprint.definition, opinionated=True)
-    kprint.definition_hash = hash_str(kprint.definition)
+    kprint._definition = defn
+    kprint._symbol_table = None
     return kprint
 
 

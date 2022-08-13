@@ -106,7 +106,7 @@ def main():
                     haskell_args += ['--debug-equation', de]
                 if args.bug_report:
                     haskell_args += ['--bug-report', str(spec_file.with_suffix(''))]
-                final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args, rule_profile=spec_file.with_suffix('.rule-profile'))
+                final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
                 print(kevm.pretty_print(final_state) + '\n')
 
             elif args.command == 'run':
