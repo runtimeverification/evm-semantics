@@ -445,6 +445,7 @@ venv-clean:
 	rm -rf ./kevm_pyk/venv-dev
 	rm -rf ./kevm_pyk/venv-prod
 	rm -rf $(KEVM_LIB)/kframework/lib/python3.8
+	rm -rf $(KEVM_LIB)/kframework/local/lib/python3.10
 	rm -rf $(K_SUBMODULE)/pyk/build
 
 venv:
