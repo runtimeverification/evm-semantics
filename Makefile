@@ -53,7 +53,7 @@ export PLUGIN_SUBMODULE
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
         test-prove-mcd test-klab-prove                                                                                           \
-        test-parse test-failure                                                                                                  \
+        test-parse test-failure test-foundry                                                                                     \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         test-kevm-pyk foundry-out foundry-clean                                                                                  \
         media media-pdf metropolis-theme                                                                                         \
@@ -469,6 +469,8 @@ foundry_out := tests/foundry/out
 
 foundry-out: $(foundry_out)
 
+test-foundry: tests/foundry/foundry.k.prove tests/foundry/foundry.k.check
+
 $(foundry_out):
 	rm -rf tests/foundry/out
 	cd $(dir $@) && forge build
@@ -485,7 +487,7 @@ tests/foundry/foundry.k.check: tests/foundry/foundry.k
 
 tests/foundry/foundry.k.prove: tests/foundry/kompiled/timestamp
 	$(KEVM) prove tests/foundry/foundry.k --backend haskell --definition tests/foundry/kompiled \
-	    $(KEVM_OPTS) $(KPROVE_OPTS) --spec-module TOKENTEST-BIN-RUNTIME-SPEC
+	    $(KEVM_OPTS) $(KPROVE_OPTS) --spec-module SPEC
 
 tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
 	$(KOMPILE) $< --backend haskell --definition tests/foundry/kompiled \
@@ -655,6 +657,7 @@ kevm_pyk_tests :=                                                               
                   tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add.json.run \
                   tests/foundry/kompiled/timestamp                                                             \
                   tests/foundry/foundry.k.check                                                                \
+                  tests/foundry/foundry.k.prove                                                                \
                   tests/specs/bihu/functional-spec.k.prove                                                     \
                   tests/specs/examples/empty-bin-runtime.k                                                     \
                   tests/specs/examples/erc20-bin-runtime.k                                                     \
