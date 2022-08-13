@@ -25,10 +25,12 @@ def main():
     parser = create_argument_parser()
     args = parser.parse_args()
 
-    if args.verbose:
+    if not (args.verbose or args.profile):
+        logging.basicConfig(level=logging.WARNING, format=_LOG_FORMAT)
+    elif args.debug:
         logging.basicConfig(level=logging.DEBUG, format=_LOG_FORMAT)
     else:
-        logging.basicConfig(level=logging.WARNING, format=_LOG_FORMAT)
+        logging.basicConfig(level=logging.INFO, format=_LOG_FORMAT)
 
     if args.command == 'compile':
         res = solc_compile(args.contract_file)
@@ -53,10 +55,11 @@ def main():
                 md_selector=args.md_selector,
                 hook_namespaces=args.hook_namespaces.split(' '),
                 concrete_rules_file=args.concrete_rules_file,
+                profile=args.profile,
             )
 
         else:
-            kevm = KEVM(args.definition_dir)
+            kevm = KEVM(args.definition_dir, profile=args.profile)
             empty_config = kevm.definition.empty_config(KSort('KevmCell'))
 
             if args.command == 'solc-to-k':
@@ -120,7 +123,7 @@ def main():
                     krun_args += ['--no-expand-macros']
                 # TODO: These are inlined into _krun
                 krun_args += ['--output', args.output]
-                krun_result = _krun(kevm.definition_dir, Path(input_file), depth=args.depth, args=krun_args)
+                krun_result = _krun(kevm.definition_dir, Path(input_file), depth=args.depth, args=krun_args, profile=args.profile)
                 print(krun_result.stdout)
                 sys.exit(krun_result.returncode)
 
