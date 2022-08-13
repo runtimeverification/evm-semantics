@@ -96,7 +96,7 @@ class Contract():
     test_methods: Tuple[Method, ...]
     fields: FrozenDict
 
-    def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False, exclude_tests: Iterable[str] = ()) -> None:
+    def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
 
         def _get_method_abi(_mname: str) -> Dict:
             for _method in contract_json['abi']:
@@ -107,7 +107,6 @@ class Contract():
         self.name = contract_name
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
         _methods = []
-        _test_methods = []
         if 'methodIdentifiers' not in contract_json or not(foundry or 'methodIdentifiers' in contract_json['evm']):
             _LOGGER.warning(f'Could not find member \'methodIdentifiers\' while processing contract: {self.name}')
         else:
@@ -117,13 +116,7 @@ class Contract():
                 mid = int(_method_identifiers[msig], 16)
                 _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
                 _methods.append(_m)
-                if mname.startswith('test'):
-                    if f'{contract_name}.{mname}' in exclude_tests:
-                        _LOGGER.warning(f'Skipping test for contract {contract_name}: {mname}')
-                    else:
-                        _test_methods.append(_m)
         self.methods = tuple(_methods)
-        self.test_methods = tuple(_test_methods)
         if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
             _LOGGER.warning(f'Could not find member \'storageLayout\' while processing contract: {self.name}')
             self.fields = FrozenDict({})
@@ -306,7 +299,7 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     return claims
 
 
-def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:
+def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = False, exclude_tests: Iterable[str] = ()) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
     sentences = contract.sentences
     module_name = contract.name.upper() + '-BIN-RUNTIME'
@@ -315,13 +308,18 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
     claims_module: Optional[KFlatModule] = None
     contract_function_application_label = contract.klabel_method
     function_test_calldatas = []
-    for tm in contract.test_methods:
-        klabel = tm.production.klabel
-        assert klabel is not None
-        args = [abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}') for name in tm.arg_names]
-        calldata: KInner = KApply(contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)])
-        callvalue: KInner = intToken(0) if not tm.payable else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
-        function_test_calldatas.append((calldata, callvalue))
+    for tm in contract.methods:
+        if f'{contract.name}.{tm.name}' in exclude_tests:
+            _LOGGER.warning(f'Excluding test from contract {contract.name}: {tm.name}')
+        elif tm.name.startswith('testFail'):
+            _LOGGER.warning(f'Ignoring test from contract {contract.name}: {tm.name}')
+        elif tm.name.startswith('test'):
+            klabel = tm.production.klabel
+            assert klabel is not None
+            args = [abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}') for name in tm.arg_names]
+            calldata: KInner = KApply(contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)])
+            callvalue: KInner = intToken(0) if not tm.payable else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
+            function_test_calldatas.append((calldata, callvalue))
     if function_test_calldatas:
         claims = gen_claims_for_contract(empty_config, contract.name, calldata_cells=function_test_calldatas)
         claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport('VERIFICATION'), KImport(module_name)])

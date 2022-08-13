@@ -69,8 +69,8 @@ def main():
                 if args.exclude_tests and args.exclude_tests.exists():
                     with open(args.exclude_tests, 'r') as el:
                         exclude_tests = el.read().strip().split('\n')
-                contract = Contract(args.contract_name, contract_json, foundry=False, exclude_tests=exclude_tests)
-                contract_module, contract_claims_module = contract_to_k(contract, empty_config)
+                contract = Contract(args.contract_name, contract_json, foundry=False)
+                contract_module, contract_claims_module = contract_to_k(contract, empty_config, exclude_tests=exclude_tests)
                 modules = [contract_module]
                 claims_modules = [contract_claims_module] if contract_claims_module else []
                 main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
@@ -97,8 +97,8 @@ def main():
                     contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
                     with open(json_file, 'r') as cjson:
                         contract_json = json.loads(cjson.read())
-                        contract = Contract(contract_name, contract_json, foundry=True, exclude_tests=exclude_tests)
-                        module, claims_module = contract_to_k(contract, empty_config, foundry=True)
+                        contract = Contract(contract_name, contract_json, foundry=True)
+                        module, claims_module = contract_to_k(contract, empty_config, foundry=True, exclude_tests=exclude_tests)
                         _LOGGER.info(f'Produced contract module: {module.name}')
                         modules.append(module)
                         if claims_module:
