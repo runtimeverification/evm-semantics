@@ -353,7 +353,7 @@ uninstall:
 TEST_CONCRETE_BACKEND := llvm
 TEST_SYMBOLIC_BACKEND := haskell
 
-TEST_OPTIONS :=
+KEVM_OPTIONS :=
 CHECK        := git --no-pager diff --no-index --ignore-all-space -R
 
 KEVM_MODE     := NORMAL
@@ -406,33 +406,33 @@ tests/specs/opcodes/evm-optimizations-spec%: KPROVE_FILE   =  evm-optimizations-
 tests/specs/opcodes/evm-optimizations-spec%: KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
 
 tests/%.run: tests/%
-	$(KEVM) interpret $< $(TEST_OPTIONS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                               \
+	$(KEVM) interpret $< $(KEVM_OPTIONS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                               \
 	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                        \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-interactive: tests/%
-	$(KEVM) run $< $(TEST_OPTIONS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                                     \
+	$(KEVM) run $< $(KEVM_OPTIONS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                                     \
 	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                        \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-expected: tests/% tests/%.expected
-	$(KEVM) run $< $(TEST_OPTIONS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND) \
+	$(KEVM) run $< $(KEVM_OPTIONS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND) \
 	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)  \
 	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                    \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.parse: tests/%
-	$(KEVM) kast $< kast $(TEST_OPTIONS) $(KAST_OPTS) --backend $(TEST_CONCRETE_BACKEND) > $@-out
+	$(KEVM) kast $< kast $(KEVM_OPTIONS) $(KAST_OPTS) --backend $(TEST_CONCRETE_BACKEND) > $@-out
 	$(CHECK) $@-out $@-expected
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json $(KEVM_BIN)/kevm
-	$(PYK_ACTIVATE) && $(KEVM) kast $< kore $(TEST_OPTIONS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
+	$(PYK_ACTIVATE) && $(KEVM) kast $< kore $(KEVM_OPTIONS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
 	$(CHECK) tests/interactive/$*.gst-to-kore.out tests/interactive/$*.gst-to-kore.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/interactive/$*.gst-to-kore.out
 
@@ -483,7 +483,7 @@ tests/foundry/foundry.k.check: tests/foundry/foundry.k
 
 tests/foundry/foundry.k.prove: tests/foundry/kompiled/timestamp
 	$(KEVM) prove tests/foundry/foundry.k --backend haskell --definition tests/foundry/kompiled \
-	    $(TEST_OPTIONS) $(KPROVE_OPTS) --spec-module TOKENTEST-BIN-RUNTIME-SPEC
+	    $(KEVM_OPTIONS) $(KPROVE_OPTS) --spec-module TOKENTEST-BIN-RUNTIME-SPEC
 
 tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
 	$(KOMPILE) $< --backend haskell --definition tests/foundry/kompiled \
@@ -508,7 +508,7 @@ tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
-	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS)                \
+	$(KEVM) prove $< $(KEVM_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS)                \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
@@ -520,7 +520,7 @@ tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_F
 	    $(KOMPILE_OPTS)
 
 tests/%.search: tests/%
-	$(KEVM) search $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" $(TEST_OPTIONS) $(KSEARCH_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) > $@-out
+	$(KEVM) search $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" $(KEVM_OPTIONS) $(KSEARCH_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) > $@-out
 	$(CHECK) $@-out $@-expected
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
@@ -658,11 +658,7 @@ kevm_pyk_tests :=                                                               
                   tests/specs/examples/erc20-bin-runtime.k                                                     \
                   tests/specs/examples/erc721-bin-runtime.k
 
-test-kevm-pyk: KPROVE_OPTS  += --pyk --verbose
-test-kevm-pyk: KOMPILE_OPTS += --pyk --verbose
-test-kevm-pyk: KAST_OPTS += --pyk --verbose
-test-kevm-pyk: KRUN_OPTS += --pyk --verbose
-test-kevm-pyk: KSEARCH_OPTS += --pyk --verbose
+test-kevm-pyk: KEVM_OPTS += --pyk --verbose
 test-kevm-pyk: KEVM = $(PYK_ACTIVATE) && kevm
 test-kevm-pyk: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 test-kevm-pyk: $(kevm_pyk_tests) venv
