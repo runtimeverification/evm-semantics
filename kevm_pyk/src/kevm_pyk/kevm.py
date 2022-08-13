@@ -8,7 +8,8 @@ from typing import Any, Dict, Final, List, Optional
 from pyk.cli_utils import run_process
 from pyk.kast import KApply, KInner, KLabel, KToken, KVariable
 from pyk.kastManip import flatten_label, getCell
-from pyk.ktool import KProve, paren
+from pyk.ktool import KProve
+from pyk.ktool.kprint import paren
 from pyk.prelude import build_assoc, intToken, stringToken
 
 from .utils import add_include_arg
@@ -48,7 +49,7 @@ class KEVM(KProve):
                 concrete_rules = ','.join(crf.read().split('\n'))
                 command += ['--concrete-rules', concrete_rules]
         try:
-            run_process(command, _LOGGER)
+            run_process(command, logger=_LOGGER)
         except CalledProcessError as err:
             sys.stderr.write(f'\nkompile stdout:\n{err.stdout}\n')
             sys.stderr.write(f'\nkompile stderr:\n{err.stderr}\n')
