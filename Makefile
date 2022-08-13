@@ -233,7 +233,7 @@ $(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes) $(plugin_includes) $(KEVM_BIN)
 	    $(haskell_main_file) $(HASKELL_KOMPILE_OPTS) \
 	    --main-module $(haskell_main_module)         \
 	    --syntax-module $(haskell_syntax_module)     \
-	    $(KOMPILE_OPTS)
+	    $(KOMPILE_OPTS) $(KEVM_OPTIONS)
 
 # Standalone
 
@@ -253,7 +253,7 @@ $(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_inc
 	    $(llvm_main_file)                     \
 	    --main-module $(llvm_main_module)     \
 	    --syntax-module $(llvm_syntax_module) \
-	    $(KOMPILE_OPTS)
+	    $(KOMPILE_OPTS) $(KEVM_OPTIONS)
 
 # Node
 
@@ -271,7 +271,7 @@ $(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_include
 	    $(node_main_file)                     \
 	    --main-module $(node_main_module)     \
 	    --syntax-module $(node_syntax_module) \
-	    $(KOMPILE_OPTS)
+	    $(KOMPILE_OPTS) $(KEVM_OPTIONS)
 
 $(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_out)
 	@mkdir -p $(dir $@)
@@ -474,8 +474,8 @@ $(foundry_out):
 	cd $(dir $@) && forge test --ffi
 
 tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
-	$(KEVM) foundry-to-k $< --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
-	     --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION      \
+	$(KEVM) foundry-to-k $< $(KEVM_OPTIONS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
+	     --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION                      \
 	     > $@
 
 tests/foundry/foundry.k.check: tests/foundry/foundry.k
@@ -489,22 +489,22 @@ tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
 	$(KOMPILE) $< --backend haskell --definition tests/foundry/kompiled \
 	    --main-module VERIFICATION --syntax-module VERIFICATION         \
 	    --concrete-rules-file tests/foundry/concrete-rules.txt          \
-	    $(KOMPILE_OPTS)
+	    $(KOMPILE_OPTS) $(KEVM_OPTIONS)
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) venv
-	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< ERC20 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
+	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< ERC20 $(KEVM_OPTIONS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
 
 tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
 tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) venv
-	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< ERC721 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
+	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< ERC721 $(KEVM_OPTIONS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
 
 tests/specs/examples/storage-spec/haskell/timestamp: tests/specs/examples/storage-bin-runtime.k
 tests/specs/examples/storage-bin-runtime.k: tests/specs/examples/Storage.sol $(KEVM_LIB)/$(haskell_kompiled) venv
-	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< Storage --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module STORAGE-VERIFICATION > $@
+	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< Storage $(KEVM_OPTIONS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module STORAGE-VERIFICATION > $@
 
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) venv
-	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< Empty --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
+	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< Empty $(KEVM_OPTIONS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
@@ -517,7 +517,7 @@ tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_F
 	    --main-module $(KPROVE_MODULE)                                                                   \
 	    --syntax-module $(KPROVE_MODULE)                                                                 \
 	    --concrete-rules-file tests/specs/$(firstword $(subst /, ,$*))/concrete-rules.txt                \
-	    $(KOMPILE_OPTS)
+	    $(KOMPILE_OPTS) $(KEVM_OPTIONS)
 
 tests/%.search: tests/%
 	$(KEVM) search $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" $(KEVM_OPTIONS) $(KSEARCH_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) > $@-out
@@ -658,7 +658,7 @@ kevm_pyk_tests :=                                                               
                   tests/specs/examples/erc20-bin-runtime.k                                                     \
                   tests/specs/examples/erc721-bin-runtime.k
 
-test-kevm-pyk: KEVM_OPTS += --pyk --verbose
+test-kevm-pyk: KEVM_OPTIONS += --pyk --verbose
 test-kevm-pyk: KEVM = $(PYK_ACTIVATE) && kevm
 test-kevm-pyk: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 test-kevm-pyk: $(kevm_pyk_tests) venv
