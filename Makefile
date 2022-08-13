@@ -658,7 +658,7 @@ kevm_pyk_tests :=                                                               
                   tests/specs/examples/erc20-bin-runtime.k                                                     \
                   tests/specs/examples/erc721-bin-runtime.k
 
-test-kevm-pyk: KEVM_OPTS += --pyk --verbose
+test-kevm-pyk: KEVM_OPTS += --pyk --verbose --profile
 test-kevm-pyk: KEVM = $(PYK_ACTIVATE) && kevm
 test-kevm-pyk: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 test-kevm-pyk: $(kevm_pyk_tests) venv
