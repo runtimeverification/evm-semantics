@@ -107,15 +107,18 @@ class Contract():
         self.name = contract_name
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
         _methods = []
-        if 'methodIdentifiers' not in contract_json or not(foundry or 'methodIdentifiers' in contract_json['evm']):
-            _LOGGER.warning(f'Could not find member \'methodIdentifiers\' while processing contract: {self.name}')
+        if (not foundry) and 'evm' in contract_json and 'methodIdentifiers' in contract_json['evm']:
+            _method_identifiers = contract_json['evm']['methodIdentifiers']
+        elif foundry and 'methodIdentifiers' in contract_json:
+            _method_identifiers = contract_json['methodIdentifiers']
         else:
-            _method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
-            for msig in _method_identifiers:
-                mname = msig.split('(')[0]
-                mid = int(_method_identifiers[msig], 16)
-                _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
-                _methods.append(_m)
+            _method_identifiers = []
+            _LOGGER.warning(f'Could not find member \'methodIdentifiers\' while processing contract: {self.name}')
+        for msig in _method_identifiers:
+            mname = msig.split('(')[0]
+            mid = int(_method_identifiers[msig], 16)
+            _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
+            _methods.append(_m)
         self.methods = tuple(_methods)
         if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
             _LOGGER.warning(f'Could not find member \'storageLayout\' while processing contract: {self.name}')
