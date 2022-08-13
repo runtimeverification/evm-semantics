@@ -33,7 +33,7 @@ def main():
         logging.basicConfig(level=logging.DEBUG, format=_LOG_FORMAT)
 
     if args.command == 'compile':
-        res = solc_compile(args.contract_file)
+        res = solc_compile(args.contract_file, profile=args.profile)
         print(json.dumps(res))
 
     elif args.command == 'gst-to-kore':
@@ -63,7 +63,7 @@ def main():
             empty_config = kevm.definition.empty_config(KSort('KevmCell'))
 
             if args.command == 'solc-to-k':
-                solc_json = solc_compile(args.contract_file)
+                solc_json = solc_compile(args.contract_file, profile=args.profile)
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
                 contract = Contract(args.contract_name, contract_json, foundry=False)
                 contract_module, contract_claims_module = contract_to_k(contract, empty_config)
