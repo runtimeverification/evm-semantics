@@ -25,12 +25,12 @@ def main():
     parser = create_argument_parser()
     args = parser.parse_args()
 
-    if not (args.verbose or args.profile):
+    if not (args.verbose or args.profile or args.debug):
         logging.basicConfig(level=logging.WARNING, format=_LOG_FORMAT)
-    elif args.debug:
-        logging.basicConfig(level=logging.DEBUG, format=_LOG_FORMAT)
-    else:
+    if args.verbose or args.profile:
         logging.basicConfig(level=logging.INFO, format=_LOG_FORMAT)
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG, format=_LOG_FORMAT)
 
     if args.command == 'compile':
         res = solc_compile(args.contract_file)
