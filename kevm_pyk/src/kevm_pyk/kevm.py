@@ -6,10 +6,10 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.kast import KApply, KInner
+from pyk.kast import KApply, KInner, KLabel, KToken, KVariable
 from pyk.kastManip import flatten_label, getCell
 from pyk.ktool import KProve, paren
-from pyk.prelude import intToken, stringToken
+from pyk.prelude import build_assoc, intToken, stringToken
 
 from .utils import add_include_arg
 
@@ -74,6 +74,7 @@ class KEVM(KProve):
         symbol_table['_|->_']                                         = paren(symbol_table['_|->_'])                                        # noqa
         symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)                                # noqa
         symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)                                # noqa
+        symbol_table['.AccountCellMap']                               = lambda: ''                                                          # noqa
         symbol_table['AccountCellMapItem']                            = lambda k, v: v                                                      # noqa
         symbol_table['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray'] = lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]'      # noqa
         symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = lambda m, s, w: '(' + m + ' [ ' + s + ' .. ' + w + ' ]):ByteArray'  # noqa
@@ -164,6 +165,10 @@ class KEVM(KProve):
         return KApply('contract_access_loc', [accessor])
 
     @staticmethod
+    def lookup(map: KInner, key: KInner):
+        return KApply('#lookup', [map, key])
+
+    @staticmethod
     def abi_calldata(name: str, args: List[KInner]) -> KApply:
         return KApply('#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
 
@@ -209,8 +214,12 @@ class KEVM(KProve):
         return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
 
     @staticmethod
-    def foundry_success() -> KApply:
-        return KApply('foundry_success')
+    def bytearray_empty():
+        return KApply('.ByteArray_EVM-TYPES_ByteArray')
+
+    @staticmethod
+    def foundry_success(s: KInner, dst: KInner) -> KApply:
+        return KApply('foundry_success ', [s, dst])
 
     @staticmethod
     def intlist(ints: List[KInner]) -> KApply:
@@ -225,3 +234,59 @@ class KEVM(KProve):
         for i in reversed(args):
             res = KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [i, res])
         return res
+
+    @staticmethod
+    def accounts(accts: List[KInner]) -> KInner:
+        return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), accts)
+
+
+class Foundry:
+
+    # address(uint160(uint256(keccak256("foundry default caller"))))
+    @staticmethod
+    def account_CALLER() -> KApply:
+        return KEVM.account_cell(intToken(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38),  # Hardcoded for now
+                                 intToken(0),
+                                 KEVM.bytearray_empty(),
+                                 KApply('.Map'),
+                                 KApply('.Map'),
+                                 intToken(0))
+
+    @staticmethod
+    def address_TEST_CONTRACT() -> KToken:
+        return intToken(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84)
+
+    @staticmethod
+    def account_TEST_CONTRACT_ADDRESS() -> KApply:
+        return KEVM.account_cell(Foundry.address_TEST_CONTRACT(),
+                                 intToken(0),
+                                 KVariable('TEST_CODE'),
+                                 KApply('.Map'),
+                                 KApply('.Map'),
+                                 intToken(0))
+
+    @staticmethod
+    def address_CHEATCODE() -> KToken:
+        return intToken(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D)
+
+    # Same address as the one used in DappTools's HEVM
+    # address(bytes20(uint160(uint256(keccak256('hevm cheat code')))))
+    @staticmethod
+    def account_CHEATCODE_ADDRESS(store_var: KInner) -> KApply:
+        return KEVM.account_cell(Foundry.address_CHEATCODE(),  # Hardcoded for now
+                                 intToken(0),
+                                 KToken('b"\\x00"', 'Bytes'),
+                                 store_var,
+                                 KApply('.Map'),
+                                 intToken(0))
+
+    # Hardhat console address (0x000000000000000000636F6e736F6c652e6c6f67)
+    # https://github.com/nomiclabs/hardhat/blob/master/packages/hardhat-core/console.sol
+    @staticmethod
+    def account_HARDHAT_CONSOLE_ADDRESS() -> KApply:
+        return KEVM.account_cell(intToken(0x000000000000000000636F6e736F6c652e6c6f67),
+                                 intToken(0),
+                                 KEVM.bytearray_empty(),
+                                 KApply('.Map'),
+                                 KApply('.Map'),
+                                 intToken(0))
