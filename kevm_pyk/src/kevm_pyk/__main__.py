@@ -74,7 +74,9 @@ def main():
                 modules = [contract_module]
                 claims_modules = [contract_claims_module] if contract_claims_module else []
                 main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
+                spec_module = KFlatModule(args.spec_module, [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
                 modules.append(main_module)
+                modules.append(spec_module)
                 bin_runtime_definition = KDefinition(args.main_module, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + args.requires])
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
                 KEVM._patch_symbol_table(_kprint.symbol_table)
@@ -102,7 +104,9 @@ def main():
                         if claims_module:
                             claims_modules.append(claims_module)
                 main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
+                spec_module = KFlatModule(args.spec_module, [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
                 modules.append(main_module)
+                modules.append(spec_module)
                 bin_runtime_definition = KDefinition(main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md', 'lemmas/int-simplification.k', 'lemmas/lemmas.k'] + args.requires])
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
                 KEVM._patch_symbol_table(_kprint.symbol_table)
@@ -195,6 +199,7 @@ def create_argument_parser():
 
     k_gen_args = argparse.ArgumentParser(add_help=False)
     k_gen_args.add_argument('--main-module', default='VERIFICATION', type=str, help='Name of the main module.')
+    k_gen_args.add_argument('--spec-module', default='SPEC', type=str, help='Name of the spec module.')
     k_gen_args.add_argument('--require', dest='requires', default=[], action='append', help='Extra K requires to include in generated output.')
     k_gen_args.add_argument('--module-import', dest='imports', default=[], action='append', help='Extra modules to import into generated main module.')
     k_gen_args.add_argument('--exclude-tests', type=file_path, help='File containing, one per line, tests to exclude as CONTRACT_NAME.TEST_NAME.')
