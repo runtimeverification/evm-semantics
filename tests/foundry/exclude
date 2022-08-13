@@ -75,4 +75,6 @@ ToStringTest.testUint256ToString
 ToStringTest.testIntToString
 TokenTest.test_1
 TokenTest.test_2
-
+AssertTest.test_assert_false
+AssertTest.testFail_assert_true
+AssertTest.testFail_assert_false
