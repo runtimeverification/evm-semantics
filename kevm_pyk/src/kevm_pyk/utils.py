@@ -28,11 +28,11 @@ def add_include_arg(includes):
     return [arg for include in includes for arg in ['-I', include]]
 
 
-def abstract_cell_vars(cterm):
+def abstract_cell_vars(cterm, keep_vars=['']):
     state, _ = split_config_and_constraints(cterm)
     config, subst = splitConfigFrom(state)
     for s in subst:
-        if type(subst[s]) is KVariable and not isAnonVariable(subst[s]):
+        if type(subst[s]) is KVariable and not isAnonVariable(subst[s]) and subst[s] not in keep_vars:
             subst[s] = abstract_term_safely(KVariable('_'), base_name=s)
     return substitute(config, subst)
 
