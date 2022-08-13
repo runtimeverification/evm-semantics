@@ -477,6 +477,7 @@ $(foundry_out):
 tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
 	$(KEVM) foundry-to-k $< $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
 	     --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION                   \
+	     --exclude-tests tests/foundry/exclude                                                      \
 	     > $@
 
 tests/foundry/foundry.k.check: tests/foundry/foundry.k
