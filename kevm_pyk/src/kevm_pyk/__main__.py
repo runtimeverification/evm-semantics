@@ -170,7 +170,7 @@ def create_argument_parser():
     prove_args.add_argument('--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.')
     prove_args.add_argument('--bug-report', default=False, action='store_true', help='Generate a haskell-backend bug report for the execution.')
 
-    run_args = command_parser.add_parser('run', help='Run KEVM proof.', parents=[shared_args, evm_chain_args])
+    run_args = command_parser.add_parser('run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args])
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
     run_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
     run_args.add_argument('--term', default=False, action='store_true', help='<input_file> is the entire term to execute.')
