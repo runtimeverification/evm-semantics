@@ -53,7 +53,7 @@ export PLUGIN_SUBMODULE
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
         test-prove-mcd test-klab-prove                                                                                           \
-        test-parse test-failure test-foundry                                                                                     \
+        test-parse test-failure test-foundry test-foundry-forge                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         test-kevm-pyk foundry-out foundry-clean                                                                                  \
         media media-pdf metropolis-theme                                                                                         \
@@ -471,10 +471,12 @@ foundry-out: $(foundry_out)
 
 test-foundry: tests/foundry/foundry.k.prove tests/foundry/foundry.k.check
 
+test-foundry-forge: $(foundry_out)
+	cd tests/foundry && forge test --ffi
+
 $(foundry_out):
 	rm -rf tests/foundry/out
 	cd $(dir $@) && forge build
-	cd $(dir $@) && forge test --ffi
 
 tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
 	$(KEVM) foundry-to-k $< $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
