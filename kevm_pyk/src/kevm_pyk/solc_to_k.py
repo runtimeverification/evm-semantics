@@ -3,7 +3,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, List, Optional, Tuple
+from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
@@ -96,7 +96,7 @@ class Contract():
     test_methods: Tuple[Method, ...]
     fields: FrozenDict
 
-    def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
+    def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False, exclude_tests: Iterable[str] = ()) -> None:
 
         def _get_method_abi(_mname: str) -> Dict:
             for _method in contract_json['abi']:
@@ -118,7 +118,10 @@ class Contract():
                 _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
                 _methods.append(_m)
                 if mname.startswith('test'):
-                    _test_methods.append(_m)
+                    if f'{contract_name}.{mname}' in exclude_tests:
+                        _LOGGER.warning(f'Skipping test for contract {contract_name}: {mname}')
+                    else:
+                        _test_methods.append(_m)
         self.methods = tuple(_methods)
         self.test_methods = tuple(_test_methods)
         if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
@@ -305,10 +308,8 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
 
 def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = False) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
-    contract_name = contract.name
-
     sentences = contract.sentences
-    module_name = contract_name.upper() + '-BIN-RUNTIME'
+    module_name = contract.name.upper() + '-BIN-RUNTIME'
     module = KFlatModule(module_name, sentences, [KImport('EDSL'), KImport('INT-SIMPLIFICATION'), KImport('LEMMAS')])
 
     claims_module: Optional[KFlatModule] = None
@@ -322,7 +323,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
         callvalue: KInner = intToken(0) if not tm.payable else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
         function_test_calldatas.append((calldata, callvalue))
     if function_test_calldatas:
-        claims = gen_claims_for_contract(empty_config, contract_name, calldata_cells=function_test_calldatas)
+        claims = gen_claims_for_contract(empty_config, contract.name, calldata_cells=function_test_calldatas)
         claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport('VERIFICATION'), KImport(module_name)])
 
     return module, claims_module
