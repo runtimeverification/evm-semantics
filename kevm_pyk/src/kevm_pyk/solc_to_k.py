@@ -31,7 +31,7 @@ from pyk.kastManip import abstract_term_safely, build_claim, substitute
 from pyk.prelude import Bool, intToken, mlEqualsTrue, stringToken
 from pyk.utils import FrozenDict, intersperse
 
-from .kevm import KEVM
+from .kevm import KEVM, Foundry
 from .utils import abstract_cell_vars
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -48,6 +48,7 @@ class Contract():
         arg_names: Tuple[str, ...]
         arg_types: Tuple[str, ...]
         contract_name: str
+        payable: bool
 
         def __init__(self, name: str, id: int, abi: Dict, contract_name: str, sort: KSort) -> None:
             self.name = name
@@ -56,6 +57,8 @@ class Contract():
             self.arg_types = tuple([input['type'] for input in abi['inputs']])
             self.contract_name = contract_name
             self.sort = sort
+            # TODO: Check that we're handling all state mutability cases
+            self.payable = abi['stateMutability'] == 'payable'
 
         @property
         def selector_alias_rule(self) -> KRule:
@@ -81,6 +84,7 @@ class Contract():
                 if rp is None:
                     _LOGGER.warning(f'Unsupported ABI type for method {contract_name}.{prod_klabel.name}, will not generate calldata sugar: {input_type}')
                     return None
+                conjuncts.append(rp)
             lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
             rhs = KEVM.abi_calldata(self.name, args)
             ensures = Bool.andBool(conjuncts)
@@ -89,6 +93,7 @@ class Contract():
     name: str
     bytecode: str
     methods: Tuple[Method, ...]
+    test_methods: Tuple[Method, ...]
     fields: FrozenDict
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
@@ -101,17 +106,21 @@ class Contract():
 
         self.name = contract_name
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
+        _methods = []
+        _test_methods = []
         if 'methodIdentifiers' not in contract_json or not(foundry or 'methodIdentifiers' in contract_json['evm']):
             _LOGGER.warning(f'Could not find member \'methodIdentifiers\' while processing contract: {self.name}')
-            self.methods = ()
         else:
             _method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
-            _methods = []
             for msig in _method_identifiers:
                 mname = msig.split('(')[0]
                 mid = int(_method_identifiers[msig], 16)
-                _methods.append(Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method))
-            self.methods = tuple(_methods)
+                _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
+                _methods.append(_m)
+                if mname.startswith('test'):
+                    _test_methods.append(_m)
+        self.methods = tuple(_methods)
+        self.test_methods = tuple(_test_methods)
         if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
             _LOGGER.warning(f'Could not find member \'storageLayout\' while processing contract: {self.name}')
             self.fields = FrozenDict({})
@@ -235,18 +244,24 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
     return json.loads(process_res.stdout)
 
 
-def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_cells: List[KInner] = None) -> List[KClaim]:
+def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[KInner, KInner]] = None) -> List[KClaim]:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
-    account_cell = KEVM.account_cell(KVariable('ACCT_ID'), KVariable('ACCT_BALANCE'), program, KVariable('ACCT_STORAGE'), KVariable('ACCT_ORIGSTORAGE'), KVariable('ACCT_NONCE'))
+    account_cell = KEVM.account_cell(Foundry.address_TEST_CONTRACT(),
+                                     KVariable('ACCT_BALANCE'),
+                                     program,
+                                     KVariable('ACCT_STORAGE'),
+                                     KVariable('ACCT_ORIGSTORAGE'),
+                                     KVariable('ACCT_NONCE'))
     init_subst = {
         'MODE_CELL': KToken('NORMAL', 'Mode'),
         'SCHEDULE_CELL': KApply('LONDON_EVM'),
+        'STATUSCODE_CELL': KVariable('STATUSCODE'),
         'CALLSTACK_CELL': KApply('.List'),
         'CALLDEPTH_CELL': intToken(0),
         'PROGRAM_CELL': program,
         'JUMPDESTS_CELL': KEVM.compute_valid_jumpdests(program),
         'ORIGIN_CELL': KVariable('ORIGIN_ID'),
-        'ID_CELL': KVariable('ACCT_ID'),
+        'ID_CELL': Foundry.address_TEST_CONTRACT(),
         'CALLER_CELL': KVariable('CALLER_ID'),
         'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
         'MEMORYUSED_CELL': intToken(0),
@@ -254,19 +269,37 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
         'PC_CELL': intToken(0),
         'GAS_CELL': KEVM.inf_gas(KVariable('VGAS')),
         'K_CELL': KSequence([KEVM.execute(), KVariable('CONTINUATION')]),
-        'ACCOUNTS_CELL': KApply('_AccountCellMap_', [account_cell, KVariable('ACCOUNTS')]),
+        'ACCOUNTS_CELL': KEVM.accounts([
+            account_cell,  # test contract address
+            Foundry.account_CALLER(),
+            Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE')),
+            Foundry.account_HARDHAT_CONSOLE_ADDRESS()])
     }
-    final_subst = {'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')])}
+    final_subst = {
+        'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')]),
+        'STATUSCODE_CELL': KVariable('STATUSCODE_FINAL'),
+        'ID_CELL': Foundry.address_TEST_CONTRACT(),
+        'ACCOUNTS_CELL': KEVM.accounts([
+            account_cell,  # test contract address
+            Foundry.account_CALLER(),
+            Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE_FINAL')),
+            Foundry.account_HARDHAT_CONSOLE_ADDRESS()])
+    }
     init_term = substitute(empty_config, init_subst)
     if calldata_cells:
-        init_terms = [(f'{contract_name.lower()}-{i}', substitute(init_term, {'CALLDATA_CELL': cd})) for i, cd in enumerate(calldata_cells)]
+        init_terms = [(f'{contract_name.lower()}-{i}', substitute(init_term, {'CALLDATA_CELL': cd, 'CALLVALUE_CELL': cv})) for i, (cd, cv) in enumerate(calldata_cells)]
     else:
         init_terms = [(contract_name.lower(), init_term)]
-    final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst)))
-    final_cterm = final_cterm.add_constraint(mlEqualsTrue(KEVM.foundry_success()))
+    final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')]))
+    # final_cterm = CTerm(setCell(final_cterm.config, 'STATUSCODE_CELL', KVariable('STATUSCODE_FINAL')))
+    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
+    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
+    dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
+    final_cterm = final_cterm.add_constraint(mlEqualsTrue(KEVM.foundry_success(KVariable('STATUSCODE_FINAL'), dst_failed_post)))
     claims: List[KClaim] = []
     for claim_id, i_term in init_terms:
-        claim, _ = build_claim(claim_id, CTerm(i_term), final_cterm)
+        i_cterm = CTerm(i_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
+        claim, _ = build_claim(claim_id, i_cterm, final_cterm)
         claims.append(claim)
     return claims
 
@@ -277,19 +310,18 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
 
     sentences = contract.sentences
     module_name = contract_name.upper() + '-BIN-RUNTIME'
-    module = KFlatModule(module_name, sentences, [KImport('EDSL')])
+    module = KFlatModule(module_name, sentences, [KImport('EDSL'), KImport('INT-SIMPLIFICATION'), KImport('LEMMAS')])
 
     claims_module: Optional[KFlatModule] = None
-    function_test_productions = [prod for prod in module.syntax_productions if prod.sort == KSort(f'{contract_name}Method')]
     contract_function_application_label = contract.klabel_method
     function_test_calldatas = []
-    for ftp in function_test_productions:
-        klabel = ftp.klabel
+    for tm in contract.test_methods:
+        klabel = tm.production.klabel
         assert klabel is not None
-        if klabel.name.startswith(f'method_{contract_name}_test'):
-            args = [abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name='V') for pi in ftp.items if type(pi) is KNonTerminal]
-            calldata: KInner = KApply(contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)])
-            function_test_calldatas.append(calldata)
+        args = [abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}') for name in tm.arg_names]
+        calldata: KInner = KApply(contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)])
+        callvalue: KInner = intToken(0) if not tm.payable else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
+        function_test_calldatas.append((calldata, callvalue))
     if function_test_calldatas:
         claims = gen_claims_for_contract(empty_config, contract_name, calldata_cells=function_test_calldatas)
         claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport('VERIFICATION'), KImport(module_name)])
