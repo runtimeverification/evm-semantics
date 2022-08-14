@@ -239,8 +239,20 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
         process_res = run_process(['solc', '--standard-json'], logger=_LOGGER, input=json.dumps(args), profile=profile)
     except CalledProcessError as err:
         raise RuntimeError('solc error', err.stdout, err.stderr)
-
-    return json.loads(process_res.stdout)
+    result = json.loads(process_res.stdout)
+    if 'errors' in result:
+        failed = False
+        for error in result['errors']:
+            if error['severity'] == 'error':
+                _LOGGER.error(f'solc error:\n{error["formattedMessage"]}')
+                failed = True
+            elif error['severity'] == 'warning':
+                _LOGGER.warning(f'solc warning:\n{error["formattedMessage"]}')
+            else:
+                _LOGGER.warning(f'Unknown solc error severity level {error["severity"]}:\n{json.dumps(error, indent=2)}')
+        if failed:
+            raise ValueError('Compilation failed.')
+    return result
 
 
 def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[KInner, KInner]] = None) -> List[KClaim]:
