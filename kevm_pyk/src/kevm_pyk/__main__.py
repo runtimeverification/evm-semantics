@@ -71,7 +71,7 @@ def main():
                 print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
             elif args.command == 'foundry-to-k':
-                path_glob = str(args.out) + '/**/*.json'
+                path_glob = str(args.out) + '/*.t.sol/*.json'
                 modules: List[KFlatModule] = []
                 claims_modules: List[KFlatModule] = []
                 # Must sort to get consistent output order on different platforms.
@@ -89,7 +89,7 @@ def main():
                             claims_modules.append(claims_module)
                 main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
                 modules.append(main_module)
-                bin_runtime_definition = KDefinition(main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + args.requires])
+                bin_runtime_definition = KDefinition(main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md', 'lemmas/int-simplification.k', 'lemmas/lemmas.k'] + args.requires])
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
                 KEVM._patch_symbol_table(_kprint.symbol_table)
                 print(_kprint.pretty_print(bin_runtime_definition) + '\n')
@@ -103,7 +103,7 @@ def main():
                     haskell_args += ['--debug-equation', de]
                 if args.bug_report:
                     haskell_args += ['--bug-report', str(spec_file.with_suffix(''))]
-                final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args, rule_profile=spec_file.with_suffix('.rule-profile'))
+                final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
                 print(kevm.pretty_print(final_state) + '\n')
 
     else:
