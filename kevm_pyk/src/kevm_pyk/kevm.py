@@ -8,7 +8,7 @@ from typing import Any, Dict, Final, List, Optional
 from pyk.cli_utils import run_process
 from pyk.kast import KApply, KInner, KLabel, KToken, KVariable
 from pyk.kastManip import flatten_label, getCell
-from pyk.ktool import KProve
+from pyk.ktool import KProve, KRun
 from pyk.ktool.kprint import paren
 from pyk.prelude import build_assoc, intToken, stringToken
 
@@ -20,36 +20,44 @@ _LOGGER: Final = logging.getLogger(__name__)
 # KEVM class
 
 
-class KEVM(KProve):
+class KEVM(KProve, KRun):
 
-    def __init__(self, definition_dir, main_file=None, use_directory=None):
-        super().__init__(definition_dir, main_file=main_file, use_directory=use_directory)
+    def __init__(self, definition_dir: Path, main_file: Optional[Path] = None, use_directory: Optional[Path] = None, profile: bool = False) -> None:
+        # I'm going for the simplest version here, we can change later if there is an advantage.
+        # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
+        # Note that they say using `super` supports dependency injection, but I have never liked dependency injection anyway.
+        KProve.__init__(self, definition_dir, use_directory=use_directory, main_file=main_file, profile=profile)
+        KRun.__init__(self, definition_dir, use_directory=use_directory, profile=profile)
         KEVM._patch_symbol_table(self.symbol_table)
 
     @staticmethod
     def kompile(
         definition_dir: Path,
         main_file: Path,
+        emit_json: bool = True,
         includes: List[str] = [],
         main_module_name: Optional[str] = None,
         syntax_module_name: Optional[str] = None,
         md_selector: Optional[str] = None,
         hook_namespaces: Optional[List[str]] = None,
         concrete_rules_file: Optional[Path] = None,
+        profile: bool = False,
     ) -> 'KEVM':
         command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
-        command += ['--emit-json', '--backend', 'haskell']
+        command += ['--backend', 'haskell']
         command += ['--main-module', main_module_name] if main_module_name else []
         command += ['--syntax-module', syntax_module_name] if syntax_module_name else []
         command += ['--md-selector', md_selector] if md_selector else []
         command += ['--hook-namespaces', ' '.join(hook_namespaces)] if hook_namespaces else []
         command += add_include_arg(includes)
+        if emit_json:
+            command += ['--emit-json']
         if concrete_rules_file and os.path.exists(concrete_rules_file):
             with open(concrete_rules_file, 'r') as crf:
                 concrete_rules = ','.join(crf.read().split('\n'))
                 command += ['--concrete-rules', concrete_rules]
         try:
-            run_process(command, logger=_LOGGER)
+            run_process(command, logger=_LOGGER, profile=profile)
         except CalledProcessError as err:
             sys.stderr.write(f'\nkompile stdout:\n{err.stdout}\n')
             sys.stderr.write(f'\nkompile stderr:\n{err.stderr}\n')

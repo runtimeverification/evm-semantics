@@ -3,10 +3,12 @@ import glob
 import json
 import logging
 import sys
+from pathlib import Path
 from typing import Final, List
 
 from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KDefinition, KFlatModule, KImport, KRequire, KSort
+from pyk.ktool.krun import _krun
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
@@ -23,19 +25,21 @@ def main():
     parser = create_argument_parser()
     args = parser.parse_args()
 
-    if args.verbose:
-        logging.basicConfig(level=logging.DEBUG, format=_LOG_FORMAT)
-    else:
+    if not (args.verbose or args.profile or args.debug):
         logging.basicConfig(level=logging.WARNING, format=_LOG_FORMAT)
+    if args.verbose or args.profile:
+        logging.basicConfig(level=logging.INFO, format=_LOG_FORMAT)
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG, format=_LOG_FORMAT)
 
     if args.command == 'compile':
-        res = solc_compile(args.contract_file)
+        res = solc_compile(args.contract_file, profile=args.profile)
         print(json.dumps(res))
 
     elif args.command == 'gst-to-kore':
         gst_to_kore(args.input_file, sys.stdout, args.schedule, args.mode, args.chainid)
 
-    elif args.command in {'solc-to-k', 'foundry-to-k', 'kompile', 'prove'}:
+    elif args.command in {'solc-to-k', 'foundry-to-k', 'kompile', 'prove', 'run'}:
 
         if 'definition_dir' not in args:
             raise ValueError(f'Must provide --definition argument to {args.command}!')
@@ -44,20 +48,22 @@ def main():
             kevm = KEVM.kompile(
                 args.definition_dir,
                 args.main_file,
+                emit_json=args.emit_json,
                 includes=args.includes,
                 main_module_name=args.main_module,
                 syntax_module_name=args.syntax_module,
                 md_selector=args.md_selector,
                 hook_namespaces=args.hook_namespaces.split(' '),
                 concrete_rules_file=args.concrete_rules_file,
+                profile=args.profile,
             )
 
         else:
-            kevm = KEVM(args.definition_dir)
+            kevm = KEVM(args.definition_dir, profile=args.profile)
             empty_config = kevm.definition.empty_config(KSort('KevmCell'))
 
             if args.command == 'solc-to-k':
-                solc_json = solc_compile(args.contract_file)
+                solc_json = solc_compile(args.contract_file, profile=args.profile)
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
                 contract = Contract(args.contract_name, contract_json, foundry=False)
                 contract_module, contract_claims_module = contract_to_k(contract, empty_config)
@@ -106,6 +112,21 @@ def main():
                 final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
                 print(kevm.pretty_print(final_state) + '\n')
 
+            elif args.command == 'run':
+                input_file = args.input_file
+                krun_args = []
+                if args.term:
+                    krun_args += ['--term']
+                if args.parser is not None:
+                    krun_args += ['--parser', args.parser]
+                if not args.expand_macros:
+                    krun_args += ['--no-expand-macros']
+                # TODO: These are inlined into _krun
+                krun_args += ['--output', args.output]
+                krun_result = _krun(kevm.definition_dir, Path(input_file), depth=args.depth, args=krun_args, profile=args.profile)
+                print(krun_result.stdout)
+                sys.exit(krun_result.returncode)
+
     else:
         assert False
 
@@ -118,7 +139,9 @@ def create_argument_parser():
         return parse
 
     shared_args = argparse.ArgumentParser(add_help=False)
-    shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose debugging information.')
+    shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
+    shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
+    shared_args.add_argument('--profile', default=False, action='store_true', help='Coarse process-level profiling.')
     shared_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
     shared_args.add_argument('-I', type=str, dest='includes', default=[], action='append', help='Directories to lookup K definitions in.')
 
@@ -138,12 +161,23 @@ def create_argument_parser():
     kompile_args.add_argument('--md-selector', type=str, help='Code selector expression to use when reading markdown.')
     kompile_args.add_argument('--hook-namespaces', type=str, help='Hook namespaces. What more can I say?')
     kompile_args.add_argument('--concrete-rules-file', type=str, help='List of rules to only evaluate if arguments are fully concrete.')
+    kompile_args.add_argument('--emit-json', dest='emit_json', default=True, action='store_true', help='Emit JSON definition after compilation.')
+    kompile_args.add_argument('--no-emit-json', dest='emit_json', action='store_false', help='Do not JSON definition after compilation.')
 
     prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args])
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
     prove_args.add_argument('--spec-module', type=str, help='Name of the specification module.')
     prove_args.add_argument('--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.')
     prove_args.add_argument('--bug-report', default=False, action='store_true', help='Generate a haskell-backend bug report for the execution.')
+
+    run_args = command_parser.add_parser('run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args])
+    run_args.add_argument('input_file', type=file_path, help='Path to input file.')
+    run_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
+    run_args.add_argument('--term', default=False, action='store_true', help='<input_file> is the entire term to execute.')
+    run_args.add_argument('--parser', default=None, type=str, help='Parser to use for $PGM.')
+    run_args.add_argument('--output', default='pretty', type=str, help='Output format to use, one of [pretty|program|kast|binary|json|latex|kore|none].')
+    run_args.add_argument('--expand-macros', dest='expand_macros', default=True, action='store_true', help='Expand macros on the input term before execution.')
+    run_args.add_argument('--no-expand-macros', dest='expand_macros', action='store_false', help='Do not expand macros on the input term before execution.')
 
     solc_args = command_parser.add_parser('compile', help='Generate combined JSON with solc compilation results.')
     solc_args.add_argument('contract_file', type=file_path, help='Path to contract file.')

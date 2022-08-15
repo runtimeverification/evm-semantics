@@ -207,7 +207,7 @@ class Contract():
         return [self.subsort, self.production, self.macro_bin_runtime] + self.field_sentences + self.method_sentences
 
 
-def solc_compile(contract_file: Path) -> Dict[str, Any]:
+def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
 
     # TODO: add check to kevm:
     # solc version should be >=0.8.0 due to:
@@ -237,7 +237,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
     }
 
     try:
-        process_res = run_process(['solc', '--standard-json'], logger=_LOGGER, input=json.dumps(args))
+        process_res = run_process(['solc', '--standard-json'], logger=_LOGGER, input=json.dumps(args), profile=profile)
     except CalledProcessError as err:
         raise RuntimeError('solc error', err.stdout, err.stderr)
 
