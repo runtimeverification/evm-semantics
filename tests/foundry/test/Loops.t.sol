@@ -216,4 +216,28 @@ contract LoopsTest is Test, DSMath {
     function testIsPrimeOpt(uint n) public {
         assertEq(isPrime(n), isPrimeOpt(n));
     }
+
+    function nthPrime(uint n) internal pure returns (uint i) {
+        uint m;
+        while (m < n) {
+            i++;
+            if (isPrime(i)) {
+                m++;
+            }
+        }
+    }
+
+    function testNthPrime(uint n, uint i) public {
+        uint nth = nthPrime(n);
+
+        if (n == 0) {
+            assertEq(nth, 0);
+            return;
+        }
+
+        assertTrue(isPrime(nth));
+
+        uint prev = nthPrime(n - 1);
+        assertTrue(i <= prev || i >= nth || !isPrime(i));
+    }
 }
