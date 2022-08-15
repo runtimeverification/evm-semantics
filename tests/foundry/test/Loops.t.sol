@@ -153,4 +153,67 @@ contract LoopsTest is Test, DSMath {
         }
         assertTrue(err < x / 100);
     }
+
+    function isPrimeBroken(uint n) internal pure returns (bool) {
+        for (uint i = 2; i < n; i++) {
+            if (n % i != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function testIsPrimeBroken(uint n, uint i) public {
+        // This test should fail for n < 2
+        bool prime = isPrimeBroken(n);
+        assertTrue(!prime || n > 1);
+        assertTrue(i < 2 || i >= n || !prime || (n % i != 0));
+    }
+
+    function isPrime(uint n) internal pure returns (bool) {
+        if (n < 2) {
+            return false;
+        }
+        for (uint i = 2; i < n; i++) {
+            if (n % i != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function testIsPrime(uint n, uint i) public {
+        bool prime = isPrime(n);
+        assertTrue(!prime || n > 1);
+        assertTrue(i < 2 || i >= n || !prime || (n % i != 0));
+    }
+
+    function testIsNotPrime(uint n) public {
+        bool prime = isPrime(n);
+        if (prime || n < 2) {
+            return;
+        }
+        for (uint i = 2; i < n; i++) {
+            if (n % i == 0) {
+                return;
+            }
+        }
+        assertTrue(false);
+    }
+
+    function isPrimeOpt(uint n) internal pure returns (bool) {
+        if (n < 2) {
+            return false;
+        }
+        for (uint i = 2; i <= n / 2; i++) {
+            if (n % i != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function testIsPrimeOpt(uint n) public {
+        assertEq(isPrime(n), isPrimeOpt(n));
+    }
 }
