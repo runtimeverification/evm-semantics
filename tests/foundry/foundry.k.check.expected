@@ -2055,6 +2055,62 @@ module SIGNTEST-BIN-RUNTIME
 
 endmodule
 
+module ASSERTTEST-BIN-RUNTIME
+    imports public EDSL
+    imports public INT-SIMPLIFICATION
+    imports public LEMMAS
+    
+    syntax Contract ::= AssertTestContract
+    
+    syntax AssertTestContract ::= "AssertTest" [klabel(contract_AssertTest)]
+    
+    rule  ( #binRuntime ( AssertTest ) => #parseByteStack ( "0x6080604052348015600f57600080fd5b506004361060505760003560e01c80630a9254e414605557806318675d42146055578063360da4d21460555780635ddecbfd1460575780637aa9ccae146057575b600080fd5b005b6055605f565b565b605d634e487b7160e01b600052600160045260246000fdfea2646970667358221220fce41d46dada48fff93f63417f8349b05bf6690db4a401bbec76eeb68b195cf064736f6c634300080f0033" ) )
+      
+    
+    syntax ByteArray ::= AssertTestContract "." AssertTestMethod [function(), klabel(method_AssertTest)]
+    
+    syntax AssertTestMethod ::= "setUp" "(" ")" [klabel(method_AssertTest_setUp)]
+    
+    syntax AssertTestMethod ::= "testFail_assert_false" "(" ")" [klabel(method_AssertTest_testFail_assert_false)]
+    
+    syntax AssertTestMethod ::= "testFail_assert_true" "(" ")" [klabel(method_AssertTest_testFail_assert_true)]
+    
+    syntax AssertTestMethod ::= "test_assert_false" "(" ")" [klabel(method_AssertTest_test_assert_false)]
+    
+    syntax AssertTestMethod ::= "test_assert_true" "(" ")" [klabel(method_AssertTest_test_assert_true)]
+    
+    rule  ( AssertTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
+      
+    
+    rule  ( AssertTest . testFail_assert_false ( ) => #abiCallData ( "testFail_assert_false" , .TypedArgs ) )
+      
+    
+    rule  ( AssertTest . testFail_assert_true ( ) => #abiCallData ( "testFail_assert_true" , .TypedArgs ) )
+      
+    
+    rule  ( AssertTest . test_assert_false ( ) => #abiCallData ( "test_assert_false" , .TypedArgs ) )
+      
+    
+    rule  ( AssertTest . test_assert_true ( ) => #abiCallData ( "test_assert_true" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "setUp" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testFail_assert_false" ) => 2057948334 )
+      
+    
+    rule  ( selector ( "testFail_assert_true" ) => 409427266 )
+      
+    
+    rule  ( selector ( "test_assert_false" ) => 1574882301 )
+      
+    
+    rule  ( selector ( "test_assert_true" ) => 906863826 )
+      
+
+endmodule
+
 module SNAPSHOTTEST-BIN-RUNTIME
     imports public EDSL
     imports public INT-SIMPLIFICATION
@@ -2437,6 +2493,7 @@ module VERIFICATION
     imports public SAFETEST-BIN-RUNTIME
     imports public SETUPTEST-BIN-RUNTIME
     imports public SIGNTEST-BIN-RUNTIME
+    imports public ASSERTTEST-BIN-RUNTIME
     imports public SNAPSHOTTEST-BIN-RUNTIME
     imports public STORE-BIN-RUNTIME
     imports public STORETEST-BIN-RUNTIME
@@ -2449,9 +2506,267 @@ module VERIFICATION
 endmodule
 
 module SPEC
+    imports public ASSERTTEST-BIN-RUNTIME-SPEC
     
     
+
+endmodule
+
+module ASSERTTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
+    imports public ASSERTTEST-BIN-RUNTIME
     
+    claim [asserttest-0]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( AssertTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( AssertTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( AssertTest . test_assert_true ( ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( .Memory => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( _STATIC_CELL => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( _ACCESSEDSTORAGE_CELL => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( _ACTIVEACCOUNTS_CELL => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <code>
+                     #binRuntime ( AssertTest )
+                   </code>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account> ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) )
+      [label(asserttest-0)]
 
 endmodule
 
