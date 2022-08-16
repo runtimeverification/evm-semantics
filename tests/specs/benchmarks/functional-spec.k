@@ -93,6 +93,7 @@ module FUNCTIONAL-SPEC
        andBool #rangeBytes(32, SIGS)
        andBool notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
 
-    claim <k> runLemma(#range( b"", 0, 1)) => doneLemma(b"\x00") ... </k>
+    claim <k> runLemma(#range( .Memory [ 0 := #padToWidth(0, .ByteArray) ], 0, 1)) 
+           => doneLemma(#padToWidth(1, .ByteArray)) ... </k>
 
 endmodule
