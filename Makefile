@@ -484,7 +484,7 @@ tests/foundry/foundry.k.check: tests/foundry/foundry.k
 
 tests/foundry/foundry.k.prove: tests/foundry/kompiled/timestamp
 	$(KEVM) prove tests/foundry/foundry.k --backend haskell --definition tests/foundry/kompiled \
-	    $(KEVM_OPTS) $(KPROVE_OPTS) --spec-module TOKENTEST-BIN-RUNTIME-SPEC
+	    $(KEVM_OPTS) $(KPROVE_OPTS) --spec-module DEALTEST-BIN-RUNTIME-SPEC
 
 tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
 	$(KOMPILE) $< --backend haskell --definition tests/foundry/kompiled \

@@ -96,6 +96,21 @@ First we have some helpers in K which can:
              ...
          </account>
 ```
+```k
+    rule [call.deal]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+         <account>
+           <acctID> ACCT_ID </acctID>
+           <balance> _ => #asWord(#range(LM, ARGSTART +Int 36, 32)) </balance>
+           ...
+         </account>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asInteger(#range(LM, ARGSTART, 4)) ==Int 3364511341 // selector ( "deal" )
+       andBool ACCT_ID ==K #asAccount(#range(LM, ARGSTART +Int 4, 32))
+      [priority(40)]
+```
 
 ```k
 endmodule
