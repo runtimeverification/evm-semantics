@@ -55,7 +55,7 @@ export PLUGIN_SUBMODULE
         test-prove-mcd test-klab-prove                                                                                           \
         test-parse test-failure test-foundry test-foundry-forge                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
-        test-kevm-pyk foundry-out foundry-clean                                                                                  \
+        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean                                                       \
         media media-pdf metropolis-theme                                                                                         \
         install uninstall                                                                                                        \
         venv venv-dev venv-clean
@@ -465,17 +465,18 @@ foundry-clean:
 tests/foundry/%: KEVM = $(PYK_ACTIVATE) && kevm
 tests/foundry/%: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 
-foundry_out := tests/foundry/out
-
-foundry-out: $(foundry_out)
+foundry_dir  := tests/foundry
+foundry_out := $(foundry_dir)/out
 
 test-foundry: tests/foundry/foundry.k.prove tests/foundry/foundry.k.check
 
-test-foundry-forge: $(foundry_out)
-	cd tests/foundry && forge test --ffi
+foundry-forge-build: $(foundry_out)
+
+foundry-forge-test: foundry-forge-build
+	cd $(foundry_dir) && forge test --ffi
 
 $(foundry_out):
-	rm -rf tests/foundry/out
+	rm -rf $@
 	cd $(dir $@) && forge build
 
 tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
