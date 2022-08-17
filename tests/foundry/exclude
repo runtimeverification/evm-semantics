@@ -59,7 +59,7 @@ LoopsTest.testSort
 LoopsTest.testSortBroken
 LoopsTest.testSqrt
 LoopsTest.testSumToN
-LoopsTest.testSumToNBrokenA
+LoopsTest.testSumToNBroken
 MockCallTest.testMockCall
 MockCallTest.testMockCalls
 MockCallTest.testMockCallValue
