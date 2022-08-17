@@ -53,7 +53,7 @@ export PLUGIN_SUBMODULE
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
         test-prove-mcd test-klab-prove                                                                                           \
-        test-parse test-failure                                                                                                  \
+        test-parse test-failure test-foundry test-foundry-forge                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
         test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean                                                       \
         media media-pdf metropolis-theme                                                                                         \
@@ -468,18 +468,24 @@ tests/foundry/%: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 foundry_dir  := tests/foundry
 foundry_out := $(foundry_dir)/out
 
-$(foundry_out):
-	rm -rf $@
-	cd $(dir $@) && forge build
+test-foundry: KEVM_OPTS += --pyk --verbose --profile
+test-foundry: KEVM = $(PYK_ACTIVATE) && kevm
+test-foundry: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
+test-foundry: tests/foundry/foundry.k.prove tests/foundry/foundry.k.check
 
 foundry-forge-build: $(foundry_out)
 
 foundry-forge-test: foundry-forge-build
 	cd $(foundry_dir) && forge test --ffi
 
+$(foundry_out):
+	rm -rf $@
+	cd $(dir $@) && forge build
+
 tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
 	$(KEVM) foundry-to-k $< $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
 	     --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION                   \
+	     --exclude-tests tests/foundry/exclude                                                      \
 	     > $@
 
 tests/foundry/foundry.k.check: tests/foundry/foundry.k
@@ -487,7 +493,7 @@ tests/foundry/foundry.k.check: tests/foundry/foundry.k
 
 tests/foundry/foundry.k.prove: tests/foundry/kompiled/timestamp
 	$(KEVM) prove tests/foundry/foundry.k --backend haskell --definition tests/foundry/kompiled \
-	    $(KEVM_OPTS) $(KPROVE_OPTS) --spec-module DEALTEST-BIN-RUNTIME-SPEC
+	    $(KEVM_OPTS) $(KPROVE_OPTS) --spec-module SPEC
 
 tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
 	$(KOMPILE) $< --backend haskell --definition tests/foundry/kompiled \
@@ -655,8 +661,6 @@ test-failure: $(failure_tests:=.run-expected)
 kevm_pyk_tests :=                                                                                              \
                   tests/interactive/vmLogTest/log3.json.gst-to-kore.check                                      \
                   tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add.json.run \
-                  tests/foundry/kompiled/timestamp                                                             \
-                  tests/foundry/foundry.k.check                                                                \
                   tests/specs/bihu/functional-spec.k.prove                                                     \
                   tests/specs/examples/empty-bin-runtime.k                                                     \
                   tests/specs/examples/erc20-bin-runtime.k                                                     \
@@ -665,7 +669,7 @@ kevm_pyk_tests :=                                                               
 test-kevm-pyk: KEVM_OPTS += --pyk --verbose --profile
 test-kevm-pyk: KEVM = $(PYK_ACTIVATE) && kevm
 test-kevm-pyk: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
-test-kevm-pyk: $(kevm_pyk_tests) venv
+test-kevm-pyk: $(kevm_pyk_tests) test-foundry venv
 
 # Interactive Tests
 

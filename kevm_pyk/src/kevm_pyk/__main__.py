@@ -65,12 +65,18 @@ def main():
             if args.command == 'solc-to-k':
                 solc_json = solc_compile(args.contract_file, profile=args.profile)
                 contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
+                exclude_tests = []
+                if args.exclude_tests and args.exclude_tests.exists():
+                    with open(args.exclude_tests, 'r') as el:
+                        exclude_tests = el.read().strip().split('\n')
                 contract = Contract(args.contract_name, contract_json, foundry=False)
-                contract_module, contract_claims_module = contract_to_k(contract, empty_config)
+                contract_module, contract_claims_module = contract_to_k(contract, empty_config, exclude_tests=exclude_tests)
                 modules = [contract_module]
                 claims_modules = [contract_claims_module] if contract_claims_module else []
                 main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
+                spec_module = KFlatModule(args.spec_module, [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
                 modules.append(main_module)
+                modules.append(spec_module)
                 bin_runtime_definition = KDefinition(args.main_module, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + args.requires])
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
                 KEVM._patch_symbol_table(_kprint.symbol_table)
@@ -80,6 +86,10 @@ def main():
                 path_glob = str(args.out) + '/*.t.sol/*.json'
                 modules: List[KFlatModule] = []
                 claims_modules: List[KFlatModule] = []
+                exclude_tests = []
+                if args.exclude_tests and args.exclude_tests.exists():
+                    with open(args.exclude_tests, 'r') as el:
+                        exclude_tests = el.read().strip().split('\n')
                 # Must sort to get consistent output order on different platforms.
                 for json_file in sorted(glob.glob(path_glob)):
                     _LOGGER.info(f'Processing contract file: {json_file}')
@@ -88,13 +98,15 @@ def main():
                     with open(json_file, 'r') as cjson:
                         contract_json = json.loads(cjson.read())
                         contract = Contract(contract_name, contract_json, foundry=True)
-                        module, claims_module = contract_to_k(contract, empty_config, foundry=True)
+                        module, claims_module = contract_to_k(contract, empty_config, foundry=True, exclude_tests=exclude_tests)
                         _LOGGER.info(f'Produced contract module: {module.name}')
                         modules.append(module)
                         if claims_module:
                             claims_modules.append(claims_module)
                 main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
+                spec_module = KFlatModule(args.spec_module, [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
                 modules.append(main_module)
+                modules.append(spec_module)
                 bin_runtime_definition = KDefinition(main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md', 'lemmas/int-simplification.k', 'lemmas/lemmas.k'] + args.requires])
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
                 KEVM._patch_symbol_table(_kprint.symbol_table)
@@ -187,8 +199,10 @@ def create_argument_parser():
 
     k_gen_args = argparse.ArgumentParser(add_help=False)
     k_gen_args.add_argument('--main-module', default='VERIFICATION', type=str, help='Name of the main module.')
+    k_gen_args.add_argument('--spec-module', default='SPEC', type=str, help='Name of the spec module.')
     k_gen_args.add_argument('--require', dest='requires', default=[], action='append', help='Extra K requires to include in generated output.')
     k_gen_args.add_argument('--module-import', dest='imports', default=[], action='append', help='Extra modules to import into generated main module.')
+    k_gen_args.add_argument('--exclude-tests', type=file_path, help='File containing, one per line, tests to exclude as CONTRACT_NAME.TEST_NAME.')
 
     solc_to_k_args = command_parser.add_parser('solc-to-k', help='Output helper K definition for given JSON output from solc compiler.', parents=[shared_args, k_gen_args])
     solc_to_k_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
