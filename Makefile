@@ -468,6 +468,9 @@ tests/foundry/%: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 foundry_dir  := tests/foundry
 foundry_out := $(foundry_dir)/out
 
+test-foundry: KEVM_OPTS += --pyk --verbose --profile
+test-foundry: KEVM = $(PYK_ACTIVATE) && kevm
+test-foundry: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 test-foundry: tests/foundry/foundry.k.prove tests/foundry/foundry.k.check
 
 foundry-forge-build: $(foundry_out)
@@ -658,9 +661,6 @@ test-failure: $(failure_tests:=.run-expected)
 kevm_pyk_tests :=                                                                                              \
                   tests/interactive/vmLogTest/log3.json.gst-to-kore.check                                      \
                   tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add.json.run \
-                  tests/foundry/kompiled/timestamp                                                             \
-                  tests/foundry/foundry.k.check                                                                \
-                  tests/foundry/foundry.k.prove                                                                \
                   tests/specs/bihu/functional-spec.k.prove                                                     \
                   tests/specs/examples/empty-bin-runtime.k                                                     \
                   tests/specs/examples/erc20-bin-runtime.k                                                     \
@@ -669,7 +669,7 @@ kevm_pyk_tests :=                                                               
 test-kevm-pyk: KEVM_OPTS += --pyk --verbose --profile
 test-kevm-pyk: KEVM = $(PYK_ACTIVATE) && kevm
 test-kevm-pyk: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
-test-kevm-pyk: $(kevm_pyk_tests) venv
+test-kevm-pyk: $(kevm_pyk_tests) test-foundry venv
 
 # Interactive Tests
 
