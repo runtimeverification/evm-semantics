@@ -352,13 +352,9 @@ module LEMMAS-HASKELL [symbolic, kore]
       requires N1 +Int #sizeByteArray(BUF1) <=Int L [simplification]
 
     rule #range (M, N1 +Int N2, K ) => #range( #range( M, N2, #sizeByteArray(M) -Int N2 ), N1, K ) 
+      requires N1 >=Int 0 
+       andBool N2 >=Int 0 
       [simplification, concrete(N2), concrete(M)]
-
-    rule 0 <Int #asWord (BUF ++ #range( M, #sizeByteArray(BUF), LEN -Int #sizeByteArray(BUF) )) => #sizeByteArray(BUF) ==Int LEN
-      requires M ==K #padToWidth(LEN, .ByteArray) [simplification]
-
-    rule maxUInt160 &Int #asWord (BUF ++ #range( M, #sizeByteArray(BUF), LEN -Int #sizeByteArray(BUF) )) => #asWord (BUF ++ #range( M, #sizeByteArray(BUF), LEN -Int #sizeByteArray(BUF) ))
-      requires #asWord(BUF) <=Int maxUInt160 [simplification]
 
   // ########################
   // Map Reasoning
