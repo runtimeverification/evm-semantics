@@ -135,6 +135,7 @@ run_krun() {
 
     krun_args=(--definition "${backend_dir}" "${run_file}")
     if ! ${pyk}; then
+        ! ${debugger} || krun_args+=(--debugger)
         krun_args+=(-cSCHEDULE="${cschedule}" -pSCHEDULE="${parser}")
         krun_args+=(-cMODE="${cmode}" -pMODE="${parser}")
         krun_args+=(-cCHAINID="${cchainid}" -pCHAINID="${parser}")
@@ -257,7 +258,6 @@ run_interpret() {
     run_kast kore > ${kast}
     run_file="${kast}"
     krun_args=(--term --parser cat --no-expand-macros --output kore)
-    ! ${debugger} || krun_args+=(--debugger)
     if [[ ${backend} == haskell ]]; then
         KORE_EXEC_OPTS="${KORE_EXEC_OPTS:-} --smt none"
         haskell_backend_command+=(--smt none)
