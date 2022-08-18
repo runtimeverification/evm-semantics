@@ -309,9 +309,9 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     }
     init_term = substitute(empty_config, init_subst)
     if calldata_cells:
-        init_terms = [(tn, substitute(init_term, {'CALLDATA_CELL': cd, 'CALLVALUE_CELL': cv})) for tn, cd, cv in calldata_cells]
+        init_terms = [(tn.replace('_', '-'), substitute(init_term, {'CALLDATA_CELL': cd, 'CALLVALUE_CELL': cv})) for tn, cd, cv in calldata_cells]
     else:
-        init_terms = [(contract_name, init_term)]
+        init_terms = [(contract_name.replace('_', '-'), init_term)]
     final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')]))
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
