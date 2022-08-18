@@ -1,3 +1,4 @@
+AssertTest.test_assert_true
 AssertTest.test_assert_false
 AssertTest.testFail_assert_false
 AssertTest.testFail_assert_true
@@ -11,7 +12,6 @@ ContractBTest.testCannotSubtract43
 ContractBTest.testFailSubtract43
 ContractBTest.testNumberIs42
 ContractTest.testExample
-DealTest.testDeal
 EmitContractTest.testExpectEmit
 EmitContractTest.testExpectEmitCheckEmitter
 EmitContractTest.testExpectEmitDoNotCheckData

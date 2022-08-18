@@ -107,8 +107,8 @@ First we have some helpers in K which can:
            ...
          </account>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
-       andBool #asInteger(#range(LM, ARGSTART, 4)) ==Int 3364511341 // selector ( "deal" )
-       andBool ACCT_ID ==K #asAccount(#range(LM, ARGSTART +Int 4, 32))
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3364511341 // selector ( "deal" )
+       andBool ACCT_ID ==Int #asInteger(#range(LM, ARGSTART +Int 4, 32))
       [priority(40)]
 ```
 

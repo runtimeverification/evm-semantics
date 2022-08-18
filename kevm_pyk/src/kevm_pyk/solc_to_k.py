@@ -260,6 +260,7 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
         'ID_CELL': Foundry.address_TEST_CONTRACT(),
         'CALLER_CELL': KVariable('CALLER_ID'),
         'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
+        'STATIC_CELL': Bool.false,
         'MEMORYUSED_CELL': intToken(0),
         'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
         'PC_CELL': intToken(0),

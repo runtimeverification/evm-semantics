@@ -4,6 +4,7 @@ requires "int-simplification.k"
 
 module LEMMAS
     imports INT-SIMPLIFICATION
+    imports ML-SIMPLIFICATION
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
 
@@ -335,5 +336,14 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
 
     rule B ==Bool false => notBool B [simplification]
+
+endmodule
+
+module ML-SIMPLIFICATION [symbolic, kore]
+imports ML-SYNTAX
+imports EDSL
+
+
+rule { false #Equals X } => #Not ({ true #Equals X }) [simplification]
 
 endmodule
