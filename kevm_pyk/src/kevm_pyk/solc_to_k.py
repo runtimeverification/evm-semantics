@@ -255,7 +255,7 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
     return result
 
 
-def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[KInner, KInner]] = None) -> List[KClaim]:
+def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[str, KInner, KInner]] = None) -> List[KClaim]:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(Foundry.address_TEST_CONTRACT(),
                                      intToken(0),
@@ -309,9 +309,9 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     }
     init_term = substitute(empty_config, init_subst)
     if calldata_cells:
-        init_terms = [(f'{contract_name.lower()}-{i}', substitute(init_term, {'CALLDATA_CELL': cd, 'CALLVALUE_CELL': cv})) for i, (cd, cv) in enumerate(calldata_cells)]
+        init_terms = [(tn, substitute(init_term, {'CALLDATA_CELL': cd, 'CALLVALUE_CELL': cv})) for tn, cd, cv in calldata_cells]
     else:
-        init_terms = [(contract_name.lower(), init_term)]
+        init_terms = [(contract_name, init_term)]
     final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')]))
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
@@ -345,7 +345,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
             args = [abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}') for name in tm.arg_names]
             calldata: KInner = KApply(contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)])
             callvalue: KInner = intToken(0) if not tm.payable else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
-            function_test_calldatas.append((calldata, callvalue))
+            function_test_calldatas.append((tm.name, calldata, callvalue))
     if function_test_calldatas:
         claims = gen_claims_for_contract(empty_config, contract.name, calldata_cells=function_test_calldatas)
         claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport('VERIFICATION'), KImport(module_name)])
