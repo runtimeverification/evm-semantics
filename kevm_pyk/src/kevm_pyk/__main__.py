@@ -92,6 +92,8 @@ def main():
                         exclude_tests = el.read().strip().split('\n')
                 # Must sort to get consistent output order on different platforms.
                 for json_file in sorted(glob.glob(path_glob)):
+                    if json_file.endswith('.metadata.json'):
+                        continue
                     _LOGGER.info(f'Processing contract file: {json_file}')
                     contract_name = json_file.split('/')[-1]
                     contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
