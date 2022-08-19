@@ -24,9 +24,8 @@ pipeline {
       stages {
         // Must come before build/prove for proper testing
         stage('Check Pyk Version')  { steps { sh 'bash ./kevm_pyk/test-version.sh ${K_VERSION}' } }
-        stage('Setup Pyk')          { steps { sh 'make venv'                                    } }
+        stage('Build')              { steps { sh 'make venv build build-prove RELEASE=true -j4' } }
         stage('Build and Test Pyk') { steps { sh 'make test-kevm-pyk -j2'                       } }
-        stage('Build')              { steps { sh 'make build build-prove RELEASE=true -j2'      } }
         stage('Test') {
           failFast true
           options { timeout(time: 200, unit: 'MINUTES') }
