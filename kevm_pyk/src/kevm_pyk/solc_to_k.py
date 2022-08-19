@@ -107,7 +107,7 @@ class Contract():
         self.name = contract_name
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
         _methods = []
-        if (not foundry) and 'evm' in contract_json and 'methodIdentifiers' in contract_json['evm']:
+        if not foundry and 'evm' in contract_json and 'methodIdentifiers' in contract_json['evm']:
             _method_identifiers = contract_json['evm']['methodIdentifiers']
         elif foundry and 'methodIdentifiers' in contract_json:
             _method_identifiers = contract_json['methodIdentifiers']
