@@ -243,7 +243,7 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
 def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[KInner, KInner]] = None) -> List[KClaim]:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(Foundry.address_TEST_CONTRACT(),
-                                     KVariable('ACCT_BALANCE'),
+                                     intToken(0),
                                      program,
                                      KVariable('ACCT_STORAGE'),
                                      KVariable('ACCT_ORIGSTORAGE'),
@@ -251,7 +251,7 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     post_account_cell = KEVM.account_cell(Foundry.address_TEST_CONTRACT(),
                                      KVariable('ACCT_BALANCE'),
                                      program,
-                                     KVariable('ACCT_STORAGE'),
+                                     KVariable('ACCT_STORAGE_FINAL'),
                                      KVariable('ACCT_ORIGSTORAGE'),
                                      KVariable('ACCT_NONCE'))
     init_subst = {
@@ -268,7 +268,7 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
         'ACCESSEDSTORAGE_CELL': KApply('.Map'),
         #'ACTIVEACCOUNTS_CELL': build_assoc(KApply('_Set_'), KLabel('SetItem'), [intToken(0), intToken(100), intToken(2), intToken(3)]),
         'ACTIVEACCOUNTS_CELL': KApply('_Set_',[ KApply('_Set_',[ KApply('SetItem',[Foundry.address_TEST_CONTRACT()]), KApply('SetItem',[Foundry.address_CHEATCODE()])]), KApply('_Set_',[ KApply('SetItem',[Foundry.address_CALLER()]), KApply('SetItem',[Foundry.address_HARDHAT_CONSOLE()])])]), #KApply('_Set_',[ KApply('SetItem',[Foundry.address_TEST_CONTRACT()]), KApply('SetItem',[Foundry.address_CHEATCODE()])]),
-        'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
+        'LOCALMEM_CELL': KVariable('LOCAL_MEM'),
         'STATIC_CELL': Bool.false,
         'MEMORYUSED_CELL': intToken(0),
         'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
