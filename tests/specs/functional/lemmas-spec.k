@@ -146,10 +146,4 @@ module LEMMAS-SPEC
       requires #range(0 <= DATA < (2 ^Int (DATA_LEN *Int 8)))
        andBool 0 <=Int DATA_LEN
 
- // ML simplifications [kore]
- // ------------------
-    //claim #Not ({ false #Equals X }) => { true #Equals X } [symbolic, kore]
-    //claim { false #Equals X } => #Not ({ true #Equals X })
-    //claim #Not ( { false #Equals #newAddr ( X , Y ) in Z } )  => #Not (#Not ( { true #Equals #newAddr ( X , Y ) in Z } ) )
-
 endmodule
