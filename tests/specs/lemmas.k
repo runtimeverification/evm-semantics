@@ -343,7 +343,6 @@ module ML-SIMPLIFICATION [symbolic, kore]
 imports ML-SYNTAX
 imports EDSL
 
-
-rule { false #Equals X } => #Not ({ true #Equals X }) [simplification]
+    //rule {true #Equals X} => #Not ({false #Equals X }) [simplification]
 
 endmodule

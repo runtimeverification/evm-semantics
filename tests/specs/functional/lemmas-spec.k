@@ -149,5 +149,7 @@ module LEMMAS-SPEC
  // ML simplifications [kore]
  // ------------------
     //claim #Not ({ false #Equals X }) => { true #Equals X } [symbolic, kore]
-    claim { false #Equals X } => #Not ({ true #Equals X })
+    //claim { false #Equals X } => #Not ({ true #Equals X })
+    //claim #Not ( { false #Equals #newAddr ( X , Y ) in Z } )  => #Not (#Not ( { true #Equals #newAddr ( X , Y ) in Z } ) )
+
 endmodule

@@ -28,7 +28,7 @@ from pyk.kast import (
     KVariable,
 )
 from pyk.kastManip import abstract_term_safely, build_claim, substitute
-from pyk.prelude import Bool, intToken, mlEqualsTrue, stringToken
+from pyk.prelude import Bool, intToken, mlEqualsTrue, stringToken, build_assoc
 from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM, Foundry
@@ -247,6 +247,12 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
                                      program,
                                      KVariable('ACCT_STORAGE'),
                                      KVariable('ACCT_ORIGSTORAGE'),
+                                     intToken(0))
+    post_account_cell = KEVM.account_cell(Foundry.address_TEST_CONTRACT(),
+                                     KVariable('ACCT_BALANCE'),
+                                     program,
+                                     KVariable('ACCT_STORAGE'),
+                                     KVariable('ACCT_ORIGSTORAGE'),
                                      KVariable('ACCT_NONCE'))
     init_subst = {
         'MODE_CELL': KToken('NORMAL', 'Mode'),
@@ -259,6 +265,9 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
         'ORIGIN_CELL': KVariable('ORIGIN_ID'),
         'ID_CELL': Foundry.address_TEST_CONTRACT(),
         'CALLER_CELL': KVariable('CALLER_ID'),
+        'ACCESSEDSTORAGE_CELL': KApply('.Map'),
+        #'ACTIVEACCOUNTS_CELL': build_assoc(KApply('_Set_'), KLabel('SetItem'), [intToken(0), intToken(100), intToken(2), intToken(3)]),
+        'ACTIVEACCOUNTS_CELL': KApply('_Set_',[ KApply('_Set_',[ KApply('SetItem',[Foundry.address_TEST_CONTRACT()]), KApply('SetItem',[Foundry.address_CHEATCODE()])]), KApply('_Set_',[ KApply('SetItem',[Foundry.address_CALLER()]), KApply('SetItem',[Foundry.address_HARDHAT_CONSOLE()])])]), #KApply('_Set_',[ KApply('SetItem',[Foundry.address_TEST_CONTRACT()]), KApply('SetItem',[Foundry.address_CHEATCODE()])]),
         'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
         'STATIC_CELL': Bool.false,
         'MEMORYUSED_CELL': intToken(0),
@@ -270,17 +279,19 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
             account_cell,  # test contract address
             Foundry.account_CALLER(),
             Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE')),
-            Foundry.account_HARDHAT_CONSOLE_ADDRESS()])
+            Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
+            KToken('.Bag', 'K')])
     }
     final_subst = {
         'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')]),
         'STATUSCODE_CELL': KVariable('STATUSCODE_FINAL'),
         'ID_CELL': Foundry.address_TEST_CONTRACT(),
         'ACCOUNTS_CELL': KEVM.accounts([
-            account_cell,  # test contract address
+            post_account_cell,  # test contract address
             Foundry.account_CALLER(),
             Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE_FINAL')),
-            Foundry.account_HARDHAT_CONSOLE_ADDRESS()])
+            Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
+            KVariable('ACCOUNTS_FINAL')])
     }
     init_term = substitute(empty_config, init_subst)
     if calldata_cells:
