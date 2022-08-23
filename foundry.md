@@ -96,8 +96,14 @@ First we have some helpers in K which can:
              ...
          </account>
 ```
-```k
 
+#### `deal` - Set a given balance to a given account.
+
+```
+function deal(address who, uint256 newBalance) external;
+```
+
+```k
     rule [call.deal]:
          <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0
           => #setBalance(#asWord(#range(LM, ARGSTART +Int 4, 32)), #asWord(#range(LM, ARGSTART +Int 36, 32)))
@@ -112,7 +118,7 @@ First we have some helpers in K which can:
 
     syntax KItem ::= "#setBalance" "(" Int "," Int ")" [klabel(foundry_setBalance)]
  // -------------------------------------------------------------------------------
-    rule <k> #setBalance(ACCTID, NEWBAL) => 1 ... </k>
+    rule <k> #setBalance(ACCTID, NEWBAL) => . ... </k>
          <account>
              <acctID> ACCTID </acctID>
              <balance> _ => NEWBAL </balance>
