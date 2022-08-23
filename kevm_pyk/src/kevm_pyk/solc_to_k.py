@@ -266,7 +266,7 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
         'ID_CELL': Foundry.address_TEST_CONTRACT(),
         'CALLER_CELL': KVariable('CALLER_ID'),
         'ACCESSEDSTORAGE_CELL': KApply('.Map'),
-        'ACTIVEACCOUNTS_CELL': KApply('_Set_',[ KApply('_Set_',[ KApply('SetItem',[Foundry.address_TEST_CONTRACT()]), KApply('SetItem',[Foundry.address_CHEATCODE()])]), KApply('_Set_',[ KApply('SetItem',[Foundry.address_CALLER()]), KApply('SetItem',[Foundry.address_HARDHAT_CONSOLE()])])]),
+        'ACTIVEACCOUNTS_CELL': build_assoc(KApply('.Set'), KLabel('_Set_'), map(KLabel('SetItem'), [Foundry.address_TEST_CONTRACT(), Foundry.address_CHEATCODE(), Foundry.address_CALLER(), Foundry.address_HARDHAT_CONSOLE()])),
         'LOCALMEM_CELL': KVariable('LOCAL_MEM'),
         'STATIC_CELL': Bool.false,
         'MEMORYUSED_CELL': intToken(0),
