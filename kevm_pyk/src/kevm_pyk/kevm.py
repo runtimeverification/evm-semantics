@@ -10,7 +10,7 @@ from pyk.kast import KApply, KInner, KLabel, KToken, KVariable
 from pyk.kastManip import flatten_label, getCell
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kprint import paren
-from pyk.prelude import build_assoc, intToken, stringToken
+from pyk.prelude import Bool, build_assoc, intToken, stringToken
 
 from .utils import add_include_arg
 
@@ -175,7 +175,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def lookup(map: KInner, key: KInner):
-        return KApply('#lookup', [map, key])
+        return KApply('#lookup(_,_)_EVM-TYPES_Int_Map_Int', [map, key])
 
     @staticmethod
     def abi_calldata(name: str, args: List[KInner]) -> KApply:
@@ -227,10 +227,6 @@ class KEVM(KProve, KRun):
         return KApply('.ByteArray_EVM-TYPES_ByteArray')
 
     @staticmethod
-    def foundry_success(s: KInner, dst: KInner) -> KApply:
-        return KApply('foundry_success ', [s, dst])
-
-    @staticmethod
     def intlist(ints: List[KInner]) -> KApply:
         res = KApply('.List{"___HASHED-LOCATIONS_IntList_Int_IntList"}_IntList')
         for i in reversed(ints):
@@ -251,10 +247,23 @@ class KEVM(KProve, KRun):
 
 class Foundry:
 
+    @staticmethod
+    def success(s: KInner, dst: KInner) -> KApply:
+        return KApply('foundry_success ', [s, dst])
+
+    @staticmethod
+    def fail(s: KInner, dst: KInner) -> KApply:
+        return Bool.notBool(Foundry.success(s, dst))
+
     # address(uint160(uint256(keccak256("foundry default caller"))))
+
+    @staticmethod
+    def address_CALLER() -> KToken:
+        return intToken(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38)
+
     @staticmethod
     def account_CALLER() -> KApply:
-        return KEVM.account_cell(intToken(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38),  # Hardcoded for now
+        return KEVM.account_cell(Foundry.address_CALLER(),
                                  intToken(0),
                                  KEVM.bytearray_empty(),
                                  KApply('.Map'),
@@ -289,11 +298,15 @@ class Foundry:
                                  KApply('.Map'),
                                  intToken(0))
 
+    @staticmethod
+    def address_HARDHAT_CONSOLE() -> KToken:
+        return intToken(0x000000000000000000636F6e736F6c652e6c6f67)
+
     # Hardhat console address (0x000000000000000000636F6e736F6c652e6c6f67)
     # https://github.com/nomiclabs/hardhat/blob/master/packages/hardhat-core/console.sol
     @staticmethod
     def account_HARDHAT_CONSOLE_ADDRESS() -> KApply:
-        return KEVM.account_cell(intToken(0x000000000000000000636F6e736F6c652e6c6f67),
+        return KEVM.account_cell(Foundry.address_HARDHAT_CONSOLE(),
                                  intToken(0),
                                  KEVM.bytearray_empty(),
                                  KApply('.Map'),
