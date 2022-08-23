@@ -84,8 +84,8 @@ First we have some helpers in K which can:
 -   Check that a given boolean condition holds (recording failure if not).
 
 ```k
-    syntax KItem ::= #assume ( Bool ) [klabel(fonudry_assume), symbol]
-                   | #assert ( Bool ) [klabel(fonudry_assert), symbol]
+    syntax KItem ::= #assume ( Bool ) [klabel(foundry_assume), symbol]
+                   | #assert ( Bool ) [klabel(foundry_assert), symbol]
  // ------------------------------------------------------------------
     rule <k> #assume(B) => . ... </k> ensures B
 
@@ -93,6 +93,29 @@ First we have some helpers in K which can:
          <account>
              <acctID> #address(FoundryCheat) </acctID>
              <storage> STORAGE => STORAGE [ #loc(FoundryCheat . Failed) <- 1 ] </storage>
+             ...
+         </account>
+```
+```k
+
+    rule [call.deal]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0
+          => #setBalance(#asWord(#range(LM, ARGSTART +Int 4, 32)), #asWord(#range(LM, ARGSTART +Int 36, 32)))
+          ~>1 ~> #push
+         ...
+         </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3364511341 // selector ( "deal" )
+      [priority(40)]
+
+    syntax KItem ::= "#setBalance" "(" Int "," Int ")" [klabel(foundry_setBalance)]
+ // -------------------------------------------------------------------------------
+    rule <k> #setBalance(ACCTID, NEWBAL) => 1 ... </k>
+         <account>
+             <acctID> ACCTID </acctID>
+             <balance> _ => NEWBAL </balance>
              ...
          </account>
 ```
