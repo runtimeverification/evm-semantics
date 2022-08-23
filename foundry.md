@@ -143,7 +143,7 @@ Prank
          <prevOrigin> _ => OG </prevOrigin>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
-       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3364511341 // selector ( "startPrank(addr)" )
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 105151830 // selector ( "startPrank(addr)" )
       [priority(40)]
 
     rule [call.startPrankWithOrigin]:
