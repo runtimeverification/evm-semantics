@@ -1,3 +1,5 @@
+AssertTest.test_assert_true
+DealTest.testDeal
 AssertTest.test_assert_false
 AssertTest.testFail_assert_false
 AssertTest.testFail_assert_true
@@ -67,7 +69,6 @@ OwnerUpOnlyTest.testFailIncrementAsNotOwner
 OwnerUpOnlyTest.testIncrementAsNotOwner
 OwnerUpOnlyTest.testIncrementAsOwner
 PrankTest.testAddAsOwner
-PrankTest.testAddStartPrank
 PrankTest.testFailAddPrank
 PrankTest.testSubtractAsTxOrigin
 PrankTest.testSubtractFail
