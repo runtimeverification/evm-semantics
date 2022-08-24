@@ -8,10 +8,9 @@ from typing import Any, Dict, Final, List, Optional
 from pyk.cli_utils import run_process
 from pyk.kast import KApply, KInner, KLabel, KToken, KVariable
 from pyk.kastManip import flatten_label, getCell
-from pyk.ktool import KProve, KRun
+from pyk.ktool import KProve, KRun, KPrint
 from pyk.ktool.kprint import paren
 from pyk.prelude import Bool, build_assoc, intToken, stringToken
-
 from .utils import add_include_arg
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -245,7 +244,40 @@ class KEVM(KProve, KRun):
         return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), accts)
 
 
-class Foundry:
+class Foundry(KPrint):
+
+    def __init__(self, definition_dir: Path, use_directory: Optional[Path] = None, profile: bool = False) -> None:
+        #copied from KEVM class and adapted to inherit KPrint instead
+        KPrint.__init__(self, definition_dir, use_directory=use_directory, profile=profile)
+        KEVM._patch_symbol_table(self.symbol_table)
+
+    @staticmethod
+    def _patch_symbol_table(symbol_table: Dict[str, Any]) -> None:
+        symbol_table['_orBool_']                                      = paren(symbol_table['_orBool_'])                                     # noqa
+        symbol_table['_andBool_']                                     = paren(symbol_table['_andBool_'])                                    # noqa
+        symbol_table['_impliesBool_']                                 = paren(symbol_table['_impliesBool_'])                                # noqa
+        symbol_table['notBool_']                                      = paren(symbol_table['notBool_'])                                     # noqa
+        symbol_table['_/Int_']                                        = paren(symbol_table['_/Int_'])                                       # noqa
+        symbol_table['_*Int_']                                        = paren(symbol_table['_*Int_'])                                       # noqa
+        symbol_table['_-Int_']                                        = paren(symbol_table['_-Int_'])                                       # noqa
+        symbol_table['_+Int_']                                        = paren(symbol_table['_+Int_'])                                       # noqa
+        symbol_table['#Or']                                           = paren(symbol_table['#Or'])                                          # noqa
+        symbol_table['#And']                                          = paren(symbol_table['#And'])                                         # noqa
+        symbol_table['#Implies']                                      = paren(symbol_table['#Implies'])                                     # noqa
+        symbol_table['_Set_']                                         = paren(symbol_table['_Set_'])                                        # noqa
+        symbol_table['_|->_']                                         = paren(symbol_table['_|->_'])                                        # noqa
+        symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)                                # noqa
+        symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)                                # noqa
+        symbol_table['.AccountCellMap']                               = lambda: ''                                                          # noqa
+        symbol_table['AccountCellMapItem']                            = lambda k, v: v                                                      # noqa
+        symbol_table['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray'] = lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]'      # noqa
+        symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = lambda m, s, w: '(' + m + ' [ ' + s + ' .. ' + w + ' ]):ByteArray'  # noqa
+        symbol_table['_<Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') <Word ('  + a2 + ')')            # noqa
+        symbol_table['_>Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') >Word ('  + a2 + ')')            # noqa
+        symbol_table['_<=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')            # noqa
+        symbol_table['_>=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')            # noqa
+        symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')            # noqa
+        symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')            # noqa
 
     @staticmethod
     def success(s: KInner, dst: KInner) -> KApply:
