@@ -47,88 +47,90 @@ def main():
             profile=args.profile,
         )
 
-    elif args.command in {'solc-to-k', 'foundry-to-k', 'prove', 'run'}:
+    elif args.command == 'solc-to-k':
         kevm = KEVM(_definition_dir(args), profile=args.profile)
         empty_config = kevm.definition.empty_config(KSort('KevmCell'))
+        solc_json = solc_compile(args.contract_file, profile=args.profile)
+        contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
+        exclude_tests = []
+        if args.exclude_tests and args.exclude_tests.exists():
+            with open(args.exclude_tests, 'r') as el:
+                exclude_tests = el.read().strip().split('\n')
+        contract = Contract(args.contract_name, contract_json, foundry=False)
+        contract_module, contract_claims_module = contract_to_k(contract, empty_config, foundry=False, exclude_tests=exclude_tests)
+        modules = [contract_module]
+        claims_modules = [contract_claims_module] if contract_claims_module else []
+        main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
+        spec_module = KFlatModule(args.spec_module, [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
+        modules.append(main_module)
+        modules.append(spec_module)
+        bin_runtime_definition = KDefinition(args.main_module, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + args.requires])
+        _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
+        KEVM._patch_symbol_table(_kprint.symbol_table)
+        print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
-        if args.command == 'solc-to-k':
-            solc_json = solc_compile(args.contract_file, profile=args.profile)
-            contract_json = solc_json['contracts'][args.contract_file.name][args.contract_name]
-            exclude_tests = []
-            if args.exclude_tests and args.exclude_tests.exists():
-                with open(args.exclude_tests, 'r') as el:
-                    exclude_tests = el.read().strip().split('\n')
-            contract = Contract(args.contract_name, contract_json, foundry=False)
-            contract_module, contract_claims_module = contract_to_k(contract, empty_config, foundry=False, exclude_tests=exclude_tests)
-            modules = [contract_module]
-            claims_modules = [contract_claims_module] if contract_claims_module else []
-            main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
-            spec_module = KFlatModule(args.spec_module, [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
-            modules.append(main_module)
-            modules.append(spec_module)
-            bin_runtime_definition = KDefinition(args.main_module, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + args.requires])
-            _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
-            KEVM._patch_symbol_table(_kprint.symbol_table)
-            print(_kprint.pretty_print(bin_runtime_definition) + '\n')
+    elif args.command == 'foundry-to-k':
+        kevm = KEVM(_definition_dir(args), profile=args.profile)
+        empty_config = kevm.definition.empty_config(KSort('KevmCell'))
+        path_glob = str(args.out) + '/*.t.sol/*.json'
+        modules: List[KFlatModule] = []
+        claims_modules: List[KFlatModule] = []
+        exclude_tests = []
+        if args.exclude_tests and args.exclude_tests.exists():
+            with open(args.exclude_tests, 'r') as el:
+                exclude_tests = el.read().strip().split('\n')
+        # Must sort to get consistent output order on different platforms.
+        for json_file in sorted(glob.glob(path_glob)):
+            if json_file.endswith('.metadata.json'):
+                continue
+            _LOGGER.info(f'Processing contract file: {json_file}')
+            contract_name = json_file.split('/')[-1]
+            contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
+            with open(json_file, 'r') as cjson:
+                contract_json = json.loads(cjson.read())
+                contract = Contract(contract_name, contract_json, foundry=True)
+                module, claims_module = contract_to_k(contract, empty_config, foundry=True, exclude_tests=exclude_tests)
+                _LOGGER.info(f'Produced contract module: {module.name}')
+                modules.append(module)
+                if claims_module:
+                    claims_modules.append(claims_module)
+        main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
+        spec_module = KFlatModule(args.spec_module, [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
+        modules.append(main_module)
+        modules.append(spec_module)
+        bin_runtime_definition = KDefinition(main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md', 'lemmas/int-simplification.k', 'lemmas/lemmas.k'] + args.requires])
+        _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
+        KEVM._patch_symbol_table(_kprint.symbol_table)
+        print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
-        elif args.command == 'foundry-to-k':
-            path_glob = str(args.out) + '/*.t.sol/*.json'
-            modules: List[KFlatModule] = []
-            claims_modules: List[KFlatModule] = []
-            exclude_tests = []
-            if args.exclude_tests and args.exclude_tests.exists():
-                with open(args.exclude_tests, 'r') as el:
-                    exclude_tests = el.read().strip().split('\n')
-            # Must sort to get consistent output order on different platforms.
-            for json_file in sorted(glob.glob(path_glob)):
-                if json_file.endswith('.metadata.json'):
-                    continue
-                _LOGGER.info(f'Processing contract file: {json_file}')
-                contract_name = json_file.split('/')[-1]
-                contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
-                with open(json_file, 'r') as cjson:
-                    contract_json = json.loads(cjson.read())
-                    contract = Contract(contract_name, contract_json, foundry=True)
-                    module, claims_module = contract_to_k(contract, empty_config, foundry=True, exclude_tests=exclude_tests)
-                    _LOGGER.info(f'Produced contract module: {module.name}')
-                    modules.append(module)
-                    if claims_module:
-                        claims_modules.append(claims_module)
-            main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
-            spec_module = KFlatModule(args.spec_module, [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
-            modules.append(main_module)
-            modules.append(spec_module)
-            bin_runtime_definition = KDefinition(main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md', 'lemmas/int-simplification.k', 'lemmas/lemmas.k'] + args.requires])
-            _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
-            KEVM._patch_symbol_table(_kprint.symbol_table)
-            print(_kprint.pretty_print(bin_runtime_definition) + '\n')
+    elif args.command == 'prove':
+        kevm = KEVM(_definition_dir(args), profile=args.profile)
+        spec_file = args.spec_file
+        spec_module = args.spec_module
+        prove_args = add_include_arg(args.includes)
+        haskell_args = []
+        for de in args.debug_equations:
+            haskell_args += ['--debug-equation', de]
+        if args.bug_report:
+            haskell_args += ['--bug-report', str(spec_file.with_suffix(''))]
+        final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
+        print(kevm.pretty_print(final_state) + '\n')
 
-        elif args.command == 'prove':
-            spec_file = args.spec_file
-            spec_module = args.spec_module
-            prove_args = add_include_arg(args.includes)
-            haskell_args = []
-            for de in args.debug_equations:
-                haskell_args += ['--debug-equation', de]
-            if args.bug_report:
-                haskell_args += ['--bug-report', str(spec_file.with_suffix(''))]
-            final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
-            print(kevm.pretty_print(final_state) + '\n')
-
-        elif args.command == 'run':
-            input_file = args.input_file
-            krun_args = []
-            if args.term:
-                krun_args += ['--term']
-            if args.parser is not None:
-                krun_args += ['--parser', args.parser]
-            if not args.expand_macros:
-                krun_args += ['--no-expand-macros']
-            # TODO: These are inlined into _krun
-            krun_args += ['--output', args.output]
-            krun_result = _krun(kevm.definition_dir, Path(input_file), depth=args.depth, args=krun_args, profile=args.profile)
-            print(krun_result.stdout)
-            sys.exit(krun_result.returncode)
+    elif args.command == 'run':
+        kevm = KEVM(_definition_dir(args), profile=args.profile)
+        input_file = args.input_file
+        krun_args = []
+        if args.term:
+            krun_args += ['--term']
+        if args.parser is not None:
+            krun_args += ['--parser', args.parser]
+        if not args.expand_macros:
+            krun_args += ['--no-expand-macros']
+        # TODO: These are inlined into _krun
+        krun_args += ['--output', args.output]
+        krun_result = _krun(kevm.definition_dir, Path(input_file), depth=args.depth, args=krun_args, profile=args.profile)
+        print(krun_result.stdout)
+        sys.exit(krun_result.returncode)
 
     else:
         assert False
