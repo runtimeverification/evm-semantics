@@ -25,29 +25,12 @@ def main():
     args = parser.parse_args()
     logging.basicConfig(level=_loglevel(args), format=_LOG_FORMAT)
 
-    if args.command == 'compile':
-        exec_compile(args)
+    executor_name = 'exec_' + args.command.lower().replace('-', '_')
+    if executor_name not in globals():
+        raise AssertionError(f'Unimplemented command: {args.command}')
 
-    elif args.command == 'gst-to-kore':
-        exec_gst_to_kore(args)
-
-    elif args.command == 'kompile':
-        exec_kompile(args)
-
-    elif args.command == 'solc-to-k':
-        exec_solc_to_k(args)
-
-    elif args.command == 'foundry-to-k':
-        exec_foundry_to_k(args)
-
-    elif args.command == 'prove':
-        exec_prove(args)
-
-    elif args.command == 'run':
-        exec_run(args)
-
-    else:
-        assert False
+    execute = globals()[executor_name]
+    execute(args)
 
 
 # Command implementation
