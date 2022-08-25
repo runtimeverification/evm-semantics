@@ -264,11 +264,11 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
                                      KVariable('ACCT_ORIGSTORAGE'),
                                      intToken(0))
     post_account_cell = KEVM.account_cell(Foundry.address_TEST_CONTRACT(),
-                                     KVariable('ACCT_BALANCE'),
-                                     program,
-                                     KVariable('ACCT_STORAGE_FINAL'),
-                                     KVariable('ACCT_ORIGSTORAGE'),
-                                     KVariable('ACCT_NONCE'))
+                                          KVariable('ACCT_BALANCE'),
+                                          program,
+                                          KVariable('ACCT_STORAGE_FINAL'),
+                                          KVariable('ACCT_ORIGSTORAGE'),
+                                          KVariable('ACCT_NONCE'))
     init_subst = {
         'MODE_CELL': KToken('NORMAL', 'Mode'),
         'SCHEDULE_CELL': KApply('LONDON_EVM'),
