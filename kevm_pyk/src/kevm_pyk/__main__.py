@@ -20,17 +20,10 @@ _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
 def main():
-
     sys.setrecursionlimit(15000000)
     parser = create_argument_parser()
     args = parser.parse_args()
-
-    if not (args.verbose or args.profile or args.debug):
-        logging.basicConfig(level=logging.WARNING, format=_LOG_FORMAT)
-    if args.verbose or args.profile:
-        logging.basicConfig(level=logging.INFO, format=_LOG_FORMAT)
-    if args.debug:
-        logging.basicConfig(level=logging.DEBUG, format=_LOG_FORMAT)
+    logging.basicConfig(level=_loglevel(args), format=_LOG_FORMAT)
 
     if args.command == 'compile':
         res = solc_compile(args.contract_file, profile=args.profile)
@@ -143,6 +136,16 @@ def main():
 
     else:
         assert False
+
+
+def _loglevel(args: Namespace) -> int:
+    if args.verbose or args.profile:
+        return logging.INFO
+
+    if args.debug:
+        return logging.DEBUG
+
+    return logging.WARNING
 
 
 def create_argument_parser():
