@@ -432,11 +432,11 @@
         "pynixify": "pynixify"
       },
       "locked": {
-        "lastModified": 1660659498,
-        "narHash": "sha256-YHglhVUJLA98PS+VIJ/1C6+Qm1GhIXtwFJJ+OAboV78=",
+        "lastModified": 1661422593,
+        "narHash": "sha256-ryaJrx95rNYxtpbNLzzAy9NHNj755DYAnMMCmLQXlOE=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "c11da4bd52180b4488e0906cb4a0c99766f4de8b",
+        "rev": "0bba24def8c08319db0f16f848b12ce72fe70f2c",
         "type": "github"
       },
       "original": {
