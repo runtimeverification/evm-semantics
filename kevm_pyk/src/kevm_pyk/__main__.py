@@ -3,6 +3,7 @@ import glob
 import json
 import logging
 import sys
+from argparse import Namespace
 from pathlib import Path
 from typing import Final, List
 
@@ -34,12 +35,9 @@ def main():
 
     elif args.command in {'solc-to-k', 'foundry-to-k', 'kompile', 'prove', 'run'}:
 
-        if 'definition_dir' not in args:
-            raise ValueError(f'Must provide --definition argument to {args.command}!')
-
         if args.command == 'kompile':
             kevm = KEVM.kompile(
-                args.definition_dir,
+                _definition_dir(args),
                 args.main_file,
                 emit_json=args.emit_json,
                 includes=args.includes,
@@ -52,7 +50,7 @@ def main():
             )
 
         else:
-            kevm = KEVM(args.definition_dir, profile=args.profile)
+            kevm = KEVM(_definition_dir(args), profile=args.profile)
             empty_config = kevm.definition.empty_config(KSort('KevmCell'))
 
             if args.command == 'solc-to-k':
@@ -146,6 +144,13 @@ def _loglevel(args: Namespace) -> int:
         return logging.DEBUG
 
     return logging.WARNING
+
+
+def _definition_dir(args: Namespace) -> str:
+    if 'definition_dir' not in args:
+        raise ValueError(f'Must provide --definition argument to {args.command}!')
+
+    return args.definition_dir
 
 
 def create_argument_parser():
