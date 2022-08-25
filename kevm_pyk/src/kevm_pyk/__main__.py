@@ -22,7 +22,7 @@ _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 def main():
     sys.setrecursionlimit(15000000)
-    parser = create_argument_parser()
+    parser = _create_argument_parser()
     args = parser.parse_args()
     logging.basicConfig(level=_loglevel(args), format=_LOG_FORMAT)
 
@@ -136,24 +136,7 @@ def main():
         assert False
 
 
-def _loglevel(args: Namespace) -> int:
-    if args.verbose or args.profile:
-        return logging.INFO
-
-    if args.debug:
-        return logging.DEBUG
-
-    return logging.WARNING
-
-
-def _definition_dir(args: Namespace) -> str:
-    if 'definition_dir' not in args:
-        raise ValueError(f'Must provide --definition argument to {args.command}!')
-
-    return args.definition_dir
-
-
-def create_argument_parser():
+def _create_argument_parser():
 
     def list_of(elem_type, delim=';'):
         def parse(s):
@@ -222,6 +205,23 @@ def create_argument_parser():
     foundry_to_k_args.add_argument('out', type=dir_path, help='Path to Foundry output directory.')
 
     return parser
+
+
+def _loglevel(args: Namespace) -> int:
+    if args.verbose or args.profile:
+        return logging.INFO
+
+    if args.debug:
+        return logging.DEBUG
+
+    return logging.WARNING
+
+
+def _definition_dir(args: Namespace) -> str:
+    if 'definition_dir' not in args:
+        raise ValueError(f'Must provide --definition argument to {args.command}!')
+
+    return args.definition_dir
 
 
 if __name__ == "__main__":
