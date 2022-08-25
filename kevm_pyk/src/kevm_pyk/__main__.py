@@ -248,11 +248,11 @@ def _loglevel(args: Namespace) -> int:
     return logging.WARNING
 
 
-def _definition_dir(args: Namespace) -> str:
+def _definition_dir(args: Namespace) -> Path:
     if 'definition_dir' not in args:
         raise ValueError(f'Must provide --definition argument to {args.command}!')
 
-    return args.definition_dir
+    return Path(args.definition_dir)
 
 
 if __name__ == "__main__":
