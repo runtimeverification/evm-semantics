@@ -135,7 +135,7 @@ Prank
 -----
 ```k
     rule [call.startPrank]:
-        <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 ~> 1 ~> #push ... </k>
+        <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <caller> CL => #asAccount(#range(LM, ARGSTART +Int 4, 32)) </caller>
          <origin> OG </origin>
@@ -147,7 +147,7 @@ Prank
       [priority(40)]
 
     rule [call.startPrankWithOrigin]:
-        <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 ~> 1 ~> #push ... </k>
+        <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <caller> CL => #asAccount(#range(LM, ARGSTART +Int 4, 32)) </caller>
          <origin> OG => #asAccount(#range(LM, ARGSTART +Int 36, 32)) </origin>
