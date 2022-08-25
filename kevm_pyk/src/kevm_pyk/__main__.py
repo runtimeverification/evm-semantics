@@ -79,7 +79,6 @@ def main():
                 modules.append(spec_module)
                 bin_runtime_definition = KDefinition(args.main_module, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + args.requires])
                 _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
-                KEVM._patch_symbol_table(_kprint.symbol_table)
                 print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
             elif args.command == 'foundry-to-k':
@@ -111,7 +110,6 @@ def main():
                 modules.append(spec_module)
                 bin_runtime_definition = KDefinition(main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md', 'lemmas/int-simplification.k', 'lemmas/lemmas.k'] + args.requires])
                 _kprint = KPrint_make_unparsing(foundry, extra_modules=modules)
-                Foundry._patch_symbol_table(_kprint.symbol_table)
                 print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
             elif args.command == 'prove':
