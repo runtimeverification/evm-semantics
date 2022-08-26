@@ -116,7 +116,7 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)`
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
-       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3364511341 // selector ( "deal" )
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3364511341 // selector ( "deal(address,uint256)" )
       [priority(40)]
 
     syntax KItem ::= "#setBalance" "(" Int "," Int ")" [klabel(foundry_setBalance)]
@@ -125,6 +125,78 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)`
          <account>
              <acctID> ACCTID </acctID>
              <balance> _ => NEWBAL </balance>
+             ...
+         </account>
+```
+
+#### `warp` - Sets the block timestamp.
+
+```
+function warp(uint256) external;
+```
+
+`call.warp` will match when the `warp` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule then takes the uint256 value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<timestamp>` cell.
+
+```k
+    rule [call.warp]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+         <timestamp> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </timestamp>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3856056066 // selector ( "warp(uint256)" )
+      [priority(40)]
+```
+
+#### `roll` - Sets the block number.
+
+```
+function roll(uint256) external;
+```
+
+`call.roll` will match when the `roll` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule then takes the uint256 value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<blockNumber>` cell.
+
+```k
+    rule [call.roll]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+         <number> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </number>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 528174896 // selector ( "roll(uint256)" )
+      [priority(40)]
+```
+
+#### `etch` - Sets the code of an account.
+
+```
+function etch(address who, bytes calldata code) external;
+```
+
+`call.etch` will match when the `etc` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and the new bytecode using `#range(LM, ARGSTART +Int 36, 32)` and forwards them to the `#setCode` marker which updates the account accordingly.
+
+```
+    rule [call.etch]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0
+          => #setCode(#asWord(#range(LM, ARGSTART +Int 4, 32)), #range(LM, ARGSTART +Int 36, 32))
+          ~> 1 ~> #push
+         ...
+         </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3033974658 // selector ( "etch(address,bytes)" )
+      [priority(40)]
+
+    syntax KItem ::= "#setCode" "(" Int "," ByteArray ")" [klabel(foundry_setCode)]
+ // -------------------------------------------------------------------------------
+    rule <k> #setBalance(ACCTID, CODE) => . ... </k>
+         <account>
+             <acctID> ACCTID </acctID>
+             <code> _ => #if #asWord(CODE) ==Int 0 #then .ByteArray #else {CODE}:>AccountCode #fi </code>
              ...
          </account>
 ```
