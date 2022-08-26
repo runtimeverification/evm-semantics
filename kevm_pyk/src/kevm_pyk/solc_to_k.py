@@ -28,7 +28,7 @@ from pyk.kast import (
     KVariable,
 )
 from pyk.kastManip import abstract_term_safely, build_claim, substitute
-from pyk.prelude import Bool, intToken, mlEqualsTrue, stringToken, build_assoc
+from pyk.prelude import Bool, build_assoc, intToken, mlEqualsTrue, stringToken
 from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM, Foundry
