@@ -223,7 +223,7 @@ This rule then takes the uint256 value using `#asWord(#range(LM, ARGSTART +Int 4
          <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
-         <chainID> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </chainID>
+         <coinbase> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </coinbase>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4282924116 // selector ( "coinbase(address)" )
       [priority(40)]
