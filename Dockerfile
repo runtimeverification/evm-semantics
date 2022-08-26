@@ -1,5 +1,5 @@
 ARG K_COMMIT
-FROM ghcr.io/foundry-rs/foundry:nightly-6b3db2ad4a7804cf33d40be03d5aaab137805c1b as FOUNDRY
+FROM ghcr.io/foundry-rs/foundry:nightly-65ca7e82ae2506e3ab8ef1ed27b213106d14c1d9 as FOUNDRY
 
 ARG K_COMMIT
 FROM runtimeverificationinc/kframework-k:ubuntu-focal-${K_COMMIT}
