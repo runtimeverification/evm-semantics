@@ -1,11 +1,6 @@
 AssertTest.test_assert_false
 AssertTest.testFail_assert_false
 AssertTest.testFail_assert_true
-BlockParamsTest.testChainId
-BlockParamsTest.testCoinBase
-BlockParamsTest.testFee
-BlockParamsTest.testRoll
-BlockParamsTest.testWarp
 BroadcastTest.testDeploy
 ContractBTest.testCannotSubtract43
 ContractBTest.testFailSubtract43
