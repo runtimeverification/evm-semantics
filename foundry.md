@@ -146,26 +146,26 @@ Prank
 ```k
     rule [call.startPrank]:
         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
-         <output> _ => .ByteArray </output>
-         <caller> CL => #asAccount(#range(LM, ARGSTART +Int 4, 32)) </caller>
-         <origin> OG </origin>
-         <prevCaller> _ => CL </prevCaller>
-         <prevOrigin> _ => OG </prevOrigin>
-         <localMem> LM </localMem>
+        <output> _ => .ByteArray </output>
+        <caller> CL => #asAccount(#range(LM, ARGSTART +Int 4, 32)) </caller>
+        <origin> OG </origin>
+        <prevCaller> _ => CL </prevCaller>
+        <prevOrigin> _ => OG </prevOrigin>
+        <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
-       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 105151830 // selector ( "startPrank(addr)" )
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 105151830 // selector ( "startPrank(address)" )
       [priority(40)]
 
     rule [call.startPrankWithOrigin]:
         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
-         <output> _ => .ByteArray </output>
-         <caller> CL => #asAccount(#range(LM, ARGSTART +Int 4, 32)) </caller>
-         <origin> OG => #asAccount(#range(LM, ARGSTART +Int 36, 32)) </origin>
-         <prevCaller> _ => CL </prevCaller>
-         <prevOrigin> _ => OG </prevOrigin>
-         <localMem> LM </localMem>
+        <output> _ => .ByteArray </output>
+        <caller> CL => #asAccount(#range(LM, ARGSTART +Int 4, 32)) </caller>
+        <origin> OG => #asAccount(#range(LM, ARGSTART +Int 36, 32)) </origin>
+        <prevCaller> _ => CL </prevCaller>
+        <prevOrigin> _ => OG </prevOrigin>
+        <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
-       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1169514616 // selector ( "startPrank(addr)" )
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1169514616 // selector ( "startPrank(address,address)" )
       [priority(40)]
 
     rule [call.stopPrank]:
