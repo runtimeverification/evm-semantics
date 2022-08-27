@@ -70,7 +70,7 @@ def main():
                     with open(args.exclude_tests, 'r') as el:
                         exclude_tests = el.read().strip().split('\n')
                 contract = Contract(args.contract_name, contract_json, foundry=False)
-                contract_module, contract_claims_module = contract_to_k(contract, empty_config, exclude_tests=exclude_tests)
+                contract_module, contract_claims_module = contract_to_k(contract, empty_config, foundry=False, exclude_tests=exclude_tests)
                 modules = [contract_module]
                 claims_modules = [contract_claims_module] if contract_claims_module else []
                 main_module = KFlatModule(args.main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + args.imports])
@@ -92,6 +92,8 @@ def main():
                         exclude_tests = el.read().strip().split('\n')
                 # Must sort to get consistent output order on different platforms.
                 for json_file in sorted(glob.glob(path_glob)):
+                    if json_file.endswith('.metadata.json'):
+                        continue
                     _LOGGER.info(f'Processing contract file: {json_file}')
                     contract_name = json_file.split('/')[-1]
                     contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name

@@ -28,7 +28,7 @@ from pyk.kast import (
     KVariable,
 )
 from pyk.kastManip import abstract_term_safely, build_claim, substitute
-from pyk.prelude import Bool, intToken, mlEqualsTrue, stringToken, build_assoc
+from pyk.prelude import Bool, build_assoc, intToken, mlEqualsTrue, stringToken
 from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM, Foundry
@@ -107,15 +107,18 @@ class Contract():
         self.name = contract_name
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
         _methods = []
-        if 'methodIdentifiers' not in contract_json or not(foundry or 'methodIdentifiers' in contract_json['evm']):
-            _LOGGER.warning(f'Could not find member \'methodIdentifiers\' while processing contract: {self.name}')
+        if not foundry and 'evm' in contract_json and 'methodIdentifiers' in contract_json['evm']:
+            _method_identifiers = contract_json['evm']['methodIdentifiers']
+        elif foundry and 'methodIdentifiers' in contract_json:
+            _method_identifiers = contract_json['methodIdentifiers']
         else:
-            _method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
-            for msig in _method_identifiers:
-                mname = msig.split('(')[0]
-                mid = int(_method_identifiers[msig], 16)
-                _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
-                _methods.append(_m)
+            _method_identifiers = []
+            _LOGGER.warning(f'Could not find member \'methodIdentifiers\' while processing contract: {self.name}')
+        for msig in _method_identifiers:
+            mname = msig.split('(')[0]
+            mid = int(_method_identifiers[msig], 16)
+            _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
+            _methods.append(_m)
         self.methods = tuple(_methods)
         if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
             _LOGGER.warning(f'Could not find member \'storageLayout\' while processing contract: {self.name}')
@@ -236,8 +239,20 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
         process_res = run_process(['solc', '--standard-json'], logger=_LOGGER, input=json.dumps(args), profile=profile)
     except CalledProcessError as err:
         raise RuntimeError('solc error', err.stdout, err.stderr)
-
-    return json.loads(process_res.stdout)
+    result = json.loads(process_res.stdout)
+    if 'errors' in result:
+        failed = False
+        for error in result['errors']:
+            if error['severity'] == 'error':
+                _LOGGER.error(f'solc error:\n{error["formattedMessage"]}')
+                failed = True
+            elif error['severity'] == 'warning':
+                _LOGGER.warning(f'solc warning:\n{error["formattedMessage"]}')
+            else:
+                _LOGGER.warning(f'Unknown solc error severity level {error["severity"]}:\n{json.dumps(error, indent=2)}')
+        if failed:
+            raise ValueError('Compilation failed.')
+    return result
 
 
 def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[KInner, KInner]] = None) -> List[KClaim]:
