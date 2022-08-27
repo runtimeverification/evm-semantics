@@ -347,13 +347,15 @@ def gen_claims_for_contract(
         ),
     }
     init_term = substitute(empty_config, init_subst)
+    init_terms = []
     if calldata_cells:
-        init_terms = [
-            (tn.replace('_', '-'), substitute(init_term, {'CALLDATA_CELL': cd, 'CALLVALUE_CELL': cv}))
-            for tn, cd, cv in calldata_cells
-        ]
+        for test_name, call_data, call_value in calldata_cells:
+            failing = test_name.startswith('testFail')
+            refined_subst = {'CALLDATA_CELL': call_data, 'CALLVALUE_CELL': call_value}
+            claim_name = test_name.replace('_', '-')
+            init_terms.append((claim_name, substitute(init_term, refined_subst), failing))
     else:
-        init_terms = [(contract_name.replace('_', '-'), init_term)]
+        init_terms.append((contract_name.lower(), init_term, False))
     final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')]))
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
@@ -362,9 +364,14 @@ def gen_claims_for_contract(
         mlEqualsTrue(Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post))
     )
     claims: List[KClaim] = []
-    for claim_id, i_term in init_terms:
+    foundry_success = Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post)
+    for claim_id, i_term, failing in init_terms:
         i_cterm = CTerm(i_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
-        claim, _ = build_claim(claim_id, i_cterm, final_cterm)
+        if not failing:
+            f_cterm = final_cterm.add_constraint(mlEqualsTrue(foundry_success))
+        else:
+            f_cterm = final_cterm.add_constraint(mlEqualsTrue(Bool.notBool(foundry_success)))
+        claim, _ = build_claim(claim_id, i_cterm, f_cterm)
         claims.append(claim)
     return claims
 
@@ -385,9 +392,7 @@ def contract_to_k(
     contract_function_application_label = contract.klabel_method
     function_test_calldatas = []
     for tm in contract.methods:
-        if tm.name.startswith('testFail'):
-            _LOGGER.warning(f'Ignoring test from contract {contract.name}: {tm.name}')
-        elif tm.name.startswith('test'):
+        if tm.name.startswith('test'):
             klabel = tm.production.klabel
             assert klabel is not None
             args = [
