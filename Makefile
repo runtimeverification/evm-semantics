@@ -58,7 +58,7 @@ export PLUGIN_SUBMODULE
         test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean                                                       \
         media media-pdf metropolis-theme                                                                                         \
         install uninstall                                                                                                        \
-        venv venv-dev venv-clean
+        venv venv-clean kevm-pyk
 .SECONDARY:
 
 all: build
@@ -451,7 +451,7 @@ venv-clean:
 venv:
 	$(MAKE) -C ./kevm_pyk venv-prod
 
-venv-dev:
+kevm-pyk:
 	$(MAKE) -C ./kevm_pyk
 
 foundry-clean:
