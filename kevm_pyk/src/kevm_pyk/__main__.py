@@ -213,7 +213,6 @@ def _create_argument_parser() -> ArgumentParser:
     shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
     shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
     shared_args.add_argument('--profile', default=False, action='store_true', help='Coarse process-level profiling.')
-    shared_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
 
     k_args = ArgumentParser(add_help=False)
     k_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
@@ -221,6 +220,7 @@ def _create_argument_parser() -> ArgumentParser:
     k_args.add_argument('--main-module', default='MAIN', type=str, help='Name of the main module.')
     k_args.add_argument('--syntax-module', default='SYNTAX', type=str, help='Name of the syntax module.')
     k_args.add_argument('--spec-module', default='SPEC', type=str, help='Name of the spec module.')
+    k_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
 
     evm_chain_args = ArgumentParser(add_help=False)
     evm_chain_args.add_argument('--schedule', type=str, default='LONDON', help='KEVM Schedule to use for execution. One of [DEFAULT|FRONTIER|HOMESTEAD|TANGERINE_WHISTLE|SPURIOUS_DRAGON|BYZANTIUM|CONSTANTINOPLE|PETERSBURG|ISTANBUL|BERLIN|LONDON].')
