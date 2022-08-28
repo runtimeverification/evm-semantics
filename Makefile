@@ -502,9 +502,9 @@ tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
 	    --concrete-rules-file tests/foundry/concrete-rules.txt          \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
-tests/specs/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
-tests/specs/%-bin-runtime.k: KEVM = $(PYK_ACTIVATE) && kevm
-tests/specs/%-bin-runtime.k: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
+tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
+tests/specs/examples/%-bin-runtime.k: KEVM = $(PYK_ACTIVATE) && kevm
+tests/specs/examples/%-bin-runtime.k: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) venv
