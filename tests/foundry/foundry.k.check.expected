@@ -2709,7 +2709,7 @@ module DEALTEST-BIN-RUNTIME-SPEC
     imports public VERIFICATION
     imports public DEALTEST-BIN-RUNTIME
     
-    claim [dealtest-0]: <kevm>
+    claim [testDeal]: <kevm>
            <k>
              ( #execute => #halt )
              ~> _CONTINUATION
@@ -2969,7 +2969,7 @@ module DEALTEST-BIN-RUNTIME-SPEC
          </kevm>
       requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
        ensures foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) )
-      [label(dealtest-0)]
+      [label(testDeal)]
 
 endmodule
 
@@ -2977,7 +2977,7 @@ module ASSERTTEST-BIN-RUNTIME-SPEC
     imports public VERIFICATION
     imports public ASSERTTEST-BIN-RUNTIME
     
-    claim [asserttest-0]: <kevm>
+    claim [test-assert-true]: <kevm>
            <k>
              ( #execute => #halt )
              ~> _CONTINUATION
@@ -3237,7 +3237,7 @@ module ASSERTTEST-BIN-RUNTIME-SPEC
          </kevm>
       requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
        ensures foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) )
-      [label(asserttest-0)]
+      [label(test-assert-true)]
 
 endmodule
 
