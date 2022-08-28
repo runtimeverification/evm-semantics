@@ -158,6 +158,7 @@ def exec_prove(
     debug_equations: List[str],
     bug_report: bool,
     spec_module: Optional[str],
+    depth: Optional[int],
     **kwargs,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
@@ -167,6 +168,8 @@ def exec_prove(
         haskell_args += ['--debug-equation', de]
     if bug_report:
         haskell_args += ['--bug-report', str(spec_file.with_suffix(''))]
+    if depth is not None:
+        prove_args += ['--depth', str(depth)]
     final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
     print(kevm.pretty_print(final_state) + '\n')
 
@@ -213,6 +216,9 @@ def _create_argument_parser() -> ArgumentParser:
     shared_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
     shared_args.add_argument('-I', type=str, dest='includes', default=[], action='append', help='Directories to lookup K definitions in.')
 
+    k_args = ArgumentParser(add_help=False)
+    k_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
+
     evm_chain_args = ArgumentParser(add_help=False)
     evm_chain_args.add_argument('--schedule', type=str, default='LONDON', help='KEVM Schedule to use for execution. One of [DEFAULT|FRONTIER|HOMESTEAD|TANGERINE_WHISTLE|SPURIOUS_DRAGON|BYZANTIUM|CONSTANTINOPLE|PETERSBURG|ISTANBUL|BERLIN|LONDON].')
     evm_chain_args.add_argument('--chainid', type=int, default=1, help='Chain ID to use for execution.')
@@ -232,15 +238,14 @@ def _create_argument_parser() -> ArgumentParser:
     kompile_args.add_argument('--emit-json', dest='emit_json', default=True, action='store_true', help='Emit JSON definition after compilation.')
     kompile_args.add_argument('--no-emit-json', dest='emit_json', action='store_false', help='Do not JSON definition after compilation.')
 
-    prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args])
+    prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args])
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
     prove_args.add_argument('--spec-module', type=str, help='Name of the specification module.')
     prove_args.add_argument('--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.')
     prove_args.add_argument('--bug-report', default=False, action='store_true', help='Generate a haskell-backend bug report for the execution.')
 
-    run_args = command_parser.add_parser('run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args])
+    run_args = command_parser.add_parser('run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args, k_args])
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
-    run_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
     run_args.add_argument('--term', default=False, action='store_true', help='<input_file> is the entire term to execute.')
     run_args.add_argument('--parser', default=None, type=str, help='Parser to use for $PGM.')
     run_args.add_argument('--output', default='pretty', type=str, help='Output format to use, one of [pretty|program|kast|binary|json|latex|kore|none].')
