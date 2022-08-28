@@ -76,8 +76,8 @@ def exec_solc_to_k(
     profile: bool,
     contract_file: Path,
     contract_name: str,
-    main_module: str,
-    spec_module: str,
+    main_module: Optional[str],
+    spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
     exclude_tests: Optional[Path],
@@ -95,8 +95,8 @@ def exec_solc_to_k(
     contract_module, contract_claims_module = contract_to_k(contract, empty_config, foundry=False, exclude_tests=_exclude_tests)
     modules = [contract_module]
     claims_modules = [contract_claims_module] if contract_claims_module else []
-    _main_module = KFlatModule(main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + imports])
-    _spec_module = KFlatModule(spec_module, [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
+    _main_module = KFlatModule(main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports])
+    _spec_module = KFlatModule(spec_module if spec_module else 'SPEC', [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
     modules.append(_main_module)
     modules.append(_spec_module)
     bin_runtime_definition = KDefinition(_main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + requires])
@@ -109,8 +109,8 @@ def exec_foundry_to_k(
     definition_dir: Path,
     profile: bool,
     out: Path,
-    main_module: str,
-    spec_module: str,
+    main_module: Optional[str],
+    spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
     exclude_tests: Optional[Path],
@@ -140,8 +140,8 @@ def exec_foundry_to_k(
             modules.append(module)
             if claims_module:
                 claims_modules.append(claims_module)
-    _main_module = KFlatModule(main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + imports])
-    _spec_module = KFlatModule(spec_module, [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
+    _main_module = KFlatModule(main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports])
+    _spec_module = KFlatModule(spec_module if spec_module else 'SPEC', [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
     modules.append(_main_module)
     modules.append(_spec_module)
     bin_runtime_definition = KDefinition(_main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md', 'lemmas/int-simplification.k', 'lemmas/lemmas.k'] + requires])
@@ -217,9 +217,9 @@ def _create_argument_parser() -> ArgumentParser:
     k_args = ArgumentParser(add_help=False)
     k_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
     k_args.add_argument('-I', type=str, dest='includes', default=[], action='append', help='Directories to lookup K definitions in.')
-    k_args.add_argument('--main-module', default='MAIN', type=str, help='Name of the main module.')
-    k_args.add_argument('--syntax-module', default='SYNTAX', type=str, help='Name of the syntax module.')
-    k_args.add_argument('--spec-module', default='SPEC', type=str, help='Name of the spec module.')
+    k_args.add_argument('--main-module', default=None, type=str, help='Name of the main module.')
+    k_args.add_argument('--syntax-module', default=None, type=str, help='Name of the syntax module.')
+    k_args.add_argument('--spec-module', default=None, type=str, help='Name of the spec module.')
     k_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
 
     evm_chain_args = ArgumentParser(add_help=False)
