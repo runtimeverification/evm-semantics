@@ -50,11 +50,16 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 # -------
 
 run_kevm_pyk() {
-    local pyk_args
-    pyk_args=(--definition "${backend_dir}")
-    pyk_args+=(-I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework")
+    local pyk_command pyk_args
+    pyk_command="$1" ; shift
+    case "${pyk_command}" in
+        kompile|run|prove|solc-to-k|foundry-to-k)
+            pyk_args=(--definition "${backend_dir}")
+            pyk_args+=(-I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework")
+            ;;
+    esac
     ! ${verbose} || pyk_args+=(--verbose)
-    execute python3 -m kevm_pyk "$@" "${pyk_args[@]}"
+    execute python3 -m kevm_pyk "${pyk_command}" "$@" "${pyk_args[@]}"
 }
 
 # User Commands
