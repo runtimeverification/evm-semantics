@@ -156,7 +156,7 @@ function roll(uint256) external;
 ```
 
 `call.roll` will match when the `roll` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
-This rule then takes the uint256 value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<number>` cell.
+This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<number>` cell.
 
 ```k
     rule [call.roll]:
@@ -176,7 +176,7 @@ function fee(uint256) external;
 ```
 
 `call.fee` will match when the `fee` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
-This rule then takes the uint256 value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<baseFee>` cell.
+This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<baseFee>` cell.
 
 ```k
     rule [call.fee]:
@@ -196,7 +196,7 @@ function chainId(uint256) external;
 ```
 
 `call.chainId` will match when the `chanId` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
-This rule then takes the uint256 value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<chainID>` cell.
+This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<chainID>` cell.
 
 ```k
     rule [call.chainId]:
@@ -216,7 +216,7 @@ function coinbase(address) external;
 ```
 
 `call.coinbase` will match when the `coinbase` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
-This rule then takes the uint256 value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<coinbase>` cell.
+This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<coinbase>` cell.
 
 ```k
     rule [call.coinbase]:
