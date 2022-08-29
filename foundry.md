@@ -108,11 +108,7 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)`
 
 ```k
     rule [call.deal]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0
-          => #setBalance(#asWord(#range(LM, ARGSTART +Int 4, 32)), #asWord(#range(LM, ARGSTART +Int 36, 32)))
-          ~> 1 ~> #push
-         ...
-         </k>
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => #setBalance(#asWord(#range(LM, ARGSTART +Int 4, 32)), #asWord(#range(LM, ARGSTART +Int 36, 32))) ~> 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
