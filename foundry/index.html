@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/foundry/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../">Homepage</a>
+      <a class="bd-toc-link" href="../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h1 id="foundry-specifications">Foundry Specifications</h1>
+<h3 id="overview">Overview</h3>
+<p>Foundry's testing framework provides a series of cheatcodes so that developers can specify what situation they want to test.
+This file describes the KEVM specification of the Foundry testing framework, which includes the definition of said cheatcodes and what does it mean for a test to pass.</p>
+<pre class="language-k"><code><span class="token keyword">requires</span> <span class="token string">"evm.md"</span>
+<span class="token keyword">requires</span> <span class="token string">"hashed-locations.md"</span>
+
+<span class="token keyword">module</span> FOUNDRY
+    <span class="token keyword">imports</span> FOUNDRY<span class="token operator">-</span>SUCCESS
+    <span class="token keyword">imports</span> FOUNDRY<span class="token operator">-</span>CHEAT<span class="token operator">-</span>CODES
+    <span class="token keyword">imports</span> FOUNDRY<span class="token operator">-</span>ACCOUNTS
+<span class="token keyword">endmodule</span>
+</code></pre>
+<h2 id="foundry-success-predicate">Foundry Success Predicate</h2>
+<p>Foundry has several baked-in convenience accounts for helping to define the "cheat-codes".
+Here we define their addresses, and important storage-locations.</p>
+<pre class="language-k"><code><span class="token keyword">module</span> FOUNDRY<span class="token operator">-</span>ACCOUNTS
+    <span class="token keyword">imports</span> SOLIDITY<span class="token operator">-</span>FIELDS
+
+    <span class="token keyword">syntax</span> Contract        <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> FoundryContract
+    <span class="token keyword">syntax</span> Field           <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> FoundryField
+    <span class="token keyword">syntax</span> FoundryContract <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"Foundry"</span>      <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>contract_Foundry<span class="token punctuation">)</span><span class="token punctuation">]</span>
+                             <span class="token operator">|</span> <span class="token string">"FoundryTest"</span>  <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>contract_FoundryTest<span class="token punctuation">)</span><span class="token punctuation">]</span>
+                             <span class="token operator">|</span> <span class="token string">"FoundryCheat"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>contract_FoundryCheat<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #address<span class="token punctuation">(</span>Foundry<span class="token punctuation">)</span>      <span class="token operator">=&gt;</span> <span class="token number">137122462167341575662000267002353578582749290296</span>  <span class="token comment">// 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38</span>
+    <span class="token keyword">rule</span> #address<span class="token punctuation">(</span>FoundryTest<span class="token punctuation">)</span>  <span class="token operator">=&gt;</span> <span class="token number">1032069922050249630382865877677304880282300743300</span> <span class="token comment">// 0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84</span>
+    <span class="token keyword">rule</span> #address<span class="token punctuation">(</span>FoundryCheat<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">645326474426547203313410069153905908525362434349</span>  <span class="token comment">// 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D</span>
+
+    <span class="token keyword">syntax</span> FoundryField <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"Failed"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>slot_failed<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #loc<span class="token punctuation">(</span>FoundryCheat <span class="token punctuation">.</span> Failed<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">46308022326495007027972728677917914892729792999299745830475596687180801507328</span> <span class="token comment">// 0x6661696c65640000000000000000000000000000000000000000000000000000</span>
+
+<span class="token keyword">endmodule</span>
+</code></pre>
+<p>The Foundry success predicate performs the same checks as <a href="https://github.com/foundry-rs/foundry/blob/e530c7325816e4256f62f4426bd9985dc54da831/evm/src/executor/mod.rs#L490" target="_blank" rel="noopener">the <code>is_success</code> function from Foundry in <code>evm/src/executor/mod.rs</code></a>.</p>
+<p>These checks are:</p>
+<ul>
+<li>The call to the test contract has not reverted, and</li>
+<li><code>DSTest.assert*</code> have not failed.</li>
+</ul>
+<p>The last condition is implemented in the <a href="https://github.com/dapphub/ds-test/blob/9310e879db8ba3ea6d5c6489a579118fd264a3f5/src/test.sol#L65" target="_blank" rel="noopener"><code>fail()</code> function from <code>DSTest</code></a>.
+If a DSTest assertion should fail, the <code>fail()</code> function stores <code>bytes32(uint256(0x01))</code> at the storage slot <code>bytes32("failed")</code>.
+Hence, checking if a <code>DSTest.assert*</code> has failed amounts to reading as a boolean the data from that particular storage slot.</p>
+<p><strong>TODO</strong>: It should also be checked if the code present in the <code>FoundryCheat</code> account is non-empty, and return false if it is.</p>
+<pre class="language-k"><code><span class="token keyword">module</span> FOUNDRY<span class="token operator">-</span>SUCCESS
+    <span class="token keyword">imports</span> EVM
+
+    <span class="token keyword">syntax</span> <span class="token keyword">Bool</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"foundry_success"</span> <span class="token string">"("</span> StatusCode <span class="token string">","</span> <span class="token keyword">Int</span> <span class="token string">")"</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> <span class="token class-name">klabel</span><span class="token punctuation">(</span>foundry_success<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">]</span>
+ <span class="token comment">// --------------------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> foundry_success<span class="token punctuation">(</span>EVMC_SUCCESS<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> foundry_success<span class="token punctuation">(</span>_<span class="token punctuation">,</span> _<span class="token punctuation">)</span>            <span class="token operator">=&gt;</span> <span class="token boolean">false</span> <span class="token punctuation">[</span>owise<span class="token punctuation">]</span>
+
+<span class="token keyword">endmodule</span>
+</code></pre>
+<h2 id="foundry-cheat-codes">Foundry Cheat Codes</h2>
+<pre class="language-k"><code><span class="token keyword">module</span> FOUNDRY<span class="token operator">-</span>CHEAT<span class="token operator">-</span>CODES
+    <span class="token keyword">imports</span> EVM
+    <span class="token keyword">imports</span> FOUNDRY<span class="token operator">-</span>ACCOUNTS
+</code></pre>
+<p>First we have some helpers in K which can:</p>
+<ul>
+<li>Inject a given boolean condition into's this execution's path condition, and</li>
+<li>Check that a given boolean condition holds (recording failure if not).</li>
+</ul>
+<pre class="language-k"><code>    <span class="token keyword">syntax</span> KItem <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #assume <span class="token punctuation">(</span> <span class="token keyword">Bool</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>foundry_assume<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">]</span>
+                   <span class="token operator">|</span> #assert <span class="token punctuation">(</span> <span class="token keyword">Bool</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>foundry_assert<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">]</span>
+ <span class="token comment">// ------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #assume<span class="token punctuation">(</span>B<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span> ensures B
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #assert<span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span>
+             <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span> #address<span class="token punctuation">(</span>FoundryCheat<span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span>
+             <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>storage</span><span class="token punctuation">&gt;</span></span> STORAGE <span class="token operator">=&gt;</span> STORAGE <span class="token punctuation">[</span> #loc<span class="token punctuation">(</span>FoundryCheat <span class="token punctuation">.</span> Failed<span class="token punctuation">)</span> &lt;<span class="token operator">-</span> <span class="token number">1</span> <span class="token punctuation">]</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>storage</span><span class="token punctuation">&gt;</span></span>
+             <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h4 id="deal---set-a-given-balance-to-a-given-account."><code>deal</code> - Set a given balance to a given account.</h4>
+<pre class="language-text"><code>function deal(address who, uint256 newBalance) external;
+</code></pre>
+<p><code>call.deal</code> will match when the <code>deal</code> function is called at the <a href="https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference" target="_blank" rel="noopener">Foundry cheatcode address</a>.
+This rule then takes the account using <code>#asWord(#range(LM, ARGSTART +Int 4, 32)</code> and the new balance using <code>#asWord(#range(LM, ARGSTART +Int 36, 32))</code> and forwards them to the <code>#setBalance</code> marker which updates the account accordingly.</p>
+<pre class="language-k"><code>    <span class="token keyword">rule</span> <span class="token punctuation">[</span>call<span class="token punctuation">.</span>deal<span class="token punctuation">]</span><span class="token punctuation">:</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> CALL _ CHEAT_ADDR <span class="token number">0</span> ARGSTART _ARGWIDTH <span class="token number">0</span> <span class="token number">0</span>
+          <span class="token operator">=&gt;</span> #setBalance<span class="token punctuation">(</span>#asWord<span class="token punctuation">(</span>#range<span class="token punctuation">(</span>LM<span class="token punctuation">,</span> ARGSTART <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">32</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> #asWord<span class="token punctuation">(</span>#range<span class="token punctuation">(</span>LM<span class="token punctuation">,</span> ARGSTART <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">36</span><span class="token punctuation">,</span> <span class="token number">32</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+          <span class="token operator">~&gt;</span> <span class="token number">1</span> <span class="token operator">~&gt;</span> #push
+         <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>output</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> <span class="token punctuation">.</span>ByteArray <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>output</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>localMem</span><span class="token punctuation">&gt;</span></span> LM <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>localMem</span><span class="token punctuation">&gt;</span></span>
+      <span class="token keyword">requires</span> CHEAT_ADDR <span class="token operator">==</span><span class="token keyword">Int</span> #address<span class="token punctuation">(</span>FoundryCheat<span class="token punctuation">)</span>
+       andBool #asWord<span class="token punctuation">(</span>#range<span class="token punctuation">(</span>LM<span class="token punctuation">,</span> ARGSTART<span class="token punctuation">,</span> <span class="token number">4</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token number">3364511341</span> <span class="token comment">// selector ( "deal" )</span>
+      <span class="token punctuation">[</span>priority<span class="token punctuation">(</span><span class="token number">40</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+    <span class="token keyword">syntax</span> KItem <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"#setBalance"</span> <span class="token string">"("</span> <span class="token keyword">Int</span> <span class="token string">","</span> <span class="token keyword">Int</span> <span class="token string">")"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>foundry_setBalance<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #setBalance<span class="token punctuation">(</span>ACCTID<span class="token punctuation">,</span> NEWBAL<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span>
+             <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span> ACCTID <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span>
+             <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>balance</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> NEWBAL <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>balance</span><span class="token punctuation">&gt;</span></span>
+             <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<pre class="language-k"><code><span class="token keyword">endmodule</span>
+</code></pre>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<details style="padding:0.25rem 0;;padding-left: 0px;" open>
+            <summary class="bd-toc-link-wrapper">
+              <a href="#foundry-specifications" class="bd-toc-link">Foundry Specifications</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#foundry-success-predicate"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Foundry Success Predicate
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#foundry-cheat-codes"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Foundry Cheat Codes
+              </a></div>
+            </div>
+          </details>
+        
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://goo.gl/maps/hKLtCjeEd6yqfzwx5" target="_blank"
+            >1807 S Neil Street, Champaign, IL 61820</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 text-md-right">
+        <p class="copyright">2022 © all rights reserved</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
