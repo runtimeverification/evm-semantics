@@ -53,7 +53,7 @@ RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.15 \
     && cd ../..                                                      \
     && rm -rf z3
 
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
 RUN    apt-get update               \
     && apt-get upgrade --yes        \
     && apt-get install --yes nodejs
