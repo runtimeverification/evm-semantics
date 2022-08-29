@@ -26,7 +26,10 @@ pipeline {
         stage('Check Pyk Version')    { steps { sh 'bash ./kevm_pyk/test-version.sh ${K_VERSION}' } }
         stage('Check Pyk Code Style') { steps { sh 'make kevm-pyk'                                } }
         stage('Build')                { steps { sh 'make venv build build-prove RELEASE=true -j4' } }
-        stage('Build and Test Pyk')   { steps { sh 'make test-kevm-pyk -j2'                       } }
+        stage('Build and Test Pyk') {
+          options { timeout(time: 60, unit: 'MINUTES') }
+          steps { sh 'make test-kevm-pyk -j2' }
+        }
         stage('Test') {
           failFast true
           options { timeout(time: 200, unit: 'MINUTES') }

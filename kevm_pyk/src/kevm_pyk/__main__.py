@@ -76,8 +76,8 @@ def exec_solc_to_k(
     profile: bool,
     contract_file: Path,
     contract_name: str,
-    main_module: str,
-    spec_module: str,
+    main_module: Optional[str],
+    spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
     exclude_tests: Optional[Path],
@@ -95,8 +95,8 @@ def exec_solc_to_k(
     contract_module, contract_claims_module = contract_to_k(contract, empty_config, foundry=False, exclude_tests=_exclude_tests)
     modules = [contract_module]
     claims_modules = [contract_claims_module] if contract_claims_module else []
-    _main_module = KFlatModule(main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + imports])
-    _spec_module = KFlatModule(spec_module, [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
+    _main_module = KFlatModule(main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports])
+    _spec_module = KFlatModule(spec_module if spec_module else 'SPEC', [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
     modules.append(_main_module)
     modules.append(_spec_module)
     bin_runtime_definition = KDefinition(_main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + requires])
@@ -109,8 +109,8 @@ def exec_foundry_to_k(
     definition_dir: Path,
     profile: bool,
     out: Path,
-    main_module: str,
-    spec_module: str,
+    main_module: Optional[str],
+    spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
     exclude_tests: Optional[Path],
@@ -140,8 +140,8 @@ def exec_foundry_to_k(
             modules.append(module)
             if claims_module:
                 claims_modules.append(claims_module)
-    _main_module = KFlatModule(main_module, [], [KImport(mname) for mname in [_m.name for _m in modules] + imports])
-    _spec_module = KFlatModule(spec_module, [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
+    _main_module = KFlatModule(main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports])
+    _spec_module = KFlatModule(spec_module if spec_module else 'SPEC', [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
     modules.append(_main_module)
     modules.append(_spec_module)
     bin_runtime_definition = KDefinition(_main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md', 'lemmas/int-simplification.k', 'lemmas/lemmas.k'] + requires])
@@ -158,6 +158,7 @@ def exec_prove(
     debug_equations: List[str],
     bug_report: bool,
     spec_module: Optional[str],
+    depth: Optional[int],
     **kwargs,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
@@ -167,6 +168,8 @@ def exec_prove(
         haskell_args += ['--debug-equation', de]
     if bug_report:
         haskell_args += ['--bug-report', str(spec_file.with_suffix(''))]
+    if depth is not None:
+        prove_args += ['--depth', str(depth)]
     final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
     print(kevm.pretty_print(final_state) + '\n')
 
@@ -210,37 +213,44 @@ def _create_argument_parser() -> ArgumentParser:
     shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
     shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
     shared_args.add_argument('--profile', default=False, action='store_true', help='Coarse process-level profiling.')
-    shared_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
-    shared_args.add_argument('-I', type=str, dest='includes', default=[], action='append', help='Directories to lookup K definitions in.')
+
+    k_args = ArgumentParser(add_help=False)
+    k_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
+    k_args.add_argument('-I', type=str, dest='includes', default=[], action='append', help='Directories to lookup K definitions in.')
+    k_args.add_argument('--main-module', default=None, type=str, help='Name of the main module.')
+    k_args.add_argument('--syntax-module', default=None, type=str, help='Name of the syntax module.')
+    k_args.add_argument('--spec-module', default=None, type=str, help='Name of the spec module.')
+    k_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
 
     evm_chain_args = ArgumentParser(add_help=False)
     evm_chain_args.add_argument('--schedule', type=str, default='LONDON', help='KEVM Schedule to use for execution. One of [DEFAULT|FRONTIER|HOMESTEAD|TANGERINE_WHISTLE|SPURIOUS_DRAGON|BYZANTIUM|CONSTANTINOPLE|PETERSBURG|ISTANBUL|BERLIN|LONDON].')
     evm_chain_args.add_argument('--chainid', type=int, default=1, help='Chain ID to use for execution.')
     evm_chain_args.add_argument('--mode', type=str, default='NORMAL', help='Execution mode to use. One of [NORMAL|VMTESTS].')
 
+    k_gen_args = ArgumentParser(add_help=False)
+    k_gen_args.add_argument('--require', dest='requires', default=[], action='append', help='Extra K requires to include in generated output.')
+    k_gen_args.add_argument('--module-import', dest='imports', default=[], action='append', help='Extra modules to import into generated main module.')
+    k_gen_args.add_argument('--exclude-tests', type=file_path, help='File containing, one per line, tests to exclude as CONTRACT_NAME.TEST_NAME.')
+
     parser = ArgumentParser(prog='python3 -m kevm_pyk')
 
     command_parser = parser.add_subparsers(dest='command', required=True)
 
-    kompile_args = command_parser.add_parser('kompile', help='Kompile KEVM specification.', parents=[shared_args])
+    kompile_args = command_parser.add_parser('kompile', help='Kompile KEVM specification.', parents=[shared_args, k_args])
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kompile_args.add_argument('--main-module', type=str, help='Name of the main module.')
-    kompile_args.add_argument('--syntax-module', type=str, help='Name of the syntax module.')
     kompile_args.add_argument('--md-selector', type=str, help='Code selector expression to use when reading markdown.')
     kompile_args.add_argument('--hook-namespaces', type=str, help='Hook namespaces. What more can I say?')
     kompile_args.add_argument('--concrete-rules-file', type=file_path, help='File containing list of rules to be evaluated only if arguments are fully concrete.')
     kompile_args.add_argument('--emit-json', dest='emit_json', default=True, action='store_true', help='Emit JSON definition after compilation.')
     kompile_args.add_argument('--no-emit-json', dest='emit_json', action='store_false', help='Do not JSON definition after compilation.')
 
-    prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args])
+    prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args])
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    prove_args.add_argument('--spec-module', type=str, help='Name of the specification module.')
     prove_args.add_argument('--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.')
     prove_args.add_argument('--bug-report', default=False, action='store_true', help='Generate a haskell-backend bug report for the execution.')
 
-    run_args = command_parser.add_parser('run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args])
+    run_args = command_parser.add_parser('run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args, k_args])
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
-    run_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
     run_args.add_argument('--term', default=False, action='store_true', help='<input_file> is the entire term to execute.')
     run_args.add_argument('--parser', default=None, type=str, help='Parser to use for $PGM.')
     run_args.add_argument('--output', default='pretty', type=str, help='Output format to use, one of [pretty|program|kast|binary|json|latex|kore|none].')
@@ -253,18 +263,11 @@ def _create_argument_parser() -> ArgumentParser:
     gst_to_kore_args = command_parser.add_parser('gst-to-kore', help='Convert a GeneralStateTest to Kore for compsumption by KEVM.', parents=[shared_args, evm_chain_args])
     gst_to_kore_args.add_argument('input_file', type=file_path, help='Path to GST.')
 
-    k_gen_args = ArgumentParser(add_help=False)
-    k_gen_args.add_argument('--main-module', default='VERIFICATION', type=str, help='Name of the main module.')
-    k_gen_args.add_argument('--spec-module', default='SPEC', type=str, help='Name of the spec module.')
-    k_gen_args.add_argument('--require', dest='requires', default=[], action='append', help='Extra K requires to include in generated output.')
-    k_gen_args.add_argument('--module-import', dest='imports', default=[], action='append', help='Extra modules to import into generated main module.')
-    k_gen_args.add_argument('--exclude-tests', type=file_path, help='File containing, one per line, tests to exclude as CONTRACT_NAME.TEST_NAME.')
-
-    solc_to_k_args = command_parser.add_parser('solc-to-k', help='Output helper K definition for given JSON output from solc compiler.', parents=[shared_args, k_gen_args])
+    solc_to_k_args = command_parser.add_parser('solc-to-k', help='Output helper K definition for given JSON output from solc compiler.', parents=[shared_args, k_args, k_gen_args])
     solc_to_k_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
 
-    foundry_to_k_args = command_parser.add_parser('foundry-to-k', help='Output helper K definition for given JSON output from solc compiler that Foundry produces.', parents=[shared_args, k_gen_args])
+    foundry_to_k_args = command_parser.add_parser('foundry-to-k', help='Output helper K definition for given JSON output from solc compiler that Foundry produces.', parents=[shared_args, k_args, k_gen_args])
     foundry_to_k_args.add_argument('out', type=dir_path, help='Path to Foundry output directory.')
 
     return parser
