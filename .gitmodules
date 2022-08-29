@@ -21,6 +21,3 @@
 [submodule "tests/foundry/lib/forge-std"]
 	path = tests/foundry/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
-[submodule "tests/foundry/lib/ds-math"]
-	path = tests/foundry/lib/ds-math
-	url = https://github.com/dapphub/ds-math
