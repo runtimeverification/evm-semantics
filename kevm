@@ -53,7 +53,7 @@ run_kevm_pyk() {
     local pyk_command pyk_args
     pyk_command="$1" ; shift
     case "${pyk_command}" in
-        kompile|run|prove|solc-to-k|foundry-to-k|foundry-kompile)
+        kompile|run|prove|solc-to-k|foundry-kompile)
             pyk_args=(--definition "${backend_dir}")
             pyk_args+=(-I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework")
             ;;
@@ -284,12 +284,6 @@ run_solc() {
     run_kevm_pyk solc-to-k "${run_file}" "${contract_name}" --definition "${backend_dir}" "$@"
 }
 
-run_foundry() {
-    local contract_name
-
-    run_kevm_pyk foundry-to-k "$@"
-}
-
 run_foundry_kompile() {
     local contract_name
 
@@ -391,7 +385,6 @@ kevm_port='8545'
 kevm_host='127.0.0.1'
 [[ ! "${run_command}" == prove           ]] || backend=haskell
 [[ ! "${run_command}" == solc-to-k       ]] || backend=haskell
-[[ ! "${run_command}" == foundry-to-k    ]] || backend=haskell
 [[ ! "${run_command}" == foundry-kompile ]] || backend=haskell
 [[ ! "${run_command}" == foundry-prove   ]] || backend=haskell
 [[ ! "${run_command}" == interpret       ]] || unparse=false
@@ -438,7 +431,7 @@ if ${pyk}; then
 fi
 
 # get the run file
-if [[ "${run_command}" != 'foundry-to-k' ]] && [[ "${run_command}" != 'foundry-kompile' ]] && [[ "${run_command}" != 'foundry-prove' ]]; then
+if [[ "${run_command}" != 'foundry-kompile' ]] && [[ "${run_command}" != 'foundry-prove' ]]; then
     run_file="$1" ; shift
     if [[ "${run_file}" == '-' ]]; then
         tmp_input="$(mktemp)"
@@ -468,7 +461,6 @@ case "$run_command-$backend" in
     search-@(java|haskell)            ) run_search          "$@" ;;
     klab-view-*                       ) view_klab           "$@" ;;
     solc-to-k-*                       ) run_solc            "$@" ;;
-    foundry-to-k-*                    ) run_foundry         "$@" ;;
     foundry-kompile-*                 ) run_foundry_kompile "$@" ;;
     foundry-prove-*                   ) run_foundry_prove   "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;

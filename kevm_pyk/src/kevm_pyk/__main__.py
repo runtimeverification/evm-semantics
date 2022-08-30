@@ -13,7 +13,7 @@ from pyk.ktool.krun import _krun
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_k, solc_compile
-from .utils import KPrint_make_unparsing, add_include_arg, output_text_io
+from .utils import KPrint_make_unparsing, add_include_arg
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -375,10 +375,6 @@ def _create_argument_parser() -> ArgumentParser:
     solc_to_k_args = command_parser.add_parser('solc-to-k', help='Output helper K definition for given JSON output from solc compiler.', parents=[shared_args, k_args, k_gen_args])
     solc_to_k_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
-
-    foundry_to_k_args = command_parser.add_parser('foundry-to-k', help='Output helper K definition for given JSON output from solc compiler that Foundry produces.', parents=[shared_args, k_args, k_gen_args])
-    foundry_to_k_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
-    foundry_to_k_args.add_argument('--output', type=output_text_io, help='Path to Foundry output directory.')
 
     foundry_kompile = command_parser.add_parser('foundry-kompile', help='Kompile K definition corresponding to given output directory.', parents=[shared_args, k_args, k_gen_args, k_kompile_args])
     foundry_kompile.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')

@@ -1,5 +1,4 @@
-import sys
-from typing import List, TextIO
+from typing import List
 
 from pyk.kast import KDefinition, KFlatModule, KImport, KTerminal, KVariable
 from pyk.kastManip import (
@@ -56,10 +55,3 @@ def get_label_for_cell_sorts(definition, sort):
     if len(productions) != 1:
         raise ValueError(f'Expected 1 production for sort {sort}, not {productions}!')
     return productions[0].klabel
-
-
-def output_text_io(fname: str) -> TextIO:
-    if fname == '-':
-        return sys.stdout
-    with open(fname, 'w') as fopen:
-        return fopen
