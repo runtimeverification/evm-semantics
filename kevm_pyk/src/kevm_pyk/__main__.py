@@ -248,13 +248,12 @@ def exec_prove(
 def exec_foundry_prove(
     profile: bool,
     foundry_out: Path,
-    contract_name: Optional[str],
+    contract: Optional[str],
     includes: List[str],
     debug_equations: List[str],
     bug_report: bool,
     spec_module: Optional[str],
     depth: Optional[int],
-    kprove_args: Iterable[str],
     **kwargs,
 ) -> None:
     _ignoring_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -262,11 +261,7 @@ def exec_foundry_prove(
     _ignoring_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     definition_dir = foundry_out / 'kompiled'
     spec_file = definition_dir / 'foundry.k'
-    kprove_args = list(kprove_args)
-    if contract_name:
-        kprove_args += ['--spec-module', contract_name.upper() + '-BIN-RUNTIME-SPEC']
-    else:
-        kprove_args += ['--spec-module', 'FOUNDRY-SPEC']
+    kprove_args = ['--spec-module'] + [contract.upper() + '-BIN-RUNTIME-SPEC' if contract else 'FOUNDRY-SPEC']
     exec_prove(
         definition_dir,
         profile,
@@ -383,8 +378,9 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_kompile.add_argument('--regen', dest='regen', default=False, action='store_true', help='Regenerate foundry.k even if it already exists.')
     foundry_kompile.add_argument('--rekompile', dest='rekompile', default=False, action='store_true', help='Rekompile foundry.k even if kompiled definition already exists.')
 
-    foundry_prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args])
-    foundry_prove_args.add_argument('contract_name', type=str, help='Name of the contract to prove.')
+    foundry_prove_args = command_parser.add_parser('foundry-prove', help='Run Foundry Proof.', parents=[shared_args, k_args, kprove_args])
+    foundry_prove_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_prove_args.add_argument('--contract', default=None, type=str, help='Limit to only proofs for the named contract.')
 
     return parser
 
