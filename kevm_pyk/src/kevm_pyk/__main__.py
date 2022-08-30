@@ -108,7 +108,7 @@ def exec_solc_to_k(
 def exec_foundry_to_k(
     definition_dir: Path,
     profile: bool,
-    out: Path,
+    foundry_out: Path,
     main_module: Optional[str],
     spec_module: Optional[str],
     requires: List[str],
@@ -119,7 +119,7 @@ def exec_foundry_to_k(
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
-    path_glob = str(out) + '/*.t.sol/*.json'
+    path_glob = str(foundry_out) + '/*.t.sol/*.json'
     modules: List[KFlatModule] = []
     claims_modules: List[KFlatModule] = []
     _exclude_tests = []
@@ -272,7 +272,7 @@ def _create_argument_parser() -> ArgumentParser:
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
 
     foundry_to_k_args = command_parser.add_parser('foundry-to-k', help='Output helper K definition for given JSON output from solc compiler that Foundry produces.', parents=[shared_args, k_args, k_gen_args])
-    foundry_to_k_args.add_argument('out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_to_k_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_to_k_args.add_argument('--output', type=output_text_io, help='Path to Foundry output directory.')
 
     return parser
