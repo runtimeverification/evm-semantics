@@ -4,7 +4,7 @@ import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Final, List, Optional, TextIO
+from typing import Final, Iterable, List, Optional, TextIO
 
 from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KDefinition, KFlatModule, KImport, KRequire, KSort
@@ -157,6 +157,59 @@ def exec_foundry_to_k(
     output.flush()
 
 
+def exec_foundry_kompile(
+    definition_dir: Path,
+    profile: bool,
+    foundry_out: Path,
+    exclude_tests: Optional[Path],
+    includes: List[str],
+    md_selector: Optional[str],
+    hook_namespaces: Optional[str],
+    concrete_rules_file: Optional[Path],
+    regen: bool = False,
+    rekompile: bool = False,
+    requires: Iterable[str] = (),
+    imports: Iterable[str] = (),
+    **kwargs,
+) -> None:
+    main_module = 'FOUNDRY-MAIN'
+    syntax_module = 'FOUNDRY-MAIN'
+    spec_module = 'FOUNDRY-SPEC'
+    requires = list(requires) + ['lemmas/int-simplification.k']
+    imports = list(imports) + ['INT-SIMPLIFICATION']
+    foundry_definition_dir = foundry_out / 'kompiled'
+    foundry_main_file = foundry_definition_dir / 'foundry.k'
+    if not foundry_definition_dir.exists():
+        foundry_definition_dir.mkdir()
+    _LOGGER.warning(f'main_module: {main_module}')
+    if regen or not foundry_main_file.exists():
+        with open(foundry_main_file, 'w') as fmf:
+            exec_foundry_to_k(
+                definition_dir=definition_dir,
+                profile=profile,
+                foundry_out=foundry_out,
+                main_module=main_module,
+                spec_module=spec_module,
+                requires=requires,
+                imports=imports,
+                exclude_tests=exclude_tests,
+                output=fmf
+            )
+    if regen or rekompile or not (foundry_definition_dir / 'timestamp').exists():
+        KEVM.kompile(
+            foundry_definition_dir,
+            foundry_main_file,
+            emit_json=True,
+            includes=includes,
+            main_module_name=main_module,
+            syntax_module_name=syntax_module,
+            md_selector=md_selector,
+            hook_namespaces=hook_namespaces.split(' ') if hook_namespaces is not None else None,
+            concrete_rules_file=concrete_rules_file,
+            profile=profile,
+        )
+
+
 def exec_prove(
     definition_dir: Path,
     profile: bool,
@@ -279,6 +332,11 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_to_k_args = command_parser.add_parser('foundry-to-k', help='Output helper K definition for given JSON output from solc compiler that Foundry produces.', parents=[shared_args, k_args, k_gen_args])
     foundry_to_k_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_to_k_args.add_argument('--output', type=output_text_io, help='Path to Foundry output directory.')
+
+    foundry_kompile = command_parser.add_parser('foundry-kompile', help='Kompile K definition corresponding to given output directory.', parents=[shared_args, k_args, k_gen_args, k_kompile_args])
+    foundry_kompile.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_kompile.add_argument('--regen', dest='regen', default=False, action='store_true', help='Regenerate foundry.k even if it already exists.')
+    foundry_kompile.add_argument('--rekompile', dest='rekompile', default=False, action='store_true', help='Rekompile foundry.k even if kompiled definition already exists.')
 
     return parser
 
