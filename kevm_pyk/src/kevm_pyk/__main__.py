@@ -229,6 +229,13 @@ def _create_argument_parser() -> ArgumentParser:
     k_args.add_argument('--spec-module', default=None, type=str, help='Name of the spec module.')
     k_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
 
+    k_kompile_args = ArgumentParser(add_help=False)
+    k_kompile_args.add_argument('--md-selector', type=str, default='k & ! nobytes & ! node', help='Code selector expression to use when reading markdown.')
+    k_kompile_args.add_argument('--hook-namespaces', type=str, default='JSON KRYPTO BLOCKCHAIN', help='Hook namespaces. What more can I say?')
+    k_kompile_args.add_argument('--concrete-rules-file', type=file_path, help='File containing list of rules to be evaluated only if arguments are fully concrete.')
+    k_kompile_args.add_argument('--emit-json', dest='emit_json', default=True, action='store_true', help='Emit JSON definition after compilation.')
+    k_kompile_args.add_argument('--no-emit-json', dest='emit_json', action='store_false', help='Do not JSON definition after compilation.')
+
     evm_chain_args = ArgumentParser(add_help=False)
     evm_chain_args.add_argument('--schedule', type=str, default='LONDON', help='KEVM Schedule to use for execution. One of [DEFAULT|FRONTIER|HOMESTEAD|TANGERINE_WHISTLE|SPURIOUS_DRAGON|BYZANTIUM|CONSTANTINOPLE|PETERSBURG|ISTANBUL|BERLIN|LONDON].')
     evm_chain_args.add_argument('--chainid', type=int, default=1, help='Chain ID to use for execution.')
@@ -243,13 +250,8 @@ def _create_argument_parser() -> ArgumentParser:
 
     command_parser = parser.add_subparsers(dest='command', required=True)
 
-    kompile_args = command_parser.add_parser('kompile', help='Kompile KEVM specification.', parents=[shared_args, k_args])
+    kompile_args = command_parser.add_parser('kompile', help='Kompile KEVM specification.', parents=[shared_args, k_args, k_kompile_args])
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kompile_args.add_argument('--md-selector', type=str, help='Code selector expression to use when reading markdown.')
-    kompile_args.add_argument('--hook-namespaces', type=str, help='Hook namespaces. What more can I say?')
-    kompile_args.add_argument('--concrete-rules-file', type=file_path, help='File containing list of rules to be evaluated only if arguments are fully concrete.')
-    kompile_args.add_argument('--emit-json', dest='emit_json', default=True, action='store_true', help='Emit JSON definition after compilation.')
-    kompile_args.add_argument('--no-emit-json', dest='emit_json', action='store_false', help='Do not JSON definition after compilation.')
 
     prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args])
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
