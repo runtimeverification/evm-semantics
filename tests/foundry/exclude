@@ -1,5 +1,3 @@
-DealTest.testDeal
-AssertTest.test_assert_true
 AssumeTest.test_assume_false
 AssertTest.test_assert_false
 AssertTest.testFail_assert_false
