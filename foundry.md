@@ -103,7 +103,7 @@ First we have some helpers in K which can:
 function assume(bool) external;
 ```
 
-`call.assume` will match when the `deal` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+`call.assume` will match when the `assume` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
 This rule then takes a `bool` condition using `#range(LM, ARGSTART +Int 4, 32)` and injects it into the execution path using the `#assume` production.
 `==K #bufStrict(32, 1)` is used to mark that the condition should hold.
 ```k
