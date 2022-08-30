@@ -2822,6 +2822,7 @@ module SPEC
 endmodule
 
 module ASSUMETEST-BIN-RUNTIME-SPEC
+    imports public INT-SIMPLIFICATION
     imports public VERIFICATION
     imports public ASSUMETEST-BIN-RUNTIME
     
@@ -3090,6 +3091,7 @@ module ASSUMETEST-BIN-RUNTIME-SPEC
 endmodule
 
 module DEALTEST-BIN-RUNTIME-SPEC
+    imports public INT-SIMPLIFICATION
     imports public VERIFICATION
     imports public DEALTEST-BIN-RUNTIME
     
@@ -3358,6 +3360,7 @@ module DEALTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module ASSERTTEST-BIN-RUNTIME-SPEC
+    imports public INT-SIMPLIFICATION
     imports public VERIFICATION
     imports public ASSERTTEST-BIN-RUNTIME
     
@@ -3624,4 +3627,3 @@ module ASSERTTEST-BIN-RUNTIME-SPEC
       [label(test-assert-true)]
 
 endmodule
-
