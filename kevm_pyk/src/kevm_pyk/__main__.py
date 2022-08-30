@@ -4,7 +4,7 @@ import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Final, List, Optional
+from typing import Final, List, Optional, TextIO
 
 from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KDefinition, KFlatModule, KImport, KRequire, KSort
@@ -13,7 +13,7 @@ from pyk.ktool.krun import _krun
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_k, solc_compile
-from .utils import KPrint_make_unparsing, add_include_arg
+from .utils import KPrint_make_unparsing, add_include_arg, output_text_io
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -114,6 +114,7 @@ def exec_foundry_to_k(
     requires: List[str],
     imports: List[str],
     exclude_tests: Optional[Path],
+    output: Optional[TextIO],
     **kwargs,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
@@ -147,7 +148,10 @@ def exec_foundry_to_k(
     bin_runtime_definition = KDefinition(_main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md', 'lemmas/int-simplification.k', 'lemmas/lemmas.k'] + requires])
     _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
     KEVM._patch_symbol_table(_kprint.symbol_table)
-    print(_kprint.pretty_print(bin_runtime_definition) + '\n')
+    if not output:
+        output = sys.stdout
+    output.write(_kprint.pretty_print(bin_runtime_definition) + '\n')
+    output.flush()
 
 
 def exec_prove(
@@ -269,6 +273,7 @@ def _create_argument_parser() -> ArgumentParser:
 
     foundry_to_k_args = command_parser.add_parser('foundry-to-k', help='Output helper K definition for given JSON output from solc compiler that Foundry produces.', parents=[shared_args, k_args, k_gen_args])
     foundry_to_k_args.add_argument('out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_to_k_args.add_argument('--output', type=output_text_io, help='Path to Foundry output directory.')
 
     return parser
 
