@@ -6,7 +6,7 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
-from pyk.cterm import CTerm
+from pyk.cterm import CTerm, build_claim
 from pyk.kast import (
     KApply,
     KAtt,
@@ -27,7 +27,7 @@ from pyk.kast import (
     KToken,
     KVariable,
 )
-from pyk.kastManip import abstract_term_safely, build_claim, substitute
+from pyk.kastManip import abstract_term_safely, substitute
 from pyk.prelude import Bool, build_assoc, intToken, mlEqualsTrue, stringToken
 from pyk.utils import FrozenDict, intersperse
 

@@ -3,9 +3,9 @@ from typing import List
 from pyk.kast import KDefinition, KFlatModule, KImport, KTerminal, KVariable
 from pyk.kastManip import (
     abstract_term_safely,
-    isAnonVariable,
+    is_anon_var,
     split_config_and_constraints,
-    splitConfigFrom,
+    split_config_from,
     substitute,
 )
 from pyk.ktool import KPrint
@@ -27,9 +27,9 @@ def add_include_arg(includes):
 
 def abstract_cell_vars(cterm, keep_vars=['']):
     state, _ = split_config_and_constraints(cterm)
-    config, subst = splitConfigFrom(state)
+    config, subst = split_config_from(state)
     for s in subst:
-        if type(subst[s]) is KVariable and not isAnonVariable(subst[s]) and subst[s] not in keep_vars:
+        if type(subst[s]) is KVariable and not is_anon_var(subst[s]) and subst[s] not in keep_vars:
             subst[s] = abstract_term_safely(KVariable('_'), base_name=s)
     return substitute(config, subst)
 
