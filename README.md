@@ -241,6 +241,93 @@ For example, we advise to put an alias for outputting the current configuration 
 alias konfig = config | kast -i kore -o pretty -d .build/usr/lib/kevm/haskell /dev/stdin
 ```
 
+### Building with Nix
+
+We now support building KEVM using [nix flakes](https://nixos.wiki/wiki/Flakes).
+To set up nix flakes you will need to be on `nix` 2.4 or higher and follow the instructions [here](https://nixos.wiki/wiki/Flakes).
+
+For example, if you are on a standard Linux distribution, such as Ubuntu, first [install nix](https://nixos.org/download.html#download-nix)
+and then enable flakes by editing either `~/.config/nix/nix.conf` or `/etc/nix/nix.conf` and adding:
+
+```
+experimental-features = nix-command flakes
+```
+
+This is needed to expose the Nix 2.0 CLI and flakes support that are hidden behind feature-flags.
+
+
+By default, Nix will build the project and its transitive dependencies from
+source, which can take up to an hour. We recommend setting up
+[the binary cache](https://app.cachix.org/cache/kore) to speed up the build
+process significantly. You will also need to add the following sections to `/etc/nix/nix.conf` or, if you are a trusted user, `~/.config/nix/nix.conf` (if you don't know what a "trusted user" is, you probably want to do the former):
+
+```
+trusted-public-keys = ... hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+substituters = ... https://cache.iog.io
+```
+
+i.e. if the file was originally
+
+```
+substituters = https://cache.nixos.org
+trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+```
+
+it will now read
+
+```
+substituters = https://cache.nixos.org https://cache.iog.io
+trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+```
+
+To build KEVM, run:
+
+```bash
+nix build .#kevm
+```
+
+This will build all of KEVM and K and put a link to the resulting binaries in the `result/` folder.
+
+
+_Note: Mac users, especially those running M1/M2 Macs may find nix segfaulting on occasion. If this happens, try running the nix command like this: `GC_DONT_GC=1 nix build .`_ 
+
+
+If you want to temporarily add the `kevm` binary to the current shell, run
+
+```bash
+nix shell .#kevm
+```
+
+### Profiling with Nix
+
+Nix can also be used to quickly profile different versions of the haskell backend. Simply run
+
+```
+nix build github:runtimeverification/evm-semantics#profile \
+  --override-input k-framework/haskell-backend github:runtimeverification/haskell-backend/<HASH> \
+  -o prof-<HASH>
+```
+
+replacing `<HASH>` with the commit you want to run profiling against.
+
+If you want to profile against a working version of the haskell backend repo, simply `cd` into the root of the repo and run
+
+```
+nix build github:runtimeverification/evm-semantics#profile \
+  --override-input k-framework/haskell-backend $(pwd) \
+  -o prof-my-feature
+```
+
+To compare profiles, you can use 
+
+```
+nix run github:runtimeverification/evm-semantics#compare-profiles -- prof-my-feature prof-<HASH>
+```
+
+This will produce a nice table with the times for both versions of haskell-backend.
+Noe that `#profile` pre-pends the output of `kore-exec --version` to the profile run, which is then used as a tag by the `#compare-profiles` script. 
+Therefore, any profiled local checkout of haskell-backend will report as `dirty-ghc8107` in the resulting table.
+
 ### Keeping `.build` up-to-date while developing
 
 -   `make build` needs to be re-run if you touch any of this repos files.

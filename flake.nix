@@ -21,6 +21,7 @@
   outputs = { self, k-framework, nixpkgs, flake-utils, pynixify
     , blockchain-k-plugin, ethereum-tests, ethereum-legacytests, rv-utils }:
     let
+      kevm-rev = self.rev or "dirty";
       buildInputs = pkgs:
         with pkgs;
         [
@@ -56,7 +57,7 @@
               # after pyk, otherwise pip will try to download pyk from the github repo
               kevm_pyk = prevPython.kevm_pyk.overrideAttrs (_: {
                 src = prev.stdenv.mkDerivation {
-                  name = "kevm_pyk-${self.rev or "dirty"}-src";
+                  name = "kevm_pyk-${kevm-rev}-src";
                   src = ./kevm_pyk;
                   dontBuild = true;
                   installPhase = ''
@@ -77,12 +78,12 @@
 
           kevm = prev.stdenv.mkDerivation {
             pname = "kevm";
-            version = self.rev or "dirty";
+            version = kevm-rev;
             buildInputs = buildInputs final;
             nativeBuildInputs = [ prev.makeWrapper ];
 
             src = prev.stdenv.mkDerivation {
-              name = "kevm-${self.rev or "dirty"}-src";
+              name = "kevm-${kevm-rev}-src";
               src = prev.lib.cleanSource
                 (prev.nix-gitignore.gitignoreSourcePure [
                   ./.gitignore
@@ -109,7 +110,7 @@
 
             postPatch = ''
               substituteInPlace ./cmake/node/CMakeLists.txt \
-                --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${prev.k}/lib)'
+                --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${final.k}/lib)'
               substituteInPlace ./kevm \
                 --replace 'execute python3 -m kevm_pyk' 'execute ${final.python38Packages.kevm_pyk}/bin/kevm-pyk'
             '';
@@ -127,15 +128,15 @@
               mkdir -p $out
               mv .build/usr/* $out/
               wrapProgram $out/bin/kevm --prefix PATH : ${
-                prev.lib.makeBinPath [ final.solc ]
+                prev.lib.makeBinPath [ final.solc final.k ]
               }
-              ln -s ${prev.k} $out/lib/kevm/kframework
+              ln -s ${final.k} $out/lib/kevm/kframework
             '';
           };
 
           kevm-test = prev.stdenv.mkDerivation {
             pname = "kevm-test";
-            version = self.rev or "dirty";
+            version = kevm-rev;
 
             src = final.kevm.src;
 
@@ -148,7 +149,12 @@
               cp -rv ${ethereum-tests}/* tests/ethereum-tests/
               cp -rv ${ethereum-legacytests}/* tests/ethereum-tests/LegacyTests/
               chmod -R u+w tests
-              APPLE_SILICON=${if prev.stdenv.isAarch64 && prev.stdenv.isDarwin then "true" else "false"} NIX=true package/test-package.sh
+              APPLE_SILICON=${
+                if prev.stdenv.isAarch64 && prev.stdenv.isDarwin then
+                  "true"
+                else
+                  "false"
+              } NIX=true package/test-package.sh
             '';
 
             installPhase = ''
@@ -188,8 +194,33 @@
         packages.default = pkgs.kevm;
         devShell = pkgs.mkShell { buildInputs = buildInputs pkgs; };
 
+        apps = {
+          compare-profiles = flake-utils.lib.mkApp {
+            drv = pkgs.stdenv.mkDerivation {
+              name = "compare-profiles";
+              src = ./package/nix;
+              installPhase = ''
+                mkdir -p $out/bin
+                cp profile.py $out/bin/compare-profiles
+              '';
+            };
+          };
+        };
+
         packages = {
           inherit (pkgs) kevm kevm-test;
+
+          profile = pkgs.callPackage ./package/nix/profile.nix {
+            kore-exec = pkgs.haskell-backend-stackProject.hsPkgs.kore.components.exes.kore-exec;
+            src = pkgs.lib.cleanSource (pkgs.nix-gitignore.gitignoreSourcePure [
+              ./.gitignore
+              ".github/"
+              "result*"
+              "*.nix"
+              "deps/"
+              "kevm_pyk/"
+            ] ./.);
+          };
 
           kevm-pyk = pkgs.python38Packages.kevm_pyk;
           # using a specially patched version of pynixify, we can pass a
@@ -208,12 +239,14 @@
               ethereum-legacytests;
           };
 
-          update-from-submodules = rv-utils.lib.update-from-submodules pkgs ./flake.lock {
-            k-framework.submodule = "deps/k";
-            blockchain-k-plugin.submodule = "deps/plugin";
-            ethereum-tests.submodule = "tests/ethereum-tests";
-            ethereum-legacytests.submodule = "tests/ethereum-tests/LegacyTests";
-          };
+          update-from-submodules =
+            rv-utils.lib.update-from-submodules pkgs ./flake.lock {
+              k-framework.submodule = "deps/k";
+              blockchain-k-plugin.submodule = "deps/plugin";
+              ethereum-tests.submodule = "tests/ethereum-tests";
+              ethereum-legacytests.submodule =
+                "tests/ethereum-tests/LegacyTests";
+            };
         };
       }) // {
         overlays.default = nixpkgs.lib.composeManyExtensions [
