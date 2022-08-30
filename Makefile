@@ -482,7 +482,7 @@ $(foundry_out):
 	rm -rf $@
 	cd $(dir $@) && forge build
 
-tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
+tests/foundry/out/kompiled/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
 	$(KEVM) foundry-to-k $< $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
 	     --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION                   \
 	     --exclude-tests tests/foundry/exclude                                                      \
