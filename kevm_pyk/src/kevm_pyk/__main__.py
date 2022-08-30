@@ -247,7 +247,7 @@ def exec_prove(
 def exec_foundry_prove(
     profile: bool,
     foundry_out: Path,
-    contract_name: str,
+    contract_name: Optional[str],
     includes: List[str],
     debug_equations: List[str],
     bug_report: bool,
@@ -256,9 +256,15 @@ def exec_foundry_prove(
     kprove_args: Iterable[str],
     **kwargs,
 ) -> None:
+    _ignoring_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
+    _ignoring_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
     definition_dir = foundry_out / 'kompiled'
     spec_file = definition_dir / 'foundry.k'
-    kprove_args = ['--spec-module', contract_name.upper() + '-BIN-RUNTIME-SPEC'] + list(kprove_args)
+    kprove_args = list(kprove_args)
+    if contract_name:
+        kprove_args += ['--spec-module', contract_name.upper() + '-BIN-RUNTIME-SPEC']
+    else:
+        kprove_args += ['--spec-module', 'FOUNDRY-SPEC']
     exec_prove(
         definition_dir,
         profile,
