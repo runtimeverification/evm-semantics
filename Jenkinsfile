@@ -27,7 +27,7 @@ pipeline {
         stage('Check Pyk Code Style') { steps { sh 'make kevm-pyk'                                } }
         stage('Build')                { steps { sh 'make venv build build-prove RELEASE=true -j4' } }
         stage('Build and Test Pyk') {
-          options { timeout(time: 60, unit: 'MINUTES') }
+          options { timeout(time: 10, unit: 'MINUTES') }
           steps { sh 'make test-kevm-pyk -j2' }
         }
         stage('Test') {
@@ -37,6 +37,7 @@ pipeline {
             stage('Conformance (LLVM)') { steps {                                         sh 'make test-conformance -j4 TEST_CONCRETE_BACKEND=llvm'      } }
             stage('Proofs (Java)')      { steps { lock("kevm-java-${env.NODE_NAME}")    { sh 'make test-prove       -j1 TEST_SYMBOLIC_BACKEND=java'    } } }
             stage('Proofs (Haskell)')   { steps { lock("kevm-haskell-${env.NODE_NAME}") { sh 'make test-prove       -j5 TEST_SYMBOLIC_BACKEND=haskell' } } }
+            stage('Proofs (Foundry)')   { steps {                                         sh 'make test-foundry'                                           }
           }
         }
         stage('Test Interactive') {
