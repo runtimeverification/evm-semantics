@@ -227,6 +227,7 @@ def exec_prove(
     bug_report: bool,
     spec_module: Optional[str],
     depth: Optional[int],
+    kprove_args: Iterable[str],
     **kwargs,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
@@ -238,8 +239,38 @@ def exec_prove(
         haskell_args += ['--bug-report', str(spec_file.with_suffix(''))]
     if depth is not None:
         prove_args += ['--depth', str(depth)]
+    prove_args = prove_args + list(kprove_args)
     final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
     print(kevm.pretty_print(final_state) + '\n')
+
+
+def exec_foundry_prove(
+    profile: bool,
+    foundry_out: Path,
+    contract_name: str,
+    includes: List[str],
+    debug_equations: List[str],
+    bug_report: bool,
+    spec_module: Optional[str],
+    depth: Optional[int],
+    kprove_args: Iterable[str],
+    **kwargs,
+) -> None:
+    definition_dir = foundry_out / 'kompiled'
+    spec_file = definition_dir / 'foundry.k'
+    kprove_args = ['--spec-module', contract_name.upper() + '-BIN-RUNTIME-SPEC'] + list(kprove_args)
+    exec_prove(
+        definition_dir,
+        profile,
+        spec_file,
+        includes=includes,
+        debug_equations=debug_equations,
+        bug_report=bug_report,
+        spec_module=spec_module,
+        depth=depth,
+        kprove_args=kprove_args,
+        **kwargs,
+    )
 
 
 def exec_run(
@@ -347,6 +378,9 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_kompile.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_kompile.add_argument('--regen', dest='regen', default=False, action='store_true', help='Regenerate foundry.k even if it already exists.')
     foundry_kompile.add_argument('--rekompile', dest='rekompile', default=False, action='store_true', help='Rekompile foundry.k even if kompiled definition already exists.')
+
+    foundry_prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args])
+    foundry_prove_args.add_argument('contract_name', type=str, help='Name of the contract to prove.')
 
     return parser
 
