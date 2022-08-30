@@ -4,7 +4,7 @@ import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Final, Iterable, List, Optional, TextIO
+from typing import Any, Dict, Final, Iterable, List, Optional, TextIO
 
 from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KDefinition, KFlatModule, KImport, KRequire, KSort
@@ -17,6 +17,11 @@ from .utils import KPrint_make_unparsing, add_include_arg, output_text_io
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
+
+
+def _ignoring_arg(args: Dict[str, Any], arg: str, cli_option: str):
+    if arg in args and args[arg]:
+        _LOGGER.warning(f'Ignoring command-line option: {cli_option}')
 
 
 def main():
@@ -173,12 +178,9 @@ def exec_foundry_kompile(
     imports: Iterable[str] = (),
     **kwargs,
 ) -> None:
-    if 'main_module' in kwargs and kwargs['main_module']:
-        _LOGGER.warning(f'Ignoring command-line supplied argument: --main-module {kwargs["main_module"]}')
-    if 'syntax_module' in kwargs and kwargs['syntax_module']:
-        _LOGGER.warning(f'Ignoring command-line supplied argument: --syntax-module {kwargs["syntax_module"]}')
-    if 'spec_module' in kwargs and kwargs['spec_module']:
-        _LOGGER.warning(f'Ignoring command-line supplied argument: --spec-module {kwargs["spec_module"]}')
+    _ignoring_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
+    _ignoring_arg(kwargs, 'syntax_module', f'--syntax-module {kwargs["syntax_module"]}')
+    _ignoring_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
     spec_module = 'FOUNDRY-SPEC'
