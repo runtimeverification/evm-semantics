@@ -22,6 +22,7 @@ _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 def _ignoring_arg(args: Dict[str, Any], arg: str, cli_option: str):
     if arg in args and args[arg]:
         _LOGGER.warning(f'Ignoring command-line option: {cli_option}')
+    args.pop(arg)
 
 
 def main():
@@ -258,6 +259,7 @@ def exec_foundry_prove(
 ) -> None:
     _ignoring_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
     _ignoring_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
+    _ignoring_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     definition_dir = foundry_out / 'kompiled'
     spec_file = definition_dir / 'foundry.k'
     kprove_args = list(kprove_args)
