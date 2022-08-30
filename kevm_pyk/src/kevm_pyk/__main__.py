@@ -11,7 +11,7 @@ from pyk.kast import KDefinition, KFlatModule, KImport, KRequire, KSort
 from pyk.ktool.krun import _krun
 
 from .gst_to_kore import gst_to_kore
-from .kevm import KEVM
+from .kevm import Foundry, KEVM
 from .solc_to_k import Contract, contract_to_k, solc_compile
 from .utils import KPrint_make_unparsing, add_include_arg
 
@@ -116,8 +116,8 @@ def exec_foundry_to_k(
     exclude_tests: Optional[Path],
     **kwargs,
 ) -> None:
-    kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KSort('KevmCell'))
+    foundry = Foundry(definition_dir, profile=profile)
+    empty_config = foundry.definition.empty_config(KSort('FoundryCell'))
     path_glob = str(out) + '/*.t.sol/*.json'
     modules: List[KFlatModule] = []
     claims_modules: List[KFlatModule] = []
@@ -145,7 +145,7 @@ def exec_foundry_to_k(
     modules.append(_main_module)
     modules.append(_spec_module)
     bin_runtime_definition = KDefinition(_main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md', 'lemmas/int-simplification.k', 'lemmas/lemmas.k'] + requires])
-    _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
+    _kprint = KPrint_make_unparsing(foundry, extra_modules=modules)
     KEVM._patch_symbol_table(_kprint.symbol_table)
     print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 

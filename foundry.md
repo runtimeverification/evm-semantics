@@ -14,6 +14,12 @@ module FOUNDRY
     imports FOUNDRY-SUCCESS
     imports FOUNDRY-CHEAT-CODES
     imports FOUNDRY-ACCOUNTS
+
+    configuration
+     <foundry>
+         <kevm/>
+         <cheatcodes/>
+     </foundry>
 endmodule
 ```
 
@@ -76,6 +82,11 @@ Foundry Cheat Codes
 module FOUNDRY-CHEAT-CODES
     imports EVM
     imports FOUNDRY-ACCOUNTS
+
+    configuration
+    <cheatcodes>
+        <expectRevert> false </expectRevert>
+    </cheatcodes>
 ```
 
 First we have some helpers in K which can:
