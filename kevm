@@ -53,7 +53,7 @@ run_kevm_pyk() {
     local pyk_command pyk_args
     pyk_command="$1" ; shift
     case "${pyk_command}" in
-        kompile|run|prove|solc-to-k|foundry-kompile)
+        kompile|run|prove|solc-to-k|foundry-kompile|foundry-prove)
             pyk_args=(--definition "${backend_dir}")
             pyk_args+=(-I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework")
             ;;
