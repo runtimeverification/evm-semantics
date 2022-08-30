@@ -93,26 +93,27 @@ module FUNCTIONAL-SPEC
        andBool #rangeBytes(32, SIGS)
        andBool notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
 
-    claim <k> runLemma(#range( #bufStrict(0, 0), 0, 1))
+    claim <k> runLemma(#range( .Memory [ 0 := #bufStrict(0, 0) ], 0, 1))
            => doneLemma(#buf(1, 0)) ... </k>
 
-    claim <k> runLemma(#range( #bufStrict(2, 0), 0, 1))
+    claim <k> runLemma(#range( .Memory [ 0 := #bufStrict(2, 0) ], 0, 1))
            => doneLemma(#buf(1, 0)) ... </k>
 
-    claim <k> runLemma(#range( #bufStrict(10, 0), 5, 1))
+    claim <k> runLemma(#range( .Memory [ 0 := #bufStrict(10, 0) ], 5, 1))
            => doneLemma(#buf(1, 0)) ... </k>
 
-    claim <k> runLemma(#range( #bufStrict(5, 0), 0, 3))
+    claim <k> runLemma(#range( .Memory [ 0 := #bufStrict(5, 0) ], 0, 3))
            => doneLemma(#buf(3, 0)) ... </k>
 
-    claim <k> runLemma(#range( #bufStrict(100, 0) [ 10 := #bufStrict(N, 0) ], 10, 5 ))
-           => doneLemma(#buf(N, 0) ++ #range( #buf(90, 0), N, 5 -Int N )) ... </k>
+    claim <k> runLemma(#range( .Memory [ 0 := #bufStrict(100, 0) ] [ 10 := #bufStrict(N, 0) ], 10, 5 )) => 
+              doneLemma(#bufStrict(N, 0) [ 10 -Int 10 .. minInt(5, #sizeByteArray(#bufStrict(N, 0)) -Int (10 -Int 10)) ] ++ #range(.Memory [ 0 := #bufStrict(100, 0) ], 10 +Int #sizeByteArray(#bufStrict(N, 0)), 5 -Int minInt(5, #sizeByteArray(#bufStrict(N, 0)) -Int (10 -Int 10)))) 
+         </k>
       requires N >=Int 0
        andBool N <=Int 5
 
-    claim <k> runLemma(#range( #bufStrict(100, 0) [ 10 := #bufStrict(N, 0) ], 13, 5 ))
-           => doneLemma(#buf(N, 0) [3 .. minInt(5, N -Int 3)]
-                 ++ #range( #buf(90, 0), N, 5 -Int minInt(5, N -Int 3) )) ... </k>
+    claim <k> runLemma(#range( .Memory [ 0 := #bufStrict(100, 0) ] [ 10 := #bufStrict(N, 0) ], 13, 5 )) => 
+              doneLemma(#bufStrict(N, 0) [ 13 -Int 10 .. minInt(5, #sizeByteArray(#bufStrict(N, 0)) -Int (13 -Int 10)) ] ++ #range(.Memory [ 0 := #bufStrict(100, 0) ], 10 +Int #sizeByteArray(#bufStrict(N, 0)), 5 -Int minInt(5, #sizeByteArray(#bufStrict(N, 0)) -Int (13 -Int 10)))) 
+          </k>
       requires N >=Int 5
        andBool N <=Int 10
 

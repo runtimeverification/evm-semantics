@@ -72,6 +72,24 @@ module LEMMAS
     rule WS         ++ .ByteArray => WS  [simplification]
     rule .ByteArray ++ WS         => WS  [simplification]
 
+    // #range
+
+    rule #range(_                       , _, K) => .ByteArray                                                                                                                                                          requires notBool K >Int 0                                                                               [simplification]
+    rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))                                                                          requires K  >Int 0 andBool L <Int N                                                                     [simplification]
+   rule #range(M [ N := BUF:ByteArray ], L, K) => 
+          BUF [ L -Int N .. minInt(K, #sizeByteArray(BUF) -Int (L -Int N)) ] ++ 
+          #range(M, N +Int #sizeByteArray(BUF), K -Int minInt(K, #sizeByteArray(BUF) -Int (L -Int N)))
+     requires K  >Int 0 andBool L <=Int N +Int #sizeByteArray(BUF) andBool L >=Int N [simplification]
+
+    rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, K) 
+      requires K >Int 0 
+       andBool L >=Int N +Int #sizeByteArray(BUF) [simplification]
+
+
+    rule #range( M [ N1 := BUF1:ByteArray ] [ N2 := BUF2:ByteArray ], L, K ) =>
+         #range( M                          [ N2 := BUF2           ], L, K )
+      requires N1 +Int #sizeByteArray(BUF1) <=Int L [simplification]
+
   // ########################
   // Map Reasoning
   // ########################
@@ -140,26 +158,6 @@ module LEMMAS-JAVA [symbolic, kast]
     rule #asWord(#buf(_N, BUF)) => BUF [simplification]
 
     rule #asWord(BUF) /Int pow224 => #asWord(BUF [ 0 .. 4 ]) requires #sizeByteArray(BUF) ==Int 32 [simplification]
-
-    // #range
-
-    rule #range(_M, _N, K) => .ByteArray requires notBool 0 <Int K [simplification]
-
-    rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))
-      requires 0 <Int K
-       andBool L <Int N
-      [simplification]
-
-    rule #range(M [ N := BUF ], L, K) => BUF [ L -Int N .. minInt(K, #sizeByteArray(BUF) -Int (L -Int N)) ] ++ #range(M, N +Int #sizeByteArray(BUF), K -Int minInt(K, #sizeByteArray(BUF) -Int (L -Int N)))
-      requires 0  <Int K
-       andBool N <=Int L
-       andBool L  <Int N +Int #sizeByteArray(BUF)
-      [simplification]
-
-    rule #range(M [ N := BUF ], L, K) => #range(M, L, K)
-      requires 0 <Int K
-       andBool N +Int #sizeByteArray(BUF) <=Int L
-      [simplification]
 
     rule #buf(N, #asWord(WS)) => WS
       requires #noOverflow(WS)
@@ -329,28 +327,10 @@ module LEMMAS-HASKELL [symbolic, kore]
   // Buffer Reasoning
   // ########################
 
-    // #range
-
-    rule #range(_                       , _, K) => .ByteArray                                                                                                                                                          requires notBool K >Int 0                                                                               [simplification]
-    rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L))                                                                          requires K  >Int 0 andBool L <Int N                                                                     [simplification]
-   rule #range(M [ N := BUF:ByteArray ], L, K) => 
-          BUF [ L -Int N .. minInt(K, #sizeByteArray(BUF) -Int (L -Int N)) ] ++ 
-          #range(M, N +Int #sizeByteArray(BUF), K -Int minInt(K, #sizeByteArray(BUF) -Int (L -Int N)))
-     requires K  >Int 0 andBool L <=Int N +Int #sizeByteArray(BUF) andBool L >=Int N [simplification]
-
-    rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, K) 
-      requires K >Int 0 
-       andBool L >=Int N +Int #sizeByteArray(BUF) [simplification]
-
-
     rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma, simplification]
 
     rule BA:ByteArray   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                       [simplification, concrete(BA)]
     rule #buf(32, DATA) ==K BA:ByteArray   =>          DATA  ==Int #asInteger(BA) requires #sizeByteArray(BA) <=Int 32 [simplification, concrete(BA)]
-
-    rule #range( M [ N1 := BUF1:ByteArray ] [ N2 := BUF2:ByteArray ], L, K ) =>
-         #range( M                          [ N2 := BUF2           ], L, K )
-      requires N1 +Int #sizeByteArray(BUF1) <=Int L [simplification]
 
     rule #range (M, N1 +Int N2, K ) => #range( #range( M, N2, #sizeByteArray(M) -Int N2 ), N1, K ) 
       requires N1 >=Int 0 
