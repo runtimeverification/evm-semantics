@@ -1,5 +1,5 @@
 ARG K_COMMIT
-FROM ghcr.io/foundry-rs/foundry:nightly-4b720c27251bd661360f28c3b87f8759f9fb2e8d as FOUNDRY
+FROM ghcr.io/foundry-rs/foundry:nightly-56dc7463ce2806c7b410bc605ff7f2916cdbe32a as FOUNDRY
 
 ARG K_COMMIT
 FROM runtimeverificationinc/kframework-k:ubuntu-focal-${K_COMMIT}
@@ -53,7 +53,7 @@ RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.15 \
     && cd ../..                                                      \
     && rm -rf z3
 
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
 RUN    apt-get update               \
     && apt-get upgrade --yes        \
     && apt-get install --yes nodejs

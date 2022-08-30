@@ -50,11 +50,16 @@ export KLAB_OUT="${KLAB_OUT:-~/.klab}"
 # -------
 
 run_kevm_pyk() {
-    local pyk_args
-    pyk_args=(--definition "${backend_dir}")
-    pyk_args+=(-I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework")
+    local pyk_command pyk_args
+    pyk_command="$1" ; shift
+    case "${pyk_command}" in
+        kompile|run|prove|solc-to-k|foundry-to-k)
+            pyk_args=(--definition "${backend_dir}")
+            pyk_args+=(-I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework")
+            ;;
+    esac
     ! ${verbose} || pyk_args+=(--verbose)
-    execute python3 -m kevm_pyk "$@" "${pyk_args[@]}"
+    execute python3 -m kevm_pyk "${pyk_command}" "$@" "${pyk_args[@]}"
 }
 
 # User Commands
@@ -135,6 +140,7 @@ run_krun() {
 
     krun_args=(--definition "${backend_dir}" "${run_file}")
     if ! ${pyk}; then
+        ! ${debugger} || krun_args+=(--debugger)
         krun_args+=(-cSCHEDULE="${cschedule}" -pSCHEDULE="${parser}")
         krun_args+=(-cMODE="${cmode}" -pMODE="${parser}")
         krun_args+=(-cCHAINID="${cchainid}" -pCHAINID="${parser}")
@@ -257,7 +263,6 @@ run_interpret() {
     run_kast kore > ${kast}
     run_file="${kast}"
     krun_args=(--term --parser cat --no-expand-macros --output kore)
-    ! ${debugger} || krun_args+=(--debugger)
     if [[ ${backend} == haskell ]]; then
         KORE_EXEC_OPTS="${KORE_EXEC_OPTS:-} --smt none"
         haskell_backend_command+=(--smt none)

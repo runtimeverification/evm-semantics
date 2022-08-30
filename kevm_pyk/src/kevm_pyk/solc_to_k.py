@@ -28,7 +28,7 @@ from pyk.kast import (
     KVariable,
 )
 from pyk.kastManip import abstract_term_safely, build_claim, substitute
-from pyk.prelude import Bool, intToken, mlEqualsTrue, stringToken
+from pyk.prelude import Bool, build_assoc, intToken, mlEqualsTrue, stringToken
 from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM, Foundry
@@ -107,15 +107,18 @@ class Contract():
         self.name = contract_name
         self.bytecode = (contract_json['evm']['deployedBytecode']['object'] if not foundry else contract_json['deployedBytecode']['object'])
         _methods = []
-        if 'methodIdentifiers' not in contract_json or not(foundry or 'methodIdentifiers' in contract_json['evm']):
-            _LOGGER.warning(f'Could not find member \'methodIdentifiers\' while processing contract: {self.name}')
+        if not foundry and 'evm' in contract_json and 'methodIdentifiers' in contract_json['evm']:
+            _method_identifiers = contract_json['evm']['methodIdentifiers']
+        elif foundry and 'methodIdentifiers' in contract_json:
+            _method_identifiers = contract_json['methodIdentifiers']
         else:
-            _method_identifiers = contract_json['evm']['methodIdentifiers'] if not foundry else contract_json['methodIdentifiers']
-            for msig in _method_identifiers:
-                mname = msig.split('(')[0]
-                mid = int(_method_identifiers[msig], 16)
-                _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
-                _methods.append(_m)
+            _method_identifiers = []
+            _LOGGER.warning(f'Could not find member \'methodIdentifiers\' while processing contract: {self.name}')
+        for msig in _method_identifiers:
+            mname = msig.split('(')[0]
+            mid = int(_method_identifiers[msig], 16)
+            _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
+            _methods.append(_m)
         self.methods = tuple(_methods)
         if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
             _LOGGER.warning(f'Could not find member \'storageLayout\' while processing contract: {self.name}')
@@ -236,18 +239,40 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
         process_res = run_process(['solc', '--standard-json'], logger=_LOGGER, input=json.dumps(args), profile=profile)
     except CalledProcessError as err:
         raise RuntimeError('solc error', err.stdout, err.stderr)
+    result = json.loads(process_res.stdout)
+    if 'errors' in result:
+        failed = False
+        for error in result['errors']:
+            if error['severity'] == 'error':
+                _LOGGER.error(f'solc error:\n{error["formattedMessage"]}')
+                failed = True
+            elif error['severity'] == 'warning':
+                _LOGGER.warning(f'solc warning:\n{error["formattedMessage"]}')
+            else:
+                _LOGGER.warning(f'Unknown solc error severity level {error["severity"]}:\n{json.dumps(error, indent=2)}')
+        if failed:
+            raise ValueError('Compilation failed.')
+    return result
 
-    return json.loads(process_res.stdout)
 
-
-def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[KInner, KInner]] = None) -> List[KClaim]:
+def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[str, KInner, KInner]] = None) -> List[KClaim]:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
-    account_cell = KEVM.account_cell(Foundry.address_TEST_CONTRACT(),
-                                     KVariable('ACCT_BALANCE'),
-                                     program,
-                                     KVariable('ACCT_STORAGE'),
-                                     KVariable('ACCT_ORIGSTORAGE'),
-                                     KVariable('ACCT_NONCE'))
+    account_cell = KEVM.account_cell(
+        Foundry.address_TEST_CONTRACT(),
+        intToken(0),
+        program,
+        KVariable('ACCT_STORAGE'),
+        KVariable('ACCT_ORIGSTORAGE'),
+        intToken(0),
+    )
+    post_account_cell = KEVM.account_cell(
+        Foundry.address_TEST_CONTRACT(),
+        KVariable('ACCT_BALANCE'),
+        program,
+        KVariable('ACCT_STORAGE_FINAL'),
+        KVariable('ACCT_ORIGSTORAGE'),
+        KVariable('ACCT_NONCE'),
+    )
     init_subst = {
         'MODE_CELL': KToken('NORMAL', 'Mode'),
         'SCHEDULE_CELL': KApply('LONDON_EVM'),
@@ -259,7 +284,10 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
         'ORIGIN_CELL': KVariable('ORIGIN_ID'),
         'ID_CELL': Foundry.address_TEST_CONTRACT(),
         'CALLER_CELL': KVariable('CALLER_ID'),
-        'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
+        'ACCESSEDSTORAGE_CELL': KApply('.Map'),
+        'ACTIVEACCOUNTS_CELL': build_assoc(KApply('.Set'), KLabel('_Set_'), map(KLabel('SetItem'), [Foundry.address_TEST_CONTRACT(), Foundry.address_CHEATCODE(), Foundry.address_CALLER(), Foundry.address_HARDHAT_CONSOLE()])),
+        'LOCALMEM_CELL': KVariable('LOCAL_MEM'),
+        'STATIC_CELL': Bool.false,
         'MEMORYUSED_CELL': intToken(0),
         'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
         'PC_CELL': intToken(0),
@@ -269,23 +297,25 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
             account_cell,  # test contract address
             Foundry.account_CALLER(),
             Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE')),
-            Foundry.account_HARDHAT_CONSOLE_ADDRESS()])
+            Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
+            KToken('.Bag', 'K')])
     }
     final_subst = {
         'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')]),
         'STATUSCODE_CELL': KVariable('STATUSCODE_FINAL'),
         'ID_CELL': Foundry.address_TEST_CONTRACT(),
         'ACCOUNTS_CELL': KEVM.accounts([
-            account_cell,  # test contract address
+            post_account_cell,  # test contract address
             Foundry.account_CALLER(),
             Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE_FINAL')),
-            Foundry.account_HARDHAT_CONSOLE_ADDRESS()])
+            Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
+            KVariable('ACCOUNTS_FINAL')])
     }
     init_term = substitute(empty_config, init_subst)
     if calldata_cells:
-        init_terms = [(f'{contract_name.lower()}-{i}', substitute(init_term, {'CALLDATA_CELL': cd, 'CALLVALUE_CELL': cv})) for i, (cd, cv) in enumerate(calldata_cells)]
+        init_terms = [(tn.replace('_', '-'), substitute(init_term, {'CALLDATA_CELL': cd, 'CALLVALUE_CELL': cv})) for tn, cd, cv in calldata_cells]
     else:
-        init_terms = [(contract_name.lower(), init_term)]
+        init_terms = [(contract_name.replace('_', '-'), init_term)]
     final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')]))
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
@@ -319,7 +349,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
             args = [abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}') for name in tm.arg_names]
             calldata: KInner = KApply(contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)])
             callvalue: KInner = intToken(0) if not tm.payable else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
-            function_test_calldatas.append((calldata, callvalue))
+            function_test_calldatas.append((tm.name, calldata, callvalue))
     if function_test_calldatas:
         claims = gen_claims_for_contract(empty_config, contract.name, calldata_cells=function_test_calldatas)
         claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport('VERIFICATION'), KImport(module_name)])

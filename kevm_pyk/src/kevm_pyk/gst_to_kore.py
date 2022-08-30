@@ -1,9 +1,8 @@
 import json
 import logging
 from collections import OrderedDict
-from io import TextIOWrapper
 from pathlib import Path
-from typing import Any, Callable, Final
+from typing import Any, Callable, Final, TextIO
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -20,7 +19,7 @@ def mode_to_kore(mode: str) -> str:
     return f'Lbl{mode}' + "{}()"
 
 
-def gst_to_kore(gst_file: Path, out_stream: TextIOWrapper, schedule: str, mode: str, chainid: int) -> None:
+def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, chainid: int) -> None:
 
     with open(gst_file) as data_file:
         data = json.load(data_file, object_pairs_hook=OrderedDict)
