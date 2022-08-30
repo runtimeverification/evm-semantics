@@ -32,6 +32,14 @@ WARNING 2022-08-30 22:08:44,267 kevm_pyk.solc_to_k - Ignoring test from contract
 
 % kevm foundry-prove out --contract AssertTest
 WARNING 2022-08-30 22:29:23,287 __main__ - Ignoring command-line option: --definition: /home/dev/src/evm-semantics/.build/usr/lib/kevm/haskell
+( <generatedTop>
+  <kevm>
+    <k>
+      #halt
+      ~> _CONTINUATION
+... A BUNCH MORE CONFIGURATION HERE ...
+</generatedTop>
+#And { 0 #Equals #lookup ( CHEATCODE_STORAGE , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) } )
 ```
 
 ### Overview
