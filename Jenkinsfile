@@ -23,12 +23,19 @@ pipeline {
       }
       stages {
         // Must come before build/prove for proper testing
-        stage('Check Pyk Version')    { steps { sh 'bash ./kevm_pyk/test-version.sh ${K_VERSION}' } }
-        stage('Check Pyk Code Style') { steps { sh 'make kevm-pyk'                                } }
-        stage('Build')                { steps { sh 'make venv build build-prove RELEASE=true -j4' } }
-        stage('Build and Test Pyk') {
+        stage('Build Pyk') {
+          parallel {
+            stage('Check Pyk Version')    { steps { sh 'bash ./kevm_pyk/test-version.sh ${K_VERSION}' } }
+            stage('Check Pyk Code Style') { steps { sh 'make kevm-pyk'                                } }
+          }
+        }
+        stage('Build') {
+          options { timeout(time: 15, unit: 'MINUTES') }
+          steps { sh 'make venv build build-prove RELEASE=true -j4' } }
+        }
+        stage('Test Pyk') {
           options { timeout(time: 10, unit: 'MINUTES') }
-          steps { sh 'make test-kevm-pyk -j2' }
+          steps { sh 'make test-kevm-pyk -j2' } }
         }
         stage('Test') {
           failFast true
