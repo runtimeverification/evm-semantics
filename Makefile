@@ -492,15 +492,15 @@ tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
 tests/foundry/foundry.k.check: tests/foundry/foundry.k
 	$(CHECK) $< $@.expected
 
-tests/foundry/foundry.k.prove: tests/foundry/kompiled/timestamp
-	$(KEVM) prove tests/foundry/foundry.k --backend haskell --definition tests/foundry/kompiled \
-	    $(KEVM_OPTS) $(KPROVE_OPTS) --spec-module SPEC
+tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
+	$(KEVM) prove $(dir $<)foundry.k --backend haskell --definition $(dir $<) \
+	    --spec-module FOUNDRY-SPEC                                            \
+	    $(KEVM_OPTS) $(KPROVE_OPTS)
 
-tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
-	$(KOMPILE) $< --backend haskell --definition tests/foundry/kompiled \
-	    --main-module VERIFICATION --syntax-module VERIFICATION         \
-	    --concrete-rules-file tests/foundry/concrete-rules.txt          \
-	    $(KOMPILE_OPTS) $(KEVM_OPTS)
+tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
+	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose        \
+	    --concrete-rules-file tests/specs/concrete-rules.txt \
+	    --exclude-tests tests/foundry/exclude
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
 tests/specs/examples/%-bin-runtime.k: KEVM = $(PYK_ACTIVATE) && kevm
