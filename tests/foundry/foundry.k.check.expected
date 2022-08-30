@@ -3,6 +3,120 @@ requires "lemmas/int-simplification.k"
 requires "lemmas/lemmas.k"
 requires "lemmas/int-simplification.k"
 
+module ASSUMETEST-BIN-RUNTIME
+    imports public EDSL
+    imports public INT-SIMPLIFICATION
+    imports public LEMMAS
+    
+    syntax Contract ::= AssumeTestContract
+    
+    syntax AssumeTestContract ::= "AssumeTest" [klabel(contract_AssumeTest)]
+    
+    rule  ( #binRuntime ( AssumeTest ) => #parseByteStack ( "0x608060405234801561001057600080fd5b50600436106100885760003560e01c8063ba414fa61161005b578063ba414fa6146100ed578063e41befb41461008d578063f8ccbf4714610105578063fa7626d41461011857600080fd5b80630eb656da1461008d5780633a768463146100a25780635f2e70fb146100da5780636eef607c146100da575b600080fd5b6100a061009b36600461052d565b610125565b005b6100bd737109709ecfa91a80626ff3989d68f67f5b1dd12d81565b6040516001600160a01b0390911681526020015b60405180910390f35b6100a06100e836600461052d565b61019b565b6100f56101d4565b60405190151581526020016100d1565b6000546100f59062010000900460ff1681565b6000546100f59060ff1681565b604051632631f2b160e11b8152818314156004820152737109709ecfa91a80626ff3989d68f67f5b1dd12d90634c63e562906024015b600060405180830381600087803b15801561017557600080fd5b505af1158015610189573d6000803e3d6000fd5b5050505061019782826102ff565b5050565b604051632631f2b160e11b81528183146004820152737109709ecfa91a80626ff3989d68f67f5b1dd12d90634c63e5629060240161015b565b60008054610100900460ff16156101f45750600054610100900460ff1690565b6000737109709ecfa91a80626ff3989d68f67f5b1dd12d3b156102fa5760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b82840152825180830384018152606083019093526000929091610282917f667f9d70ca411d70ead50d8d5c22070dafc36ad75f3dcf5e7237b22ade9aecc49160800161058a565b60408051601f198184030181529082905261029c916105ae565b6000604051808303816000865af19150503d80600081146102d9576040519150601f19603f3d011682016040523d82523d6000602084013e6102de565b606091505b50915050808060200190518101906102f691906105c1565b9150505b919050565b808214610197577f41304facd9323d75b11bcdd609cb38effffdb05710f7caf0e9b16c6d9d709f506040516103709060208082526022908201527f4572726f723a2061203d3d2062206e6f7420736174697366696564205b75696e604082015261745d60f01b606082015260800190565b60405180910390a160408051818152600a81830152690808115e1c1958dd195960b21b60608201526020810183905290517fb2de2fbe801a0df6c0cbddfd448ba3c41d48a040ca35c56c8196ef0fcae721a89181900360800190a160408051818152600a8183015269080808081058dd1d585b60b21b60608201526020810184905290517fb2de2fbe801a0df6c0cbddfd448ba3c41d48a040ca35c56c8196ef0fcae721a89181900360800190a1610197737109709ecfa91a80626ff3989d68f67f5b1dd12d3b1561051c5760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b9282019290925260016060820152600091907f70ca10bbd0dbfd9020a9f4b13402c16cb120705e0d1c0aeab10fa353ae586fc49060800160408051601f19818403018152908290526104bb929160200161058a565b60408051601f19818403018152908290526104d5916105ae565b6000604051808303816000865af19150503d8060008114610512576040519150601f19603f3d011682016040523d82523d6000602084013e610517565b606091505b505050505b6000805461ff001916610100179055565b6000806040838503121561054057600080fd5b50508035926020909101359150565b6000815160005b818110156105705760208185018101518683015201610556565b8181111561057f576000828601525b509290920192915050565b6001600160e01b03198316815260006105a6600483018461054f565b949350505050565b60006105ba828461054f565b9392505050565b6000602082840312156105d357600080fd5b815180151581146105ba57600080fdfea2646970667358221220518a724d423010b6b721a9f29160c745e0bdfdc3ba5c26a4814f0d218249b7ea64736f6c634300080d0033" ) )
+      
+    
+    syntax Field ::= AssumeTestField
+    
+    syntax AssumeTestField ::= "IS_TEST" [symbol(), klabel(field_AssumeTest_IS_TEST)]
+    
+    syntax AssumeTestField ::= "_failed" [symbol(), klabel(field_AssumeTest__failed)]
+    
+    syntax AssumeTestField ::= "IS_SCRIPT" [symbol(), klabel(field_AssumeTest_IS_SCRIPT)]
+    
+    syntax AssumeTestField ::= "stdstore" [symbol(), klabel(field_AssumeTest_stdstore)]
+    
+    rule  ( #loc ( AssumeTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( AssumeTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( AssumeTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( AssumeTest . stdstore ) => 1 )
+      
+    
+    syntax ByteArray ::= AssumeTestContract "." AssumeTestMethod [function(), klabel(method_AssumeTest)]
+    
+    syntax AssumeTestMethod ::= "IS_SCRIPT" "(" ")" [klabel(method_AssumeTest_IS_SCRIPT)]
+    
+    syntax AssumeTestMethod ::= "IS_TEST" "(" ")" [klabel(method_AssumeTest_IS_TEST)]
+    
+    syntax AssumeTestMethod ::= "failed" "(" ")" [klabel(method_AssumeTest_failed)]
+    
+    syntax AssumeTestMethod ::= "testFail_assume_false" "(" Int "," Int ")" [klabel(method_AssumeTest_testFail_assume_false)]
+    
+    syntax AssumeTestMethod ::= "testFail_assume_true" "(" Int "," Int ")" [klabel(method_AssumeTest_testFail_assume_true)]
+    
+    syntax AssumeTestMethod ::= "test_assume_false" "(" Int "," Int ")" [klabel(method_AssumeTest_test_assume_false)]
+    
+    syntax AssumeTestMethod ::= "test_assume_true" "(" Int "," Int ")" [klabel(method_AssumeTest_test_assume_true)]
+    
+    syntax AssumeTestMethod ::= "vm" "(" ")" [klabel(method_AssumeTest_vm)]
+    
+    rule  ( AssumeTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( AssumeTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( AssumeTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( AssumeTest . testFail_assume_false ( V0_a , V1_b ) => #abiCallData ( "testFail_assume_false" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( AssumeTest . testFail_assume_true ( V0_a , V1_b ) => #abiCallData ( "testFail_assume_true" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( AssumeTest . test_assume_false ( V0_a , V1_b ) => #abiCallData ( "test_assume_false" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( AssumeTest . test_assume_true ( V0_a , V1_b ) => #abiCallData ( "test_assume_true" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( AssumeTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testFail_assume_false" ) => 1596879099 )
+      
+    
+    rule  ( selector ( "testFail_assume_true" ) => 246830810 )
+      
+    
+    rule  ( selector ( "test_assume_false" ) => 3827036084 )
+      
+    
+    rule  ( selector ( "test_assume_true" ) => 1861181564 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
 module BLOCKPARAMSTEST-BIN-RUNTIME
     imports public EDSL
     imports public INT-SIMPLIFICATION
@@ -2663,6 +2777,7 @@ module TOKENTEST-BIN-RUNTIME
 endmodule
 
 module VERIFICATION
+    imports public ASSUMETEST-BIN-RUNTIME
     imports public BLOCKPARAMSTEST-BIN-RUNTIME
     imports public BROADCASTTEST-BIN-RUNTIME
     imports public CONTRACTTEST-BIN-RUNTIME
@@ -2698,10 +2813,279 @@ module VERIFICATION
 endmodule
 
 module SPEC
+    imports public ASSUMETEST-BIN-RUNTIME-SPEC
     imports public DEALTEST-BIN-RUNTIME-SPEC
     imports public ASSERTTEST-BIN-RUNTIME-SPEC
     
     
+
+endmodule
+
+module ASSUMETEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
+    imports public ASSUMETEST-BIN-RUNTIME
+    
+    claim [test-assume-true]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( AssumeTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( AssumeTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( AssumeTest . test_assume_true ( _VV0_a_3c5818c8 , _VV1_b_3c5818c8 ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( AssumeTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) )
+      [label(test-assume-true)]
 
 endmodule
 
