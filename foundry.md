@@ -19,7 +19,7 @@ kevm foundry-prove path/to/foundry/out [--contract TestContractName]
 
 Adding optional argument `--contract TestContractName` will only attempt to run the proofs from that contract.
 
-For example, in the root of this repository, yu can run:
+For example, in this repository, you can run:
 
 ```sh
 % cd tests/foundry
