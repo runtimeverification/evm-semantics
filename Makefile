@@ -471,7 +471,7 @@ foundry_out := $(foundry_dir)/out
 test-foundry: KEVM_OPTS += --pyk --verbose --profile
 test-foundry: KEVM = $(PYK_ACTIVATE) && kevm
 test-foundry: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
-test-foundry: tests/foundry/foundry.k.prove tests/foundry/foundry.k.check
+test-foundry: tests/foundry/out/kompiled/foundry.k.prove tests/foundry/foundry.k.check
 
 foundry-forge-build: $(foundry_out)
 
@@ -489,13 +489,11 @@ tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
 	     --main-module VERIFICATION                                                                 \
 	     > $@
 
-tests/foundry/foundry.k.check: tests/foundry/foundry.k
+tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 	$(CHECK) $< $@.expected
 
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
-	$(KEVM) prove $(dir $<)foundry.k --backend haskell --definition $(dir $<) \
-	    --spec-module FOUNDRY-SPEC                                            \
-	    $(KEVM_OPTS) $(KPROVE_OPTS)
+	$(KEVM) foundry-prove tests/foundry/out $(KEVM_OPTS) $(KPROVE_OPTS)
 
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
 	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose        \
