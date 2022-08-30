@@ -1,3 +1,7 @@
+BlockParamsTest.testChainId
+BlockParamsTest.testCoinBase
+BlockParamsTest.testFee
+BlockParamsTest.testRoll
 AssertTest.test_assert_false
 AssertTest.testFail_assert_false
 AssertTest.testFail_assert_true
