@@ -1,6 +1,39 @@
 Foundry Specifications
 ======================
 
+**UNDER CONSTRUCTION**
+
+### Usage
+
+Given a Foundry `out` directory, call (~2-3 minutes):
+
+```sh
+kevm foundry-kompile path/to/foundry/out
+```
+
+Then, you can attempt to prove your Foundry property tests with:
+
+```sh
+kevm foundry-prove path/to/foundry/out [--contract TestContractName]
+```
+
+Adding optional argument `--contract TestContractName` will only attempt to run the proofs from that contract.
+
+For example, in the root of this repository, yu can run:
+
+```sh
+% cd tests/foundry
+% forge build
+
+% kevm foundry-kompile out --concrete-rules-file ../specs/concrete-rules.txt
+WARNING 2022-08-30 22:08:43,482 kevm_pyk.solc_to_k - Ignoring test from contract AssumeTest: testFail_assume_false
+... BUNCH MOE WARNINGS ...
+WARNING 2022-08-30 22:08:44,267 kevm_pyk.solc_to_k - Ignoring test from contract AssertTest: testFail_assert_true
+
+% kevm foundry-prove out --contract AssertTest
+WARNING 2022-08-30 22:29:23,287 __main__ - Ignoring command-line option: --definition: /home/dev/src/evm-semantics/.build/usr/lib/kevm/haskell
+```
+
 ### Overview
 
 Foundry's testing framework provides a series of cheatcodes so that developers can specify what situation they want to test.
