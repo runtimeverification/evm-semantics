@@ -290,6 +290,10 @@ def _create_argument_parser() -> ArgumentParser:
     k_args.add_argument('--spec-module', default=None, type=str, help='Name of the spec module.')
     k_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
 
+    kprove_args = ArgumentParser(add_help=False)
+    kprove_args.add_argument('--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.')
+    kprove_args.add_argument('--bug-report', default=False, action='store_true', help='Generate a haskell-backend bug report for the execution.')
+
     k_kompile_args = ArgumentParser(add_help=False)
     k_kompile_args.add_argument('--md-selector', type=str, default='k & ! nobytes & ! node', help='Code selector expression to use when reading markdown.')
     k_kompile_args.add_argument('--hook-namespaces', type=str, default='JSON KRYPTO BLOCKCHAIN', help='Hook namespaces. What more can I say?')
@@ -314,10 +318,8 @@ def _create_argument_parser() -> ArgumentParser:
     kompile_args = command_parser.add_parser('kompile', help='Kompile KEVM specification.', parents=[shared_args, k_args, k_kompile_args])
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
 
-    prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args])
+    prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args])
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    prove_args.add_argument('--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.')
-    prove_args.add_argument('--bug-report', default=False, action='store_true', help='Generate a haskell-backend bug report for the execution.')
 
     run_args = command_parser.add_parser('run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args, k_args])
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
