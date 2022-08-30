@@ -92,7 +92,7 @@ def exec_solc_to_k(
         with open(exclude_tests, 'r') as el:
             _exclude_tests = el.read().strip().split('\n')
     contract = Contract(contract_name, contract_json, foundry=False)
-    contract_module, contract_claims_module = contract_to_k(contract, empty_config, foundry=False, exclude_tests=_exclude_tests)
+    contract_module, contract_claims_module = contract_to_k(contract, empty_config, foundry=False, exclude_tests=_exclude_tests, imports=('VERIFICATION'))
     modules = [contract_module]
     claims_modules = [contract_claims_module] if contract_claims_module else []
     _main_module = KFlatModule(main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports])
@@ -120,6 +120,9 @@ def exec_foundry_to_k(
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
     path_glob = str(foundry_out) + '/*.t.sol/*.json'
+    spec_imports = list(imports)
+    if main_module is not None:
+        spec_imports.append(main_module)
     modules: List[KFlatModule] = []
     claims_modules: List[KFlatModule] = []
     _exclude_tests = []
@@ -136,7 +139,7 @@ def exec_foundry_to_k(
         with open(json_file, 'r') as cjson:
             contract_json = json.loads(cjson.read())
             contract = Contract(contract_name, contract_json, foundry=True)
-            module, claims_module = contract_to_k(contract, empty_config, foundry=True, exclude_tests=_exclude_tests)
+            module, claims_module = contract_to_k(contract, empty_config, foundry=True, exclude_tests=_exclude_tests, imports=spec_imports)
             _LOGGER.info(f'Produced contract module: {module.name}')
             modules.append(module)
             if claims_module:

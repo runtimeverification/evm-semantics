@@ -329,7 +329,7 @@ def gen_claims_for_contract(empty_config: KInner, contract_name: str, calldata_c
     return claims
 
 
-def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = False, exclude_tests: Iterable[str] = ()) -> Tuple[KFlatModule, Optional[KFlatModule]]:
+def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = False, exclude_tests: Iterable[str] = (), imports: Iterable[str] = ()) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
     sentences = contract.sentences
     module_name = contract.name.upper() + '-BIN-RUNTIME'
@@ -352,7 +352,7 @@ def contract_to_k(contract: Contract, empty_config: KInner, foundry: bool = Fals
             function_test_calldatas.append((tm.name, calldata, callvalue))
     if function_test_calldatas:
         claims = gen_claims_for_contract(empty_config, contract.name, calldata_cells=function_test_calldatas)
-        claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport('VERIFICATION'), KImport(module_name)])
+        claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(i) for i in list(imports) + [module_name]])
 
     return module, claims_module
 
