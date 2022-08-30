@@ -24,6 +24,7 @@ pipeline {
       stages {
         // Must come before build/prove for proper testing
         stage('Build Pyk') {
+          options { timeout(time: 5, unit: 'MINUTES') }
           parallel {
             stage('Check Pyk Version')    { steps { sh 'bash ./kevm_pyk/test-version.sh ${K_VERSION}' } }
             stage('Check Pyk Code Style') { steps { sh 'make kevm-pyk'                                } }
