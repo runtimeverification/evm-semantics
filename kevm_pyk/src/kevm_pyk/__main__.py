@@ -143,6 +143,7 @@ def exec_foundry_to_k(
             _LOGGER.info(f'Produced contract module: {module.name}')
             modules.append(module)
             if claims_module:
+                _LOGGER.info(f'Produced claim module: {claims_module.name}')
                 claims_modules.append(claims_module)
     _main_module = KFlatModule(main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports])
     _spec_module = KFlatModule(spec_module if spec_module else 'SPEC', [], [KImport(mname) for mname in [_m.name for _m in claims_modules]])
@@ -172,6 +173,12 @@ def exec_foundry_kompile(
     imports: Iterable[str] = (),
     **kwargs,
 ) -> None:
+    if 'main_module' in kwargs and kwargs['main_module']:
+        _LOGGER.warning(f'Ignoring command-line supplied argument: --main-module {kwargs["main_module"]}')
+    if 'syntax_module' in kwargs and kwargs['syntax_module']:
+        _LOGGER.warning(f'Ignoring command-line supplied argument: --syntax-module {kwargs["syntax_module"]}')
+    if 'spec_module' in kwargs and kwargs['spec_module']:
+        _LOGGER.warning(f'Ignoring command-line supplied argument: --spec-module {kwargs["spec_module"]}')
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
     spec_module = 'FOUNDRY-SPEC'
@@ -181,7 +188,6 @@ def exec_foundry_kompile(
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
-    _LOGGER.warning(f'main_module: {main_module}')
     if regen or not foundry_main_file.exists():
         with open(foundry_main_file, 'w') as fmf:
             exec_foundry_to_k(
