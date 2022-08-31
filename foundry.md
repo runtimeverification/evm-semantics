@@ -149,6 +149,25 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)`
          </account>
 ```
 
+#### `label` - Sets a label for a given address.
+
+```
+function label(address addr, string calldata label) external;
+```
+
+`call.label` will match when the `label` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+If an address is labelled, the label will show up in test traces instead of the address. However, there is no change on the state and therefore this rule just skips the cheatcode invocation. 
+
+```k
+    rule [call.label]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3327641368 // selector ( "label(address,string)" )
+      [priority(40)]
+```
+
 ```k
 endmodule
 ```
