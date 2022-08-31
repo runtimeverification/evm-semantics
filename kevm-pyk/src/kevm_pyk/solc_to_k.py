@@ -251,7 +251,7 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
     try:
         process_res = run_process(['solc', '--standard-json'], logger=_LOGGER, input=json.dumps(args), profile=profile)
     except CalledProcessError as err:
-        raise RuntimeError('solc error', err.stdout, err.stderr)
+        raise RuntimeError('solc error', err.stdout, err.stderr) from err
     result = json.loads(process_res.stdout)
     if 'errors' in result:
         failed = False
