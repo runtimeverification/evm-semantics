@@ -12,7 +12,6 @@
 /package/pkg
 /package/src
 /pkg
-/src
 /tests/**/*.debug-log
 /tests/foundry/cache
 /tests/foundry/foundry.k
