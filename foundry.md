@@ -128,15 +128,11 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)`
 
 ```k
     rule [call.deal]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0
-          => #setBalance(#asWord(#range(LM, ARGSTART +Int 4, 32)), #asWord(#range(LM, ARGSTART +Int 36, 32)))
-          ~> 1 ~> #push
-         ...
-         </k>
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => #setBalance(#asWord(#range(LM, ARGSTART +Int 4, 32)), #asWord(#range(LM, ARGSTART +Int 36, 32))) ~> 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
-       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3364511341 // selector ( "deal" )
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3364511341 // selector ( "deal(address,uint256)" )
       [priority(40)]
 
     syntax KItem ::= "#setBalance" "(" Int "," Int ")" [klabel(foundry_setBalance)]
@@ -147,6 +143,106 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)`
              <balance> _ => NEWBAL </balance>
              ...
          </account>
+```
+
+#### `warp` - Sets the block timestamp.
+
+```
+function warp(uint256) external;
+```
+
+`call.warp` will match when the `warp` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule then takes the uint256 value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<timestamp>` cell.
+
+```k
+    rule [call.warp]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+         <timestamp> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </timestamp>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3856056066 // selector ( "warp(uint256)" )
+      [priority(40)]
+```
+
+#### `roll` - Sets the block number.
+
+```
+function roll(uint256) external;
+```
+
+`call.roll` will match when the `roll` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<number>` cell.
+
+```k
+    rule [call.roll]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+         <number> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </number>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 528174896 // selector ( "roll(uint256)" )
+      [priority(40)]
+```
+
+#### `fee` - Sets the block number.
+
+```
+function fee(uint256) external;
+```
+
+`call.fee` will match when the `fee` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<baseFee>` cell.
+
+```k
+    rule [call.fee]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+         <baseFee> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </baseFee>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 968063664 // selector ( "fee(uint256)" )
+      [priority(40)]
+```
+
+#### `chainId` - Sets the block number.
+
+```
+function chainId(uint256) external;
+```
+
+`call.chainId` will match when the `chanId` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<chainID>` cell.
+
+```k
+    rule [call.chainId]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+         <chainID> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </chainID>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1078582738 // selector ( "chainId(uint256)" )
+      [priority(40)]
+```
+
+#### `coinbase` - Sets the block number.
+
+```
+function coinbase(address) external;
+```
+
+`call.coinbase` will match when the `coinbase` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and updates the `<coinbase>` cell.
+
+```k
+    rule [call.coinbase]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+         <coinbase> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </coinbase>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4282924116 // selector ( "coinbase(address)" )
+      [priority(40)]
 ```
 
 ```k
