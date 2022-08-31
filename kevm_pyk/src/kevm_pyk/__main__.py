@@ -99,7 +99,7 @@ def exec_solc_to_k(
         with open(exclude_tests, 'r') as el:
             _exclude_tests = el.read().strip().split('\n')
     contract = Contract(contract_name, contract_json, foundry=False)
-    contract_module, contract_claims_module = contract_to_k(contract, empty_config, foundry=False, exclude_tests=_exclude_tests, imports=('VERIFICATION'))
+    contract_module, contract_claims_module = contract_to_k(contract, empty_config, foundry=False, exclude_tests=_exclude_tests, imports=imports)
     modules = [contract_module]
     claims_modules = [contract_claims_module] if contract_claims_module else []
     _main_module = KFlatModule(main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports])
