@@ -1,8 +1,5 @@
 /.build/*
 .envrc
-/kevm_pyk/build
-/kevm_pyk/src/kevm_pyk.egg-info
-/kevm_pyk/src/kevm_pyk/__pycache__
 .kompile*
 .kprove*
 .krun*
