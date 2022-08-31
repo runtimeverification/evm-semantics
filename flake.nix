@@ -6,7 +6,7 @@
     nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.url = "github:runtimeverification/rv-nix-tools";
-    pynixify.follows = "k-framework/pynixify";
+    poetry2nix.follows = "k-framework/poetry2nix";
     blockchain-k-plugin.url =
       "github:runtimeverification/blockchain-k-plugin/8fdc74e3caf254aa3952393dbb0368d2c98c321a";
     blockchain-k-plugin.inputs.flake-utils.follows = "k-framework/flake-utils";
@@ -18,11 +18,10 @@
       "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
   };
-  outputs = { self, k-framework, nixpkgs, flake-utils, pynixify
+  outputs = { self, k-framework, nixpkgs, flake-utils, poetry2nix
     , blockchain-k-plugin, ethereum-tests, ethereum-legacytests, rv-utils }:
     let
-      kevm-rev = self.rev or "dirty";
-      buildInputs = pkgs:
+      buildInputs = pkgs: k:
         with pkgs;
         [
           k
@@ -39,7 +38,7 @@
           pkg-config
           procps
           protobuf
-          python38
+          python39
           secp256k1
           solc
           time
@@ -47,43 +46,16 @@
         ] ++ lib.optional (!stdenv.isDarwin) elfutils
         ++ lib.optionals stdenv.isDarwin [ automake libtool ];
 
-      overlay = final: prev:
-        let
-          pythonOverrides = nixpkgs.lib.composeManyExtensions [
-            prev.pythonOverrides
-            (import ./kevm_pyk/nix/overlay.nix)
-            (finalPython: prevPython: {
-              # another hacky thing. we need to modify setup.cfg and remove '@ git+...'
-              # after pyk, otherwise pip will try to download pyk from the github repo
-              kevm_pyk = prevPython.kevm_pyk.overrideAttrs (_: {
-                src = prev.stdenv.mkDerivation {
-                  name = "kevm_pyk-${kevm-rev}-src";
-                  src = ./kevm_pyk;
-                  dontBuild = true;
-                  installPhase = ''
-                    mkdir $out
-                    cp -rv ./* $out
-                    chmod -R u+w $out
-                    sed -i "$out/setup.cfg" -e 's/pyk @ git.*/pyk/g'
-                  '';
-                };
-              });
-            })
-          ];
-        in {
-          inherit pythonOverrides;
-          # solc derivation is broken for darwin M1 in the version of nixpkgs we are on
-          # the derivation below is a copy from nixpkgs 22.05
-          solc = prev.callPackage ./package/nix/solc.nix { };
-
-          kevm = prev.stdenv.mkDerivation {
+      overlay = final: prev: {
+        kevm = k:
+          prev.stdenv.mkDerivation {
             pname = "kevm";
-            version = kevm-rev;
-            buildInputs = buildInputs final;
+            version = self.rev or "dirty";
+            buildInputs = buildInputs final k;
             nativeBuildInputs = [ prev.makeWrapper ];
 
             src = prev.stdenv.mkDerivation {
-              name = "kevm-${kevm-rev}-src";
+              name = "kevm-${self.rev or "dirty"}-src";
               src = prev.lib.cleanSource
                 (prev.nix-gitignore.gitignoreSourcePure [
                   ./.gitignore
@@ -91,7 +63,7 @@
                   "result*"
                   "*.nix"
                   "deps/"
-                  "kevm_pyk/"
+                  "kevm-pyk/"
                 ] ./.);
               dontBuild = true;
 
@@ -110,9 +82,9 @@
 
             postPatch = ''
               substituteInPlace ./cmake/node/CMakeLists.txt \
-                --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${final.k}/lib)'
+                --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
               substituteInPlace ./kevm \
-                --replace 'execute python3 -m kevm_pyk' 'execute ${final.python38Packages.kevm_pyk}/bin/kevm-pyk'
+                --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
             '';
 
             buildFlags =
@@ -128,21 +100,22 @@
               mkdir -p $out
               mv .build/usr/* $out/
               wrapProgram $out/bin/kevm --prefix PATH : ${
-                prev.lib.makeBinPath [ final.solc final.k ]
+                prev.lib.makeBinPath [ final.solc ]
               }
-              ln -s ${final.k} $out/lib/kevm/kframework
+              ln -s ${k} $out/lib/kevm/kframework
             '';
           };
 
-          kevm-test = prev.stdenv.mkDerivation {
+        kevm-test = k:
+          prev.stdenv.mkDerivation {
             pname = "kevm-test";
-            version = kevm-rev;
+            version = self.rev or "dirty";
 
-            src = final.kevm.src;
+            src = (final.kevm k).src;
 
             enableParallelBuilding = true;
 
-            buildInputs = [ final.kevm prev.which prev.git ];
+            buildInputs = [ (final.kevm k) prev.which prev.git ];
 
             buildPhase = ''
               mkdir -p tests/ethereum-tests/LegacyTests
@@ -162,18 +135,25 @@
             '';
           };
 
-        } // prev.lib.genAttrs [
-          "python2"
-          "python27"
-          "python3"
-          "python35"
-          "python36"
-          "python37"
-          "python38"
-          "python39"
-          "python310"
-        ] (python:
-          prev.${python}.override { packageOverrides = pythonOverrides; });
+        kevm-pyk = prev.poetry2nix.mkPoetryApplication {
+          python = prev.python39;
+          projectDir = prev.stdenv.mkDerivation {
+            name = "kevm-pyk-src";
+            src = ./kevm-pyk;
+            dontBuild = true;
+            installPhase = ''
+              mkdir $out
+              cp -rv $src/* $out
+              chmod -R u+w $out
+              sed -i $out/pyproject.toml \
+                  -e 's/\[tool.poetry.dependencies\]/[tool.poetry.dependencies]\npyk = "*"/'
+            '';
+          };
+          overrides = prev.poetry2nix.overrides.withDefaults
+            (finalPython: prevPython: { pyk = prev.pyk; });
+        };
+
+      };
     in flake-utils.lib.eachSystem [
       "x86_64-linux"
       "x86_64-darwin"
@@ -192,7 +172,9 @@
         };
       in {
         packages.default = pkgs.kevm;
-        devShell = pkgs.mkShell { buildInputs = buildInputs pkgs; };
+        devShell = pkgs.mkShell {
+          buildInputs = buildInputs pkgs k-framework.packages.${system}.k;
+        };
 
         apps = {
           compare-profiles = flake-utils.lib.mkApp {
@@ -208,31 +190,9 @@
         };
 
         packages = {
-          inherit (pkgs) kevm kevm-test;
-
-          profile = pkgs.callPackage ./package/nix/profile.nix {
-            kore-exec = pkgs.haskell-backend-stackProject.hsPkgs.kore.components.exes.kore-exec;
-            src = pkgs.lib.cleanSource (pkgs.nix-gitignore.gitignoreSourcePure [
-              ./.gitignore
-              ".github/"
-              "result*"
-              "*.nix"
-              "deps/"
-              "kevm_pyk/"
-            ] ./.);
-          };
-
-          kevm-pyk = pkgs.python38Packages.kevm_pyk;
-          # using a specially patched version of pynixify, we can pass a
-          # --ignore-packages pyk directive, telling pynixify not to generate a
-          # nix expression for the pyk dependency
-          update-python = pkgs.writeShellScriptBin "update-python" ''
-            #!/bin/sh
-            cd kevm_pyk
-            ${
-              pynixify.packages.${system}.pynixify
-            }/bin/pynixify -l kevm_pyk --overlay-only --ignore-packages pyk --output ./nix
-          '';
+          inherit (pkgs) kevm-pyk;
+          kevm = pkgs.kevm k-framework.packages.${system}.k;
+          kevm-test = pkgs.kevm-test k-framework.packages.${system}.k;
 
           check-submodules = rv-utils.lib.check-submodules pkgs {
             inherit k-framework blockchain-k-plugin ethereum-tests
