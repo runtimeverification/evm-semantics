@@ -1369,6 +1369,84 @@ module GETCODETEST-BIN-RUNTIME
 
 endmodule
 
+module LABELTEST-BIN-RUNTIME
+    imports public EDSL
+    imports public INT-SIMPLIFICATION
+    imports public LEMMAS
+    
+    syntax Contract ::= LabelTestContract
+    
+    syntax LabelTestContract ::= "LabelTest" [klabel(contract_LabelTest)]
+    
+    rule  ( #binRuntime ( LabelTest ) => #parseByteStack ( "0x608060405234801561001057600080fd5b50600436106100575760003560e01c80632fa150bd1461005c5780633a76846314610066578063ba414fa61461009e578063f8ccbf47146100b6578063fa7626d4146100c9575b600080fd5b6100646100d6565b005b610081737109709ecfa91a80626ff3989d68f67f5b1dd12d81565b6040516001600160a01b0390911681526020015b60405180910390f35b6100a661018f565b6040519015158152602001610095565b6000546100a69062010000900460ff1681565b6000546100a69060ff1681565b604080516318caf8e360e31b815273ea674fdde714fd979de3edf0f56aa9716b898ec86004820181905260248201929092526005604482015264416c69636560d81b6064820152737109709ecfa91a80626ff3989d68f67f5b1dd12d9063c657c71890608401600060405180830381600087803b15801561015657600080fd5b505af115801561016a573d6000803e3d6000fd5b5050505061018c8173ea674fdde714fd979de3edf0f56aa9716b898ec86102ba565b50565b60008054610100900460ff16156101af5750600054610100900460ff1690565b6000737109709ecfa91a80626ff3989d68f67f5b1dd12d3b156102b55760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b8284015282518083038401815260608301909352600092909161023d917f667f9d70ca411d70ead50d8d5c22070dafc36ad75f3dcf5e7237b22ade9aecc491608001610551565b60408051601f198184030181529082905261025791610575565b6000604051808303816000865af19150503d8060008114610294576040519150601f19603f3d011682016040523d82523d6000602084013e610299565b606091505b50915050808060200190518101906102b19190610588565b9150505b919050565b806001600160a01b0316826001600160a01b031614610406577f41304facd9323d75b11bcdd609cb38effffdb05710f7caf0e9b16c6d9d709f506040516103409060208082526025908201527f4572726f723a2061203d3d2062206e6f7420736174697366696564205b616464604082015264726573735d60d81b606082015260800190565b60405180910390a160408051818152600a81830152690808115e1c1958dd195960b21b60608201526001600160a01b038316602082015290517f9c4e8541ca8f0dc1c413f9108f66d82d3cecb1bddbce437a61caa3175c4cc96f9181900360800190a160408051818152600a8183015269080808081058dd1d585b60b21b60608201526001600160a01b038416602082015290517f9c4e8541ca8f0dc1c413f9108f66d82d3cecb1bddbce437a61caa3175c4cc96f9181900360800190a161040661040a565b5050565b737109709ecfa91a80626ff3989d68f67f5b1dd12d3b156105055760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b9282019290925260016060820152600091907f70ca10bbd0dbfd9020a9f4b13402c16cb120705e0d1c0aeab10fa353ae586fc49060800160408051601f19818403018152908290526104a49291602001610551565b60408051601f19818403018152908290526104be91610575565b6000604051808303816000865af19150503d80600081146104fb576040519150601f19603f3d011682016040523d82523d6000602084013e610500565b606091505b505050505b6000805461ff001916610100179055565b6000815160005b81811015610537576020818501810151868301520161051d565b81811115610546576000828601525b509290920192915050565b6001600160e01b031983168152600061056d6004830184610516565b949350505050565b60006105818284610516565b9392505050565b60006020828403121561059a57600080fd5b8151801515811461058157600080fdfea264697066735822122077fb7fa44e12fcdc3c069226825a9f52cf6ac48e0537b1681842536abb9db5d764736f6c634300080d0033" ) )
+      
+    
+    syntax Field ::= LabelTestField
+    
+    syntax LabelTestField ::= "IS_TEST" [symbol(), klabel(field_LabelTest_IS_TEST)]
+    
+    syntax LabelTestField ::= "_failed" [symbol(), klabel(field_LabelTest__failed)]
+    
+    syntax LabelTestField ::= "IS_SCRIPT" [symbol(), klabel(field_LabelTest_IS_SCRIPT)]
+    
+    syntax LabelTestField ::= "stdstore" [symbol(), klabel(field_LabelTest_stdstore)]
+    
+    rule  ( #loc ( LabelTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( LabelTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( LabelTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( LabelTest . stdstore ) => 1 )
+      
+    
+    syntax ByteArray ::= LabelTestContract "." LabelTestMethod [function(), klabel(method_LabelTest)]
+    
+    syntax LabelTestMethod ::= "IS_SCRIPT" "(" ")" [klabel(method_LabelTest_IS_SCRIPT)]
+    
+    syntax LabelTestMethod ::= "IS_TEST" "(" ")" [klabel(method_LabelTest_IS_TEST)]
+    
+    syntax LabelTestMethod ::= "failed" "(" ")" [klabel(method_LabelTest_failed)]
+    
+    syntax LabelTestMethod ::= "testLabel" "(" ")" [klabel(method_LabelTest_testLabel)]
+    
+    syntax LabelTestMethod ::= "vm" "(" ")" [klabel(method_LabelTest_vm)]
+    
+    rule  ( LabelTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( LabelTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( LabelTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( LabelTest . testLabel ( ) => #abiCallData ( "testLabel" , .TypedArgs ) )
+      
+    
+    rule  ( LabelTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testLabel" ) => 799101117 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
 module LOOPSTEST-BIN-RUNTIME
     imports public EDSL
     imports public INT-SIMPLIFICATION
@@ -2791,6 +2869,7 @@ module FOUNDRY-MAIN
     imports public FILESTEST-BIN-RUNTIME
     imports public FORKTEST-BIN-RUNTIME
     imports public GETCODETEST-BIN-RUNTIME
+    imports public LABELTEST-BIN-RUNTIME
     imports public LOOPSTEST-BIN-RUNTIME
     imports public MOCKCALLTEST-BIN-RUNTIME
     imports public NONCETEST-BIN-RUNTIME
@@ -2815,6 +2894,7 @@ endmodule
 module FOUNDRY-SPEC
     imports public ASSUMETEST-BIN-RUNTIME-SPEC
     imports public DEALTEST-BIN-RUNTIME-SPEC
+    imports public LABELTEST-BIN-RUNTIME-SPEC
     imports public ASSERTTEST-BIN-RUNTIME-SPEC
     
     
@@ -3356,6 +3436,274 @@ module DEALTEST-BIN-RUNTIME-SPEC
       requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
        ensures foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) )
       [label(testDeal)]
+
+endmodule
+
+module LABELTEST-BIN-RUNTIME-SPEC
+    imports public VERIFICATION
+    imports public LABELTEST-BIN-RUNTIME
+    
+    claim [testLabel]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( LabelTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( LabelTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( LabelTest . testLabel ( ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( LabelTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) )
+      [label(testLabel)]
 
 endmodule
 
