@@ -1,3 +1,6 @@
+AssumeTest.test_assume_false
+AssumeTest.testFail_assume_true
+AssumeTest.testFail_assume_false
 BlockParamsTest.testChainId
 BlockParamsTest.testCoinBase
 BlockParamsTest.testFee
