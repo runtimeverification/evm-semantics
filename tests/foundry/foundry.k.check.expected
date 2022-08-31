@@ -2776,7 +2776,7 @@ module TOKENTEST-BIN-RUNTIME
 
 endmodule
 
-module VERIFICATION
+module FOUNDRY-MAIN
     imports public ASSUMETEST-BIN-RUNTIME
     imports public BLOCKPARAMSTEST-BIN-RUNTIME
     imports public BROADCASTTEST-BIN-RUNTIME
@@ -2812,7 +2812,7 @@ module VERIFICATION
 
 endmodule
 
-module SPEC
+module FOUNDRY-SPEC
     imports public ASSUMETEST-BIN-RUNTIME-SPEC
     imports public DEALTEST-BIN-RUNTIME-SPEC
     imports public ASSERTTEST-BIN-RUNTIME-SPEC
@@ -2823,7 +2823,7 @@ endmodule
 
 module ASSUMETEST-BIN-RUNTIME-SPEC
     imports public INT-SIMPLIFICATION
-    imports public VERIFICATION
+    imports public FOUNDRY-MAIN
     imports public ASSUMETEST-BIN-RUNTIME
     
     claim [test-assume-true]: <kevm>
@@ -3092,7 +3092,7 @@ endmodule
 
 module DEALTEST-BIN-RUNTIME-SPEC
     imports public INT-SIMPLIFICATION
-    imports public VERIFICATION
+    imports public FOUNDRY-MAIN
     imports public DEALTEST-BIN-RUNTIME
     
     claim [testDeal]: <kevm>
@@ -3361,7 +3361,7 @@ endmodule
 
 module ASSERTTEST-BIN-RUNTIME-SPEC
     imports public INT-SIMPLIFICATION
-    imports public VERIFICATION
+    imports public FOUNDRY-MAIN
     imports public ASSERTTEST-BIN-RUNTIME
     
     claim [test-assert-true]: <kevm>
