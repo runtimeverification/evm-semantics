@@ -3,7 +3,7 @@ import os
 import sys
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, List, Optional
+from typing import Any, Dict, Final, Iterable, List, Optional
 
 from pyk.cli_utils import run_process
 from pyk.kast import KApply, KInner, KLabel, KToken, KVariable
@@ -40,7 +40,7 @@ class KEVM(KProve, KRun):
         definition_dir: Path,
         main_file: Path,
         emit_json: bool = True,
-        includes: List[str] = [],
+        includes: Iterable[str] = (),
         main_module_name: Optional[str] = None,
         syntax_module_name: Optional[str] = None,
         md_selector: Optional[str] = None,
@@ -218,7 +218,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def account_cell(
-        id: KInner, balance: KInner, code: KInner, storage: KInner, origStorage: KInner, nonce: KInner
+        id: KInner, balance: KInner, code: KInner, storage: KInner, orig_storage: KInner, nonce: KInner
     ) -> KApply:
         return KApply(
             '<account>',
@@ -227,14 +227,14 @@ class KEVM(KProve, KRun):
                 KApply('<balance>', [balance]),
                 KApply('<code>', [code]),
                 KApply('<storage>', [storage]),
-                KApply('<origStorage>', [origStorage]),
+                KApply('<origStorage>', [orig_storage]),
                 KApply('<nonce>', [nonce]),
             ],
         )
 
     @staticmethod
-    def wordstack_len(constrainedTerm: KInner) -> int:
-        return len(flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', get_cell(constrainedTerm, 'WORDSTACK_CELL')))
+    def wordstack_len(constrained_term: KInner) -> int:
+        return len(flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', get_cell(constrained_term, 'WORDSTACK_CELL')))
 
     @staticmethod
     def parse_bytestack(s: KInner) -> KApply:
@@ -275,21 +275,21 @@ class Foundry:
     # address(uint160(uint256(keccak256("foundry default caller"))))
 
     @staticmethod
-    def address_CALLER() -> KToken:
+    def address_CALLER() -> KToken:  # noqa: N802
         return intToken(0x1804C8AB1F12E6BBF3894D4083F33E07309D1F38)
 
     @staticmethod
-    def account_CALLER() -> KApply:
+    def account_CALLER() -> KApply:  # noqa: N802
         return KEVM.account_cell(
             Foundry.address_CALLER(), intToken(0), KEVM.bytearray_empty(), KApply('.Map'), KApply('.Map'), intToken(0)
         )
 
     @staticmethod
-    def address_TEST_CONTRACT() -> KToken:
+    def address_TEST_CONTRACT() -> KToken:  # noqa: N802
         return intToken(0xB4C79DAB8F259C7AEE6E5B2AA729821864227E84)
 
     @staticmethod
-    def account_TEST_CONTRACT_ADDRESS() -> KApply:
+    def account_TEST_CONTRACT_ADDRESS() -> KApply:  # noqa: N802
         return KEVM.account_cell(
             Foundry.address_TEST_CONTRACT(),
             intToken(0),
@@ -300,13 +300,13 @@ class Foundry:
         )
 
     @staticmethod
-    def address_CHEATCODE() -> KToken:
+    def address_CHEATCODE() -> KToken:  # noqa: N802
         return intToken(0x7109709ECFA91A80626FF3989D68F67F5B1DD12D)
 
     # Same address as the one used in DappTools's HEVM
     # address(bytes20(uint160(uint256(keccak256('hevm cheat code')))))
     @staticmethod
-    def account_CHEATCODE_ADDRESS(store_var: KInner) -> KApply:
+    def account_CHEATCODE_ADDRESS(store_var: KInner) -> KApply:  # noqa: N802
         return KEVM.account_cell(
             Foundry.address_CHEATCODE(),  # Hardcoded for now
             intToken(0),
@@ -317,13 +317,13 @@ class Foundry:
         )
 
     @staticmethod
-    def address_HARDHAT_CONSOLE() -> KToken:
+    def address_HARDHAT_CONSOLE() -> KToken:  # noqa: N802
         return intToken(0x000000000000000000636F6E736F6C652E6C6F67)
 
     # Hardhat console address (0x000000000000000000636F6e736F6c652e6c6f67)
     # https://github.com/nomiclabs/hardhat/blob/master/packages/hardhat-core/console.sol
     @staticmethod
-    def account_HARDHAT_CONSOLE_ADDRESS() -> KApply:
+    def account_HARDHAT_CONSOLE_ADDRESS() -> KApply:  # noqa: N802
         return KEVM.account_cell(
             Foundry.address_HARDHAT_CONSOLE(),
             intToken(0),
