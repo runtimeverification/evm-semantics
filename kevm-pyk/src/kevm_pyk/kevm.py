@@ -21,8 +21,13 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 class KEVM(KProve, KRun):
-
-    def __init__(self, definition_dir: Path, main_file: Optional[Path] = None, use_directory: Optional[Path] = None, profile: bool = False) -> None:
+    def __init__(
+        self,
+        definition_dir: Path,
+        main_file: Optional[Path] = None,
+        use_directory: Optional[Path] = None,
+        profile: bool = False,
+    ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
         # Note that they say using `super` supports dependency injection, but I have never liked dependency injection anyway.
@@ -68,31 +73,33 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def _patch_symbol_table(symbol_table: Dict[str, Any]) -> None:
-        symbol_table['_orBool_']                                      = paren(symbol_table['_orBool_'])                                     # noqa
-        symbol_table['_andBool_']                                     = paren(symbol_table['_andBool_'])                                    # noqa
-        symbol_table['_impliesBool_']                                 = paren(symbol_table['_impliesBool_'])                                # noqa
-        symbol_table['notBool_']                                      = paren(symbol_table['notBool_'])                                     # noqa
-        symbol_table['_/Int_']                                        = paren(symbol_table['_/Int_'])                                       # noqa
-        symbol_table['_*Int_']                                        = paren(symbol_table['_*Int_'])                                       # noqa
-        symbol_table['_-Int_']                                        = paren(symbol_table['_-Int_'])                                       # noqa
-        symbol_table['_+Int_']                                        = paren(symbol_table['_+Int_'])                                       # noqa
-        symbol_table['#Or']                                           = paren(symbol_table['#Or'])                                          # noqa
-        symbol_table['#And']                                          = paren(symbol_table['#And'])                                         # noqa
-        symbol_table['#Implies']                                      = paren(symbol_table['#Implies'])                                     # noqa
-        symbol_table['_Set_']                                         = paren(symbol_table['_Set_'])                                        # noqa
-        symbol_table['_|->_']                                         = paren(symbol_table['_|->_'])                                        # noqa
-        symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)                                # noqa
-        symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)                                # noqa
-        symbol_table['.AccountCellMap']                               = lambda: ''                                                          # noqa
-        symbol_table['AccountCellMapItem']                            = lambda k, v: v                                                      # noqa
-        symbol_table['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray'] = lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]'      # noqa
-        symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = lambda m, s, w: '(' + m + ' [ ' + s + ' .. ' + w + ' ]):ByteArray'  # noqa
-        symbol_table['_<Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') <Word ('  + a2 + ')')            # noqa
-        symbol_table['_>Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') >Word ('  + a2 + ')')            # noqa
-        symbol_table['_<=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')            # noqa
-        symbol_table['_>=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')            # noqa
-        symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')            # noqa
-        symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')            # noqa
+        # fmt: off
+        symbol_table['_orBool_']                                      = paren(symbol_table['_orBool_'])
+        symbol_table['_andBool_']                                     = paren(symbol_table['_andBool_'])
+        symbol_table['_impliesBool_']                                 = paren(symbol_table['_impliesBool_'])
+        symbol_table['notBool_']                                      = paren(symbol_table['notBool_'])
+        symbol_table['_/Int_']                                        = paren(symbol_table['_/Int_'])
+        symbol_table['_*Int_']                                        = paren(symbol_table['_*Int_'])
+        symbol_table['_-Int_']                                        = paren(symbol_table['_-Int_'])
+        symbol_table['_+Int_']                                        = paren(symbol_table['_+Int_'])
+        symbol_table['#Or']                                           = paren(symbol_table['#Or'])
+        symbol_table['#And']                                          = paren(symbol_table['#And'])
+        symbol_table['#Implies']                                      = paren(symbol_table['#Implies'])
+        symbol_table['_Set_']                                         = paren(symbol_table['_Set_'])
+        symbol_table['_|->_']                                         = paren(symbol_table['_|->_'])
+        symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)
+        symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)
+        symbol_table['.AccountCellMap']                               = lambda: ''
+        symbol_table['AccountCellMapItem']                            = lambda k, v: v
+        symbol_table['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray'] = lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]'
+        symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = lambda m, s, w: '(' + m + ' [ ' + s + ' .. ' + w + ' ]):ByteArray'
+        symbol_table['_<Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') <Word ('  + a2 + ')')
+        symbol_table['_>Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') >Word ('  + a2 + ')')
+        symbol_table['_<=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')
+        symbol_table['_>=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')
+        symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
+        symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
+        # fmt: on
 
     @staticmethod
     def halt() -> KApply:
@@ -164,7 +171,9 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def hashed_location(compiler: str, base: KInner, offset: KInner, member_offset: int = 0) -> KApply:
-        location = KApply('#hashedLocation(_,_,_)_HASHED-LOCATIONS_Int_String_Int_IntList', [stringToken(compiler), base, offset])
+        location = KApply(
+            '#hashedLocation(_,_,_)_HASHED-LOCATIONS_Int_String_Int_IntList', [stringToken(compiler), base, offset]
+        )
         if member_offset > 0:
             location = KApply('_+Int_', [location, intToken(member_offset)])
         return location
@@ -179,7 +188,9 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def abi_calldata(name: str, args: List[KInner]) -> KApply:
-        return KApply('#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
+        return KApply(
+            '#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)]
+        )
 
     @staticmethod
     def abi_selector(name: str) -> KApply:
@@ -206,13 +217,20 @@ class KEVM(KProve, KRun):
         return KApply('_++__EVM-TYPES_ByteArray_ByteArray_ByteArray', [b1, b2])
 
     @staticmethod
-    def account_cell(id: KInner, balance: KInner, code: KInner, storage: KInner, origStorage: KInner, nonce: KInner) -> KApply:
-        return KApply('<account>', [KApply('<acctID>', [id]),
-                                    KApply('<balance>', [balance]),
-                                    KApply('<code>', [code]),
-                                    KApply('<storage>', [storage]),
-                                    KApply('<origStorage>', [origStorage]),
-                                    KApply('<nonce>', [nonce])])
+    def account_cell(
+        id: KInner, balance: KInner, code: KInner, storage: KInner, origStorage: KInner, nonce: KInner
+    ) -> KApply:
+        return KApply(
+            '<account>',
+            [
+                KApply('<acctID>', [id]),
+                KApply('<balance>', [balance]),
+                KApply('<code>', [code]),
+                KApply('<storage>', [storage]),
+                KApply('<origStorage>', [origStorage]),
+                KApply('<nonce>', [nonce]),
+            ],
+        )
 
     @staticmethod
     def wordstack_len(constrainedTerm: KInner) -> int:
@@ -246,7 +264,6 @@ class KEVM(KProve, KRun):
 
 
 class Foundry:
-
     @staticmethod
     def success(s: KInner, dst: KInner) -> KApply:
         return KApply('foundry_success ', [s, dst])
@@ -259,56 +276,59 @@ class Foundry:
 
     @staticmethod
     def address_CALLER() -> KToken:
-        return intToken(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38)
+        return intToken(0x1804C8AB1F12E6BBF3894D4083F33E07309D1F38)
 
     @staticmethod
     def account_CALLER() -> KApply:
-        return KEVM.account_cell(Foundry.address_CALLER(),
-                                 intToken(0),
-                                 KEVM.bytearray_empty(),
-                                 KApply('.Map'),
-                                 KApply('.Map'),
-                                 intToken(0))
+        return KEVM.account_cell(
+            Foundry.address_CALLER(), intToken(0), KEVM.bytearray_empty(), KApply('.Map'), KApply('.Map'), intToken(0)
+        )
 
     @staticmethod
     def address_TEST_CONTRACT() -> KToken:
-        return intToken(0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84)
+        return intToken(0xB4C79DAB8F259C7AEE6E5B2AA729821864227E84)
 
     @staticmethod
     def account_TEST_CONTRACT_ADDRESS() -> KApply:
-        return KEVM.account_cell(Foundry.address_TEST_CONTRACT(),
-                                 intToken(0),
-                                 KVariable('TEST_CODE'),
-                                 KApply('.Map'),
-                                 KApply('.Map'),
-                                 intToken(0))
+        return KEVM.account_cell(
+            Foundry.address_TEST_CONTRACT(),
+            intToken(0),
+            KVariable('TEST_CODE'),
+            KApply('.Map'),
+            KApply('.Map'),
+            intToken(0),
+        )
 
     @staticmethod
     def address_CHEATCODE() -> KToken:
-        return intToken(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D)
+        return intToken(0x7109709ECFA91A80626FF3989D68F67F5B1DD12D)
 
     # Same address as the one used in DappTools's HEVM
     # address(bytes20(uint160(uint256(keccak256('hevm cheat code')))))
     @staticmethod
     def account_CHEATCODE_ADDRESS(store_var: KInner) -> KApply:
-        return KEVM.account_cell(Foundry.address_CHEATCODE(),  # Hardcoded for now
-                                 intToken(0),
-                                 KToken('b"\\x00"', 'Bytes'),
-                                 store_var,
-                                 KApply('.Map'),
-                                 intToken(0))
+        return KEVM.account_cell(
+            Foundry.address_CHEATCODE(),  # Hardcoded for now
+            intToken(0),
+            KToken('b"\\x00"', 'Bytes'),
+            store_var,
+            KApply('.Map'),
+            intToken(0),
+        )
 
     @staticmethod
     def address_HARDHAT_CONSOLE() -> KToken:
-        return intToken(0x000000000000000000636F6e736F6c652e6c6f67)
+        return intToken(0x000000000000000000636F6E736F6C652E6C6F67)
 
     # Hardhat console address (0x000000000000000000636F6e736F6c652e6c6f67)
     # https://github.com/nomiclabs/hardhat/blob/master/packages/hardhat-core/console.sol
     @staticmethod
     def account_HARDHAT_CONSOLE_ADDRESS() -> KApply:
-        return KEVM.account_cell(Foundry.address_HARDHAT_CONSOLE(),
-                                 intToken(0),
-                                 KEVM.bytearray_empty(),
-                                 KApply('.Map'),
-                                 KApply('.Map'),
-                                 intToken(0))
+        return KEVM.account_cell(
+            Foundry.address_HARDHAT_CONSOLE(),
+            intToken(0),
+            KEVM.bytearray_empty(),
+            KApply('.Map'),
+            KApply('.Map'),
+            intToken(0),
+        )
