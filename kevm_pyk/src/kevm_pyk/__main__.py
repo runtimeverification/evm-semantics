@@ -19,10 +19,11 @@ _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
-def _ignoring_arg(args: Dict[str, Any], arg: str, cli_option: str):
-    if arg in args and args[arg]:
-        _LOGGER.warning(f'Ignoring command-line option: {cli_option}')
-    args.pop(arg)
+def _ignore_arg(args: Dict[str, Any], arg: str, cli_option: str) -> None:
+    if arg in args:
+        if args[arg] is not None:
+            _LOGGER.warning(f'Ignoring command-line option: {cli_option}')
+        args.pop(arg)
 
 
 def main():
