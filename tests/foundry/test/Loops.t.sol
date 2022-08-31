@@ -1,11 +1,21 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity =0.8.13;
 
 import "forge-std/Test.sol";
-import "ds-math/math.sol";
 
-contract LoopsTest is Test, DSMath {
+contract LoopsTest is Test {
     function setUp() public {}
+
+    uint constant WAD = 10 ** 18;
+    uint constant RAY = 10 ** 27;
+
+    function wmul(uint x, uint y) internal pure returns (uint z) {
+        z = ((x * y) + (WAD / 2)) / WAD;
+    }
+
+    function wdiv(uint x, uint y) internal pure returns (uint z) {
+        z = ((x * WAD) + (y / 2)) / y;
+    }
 
     function sumToN(uint256 n) internal pure returns (uint256) {
         uint256 result = 0;
@@ -134,7 +144,7 @@ contract LoopsTest is Test, DSMath {
             uint z = x;
             while (true) {
                 y = z;
-                z = add(wdiv(x, z), z) / 2;
+                z = (wdiv(x, z) + z) / 2;
                 if (y == z) {
                     break;
                 }

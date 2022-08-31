@@ -58,7 +58,7 @@ export PLUGIN_SUBMODULE
         test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean                                                       \
         media media-pdf metropolis-theme                                                                                         \
         install uninstall                                                                                                        \
-        venv venv-dev venv-clean
+        venv venv-clean kevm-pyk
 .SECONDARY:
 
 all: build
@@ -451,7 +451,7 @@ venv-clean:
 venv:
 	$(MAKE) -C ./kevm_pyk venv-prod
 
-venv-dev:
+kevm-pyk:
 	$(MAKE) -C ./kevm_pyk
 
 foundry-clean:
@@ -486,6 +486,7 @@ tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
 	$(KEVM) foundry-to-k $< $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
 	     --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION                   \
 	     --exclude-tests tests/foundry/exclude                                                      \
+	     --main-module VERIFICATION                                                                 \
 	     > $@
 
 tests/foundry/foundry.k.check: tests/foundry/foundry.k
@@ -501,20 +502,24 @@ tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
 	    --concrete-rules-file tests/foundry/concrete-rules.txt          \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
+tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
+tests/specs/examples/%-bin-runtime.k: KEVM = $(PYK_ACTIVATE) && kevm
+tests/specs/examples/%-bin-runtime.k: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
+
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) venv
-	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< ERC20 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
+	$(KEVM) solc-to-k $< ERC20 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
 
 tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
 tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) venv
-	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< ERC721 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
+	$(KEVM) solc-to-k $< ERC721 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
 
 tests/specs/examples/storage-spec/haskell/timestamp: tests/specs/examples/storage-bin-runtime.k
 tests/specs/examples/storage-bin-runtime.k: tests/specs/examples/Storage.sol $(KEVM_LIB)/$(haskell_kompiled) venv
-	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< Storage $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module STORAGE-VERIFICATION > $@
+	$(KEVM) solc-to-k $< Storage $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module STORAGE-VERIFICATION > $@
 
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) venv
-	$(PYK_ACTIVATE) && $(KEVM) solc-to-k $< Empty $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
+	$(KEVM) solc-to-k $< Empty $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
