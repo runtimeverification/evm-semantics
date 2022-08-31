@@ -47,105 +47,111 @@
         ++ lib.optionals stdenv.isDarwin [ automake libtool ];
 
       overlay = final: prev: {
-        kevm = k: prev.stdenv.mkDerivation {
-          pname = "kevm";
-          version = self.rev or "dirty";
-          buildInputs = buildInputs final k;
-          nativeBuildInputs = [ prev.makeWrapper ];
+        kevm = k:
+          prev.stdenv.mkDerivation {
+            pname = "kevm";
+            version = self.rev or "dirty";
+            buildInputs = buildInputs final k;
+            nativeBuildInputs = [ prev.makeWrapper ];
 
-          src = prev.stdenv.mkDerivation {
-            name = "kevm-${self.rev or "dirty"}-src";
-            src = prev.lib.cleanSource
-              (prev.nix-gitignore.gitignoreSourcePure [
-                ./.gitignore
-                ".github/"
-                "result*"
-                "*.nix"
-                "deps/"
-                "kevm-pyk/"
-              ] ./.);
-            dontBuild = true;
-
-            installPhase = ''
-              mkdir $out
-              cp -rv $src/* $out
-              chmod -R u+w $out
-              mkdir -p $out/deps/plugin
-              cp -rv ${prev.blockchain-k-plugin-src}/* $out/deps/plugin/
-            '';
-          };
-
-          dontUseCmakeConfigure = true;
-
-          patches = [ ./package/nix/kevm.patch ];
-
-          postPatch = ''
-            substituteInPlace ./cmake/node/CMakeLists.txt \
-              --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
-            substituteInPlace ./kevm \
-              --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
-          '';
-
-          buildFlags =
-            prev.lib.optional (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
-            "APPLE_SILICON=true";
-          enableParallelBuilding = true;
-
-          preBuild = ''
-            make plugin-deps
-          '';
-
-          installPhase = ''
-            mkdir -p $out
-            mv .build/usr/* $out/
-            wrapProgram $out/bin/kevm --prefix PATH : ${
-              prev.lib.makeBinPath [ final.solc ]
-            }
-            ln -s ${k} $out/lib/kevm/kframework
-          '';
-        };
-
-        kevm-test = k: prev.stdenv.mkDerivation {
-          pname = "kevm-test";
-          version = self.rev or "dirty";
-
-          src = (final.kevm k).src;
-
-          enableParallelBuilding = true;
-
-          buildInputs = [ (final.kevm k) prev.which prev.git ];
-
-          buildPhase = ''
-            mkdir -p tests/ethereum-tests/LegacyTests
-            cp -rv ${ethereum-tests}/* tests/ethereum-tests/
-            cp -rv ${ethereum-legacytests}/* tests/ethereum-tests/LegacyTests/
-            chmod -R u+w tests
-            APPLE_SILICON=${if prev.stdenv.isAarch64 && prev.stdenv.isDarwin then "true" else "false"} NIX=true package/test-package.sh
-          '';
-
-          installPhase = ''
-            touch $out
-          '';
-        };
-
-        kevm-pyk = prev.poetry2nix.mkPoetryApplication {
-            python = prev.python39;
-            projectDir = prev.stdenv.mkDerivation {
-              name = "kevm-pyk-src";
-              src = ./kevm-pyk;
+            src = prev.stdenv.mkDerivation {
+              name = "kevm-${self.rev or "dirty"}-src";
+              src = prev.lib.cleanSource
+                (prev.nix-gitignore.gitignoreSourcePure [
+                  ./.gitignore
+                  ".github/"
+                  "result*"
+                  "*.nix"
+                  "deps/"
+                  "kevm-pyk/"
+                ] ./.);
               dontBuild = true;
+
               installPhase = ''
                 mkdir $out
                 cp -rv $src/* $out
                 chmod -R u+w $out
-                sed -i $out/pyproject.toml \
-                    -e 's/\[tool.poetry.dependencies\]/[tool.poetry.dependencies]\npyk = "*"/'
+                mkdir -p $out/deps/plugin
+                cp -rv ${prev.blockchain-k-plugin-src}/* $out/deps/plugin/
               '';
             };
-            overrides = prev.poetry2nix.overrides.withDefaults (finalPython: prevPython: {
-              pyk = prev.pyk;
-            });
+
+            dontUseCmakeConfigure = true;
+
+            patches = [ ./package/nix/kevm.patch ];
+
+            postPatch = ''
+              substituteInPlace ./cmake/node/CMakeLists.txt \
+                --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
+              substituteInPlace ./kevm \
+                --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
+            '';
+
+            buildFlags =
+              prev.lib.optional (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
+              "APPLE_SILICON=true";
+            enableParallelBuilding = true;
+
+            preBuild = ''
+              make plugin-deps
+            '';
+
+            installPhase = ''
+              mkdir -p $out
+              mv .build/usr/* $out/
+              wrapProgram $out/bin/kevm --prefix PATH : ${
+                prev.lib.makeBinPath [ final.solc ]
+              }
+              ln -s ${k} $out/lib/kevm/kframework
+            '';
           };
+
+        kevm-test = k:
+          prev.stdenv.mkDerivation {
+            pname = "kevm-test";
+            version = self.rev or "dirty";
+
+            src = (final.kevm k).src;
+
+            enableParallelBuilding = true;
+
+            buildInputs = [ (final.kevm k) prev.which prev.git ];
+
+            buildPhase = ''
+              mkdir -p tests/ethereum-tests/LegacyTests
+              cp -rv ${ethereum-tests}/* tests/ethereum-tests/
+              cp -rv ${ethereum-legacytests}/* tests/ethereum-tests/LegacyTests/
+              chmod -R u+w tests
+              APPLE_SILICON=${
+                if prev.stdenv.isAarch64 && prev.stdenv.isDarwin then
+                  "true"
+                else
+                  "false"
+              } NIX=true package/test-package.sh
+            '';
+
+            installPhase = ''
+              touch $out
+            '';
+          };
+
+        kevm-pyk = prev.poetry2nix.mkPoetryApplication {
+          python = prev.python39;
+          projectDir = prev.stdenv.mkDerivation {
+            name = "kevm-pyk-src";
+            src = ./kevm-pyk;
+            dontBuild = true;
+            installPhase = ''
+              mkdir $out
+              cp -rv $src/* $out
+              chmod -R u+w $out
+              sed -i $out/pyproject.toml \
+                  -e 's/\[tool.poetry.dependencies\]/[tool.poetry.dependencies]\npyk = "*"/'
+            '';
+          };
+          overrides = prev.poetry2nix.overrides.withDefaults
+            (finalPython: prevPython: { pyk = prev.pyk; });
+        };
 
       };
     in flake-utils.lib.eachSystem [
@@ -166,7 +172,9 @@
         };
       in {
         packages.default = pkgs.kevm;
-        devShell = pkgs.mkShell { buildInputs = buildInputs pkgs k-framework.packages.${system}.k; };
+        devShell = pkgs.mkShell {
+          buildInputs = buildInputs pkgs k-framework.packages.${system}.k;
+        };
 
         apps = {
           compare-profiles = flake-utils.lib.mkApp {
