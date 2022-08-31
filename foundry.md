@@ -86,6 +86,7 @@ module FOUNDRY-CHEAT-CODES
     configuration
     <cheatcodes>
         <expectRevert> false </expectRevert>
+        <expectedBytes> .ByteArray </expectedBytes>
     </cheatcodes>
 ```
 
@@ -158,6 +159,66 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)`
              <balance> _ => NEWBAL </balance>
              ...
          </account>
+```
+
+#### `expectRevert` - The next call is expected to fail
+
+In addition, cheatcodes should be ignored during the execution of the `expectRevert` cheatcode.
+
+```k
+    rule [call.expectRevert]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+         <expectRevert> false => true </expectRevert>
+         <expectedBytes> _ => .ByteArray </expectedBytes>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4102309908 // selector ( "expectRevert()" )
+      [priority(40)]
+
+    rule [call.expectRevertBytes]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+         <expectRevert> false => true </expectRevert>
+         <expectedBytes> _ => #range(LM, ARGSTART +Int 4, 32) </expectedBytes>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4069379763 // selector ( "expectRevert(bytes)" )
+      [priority(40)]
+
+    rule [call.expectRevertBytes4]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+         <expectRevert> false => true </expectRevert>
+         <expectedBytes> _ => #range(LM, ARGSTART +Int 4, 4) </expectedBytes>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3273568480 // selector ( "expectRevert(bytes4)" )
+      [priority(40)]
+
+    rule [call.setEndExpectRevert]:
+         <k> CALL _ ADDR _ _ _ _ _ ~> (. => #endExpectRevert) ~> KITEM ... </k>
+         <output> _ => .ByteArray </output>
+         <expectRevert> true </expectRevert>
+      requires ADDR =/=Int #address(FoundryCheat)
+       andBool KITEM =/=K #endExpectRevert
+      [priority(40)]
+
+    syntax KItem ::= "#endExpectRevert" [klabel(foundry_endExpectRevert)]
+ // ---------------------------------------------------------------------
+    rule <k> #endExpectRevert => . ... </k>
+         <expectRevert> true => false </expectRevert>
+         <expectedBytes> _ => .ByteArray </expectedBytes>
+         <output>
+```
+
+```k
+    rule [call.ignoreCheatcodes]:
+         <k> CALL _ CHEAT_ADDR 0 _ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <expectRevert> true </expectRevert>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+      [priority(45)]
 ```
 
 ```k
