@@ -157,7 +157,8 @@ function etch(address who, bytes calldata code) external;
 ```
 
 `call.etch` will match when the `etch` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
-This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and the new bytecode using `#range(LM, ARGSTART +Int 36, 32)` and forwards them to the `#setCode` marker which updates the account accordingly.
+This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and the new bytecode using `#range(LM, ARGSTART +Int 36, ARGWIDTH -Int 36)`, where `ARGWIDTH -Int 36` is used to determine the length of the second argument.
+The values are forwarded to the `#setCode` marker which updates the account accordingly.
 
 ```k
     rule [call.etch]:
