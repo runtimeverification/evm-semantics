@@ -243,8 +243,8 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4282924116 // selector ( "coinbase(address)" )
       [priority(40)]
-
 ```
+
 #### `label` - Sets a label for a given address.
 
 ```
@@ -261,7 +261,7 @@ If an address is labelled, the label will show up in test traces instead of the 
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3327641368 // selector ( "label(address,string)" )
-
+```
 
 ```k
 endmodule
