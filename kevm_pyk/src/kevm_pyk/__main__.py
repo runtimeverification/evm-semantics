@@ -228,7 +228,6 @@ def exec_prove(
     bug_report: bool,
     spec_module: Optional[str],
     depth: Optional[int],
-    kprove_args: Iterable[str],
     **kwargs,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
@@ -240,7 +239,6 @@ def exec_prove(
         haskell_args += ['--bug-report', str(spec_file.with_suffix(''))]
     if depth is not None:
         prove_args += ['--depth', str(depth)]
-    prove_args = prove_args + list(kprove_args)
     final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
     print(kevm.pretty_print(final_state) + '\n')
 
@@ -261,7 +259,7 @@ def exec_foundry_prove(
     _ignoring_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     definition_dir = foundry_out / 'kompiled'
     spec_file = definition_dir / 'foundry.k'
-    kprove_args = ['--spec-module'] + [contract.upper() + '-BIN-RUNTIME-SPEC' if contract else 'FOUNDRY-SPEC']
+    spec_module = contract.upper() + '-BIN-RUNTIME-SPEC' if contract else 'FOUNDRY-SPEC'
     exec_prove(
         definition_dir,
         profile,
@@ -269,9 +267,8 @@ def exec_foundry_prove(
         includes=includes,
         debug_equations=debug_equations,
         bug_report=bug_report,
-        spec_module=spec_module,
         depth=depth,
-        kprove_args=kprove_args,
+        spec_module=spec_module,
         **kwargs,
     )
 
