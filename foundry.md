@@ -141,14 +141,13 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)`
 
 ```k
     rule [call.etch]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0
-          => #setCode(#asWord(#range(LM, ARGSTART +Int 4, 32)), #range(CD, 0, #sizeByteArray(CD)))
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART ARGWIDTH 0 0
+          => #setCode(#asWord(#range(LM, ARGSTART +Int 4, 32)), #range(LM, ARGSTART +Int 36, ARGWIDTH -Int 36))
           ~> 1 ~> #push
          ...
          </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
-         <callData> CD </callData>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3033974658 // selector ( "etch(address,bytes)" )
       [priority(40)]

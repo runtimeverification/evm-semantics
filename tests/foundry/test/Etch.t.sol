@@ -6,16 +6,11 @@ import "src/Token.sol";
 
 contract EtchTest is Test {
 
-    Token awesomeContract;
-
-    function setUp() public{
-        awesomeContract = new Token();
-    }
-
     function testEtch() public {
-        bytes memory code = address(awesomeContract).code;
-        address targetAddr = address(1);
-        vm.etch(targetAddr, code);
-        assertEq(address(targetAddr).code, code);
+        Token awesomeContract = new Token();
+        bytes memory code = bytes("this should be EVM bytecode");
+        vm.etch(address(awesomeContract), code);
+        assertEq(address(awesomeContract).code, code);
     }
+
 }
