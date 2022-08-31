@@ -1,0 +1,18 @@
+{
+  "template": "https://github.com/runtimeverification/python-project-template.git",
+  "commit": "a3cf7a9037ef67cac28b44719687a2b97e1a74ca",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "project_name": "kevm-pyk",
+      "project_slug": "kevm-pyk",
+      "package_name": "kevm_pyk",
+      "version": "0.1.0",
+      "description": "",
+      "author_name": "Runtime Verification, Inc.",
+      "author_email": "contact@runtimeverification.com",
+      "_template": "https://github.com/runtimeverification/python-project-template.git"
+    }
+  },
+  "directory": null
+}

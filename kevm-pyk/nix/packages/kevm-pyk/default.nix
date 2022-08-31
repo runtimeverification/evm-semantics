@@ -5,7 +5,7 @@
 { buildPythonPackage, fetchPypi, lib, pyk }:
 
 buildPythonPackage rec {
-  pname = "kevm_pyk";
+  pname = "kevm-pyk";
   version = "0.1.dev0";
 
   src = lib.cleanSource ../../..;

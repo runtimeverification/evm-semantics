@@ -23,7 +23,6 @@ pipeline {
       }
       stages {
         // Must come before build/prove for proper testing
-        stage('Check Pyk Version')    { steps { sh 'bash ./kevm_pyk/test-version.sh ${K_VERSION}' } }
         stage('Check Pyk Code Style') { steps { sh 'make kevm-pyk'                                } }
         stage('Build')                { steps { sh 'make venv build build-prove RELEASE=true -j4' } }
         stage('Build and Test Pyk') {
@@ -100,7 +99,7 @@ pipeline {
                     sudo DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:ethereum/ethereum
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes ./kevm_${VERSION}_amd64.deb
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes solc
-                    pip3 install ./kevm_pyk
+                    pip3 install ./kevm-pyk
 
                     ./package/test-package.sh
                   '''
