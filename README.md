@@ -107,12 +107,13 @@ sudo pacman -S                                               \
     mpfr protobuf python stack yaml-cpp zlib
 ```
 
-#### MacOS
+#### macOS
 
-On OSX, using [Homebrew](https://brew.sh/), after installing the command line tools package:
+On macOS, using [Homebrew](https://brew.sh/), after installing the Command Line Tools and getting the [blockchain plugin](#blockchain-plugin):
 
 ```sh
-brew install java automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python
+brew tap kframework/k
+brew install java automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python bash kframework/k/cryptopp@8.6.0
 make libsecp256k1
 ```
 
@@ -123,6 +124,15 @@ If you are building on an Apple Silicon machine, ensure that your `PATH` is set
 up correctly before running `make deps` or `make k-deps`. You can do so using
 [`direnv`](https://direnv.net/) by copying `macos-envrc` to `.envrc`, then
 running `direnv allow`.
+
+If the build on macOS still fails, you can also try adding the following lines to the top of your `Makefile` under `UNAME_S`:
+
+```sh
+ifeq ($(UNAME_S), Darwin)
+SHELL := /usr/local/bin/bash
+PATH := $(pwd)/.build/usr/bin:$(PATH)
+endif
+```
 
 #### Haskell Stack (all platforms)
 
@@ -179,6 +189,7 @@ Finally, you can build the semantics.
 make build
 ```
 
+
 Running Tests
 -------------
 
@@ -202,7 +213,7 @@ When running tests with the `Makefile`, you can specify the `TEST_CONCRETE_BACKE
 For Developers
 -------------
 
-After building, the `kevm` executable will be located in the `.build/usr/bin:$PATH` directory .
+After building, the `kevm` executable will be located in the `.build/usr/bin` directory.
 The one in the project root is a build artifact, don't use it.
 To make sure you are using the correct `kevm`, add this directory to your `PATH`:
 
@@ -210,7 +221,7 @@ To make sure you are using the correct `kevm`, add this directory to your `PATH`
 export PATH=$(pwd)/.build/usr/bin:$PATH
 ```
 
-Alternatively, if you work on multiple checkouts of `evm-semantics`, or other semantics, you could add the relative path `.build/usr/bin` to your `PATH`. 
+Alternatively, if you work on multiple checkouts of `evm-semantics`, or other semantics, you could add the relative path `.build/usr/bin` to your `PATH`.
 Do note, however, that this is a security concern.
 
 You can call `kevm help` to get a quick summary of how to use the script.
@@ -228,7 +239,7 @@ For example, to prove one of the specifications:
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --verif-module VERIFICATION
 ```
 
-You can also debug proofs interactively: 
+You can also debug proofs interactively:
 
 ```sh
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --verif-module VERIFICATION --debugger --debug-script kscript --backend haskell
@@ -289,7 +300,7 @@ nix build .#kevm
 This will build all of KEVM and K and put a link to the resulting binaries in the `result/` folder.
 
 
-_Note: Mac users, especially those running M1/M2 Macs may find nix segfaulting on occasion. If this happens, try running the nix command like this: `GC_DONT_GC=1 nix build .`_ 
+_Note: Mac users, especially those running M1/M2 Macs may find nix segfaulting on occasion. If this happens, try running the nix command like this: `GC_DONT_GC=1 nix build .`_
 
 
 If you want to temporarily add the `kevm` binary to the current shell, run
@@ -318,20 +329,20 @@ nix build github:runtimeverification/evm-semantics#profile \
   -o prof-my-feature
 ```
 
-To compare profiles, you can use 
+To compare profiles, you can use
 
 ```
 nix run github:runtimeverification/evm-semantics#compare-profiles -- prof-my-feature prof-<HASH>
 ```
 
 This will produce a nice table with the times for both versions of haskell-backend.
-Noe that `#profile` pre-pends the output of `kore-exec --version` to the profile run, which is then used as a tag by the `#compare-profiles` script. 
+Noe that `#profile` pre-pends the output of `kore-exec --version` to the profile run, which is then used as a tag by the `#compare-profiles` script.
 Therefore, any profiled local checkout of haskell-backend will report as `dirty-ghc8107` in the resulting table.
 
 ### Keeping `.build` up-to-date while developing
 
 -   `make build` needs to be re-run if you touch any of this repos files.
--   `make deps` needs to be re-run if there is a submodule update (you did `git submodule update --init --recursive` and it actually did something).
+-   `make deps` needs to be re-run if there is an update of the K submodule (you did `git submodule update --init --recursive -- deps/k` and it actually did something).
 -   If both `deps` and `build` need to be re-run, you need to do `deps` first.
 -   `make clean` is a safe way to remove the `.build` directory, but then you need to re-run `make deps` (should be quick this time) and `make build`.
 
