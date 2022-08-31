@@ -9,9 +9,6 @@ BlockParamsTest.testCoinBase
 BlockParamsTest.testFee
 BlockParamsTest.testRoll
 BlockParamsTest.testWarp
-AssertTest.test_assert_false
-AssertTest.testFail_assert_false
-AssertTest.testFail_assert_true
 BroadcastTest.testDeploy
 ContractBTest.testCannotSubtract43
 ContractBTest.testFailSubtract43
