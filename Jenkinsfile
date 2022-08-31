@@ -40,7 +40,7 @@ pipeline {
         }
         stage('Test') {
           failFast true
-          options { timeout(time: 200, unit: 'MINUTES') }
+          options { timeout(time: 120, unit: 'MINUTES') }
           parallel {
             stage('Conformance (LLVM)') { steps {                                         sh 'make test-conformance -j4 TEST_CONCRETE_BACKEND=llvm'      } }
             stage('Proofs (Java)')      { steps { lock("kevm-java-${env.NODE_NAME}")    { sh 'make test-prove       -j2 TEST_SYMBOLIC_BACKEND=java'    } } }
