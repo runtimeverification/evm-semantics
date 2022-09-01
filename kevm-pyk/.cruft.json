@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/runtimeverification/python-project-template.git",
-  "commit": "a3cf7a9037ef67cac28b44719687a2b97e1a74ca",
+  "commit": "b94c940a20c958abc9ff1ab402dbf81db0ee079b",
   "checkout": null,
   "context": {
     "cookiecutter": {
