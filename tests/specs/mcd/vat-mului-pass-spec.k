@@ -75,8 +75,8 @@ module VAT-MULUI-PASS-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vat => ?_ </nonce>
+              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>
@@ -95,6 +95,7 @@ module VAT-MULUI-PASS-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Vat)
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeSInt(256, ABI_y)

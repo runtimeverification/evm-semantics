@@ -73,7 +73,7 @@ module FLIPPER-ADDU48U48-FAIL-ROUGH-SPEC
               <code> Flipper_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Flipper => ?_ </nonce>
+              <nonce> Nonce_Flipper </nonce>
             </account>
            ...
           </accounts>
@@ -92,6 +92,7 @@ module FLIPPER-ADDU48U48-FAIL-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Flipper)
 
        andBool (#rangeUInt(48, ABI_x)
        andBool (#rangeUInt(48, ABI_y)

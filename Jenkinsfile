@@ -23,17 +23,26 @@ pipeline {
       }
       stages {
         // Must come before build/prove for proper testing
-        stage('Check Pyk Version')  { steps { sh 'bash ./kevm_pyk/test-version.sh ${K_VERSION}' } }
-        stage('Setup Pyk')          { steps { sh 'make kevm-pyk-venv'                           } }
-        stage('Build and Test Pyk') { steps { sh 'make test-kevm-pyk -j2'                       } }
-        stage('Build')              { steps { sh 'make build build-prove RELEASE=true -j2'      } }
+        stage('Build Pyk') {
+          options { timeout(time: 1, unit: 'MINUTES') }
+          steps { sh 'make kevm-pyk' }
+        }
+        stage('Build') {
+          options { timeout(time: 15, unit: 'MINUTES') }
+          steps { sh 'make venv build build-prove RELEASE=true -j4' }
+        }
+        stage('Test Pyk') {
+          options { timeout(time: 1, unit: 'MINUTES') }
+          steps { sh 'make test-kevm-pyk -j2' }
+        }
         stage('Test') {
           failFast true
-          options { timeout(time: 200, unit: 'MINUTES') }
+          options { timeout(time: 120, unit: 'MINUTES') }
           parallel {
             stage('Conformance (LLVM)') { steps {                                         sh 'make test-conformance -j4 TEST_CONCRETE_BACKEND=llvm'      } }
             stage('Proofs (Java)')      { steps { lock("kevm-java-${env.NODE_NAME}")    { sh 'make test-prove       -j2 TEST_SYMBOLIC_BACKEND=java'    } } }
-            stage('Proofs (Haskell)')   { steps { lock("kevm-haskell-${env.NODE_NAME}") { sh 'make test-prove       -j4 TEST_SYMBOLIC_BACKEND=haskell' } } }
+            stage('Proofs (Haskell)')   { steps { lock("kevm-haskell-${env.NODE_NAME}") { sh 'make test-prove       -j5 TEST_SYMBOLIC_BACKEND=haskell' } } }
+            stage('Proofs (Foundry)')   { steps {                                         sh 'make test-foundry'                                         } }
           }
         }
         stage('Test Interactive') {
@@ -97,7 +106,7 @@ pipeline {
                     sudo DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:ethereum/ethereum
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes ./kevm_${VERSION}_amd64.deb
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes solc
-                    pip3 install ./kevm_pyk
+                    pip3 install ./kevm-pyk
 
                     ./package/test-package.sh
                   '''

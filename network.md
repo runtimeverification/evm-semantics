@@ -45,7 +45,8 @@ The following codes all indicate that the VM ended execution with an exception, 
                                    | "EVMC_INVALID_MEMORY_ACCESS"
                                    | "EVMC_STATIC_MODE_VIOLATION"
                                    | "EVMC_PRECOMPILE_FAILURE"
- // ----------------------------------------------------------
+                                   | "EVMC_NONCE_EXCEEDED"
+ // -------------------------------------------------------------
     rule StatusCode2String(EVMC_FAILURE)               => "EVMC_FAILURE"
     rule StatusCode2String(EVMC_INVALID_INSTRUCTION)   => "EVMC_INVALID_INSTRUCTION"
     rule StatusCode2String(EVMC_UNDEFINED_INSTRUCTION) => "EVMC_UNDEFINED_INSTRUCTION"
@@ -57,6 +58,7 @@ The following codes all indicate that the VM ended execution with an exception, 
     rule StatusCode2String(EVMC_INVALID_MEMORY_ACCESS) => "EVMC_INVALID_MEMORY_ACCESS"
     rule StatusCode2String(EVMC_STATIC_MODE_VIOLATION) => "EVMC_STATIC_MODE_VIOLATION"
     rule StatusCode2String(EVMC_PRECOMPILE_FAILURE)    => "EVMC_PRECOMPILE_FAILURE"
+    rule StatusCode2String(EVMC_NONCE_EXCEEDED)        => "EVMC_NONCE_EXCEEDED"
 ```
 
 ### Ending Codes

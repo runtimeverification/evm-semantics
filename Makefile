@@ -53,11 +53,12 @@ export PLUGIN_SUBMODULE
         test-prove test-failing-prove                                                                                            \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
         test-prove-mcd test-klab-prove                                                                                           \
-        test-parse test-failure                                                                                                  \
+        test-parse test-failure test-foundry test-foundry-forge                                                                  \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
-        test-kevm-pyk                                                                                                            \
+        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean                                                       \
         media media-pdf metropolis-theme                                                                                         \
-        install uninstall
+        install uninstall                                                                                                        \
+        venv venv-clean kevm-pyk
 .SECONDARY:
 
 all: build
@@ -232,7 +233,7 @@ $(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes) $(plugin_includes) $(KEVM_BIN)
 	    $(haskell_main_file) $(HASKELL_KOMPILE_OPTS) \
 	    --main-module $(haskell_main_module)         \
 	    --syntax-module $(haskell_syntax_module)     \
-	    $(KOMPILE_OPTS)
+	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 # Standalone
 
@@ -252,7 +253,7 @@ $(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_inc
 	    $(llvm_main_file)                     \
 	    --main-module $(llvm_main_module)     \
 	    --syntax-module $(llvm_syntax_module) \
-	    $(KOMPILE_OPTS)
+	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 # Node
 
@@ -270,7 +271,7 @@ $(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_include
 	    $(node_main_file)                     \
 	    --main-module $(node_main_module)     \
 	    --syntax-module $(node_syntax_module) \
-	    $(KOMPILE_OPTS)
+	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 $(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_out)
 	@mkdir -p $(dir $@)
@@ -352,8 +353,7 @@ uninstall:
 TEST_CONCRETE_BACKEND := llvm
 TEST_SYMBOLIC_BACKEND := haskell
 
-TEST_OPTIONS :=
-CHECK        := git --no-pager diff --no-index --ignore-all-space -R
+CHECK := git --no-pager diff --no-index --ignore-all-space -R
 
 KEVM_MODE     := NORMAL
 KEVM_SCHEDULE := LONDON
@@ -362,7 +362,12 @@ KEVM_CHAINID  := 1
 KPROVE_MODULE  = VERIFICATION
 KPROVE_FILE    = verification
 KPROVE_EXT     = k
-KPROVE_OPTS   ?=
+
+KEVM_OPTS    ?=
+KPROVE_OPTS  ?=
+KAST_OPTS    ?=
+KRUN_OPTS    ?=
+KSEARCH_OPTS ?=
 
 KEEP_OUTPUTS := false
 
@@ -385,6 +390,8 @@ tests/specs/examples/erc20-spec%:            KPROVE_EXT    =  md
 tests/specs/examples/erc20-spec%:            KPROVE_FILE   =  erc20-spec
 tests/specs/examples/erc721-spec%:           KPROVE_EXT    =  md
 tests/specs/examples/erc721-spec%:           KPROVE_FILE   =  erc721-spec
+tests/specs/examples/storage-spec%:          KPROVE_EXT    =  md
+tests/specs/examples/storage-spec%:          KPROVE_FILE   =  storage-spec
 tests/specs/examples/sum-to-n-spec%:         KPROVE_FILE   =  sum-to-n-spec
 tests/specs/functional/infinite-gas-spec%:   KPROVE_FILE   =  infinite-gas-spec
 tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_FILE   =  lemmas-no-smt-spec
@@ -399,75 +406,130 @@ tests/specs/opcodes/evm-optimizations-spec%: KPROVE_FILE   =  evm-optimizations-
 tests/specs/opcodes/evm-optimizations-spec%: KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
 
 tests/%.run: tests/%
-	$(KEVM) interpret $< $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                            \
+	$(KEVM) interpret $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                                  \
 	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                        \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-interactive: tests/%
-	$(KEVM) run $< $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)                                                  \
+	$(KEVM) run $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                                        \
 	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                        \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.run-expected: tests/% tests/%.expected
-	$(KEVM) run $< $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND)             \
-	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID) \
-	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                   \
+	$(KEVM) run $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)    \
+	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)  \
+	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                    \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
 tests/%.parse: tests/%
-	$(KEVM) kast $< kast $(TEST_OPTIONS) --backend $(TEST_CONCRETE_BACKEND) > $@-out
+	$(KEVM) kast $< kast $(KEVM_OPTS) $(KAST_OPTS) --backend $(TEST_CONCRETE_BACKEND) > $@-out
 	$(CHECK) $@-out $@-expected
 	$(KEEP_OUTPUTS) || rm -rf $@-out
+
+tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json $(KEVM_BIN)/kevm
+	$(PYK_ACTIVATE) && $(KEVM) kast $< kore $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
+	$(CHECK) tests/interactive/$*.gst-to-kore.out tests/interactive/$*.gst-to-kore.expected
+	$(KEEP_OUTPUTS) || rm -rf tests/interactive/$*.gst-to-kore.out
 
 # solc-to-k
 # ---------
 
-kevm-pyk-venv:
-	$(MAKE) -C ./kevm_pyk venv-prod
+VENV_DIR     := $(BUILD_DIR)/venv
+PYK_ACTIVATE := . $(VENV_DIR)/bin/activate
 
-tests/foundry/%: KEVM = . ./kevm_pyk/venv-prod/bin/activate && kevm
-tests/foundry/%: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile
+venv-clean:
+	rm -rf $(VENV_DIR)
+	rm -rf $(KEVM_LIB)/kframework/lib/python3.8
+	rm -rf $(KEVM_LIB)/kframework/local/lib/python3.10
+	rm -rf $(K_SUBMODULE)/pyk/build
 
-tests/foundry/out:
+$(VENV_DIR)/pyvenv.cfg:
+	   virtualenv -p python3 $(VENV_DIR) \
+	&& $(PYK_ACTIVATE)                   \
+	&& pip install --editable deps/k/pyk \
+	&& pip install --editable kevm-pyk
+
+venv: $(VENV_DIR)/pyvenv.cfg
+	@echo $(PYK_ACTIVATE)
+
+kevm-pyk:
+	$(MAKE) -C ./kevm-pyk
+
+foundry-clean:
+	rm -rf tests/foundry/cache
+	rm -rf tests/foundry/kompiled
+	rm -rf tests/foundry/out
+	rm -f  tests/foundry/foundry.debug-log
+	rm -f  tests/foundry/foundry.k
+	rm -f  tests/foundry/foundry.rule-profile
+
+tests/foundry/%: KEVM = $(PYK_ACTIVATE) && kevm
+tests/foundry/%: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
+
+foundry_dir  := tests/foundry
+foundry_out := $(foundry_dir)/out
+
+test-foundry: KEVM_OPTS += --pyk --verbose --profile
+test-foundry: KEVM = $(PYK_ACTIVATE) && kevm
+test-foundry: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
+test-foundry: tests/foundry/foundry.k.prove tests/foundry/foundry.k.check
+
+foundry-forge-build: $(foundry_out)
+
+foundry-forge-test: foundry-forge-build
+	cd $(foundry_dir) && forge test --ffi
+
+$(foundry_out):
+	rm -rf $@
 	cd $(dir $@) && forge build
 
-tests/foundry/foundry.k: tests/foundry/out $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	$(KEVM) foundry-to-k $< --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
-	     --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION      \
+tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
+	$(KEVM) foundry-to-k $< $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
+	     --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION                   \
+	     --exclude-tests tests/foundry/exclude                                                      \
+	     --main-module VERIFICATION                                                                 \
 	     > $@
 
 tests/foundry/foundry.k.check: tests/foundry/foundry.k
 	$(CHECK) $< $@.expected
 
 tests/foundry/foundry.k.prove: tests/foundry/kompiled/timestamp
-	$(KEVM) prove tests/foundry/foundry.k --pyk --backend haskell --definition tests/foundry/kompiled \
-	    $(TEST_OPTIONS) --spec-module TOKENTEST-BIN-RUNTIME-SPEC
+	$(KEVM) prove tests/foundry/foundry.k --backend haskell --definition tests/foundry/kompiled \
+	    $(KEVM_OPTS) $(KPROVE_OPTS) --spec-module SPEC
 
 tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
-	$(KOMPILE) $< --pyk --backend haskell --definition tests/foundry/kompiled \
-	    --main-module VERIFICATION --syntax-module VERIFICATION               \
-	    --concrete-rules-file tests/foundry/concrete-rules.txt                \
-	    $(KOMPILE_OPTS)
+	$(KOMPILE) $< --backend haskell --definition tests/foundry/kompiled \
+	    --main-module VERIFICATION --syntax-module VERIFICATION         \
+	    --concrete-rules-file tests/foundry/concrete-rules.txt          \
+	    $(KOMPILE_OPTS) $(KEVM_OPTS)
+
+tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
+tests/specs/examples/%-bin-runtime.k: KEVM = $(PYK_ACTIVATE) && kevm
+tests/specs/examples/%-bin-runtime.k: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
-tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC20 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
+tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+	$(KEVM) solc-to-k $< ERC20 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
 
 tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
-tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< ERC721 --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
+tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+	$(KEVM) solc-to-k $< ERC721 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
 
-tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) kevm-pyk-venv
-	. ./kevm_pyk/venv-prod/bin/activate && $(KEVM) solc-to-k $< Empty --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
+tests/specs/examples/storage-spec/haskell/timestamp: tests/specs/examples/storage-bin-runtime.k
+tests/specs/examples/storage-bin-runtime.k: tests/specs/examples/Storage.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+	$(KEVM) solc-to-k $< Storage $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module STORAGE-VERIFICATION > $@
+
+tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+	$(KEVM) solc-to-k $< Empty $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
-	$(KEVM) prove $< $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS) \
+	$(KEVM) prove $< $(KEVM_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS)                   \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/$$(firstword $$(subst /, ,$$*))/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
@@ -476,10 +538,10 @@ tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_F
 	    --main-module $(KPROVE_MODULE)                                                                   \
 	    --syntax-module $(KPROVE_MODULE)                                                                 \
 	    --concrete-rules-file tests/specs/$(firstword $(subst /, ,$*))/concrete-rules.txt                \
-	    $(KOMPILE_OPTS)
+	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 tests/%.search: tests/%
-	$(KEVM) search $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" $(TEST_OPTIONS) --backend $(TEST_SYMBOLIC_BACKEND) > $@-out
+	$(KEVM) search $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" $(KEVM_OPTS) $(KSEARCH_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) > $@-out
 	$(CHECK) $@-out $@-expected
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
@@ -552,6 +614,7 @@ prove_definitions :=                                                            
                      tests/specs/erc20/verification/java/timestamp                \
                      tests/specs/examples/erc20-spec/haskell/timestamp            \
                      tests/specs/examples/erc721-spec/haskell/timestamp           \
+                     tests/specs/examples/storage-spec/haskell/timestamp          \
                      tests/specs/examples/solidity-code-spec/haskell/timestamp    \
                      tests/specs/examples/solidity-code-spec/java/timestamp       \
                      tests/specs/examples/sum-to-n-spec/haskell/timestamp         \
@@ -604,22 +667,19 @@ failure_tests:=$(wildcard tests/failing/*.json)
 
 test-failure: $(failure_tests:=.run-expected)
 
-# kevm_pyk Tests
+# kevm-pyk Tests
 
-kevm_pyk_tests :=                                           \
-                  tests/foundry/kompiled/timestamp          \
-                  tests/foundry/foundry.k.check             \
-                  tests/specs/bihu/functional-spec.k.prove  \
-                  tests/specs/examples/empty-bin-runtime.k  \
-                  tests/specs/examples/erc20-bin-runtime.k  \
+kevm_pyk_tests :=                                                                                              \
+                  tests/interactive/vmLogTest/log3.json.gst-to-kore.check                                      \
+                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add.json.run \
+                  tests/specs/examples/empty-bin-runtime.k                                                     \
+                  tests/specs/examples/erc20-bin-runtime.k                                                     \
                   tests/specs/examples/erc721-bin-runtime.k
 
-test-kevm-pyk: KPROVE_OPTS  += --pyk --verbose
-test-kevm-pyk: KOMPILE_OPTS += --pyk --verbose
-test-kevm-pyk: KEVM = . ./kevm_pyk/venv-prod/bin/activate && kevm
-test-kevm-pyk: KOMPILE = . ./kevm_pyk/venv-prod/bin/activate && kevm kompile
-test-kevm-pyk: $(kevm_pyk_tests)
-	wc -l tests/specs/bihu/functional-spec.rule-profile
+test-kevm-pyk: KEVM_OPTS += --pyk --verbose --profile
+test-kevm-pyk: KEVM = $(PYK_ACTIVATE) && kevm
+test-kevm-pyk: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
+test-kevm-pyk: $(kevm_pyk_tests) venv
 
 # Interactive Tests
 

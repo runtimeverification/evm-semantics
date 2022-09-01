@@ -107,12 +107,13 @@ sudo pacman -S                                               \
     mpfr protobuf python stack yaml-cpp zlib
 ```
 
-#### MacOS
+#### macOS
 
-On OSX, using [Homebrew](https://brew.sh/), after installing the command line tools package:
+On macOS, using [Homebrew](https://brew.sh/), after installing the Command Line Tools and getting the [blockchain plugin](#blockchain-plugin):
 
 ```sh
-brew install java automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python
+brew tap kframework/k
+brew install java automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python bash kframework/k/cryptopp@8.6.0
 make libsecp256k1
 ```
 
@@ -123,6 +124,15 @@ If you are building on an Apple Silicon machine, ensure that your `PATH` is set
 up correctly before running `make deps` or `make k-deps`. You can do so using
 [`direnv`](https://direnv.net/) by copying `macos-envrc` to `.envrc`, then
 running `direnv allow`.
+
+If the build on macOS still fails, you can also try adding the following lines to the top of your `Makefile` under `UNAME_S`:
+
+```sh
+ifeq ($(UNAME_S), Darwin)
+SHELL := /usr/local/bin/bash
+PATH := $(pwd)/.build/usr/bin:$(PATH)
+endif
+```
 
 #### Haskell Stack (all platforms)
 
@@ -179,6 +189,7 @@ Finally, you can build the semantics.
 make build
 ```
 
+
 Running Tests
 -------------
 
@@ -202,7 +213,7 @@ When running tests with the `Makefile`, you can specify the `TEST_CONCRETE_BACKE
 For Developers
 -------------
 
-After building, the `kevm` executable will be located in the `.build/usr/bin:$PATH` directory .
+After building, the `kevm` executable will be located in the `.build/usr/bin` directory.
 The one in the project root is a build artifact, don't use it.
 To make sure you are using the correct `kevm`, add this directory to your `PATH`:
 
@@ -210,7 +221,7 @@ To make sure you are using the correct `kevm`, add this directory to your `PATH`
 export PATH=$(pwd)/.build/usr/bin:$PATH
 ```
 
-Alternatively, if you work on multiple checkouts of `evm-semantics`, or other semantics, you could add the relative path `.build/usr/bin` to your `PATH`. 
+Alternatively, if you work on multiple checkouts of `evm-semantics`, or other semantics, you could add the relative path `.build/usr/bin` to your `PATH`.
 Do note, however, that this is a security concern.
 
 You can call `kevm help` to get a quick summary of how to use the script.
@@ -228,7 +239,7 @@ For example, to prove one of the specifications:
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --verif-module VERIFICATION
 ```
 
-You can also debug proofs interactively: 
+You can also debug proofs interactively:
 
 ```sh
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --verif-module VERIFICATION --debugger --debug-script kscript --backend haskell
@@ -241,10 +252,97 @@ For example, we advise to put an alias for outputting the current configuration 
 alias konfig = config | kast -i kore -o pretty -d .build/usr/lib/kevm/haskell /dev/stdin
 ```
 
+### Building with Nix
+
+We now support building KEVM using [nix flakes](https://nixos.wiki/wiki/Flakes).
+To set up nix flakes you will need to be on `nix` 2.4 or higher and follow the instructions [here](https://nixos.wiki/wiki/Flakes).
+
+For example, if you are on a standard Linux distribution, such as Ubuntu, first [install nix](https://nixos.org/download.html#download-nix)
+and then enable flakes by editing either `~/.config/nix/nix.conf` or `/etc/nix/nix.conf` and adding:
+
+```
+experimental-features = nix-command flakes
+```
+
+This is needed to expose the Nix 2.0 CLI and flakes support that are hidden behind feature-flags.
+
+
+By default, Nix will build the project and its transitive dependencies from
+source, which can take up to an hour. We recommend setting up
+[the binary cache](https://app.cachix.org/cache/kore) to speed up the build
+process significantly. You will also need to add the following sections to `/etc/nix/nix.conf` or, if you are a trusted user, `~/.config/nix/nix.conf` (if you don't know what a "trusted user" is, you probably want to do the former):
+
+```
+trusted-public-keys = ... hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+substituters = ... https://cache.iog.io
+```
+
+i.e. if the file was originally
+
+```
+substituters = https://cache.nixos.org
+trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+```
+
+it will now read
+
+```
+substituters = https://cache.nixos.org https://cache.iog.io
+trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+```
+
+To build KEVM, run:
+
+```bash
+nix build .#kevm
+```
+
+This will build all of KEVM and K and put a link to the resulting binaries in the `result/` folder.
+
+
+_Note: Mac users, especially those running M1/M2 Macs may find nix segfaulting on occasion. If this happens, try running the nix command like this: `GC_DONT_GC=1 nix build .`_
+
+
+If you want to temporarily add the `kevm` binary to the current shell, run
+
+```bash
+nix shell .#kevm
+```
+
+### Profiling with Nix
+
+Nix can also be used to quickly profile different versions of the haskell backend. Simply run
+
+```
+nix build github:runtimeverification/evm-semantics#profile \
+  --override-input k-framework/haskell-backend github:runtimeverification/haskell-backend/<HASH> \
+  -o prof-<HASH>
+```
+
+replacing `<HASH>` with the commit you want to run profiling against.
+
+If you want to profile against a working version of the haskell backend repo, simply `cd` into the root of the repo and run
+
+```
+nix build github:runtimeverification/evm-semantics#profile \
+  --override-input k-framework/haskell-backend $(pwd) \
+  -o prof-my-feature
+```
+
+To compare profiles, you can use
+
+```
+nix run github:runtimeverification/evm-semantics#compare-profiles -- prof-my-feature prof-<HASH>
+```
+
+This will produce a nice table with the times for both versions of haskell-backend.
+Noe that `#profile` pre-pends the output of `kore-exec --version` to the profile run, which is then used as a tag by the `#compare-profiles` script.
+Therefore, any profiled local checkout of haskell-backend will report as `dirty-ghc8107` in the resulting table.
+
 ### Keeping `.build` up-to-date while developing
 
 -   `make build` needs to be re-run if you touch any of this repos files.
--   `make deps` needs to be re-run if there is a submodule update (you did `git submodule update --init --recursive` and it actually did something).
+-   `make deps` needs to be re-run if there is an update of the K submodule (you did `git submodule update --init --recursive -- deps/k` and it actually did something).
 -   If both `deps` and `build` need to be re-run, you need to do `deps` first.
 -   `make clean` is a safe way to remove the `.build` directory, but then you need to re-run `make deps` (should be quick this time) and `make build`.
 

@@ -1,8 +1,5 @@
 /.build/*
 .envrc
-/kevm_pyk/build
-/kevm_pyk/src/kevm_pyk.egg-info
-/kevm_pyk/src/kevm_pyk/__pycache__
 .kompile*
 .kprove*
 .krun*
@@ -12,12 +9,14 @@
 /package/pkg
 /package/src
 /pkg
-/src
 /tests/**/*.debug-log
 /tests/foundry/cache
+/tests/foundry/foundry.k
 /tests/foundry/*.out
 /tests/foundry/out
-/tests/foundry/foundry.k
+/tests/foundry/test/filecopy2.txt
+/tests/foundry/test/filecopy.txt
+/tests/foundry/test/fileline.txt
 /tests/**/*.rule-profile
 /tests/specs/**/*-bin-runtime.k
 /tests/specs/foundry/*.out

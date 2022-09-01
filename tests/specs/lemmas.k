@@ -2,7 +2,7 @@ requires "evm.md"
 requires "edsl.md"
 requires "int-simplification.k"
 
-module LEMMAS
+module LEMMAS [symbolic]
     imports INT-SIMPLIFICATION
     imports LEMMAS-JAVA
     imports LEMMAS-HASKELL
