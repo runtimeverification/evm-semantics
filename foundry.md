@@ -204,8 +204,15 @@ In addition, cheatcodes should be ignored during the execution of the `expectRev
  // ---------------------------------------------------------------------
     rule <k> #endExpectRevert => . ... </k>
          <expectRevert> true => false </expectRevert>
-         <expectedBytes> _ => .ByteArray </expectedBytes>
-         <output>
+         <expectedBytes> EXPECTED => .ByteArray </expectedBytes>
+         <output> OUT </output>
+         <statusCode> _:ExceptionalStatusCode </statusCode>
+      requires OUT ==K EXPECTED
+        orBool EXPECTED ==K .ByteArray
+
+    rule <k> #endExpectRevert => #assert(false) ... </k>
+         <expectRevert> true => false </expectRevert>
+         <expectedBytes> _ => .ByteArray </expectedBytes> [owise]
 ```
 
 ```k
