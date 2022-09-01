@@ -439,20 +439,26 @@ tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTes
 # solc-to-k
 # ---------
 
-PYK_ACTIVATE = . ./kevm_pyk/venv-prod/bin/activate
+VENV_DIR     := $(BUILD_DIR)/venv
+PYK_ACTIVATE := . $(VENV_DIR)/bin/activate
 
 venv-clean:
-	rm -rf ./kevm_pyk/venv-dev
-	rm -rf ./kevm_pyk/venv-prod
+	rm -rf $(VENV_DIR)
 	rm -rf $(KEVM_LIB)/kframework/lib/python3.8
 	rm -rf $(KEVM_LIB)/kframework/local/lib/python3.10
 	rm -rf $(K_SUBMODULE)/pyk/build
 
-venv:
-	$(MAKE) -C ./kevm_pyk venv-prod
+$(VENV_DIR)/pyvenv.cfg:
+	   virtualenv -p python3 $(VENV_DIR) \
+	&& $(PYK_ACTIVATE)                   \
+	&& pip install --editable deps/k/pyk \
+	&& pip install --editable kevm-pyk
+
+venv: $(VENV_DIR)/pyvenv.cfg
+	@echo $(PYK_ACTIVATE)
 
 kevm-pyk:
-	$(MAKE) -C ./kevm_pyk
+	$(MAKE) -C ./kevm-pyk
 
 foundry-clean:
 	rm -rf tests/foundry/cache
@@ -661,12 +667,11 @@ failure_tests:=$(wildcard tests/failing/*.json)
 
 test-failure: $(failure_tests:=.run-expected)
 
-# kevm_pyk Tests
+# kevm-pyk Tests
 
 kevm_pyk_tests :=                                                                                              \
                   tests/interactive/vmLogTest/log3.json.gst-to-kore.check                                      \
                   tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add.json.run \
-                  tests/specs/bihu/functional-spec.k.prove                                                     \
                   tests/specs/examples/empty-bin-runtime.k                                                     \
                   tests/specs/examples/erc20-bin-runtime.k                                                     \
                   tests/specs/examples/erc721-bin-runtime.k
@@ -674,7 +679,7 @@ kevm_pyk_tests :=                                                               
 test-kevm-pyk: KEVM_OPTS += --pyk --verbose --profile
 test-kevm-pyk: KEVM = $(PYK_ACTIVATE) && kevm
 test-kevm-pyk: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
-test-kevm-pyk: $(kevm_pyk_tests) test-foundry venv
+test-kevm-pyk: $(kevm_pyk_tests) venv
 
 # Interactive Tests
 
