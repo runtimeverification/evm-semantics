@@ -428,11 +428,11 @@
         "poetry2nix": "poetry2nix"
       },
       "locked": {
-        "lastModified": 1661895809,
-        "narHash": "sha256-Fa7VlYZSVZjemwAtqEBD1VpFQXDUEi8NQteeD9b2ALQ=",
+        "lastModified": 1662050796,
+        "narHash": "sha256-K+/YqUxQB5rajmoKUgB2+Zf9fYCL7Wr7tAOM61VBI74=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "9d2f88ff1aefea4493b16219501e100c4b3e417f",
+        "rev": "f2c4ff426c7023147520ce743355294383b0186b",
         "type": "github"
       },
       "original": {
