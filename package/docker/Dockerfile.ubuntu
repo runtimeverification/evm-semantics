@@ -19,6 +19,6 @@ RUN    apt-get update                  \
     && apt-get install --yes /kevm.deb \
     && rm -rf /kevm.deb
 
-COPY kevm_pyk/ /kevm_pyk
-RUN    pip3 install /kevm_pyk \
-    && rm -rf /kevm_pyk
+COPY kevm-pyk/ /kevm-pyk
+RUN    pip3 install /kevm-pyk \
+    && rm -rf /kevm-pyk

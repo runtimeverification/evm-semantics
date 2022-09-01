@@ -50,7 +50,7 @@ def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, ch
                 _print_kast(elem)
                 out_stream.write(',')
             out_stream.write('Lbl\'Stop\'List\'LBraQuot\'JSONs\'QuotRBraUnds\'JSONs{}()')
-            for elem in _data:
+            for _ in _data:
                 out_stream.write(')')
             out_stream.write(')')
         elif isinstance(_data, OrderedDict):
@@ -62,7 +62,7 @@ def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, ch
                 _print_kast(value)
                 out_stream.write('),')
             out_stream.write('Lbl\'Stop\'List\'LBraQuot\'JSONs\'QuotRBraUnds\'JSONs{}()')
-            for key in _data:
+            for _ in _data:
                 out_stream.write(')')
             out_stream.write(')')
         elif isinstance(_data, str):
@@ -83,7 +83,9 @@ def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, ch
         _print_sort_injection(vsort, 'KItem', v, vprint)
         out_stream.write(')')
 
-    out_stream.write('LblinitGeneratedTopCell{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Stop\'Map{}(),')
+    out_stream.write(
+        'LblinitGeneratedTopCell{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Stop\'Map{}(),'
+    )
     _print_config_map_entry('PGM', data, 'JSON', _print_kast)
     out_stream.write('),')
     _print_config_map_entry('SCHEDULE', schedule_to_kore(schedule), 'Schedule', _print_direct)
