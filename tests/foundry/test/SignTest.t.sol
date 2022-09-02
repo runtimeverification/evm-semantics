@@ -14,10 +14,4 @@ contract SignTest is Test {
         address signer = ecrecover(hash, v, r, s);
         assertEq(alice, signer);
     }
-
-    function testAddr() public{
-        address alice = vm.addr(1);
-        assertEq(alice, 0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf);
-    }
-
 }
