@@ -18,7 +18,7 @@ module FOUNDRY
     configuration
     <foundry>
         <kevm/>
-        <prank/>
+        <cheatcodes/>
     </foundry>
 endmodule
 ```
@@ -84,10 +84,10 @@ module FOUNDRY-CHEAT-CODES
     imports FOUNDRY-ACCOUNTS
 
     configuration
-    <prank>
+    <cheatcodes>
         <prevCaller> .Account </prevCaller>
         <prevOrigin> .Account </prevOrigin>
-    </prank>
+    </cheatcodes>
 ```
 
 First we have some helpers in K which can:
