@@ -145,6 +145,39 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)`
          </account>
 ```
 
+#### `etch` - Sets the code of an account.
+
+```
+function etch(address who, bytes calldata code) external;
+```
+
+`call.etch` will match when the `etch` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and the new bytecode using `#range(LM, ARGSTART +Int 36, ARGWIDTH -Int 36)`, where `ARGWIDTH -Int 36` is used to determine the length of the second argument.
+The values are forwarded to the `#setCode` marker which updates the account accordingly.
+
+```k
+    rule [call.etch]:
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART ARGWIDTH 0 0
+          => #setCode(#asWord(#range(LM, ARGSTART +Int 4, 32)), #range(LM, ARGSTART +Int 36, ARGWIDTH -Int 36))
+          ~> 1 ~> #push
+         ...
+         </k>
+         <output> _ => .ByteArray </output>
+         <localMem> LM </localMem>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3033974658 // selector ( "etch(address,bytes)" )
+      [priority(40)]
+
+    syntax KItem ::= "#setCode" "(" Int "," ByteArray ")" [klabel(foundry_setCode)]
+ // -------------------------------------------------------------------------------
+    rule <k> #setCode(ACCTID, CODE) => . ... </k>
+         <account>
+             <acctID> ACCTID </acctID>
+             <code> _ => #if #asWord(CODE) ==Int 0 #then .ByteArray:AccountCode #else {CODE}:>AccountCode #fi </code>
+             ...
+         </account>
+```
+
 #### `warp` - Sets the block timestamp.
 
 ```
@@ -252,7 +285,8 @@ function label(address addr, string calldata label) external;
 ```
 
 `call.label` will match when the `label` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
-If an address is labelled, the label will show up in test traces instead of the address. However, there is no change on the state and therefore this rule just skips the cheatcode invocation. 
+If an address is labelled, the label will show up in test traces instead of the address.
+However, there is no change on the state and therefore this rule just skips the cheatcode invocation. 
 
 ```k
     rule [call.label]:
