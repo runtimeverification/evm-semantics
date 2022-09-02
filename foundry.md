@@ -157,8 +157,20 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)`
          </account>
 ```
 
-Prank
------
+Pranks
+------
+
+#### `startPrank` - Sets `msg.sender` for all subsequent calls until `stopPrank` is called.
+
+```
+function startPrank(address) external;
+function startPrank(address sender, address origin) external;
+```
+
+`call.startPrank` and `call.startPrankWithOrigin` will match when either of `startPrank` functions are called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+The rule then take the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)` which will be used to impersonate future calls and set them into the `<caller>` and (if is the case) `<origin>` cells.
+The same rules will store the initial values of the `<caller>` and `<origin>` cells in `<prevCaller>` and `<prevOrigin>`.
+
 ```k
     rule [call.startPrank]:
         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
@@ -183,7 +195,18 @@ Prank
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1169514616 // selector ( "startPrank(address,address)" )
       [priority(40)]
+```
 
+#### `stopPrank` - stops the virtual machine from impersonating an account.
+
+```
+function stopPrank() external;
+```
+
+`call.stopPrank` will be invoked when the `stopPrank` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+The rule will restore the account addresses stored in `<prevCaller>` and `<prevOrigin>` cells into `<caller>` and `<origin>` cells.
+
+```k
     rule [call.stopPrank]:
         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 ~> 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
@@ -193,6 +216,7 @@ Prank
          <prevOrigin> OG </prevOrigin>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool CL =/=K .Account andBool OG =/=K .Account
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 2428830011 // selector ( "stopPrank()" )
       [priority(40)]
 ```

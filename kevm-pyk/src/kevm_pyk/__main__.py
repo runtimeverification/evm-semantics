@@ -126,7 +126,7 @@ def exec_foundry_to_k(
     **kwargs,
 ) -> None:
     foundry = Foundry(definition_dir, profile=profile)
-    empty_config = foundry.definition.empty_config(KSort('KevmCell'))
+    empty_config = foundry.definition.empty_config(KSort('FoundryCell'))
     path_glob = str(out) + '/*.t.sol/*.json'
     modules: List[KFlatModule] = []
     claims_modules: List[KFlatModule] = []
