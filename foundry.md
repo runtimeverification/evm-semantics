@@ -173,7 +173,7 @@ The values are forwarded to the `#setCode` marker which updates the account acco
     rule <k> #setCode(ACCTID, CODE) => . ... </k>
          <account>
              <acctID> ACCTID </acctID>
-             <code> _ => #if #asWord(CODE) ==Int 0 #then .ByteArray #else {CODE}:>AccountCode #fi </code>
+             <code> _ => #if #asWord(CODE) ==Int 0 #then .ByteArray:AccountCode #else {CODE}:>AccountCode #fi </code>
              ...
          </account>
 ```
