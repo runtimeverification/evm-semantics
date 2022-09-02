@@ -71,6 +71,7 @@ OwnerUpOnlyTest.testIncrementAsNotOwner
 OwnerUpOnlyTest.testIncrementAsOwner
 PrankTest.testAddAsOwner
 PrankTest.testFailAddPrank
+PrankTest.testAddStartPrank
 PrankTest.testSubtractAsTxOrigin
 PrankTest.testSubtractFail
 PrankTest.testSubtractStartPrank
