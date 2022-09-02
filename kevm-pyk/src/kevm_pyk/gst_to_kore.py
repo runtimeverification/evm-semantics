@@ -1,9 +1,8 @@
 import json
 import logging
 from collections import OrderedDict
-from io import TextIOWrapper
 from pathlib import Path
-from typing import Any, Callable, Final
+from typing import Any, Callable, Final, TextIO
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -20,7 +19,7 @@ def mode_to_kore(mode: str) -> str:
     return f'Lbl{mode}' + "{}()"
 
 
-def gst_to_kore(gst_file: Path, out_stream: TextIOWrapper, schedule: str, mode: str, chainid: int) -> None:
+def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, chainid: int) -> None:
 
     with open(gst_file) as data_file:
         data = json.load(data_file, object_pairs_hook=OrderedDict)
@@ -51,7 +50,7 @@ def gst_to_kore(gst_file: Path, out_stream: TextIOWrapper, schedule: str, mode: 
                 _print_kast(elem)
                 out_stream.write(',')
             out_stream.write('Lbl\'Stop\'List\'LBraQuot\'JSONs\'QuotRBraUnds\'JSONs{}()')
-            for elem in _data:
+            for _ in _data:
                 out_stream.write(')')
             out_stream.write(')')
         elif isinstance(_data, OrderedDict):
@@ -63,7 +62,7 @@ def gst_to_kore(gst_file: Path, out_stream: TextIOWrapper, schedule: str, mode: 
                 _print_kast(value)
                 out_stream.write('),')
             out_stream.write('Lbl\'Stop\'List\'LBraQuot\'JSONs\'QuotRBraUnds\'JSONs{}()')
-            for key in _data:
+            for _ in _data:
                 out_stream.write(')')
             out_stream.write(')')
         elif isinstance(_data, str):
@@ -84,7 +83,9 @@ def gst_to_kore(gst_file: Path, out_stream: TextIOWrapper, schedule: str, mode: 
         _print_sort_injection(vsort, 'KItem', v, vprint)
         out_stream.write(')')
 
-    out_stream.write('LblinitGeneratedTopCell{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Stop\'Map{}(),')
+    out_stream.write(
+        'LblinitGeneratedTopCell{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Stop\'Map{}(),'
+    )
     _print_config_map_entry('PGM', data, 'JSON', _print_kast)
     out_stream.write('),')
     _print_config_map_entry('SCHEDULE', schedule_to_kore(schedule), 'Schedule', _print_direct)
