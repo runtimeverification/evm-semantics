@@ -496,6 +496,7 @@ def _create_argument_parser() -> ArgumentParser:
         help='Run Foundry Proof.',
         parents=[shared_args, k_args, kprove_args],
     )
+    foundry_prove_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_prove_args.add_argument(
         '--contract', default=None, type=str, help='Limit to only proofs for the named contract.'
     )
