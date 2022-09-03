@@ -63,7 +63,7 @@ export PLUGIN_SUBMODULE
 
 all: build
 
-clean:
+clean: foundry-clean venv-clean
 	rm -rf $(KEVM_BIN) $(KEVM_LIB)
 
 distclean:
@@ -462,7 +462,6 @@ kevm-pyk:
 
 foundry-clean:
 	rm -rf tests/foundry/cache
-	rm -rf tests/foundry/kompiled
 	rm -rf tests/foundry/out
 	rm -f  tests/foundry/foundry.debug-log
 	rm -f  tests/foundry/foundry.k
