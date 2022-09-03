@@ -173,13 +173,14 @@ The same rules will store the initial values of the `<caller>` and `<origin>` ce
 
 ```k
     rule [call.startPrank]:
-        <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+        <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH _ 0 => 1 ~> #push ... </k>
         <output> _ => .ByteArray </output>
-        <caller> CL => #asAccount(#range(LM, ARGSTART +Int 4, 32)) </caller>
+        <id> CL => #asAccount(#range(LM, ARGSTART +Int 4, 32)) </id>
         <origin> OG </origin>
         <prevCaller> _ => CL </prevCaller>
         <prevOrigin> _ => OG </prevOrigin>
         <localMem> LM </localMem>
+        <activeAccounts> ACTIVEACCOUNTS </activeAccounts>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 105151830 // selector ( "startPrank(address)" )
       [priority(40)]
@@ -187,7 +188,7 @@ The same rules will store the initial values of the `<caller>` and `<origin>` ce
     rule [call.startPrankWithOrigin]:
         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
         <output> _ => .ByteArray </output>
-        <caller> CL => #asAccount(#range(LM, ARGSTART +Int 4, 32)) </caller>
+        <id> CL => #asAccount(#range(LM, ARGSTART +Int 4, 32)) </id>
         <origin> OG => #asAccount(#range(LM, ARGSTART +Int 36, 32)) </origin>
         <prevCaller> _ => CL </prevCaller>
         <prevOrigin> _ => OG </prevOrigin>
@@ -195,6 +196,7 @@ The same rules will store the initial values of the `<caller>` and `<origin>` ce
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1169514616 // selector ( "startPrank(address,address)" )
       [priority(40)]
+
 ```
 
 #### `stopPrank` - stops the virtual machine from impersonating an account.
@@ -207,16 +209,16 @@ function stopPrank() external;
 The rule will restore the account addresses stored in `<prevCaller>` and `<prevOrigin>` cells into `<caller>` and `<origin>` cells.
 
 ```k
+
     rule [call.stopPrank]:
-        <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 ~> 1 ~> #push ... </k>
+        <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH _ 0 ~> 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
-         <caller> _ => CL </caller>
+         <id> _ => CL </id>
          <origin> _ => OG </origin>
-         <prevCaller> CL </prevCaller>
-         <prevOrigin> OG </prevOrigin>
+         <prevCaller> CL => .Account </prevCaller>
+         <prevOrigin> OG => .Account </prevOrigin>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
-       andBool CL =/=K .Account andBool OG =/=K .Account
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 2428830011 // selector ( "stopPrank()" )
       [priority(40)]
 ```

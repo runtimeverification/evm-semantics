@@ -10,9 +10,10 @@ contract AdditionalToken {
 
     constructor() {
         owner = msg.sender;
+        count = 0;
     }
 
-    function incrementCount() public{
+    function incrementCount() public {
         require(msg.sender != owner);
         count = count + 1;
     }
