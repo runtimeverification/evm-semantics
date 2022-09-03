@@ -357,7 +357,10 @@ def _create_argument_parser() -> ArgumentParser:
 
     k_kompile_args = ArgumentParser(add_help=False)
     k_kompile_args.add_argument(
-        '--md-selector', type=str, help='Code selector expression to use when reading markdown.'
+        '--md-selector',
+        type=str,
+        default='k & ! nobytes & ! node',
+        help='Code selector expression to use when reading markdown.',
     )
     k_kompile_args.add_argument('--hook-namespaces', type=str, help='Hook namespaces. What more can I say?')
     k_kompile_args.add_argument(
