@@ -31,7 +31,6 @@ EnvTest.testEnvString
 EnvTest.testEnvStringArray
 EnvTest.testEnvUInt
 EnvTest.testEnvUIntArray
-EtchTest.testEtch
 FfiTest.testffi
 FfiTest.testFFIFOO
 FfiTest.testFFIScript
