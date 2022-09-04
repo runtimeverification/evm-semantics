@@ -160,7 +160,7 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)`
 Pranks
 ------
 
-#### `startPrank` - Sets `msg.sender` for all subsequent calls until `stopPrank` is called.
+#### `startPrank` - Sets `msg.sender` and `tx.origin` for all subsequent calls until `stopPrank` is called.
 
 ```
 function startPrank(address) external;
