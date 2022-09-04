@@ -11,6 +11,7 @@ from pyk.kastManip import flatten_label, get_cell
 from pyk.ktool import KProve, KRun, KPrint
 from pyk.ktool.kprint import paren
 from pyk.prelude import Bool, build_assoc, intToken, stringToken
+
 from .utils import add_include_arg
 
 _LOGGER: Final = logging.getLogger(__name__)
