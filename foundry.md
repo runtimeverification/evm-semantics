@@ -170,6 +170,7 @@ function startPrank(address sender, address origin) external;
 `call.startPrank` and `call.startPrankWithOrigin` will match when either of `startPrank` functions are called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
 The rule then take the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)` which will be used to impersonate future calls and set them into the `<caller>` and (if is the case) `<origin>` cells.
 The same rules will store the initial values of the `<caller>` and `<origin>` cells in `<prevCaller>` and `<prevOrigin>`.
+`<prevCaller>` and `<prevOrigin>` are required to have `.Account` on the lhs of the rule because only a single prank can be active at a time.
 
 ```k
     rule [call.startPrank]:
@@ -182,20 +183,8 @@ The same rules will store the initial values of the `<caller>` and `<origin>` ce
         <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 105151830 // selector ( "startPrank(address)" )
+        orBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1169514616 // selector ( "startPrank(address,address)" )
       [priority(40)]
-
-    rule [call.startPrankWithOrigin]:
-        <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH _ 0 => 1 ~> #push ... </k>
-        <output> _ => .ByteArray </output>
-        <id> CL => #asAccount(#range(LM, ARGSTART +Int 4, 32)) </id>
-        <origin> OG => #asAccount(#range(LM, ARGSTART +Int 36, 32)) </origin>
-        <prevCaller> .Account => CL </prevCaller>
-        <prevOrigin> .Account => OG </prevOrigin>
-        <localMem> LM </localMem>
-      requires CHEAT_ADDR ==Int #address(FoundryCheat)
-       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1169514616 // selector ( "startPrank(address,address)" )
-      [priority(40)]
-
 ```
 
 #### `stopPrank` - stops the virtual machine from impersonating an account.
