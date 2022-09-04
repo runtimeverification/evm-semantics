@@ -337,7 +337,7 @@ def gen_claims_for_contract(
     final_subst = {
         'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')]),
         'STATUSCODE_CELL': KVariable('STATUSCODE_FINAL'),
-        'ID_CELL': KVariable('ID_FINAL'),
+        'ID_CELL': KVariable('ACCT_ID_FINAL'),
         'ACCOUNTS_CELL': KEVM.accounts(
             [
                 post_account_cell,  # test contract address
@@ -358,13 +358,18 @@ def gen_claims_for_contract(
         ]
     else:
         init_terms = [(contract_name.replace('_', '-'), init_term)]
-    final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')]))
+    final_cterm = CTerm(
+        abstract_cell_vars(
+            substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL'), KVariable('ACCT_ID_FINAL')]
+        )
+    )
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
     dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
     final_cterm = final_cterm.add_constraint(
         mlEqualsTrue(Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post))
     )
+    final_cterm = final_cterm.add_constraint(mlEqualsTrue(KApply('#rangeAddress', KVariable('ACCT_ID_FINAL'))))
     claims: List[KClaim] = []
     for claim_id, i_term in init_terms:
         i_cterm = CTerm(i_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))

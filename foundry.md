@@ -121,7 +121,7 @@ This rule then takes a `bool` condition using `#range(LM, ARGSTART +Int 4, 32)` 
 ```k
 
     rule [call.assume]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => #assume(#range(LM, ARGSTART +Int 4, 32) ==K #bufStrict(32, 1)) ~> 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH _ 0 => #assume(#range(LM, ARGSTART +Int 4, 32) ==K #bufStrict(32, 1)) ~> 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
