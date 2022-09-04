@@ -168,21 +168,30 @@ function startPrank(address sender, address origin) external;
 ```
 
 `call.startPrank` and `call.startPrankWithOrigin` will match when either of `startPrank` functions are called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
-The rule then take the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)` which will be used to impersonate future calls and set them into the `<caller>` and (if is the case) `<origin>` cells.
-The same rules will store the initial values of the `<caller>` and `<origin>` cells in `<prevId>` and `<prevOrigin>`.
-`<prevId>` and `<prevOrigin>` are required to have `.Account` on the lhs of the rule because only a single prank can be active at a time.
+The addresses which will be used to impersonate future calls are retrieved from the local memory using `#asWord(#range(LM, ARGSTART +Int 4, 32)` for the sender, and `#asWord(#range(LM, ARGSTART +Int 36, 32)` for the origin (only for the `call.startPrankWithOrigin` rule).
+These addresses will be loaded in the `<id>` and `<origin>` cells while the initial values will be stored in `<prevId>` and `<prevOrigin>`.
+`<prevId>` and `<prevOrigin>` are required to have `.Account` on the lhs of the rule in order to ensure that only a single prank can be active at a time.
 
 ```k
     rule [call.startPrank]:
         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH _ 0 => 1 ~> #push ... </k>
         <output> _ => .ByteArray </output>
         <id> CL => #asAccount(#range(LM, ARGSTART +Int 4, 32)) </id>
-        <origin> OG </origin>
+        <prevId> .Account => CL </prevId>
+        <localMem> LM </localMem>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 105151830 // selector ( "startPrank(address)" )
+      [priority(40)]
+
+    rule [call.startPrankWithOrigin]:
+        <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH _ 0 => 1 ~> #push ... </k>
+        <output> _ => .ByteArray </output>
+        <id> CL => #asAccount(#range(LM, ARGSTART +Int 4, 32)) </id>
+        <origin> OG => #asAccount(#range(LM, ARGSTART +Int 36, 32)) </origin>
         <prevId> .Account => CL </prevId>
         <prevOrigin> .Account => OG </prevOrigin>
         <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
-       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 105151830 // selector ( "startPrank(address)" )
         orBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1169514616 // selector ( "startPrank(address,address)" )
       [priority(40)]
 ```
@@ -195,15 +204,15 @@ function stopPrank() external;
 
 `call.stopPrank` will be invoked when the `stopPrank` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
 The rule will restore the account addresses stored in `<prevId>` and `<prevOrigin>` cells into `<id>` and `<origin>` cells.
-The `#if` statements in cells `<id>` and `<origin>` are used in order to avoid the rewriting of of the cells to `.Account` if there is no prank active.
+The `#if` statements in cells `<id>` and `<origin>` are used in order to avoid the rewriting of the cells to `.Account` if there is no prank active.
 
 ```k
     rule [call.stopPrank]:
         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH _ 0 => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
-         <id> ID => #if OLD_ID =/=K .Account #then OLD_ID #else ID #fi </id>
+         <id> CL => #if OLD_CL =/=K .Account #then OLD_CL #else CL #fi </id>
          <origin> OG => #if OLD_OG =/=K .Account #then OLD_OG #else OG #fi </origin>
-         <prevId> OLD_ID => .Account </prevId>
+         <prevId> OLD_CL => .Account </prevId>
          <prevOrigin> OLD_OG => .Account </prevOrigin>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
