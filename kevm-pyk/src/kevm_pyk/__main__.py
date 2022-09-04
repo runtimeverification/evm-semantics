@@ -205,8 +205,6 @@ def exec_foundry_kompile(
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
     spec_module = 'FOUNDRY-SPEC'
-    requires = list(requires) + ['lemmas/int-simplification.k']
-    imports = list(imports) + ['INT-SIMPLIFICATION']
     foundry_definition_dir = foundry_out / 'kompiled'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     if not foundry_definition_dir.exists():
