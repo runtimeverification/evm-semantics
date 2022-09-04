@@ -3428,7 +3428,8 @@ module DEALTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module ETCHTEST-BIN-RUNTIME-SPEC
-    imports public VERIFICATION
+    imports public INT-SIMPLIFICATION
+    imports public FOUNDRY-MAIN
     imports public ETCHTEST-BIN-RUNTIME
     
     claim [testEtch]: <kevm>
@@ -3696,7 +3697,8 @@ module ETCHTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module LABELTEST-BIN-RUNTIME-SPEC
-    imports public VERIFICATION
+    imports public INT-SIMPLIFICATION
+    imports public FOUNDRY-MAIN
     imports public LABELTEST-BIN-RUNTIME
     
     claim [testLabel]: <kevm>
