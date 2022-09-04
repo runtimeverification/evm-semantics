@@ -39,6 +39,7 @@ contract PlainPrankTest is Test {
 
     function test_stopPrank_true() public {
         vm.stopPrank();
+        vm.stopPrank();
     }
 
     function test_stopPrank_true2() public {

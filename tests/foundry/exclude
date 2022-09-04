@@ -73,6 +73,9 @@ NonceTest.testNonce
 OwnerUpOnlyTest.testFailIncrementAsNotOwner
 OwnerUpOnlyTest.testIncrementAsNotOwner
 OwnerUpOnlyTest.testIncrementAsOwner
+PlainPrankTest.test_startPrankWithOrigin_true
+PlainPrankTest.test_stopPrank_true2
+PlainPrankTest.testFail_startPrank_false
 PrankTest.testAddAsOwner
 PrankTest.testAddStartPrank
 PrankTest.testFailAddPrank

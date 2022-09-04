@@ -331,11 +331,13 @@ def gen_claims_for_contract(
                 KToken('.Bag', 'K'),
             ]
         ),
+        'PREVCALLER_CELL': KToken('.Account', 'K'),
+        'PREVORIGIN_CELL': KToken('.Account', 'K'),
     }
     final_subst = {
         'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')]),
         'STATUSCODE_CELL': KVariable('STATUSCODE_FINAL'),
-        'ID_CELL': Foundry.address_TEST_CONTRACT(),
+        'ID_CELL': KVariable('ID_FINAL'),
         'ACCOUNTS_CELL': KEVM.accounts(
             [
                 post_account_cell,  # test contract address
@@ -345,6 +347,8 @@ def gen_claims_for_contract(
                 KVariable('ACCOUNTS_FINAL'),
             ]
         ),
+        'PREVCALLER_CELL': KVariable('PREVCALLER_FINAL'),
+        'PREVORIGIN_CELL': KVariable('PREVORIGIN_FINAL'),
     }
     init_term = substitute(empty_config, init_subst)
     if calldata_cells:
