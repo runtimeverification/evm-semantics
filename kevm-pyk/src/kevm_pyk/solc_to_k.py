@@ -331,7 +331,7 @@ def gen_claims_for_contract(
                 KToken('.Bag', 'K'),
             ]
         ),
-        'PREVCALLER_CELL': KToken('.Account', 'K'),
+        'PREVID_CELL': KToken('.Account', 'K'),
         'PREVORIGIN_CELL': KToken('.Account', 'K'),
     }
     final_subst = {
@@ -347,7 +347,7 @@ def gen_claims_for_contract(
                 KVariable('ACCOUNTS_FINAL'),
             ]
         ),
-        'PREVCALLER_CELL': KVariable('PREVCALLER_FINAL'),
+        'PREVID_CELL': KVariable('PREVID_FINAL'),
         'PREVORIGIN_CELL': KVariable('PREVORIGIN_FINAL'),
     }
     init_term = substitute(empty_config, init_subst)
