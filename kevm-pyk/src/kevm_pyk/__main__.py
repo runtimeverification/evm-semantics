@@ -11,7 +11,7 @@ from pyk.kast import KDefinition, KFlatModule, KImport, KRequire, KSort
 from pyk.ktool.krun import _krun
 
 from .gst_to_kore import gst_to_kore
-from .kevm import Foundry, KEVM
+from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_k, solc_compile
 from .utils import KPrint_make_unparsing, add_include_arg
 
