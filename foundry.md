@@ -316,8 +316,8 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
              <nonce>  NONCE  </nonce>
              ...
          </account>
-```
        requires CHEAT_ADDR ==Int #address(FoundryCheat)
+        andBool ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
         andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 755185067 // selector ( "getNonce(address)" )
      [priority(40)]
 ```

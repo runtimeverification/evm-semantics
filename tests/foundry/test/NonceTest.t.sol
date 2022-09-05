@@ -14,4 +14,10 @@ contract NonceTest is Test {
        assertEq(vm.getNonce(address(this)),newNonce);
     }
 
+    function testGetNonce(uint64 nonce) public {
+       uint64 oldnonce = vm.getNonce(address(this));
+       vm.assume(nonce > oldnonce);
+       assertGt(nonce,oldnonce);
+    }
+
 }
