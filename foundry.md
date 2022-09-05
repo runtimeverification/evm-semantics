@@ -286,7 +286,7 @@ function label(address addr, string calldata label) external;
 
 `call.label` will match when the `label` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
 If an address is labelled, the label will show up in test traces instead of the address.
-However, there is no change on the state and therefore this rule just skips the cheatcode invocation. 
+However, there is no change on the state and therefore this rule just skips the cheatcode invocation.
 
 ```k
     rule [call.label]:
@@ -295,6 +295,31 @@ However, there is no change on the state and therefore this rule just skips the 
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3327641368 // selector ( "label(address,string)" )
+```
+
+#### `getNonce` - Sets a label for a given address.
+
+```
+function getNonce(address account) external returns (uint64);
+```
+
+`call.getNonce` will match when the `nonce` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and returns its `nonce` updating the `<output>` cell.
+
+```k
+    rule [call.getNonce]:
+          <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH RETSTART RETWIDTH => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, NONCE) ... </k>
+          <output> _ => #bufStrict(32, NONCE) </output>
+          <localMem> LM </localMem>
+          <account>
+             <acctID> ACCTID </acctID>
+             <nonce>  NONCE  </nonce>
+             ...
+         </account>
+```
+       requires CHEAT_ADDR ==Int #address(FoundryCheat)
+        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 755185067 // selector ( "getNonce(address)" )
+     [priority(40)]
 ```
 
 ```k
