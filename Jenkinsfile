@@ -25,10 +25,7 @@ pipeline {
         // Must come before build/prove for proper testing
         stage('Build Pyk') {
           options { timeout(time: 1, unit: 'MINUTES') }
-          parallel {
-            stage('Check Pyk Version')    { steps { sh 'bash ./kevm_pyk/test-version.sh ${K_VERSION}' } }
-            stage('Check Pyk Code Style') { steps { sh 'make kevm-pyk'                                } }
-          }
+          steps { sh 'make kevm-pyk' }
         }
         stage('Build') {
           options { timeout(time: 15, unit: 'MINUTES') }
@@ -109,7 +106,8 @@ pipeline {
                     sudo DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:ethereum/ethereum
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes ./kevm_${VERSION}_amd64.deb
                     sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes solc
-                    pip3 install ./kevm_pyk
+                    pip3 install ./deps/k/pyk
+                    pip3 install ./kevm-pyk
 
                     ./package/test-package.sh
                   '''
