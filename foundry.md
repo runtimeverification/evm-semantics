@@ -309,8 +309,7 @@ This rule takes `uint256` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` 
 
 ```k
     rule [call.addr]:
-          <k> CALL _ CHEAT_ADDR VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH => #checkCall ACCTFROM VALUE ~> #transferFunds ACCTFROM CHEAT_ADDR VALUE ~> 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, #addrFromPrivateKey(#unparseByteStack(#range(LM, ARGSTART +Int 4, 32)))) ... </k>
-          <id> ACCTFROM </id>
+          <k> CALL _ CHEAT_ADDR _ ARGSTART _ARGWIDTH RETSTART RETWIDTH => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, #addrFromPrivateKey(#unparseByteStack(#range(LM, ARGSTART +Int 4, 32)))) ... </k>
           <output> _ => #bufStrict(32, #addrFromPrivateKey(#unparseByteStack(#range(LM, ARGSTART +Int 4, 32)))) </output>
           <localMem> LM </localMem>
        requires CHEAT_ADDR ==Int #address(FoundryCheat)
