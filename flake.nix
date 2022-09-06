@@ -19,8 +19,9 @@
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
   };
-  outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils, poetry2nix
-    , blockchain-k-plugin, ethereum-tests, ethereum-legacytests, rv-utils }:
+  outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
+    , poetry2nix, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
+    , rv-utils }:
     let
       buildInputs = pkgs: k:
         with pkgs;

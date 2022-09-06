@@ -1,7 +1,6 @@
 { stdenv, writeScriptBin, src, kevm, time, which, kore-exec }:
 
 let
-
   profile = writeScriptBin "profile" ''
     #! ${stdenv.shell}        
     set -euo pipefail
