@@ -79,12 +79,13 @@ module LEMMAS [symbolic]
       requires notBool K >Int 0 [simplification]
 
     rule #range(M [ N := BUF:ByteArray ], L, K) => 
-         #range(M, L, minInt(K, N -Int L)) ++ #range(M [ N := BUF ], N, K -Int minInt(K, N -Int L)) 
+         #let W = minInt(K, N -Int L) #in #range(M, L, W) ++ #range(M [ N := BUF ], N, K -Int W) 
       requires K  >Int 0 andBool L <Int N [simplification]
 
     rule #range(M [ N := BUF:ByteArray ], L, K) => 
-           BUF [ L -Int N .. minInt(K, #sizeByteArray(BUF) -Int (L -Int N)) ]
-           ++ #range(M, N +Int #sizeByteArray(BUF), K -Int minInt(K, #sizeByteArray(BUF) -Int (L -Int N)))
+           #let S = L -Int N #in
+           #let W = minInt(K, #sizeByteArray(BUF) -Int S) #in
+           BUF [ S .. W ] ++ #range(M, N +Int #sizeByteArray(BUF), K -Int W)
       requires K  >Int 0 andBool L <=Int N +Int #sizeByteArray(BUF) andBool L >=Int N [simplification]
 
     rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, K) 
