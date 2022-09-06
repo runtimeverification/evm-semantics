@@ -297,7 +297,7 @@ However, there is no change on the state and therefore this rule just skips the 
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3327641368 // selector ( "label(address,string)" )
 ```
 
-#### `getNonce` - Sets a label for a given address.
+#### `getNonce` - Gets the nonce of the given account..
 
 ```
 function getNonce(address account) external returns (uint64);
