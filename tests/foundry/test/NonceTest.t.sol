@@ -14,10 +14,24 @@ contract NonceTest is Test {
        assertEq(vm.getNonce(address(this)),newNonce);
     }
 
-    function testGetNonce(uint64 nonce) public {
+    function test_GetNonce_true() public {
        uint64 oldnonce = vm.getNonce(address(this));
-       vm.assume(nonce > oldnonce);
-       assertGt(nonce,oldnonce);
+       assert(oldnonce >= 0);
+    }
+
+    function test_GetNonce_false() public {
+       uint64 oldnonce = vm.getNonce(address(this));
+       assert(oldnonce < 0);
+    }
+
+    function testFail_GetNonce_true() public {
+       uint64 oldnonce = vm.getNonce(address(this));
+       assert(oldnonce < 0);
+    }
+
+    function testFail_GetNonce_false() public {
+       uint64 oldnonce = vm.getNonce(address(this));
+       assert(oldnonce >= 0);
     }
 
 }
