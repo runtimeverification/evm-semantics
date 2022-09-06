@@ -192,7 +192,7 @@ These addresses will be loaded in the `<id>` and `<origin>` cells while the init
         <prevOrigin> .Account => OG </prevOrigin>
         <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
-        orBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1169514616 // selector ( "startPrank(address,address)" )
+        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1169514616 // selector ( "startPrank(address,address)" )
       [priority(40)]
 ```
 
