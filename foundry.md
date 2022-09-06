@@ -298,7 +298,7 @@ However, there is no change on the state and therefore this rule just skips the 
     [priority(40)]
 ```
 
-#### `addr` - Sets a label for a given address.
+#### `addr` - Computes the address for a given private key.
 
 ```
 function addr(uint256 privateKey) external returns (address);
