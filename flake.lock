@@ -322,11 +322,11 @@
         "z3-src": "z3-src"
       },
       "locked": {
-        "lastModified": 1662029105,
-        "narHash": "sha256-EK1aUFhgcS2tweY5TcLg8PsGljNJ/CLlIOIE3CrAdIU=",
+        "lastModified": 1662470488,
+        "narHash": "sha256-fOgOwrPoRlxGb1A97sJs3SErL1EA5bNJQf4wnZKAoXs=",
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "9ae4daa1daedb0f3ef3db72b50fd439687368f80",
+        "rev": "a1959233e210f960d49a91ebe7fcec76da14ebe3",
         "type": "github"
       },
       "original": {
@@ -445,11 +445,11 @@
         "rv-utils": "rv-utils"
       },
       "locked": {
-        "lastModified": 1662479329,
-        "narHash": "sha256-qsRLANsJOkXRRr4t5RFVIC0lhGeYwWT7eTa40WUWWEw=",
+        "lastModified": 1662541577,
+        "narHash": "sha256-3HEFYM0wDKXCNrsINR1fWQmH0dvlKVInxkEjZpP1gt8=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "da3ba785f51309a96f37c21abe2f18056f83f2ed",
+        "rev": "e3379c9d951b244d195f552cc8564e4539dd65be",
         "type": "github"
       },
       "original": {
@@ -767,11 +767,11 @@
     },
     "nixpkgs_6": {
       "locked": {
-        "lastModified": 1662388292,
-        "narHash": "sha256-2RcKSi0wC70j4Jjn2BZexQIm6RcF/+Bv4HqfOiRyWc0=",
+        "lastModified": 1662482114,
+        "narHash": "sha256-OOlnwPGCf6iIX6oTRM4k803rzbriGg02/CkFpO46jAk=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "07dc8ecd7893b1b3b08b6b96ccd29e11b925fd23",
+        "rev": "5f1d6e5e3ea7c28e891addbfccf864235566be8a",
         "type": "github"
       },
       "original": {
