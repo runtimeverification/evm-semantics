@@ -298,18 +298,18 @@ However, there is no change on the state and therefore this rule just skips the 
     [priority(40)]
 ```
 
-#### `getNonce` - Gets the nonce of the given account..
+#### `getNonce` - Gets the nonce of the given account.
 
 ```
 function getNonce(address account) external returns (uint64);
 ```
 
-`call.getNonce` will match when the `nonce` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+`call.getNonce` will match when the `getNonce` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
 This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and returns its `nonce` updating the `<output>` cell.
 
 ```k
     rule [call.getNonce]:
-          <k> CALL _ CHEAT_ADDR _ ARGSTART _ARGWIDTH RETSTART RETWIDTH => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, NONCE) ... </k>
+          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, NONCE) ... </k>
           <output> _ => #bufStrict(32, NONCE) </output>
           <localMem> LM </localMem>
           <account>
