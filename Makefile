@@ -476,7 +476,7 @@ foundry_out := $(foundry_dir)/out
 test-foundry: KEVM_OPTS += --pyk --verbose --profile
 test-foundry: KEVM = $(PYK_ACTIVATE) && kevm
 test-foundry: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
-test-foundry: tests/foundry/out/kompiled/foundry.k.prove tests/foundry/foundry.k.check
+test-foundry: tests/foundry/foundry.k.check tests/foundry/out/kompiled/foundry.k.prove
 
 foundry-forge-build: $(foundry_out)
 
