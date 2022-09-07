@@ -264,13 +264,11 @@ class KEVM(KProve, KRun):
 
 
 class Foundry(KPrint):
-
     def __init__(self, definition_dir: Path, use_directory: Optional[Path] = None, profile: bool = False) -> None:
-        #copied from KEVM class and adapted to inherit KPrint instead
+        # copied from KEVM class and adapted to inherit KPrint instead
         KPrint.__init__(self, definition_dir, use_directory=use_directory, profile=profile)
         KEVM._patch_symbol_table(self.symbol_table)
 
-class Foundry:
     @staticmethod
     def success(s: KInner, dst: KInner) -> KApply:
         return KApply('foundry_success ', [s, dst])
