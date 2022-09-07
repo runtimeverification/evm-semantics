@@ -1,3 +1,6 @@
+AddrTest.test_addr_false
+AddrTest.testFail_addr_true
+AddrTest.testFail_addr_false
 AssumeTest.test_assume_false
 AssumeTest.testFail_assume_true
 AssumeTest.testFail_assume_false
@@ -65,6 +68,9 @@ MockCallTest.testMockCall
 MockCallTest.testMockCalls
 MockCallTest.testMockCallValue
 NonceTest.testNonce
+NonceTest.test_GetNonce_false
+NonceTest.testFail_GetNonce_true
+NonceTest.testFail_GetNonce_false
 OwnerUpOnlyTest.testFailIncrementAsNotOwner
 OwnerUpOnlyTest.testIncrementAsNotOwner
 OwnerUpOnlyTest.testIncrementAsOwner

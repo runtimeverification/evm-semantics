@@ -298,6 +298,31 @@ However, there is no change on the state and therefore this rule just skips the 
     [priority(40)]
 ```
 
+#### `getNonce` - Gets the nonce of the given account.
+
+```
+function getNonce(address account) external returns (uint64);
+```
+
+`call.getNonce` will match when the `getNonce` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and returns its `nonce` updating the `<output>` cell.
+
+```k
+    rule [call.getNonce]:
+          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, NONCE) ... </k>
+          <output> _ => #bufStrict(32, NONCE) </output>
+          <localMem> LM </localMem>
+          <account>
+             <acctID> ACCTID </acctID>
+             <nonce>  NONCE  </nonce>
+             ...
+         </account>
+       requires CHEAT_ADDR ==Int #address(FoundryCheat)
+        andBool ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
+        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 755185067 // selector ( "getNonce(address)" )
+     [priority(40)]
+```
+
 #### `addr` - Computes the address for a given private key.
 
 ```
