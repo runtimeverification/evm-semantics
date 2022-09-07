@@ -2993,6 +2993,7 @@ module FOUNDRY-SPEC
 endmodule
 
 module ADDRTEST-BIN-RUNTIME-SPEC
+    imports public ADDRTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [test-addr-false]: <kevm>
@@ -3522,6 +3523,7 @@ module ADDRTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module ASSUMETEST-BIN-RUNTIME-SPEC
+    imports public ASSUMETEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [test-assume-true]: <kevm>
@@ -3789,6 +3791,7 @@ module ASSUMETEST-BIN-RUNTIME-SPEC
 endmodule
 
 module DEALTEST-BIN-RUNTIME-SPEC
+    imports public DEALTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testDeal]: <kevm>
@@ -4056,6 +4059,7 @@ module DEALTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module ETCHTEST-BIN-RUNTIME-SPEC
+    imports public ETCHTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testEtch]: <kevm>
@@ -4323,6 +4327,7 @@ module ETCHTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module LABELTEST-BIN-RUNTIME-SPEC
+    imports public LABELTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testLabel]: <kevm>
@@ -4590,6 +4595,7 @@ module LABELTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module ASSERTTEST-BIN-RUNTIME-SPEC
+    imports public ASSERTTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [test-assert-true]: <kevm>
