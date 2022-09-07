@@ -136,9 +136,6 @@ def exec_foundry_to_k(
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
     path_glob = str(foundry_out) + '/*.t.sol/*.json'
-    spec_imports = list(imports)
-    if main_module is not None:
-        spec_imports.append(main_module)
     modules: List[KFlatModule] = []
     claims_modules: List[KFlatModule] = []
     _exclude_tests = []
@@ -156,7 +153,12 @@ def exec_foundry_to_k(
             contract_json = json.loads(cjson.read())
             contract = Contract(contract_name, contract_json, foundry=True)
             module, claims_module = contract_to_k(
-                contract, empty_config, foundry=True, exclude_tests=_exclude_tests, imports=spec_imports
+                contract,
+                empty_config,
+                foundry=True,
+                exclude_tests=_exclude_tests,
+                imports=imports,
+                main_module=main_module,
             )
             _LOGGER.info(f'Produced contract module: {module.name}')
             modules.append(module)

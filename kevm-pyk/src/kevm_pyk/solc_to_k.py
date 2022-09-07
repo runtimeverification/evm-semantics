@@ -375,6 +375,7 @@ def contract_to_k(
     foundry: bool = False,
     exclude_tests: Iterable[str] = (),
     imports: Iterable[str] = (),
+    main_module: Optional[str] = None,
 ) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
     sentences = contract.sentences
@@ -407,7 +408,9 @@ def contract_to_k(
             function_test_calldatas.append((tm.name, calldata, callvalue))
     if function_test_calldatas:
         claims = gen_claims_for_contract(empty_config, contract.name, calldata_cells=function_test_calldatas)
-        claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(i) for i in list(imports) + [module_name]])
+        claims_module = KFlatModule(
+            module_name + '-SPEC', claims, [KImport(module_name) if not main_module else KImport(main_module)]
+        )
 
     return module, claims_module
 
