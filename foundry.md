@@ -309,7 +309,7 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
 
 ```k
     rule [call.getNonce]:
-          <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH RETSTART RETWIDTH => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, NONCE) ... </k>
+          <k> CALL _ CHEAT_ADDR _ ARGSTART _ARGWIDTH RETSTART RETWIDTH => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, NONCE) ... </k>
           <output> _ => #bufStrict(32, NONCE) </output>
           <localMem> LM </localMem>
           <account>
