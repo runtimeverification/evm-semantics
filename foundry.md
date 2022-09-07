@@ -295,6 +295,7 @@ However, there is no change on the state and therefore this rule just skips the 
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3327641368 // selector ( "label(address,string)" )
+    [priority(40)]
 ```
 
 #### `getNonce` - Gets the nonce of the given account..
@@ -322,7 +323,25 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
      [priority(40)]
 ```
 
+#### `addr` - Computes the address for a given private key.
+
+```
+function addr(uint256 privateKey) external returns (address);
+```
+
+`call.addr` will match when the `addr` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule takes `uint256` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and computes the address for a given private key updating the `<output>` cell.
+
+```k
+    rule [call.addr]:
+          <k> CALL _ CHEAT_ADDR _ ARGSTART _ARGWIDTH RETSTART RETWIDTH => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, #addrFromPrivateKey(#unparseByteStack(#range(LM, ARGSTART +Int 4, 32)))) ... </k>
+          <output> _ => #bufStrict(32, #addrFromPrivateKey(#unparseByteStack(#range(LM, ARGSTART +Int 4, 32)))) </output>
+          <localMem> LM </localMem>
+       requires CHEAT_ADDR ==Int #address(FoundryCheat)
+        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4288775753 // selector ( "addr(uint256)" )
+     [priority(40)]
+```
+
 ```k
 endmodule
 ```
-
