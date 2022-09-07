@@ -16,7 +16,7 @@ contract NonceTest is Test {
 
     function test_GetNonce_true() public {
        uint64 oldnonce = vm.getNonce(address(this));
-       assert(oldnonce >= 0);
+       assertGt(oldnonce,0);
     }
 
     function test_GetNonce_false() public {
