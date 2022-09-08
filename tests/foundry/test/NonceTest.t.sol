@@ -34,4 +34,18 @@ contract NonceTest is Test {
        assert(oldnonce >= 0);
     }
 
+/*
+    function test_SetNonce() public {
+       uint64 oldnonce = vm.getNonce(address(this));
+       console.log(oldnonce);
+       vm.setNonce(address(this), oldnonce+1);
+       assertEq(vm.getNonce(address(this)),oldnonce+1);
+    }
+    */
+
+    function test_SetNonce_true() public {
+       vm.setNonce(address(this), 100);
+       assertEq(vm.getNonce(address(this)),100);
+    }
+
 }
