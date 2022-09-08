@@ -61,7 +61,6 @@ def exec_kompile(
     main_module: Optional[str],
     syntax_module: Optional[str],
     md_selector: Optional[str],
-    hook_namespaces: Optional[str],
     **kwargs,
 ) -> None:
     KEVM.kompile(
@@ -72,7 +71,6 @@ def exec_kompile(
         main_module_name=main_module,
         syntax_module_name=syntax_module,
         md_selector=md_selector,
-        hook_namespaces=hook_namespaces.split(' ') if hook_namespaces is not None else None,
         profile=profile,
     )
 
@@ -191,7 +189,6 @@ def exec_foundry_kompile(
     exclude_tests: Optional[Path],
     includes: List[str],
     md_selector: Optional[str],
-    hook_namespaces: Optional[str],
     regen: bool = False,
     rekompile: bool = False,
     requires: Iterable[str] = (),
@@ -230,7 +227,6 @@ def exec_foundry_kompile(
             main_module_name=main_module,
             syntax_module_name=syntax_module,
             md_selector=md_selector,
-            hook_namespaces=hook_namespaces.split(' ') if hook_namespaces is not None else None,
             profile=profile,
         )
 
@@ -358,7 +354,6 @@ def _create_argument_parser() -> ArgumentParser:
         default='k & ! nobytes & ! node',
         help='Code selector expression to use when reading markdown.',
     )
-    k_kompile_args.add_argument('--hook-namespaces', type=str, help='Hook namespaces. What more can I say?')
     k_kompile_args.add_argument(
         '--emit-json',
         dest='emit_json',

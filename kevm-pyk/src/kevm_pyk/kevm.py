@@ -43,7 +43,6 @@ class KEVM(KProve, KRun):
         main_module_name: Optional[str] = None,
         syntax_module_name: Optional[str] = None,
         md_selector: Optional[str] = None,
-        hook_namespaces: Optional[List[str]] = None,
         profile: bool = False,
     ) -> 'KEVM':
         command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
@@ -51,7 +50,7 @@ class KEVM(KProve, KRun):
         command += ['--main-module', main_module_name] if main_module_name else []
         command += ['--syntax-module', syntax_module_name] if syntax_module_name else []
         command += ['--md-selector', md_selector] if md_selector else []
-        command += ['--hook-namespaces', ' '.join(hook_namespaces)] if hook_namespaces else []
+        command += ['--hook-namespaces', ' '.join(KEVM.hook_namespaces())]
         command += add_include_arg(includes)
         if emit_json:
             command += ['--emit-json']
@@ -95,6 +94,10 @@ class KEVM(KProve, KRun):
         symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
         symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
         # fmt: on
+
+    @staticmethod
+    def hook_namespaces() -> List[str]:
+        return ['JSON', 'KRYPTO', 'BLOCKCHAIN']
 
     @staticmethod
     def concrete_rules() -> List[str]:
