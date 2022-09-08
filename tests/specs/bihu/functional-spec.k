@@ -19,19 +19,22 @@ module FUNCTIONAL-SPEC
            => doneLemma(#buf(32, BS)) ... </k>
       requires #rangeUInt(256, BS)
 
-   rule <k> runLemma(
-      chop (
+   claim <k> runLemma(
          chop (
-            #roundpower (
-               COLLECTED +Int BAL ,
-               90 ,
-               100 ,
-               ( NOW -Int START ) /Int 31536000 ) *Int 10 /Int 100 *Int (
+            chop (
+               #roundpower (
+                  COLLECTED +Int BAL ,
+                  90 ,
+                  100 ,
+                  ( NOW -Int START ) /Int 31536000
+               ) *Int 10 /Int 100 *Int (
                   ( NOW -Int START ) modInt 31536000
-               ) /Int 31536000 +Int COLLECTED +Int BAL -Int #roundpower ( COLLECTED +Int BAL ,
-               90 ,
-               100 ,
-               ( NOW -Int START ) /Int 31536000 )
+               ) /Int 31536000 +Int COLLECTED +Int BAL -Int #roundpower (
+                  COLLECTED +Int BAL ,
+                  90 ,
+                  100 ,
+                  ( NOW -Int START ) /Int 31536000
+               )
             ) -Int COLLECTED
          )
       ) => doneLemma(
@@ -41,7 +44,7 @@ module FUNCTIONAL-SPEC
                90 ,
                100 ,
                ( NOW -Int START ) /Int 31536000
-            ) /Int 10 *Int (
+            ) *Int 10 /Int 100 *Int (
                ( NOW -Int START ) modInt 31536000
             ) /Int 31536000 +Int COLLECTED +Int BAL -Int #roundpower (
                COLLECTED +Int BAL ,
@@ -61,6 +64,10 @@ module FUNCTIONAL-SPEC
                1 |-> BAL:Int
                ...
             </storage>
+            <balance> _ </balance>
+            <code> _ </code>
+            <nonce> _ </nonce>
+            <origStorage> _ </origStorage>
          </account>
       </accounts>
       <timestamp>
@@ -69,7 +76,6 @@ module FUNCTIONAL-SPEC
       <callData>
             b"\xb9>,\xdb" ++ #buf ( 32 , NOW ) ++ #buf ( 32 , START )
       </callData>
-
    requires 0 <=Int COLLECTED +Int BAL
    andBool  0 <=Int COLLECTED
    andBool  COLLECTED <Int pow256
@@ -89,7 +95,5 @@ module FUNCTIONAL-SPEC
    andBool  0 <=Int ( NOW -Int START ) modInt 31536000
    andBool  BAL <Int pow256
    andBool  0 <=Int BAL
-
-   // COLLECT ALL SIDE_CONDITIONS FROM ABOVE TERM THAT TALK ABOUT VARIABLES PRESENT IN THIS REWRITE
 
 endmodule

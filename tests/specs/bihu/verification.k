@@ -34,6 +34,9 @@ module VERIFICATION
        andBool I2 >=Int I3
       [simplification]
 
+    rule chop(chop(X) -Int Y) => chop(X) -Int Y
+      requires Y <Int pow256 [simplification]
+
   // ########################
   // #roundpower
   // ########################
