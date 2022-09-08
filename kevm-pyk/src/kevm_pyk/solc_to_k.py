@@ -380,7 +380,7 @@ def contract_to_k(
 
     sentences = contract.sentences
     module_name = contract.name.upper() + '-BIN-RUNTIME'
-    module = KFlatModule(module_name, sentences, [KImport(i) for i in ['EDSL', 'LEMMAS'] + list(imports)])
+    module = KFlatModule(module_name, sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
 
     claims_module: Optional[KFlatModule] = None
     contract_function_application_label = contract.klabel_method

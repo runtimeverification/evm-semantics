@@ -498,6 +498,7 @@ tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
 	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose                            \
 	    --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION \
+	    --require lemmas/lemmas.k --module-import LEMMAS                         \
 	    --concrete-rules-file tests/specs/concrete-rules.txt                     \
 	    --exclude-tests tests/foundry/exclude
 

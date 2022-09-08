@@ -176,7 +176,7 @@ def exec_foundry_to_k(
     bin_runtime_definition = KDefinition(
         _main_module.name,
         modules + claims_modules,
-        requires=[KRequire(req) for req in ['edsl.md', 'lemmas/lemmas.k'] + requires],
+        requires=[KRequire(req) for req in ['edsl.md'] + requires],
     )
     _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
     KEVM._patch_symbol_table(_kprint.symbol_table)
