@@ -339,12 +339,11 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
           <localMem> LM </localMem>
           <account>
              <acctID> ACCTID </acctID>
-             <nonce>  _ => NONCE  </nonce>
+             <nonce>  _ => #asWord(#range(LM, ARGSTART +Int 36, 8))  </nonce>
              ...
          </account>
        requires CHEAT_ADDR ==Int #address(FoundryCheat)
         andBool ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
-        andBool NONCE ==Int #asWord(#range(LM, ARGSTART +Int 36, 8))
         andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4175530839 // selector ( "setNonce(address,uint64)" )
      [priority(40)]
 ```
