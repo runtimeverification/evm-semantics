@@ -62,7 +62,6 @@ def exec_kompile(
     syntax_module: Optional[str],
     md_selector: Optional[str],
     hook_namespaces: Optional[str],
-    concrete_rules_file: Optional[Path],
     **kwargs,
 ) -> None:
     KEVM.kompile(
@@ -74,7 +73,6 @@ def exec_kompile(
         syntax_module_name=syntax_module,
         md_selector=md_selector,
         hook_namespaces=hook_namespaces.split(' ') if hook_namespaces is not None else None,
-        concrete_rules_file=concrete_rules_file,
         profile=profile,
     )
 
@@ -194,7 +192,6 @@ def exec_foundry_kompile(
     includes: List[str],
     md_selector: Optional[str],
     hook_namespaces: Optional[str],
-    concrete_rules_file: Optional[Path],
     regen: bool = False,
     rekompile: bool = False,
     requires: Iterable[str] = (),
@@ -234,7 +231,6 @@ def exec_foundry_kompile(
             syntax_module_name=syntax_module,
             md_selector=md_selector,
             hook_namespaces=hook_namespaces.split(' ') if hook_namespaces is not None else None,
-            concrete_rules_file=concrete_rules_file,
             profile=profile,
         )
 
@@ -363,11 +359,6 @@ def _create_argument_parser() -> ArgumentParser:
         help='Code selector expression to use when reading markdown.',
     )
     k_kompile_args.add_argument('--hook-namespaces', type=str, help='Hook namespaces. What more can I say?')
-    k_kompile_args.add_argument(
-        '--concrete-rules-file',
-        type=file_path,
-        help='File containing list of rules to be evaluated only if arguments are fully concrete.',
-    )
     k_kompile_args.add_argument(
         '--emit-json',
         dest='emit_json',

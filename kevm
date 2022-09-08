@@ -78,8 +78,7 @@ run_kompile() {
 
     if [[ ! -z ${concrete_rules_file} ]]; then
         if [[ -f ${concrete_rules_file} ]]; then
-              ${pyk} || kompile_opts+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
-            ! ${pyk} || kompile_opts+=(--concrete-rules-file "${concrete_rules_file}")
+            ${pyk} || kompile_opts+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
         else
             fatal "Concrete rules file doesn't exist: ${concrete_rules_file}"
         fi

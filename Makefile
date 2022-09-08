@@ -499,7 +499,6 @@ tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(haskell_kompi
 	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose                            \
 	    --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION \
 	    --require lemmas/lemmas.k --module-import LEMMAS                         \
-	    --concrete-rules-file tests/specs/concrete-rules.txt                     \
 	    --exclude-tests tests/foundry/exclude
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
