@@ -320,6 +320,16 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
        requires CHEAT_ADDR ==Int #address(FoundryCheat)
         andBool ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
         andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 755185067 // selector ( "getNonce(address)" )
+     [priority(35)]
+```
+
+```k
+     rule [call.getNonceNonExistingAddress]:
+          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH => #newAccount (#asWord(#range(LM, ARGSTART +Int 4, 32))) ~> 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, 0) ... </k>
+          <output> _ => #bufStrict(32, 0) </output>
+          <localMem> LM </localMem>
+       requires CHEAT_ADDR ==Int #address(FoundryCheat)
+        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 755185067 // selector ( "getNonce(address)" )
      [priority(40)]
 ```
 
