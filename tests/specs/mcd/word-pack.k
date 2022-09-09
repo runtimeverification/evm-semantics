@@ -208,21 +208,24 @@ module WORD-PACK-COMMON
     //
     // More simplifications surrounding pow48 and maxUInt48
     //
-    rule maxUInt48 &Int X:Int => X requires (0 <=Int X) andBool (X <Int pow48) [simplification]
+    rule maxUInt48 &Int X:Int => X requires #rangeUInt(48, X) [simplification]
     rule maxUInt48 &Int (X /Int pow48) => X /Int pow48 requires #rangeUInt(96, X) [simplification]
     rule (maxUInt48 &Int _) /Int C => 0 requires C >=Int maxUInt48 [simplification]
-    rule maxUInt48 &Int X <Int Y => true requires 0 <=Int X andBool pow48 <=Int Y [simplification]
     rule X /Int pow48 => 0 requires #rangeUInt(48, X) [simplification]
 
     rule maxUInt48 &Int (A:Int |Int B:Int) => (maxUInt48 &Int A) |Int (maxUInt48 &Int B)
       requires 0 <=Int A andBool 0 <=Int B [simplification]
 
+    rule MAX_UINT &Int X <Int Y => true
+      requires 0 <=Int X
+       andBool MAX_UINT <Int Y
+       andBool 0 <=Int MAX_UINT [simplification]
+
     //
     // More simplifications surrounding pow160 and maxUInt160
     //
-    rule maxUInt160 &Int X:Int => X requires (0 <=Int X) andBool (X <Int pow160) [simplification]
+    rule maxUInt160 &Int X:Int => X requires #rangeUInt(160, X) [simplification]
     rule (maxUInt160 &Int _) /Int C => 0 requires C >=Int maxUInt160 [simplification]
-    rule maxUInt160 &Int X <Int Y => true requires 0 <=Int X andBool pow160 <=Int Y [simplification]
     rule X /Int pow160 => 0 requires #rangeUInt(160, X) [simplification]
 
     rule maxUInt160 &Int (A:Int |Int B:Int) => (maxUInt160 &Int A) |Int (maxUInt160 &Int B)
