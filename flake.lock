@@ -763,6 +763,36 @@
         "type": "github"
       }
     },
+    "pyk": {
+      "inputs": {
+        "flake-utils": [
+          "k-framework",
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "k-framework",
+          "nixpkgs"
+        ],
+        "poetry2nix": [
+          "k-framework",
+          "poetry2nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1662734323,
+        "narHash": "sha256-rO/oikq/JgSLciSi24MK3bwmaEdcsFOIPNvRpp5Wtpw=",
+        "owner": "runtimeverification",
+        "repo": "pyk",
+        "rev": "3cef4165e26b1662241c1b8d1d1edd5551413856",
+        "type": "github"
+      },
+      "original": {
+        "owner": "runtimeverification",
+        "repo": "pyk",
+        "rev": "3cef4165e26b1662241c1b8d1d1edd5551413856",
+        "type": "github"
+      }
+    },
     "rapidjson-src": {
       "flake": false,
       "locked": {
@@ -798,6 +828,7 @@
           "k-framework",
           "poetry2nix"
         ],
+        "pyk": "pyk",
         "rv-utils": "rv-utils"
       }
     },
