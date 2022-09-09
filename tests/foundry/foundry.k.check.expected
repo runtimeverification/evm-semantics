@@ -1,7 +1,6 @@
 requires "edsl.md"
 requires "lemmas/int-simplification.k"
 requires "lemmas/lemmas.k"
-requires "lemmas/int-simplification.k"
 
 module ADDRTEST-BIN-RUNTIME
     imports public EDSL
@@ -1859,15 +1858,15 @@ module NONCETEST-BIN-RUNTIME
     syntax NonceTestMethod ::= "setUp" "(" ")" [klabel(method_NonceTest_setUp)]
     
     syntax NonceTestMethod ::= "testFail_GetNonce_false" "(" ")" [klabel(method_NonceTest_testFail_GetNonce_false)]
-
+    
     syntax NonceTestMethod ::= "testFail_GetNonce_true" "(" ")" [klabel(method_NonceTest_testFail_GetNonce_true)]
-
+    
     syntax NonceTestMethod ::= "testNonce" "(" Int ")" [klabel(method_NonceTest_testNonce)]
     
     syntax NonceTestMethod ::= "test_GetNonce_false" "(" ")" [klabel(method_NonceTest_test_GetNonce_false)]
-
+    
     syntax NonceTestMethod ::= "test_GetNonce_true" "(" ")" [klabel(method_NonceTest_test_GetNonce_true)]
-
+    
     syntax NonceTestMethod ::= "vm" "(" ")" [klabel(method_NonceTest_vm)]
     
     rule  ( NonceTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
@@ -1883,21 +1882,21 @@ module NONCETEST-BIN-RUNTIME
       
     
     rule  ( NonceTest . testFail_GetNonce_false ( ) => #abiCallData ( "testFail_GetNonce_false" , .TypedArgs ) )
-
-
+      
+    
     rule  ( NonceTest . testFail_GetNonce_true ( ) => #abiCallData ( "testFail_GetNonce_true" , .TypedArgs ) )
-
-
+      
+    
     rule  ( NonceTest . testNonce ( V0_newNonce ) => #abiCallData ( "testNonce" , #uint64 ( V0_newNonce ) , .TypedArgs ) )
        ensures #rangeUInt ( 64 , V0_newNonce )
       
     
     rule  ( NonceTest . test_GetNonce_false ( ) => #abiCallData ( "test_GetNonce_false" , .TypedArgs ) )
-
-
+      
+    
     rule  ( NonceTest . test_GetNonce_true ( ) => #abiCallData ( "test_GetNonce_true" , .TypedArgs ) )
-
-
+      
+    
     rule  ( NonceTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
     
@@ -1914,20 +1913,20 @@ module NONCETEST-BIN-RUNTIME
       
     
     rule  ( selector ( "testFail_GetNonce_false" ) => 2393877859 )
-
-
+      
+    
     rule  ( selector ( "testFail_GetNonce_true" ) => 1067907152 )
-
-
+      
+    
     rule  ( selector ( "testNonce" ) => 3637501163 )
       
     
     rule  ( selector ( "test_GetNonce_false" ) => 3545243759 )
-
-
+      
+    
     rule  ( selector ( "test_GetNonce_true" ) => 3968101798 )
-
-
+      
+    
     rule  ( selector ( "vm" ) => 980845667 )
       
 
@@ -2975,7 +2974,7 @@ module TOKENTEST-BIN-RUNTIME
 
 endmodule
 
-module VERIFICATION
+module FOUNDRY-MAIN
     imports public ADDRTEST-BIN-RUNTIME
     imports public ASSUMETEST-BIN-RUNTIME
     imports public BLOCKPARAMSTEST-BIN-RUNTIME
@@ -3008,12 +3007,13 @@ module VERIFICATION
     imports public TOSTRINGTEST-BIN-RUNTIME
     imports public TOKENTEST-BIN-RUNTIME
     imports public INT-SIMPLIFICATION
+    imports public LEMMAS
     
     
 
 endmodule
 
-module SPEC
+module FOUNDRY-SPEC
     imports public ADDRTEST-BIN-RUNTIME-SPEC
     imports public ASSUMETEST-BIN-RUNTIME-SPEC
     imports public DEALTEST-BIN-RUNTIME-SPEC
@@ -3027,8 +3027,8 @@ module SPEC
 endmodule
 
 module ADDRTEST-BIN-RUNTIME-SPEC
-    imports public VERIFICATION
     imports public ADDRTEST-BIN-RUNTIME
+    imports public FOUNDRY-MAIN
     
     claim [test-addr-true]: <kevm>
            <k>
@@ -3295,9 +3295,9 @@ module ADDRTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module ASSUMETEST-BIN-RUNTIME-SPEC
-    imports public VERIFICATION
     imports public ASSUMETEST-BIN-RUNTIME
-
+    imports public FOUNDRY-MAIN
+    
     claim [test-assume-true]: <kevm>
            <k>
              ( #execute => #halt )
@@ -3563,8 +3563,8 @@ module ASSUMETEST-BIN-RUNTIME-SPEC
 endmodule
 
 module DEALTEST-BIN-RUNTIME-SPEC
-    imports public VERIFICATION
     imports public DEALTEST-BIN-RUNTIME
+    imports public FOUNDRY-MAIN
     
     claim [testDeal]: <kevm>
            <k>
@@ -3831,8 +3831,8 @@ module DEALTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module ETCHTEST-BIN-RUNTIME-SPEC
-    imports public VERIFICATION
     imports public ETCHTEST-BIN-RUNTIME
+    imports public FOUNDRY-MAIN
     
     claim [testEtch]: <kevm>
            <k>
@@ -4099,8 +4099,8 @@ module ETCHTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module LABELTEST-BIN-RUNTIME-SPEC
-    imports public VERIFICATION
     imports public LABELTEST-BIN-RUNTIME
+    imports public FOUNDRY-MAIN
     
     claim [testLabel]: <kevm>
            <k>
@@ -4367,8 +4367,8 @@ module LABELTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module NONCETEST-BIN-RUNTIME-SPEC
-    imports public VERIFICATION
     imports public NONCETEST-BIN-RUNTIME
+    imports public FOUNDRY-MAIN
     
     claim [test-GetNonce-true]: <kevm>
            <k>
@@ -4635,8 +4635,8 @@ module NONCETEST-BIN-RUNTIME-SPEC
 endmodule
 
 module ASSERTTEST-BIN-RUNTIME-SPEC
-    imports public VERIFICATION
     imports public ASSERTTEST-BIN-RUNTIME
+    imports public FOUNDRY-MAIN
     
     claim [test-assert-true]: <kevm>
            <k>
@@ -4901,4 +4901,3 @@ module ASSERTTEST-BIN-RUNTIME-SPEC
       [label(test-assert-true)]
 
 endmodule
-
