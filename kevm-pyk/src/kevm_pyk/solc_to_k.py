@@ -373,7 +373,6 @@ def contract_to_k(
     contract: Contract,
     empty_config: KInner,
     foundry: bool = False,
-    exclude_tests: Iterable[str] = (),
     imports: Iterable[str] = (),
     main_module: Optional[str] = None,
 ) -> Tuple[KFlatModule, Optional[KFlatModule]]:
@@ -386,9 +385,7 @@ def contract_to_k(
     contract_function_application_label = contract.klabel_method
     function_test_calldatas = []
     for tm in contract.methods:
-        if f'{contract.name}.{tm.name}' in exclude_tests:
-            _LOGGER.warning(f'Excluding test from contract {contract.name}: {tm.name}')
-        elif tm.name.startswith('testFail'):
+        if tm.name.startswith('testFail'):
             _LOGGER.warning(f'Ignoring test from contract {contract.name}: {tm.name}')
         elif tm.name.startswith('test'):
             klabel = tm.production.klabel

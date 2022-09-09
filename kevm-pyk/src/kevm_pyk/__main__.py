@@ -84,21 +84,14 @@ def exec_solc_to_k(
     spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
-    exclude_tests: Optional[Path],
     **kwargs,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
     solc_json = solc_compile(contract_file, profile=profile)
     contract_json = solc_json['contracts'][contract_file.name][contract_name]
-    _exclude_tests = []
-    if exclude_tests and exclude_tests.exists():
-        with open(exclude_tests, 'r') as el:
-            _exclude_tests = el.read().strip().split('\n')
     contract = Contract(contract_name, contract_json, foundry=False)
-    contract_module, contract_claims_module = contract_to_k(
-        contract, empty_config, foundry=False, exclude_tests=_exclude_tests, imports=imports
-    )
+    contract_module, contract_claims_module = contract_to_k(contract, empty_config, foundry=False, imports=imports)
     modules = [contract_module]
     claims_modules = [contract_claims_module] if contract_claims_module else []
     _main_module = KFlatModule(
@@ -125,7 +118,6 @@ def exec_foundry_to_k(
     spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
-    exclude_tests: Optional[Path],
     output: Optional[TextIO],
     **kwargs,
 ) -> None:
@@ -134,10 +126,6 @@ def exec_foundry_to_k(
     path_glob = str(foundry_out) + '/*.t.sol/*.json'
     modules: List[KFlatModule] = []
     claims_modules: List[KFlatModule] = []
-    _exclude_tests = []
-    if exclude_tests and exclude_tests.exists():
-        with open(exclude_tests, 'r') as el:
-            _exclude_tests = el.read().strip().split('\n')
     # Must sort to get consistent output order on different platforms.
     for json_file in sorted(glob.glob(path_glob)):
         if json_file.endswith('.metadata.json'):
@@ -152,7 +140,6 @@ def exec_foundry_to_k(
                 contract,
                 empty_config,
                 foundry=True,
-                exclude_tests=_exclude_tests,
                 imports=imports,
                 main_module=main_module,
             )
@@ -186,7 +173,6 @@ def exec_foundry_kompile(
     definition_dir: Path,
     profile: bool,
     foundry_out: Path,
-    exclude_tests: Optional[Path],
     includes: List[str],
     md_selector: Optional[str],
     regen: bool = False,
@@ -215,7 +201,6 @@ def exec_foundry_kompile(
                 spec_module=spec_module,
                 requires=list(requires),
                 imports=list(imports),
-                exclude_tests=exclude_tests,
                 output=fmf,
             )
     if regen or rekompile or not (foundry_definition_dir / 'timestamp').exists():
@@ -391,11 +376,6 @@ def _create_argument_parser() -> ArgumentParser:
         default=[],
         action='append',
         help='Extra modules to import into generated main module.',
-    )
-    k_gen_args.add_argument(
-        '--exclude-tests',
-        type=file_path,
-        help='File containing, one per line, tests to exclude as CONTRACT_NAME.TEST_NAME.',
     )
 
     parser = ArgumentParser(prog='python3 -m kevm_pyk')
