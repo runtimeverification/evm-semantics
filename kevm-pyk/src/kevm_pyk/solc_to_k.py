@@ -370,12 +370,17 @@ def gen_claims_for_contract(
 
 
 def contract_to_k(
-    contract: Contract, empty_config: KInner, foundry: bool = False, exclude_tests: Iterable[str] = ()
+    contract: Contract,
+    empty_config: KInner,
+    foundry: bool = False,
+    exclude_tests: Iterable[str] = (),
+    imports: Iterable[str] = (),
+    main_module: Optional[str] = None,
 ) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
     sentences = contract.sentences
     module_name = contract.name.upper() + '-BIN-RUNTIME'
-    module = KFlatModule(module_name, sentences, [KImport('EDSL'), KImport('INT-SIMPLIFICATION'), KImport('LEMMAS')])
+    module = KFlatModule(module_name, sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
 
     claims_module: Optional[KFlatModule] = None
     contract_function_application_label = contract.klabel_method
@@ -403,7 +408,9 @@ def contract_to_k(
             function_test_calldatas.append((tm.name, calldata, callvalue))
     if function_test_calldatas:
         claims = gen_claims_for_contract(empty_config, contract.name, calldata_cells=function_test_calldatas)
-        claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport('VERIFICATION'), KImport(module_name)])
+        claim_imports = [KImport(module_name)]
+        claim_imports += [KImport(main_module)] if main_module else []
+        claims_module = KFlatModule(module_name + '-SPEC', claims, claim_imports)
 
     return module, claims_module
 
