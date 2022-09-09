@@ -226,6 +226,7 @@ def exec_prove(
     spec_module: Optional[str],
     depth: Optional[int],
     claims: Iterable[str] = (),
+    exclude_claims: Iterable[str] = (),
     **kwargs,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
@@ -239,6 +240,8 @@ def exec_prove(
         prove_args += ['--depth', str(depth)]
     if claims:
         prove_args += ['--claims', ','.join(claims)]
+    if exclude_claims:
+        prove_args += ['--exclude', ','.join(exclude_claims)]
     final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
     print(kevm.pretty_print(final_state) + '\n')
 
@@ -251,6 +254,7 @@ def exec_foundry_prove(
     bug_report: bool,
     depth: Optional[int],
     tests: Iterable[str] = (),
+    exclude_tests: Iterable[str] = (),
     **kwargs,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -261,11 +265,17 @@ def exec_foundry_prove(
     spec_file = definition_dir / 'foundry.k'
     spec_module = 'FOUNDRY-SPEC'
     claims = []
+    exclude_claims = []
     for _t in tests:
         _m, _c = _t.split('.')
         _m = _m.upper() + '-BIN-RUNTIME-SPEC'
         _c = _c.replace('_', '-')
         claims.append(f'{_m}.{_c}')
+    for _t in exclude_tests:
+        _m, _c = _t.split('.')
+        _m = _m.upper() + '-BIN-RUNTIME-SPEC'
+        _c = _c.replace('_', '-')
+        exclude_claims.append(f'{_m}.{_c}')
     exec_prove(
         definition_dir,
         profile,
@@ -275,6 +285,7 @@ def exec_foundry_prove(
         bug_report=bug_report,
         depth=depth,
         claims=claims,
+        exclude_claims=exclude_claims,
         spec_module=spec_module,
         **kwargs,
     )
@@ -402,6 +413,13 @@ def _create_argument_parser() -> ArgumentParser:
     prove_args.add_argument(
         '--claim', type=str, dest='claims', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
     )
+    prove_args.add_argument(
+        '--exclude-claim',
+        type=str,
+        dest='exclude_claims',
+        action='append',
+        help='Skip listed claims, MODULE_NAME.claim-id',
+    )
 
     run_args = command_parser.add_parser(
         'run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args, k_args]
@@ -483,6 +501,14 @@ def _create_argument_parser() -> ArgumentParser:
         default=[],
         action='append',
         help='Limit to only listed tests, ContractName.TestName',
+    )
+    foundry_prove_args.add_argument(
+        '--exclude-test',
+        type=str,
+        dest='exclude_tests',
+        default=[],
+        action='append',
+        help='Skip listed tests, ContractName.TestName',
     )
 
     return parser
