@@ -1,6 +1,47 @@
 Foundry Specifications
 ======================
 
+**UNDER CONSTRUCTION**
+
+### Usage
+
+Given a Foundry `out` directory, call (~2-3 minutes):
+
+```sh
+kevm foundry-kompile path/to/foundry/out
+```
+
+Then, you can attempt to prove your Foundry property tests with:
+
+```sh
+kevm foundry-prove path/to/foundry/out [--contract TestContractName]
+```
+
+Adding optional argument `--contract TestContractName` will only attempt to run the proofs from that contract.
+
+For example, in this repository, you can run:
+
+```sh
+% cd tests/foundry
+% forge build
+
+% kevm foundry-kompile out --concrete-rules-file ../specs/concrete-rules.txt
+WARNING 2022-08-30 22:08:43,482 kevm_pyk.solc_to_k - Ignoring test from contract AssumeTest: testFail_assume_false
+... BUNCH MOE WARNINGS ...
+WARNING 2022-08-30 22:08:44,267 kevm_pyk.solc_to_k - Ignoring test from contract AssertTest: testFail_assert_true
+
+% kevm foundry-prove out --contract AssertTest
+WARNING 2022-08-30 22:29:23,287 __main__ - Ignoring command-line option: --definition: /home/dev/src/evm-semantics/.build/usr/lib/kevm/haskell
+( <generatedTop>
+  <kevm>
+    <k>
+      #halt
+      ~> _CONTINUATION
+... A BUNCH MORE CONFIGURATION HERE ...
+</generatedTop>
+#And { 0 #Equals #lookup ( CHEATCODE_STORAGE , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) } )
+```
+
 ### Overview
 
 Foundry's testing framework provides a series of cheatcodes so that developers can specify what situation they want to test.
@@ -109,7 +150,7 @@ This rule then takes a `bool` condition using `#range(LM, ARGSTART +Int 4, 32)` 
 ```k
 
     rule [call.assume]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => #assume(#range(LM, ARGSTART +Int 4, 32) ==K #bufStrict(32, 1)) ~> 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #assume(#range(LM, ARGSTART +Int 4, 32) ==K #bufStrict(32, 1)) ~> 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
@@ -128,7 +169,7 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)`
 
 ```k
     rule [call.deal]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => #setBalance(#asWord(#range(LM, ARGSTART +Int 4, 32)), #asWord(#range(LM, ARGSTART +Int 36, 32))) ~> 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #setBalance(#asWord(#range(LM, ARGSTART +Int 4, 32)), #asWord(#range(LM, ARGSTART +Int 36, 32))) ~> 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
@@ -157,7 +198,7 @@ The values are forwarded to the `#setCode` marker which updates the account acco
 
 ```k
     rule [call.etch]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART ARGWIDTH 0 0
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART ARGWIDTH _RETSTART _RETWIDTH
           => #setCode(#asWord(#range(LM, ARGSTART +Int 4, 32)), #range(LM, ARGSTART +Int 36, ARGWIDTH -Int 36))
           ~> 1 ~> #push
          ...
@@ -189,7 +230,7 @@ This rule then takes the uint256 value using `#asWord(#range(LM, ARGSTART +Int 4
 
 ```k
     rule [call.warp]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <timestamp> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </timestamp>
@@ -209,7 +250,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
 
 ```k
     rule [call.roll]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <number> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </number>
@@ -218,7 +259,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
       [priority(40)]
 ```
 
-#### `fee` - Sets the block number.
+#### `fee` - Sets the block base fee.
 
 ```
 function fee(uint256) external;
@@ -229,7 +270,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
 
 ```k
     rule [call.fee]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <baseFee> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </baseFee>
@@ -238,7 +279,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
       [priority(40)]
 ```
 
-#### `chainId` - Sets the block number.
+#### `chainId` - Sets the chain ID.
 
 ```
 function chainId(uint256) external;
@@ -249,7 +290,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
 
 ```k
     rule [call.chainId]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <chainID> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </chainID>
@@ -258,7 +299,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
       [priority(40)]
 ```
 
-#### `coinbase` - Sets the block number.
+#### `coinbase` - Sets the block coinbase.
 
 ```
 function coinbase(address) external;
@@ -269,7 +310,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
 
 ```k
     rule [call.coinbase]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <coinbase> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </coinbase>
@@ -290,12 +331,37 @@ However, there is no change on the state and therefore this rule just skips the 
 
 ```k
     rule [call.label]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3327641368 // selector ( "label(address,string)" )
     [priority(40)]
+```
+
+#### `getNonce` - Gets the nonce of the given account.
+
+```
+function getNonce(address account) external returns (uint64);
+```
+
+`call.getNonce` will match when the `getNonce` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and returns its `nonce` updating the `<output>` cell.
+
+```k
+    rule [call.getNonce]:
+          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, NONCE) ... </k>
+          <output> _ => #bufStrict(32, NONCE) </output>
+          <localMem> LM </localMem>
+          <account>
+             <acctID> ACCTID </acctID>
+             <nonce>  NONCE  </nonce>
+             ...
+         </account>
+       requires CHEAT_ADDR ==Int #address(FoundryCheat)
+        andBool ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
+        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 755185067 // selector ( "getNonce(address)" )
+     [priority(40)]
 ```
 
 #### `addr` - Computes the address for a given private key.
