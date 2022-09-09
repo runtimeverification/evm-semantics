@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, Final, Iterable, List, Optional, TextIO
 
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KDefinition, KFlatModule, KImport, KRequire, KSort
+from pyk.kast import KApply, KDefinition, KFlatModule, KImport, KRequire, KSort
 from pyk.ktool.krun import _krun
 
 from .gst_to_kore import gst_to_kore
@@ -244,6 +244,9 @@ def exec_prove(
         prove_args += ['--exclude', ','.join(exclude_claims)]
     final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
     print(kevm.pretty_print(final_state) + '\n')
+    if not (type(final_state) is KApply and final_state.label.name == '#Top'):
+        _LOGGER.error('Proof failed!')
+        sys.exit(1)
 
 
 def exec_foundry_prove(
