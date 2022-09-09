@@ -237,6 +237,8 @@ def exec_prove(
         haskell_args += ['--bug-report', str(spec_file.with_suffix(''))]
     if depth is not None:
         prove_args += ['--depth', str(depth)]
+    if claims:
+        prove_args += ['--claims', ','.join(claims)]
     final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
     print(kevm.pretty_print(final_state) + '\n')
 
@@ -254,13 +256,16 @@ def exec_foundry_prove(
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    _ignore_arg(kwargs, 'spec_moule', f'--spec-module: {kwargs["spec_module"]}')
+    _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
     definition_dir = foundry_out / 'kompiled'
     spec_file = definition_dir / 'foundry.k'
+    spec_module = 'FOUNDRY-SPEC'
     claims = []
     for _t in tests:
         _m, _c = _t.split('.')
-        claims.append(f'{_m.upper()}.{_t.replace("_", "-")}')
+        _m = _m.upper() + '-BIN-RUNTIME-SPEC'
+        _c = _c.replace('_', '-')
+        claims.append(f'{_m}.{_c}')
     exec_prove(
         definition_dir,
         profile,
@@ -270,6 +275,7 @@ def exec_foundry_prove(
         bug_report=bug_report,
         depth=depth,
         claims=claims,
+        spec_module=spec_module,
         **kwargs,
     )
 
