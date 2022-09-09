@@ -225,6 +225,7 @@ def exec_prove(
     bug_report: bool,
     spec_module: Optional[str],
     depth: Optional[int],
+    claims: Iterable[str] = (),
     **kwargs,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
@@ -243,20 +244,23 @@ def exec_prove(
 def exec_foundry_prove(
     profile: bool,
     foundry_out: Path,
-    contract: Optional[str],
     includes: List[str],
     debug_equations: List[str],
     bug_report: bool,
-    spec_module: Optional[str],
     depth: Optional[int],
+    tests: Iterable[str] = (),
     **kwargs,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
+    _ignore_arg(kwargs, 'spec_moule', f'--spec-module: {kwargs["spec_module"]}')
     definition_dir = foundry_out / 'kompiled'
     spec_file = definition_dir / 'foundry.k'
-    spec_module = contract.upper() + '-BIN-RUNTIME-SPEC' if contract else 'FOUNDRY-SPEC'
+    claims = []
+    for _t in tests:
+        _m, _c = _t.split('.')
+        claims.append(f'{_m.upper()}.{_t.replace("_", "-")}')
     exec_prove(
         definition_dir,
         profile,
@@ -265,7 +269,7 @@ def exec_foundry_prove(
         debug_equations=debug_equations,
         bug_report=bug_report,
         depth=depth,
-        spec_module=spec_module,
+        claims=claims,
         **kwargs,
     )
 
@@ -389,6 +393,9 @@ def _create_argument_parser() -> ArgumentParser:
 
     prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args])
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
+    prove_args.add_argument(
+        '--claim', type=str, dest='claims', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
+    )
 
     run_args = command_parser.add_parser(
         'run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args, k_args]
@@ -464,7 +471,12 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_prove_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_prove_args.add_argument(
-        '--contract', default=None, type=str, help='Limit to only proofs for the named contract.'
+        '--test',
+        type=str,
+        dest='tests',
+        default=[],
+        action='append',
+        help='Limit to only listed tests, ContractName.TestName',
     )
 
     return parser
