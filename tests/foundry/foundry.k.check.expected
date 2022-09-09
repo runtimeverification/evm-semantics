@@ -3137,8 +3137,531 @@ module FOUNDRY-SPEC
 endmodule
 
 module ADDRTEST-BIN-RUNTIME-SPEC
-    imports public ADDRTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
+    
+    claim [testFail-addr-false]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( AddrTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( AddrTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( AddrTest . testFail_addr_false ( ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( AddrTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures ( notBool foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) ) )
+      [label(testFail-addr-false)]
+    
+    claim [testFail-addr-true]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( AddrTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( AddrTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( AddrTest . testFail_addr_true ( ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( AddrTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures ( notBool foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) ) )
+      [label(testFail-addr-true)]
     
     claim [test-addr-false]: <kevm>
            <k>
@@ -3667,8 +4190,531 @@ module ADDRTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module ASSUMETEST-BIN-RUNTIME-SPEC
-    imports public ASSUMETEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
+    
+    claim [testFail-assume-false]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( AssumeTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( AssumeTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( AssumeTest . testFail_assume_false ( _VV0_a_3c5818c8 , _VV1_b_3c5818c8 ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( AssumeTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures ( notBool foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) ) )
+      [label(testFail-assume-false)]
+    
+    claim [testFail-assume-true]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( AssumeTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( AssumeTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( AssumeTest . testFail_assume_true ( _VV0_a_3c5818c8 , _VV1_b_3c5818c8 ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( AssumeTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures ( notBool foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) ) )
+      [label(testFail-assume-true)]
     
     claim [test-assume-false]: <kevm>
            <k>
@@ -4197,7 +5243,6 @@ module ASSUMETEST-BIN-RUNTIME-SPEC
 endmodule
 
 module BLOCKPARAMSTEST-BIN-RUNTIME-SPEC
-    imports public BLOCKPARAMSTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testChainId]: <kevm>
@@ -5513,7 +6558,6 @@ module BLOCKPARAMSTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module BROADCASTTEST-BIN-RUNTIME-SPEC
-    imports public BROADCASTTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testDeploy]: <kevm>
@@ -5781,7 +6825,6 @@ module BROADCASTTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module CONTRACTTEST-BIN-RUNTIME-SPEC
-    imports public CONTRACTTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testExample]: <kevm>
@@ -6049,7 +7092,6 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module CONTRACTBTEST-BIN-RUNTIME-SPEC
-    imports public CONTRACTBTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testCannotSubtract43]: <kevm>
@@ -6313,6 +7355,268 @@ module CONTRACTBTEST-BIN-RUNTIME-SPEC
       requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
        ensures foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) )
       [label(testCannotSubtract43)]
+    
+    claim [testFailSubtract43]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( ContractBTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( ContractBTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( ContractBTest . testFailSubtract43 ( ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( ContractBTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures ( notBool foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) ) )
+      [label(testFailSubtract43)]
     
     claim [testNumberIs42]: <kevm>
            <k>
@@ -6579,7 +7883,6 @@ module CONTRACTBTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module DEALTEST-BIN-RUNTIME-SPEC
-    imports public DEALTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testDeal]: <kevm>
@@ -6847,7 +8150,6 @@ module DEALTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module EMITCONTRACTTEST-BIN-RUNTIME-SPEC
-    imports public EMITCONTRACTTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testExpectEmit]: <kevm>
@@ -7639,7 +8941,6 @@ module EMITCONTRACTTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module ENVTEST-BIN-RUNTIME-SPEC
-    imports public ENVTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testEnvAddress]: <kevm>
@@ -11313,7 +12614,6 @@ module ENVTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module ETCHTEST-BIN-RUNTIME-SPEC
-    imports public ETCHTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testEtch]: <kevm>
@@ -11581,7 +12881,6 @@ module ETCHTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module FFITEST-BIN-RUNTIME-SPEC
-    imports public FFITEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testFFIFOO]: <kevm>
@@ -12635,8 +13934,269 @@ module FFITEST-BIN-RUNTIME-SPEC
 endmodule
 
 module FILESTEST-BIN-RUNTIME-SPEC
-    imports public FILESTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
+    
+    claim [testFailRemoveFile]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( FilesTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( FilesTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( FilesTest . testFailRemoveFile ( ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( FilesTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures ( notBool foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) ) )
+      [label(testFailRemoveFile)]
     
     claim [testReadWriteFile]: <kevm>
            <k>
@@ -13165,7 +14725,6 @@ module FILESTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module FORKTEST-BIN-RUNTIME-SPEC
-    imports public FORKTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testActiveFork]: <kevm>
@@ -15791,7 +17350,6 @@ module FORKTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module GETCODETEST-BIN-RUNTIME-SPEC
-    imports public GETCODETEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testGetCode]: <kevm>
@@ -16059,7 +17617,6 @@ module GETCODETEST-BIN-RUNTIME-SPEC
 endmodule
 
 module LABELTEST-BIN-RUNTIME-SPEC
-    imports public LABELTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testLabel]: <kevm>
@@ -16327,7 +17884,6 @@ module LABELTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module LOOPSTEST-BIN-RUNTIME-SPEC
-    imports public LOOPSTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testIsNotPrime]: <kevm>
@@ -19477,7 +21033,6 @@ module LOOPSTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module MOCKCALLTEST-BIN-RUNTIME-SPEC
-    imports public MOCKCALLTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testMockCall]: <kevm>
@@ -20269,8 +21824,531 @@ module MOCKCALLTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module NONCETEST-BIN-RUNTIME-SPEC
-    imports public NONCETEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
+    
+    claim [testFail-GetNonce-false]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( NonceTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( NonceTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( NonceTest . testFail_GetNonce_false ( ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( NonceTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures ( notBool foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) ) )
+      [label(testFail-GetNonce-false)]
+    
+    claim [testFail-GetNonce-true]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( NonceTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( NonceTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( NonceTest . testFail_GetNonce_true ( ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( NonceTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures ( notBool foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) ) )
+      [label(testFail-GetNonce-true)]
     
     claim [testNonce]: <kevm>
            <k>
@@ -21061,8 +23139,269 @@ module NONCETEST-BIN-RUNTIME-SPEC
 endmodule
 
 module OWNERUPONLYTEST-BIN-RUNTIME-SPEC
-    imports public OWNERUPONLYTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
+    
+    claim [testFailIncrementAsNotOwner]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( OwnerUpOnlyTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( OwnerUpOnlyTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( OwnerUpOnlyTest . testFailIncrementAsNotOwner ( ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( OwnerUpOnlyTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures ( notBool foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) ) )
+      [label(testFailIncrementAsNotOwner)]
     
     claim [testIncrementAsNotOwner]: <kevm>
            <k>
@@ -21591,7 +23930,6 @@ module OWNERUPONLYTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module PRANKTEST-BIN-RUNTIME-SPEC
-    imports public PRANKTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testAddAsOwner]: <kevm>
@@ -22117,6 +24455,268 @@ module PRANKTEST-BIN-RUNTIME-SPEC
       requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
        ensures foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) )
       [label(testAddStartPrank)]
+    
+    claim [testFailAddPrank]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( PrankTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( PrankTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( PrankTest . testFailAddPrank ( _VV0_x_3c5818c8 ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( PrankTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures ( notBool foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) ) )
+      [label(testFailAddPrank)]
     
     claim [testSubtractAsTxOrigin]: <kevm>
            <k>
@@ -22907,7 +25507,6 @@ module PRANKTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module RECORDLOGSTEST-BIN-RUNTIME-SPEC
-    imports public RECORDLOGSTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testRecordLogs]: <kevm>
@@ -23175,7 +25774,6 @@ module RECORDLOGSTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module SAFETEST-BIN-RUNTIME-SPEC
-    imports public SAFETEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testWithdraw]: <kevm>
@@ -23705,7 +26303,6 @@ module SAFETEST-BIN-RUNTIME-SPEC
 endmodule
 
 module SETUPTEST-BIN-RUNTIME-SPEC
-    imports public SETUPTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testSetUpCalled]: <kevm>
@@ -24235,7 +26832,6 @@ module SETUPTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module SIGNTEST-BIN-RUNTIME-SPEC
-    imports public SIGNTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testSign]: <kevm>
@@ -24503,8 +27099,531 @@ module SIGNTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module ASSERTTEST-BIN-RUNTIME-SPEC
-    imports public ASSERTTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
+    
+    claim [testFail-assert-false]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( AssertTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( AssertTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( AssertTest . testFail_assert_false ( ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( AssertTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures ( notBool foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) ) )
+      [label(testFail-assert-false)]
+    
+    claim [testFail-assert-true]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( AssertTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( AssertTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( AssertTest . testFail_assert_true ( ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( AssertTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures ( notBool foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) ) )
+      [label(testFail-assert-true)]
     
     claim [test-assert-false]: <kevm>
            <k>
@@ -25033,7 +28152,6 @@ module ASSERTTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module SNAPSHOTTEST-BIN-RUNTIME-SPEC
-    imports public SNAPSHOTTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testSnapshot]: <kevm>
@@ -25301,7 +28419,6 @@ module SNAPSHOTTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module STORETEST-BIN-RUNTIME-SPEC
-    imports public STORETEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testAccesses]: <kevm>
@@ -25831,7 +28948,6 @@ module STORETEST-BIN-RUNTIME-SPEC
 endmodule
 
 module TOSTRINGTEST-BIN-RUNTIME-SPEC
-    imports public TOSTRINGTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [testAddressToString]: <kevm>
@@ -27409,7 +30525,6 @@ module TOSTRINGTEST-BIN-RUNTIME-SPEC
 endmodule
 
 module TOKENTEST-BIN-RUNTIME-SPEC
-    imports public TOKENTEST-BIN-RUNTIME
     imports public FOUNDRY-MAIN
     
     claim [test-1]: <kevm>
