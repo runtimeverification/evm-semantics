@@ -18,6 +18,10 @@ from pyk.ktool import KPrint
 from pyk.prelude import Bool, mlAnd
 
 
+def KDefinition_claims(defn: KDefinition) -> List[KClaim]:  # noqa: N802
+    return [c for module in defn.modules for c in module.claims]
+
+
 def KCFG_from_claim(defn: KDefinition, claim: KClaim) -> KCFG:  # noqa: N802
     cfg = KCFG()
     claim_body = claim.body
