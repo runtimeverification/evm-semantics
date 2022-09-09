@@ -49,6 +49,14 @@ contract PlainPrankTest is Test {
         assert(token.count() == 1);
     }
 
+    function test_zeroPrank_true() public {
+        AdditionalToken token = new AdditionalToken();
+        vm.startPrank(address(0));
+        token.incrementCount();
+        vm.stopPrank();
+        assert(token.count() == 1);
+    }
+
     function testFail_startPrank_false() public {
         AdditionalToken token = new AdditionalToken();
         vm.startPrank(address(token));
