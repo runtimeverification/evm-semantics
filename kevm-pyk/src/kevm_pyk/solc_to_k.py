@@ -360,9 +360,6 @@ def gen_claims_for_contract(
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
     dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
-    final_cterm = final_cterm.add_constraint(
-        mlEqualsTrue(Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post))
-    )
     claims: List[KClaim] = []
     foundry_success = Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post)
     for claim_id, i_term, failing in init_terms:
