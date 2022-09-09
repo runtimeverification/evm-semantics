@@ -3,7 +3,7 @@ pragma solidity =0.8.13;
 
 import "forge-std/Test.sol";
 
-contract DifferentToken {
+contract Guess {
     uint256 value;
 
     constructor (uint256 _value){
@@ -16,13 +16,13 @@ contract DifferentToken {
     }
 
 }
-contract Token {
+contract CheckRevert {
     bool a;
-    DifferentToken token;
+    Guess guess;
 
     constructor (bool _a, uint256 _b){
         a = _a;
-        token = new DifferentToken(_b);
+        guess = new Guess(_b);
     }
 
     function revertIfNotEqual(bool value) public view returns(bool){
@@ -31,33 +31,33 @@ contract Token {
     }
 
     function tryToGuess(uint256 _value) public view returns (bool){
-        return token.guessTheValue(_value);
+        return guess.guessTheValue(_value);
     }
 }
 contract ExpectRevertTest is Test {
 
     function test_expectRevert_true() public {
-        Token token = new Token(false, 0);
+        CheckRevert checkRevert = new CheckRevert(false, 0);
         vm.expectRevert(bytes("error message"));
-        token.revertIfNotEqual(true);
+        checkRevert.revertIfNotEqual(true);
     }
 
-    function test_expectRevert_false() public {
-        Token token = new Token(false, 0);
+    function testFail_expectRevert_false() public {
+        CheckRevert checkRevert = new CheckRevert(false, 0);
         vm.expectRevert(bytes("error"));
-        token.revertIfNotEqual(true);
+        checkRevert.revertIfNotEqual(true);
     }
 
     function test_expectRevert_true2() public {
-        Token token = new Token(false, 1);
+        CheckRevert checkRevert = new CheckRevert(false, 1);
         vm.expectRevert();
-        token.tryToGuess(2);
+        checkRevert.tryToGuess(2);
     }
 
-    function test_expectRevert_false2() public {
-        Token token = new Token(false, 0);
+    function testFail_expectRevert_false2() public {
+        CheckRevert checkRevert = new CheckRevert(false, 0);
         vm.expectRevert(bytes("error"));
-        token.revertIfNotEqual(false);
+        checkRevert.revertIfNotEqual(false);
     }
 
 }
