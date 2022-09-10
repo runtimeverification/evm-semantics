@@ -13,7 +13,7 @@ from pyk.ktool.krun import _krun
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_k, solc_compile
-from .utils import KCFG_from_claim, KDefinition_claims, KPrint_make_unparsing, add_include_arg
+from .utils import KCFG_from_claim, KPrint_make_unparsing, add_include_arg, read_kast_flatmodulelist
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -178,6 +178,7 @@ def exec_foundry_kompile(
     regen: bool = False,
     rekompile: bool = False,
     reparse: bool = False,
+    reinit: bool = False,
     requires: Iterable[str] = (),
     imports: Iterable[str] = (),
     **kwargs,
@@ -222,16 +223,24 @@ def exec_foundry_kompile(
         )
     kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
     if regen or rekompile or reparse or not parsed_spec.exists():
+        prove_args = add_include_arg(includes)
         kevm.prove(
-            foundry_main_file, spec_module_name=spec_module, dry_run=True, args=['--emit-json-spec', str(parsed_spec)]
+            foundry_main_file,
+            spec_module_name=spec_module,
+            dry_run=True,
+            args=(['--emit-json-spec', str(parsed_spec)] + prove_args),
         )
-    if regen or rekompile or reparse or not kcfgs_file.exists():
-        cfgs = {
-            c.att['label']: KCFG_from_claim(kevm.definition, c).to_dict() for c in KDefinition_claims(kevm.definition)
-        }
+    if regen or rekompile or reparse or reinit or not kcfgs_file.exists():
+        cfgs: Dict[str, Dict] = {}
+        for module in read_kast_flatmodulelist(parsed_spec).modules:
+            for claim in module.claims:
+                cfg_label = f'{module.name}.{claim.att["label"]}'
+                _LOGGER.info(f'Producting KCFG: {cfg_label}')
+                cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
         with open(kcfgs_file, 'w') as kf:
             kf.write(json.dumps(cfgs))
             kf.close()
+            _LOGGER.info(f'Wrote file: {kcfgs_file}')
 
 
 def exec_prove(
@@ -503,7 +512,14 @@ def _create_argument_parser() -> ArgumentParser:
         dest='reparse',
         default=False,
         action='store_true',
-        help='Reparse foundry.k even if parsed specification and KCFGs already exist.',
+        help='Reparse K specifications even if the parsed spec already exists.',
+    )
+    foundry_kompile.add_argument(
+        '--reinit',
+        dest='reinit',
+        default=False,
+        action='store_true',
+        help='Reinitialize kcfgs even if they already exist.',
     )
 
     foundry_prove_args = command_parser.add_parser(

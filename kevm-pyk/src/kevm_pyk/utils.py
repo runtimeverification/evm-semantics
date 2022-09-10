@@ -1,8 +1,9 @@
+from pathlib import Path
 from typing import Collection, Iterable, List
 
 from pyk.cfg_manager import instantiate_cell_vars, rename_generated_vars
 from pyk.cterm import CTerm
-from pyk.kast import KClaim, KDefinition, KFlatModule, KImport, KVariable
+from pyk.kast import KClaim, KDefinition, KFlatModule, KFlatModuleList, KImport, KVariable, read_kast
 from pyk.kastManip import (
     abstract_term_safely,
     bool_to_ml_pred,
@@ -18,8 +19,10 @@ from pyk.ktool import KPrint
 from pyk.prelude import Bool, mlAnd
 
 
-def KDefinition_claims(defn: KDefinition) -> List[KClaim]:  # noqa: N802
-    return [c for module in defn.modules for c in module.claims]
+def read_kast_flatmodulelist(ifile: Path) -> KFlatModuleList:
+    _flat_module_list = read_kast(ifile)
+    assert isinstance(_flat_module_list, KFlatModuleList)
+    return _flat_module_list
 
 
 def KCFG_from_claim(defn: KDefinition, claim: KClaim) -> KCFG:  # noqa: N802
