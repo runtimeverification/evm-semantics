@@ -4,10 +4,11 @@ import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Any, Dict, Final, Iterable, List, Optional, TextIO
+from typing import Any, Dict, Final, Iterable, List, Optional, TextIO, Tuple
 
+from pathos.multiprocessing import ProcessingPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KApply, KDefinition, KFlatModule, KImport, KRequire, KSort
+from pyk.kast import KApply, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KSort
 from pyk.kcfg import KCFG
 from pyk.ktool.krun import _krun
 from pyk.prelude import mlTop
@@ -287,6 +288,7 @@ def exec_foundry_prove(
     depth: Optional[int],
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
+    parallel: int = 1,
     **kwargs,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -326,13 +328,19 @@ def exec_foundry_prove(
         )
         for kcfg_name, kcfg in kcfgs.items()
     ]
-    _failed_claims: List[str] = []
-    for claim_id, claim in claims:
-        failed, result = KProve_prove_claim(kevm, claim, claim_id, _LOGGER)
-        if failed:
-            _failed_claims.append(claim_id)
-    if _failed_claims:
-        _LOGGER.error(f'Failed to prove KCFGs: {_failed_claims}')
+
+    def prove_it(_id_and_claim: Tuple[str, KClaim]) -> Tuple[bool, KInner]:
+        _claim_id, _claim = _id_and_claim
+        return KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER)
+
+    with ProcessingPool(nodes=parallel) as pool:
+        results = pool.map(prove_it, claims)
+
+    failed_claims = [(cid, result) for ((cid, _), (failed, result)) in zip(claims, results)]
+    _failed_claim_ids = [cid for cid, _ in failed_claims]
+
+    if _failed_claim_ids:
+        _LOGGER.error(f'Failed to prove KCFGs: {_failed_claim_ids}')
         sys.exit(1)
 
 
@@ -376,6 +384,7 @@ def _create_argument_parser() -> ArgumentParser:
     shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
     shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
     shared_args.add_argument('--profile', default=False, action='store_true', help='Coarse process-level profiling.')
+    shared_args.add_argument('--parallel', '-j', default=1, type=int, help='Number of processes to run in parallel.')
 
     k_args = ArgumentParser(add_help=False)
     k_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
