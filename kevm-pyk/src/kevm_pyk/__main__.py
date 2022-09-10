@@ -8,7 +8,9 @@ from typing import Any, Dict, Final, Iterable, List, Optional, TextIO
 
 from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KApply, KDefinition, KFlatModule, KImport, KRequire, KSort
+from pyk.kcfg import KCFG
 from pyk.ktool.krun import _krun
+from pyk.prelude import mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
@@ -234,7 +236,7 @@ def exec_foundry_kompile(
         cfgs: Dict[str, Dict] = {}
         for module in read_kast_flatmodulelist(parsed_spec).modules:
             for claim in module.claims:
-                cfg_label = f'{module.name}.{claim.att["label"]}'
+                cfg_label = claim.att["label"]
                 _LOGGER.info(f'Producting KCFG: {cfg_label}')
                 cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
         with open(kcfgs_file, 'w') as kf:
@@ -292,23 +294,45 @@ def exec_foundry_prove(
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
     definition_dir = foundry_out / 'kompiled'
-    spec_file = definition_dir / 'foundry.k'
-    spec_module = 'FOUNDRY-SPEC'
-    claims = [Contract.contract_test_to_claim_id(_t) for _t in tests]
-    exclude_claims = [Contract.contract_test_to_claim_id(_t) for _t in exclude_tests]
-    exec_prove(
-        definition_dir,
-        profile,
-        spec_file,
-        includes=includes,
-        debug_equations=debug_equations,
-        bug_report=bug_report,
-        depth=depth,
-        claims=claims,
-        exclude_claims=exclude_claims,
-        spec_module=spec_module,
-        **kwargs,
-    )
+    use_directory = foundry_out / 'specs'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    kevm = KEVM(definition_dir, profile=profile, use_directory=use_directory)
+    kcfgs_file = definition_dir / 'kcfgs.json'
+    kcfgs: Dict[str, KCFG] = {}
+    _LOGGER.info(f'Reading file: {kcfgs_file}')
+    with open(kcfgs_file, 'r') as kf:
+        kcfgs = {k: KCFG.from_dict(v) for k, v in json.loads(kf.read()).items()}
+    tests = [Contract.contract_test_to_claim_id(_t) for _t in tests]
+    exclude_tests = [Contract.contract_test_to_claim_id(_t) for _t in exclude_tests]
+    claims = list(kcfgs.keys())
+    _unfound_kcfgs: List[str] = []
+    if not tests:
+        tests = claims
+    for _t in tests:
+        if _t not in claims:
+            _unfound_kcfgs.append(_t)
+    for _t in exclude_tests:
+        if _t not in claims:
+            _unfound_kcfgs.append(_t)
+        if _t in kcfgs:
+            kcfgs.pop(_t)
+    if _unfound_kcfgs:
+        _LOGGER.error(f'Missing KCFGs for tests: {_unfound_kcfgs}')
+        sys.exit(1)
+    _failed_claims: List[str] = []
+    for kcfg_name, kcfg in kcfgs.items():
+        _LOGGER.info(f'Proving KCFG: {kcfg_name}')
+        edge = kcfg.create_edge(kcfg.get_unique_init().id, kcfg.get_unique_target().id, mlTop(), depth=-1)
+        claim = edge.to_claim()
+        result = kevm.prove_claim(claim, kcfg_name.replace('.', '-'))
+        if type(result) is KApply and result.label.name == '#Top':
+            _LOGGER.info(f'Proved KCFG: {kcfg_name}')
+        else:
+            _LOGGER.error(f'Failed to prove KCFG: {kcfg_name}')
+            _failed_claims.append(kcfg_name)
+    if _failed_claims:
+        _LOGGER.error(f'Failed to prove KCFGs: {_failed_claims}')
+        sys.exit(1)
 
 
 def exec_run(
