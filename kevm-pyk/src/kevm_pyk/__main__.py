@@ -6,7 +6,7 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Any, Dict, Final, Iterable, List, Optional, TextIO, Tuple
 
-from pathos.multiprocessing import ProcessingPool  # type: ignore
+from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KApply, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KSort
 from pyk.kcfg import KCFG
@@ -333,7 +333,7 @@ def exec_foundry_prove(
         _claim_id, _claim = _id_and_claim
         return KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER)
 
-    with ProcessingPool(nodes=parallel) as pool:
+    with ProcessPool(ncpus=parallel) as pool:
         results = pool.map(prove_it, claims)
 
     failed_claims = [(cid, result) for ((cid, _), (failed, result)) in zip(claims, results)]
