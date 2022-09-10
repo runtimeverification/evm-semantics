@@ -344,7 +344,7 @@ def gen_claims_for_contract(
                 Foundry.account_CALLER(),
                 Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE')),
                 Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
-                KToken('.Bag', 'K'),
+                KVariable('ACCOUNTS_INIT'),
             ]
         ),
     }
@@ -372,7 +372,12 @@ def gen_claims_for_contract(
             init_terms.append((claim_name, substitute(init_term, refined_subst), failing))
     else:
         init_terms.append((contract_name.lower(), init_term, False))
-    final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')]))
+    final_cterm = CTerm(
+        abstract_cell_vars(
+            substitute(empty_config, final_subst),
+            keep_vars=[KVariable('STATUSCODE_FINAL'), KVariable('ACCOUNTS_FINAL')],
+        )
+    )
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
     dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
