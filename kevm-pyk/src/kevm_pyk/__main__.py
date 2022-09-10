@@ -15,7 +15,7 @@ from pyk.prelude import mlTop
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_k, solc_compile
-from .utils import KCFG_from_claim, KPrint_make_unparsing, add_include_arg, read_kast_flatmodulelist
+from .utils import KCFG_from_claim, KPrint_make_unparsing, KProve_prove_claim, add_include_arg, read_kast_flatmodulelist
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -319,21 +319,17 @@ def exec_foundry_prove(
     if _unfound_kcfgs:
         _LOGGER.error(f'Missing KCFGs for tests: {_unfound_kcfgs}')
         sys.exit(1)
-    _failed_claims: List[str] = []
     claims = [
         (
             kcfg_name.replace('.', '-'),
-            kcfg.create_edge(kcfg.get_unique_init().id, kcfg.get_unique_target().id, mlTop(), depth=-1),
+            kcfg.create_edge(kcfg.get_unique_init().id, kcfg.get_unique_target().id, mlTop(), depth=-1).to_claim(),
         )
         for kcfg_name, kcfg in kcfgs.items()
     ]
+    _failed_claims: List[str] = []
     for claim_id, claim in claims:
-        _LOGGER.info(f'Proving KCFG: {claim_id}')
-        result = kevm.prove_claim(claim, claim_id)
-        if type(result) is KApply and result.label.name == '#Top':
-            _LOGGER.info(f'Proved KCFG: {claim_id}')
-        else:
-            _LOGGER.error(f'Failed to prove KCFG: {claim_id}')
+        failed, result = KProve_prove_claim(kevm, claim, claim_id, _LOGGER)
+        if failed:
             _failed_claims.append(claim_id)
     if _failed_claims:
         _LOGGER.error(f'Failed to prove KCFGs: {_failed_claims}')
