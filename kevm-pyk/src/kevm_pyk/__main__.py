@@ -304,15 +304,15 @@ def exec_foundry_prove(
         kcfgs = {k: KCFG.from_dict(v) for k, v in json.loads(kf.read()).items()}
     tests = [Contract.contract_test_to_claim_id(_t) for _t in tests]
     exclude_tests = [Contract.contract_test_to_claim_id(_t) for _t in exclude_tests]
-    claims = list(kcfgs.keys())
+    claim_names = list(kcfgs.keys())
     _unfound_kcfgs: List[str] = []
     if len(tests) > 0:
         kcfgs = {k: kcfg for k, kcfg in kcfgs.items() if k in tests}
     for _t in tests:
-        if _t not in claims:
+        if _t not in claim_names:
             _unfound_kcfgs.append(_t)
     for _t in exclude_tests:
-        if _t not in claims:
+        if _t not in claim_names:
             _unfound_kcfgs.append(_t)
         if _t in kcfgs:
             kcfgs.pop(_t)
@@ -320,16 +320,21 @@ def exec_foundry_prove(
         _LOGGER.error(f'Missing KCFGs for tests: {_unfound_kcfgs}')
         sys.exit(1)
     _failed_claims: List[str] = []
-    for kcfg_name, kcfg in kcfgs.items():
-        _LOGGER.info(f'Proving KCFG: {kcfg_name}')
-        edge = kcfg.create_edge(kcfg.get_unique_init().id, kcfg.get_unique_target().id, mlTop(), depth=-1)
-        claim = edge.to_claim()
-        result = kevm.prove_claim(claim, kcfg_name.replace('.', '-'))
+    claims = [
+        (
+            kcfg_name.replace('.', '-'),
+            kcfg.create_edge(kcfg.get_unique_init().id, kcfg.get_unique_target().id, mlTop(), depth=-1),
+        )
+        for kcfg_name, kcfg in kcfgs.items()
+    ]
+    for claim_id, claim in claims:
+        _LOGGER.info(f'Proving KCFG: {claim_id}')
+        result = kevm.prove_claim(claim, claim_id)
         if type(result) is KApply and result.label.name == '#Top':
-            _LOGGER.info(f'Proved KCFG: {kcfg_name}')
+            _LOGGER.info(f'Proved KCFG: {claim_id}')
         else:
-            _LOGGER.error(f'Failed to prove KCFG: {kcfg_name}')
-            _failed_claims.append(kcfg_name)
+            _LOGGER.error(f'Failed to prove KCFG: {claim_id}')
+            _failed_claims.append(claim_id)
     if _failed_claims:
         _LOGGER.error(f'Failed to prove KCFGs: {_failed_claims}')
         sys.exit(1)
