@@ -405,7 +405,7 @@ def _init_term(empty_config: KInner, contract_name: str) -> KInner:
                 Foundry.account_CALLER(),
                 Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE')),
                 Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
-                KToken('.Bag', 'K'),
+                KVariable('ACCOUNTS_INIT'),
             ]
         ),
     }
@@ -436,7 +436,9 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             ]
         ),
     }
-    return abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')])
+    return abstract_cell_vars(
+        substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL'), KVariable('ACCOUNTS_FINAL')]
+    )
 
 
 # Helpers
