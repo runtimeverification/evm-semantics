@@ -336,7 +336,7 @@ def exec_foundry_prove(
     with ProcessPool(ncpus=parallel) as pool:
         results = pool.map(prove_it, claims)
 
-    failed_claims = [(cid, result) for ((cid, _), (failed, result)) in zip(claims, results)]
+    failed_claims = [(cid, result) for ((cid, _), (failed, result)) in zip(claims, results) if failed]
     _failed_claim_ids = [cid for cid, _ in failed_claims]
 
     if _failed_claim_ids:
