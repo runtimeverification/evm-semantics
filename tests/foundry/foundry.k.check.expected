@@ -3383,7 +3383,7 @@ module ADDRTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -3645,7 +3645,7 @@ module ADDRTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -3907,7 +3907,7 @@ module ADDRTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -4169,7 +4169,7 @@ module ADDRTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -4436,7 +4436,7 @@ module ASSUMETEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -4698,7 +4698,7 @@ module ASSUMETEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -4960,7 +4960,7 @@ module ASSUMETEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -5222,7 +5222,7 @@ module ASSUMETEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -5489,7 +5489,7 @@ module BLOCKPARAMSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -5751,7 +5751,7 @@ module BLOCKPARAMSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -6013,7 +6013,7 @@ module BLOCKPARAMSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -6275,7 +6275,7 @@ module BLOCKPARAMSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -6537,7 +6537,7 @@ module BLOCKPARAMSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -6804,7 +6804,7 @@ module BROADCASTTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -7071,7 +7071,7 @@ module CONTRACTTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -7338,7 +7338,7 @@ module CONTRACTBTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -7600,7 +7600,7 @@ module CONTRACTBTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -7862,7 +7862,7 @@ module CONTRACTBTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -8129,7 +8129,7 @@ module DEALTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -8396,7 +8396,7 @@ module EMITCONTRACTTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -8658,7 +8658,7 @@ module EMITCONTRACTTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -8920,7 +8920,7 @@ module EMITCONTRACTTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -9187,7 +9187,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -9449,7 +9449,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -9711,7 +9711,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -9973,7 +9973,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -10235,7 +10235,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -10497,7 +10497,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -10759,7 +10759,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -11021,7 +11021,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -11283,7 +11283,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -11545,7 +11545,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -11807,7 +11807,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -12069,7 +12069,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -12331,7 +12331,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -12593,7 +12593,7 @@ module ENVTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -12860,7 +12860,7 @@ module ETCHTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -13127,7 +13127,7 @@ module FFITEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -13389,7 +13389,7 @@ module FFITEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -13651,7 +13651,7 @@ module FFITEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -13913,7 +13913,7 @@ module FFITEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -14180,7 +14180,7 @@ module FILESTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -14442,7 +14442,7 @@ module FILESTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -14704,7 +14704,7 @@ module FILESTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -14971,7 +14971,7 @@ module FORKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -15233,7 +15233,7 @@ module FORKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -15495,7 +15495,7 @@ module FORKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -15757,7 +15757,7 @@ module FORKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -16019,7 +16019,7 @@ module FORKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -16281,7 +16281,7 @@ module FORKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -16543,7 +16543,7 @@ module FORKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -16805,7 +16805,7 @@ module FORKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -17067,7 +17067,7 @@ module FORKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -17329,7 +17329,7 @@ module FORKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -17596,7 +17596,7 @@ module GETCODETEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -17863,7 +17863,7 @@ module LABELTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -18130,7 +18130,7 @@ module LOOPSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -18392,7 +18392,7 @@ module LOOPSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -18654,7 +18654,7 @@ module LOOPSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -18916,7 +18916,7 @@ module LOOPSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -19178,7 +19178,7 @@ module LOOPSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -19440,7 +19440,7 @@ module LOOPSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -19702,7 +19702,7 @@ module LOOPSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -19964,7 +19964,7 @@ module LOOPSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -20226,7 +20226,7 @@ module LOOPSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -20488,7 +20488,7 @@ module LOOPSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -20750,7 +20750,7 @@ module LOOPSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -21012,7 +21012,7 @@ module LOOPSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -21279,7 +21279,7 @@ module MOCKCALLTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -21541,7 +21541,7 @@ module MOCKCALLTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -21803,7 +21803,7 @@ module MOCKCALLTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -22070,7 +22070,7 @@ module NONCETEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -22332,7 +22332,7 @@ module NONCETEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -22594,7 +22594,7 @@ module NONCETEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -22856,7 +22856,7 @@ module NONCETEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -23118,7 +23118,7 @@ module NONCETEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -23385,7 +23385,7 @@ module OWNERUPONLYTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -23647,7 +23647,7 @@ module OWNERUPONLYTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -23909,7 +23909,7 @@ module OWNERUPONLYTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -24176,7 +24176,7 @@ module PRANKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -24438,7 +24438,7 @@ module PRANKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -24700,7 +24700,7 @@ module PRANKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -24962,7 +24962,7 @@ module PRANKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -25224,7 +25224,7 @@ module PRANKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -25486,7 +25486,7 @@ module PRANKTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -25753,7 +25753,7 @@ module RECORDLOGSTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -26020,7 +26020,7 @@ module SAFETEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -26282,7 +26282,7 @@ module SAFETEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -26549,7 +26549,7 @@ module SETUPTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -26811,7 +26811,7 @@ module SETUPTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -27078,7 +27078,7 @@ module SIGNTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -27345,7 +27345,7 @@ module ASSERTTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -27607,7 +27607,7 @@ module ASSERTTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -27869,7 +27869,7 @@ module ASSERTTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -28131,7 +28131,7 @@ module ASSERTTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -28398,7 +28398,7 @@ module SNAPSHOTTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -28665,7 +28665,7 @@ module STORETEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -28927,7 +28927,7 @@ module STORETEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -29194,7 +29194,7 @@ module TOSTRINGTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -29456,7 +29456,7 @@ module TOSTRINGTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -29718,7 +29718,7 @@ module TOSTRINGTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -29980,7 +29980,7 @@ module TOSTRINGTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -30242,7 +30242,7 @@ module TOSTRINGTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -30504,7 +30504,7 @@ module TOSTRINGTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -30771,7 +30771,7 @@ module TOKENTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
@@ -31033,7 +31033,7 @@ module TOKENTEST-BIN-RUNTIME-SPEC
                      0
                    </nonce>
                  </account>
-                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+                 ( _ACCOUNTS_INIT => ?_ACCOUNTS_FINAL ) ) ) ) )
                </accounts>
                <txOrder>
                  ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
