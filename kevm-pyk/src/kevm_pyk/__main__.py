@@ -298,12 +298,12 @@ def exec_foundry_prove(
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
-    kevm = KEVM(definition_dir, profile=profile, use_directory=use_directory)
     kcfgs_file = definition_dir / 'kcfgs.json'
-    kcfgs: Dict[str, KCFG] = {}
+
     _LOGGER.info(f'Reading file: {kcfgs_file}')
     with open(kcfgs_file, 'r') as kf:
         kcfgs = {k: KCFG.from_dict(v) for k, v in json.loads(kf.read()).items()}
+
     tests = [Contract.contract_test_to_claim_id(_t) for _t in tests]
     exclude_tests = [Contract.contract_test_to_claim_id(_t) for _t in exclude_tests]
     claim_names = list(kcfgs.keys())
@@ -328,6 +328,8 @@ def exec_foundry_prove(
         )
         for kcfg_name, kcfg in kcfgs.items()
     ]
+
+    kevm = KEVM(definition_dir, profile=profile, use_directory=use_directory)
 
     def prove_it(_id_and_claim: Tuple[str, KClaim]) -> Tuple[bool, KInner]:
         _claim_id, _claim = _id_and_claim
