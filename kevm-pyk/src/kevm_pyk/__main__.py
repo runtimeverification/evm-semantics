@@ -189,6 +189,8 @@ def exec_foundry_kompile(
     spec_module = 'FOUNDRY-SPEC'
     foundry_definition_dir = foundry_out / 'kompiled'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
+    requires = ['lemmas/lemmas.k', 'lemmas/int-simplification.k'] + list(requires)
+    imports = ['LEMMAS', 'INT-SIMPLIFICATION'] + list(imports)
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
     if regen or not foundry_main_file.exists():
