@@ -335,15 +335,17 @@ def exec_foundry_prove(
         _claim_id, _claim = _id_and_claim
         return KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER)
 
-    with ProcessPool(ncpus=parallel) as pool:
-        results = pool.map(prove_it, claims)
+    with ProcessPool(ncpus=parallel) as process_pool:
+        results = process_pool.map(prove_it, claims)
+        process_pool.close()
 
     failed_claims = [(cid, result) for ((cid, _), (failed, result)) in zip(claims, results) if failed]
     _failed_claim_ids = [cid for cid, _ in failed_claims]
 
     if _failed_claim_ids:
         _LOGGER.error(f'Failed to prove KCFGs: {_failed_claim_ids}')
-        sys.exit(1)
+
+    sys.exit(len(_failed_claim_ids))
 
 
 def exec_run(
