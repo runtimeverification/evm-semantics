@@ -1,11 +1,11 @@
 requires "edsl.md"
-requires "lemmas/int-simplification.k"
 requires "lemmas/lemmas.k"
+requires "lemmas/int-simplification.k"
 
 module ADDRTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= AddrTestContract
     
@@ -106,8 +106,8 @@ endmodule
 
 module ASSUMETEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= AssumeTestContract
     
@@ -220,8 +220,8 @@ endmodule
 
 module BLOCKPARAMSTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= BlockParamsTestContract
     
@@ -334,8 +334,8 @@ endmodule
 
 module BROADCASTTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= BroadcastTestContract
     
@@ -446,8 +446,8 @@ endmodule
 
 module CONTRACTTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= ContractTestContract
     
@@ -532,8 +532,8 @@ endmodule
 
 module CONTRACTBTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= ContractBTestContract
     
@@ -639,8 +639,8 @@ endmodule
 
 module DEALTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= DealTestContract
     
@@ -718,8 +718,8 @@ endmodule
 
 module TOKEN-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= TokenContract
     
@@ -732,8 +732,8 @@ endmodule
 
 module EMITCONTRACTTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= EmitContractTestContract
     
@@ -826,8 +826,8 @@ endmodule
 
 module ENVTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= EnvTestContract
     
@@ -1016,8 +1016,8 @@ endmodule
 
 module ETCHTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= EtchTestContract
     
@@ -1094,8 +1094,8 @@ endmodule
 
 module FFITEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= FfiTestContract
     
@@ -1204,8 +1204,8 @@ endmodule
 
 module FILESTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= FilesTestContract
     
@@ -1298,8 +1298,8 @@ endmodule
 
 module FORKTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= ForkTestContract
     
@@ -1448,8 +1448,8 @@ endmodule
 
 module GETCODETEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= GetCodeTestContract
     
@@ -1539,8 +1539,8 @@ endmodule
 
 module LABELTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= LabelTestContract
     
@@ -1617,8 +1617,8 @@ endmodule
 
 module LOOPSTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= LoopsTestContract
     
@@ -1793,8 +1793,8 @@ endmodule
 
 module MOCKCALLTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= MockCallTestContract
     
@@ -1895,8 +1895,8 @@ endmodule
 
 module NONCETEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= NonceTestContract
     
@@ -2014,8 +2014,8 @@ endmodule
 
 module OWNERUPONLYTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= OwnerUpOnlyTestContract
     
@@ -2121,8 +2121,8 @@ endmodule
 
 module PRANKTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= PrankTestContract
     
@@ -2262,8 +2262,8 @@ endmodule
 
 module RECORDLOGSTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= RecordLogsTestContract
     
@@ -2353,8 +2353,8 @@ endmodule
 
 module SAFETEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= SafeTestContract
     
@@ -2453,8 +2453,8 @@ endmodule
 
 module SETUPTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= SetUpTestContract
     
@@ -2553,8 +2553,8 @@ endmodule
 
 module SIGNTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= SignTestContract
     
@@ -2639,8 +2639,8 @@ endmodule
 
 module ASSERTTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= AssertTestContract
     
@@ -2695,8 +2695,8 @@ endmodule
 
 module SNAPSHOTTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= SnapshotTestContract
     
@@ -2786,8 +2786,8 @@ endmodule
 
 module STORE-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= StoreContract
     
@@ -2807,8 +2807,8 @@ endmodule
 
 module STORETEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= StoreTestContract
     
@@ -2906,8 +2906,8 @@ endmodule
 
 module TOSTRINGTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= ToStringTestContract
     
@@ -3024,8 +3024,8 @@ endmodule
 
 module TOKENTEST-BIN-RUNTIME
     imports public EDSL
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= TokenTestContract
     
@@ -3094,8 +3094,8 @@ module FOUNDRY-MAIN
     imports public STORETEST-BIN-RUNTIME
     imports public TOSTRINGTEST-BIN-RUNTIME
     imports public TOKENTEST-BIN-RUNTIME
-    imports public INT-SIMPLIFICATION
     imports public LEMMAS
+    imports public INT-SIMPLIFICATION
     
     
 
