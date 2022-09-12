@@ -68,6 +68,7 @@ MockCallTest.testMockCall
 MockCallTest.testMockCalls
 MockCallTest.testMockCallValue
 NonceTest.testNonce
+NonceTest.test_GetNonce_true
 NonceTest.test_GetNonce_false
 NonceTest.testFail_GetNonce_true
 NonceTest.testFail_GetNonce_false
