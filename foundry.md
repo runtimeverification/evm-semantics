@@ -417,7 +417,7 @@ This rule then loads the storage slot identified by `#asWord(#range(LM, ARGSTART
          </output>
          <account>
              <acctID> ACCTID </acctID>
-			 <storage> STORAGE </storage>
+             <storage> STORAGE </storage>
              ...
          </account>
          <localMem> LM </localMem>
@@ -451,8 +451,7 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32))
          <output> _ => .ByteArray </output>
          <account>
              <acctID> ACCTID </acctID>
-			 <storage> STORAGE => STORAGE [ #asWord(#range(LM, ARGSTART +Int 36, 32))
-                                            <- #asWord(#range(LM, ARGSTART +Int 68, 32)) ] </storage>
+             <storage> STORAGE => STORAGE [ #asWord(#range(LM, ARGSTART +Int 36, 32)) <- #asWord(#range(LM, ARGSTART +Int 68, 32)) ] </storage>
              ...
          </account>
          <localMem> LM </localMem>
