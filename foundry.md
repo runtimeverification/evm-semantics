@@ -199,9 +199,9 @@ The values are forwarded to the `#setCode` marker which updates the account acco
 ```k
     rule [call.etch]:
          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH
-          => #let CodeStart = ARGSTART +Int 100 #in
-             #let CodeLen = #asWord(#range(LM, ARGSTART +Int 68, 32)) #in
-             #setCode(#asWord(#range(LM, ARGSTART +Int 4, 32)), #range(LM, CodeStart, CodeLen))
+          => #let CODE_START = ARGSTART +Int 100 #in
+             #let CODE_LENGTH = #asWord(#range(LM, ARGSTART +Int 68, 32)) #in
+             #setCode(#asWord(#range(LM, ARGSTART +Int 4, 32)), #range(LM, CODE_START, CODE_LENGTH))
           ~> 1 ~> #push
          ...
          </k>
