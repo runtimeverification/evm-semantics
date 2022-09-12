@@ -69,6 +69,7 @@ MockCallTest.testMockCalls
 MockCallTest.testMockCallValue
 NonceTest.testNonce
 NonceTest.test_GetNonce_false
+NonceTest.test_GetNonce_true
 NonceTest.testFail_GetNonce_true
 NonceTest.testFail_GetNonce_false
 OwnerUpOnlyTest.testFailIncrementAsNotOwner

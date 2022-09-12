@@ -2713,7 +2713,7 @@ module STORE-BIN-RUNTIME
     
     syntax StoreContract ::= "Store" [klabel(contract_Store)]
     
-    rule  ( #binRuntime ( Store ) => #parseByteStack ( "0x6080604052600080fdfea264697066735822122035d8e78e0625d898206f5972de53e4ad562a71e952947c155dd520c0d687837264736f6c634300080d0033" ) )
+    rule  ( #binRuntime ( Store ) => #parseByteStack ( "0x6080604052600080fdfea26469706673582212204a24de89c36b269e6851fd2e1f9dff95d158557b1822690dcb27d5a2fd647b2764736f6c634300080d0033" ) )
       
     
     syntax Field ::= StoreField
@@ -2734,7 +2734,7 @@ module STORETEST-BIN-RUNTIME
     
     syntax StoreTestContract ::= "StoreTest" [klabel(contract_StoreTest)]
     
-    rule  ( #binRuntime ( StoreTest ) => #parseByteStack ( "0x608060405234801561001057600080fd5b506004361061007d5760003560e01c8063480880731161005b57806348088073146100cc578063ba414fa6146100d4578063f8ccbf47146100ec578063fa7626d4146100ff57600080fd5b806309840bb5146100825780630a9254e41461008c5780633a76846314610094575b600080fd5b61008a61010c565b005b61008a6101b7565b6100af737109709ecfa91a80626ff3989d68f67f5b1dd12d81565b6040516001600160a01b0390911681526020015b60405180910390f35b61008a610266565b6100dc610383565b60405190151581526020016100c3565b6000546100dc9062010000900460ff1681565b6000546100dc9060ff1681565b6008546040516365bc948160e01b81526001600160a01b0390911660048201526000908190737109709ecfa91a80626ff3989d68f67f5b1dd12d906365bc9481906024016000604051808303816000875af115801561016f573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f191682016040526101979190810190610799565b915091506101a7825160016104ae565b6101b3815160016104ae565b5050565b6040805163266cf10960e01b81529051737109709ecfa91a80626ff3989d68f67f5b1dd12d9163266cf10991600480830192600092919082900301818387803b15801561020357600080fd5b505af1158015610217573d6000803e3d6000fd5b50505050604051610227906106dc565b604051809103906000f080158015610243573d6000803e3d6000fd5b50600880546001600160a01b0319166001600160a01b0392909216919091179055565b6008546040516370ca10bb60e01b81526001600160a01b03909116600482015260006024820152617a696044820152737109709ecfa91a80626ff3989d68f67f5b1dd12d906370ca10bb90606401600060405180830381600087803b1580156102ce57600080fd5b505af11580156102e2573d6000803e3d6000fd5b5050600854604051630667f9d760e41b81526001600160a01b0390911660048201526000602482018190529250737109709ecfa91a80626ff3989d68f67f5b1dd12d915063667f9d70906044016020604051808303816000875af115801561034e573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061037291906107fd565b905061038081617a696104ae565b50565b60008054610100900460ff16156103a35750600054610100900460ff1690565b6000737109709ecfa91a80626ff3989d68f67f5b1dd12d3b156104a95760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b82840152825180830384018152606083019093526000929091610431917f667f9d70ca411d70ead50d8d5c22070dafc36ad75f3dcf5e7237b22ade9aecc491608001610851565b60408051601f198184030181529082905261044b91610875565b6000604051808303816000865af19150503d8060008114610488576040519150601f19603f3d011682016040523d82523d6000602084013e61048d565b606091505b50915050808060200190518101906104a59190610888565b9150505b919050565b8082146101b3577f41304facd9323d75b11bcdd609cb38effffdb05710f7caf0e9b16c6d9d709f5060405161051f9060208082526022908201527f4572726f723a2061203d3d2062206e6f7420736174697366696564205b75696e604082015261745d60f01b606082015260800190565b60405180910390a160408051818152600a81830152690808115e1c1958dd195960b21b60608201526020810183905290517fb2de2fbe801a0df6c0cbddfd448ba3c41d48a040ca35c56c8196ef0fcae721a89181900360800190a160408051818152600a8183015269080808081058dd1d585b60b21b60608201526020810184905290517fb2de2fbe801a0df6c0cbddfd448ba3c41d48a040ca35c56c8196ef0fcae721a89181900360800190a16101b3737109709ecfa91a80626ff3989d68f67f5b1dd12d3b156106cb5760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b9282019290925260016060820152600091907f70ca10bbd0dbfd9020a9f4b13402c16cb120705e0d1c0aeab10fa353ae586fc49060800160408051601f198184030181529082905261066a9291602001610851565b60408051601f198184030181529082905261068491610875565b6000604051808303816000865af19150503d80600081146106c1576040519150601f19603f3d011682016040523d82523d6000602084013e6106c6565b606091505b505050505b6000805461ff001916610100179055565b6062806108ab83390190565b634e487b7160e01b600052604160045260246000fd5b600082601f83011261070f57600080fd5b8151602067ffffffffffffffff8083111561072c5761072c6106e8565b8260051b604051601f19603f83011681018181108482111715610751576107516106e8565b60405293845285810183019383810192508785111561076f57600080fd5b83870191505b8482101561078e57815183529183019190830190610775565b979650505050505050565b600080604083850312156107ac57600080fd5b825167ffffffffffffffff808211156107c457600080fd5b6107d0868387016106fe565b935060208501519150808211156107e657600080fd5b506107f3858286016106fe565b9150509250929050565b60006020828403121561080f57600080fd5b5051919050565b6000815160005b81811015610837576020818501810151868301520161081d565b81811115610846576000828601525b509290920192915050565b6001600160e01b031983168152600061086d6004830184610816565b949350505050565b60006108818284610816565b9392505050565b60006020828403121561089a57600080fd5b8151801515811461088157600080fdfe6080604052610539600055348015601557600080fd5b50603f8060236000396000f3fe6080604052600080fdfea264697066735822122035d8e78e0625d898206f5972de53e4ad562a71e952947c155dd520c0d687837264736f6c634300080d0033a264697066735822122048ecf2596cbb19dc5ff6d227e2b66f60359d3668fcdcbfd167f066dc720e5c3964736f6c634300080d0033" ) )
+    rule  ( #binRuntime ( StoreTest ) => #parseByteStack ( "0x608060405234801561001057600080fd5b50600436106100885760003560e01c8063ba414fa61161005b578063ba414fa6146100df578063e92ca5bb146100f7578063f8ccbf47146100ff578063fa7626d41461011257600080fd5b806309840bb51461008d5780633a7684631461009757806348088073146100cf57806387a8a81b146100d7575b600080fd5b61009561011f565b005b6100b2737109709ecfa91a80626ff3989d68f67f5b1dd12d81565b6040516001600160a01b0390911681526020015b60405180910390f35b610095610270565b6100956103b4565b6100e7610444565b60405190151581526020016100c6565b61009561056f565b6000546100e79062010000900460ff1681565b6000546100e79060ff1681565b600060405161012d9061089b565b604051809103906000f080158015610149573d6000803e3d6000fd5b5090507f885cb69240a935d632d79c317109709ecfa91a80626ff3989d68f67f5b1dd12d60001c60601b60601c6001600160a01b031663266cf1096040518163ffffffff1660e01b8152600401600060405180830381600087803b1580156101b057600080fd5b505af11580156101c4573d6000803e3d6000fd5b50506040516365bc948160e01b81526001600160a01b038416600482015260009250829150737109709ecfa91a80626ff3989d68f67f5b1dd12d906365bc9481906024016000604051808303816000875af1158015610227573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f1916820160405261024f9190810190610958565b9150915061025f8251600161066d565b61026b8151600161066d565b505050565b600060405161027e9061089b565b604051809103906000f08015801561029a573d6000803e3d6000fd5b506040516370ca10bb60e01b81526001600160a01b038216600482015260006024820152617a696044820152909150737109709ecfa91a80626ff3989d68f67f5b1dd12d906370ca10bb90606401600060405180830381600087803b15801561030257600080fd5b505af1158015610316573d6000803e3d6000fd5b5050604051630667f9d760e41b81526001600160a01b03841660048201526000602482018190529250737109709ecfa91a80626ff3989d68f67f5b1dd12d915063667f9d70906044016020604051808303816000875af115801561037e573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906103a291906109bc565b90506103b081617a6961066d565b5050565b604051630667f9d760e41b81526064600482015260176024820152600090737109709ecfa91a80626ff3989d68f67f5b1dd12d9063667f9d70906044016020604051808303816000875af1158015610410573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061043491906109bc565b905061044181600061066d565b50565b60008054610100900460ff16156104645750600054610100900460ff1690565b6000737109709ecfa91a80626ff3989d68f67f5b1dd12d3b1561056a5760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b828401528251808303840181526060830190935260009290916104f2917f667f9d70ca411d70ead50d8d5c22070dafc36ad75f3dcf5e7237b22ade9aecc491608001610a10565b60408051601f198184030181529082905261050c91610a34565b6000604051808303816000865af19150503d8060008114610549576040519150601f19603f3d011682016040523d82523d6000602084013e61054e565b606091505b50915050808060200190518101906105669190610a47565b9150505b919050565b6040516370ca10bb60e01b81526000600482015260036024820152617a696044820152737109709ecfa91a80626ff3989d68f67f5b1dd12d906370ca10bb90606401600060405180830381600087803b1580156105cb57600080fd5b505af11580156105df573d6000803e3d6000fd5b5050604051630667f9d760e41b8152600060048201819052600360248301529250737109709ecfa91a80626ff3989d68f67f5b1dd12d915063667f9d70906044016020604051808303816000875af115801561063f573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061066391906109bc565b905061044181617a695b8082146103b0577f41304facd9323d75b11bcdd609cb38effffdb05710f7caf0e9b16c6d9d709f506040516106de9060208082526022908201527f4572726f723a2061203d3d2062206e6f7420736174697366696564205b75696e604082015261745d60f01b606082015260800190565b60405180910390a160408051818152600a81830152690808115e1c1958dd195960b21b60608201526020810183905290517fb2de2fbe801a0df6c0cbddfd448ba3c41d48a040ca35c56c8196ef0fcae721a89181900360800190a160408051818152600a8183015269080808081058dd1d585b60b21b60608201526020810184905290517fb2de2fbe801a0df6c0cbddfd448ba3c41d48a040ca35c56c8196ef0fcae721a89181900360800190a16103b0737109709ecfa91a80626ff3989d68f67f5b1dd12d3b1561088a5760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b9282019290925260016060820152600091907f70ca10bbd0dbfd9020a9f4b13402c16cb120705e0d1c0aeab10fa353ae586fc49060800160408051601f19818403018152908290526108299291602001610a10565b60408051601f198184030181529082905261084391610a34565b6000604051808303816000865af19150503d8060008114610880576040519150601f19603f3d011682016040523d82523d6000602084013e610885565b606091505b505050505b6000805461ff001916610100179055565b606280610a6a83390190565b634e487b7160e01b600052604160045260246000fd5b600082601f8301126108ce57600080fd5b8151602067ffffffffffffffff808311156108eb576108eb6108a7565b8260051b604051601f19603f83011681018181108482111715610910576109106108a7565b60405293845285810183019383810192508785111561092e57600080fd5b83870191505b8482101561094d57815183529183019190830190610934565b979650505050505050565b6000806040838503121561096b57600080fd5b825167ffffffffffffffff8082111561098357600080fd5b61098f868387016108bd565b935060208501519150808211156109a557600080fd5b506109b2858286016108bd565b9150509250929050565b6000602082840312156109ce57600080fd5b5051919050565b6000815160005b818110156109f657602081850181015186830152016109dc565b81811115610a05576000828601525b509290920192915050565b6001600160e01b0319831681526000610a2c60048301846109d5565b949350505050565b6000610a4082846109d5565b9392505050565b600060208284031215610a5957600080fd5b81518015158114610a4057600080fdfe6080604052610539600055348015601557600080fd5b50603f8060236000396000f3fe6080604052600080fdfea26469706673582212204a24de89c36b269e6851fd2e1f9dff95d158557b1822690dcb27d5a2fd647b2764736f6c634300080d0033a2646970667358221220337bd4907ff5f99c247db8a2d66eb7519f154afd7aaee56fa51b93d461dc533564736f6c634300080d0033" ) )
       
     
     syntax Field ::= StoreTestField
@@ -2746,8 +2746,6 @@ module STORETEST-BIN-RUNTIME
     syntax StoreTestField ::= "IS_SCRIPT" [symbol(), klabel(field_StoreTest_IS_SCRIPT)]
     
     syntax StoreTestField ::= "stdstore" [symbol(), klabel(field_StoreTest_stdstore)]
-    
-    syntax StoreTestField ::= "myStore" [symbol(), klabel(field_StoreTest_myStore)]
     
     rule  ( #loc ( StoreTest . IS_TEST ) => 0 )
       
@@ -2761,9 +2759,6 @@ module STORETEST-BIN-RUNTIME
     rule  ( #loc ( StoreTest . stdstore ) => 1 )
       
     
-    rule  ( #loc ( StoreTest . myStore ) => 8 )
-      
-    
     syntax ByteArray ::= StoreTestContract "." StoreTestMethod [function(), klabel(method_StoreTest)]
     
     syntax StoreTestMethod ::= "IS_SCRIPT" "(" ")" [klabel(method_StoreTest_IS_SCRIPT)]
@@ -2772,11 +2767,13 @@ module STORETEST-BIN-RUNTIME
     
     syntax StoreTestMethod ::= "failed" "(" ")" [klabel(method_StoreTest_failed)]
     
-    syntax StoreTestMethod ::= "setUp" "(" ")" [klabel(method_StoreTest_setUp)]
-    
     syntax StoreTestMethod ::= "testAccesses" "(" ")" [klabel(method_StoreTest_testAccesses)]
     
+    syntax StoreTestMethod ::= "testLoadNonExistent" "(" ")" [klabel(method_StoreTest_testLoadNonExistent)]
+    
     syntax StoreTestMethod ::= "testStoreLoad" "(" ")" [klabel(method_StoreTest_testStoreLoad)]
+    
+    syntax StoreTestMethod ::= "testStoreLoadNonExistent" "(" ")" [klabel(method_StoreTest_testStoreLoadNonExistent)]
     
     syntax StoreTestMethod ::= "vm" "(" ")" [klabel(method_StoreTest_vm)]
     
@@ -2789,13 +2786,16 @@ module STORETEST-BIN-RUNTIME
     rule  ( StoreTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
-    rule  ( StoreTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
-      
-    
     rule  ( StoreTest . testAccesses ( ) => #abiCallData ( "testAccesses" , .TypedArgs ) )
       
     
+    rule  ( StoreTest . testLoadNonExistent ( ) => #abiCallData ( "testLoadNonExistent" , .TypedArgs ) )
+      
+    
     rule  ( StoreTest . testStoreLoad ( ) => #abiCallData ( "testStoreLoad" , .TypedArgs ) )
+      
+    
+    rule  ( StoreTest . testStoreLoadNonExistent ( ) => #abiCallData ( "testStoreLoadNonExistent" , .TypedArgs ) )
       
     
     rule  ( StoreTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
@@ -2810,13 +2810,16 @@ module STORETEST-BIN-RUNTIME
     rule  ( selector ( "failed" ) => 3124842406 )
       
     
-    rule  ( selector ( "setUp" ) => 177362148 )
-      
-    
     rule  ( selector ( "testAccesses" ) => 159648693 )
       
     
+    rule  ( selector ( "testLoadNonExistent" ) => 2275977243 )
+      
+    
     rule  ( selector ( "testStoreLoad" ) => 1208516723 )
+      
+    
+    rule  ( selector ( "testStoreLoadNonExistent" ) => 3912017339 )
       
     
     rule  ( selector ( "vm" ) => 980845667 )
@@ -3021,6 +3024,7 @@ module FOUNDRY-SPEC
     imports public LABELTEST-BIN-RUNTIME-SPEC
     imports public NONCETEST-BIN-RUNTIME-SPEC
     imports public ASSERTTEST-BIN-RUNTIME-SPEC
+    imports public STORETEST-BIN-RUNTIME-SPEC
     
     
 
@@ -4899,5 +4903,535 @@ module ASSERTTEST-BIN-RUNTIME-SPEC
       requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
        ensures foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) )
       [label(test-assert-true)]
+
+endmodule
+
+module STORETEST-BIN-RUNTIME-SPEC
+    imports public STORETEST-BIN-RUNTIME
+    imports public FOUNDRY-MAIN
+    
+    claim [testLoadNonExistent]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( StoreTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( StoreTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( StoreTest . testLoadNonExistent ( ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( StoreTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) )
+      [label(testLoadNonExistent)]
+    
+    claim [testStoreLoadNonExistent]: <kevm>
+           <k>
+             ( #execute => #halt )
+             ~> _CONTINUATION
+           </k>
+           <exit-code>
+             ( _EXITCODE_CELL => ?_EXIT_CODE_CELL_c89e25d9 )
+           </exit-code>
+           <mode>
+             ( NORMAL => ?_MODE_CELL_c89e25d9 )
+           </mode>
+           <schedule>
+             ( LONDON => ?_SCHEDULE_CELL_c89e25d9 )
+           </schedule>
+           <ethereum>
+             <evm>
+               <output>
+                 ( _OUTPUT_CELL => ?_OUTPUT_CELL_c89e25d9 )
+               </output>
+               <statusCode>
+                 ( _STATUSCODE => ?STATUSCODE_FINAL )
+               </statusCode>
+               <endPC>
+                 ( _ENDPC_CELL => ?_ENDPC_CELL_c89e25d9 )
+               </endPC>
+               <callStack>
+                 ( .List => ?_CALLSTACK_CELL_c89e25d9 )
+               </callStack>
+               <interimStates>
+                 ( _INTERIMSTATES_CELL => ?_INTERIMSTATES_CELL_c89e25d9 )
+               </interimStates>
+               <touchedAccounts>
+                 ( _TOUCHEDACCOUNTS_CELL => ?_TOUCHEDACCOUNTS_CELL_c89e25d9 )
+               </touchedAccounts>
+               <callState>
+                 <program>
+                   ( #binRuntime ( StoreTest ) => ?_PROGRAM_CELL_c89e25d9 )
+                 </program>
+                 <jumpDests>
+                   ( #computeValidJumpDests ( #binRuntime ( StoreTest ) ) => ?_JUMPDESTS_CELL_c89e25d9 )
+                 </jumpDests>
+                 <id>
+                   1032069922050249630382865877677304880282300743300
+                 </id>
+                 <caller>
+                   ( _CALLER_ID => ?_CALLER_CELL_c89e25d9 )
+                 </caller>
+                 <callData>
+                   ( StoreTest . testStoreLoadNonExistent ( ) => ?_CALLDATA_CELL_c89e25d9 )
+                 </callData>
+                 <callValue>
+                   ( 0 => ?_CALLVALUE_CELL_c89e25d9 )
+                 </callValue>
+                 <wordStack>
+                   ( .WordStack => ?_WORDSTACK_CELL_c89e25d9 )
+                 </wordStack>
+                 <localMem>
+                   ( _LOCAL_MEM => ?_LOCALMEM_CELL_c89e25d9 )
+                 </localMem>
+                 <pc>
+                   ( 0 => ?_PC_CELL_c89e25d9 )
+                 </pc>
+                 <gas>
+                   ( #gas ( _VGAS ) => ?_GAS_CELL_c89e25d9 )
+                 </gas>
+                 <memoryUsed>
+                   ( 0 => ?_MEMORYUSED_CELL_c89e25d9 )
+                 </memoryUsed>
+                 <callGas>
+                   ( _CALLGAS_CELL => ?_CALLGAS_CELL_c89e25d9 )
+                 </callGas>
+                 <static>
+                   ( false => ?_STATIC_CELL_c89e25d9 )
+                 </static>
+                 <callDepth>
+                   ( 0 => ?_CALLDEPTH_CELL_c89e25d9 )
+                 </callDepth>
+               </callState>
+               <substate>
+                 <selfDestruct>
+                   ( _SELFDESTRUCT_CELL => ?_SELFDESTRUCT_CELL_c89e25d9 )
+                 </selfDestruct>
+                 <log>
+                   ( _LOG_CELL => ?_LOG_CELL_c89e25d9 )
+                 </log>
+                 <refund>
+                   ( _REFUND_CELL => ?_REFUND_CELL_c89e25d9 )
+                 </refund>
+                 <accessedAccounts>
+                   ( _ACCESSEDACCOUNTS_CELL => ?_ACCESSEDACCOUNTS_CELL_c89e25d9 )
+                 </accessedAccounts>
+                 <accessedStorage>
+                   ( .Map => ?_ACCESSEDSTORAGE_CELL_c89e25d9 )
+                 </accessedStorage>
+               </substate>
+               <gasPrice>
+                 ( _GASPRICE_CELL => ?_GASPRICE_CELL_c89e25d9 )
+               </gasPrice>
+               <origin>
+                 ( _ORIGIN_ID => ?_ORIGIN_CELL_c89e25d9 )
+               </origin>
+               <blockhashes>
+                 ( _BLOCKHASHES_CELL => ?_BLOCKHASHES_CELL_c89e25d9 )
+               </blockhashes>
+               <block>
+                 <previousHash>
+                   ( _PREVIOUSHASH_CELL => ?_PREVIOUSHASH_CELL_c89e25d9 )
+                 </previousHash>
+                 <ommersHash>
+                   ( _OMMERSHASH_CELL => ?_OMMERSHASH_CELL_c89e25d9 )
+                 </ommersHash>
+                 <coinbase>
+                   ( _COINBASE_CELL => ?_COINBASE_CELL_c89e25d9 )
+                 </coinbase>
+                 <stateRoot>
+                   ( _STATEROOT_CELL => ?_STATEROOT_CELL_c89e25d9 )
+                 </stateRoot>
+                 <transactionsRoot>
+                   ( _TRANSACTIONSROOT_CELL => ?_TRANSACTIONSROOT_CELL_c89e25d9 )
+                 </transactionsRoot>
+                 <receiptsRoot>
+                   ( _RECEIPTSROOT_CELL => ?_RECEIPTSROOT_CELL_c89e25d9 )
+                 </receiptsRoot>
+                 <logsBloom>
+                   ( _LOGSBLOOM_CELL => ?_LOGSBLOOM_CELL_c89e25d9 )
+                 </logsBloom>
+                 <difficulty>
+                   ( _DIFFICULTY_CELL => ?_DIFFICULTY_CELL_c89e25d9 )
+                 </difficulty>
+                 <number>
+                   ( _NUMBER_CELL => ?_NUMBER_CELL_c89e25d9 )
+                 </number>
+                 <gasLimit>
+                   ( _GASLIMIT_CELL => ?_GASLIMIT_CELL_c89e25d9 )
+                 </gasLimit>
+                 <gasUsed>
+                   ( _GASUSED_CELL => ?_GASUSED_CELL_c89e25d9 )
+                 </gasUsed>
+                 <timestamp>
+                   ( _TIMESTAMP_CELL => ?_TIMESTAMP_CELL_c89e25d9 )
+                 </timestamp>
+                 <extraData>
+                   ( _EXTRADATA_CELL => ?_EXTRADATA_CELL_c89e25d9 )
+                 </extraData>
+                 <mixHash>
+                   ( _MIXHASH_CELL => ?_MIXHASH_CELL_c89e25d9 )
+                 </mixHash>
+                 <blockNonce>
+                   ( _BLOCKNONCE_CELL => ?_BLOCKNONCE_CELL_c89e25d9 )
+                 </blockNonce>
+                 <baseFee>
+                   ( _BASEFEE_CELL => ?_BASEFEE_CELL_c89e25d9 )
+                 </baseFee>
+                 <ommerBlockHeaders>
+                   ( _OMMERBLOCKHEADERS_CELL => ?_OMMERBLOCKHEADERS_CELL_c89e25d9 )
+                 </ommerBlockHeaders>
+               </block>
+             </evm>
+             <network>
+               <chainID>
+                 ( _CHAINID_CELL => ?_CHAINID_CELL_c89e25d9 )
+               </chainID>
+               <activeAccounts>
+                 ( ( SetItem ( 1032069922050249630382865877677304880282300743300 ) ( SetItem ( 645326474426547203313410069153905908525362434349 ) ( SetItem ( 137122462167341575662000267002353578582749290296 ) SetItem ( 120209876281281145568259943 ) ) ) ) => ?_ACTIVEACCOUNTS_CELL_c89e25d9 )
+               </activeAccounts>
+               <accounts>
+                 ( <account>
+                   <acctID>
+                     1032069922050249630382865877677304880282300743300
+                   </acctID>
+                   <balance>
+                     ( 0 => ?_ACCT_BALANCE )
+                   </balance>
+                   <code>
+                     #binRuntime ( StoreTest )
+                   </code>
+                   <storage>
+                     ( _ACCT_STORAGE => ?_ACCT_STORAGE_FINAL )
+                   </storage>
+                   <nonce>
+                     ( 0 => ?_ACCT_NONCE )
+                   </nonce>
+                   ...
+                 </account>
+                 ( <account>
+                   <acctID>
+                     137122462167341575662000267002353578582749290296
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     645326474426547203313410069153905908525362434349
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     b"\x00"
+                   </code>
+                   <storage>
+                     ( CHEATCODE_STORAGE => ?CHEATCODE_STORAGE_FINAL )
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( <account>
+                   <acctID>
+                     120209876281281145568259943
+                   </acctID>
+                   <balance>
+                     0
+                   </balance>
+                   <code>
+                     .ByteArray
+                   </code>
+                   <storage>
+                     .Map
+                   </storage>
+                   <origStorage>
+                     .Map
+                   </origStorage>
+                   <nonce>
+                     0
+                   </nonce>
+                 </account>
+                 ( .Bag => ?_ACCOUNTS_FINAL ) ) ) ) )
+               </accounts>
+               <txOrder>
+                 ( _TXORDER_CELL => ?_TXORDER_CELL_c89e25d9 )
+               </txOrder>
+               <txPending>
+                 ( _TXPENDING_CELL => ?_TXPENDING_CELL_c89e25d9 )
+               </txPending>
+               <messages>
+                 ( _MESSAGES_CELL => ?_MESSAGES_CELL_c89e25d9 )
+               </messages>
+             </network>
+           </ethereum>
+         </kevm>
+      requires #lookup ( CHEATCODE_STORAGE , #loc ( FoundryCheat . Failed ) ) ==Int 0
+       ensures foundry_success  ( ?STATUSCODE_FINAL , #lookup ( ?CHEATCODE_STORAGE_FINAL , #loc ( FoundryCheat . Failed ) ) )
+      [label(testStoreLoadNonExistent)]
 
 endmodule
