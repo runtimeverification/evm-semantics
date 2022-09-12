@@ -355,7 +355,7 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
           <localMem> LM </localMem>
           <account>
              <acctID> ACCTID </acctID>
-             <nonce>  NONCE  </nonce>
+             <nonce>  NONCE </nonce>
              ...
          </account>
        requires CHEAT_ADDR ==Int #address(FoundryCheat)
@@ -381,7 +381,7 @@ function setNonce(address account, uint64 nonce) external;
 ```
 
 `call.setNonce` will match when the `setNonce` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
-This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and `uint64` value corresponding to new nonce using `#asWord(#range(LM, ARGSTART +Int 36, 8)` and updates the `<nonce>` cell in the respective account.
+This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and `uint64` value corresponding to new nonce using `#asWord(#range(LM, ARGSTART +Int 36, 32)` and updates the `<nonce>` cell in the respective account.
 
 ```k
     rule [call.setNonce]:
@@ -390,13 +390,32 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
           <localMem> LM </localMem>
           <account>
              <acctID> ACCTID </acctID>
-             <nonce>  _ => #asWord(#range(LM, ARGSTART +Int 36, 8))  </nonce>
+             <nonce>  _ => #asWord(#range(LM, ARGSTART +Int 36, 32))  </nonce>
              ...
          </account>
        requires CHEAT_ADDR ==Int #address(FoundryCheat)
         andBool ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
         andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4175530839 // selector ( "setNonce(address,uint64)" )
+     [priority(35)]
+```
+
+```k
+rule [call.setNonceNonExistingAddress]:
+          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #newAccount (#asWord(#range(LM, ARGSTART +Int 4, 32))) ~> #setNonce(#asWord(#range(LM, ARGSTART +Int 4, 32)),#asWord(#range(LM, ARGSTART +Int 36, 32))) ~>  1 ~> #push ... </k>
+          <output> _ => .ByteArray </output>
+          <localMem> LM </localMem>
+       requires CHEAT_ADDR ==Int #address(FoundryCheat)
+        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4175530839 // selector ( "setNonce(address,uint64)" )
      [priority(40)]
+
+     syntax KItem ::= "#setNonce" "(" Int "," Int ")" [klabel(foundry_setNonce)]
+ // -------------------------------------------------------------------------------
+     rule <k> #setNonce(ACCTID, NONCE) => . ... </k>
+         <account>
+             <acctID> ACCTID </acctID>
+             <nonce> _ => NONCE </nonce>
+             ...
+         </account>
 ```
 
 #### `addr` - Computes the address for a given private key.
