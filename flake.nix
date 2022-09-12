@@ -18,7 +18,7 @@
       "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
     pyk.url =
-      "github:runtimeverification/pyk/3cef4165e26b1662241c1b8d1d1edd5551413856";
+      "github:runtimeverification/pyk/v0.1.1";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     pyk.inputs.poetry2nix.follows = "k-framework/poetry2nix";
