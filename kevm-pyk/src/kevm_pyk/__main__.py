@@ -269,18 +269,8 @@ def exec_foundry_prove(
     definition_dir = foundry_out / 'kompiled'
     spec_file = definition_dir / 'foundry.k'
     spec_module = 'FOUNDRY-SPEC'
-    claims = []
-    exclude_claims = []
-    for _t in tests:
-        _m, _c = _t.split('.')
-        _m = _m.upper() + '-BIN-RUNTIME-SPEC'
-        _c = _c.replace('_', '-')
-        claims.append(f'{_m}.{_c}')
-    for _t in exclude_tests:
-        _m, _c = _t.split('.')
-        _m = _m.upper() + '-BIN-RUNTIME-SPEC'
-        _c = _c.replace('_', '-')
-        exclude_claims.append(f'{_m}.{_c}')
+    claims = [Contract.contract_test_to_claim_id(_t) for _t in tests]
+    exclude_claims = [Contract.contract_test_to_claim_id(_t) for _t in exclude_tests]
     exec_prove(
         definition_dir,
         profile,
