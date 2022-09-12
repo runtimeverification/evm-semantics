@@ -290,14 +290,6 @@ def gen_claims_for_contract(
     empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[str, KInner, KInner]] = None
 ) -> List[KClaim]:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
-    account_cell = KEVM.account_cell(
-        Foundry.address_TEST_CONTRACT(),
-        intToken(0),
-        program,
-        KVariable('ACCT_STORAGE'),
-        KVariable('ACCT_ORIGSTORAGE'),
-        intToken(0),
-    )
     post_account_cell = KEVM.account_cell(
         Foundry.address_TEST_CONTRACT(),
         KVariable('ACCT_BALANCE'),
@@ -305,6 +297,57 @@ def gen_claims_for_contract(
         KVariable('ACCT_STORAGE_FINAL'),
         KVariable('ACCT_ORIGSTORAGE'),
         KVariable('ACCT_NONCE'),
+    )
+    final_subst = {
+        'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')]),
+        'STATUSCODE_CELL': KVariable('STATUSCODE_FINAL'),
+        'ID_CELL': Foundry.address_TEST_CONTRACT(),
+        'ACCOUNTS_CELL': KEVM.accounts(
+            [
+                post_account_cell,  # test contract address
+                Foundry.account_CALLER(),
+                Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE_FINAL')),
+                Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
+                KVariable('ACCOUNTS_FINAL'),
+            ]
+        ),
+    }
+    init_term = _init_term(empty_config, contract_name)
+    init_terms = []
+    if calldata_cells:
+        for test_name, call_data, call_value in calldata_cells:
+            failing = test_name.startswith('testFail')
+            refined_subst = {'CALLDATA_CELL': call_data, 'CALLVALUE_CELL': call_value}
+            claim_name = test_name.replace('_', '-')
+            init_terms.append((claim_name, substitute(init_term, refined_subst), failing))
+    else:
+        init_terms.append((contract_name.lower(), init_term, False))
+    final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')]))
+    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
+    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
+    dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
+    claims: List[KClaim] = []
+    foundry_success = Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post)
+    for claim_id, i_term, failing in init_terms:
+        i_cterm = CTerm(i_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
+        if not failing:
+            f_cterm = final_cterm.add_constraint(mlEqualsTrue(foundry_success))
+        else:
+            f_cterm = final_cterm.add_constraint(mlEqualsTrue(Bool.notBool(foundry_success)))
+        claim, _ = build_claim(claim_id, i_cterm, f_cterm)
+        claims.append(claim)
+    return claims
+
+
+def _init_term(empty_config: KInner, contract_name: str) -> KInner:
+    program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
+    account_cell = KEVM.account_cell(
+        Foundry.address_TEST_CONTRACT(),
+        intToken(0),
+        program,
+        KVariable('ACCT_STORAGE'),
+        KVariable('ACCT_ORIGSTORAGE'),
+        intToken(0),
     )
     init_subst = {
         'MODE_CELL': KToken('NORMAL', 'Mode'),
@@ -348,45 +391,7 @@ def gen_claims_for_contract(
             ]
         ),
     }
-    final_subst = {
-        'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')]),
-        'STATUSCODE_CELL': KVariable('STATUSCODE_FINAL'),
-        'ID_CELL': Foundry.address_TEST_CONTRACT(),
-        'ACCOUNTS_CELL': KEVM.accounts(
-            [
-                post_account_cell,  # test contract address
-                Foundry.account_CALLER(),
-                Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE_FINAL')),
-                Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
-                KVariable('ACCOUNTS_FINAL'),
-            ]
-        ),
-    }
-    init_term = substitute(empty_config, init_subst)
-    init_terms = []
-    if calldata_cells:
-        for test_name, call_data, call_value in calldata_cells:
-            failing = test_name.startswith('testFail')
-            refined_subst = {'CALLDATA_CELL': call_data, 'CALLVALUE_CELL': call_value}
-            claim_name = test_name.replace('_', '-')
-            init_terms.append((claim_name, substitute(init_term, refined_subst), failing))
-    else:
-        init_terms.append((contract_name.lower(), init_term, False))
-    final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')]))
-    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
-    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
-    dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
-    claims: List[KClaim] = []
-    foundry_success = Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post)
-    for claim_id, i_term, failing in init_terms:
-        i_cterm = CTerm(i_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
-        if not failing:
-            f_cterm = final_cterm.add_constraint(mlEqualsTrue(foundry_success))
-        else:
-            f_cterm = final_cterm.add_constraint(mlEqualsTrue(Bool.notBool(foundry_success)))
-        claim, _ = build_claim(claim_id, i_cterm, f_cterm)
-        claims.append(claim)
-    return claims
+    return substitute(empty_config, init_subst)
 
 
 def contract_to_k(
