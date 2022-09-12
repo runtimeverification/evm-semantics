@@ -10,7 +10,7 @@ From the root of the [KEVM repository](../README.md), after having:
 
 -   Successfully built (or installed) KEVM, and
 -   Have `kevm` on `PATH`, and
--   Have stepped into the virtual environment.
+-   Have stepped into the virtual environment (see the [README](../README.md)).
 
 KEVM supports Foundry specifications via two CLI utilities, `foundry-kompile` and `foundry-prove`.
 To get help, you can do `kevm foundry-kompile --help` and `kevm foundry-prove --help`.
