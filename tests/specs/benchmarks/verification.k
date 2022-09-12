@@ -149,8 +149,7 @@ module VERIFICATION-HASKELL [symbolic, kore]
     rule ( #sizeByteArray(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 0  ) =>           #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )  [simplification]
     rule ( #sizeByteArray(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 32 ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )) [simplification]
 
-    rule ( #sizeByteArray(#ecrec( _, _, _, _ )) <=Int K ) => true  
-      requires 32 <=Int K [simplification]
+    rule ( #sizeByteArray(#ecrec( _, _, _, _ )) <=Int K ) => true requires 32 <=Int K [simplification]
 
     rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
 

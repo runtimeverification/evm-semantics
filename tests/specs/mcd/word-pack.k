@@ -216,10 +216,10 @@ module WORD-PACK-COMMON
     rule maxUInt48 &Int (A:Int |Int B:Int) => (maxUInt48 &Int A) |Int (maxUInt48 &Int B)
       requires 0 <=Int A andBool 0 <=Int B [simplification]
 
-    rule MAX_UINT &Int X <Int Y => true
-      requires 0 <=Int X
-       andBool MAX_UINT <Int Y
-       andBool 0 <=Int MAX_UINT [simplification]
+    rule X &Int Y <Int Z => true
+      requires 0 <=Int X andBool 0 <=Int Y
+       andBool (X <Int Z orBool Y <Int Z)
+      [simplification]
 
     //
     // More simplifications surrounding pow160 and maxUInt160
@@ -231,6 +231,5 @@ module WORD-PACK-COMMON
     rule maxUInt160 &Int (A:Int |Int B:Int) => (maxUInt160 &Int A) |Int (maxUInt160 &Int B)
       requires 0 <=Int A andBool 0 <=Int B [simplification]
 
-    rule maxUInt160 &Int (maxUInt160 &Int A) => maxUInt160 &Int A
-      requires 0 <=Int A [simplification]
+    rule X &Int (X &Int Y) => X &Int Y requires 0 <=Int X andBool 0 <=Int Y [simplification]
 endmodule
