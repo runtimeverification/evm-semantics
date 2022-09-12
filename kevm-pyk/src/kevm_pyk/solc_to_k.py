@@ -143,7 +143,7 @@ class Contract:
 
     @staticmethod
     def contract_to_module_name(c: str, spec: bool = True) -> str:
-        m = c.upper() + 'BIN-RUNTIME'
+        m = c.upper() + '-BIN-RUNTIME'
         if spec:
             m = m + '-SPEC'
         return m
@@ -398,7 +398,7 @@ def contract_to_k(
 ) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
     sentences = contract.sentences
-    module_name = contract.name.upper() + '-BIN-RUNTIME'
+    module_name = Contract.contract_to_module_name(contract.name, spec=False)
     module = KFlatModule(module_name, sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
 
     claims_module: Optional[KFlatModule] = None
