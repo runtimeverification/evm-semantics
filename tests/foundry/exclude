@@ -32,8 +32,8 @@ EnvTest.testEnvStringArray
 EnvTest.testEnvUInt
 EnvTest.testEnvUIntArray
 EtchTest.testEtch
-ExpectRevertTest.test_expectRevert_false
-ExpectRevertTest.test_expectRevert_false2
+ExpectRevertTest.testFail_expectRevert_false
+ExpectRevertTest.testFail_expectRevert_false2
 FfiTest.testffi
 FfiTest.testFFIFOO
 FfiTest.testFFIScript
