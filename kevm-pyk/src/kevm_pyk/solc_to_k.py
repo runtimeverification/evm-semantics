@@ -289,29 +289,6 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
 def gen_claims_for_contract(
     empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[str, KInner, KInner]] = None
 ) -> List[KClaim]:
-    program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
-    post_account_cell = KEVM.account_cell(
-        Foundry.address_TEST_CONTRACT(),
-        KVariable('ACCT_BALANCE'),
-        program,
-        KVariable('ACCT_STORAGE_FINAL'),
-        KVariable('ACCT_ORIGSTORAGE'),
-        KVariable('ACCT_NONCE'),
-    )
-    final_subst = {
-        'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')]),
-        'STATUSCODE_CELL': KVariable('STATUSCODE_FINAL'),
-        'ID_CELL': Foundry.address_TEST_CONTRACT(),
-        'ACCOUNTS_CELL': KEVM.accounts(
-            [
-                post_account_cell,  # test contract address
-                Foundry.account_CALLER(),
-                Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE_FINAL')),
-                Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
-                KVariable('ACCOUNTS_FINAL'),
-            ]
-        ),
-    }
     init_term = _init_term(empty_config, contract_name)
     init_terms = []
     if calldata_cells:
@@ -322,7 +299,8 @@ def gen_claims_for_contract(
             init_terms.append((claim_name, substitute(init_term, refined_subst), failing))
     else:
         init_terms.append((contract_name.lower(), init_term, False))
-    final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')]))
+    final_term = _final_term(empty_config, contract_name)
+    final_cterm = CTerm(final_term)
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
     dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
@@ -392,6 +370,33 @@ def _init_term(empty_config: KInner, contract_name: str) -> KInner:
         ),
     }
     return substitute(empty_config, init_subst)
+
+
+def _final_term(empty_config: KInner, contract_name: str) -> KInner:
+    program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
+    post_account_cell = KEVM.account_cell(
+        Foundry.address_TEST_CONTRACT(),
+        KVariable('ACCT_BALANCE'),
+        program,
+        KVariable('ACCT_STORAGE_FINAL'),
+        KVariable('ACCT_ORIGSTORAGE'),
+        KVariable('ACCT_NONCE'),
+    )
+    final_subst = {
+        'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')]),
+        'STATUSCODE_CELL': KVariable('STATUSCODE_FINAL'),
+        'ID_CELL': Foundry.address_TEST_CONTRACT(),
+        'ACCOUNTS_CELL': KEVM.accounts(
+            [
+                post_account_cell,  # test contract address
+                Foundry.account_CALLER(),
+                Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE_FINAL')),
+                Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
+                KVariable('ACCOUNTS_FINAL'),
+            ]
+        ),
+    }
+    return abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')])
 
 
 def contract_to_k(
