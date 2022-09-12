@@ -286,6 +286,46 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
     return result
 
 
+def contract_to_k(
+    contract: Contract,
+    empty_config: KInner,
+    foundry: bool = False,
+    imports: Iterable[str] = (),
+    main_module: Optional[str] = None,
+) -> Tuple[KFlatModule, Optional[KFlatModule]]:
+
+    sentences = contract.sentences
+    module_name = Contract.contract_to_module_name(contract.name, spec=False)
+    module = KFlatModule(module_name, sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
+
+    claims_module: Optional[KFlatModule] = None
+    contract_function_application_label = contract.klabel_method
+    function_test_calldatas = []
+    for tm in contract.methods:
+        if tm.name.startswith('test'):
+            klabel = tm.production.klabel
+            assert klabel is not None
+            args = [
+                abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}')
+                for name in tm.arg_names
+            ]
+            calldata: KInner = KApply(
+                contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)]
+            )
+            callvalue: KInner = (
+                intToken(0)
+                if not tm.payable
+                else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
+            )
+            function_test_calldatas.append((tm.name, calldata, callvalue))
+    if function_test_calldatas:
+        claims = gen_claims_for_contract(empty_config, contract.name, calldata_cells=function_test_calldatas)
+        import_module = main_module if main_module else module_name
+        claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(import_module)])
+
+    return module, claims_module
+
+
 def gen_claims_for_contract(
     empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[str, KInner, KInner]] = None
 ) -> List[KClaim]:
@@ -397,46 +437,6 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
         ),
     }
     return abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')])
-
-
-def contract_to_k(
-    contract: Contract,
-    empty_config: KInner,
-    foundry: bool = False,
-    imports: Iterable[str] = (),
-    main_module: Optional[str] = None,
-) -> Tuple[KFlatModule, Optional[KFlatModule]]:
-
-    sentences = contract.sentences
-    module_name = Contract.contract_to_module_name(contract.name, spec=False)
-    module = KFlatModule(module_name, sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
-
-    claims_module: Optional[KFlatModule] = None
-    contract_function_application_label = contract.klabel_method
-    function_test_calldatas = []
-    for tm in contract.methods:
-        if tm.name.startswith('test'):
-            klabel = tm.production.klabel
-            assert klabel is not None
-            args = [
-                abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}')
-                for name in tm.arg_names
-            ]
-            calldata: KInner = KApply(
-                contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)]
-            )
-            callvalue: KInner = (
-                intToken(0)
-                if not tm.payable
-                else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
-            )
-            function_test_calldatas.append((tm.name, calldata, callvalue))
-    if function_test_calldatas:
-        claims = gen_claims_for_contract(empty_config, contract.name, calldata_cells=function_test_calldatas)
-        import_module = main_module if main_module else module_name
-        claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(import_module)])
-
-    return module, claims_module
 
 
 # Helpers
