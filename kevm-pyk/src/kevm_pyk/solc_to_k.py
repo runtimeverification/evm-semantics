@@ -319,14 +319,14 @@ def contract_to_k(
             )
             function_test_calldatas.append((tm.name, calldata, callvalue))
     if function_test_calldatas:
-        claims = gen_claims_for_contract(empty_config, contract.name, calldata_cells=function_test_calldatas)
+        claims = _gen_claims_for_contract(empty_config, contract.name, calldata_cells=function_test_calldatas)
         import_module = main_module if main_module else module_name
         claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(import_module)])
 
     return module, claims_module
 
 
-def gen_claims_for_contract(
+def _gen_claims_for_contract(
     empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[str, KInner, KInner]] = None
 ) -> List[KClaim]:
     init_term = _init_term(empty_config, contract_name)
