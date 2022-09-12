@@ -496,9 +496,7 @@ tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	$(KEVM) foundry-prove tests/foundry/out $(KEVM_OPTS) $(KPROVE_OPTS) $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
 
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
-	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose                            \
-	    --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION \
-	    --require lemmas/lemmas.k --module-import LEMMAS
+	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
 tests/specs/examples/%-bin-runtime.k: KEVM = $(PYK_ACTIVATE) && kevm
