@@ -220,10 +220,10 @@ module WORD-PACK-COMMON
        andBool (X <Int Z orBool Y <Int Z)
       [simplification]
 
-    rule (MAX_UINT &Int X) /Int C => 0
-      requires (MAX_UINT <Int C orBool X <Int C)
-       andBool 0 <=Int MAX_UINT
-       andBool 0 <=Int X [simplification]
+    rule (X &Int Y) /Int Z => 0
+      requires 0 <=Int X andBool 0 <=Int Y
+       andBool (X <Int Z orBool Y <Int Z)
+       [simplification]
 
     //
     // More simplifications surrounding pow160 and maxUInt160
