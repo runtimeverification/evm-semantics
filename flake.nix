@@ -17,6 +17,7 @@
     ethereum-legacytests.url =
       "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
+    haskell-backend.follows = "k-framework/haskell-backend";
     pyk.url =
       "github:runtimeverification/pyk/v0.1.1";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
@@ -24,7 +25,7 @@
     pyk.inputs.poetry2nix.follows = "k-framework/poetry2nix";
 
   };
-  outputs = { self, k-framework, nixpkgs, flake-utils, poetry2nix
+  outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils, poetry2nix
     , blockchain-k-plugin, ethereum-tests, ethereum-legacytests, rv-utils, pyk
     }:
     let
@@ -107,7 +108,7 @@
               mkdir -p $out
               mv .build/usr/* $out/
               wrapProgram $out/bin/kevm --prefix PATH : ${
-                prev.lib.makeBinPath [ final.solc ]
+                prev.lib.makeBinPath [ final.solc prev.which k ]
               }
               ln -s ${k} $out/lib/kevm/kframework
             '';
@@ -167,8 +168,9 @@
             overlay
           ];
         };
+        kevm = pkgs.kevm k-framework.packages.${system}.k;
       in {
-        packages.default = pkgs.kevm;
+        packages.default = kevm;
         devShell = pkgs.mkShell {
           buildInputs = buildInputs pkgs k-framework.packages.${system}.k;
         };
@@ -188,8 +190,21 @@
 
         packages = {
           inherit (pkgs) kevm-pyk;
-          kevm = pkgs.kevm k-framework.packages.${system}.k;
+          inherit kevm;
           kevm-test = pkgs.kevm-test k-framework.packages.${system}.k;
+
+          profile = pkgs.callPackage ./package/nix/profile.nix {
+            inherit kevm;
+            kore-exec = haskell-backend.packages.${system}."kore:exe:kore-exec";
+            src = pkgs.lib.cleanSource (pkgs.nix-gitignore.gitignoreSourcePure [
+              ./.gitignore
+              ".github/"
+              "result*"
+              "*.nix"
+              "deps/"
+              "kevm-pyk/"
+            ] ./.);
+          };
 
           check-submodules = rv-utils.lib.check-submodules pkgs {
             inherit k-framework blockchain-k-plugin ethereum-tests
