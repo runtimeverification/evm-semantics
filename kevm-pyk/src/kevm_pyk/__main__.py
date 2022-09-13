@@ -338,7 +338,7 @@ def exec_foundry_prove(
 
     def prove_it(_id_and_claim: Tuple[str, KClaim]) -> Tuple[bool, KInner]:
         _claim_id, _claim = _id_and_claim
-        return KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER)
+        return KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER, depth=depth)
 
     with ProcessPool(ncpus=workers) as process_pool:
         results = process_pool.map(prove_it, claims)
