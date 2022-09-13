@@ -919,10 +919,25 @@
           "poetry2nix"
         ],
         "pyk": "pyk",
-        "rv-utils": "rv-utils"
+        "rv-utils": "rv-utils_2"
       }
     },
     "rv-utils": {
+      "locked": {
+        "lastModified": 1659349707,
+        "narHash": "sha256-+RwJvYwRS4In+pl8R5Uz+R/yZ5yO5SAa7X6UR+eSC2U=",
+        "owner": "runtimeverification",
+        "repo": "rv-nix-tools",
+        "rev": "7026604726c5247ceb6e7a1a7532302a58e7e2bf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "runtimeverification",
+        "repo": "rv-nix-tools",
+        "type": "github"
+      }
+    },
+    "rv-utils_2": {
       "locked": {
         "lastModified": 1659349707,
         "narHash": "sha256-+RwJvYwRS4In+pl8R5Uz+R/yZ5yO5SAa7X6UR+eSC2U=",
