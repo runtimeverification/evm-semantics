@@ -32,6 +32,10 @@ These additional files extend the semantics to make the repository more useful:
 -   [abi.md](abi.md) defines the [Contract ABI Specification](https://docs.soliditylang.org/en/v0.8.1/abi-spec.html) for use in proofs and easy contract/function specification.
 -   [hashed-locations.md](hashed-locations.md) defines the `#hashedLocation` abstraction which makes it easier to specify Solidity-generate storage layouts.
 -   [edsl.md](edsl.md) combines the previous three abstractions for ease-of-use.
+-   [foundry.md](foundry.md) adds Foundry capabilities to KEVM.
+
+These files are used for testing the semantics itself:
+
 -   [state-utils.md](state-utils.md) provides functionality for EVM initialization, setup, and querying.
 -   [driver.md](driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
 
@@ -189,6 +193,18 @@ Finally, you can build the semantics.
 make build
 ```
 
+And you need to set up the virtual environment:
+
+```sh
+make venv
+```
+
+Which should output (towards the end), a line like this: `. .build/venv/bin/activate`.
+You should run this line in your shell, then you are in the virtual environment:
+
+```sh
+. .build/venv/bin/activate
+```
 
 Running Tests
 -------------

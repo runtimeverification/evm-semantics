@@ -833,6 +833,36 @@
         "type": "github"
       }
     },
+    "pyk": {
+      "inputs": {
+        "flake-utils": [
+          "k-framework",
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "k-framework",
+          "nixpkgs"
+        ],
+        "poetry2nix": [
+          "k-framework",
+          "poetry2nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1662971995,
+        "narHash": "sha256-NEL4DmPuZOFxhGXKli/BBLy1LiDIo7cPomYYr5VkUwk=",
+        "owner": "runtimeverification",
+        "repo": "pyk",
+        "rev": "7018f573e1f130bfda2f07bb5fe870fe3be17c3a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "runtimeverification",
+        "ref": "v0.1.1",
+        "repo": "pyk",
+        "type": "github"
+      }
+    },
     "pypi-deps-db": {
       "flake": false,
       "locked": {
@@ -875,6 +905,10 @@
           "k-framework",
           "flake-utils"
         ],
+        "haskell-backend": [
+          "k-framework",
+          "haskell-backend"
+        ],
         "k-framework": "k-framework",
         "nixpkgs": [
           "k-framework",
@@ -884,25 +918,11 @@
           "k-framework",
           "poetry2nix"
         ],
-        "rv-utils": "rv-utils_2"
+        "pyk": "pyk",
+        "rv-utils": "rv-utils"
       }
     },
     "rv-utils": {
-      "locked": {
-        "lastModified": 1659349707,
-        "narHash": "sha256-+RwJvYwRS4In+pl8R5Uz+R/yZ5yO5SAa7X6UR+eSC2U=",
-        "owner": "runtimeverification",
-        "repo": "rv-nix-tools",
-        "rev": "7026604726c5247ceb6e7a1a7532302a58e7e2bf",
-        "type": "github"
-      },
-      "original": {
-        "owner": "runtimeverification",
-        "repo": "rv-nix-tools",
-        "type": "github"
-      }
-    },
-    "rv-utils_2": {
       "locked": {
         "lastModified": 1659349707,
         "narHash": "sha256-+RwJvYwRS4In+pl8R5Uz+R/yZ5yO5SAa7X6UR+eSC2U=",

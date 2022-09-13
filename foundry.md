@@ -3,46 +3,69 @@ Foundry Specifications
 
 **UNDER CONSTRUCTION**
 
-### Usage
+Example Usage
+-------------
 
-Given a Foundry `out` directory, call (~2-3 minutes):
+From the root of the [KEVM repository](../README.md), after having:
 
-```sh
-kevm foundry-kompile path/to/foundry/out
-```
+-   Successfully built (or installed) KEVM, and
+-   Have `kevm` on `PATH`, and
+-   Have stepped into the virtual environment (see the [README](../README.md)).
 
-Then, you can attempt to prove your Foundry property tests with:
+KEVM supports Foundry specifications via two CLI utilities, `foundry-kompile` and `foundry-prove`.
+To get help, you can do `kevm foundry-kompile --help` and `kevm foundry-prove --help`.
+Each command takes as input the Foundry `out/` directory.
+For example, in the root of this repository, you can run:
 
-```sh
-kevm foundry-prove path/to/foundry/out [--contract TestContractName]
-```
-
-Adding optional argument `--contract TestContractName` will only attempt to run the proofs from that contract.
-
-For example, in this repository, you can run:
+*Build Foundry Project:*
 
 ```sh
-% cd tests/foundry
-% forge build
+$ cd tests/foundry
+$ forge build
+[⠊] Compiling...
+[⠑] Compiling 44 files with 0.8.13
+[⠊] Solc 0.8.13 finished in 3.58s
+Compiler run successful (with warnings)
 
-% kevm foundry-kompile out --concrete-rules-file ../specs/concrete-rules.txt
-WARNING 2022-08-30 22:08:43,482 kevm_pyk.solc_to_k - Ignoring test from contract AssumeTest: testFail_assume_false
-... BUNCH MOE WARNINGS ...
-WARNING 2022-08-30 22:08:44,267 kevm_pyk.solc_to_k - Ignoring test from contract AssertTest: testFail_assert_true
-
-% kevm foundry-prove out --contract AssertTest
-WARNING 2022-08-30 22:29:23,287 __main__ - Ignoring command-line option: --definition: /home/dev/src/evm-semantics/.build/usr/lib/kevm/haskell
-( <generatedTop>
-  <kevm>
-    <k>
-      #halt
-      ~> _CONTINUATION
-... A BUNCH MORE CONFIGURATION HERE ...
-</generatedTop>
-#And { 0 #Equals #lookup ( CHEATCODE_STORAGE , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) } )
+$ cd ../..
 ```
 
-### Overview
+*Kompile to KEVM specification (inside virtual environment):*
+
+```sh
+(venv) $ kevm foundry-kompile tests/foundry/out
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unknown range predicate for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unsupported ABI type for method LoopsTest.method_LoopsTest_testMax, will not generate calldata sugar: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unknown range predicate for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unsupported ABI type for method LoopsTest.method_LoopsTest_testMaxBroken, will not generate calldata sugar: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unknown range predicate for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unsupported ABI type for method LoopsTest.method_LoopsTest_testSort, will not generate calldata sugar: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unknown range predicate for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unsupported ABI type for method LoopsTest.method_LoopsTest_testSortBroken, will not generate calldata sugar: uint256[]
+WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+```
+
+*And discharge some specific test as a proof obligation (inside virtual environment):*
+
+```sh
+(venv) $ kevm foundry-prove tests/foundry/out --test AssertTest.test_assert_true
+WARNING 2022-09-11 15:37:31,956 __main__ - Ignoring command-line option: --definition: /home/dev/src/evm-semantics/.build/usr/lib/kevm/haskell
+#Top
+```
+
+Foundry Module for KEVM
+-----------------------
 
 Foundry's testing framework provides a series of cheatcodes so that developers can specify what situation they want to test.
 This file describes the KEVM specification of the Foundry testing framework, which includes the definition of said cheatcodes and what does it mean for a test to pass.
@@ -58,8 +81,7 @@ module FOUNDRY
 endmodule
 ```
 
-Foundry Success Predicate
--------------------------
+### Foundry Success Predicate
 
 Foundry has several baked-in convenience accounts for helping to define the "cheat-codes".
 Here we define their addresses, and important storage-locations.
@@ -110,8 +132,7 @@ module FOUNDRY-SUCCESS
 endmodule
 ```
 
-Foundry Cheat Codes
--------------------
+### Foundry Cheat Codes
 
 ```k
 module FOUNDRY-CHEAT-CODES
