@@ -202,6 +202,7 @@ def exec_foundry_kompile(
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
     if regen or not foundry_main_file.exists():
+        _LOGGER.info(f'Generating K: {foundry_main_file}')
         with open(foundry_main_file, 'w') as fmf:
             exec_foundry_to_k(
                 definition_dir=definition_dir,
@@ -214,6 +215,7 @@ def exec_foundry_kompile(
                 output=fmf,
             )
     if regen or rekompile or not kompiled_timestamp.exists():
+        _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
         KEVM.kompile(
             foundry_definition_dir,
             foundry_main_file,
@@ -226,6 +228,7 @@ def exec_foundry_kompile(
         )
     kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
     if regen or rekompile or reparse or not parsed_spec.exists():
+        _LOGGER.info(f'Parsing specs: {foundry_main_file}')
         prove_args = add_include_arg(includes)
         kevm.prove(
             foundry_main_file,
@@ -234,6 +237,7 @@ def exec_foundry_kompile(
             args=(['--emit-json-spec', str(parsed_spec)] + prove_args),
         )
     if regen or rekompile or reparse or reinit or not kcfgs_file.exists():
+        _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
         cfgs: Dict[str, Dict] = {}
         for module in read_kast_flatmodulelist(parsed_spec).modules:
             for claim in module.claims:
