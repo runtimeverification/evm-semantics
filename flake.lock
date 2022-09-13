@@ -819,6 +819,10 @@
           "k-framework",
           "flake-utils"
         ],
+        "haskell-backend": [
+          "k-framework",
+          "haskell-backend"
+        ],
         "k-framework": "k-framework",
         "nixpkgs": [
           "k-framework",
