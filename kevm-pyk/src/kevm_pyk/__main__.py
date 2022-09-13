@@ -237,7 +237,7 @@ def exec_foundry_kompile(
         for module in read_kast_flatmodulelist(parsed_spec).modules:
             for claim in module.claims:
                 cfg_label = claim.att["label"]
-                _LOGGER.info(f'Producting KCFG: {cfg_label}')
+                _LOGGER.info(f'Producing KCFG: {cfg_label}')
                 cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
         with open(kcfgs_file, 'w') as kf:
             kf.write(json.dumps(cfgs))
