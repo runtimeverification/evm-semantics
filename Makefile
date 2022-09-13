@@ -63,7 +63,7 @@ export PLUGIN_SUBMODULE
 
 all: build
 
-clean:
+clean: foundry-clean venv-clean
 	rm -rf $(KEVM_BIN) $(KEVM_LIB)
 
 distclean:
@@ -439,6 +439,7 @@ tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTes
 # solc-to-k
 # ---------
 
+KEVM_PYK_DIR := ./kevm-pyk
 VENV_DIR     := $(BUILD_DIR)/venv
 PYK_ACTIVATE := . $(VENV_DIR)/bin/activate
 
@@ -451,18 +452,16 @@ venv-clean:
 $(VENV_DIR)/pyvenv.cfg:
 	   virtualenv -p python3 $(VENV_DIR) \
 	&& $(PYK_ACTIVATE)                   \
-	&& pip install --editable deps/k/pyk \
-	&& pip install --editable kevm-pyk
+	&& pip install --editable $(KEVM_PYK_DIR)
 
 venv: $(VENV_DIR)/pyvenv.cfg
 	@echo $(PYK_ACTIVATE)
 
 kevm-pyk:
-	$(MAKE) -C ./kevm-pyk
+	$(MAKE) -C $(KEVM_PYK_DIR)
 
 foundry-clean:
 	rm -rf tests/foundry/cache
-	rm -rf tests/foundry/kompiled
 	rm -rf tests/foundry/out
 	rm -f  tests/foundry/foundry.debug-log
 	rm -f  tests/foundry/foundry.k
@@ -477,7 +476,7 @@ foundry_out := $(foundry_dir)/out
 test-foundry: KEVM_OPTS += --pyk --verbose --profile
 test-foundry: KEVM = $(PYK_ACTIVATE) && kevm
 test-foundry: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
-test-foundry: tests/foundry/foundry.k.prove tests/foundry/foundry.k.check
+test-foundry: tests/foundry/foundry.k.check tests/foundry/out/kompiled/foundry.k.prove
 
 foundry-forge-build: $(foundry_out)
 
@@ -488,25 +487,16 @@ $(foundry_out):
 	rm -rf $@
 	cd $(dir $@) && forge build
 
-tests/foundry/foundry.k: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
-	$(KEVM) foundry-to-k $< $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) \
-	     --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION                   \
-	     --exclude-tests tests/foundry/exclude                                                      \
-	     --main-module VERIFICATION                                                                 \
-	     > $@
-
-tests/foundry/foundry.k.check: tests/foundry/foundry.k
+tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 	$(CHECK) $< $@.expected
 
-tests/foundry/foundry.k.prove: tests/foundry/kompiled/timestamp
-	$(KEVM) prove tests/foundry/foundry.k --backend haskell --definition tests/foundry/kompiled \
-	    $(KEVM_OPTS) $(KPROVE_OPTS) --spec-module SPEC
+tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
 
-tests/foundry/kompiled/timestamp: tests/foundry/foundry.k
-	$(KOMPILE) $< --backend haskell --definition tests/foundry/kompiled \
-	    --main-module VERIFICATION --syntax-module VERIFICATION         \
-	    --concrete-rules-file tests/foundry/concrete-rules.txt          \
-	    $(KOMPILE_OPTS) $(KEVM_OPTS)
+tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
+	$(KEVM) foundry-prove tests/foundry/out $(KEVM_OPTS) $(KPROVE_OPTS) $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
+
+tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
+	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
 tests/specs/examples/%-bin-runtime.k: KEVM = $(PYK_ACTIVATE) && kevm

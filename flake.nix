@@ -17,9 +17,16 @@
     ethereum-legacytests.url =
       "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
+    pyk.url =
+      "github:runtimeverification/pyk/v0.1.1";
+    pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
+    pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
+    pyk.inputs.poetry2nix.follows = "k-framework/poetry2nix";
+
   };
   outputs = { self, k-framework, nixpkgs, flake-utils, poetry2nix
-    , blockchain-k-plugin, ethereum-tests, ethereum-legacytests, rv-utils }:
+    , blockchain-k-plugin, ethereum-tests, ethereum-legacytests, rv-utils, pyk
+    }:
     let
       buildInputs = pkgs: k:
         with pkgs;
@@ -137,18 +144,7 @@
 
         kevm-pyk = prev.poetry2nix.mkPoetryApplication {
           python = prev.python39;
-          projectDir = prev.stdenv.mkDerivation {
-            name = "kevm-pyk-src";
-            src = ./kevm-pyk;
-            dontBuild = true;
-            installPhase = ''
-              mkdir $out
-              cp -rv $src/* $out
-              chmod -R u+w $out
-              sed -i $out/pyproject.toml \
-                  -e 's/\[tool.poetry.dependencies\]/[tool.poetry.dependencies]\npyk = "*"/'
-            '';
-          };
+          projectDir = ./kevm-pyk;
           overrides = prev.poetry2nix.overrides.withDefaults
             (finalPython: prevPython: { pyk = prev.pyk; });
         };
@@ -167,6 +163,7 @@
             (final: prev: { llvm-backend-release = false; })
             k-framework.overlay
             blockchain-k-plugin.overlay
+            pyk.overlay
             overlay
           ];
         };
