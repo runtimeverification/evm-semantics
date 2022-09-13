@@ -8,7 +8,7 @@ from typing import Any, Dict, Final, Iterable, List, Optional, TextIO, Tuple
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KApply, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KSort
+from pyk.kast import KApply, KClaim, KDefinition, KFlatModule, KImport, KRequire, KSort
 from pyk.kcfg import KCFG
 from pyk.ktool.krun import _krun
 from pyk.prelude import mlTop
@@ -335,21 +335,21 @@ def exec_foundry_prove(
 
     kevm = KEVM(definition_dir, profile=profile, use_directory=use_directory)
 
-    def prove_it(_id_and_claim: Tuple[str, KClaim]) -> Tuple[bool, KInner]:
+    def prove_it(_id_and_claim: Tuple[str, KClaim]) -> bool:
         _claim_id, _claim = _id_and_claim
-        return KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER, depth=depth)
+        ret, result = KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER, depth=depth)
+        print(f'Result for {_claim_id}:\n{kevm.pretty_print(result)}')
+        return ret
 
     with ProcessPool(ncpus=parallel) as process_pool:
         results = process_pool.map(prove_it, claims)
         process_pool.close()
 
-    failed_claims = [(cid, result) for ((cid, _), (failed, result)) in zip(claims, results) if failed]
-    _failed_claim_ids = [cid for cid, _ in failed_claims]
+    failed_claims = [cid for ((cid, _), failed) in zip(claims, results) if failed]
+    if failed_claims:
+        _LOGGER.error(f'Failed to prove KCFGs: {failed_claims}')
 
-    if _failed_claim_ids:
-        _LOGGER.error(f'Failed to prove KCFGs: {_failed_claim_ids}')
-
-    sys.exit(len(_failed_claim_ids))
+    sys.exit(len(failed_claims))
 
 
 def exec_run(
