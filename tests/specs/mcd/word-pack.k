@@ -206,33 +206,19 @@ module WORD-PACK-COMMON
     rule #WordPackAddrUInt8(_, _) <Int pow168 => true [simplification]
 
     //
-    // More simplifications surrounding pow48 and maxUInt48
+    // More simplifications surrounding pow48/160
     //
-    rule maxUInt48 &Int X:Int => X requires #rangeUInt(48, X) [simplification]
-    rule maxUInt48 &Int (X /Int pow48) => X /Int pow48 requires #rangeUInt(96, X) [simplification]
-    rule X /Int pow48 => 0 requires #rangeUInt(48, X) [simplification]
-
-    rule maxUInt48 &Int (A:Int |Int B:Int) => (maxUInt48 &Int A) |Int (maxUInt48 &Int B)
-      requires 0 <=Int A andBool 0 <=Int B [simplification]
-
-    rule X &Int Y <Int Z => true
-      requires 0 <=Int X andBool 0 <=Int Y
-       andBool (X <Int Z orBool Y <Int Z)
-      [simplification]
-
-    rule (X &Int Y) /Int Z => 0
-      requires 0 <=Int X andBool 0 <=Int Y
-       andBool (X <Int Z orBool Y <Int Z)
-       [simplification]
-
-    //
-    // More simplifications surrounding pow160 and maxUInt160
-    //
+    rule maxUInt48  &Int X:Int => X requires #rangeUInt(48, X)  [simplification]
     rule maxUInt160 &Int X:Int => X requires #rangeUInt(160, X) [simplification]
-    rule X /Int pow160 => 0 requires #rangeUInt(160, X) [simplification]
+    
+    rule maxUInt48 &Int (X /Int pow48) => X /Int pow48 requires #rangeUInt(96, X) [simplification]
 
-    rule maxUInt160 &Int (A:Int |Int B:Int) => (maxUInt160 &Int A) |Int (maxUInt160 &Int B)
-      requires 0 <=Int A andBool 0 <=Int B [simplification]
+    rule maxUInt48  &Int (A:Int |Int B:Int) => (maxUInt48  &Int A) |Int (maxUInt48  &Int B) requires 0 <=Int A andBool 0 <=Int B [simplification]
+    rule maxUInt160 &Int (A:Int |Int B:Int) => (maxUInt160 &Int A) |Int (maxUInt160 &Int B) requires 0 <=Int A andBool 0 <=Int B [simplification]
 
+    rule 0 <=Int X &Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
+    rule X &Int Y <Int Z  => true requires 0 <=Int X andBool 0 <=Int Y andBool (X <Int Z orBool Y <Int Z) [simplification]
+
+    rule X /Int Y => 0 requires 0 <=Int X andBool X <Int Y [simplification]
     rule X &Int (X &Int Y) => X &Int Y requires 0 <=Int X andBool 0 <=Int Y [simplification]
 endmodule
