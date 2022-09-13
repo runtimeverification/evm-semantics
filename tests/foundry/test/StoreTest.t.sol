@@ -13,7 +13,7 @@ contract Store {
 contract StoreTest is Test {
 
     function testAccesses() public {
-		Store myStore= new Store();
+        Store myStore = new Store();
         vm.record();
 
         (bytes32[] memory reads, bytes32[] memory writes) = vm.accesses(address(myStore));
@@ -22,8 +22,7 @@ contract StoreTest is Test {
     }
 
     function testStoreLoad() public {
-		Store myStore= new Store();
-
+        Store myStore = new Store();
         vm.store(address(myStore), bytes32(uint256(0)), bytes32(uint256(31337)));
         bytes32 testNumber = vm.load(address(myStore), bytes32(uint256(0)));
         assertEq(uint256(testNumber), 31337); // 31337
