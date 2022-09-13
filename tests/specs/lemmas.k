@@ -89,12 +89,11 @@ module LEMMAS [symbolic]
       requires 0 <Int K andBool N <=Int L andBool L <=Int N +Int #sizeByteArray(BUF) [simplification]
 
     rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, K) 
-      requires K >Int 0 
-       andBool N +Int #sizeByteArray(BUF) <=Int L [simplification]
+      requires 0 <Int K andBool N +Int #sizeByteArray(BUF) <=Int L [simplification]
 
     rule #range( M [ N1 := BUF1:ByteArray ] [ N2 := BUF2:ByteArray ], L, K ) =>
          #range( M                          [ N2 := BUF2           ], L, K )
-      requires N1 +Int #sizeByteArray(BUF1) <=Int L [simplification]
+      requires 0 <Int K andBool N1 +Int #sizeByteArray(BUF1) <=Int L [simplification]
 
   // ########################
   // Map Reasoning
