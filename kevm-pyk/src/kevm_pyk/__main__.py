@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, Final, Iterable, List, Optional, TextIO
 
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KDefinition, KFlatModule, KImport, KRequire, KSort
+from pyk.kast import KApply, KDefinition, KFlatModule, KImport, KRequire, KSort
 from pyk.ktool.krun import _krun
 
 from .gst_to_kore import gst_to_kore
@@ -84,21 +84,14 @@ def exec_solc_to_k(
     spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
-    exclude_tests: Optional[Path],
     **kwargs,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
     solc_json = solc_compile(contract_file, profile=profile)
     contract_json = solc_json['contracts'][contract_file.name][contract_name]
-    _exclude_tests = []
-    if exclude_tests and exclude_tests.exists():
-        with open(exclude_tests, 'r') as el:
-            _exclude_tests = el.read().strip().split('\n')
     contract = Contract(contract_name, contract_json, foundry=False)
-    contract_module, contract_claims_module = contract_to_k(
-        contract, empty_config, foundry=False, exclude_tests=_exclude_tests, imports=imports
-    )
+    contract_module, contract_claims_module = contract_to_k(contract, empty_config, foundry=False, imports=imports)
     modules = [contract_module]
     claims_modules = [contract_claims_module] if contract_claims_module else []
     _main_module = KFlatModule(
@@ -125,7 +118,6 @@ def exec_foundry_to_k(
     spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
-    exclude_tests: Optional[Path],
     output: Optional[TextIO],
     **kwargs,
 ) -> None:
@@ -134,10 +126,6 @@ def exec_foundry_to_k(
     path_glob = str(foundry_out) + '/*.t.sol/*.json'
     modules: List[KFlatModule] = []
     claims_modules: List[KFlatModule] = []
-    _exclude_tests = []
-    if exclude_tests and exclude_tests.exists():
-        with open(exclude_tests, 'r') as el:
-            _exclude_tests = el.read().strip().split('\n')
     # Must sort to get consistent output order on different platforms.
     for json_file in sorted(glob.glob(path_glob)):
         if json_file.endswith('.metadata.json'):
@@ -152,7 +140,6 @@ def exec_foundry_to_k(
                 contract,
                 empty_config,
                 foundry=True,
-                exclude_tests=_exclude_tests,
                 imports=imports,
                 main_module=main_module,
             )
@@ -186,7 +173,6 @@ def exec_foundry_kompile(
     definition_dir: Path,
     profile: bool,
     foundry_out: Path,
-    exclude_tests: Optional[Path],
     includes: List[str],
     md_selector: Optional[str],
     regen: bool = False,
@@ -203,6 +189,8 @@ def exec_foundry_kompile(
     spec_module = 'FOUNDRY-SPEC'
     foundry_definition_dir = foundry_out / 'kompiled'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
+    requires = ['lemmas/lemmas.k', 'lemmas/int-simplification.k'] + list(requires)
+    imports = ['LEMMAS', 'INT-SIMPLIFICATION'] + list(imports)
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
     if regen or not foundry_main_file.exists():
@@ -215,7 +203,6 @@ def exec_foundry_kompile(
                 spec_module=spec_module,
                 requires=list(requires),
                 imports=list(imports),
-                exclude_tests=exclude_tests,
                 output=fmf,
             )
     if regen or rekompile or not (foundry_definition_dir / 'timestamp').exists():
@@ -240,6 +227,8 @@ def exec_prove(
     bug_report: bool,
     spec_module: Optional[str],
     depth: Optional[int],
+    claims: Iterable[str] = (),
+    exclude_claims: Iterable[str] = (),
     **kwargs,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
@@ -251,27 +240,37 @@ def exec_prove(
         haskell_args += ['--bug-report', str(spec_file.with_suffix(''))]
     if depth is not None:
         prove_args += ['--depth', str(depth)]
+    if claims:
+        prove_args += ['--claims', ','.join(claims)]
+    if exclude_claims:
+        prove_args += ['--exclude', ','.join(exclude_claims)]
     final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
     print(kevm.pretty_print(final_state) + '\n')
+    if not (type(final_state) is KApply and final_state.label.name == '#Top'):
+        _LOGGER.error('Proof failed!')
+        sys.exit(1)
 
 
 def exec_foundry_prove(
     profile: bool,
     foundry_out: Path,
-    contract: Optional[str],
     includes: List[str],
     debug_equations: List[str],
     bug_report: bool,
-    spec_module: Optional[str],
     depth: Optional[int],
+    tests: Iterable[str] = (),
+    exclude_tests: Iterable[str] = (),
     **kwargs,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
+    _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
     definition_dir = foundry_out / 'kompiled'
     spec_file = definition_dir / 'foundry.k'
-    spec_module = contract.upper() + '-BIN-RUNTIME-SPEC' if contract else 'FOUNDRY-SPEC'
+    spec_module = 'FOUNDRY-SPEC'
+    claims = [Contract.contract_test_to_claim_id(_t) for _t in tests]
+    exclude_claims = [Contract.contract_test_to_claim_id(_t) for _t in exclude_tests]
     exec_prove(
         definition_dir,
         profile,
@@ -280,6 +279,8 @@ def exec_foundry_prove(
         debug_equations=debug_equations,
         bug_report=bug_report,
         depth=depth,
+        claims=claims,
+        exclude_claims=exclude_claims,
         spec_module=spec_module,
         **kwargs,
     )
@@ -392,11 +393,6 @@ def _create_argument_parser() -> ArgumentParser:
         action='append',
         help='Extra modules to import into generated main module.',
     )
-    k_gen_args.add_argument(
-        '--exclude-tests',
-        type=file_path,
-        help='File containing, one per line, tests to exclude as CONTRACT_NAME.TEST_NAME.',
-    )
 
     parser = ArgumentParser(prog='python3 -m kevm_pyk')
 
@@ -409,6 +405,16 @@ def _create_argument_parser() -> ArgumentParser:
 
     prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args])
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
+    prove_args.add_argument(
+        '--claim', type=str, dest='claims', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
+    )
+    prove_args.add_argument(
+        '--exclude-claim',
+        type=str,
+        dest='exclude_claims',
+        action='append',
+        help='Skip listed claims, MODULE_NAME.claim-id',
+    )
 
     run_args = command_parser.add_parser(
         'run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args, k_args]
@@ -484,7 +490,20 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_prove_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_prove_args.add_argument(
-        '--contract', default=None, type=str, help='Limit to only proofs for the named contract.'
+        '--test',
+        type=str,
+        dest='tests',
+        default=[],
+        action='append',
+        help='Limit to only listed tests, ContractName.TestName',
+    )
+    foundry_prove_args.add_argument(
+        '--exclude-test',
+        type=str,
+        dest='exclude_tests',
+        default=[],
+        action='append',
+        help='Skip listed tests, ContractName.TestName',
     )
 
     return parser
