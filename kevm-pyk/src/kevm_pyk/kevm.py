@@ -1,5 +1,4 @@
 import logging
-import os
 import sys
 from pathlib import Path
 from subprocess import CalledProcessError
@@ -44,8 +43,6 @@ class KEVM(KProve, KRun):
         main_module_name: Optional[str] = None,
         syntax_module_name: Optional[str] = None,
         md_selector: Optional[str] = None,
-        hook_namespaces: Optional[List[str]] = None,
-        concrete_rules_file: Optional[Path] = None,
         profile: bool = False,
     ) -> 'KEVM':
         command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
@@ -53,14 +50,11 @@ class KEVM(KProve, KRun):
         command += ['--main-module', main_module_name] if main_module_name else []
         command += ['--syntax-module', syntax_module_name] if syntax_module_name else []
         command += ['--md-selector', md_selector] if md_selector else []
-        command += ['--hook-namespaces', ' '.join(hook_namespaces)] if hook_namespaces else []
+        command += ['--hook-namespaces', ' '.join(KEVM.hook_namespaces())]
         command += add_include_arg(includes)
         if emit_json:
             command += ['--emit-json']
-        if concrete_rules_file and os.path.exists(concrete_rules_file):
-            with open(concrete_rules_file, 'r') as crf:
-                concrete_rules = ','.join(crf.read().split('\n'))
-                command += ['--concrete-rules', concrete_rules]
+        command += ['--concrete-rules', ','.join(KEVM.concrete_rules())]
         try:
             run_process(command, logger=_LOGGER, profile=profile)
         except CalledProcessError as err:
@@ -100,6 +94,60 @@ class KEVM(KProve, KRun):
         symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
         symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
         # fmt: on
+
+    @staticmethod
+    def hook_namespaces() -> List[str]:
+        return ['JSON', 'KRYPTO', 'BLOCKCHAIN']
+
+    @staticmethod
+    def concrete_rules() -> List[str]:
+        return [
+            'EVM.allBut64th.pos',
+            'EVM.Cextra.new',
+            'EVM.Cextra.old',
+            'EVM.Cgascap',
+            'EVM.Cmem',
+            'EVM.Csstore.new',
+            'EVM.Csstore.old',
+            'EVM.ecrec',
+            'EVM.isPrecompiledAccount.false',
+            'EVM.isPrecompiledAccount.true',
+            'EVM.#memoryUsageUpdate.some',
+            'EVM.Rsstore.new',
+            'EVM.Rsstore.old',
+            'EVM.Caddraccess',
+            'EVM.Cstorageaccess',
+            'EVM.Csload.new',
+            'EVM.Cextcodesize.new',
+            'EVM.Cextcodesize.old',
+            'EVM.Cextcodehash.new',
+            'EVM.Cextcodehash.old',
+            'EVM.Cextcodecopy.new',
+            'EVM.Cextcodecopy.old',
+            'EVM.Cbalance.new',
+            'EVM.Cbalance.old',
+            'EVM.Cmodexp.new',
+            'EVM.Cmodexp.old',
+            'EVM-TYPES.#asByteStack',
+            'EVM-TYPES.#asByteStackAux.recursive',
+            'EVM-TYPES.#asWord.recursive',
+            'EVM-TYPES.ByteArray.range',
+            'EVM-TYPES.bytesRange',
+            'EVM-TYPES.mapWriteBytes.recursive',
+            'EVM-TYPES.#padRightToWidth',
+            'EVM-TYPES.#padToWidth',
+            'EVM-TYPES.padToWidthNonEmpty',
+            'EVM-TYPES.powmod.nonzero',
+            'EVM-TYPES.powmod.zero',
+            'EVM-TYPES.#range',
+            'EVM-TYPES.signextend.invalid',
+            'EVM-TYPES.signextend.negative',
+            'EVM-TYPES.signextend.positive',
+            'EVM-TYPES.upDivInt',
+            'SERIALIZATION.keccak',
+            'SERIALIZATION.#newAddr',
+            'SERIALIZATION.#newAddrCreate2',
+        ]
 
     @staticmethod
     def halt() -> KApply:

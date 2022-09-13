@@ -32,6 +32,11 @@ module FUNCTIONAL-SPEC
        andBool #rangeUInt(48, ABI_y)
        andBool notBool #rangeUInt(48, ABI_x +Int ABI_y)
 
+    claim <k> runLemma( (maxUInt48 &Int W1) +Int (maxUInt160 &Int W2) )
+          => doneLemma( X +Int Y ) ... </k>
+          requires (W1 ==Int #WordPackUInt48UInt48(X, _))
+           andBool (W2 ==Int #WordPackAddrUInt48UInt48(Y, _, _))
+
     claim <k> runLemma(bool2Word(ABI_src:Int ==Int CALLER_ID:Int) |Int bool2Word(X)) => doneLemma(bool2Word(ABI_src ==Int CALLER_ID orBool X)) ... </k>
       requires #rangeUInt(256, ABI_src)
        andBool #rangeUInt(256, CALLER_ID)
@@ -75,6 +80,21 @@ module FUNCTIONAL-SPEC
     claim <k> runLemma(maxUInt48 &Int ((CALLER_ID |Int (maskWordPackAddrUInt48UInt48_1 &Int #lookup(M, KX))) /Int pow208)) => doneLemma(maxUInt48 &Int (#lookup(M, KX) /Int pow208)) ... </k>
       requires #rangeAddress(CALLER_ID)
 
+    claim <k> runLemma(TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) ++ X ) +Int 1 <- #lookup ( ACCT_ID_STORAGE , 5 ) *Int #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) ++ X ) +Int 1 ) /Int 1000000000000000000 ] , 6 ) /Int pow48 ) <Int pow48)
+           => doneLemma(true) ... </k>
+        requires #lookup(ACCT_ID_STORAGE, 6) ==Int #WordPackUInt48UInt48(_, Tau)
+        andBool #rangeUInt(48, TIME +Int Tau)
+
+    claim <k> runLemma( ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 1 <- ABI_lot:Int ] [ keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 2 ) /Int pow208 ) ]
+                          ==K
+                        ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 2 ) /Int pow208 ) ] [ keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 1 <- ABI_lot:Int ])
+           => doneLemma(true)
+              ... </k>
+
+    claim <k> runLemma(#lookup( M:Map [ keccak(_) <- _ ], I:Int ))
+           => doneLemma(#lookup( M , I )) ... </k>
+      requires 0 <=Int I andBool I <Int 10
+
     // Memory operations
 
     claim <k> runLemma(#range(M:Memory [ 0 := #buf(4, X) ] [ 0 <- 10 ] [ 1 <- 11 ] [ 2 <- 12 ] [ 3 <- 13 ], 0, 4)) => doneLemma(10 : 11 : 12 : 13 : .ByteArray) ... </k>
@@ -103,5 +123,17 @@ module FUNCTIONAL-SPEC
       andBool #rangeUInt(256, B21) andBool #rangeUInt(256, B22) andBool #rangeUInt(256, B23) andBool #rangeUInt(256, B24) andBool #rangeUInt(256, B25)
       andBool #rangeUInt(256, B31) andBool #rangeUInt(256, B32)
       andBool #rangeUInt(256, B41)
+
+    claim <k> runLemma(maxUInt48 &Int (maxUInt48 -Int 1) <Int maxUInt48 +Int 1) => doneLemma(true) </k>
+    claim <k> runLemma(maxUInt160 &Int (maxUInt160 -Int 1) <Int maxUInt160 +Int 1) => doneLemma(true) </k>
+
+    claim <k> runLemma((maxUInt48 &Int maxUInt48) /Int maxUInt48) => doneLemma(1) </k>
+    claim <k> runLemma((maxUInt160 &Int maxUInt160) /Int maxUInt160) => doneLemma(1) </k>
+
+    claim <k> runLemma((maxUInt48 &Int M) /Int (maxUInt48 +Int 1)) => doneLemma(0) </k>
+      requires M >Int 0
+
+    claim <k> runLemma((maxUInt160 &Int M) /Int (maxUInt160 +Int 1)) => doneLemma(0) </k>
+      requires M >Int 0
 
 endmodule

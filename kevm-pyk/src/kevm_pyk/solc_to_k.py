@@ -141,6 +141,22 @@ class Contract:
                 _fields[_l] = _s
             self.fields = FrozenDict(_fields)
 
+    @staticmethod
+    def contract_to_module_name(c: str, spec: bool = True) -> str:
+        m = c.upper() + '-BIN-RUNTIME'
+        if spec:
+            m = m + '-SPEC'
+        return m
+
+    @staticmethod
+    def test_to_claim_name(t: str) -> str:
+        return t.replace('_', '-')
+
+    @staticmethod
+    def contract_test_to_claim_id(ct: str, spec: bool = True) -> str:
+        _c, _t = ct.split('.')
+        return f'{Contract.contract_to_module_name(_c, spec=spec)}.{Contract.test_to_claim_name(_t)}'
+
     @property
     def name_upper(self) -> str:
         return self.name[0:1].upper() + self.name[1:]
@@ -347,45 +363,49 @@ def gen_claims_for_contract(
         ),
     }
     init_term = substitute(empty_config, init_subst)
+    init_terms = []
     if calldata_cells:
-        init_terms = [
-            (tn.replace('_', '-'), substitute(init_term, {'CALLDATA_CELL': cd, 'CALLVALUE_CELL': cv}))
-            for tn, cd, cv in calldata_cells
-        ]
+        for test_name, call_data, call_value in calldata_cells:
+            failing = test_name.startswith('testFail')
+            refined_subst = {'CALLDATA_CELL': call_data, 'CALLVALUE_CELL': call_value}
+            claim_name = test_name.replace('_', '-')
+            init_terms.append((claim_name, substitute(init_term, refined_subst), failing))
     else:
-        init_terms = [(contract_name.replace('_', '-'), init_term)]
+        init_terms.append((contract_name.lower(), init_term, False))
     final_cterm = CTerm(abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')]))
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
     dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
-    final_cterm = final_cterm.add_constraint(
-        mlEqualsTrue(Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post))
-    )
     claims: List[KClaim] = []
-    for claim_id, i_term in init_terms:
+    foundry_success = Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post)
+    for claim_id, i_term, failing in init_terms:
         i_cterm = CTerm(i_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
-        claim, _ = build_claim(claim_id, i_cterm, final_cterm)
+        if not failing:
+            f_cterm = final_cterm.add_constraint(mlEqualsTrue(foundry_success))
+        else:
+            f_cterm = final_cterm.add_constraint(mlEqualsTrue(Bool.notBool(foundry_success)))
+        claim, _ = build_claim(claim_id, i_cterm, f_cterm)
         claims.append(claim)
     return claims
 
 
 def contract_to_k(
-    contract: Contract, empty_config: KInner, foundry: bool = False, exclude_tests: Iterable[str] = ()
+    contract: Contract,
+    empty_config: KInner,
+    foundry: bool = False,
+    imports: Iterable[str] = (),
+    main_module: Optional[str] = None,
 ) -> Tuple[KFlatModule, Optional[KFlatModule]]:
 
     sentences = contract.sentences
-    module_name = contract.name.upper() + '-BIN-RUNTIME'
-    module = KFlatModule(module_name, sentences, [KImport('EDSL'), KImport('INT-SIMPLIFICATION'), KImport('LEMMAS')])
+    module_name = Contract.contract_to_module_name(contract.name, spec=False)
+    module = KFlatModule(module_name, sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
 
     claims_module: Optional[KFlatModule] = None
     contract_function_application_label = contract.klabel_method
     function_test_calldatas = []
     for tm in contract.methods:
-        if f'{contract.name}.{tm.name}' in exclude_tests:
-            _LOGGER.warning(f'Excluding test from contract {contract.name}: {tm.name}')
-        elif tm.name.startswith('testFail'):
-            _LOGGER.warning(f'Ignoring test from contract {contract.name}: {tm.name}')
-        elif tm.name.startswith('test'):
+        if tm.name.startswith('test'):
             klabel = tm.production.klabel
             assert klabel is not None
             args = [
@@ -403,7 +423,8 @@ def contract_to_k(
             function_test_calldatas.append((tm.name, calldata, callvalue))
     if function_test_calldatas:
         claims = gen_claims_for_contract(empty_config, contract.name, calldata_cells=function_test_calldatas)
-        claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport('VERIFICATION'), KImport(module_name)])
+        import_module = main_module if main_module else module_name
+        claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(import_module)])
 
     return module, claims_module
 
