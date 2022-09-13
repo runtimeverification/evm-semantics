@@ -306,8 +306,8 @@ def exec_foundry_prove(
     exclude_tests = [Contract.contract_test_to_claim_id(_t) for _t in exclude_tests]
     claims = list(kcfgs.keys())
     _unfound_kcfgs: List[str] = []
-    if not tests:
-        tests = claims
+    if len(tests) > 0:
+        kcfgs = {k: kcfg for k, kcfg in kcfgs.items() if k in tests}
     for _t in tests:
         if _t not in claims:
             _unfound_kcfgs.append(_t)
