@@ -127,6 +127,7 @@ module FOUNDRY-SUCCESS
     syntax Bool ::= "foundry_success" "(" StatusCode "," Int ")" [function, klabel(foundry_success), symbol]
  // --------------------------------------------------------------------------------------------------------
     rule foundry_success(EVMC_SUCCESS, 0) => true
+    rule foundry_success(EVMC_REVERT, 0)  => true
     rule foundry_success(_, _)            => false [owise]
 
 endmodule
