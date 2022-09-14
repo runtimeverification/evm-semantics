@@ -83,7 +83,7 @@ class KEVM(KProve, KRun):
         symbol_table['_|->_']                                         = paren(symbol_table['_|->_'])
         symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)
         symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)
-        symbol_table['.AccountCellMap']                               = lambda: ''
+        symbol_table['.AccountCellMap']                               = lambda: '.Bag'
         symbol_table['AccountCellMapItem']                            = lambda k, v: v
         symbol_table['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray'] = lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]'
         symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = lambda m, s, w: '(' + m + ' [ ' + s + ' .. ' + w + ' ]):ByteArray'
