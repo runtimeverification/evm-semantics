@@ -97,3 +97,8 @@ ToStringTest.testBytes32ToString
 ToStringTest.testBytesToString
 ToStringTest.testIntToString
 ToStringTest.testUint256ToString
+UintTypeTest.testFail_uint256
+UintTypeTest.testFail_uint224
+UintTypeTest.testFail_uint160
+UintTypeTest.testFail_uint144
+UintTypeTest.testFail_uint112
