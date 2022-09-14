@@ -292,13 +292,16 @@ def exec_foundry_prove(
     depth: Optional[int],
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
-    parallel: int = 1,
+    workers: int = 1,
     **kwargs,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
+    if workers <= 0:
+        _LOGGER.error(f'Must have at least one worker, found: --workers {workers}')
+        sys.exit(1)
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
@@ -337,7 +340,7 @@ def exec_foundry_prove(
         _claim_id, _claim = _id_and_claim
         return KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER)
 
-    with ProcessPool(ncpus=parallel) as process_pool:
+    with ProcessPool(ncpus=workers) as process_pool:
         results = process_pool.map(prove_it, claims)
         process_pool.close()
 
@@ -390,7 +393,7 @@ def _create_argument_parser() -> ArgumentParser:
     shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
     shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
     shared_args.add_argument('--profile', default=False, action='store_true', help='Coarse process-level profiling.')
-    shared_args.add_argument('--parallel', '-j', default=1, type=int, help='Number of processes to run in parallel.')
+    shared_args.add_argument('--workers', '-j', default=1, type=int, help='Number of processes to run in parallel.')
 
     k_args = ArgumentParser(add_help=False)
     k_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
