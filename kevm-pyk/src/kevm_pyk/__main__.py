@@ -329,7 +329,7 @@ def exec_foundry_prove(
         ret, result = KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER, depth=depth)
         if minimize:
             result = minimize_term(result)
-        print(f'Result for {_claim_id}:\n{kevm.pretty_print(result)}')
+        print(f'Result for {_claim_id}:\n{kevm.pretty_print(result)}\n')
         return ret
 
     with ProcessPool(ncpus=workers) as process_pool:
