@@ -8,12 +8,14 @@ from typing import Any, Dict, Final, Iterable, List, Optional, TextIO
 
 from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KApply, KDefinition, KFlatModule, KImport, KRequire, KSort
+from pyk.kcfg import KCFG
 from pyk.ktool.krun import _krun
+from pyk.prelude import mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_k, solc_compile
-from .utils import KPrint_make_unparsing, add_include_arg
+from .utils import KCFG_from_claim, KPrint_make_unparsing, add_include_arg, read_kast_flatmodulelist
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -177,6 +179,8 @@ def exec_foundry_kompile(
     md_selector: Optional[str],
     regen: bool = False,
     rekompile: bool = False,
+    reparse: bool = False,
+    reinit: bool = False,
     requires: Iterable[str] = (),
     imports: Iterable[str] = (),
     **kwargs,
@@ -189,6 +193,9 @@ def exec_foundry_kompile(
     spec_module = 'FOUNDRY-SPEC'
     foundry_definition_dir = foundry_out / 'kompiled'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
+    kompiled_timestamp = foundry_definition_dir / 'timestamp'
+    parsed_spec = foundry_definition_dir / 'spec.json'
+    kcfgs_file = foundry_definition_dir / 'kcfgs.json'
     requires = ['lemmas/lemmas.k', 'lemmas/int-simplification.k'] + list(requires)
     imports = ['LEMMAS', 'INT-SIMPLIFICATION'] + list(imports)
     if not foundry_definition_dir.exists():
@@ -205,7 +212,7 @@ def exec_foundry_kompile(
                 imports=list(imports),
                 output=fmf,
             )
-    if regen or rekompile or not (foundry_definition_dir / 'timestamp').exists():
+    if regen or rekompile or not kompiled_timestamp.exists():
         KEVM.kompile(
             foundry_definition_dir,
             foundry_main_file,
@@ -216,6 +223,26 @@ def exec_foundry_kompile(
             md_selector=md_selector,
             profile=profile,
         )
+    kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
+    if regen or rekompile or reparse or not parsed_spec.exists():
+        prove_args = add_include_arg(includes)
+        kevm.prove(
+            foundry_main_file,
+            spec_module_name=spec_module,
+            dry_run=True,
+            args=(['--emit-json-spec', str(parsed_spec)] + prove_args),
+        )
+    if regen or rekompile or reparse or reinit or not kcfgs_file.exists():
+        cfgs: Dict[str, Dict] = {}
+        for module in read_kast_flatmodulelist(parsed_spec).modules:
+            for claim in module.claims:
+                cfg_label = claim.att["label"]
+                _LOGGER.info(f'Producing KCFG: {cfg_label}')
+                cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
+        with open(kcfgs_file, 'w') as kf:
+            kf.write(json.dumps(cfgs))
+            kf.close()
+            _LOGGER.info(f'Wrote file: {kcfgs_file}')
 
 
 def exec_prove(
@@ -267,23 +294,45 @@ def exec_foundry_prove(
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
     definition_dir = foundry_out / 'kompiled'
-    spec_file = definition_dir / 'foundry.k'
-    spec_module = 'FOUNDRY-SPEC'
-    claims = [Contract.contract_test_to_claim_id(_t) for _t in tests]
-    exclude_claims = [Contract.contract_test_to_claim_id(_t) for _t in exclude_tests]
-    exec_prove(
-        definition_dir,
-        profile,
-        spec_file,
-        includes=includes,
-        debug_equations=debug_equations,
-        bug_report=bug_report,
-        depth=depth,
-        claims=claims,
-        exclude_claims=exclude_claims,
-        spec_module=spec_module,
-        **kwargs,
-    )
+    use_directory = foundry_out / 'specs'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    kevm = KEVM(definition_dir, profile=profile, use_directory=use_directory)
+    kcfgs_file = definition_dir / 'kcfgs.json'
+    kcfgs: Dict[str, KCFG] = {}
+    _LOGGER.info(f'Reading file: {kcfgs_file}')
+    with open(kcfgs_file, 'r') as kf:
+        kcfgs = {k: KCFG.from_dict(v) for k, v in json.loads(kf.read()).items()}
+    tests = [Contract.contract_test_to_claim_id(_t) for _t in tests]
+    exclude_tests = [Contract.contract_test_to_claim_id(_t) for _t in exclude_tests]
+    claims = list(kcfgs.keys())
+    _unfound_kcfgs: List[str] = []
+    if len(tests) > 0:
+        kcfgs = {k: kcfg for k, kcfg in kcfgs.items() if k in tests}
+    for _t in tests:
+        if _t not in claims:
+            _unfound_kcfgs.append(_t)
+    for _t in exclude_tests:
+        if _t not in claims:
+            _unfound_kcfgs.append(_t)
+        if _t in kcfgs:
+            kcfgs.pop(_t)
+    if _unfound_kcfgs:
+        _LOGGER.error(f'Missing KCFGs for tests: {_unfound_kcfgs}')
+        sys.exit(1)
+    _failed_claims: List[str] = []
+    for kcfg_name, kcfg in kcfgs.items():
+        _LOGGER.info(f'Proving KCFG: {kcfg_name}')
+        edge = kcfg.create_edge(kcfg.get_unique_init().id, kcfg.get_unique_target().id, mlTop(), depth=-1)
+        claim = edge.to_claim()
+        result = kevm.prove_claim(claim, kcfg_name.replace('.', '-'))
+        if type(result) is KApply and result.label.name == '#Top':
+            _LOGGER.info(f'Proved KCFG: {kcfg_name}')
+        else:
+            _LOGGER.error(f'Failed to prove KCFG: {kcfg_name}')
+            _failed_claims.append(kcfg_name)
+    if _failed_claims:
+        _LOGGER.error(f'Failed to prove KCFGs: {_failed_claims}')
+        sys.exit(1)
 
 
 def exec_run(
@@ -481,6 +530,20 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Rekompile foundry.k even if kompiled definition already exists.',
+    )
+    foundry_kompile.add_argument(
+        '--reparse',
+        dest='reparse',
+        default=False,
+        action='store_true',
+        help='Reparse K specifications even if the parsed spec already exists.',
+    )
+    foundry_kompile.add_argument(
+        '--reinit',
+        dest='reinit',
+        default=False,
+        action='store_true',
+        help='Reinitialize kcfgs even if they already exist.',
     )
 
     foundry_prove_args = command_parser.add_parser(
