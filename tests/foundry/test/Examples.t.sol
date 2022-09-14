@@ -22,7 +22,7 @@ contract ExamplesTest is Test {
     function test_max1_broken(uint a, uint b) external {
         vm.assume(a <= b);
         uint c = max(a, b);
-        assertEq(c, b);
+        assertEq(c + 1, a);
     }
 
     uint constant WAD = 10 ** 18;
@@ -48,6 +48,13 @@ contract ExamplesTest is Test {
         uint c1 = wmul1(a, b);
         uint c2 = wmul2(a ,b);
         assertTrue(c2 <= c1);
+    }
+
+    function test_wmul_increasing(uint a, uint b) external {
+        uint c = wmul2(a, b);
+        // counterexample: a == 0 && b == 0
+        // assertTrue(a < c && b < c);
+        assertTrue(a <= c && b <= c);
     }
 
     function test_wdiv_rounding(uint a, uint b) external {
