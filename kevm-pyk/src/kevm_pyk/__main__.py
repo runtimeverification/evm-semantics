@@ -310,7 +310,7 @@ def exec_foundry_prove(
 
     tests = [Contract.contract_test_to_claim_id(_t) for _t in tests]
     exclude_tests = [Contract.contract_test_to_claim_id(_t) for _t in exclude_tests]
-    claim_names = list(kcfgs.keys())
+    claim_names = set(kcfgs)
     _unfound_kcfgs: List[str] = []
     if len(tests) > 0:
         kcfgs = {k: kcfg for k, kcfg in kcfgs.items() if k in tests}
@@ -325,13 +325,11 @@ def exec_foundry_prove(
     if _unfound_kcfgs:
         _LOGGER.error(f'Missing KCFGs for tests: {_unfound_kcfgs}')
         sys.exit(1)
-    claims = [
-        (
-            kcfg_name.replace('.', '-'),
-            kcfg.create_edge(kcfg.get_unique_init().id, kcfg.get_unique_target().id, mlTop(), depth=-1).to_claim(),
-        )
-        for kcfg_name, kcfg in kcfgs.items()
-    ]
+
+    def _kcfg_unproven_to_claim(_kcfg: KCFG) -> KClaim:
+        return _kcfg.create_edge(_kcfg.get_unique_init().id, _kcfg.get_unique_target().id, mlTop(), depth=-1).to_claim()
+
+    claims = [(kcfg_name.replace('.', '-'), _kcfg_unproven_to_claim(kcfg)) for kcfg_name, kcfg in kcfgs.items()]
 
     kevm = KEVM(definition_dir, profile=profile, use_directory=use_directory)
 
