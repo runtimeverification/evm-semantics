@@ -299,10 +299,20 @@ module LEMMAS-HASKELL [symbolic, kore]
   // Arithmetic
   // ########################
 
+    rule N &Int maxUInt224 => N  requires #rangeUInt(224, N) [simplification]
+    rule maxUInt224 &Int N => N  requires #rangeUInt(224, N) [simplification]
+
     rule N &Int maxUInt160 => N  requires #rangeUInt(160, N) [simplification]
     rule maxUInt160 &Int N => N  requires #rangeUInt(160, N) [simplification]
 
-    rule maxUInt8 &Int X => X requires #rangeUInt(8 , X)     [simplification]
+    rule N &Int maxUInt144 => N  requires #rangeUInt(144, N) [simplification]
+    rule maxUInt144 &Int N => N  requires #rangeUInt(144, N) [simplification]
+
+    rule N &Int maxUInt112 => N  requires #rangeUInt(112, N) [simplification]
+    rule maxUInt112 &Int N => N  requires #rangeUInt(112, N) [simplification]
+
+    rule maxUInt8 &Int N   => N  requires #rangeUInt(8, N)   [simplification]
+    rule N &Int maxUInt8   => N  requires #rangeUInt(8, N)   [simplification]
 
     rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
 
