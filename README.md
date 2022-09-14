@@ -113,11 +113,11 @@ sudo pacman -S                                               \
 
 #### macOS
 
-On macOS, using [Homebrew](https://brew.sh/), after installing the Command Line Tools and getting the [blockchain plugin](#blockchain-plugin):
+After installing the Command Line Tools, [Homebrew](https://brew.sh/), and getting the [blockchain plugin](#blockchain-plugin), run:
 
 ```sh
 brew tap kframework/k
-brew install java automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python bash kframework/k/cryptopp@8.6.0
+brew install java automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python bash kframework/k/cryptopp@8.6.0 poetry solidity
 make libsecp256k1
 ```
 
@@ -156,7 +156,8 @@ export PATH=$HOME/.local/bin:$PATH
 #### K Framework
 
 The `Makefile` and `kevm` will work with either a (i) globally installed K, or (ii) a K submodule included in this repository.
-If you want to use the K submodule, follow these instructions get the submodule and build K:
+For contributing to `kevm`, it is highly recommended to go with (ii) because otherwise some of the build scripts might not work.
+Follow these instructions to get and build the K submodule:
 
 ```sh
 git submodule update --init --recursive -- deps/k
@@ -210,7 +211,7 @@ Running Tests
 -------------
 
 The tests are run using the supplied `Makefile`.
-First, run `make split-tests` to generate some of the tests from the markdown files.
+First, run `make build-prove` to generate some of the tests from the markdown files.
 
 The following subsume all other tests:
 
