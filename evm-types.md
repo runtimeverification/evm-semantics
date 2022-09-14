@@ -34,7 +34,9 @@ These can be used for pattern-matching on the LHS of rules as well (`alias` attr
                  | "pow208" [alias] /* 2 ^Int 208 */
                  | "pow168" [alias] /* 2 ^Int 168 */
                  | "pow160" [alias] /* 2 ^Int 160 */
+                 | "pow144" [alias] /* 2 ^Int 144 */
                  | "pow128" [alias] /* 2 ^Int 128 */
+                 | "pow112" [alias] /* 2 ^Int 112 */
                  | "pow96"  [alias] /* 2 ^Int 96  */
                  | "pow64"  [alias] /* 2 ^Int 64  */
                  | "pow48"  [alias] /* 2 ^Int 48  */
@@ -46,7 +48,9 @@ These can be used for pattern-matching on the LHS of rules as well (`alias` attr
     rule pow208 => 411376139330301510538742295639337626245683966408394965837152256
     rule pow168 => 374144419156711147060143317175368453031918731001856
     rule pow160 => 1461501637330902918203684832716283019655932542976
+    rule pow144 => 22300745198530623141535718272648361505980416
     rule pow128 => 340282366920938463463374607431768211456
+    rule pow112 => 5192296858534827628530496329220096
     rule pow96  => 79228162514264337593543950336
     rule pow64  => 18446744073709551616
     rule pow48  => 281474976710656
@@ -64,8 +68,12 @@ These can be used for pattern-matching on the LHS of rules as well (`alias` attr
                  | "maxUInt64"       [alias]
                  | "minUInt96"       [macro]
                  | "maxUInt96"       [alias]
+                 | "minUInt112"      [macro]
+                 | "maxUInt112"      [alias]
                  | "minUInt128"      [macro]
                  | "maxUInt128"      [alias]
+                 | "minUInt144"      [macro]
+                 | "maxUInt144"      [alias]
                  | "minUInt160"      [macro]
                  | "maxUInt160"      [alias]
                  | "minUInt168"      [macro]
@@ -100,10 +108,14 @@ These can be used for pattern-matching on the LHS of rules as well (`alias` attr
     rule maxUInt64       =>  18446744073709551615                                                           /*   2^64 -  1  */
     rule minUInt96       =>  0
     rule maxUInt96       =>  79228162514264337593543950335                                                  /*   2^96 -  1  */
+    rule minUInt112      =>  0
+    rule maxUInt112      =>  5192296858534827628530496329220095                                             /*   2^112 - 1  */
     rule minUInt128      =>  0
     rule maxUInt128      =>  340282366920938463463374607431768211455                                        /*   2^128 - 1  */
     rule minUFixed128x10 =>  0
     rule maxUFixed128x10 =>  3402823669209384634633746074317682114550000000000                              /* ( 2^128 - 1) * 10^10 */
+    rule minUInt144      =>  0
+    rule maxUInt144      =>  22300745198530623141535718272648361505980415                                   /*   2^144 - 1  */
     rule minUInt160      =>  0
     rule maxUInt160      =>  1461501637330902918203684832716283019655932542975                              /*   2^160 - 1  */
     rule minUInt168      =>  0
@@ -139,7 +151,9 @@ These can be used for pattern-matching on the LHS of rules as well (`alias` attr
     rule #rangeUInt    (  16 ,      X ) => #range ( minUInt16       <= X <  pow16           )
     rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <  pow48           )
     rule #rangeUInt    (  96 ,      X ) => #range ( minUInt96       <= X <  pow96           )
+    rule #rangeUInt    ( 112 ,      X ) => #range ( minUInt112      <= X <  pow112          )
     rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <  pow128          )
+    rule #rangeUInt    ( 144 ,      X ) => #range ( minUInt144      <= X <  pow144          )
     rule #rangeUInt    ( 160 ,      X ) => #range ( minUInt160      <= X <  pow160          )
     rule #rangeUInt    ( 168 ,      X ) => #range ( minUInt168      <= X <  pow168          )
     rule #rangeUInt    ( 208 ,      X ) => #range ( minUInt208      <= X <  pow208          )

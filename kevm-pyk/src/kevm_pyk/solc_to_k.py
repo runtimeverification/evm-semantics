@@ -439,11 +439,15 @@ def _evm_base_sort(type_label: str):
         'bytes4',
         'bytes32',
         'int256',
-        'uint256',
         'uint8',
+        'uint32',
         'uint64',
         'uint96',
-        'uint32',
+        'uint112',
+        'uint144',
+        'uint160',
+        'uint224',
+        'uint256',
     }:
         return KSort('Int')
 
@@ -474,6 +478,14 @@ def _range_predicate(term, type_label: str):
         return KEVM.range_uint(64, term)
     if type_label == 'uint96':
         return KEVM.range_uint(96, term)
+    if type_label == 'uint112':
+        return KEVM.range_uint(112, term)
+    if type_label == 'uint144':
+        return KEVM.range_uint(144, term)
+    if type_label == 'uint160':
+        return KEVM.range_uint(160, term)
+    if type_label == 'uint224':
+        return KEVM.range_uint(224, term)
     if type_label == 'uint32':
         return KEVM.range_uint(32, term)
     if type_label in {'bytes', 'string'}:

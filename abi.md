@@ -31,12 +31,15 @@ which denotes (indeed, is translated to) the following byte array:
 where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of `2835717307`, the first four bytes of the hash value of the `transfer` function signature, `keccak256("transfer(address,unit256)")`, and `T1 : ... : T32` and `V1 : ... : V32` are the byte-array representations of `TO` and `VALUE` respectively.
 
 ```k
-    syntax TypedArg ::= #uint160 ( Int )                        [klabel(abi_type_uint160), symbol]
-                      | #address ( Int )                        [klabel(abi_type_address), symbol]
+    syntax TypedArg ::= #address ( Int )                        [klabel(abi_type_address), symbol]
                       | #uint256 ( Int )                        [klabel(abi_type_uint256), symbol]
+                      | #uint224 ( Int )                        [klabel(abi_type_uint224), symbol]
+                      | #uint160 ( Int )                        [klabel(abi_type_uint160), symbol]
+                      | #uint144 ( Int )                        [klabel(abi_type_uint144), symbol]
+                      | #uint112 ( Int )                        [klabel(abi_type_uint112), symbol]
                       | #uint96  ( Int )                        [klabel(abi_type_uint96),  symbol]
-                      | #uint48  ( Int )                        [klabel(abi_type_uint48),  symbol]
                       | #uint64  ( Int )                        [klabel(abi_type_uint64),  symbol]
+                      | #uint48  ( Int )                        [klabel(abi_type_uint48),  symbol]
                       | #uint32  ( Int )                        [klabel(abi_type_uint32),  symbol]
                       | #uint16  ( Int )                        [klabel(abi_type_uint16),  symbol]
                       | #uint8   ( Int )                        [klabel(abi_type_uint8),   symbol]
@@ -72,9 +75,12 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax String ::= #typeName ( TypedArg ) [function, functional]
  // ---------------------------------------------------------------
-    rule #typeName(   #uint160( _ )) => "uint160"
     rule #typeName(   #address( _ )) => "address"
     rule #typeName(   #uint256( _ )) => "uint256"
+    rule #typeName(   #uint224( _ )) => "uint224"
+    rule #typeName(   #uint160( _ )) => "uint160"
+    rule #typeName(   #uint144( _ )) => "uint144"
+    rule #typeName(   #uint112( _ )) => "uint112"
     rule #typeName(    #uint48( _ )) => "uint48"
     rule #typeName(    #uint16( _ )) => "uint16"
     rule #typeName(     #uint8( _ )) => "uint8"
@@ -109,9 +115,12 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax Int ::= #lenOfHead ( TypedArg ) [function, functional]
  // -------------------------------------------------------------
-    rule #lenOfHead(  #uint160( _ )) => 32
     rule #lenOfHead(  #address( _ )) => 32
     rule #lenOfHead(  #uint256( _ )) => 32
+    rule #lenOfHead(  #uint224( _ )) => 32
+    rule #lenOfHead(  #uint160( _ )) => 32
+    rule #lenOfHead(  #uint144( _ )) => 32
+    rule #lenOfHead(  #uint112( _ )) => 32
     rule #lenOfHead(   #uint48( _ )) => 32
     rule #lenOfHead(   #uint16( _ )) => 32
     rule #lenOfHead(    #uint8( _ )) => 32
@@ -125,9 +134,12 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax Bool ::= #isStaticType ( TypedArg ) [function, functional]
  // -----------------------------------------------------------------
-    rule #isStaticType(  #uint160( _ )) => true
     rule #isStaticType(  #address( _ )) => true
     rule #isStaticType(  #uint256( _ )) => true
+    rule #isStaticType(  #uint224( _ )) => true
+    rule #isStaticType(  #uint160( _ )) => true
+    rule #isStaticType(  #uint144( _ )) => true
+    rule #isStaticType(  #uint112( _ )) => true
     rule #isStaticType(   #uint48( _ )) => true
     rule #isStaticType(   #uint16( _ )) => true
     rule #isStaticType(    #uint8( _ )) => true
@@ -159,9 +171,12 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax ByteArray ::= #enc ( TypedArg ) [function]
  // -------------------------------------------------
     // static Type
-    rule #enc(#uint160( DATA )) => #bufStrict(32, #getValue(#uint160( DATA )))
     rule #enc(#address( DATA )) => #bufStrict(32, #getValue(#address( DATA )))
     rule #enc(#uint256( DATA )) => #bufStrict(32, #getValue(#uint256( DATA )))
+    rule #enc(#uint224( DATA )) => #bufStrict(32, #getValue(#uint224( DATA )))
+    rule #enc(#uint160( DATA )) => #bufStrict(32, #getValue(#uint160( DATA )))
+    rule #enc(#uint144( DATA )) => #bufStrict(32, #getValue(#uint144( DATA )))
+    rule #enc(#uint112( DATA )) => #bufStrict(32, #getValue(#uint112( DATA )))
     rule #enc( #uint48( DATA )) => #bufStrict(32, #getValue( #uint48( DATA )))
     rule #enc( #uint16( DATA )) => #bufStrict(32, #getValue( #uint16( DATA )))
     rule #enc(  #uint8( DATA )) => #bufStrict(32, #getValue(  #uint8( DATA )))
@@ -188,7 +203,10 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #getValue(  #uint8( X )) => X       requires #rangeUInt(8, X)
     rule #getValue( #uint16( X )) => X       requires #rangeUInt(16, X)
     rule #getValue( #uint48( X )) => X       requires #rangeUInt(48, X)
+    rule #getValue(#uint112( X )) => X       requires #rangeUInt(112, X)
+    rule #getValue(#uint144( X )) => X       requires #rangeUInt(144, X)
     rule #getValue(#uint160( X )) => X       requires #rangeUInt(160, X)
+    rule #getValue(#uint224( X )) => X       requires #rangeUInt(224, X)
     rule #getValue(#uint256( X )) => X       requires #rangeUInt(256, X)
     rule #getValue( #int128( X )) => chop(X) requires #rangeSInt(128, X)
     rule #getValue( #int256( X )) => chop(X) requires #rangeSInt(256, X)
