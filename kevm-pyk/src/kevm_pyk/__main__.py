@@ -8,7 +8,7 @@ from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KApply, KClaim, KDefinition, KFlatModule, KImport, KRequire, KSort
+from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KRequire, KRule, KSort, KToken
 from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
 from pyk.ktool.krun import _krun
@@ -248,6 +248,7 @@ def exec_prove(
     minimize: bool = True,
     **kwargs,
 ) -> None:
+    _ignore_arg(kwargs, 'lemmas', '--lemma')
     kevm = KEVM(definition_dir, profile=profile)
     prove_args = add_include_arg(includes)
     haskell_args = []
@@ -280,6 +281,7 @@ def exec_foundry_prove(
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
     parallel: int = 1,
+    lemmas: Iterable[str] = (),
     minimize: bool = True,
     **kwargs,
 ) -> None:
@@ -323,9 +325,11 @@ def exec_foundry_prove(
 
     kevm = KEVM(definition_dir, profile=profile, use_directory=use_directory)
 
+    lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
+
     def prove_it(_id_and_claim: Tuple[str, KClaim]) -> bool:
         _claim_id, _claim = _id_and_claim
-        ret, result = KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER, depth=depth)
+        ret, result = KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
         if minimize:
             result = minimize_term(result)
         print(f'Result for {_claim_id}:\n{kevm.pretty_print(result)}')
@@ -403,6 +407,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Generate a haskell-backend bug report for the execution.',
+    )
+    kprove_args.add_argument(
+        '--lemma',
+        dest='lemmas',
+        default=[],
+        action='append',
+        help='Additional lemmas to include as simplification rules during execution.',
     )
     kprove_args.add_argument(
         '--minimize', dest='minimize', default=True, action='store_true', help='Minimize prover output.'
