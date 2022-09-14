@@ -118,11 +118,11 @@ def exec_foundry_to_k(
     profile: bool,
     foundry_out: Path,
     main_module: Optional[str],
-    spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
     **kwargs,
 ) -> Tuple[KDefinition, List[Tuple[str, KClaim]]]:
+    _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
     path_glob = str(foundry_out) + '/*.t.sol/*.json'
@@ -180,7 +180,6 @@ def exec_foundry_kompile(
     _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
-    spec_module = 'FOUNDRY-SPEC'
     foundry_definition_dir = foundry_out / 'kompiled'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
@@ -196,7 +195,6 @@ def exec_foundry_kompile(
         profile=profile,
         foundry_out=foundry_out,
         main_module=main_module,
-        spec_module=spec_module,
         requires=list(requires),
         imports=list(imports),
     )
