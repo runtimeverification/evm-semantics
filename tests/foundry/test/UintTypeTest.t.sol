@@ -28,7 +28,7 @@ contract UintTypeTest {
     }
 
     function testFail_uint160(uint160 x) public pure {
-        assert(type(uint160).max >= x);
+        assert(type(uint160).max > x);
     }
 
     function test_uint144(uint144 x) public pure {
