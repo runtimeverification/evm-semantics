@@ -4,7 +4,7 @@ import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Any, Dict, Final, Iterable, List, Optional, TextIO, Tuple
+from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
@@ -16,7 +16,7 @@ from pyk.prelude import mlTop
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_k, solc_compile
-from .utils import KCFG_from_claim, KPrint_make_unparsing, KProve_prove_claim, add_include_arg, read_kast_flatmodulelist
+from .utils import KCFG_from_claim, KPrint_make_unparsing, KProve_prove_claim, add_include_arg
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -121,9 +121,8 @@ def exec_foundry_to_k(
     spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
-    output: Optional[TextIO],
     **kwargs,
-) -> None:
+) -> KDefinition:
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
     path_glob = str(foundry_out) + '/*.t.sol/*.json'
@@ -164,12 +163,7 @@ def exec_foundry_to_k(
         modules + claims_modules,
         requires=[KRequire(req) for req in ['edsl.md'] + requires],
     )
-    _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
-    KEVM._patch_symbol_table(_kprint.symbol_table)
-    if not output:
-        output = sys.stdout
-    output.write(_kprint.pretty_print(bin_runtime_definition) + '\n')
-    output.flush()
+    return bin_runtime_definition
 
 
 def exec_foundry_kompile(
@@ -180,7 +174,6 @@ def exec_foundry_kompile(
     md_selector: Optional[str],
     regen: bool = False,
     rekompile: bool = False,
-    reparse: bool = False,
     reinit: bool = False,
     requires: Iterable[str] = (),
     imports: Iterable[str] = (),
@@ -195,25 +188,31 @@ def exec_foundry_kompile(
     foundry_definition_dir = foundry_out / 'kompiled'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
-    parsed_spec = foundry_definition_dir / 'spec.json'
     kcfgs_file = foundry_definition_dir / 'kcfgs.json'
     requires = ['lemmas/lemmas.k', 'lemmas/int-simplification.k'] + list(requires)
     imports = ['LEMMAS', 'INT-SIMPLIFICATION'] + list(imports)
+
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
+
+    bin_runtime_definition = exec_foundry_to_k(
+        definition_dir=definition_dir,
+        profile=profile,
+        foundry_out=foundry_out,
+        main_module=main_module,
+        spec_module=spec_module,
+        requires=list(requires),
+        imports=list(imports),
+    )
+
     if regen or not foundry_main_file.exists():
-        _LOGGER.info(f'Generating K: {foundry_main_file}')
         with open(foundry_main_file, 'w') as fmf:
-            exec_foundry_to_k(
-                definition_dir=definition_dir,
-                profile=profile,
-                foundry_out=foundry_out,
-                main_module=main_module,
-                spec_module=spec_module,
-                requires=list(requires),
-                imports=list(imports),
-                output=fmf,
-            )
+            _LOGGER.info(f'Writing file: {foundry_main_file}')
+            _kevm = KEVM(definition_dir=definition_dir)
+            _kprint = KPrint_make_unparsing(_kevm, extra_modules=bin_runtime_definition.modules)
+            KEVM._patch_symbol_table(_kprint.symbol_table)
+            fmf.write(_kprint.pretty_print(bin_runtime_definition) + '\n')
+
     if regen or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
         KEVM.kompile(
@@ -226,22 +225,14 @@ def exec_foundry_kompile(
             md_selector=md_selector,
             profile=profile,
         )
+
     kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
-    if regen or rekompile or reparse or not parsed_spec.exists():
-        _LOGGER.info(f'Parsing specs: {foundry_main_file}')
-        prove_args = add_include_arg(includes)
-        kevm.prove(
-            foundry_main_file,
-            spec_module_name=spec_module,
-            dry_run=True,
-            args=(['--emit-json-spec', str(parsed_spec)] + prove_args),
-        )
-    if regen or rekompile or reparse or reinit or not kcfgs_file.exists():
+    if regen or rekompile or reinit or not kcfgs_file.exists():
         _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
         cfgs: Dict[str, Dict] = {}
-        for module in read_kast_flatmodulelist(parsed_spec).modules:
+        for module in bin_runtime_definition.modules:
             for claim in module.claims:
-                cfg_label = claim.att["label"]
+                cfg_label = f'{module.name}.{claim.att["label"]}'
                 _LOGGER.info(f'Producing KCFG: {cfg_label}')
                 cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
         with open(kcfgs_file, 'w') as kf:
@@ -548,13 +539,6 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Rekompile foundry.k even if kompiled definition already exists.',
-    )
-    foundry_kompile.add_argument(
-        '--reparse',
-        dest='reparse',
-        default=False,
-        action='store_true',
-        help='Reparse K specifications even if the parsed spec already exists.',
     )
     foundry_kompile.add_argument(
         '--reinit',
