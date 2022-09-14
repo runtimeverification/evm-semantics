@@ -50,10 +50,13 @@ contract ExamplesTest is Test {
         assertTrue(c2 <= c1);
     }
 
+    function test_wmul_strictly_increasing(uint a, uint b) external {
+        uint c = wmul2(a, b);
+        assertTrue(a < c && b < c);
+    }
+
     function test_wmul_increasing(uint a, uint b) external {
         uint c = wmul2(a, b);
-        // counterexample: a == 0 && b == 0
-        // assertTrue(a < c && b < c);
         assertTrue(a <= c && b <= c);
     }
 
