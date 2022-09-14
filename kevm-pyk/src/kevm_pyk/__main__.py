@@ -9,6 +9,7 @@ from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KApply, KClaim, KDefinition, KFlatModule, KImport, KRequire, KSort
+from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
 from pyk.ktool.krun import _krun
 from pyk.prelude import mlTop
@@ -244,6 +245,7 @@ def exec_prove(
     depth: Optional[int],
     claims: Iterable[str] = (),
     exclude_claims: Iterable[str] = (),
+    minimize: bool = True,
     **kwargs,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
@@ -260,6 +262,8 @@ def exec_prove(
     if exclude_claims:
         prove_args += ['--exclude', ','.join(exclude_claims)]
     final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
+    if minimize:
+        final_state = minimize_term(final_state)
     print(kevm.pretty_print(final_state) + '\n')
     if not (type(final_state) is KApply and final_state.label.name == '#Top'):
         _LOGGER.error('Proof failed!')
@@ -276,6 +280,7 @@ def exec_foundry_prove(
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
     workers: int = 1,
+    minimize: bool = True,
     **kwargs,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -322,6 +327,8 @@ def exec_foundry_prove(
     def prove_it(_id_and_claim: Tuple[str, KClaim]) -> bool:
         _claim_id, _claim = _id_and_claim
         ret, result = KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER, depth=depth)
+        if minimize:
+            result = minimize_term(result)
         print(f'Result for {_claim_id}:\n{kevm.pretty_print(result)}')
         return ret
 
@@ -397,6 +404,12 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Generate a haskell-backend bug report for the execution.',
+    )
+    kprove_args.add_argument(
+        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize prover output.'
+    )
+    kprove_args.add_argument(
+        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize prover output.'
     )
 
     k_kompile_args = ArgumentParser(add_help=False)
