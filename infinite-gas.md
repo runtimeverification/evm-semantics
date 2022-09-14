@@ -58,6 +58,8 @@ module INFINITE-GAS-HASKELL [kore]
 
     rule #gas(_) <=Int _C => false [concrete(_C), simplification]
     rule _C <=Int #gas(_) => true  [concrete(_C), simplification]
+
+    rule { #gas(_) #Equals #gas(_) } => #Top [simplification]
 endmodule
 
 module INFINITE-GAS-COMMON
