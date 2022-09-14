@@ -122,12 +122,12 @@ def exec_foundry_to_k(
     requires: List[str],
     imports: List[str],
     **kwargs,
-) -> KDefinition:
+) -> Tuple[KDefinition, List[Tuple[str, KClaim]]]:
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
     path_glob = str(foundry_out) + '/*.t.sol/*.json'
-    modules: List[KFlatModule] = []
-    claims_modules: List[KFlatModule] = []
+    modules = []
+    claims: List[Tuple[str, KClaim]] = []
     # Must sort to get consistent output order on different platforms.
     for json_file in sorted(glob.glob(path_glob)):
         if json_file.endswith('.metadata.json'):
@@ -149,21 +149,17 @@ def exec_foundry_to_k(
             modules.append(module)
             if claims_module:
                 _LOGGER.info(f'Produced claim module: {claims_module.name}')
-                claims_modules.append(claims_module)
+                claims.extend((claims_module.name, claim) for claim in claims_module.claims)
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports]
     )
-    _spec_module = KFlatModule(
-        spec_module if spec_module else 'SPEC', [], [KImport(mname) for mname in [_m.name for _m in claims_modules]]
-    )
     modules.append(_main_module)
-    modules.append(_spec_module)
     bin_runtime_definition = KDefinition(
         _main_module.name,
-        modules + claims_modules,
+        modules,
         requires=[KRequire(req) for req in ['edsl.md'] + requires],
     )
-    return bin_runtime_definition
+    return bin_runtime_definition, claims
 
 
 def exec_foundry_kompile(
@@ -195,7 +191,7 @@ def exec_foundry_kompile(
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
 
-    bin_runtime_definition = exec_foundry_to_k(
+    bin_runtime_definition, claims = exec_foundry_to_k(
         definition_dir=definition_dir,
         profile=profile,
         foundry_out=foundry_out,
@@ -230,11 +226,10 @@ def exec_foundry_kompile(
     if regen or rekompile or reinit or not kcfgs_file.exists():
         _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
         cfgs: Dict[str, Dict] = {}
-        for module in bin_runtime_definition.modules:
-            for claim in module.claims:
-                cfg_label = f'{module.name}.{claim.att["label"]}'
-                _LOGGER.info(f'Producing KCFG: {cfg_label}')
-                cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
+        for module_name, claim in claims:
+            cfg_label = f'{module_name}.{claim.att["label"]}'
+            _LOGGER.info(f'Producing KCFG: {cfg_label}')
+            cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
         with open(kcfgs_file, 'w') as kf:
             kf.write(json.dumps(cfgs))
             kf.close()
