@@ -73,6 +73,7 @@ class Contract:
                 self.sort,
                 items_before + items_args + items_after,
                 klabel=KLabel(f'method_{self.contract_name}_{self.name}'),
+                att=KAtt({'symbol': ''}),
             )
 
         def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> Optional[KRule]:
@@ -195,7 +196,7 @@ class Contract:
 
     @property
     def production(self) -> KProduction:
-        return KProduction(self.sort, [KTerminal(self.name)], klabel=self.klabel)
+        return KProduction(self.sort, [KTerminal(self.name)], klabel=self.klabel, att=KAtt({'symbol': ''}))
 
     @property
     def macro_bin_runtime(self) -> KRule:
@@ -207,7 +208,7 @@ class Contract:
             KSort('ByteArray'),
             [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)],
             klabel=self.klabel_method,
-            att=KAtt({'function': ''}),
+            att=KAtt({'function': '', 'symbol': ''}),
         )
         res: List[KSentence] = [method_application_production]
         res.extend(method.production for method in self.methods)
