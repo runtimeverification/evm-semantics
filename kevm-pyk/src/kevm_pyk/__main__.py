@@ -122,7 +122,6 @@ def exec_foundry_to_k(
     imports: List[str],
     **kwargs,
 ) -> Tuple[KDefinition, List[Tuple[str, KClaim]]]:
-    _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
     path_glob = str(foundry_out) + '/*.t.sol/*.json'
@@ -221,7 +220,7 @@ def exec_foundry_kompile(
         )
 
     kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
-    if regen or rekompile or reinit or not kcfgs_file.exists():
+    if reinit or not kcfgs_file.exists():
         _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
         cfgs: Dict[str, Dict] = {}
         for module_name, claim in claims:
