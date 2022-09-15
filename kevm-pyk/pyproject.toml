@@ -12,6 +12,8 @@ authors = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
+pathos = "*"
+pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="v0.1.1" }
 
 [tool.poetry.dev-dependencies]
 autoflake = "*"
@@ -22,7 +24,6 @@ flake8-comprehensions = "*"
 isort = "*"
 mypy = "*"
 pep8-naming = "*"
-pyk = { path = "../deps/k/pyk" }
 
 [tool.poetry.scripts]
 kevm-pyk = "kevm_pyk.__main__:main"

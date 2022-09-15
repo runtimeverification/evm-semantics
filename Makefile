@@ -439,6 +439,7 @@ tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTes
 # solc-to-k
 # ---------
 
+KEVM_PYK_DIR := ./kevm-pyk
 VENV_DIR     := $(BUILD_DIR)/venv
 PYK_ACTIVATE := . $(VENV_DIR)/bin/activate
 
@@ -451,14 +452,13 @@ venv-clean:
 $(VENV_DIR)/pyvenv.cfg:
 	   virtualenv -p python3 $(VENV_DIR) \
 	&& $(PYK_ACTIVATE)                   \
-	&& pip install --editable deps/k/pyk \
-	&& pip install --editable kevm-pyk
+	&& pip install --editable $(KEVM_PYK_DIR)
 
 venv: $(VENV_DIR)/pyvenv.cfg
 	@echo $(PYK_ACTIVATE)
 
 kevm-pyk:
-	$(MAKE) -C ./kevm-pyk
+	$(MAKE) -C $(KEVM_PYK_DIR)
 
 foundry-clean:
 	rm -rf tests/foundry/cache
@@ -493,13 +493,10 @@ tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
 
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove tests/foundry/out $(KEVM_OPTS) $(KPROVE_OPTS)
+	$(KEVM) foundry-prove tests/foundry/out -j4 $(KEVM_OPTS) $(KPROVE_OPTS) $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
 
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
-	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose                            \
-	    --require lemmas/int-simplification.k --module-import INT-SIMPLIFICATION \
-	    --require lemmas/lemmas.k --module-import LEMMAS                         \
-	    --exclude-tests tests/foundry/exclude
+	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
 tests/specs/examples/%-bin-runtime.k: KEVM = $(PYK_ACTIVATE) && kevm
