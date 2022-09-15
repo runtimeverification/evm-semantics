@@ -1,5 +1,6 @@
+from logging import Logger
 from pathlib import Path
-from typing import Collection, Iterable, List
+from typing import Collection, Iterable, List, Tuple
 
 from pyk.cfg_manager import instantiate_cell_vars, rename_generated_vars
 from pyk.cterm import CTerm
@@ -21,8 +22,22 @@ from pyk.kastManip import (
     undo_aliases,
 )
 from pyk.kcfg import KCFG
-from pyk.ktool import KPrint
+from pyk.ktool import KPrint, KProve
 from pyk.prelude import Bool, mlAnd
+
+
+def KProve_prove_claim(  # noqa: N802
+    kprove: KProve, claim: KClaim, claim_id: str, logger: Logger
+) -> Tuple[bool, KInner]:
+    logger.info(f'Proving KCFG: {claim_id}')
+    result = kprove.prove_claim(claim, claim_id)
+    failed = False
+    if type(result) is KApply and result.label.name == '#Top':
+        logger.info(f'Proved KCFG: {claim_id}')
+    else:
+        logger.error(f'Failed to prove KCFG: {claim_id}')
+        failed = True
+    return failed, result
 
 
 def read_kast_flatmodulelist(ifile: Path) -> KFlatModuleList:
