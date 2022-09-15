@@ -398,9 +398,11 @@ This rule then loads the storage slot identified by `#asWord(#range(LM, ARGSTART
     rule [call.load]:
          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH
           => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32))
-          ~> #foundryVmLoad ARGSTART RETSTART RETWIDTH ...
+          ~> #foundryVmLoad ARGSTART RETSTART RETWIDTH
+          ~> #refund GCALL ...
          </k>
          <localMem> LM </localMem>
+         <callGas> GCALL => 0 </callGas>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1719639408 // selector ( "load(address,bytes32)" )
       [priority(40)]
@@ -437,9 +439,11 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32))
     rule [call.store]:
          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH
           => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32))
-          ~> #foundryVmStore ARGSTART ...
+          ~> #foundryVmStore ARGSTART
+          ~> #refund GCALL ...
          </k>
          <localMem> LM </localMem>
+         <callGas> GCALL => 0 </callGas>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1892290747 // selector ( "store(address,bytes32,bytes32)" )
       [priority(40)]
@@ -466,11 +470,11 @@ Utils
 ```k
     syntax KItem ::= "#loadAccount" Int
  // ---------------------------------
-    rule <k> #loadAccount ACCT => . ... </k>
+    rule <k> #loadAccount ACCT => #accessAccounts ACCT ... </k>
          <activeAccounts> ACCTS:Set </activeAccounts>
       requires ACCT in ACCTS
 
-    rule <k> #loadAccount ACCT => #newAccount ACCT ... </k>
+    rule <k> #loadAccount ACCT => #newAccount ACCT ~> #accessAccounts ACCT ... </k>
          <activeAccounts> ACCTS:Set </activeAccounts>
       requires notBool ACCT in ACCTS
 ```
