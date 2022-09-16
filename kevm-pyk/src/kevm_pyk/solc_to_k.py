@@ -449,15 +449,38 @@ def _evm_base_sort(type_label: str):
         'bytes4',
         'bytes32',
         'int256',
-        'uint8',
-        'uint32',
-        'uint64',
-        'uint96',
-        'uint112',
-        'uint144',
-        'uint160',
-        'uint224',
         'uint256',
+        'uint248',
+        'uint240',
+        'uint232',
+        'uint224',
+        'uint216',
+        'uint208',
+        'uint200',
+        'uint192',
+        'uint184',
+        'uint176',
+        'uint168',
+        'uint160',
+        'uint152',
+        'uint144',
+        'uint136',
+        'uint128',
+        'uint120',
+        'uint112',
+        'uint104',
+        'uint96',
+        'uint88',
+        'uint80',
+        'uint72',
+        'uint64',
+        'uint56',
+        'uint48',
+        'uint40',
+        'uint32',
+        'uint24',
+        'uint16',
+        'uint8',
     }:
         return KSort('Int')
 
@@ -472,6 +495,9 @@ def _evm_base_sort(type_label: str):
 
 
 def _range_predicate(term, type_label: str):
+    (success, result) = _range_predicate_uint(term, type_label)
+    if success:
+        return result
     if type_label == 'address':
         return KEVM.range_address(term)
     if type_label == 'bool':
@@ -482,24 +508,75 @@ def _range_predicate(term, type_label: str):
         return KEVM.range_uint(256, term)
     if type_label == 'int256':
         return KEVM.range_sint(256, term)
-    if type_label == 'uint8':
-        return KEVM.range_uint(8, term)
-    if type_label == 'uint64':
-        return KEVM.range_uint(64, term)
-    if type_label == 'uint96':
-        return KEVM.range_uint(96, term)
-    if type_label == 'uint112':
-        return KEVM.range_uint(112, term)
-    if type_label == 'uint144':
-        return KEVM.range_uint(144, term)
-    if type_label == 'uint160':
-        return KEVM.range_uint(160, term)
-    if type_label == 'uint224':
-        return KEVM.range_uint(224, term)
-    if type_label == 'uint32':
-        return KEVM.range_uint(32, term)
     if type_label in {'bytes', 'string'}:
         return Bool.true
 
     _LOGGER.warning(f'Unknown range predicate for type: {type_label}')
     return None
+
+
+def _range_predicate_uint(term, type_label: str):
+    if type_label == 'uint248':
+        return (True, KEVM.range_uint(248, term))
+    if type_label == 'uint240':
+        return (True, KEVM.range_uint(240, term))
+    if type_label == 'uint232':
+        return (True, KEVM.range_uint(232, term))
+    if type_label == 'uint224':
+        return (True, KEVM.range_uint(224, term))
+    if type_label == 'uint216':
+        return (True, KEVM.range_uint(216, term))
+    if type_label == 'uint208':
+        return (True, KEVM.range_uint(208, term))
+    if type_label == 'uint200':
+        return (True, KEVM.range_uint(200, term))
+    if type_label == 'uint192':
+        return (True, KEVM.range_uint(192, term))
+    if type_label == 'uint184':
+        return (True, KEVM.range_uint(184, term))
+    if type_label == 'uint176':
+        return (True, KEVM.range_uint(176, term))
+    if type_label == 'uint168':
+        return (True, KEVM.range_uint(168, term))
+    if type_label == 'uint160':
+        return (True, KEVM.range_uint(160, term))
+    if type_label == 'uint152':
+        return (True, KEVM.range_uint(152, term))
+    if type_label == 'uint144':
+        return (True, KEVM.range_uint(144, term))
+    if type_label == 'uint136':
+        return (True, KEVM.range_uint(136, term))
+    if type_label == 'uint128':
+        return (True, KEVM.range_uint(128, term))
+    if type_label == 'uint120':
+        return (True, KEVM.range_uint(120, term))
+    if type_label == 'uint112':
+        return (True, KEVM.range_uint(112, term))
+    if type_label == 'uint104':
+        return (True, KEVM.range_uint(104, term))
+    if type_label == 'uint96':
+        return (True, KEVM.range_uint(96, term))
+    if type_label == 'uint88':
+        return (True, KEVM.range_uint(88, term))
+    if type_label == 'uint80':
+        return (True, KEVM.range_uint(80, term))
+    if type_label == 'uint72':
+        return (True, KEVM.range_uint(72, term))
+    if type_label == 'uint64':
+        return (True, KEVM.range_uint(64, term))
+    if type_label == 'uint56':
+        return (True, KEVM.range_uint(56, term))
+    if type_label == 'uint48':
+        return (True, KEVM.range_uint(48, term))
+    if type_label == 'uint40':
+        return (True, KEVM.range_uint(40, term))
+    if type_label == 'uint32':
+        return (True, KEVM.range_uint(32, term))
+    if type_label == 'uint24':
+        return (True, KEVM.range_uint(24, term))
+    if type_label == 'uint16':
+        return (True, KEVM.range_uint(16, term))
+    if type_label == 'uint8':
+        return (True, KEVM.range_uint(8, term))
+
+    return (False, None)
