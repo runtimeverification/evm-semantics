@@ -348,7 +348,7 @@ def exec_foundry_prove(
     _failed_claim_ids = [cid for cid, _ in failed_claims]
 
     if _failed_claim_ids:
-        for (cid,result) in failed_claims:
+        for (cid, result) in failed_claims:
             print(f'Failed to prove KCFG: {cid}\n')
             print(kevm.pretty_print(result) + '\n')
 
