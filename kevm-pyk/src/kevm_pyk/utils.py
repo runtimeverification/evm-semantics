@@ -1,10 +1,21 @@
 from logging import Logger
 from pathlib import Path
-from typing import Collection, Iterable, List, Tuple
+from typing import Collection, Iterable, List, Optional, Tuple
 
 from pyk.cfg_manager import instantiate_cell_vars, rename_generated_vars
 from pyk.cterm import CTerm
-from pyk.kast import KApply, KClaim, KDefinition, KFlatModule, KFlatModuleList, KImport, KInner, KVariable, read_kast
+from pyk.kast import (
+    KApply,
+    KClaim,
+    KDefinition,
+    KFlatModule,
+    KFlatModuleList,
+    KImport,
+    KInner,
+    KRule,
+    KVariable,
+    read_kast,
+)
 from pyk.kastManip import (
     abstract_term_safely,
     bool_to_ml_pred,
@@ -27,10 +38,18 @@ from pyk.prelude import Bool, mlAnd
 
 
 def KProve_prove_claim(  # noqa: N802
-    kprove: KProve, claim: KClaim, claim_id: str, logger: Logger
+    kprove: KProve,
+    claim: KClaim,
+    claim_id: str,
+    logger: Logger,
+    depth: Optional[int] = None,
+    lemmas: Iterable[KRule] = (),
 ) -> Tuple[bool, KInner]:
     logger.info(f'Proving KCFG: {claim_id}')
-    result = kprove.prove_claim(claim, claim_id)
+    prove_args = []
+    if depth is not None:
+        prove_args += ['--depth', str(depth)]
+    result = kprove.prove_claim(claim, claim_id, args=prove_args, lemmas=lemmas)
     failed = False
     if type(result) is KApply and result.label.name == '#Top':
         logger.info(f'Proved KCFG: {claim_id}')
