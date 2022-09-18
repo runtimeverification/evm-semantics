@@ -219,8 +219,10 @@ The values are forwarded to the `#setCode` marker which updates the account acco
 
 ```k
     rule [call.etch]:
-         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART ARGWIDTH _RETSTART _RETWIDTH
-          => #setCode(#asWord(#range(LM, ARGSTART +Int 4, 32)), #range(LM, ARGSTART +Int 36, ARGWIDTH -Int 36))
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH
+          => #let CODE_START = ARGSTART +Int 100 #in
+             #let CODE_LENGTH = #asWord(#range(LM, ARGSTART +Int 68, 32)) #in
+             #setCode(#asWord(#range(LM, ARGSTART +Int 4, 32)), #range(LM, CODE_START, CODE_LENGTH))
           ~> 1 ~> #push
          ...
          </k>
@@ -402,6 +404,100 @@ This rule takes `uint256` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` 
        requires CHEAT_ADDR ==Int #address(FoundryCheat)
         andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4288775753 // selector ( "addr(uint256)" )
      [priority(40)]
+```
+
+#### `load` - Loads a storage slot from an address.
+
+```
+function load(address account, bytes32 slot) external returns (bytes32);
+```
+
+`call.load` will match when the `load` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule then loads the storage slot identified by `#asWord(#range(LM, ARGSTART +Int 36, 32))` (referring to `slot` argument) from account `#asWord(#range(LM, ARGSTART +Int 4, 32))` (referring to `account`) and sets the return value to the loaded slot value.
+
+```k
+    rule [call.load]:
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH
+          => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32))
+          ~> #foundryVmLoad ARGSTART RETSTART RETWIDTH
+          ~> #refund GCALL ...
+         </k>
+         <localMem> LM </localMem>
+         <callGas> GCALL => 0 </callGas>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1719639408 // selector ( "load(address,bytes32)" )
+      [priority(40)]
+
+
+    syntax KItem ::= "#foundryVmLoad" Int Int Int
+ // ----------------------------------------------------------
+    rule <k> #foundryVmLoad ARGSTART RETSTART RETWIDTH
+          => #setLocalMem RETSTART RETWIDTH #bufStrict(32, #lookup(STORAGE, #asWord(#range(LM, ARGSTART +Int 36, 32))))
+          ~> 1 ~> #push ...
+         </k>
+         <output>
+           _ => #bufStrict(32, #lookup(STORAGE, #asWord(#range(LM, ARGSTART +Int 36, 32))))
+         </output>
+         <account>
+             <acctID> ACCTID </acctID>
+             <storage> STORAGE </storage>
+             ...
+         </account>
+         <localMem> LM </localMem>
+      requires ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
+```
+
+#### `store` - Stores a value to an address' storage slot.
+
+```
+function store(address account, bytes32 slot, bytes32 value) external;
+```
+
+`call.store` will match when the `store` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32))` and the new slot value using `#asWord(#range(LM, ARGSTART +Int 68, 32))` and updates the slot denoted by `#asWord(#range(LM, ARGSTART +Int 36, 32))`.
+
+```k
+    rule [call.store]:
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH
+          => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32))
+          ~> #foundryVmStore ARGSTART
+          ~> #refund GCALL ...
+         </k>
+         <localMem> LM </localMem>
+         <callGas> GCALL => 0 </callGas>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1892290747 // selector ( "store(address,bytes32,bytes32)" )
+      [priority(40)]
+
+
+    syntax KItem ::= "#foundryVmStore" Int
+ // ----------------------------------------------------------
+    rule <k> #foundryVmStore ARGSTART => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <account>
+             <acctID> ACCTID </acctID>
+             <storage> STORAGE => STORAGE [ #asWord(#range(LM, ARGSTART +Int 36, 32)) <- #asWord(#range(LM, ARGSTART +Int 68, 32)) ] </storage>
+             ...
+         </account>
+         <localMem> LM </localMem>
+      requires ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
+```
+
+Utils
+-----
+
+- `#loadAccount ACCT` creates a new, empty account for `ACCT` if it does not already exist. Otherwise, it has no effect
+
+```k
+    syntax KItem ::= "#loadAccount" Int
+ // ---------------------------------
+    rule <k> #loadAccount ACCT => #accessAccounts ACCT ... </k>
+         <activeAccounts> ACCTS:Set </activeAccounts>
+      requires ACCT in ACCTS
+
+    rule <k> #loadAccount ACCT => #newAccount ACCT ~> #accessAccounts ACCT ... </k>
+         <activeAccounts> ACCTS:Set </activeAccounts>
+      requires notBool ACCT in ACCTS
 ```
 
 ```k

@@ -379,6 +379,7 @@ def _init_term(empty_config: KInner, contract_name: str) -> KInner:
         'ORIGIN_CELL': KVariable('ORIGIN_ID'),
         'ID_CELL': Foundry.address_TEST_CONTRACT(),
         'CALLER_CELL': KVariable('CALLER_ID'),
+        'ACCESSEDACCOUNTS_CELL': KApply('.Set'),
         'ACCESSEDSTORAGE_CELL': KApply('.Map'),
         'ACTIVEACCOUNTS_CELL': build_assoc(
             KApply('.Set'),
@@ -393,12 +394,12 @@ def _init_term(empty_config: KInner, contract_name: str) -> KInner:
                 ],
             ),
         ),
-        'LOCALMEM_CELL': KVariable('LOCAL_MEM'),
+        'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
         'STATIC_CELL': Bool.false,
         'MEMORYUSED_CELL': intToken(0),
         'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
         'PC_CELL': intToken(0),
-        'GAS_CELL': KEVM.inf_gas(KVariable('VGAS')),
+        'GAS_CELL': intToken(9223372036854775807),
         'K_CELL': KSequence([KEVM.execute(), KVariable('CONTINUATION')]),
         'ACCOUNTS_CELL': KEVM.accounts(
             [
