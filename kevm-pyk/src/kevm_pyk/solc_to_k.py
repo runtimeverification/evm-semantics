@@ -73,6 +73,7 @@ class Contract:
                 self.sort,
                 items_before + items_args + items_after,
                 klabel=KLabel(f'method_{self.contract_name}_{self.name}'),
+                att=KAtt({'symbol': ''}),
             )
 
         def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> Optional[KRule]:
@@ -195,7 +196,7 @@ class Contract:
 
     @property
     def production(self) -> KProduction:
-        return KProduction(self.sort, [KTerminal(self.name)], klabel=self.klabel)
+        return KProduction(self.sort, [KTerminal(self.name)], klabel=self.klabel, att=KAtt({'symbol': ''}))
 
     @property
     def macro_bin_runtime(self) -> KRule:
@@ -207,7 +208,7 @@ class Contract:
             KSort('ByteArray'),
             [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)],
             klabel=self.klabel_method,
-            att=KAtt({'function': ''}),
+            att=KAtt({'function': '', 'symbol': ''}),
         )
         res: List[KSentence] = [method_application_production]
         res.extend(method.production for method in self.methods)
@@ -378,6 +379,7 @@ def _init_term(empty_config: KInner, contract_name: str) -> KInner:
         'ORIGIN_CELL': KVariable('ORIGIN_ID'),
         'ID_CELL': Foundry.address_TEST_CONTRACT(),
         'CALLER_CELL': KVariable('CALLER_ID'),
+        'ACCESSEDACCOUNTS_CELL': KApply('.Set'),
         'ACCESSEDSTORAGE_CELL': KApply('.Map'),
         'ACTIVEACCOUNTS_CELL': build_assoc(
             KApply('.Set'),
@@ -392,12 +394,12 @@ def _init_term(empty_config: KInner, contract_name: str) -> KInner:
                 ],
             ),
         ),
-        'LOCALMEM_CELL': KVariable('LOCAL_MEM'),
+        'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
         'STATIC_CELL': Bool.false,
         'MEMORYUSED_CELL': intToken(0),
         'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
         'PC_CELL': intToken(0),
-        'GAS_CELL': KEVM.inf_gas(KVariable('VGAS')),
+        'GAS_CELL': intToken(9223372036854775807),
         'K_CELL': KSequence([KEVM.execute(), KVariable('CONTINUATION')]),
         'ACCOUNTS_CELL': KEVM.accounts(
             [
@@ -405,7 +407,7 @@ def _init_term(empty_config: KInner, contract_name: str) -> KInner:
                 Foundry.account_CALLER(),
                 Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE')),
                 Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
-                KToken('.Bag', 'K'),
+                KVariable('ACCOUNTS_INIT'),
             ]
         ),
     }
@@ -436,7 +438,9 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             ]
         ),
     }
-    return abstract_cell_vars(substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL')])
+    return abstract_cell_vars(
+        substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL'), KVariable('ACCOUNTS_FINAL')]
+    )
 
 
 # Helpers
