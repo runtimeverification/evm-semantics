@@ -373,28 +373,32 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
 
 ```k
     rule [call.getNonce]:
-          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, NONCE) ... </k>
-          <output> _ => #bufStrict(32, NONCE) </output>
-          <localMem> LM </localMem>
-          <account>
-             <acctID> ACCTID </acctID>
-             <nonce>  NONCE </nonce>
-             ...
-         </account>
-       requires CHEAT_ADDR ==Int #address(FoundryCheat)
-        andBool ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
-        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 755185067 // selector ( "getNonce(address)" )
-     [priority(35)]
-```
-
-```k
-     rule [call.getNonceNonExistingAddress]:
-          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH => #newAccount (#asWord(#range(LM, ARGSTART +Int 4, 32))) ~> 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, 0) ... </k>
-          <output> _ => #bufStrict(32, 0) </output>
+          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH
+           => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32))
+           ~> #foundryGetNonce ARGSTART RETSTART RETWIDTH
+           ~> #refund GCALL ...
+          </k>
+          <callGas> GCALL => 0 </callGas>
           <localMem> LM </localMem>
        requires CHEAT_ADDR ==Int #address(FoundryCheat)
         andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 755185067 // selector ( "getNonce(address)" )
      [priority(40)]
+
+
+     syntax KItem ::= "#foundryGetNonce" Int Int Int
+ // ----------------------------------------------------------
+    rule <k> #foundryGetNonce ARGSTART RETSTART RETWIDTH
+          => #setLocalMem RETSTART RETWIDTH #bufStrict(32, NONCE)
+          ~> 1 ~> #push ...
+         </k>
+         <output> _ => #bufStrict(32, NONCE) </output>
+         <account>
+             <acctID> ACCTID </acctID>
+             <nonce>  NONCE </nonce>
+             ...
+         </account>
+         <localMem> LM </localMem>
+      requires ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
 ```
 
 #### `setNonce` - Sets the nonce of the given account.
@@ -408,37 +412,28 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
 
 ```k
     rule [call.setNonce]:
-          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
-          <output> _ => .ByteArray </output>
+          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH
+           => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32))
+           ~> #foundrySetNonce ARGSTART
+           ~> #refund GCALL ...
+          </k>
           <localMem> LM </localMem>
-          <account>
-             <acctID> ACCTID </acctID>
-             <nonce>  _ => #asWord(#range(LM, ARGSTART +Int 36, 32))  </nonce>
-             ...
-         </account>
-       requires CHEAT_ADDR ==Int #address(FoundryCheat)
-        andBool ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
-        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4175530839 // selector ( "setNonce(address,uint64)" )
-     [priority(35)]
-```
-
-```k
-rule [call.setNonceNonExistingAddress]:
-          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #newAccount (#asWord(#range(LM, ARGSTART +Int 4, 32))) ~> #setNonce(#asWord(#range(LM, ARGSTART +Int 4, 32)),#asWord(#range(LM, ARGSTART +Int 36, 32))) ~>  1 ~> #push ... </k>
-          <output> _ => .ByteArray </output>
-          <localMem> LM </localMem>
+          <callGas> GCALL => 0 </callGas>
        requires CHEAT_ADDR ==Int #address(FoundryCheat)
         andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4175530839 // selector ( "setNonce(address,uint64)" )
      [priority(40)]
 
-     syntax KItem ::= "#setNonce" "(" Int "," Int ")" [klabel(foundry_setNonce)]
- // -------------------------------------------------------------------------------
-     rule <k> #setNonce(ACCTID, NONCE) => . ... </k>
+     syntax KItem ::= "#foundrySetNonce" Int
+ // ----------------------------------------------------------
+    rule <k> #foundrySetNonce ARGSTART => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
          <account>
              <acctID> ACCTID </acctID>
-             <nonce> _ => NONCE </nonce>
+             <nonce>  _ => #asWord(#range(LM, ARGSTART +Int 36, 32))  </nonce>
              ...
          </account>
+         <localMem> LM </localMem>
+      requires ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
 ```
 
 #### `addr` - Computes the address for a given private key.
