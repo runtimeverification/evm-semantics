@@ -4,11 +4,12 @@ import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Any, Dict, Final, Iterable, List, Optional, TextIO, Tuple
+from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KApply, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KSort
+from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KRequire, KRule, KSort, KToken
+from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
 from pyk.ktool.krun import _krun
 from pyk.prelude import mlTop
@@ -16,7 +17,7 @@ from pyk.prelude import mlTop
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_k, solc_compile
-from .utils import KCFG_from_claim, KPrint_make_unparsing, KProve_prove_claim, add_include_arg, read_kast_flatmodulelist
+from .utils import KCFG_from_claim, KPrint_make_unparsing, KProve_prove_claim, add_include_arg
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -118,17 +119,15 @@ def exec_foundry_to_k(
     profile: bool,
     foundry_out: Path,
     main_module: Optional[str],
-    spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
-    output: Optional[TextIO],
     **kwargs,
-) -> None:
+) -> Tuple[KDefinition, List[Tuple[str, KClaim]]]:
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
     path_glob = str(foundry_out) + '/*.t.sol/*.json'
-    modules: List[KFlatModule] = []
-    claims_modules: List[KFlatModule] = []
+    modules = []
+    claims: List[Tuple[str, KClaim]] = []
     # Must sort to get consistent output order on different platforms.
     for json_file in sorted(glob.glob(path_glob)):
         if json_file.endswith('.metadata.json'):
@@ -150,26 +149,17 @@ def exec_foundry_to_k(
             modules.append(module)
             if claims_module:
                 _LOGGER.info(f'Produced claim module: {claims_module.name}')
-                claims_modules.append(claims_module)
+                claims.extend((claims_module.name, claim) for claim in claims_module.claims)
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports]
     )
-    _spec_module = KFlatModule(
-        spec_module if spec_module else 'SPEC', [], [KImport(mname) for mname in [_m.name for _m in claims_modules]]
-    )
     modules.append(_main_module)
-    modules.append(_spec_module)
     bin_runtime_definition = KDefinition(
         _main_module.name,
-        modules + claims_modules,
+        modules,
         requires=[KRequire(req) for req in ['edsl.md'] + requires],
     )
-    _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
-    KEVM._patch_symbol_table(_kprint.symbol_table)
-    if not output:
-        output = sys.stdout
-    output.write(_kprint.pretty_print(bin_runtime_definition) + '\n')
-    output.flush()
+    return bin_runtime_definition, claims
 
 
 def exec_foundry_kompile(
@@ -180,7 +170,6 @@ def exec_foundry_kompile(
     md_selector: Optional[str],
     regen: bool = False,
     rekompile: bool = False,
-    reparse: bool = False,
     reinit: bool = False,
     requires: Iterable[str] = (),
     imports: Iterable[str] = (),
@@ -191,29 +180,33 @@ def exec_foundry_kompile(
     _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
-    spec_module = 'FOUNDRY-SPEC'
     foundry_definition_dir = foundry_out / 'kompiled'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
-    parsed_spec = foundry_definition_dir / 'spec.json'
     kcfgs_file = foundry_definition_dir / 'kcfgs.json'
     requires = ['lemmas/lemmas.k', 'lemmas/int-simplification.k'] + list(requires)
     imports = ['LEMMAS', 'INT-SIMPLIFICATION'] + list(imports)
+
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
+
+    bin_runtime_definition, claims = exec_foundry_to_k(
+        definition_dir=definition_dir,
+        profile=profile,
+        foundry_out=foundry_out,
+        main_module=main_module,
+        requires=list(requires),
+        imports=list(imports),
+    )
+
     if regen or not foundry_main_file.exists():
-        _LOGGER.info(f'Generating K: {foundry_main_file}')
         with open(foundry_main_file, 'w') as fmf:
-            exec_foundry_to_k(
-                definition_dir=definition_dir,
-                profile=profile,
-                foundry_out=foundry_out,
-                main_module=main_module,
-                spec_module=spec_module,
-                requires=list(requires),
-                imports=list(imports),
-                output=fmf,
-            )
+            _LOGGER.info(f'Writing file: {foundry_main_file}')
+            _kevm = KEVM(definition_dir=definition_dir)
+            _kprint = KPrint_make_unparsing(_kevm, extra_modules=bin_runtime_definition.modules)
+            KEVM._patch_symbol_table(_kprint.symbol_table)
+            fmf.write(_kprint.pretty_print(bin_runtime_definition) + '\n')
+
     if regen or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
         KEVM.kompile(
@@ -226,24 +219,15 @@ def exec_foundry_kompile(
             md_selector=md_selector,
             profile=profile,
         )
+
     kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
-    if regen or rekompile or reparse or not parsed_spec.exists():
-        _LOGGER.info(f'Parsing specs: {foundry_main_file}')
-        prove_args = add_include_arg(includes)
-        kevm.prove(
-            foundry_main_file,
-            spec_module_name=spec_module,
-            dry_run=True,
-            args=(['--emit-json-spec', str(parsed_spec)] + prove_args),
-        )
-    if regen or rekompile or reparse or reinit or not kcfgs_file.exists():
+    if reinit or not kcfgs_file.exists():
         _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
         cfgs: Dict[str, Dict] = {}
-        for module in read_kast_flatmodulelist(parsed_spec).modules:
-            for claim in module.claims:
-                cfg_label = claim.att["label"]
-                _LOGGER.info(f'Producing KCFG: {cfg_label}')
-                cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
+        for module_name, claim in claims:
+            cfg_label = f'{module_name}.{claim.att["label"]}'
+            _LOGGER.info(f'Producing KCFG: {cfg_label}')
+            cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
         with open(kcfgs_file, 'w') as kf:
             kf.write(json.dumps(cfgs))
             kf.close()
@@ -261,8 +245,10 @@ def exec_prove(
     depth: Optional[int],
     claims: Iterable[str] = (),
     exclude_claims: Iterable[str] = (),
+    minimize: bool = True,
     **kwargs,
 ) -> None:
+    _ignore_arg(kwargs, 'lemmas', '--lemma')
     kevm = KEVM(definition_dir, profile=profile)
     prove_args = add_include_arg(includes)
     haskell_args = []
@@ -277,6 +263,8 @@ def exec_prove(
     if exclude_claims:
         prove_args += ['--exclude', ','.join(exclude_claims)]
     final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
+    if minimize:
+        final_state = minimize_term(final_state)
     print(kevm.pretty_print(final_state) + '\n')
     if not (type(final_state) is KApply and final_state.label.name == '#Top'):
         _LOGGER.error('Proof failed!')
@@ -293,6 +281,8 @@ def exec_foundry_prove(
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
     workers: int = 1,
+    minimize: bool = True,
+    lemmas: Iterable[str] = (),
     **kwargs,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -336,21 +326,25 @@ def exec_foundry_prove(
 
     kevm = KEVM(definition_dir, profile=profile, use_directory=use_directory)
 
-    def prove_it(_id_and_claim: Tuple[str, KClaim]) -> Tuple[bool, KInner]:
+    lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
+
+    def prove_it(_id_and_claim: Tuple[str, KClaim]) -> bool:
         _claim_id, _claim = _id_and_claim
-        return KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER)
+        ret, result = KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
+        if minimize:
+            result = minimize_term(result)
+        print(f'Result for {_claim_id}:\n{kevm.pretty_print(result)}\n')
+        return ret
 
     with ProcessPool(ncpus=workers) as process_pool:
         results = process_pool.map(prove_it, claims)
         process_pool.close()
 
-    failed_claims = [(cid, result) for ((cid, _), (failed, result)) in zip(claims, results) if failed]
-    _failed_claim_ids = [cid for cid, _ in failed_claims]
+    failed_claims = [cid for ((cid, _), failed) in zip(claims, results) if failed]
+    if failed_claims:
+        print(f'Failed to prove KCFGs: {failed_claims}\n')
 
-    if _failed_claim_ids:
-        print(f'Failed to prove KCFGs: {_failed_claim_ids}\n')
-
-    sys.exit(len(_failed_claim_ids))
+    sys.exit(len(failed_claims))
 
 
 def exec_run(
@@ -414,6 +408,19 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Generate a haskell-backend bug report for the execution.',
+    )
+    kprove_args.add_argument(
+        '--lemma',
+        dest='lemmas',
+        default=[],
+        action='append',
+        help='Additional lemmas to include as simplification rules during execution.',
+    )
+    kprove_args.add_argument(
+        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize prover output.'
+    )
+    kprove_args.add_argument(
+        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize prover output.'
     )
 
     k_kompile_args = ArgumentParser(add_help=False)
@@ -549,13 +556,6 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Rekompile foundry.k even if kompiled definition already exists.',
-    )
-    foundry_kompile.add_argument(
-        '--reparse',
-        dest='reparse',
-        default=False,
-        action='store_true',
-        help='Reparse K specifications even if the parsed spec already exists.',
     )
     foundry_kompile.add_argument(
         '--reinit',
