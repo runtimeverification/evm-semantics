@@ -460,7 +460,7 @@ def _evm_base_sort(type_label: str) -> KSort:
     return KSort('K')
 
 
-def _evm_base_sort_int(type_label: str) -> Bool:
+def _evm_base_sort_int(type_label: str) -> bool:
     success = False
 
     # Check address and bool
@@ -515,7 +515,7 @@ def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
     return None
 
 
-def _range_predicate_uint(term, type_label: str):
+def _range_predicate_uint(term: KInner, type_label: str) -> Tuple[bool, Optional[KInner]]:
     if type_label.startswith('uint') and not type_label.endswith(']'):
         width = int(type_label[4:])
         if not (0 < width and width <= 256 and width % 8 == 0):
