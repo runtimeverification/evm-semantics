@@ -6,7 +6,7 @@
     nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.url = "github:runtimeverification/rv-nix-tools";
-    poetry2nix.follows = "k-framework/poetry2nix";
+    poetry2nix.follows = "pyk/poetry2nix";
     blockchain-k-plugin.url =
       "github:runtimeverification/blockchain-k-plugin/8fdc74e3caf254aa3952393dbb0368d2c98c321a";
     blockchain-k-plugin.inputs.flake-utils.follows = "k-framework/flake-utils";
@@ -22,7 +22,6 @@
       "github:runtimeverification/pyk/v0.1.1";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
-    pyk.inputs.poetry2nix.follows = "k-framework/poetry2nix";
 
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils, poetry2nix
@@ -164,6 +163,7 @@
             (final: prev: { llvm-backend-release = false; })
             k-framework.overlay
             blockchain-k-plugin.overlay
+            poetry2nix.overlay
             pyk.overlay
             overlay
           ];
