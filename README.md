@@ -91,7 +91,8 @@ sudo apt-get install --yes                                                      
             libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev       \
             libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-10       \
             llvm-10-tools make maven netcat-openbsd openjdk-11-jdk pkg-config          \
-            protobuf-compiler python3 python-pygments rapidjson-dev time zlib1g-dev
+            protobuf-compiler python3 python-pygments rapidjson-dev time zlib1g-dev    \
+            python3-pip
 pip3 install poetry
 ```
 
