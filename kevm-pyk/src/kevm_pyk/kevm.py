@@ -231,7 +231,7 @@ class KEVM(KProve, KRun):
         return KApply('contract_access_loc', [accessor])
 
     @staticmethod
-    def lookup(map: KInner, key: KInner):
+    def lookup(map: KInner, key: KInner) -> KApply:
         return KApply('#lookup(_,_)_EVM-TYPES_Int_Map_Int', [map, key])
 
     @staticmethod
@@ -289,7 +289,7 @@ class KEVM(KProve, KRun):
         return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
 
     @staticmethod
-    def bytearray_empty():
+    def bytearray_empty() -> KApply:
         return KApply('.ByteArray_EVM-TYPES_ByteArray')
 
     @staticmethod

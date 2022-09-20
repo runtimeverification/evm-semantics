@@ -446,7 +446,7 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
 # Helpers
 
 
-def _evm_base_sort(type_label: str):
+def _evm_base_sort(type_label: str) -> KSort:
     if _evm_base_sort_int(type_label):
         return KSort('Int')
 
@@ -460,7 +460,7 @@ def _evm_base_sort(type_label: str):
     return KSort('K')
 
 
-def _evm_base_sort_int(type_label: str):
+def _evm_base_sort_int(type_label: str) -> Bool:
     success = False
 
     # Check address and bool
@@ -494,7 +494,7 @@ def _evm_base_sort_int(type_label: str):
     return success
 
 
-def _range_predicate(term, type_label: str):
+def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
     (success, result) = _range_predicate_uint(term, type_label)
     if success:
         return result
