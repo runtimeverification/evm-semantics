@@ -446,18 +446,18 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
 # Helpers
 
 
-def _evm_base_sort(type_label: str):
+def _evm_base_sort(type_label: str) -> KSort:
     if type_label in {
         'address',
         'bool',
         'bytes4',
         'bytes32',
         'int256',
-        'uint256',
         'uint8',
+        'uint32',
         'uint64',
         'uint96',
-        'uint32',
+        'uint256',
     }:
         return KSort('Int')
 
@@ -471,7 +471,7 @@ def _evm_base_sort(type_label: str):
     return KSort('K')
 
 
-def _range_predicate(term, type_label: str):
+def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
     if type_label == 'address':
         return KEVM.range_address(term)
     if type_label == 'bool':
