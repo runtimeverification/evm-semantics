@@ -184,7 +184,8 @@ kevm_files := abi.md              \
               network.md          \
               optimizations.md    \
               serialization.md    \
-              state-utils.md
+              state-utils.md      \
+              word.md
 
 kevm_lemmas := lemmas.k             \
                int-simplification.k \

@@ -447,18 +447,7 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
 
 
 def _evm_base_sort(type_label: str) -> KSort:
-    if type_label in {
-        'address',
-        'bool',
-        'bytes4',
-        'bytes32',
-        'int256',
-        'uint8',
-        'uint32',
-        'uint64',
-        'uint96',
-        'uint256',
-    }:
+    if _evm_base_sort_int(type_label):
         return KSort('Int')
 
     if type_label == 'bytes':
@@ -471,7 +460,44 @@ def _evm_base_sort(type_label: str) -> KSort:
     return KSort('K')
 
 
+def _evm_base_sort_int(type_label: str) -> bool:
+    success = False
+
+    # Check address and bool
+    if type_label in {'address', 'bool'}:
+        success = True
+
+    # Check bytes
+    if type_label.startswith('bytes') and len(type_label) > 5 and not type_label.endswith(']'):
+        width = int(type_label[5:])
+        if not width in {4, 32}:
+            raise ValueError(f'Unsupported evm base sort type: {type_label}')
+        else:
+            success = True
+
+    # Check ints
+    if type_label.startswith('int') and not type_label.endswith(']'):
+        width = int(type_label[3:])
+        if not width == 256:
+            raise ValueError(f'Unsupported evm base sort type: {type_label}')
+        else:
+            success = True
+
+    # Check uints
+    if type_label.startswith('uint') and not type_label.endswith(']'):
+        width = int(type_label[4:])
+        if not (0 < width and width <= 256 and width % 8 == 0):
+            raise ValueError(f'Unsupported evm base sort type: {type_label}')
+        else:
+            success = True
+
+    return success
+
+
 def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
+    (success, result) = _range_predicate_uint(term, type_label)
+    if success:
+        return result
     if type_label == 'address':
         return KEVM.range_address(term)
     if type_label == 'bool':
@@ -482,16 +508,18 @@ def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
         return KEVM.range_uint(256, term)
     if type_label == 'int256':
         return KEVM.range_sint(256, term)
-    if type_label == 'uint8':
-        return KEVM.range_uint(8, term)
-    if type_label == 'uint64':
-        return KEVM.range_uint(64, term)
-    if type_label == 'uint96':
-        return KEVM.range_uint(96, term)
-    if type_label == 'uint32':
-        return KEVM.range_uint(32, term)
     if type_label in {'bytes', 'string'}:
         return Bool.true
 
     _LOGGER.warning(f'Unknown range predicate for type: {type_label}')
     return None
+
+
+def _range_predicate_uint(term: KInner, type_label: str) -> Tuple[bool, Optional[KInner]]:
+    if type_label.startswith('uint') and not type_label.endswith(']'):
+        width = int(type_label[4:])
+        if not (0 < width and width <= 256 and width % 8 == 0):
+            raise ValueError(f'Unsupported range predicate type: {type_label}')
+        return (True, KEVM.range_uint(width, term))
+    else:
+        return (False, None)

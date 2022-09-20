@@ -6,169 +6,18 @@ Here we provide the arithmetic of these words, as well as some data-structures o
 Both are implemented using K's `Int`.
 
 ```k
+requires "word.md"
+
 module EVM-TYPES
-    imports INT
     imports STRING
     imports COLLECTIONS
-    imports BOOL
     imports K-EQUAL
     imports JSON
-```
-
-```{.k .bytes}
-    imports BYTES
+    imports WORD
 ```
 
 Utilities
 ---------
-
-### Important Powers
-
-Some important numbers that are referred to often during execution.
-These can be used for pattern-matching on the LHS of rules as well (`alias` attribute expands all occurances of these in rules).
-
-```k
-    syntax Int ::= "pow256" [alias] /* 2 ^Int 256 */
-                 | "pow255" [alias] /* 2 ^Int 255 */
-                 | "pow224" [alias] /* 2 ^Int 224 */
-                 | "pow208" [alias] /* 2 ^Int 208 */
-                 | "pow168" [alias] /* 2 ^Int 168 */
-                 | "pow160" [alias] /* 2 ^Int 160 */
-                 | "pow128" [alias] /* 2 ^Int 128 */
-                 | "pow96"  [alias] /* 2 ^Int 96  */
-                 | "pow64"  [alias] /* 2 ^Int 64  */
-                 | "pow48"  [alias] /* 2 ^Int 48  */
-                 | "pow16"  [alias] /* 2 ^Int 16  */
- // ------------------------------------------------
-    rule pow256 => 115792089237316195423570985008687907853269984665640564039457584007913129639936
-    rule pow255 => 57896044618658097711785492504343953926634992332820282019728792003956564819968
-    rule pow224 => 26959946667150639794667015087019630673637144422540572481103610249216
-    rule pow208 => 411376139330301510538742295639337626245683966408394965837152256
-    rule pow168 => 374144419156711147060143317175368453031918731001856
-    rule pow160 => 1461501637330902918203684832716283019655932542976
-    rule pow128 => 340282366920938463463374607431768211456
-    rule pow96  => 79228162514264337593543950336
-    rule pow64  => 18446744073709551616
-    rule pow48  => 281474976710656
-    rule pow16  => 65536
-
-    syntax Int ::= "minSInt128"      [alias]
-                 | "maxSInt128"      [alias]
-                 | "minUInt8"        [macro]
-                 | "maxUInt8"        [alias]
-                 | "minUInt16"       [macro]
-                 | "maxUInt16"       [alias]
-                 | "minUInt48"       [macro]
-                 | "maxUInt48"       [alias]
-                 | "minUInt64"       [macro]
-                 | "maxUInt64"       [alias]
-                 | "minUInt96"       [macro]
-                 | "maxUInt96"       [alias]
-                 | "minUInt128"      [macro]
-                 | "maxUInt128"      [alias]
-                 | "minUInt160"      [macro]
-                 | "maxUInt160"      [alias]
-                 | "minUInt168"      [macro]
-                 | "maxUInt168"      [alias]
-                 | "minUInt208"      [macro]
-                 | "maxUInt208"      [alias]
-                 | "minUInt224"      [macro]
-                 | "maxUInt224"      [alias]
-                 | "minSInt256"      [alias]
-                 | "maxSInt256"      [alias]
-                 | "minUInt256"      [macro]
-                 | "maxUInt256"      [alias]
-                 | "minSFixed128x10" [alias]
-                 | "maxSFixed128x10" [alias]
-                 | "minUFixed128x10" [macro]
-                 | "maxUFixed128x10" [alias]
- // ----------------------------------------
-    rule minSInt128      => -170141183460469231731687303715884105728                                        /*  -2^127      */
-    rule maxSInt128      =>  170141183460469231731687303715884105727                                        /*   2^127 - 1  */
-    rule minSFixed128x10 => -1701411834604692317316873037158841057280000000000                              /* (-2^127    ) * 10^10 */
-    rule maxSFixed128x10 =>  1701411834604692317316873037158841057270000000000                              /* ( 2^127 - 1) * 10^10 */
-    rule minSInt256      => -57896044618658097711785492504343953926634992332820282019728792003956564819968  /*  -2^255      */
-    rule maxSInt256      =>  57896044618658097711785492504343953926634992332820282019728792003956564819967  /*   2^255 - 1  */
-
-    rule minUInt8        =>  0
-    rule maxUInt8        =>  255
-    rule minUInt16       =>  0
-    rule maxUInt16       =>  65535                                                                          /*   2^16 -  1  */
-    rule minUInt48       =>  0
-    rule maxUInt48       =>  281474976710655                                                                /*   2^48 -  1  */
-    rule minUInt64       =>  0
-    rule maxUInt64       =>  18446744073709551615                                                           /*   2^64 -  1  */
-    rule minUInt96       =>  0
-    rule maxUInt96       =>  79228162514264337593543950335                                                  /*   2^96 -  1  */
-    rule minUInt128      =>  0
-    rule maxUInt128      =>  340282366920938463463374607431768211455                                        /*   2^128 - 1  */
-    rule minUFixed128x10 =>  0
-    rule maxUFixed128x10 =>  3402823669209384634633746074317682114550000000000                              /* ( 2^128 - 1) * 10^10 */
-    rule minUInt160      =>  0
-    rule maxUInt160      =>  1461501637330902918203684832716283019655932542975                              /*   2^160 - 1  */
-    rule minUInt168      =>  0
-    rule maxUInt168      =>  374144419156711147060143317175368453031918731001855                            /*   2^168 - 1  */
-    rule minUInt208      =>  0
-    rule maxUInt208      =>  411376139330301510538742295639337626245683966408394965837152255                /*   2^208 - 1  */
-    rule minUInt224      =>  0
-    rule maxUInt224      =>  26959946667150639794667015087019630673637144422540572481103610249215           /*   2^224 - 1  */
-    rule minUInt256      =>  0
-    rule maxUInt256      =>  115792089237316195423570985008687907853269984665640564039457584007913129639935 /*   2^256 - 1  */
-
-    syntax Int ::= "eth" [macro]
- // ----------------------------
-    rule eth => 1000000000000000000
-```
-
--   Range of types
-
-```k
-    syntax Bool ::= #rangeBool    ( Int )             [alias]
-                  | #rangeSInt    ( Int , Int )       [alias]
-                  | #rangeUInt    ( Int , Int )       [alias]
-                  | #rangeSFixed  ( Int , Int , Int ) [alias]
-                  | #rangeUFixed  ( Int , Int , Int ) [alias]
-                  | #rangeAddress ( Int )             [alias]
-                  | #rangeBytes   ( Int , Int )       [alias]
-                  | #rangeNonce   ( Int )             [alias]
- // ---------------------------------------------------------
-    rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1
-    rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      )
-    rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      )
-    rule #rangeUInt    (   8 ,      X ) => #range ( minUInt8        <= X <  256             )
-    rule #rangeUInt    (  16 ,      X ) => #range ( minUInt16       <= X <  pow16           )
-    rule #rangeUInt    (  48 ,      X ) => #range ( minUInt48       <= X <  pow48           )
-    rule #rangeUInt    (  96 ,      X ) => #range ( minUInt96       <= X <  pow96           )
-    rule #rangeUInt    ( 128 ,      X ) => #range ( minUInt128      <= X <  pow128          )
-    rule #rangeUInt    ( 160 ,      X ) => #range ( minUInt160      <= X <  pow160          )
-    rule #rangeUInt    ( 168 ,      X ) => #range ( minUInt168      <= X <  pow168          )
-    rule #rangeUInt    ( 208 ,      X ) => #range ( minUInt208      <= X <  pow208          )
-    rule #rangeUInt    ( 224 ,      X ) => #range ( minUInt224      <= X <  pow224          )
-    rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <  pow256          )
-    rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 )
-    rule #rangeUFixed  ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 )
-    rule #rangeAddress (            X ) => #range ( minUInt160      <= X <  pow160          )
-    rule #rangeBytes   (   N ,      X ) => #range ( 0               <= X <  1 <<Byte N      )
-    rule #rangeNonce   (   X          ) => #range ( 0               <= X < maxUInt64        )
-
-    syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")" [macro]
-                  | "#range" "(" Int "<"  Int "<=" Int ")" [macro]
-                  | "#range" "(" Int "<=" Int "<"  Int ")" [macro]
-                  | "#range" "(" Int "<=" Int "<=" Int ")" [macro]
- // --------------------------------------------------------------
-    rule #range ( LB <  X <  UB ) => LB  <Int X andBool X  <Int UB
-    rule #range ( LB <  X <= UB ) => LB  <Int X andBool X <=Int UB
-    rule #range ( LB <= X <  UB ) => LB <=Int X andBool X  <Int UB
-    rule #range ( LB <= X <= UB ) => LB <=Int X andBool X <=Int UB
-```
-
--   `chop` interprets an integer modulo `2^256`.
-
-```k
-    syntax Int ::= chop ( Int ) [function, functional, smtlib(chop)]
- // ----------------------------------------------------------------
-    rule chop ( I:Int ) => I modInt pow256 [concrete, smt-lemma]
-```
 
 ### Boolean Conversions
 
@@ -345,19 +194,13 @@ Bitwise logical operators are lifted from the integer versions.
 
 -   `#nBits` shifts in `N` ones from the right.
 -   `#nBytes` shifts in `N` bytes of ones from the right.
--   `_<<Byte_` shifts an integer 8 bits to the left.
--   `_>>Byte_` shifts an integer 8 bits to the right.
 
 ```k
     syntax Int ::= #nBits  ( Int )  [function]
                  | #nBytes ( Int )  [function]
-                 | Int "<<Byte" Int [function]
-                 | Int ">>Byte" Int [function]
  // ------------------------------------------
     rule #nBits(N)  => (1 <<Int N) -Int 1 requires N >=Int 0
     rule #nBytes(N) => #nBits(N *Int 8)   requires N >=Int 0
-    rule N <<Byte M => N <<Int (8 *Int M)
-    rule N >>Byte M => N >>Int (8 *Int M)
 ```
 
 -   `signextend(N, W)` sign-extends from byte `N` of `W` (0 being MSB).
