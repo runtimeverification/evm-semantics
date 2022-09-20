@@ -163,6 +163,7 @@
             (final: prev: { llvm-backend-release = false; })
             k-framework.overlay
             blockchain-k-plugin.overlay
+            poetry2nix.overlay
             pyk.overlay
             overlay
           ];
