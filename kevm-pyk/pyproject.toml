@@ -32,6 +32,17 @@ kevm-pyk = "kevm_pyk.__main__:main"
 profile = "black"
 line_length = 120
 
+[tool.autoflake]
+recursive = true
+expand-star-imports = true
+remove-all-unused-imports = true
+ignore-init-module-imports = true
+remove-duplicate-keys = true
+remove-unused-variables = true
+
 [tool.black]
 line-length = 120
 skip-string-normalization = true
+
+[tool.mypy]
+disallow_untyped_defs = true
