@@ -348,11 +348,15 @@ def _gen_claims_for_contract(
             claims.append(claim)
         return claims
 
+    return [_default_claim(empty_config, contract_name)]
+
+
+def _default_claim(empty_config: KInner, contract_name: str) -> KClaim:
     init_term = _init_term(empty_config, contract_name)
     i_cterm = _init_cterm(init_term)
     f_cterm = _final_cterm(empty_config, contract_name, failing=False)
     claim, _ = build_claim(contract_name.lower(), i_cterm, f_cterm)
-    return [claim]
+    return claim
 
 
 def _init_term(empty_config: KInner, contract_name: str) -> KInner:
