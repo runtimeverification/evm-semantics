@@ -365,6 +365,21 @@ def _default_claim(empty_config: KInner, contract_name: str) -> KClaim:
     return claim
 
 
+def _init_cterm(init_term: KInner) -> CTerm:
+    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
+    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
+    return CTerm(init_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
+
+
+def _init_term_with_calldata(
+    init_term: KInner,
+    calldata: KInner,
+    callvalue: KInner,
+) -> KInner:
+    subst = {'CALLDATA_CELL': calldata, 'CALLVALUE_CELL': callvalue}
+    return substitute(init_term, subst)
+
+
 def _init_term(empty_config: KInner, contract_name: str) -> KInner:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(
@@ -421,15 +436,6 @@ def _init_term(empty_config: KInner, contract_name: str) -> KInner:
     return substitute(empty_config, init_subst)
 
 
-def _init_term_with_calldata(
-    init_term: KInner,
-    calldata: KInner,
-    callvalue: KInner,
-) -> KInner:
-    subst = {'CALLDATA_CELL': calldata, 'CALLVALUE_CELL': callvalue}
-    return substitute(init_term, subst)
-
-
 def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool) -> CTerm:
     final_term = _final_term(empty_config, contract_name)
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
@@ -468,12 +474,6 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
     return abstract_cell_vars(
         substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL'), KVariable('ACCOUNTS_FINAL')]
     )
-
-
-def _init_cterm(init_term: KInner) -> CTerm:
-    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
-    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
-    return CTerm(init_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
 
 
 # Helpers
