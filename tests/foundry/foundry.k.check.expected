@@ -1943,7 +1943,6 @@ module NONCETEST-BIN-RUNTIME
     
     syntax NonceTestMethod ::= "testNonce" "(" Int ")" [symbol(), klabel(method_NonceTest_testNonce)]
     
-<<<<<<< HEAD
     syntax NonceTestMethod ::= "test_GetNonce_false" "(" ")" [klabel(method_NonceTest_test_GetNonce_false)]
 
     syntax NonceTestMethod ::= "test_GetNonce_true" "(" ")" [klabel(method_NonceTest_test_GetNonce_true)]
@@ -1954,14 +1953,6 @@ module NONCETEST-BIN-RUNTIME
 
     syntax NonceTestMethod ::= "vm" "(" ")" [klabel(method_NonceTest_vm)]
 
-=======
-    syntax NonceTestMethod ::= "test_GetNonce_false" "(" ")" [symbol(), klabel(method_NonceTest_test_GetNonce_false)]
-    
-    syntax NonceTestMethod ::= "test_GetNonce_true" "(" ")" [symbol(), klabel(method_NonceTest_test_GetNonce_true)]
-    
-    syntax NonceTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_NonceTest_vm)]
-    
->>>>>>> master
     rule  ( NonceTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
