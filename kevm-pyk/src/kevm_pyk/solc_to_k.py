@@ -304,9 +304,9 @@ def contract_to_k(
     module = KFlatModule(module_name, sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
 
     function_test_calldatas = []
-    for tm in contract.methods:
-        if tm.name.startswith('test'):
-            function_test_calldatas.append((tm.name, *_calldata_cell_for_method(contract, tm)))
+    for method in contract.methods:
+        if method.name.startswith('test'):
+            function_test_calldatas.append((method.name, *_calldata_cell_for_method(contract, method)))
 
     claims_module: Optional[KFlatModule] = None
     if function_test_calldatas:
