@@ -59,7 +59,7 @@ WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for ty
 *And discharge some specific test as a proof obligation (inside virtual environment):*
 
 ```sh
-(venv) $ kevm foundry-prove tests/foundry/out --test AssertTest.test_assert_true
+(venv) $ kevm foundry-prove tests/foundry/out --test AssumeTest.test_assume_true
 WARNING 2022-09-11 15:37:31,956 __main__ - Ignoring command-line option: --definition: /home/dev/src/evm-semantics/.build/usr/lib/kevm/haskell
 #Top
 ```
