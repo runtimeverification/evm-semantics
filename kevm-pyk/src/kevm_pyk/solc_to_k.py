@@ -26,9 +26,13 @@ from pyk.kast import (
     KTerminal,
     KToken,
     KVariable,
+    build_assoc,
 )
 from pyk.kastManip import abstract_term_safely, substitute
-from pyk.prelude import Bool, build_assoc, intToken, mlEqualsTrue, stringToken
+from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
+from pyk.prelude.kint import intToken
+from pyk.prelude.ml import mlEqualsTrue
+from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM, Foundry
@@ -93,7 +97,7 @@ class Contract:
                 conjuncts.append(rp)
             lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
             rhs = KEVM.abi_calldata(self.name, args)
-            ensures = Bool.andBool(conjuncts)
+            ensures = andBool(conjuncts)
             return KRule(KRewrite(lhs, rhs), ensures=ensures)
 
     name: str
@@ -352,7 +356,7 @@ def _gen_claims_for_contract(
         if not failing:
             f_cterm = final_cterm.add_constraint(mlEqualsTrue(foundry_success))
         else:
-            f_cterm = final_cterm.add_constraint(mlEqualsTrue(Bool.notBool(foundry_success)))
+            f_cterm = final_cterm.add_constraint(mlEqualsTrue(notBool(foundry_success)))
         claim, _ = build_claim(claim_id, i_cterm, f_cterm)
         claims.append(claim)
     return claims
@@ -395,7 +399,7 @@ def _init_term(empty_config: KInner, contract_name: str) -> KInner:
             ),
         ),
         'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
-        'STATIC_CELL': Bool.false,
+        'STATIC_CELL': FALSE,
         'MEMORYUSED_CELL': intToken(0),
         'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
         'PC_CELL': intToken(0),
@@ -509,7 +513,7 @@ def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
     if type_label == 'int256':
         return KEVM.range_sint(256, term)
     if type_label in {'bytes', 'string'}:
-        return Bool.true
+        return TRUE
 
     _LOGGER.warning(f'Unknown range predicate for type: {type_label}')
     return None

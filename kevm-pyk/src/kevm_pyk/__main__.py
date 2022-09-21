@@ -12,7 +12,7 @@ from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KR
 from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
 from pyk.ktool.krun import _krun
-from pyk.prelude import mlTop
+from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM

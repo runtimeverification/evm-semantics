@@ -272,7 +272,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "pyk"
-version = "0.1.1"
+version = "0.1.10"
 description = ""
 category = "main"
 optional = false
@@ -285,8 +285,8 @@ graphviz = "^0.20.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.1"
-resolved_reference = "7018f573e1f130bfda2f07bb5fe870fe3be17c3a"
+reference = "v0.1.10"
+resolved_reference = "47b2698e6e99d458150110de4ed507ae3ba5e4a0"
 
 [[package]]
 name = "six"
@@ -323,7 +323,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "6830fb303ee176d2da788dca3b029086b8c5e03f555b2f49ee12d520ab8c0a9e"
+content-hash = "1fcd67d504aaf685c0b71972c30a533938e43bd55d39e0648280b4f6c0d50df7"
 
 [metadata.files]
 attrs = [

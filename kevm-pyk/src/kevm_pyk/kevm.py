@@ -5,11 +5,13 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, Iterable, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.kast import KApply, KInner, KLabel, KToken, KVariable
+from pyk.kast import KApply, KInner, KLabel, KToken, KVariable, build_assoc
 from pyk.kastManip import flatten_label, get_cell
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kprint import paren
-from pyk.prelude import Bool, build_assoc, intToken, stringToken
+from pyk.prelude.kbool import notBool
+from pyk.prelude.kint import intToken
+from pyk.prelude.string import stringToken
 
 from .utils import add_include_arg
 
@@ -318,7 +320,7 @@ class Foundry:
 
     @staticmethod
     def fail(s: KInner, dst: KInner) -> KApply:
-        return Bool.notBool(Foundry.success(s, dst))
+        return notBool(Foundry.success(s, dst))
 
     # address(uint160(uint256(keccak256("foundry default caller"))))
 
