@@ -313,6 +313,18 @@ def contract_to_k(
     return module, claims_module
 
 
+def _test_execution_claim(
+    empty_config: KInner, contract_name: str, test_name: str, calldata: KInner, callvalue: KInner
+) -> KClaim:
+    claim_name = test_name.replace('_', '-')
+    init_term = _init_term(empty_config, contract_name)
+    i_cterm = _init_cterm(_init_term_with_calldata(init_term, calldata, callvalue))
+    failing = test_name.startswith('testFail')
+    f_cterm = _final_cterm(empty_config, contract_name, failing=failing)
+    claim, _ = build_claim(claim_name, i_cterm, f_cterm)
+    return claim
+
+
 def _calldata_cell_for_method(contract: Contract, method: Contract.Method) -> Tuple[KInner, KInner]:
     contract_function_application_label = contract.klabel_method
     klabel = method.production.klabel
@@ -327,18 +339,6 @@ def _calldata_cell_for_method(contract: Contract, method: Contract.Method) -> Tu
         else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
     )
     return calldata, callvalue
-
-
-def _test_execution_claim(
-    empty_config: KInner, contract_name: str, test_name: str, calldata: KInner, callvalue: KInner
-) -> KClaim:
-    claim_name = test_name.replace('_', '-')
-    init_term = _init_term(empty_config, contract_name)
-    i_cterm = _init_cterm(_init_term_with_calldata(init_term, calldata, callvalue))
-    failing = test_name.startswith('testFail')
-    f_cterm = _final_cterm(empty_config, contract_name, failing=failing)
-    claim, _ = build_claim(claim_name, i_cterm, f_cterm)
-    return claim
 
 
 def _default_claim(empty_config: KInner, contract_name: str) -> KClaim:
