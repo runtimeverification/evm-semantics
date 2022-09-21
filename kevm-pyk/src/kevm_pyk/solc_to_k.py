@@ -302,22 +302,20 @@ def contract_to_k(
     module_name = Contract.contract_to_module_name(contract.name, spec=False)
     module = KFlatModule(module_name, sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
 
-    function_test_calldatas = []
+    claims: List[KClaim] = []
     for method in contract.methods:
         if method.name.startswith('test'):
-            function_test_calldatas.append((method.name, *_calldata_cell_for_method(contract, method)))
+            claim = _test_execution_claim(
+                empty_config, contract.name, method.name, *_calldata_cell_for_method(contract, method)
+            )
+            claims.append(claim)
 
-    claims_module: Optional[KFlatModule] = None
-    if function_test_calldatas:
-        claims = [
-            _test_execution_claim(empty_config, contract.name, test_name, calldata, callvalue)
-            for test_name, calldata, callvalue in function_test_calldatas
-        ]
-
+    if claims:
         import_module = main_module if main_module else module_name
         claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(import_module)])
+        return module, claims_module
 
-    return module, claims_module
+    return module, None
 
 
 def _calldata_cell_for_method(contract: Contract, method: Contract.Method) -> Tuple[KInner, KInner]:
