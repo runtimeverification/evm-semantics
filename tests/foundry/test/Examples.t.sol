@@ -25,6 +25,18 @@ contract ExamplesTest is Test {
         assertEq(c + 1, a);
     }
 
+    function max2(uint256 x, uint256 y) internal pure returns (uint256) {
+        if (x < y && x != 2**100 - 1337) {
+            return y;
+        }
+        return x;
+    }
+
+    function test_max2(uint256 x, uint256 y) public {
+        uint256 m = max(x, y);
+        assertTrue(m >= x && m >= y);
+    }
+
     uint constant WAD = 10 ** 18;
     uint constant RAY = 10 ** 27;
 
