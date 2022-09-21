@@ -312,36 +312,39 @@ def contract_to_k(
 
 def _test_execution_claim(empty_config: KInner, contract: Contract, method: Contract.Method) -> KClaim:
     claim_name = method.name.replace('_', '-')
+    calldata = _calldata_cell(contract, method)
+    callvalue = _callvalue_cell(method)
     init_term = _init_term(empty_config, contract.name)
-    calldata, callvalue = _calldata_cell_for_method(contract, method)
-    i_cterm = _init_cterm(_init_term_with_calldata(init_term, calldata, callvalue))
+    init_cterm = _init_cterm(_init_term_with_calldata(init_term, calldata, callvalue))
     failing = method.name.startswith('testFail')
-    f_cterm = _final_cterm(empty_config, contract.name, failing=failing)
-    claim, _ = build_claim(claim_name, i_cterm, f_cterm)
+    final_cterm = _final_cterm(empty_config, contract.name, failing=failing)
+    claim, _ = build_claim(claim_name, init_cterm, final_cterm)
     return claim
 
 
-def _calldata_cell_for_method(contract: Contract, method: Contract.Method) -> Tuple[KInner, KInner]:
+def _calldata_cell(contract: Contract, method: Contract.Method) -> KInner:
     contract_function_application_label = contract.klabel_method
     klabel = method.production.klabel
     assert klabel is not None
     args = [
         abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}') for name in method.arg_names
     ]
-    calldata: KInner = KApply(contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)])
-    callvalue: KInner = (
+    return KApply(contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)])
+
+
+def _callvalue_cell(method: Contract.Method) -> KInner:
+    return (
         intToken(0)
         if not method.payable
         else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
     )
-    return calldata, callvalue
 
 
 def _default_claim(empty_config: KInner, contract_name: str) -> KClaim:
     init_term = _init_term(empty_config, contract_name)
-    i_cterm = _init_cterm(init_term)
-    f_cterm = _final_cterm(empty_config, contract_name, failing=False)
-    claim, _ = build_claim(contract_name.lower(), i_cterm, f_cterm)
+    init_cterm = _init_cterm(init_term)
+    final_cterm = _final_cterm(empty_config, contract_name, failing=False)
+    claim, _ = build_claim(contract_name.lower(), init_cterm, final_cterm)
     return claim
 
 
