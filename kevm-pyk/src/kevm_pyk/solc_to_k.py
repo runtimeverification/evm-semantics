@@ -339,11 +339,10 @@ def _gen_claims_for_contract(
     init_term = _init_term(empty_config, contract_name)
     init_terms = []
     if calldata_cells:
-        for test_name, call_data, call_value in calldata_cells:
+        for test_name, calldata, callvalue in calldata_cells:
             failing = test_name.startswith('testFail')
-            refined_subst = {'CALLDATA_CELL': call_data, 'CALLVALUE_CELL': call_value}
             claim_name = test_name.replace('_', '-')
-            init_terms.append((claim_name, substitute(init_term, refined_subst), failing))
+            init_terms.append((claim_name, _init_term_with_calldata(init_term, calldata, callvalue), failing))
     else:
         init_terms.append((contract_name.lower(), init_term, False))
     final_term = _final_term(empty_config, contract_name)
@@ -418,6 +417,15 @@ def _init_term(empty_config: KInner, contract_name: str) -> KInner:
         ),
     }
     return substitute(empty_config, init_subst)
+
+
+def _init_term_with_calldata(
+    init_term: KInner,
+    calldata: KInner,
+    callvalue: KInner,
+) -> KInner:
+    subst = {'CALLDATA_CELL': calldata, 'CALLVALUE_CELL': callvalue}
+    return substitute(init_term, subst)
 
 
 def _final_term(empty_config: KInner, contract_name: str) -> KInner:
