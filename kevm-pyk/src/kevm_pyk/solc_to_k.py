@@ -336,22 +336,23 @@ def _calldata_cell_for_method(contract: Contract, method: Contract.Method) -> Tu
 def _gen_claims_for_contract(
     empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[str, KInner, KInner]] = None
 ) -> List[KClaim]:
-    init_term = _init_term(empty_config, contract_name)
-    init_terms = []
     if calldata_cells:
+        claims: List[KClaim] = []
         for test_name, calldata, callvalue in calldata_cells:
-            failing = test_name.startswith('testFail')
             claim_name = test_name.replace('_', '-')
-            init_terms.append((claim_name, _init_term_with_calldata(init_term, calldata, callvalue), failing))
-    else:
-        init_terms.append((contract_name.lower(), init_term, False))
-    claims: List[KClaim] = []
-    for claim_id, i_term, failing in init_terms:
-        i_cterm = _init_cterm(i_term)
-        f_cterm = _final_cterm(empty_config, contract_name, failing=failing)
-        claim, _ = build_claim(claim_id, i_cterm, f_cterm)
-        claims.append(claim)
-    return claims
+            init_term = _init_term(empty_config, contract_name)
+            i_cterm = _init_cterm(_init_term_with_calldata(init_term, calldata, callvalue))
+            failing = test_name.startswith('testFail')
+            f_cterm = _final_cterm(empty_config, contract_name, failing=failing)
+            claim, _ = build_claim(claim_name, i_cterm, f_cterm)
+            claims.append(claim)
+        return claims
+
+    init_term = _init_term(empty_config, contract_name)
+    i_cterm = _init_cterm(init_term)
+    f_cterm = _final_cterm(empty_config, contract_name, failing=False)
+    claim, _ = build_claim(contract_name.lower(), i_cterm, f_cterm)
+    return [claim]
 
 
 def _init_term(empty_config: KInner, contract_name: str) -> KInner:
