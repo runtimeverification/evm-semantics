@@ -294,7 +294,6 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
 def contract_to_k(
     contract: Contract,
     empty_config: KInner,
-    foundry: bool = False,
     imports: Iterable[str] = (),
     main_module: Optional[str] = None,
 ) -> Tuple[KFlatModule, Optional[KFlatModule]]:
