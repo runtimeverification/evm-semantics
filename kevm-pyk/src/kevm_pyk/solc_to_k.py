@@ -303,32 +303,34 @@ def contract_to_k(
     module_name = Contract.contract_to_module_name(contract.name, spec=False)
     module = KFlatModule(module_name, sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
 
-    claims_module: Optional[KFlatModule] = None
-    contract_function_application_label = contract.klabel_method
     function_test_calldatas = []
     for tm in contract.methods:
         if tm.name.startswith('test'):
-            klabel = tm.production.klabel
-            assert klabel is not None
-            args = [
-                abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}')
-                for name in tm.arg_names
-            ]
-            calldata: KInner = KApply(
-                contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)]
-            )
-            callvalue: KInner = (
-                intToken(0)
-                if not tm.payable
-                else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
-            )
-            function_test_calldatas.append((tm.name, calldata, callvalue))
+            function_test_calldatas.append((tm.name, *_calldata_cell_for_method(contract, tm)))
+
+    claims_module: Optional[KFlatModule] = None
     if function_test_calldatas:
         claims = _gen_claims_for_contract(empty_config, contract.name, calldata_cells=function_test_calldatas)
         import_module = main_module if main_module else module_name
         claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(import_module)])
 
     return module, claims_module
+
+
+def _calldata_cell_for_method(contract: Contract, method: Contract.Method) -> Tuple[KInner, KInner]:
+    contract_function_application_label = contract.klabel_method
+    klabel = method.production.klabel
+    assert klabel is not None
+    args = [
+        abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}') for name in method.arg_names
+    ]
+    calldata: KInner = KApply(contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)])
+    callvalue: KInner = (
+        intToken(0)
+        if not method.payable
+        else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
+    )
+    return calldata, callvalue
 
 
 def _gen_claims_for_contract(
