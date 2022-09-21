@@ -346,17 +346,10 @@ def _gen_claims_for_contract(
     else:
         init_terms.append((contract_name.lower(), init_term, False))
     final_term = _final_term(empty_config, contract_name)
-    final_cterm = CTerm(final_term)
-    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
-    dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
     claims: List[KClaim] = []
-    foundry_success = Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post)
     for claim_id, i_term, failing in init_terms:
         i_cterm = _init_cterm(i_term)
-        if not failing:
-            f_cterm = final_cterm.add_constraint(mlEqualsTrue(foundry_success))
-        else:
-            f_cterm = final_cterm.add_constraint(mlEqualsTrue(notBool(foundry_success)))
+        f_cterm = _final_cterm(final_term, failing=failing)
         claim, _ = build_claim(claim_id, i_cterm, f_cterm)
         claims.append(claim)
     return claims
@@ -460,6 +453,16 @@ def _init_cterm(init_term: KInner) -> CTerm:
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
     return CTerm(init_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
+
+
+def _final_cterm(final_term: KInner, *, failing: bool) -> CTerm:
+    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
+    dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
+    foundry_success = Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post)
+    if not failing:
+        return CTerm(final_term).add_constraint(mlEqualsTrue(foundry_success))
+    else:
+        return CTerm(final_term).add_constraint(mlEqualsTrue(notBool(foundry_success)))
 
 
 # Helpers
