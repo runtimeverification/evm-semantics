@@ -348,12 +348,11 @@ def _gen_claims_for_contract(
     final_term = _final_term(empty_config, contract_name)
     final_cterm = CTerm(final_term)
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
-    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
     dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
     claims: List[KClaim] = []
     foundry_success = Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post)
     for claim_id, i_term, failing in init_terms:
-        i_cterm = CTerm(i_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
+        i_cterm = _init_cterm(i_term)
         if not failing:
             f_cterm = final_cterm.add_constraint(mlEqualsTrue(foundry_success))
         else:
@@ -455,6 +454,12 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
     return abstract_cell_vars(
         substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL'), KVariable('ACCOUNTS_FINAL')]
     )
+
+
+def _init_cterm(init_term: KInner) -> CTerm:
+    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
+    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
+    return CTerm(init_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
 
 
 # Helpers
