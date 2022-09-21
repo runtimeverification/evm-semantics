@@ -19,7 +19,7 @@
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
     pyk.url =
-      "github:runtimeverification/pyk/v0.1.1";
+      "github:runtimeverification/pyk/v0.1.10";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
 
