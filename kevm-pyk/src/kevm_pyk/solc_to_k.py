@@ -309,7 +309,15 @@ def contract_to_k(
 
     claims_module: Optional[KFlatModule] = None
     if function_test_calldatas:
-        claims = _gen_claims_for_contract(empty_config, contract.name, calldata_cells=function_test_calldatas)
+        claims: List[KClaim]
+        if function_test_calldatas:
+            claims = [
+                _test_execution_claim(empty_config, contract.name, test_name, calldata, callvalue)
+                for test_name, calldata, callvalue in function_test_calldatas
+            ]
+        else:
+            claims = [_default_claim(empty_config, contract.name)]
+
         import_module = main_module if main_module else module_name
         claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(import_module)])
 
@@ -330,18 +338,6 @@ def _calldata_cell_for_method(contract: Contract, method: Contract.Method) -> Tu
         else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
     )
     return calldata, callvalue
-
-
-def _gen_claims_for_contract(
-    empty_config: KInner, contract_name: str, calldata_cells: List[Tuple[str, KInner, KInner]] = None
-) -> List[KClaim]:
-    if calldata_cells:
-        return [
-            _test_execution_claim(empty_config, contract_name, test_name, calldata, callvalue)
-            for test_name, calldata, callvalue in calldata_cells
-        ]
-
-    return [_default_claim(empty_config, contract_name)]
 
 
 def _test_execution_claim(
