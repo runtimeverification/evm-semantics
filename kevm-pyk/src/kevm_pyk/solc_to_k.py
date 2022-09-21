@@ -304,23 +304,19 @@ def contract_to_k(
     if not test_methods:
         return module, None
 
-    claims = [
-        _test_execution_claim(empty_config, contract.name, method.name, *_calldata_cell_for_method(contract, method))
-        for method in test_methods
-    ]
+    claims = [_test_execution_claim(empty_config, contract, method) for method in test_methods]
     import_module = main_module if main_module else module_name
     claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(import_module)])
     return module, claims_module
 
 
-def _test_execution_claim(
-    empty_config: KInner, contract_name: str, test_name: str, calldata: KInner, callvalue: KInner
-) -> KClaim:
-    claim_name = test_name.replace('_', '-')
-    init_term = _init_term(empty_config, contract_name)
+def _test_execution_claim(empty_config: KInner, contract: Contract, method: Contract.Method) -> KClaim:
+    claim_name = method.name.replace('_', '-')
+    init_term = _init_term(empty_config, contract.name)
+    calldata, callvalue = _calldata_cell_for_method(contract, method)
     i_cterm = _init_cterm(_init_term_with_calldata(init_term, calldata, callvalue))
-    failing = test_name.startswith('testFail')
-    f_cterm = _final_cterm(empty_config, contract_name, failing=failing)
+    failing = method.name.startswith('testFail')
+    f_cterm = _final_cterm(empty_config, contract.name, failing=failing)
     claim, _ = build_claim(claim_name, i_cterm, f_cterm)
     return claim
 
