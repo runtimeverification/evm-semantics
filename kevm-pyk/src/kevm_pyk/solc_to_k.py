@@ -1,6 +1,7 @@
 import json
 import logging
 from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
@@ -99,6 +100,14 @@ class Contract:
             rhs = KEVM.abi_calldata(self.name, args)
             ensures = andBool(conjuncts)
             return KRule(KRewrite(lhs, rhs), ensures=ensures)
+
+        @cached_property
+        def callvalue_cell(self) -> KInner:
+            return (
+                intToken(0)
+                if not self.payable
+                else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
+            )
 
     name: str
     bytecode: str
@@ -313,7 +322,7 @@ def contract_to_k(
 def _test_execution_claim(empty_config: KInner, contract: Contract, method: Contract.Method) -> KClaim:
     claim_name = method.name.replace('_', '-')
     calldata = _calldata_cell(contract, method)
-    callvalue = _callvalue_cell(method)
+    callvalue = method.callvalue_cell
     init_term = _init_term(empty_config, contract.name)
     init_cterm = _init_cterm(_init_term_with_calldata(init_term, calldata, callvalue))
     failing = method.name.startswith('testFail')
@@ -330,14 +339,6 @@ def _calldata_cell(contract: Contract, method: Contract.Method) -> KInner:
         abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}') for name in method.arg_names
     ]
     return KApply(contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)])
-
-
-def _callvalue_cell(method: Contract.Method) -> KInner:
-    return (
-        intToken(0)
-        if not method.payable
-        else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
-    )
 
 
 def _default_claim(empty_config: KInner, contract_name: str) -> KClaim:
