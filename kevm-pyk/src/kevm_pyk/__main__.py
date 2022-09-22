@@ -97,19 +97,14 @@ def exec_solc_to_k(
     solc_json = solc_compile(contract_file, profile=profile)
     contract_json = solc_json['contracts'][contract_file.name][contract_name]
     contract = Contract(contract_name, contract_json, foundry=False)
-    contract_module, contract_claims_module = contract_to_k(contract, empty_config, imports=imports)
-    modules = [contract_module]
-    claims_modules = [contract_claims_module] if contract_claims_module else []
+    contract_module, _ = contract_to_k(contract, empty_config, imports=imports)
     _main_module = KFlatModule(
-        main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports]
+        main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [contract_module.name] + imports]
     )
-    _spec_module = KFlatModule(
-        spec_module if spec_module else 'SPEC', [], [KImport(mname) for mname in [_m.name for _m in claims_modules]]
-    )
-    modules.append(_main_module)
-    modules.append(_spec_module)
+    _spec_module = KFlatModule(spec_module if spec_module else 'SPEC')
+    modules = (contract_module, _main_module, _spec_module)
     bin_runtime_definition = KDefinition(
-        _main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
+        _main_module.name, modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
     )
     _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
     KEVM._patch_symbol_table(_kprint.symbol_table)
