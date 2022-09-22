@@ -111,48 +111,6 @@ def exec_solc_to_k(
     print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
 
-def exec_foundry_to_k(
-    definition_dir: Path,
-    profile: bool,
-    foundry_out: Path,
-    main_module: Optional[str],
-    requires: List[str],
-    imports: List[str],
-    **kwargs: Any,
-) -> Tuple[KDefinition, List[Tuple[str, KClaim]]]:
-    kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KSort('KevmCell'))
-    path_glob = str(foundry_out) + '/*.t.sol/*.json'
-    modules = []
-    claims: List[Tuple[str, KClaim]] = []
-    # Must sort to get consistent output order on different platforms.
-    for json_file in sorted(glob.glob(path_glob)):
-        if json_file.endswith('.metadata.json'):
-            continue
-        _LOGGER.info(f'Processing contract file: {json_file}')
-        contract_name = json_file.split('/')[-1]
-        contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
-        with open(json_file, 'r') as cjson:
-            contract_json = json.loads(cjson.read())
-            contract = Contract(contract_name, contract_json, foundry=True)
-            module, claims_module = contract_to_k(contract, empty_config, imports=imports, main_module=main_module)
-            _LOGGER.info(f'Produced contract module: {module.name}')
-            modules.append(module)
-            if claims_module:
-                _LOGGER.info(f'Produced claim module: {claims_module.name}')
-                claims.extend((claims_module.name, claim) for claim in claims_module.claims)
-    _main_module = KFlatModule(
-        main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports]
-    )
-    modules.append(_main_module)
-    bin_runtime_definition = KDefinition(
-        _main_module.name,
-        modules,
-        requires=[KRequire(req) for req in ['edsl.md'] + requires],
-    )
-    return bin_runtime_definition, claims
-
-
 def exec_foundry_kompile(
     definition_dir: Path,
     profile: bool,
@@ -181,7 +139,7 @@ def exec_foundry_kompile(
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
 
-    bin_runtime_definition, claims = exec_foundry_to_k(
+    bin_runtime_definition, claims = _foundry_to_k(
         definition_dir=definition_dir,
         profile=profile,
         foundry_out=foundry_out,
@@ -223,6 +181,47 @@ def exec_foundry_kompile(
             kf.write(json.dumps(cfgs))
             kf.close()
             _LOGGER.info(f'Wrote file: {kcfgs_file}')
+
+
+def _foundry_to_k(
+    definition_dir: Path,
+    profile: bool,
+    foundry_out: Path,
+    main_module: Optional[str],
+    requires: List[str],
+    imports: List[str],
+) -> Tuple[KDefinition, List[Tuple[str, KClaim]]]:
+    kevm = KEVM(definition_dir, profile=profile)
+    empty_config = kevm.definition.empty_config(KSort('KevmCell'))
+    path_glob = str(foundry_out) + '/*.t.sol/*.json'
+    modules = []
+    claims: List[Tuple[str, KClaim]] = []
+    # Must sort to get consistent output order on different platforms.
+    for json_file in sorted(glob.glob(path_glob)):
+        if json_file.endswith('.metadata.json'):
+            continue
+        _LOGGER.info(f'Processing contract file: {json_file}')
+        contract_name = json_file.split('/')[-1]
+        contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
+        with open(json_file, 'r') as cjson:
+            contract_json = json.loads(cjson.read())
+            contract = Contract(contract_name, contract_json, foundry=True)
+            module, claims_module = contract_to_k(contract, empty_config, imports=imports, main_module=main_module)
+            _LOGGER.info(f'Produced contract module: {module.name}')
+            modules.append(module)
+            if claims_module:
+                _LOGGER.info(f'Produced claim module: {claims_module.name}')
+                claims.extend((claims_module.name, claim) for claim in claims_module.claims)
+    _main_module = KFlatModule(
+        main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports]
+    )
+    modules.append(_main_module)
+    bin_runtime_definition = KDefinition(
+        _main_module.name,
+        modules,
+        requires=[KRequire(req) for req in ['edsl.md'] + requires],
+    )
+    return bin_runtime_definition, claims
 
 
 def exec_prove(
