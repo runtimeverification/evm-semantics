@@ -146,8 +146,8 @@ def exec_foundry_kompile(
         profile=profile,
         contracts=contracts,
         main_module=main_module,
-        requires=list(requires),
-        imports=list(imports),
+        requires=requires,
+        imports=imports,
     )
 
     if regen or not foundry_main_file.exists():
@@ -216,8 +216,8 @@ def _foundry_to_bin_runtime(
     profile: bool,
     contracts: Iterable[Contract],
     main_module: Optional[str],
-    requires: List[str],
-    imports: List[str],
+    requires: Iterable[str],
+    imports: Iterable[str],
 ) -> KDefinition:
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
@@ -228,14 +228,15 @@ def _foundry_to_bin_runtime(
         _LOGGER.info(f'Produced contract module: {module.name}')
         modules.append(module)
     _main_module = KFlatModule(
-        main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports]
+        main_module if main_module else 'MAIN',
+        imports=(KImport(mname) for mname in [_m.name for _m in modules] + list(imports)),
     )
     modules.append(_main_module)
 
     bin_runtime_definition = KDefinition(
         _main_module.name,
         modules,
-        requires=[KRequire(req) for req in ['edsl.md'] + requires],
+        requires=(KRequire(req) for req in ['edsl.md'] + list(requires)),
     )
 
     return bin_runtime_definition
