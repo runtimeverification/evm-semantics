@@ -331,7 +331,7 @@ def contract_to_k(
 
 def _test_execution_claim(empty_config: KInner, contract: Contract, method: Contract.Method) -> KClaim:
     claim_name = method.name.replace('_', '-')
-    calldata = _calldata_cell(contract, method)
+    calldata = KApply(contract.klabel_method, [KApply(contract.klabel), method.application])
     callvalue = method.callvalue_cell
     init_term = _init_term(empty_config, contract.name)
     init_cterm = _init_cterm(_init_term_with_calldata(init_term, calldata, callvalue))
@@ -339,11 +339,6 @@ def _test_execution_claim(empty_config: KInner, contract: Contract, method: Cont
     final_cterm = _final_cterm(empty_config, contract.name, failing=failing)
     claim, _ = build_claim(claim_name, init_cterm, final_cterm)
     return claim
-
-
-def _calldata_cell(contract: Contract, method: Contract.Method) -> KInner:
-    contract_function_application_label = contract.klabel_method
-    return KApply(contract_function_application_label, [KApply(contract.klabel), method.application])
 
 
 def _default_claim(empty_config: KInner, contract_name: str) -> KClaim:
