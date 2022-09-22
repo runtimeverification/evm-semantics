@@ -202,13 +202,7 @@ def _foundry_to_k(
         if json_file.endswith('.metadata.json'):
             continue
 
-        _LOGGER.info(f'Processing contract file: {json_file}')
-        with open(json_file, 'r') as cjson:
-            contract_json = json.loads(cjson.read())
-
-        contract_name = json_file.split('/')[-1]
-        contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
-        contract = Contract(contract_name, contract_json, foundry=True)
+        contract = _contract_from_json(json_file)
 
         module = contract_to_main_module(contract, empty_config, imports=imports)
         _LOGGER.info(f'Produced contract module: {module.name}')
@@ -229,6 +223,15 @@ def _foundry_to_k(
         requires=[KRequire(req) for req in ['edsl.md'] + requires],
     )
     return bin_runtime_definition, claims
+
+
+def _contract_from_json(json_path: str) -> Contract:
+    _LOGGER.info(f'Processing contract file: {json_path}')
+    with open(json_path, 'r') as json_file:
+        contract_json = json.loads(json_file.read())
+    contract_name = json_path.split('/')[-1]
+    contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
+    return Contract(contract_name, contract_json, foundry=True)
 
 
 def exec_prove(
