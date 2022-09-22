@@ -139,10 +139,15 @@ def exec_foundry_kompile(
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
 
+    path_glob = str(foundry_out) + '/*.t.sol/*.json'
+    json_paths = glob.glob(path_glob)
+    json_paths = [json_path for json_path in json_paths if not json_path.endswith('.metadata.json')]
+    json_paths = sorted(json_paths)  # Must sort to get consistent output order on different platforms
+
     bin_runtime_definition, claims = _foundry_to_k(
         definition_dir=definition_dir,
         profile=profile,
-        foundry_out=foundry_out,
+        json_paths=json_paths,
         main_module=main_module,
         requires=list(requires),
         imports=list(imports),
@@ -186,19 +191,16 @@ def exec_foundry_kompile(
 def _foundry_to_k(
     definition_dir: Path,
     profile: bool,
-    foundry_out: Path,
+    json_paths: Iterable[str],
     main_module: Optional[str],
     requires: List[str],
     imports: List[str],
 ) -> Tuple[KDefinition, List[Tuple[str, KClaim]]]:
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
-    path_glob = str(foundry_out) + '/*.t.sol/*.json'
     modules = []
     claims: List[Tuple[str, KClaim]] = []
 
-    # Must sort to get consistent output order on different platforms.
-    json_paths = sorted(json_path for json_path in glob.glob(path_glob) if not json_path.endswith('.metadata.json'))
     for json_path in json_paths:
         contract = _contract_from_json(json_path)
 
