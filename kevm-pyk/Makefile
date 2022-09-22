@@ -39,26 +39,10 @@ check-isort: poetry-install
 	$(POETRY_RUN) isort --check src
 
 autoflake: poetry-install
-	$(POETRY_RUN) autoflake src    \
-	  --in-place                   \
-	  --quiet                      \
-	  --recursive                  \
-	  --expand-star-imports        \
-	  --remove-all-unused-imports  \
-	  --ignore-init-module-imports \
-	  --remove-duplicate-keys      \
-	  --remove-unused-variables
+	$(POETRY_RUN) autoflake --quiet --in-place src
 
 check-autoflake: poetry-install
-	$(POETRY_RUN) autoflake src    \
-	  --check                      \
-	  --quiet                      \
-	  --recursive                  \
-	  --expand-star-imports        \
-	  --remove-all-unused-imports  \
-	  --ignore-init-module-imports \
-	  --remove-duplicate-keys      \
-	  --remove-unused-variables
+	$(POETRY_RUN) autoflake --quiet --check src
 
 check-flake8: poetry-install
 	$(POETRY_RUN) flake8 src

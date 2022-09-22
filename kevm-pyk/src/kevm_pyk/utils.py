@@ -34,7 +34,8 @@ from pyk.kastManip import (
 )
 from pyk.kcfg import KCFG
 from pyk.ktool import KPrint, KProve
-from pyk.prelude import Bool, mlAnd
+from pyk.prelude.kbool import FALSE, TRUE
+from pyk.prelude.ml import mlAnd
 
 
 def KProve_prove_claim(  # noqa: N802
@@ -67,7 +68,7 @@ def read_kast_flatmodulelist(ifile: Path) -> KFlatModuleList:
 
 def KCFG_from_claim(defn: KDefinition, claim: KClaim) -> KCFG:  # noqa: N802
     def _make_cterm(_kinner: KInner, _cond: KInner) -> CTerm:
-        _kinner = _kinner if _cond == Bool.true else mlAnd([_kinner, bool_to_ml_pred(_cond)])
+        _kinner = _kinner if _cond == TRUE else mlAnd([_kinner, bool_to_ml_pred(_cond)])
         _kinner = sanitize_config(defn, _kinner)
         return CTerm(_kinner)
 
@@ -101,7 +102,7 @@ def add_include_arg(includes: Iterable[str]) -> List[str]:
     return [arg for include in includes for arg in ['-I', include]]
 
 
-def abstract_cell_vars(cterm, keep_vars: Collection[KVariable] = ()):
+def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> KInner:
     state, _ = split_config_and_constraints(cterm)
     config, subst = split_config_from(state)
     for s in subst:
@@ -111,7 +112,7 @@ def abstract_cell_vars(cterm, keep_vars: Collection[KVariable] = ()):
 
 
 def sanitize_config(defn: KDefinition, init_term: KInner) -> KInner:
-    def _var_name(vname):
+    def _var_name(vname: str) -> str:
         new_vname = vname
         while new_vname.startswith('_') or new_vname.startswith('?'):
             new_vname = new_vname[1:]
@@ -121,10 +122,10 @@ def sanitize_config(defn: KDefinition, init_term: KInner) -> KInner:
 
     # TODO: This is somewhat hacky. We shouldn't have to touch the config this much.
     # Likely, the frontend should just be giving us initial states with these already in place.
-    def _remove_cell_map_definedness(_kast):
+    def _remove_cell_map_definedness(_kast: KInner) -> KInner:
         if type(_kast) is KApply:
             if _kast.label.name.endswith('CellMap:in_keys'):
-                return Bool.false
+                return FALSE
             elif _kast.label.name.endswith('CellMapItem'):
                 return _kast.args[1]
         return _kast

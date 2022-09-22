@@ -4,7 +4,7 @@ import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
+from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
@@ -12,12 +12,14 @@ from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KR
 from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
 from pyk.ktool.krun import _krun
-from pyk.prelude import mlTop
+from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_k, solc_compile
 from .utils import KCFG_from_claim, KPrint_make_unparsing, KProve_prove_claim, add_include_arg
+
+T = TypeVar('T')
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -30,7 +32,7 @@ def _ignore_arg(args: Dict[str, Any], arg: str, cli_option: str) -> None:
         args.pop(arg)
 
 
-def main():
+def main() -> None:
     sys.setrecursionlimit(15000000)
     parser = _create_argument_parser()
     args = parser.parse_args()
@@ -47,12 +49,12 @@ def main():
 # Command implementation
 
 
-def exec_compile(contract_file: Path, profile: bool, **kwargs) -> None:
+def exec_compile(contract_file: Path, profile: bool, **kwargs: Any) -> None:
     res = solc_compile(contract_file, profile=profile)
     print(json.dumps(res))
 
 
-def exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, **kwargs) -> None:
+def exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, **kwargs: Any) -> None:
     gst_to_kore(input_file, sys.stdout, schedule, mode, chainid)
 
 
@@ -65,7 +67,7 @@ def exec_kompile(
     main_module: Optional[str],
     syntax_module: Optional[str],
     md_selector: Optional[str],
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     KEVM.kompile(
         definition_dir,
@@ -88,7 +90,7 @@ def exec_solc_to_k(
     spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
@@ -121,7 +123,7 @@ def exec_foundry_to_k(
     main_module: Optional[str],
     requires: List[str],
     imports: List[str],
-    **kwargs,
+    **kwargs: Any,
 ) -> Tuple[KDefinition, List[Tuple[str, KClaim]]]:
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
@@ -173,7 +175,7 @@ def exec_foundry_kompile(
     reinit: bool = False,
     requires: Iterable[str] = (),
     imports: Iterable[str] = (),
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module {kwargs["syntax_module"]}')
@@ -246,7 +248,7 @@ def exec_prove(
     claims: Iterable[str] = (),
     exclude_claims: Iterable[str] = (),
     minimize: bool = True,
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'lemmas', '--lemma')
     kevm = KEVM(definition_dir, profile=profile)
@@ -283,7 +285,7 @@ def exec_foundry_prove(
     workers: int = 1,
     minimize: bool = True,
     lemmas: Iterable[str] = (),
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
@@ -356,7 +358,7 @@ def exec_run(
     expand_macros: str,
     depth: Optional[int],
     output: str,
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
     krun_args = []
@@ -377,8 +379,8 @@ def exec_run(
 
 
 def _create_argument_parser() -> ArgumentParser:
-    def list_of(elem_type, delim=';'):
-        def parse(s):
+    def list_of(elem_type: Callable[[str], T], delim: str = ';') -> Callable[[str], List[T]]:
+        def parse(s: str) -> List[T]:
             return [elem_type(elem) for elem in s.split(delim)]
 
         return parse
