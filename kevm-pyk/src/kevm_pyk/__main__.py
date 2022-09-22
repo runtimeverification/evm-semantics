@@ -140,11 +140,12 @@ def exec_foundry_kompile(
         foundry_definition_dir.mkdir()
 
     json_paths = _contract_json_paths(foundry_out)
+    contracts = [_contract_from_json(json_path) for json_path in json_paths]
 
     bin_runtime_definition, claims = _foundry_to_k(
         definition_dir=definition_dir,
         profile=profile,
-        json_paths=json_paths,
+        contracts=contracts,
         main_module=main_module,
         requires=list(requires),
         imports=list(imports),
@@ -196,7 +197,7 @@ def _contract_json_paths(foundry_out: Path) -> List[str]:
 def _foundry_to_k(
     definition_dir: Path,
     profile: bool,
-    json_paths: Iterable[str],
+    contracts: Iterable[Contract],
     main_module: Optional[str],
     requires: List[str],
     imports: List[str],
@@ -206,9 +207,7 @@ def _foundry_to_k(
     modules = []
     claims: List[Tuple[str, KClaim]] = []
 
-    for json_path in json_paths:
-        contract = _contract_from_json(json_path)
-
+    for contract in contracts:
         module = contract_to_main_module(contract, empty_config, imports=imports)
         _LOGGER.info(f'Produced contract module: {module.name}')
         modules.append(module)
