@@ -213,27 +213,29 @@ def _foundry_to_k(
 ) -> Tuple[KDefinition, List[Tuple[str, KClaim]]]:
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
-    modules = []
-    claims: List[Tuple[str, KClaim]] = []
 
+    modules = []
     for contract in contracts:
         module = contract_to_main_module(contract, empty_config, imports=imports)
         _LOGGER.info(f'Produced contract module: {module.name}')
         modules.append(module)
-
-        claims_module = contract_to_spec_module(contract, empty_config, main_module=main_module)
-        _LOGGER.info(f'Produced claim module: {claims_module.name}')
-        claims.extend((claims_module.name, claim) for claim in claims_module.claims)
-
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports]
     )
     modules.append(_main_module)
+
     bin_runtime_definition = KDefinition(
         _main_module.name,
         modules,
         requires=[KRequire(req) for req in ['edsl.md'] + requires],
     )
+
+    claims: List[Tuple[str, KClaim]] = []
+    for contract in contracts:
+        claims_module = contract_to_spec_module(contract, empty_config, main_module=main_module)
+        _LOGGER.info(f'Produced claim module: {claims_module.name}')
+        claims.extend((claims_module.name, claim) for claim in claims_module.claims)
+
     return bin_runtime_definition, claims
 
 
