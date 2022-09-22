@@ -151,13 +151,6 @@ def exec_foundry_kompile(
         imports=list(imports),
     )
 
-    claims = _foundry_to_claims(
-        definition_dir=definition_dir,
-        profile=profile,
-        contracts=contracts,
-        main_module=main_module,
-    )
-
     if regen or not foundry_main_file.exists():
         with open(foundry_main_file, 'w') as fmf:
             _LOGGER.info(f'Writing file: {foundry_main_file}')
@@ -180,6 +173,14 @@ def exec_foundry_kompile(
         )
 
     kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
+
+    claims = _foundry_to_claims(
+        definition_dir=definition_dir,
+        profile=profile,
+        contracts=contracts,
+        main_module=main_module,
+    )
+
     if reinit or not kcfgs_file.exists():
         _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
         cfgs: Dict[str, Dict] = {}
