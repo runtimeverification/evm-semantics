@@ -171,25 +171,22 @@ def exec_foundry_kompile(
             profile=profile,
         )
 
-    kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
-
-    claims = _foundry_to_claims(
-        definition_dir=definition_dir,
-        profile=profile,
-        contracts=contracts,
-    )
-
     if reinit or not kcfgs_file.exists():
         _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
-        cfgs: Dict[str, Dict] = {}
-        for module_name, claim in claims:
-            cfg_label = f'{module_name}.{claim.att["label"]}'
-            _LOGGER.info(f'Producing KCFG: {cfg_label}')
-            cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
+
+        kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
+        cfgs = _contract_to_claim_cfgs(
+            definition=kevm.definition,
+            definition_dir=definition_dir,
+            profile=profile,
+            contracts=contracts,
+        )
+
         with open(kcfgs_file, 'w') as kf:
             kf.write(json.dumps(cfgs))
             kf.close()
-            _LOGGER.info(f'Wrote file: {kcfgs_file}')
+
+        _LOGGER.info(f'Wrote file: {kcfgs_file}')
 
 
 def _contract_json_paths(foundry_out: Path) -> List[str]:
@@ -241,21 +238,24 @@ def _foundry_to_bin_runtime(
     return bin_runtime_definition
 
 
-def _foundry_to_claims(
+def _contract_to_claim_cfgs(
+    definition: KDefinition,
     definition_dir: Path,
     profile: bool,
     contracts: Iterable[Contract],
-) -> List[Tuple[str, KClaim]]:
+) -> Dict[str, Dict]:
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
 
-    res: List[Tuple[str, KClaim]] = []
+    cfgs: Dict[str, Dict] = {}
     for contract in contracts:
         module_name, claims = contract_to_claims(contract, empty_config)
-        _LOGGER.info(f'Produced claim module: {module_name}')
-        res.extend((module_name, claim) for claim in claims)
+        for claim in claims:
+            cfg_label = f'{module_name}.{claim.att["label"]}'
+            cfgs[cfg_label] = KCFG_from_claim(definition, claim).to_dict()
+            _LOGGER.info(f'Produced KCFG: {cfg_label}')
 
-    return res
+    return cfgs
 
 
 def exec_prove(
