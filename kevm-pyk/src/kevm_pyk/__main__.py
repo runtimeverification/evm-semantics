@@ -194,6 +194,15 @@ def _contract_json_paths(foundry_out: Path) -> List[str]:
     return json_paths
 
 
+def _contract_from_json(json_path: str) -> Contract:
+    _LOGGER.info(f'Processing contract file: {json_path}')
+    with open(json_path, 'r') as json_file:
+        contract_json = json.loads(json_file.read())
+    contract_name = json_path.split('/')[-1]
+    contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
+    return Contract(contract_name, contract_json, foundry=True)
+
+
 def _foundry_to_k(
     definition_dir: Path,
     profile: bool,
@@ -226,15 +235,6 @@ def _foundry_to_k(
         requires=[KRequire(req) for req in ['edsl.md'] + requires],
     )
     return bin_runtime_definition, claims
-
-
-def _contract_from_json(json_path: str) -> Contract:
-    _LOGGER.info(f'Processing contract file: {json_path}')
-    with open(json_path, 'r') as json_file:
-        contract_json = json.loads(json_file.read())
-    contract_name = json_path.split('/')[-1]
-    contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
-    return Contract(contract_name, contract_json, foundry=True)
 
 
 def exec_prove(
