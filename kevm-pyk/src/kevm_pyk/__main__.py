@@ -196,22 +196,19 @@ def _foundry_to_k(
     path_glob = str(foundry_out) + '/*.t.sol/*.json'
     modules = []
     claims: List[Tuple[str, KClaim]] = []
+
     # Must sort to get consistent output order on different platforms.
-    for json_file in sorted(glob.glob(path_glob)):
-
-        if json_file.endswith('.metadata.json'):
-            continue
-
-        contract = _contract_from_json(json_file)
+    json_paths = sorted(json_path for json_path in glob.glob(path_glob) if not json_path.endswith('.metadata.json'))
+    for json_path in json_paths:
+        contract = _contract_from_json(json_path)
 
         module = contract_to_main_module(contract, empty_config, imports=imports)
         _LOGGER.info(f'Produced contract module: {module.name}')
         modules.append(module)
 
         claims_module = contract_to_spec_module(contract, empty_config, main_module=main_module)
-        if claims_module:
-            _LOGGER.info(f'Produced claim module: {claims_module.name}')
-            claims.extend((claims_module.name, claim) for claim in claims_module.claims)
+        _LOGGER.info(f'Produced claim module: {claims_module.name}')
+        claims.extend((claims_module.name, claim) for claim in claims_module.claims)
 
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports]
