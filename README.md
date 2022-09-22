@@ -91,7 +91,9 @@ sudo apt-get install --yes                                                      
             libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev       \
             libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-10       \
             llvm-10-tools make maven netcat-openbsd openjdk-11-jdk pkg-config          \
-            protobuf-compiler python3 python-pygments rapidjson-dev time zlib1g-dev
+            protobuf-compiler python3 python3-dev python3-pip rapidjson-dev time      \
+            zlib1g-dev
+pip3 install poetry
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
