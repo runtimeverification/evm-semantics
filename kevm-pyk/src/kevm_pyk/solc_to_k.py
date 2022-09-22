@@ -333,8 +333,8 @@ def _test_execution_claim(empty_config: KInner, contract: Contract, method: Cont
     claim_name = method.name.replace('_', '-')
     calldata = KApply(contract.klabel_method, [KApply(contract.klabel), method.application])
     callvalue = method.callvalue_cell
-    init_term = _init_term(empty_config, contract.name)
-    init_cterm = _init_cterm(_init_term_with_calldata(init_term, calldata, callvalue))
+    init_term = _init_term(empty_config, contract.name, calldata=calldata, callvalue=callvalue)
+    init_cterm = _init_cterm(init_term)
     failing = method.name.startswith('testFail')
     final_cterm = _final_cterm(empty_config, contract.name, failing=failing)
     claim, _ = build_claim(claim_name, init_cterm, final_cterm)
@@ -355,16 +355,13 @@ def _init_cterm(init_term: KInner) -> CTerm:
     return CTerm(init_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
 
 
-def _init_term_with_calldata(
-    init_term: KInner,
-    calldata: KInner,
-    callvalue: KInner,
+def _init_term(
+    empty_config: KInner,
+    contract_name: str,
+    *,
+    calldata: Optional[KInner] = None,
+    callvalue: Optional[KInner] = None,
 ) -> KInner:
-    subst = {'CALLDATA_CELL': calldata, 'CALLVALUE_CELL': callvalue}
-    return substitute(init_term, subst)
-
-
-def _init_term(empty_config: KInner, contract_name: str) -> KInner:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(
         Foundry.address_TEST_CONTRACT(),
@@ -417,6 +414,13 @@ def _init_term(empty_config: KInner, contract_name: str) -> KInner:
             ]
         ),
     }
+
+    if calldata is not None:
+        init_subst['CALLDATA_CELL'] = calldata
+
+    if callvalue is not None:
+        init_subst['CALLVALUE_CELL'] = callvalue
+
     return substitute(empty_config, init_subst)
 
 
