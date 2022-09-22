@@ -142,13 +142,20 @@ def exec_foundry_kompile(
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
 
-    bin_runtime_definition, claims = _foundry_to_k(
+    bin_runtime_definition = _foundry_to_bin_runtime(
         definition_dir=definition_dir,
         profile=profile,
         contracts=contracts,
         main_module=main_module,
         requires=list(requires),
         imports=list(imports),
+    )
+
+    claims = _foundry_to_claims(
+        definition_dir=definition_dir,
+        profile=profile,
+        contracts=contracts,
+        main_module=main_module,
     )
 
     if regen or not foundry_main_file.exists():
@@ -203,14 +210,14 @@ def _contract_from_json(json_path: str) -> Contract:
     return Contract(contract_name, contract_json, foundry=True)
 
 
-def _foundry_to_k(
+def _foundry_to_bin_runtime(
     definition_dir: Path,
     profile: bool,
     contracts: Iterable[Contract],
     main_module: Optional[str],
     requires: List[str],
     imports: List[str],
-) -> Tuple[KDefinition, List[Tuple[str, KClaim]]]:
+) -> KDefinition:
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
 
@@ -230,13 +237,25 @@ def _foundry_to_k(
         requires=[KRequire(req) for req in ['edsl.md'] + requires],
     )
 
+    return bin_runtime_definition
+
+
+def _foundry_to_claims(
+    definition_dir: Path,
+    profile: bool,
+    contracts: Iterable[Contract],
+    main_module: Optional[str],
+) -> List[Tuple[str, KClaim]]:
+    kevm = KEVM(definition_dir, profile=profile)
+    empty_config = kevm.definition.empty_config(KSort('KevmCell'))
+
     claims: List[Tuple[str, KClaim]] = []
     for contract in contracts:
         claims_module = contract_to_spec_module(contract, empty_config, main_module=main_module)
         _LOGGER.info(f'Produced claim module: {claims_module.name}')
         claims.extend((claims_module.name, claim) for claim in claims_module.claims)
 
-    return bin_runtime_definition, claims
+    return claims
 
 
 def exec_prove(
