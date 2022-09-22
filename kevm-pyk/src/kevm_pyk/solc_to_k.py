@@ -109,6 +109,16 @@ class Contract:
                 else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
             )
 
+        @cached_property
+        def application(self) -> KInner:
+            klabel = self.production.klabel
+            assert klabel is not None
+            args = [
+                abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}')
+                for name in self.arg_names
+            ]
+            return klabel(args)
+
     name: str
     bytecode: str
     methods: Tuple[Method, ...]
@@ -333,12 +343,7 @@ def _test_execution_claim(empty_config: KInner, contract: Contract, method: Cont
 
 def _calldata_cell(contract: Contract, method: Contract.Method) -> KInner:
     contract_function_application_label = contract.klabel_method
-    klabel = method.production.klabel
-    assert klabel is not None
-    args = [
-        abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}') for name in method.arg_names
-    ]
-    return KApply(contract_function_application_label, [KApply(contract.klabel), KApply(klabel, args)])
+    return KApply(contract_function_application_label, [KApply(contract.klabel), method.application])
 
 
 def _default_claim(empty_config: KInner, contract_name: str) -> KClaim:
