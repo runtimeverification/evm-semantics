@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KRequire, KRule, KSort, KToken
+from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KRequire, KRule, KToken
 from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
 from pyk.ktool.krun import _krun
@@ -92,7 +92,7 @@ def exec_solc_to_k(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KSort('KevmCell'))
+    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
     solc_json = solc_compile(contract_file, profile=profile)
     contract_json = solc_json['contracts'][contract_file.name][contract_name]
     contract = Contract(contract_name, contract_json, foundry=False)
@@ -216,7 +216,7 @@ def _foundry_to_bin_runtime(
     imports: Iterable[str],
 ) -> KDefinition:
     kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KSort('KevmCell'))
+    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
 
     modules = []
     for contract in contracts:
@@ -245,7 +245,7 @@ def _contract_to_claim_cfgs(
     contracts: Iterable[Contract],
 ) -> Dict[str, Dict]:
     kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KSort('KevmCell'))
+    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
 
     cfgs: Dict[str, Dict] = {}
     for contract in contracts:

@@ -5,7 +5,7 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, Iterable, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.kast import KApply, KInner, KLabel, KToken, KVariable, build_assoc
+from pyk.kast import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
 from pyk.kastManip import flatten_label, get_cell
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kprint import paren
@@ -96,6 +96,9 @@ class KEVM(KProve, KRun):
         symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
         symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
         # fmt: on
+
+    class Sorts:
+        KEVM_CELL: Final = KSort('KevmCell')
 
     @staticmethod
     def hook_namespaces() -> List[str]:
