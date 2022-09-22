@@ -97,7 +97,7 @@ def exec_solc_to_k(
     solc_json = solc_compile(contract_file, profile=profile)
     contract_json = solc_json['contracts'][contract_file.name][contract_name]
     contract = Contract(contract_name, contract_json, foundry=False)
-    contract_module, contract_claims_module = contract_to_k(contract, empty_config, foundry=False, imports=imports)
+    contract_module, contract_claims_module = contract_to_k(contract, empty_config, imports=imports)
     modules = [contract_module]
     claims_modules = [contract_claims_module] if contract_claims_module else []
     _main_module = KFlatModule(
@@ -140,13 +140,7 @@ def exec_foundry_to_k(
         with open(json_file, 'r') as cjson:
             contract_json = json.loads(cjson.read())
             contract = Contract(contract_name, contract_json, foundry=True)
-            module, claims_module = contract_to_k(
-                contract,
-                empty_config,
-                foundry=True,
-                imports=imports,
-                main_module=main_module,
-            )
+            module, claims_module = contract_to_k(contract, empty_config, imports=imports, main_module=main_module)
             _LOGGER.info(f'Produced contract module: {module.name}')
             modules.append(module)
             if claims_module:
