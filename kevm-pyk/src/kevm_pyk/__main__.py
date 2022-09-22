@@ -15,7 +15,7 @@ from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
-from .solc_to_k import Contract, contract_to_main_module, contract_to_spec_module, solc_compile
+from .solc_to_k import Contract, contract_to_claims, contract_to_main_module, solc_compile
 from .utils import KCFG_from_claim, KPrint_make_unparsing, KProve_prove_claim, add_include_arg
 
 T = TypeVar('T')
@@ -177,7 +177,6 @@ def exec_foundry_kompile(
         definition_dir=definition_dir,
         profile=profile,
         contracts=contracts,
-        main_module=main_module,
     )
 
     if reinit or not kcfgs_file.exists():
@@ -246,18 +245,17 @@ def _foundry_to_claims(
     definition_dir: Path,
     profile: bool,
     contracts: Iterable[Contract],
-    main_module: Optional[str],
 ) -> List[Tuple[str, KClaim]]:
     kevm = KEVM(definition_dir, profile=profile)
     empty_config = kevm.definition.empty_config(KSort('KevmCell'))
 
-    claims: List[Tuple[str, KClaim]] = []
+    res: List[Tuple[str, KClaim]] = []
     for contract in contracts:
-        claims_module = contract_to_spec_module(contract, empty_config, main_module=main_module)
-        _LOGGER.info(f'Produced claim module: {claims_module.name}')
-        claims.extend((claims_module.name, claim) for claim in claims_module.claims)
+        module_name, claims = contract_to_claims(contract, empty_config)
+        _LOGGER.info(f'Produced claim module: {module_name}')
+        res.extend((module_name, claim) for claim in claims)
 
-    return claims
+    return res
 
 
 def exec_prove(

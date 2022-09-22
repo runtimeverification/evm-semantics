@@ -315,13 +315,11 @@ def contract_to_main_module(contract: Contract, empty_config: KInner, imports: I
     return KFlatModule(module_name, contract.sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
 
 
-def contract_to_spec_module(contract: Contract, empty_config: KInner, main_module: Optional[str] = None) -> KFlatModule:
+def contract_to_claims(contract: Contract, empty_config: KInner) -> Tuple[str, List[KClaim]]:
     module_name = Contract.contract_to_module_name(contract.name, spec=True)
-    main_module_name = main_module if main_module else Contract.contract_to_module_name(contract.name, spec=False)
     test_methods = [method for method in contract.methods if method.name.startswith('test')]
     claims = [_test_execution_claim(empty_config, contract, method) for method in test_methods]
-    claims_module = KFlatModule(module_name, claims, [KImport(main_module_name)])
-    return claims_module
+    return module_name, claims
 
 
 def _test_execution_claim(empty_config: KInner, contract: Contract, method: Contract.Method) -> KClaim:
