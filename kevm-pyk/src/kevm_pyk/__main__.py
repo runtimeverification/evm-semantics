@@ -1,4 +1,3 @@
-import glob
 import json
 import logging
 import sys
@@ -195,8 +194,9 @@ def exec_foundry_kompile(
 
 
 def _contract_json_paths(foundry_out: Path) -> List[str]:
-    path_glob = str(foundry_out) + '/*.t.sol/*.json'
-    json_paths = glob.glob(path_glob)
+    pattern = '*.t.sol/*.json'
+    paths = foundry_out.glob(pattern)
+    json_paths = [str(path) for path in paths]
     json_paths = [json_path for json_path in json_paths if not json_path.endswith('.metadata.json')]
     json_paths = sorted(json_paths)  # Must sort to get consistent output order on different platforms
     return json_paths
