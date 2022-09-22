@@ -16,7 +16,7 @@ from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
-from .solc_to_k import Contract, contract_to_k, solc_compile
+from .solc_to_k import Contract, contract_to_main_module, contract_to_spec_module, solc_compile
 from .utils import KCFG_from_claim, KPrint_make_unparsing, KProve_prove_claim, add_include_arg
 
 T = TypeVar('T')
@@ -97,7 +97,7 @@ def exec_solc_to_k(
     solc_json = solc_compile(contract_file, profile=profile)
     contract_json = solc_json['contracts'][contract_file.name][contract_name]
     contract = Contract(contract_name, contract_json, foundry=False)
-    contract_module, _ = contract_to_k(contract, empty_config, imports=imports)
+    contract_module = contract_to_main_module(contract, empty_config, imports=imports)
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [contract_module.name] + imports]
     )
@@ -206,9 +206,12 @@ def _foundry_to_k(
         with open(json_file, 'r') as cjson:
             contract_json = json.loads(cjson.read())
             contract = Contract(contract_name, contract_json, foundry=True)
-            module, claims_module = contract_to_k(contract, empty_config, imports=imports, main_module=main_module)
+
+            module = contract_to_main_module(contract, empty_config, imports=imports)
             _LOGGER.info(f'Produced contract module: {module.name}')
             modules.append(module)
+
+            claims_module = contract_to_spec_module(contract, empty_config, main_module=main_module)
             if claims_module:
                 _LOGGER.info(f'Produced claim module: {claims_module.name}')
                 claims.extend((claims_module.name, claim) for claim in claims_module.claims)
