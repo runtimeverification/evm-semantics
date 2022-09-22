@@ -139,10 +139,7 @@ def exec_foundry_kompile(
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
 
-    path_glob = str(foundry_out) + '/*.t.sol/*.json'
-    json_paths = glob.glob(path_glob)
-    json_paths = [json_path for json_path in json_paths if not json_path.endswith('.metadata.json')]
-    json_paths = sorted(json_paths)  # Must sort to get consistent output order on different platforms
+    json_paths = _contract_json_paths(foundry_out)
 
     bin_runtime_definition, claims = _foundry_to_k(
         definition_dir=definition_dir,
@@ -186,6 +183,14 @@ def exec_foundry_kompile(
             kf.write(json.dumps(cfgs))
             kf.close()
             _LOGGER.info(f'Wrote file: {kcfgs_file}')
+
+
+def _contract_json_paths(foundry_out: Path) -> List[str]:
+    path_glob = str(foundry_out) + '/*.t.sol/*.json'
+    json_paths = glob.glob(path_glob)
+    json_paths = [json_path for json_path in json_paths if not json_path.endswith('.metadata.json')]
+    json_paths = sorted(json_paths)  # Must sort to get consistent output order on different platforms
+    return json_paths
 
 
 def _foundry_to_k(
