@@ -198,23 +198,27 @@ def _foundry_to_k(
     claims: List[Tuple[str, KClaim]] = []
     # Must sort to get consistent output order on different platforms.
     for json_file in sorted(glob.glob(path_glob)):
+
         if json_file.endswith('.metadata.json'):
             continue
+
         _LOGGER.info(f'Processing contract file: {json_file}')
-        contract_name = json_file.split('/')[-1]
-        contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
         with open(json_file, 'r') as cjson:
             contract_json = json.loads(cjson.read())
-            contract = Contract(contract_name, contract_json, foundry=True)
 
-            module = contract_to_main_module(contract, empty_config, imports=imports)
-            _LOGGER.info(f'Produced contract module: {module.name}')
-            modules.append(module)
+        contract_name = json_file.split('/')[-1]
+        contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
+        contract = Contract(contract_name, contract_json, foundry=True)
 
-            claims_module = contract_to_spec_module(contract, empty_config, main_module=main_module)
-            if claims_module:
-                _LOGGER.info(f'Produced claim module: {claims_module.name}')
-                claims.extend((claims_module.name, claim) for claim in claims_module.claims)
+        module = contract_to_main_module(contract, empty_config, imports=imports)
+        _LOGGER.info(f'Produced contract module: {module.name}')
+        modules.append(module)
+
+        claims_module = contract_to_spec_module(contract, empty_config, main_module=main_module)
+        if claims_module:
+            _LOGGER.info(f'Produced claim module: {claims_module.name}')
+            claims.extend((claims_module.name, claim) for claim in claims_module.claims)
+
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports]
     )
