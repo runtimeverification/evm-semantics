@@ -48,6 +48,7 @@ class KEVM(KProve, KRun):
         md_selector: Optional[str] = None,
         profile: bool = False,
         ccopts: Iterable[str] = (),
+        llvm_kompile: bool = True,
     ) -> 'KEVM':
         command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
         command += ['--backend', backend]
@@ -58,6 +59,8 @@ class KEVM(KProve, KRun):
         command += add_include_arg(includes)
         if emit_json:
             command += ['--emit-json']
+        if not llvm_kompile:
+            command += ['--no-llvm-kompile']
         if ccopts:
             for ccopt in ccopts:
                 command += ['-ccopt', ccopt]

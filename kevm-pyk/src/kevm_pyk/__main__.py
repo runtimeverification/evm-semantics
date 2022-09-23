@@ -68,6 +68,7 @@ def exec_kompile(
     syntax_module: Optional[str],
     md_selector: Optional[str],
     ccopts: Iterable[str] = (),
+    llvm_kompile: bool = True,
     **kwargs: Any,
 ) -> None:
     KEVM.kompile(
@@ -127,6 +128,7 @@ def exec_foundry_kompile(
     requires: Iterable[str] = (),
     imports: Iterable[str] = (),
     ccopts: Iterable[str] = (),
+    llvm_kompile: bool = True,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
@@ -180,6 +182,7 @@ def exec_foundry_kompile(
             md_selector=md_selector,
             profile=profile,
             ccopts=ccopts,
+            llvm_kompile=llvm_kompile,
         )
 
     if reinit or not kcfgs_file.exists():
@@ -468,6 +471,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=[],
         action='append',
         help='Additional arguments to pass to llvm-kompile.',
+    )
+    k_kompile_args.add_argument(
+        '--no-llvm-kompile',
+        dest='llvm_kompile',
+        default=True,
+        action='store_false',
+        help='Do not run llvm-kompile process.',
     )
 
     evm_chain_args = ArgumentParser(add_help=False)
