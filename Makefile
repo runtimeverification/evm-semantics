@@ -166,7 +166,11 @@ plugin-deps: $(plugin_includes) $(plugin_c_includes)
 # Building
 # --------
 
-KOMPILE := $(KEVM) kompile
+KEVM_PYK_DIR := ./kevm-pyk
+VENV_DIR     := $(BUILD_DIR)/venv
+PYK_ACTIVATE := . $(VENV_DIR)/bin/activate
+
+KOMPILE := $(PYK_ACTIVATE) && $(KEVM) kompile --pyk
 
 kevm_files := abi.md              \
               asm.md              \
@@ -440,10 +444,6 @@ tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTes
 # solc-to-k
 # ---------
 
-KEVM_PYK_DIR := ./kevm-pyk
-VENV_DIR     := $(BUILD_DIR)/venv
-PYK_ACTIVATE := . $(VENV_DIR)/bin/activate
-
 venv-clean:
 	rm -rf $(VENV_DIR)
 	rm -rf $(KEVM_LIB)/kframework/lib/python3.8
@@ -469,14 +469,12 @@ foundry-clean:
 	rm -f  tests/foundry/foundry.rule-profile
 
 tests/foundry/%: KEVM = $(PYK_ACTIVATE) && kevm
-tests/foundry/%: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 
 foundry_dir  := tests/foundry
 foundry_out := $(foundry_dir)/out
 
 test-foundry: KEVM_OPTS += --pyk --verbose --profile
 test-foundry: KEVM = $(PYK_ACTIVATE) && kevm
-test-foundry: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 test-foundry: tests/foundry/foundry.k.check tests/foundry/out/kompiled/foundry.k.prove
 
 foundry-forge-build: $(foundry_out)
@@ -501,7 +499,6 @@ tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(haskell_kompi
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
 tests/specs/examples/%-bin-runtime.k: KEVM = $(PYK_ACTIVATE) && kevm
-tests/specs/examples/%-bin-runtime.k: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) venv
