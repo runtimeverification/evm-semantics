@@ -22,14 +22,13 @@ pipeline {
         }
       }
       stages {
-        // Must come before build/prove for proper testing
         stage('Build Pyk') {
           options { timeout(time: 1, unit: 'MINUTES') }
-          steps { sh 'make kevm-pyk' }
+          steps { sh 'make kevm-pyk venv -j2' }
         }
         stage('Build') {
           options { timeout(time: 15, unit: 'MINUTES') }
-          steps { sh 'make venv build build-prove RELEASE=true -j4' }
+          steps { sh 'make build build-prove RELEASE=true -j4' }
         }
         stage('Test Pyk') {
           options { timeout(time: 1, unit: 'MINUTES') }
