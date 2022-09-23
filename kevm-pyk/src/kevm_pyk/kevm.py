@@ -8,6 +8,7 @@ from pyk.cli_utils import run_process
 from pyk.kast import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
 from pyk.kastManip import flatten_label, get_cell
 from pyk.ktool import KPrint, KProve, KRun
+from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.kprint import paren
 from pyk.prelude.kbool import notBool
 from pyk.prelude.kint import intToken
@@ -39,7 +40,7 @@ class KEVM(KProve, KRun):
     @staticmethod
     def kompile(
         definition_dir: Path,
-        backend: str,
+        backend: KompileBackend,
         main_file: Path,
         emit_json: bool = True,
         includes: Iterable[str] = (),
@@ -52,7 +53,7 @@ class KEVM(KProve, KRun):
         optimization: int = 0,
     ) -> 'KEVM':
         command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
-        command += ['--backend', backend]
+        command += ['--backend', str(backend)]
         command += ['--main-module', main_module_name] if main_module_name else []
         command += ['--syntax-module', syntax_module_name] if syntax_module_name else []
         command += ['--md-selector', md_selector] if md_selector else []

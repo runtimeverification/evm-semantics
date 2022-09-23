@@ -10,6 +10,7 @@ from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KRule, KToken
 from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
+from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KPrint, _krun
 from pyk.prelude.ml import mlTop
 
@@ -59,7 +60,7 @@ def exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, *
 
 def exec_kompile(
     definition_dir: Path,
-    backend: str,
+    backend: KompileBackend,
     profile: bool,
     main_file: Path,
     emit_json: bool,
@@ -189,7 +190,7 @@ def exec_foundry_kompile(
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
         KEVM.kompile(
             foundry_definition_dir,
-            'haskell',
+            KompileBackend.HASKELL,
             foundry_main_file,
             emit_json=True,
             includes=includes,
@@ -464,7 +465,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
 
     k_kompile_args = ArgumentParser(add_help=False)
-    k_kompile_args.add_argument('--backend', type=str, help='[llvm|haskell]')
+    k_kompile_args.add_argument('--backend', type=KompileBackend, help='[llvm|haskell]')
     k_kompile_args.add_argument(
         '--md-selector',
         type=str,
