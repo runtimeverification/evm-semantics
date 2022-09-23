@@ -49,6 +49,7 @@ class KEVM(KProve, KRun):
         profile: bool = False,
         ccopts: Iterable[str] = (),
         llvm_kompile: bool = True,
+        optimization: int = 0,
     ) -> 'KEVM':
         command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
         command += ['--backend', backend]
@@ -64,6 +65,8 @@ class KEVM(KProve, KRun):
         if ccopts:
             for ccopt in ccopts:
                 command += ['-ccopt', ccopt]
+        if 0 < optimization and optimization <= 3:
+            command += [f'-O{optimization}']
         command += ['--concrete-rules', ','.join(KEVM.concrete_rules())]
         try:
             run_process(command, logger=_LOGGER, profile=profile)

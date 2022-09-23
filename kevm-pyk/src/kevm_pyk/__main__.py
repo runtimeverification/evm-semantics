@@ -69,8 +69,19 @@ def exec_kompile(
     md_selector: Optional[str],
     ccopts: Iterable[str] = (),
     llvm_kompile: bool = True,
+    o0: bool = False,
+    o1: bool = False,
+    o2: bool = False,
+    o3: bool = False,
     **kwargs: Any,
 ) -> None:
+    optimization = 0
+    if o1:
+        optimization = 1
+    if o2:
+        optimization = 2
+    if o3:
+        optimization = 3
     KEVM.kompile(
         definition_dir,
         backend,
@@ -83,6 +94,7 @@ def exec_kompile(
         profile=profile,
         ccopts=ccopts,
         llvm_kompile=llvm_kompile,
+        optimization=optimization,
     )
 
 
@@ -135,6 +147,10 @@ def exec_foundry_kompile(
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
     _ignore_arg(kwargs, 'backend', f'--backend {kwargs["backend"]}')
+    _ignore_arg(kwargs, 'o0', '-O0')
+    _ignore_arg(kwargs, 'o1', '-O1')
+    _ignore_arg(kwargs, 'o2', '-O2')
+    _ignore_arg(kwargs, 'o3', '-O3')
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
     foundry_definition_dir = foundry_out / 'kompiled'
@@ -479,6 +495,10 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_false',
         help='Do not run llvm-kompile process.',
     )
+    k_kompile_args.add_argument('-O0', dest='o0', default=False, action='store_true', help='Optimization level 0.')
+    k_kompile_args.add_argument('-O1', dest='o1', default=False, action='store_true', help='Optimization level 1.')
+    k_kompile_args.add_argument('-O2', dest='o2', default=False, action='store_true', help='Optimization level 2.')
+    k_kompile_args.add_argument('-O3', dest='o3', default=False, action='store_true', help='Optimization level 3.')
 
     evm_chain_args = ArgumentParser(add_help=False)
     evm_chain_args.add_argument(
