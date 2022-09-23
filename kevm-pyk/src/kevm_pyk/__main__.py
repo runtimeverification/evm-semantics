@@ -66,6 +66,7 @@ def exec_kompile(
     main_module: Optional[str],
     syntax_module: Optional[str],
     md_selector: Optional[str],
+    ccopts: Iterable[str] = (),
     **kwargs: Any,
 ) -> None:
     KEVM.kompile(
@@ -77,6 +78,7 @@ def exec_kompile(
         syntax_module_name=syntax_module,
         md_selector=md_selector,
         profile=profile,
+        ccopts=ccopts,
     )
 
 
@@ -121,6 +123,7 @@ def exec_foundry_kompile(
     reinit: bool = False,
     requires: Iterable[str] = (),
     imports: Iterable[str] = (),
+    ccopts: Iterable[str] = (),
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
@@ -171,6 +174,7 @@ def exec_foundry_kompile(
             syntax_module_name=syntax_module,
             md_selector=md_selector,
             profile=profile,
+            ccopts=ccopts,
         )
 
     if reinit or not kcfgs_file.exists():
@@ -451,6 +455,13 @@ def _create_argument_parser() -> ArgumentParser:
     )
     k_kompile_args.add_argument(
         '--no-emit-json', dest='emit_json', action='store_false', help='Do not JSON definition after compilation.'
+    )
+    k_kompile_args.add_argument(
+        '-ccopt',
+        dest='ccopts',
+        default=[],
+        action='append',
+        help='Additional arguments to pass to llvm-kompile.',
     )
 
     evm_chain_args = ArgumentParser(add_help=False)

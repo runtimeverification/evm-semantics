@@ -46,6 +46,7 @@ class KEVM(KProve, KRun):
         syntax_module_name: Optional[str] = None,
         md_selector: Optional[str] = None,
         profile: bool = False,
+        ccopts: Iterable[str] = (),
     ) -> 'KEVM':
         command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
         command += ['--backend', 'haskell']
@@ -56,6 +57,9 @@ class KEVM(KProve, KRun):
         command += add_include_arg(includes)
         if emit_json:
             command += ['--emit-json']
+        if ccopts:
+            for ccopt in ccopts:
+                command += ['-ccopt', ccopt]
         command += ['--concrete-rules', ','.join(KEVM.concrete_rules())]
         try:
             run_process(command, logger=_LOGGER, profile=profile)
