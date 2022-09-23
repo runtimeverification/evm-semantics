@@ -53,7 +53,7 @@ class KEVM(KProve, KRun):
         optimization: int = 0,
     ) -> 'KEVM':
         command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
-        command += ['--backend', str(backend)]
+        command += ['--backend', backend.value]
         command += ['--main-module', main_module_name] if main_module_name else []
         command += ['--syntax-module', syntax_module_name] if syntax_module_name else []
         command += ['--md-selector', md_selector] if md_selector else []
