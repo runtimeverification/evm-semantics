@@ -67,10 +67,6 @@ run_kevm_pyk() {
 run_kompile() {
     local ccopts ccopt kompile_opts openssl_root
 
-    if ${pyk} && [[ "${backend}" != haskell ]]; then
-        fatal "Command kompile with option --pyk only available for --backend haskell."
-    fi
-
     kompile_opts=( "${run_file}" --emit-json )
     ${pyk} || kompile_opts+=( --output-definition "${backend_dir}" )
     ${pyk} || kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
@@ -105,7 +101,11 @@ run_kompile() {
                        ccopts+=( -I${libcryptopp_dir}/include -L/${libcryptopp_dir}/lib                                     )
                    fi
                    for ccopt in "${ccopts[@]}"; do
-                       kompile_opts+=(-ccopt "${ccopt}")
+                       if ${pyk}; then
+                           kompile_opts+=(-ccopt="${ccopt}")
+                       else
+                           kompile_opts+=(-ccopt "${ccopt}")
+                       fi
                    done
                    ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
