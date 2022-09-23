@@ -111,7 +111,7 @@ run_kompile() {
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
 
-    ${pyk} || kompile_opts+=( --backend ${backend} )
+    kompile_opts+=(--backend ${backend})
     if ${pyk} && ${debug}; then
         kompile_opts+=( --debug )
     fi

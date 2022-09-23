@@ -59,6 +59,7 @@ def exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, *
 
 def exec_kompile(
     definition_dir: Path,
+    backend: str,
     profile: bool,
     main_file: Path,
     emit_json: bool,
@@ -71,6 +72,7 @@ def exec_kompile(
 ) -> None:
     KEVM.kompile(
         definition_dir,
+        backend,
         main_file,
         emit_json=emit_json,
         includes=includes,
@@ -79,6 +81,7 @@ def exec_kompile(
         md_selector=md_selector,
         profile=profile,
         ccopts=ccopts,
+        llvm_kompile=llvm_kompile,
     )
 
 
@@ -129,6 +132,7 @@ def exec_foundry_kompile(
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
+    _ignore_arg(kwargs, 'backend', f'--backend {kwargs["backend"]}')
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
     foundry_definition_dir = foundry_out / 'kompiled'
@@ -167,6 +171,7 @@ def exec_foundry_kompile(
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
         KEVM.kompile(
             foundry_definition_dir,
+            'haskell',
             foundry_main_file,
             emit_json=True,
             includes=includes,
@@ -440,6 +445,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
 
     k_kompile_args = ArgumentParser(add_help=False)
+    k_kompile_args.add_argument('--backend', type=str, help='[llvm|haskell]')
     k_kompile_args.add_argument(
         '--md-selector',
         type=str,
