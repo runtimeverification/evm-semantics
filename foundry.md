@@ -421,7 +421,7 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
         andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4175530839 // selector ( "setNonce(address,uint64)" )
      [priority(40)]
 
-     syntax KItem ::= "#setNonce" Int
+     syntax KItem ::= "#setNonce" Int Int
  // ----------------------------------------------------------
     rule <k> #setNonce ACCTID NONCE
           => 1 ~> #push ... </k>
