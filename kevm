@@ -109,6 +109,9 @@ run_kompile() {
     esac
 
     ${pyk} || kompile_opts+=( --backend ${backend} )
+    if ${pyk} && ${debug}; then
+        kompile_opts+=( --debug )
+    fi
 
     if ${pyk}; then
         run_kevm_pyk kompile "${kompile_opts[@]}" "$@"
