@@ -15,13 +15,15 @@ RUN    apt-get update                                   \
     && apt-get install --yes software-properties-common \
     && add-apt-repository ppa:ethereum/ethereum
 
-RUN    apt-get update        \
-    && apt-get upgrade --yes \
-    && apt-get install --yes \
-            cmake            \
-            curl             \
-            python3          \
-            python3-pip
+RUN    apt-get update         \
+    && apt-get upgrade --yes  \
+    && apt-get install --yes  \
+            cmake             \
+            curl              \
+            protobuf-compiler \
+            python3           \
+            python3-pip       \
+            solc
 
 RUN pip3 install virtualenv
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - && poetry --version
