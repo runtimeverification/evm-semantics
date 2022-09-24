@@ -20,6 +20,7 @@ jobs:
           fetch-depth: 0
       - name: 'Set up Docker'
         run: |
+          cd deps/k && git fetch --tags && cd ../..
           K_VERSION="$(cd deps/k && git tag --points-at HEAD | cut --characters=2-)"
           docker build . --file .github/workflows/Dockerfile           \
             --tag runtimeverification/kevm-ci-concrete                 \
