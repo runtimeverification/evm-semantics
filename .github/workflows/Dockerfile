@@ -15,47 +15,16 @@ RUN    apt-get update                                   \
     && apt-get install --yes software-properties-common \
     && add-apt-repository ppa:ethereum/ethereum
 
-RUN    apt-get update            \
-    && apt-get upgrade --yes     \
-    && apt-get install --yes     \
-            cmake                \
-            curl                 \
-            debhelper            \
-            default-jdk-headless \
-            jq                   \
-            libboost-test-dev    \
-            libcrypto++-dev      \
-            libgflags-dev        \
-            libprocps-dev        \
-            libsecp256k1-dev     \
-            libssl-dev           \
-            libyaml-dev          \
-            llvm-12              \
-            llvm-12-dev          \
-            llvm-12-tools        \
-            maven                \
-            solc                 \
-            netcat-openbsd       \
-            pkg-config           \
-            protobuf-compiler    \
-            python3              \
-            python3-pip          \
-            python-pygments      \
-            rapidjson-dev        \
-            z3                   \
-            zlib1g-dev
+RUN    apt-get update        \
+    && apt-get upgrade --yes \
+    && apt-get install --yes \
+            curl             \
+            python3          \
+            python3-pip
 
 COPY --from=Z3 /usr/bin/z3 /usr/bin/z3
 
 RUN pip3 install virtualenv
-
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
-RUN    apt-get update               \
-    && apt-get upgrade --yes        \
-    && apt-get install --yes nodejs
-
-RUN curl -sSL https://get.haskellstack.org/ | sh
-
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - && poetry --version
 
 ARG USER_ID=1000
@@ -64,13 +33,3 @@ RUN groupadd -g $GROUP_ID user && useradd -m -u $USER_ID -s /bin/sh -g user user
 
 USER user:user
 WORKDIR /home/user
-
-RUN    git config --global user.email 'admin@runtimeverification.com' \
-    && git config --global user.name  'RV Jenkins'                    \
-    && mkdir -p ~/.ssh                                                \
-    && echo 'host github.com'                       > ~/.ssh/config   \
-    && echo '    hostname github.com'              >> ~/.ssh/config   \
-    && echo '    user git'                         >> ~/.ssh/config   \
-    && echo '    identityagent SSH_AUTH_SOCK'      >> ~/.ssh/config   \
-    && echo '    stricthostkeychecking accept-new' >> ~/.ssh/config   \
-    && chmod go-rwx -R ~/.ssh
