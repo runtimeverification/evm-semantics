@@ -2,6 +2,9 @@ ARG K_COMMIT
 FROM ghcr.io/foundry-rs/foundry:nightly-56dc7463ce2806c7b410bc605ff7f2916cdbe32a as FOUNDRY
 
 ARG K_COMMIT
+FROM runtimeverification:z3 as Z3
+
+ARG K_COMMIT
 FROM runtimeverificationinc/kframework-k:ubuntu-focal-${K_COMMIT}
 
 COPY --from=FOUNDRY /usr/local/bin/forge /usr/local/bin/forge
@@ -42,16 +45,9 @@ RUN    apt-get update            \
             z3                   \
             zlib1g-dev
 
-RUN pip3 install virtualenv
+COPY --from=Z3 /usr/bin/z3 /usr/bin/z3
 
-RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.15 \
-    && cd z3                                                         \
-    && python3 scripts/mk_make.py                                    \
-    && cd build                                                      \
-    && make -j8                                                      \
-    && make install                                                  \
-    && cd ../..                                                      \
-    && rm -rf z3
+RUN pip3 install virtualenv
 
 RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
 RUN    apt-get update               \
