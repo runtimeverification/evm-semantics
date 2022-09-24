@@ -13,7 +13,7 @@ concurrency:
 jobs:
 
   update-k-version:
-    name: 'Update kevm-pyk Version'
+    name: 'Update K Release tag'
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
@@ -24,7 +24,7 @@ jobs:
           git config user.name devops
           git config user.email devops@runtimeverification.com
           cd deps/k && git fetch --tags && cd ../..
-          K_VERSION="$(cd deps/k && git tag --points-at HEAD | cut --characters=2-)"
+          K_VERSION="$(cd deps/k && git tag --points-at HEAD)"
           echo "${K_VERSION}" > deps/k_release
           git add deps/k_release
           git commit -m 'deps/k_release: update release file'
