@@ -11,6 +11,7 @@ jobs:
 
   test-concrete-execution:
     name: 'Build and Test KEVM concrete execution'
+    runs-on: [self-hosted, linux]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -54,8 +55,9 @@ jobs:
           docker stop kevm-ci-concrete || true
 
   test-prove-java:
-    needs: test-concrete-execution
     name: 'Build and Test KEVM java proofs'
+    needs: test-concrete-execution
+    runs-on: [self-hosted, linux]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -87,8 +89,9 @@ jobs:
           docker stop kevm-ci-java || true
 
   test-prove-haskell:
-    needs: test-concrete-execution
     name: 'Build and Test KEVM haskell proofs'
+    needs: test-concrete-execution
+    runs-on: [self-hosted, linux]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -120,8 +123,9 @@ jobs:
           docker stop kevm-ci-haskell || true
 
   test-prove-foundry:
-    needs: test-prove-java
     name: 'Build and Test KEVM Foundry proofs'
+    needs: test-prove-java
+    runs-on: [self-hosted, linux]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
