@@ -1,7 +1,8 @@
-name: "Test"
+name: 'Test PR'
 on:
   pull_request:
-# Stop in progress workflows on the same branch and same workflow to use latest committed code
+    branches:
+      - 'master'
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
