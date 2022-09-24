@@ -10,6 +10,8 @@ COPY --from=FOUNDRY /usr/local/bin/forge /usr/local/bin/forge
 COPY --from=FOUNDRY /usr/local/bin/anvil /usr/local/bin/anvil
 COPY --from=FOUNDRY /usr/local/bin/cast /usr/local/bin/cast
 
+COPY --from=Z3 /usr/bin/z3 /usr/bin/z3
+
 RUN    apt-get update                                   \
     && apt-get install --yes software-properties-common \
     && add-apt-repository ppa:ethereum/ethereum
@@ -17,11 +19,10 @@ RUN    apt-get update                                   \
 RUN    apt-get update        \
     && apt-get upgrade --yes \
     && apt-get install --yes \
+            cmake            \
             curl             \
             python3          \
             python3-pip
-
-COPY --from=Z3 /usr/bin/z3 /usr/bin/z3
 
 RUN pip3 install virtualenv
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - && poetry --version
