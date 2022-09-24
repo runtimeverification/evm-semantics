@@ -8,6 +8,149 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+
+  test-concrete-execution:
+    name: 'Build and Test KEVM concrete execution'
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: 'Set up Docker'
+        run: |
+          docker build . --file .github/workflows/Dockerfile --tag runtimeverification/kevm-ci-concrete \
+            --build-arg BASE_IMAGE=ubuntu:jammy --build-arg LLVM_VERSION=14                             \
+            --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
+          docker run                        \
+            --name kevm-ci-concrete         \
+            --rm -it                        \
+            --detach                        \
+            --workdir /opt/workspace        \
+            --user $(id -u):$(id -g)        \
+            -v ${HOME}:${HOME}              \
+            -v "$(pwd):/opt/workspace"      \
+            -v "/etc/passwd:/etc/passwd:ro" \
+            -v "/etc/group:/etc/group:ro"   \
+            runtimeverification/kevm-ci-concrete
+      - name: 'Build kevm-pyk'
+        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make kevm-pyk venv -j2'
+      - name: 'Build kevm'
+        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make build-llvm build-node -j2 RELEASE=true'
+      - name: 'Test kevm-pyk'
+        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-kevm-pyk -j2'
+      - name: 'Test conformance'
+        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-conformance -j4 TEST_CONCRETE_BACKEND=llvm'
+      - name: 'Test llvm krun'
+        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'
+      - name: 'Test test kast'
+        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-parse -j4 TEST_CONCRETE_BACKEND=llvm'
+      - name: 'Test failure tests'
+        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-failure -j4 TEST_CONCRETE_BACKEND=llvm'
+      - name: 'Test node'
+      - name: 'Tear down Docker'
+        if: always()
+        run: |
+          docker stop kevm-ci-concrete || true
+
+  test-prove-java:
+    needs: test-concrete-execution
+    name: 'Build and Test KEVM java proofs'
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: 'Set up Docker'
+        run: |
+          docker build . --file .github/workflows/Dockerfile --tag runtimeverification/kevm-ci-java \
+            --build-arg BASE_IMAGE=ubuntu:jammy --build-arg LLVM_VERSION=14                         \
+            --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
+          docker run                        \
+            --name kevm-ci-java             \
+            --rm -it                        \
+            --detach                        \
+            --workdir /opt/workspace        \
+            --user $(id -u):$(id -g)        \
+            -v ${HOME}:${HOME}              \
+            -v "$(pwd):/opt/workspace"      \
+            -v "/etc/passwd:/etc/passwd:ro" \
+            -v "/etc/group:/etc/group:ro"   \
+            runtimeverification/kevm-ci-java
+      - name: 'Build kevm-pyk'
+        run: docker exec -t kevm-ci-java /bin/bash -c 'make kevm-pyk venv -j2'
+      - name: 'Test Java'
+        run: docker exec -t kevm-ci-java /bin/bash -c 'make test-prove -j2 TEST_SYMBOLIC_BACKEND=java'
+      - name: 'Tear down Docker'
+        if: always()
+        run: |
+          docker stop kevm-ci-java || true
+
+  test-prove-haskell:
+    needs: test-concrete-execution
+    name: 'Build and Test KEVM haskell proofs'
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: 'Set up Docker'
+        run: |
+          docker build . --file .github/workflows/Dockerfile --tag runtimeverification/kevm-ci-haskell \
+            --build-arg BASE_IMAGE=ubuntu:jammy --build-arg LLVM_VERSION=14                            \
+            --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
+          docker run                        \
+            --name kevm-ci-haskell          \
+            --rm -it                        \
+            --detach                        \
+            --workdir /opt/workspace        \
+            --user $(id -u):$(id -g)        \
+            -v ${HOME}:${HOME}              \
+            -v "$(pwd):/opt/workspace"      \
+            -v "/etc/passwd:/etc/passwd:ro" \
+            -v "/etc/group:/etc/group:ro"   \
+            runtimeverification/kevm-ci-haskell
+      - name: 'Build kevm-pyk'
+        run: docker exec -t kevm-ci-haskell /bin/bash -c 'make kevm-pyk venv -j2'
+      - name: 'Test Java'
+        run: docker exec -t kevm-ci-haskell /bin/bash -c 'make test-prove -j6 TEST_SYMBOLIC_BACKEND=haskell'
+      - name: 'Tear down Docker'
+        if: always()
+        run: |
+          docker stop kevm-ci-haskell || true
+
+  test-prove-foundry:
+    needs: test-concrete-execution
+    name: 'Build and Test KEVM Foundry proofs'
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: 'Set up Docker'
+        run: |
+          docker build . --file .github/workflows/Dockerfile --tag runtimeverification/kevm-ci-foundry \
+            --build-arg BASE_IMAGE=ubuntu:jammy --build-arg LLVM_VERSION=14                            \
+            --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
+          docker run                        \
+            --name kevm-ci-foundry          \
+            --rm -it                        \
+            --detach                        \
+            --workdir /opt/workspace        \
+            --user $(id -u):$(id -g)        \
+            -v ${HOME}:${HOME}              \
+            -v "$(pwd):/opt/workspace"      \
+            -v "/etc/passwd:/etc/passwd:ro" \
+            -v "/etc/group:/etc/group:ro"   \
+            runtimeverification/kevm-ci-foundry
+      - name: 'Build kevm-pyk'
+        run: docker exec -t kevm-ci-foundry /bin/bash -c 'make kevm-pyk venv -j2'
+      - name: 'Test Java'
+        run: docker exec -t kevm-ci-foundry /bin/bash -c 'make test-prove -j6 TEST_SYMBOLIC_BACKEND=haskell'
+      - name: 'Tear down Docker'
+        if: always()
+        run: |
+          docker stop kevm-ci-foundry || true
+
   nix:
     name: 'Nix'
     strategy:
