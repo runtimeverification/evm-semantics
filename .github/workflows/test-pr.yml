@@ -47,6 +47,7 @@ jobs:
       - name: 'Test failure tests'
         run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-failure -j4 TEST_CONCRETE_BACKEND=llvm'
       - name: 'Test node'
+        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-node -j4'
       - name: 'Tear down Docker'
         if: always()
         run: |
