@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   test-pr:
-    name: 'Update kevm_pyk Version'
+    name: 'Update kevm-pyk Version'
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
@@ -39,5 +39,4 @@ jobs:
           nix run .#update-from-submodules
           git add flake.lock
           git commit -m "sync flake.lock to submodules" || true
-      - run: |
           git push
