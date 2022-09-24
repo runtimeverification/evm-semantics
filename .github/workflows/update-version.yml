@@ -21,11 +21,11 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
-      - run: |
+        run: |
           git config user.name devops
           git config user.email devops@runtimeverification.com
       - name: 'Update release tag'
-          run: |
+        run: |
           cd deps/k && git fetch --tags && cd ../..
           K_VERSION="$(cd deps/k && git tag --points-at HEAD)"
           echo "${K_VERSION}" > deps/k_release
