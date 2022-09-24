@@ -12,25 +12,7 @@ concurrency:
 
 jobs:
 
-  update-k-version:
-    name: 'Update K Release tag'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - run: |
-          git config user.name devops
-          git config user.email devops@runtimeverification.com
-          cd deps/k && git fetch --tags && cd ../..
-          K_VERSION="$(cd deps/k && git tag --points-at HEAD)"
-          echo "${K_VERSION}" > deps/k_release
-          git add deps/k_release
-          git commit -m 'deps/k_release: update release file'
-          git push
-
-  update-nix-kevm-pyk:
+  update-versions:
     needs: update-k-version
     name: 'Update kevm-pyk Version'
     runs-on: ubuntu-latest
@@ -42,6 +24,14 @@ jobs:
       - run: |
           git config user.name devops
           git config user.email devops@runtimeverification.com
+      - name: 'Update release tag'
+          run: |
+          cd deps/k && git fetch --tags && cd ../..
+          K_VERSION="$(cd deps/k && git tag --points-at HEAD)"
+          echo "${K_VERSION}" > deps/k_release
+          if git add deps/k_release && git commit -m 'deps/k_release: update release file'; then
+              git push
+          fi
       - name: 'Install Nix'
         uses: cachix/install-nix-action@v15
         with:
