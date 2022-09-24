@@ -13,7 +13,7 @@ concurrency:
 jobs:
 
   update-versions:
-    name: 'Update kevm-pyk Version'
+    name: 'Update K and kevm-pyk versions'
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
