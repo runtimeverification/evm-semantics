@@ -43,7 +43,7 @@ jobs:
         run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-conformance -j4 TEST_CONCRETE_BACKEND=llvm'
       - name: 'Test llvm krun'
         run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'
-      - name: 'Test test kast'
+      - name: 'Test kast'
         run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-parse -j4 TEST_CONCRETE_BACKEND=llvm'
       - name: 'Test failure tests'
         run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-failure -j4 TEST_CONCRETE_BACKEND=llvm'
