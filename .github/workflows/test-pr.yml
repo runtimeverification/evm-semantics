@@ -20,12 +20,14 @@ jobs:
           fetch-depth: 0
       - name: 'Set up Docker'
         run: |
+          Z3_VERSION=4.8.15
           K_COMMIT="$(cat deps/k_release | cut --characters=2-)"
           docker build . --file .github/workflows/Dockerfile.z3 \
-            --tag runtimeverification:z3
+            --tag z3:${Z3_VERSION}
           docker build . --file .github/workflows/Dockerfile           \
             --tag runtimeverification/kevm-ci-concrete                 \
             --build-arg K_COMMIT=${K_COMMIT}                           \
+            --build-arg Z3_IMAGE=z3:${Z3_VERSION}                      \
             --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
           docker run                        \
             --name kevm-ci-concrete         \

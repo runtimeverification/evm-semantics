@@ -1,8 +1,7 @@
-ARG K_COMMIT
 FROM ghcr.io/foundry-rs/foundry:nightly-56dc7463ce2806c7b410bc605ff7f2916cdbe32a as FOUNDRY
 
-ARG K_COMMIT
-FROM runtimeverification:z3 as Z3
+ARG Z3_IMAGE
+FROM ${Z3_IMAGE} as Z3
 
 ARG K_COMMIT
 FROM runtimeverificationinc/kframework-k:ubuntu-focal-${K_COMMIT}
