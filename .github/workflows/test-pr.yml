@@ -27,7 +27,7 @@ jobs:
           docker build . --file .github/workflows/Dockerfile           \
             --tag runtimeverification/kevm-ci-concrete                 \
             --build-arg K_COMMIT=${K_COMMIT}                           \
-            --build-arg Z3_IMAGE=z3:${Z3_VERSION}                      \
+            --build-arg Z3_VERSION=${Z3_VERSION}                       \
             --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
           docker run                        \
             --name kevm-ci-concrete         \

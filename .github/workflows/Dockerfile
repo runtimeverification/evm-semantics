@@ -1,9 +1,8 @@
-FROM ghcr.io/foundry-rs/foundry:nightly-56dc7463ce2806c7b410bc605ff7f2916cdbe32a as FOUNDRY
-
-ARG Z3_IMAGE
-FROM ${Z3_IMAGE} as Z3
-
 ARG K_COMMIT
+ARG Z3_VERSION
+
+FROM ghcr.io/foundry-rs/foundry:nightly-56dc7463ce2806c7b410bc605ff7f2916cdbe32a as FOUNDRY
+FROM z3:${Z3_VERSION} as Z3
 FROM runtimeverificationinc/kframework-k:ubuntu-focal-${K_COMMIT}
 
 COPY --from=FOUNDRY /usr/local/bin/forge /usr/local/bin/forge
