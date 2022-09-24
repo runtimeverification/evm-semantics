@@ -120,7 +120,7 @@ jobs:
           docker stop kevm-ci-haskell || true
 
   test-prove-foundry:
-    needs: test-concrete-execution
+    needs: test-prove-java
     name: 'Build and Test KEVM Foundry proofs'
     steps:
       - name: 'Check out code'
