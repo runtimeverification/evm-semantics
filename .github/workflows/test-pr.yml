@@ -19,8 +19,10 @@ jobs:
           submodules: recursive
       - name: 'Set up Docker'
         run: |
-          docker build . --file .github/workflows/Dockerfile --tag runtimeverification/kevm-ci-concrete \
-            --build-arg BASE_IMAGE=ubuntu:jammy --build-arg LLVM_VERSION=14                             \
+          K_VERSION="$(cd deps/k && git tag --points-at HEAD | cut --characters=2-)"
+          docker build . --file .github/workflows/Dockerfile           \
+            --tag runtimeverification/kevm-ci-concrete                 \
+            --build-arg K_COMMIT=${K_COMMIT}                           \
             --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
           docker run                        \
             --name kevm-ci-concrete         \
