@@ -98,4 +98,12 @@ module VERIFICATION-JAVA [symbolic, kast]
       requires Ghasdirtysstore << SCHED >>
       [simplification]
 
+    rule Csstore(SCHED, NEW, CURR, _ORIG)
+      => #if CURR ==Int 0 andBool NEW =/=Int 0
+           #then Gsstoreset < SCHED >
+           #else Gsstorereset < SCHED >
+         #fi
+      requires notBool Ghasdirtysstore << SCHED >>
+      [simplification]
+
 endmodule
