@@ -4,6 +4,7 @@ requires "../lemmas.k"
 module VERIFICATION
     imports EDSL
     imports LEMMAS
+    imports VERIFICATION-JAVA
 
   // ########################
   // Buffer Reasoning
@@ -79,5 +80,21 @@ module VERIFICATION
 
     rule                 @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int ((COLLECTED +Int BAL) -Int @remainingTokens(COLLECTED +Int BAL, NOW, START)) -Int COLLECTED <Int pow256 => true  requires #accumulatedReleasedTokens(BAL, COLLECTED, START, NOW) >Int COLLECTED +Int 3 [simplification]
     rule                 @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int ((COLLECTED +Int BAL) -Int @remainingTokens(COLLECTED +Int BAL, NOW, START)) <Int pow256                => true  requires #accumulatedReleasedTokens(BAL, COLLECTED, START, NOW) >Int COLLECTED +Int 3 [simplification]
+endmodule
+
+module VERIFICATION-JAVA [symbolic, kast]
+    imports EVM
+
+ // Csstore rule
+
+    rule Csstore(ISTANBUL, NEW, CURR, ORIG)
+      => #if CURR ==Int NEW orBool ORIG =/=Int CURR
+           #then Gsload < ISTANBUL >
+           #else #if ORIG ==Int 0
+                   #then Gsstoreset < ISTANBUL >
+                   #else Gsstorereset < ISTANBUL >
+                 #fi
+         #fi
+      [simplification]
 
 endmodule
