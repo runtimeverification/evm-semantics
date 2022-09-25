@@ -87,14 +87,15 @@ module VERIFICATION-JAVA [symbolic, kast]
 
  // Csstore rule
 
-    rule Csstore(ISTANBUL, NEW, CURR, ORIG)
+    rule Csstore(SCHED, NEW, CURR, ORIG)
       => #if CURR ==Int NEW orBool ORIG =/=Int CURR
-           #then Gsload < ISTANBUL >
+           #then Gsload < SCHED >
            #else #if ORIG ==Int 0
-                   #then Gsstoreset < ISTANBUL >
-                   #else Gsstorereset < ISTANBUL >
+                   #then Gsstoreset < SCHED >
+                   #else Gsstorereset < SCHED >
                  #fi
          #fi
+      requires Ghasdirtysstore << SCHED >>
       [simplification]
 
 endmodule
