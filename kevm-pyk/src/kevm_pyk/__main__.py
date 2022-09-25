@@ -1,4 +1,3 @@
-import glob
 import json
 import logging
 import sys
@@ -8,7 +7,7 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KRequire, KRule, KSort, KToken
+from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KRequire, KRule, KToken
 from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
 from pyk.ktool.krun import _krun
@@ -16,7 +15,7 @@ from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
-from .solc_to_k import Contract, contract_to_k, solc_compile
+from .solc_to_k import Contract, contract_to_claims, contract_to_main_module, solc_compile
 from .utils import KCFG_from_claim, KPrint_make_unparsing, KProve_prove_claim, add_include_arg
 
 T = TypeVar('T')
@@ -93,69 +92,22 @@ def exec_solc_to_k(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KSort('KevmCell'))
+    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
     solc_json = solc_compile(contract_file, profile=profile)
     contract_json = solc_json['contracts'][contract_file.name][contract_name]
     contract = Contract(contract_name, contract_json, foundry=False)
-    contract_module, contract_claims_module = contract_to_k(contract, empty_config, imports=imports)
-    modules = [contract_module]
-    claims_modules = [contract_claims_module] if contract_claims_module else []
+    contract_module = contract_to_main_module(contract, empty_config, imports=imports)
     _main_module = KFlatModule(
-        main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports]
+        main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [contract_module.name] + imports]
     )
-    _spec_module = KFlatModule(
-        spec_module if spec_module else 'SPEC', [], [KImport(mname) for mname in [_m.name for _m in claims_modules]]
-    )
-    modules.append(_main_module)
-    modules.append(_spec_module)
+    _spec_module = KFlatModule(spec_module if spec_module else 'SPEC')
+    modules = (contract_module, _main_module, _spec_module)
     bin_runtime_definition = KDefinition(
-        _main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
+        _main_module.name, modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
     )
     _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
     KEVM._patch_symbol_table(_kprint.symbol_table)
     print(_kprint.pretty_print(bin_runtime_definition) + '\n')
-
-
-def exec_foundry_to_k(
-    definition_dir: Path,
-    profile: bool,
-    foundry_out: Path,
-    main_module: Optional[str],
-    requires: List[str],
-    imports: List[str],
-    **kwargs: Any,
-) -> Tuple[KDefinition, List[Tuple[str, KClaim]]]:
-    kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KSort('KevmCell'))
-    path_glob = str(foundry_out) + '/*.t.sol/*.json'
-    modules = []
-    claims: List[Tuple[str, KClaim]] = []
-    # Must sort to get consistent output order on different platforms.
-    for json_file in sorted(glob.glob(path_glob)):
-        if json_file.endswith('.metadata.json'):
-            continue
-        _LOGGER.info(f'Processing contract file: {json_file}')
-        contract_name = json_file.split('/')[-1]
-        contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
-        with open(json_file, 'r') as cjson:
-            contract_json = json.loads(cjson.read())
-            contract = Contract(contract_name, contract_json, foundry=True)
-            module, claims_module = contract_to_k(contract, empty_config, imports=imports, main_module=main_module)
-            _LOGGER.info(f'Produced contract module: {module.name}')
-            modules.append(module)
-            if claims_module:
-                _LOGGER.info(f'Produced claim module: {claims_module.name}')
-                claims.extend((claims_module.name, claim) for claim in claims_module.claims)
-    _main_module = KFlatModule(
-        main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports]
-    )
-    modules.append(_main_module)
-    bin_runtime_definition = KDefinition(
-        _main_module.name,
-        modules,
-        requires=[KRequire(req) for req in ['edsl.md'] + requires],
-    )
-    return bin_runtime_definition, claims
 
 
 def exec_foundry_kompile(
@@ -186,13 +138,16 @@ def exec_foundry_kompile(
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
 
-    bin_runtime_definition, claims = exec_foundry_to_k(
+    json_paths = _contract_json_paths(foundry_out)
+    contracts = [_contract_from_json(json_path) for json_path in json_paths]
+
+    bin_runtime_definition = _foundry_to_bin_runtime(
         definition_dir=definition_dir,
         profile=profile,
-        foundry_out=foundry_out,
+        contracts=contracts,
         main_module=main_module,
-        requires=list(requires),
-        imports=list(imports),
+        requires=requires,
+        imports=imports,
     )
 
     if regen or not foundry_main_file.exists():
@@ -216,18 +171,91 @@ def exec_foundry_kompile(
             profile=profile,
         )
 
-    kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
     if reinit or not kcfgs_file.exists():
         _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
-        cfgs: Dict[str, Dict] = {}
-        for module_name, claim in claims:
-            cfg_label = f'{module_name}.{claim.att["label"]}'
-            _LOGGER.info(f'Producing KCFG: {cfg_label}')
-            cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
+
+        kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
+        cfgs = _contract_to_claim_cfgs(
+            definition=kevm.definition,
+            definition_dir=definition_dir,
+            profile=profile,
+            contracts=contracts,
+        )
+
         with open(kcfgs_file, 'w') as kf:
             kf.write(json.dumps(cfgs))
             kf.close()
-            _LOGGER.info(f'Wrote file: {kcfgs_file}')
+
+        _LOGGER.info(f'Wrote file: {kcfgs_file}')
+
+
+def _contract_json_paths(foundry_out: Path) -> List[str]:
+    pattern = '*.t.sol/*.json'
+    paths = foundry_out.glob(pattern)
+    json_paths = [str(path) for path in paths]
+    json_paths = [json_path for json_path in json_paths if not json_path.endswith('.metadata.json')]
+    json_paths = sorted(json_paths)  # Must sort to get consistent output order on different platforms
+    return json_paths
+
+
+def _contract_from_json(json_path: str) -> Contract:
+    _LOGGER.info(f'Processing contract file: {json_path}')
+    with open(json_path, 'r') as json_file:
+        contract_json = json.loads(json_file.read())
+    contract_name = json_path.split('/')[-1]
+    contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
+    return Contract(contract_name, contract_json, foundry=True)
+
+
+def _foundry_to_bin_runtime(
+    definition_dir: Path,
+    profile: bool,
+    contracts: Iterable[Contract],
+    main_module: Optional[str],
+    requires: Iterable[str],
+    imports: Iterable[str],
+) -> KDefinition:
+    kevm = KEVM(definition_dir, profile=profile)
+    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
+
+    modules = []
+    for contract in contracts:
+        module = contract_to_main_module(contract, empty_config, imports=imports)
+        _LOGGER.info(f'Produced contract module: {module.name}')
+        modules.append(module)
+    _main_module = KFlatModule(
+        main_module if main_module else 'MAIN',
+        imports=(KImport(mname) for mname in [_m.name for _m in modules] + list(imports)),
+    )
+    modules.append(_main_module)
+
+    bin_runtime_definition = KDefinition(
+        _main_module.name,
+        modules,
+        requires=(KRequire(req) for req in ['edsl.md'] + list(requires)),
+    )
+
+    return bin_runtime_definition
+
+
+def _contract_to_claim_cfgs(
+    definition: KDefinition,
+    definition_dir: Path,
+    profile: bool,
+    contracts: Iterable[Contract],
+) -> Dict[str, Dict]:
+    kevm = KEVM(definition_dir, profile=profile)
+    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
+
+    cfgs: Dict[str, Dict] = {}
+    for contract in contracts:
+        module_name, claims = contract_to_claims(contract, empty_config)
+        for claim in claims:
+            cfg_label = f'{module_name}.{claim.att["label"]}'
+            cfgs[cfg_label] = KCFG_from_claim(definition, claim).to_dict()
+            _LOGGER.info(f'Produced KCFG: {cfg_label}')
+
+    return cfgs
 
 
 def exec_prove(

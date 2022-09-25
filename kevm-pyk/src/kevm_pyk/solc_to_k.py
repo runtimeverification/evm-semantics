@@ -310,23 +310,16 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
     return result
 
 
-def contract_to_k(
-    contract: Contract,
-    empty_config: KInner,
-    imports: Iterable[str] = (),
-    main_module: Optional[str] = None,
-) -> Tuple[KFlatModule, Optional[KFlatModule]]:
+def contract_to_main_module(contract: Contract, empty_config: KInner, imports: Iterable[str] = ()) -> KFlatModule:
     module_name = Contract.contract_to_module_name(contract.name, spec=False)
-    module = KFlatModule(module_name, contract.sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
+    return KFlatModule(module_name, contract.sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
 
+
+def contract_to_claims(contract: Contract, empty_config: KInner) -> Tuple[str, List[KClaim]]:
+    module_name = Contract.contract_to_module_name(contract.name, spec=True)
     test_methods = [method for method in contract.methods if method.name.startswith('test')]
-    if not test_methods:
-        return module, None
-
     claims = [_test_execution_claim(empty_config, contract, method) for method in test_methods]
-    import_module = main_module if main_module else module_name
-    claims_module = KFlatModule(module_name + '-SPEC', claims, [KImport(import_module)])
-    return module, claims_module
+    return module_name, claims
 
 
 def _test_execution_claim(empty_config: KInner, contract: Contract, method: Contract.Method) -> KClaim:
