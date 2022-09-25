@@ -48,11 +48,14 @@ class KEVM(KProve, KRun):
         syntax_module_name: Optional[str] = None,
         md_selector: Optional[str] = None,
         profile: bool = False,
+        debug: bool = False,
         ccopts: Iterable[str] = (),
         llvm_kompile: bool = True,
         optimization: int = 0,
     ) -> 'KEVM':
         command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
+        if debug:
+            command += ['--debug']
         command += ['--backend', backend.value]
         command += ['--main-module', main_module_name] if main_module_name else []
         command += ['--syntax-module', syntax_module_name] if syntax_module_name else []

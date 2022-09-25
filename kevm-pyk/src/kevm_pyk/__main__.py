@@ -74,6 +74,7 @@ def exec_kompile(
     o1: bool = False,
     o2: bool = False,
     o3: bool = False,
+    debug: bool = False,
     **kwargs: Any,
 ) -> None:
     optimization = 0
@@ -93,6 +94,7 @@ def exec_kompile(
         syntax_module_name=syntax_module,
         md_selector=md_selector,
         profile=profile,
+        debug=debug,
         ccopts=ccopts,
         llvm_kompile=llvm_kompile,
         optimization=optimization,
@@ -142,6 +144,7 @@ def exec_foundry_kompile(
     imports: Iterable[str] = (),
     ccopts: Iterable[str] = (),
     llvm_kompile: bool = True,
+    debug: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
@@ -198,6 +201,7 @@ def exec_foundry_kompile(
             syntax_module_name=syntax_module,
             md_selector=md_selector,
             profile=profile,
+            debug=debug,
             ccopts=ccopts,
             llvm_kompile=llvm_kompile,
         )
