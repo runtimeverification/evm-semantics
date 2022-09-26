@@ -7,10 +7,10 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KRequire, KRule, KToken
+from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KRule, KToken
 from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
-from pyk.ktool.krun import _krun
+from pyk.ktool.krun import KPrint, _krun
 from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
@@ -141,9 +141,11 @@ def exec_foundry_kompile(
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
 
+    kevm = KEVM(definition_dir, profile=profile)
+    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
+
     bin_runtime_definition = _foundry_to_bin_runtime(
-        definition_dir=definition_dir,
-        profile=profile,
+        empty_config=empty_config,
         contracts=contracts,
         main_module=main_module,
         requires=requires,
@@ -175,12 +177,7 @@ def exec_foundry_kompile(
         _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
 
         foundry = Foundry(definition_dir, profile=profile)
-        cfgs = _contract_to_claim_cfgs(
-            definition=foundry.definition,
-            definition_dir=definition_dir,
-            profile=profile,
-            contracts=contracts,
-        )
+        cfgs = _contract_to_claim_cfgs(kevm=foundry, contracts=contracts)
 
         with open(kcfgs_file, 'w') as kf:
             kf.write(json.dumps(cfgs))
@@ -208,16 +205,12 @@ def _contract_from_json(json_path: str) -> Contract:
 
 
 def _foundry_to_bin_runtime(
-    definition_dir: Path,
-    profile: bool,
+    empty_config: KInner,
     contracts: Iterable[Contract],
     main_module: Optional[str],
     requires: Iterable[str],
     imports: Iterable[str],
 ) -> KDefinition:
-    foundry = Foundry(definition_dir, profile=profile)
-    empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
-
     modules = []
     for contract in contracts:
         module = contract_to_main_module(contract, empty_config, imports=imports)
@@ -239,20 +232,15 @@ def _foundry_to_bin_runtime(
 
 
 def _contract_to_claim_cfgs(
-    definition: KDefinition,
-    definition_dir: Path,
-    profile: bool,
+    kevm: KPrint,
     contracts: Iterable[Contract],
 ) -> Dict[str, Dict]:
-    foundry = Foundry(definition_dir, profile=profile)
-    empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
-
     cfgs: Dict[str, Dict] = {}
     for contract in contracts:
-        module_name, claims = contract_to_claims(contract, empty_config)
+        module_name, claims = contract_to_claims(kevm, contract)
         for claim in claims:
             cfg_label = f'{module_name}.{claim.att["label"]}'
-            cfgs[cfg_label] = KCFG_from_claim(definition, claim).to_dict()
+            cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
             _LOGGER.info(f'Produced KCFG: {cfg_label}')
 
     return cfgs
