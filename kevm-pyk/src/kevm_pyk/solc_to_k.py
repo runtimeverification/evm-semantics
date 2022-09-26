@@ -109,6 +109,9 @@ class Contract:
                 else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
             )
 
+        def calldata_cell(self, contract: 'Contract') -> KInner:
+            return KApply(contract.klabel_method, [KApply(contract.klabel), self.application])
+
         @cached_property
         def application(self) -> KInner:
             klabel = self.production.klabel
@@ -324,7 +327,7 @@ def contract_to_claims(contract: Contract, empty_config: KInner) -> Tuple[str, L
 
 def _test_execution_claim(empty_config: KInner, contract: Contract, method: Contract.Method) -> KClaim:
     claim_name = method.name.replace('_', '-')
-    calldata = KApply(contract.klabel_method, [KApply(contract.klabel), method.application])
+    calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
     init_term = _init_term(empty_config, contract.name, calldata=calldata, callvalue=callvalue)
     init_cterm = _init_cterm(init_term)
