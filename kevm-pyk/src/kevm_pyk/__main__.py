@@ -10,7 +10,7 @@ from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KRule, KToken
 from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
-from pyk.ktool.krun import _krun
+from pyk.ktool.krun import KPrint, _krun
 from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
@@ -177,12 +177,7 @@ def exec_foundry_kompile(
         _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
 
         kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
-        cfgs = _contract_to_claim_cfgs(
-            definition=kevm.definition,
-            definition_dir=definition_dir,
-            profile=profile,
-            contracts=contracts,
-        )
+        cfgs = _contract_to_claim_cfgs(kevm=kevm, contracts=contracts)
 
         with open(kcfgs_file, 'w') as kf:
             kf.write(json.dumps(cfgs))
@@ -237,13 +232,11 @@ def _foundry_to_bin_runtime(
 
 
 def _contract_to_claim_cfgs(
-    definition: KDefinition,
-    definition_dir: Path,
-    profile: bool,
+    kevm: KPrint,
     contracts: Iterable[Contract],
 ) -> Dict[str, Dict]:
-    kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
+    definition = kevm.definition
+    empty_config = definition.empty_config(KEVM.Sorts.KEVM_CELL)
 
     cfgs: Dict[str, Dict] = {}
     for contract in contracts:
