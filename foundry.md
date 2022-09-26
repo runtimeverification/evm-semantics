@@ -387,9 +387,7 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
 
      syntax KItem ::= "#getNonce" Int Int Int
  // ------------------------------------------------
-    rule <k> #getNonce ACCTID RETSTART RETWIDTH
-          => #setLocalMem RETSTART RETWIDTH #bufStrict(32, NONCE)
-          ~> 1 ~> #push ...
+    rule <k> #getNonce ACCTID RETSTART RETWIDTH => #setLocalMem RETSTART RETWIDTH #bufStrict(32, NONCE) ~> 1 ~> #push ...
          </k>
          <output> _ => #bufStrict(32, NONCE) </output>
          <account>
@@ -423,8 +421,7 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
 
      syntax KItem ::= "#setNonce" Int Int
  // ----------------------------------------------------------
-    rule <k> #setNonce ACCTID NONCE
-          => 1 ~> #push ... </k>
+    rule <k> #setNonce ACCTID NONCE => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <account>
              <acctID> ACCTID </acctID>
