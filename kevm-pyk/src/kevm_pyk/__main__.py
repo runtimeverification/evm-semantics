@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KRequire, KRule, KToken
+from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KRule, KToken
 from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
 from pyk.ktool.krun import _krun
@@ -141,9 +141,11 @@ def exec_foundry_kompile(
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
 
+    kevm = KEVM(definition_dir, profile=profile)
+    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
+
     bin_runtime_definition = _foundry_to_bin_runtime(
-        definition_dir=definition_dir,
-        profile=profile,
+        empty_config=empty_config,
         contracts=contracts,
         main_module=main_module,
         requires=requires,
@@ -208,16 +210,12 @@ def _contract_from_json(json_path: str) -> Contract:
 
 
 def _foundry_to_bin_runtime(
-    definition_dir: Path,
-    profile: bool,
+    empty_config: KInner,
     contracts: Iterable[Contract],
     main_module: Optional[str],
     requires: Iterable[str],
     imports: Iterable[str],
 ) -> KDefinition:
-    kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
-
     modules = []
     for contract in contracts:
         module = contract_to_main_module(contract, empty_config, imports=imports)
