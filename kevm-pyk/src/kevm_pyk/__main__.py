@@ -141,8 +141,8 @@ def exec_foundry_kompile(
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
 
-    kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
+    foundry = Foundry(definition_dir, profile=profile)
+    empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
 
     bin_runtime_definition = _foundry_to_bin_runtime(
         empty_config=empty_config,
@@ -155,9 +155,9 @@ def exec_foundry_kompile(
     if regen or not foundry_main_file.exists():
         with open(foundry_main_file, 'w') as fmf:
             _LOGGER.info(f'Writing file: {foundry_main_file}')
-            _kevm = KEVM(definition_dir=definition_dir)
-            _kprint = KPrint_make_unparsing(_kevm, extra_modules=bin_runtime_definition.modules)
-            KEVM._patch_symbol_table(_kprint.symbol_table)
+            _foundry = Foundry(definition_dir=definition_dir)
+            _kprint = KPrint_make_unparsing(_foundry, extra_modules=bin_runtime_definition.modules)
+            Foundry._patch_symbol_table(_kprint.symbol_table)
             fmf.write(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
     if regen or rekompile or not kompiled_timestamp.exists():
