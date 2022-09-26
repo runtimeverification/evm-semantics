@@ -30,6 +30,7 @@ from pyk.kast import (
     build_assoc,
 )
 from pyk.kastManip import abstract_term_safely, substitute
+from pyk.ktool import KPrint
 from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.ml import mlEqualsTrue
@@ -326,7 +327,9 @@ def contract_to_main_module(contract: Contract, empty_config: KInner, imports: I
     return KFlatModule(module_name, contract.sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
 
 
-def contract_to_claims(contract: Contract, empty_config: KInner) -> Tuple[str, List[KClaim]]:
+def contract_to_claims(kevm: KPrint, contract: Contract) -> Tuple[str, List[KClaim]]:
+    definition = kevm.definition
+    empty_config = definition.empty_config(KEVM.Sorts.KEVM_CELL)
     module_name = Contract.contract_to_module_name(contract.name, spec=True)
     test_methods = [method for method in contract.methods if method.name.startswith('test')]
     claims = [_test_execution_claim(empty_config, contract, method) for method in test_methods]

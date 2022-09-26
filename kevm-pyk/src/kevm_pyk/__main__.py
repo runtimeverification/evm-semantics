@@ -235,15 +235,12 @@ def _contract_to_claim_cfgs(
     kevm: KPrint,
     contracts: Iterable[Contract],
 ) -> Dict[str, Dict]:
-    definition = kevm.definition
-    empty_config = definition.empty_config(KEVM.Sorts.KEVM_CELL)
-
     cfgs: Dict[str, Dict] = {}
     for contract in contracts:
-        module_name, claims = contract_to_claims(contract, empty_config)
+        module_name, claims = contract_to_claims(kevm, contract)
         for claim in claims:
             cfg_label = f'{module_name}.{claim.att["label"]}'
-            cfgs[cfg_label] = KCFG_from_claim(definition, claim).to_dict()
+            cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
             _LOGGER.info(f'Produced KCFG: {cfg_label}')
 
     return cfgs
