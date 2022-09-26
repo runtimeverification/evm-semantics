@@ -245,7 +245,7 @@ def _contract_to_claim_cfgs(
     contracts: Iterable[Contract],
 ) -> Dict[str, Dict]:
     foundry = Foundry(definition_dir, profile=profile)
-    empty_config = foundry.definition.empty_config(KSort('FoundryCell'))
+    empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
 
     cfgs: Dict[str, Dict] = {}
     for contract in contracts:

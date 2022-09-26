@@ -322,6 +322,9 @@ class Foundry(KPrint):
         KPrint.__init__(self, definition_dir, use_directory=use_directory, profile=profile)
         KEVM._patch_symbol_table(self.symbol_table)
 
+    class Sorts:
+        FOUNDRY_CELL: Final = KSort('FoundryCell')
+
     @staticmethod
     def success(s: KInner, dst: KInner) -> KApply:
         return KApply('foundry_success ', [s, dst])
