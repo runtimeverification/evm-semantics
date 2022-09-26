@@ -14,7 +14,7 @@ from pyk.ktool.krun import _krun
 from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
-from .kevm import KEVM
+from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_claims, contract_to_main_module, solc_compile
 from .utils import KCFG_from_claim, KPrint_make_unparsing, KProve_prove_claim, add_include_arg
 
@@ -174,9 +174,9 @@ def exec_foundry_kompile(
     if reinit or not kcfgs_file.exists():
         _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
 
-        kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
+        foundry = Foundry(definition_dir, profile=profile)
         cfgs = _contract_to_claim_cfgs(
-            definition=kevm.definition,
+            definition=foundry.definition,
             definition_dir=definition_dir,
             profile=profile,
             contracts=contracts,
@@ -215,8 +215,8 @@ def _foundry_to_bin_runtime(
     requires: Iterable[str],
     imports: Iterable[str],
 ) -> KDefinition:
-    kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
+    foundry = Foundry(definition_dir, profile=profile)
+    empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
 
     modules = []
     for contract in contracts:
@@ -244,8 +244,8 @@ def _contract_to_claim_cfgs(
     profile: bool,
     contracts: Iterable[Contract],
 ) -> Dict[str, Dict]:
-    kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
+    foundry = Foundry(definition_dir, profile=profile)
+    empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
 
     cfgs: Dict[str, Dict] = {}
     for contract in contracts:

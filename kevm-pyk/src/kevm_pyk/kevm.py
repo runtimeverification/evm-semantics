@@ -7,7 +7,7 @@ from typing import Any, Dict, Final, Iterable, List, Optional
 from pyk.cli_utils import run_process
 from pyk.kast import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
 from pyk.kastManip import flatten_label, get_cell
-from pyk.ktool import KProve, KRun
+from pyk.ktool import KPrint, KProve, KRun
 from pyk.ktool.kprint import paren
 from pyk.prelude.kbool import notBool
 from pyk.prelude.kint import intToken
@@ -316,7 +316,15 @@ class KEVM(KProve, KRun):
         return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), accts)
 
 
-class Foundry:
+class Foundry(KPrint):
+    def __init__(self, definition_dir: Path, use_directory: Optional[Path] = None, profile: bool = False) -> None:
+         # copied from KEVM class and adapted to inherit KPrint instead
+         KPrint.__init__(self, definition_dir, use_directory=use_directory, profile=profile)
+         KEVM._patch_symbol_table(self.symbol_table)
+
+    class Sorts:
+        FOUNDRY_CELL: Final = KSort('FoundryCell')
+
     @staticmethod
     def success(s: KInner, dst: KInner) -> KApply:
         return KApply('foundry_success ', [s, dst])
