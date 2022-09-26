@@ -8,7 +8,7 @@ contract TokenTest {
         assert(true);
     }
 
-    //function test_2() public pure {
-    //    assert(false);
-    //}
+    function test_2() public pure {
+        assert(false);
+    }
 }

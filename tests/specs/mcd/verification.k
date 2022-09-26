@@ -80,11 +80,6 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
 
     rule chop(Y) => Y +Int pow256 requires #range( 0 -Int maxUInt256 <= Y < 0 ) [simplification]
 
-    rule maxUInt48 &Int X <=Int maxUInt48 &Int X +Int Y => false
-      requires #rangeUInt(48, X)
-       andBool #rangeUInt(48, Y)
-       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
-
     rule sgn(chop(X)) ==Int  1 => 0 <=Int X requires #rangeSInt(256, X) [simplification]
     rule sgn(chop(X)) ==Int -1 => X  <Int 0 requires #rangeSInt(256, X) [simplification]
 
@@ -130,6 +125,30 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
        andBool Y <=Int 0
        andBool notBool #rangeUInt(256, X -Int Y) [simplification]
 
+    rule { chop(X) #Equals chop(Y) } => { X #Equals Y }
+         requires #rangeSInt(256, X) andBool #rangeSInt(256, Y)
+         [simplification]
+
+  // ########################
+  // Buffer Reasoning
+  // ########################
+
+    rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray } => { BY #Equals BZ }
+         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
+
+    rule { BA1:ByteArray ++ (BA2:ByteArray ++ BA3:ByteArray) #Equals BA4:ByteArray ++ BA3 } => { (BA1 ++ BA2) #Equals BA4 } [simplification]
+
+    rule { BA1:ByteArray ++ BA2:ByteArray #Equals BA3:ByteArray ++ BA4:ByteArray } =>
+         { true #Equals BA1 ==K BA3 andBool BA2 ==K BA4 }
+         requires (#sizeByteArray(BA1) ==Int #sizeByteArray(BA3))
+           orBool (#sizeByteArray(BA2) ==Int #sizeByteArray(BA4))
+         [simplification]
+
+    rule { BA1:ByteArray #Equals BA2:ByteArray ++ BA3:ByteArray } =>
+         { true #Equals BA1 ==K BA2 andBool .ByteArray ==K BA3 }
+         requires (#sizeByteArray(BA1) ==Int #sizeByteArray(BA2))
+         [simplification]
+
   // ########################
   // Map
   // ########################
@@ -137,6 +156,9 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
     rule #range(M:Memory [ K <- V ]                        , START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)  requires K +Int 1                    ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START [concrete(K    , V     ), simplification]
     rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS')        ], START, WIDTH)  requires K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START
                                                                                                                                   andBool K +Int 1                    ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
+
+    rule { (M:Map [K <- V1]) #Equals (M [K <- V2]) } => { V1 #Equals V2 }
+         [simplification]
 
 endmodule
 
@@ -146,11 +168,6 @@ module LEMMAS-MCD-JAVA [symbolic, kast]
   // ########################
   // Arithmetic
   // ########################
-
-    rule X <=Int maxUInt48 &Int X +Int Y => false
-      requires #rangeUInt(48, X)
-       andBool #rangeUInt(48, Y)
-       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
 
     rule sgn(chop(X)) ==K  1 => 0 <=Int X requires #rangeSInt(256, X) [simplification]
     rule sgn(chop(X)) ==K -1 => X  <Int 0 requires #rangeSInt(256, X) [simplification]
@@ -178,11 +195,19 @@ module LEMMAS-MCD-COMMON
     rule (W0 : WS) [ 0     .. WIDTH ] => W0 : (WS [ 0 .. WIDTH -Int 1 ])  requires 0 <Int WIDTH [simplification]
     rule (_  : WS) [ START .. WIDTH ] => WS [ START -Int 1 .. WIDTH ]     requires 0 <Int START [simplification]
 
-    // ### cat-exhaustiveness
-
     rule WS [ START .. WIDTH ] [ 0 .. WIDTH' ]  => WS [ START .. WIDTH' ]  requires WIDTH' <=Int WIDTH [simplification]
 
+    // ### cat-exhaustiveness
+
     rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 ) [simplification]
+
+  // ########################
+  // Keccak
+  // ########################
+
+    rule keccak(_) ==Int I => false requires 0 <=Int I andBool I <Int 10 [simplification]
+    rule keccak(_) +Int I1 ==Int I2 => false
+      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10 [simplification]
 
   // ########################
   // Word Reasoning
@@ -326,12 +351,17 @@ module LEMMAS-MCD-COMMON
 
     rule M:Memory [ K1 := (BUF11 ++ BUF12) ] [ K2 := BUF2 ] => M [ K1 +Int #sizeByteArray(BUF11) := BUF12 ] [ K2 := BUF2 ]
       requires K2 <=Int K1
-       andBool K1 +Int #sizeByteArray(BUF11) <=Int K2 +Int #sizeByteArray(BUF2)
+      andBool K1 +Int #sizeByteArray(BUF11) <=Int K2 +Int #sizeByteArray(BUF2)
       [simplification]
 
   // ########################
   // Arithmetic
   // ########################
+
+    rule X <=Int maxUInt48 &Int (X +Int Y) => false
+      requires #rangeUInt(48, X)
+       andBool #rangeUInt(48, Y)
+       andBool notBool #rangeUInt(48, X +Int Y) [simplification]
 
     rule chop(N +Int M) <Int N => true  requires #rangeUInt(256, N)
                                          andBool #rangeUInt(256, M)
@@ -466,5 +496,13 @@ module LEMMAS-MCD-COMMON
     rule M:Map [ K1 <- _ ] [ K2 <- V2 ] [ K3 <- V3 ] [ K1 <- V4 ] => M [ K1 <- V4 ] [ K2 <- V2 ] [ K3 <- V3 ] requires K1 =/=Int K2 andBool K1 =/=Int K3 [simplification]
 
     rule chop(X *Int (Y +Int pow256)) => chop(X *Int Y) [simplification]
+
+  // ########################
+  // Boolean Logic
+  // ########################
+
+    rule X:Int ==Int A:Int orBool X ==Int B:Int orBool X ==Int C:Int orBool X ==Int D:Int => X ==Int D
+         requires X =/=Int A andBool X =/=Int B andBool X =/=Int C
+         [simplification]
 
 endmodule

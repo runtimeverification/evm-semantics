@@ -1,25 +1,37 @@
-import glob
 import json
 import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Final, List, Optional
+from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
+from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KDefinition, KFlatModule, KImport, KRequire, KSort
+from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KRequire, KRule, KToken
+from pyk.kastManip import minimize_term
+from pyk.kcfg import KCFG
 from pyk.ktool.krun import _krun
+from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
-from .solc_to_k import Contract, contract_to_k, solc_compile
-from .utils import KPrint_make_unparsing, add_include_arg
+from .solc_to_k import Contract, contract_to_claims, contract_to_main_module, solc_compile
+from .utils import KCFG_from_claim, KPrint_make_unparsing, KProve_prove_claim, add_include_arg
+
+T = TypeVar('T')
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
-def main():
+def _ignore_arg(args: Dict[str, Any], arg: str, cli_option: str) -> None:
+    if arg in args:
+        if args[arg] is not None:
+            _LOGGER.warning(f'Ignoring command-line option: {cli_option}')
+        args.pop(arg)
+
+
+def main() -> None:
     sys.setrecursionlimit(15000000)
     parser = _create_argument_parser()
     args = parser.parse_args()
@@ -36,12 +48,12 @@ def main():
 # Command implementation
 
 
-def exec_compile(contract_file: Path, profile: bool, **kwargs) -> None:
+def exec_compile(contract_file: Path, profile: bool, **kwargs: Any) -> None:
     res = solc_compile(contract_file, profile=profile)
     print(json.dumps(res))
 
 
-def exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, **kwargs) -> None:
+def exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, **kwargs: Any) -> None:
     gst_to_kore(input_file, sys.stdout, schedule, mode, chainid)
 
 
@@ -54,9 +66,7 @@ def exec_kompile(
     main_module: Optional[str],
     syntax_module: Optional[str],
     md_selector: Optional[str],
-    hook_namespaces: Optional[str],
-    concrete_rules_file: Optional[Path],
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     KEVM.kompile(
         definition_dir,
@@ -66,8 +76,6 @@ def exec_kompile(
         main_module_name=main_module,
         syntax_module_name=syntax_module,
         md_selector=md_selector,
-        hook_namespaces=hook_namespaces.split(' ') if hook_namespaces is not None else None,
-        concrete_rules_file=concrete_rules_file,
         profile=profile,
     )
 
@@ -81,90 +89,173 @@ def exec_solc_to_k(
     spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
-    exclude_tests: Optional[Path],
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KSort('KevmCell'))
+    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
     solc_json = solc_compile(contract_file, profile=profile)
     contract_json = solc_json['contracts'][contract_file.name][contract_name]
-    _exclude_tests = []
-    if exclude_tests and exclude_tests.exists():
-        with open(exclude_tests, 'r') as el:
-            _exclude_tests = el.read().strip().split('\n')
     contract = Contract(contract_name, contract_json, foundry=False)
-    contract_module, contract_claims_module = contract_to_k(
-        contract, empty_config, foundry=False, exclude_tests=_exclude_tests
-    )
-    modules = [contract_module]
-    claims_modules = [contract_claims_module] if contract_claims_module else []
+    contract_module = contract_to_main_module(contract, empty_config, imports=imports)
     _main_module = KFlatModule(
-        main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports]
+        main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [contract_module.name] + imports]
     )
-    _spec_module = KFlatModule(
-        spec_module if spec_module else 'SPEC', [], [KImport(mname) for mname in [_m.name for _m in claims_modules]]
-    )
-    modules.append(_main_module)
-    modules.append(_spec_module)
+    _spec_module = KFlatModule(spec_module if spec_module else 'SPEC')
+    modules = (contract_module, _main_module, _spec_module)
     bin_runtime_definition = KDefinition(
-        _main_module.name, modules + claims_modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
+        _main_module.name, modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
     )
     _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
     KEVM._patch_symbol_table(_kprint.symbol_table)
     print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
 
-def exec_foundry_to_k(
+def exec_foundry_kompile(
     definition_dir: Path,
     profile: bool,
-    out: Path,
-    main_module: Optional[str],
-    spec_module: Optional[str],
-    requires: List[str],
-    imports: List[str],
-    exclude_tests: Optional[Path],
-    **kwargs,
+    foundry_out: Path,
+    includes: List[str],
+    md_selector: Optional[str],
+    regen: bool = False,
+    rekompile: bool = False,
+    reinit: bool = False,
+    requires: Iterable[str] = (),
+    imports: Iterable[str] = (),
+    **kwargs: Any,
 ) -> None:
-    foundry = Foundry(definition_dir, profile=profile)
-    empty_config = foundry.definition.empty_config(KSort('FoundryCell'))
-    path_glob = str(out) + '/*.t.sol/*.json'
-    modules: List[KFlatModule] = []
-    claims_modules: List[KFlatModule] = []
-    _exclude_tests = []
-    if exclude_tests and exclude_tests.exists():
-        with open(exclude_tests, 'r') as el:
-            _exclude_tests = el.read().strip().split('\n')
-    # Must sort to get consistent output order on different platforms.
-    for json_file in sorted(glob.glob(path_glob)):
-        if json_file.endswith('.metadata.json'):
-            continue
-        _LOGGER.info(f'Processing contract file: {json_file}')
-        contract_name = json_file.split('/')[-1]
-        contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
-        with open(json_file, 'r') as cjson:
-            contract_json = json.loads(cjson.read())
-            contract = Contract(contract_name, contract_json, foundry=True)
-            module, claims_module = contract_to_k(contract, empty_config, foundry=True, exclude_tests=_exclude_tests)
-            _LOGGER.info(f'Produced contract module: {module.name}')
-            modules.append(module)
-            if claims_module:
-                claims_modules.append(claims_module)
-    _main_module = KFlatModule(
-        main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [_m.name for _m in modules] + imports]
+    _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
+    _ignore_arg(kwargs, 'syntax_module', f'--syntax-module {kwargs["syntax_module"]}')
+    _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
+    main_module = 'FOUNDRY-MAIN'
+    syntax_module = 'FOUNDRY-MAIN'
+    foundry_definition_dir = foundry_out / 'kompiled'
+    foundry_main_file = foundry_definition_dir / 'foundry.k'
+    kompiled_timestamp = foundry_definition_dir / 'timestamp'
+    kcfgs_file = foundry_definition_dir / 'kcfgs.json'
+    requires = ['lemmas/lemmas.k', 'lemmas/int-simplification.k'] + list(requires)
+    imports = ['LEMMAS', 'INT-SIMPLIFICATION'] + list(imports)
+
+    if not foundry_definition_dir.exists():
+        foundry_definition_dir.mkdir()
+
+    json_paths = _contract_json_paths(foundry_out)
+    contracts = [_contract_from_json(json_path) for json_path in json_paths]
+
+    bin_runtime_definition = _foundry_to_bin_runtime(
+        definition_dir=definition_dir,
+        profile=profile,
+        contracts=contracts,
+        main_module=main_module,
+        requires=requires,
+        imports=imports,
     )
-    _spec_module = KFlatModule(
-        spec_module if spec_module else 'SPEC', [], [KImport(mname) for mname in [_m.name for _m in claims_modules]]
+
+    if regen or not foundry_main_file.exists():
+        with open(foundry_main_file, 'w') as fmf:
+            _LOGGER.info(f'Writing file: {foundry_main_file}')
+            _kevm = KEVM(definition_dir=definition_dir)
+            _kprint = KPrint_make_unparsing(_kevm, extra_modules=bin_runtime_definition.modules)
+            KEVM._patch_symbol_table(_kprint.symbol_table)
+            fmf.write(_kprint.pretty_print(bin_runtime_definition) + '\n')
+
+    if regen or rekompile or not kompiled_timestamp.exists():
+        _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
+        KEVM.kompile(
+            foundry_definition_dir,
+            foundry_main_file,
+            emit_json=True,
+            includes=includes,
+            main_module_name=main_module,
+            syntax_module_name=syntax_module,
+            md_selector=md_selector,
+            profile=profile,
+        )
+
+    if reinit or not kcfgs_file.exists():
+        _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
+
+        kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
+        cfgs = _contract_to_claim_cfgs(
+            definition=kevm.definition,
+            definition_dir=definition_dir,
+            profile=profile,
+            contracts=contracts,
+        )
+
+        with open(kcfgs_file, 'w') as kf:
+            kf.write(json.dumps(cfgs))
+            kf.close()
+
+        _LOGGER.info(f'Wrote file: {kcfgs_file}')
+
+
+def _contract_json_paths(foundry_out: Path) -> List[str]:
+    pattern = '*.t.sol/*.json'
+    paths = foundry_out.glob(pattern)
+    json_paths = [str(path) for path in paths]
+    json_paths = [json_path for json_path in json_paths if not json_path.endswith('.metadata.json')]
+    json_paths = sorted(json_paths)  # Must sort to get consistent output order on different platforms
+    return json_paths
+
+
+def _contract_from_json(json_path: str) -> Contract:
+    _LOGGER.info(f'Processing contract file: {json_path}')
+    with open(json_path, 'r') as json_file:
+        contract_json = json.loads(json_file.read())
+    contract_name = json_path.split('/')[-1]
+    contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
+    return Contract(contract_name, contract_json, foundry=True)
+
+
+def _foundry_to_bin_runtime(
+    definition_dir: Path,
+    profile: bool,
+    contracts: Iterable[Contract],
+    main_module: Optional[str],
+    requires: Iterable[str],
+    imports: Iterable[str],
+) -> KDefinition:
+    kevm = KEVM(definition_dir, profile=profile)
+    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
+
+    modules = []
+    for contract in contracts:
+        module = contract_to_main_module(contract, empty_config, imports=imports)
+        _LOGGER.info(f'Produced contract module: {module.name}')
+        modules.append(module)
+    _main_module = KFlatModule(
+        main_module if main_module else 'MAIN',
+        imports=(KImport(mname) for mname in [_m.name for _m in modules] + list(imports)),
     )
     modules.append(_main_module)
-    modules.append(_spec_module)
+
     bin_runtime_definition = KDefinition(
         _main_module.name,
-        modules + claims_modules,
-        requires=[KRequire(req) for req in ['edsl.md', 'lemmas/int-simplification.k', 'lemmas/lemmas.k'] + requires],
+        modules,
+        requires=(KRequire(req) for req in ['edsl.md'] + list(requires)),
     )
-    _kprint = KPrint_make_unparsing(foundry, extra_modules=modules)
-    KEVM._patch_symbol_table(_kprint.symbol_table)
-    print(_kprint.pretty_print(bin_runtime_definition) + '\n')
+
+    return bin_runtime_definition
+
+
+def _contract_to_claim_cfgs(
+    definition: KDefinition,
+    definition_dir: Path,
+    profile: bool,
+    contracts: Iterable[Contract],
+) -> Dict[str, Dict]:
+    foundry = Foundry(definition_dir, profile=profile)
+    empty_config = foundry.definition.empty_config(KSort('FoundryCell'))
+
+    cfgs: Dict[str, Dict] = {}
+    for contract in contracts:
+        module_name, claims = contract_to_claims(contract, empty_config)
+        for claim in claims:
+            cfg_label = f'{module_name}.{claim.att["label"]}'
+            cfgs[cfg_label] = KCFG_from_claim(definition, claim).to_dict()
+            _LOGGER.info(f'Produced KCFG: {cfg_label}')
+
+    return cfgs
 
 
 def exec_prove(
@@ -176,8 +267,12 @@ def exec_prove(
     bug_report: bool,
     spec_module: Optional[str],
     depth: Optional[int],
-    **kwargs,
+    claims: Iterable[str] = (),
+    exclude_claims: Iterable[str] = (),
+    minimize: bool = True,
+    **kwargs: Any,
 ) -> None:
+    _ignore_arg(kwargs, 'lemmas', '--lemma')
     kevm = KEVM(definition_dir, profile=profile)
     prove_args = add_include_arg(includes)
     haskell_args = []
@@ -187,8 +282,93 @@ def exec_prove(
         haskell_args += ['--bug-report', str(spec_file.with_suffix(''))]
     if depth is not None:
         prove_args += ['--depth', str(depth)]
+    if claims:
+        prove_args += ['--claims', ','.join(claims)]
+    if exclude_claims:
+        prove_args += ['--exclude', ','.join(exclude_claims)]
     final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
+    if minimize:
+        final_state = minimize_term(final_state)
     print(kevm.pretty_print(final_state) + '\n')
+    if not (type(final_state) is KApply and final_state.label.name == '#Top'):
+        _LOGGER.error('Proof failed!')
+        sys.exit(1)
+
+
+def exec_foundry_prove(
+    profile: bool,
+    foundry_out: Path,
+    includes: List[str],
+    debug_equations: List[str],
+    bug_report: bool,
+    depth: Optional[int],
+    tests: Iterable[str] = (),
+    exclude_tests: Iterable[str] = (),
+    workers: int = 1,
+    minimize: bool = True,
+    lemmas: Iterable[str] = (),
+    **kwargs: Any,
+) -> None:
+    _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
+    _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
+    _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
+    _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
+    if workers <= 0:
+        _LOGGER.error(f'Must have at least one worker, found: --workers {workers}')
+        sys.exit(1)
+    definition_dir = foundry_out / 'kompiled'
+    use_directory = foundry_out / 'specs'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    kcfgs_file = definition_dir / 'kcfgs.json'
+
+    _LOGGER.info(f'Reading file: {kcfgs_file}')
+    with open(kcfgs_file, 'r') as kf:
+        kcfgs = {k: KCFG.from_dict(v) for k, v in json.loads(kf.read()).items()}
+
+    tests = [Contract.contract_test_to_claim_id(_t) for _t in tests]
+    exclude_tests = [Contract.contract_test_to_claim_id(_t) for _t in exclude_tests]
+    claim_names = set(kcfgs)
+    _unfound_kcfgs: List[str] = []
+    if len(tests) > 0:
+        kcfgs = {k: kcfg for k, kcfg in kcfgs.items() if k in tests}
+    for _t in tests:
+        if _t not in claim_names:
+            _unfound_kcfgs.append(_t)
+    for _t in exclude_tests:
+        if _t not in claim_names:
+            _unfound_kcfgs.append(_t)
+        if _t in kcfgs:
+            kcfgs.pop(_t)
+    if _unfound_kcfgs:
+        _LOGGER.error(f'Missing KCFGs for tests: {_unfound_kcfgs}')
+        sys.exit(1)
+
+    def _kcfg_unproven_to_claim(_kcfg: KCFG) -> KClaim:
+        return _kcfg.create_edge(_kcfg.get_unique_init().id, _kcfg.get_unique_target().id, mlTop(), depth=-1).to_claim()
+
+    claims = [(kcfg_name.replace('.', '-'), _kcfg_unproven_to_claim(kcfg)) for kcfg_name, kcfg in kcfgs.items()]
+
+    kevm = KEVM(definition_dir, profile=profile, use_directory=use_directory)
+
+    lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
+
+    def prove_it(_id_and_claim: Tuple[str, KClaim]) -> bool:
+        _claim_id, _claim = _id_and_claim
+        ret, result = KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
+        if minimize:
+            result = minimize_term(result)
+        print(f'Result for {_claim_id}:\n{kevm.pretty_print(result)}\n')
+        return ret
+
+    with ProcessPool(ncpus=workers) as process_pool:
+        results = process_pool.map(prove_it, claims)
+        process_pool.close()
+
+    failed_claims = [cid for ((cid, _), failed) in zip(claims, results) if failed]
+    if failed_claims:
+        print(f'Failed to prove KCFGs: {failed_claims}\n')
+
+    sys.exit(len(failed_claims))
 
 
 def exec_run(
@@ -200,7 +380,7 @@ def exec_run(
     expand_macros: str,
     depth: Optional[int],
     output: str,
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir, profile=profile)
     krun_args = []
@@ -221,8 +401,8 @@ def exec_run(
 
 
 def _create_argument_parser() -> ArgumentParser:
-    def list_of(elem_type, delim=';'):
-        def parse(s):
+    def list_of(elem_type: Callable[[str], T], delim: str = ';') -> Callable[[str], List[T]]:
+        def parse(s: str) -> List[T]:
             return [elem_type(elem) for elem in s.split(delim)]
 
         return parse
@@ -231,6 +411,7 @@ def _create_argument_parser() -> ArgumentParser:
     shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
     shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
     shared_args.add_argument('--profile', default=False, action='store_true', help='Coarse process-level profiling.')
+    shared_args.add_argument('--workers', '-j', default=1, type=int, help='Number of processes to run in parallel.')
 
     k_args = ArgumentParser(add_help=False)
     k_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
@@ -241,6 +422,48 @@ def _create_argument_parser() -> ArgumentParser:
     k_args.add_argument('--syntax-module', default=None, type=str, help='Name of the syntax module.')
     k_args.add_argument('--spec-module', default=None, type=str, help='Name of the spec module.')
     k_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
+
+    kprove_args = ArgumentParser(add_help=False)
+    kprove_args.add_argument(
+        '--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.'
+    )
+    kprove_args.add_argument(
+        '--bug-report',
+        default=False,
+        action='store_true',
+        help='Generate a haskell-backend bug report for the execution.',
+    )
+    kprove_args.add_argument(
+        '--lemma',
+        dest='lemmas',
+        default=[],
+        action='append',
+        help='Additional lemmas to include as simplification rules during execution.',
+    )
+    kprove_args.add_argument(
+        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize prover output.'
+    )
+    kprove_args.add_argument(
+        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize prover output.'
+    )
+
+    k_kompile_args = ArgumentParser(add_help=False)
+    k_kompile_args.add_argument(
+        '--md-selector',
+        type=str,
+        default='k & ! nobytes & ! node',
+        help='Code selector expression to use when reading markdown.',
+    )
+    k_kompile_args.add_argument(
+        '--emit-json',
+        dest='emit_json',
+        default=True,
+        action='store_true',
+        help='Emit JSON definition after compilation.',
+    )
+    k_kompile_args.add_argument(
+        '--no-emit-json', dest='emit_json', action='store_false', help='Do not JSON definition after compilation.'
+    )
 
     evm_chain_args = ArgumentParser(add_help=False)
     evm_chain_args.add_argument(
@@ -269,48 +492,27 @@ def _create_argument_parser() -> ArgumentParser:
         action='append',
         help='Extra modules to import into generated main module.',
     )
-    k_gen_args.add_argument(
-        '--exclude-tests',
-        type=file_path,
-        help='File containing, one per line, tests to exclude as CONTRACT_NAME.TEST_NAME.',
-    )
 
     parser = ArgumentParser(prog='python3 -m kevm_pyk')
 
     command_parser = parser.add_subparsers(dest='command', required=True)
 
     kompile_args = command_parser.add_parser(
-        'kompile', help='Kompile KEVM specification.', parents=[shared_args, k_args]
+        'kompile', help='Kompile KEVM specification.', parents=[shared_args, k_args, k_kompile_args]
     )
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kompile_args.add_argument('--md-selector', type=str, help='Code selector expression to use when reading markdown.')
-    kompile_args.add_argument('--hook-namespaces', type=str, help='Hook namespaces. What more can I say?')
-    kompile_args.add_argument(
-        '--concrete-rules-file',
-        type=file_path,
-        help='File containing list of rules to be evaluated only if arguments are fully concrete.',
-    )
-    kompile_args.add_argument(
-        '--emit-json',
-        dest='emit_json',
-        default=True,
-        action='store_true',
-        help='Emit JSON definition after compilation.',
-    )
-    kompile_args.add_argument(
-        '--no-emit-json', dest='emit_json', action='store_false', help='Do not JSON definition after compilation.'
-    )
 
-    prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args])
+    prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args])
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
     prove_args.add_argument(
-        '--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.'
+        '--claim', type=str, dest='claims', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
     )
     prove_args.add_argument(
-        '--bug-report',
-        default=False,
-        action='store_true',
-        help='Generate a haskell-backend bug report for the execution.',
+        '--exclude-claim',
+        type=str,
+        dest='exclude_claims',
+        action='append',
+        help='Skip listed claims, MODULE_NAME.claim-id',
     )
 
     run_args = command_parser.add_parser(
@@ -359,12 +561,56 @@ def _create_argument_parser() -> ArgumentParser:
     solc_to_k_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
 
-    foundry_to_k_args = command_parser.add_parser(
-        'foundry-to-k',
-        help='Output helper K definition for given JSON output from solc compiler that Foundry produces.',
-        parents=[shared_args, k_args, k_gen_args],
+    foundry_kompile = command_parser.add_parser(
+        'foundry-kompile',
+        help='Kompile K definition corresponding to given output directory.',
+        parents=[shared_args, k_args, k_gen_args, k_kompile_args],
     )
-    foundry_to_k_args.add_argument('out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_kompile.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_kompile.add_argument(
+        '--regen',
+        dest='regen',
+        default=False,
+        action='store_true',
+        help='Regenerate foundry.k even if it already exists.',
+    )
+    foundry_kompile.add_argument(
+        '--rekompile',
+        dest='rekompile',
+        default=False,
+        action='store_true',
+        help='Rekompile foundry.k even if kompiled definition already exists.',
+    )
+    foundry_kompile.add_argument(
+        '--reinit',
+        dest='reinit',
+        default=False,
+        action='store_true',
+        help='Reinitialize kcfgs even if they already exist.',
+    )
+
+    foundry_prove_args = command_parser.add_parser(
+        'foundry-prove',
+        help='Run Foundry Proof.',
+        parents=[shared_args, k_args, kprove_args],
+    )
+    foundry_prove_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_prove_args.add_argument(
+        '--test',
+        type=str,
+        dest='tests',
+        default=[],
+        action='append',
+        help='Limit to only listed tests, ContractName.TestName',
+    )
+    foundry_prove_args.add_argument(
+        '--exclude-test',
+        type=str,
+        dest='exclude_tests',
+        default=[],
+        action='append',
+        help='Skip listed tests, ContractName.TestName',
+    )
 
     return parser
 

@@ -1,16 +1,17 @@
 import logging
-import os
 import sys
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import Any, Dict, Final, Iterable, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.kast import KApply, KInner, KLabel, KToken, KVariable
+from pyk.kast import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
 from pyk.kastManip import flatten_label, get_cell
 from pyk.ktool import KPrint, KProve, KRun
 from pyk.ktool.kprint import paren
-from pyk.prelude import Bool, build_assoc, intToken, stringToken
+from pyk.prelude.kbool import notBool
+from pyk.prelude.kint import intToken
+from pyk.prelude.string import stringToken
 
 from .utils import add_include_arg
 
@@ -44,8 +45,6 @@ class KEVM(KProve, KRun):
         main_module_name: Optional[str] = None,
         syntax_module_name: Optional[str] = None,
         md_selector: Optional[str] = None,
-        hook_namespaces: Optional[List[str]] = None,
-        concrete_rules_file: Optional[Path] = None,
         profile: bool = False,
     ) -> 'KEVM':
         command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
@@ -53,14 +52,11 @@ class KEVM(KProve, KRun):
         command += ['--main-module', main_module_name] if main_module_name else []
         command += ['--syntax-module', syntax_module_name] if syntax_module_name else []
         command += ['--md-selector', md_selector] if md_selector else []
-        command += ['--hook-namespaces', ' '.join(hook_namespaces)] if hook_namespaces else []
+        command += ['--hook-namespaces', ' '.join(KEVM.hook_namespaces())]
         command += add_include_arg(includes)
         if emit_json:
             command += ['--emit-json']
-        if concrete_rules_file and os.path.exists(concrete_rules_file):
-            with open(concrete_rules_file, 'r') as crf:
-                concrete_rules = ','.join(crf.read().split('\n'))
-                command += ['--concrete-rules', concrete_rules]
+        command += ['--concrete-rules', ','.join(KEVM.concrete_rules())]
         try:
             run_process(command, logger=_LOGGER, profile=profile)
         except CalledProcessError as err:
@@ -89,7 +85,7 @@ class KEVM(KProve, KRun):
         symbol_table['_|->_']                                         = paren(symbol_table['_|->_'])
         symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)
         symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)
-        symbol_table['.AccountCellMap']                               = lambda: ''
+        symbol_table['.AccountCellMap']                               = lambda: '.Bag'
         symbol_table['AccountCellMapItem']                            = lambda k, v: v
         symbol_table['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray'] = lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]'
         symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = lambda m, s, w: '(' + m + ' [ ' + s + ' .. ' + w + ' ]):ByteArray'
@@ -100,6 +96,63 @@ class KEVM(KProve, KRun):
         symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
         symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
         # fmt: on
+
+    class Sorts:
+        KEVM_CELL: Final = KSort('KevmCell')
+
+    @staticmethod
+    def hook_namespaces() -> List[str]:
+        return ['JSON', 'KRYPTO', 'BLOCKCHAIN']
+
+    @staticmethod
+    def concrete_rules() -> List[str]:
+        return [
+            'EVM.allBut64th.pos',
+            'EVM.Cextra.new',
+            'EVM.Cextra.old',
+            'EVM.Cgascap',
+            'EVM.Cmem',
+            'EVM.Csstore.new',
+            'EVM.Csstore.old',
+            'EVM.ecrec',
+            'EVM.isPrecompiledAccount.false',
+            'EVM.isPrecompiledAccount.true',
+            'EVM.#memoryUsageUpdate.some',
+            'EVM.Rsstore.new',
+            'EVM.Rsstore.old',
+            'EVM.Caddraccess',
+            'EVM.Cstorageaccess',
+            'EVM.Csload.new',
+            'EVM.Cextcodesize.new',
+            'EVM.Cextcodesize.old',
+            'EVM.Cextcodehash.new',
+            'EVM.Cextcodehash.old',
+            'EVM.Cextcodecopy.new',
+            'EVM.Cextcodecopy.old',
+            'EVM.Cbalance.new',
+            'EVM.Cbalance.old',
+            'EVM.Cmodexp.new',
+            'EVM.Cmodexp.old',
+            'EVM-TYPES.#asByteStack',
+            'EVM-TYPES.#asByteStackAux.recursive',
+            'EVM-TYPES.#asWord.recursive',
+            'EVM-TYPES.ByteArray.range',
+            'EVM-TYPES.bytesRange',
+            'EVM-TYPES.mapWriteBytes.recursive',
+            'EVM-TYPES.#padRightToWidth',
+            'EVM-TYPES.#padToWidth',
+            'EVM-TYPES.padToWidthNonEmpty',
+            'EVM-TYPES.powmod.nonzero',
+            'EVM-TYPES.powmod.zero',
+            'EVM-TYPES.#range',
+            'EVM-TYPES.signextend.invalid',
+            'EVM-TYPES.signextend.negative',
+            'EVM-TYPES.signextend.positive',
+            'EVM-TYPES.upDivInt',
+            'SERIALIZATION.keccak',
+            'SERIALIZATION.#newAddr',
+            'SERIALIZATION.#newAddrCreate2',
+        ]
 
     @staticmethod
     def halt() -> KApply:
@@ -127,27 +180,27 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def pow256() -> KApply:
-        return KApply('pow256_EVM-TYPES_Int', [])
+        return KApply('pow256_WORD_Int', [])
 
     @staticmethod
     def range_uint(width: int, i: KInner) -> KApply:
-        return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(width), i])
+        return KApply('#rangeUInt(_,_)_WORD_Bool_Int_Int', [intToken(width), i])
 
     @staticmethod
     def range_sint(width: int, i: KInner) -> KApply:
-        return KApply('#rangeSInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(width), i])
+        return KApply('#rangeSInt(_,_)_WORD_Bool_Int_Int', [intToken(width), i])
 
     @staticmethod
     def range_address(i: KInner) -> KApply:
-        return KApply('#rangeAddress(_)_EVM-TYPES_Bool_Int', [i])
+        return KApply('#rangeAddress(_)_WORD_Bool_Int', [i])
 
     @staticmethod
     def range_bool(i: KInner) -> KApply:
-        return KApply('#rangeBool(_)_EVM-TYPES_Bool_Int', [i])
+        return KApply('#rangeBool(_)_WORD_Bool_Int', [i])
 
     @staticmethod
     def range_bytes(width: KInner, ba: KInner) -> KApply:
-        return KApply('#rangeBytes(_,_)_EVM-TYPES_Bool_Int_Int', [width, ba])
+        return KApply('#rangeBytes(_,_)_WORD_Bool_Int_Int', [width, ba])
 
     @staticmethod
     def bool_2_word(cond: KInner) -> KApply:
@@ -183,7 +236,7 @@ class KEVM(KProve, KRun):
         return KApply('contract_access_loc', [accessor])
 
     @staticmethod
-    def lookup(map: KInner, key: KInner):
+    def lookup(map: KInner, key: KInner) -> KApply:
         return KApply('#lookup(_,_)_EVM-TYPES_Int_Map_Int', [map, key])
 
     @staticmethod
@@ -241,7 +294,7 @@ class KEVM(KProve, KRun):
         return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
 
     @staticmethod
-    def bytearray_empty():
+    def bytearray_empty() -> KApply:
         return KApply('.ByteArray_EVM-TYPES_ByteArray')
 
     @staticmethod
@@ -275,7 +328,7 @@ class Foundry(KPrint):
 
     @staticmethod
     def fail(s: KInner, dst: KInner) -> KApply:
-        return Bool.notBool(Foundry.success(s, dst))
+        return notBool(Foundry.success(s, dst))
 
     # address(uint160(uint256(keccak256("foundry default caller"))))
 

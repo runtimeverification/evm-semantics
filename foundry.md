@@ -1,7 +1,71 @@
 Foundry Specifications
 ======================
 
-### Overview
+**UNDER CONSTRUCTION**
+
+Example Usage
+-------------
+
+From the root of the [KEVM repository](../README.md), after having:
+
+-   Successfully built (or installed) KEVM, and
+-   Have `kevm` on `PATH`, and
+-   Have stepped into the virtual environment (see the [README](../README.md)).
+
+KEVM supports Foundry specifications via two CLI utilities, `foundry-kompile` and `foundry-prove`.
+To get help, you can do `kevm foundry-kompile --help` and `kevm foundry-prove --help`.
+Each command takes as input the Foundry `out/` directory.
+For example, in the root of this repository, you can run:
+
+*Build Foundry Project:*
+
+```sh
+$ cd tests/foundry
+$ forge build
+[⠊] Compiling...
+[⠑] Compiling 44 files with 0.8.13
+[⠊] Solc 0.8.13 finished in 3.58s
+Compiler run successful (with warnings)
+
+$ cd ../..
+```
+
+*Kompile to KEVM specification (inside virtual environment):*
+
+```sh
+(venv) $ kevm foundry-kompile tests/foundry/out
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unknown range predicate for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unsupported ABI type for method LoopsTest.method_LoopsTest_testMax, will not generate calldata sugar: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unknown range predicate for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unsupported ABI type for method LoopsTest.method_LoopsTest_testMaxBroken, will not generate calldata sugar: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unknown range predicate for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unsupported ABI type for method LoopsTest.method_LoopsTest_testSort, will not generate calldata sugar: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unknown range predicate for type: uint256[]
+WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unsupported ABI type for method LoopsTest.method_LoopsTest_testSortBroken, will not generate calldata sugar: uint256[]
+WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+```
+
+*And discharge some specific test as a proof obligation (inside virtual environment):*
+
+```sh
+(venv) $ kevm foundry-prove tests/foundry/out --test AssertTest.test_assert_true
+WARNING 2022-09-11 15:37:31,956 __main__ - Ignoring command-line option: --definition: /home/dev/src/evm-semantics/.build/usr/lib/kevm/haskell
+#Top
+```
+
+Foundry Module for KEVM
+-----------------------
 
 Foundry's testing framework provides a series of cheatcodes so that developers can specify what situation they want to test.
 This file describes the KEVM specification of the Foundry testing framework, which includes the definition of said cheatcodes and what does it mean for a test to pass.
@@ -23,8 +87,7 @@ module FOUNDRY
 endmodule
 ```
 
-Foundry Success Predicate
--------------------------
+### Foundry Success Predicate
 
 Foundry has several baked-in convenience accounts for helping to define the "cheat-codes".
 Here we define their addresses, and important storage-locations.
@@ -75,8 +138,7 @@ module FOUNDRY-SUCCESS
 endmodule
 ```
 
-Foundry Cheat Codes
--------------------
+### Foundry Cheat Codes
 
 ```k
 module FOUNDRY-CHEAT-CODES
@@ -121,7 +183,7 @@ This rule then takes a `bool` condition using `#range(LM, ARGSTART +Int 4, 32)` 
 ```k
 
     rule [call.assume]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH _ 0 => #assume(#range(LM, ARGSTART +Int 4, 32) ==K #bufStrict(32, 1)) ~> 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #assume(#range(LM, ARGSTART +Int 4, 32) ==K #bufStrict(32, 1)) ~> 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
@@ -140,7 +202,7 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)`
 
 ```k
     rule [call.deal]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => #setBalance(#asWord(#range(LM, ARGSTART +Int 4, 32)), #asWord(#range(LM, ARGSTART +Int 36, 32))) ~> 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #setBalance(#asWord(#range(LM, ARGSTART +Int 4, 32)), #asWord(#range(LM, ARGSTART +Int 36, 32))) ~> 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
@@ -232,8 +294,10 @@ The values are forwarded to the `#setCode` marker which updates the account acco
 
 ```k
     rule [call.etch]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART ARGWIDTH 0 0
-          => #setCode(#asWord(#range(LM, ARGSTART +Int 4, 32)), #range(LM, ARGSTART +Int 36, ARGWIDTH -Int 36))
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH
+          => #let CODE_START = ARGSTART +Int 100 #in
+             #let CODE_LENGTH = #asWord(#range(LM, ARGSTART +Int 68, 32)) #in
+             #setCode(#asWord(#range(LM, ARGSTART +Int 4, 32)), #range(LM, CODE_START, CODE_LENGTH))
           ~> 1 ~> #push
          ...
          </k>
@@ -264,7 +328,7 @@ This rule then takes the uint256 value using `#asWord(#range(LM, ARGSTART +Int 4
 
 ```k
     rule [call.warp]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <timestamp> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </timestamp>
@@ -284,7 +348,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
 
 ```k
     rule [call.roll]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <number> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </number>
@@ -293,7 +357,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
       [priority(40)]
 ```
 
-#### `fee` - Sets the block number.
+#### `fee` - Sets the block base fee.
 
 ```
 function fee(uint256) external;
@@ -304,7 +368,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
 
 ```k
     rule [call.fee]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <baseFee> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </baseFee>
@@ -313,7 +377,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
       [priority(40)]
 ```
 
-#### `chainId` - Sets the block number.
+#### `chainId` - Sets the chain ID.
 
 ```
 function chainId(uint256) external;
@@ -324,7 +388,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
 
 ```k
     rule [call.chainId]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <chainID> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </chainID>
@@ -333,7 +397,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
       [priority(40)]
 ```
 
-#### `coinbase` - Sets the block number.
+#### `coinbase` - Sets the block coinbase.
 
 ```
 function coinbase(address) external;
@@ -344,7 +408,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
 
 ```k
     rule [call.coinbase]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <coinbase> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </coinbase>
@@ -365,12 +429,37 @@ However, there is no change on the state and therefore this rule just skips the 
 
 ```k
     rule [call.label]:
-         <k> CALL _ CHEAT_ADDR 0 ARGSTART _ARGWIDTH 0 0 => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3327641368 // selector ( "label(address,string)" )
     [priority(40)]
+```
+
+#### `getNonce` - Gets the nonce of the given account.
+
+```
+function getNonce(address account) external returns (uint64);
+```
+
+`call.getNonce` will match when the `getNonce` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and returns its `nonce` updating the `<output>` cell.
+
+```k
+    rule [call.getNonce]:
+          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, NONCE) ... </k>
+          <output> _ => #bufStrict(32, NONCE) </output>
+          <localMem> LM </localMem>
+          <account>
+             <acctID> ACCTID </acctID>
+             <nonce>  NONCE  </nonce>
+             ...
+         </account>
+       requires CHEAT_ADDR ==Int #address(FoundryCheat)
+        andBool ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
+        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 755185067 // selector ( "getNonce(address)" )
+     [priority(40)]
 ```
 
 #### `addr` - Computes the address for a given private key.
@@ -390,6 +479,100 @@ This rule takes `uint256` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` 
        requires CHEAT_ADDR ==Int #address(FoundryCheat)
         andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4288775753 // selector ( "addr(uint256)" )
      [priority(40)]
+```
+
+#### `load` - Loads a storage slot from an address.
+
+```
+function load(address account, bytes32 slot) external returns (bytes32);
+```
+
+`call.load` will match when the `load` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule then loads the storage slot identified by `#asWord(#range(LM, ARGSTART +Int 36, 32))` (referring to `slot` argument) from account `#asWord(#range(LM, ARGSTART +Int 4, 32))` (referring to `account`) and sets the return value to the loaded slot value.
+
+```k
+    rule [call.load]:
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH
+          => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32))
+          ~> #foundryVmLoad ARGSTART RETSTART RETWIDTH
+          ~> #refund GCALL ...
+         </k>
+         <localMem> LM </localMem>
+         <callGas> GCALL => 0 </callGas>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1719639408 // selector ( "load(address,bytes32)" )
+      [priority(40)]
+
+
+    syntax KItem ::= "#foundryVmLoad" Int Int Int
+ // ----------------------------------------------------------
+    rule <k> #foundryVmLoad ARGSTART RETSTART RETWIDTH
+          => #setLocalMem RETSTART RETWIDTH #bufStrict(32, #lookup(STORAGE, #asWord(#range(LM, ARGSTART +Int 36, 32))))
+          ~> 1 ~> #push ...
+         </k>
+         <output>
+           _ => #bufStrict(32, #lookup(STORAGE, #asWord(#range(LM, ARGSTART +Int 36, 32))))
+         </output>
+         <account>
+             <acctID> ACCTID </acctID>
+             <storage> STORAGE </storage>
+             ...
+         </account>
+         <localMem> LM </localMem>
+      requires ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
+```
+
+#### `store` - Stores a value to an address' storage slot.
+
+```
+function store(address account, bytes32 slot, bytes32 value) external;
+```
+
+`call.store` will match when the `store` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32))` and the new slot value using `#asWord(#range(LM, ARGSTART +Int 68, 32))` and updates the slot denoted by `#asWord(#range(LM, ARGSTART +Int 36, 32))`.
+
+```k
+    rule [call.store]:
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH
+          => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32))
+          ~> #foundryVmStore ARGSTART
+          ~> #refund GCALL ...
+         </k>
+         <localMem> LM </localMem>
+         <callGas> GCALL => 0 </callGas>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1892290747 // selector ( "store(address,bytes32,bytes32)" )
+      [priority(40)]
+
+
+    syntax KItem ::= "#foundryVmStore" Int
+ // ----------------------------------------------------------
+    rule <k> #foundryVmStore ARGSTART => 1 ~> #push ... </k>
+         <output> _ => .ByteArray </output>
+         <account>
+             <acctID> ACCTID </acctID>
+             <storage> STORAGE => STORAGE [ #asWord(#range(LM, ARGSTART +Int 36, 32)) <- #asWord(#range(LM, ARGSTART +Int 68, 32)) ] </storage>
+             ...
+         </account>
+         <localMem> LM </localMem>
+      requires ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
+```
+
+Utils
+-----
+
+- `#loadAccount ACCT` creates a new, empty account for `ACCT` if it does not already exist. Otherwise, it has no effect
+
+```k
+    syntax KItem ::= "#loadAccount" Int
+ // ---------------------------------
+    rule <k> #loadAccount ACCT => #accessAccounts ACCT ... </k>
+         <activeAccounts> ACCTS:Set </activeAccounts>
+      requires ACCT in ACCTS
+
+    rule <k> #loadAccount ACCT => #newAccount ACCT ~> #accessAccounts ACCT ... </k>
+         <activeAccounts> ACCTS:Set </activeAccounts>
+      requires notBool ACCT in ACCTS
 ```
 
 ```k

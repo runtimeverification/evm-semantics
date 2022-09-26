@@ -8,8 +8,8 @@ module VERIFICATION-COMMON
   // ########################
 
     //Symbolic predicate representing whether output of #ecrec is empty. No implementation.
-    syntax Bool ::= #ecrecEmpty( ByteArray , ByteArray , ByteArray , ByteArray ) [function, no-evaluators]
- // ------------------------------------------------------------------------------------------------------
+    syntax Bool ::= #ecrecEmpty( ByteArray , ByteArray , ByteArray , ByteArray ) [function, no-evaluators, smtlib(ecrecEmpty)]
+ // --------------------------------------------------------------------------------------------------------------------------
     rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
     rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 0  requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
 
@@ -145,6 +145,13 @@ module VERIFICATION-HASKELL [symbolic, kore]
     rule BA1 ++ (BA2 ++ BA3) => (BA1 ++ BA2) ++ BA3 [concrete(BA1, BA2), simplification]
 
     rule maxUInt160 &Int Y => Y requires 0 <=Int Y andBool Y <=Int maxUInt160 [simplification]
+
+    rule ( #sizeByteArray(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 0  ) =>           #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )  [simplification]
+    rule ( #sizeByteArray(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 32 ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )) [simplification]
+
+    rule ( #sizeByteArray(#ecrec( _, _, _, _ )) <=Int K ) => true requires 32 <=Int K [simplification]
+
+    rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
 
 endmodule
 

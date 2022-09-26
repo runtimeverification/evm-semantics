@@ -32,6 +32,10 @@ These additional files extend the semantics to make the repository more useful:
 -   [abi.md](abi.md) defines the [Contract ABI Specification](https://docs.soliditylang.org/en/v0.8.1/abi-spec.html) for use in proofs and easy contract/function specification.
 -   [hashed-locations.md](hashed-locations.md) defines the `#hashedLocation` abstraction which makes it easier to specify Solidity-generate storage layouts.
 -   [edsl.md](edsl.md) combines the previous three abstractions for ease-of-use.
+-   [foundry.md](foundry.md) adds Foundry capabilities to KEVM.
+
+These files are used for testing the semantics itself:
+
 -   [state-utils.md](state-utils.md) provides functionality for EVM initialization, setup, and querying.
 -   [driver.md](driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
 
@@ -87,7 +91,9 @@ sudo apt-get install --yes                                                      
             libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev       \
             libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-10       \
             llvm-10-tools make maven netcat-openbsd openjdk-11-jdk pkg-config          \
-            protobuf-compiler python3 python-pygments rapidjson-dev time zlib1g-dev
+            protobuf-compiler python3 python3-dev python3-pip rapidjson-dev time      \
+            zlib1g-dev
+pip3 install poetry
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
@@ -109,11 +115,11 @@ sudo pacman -S                                               \
 
 #### macOS
 
-On macOS, using [Homebrew](https://brew.sh/), after installing the Command Line Tools and getting the [blockchain plugin](#blockchain-plugin):
+After installing the Command Line Tools, [Homebrew](https://brew.sh/), and getting the [blockchain plugin](#blockchain-plugin), run:
 
 ```sh
 brew tap kframework/k
-brew install java automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python bash kframework/k/cryptopp@8.6.0
+brew install java automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python bash kframework/k/cryptopp@8.6.0 poetry solidity
 make libsecp256k1
 ```
 
@@ -152,7 +158,8 @@ export PATH=$HOME/.local/bin:$PATH
 #### K Framework
 
 The `Makefile` and `kevm` will work with either a (i) globally installed K, or (ii) a K submodule included in this repository.
-If you want to use the K submodule, follow these instructions get the submodule and build K:
+For contributing to `kevm`, it is highly recommended to go with (ii) because otherwise some of the build scripts might not work.
+Follow these instructions to get and build the K submodule:
 
 ```sh
 git submodule update --init --recursive -- deps/k
@@ -189,12 +196,24 @@ Finally, you can build the semantics.
 make build
 ```
 
+And you need to set up the virtual environment:
+
+```sh
+make venv
+```
+
+Which should output (towards the end), a line like this: `. .build/venv/bin/activate`.
+You should run this line in your shell, then you are in the virtual environment:
+
+```sh
+. .build/venv/bin/activate
+```
 
 Running Tests
 -------------
 
 The tests are run using the supplied `Makefile`.
-First, run `make split-tests` to generate some of the tests from the markdown files.
+First, run `make build-prove` to generate some of the tests from the markdown files.
 
 The following subsume all other tests:
 
