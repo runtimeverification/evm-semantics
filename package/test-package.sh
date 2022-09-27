@@ -31,7 +31,7 @@ kevm kompile --backend haskell tests/specs/examples/erc20-spec.md \
     --definition tests/specs/examples/erc20-spec/haskell          \
     --main-module VERIFICATION                                    \
     --syntax-module VERIFICATION                                  \
-    --concrete-rules-file tests/specs/examples/concrete-rules.txt \
+    --concrete-rules-file tests/specs/concrete-rules.txt          \
     --verbose
 # This test is probably too long for public Github runner and currently seems broken
 if ! ${NIX:-false}; then
@@ -39,11 +39,11 @@ kevm prove tests/specs/examples/erc20-spec.md --backend haskell --format-failure
     --definition tests/specs/examples/erc20-spec/haskell
 
 
-kevm kompile --backend java tests/specs/erc20/verification.k   \
-    --definition tests/specs/erc20/verification/java           \
-    --main-module VERIFICATION                                 \
-    --syntax-module VERIFICATION                               \
-    --concrete-rules-file tests/specs/erc20/concrete-rules.txt \
+kevm kompile --backend java tests/specs/erc20/verification.k \
+    --definition tests/specs/erc20/verification/java         \
+    --main-module VERIFICATION                               \
+    --syntax-module VERIFICATION                             \
+    --concrete-rules-file tests/specs/concrete-rules.txt     \
     --debug
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --backend java --format-failures --debugger \
     --definition tests/specs/erc20/verification/java
