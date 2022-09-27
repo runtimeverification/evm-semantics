@@ -142,9 +142,9 @@ endmodule
 
 The configuration of the Foundry Cheat Codes is defined as follwing:
 1. The `<prank>` subconfiguration stores values which are used during the execution of any kind of `prank` cheatcode:
-    - `<prevId>` keeps the current address of the contract that initiated the prank.
+    - `<prevCaller>` keeps the current address of the contract that initiated the prank.
     - `<prevOrigin>` keeps the current address of the `tx.origin` value.
-    - `<newId>` and `<newOrigin>` are addresses to be assigned after the prank call to `msg.sender` and `tx.origin`.
+    - `<newCaller>` and `<newOrigin>` are addresses to be assigned after the prank call to `msg.sender` and `tx.origin`.
     - `<depth>` records the current call depth at which the prank was invoked.
     - `<singleCall>` tells whether the prank stops by itself after the next call or when a `stopPrank` cheat code is invoked.
 
@@ -156,9 +156,9 @@ module FOUNDRY-CHEAT-CODES
     configuration
      <cheatcodes>
         <prank>
-            <prevId> .Account </prevId>
+            <prevCaller> .Account </prevCaller>
             <prevOrigin> .Account </prevOrigin>
-            <newId> .Account </newId>
+            <newCaller> .Account </newCaller>
             <newOrigin> .Account </newOrigin>
             <depth> 0 </depth>
             <singleCall> false </singleCall>

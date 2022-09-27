@@ -329,7 +329,7 @@ def contract_to_main_module(contract: Contract, empty_config: KInner, imports: I
 
 def contract_to_claims(kevm: KPrint, contract: Contract) -> Tuple[str, List[KClaim]]:
     definition = kevm.definition
-    empty_config = definition.empty_config(KEVM.Sorts.KEVM_CELL)
+    empty_config = definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
     module_name = Contract.contract_to_module_name(contract.name, spec=True)
     test_methods = [method for method in contract.methods if method.name.startswith('test')]
     claims = [_test_execution_claim(empty_config, contract, method) for method in test_methods]

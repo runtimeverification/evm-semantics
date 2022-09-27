@@ -176,7 +176,7 @@ def exec_foundry_kompile(
     if reinit or not kcfgs_file.exists():
         _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
 
-        foundry = Foundry(definition_dir, profile=profile)
+        foundry = Foundry(foundry_definition_dir, profile=profile)
         cfgs = _contract_to_claim_cfgs(kevm=foundry, contracts=contracts)
 
         with open(kcfgs_file, 'w') as kf:
