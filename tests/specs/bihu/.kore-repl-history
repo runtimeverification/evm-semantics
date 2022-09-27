@@ -1,0 +1,29 @@
+konfig 1028
+graph collapsed proof png
+graph
+graph expanded
+clear
+graph expanded
+graph
+graph expanded proof svg
+graph expanded proof jpeg
+graph expanded proof png
+graph expanded proof pdf
+help
+stepf 1000
+stepf 3000
+config | bash prscript verification/haskell
+stepf 200
+config | bash prscript verification/haskell
+config | bash prscript verification/haskell
+config | bash prscript verification/haskell
+config | bash prscript 
+config | pyk print verification/haskell foo.txt
+config >> foo.txt
+config | pyk print verification/haskell
+stepf 20
+config | pyk print verification/haskell
+config | pyk print verification/haskell ...
+config | pyk print verification/haskell
+ls
+konfig

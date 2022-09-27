@@ -1,0 +1,94 @@
+konfig
+help
+config | pyk print tests/specs/bihu/verification/haskell lol.txt
+config | pyk print lol.txt tests/specs/bihu/verification/haskell
+config | pyk print tests/specs/bihu/verification/haskell lol.txt
+config | pyk print tests/specs/bihu/verification/haskell lol.txt
+config > lol.txt
+config | pyk print tests/specs/bihu/verification/haskell
+stepf 20
+config | pyk print tests/specs/bihu/verification/haskell
+config | pyk print tests/specs/bihu/verification/haskell ...
+config | pyk print tests/specs/bihu/verification/haskell
+config | kast -i kore -o pretty --definition tests/specs/bihu/verification/haskell /dev/stdin
+config | kast -i kore -o pretty --definition tests/specs/mcd/verification/haskell /dev/stdin
+config | kast -i kore -o pretty --definition . /dev/stdin
+config | kast -i kore -o pretty -d . /dev/stdin
+config | kast -i kore -o pretty --definition .build/usr/lib/kevm/haskell /dev/stdin
+stepf 20
+config | kast -i kore -o pretty --definition .build/usr/lib/kevm/haskell /dev/stdin
+config | kast -i kore -o pretty --definition .build/usr/lib/kevm/haskell /dev/stdin
+config | pyk print
+help
+h
+pyk print tests/specs/bihu/verification.k $(echo $(config))
+pyk print tests/specs/bihu/verification.k $(echo config)
+pyk print tests/specs/bihu/verification.k
+config | pyk print tests/specs/bihu/verification.k
+config | pyk print tests/specs/bihu/verification.k ...
+config | pyk print
+config | pyk
+config | pyk print -v
+config | pyk print tests/specs/bihu/verification.k ... -v
+config | pyk print tests/specs/bihu/verification.k ...
+config | pyk print tests/specs/bihu/verification.k
+config
+config | pyk print tests/specs/bihu/verification.k
+config | pyk print tests/specs/bihu/verification.k
+stepf 20
+config | pyk print tests/specs/bihu/verification.k
+config | pyk print tests/specs/bihu/verification.k
+config | pyk print ... tests/specs/bihu/verification.k
+config | pyk print ... tests/specs/bihu/verification
+config | pyk print ... tests/specs/bihu/verification/
+config | pyk print ... .
+config | pyk print ... tests/specs/bihu/verification/haskell
+config | pyk print tests/specs/bihu/verification/haskell ...
+config | pyk print ... ...
+config | pyk print
+config | pyk print ...
+ls
+konfig
+config | pyk print ...
+config |> pyk print ...
+config | pyk print ...
+config | pyk print ...<k></k>
+config | pyk print ... <k></k>
+config | pyk print 
+config | pyk print ...
+config | pyk print
+config | pyk print ...
+config | pyk print -h
+pyk print -h
+config | pyk print definition
+config | pyk print
+config | pyk print KCell
+config | pyk print "<k>"
+config | pyk print <kevm>
+config | pyk print kevm
+config | pyk print ...
+config | pyk print
+config | python3 pyk print
+config | python3 kevm-pyk print
+config | python3 kevm-pyk print ...
+config | kevm-pyk print ...
+config | kevm-pyk print
+graph
+graph
+help
+kevm-pyk
+pyk
+pyk print ...
+konfig3
+alias konfig3 = config | kast -i kore -o pretty --definition .build/usr/lib/kevm/haskell /dev/stdin
+alias konfig2 = config | kast -i kore -o pretty --definition .build/usr/lib/kevm/haskell /dev/stdin
+konfig2
+konfig
+alias konfig2 = config | kast -i kore -o pretty -d .build/usr/lib/kevm/haskell /dev/stdin --definition tests/specs/bihu/verification/haskell
+alias konfig = config | kast -i kore -o pretty -d .build/usr/lib/kevm/haskell /dev/stdin --definition tests/specs/bihu/verification/haskell
+konfig
+stepf 20
+konfig
+alias konfig = config | kast -i kore -o pretty -d .build/usr/lib/kevm/haskell /dev/stdin
+konfig
+config
