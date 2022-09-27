@@ -5,6 +5,7 @@ module VERIFICATION
     imports EDSL
     imports LEMMAS
     imports VERIFICATION-JAVA
+    imports VERIFICATION-HASKELL
 
   // ########################
   // Buffer Reasoning
@@ -80,6 +81,24 @@ module VERIFICATION
 
     rule                 @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int ((COLLECTED +Int BAL) -Int @remainingTokens(COLLECTED +Int BAL, NOW, START)) -Int COLLECTED <Int pow256 => true  requires #accumulatedReleasedTokens(BAL, COLLECTED, START, NOW) >Int COLLECTED +Int 3 [simplification]
     rule                 @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int ((COLLECTED +Int BAL) -Int @remainingTokens(COLLECTED +Int BAL, NOW, START)) <Int pow256                => true  requires #accumulatedReleasedTokens(BAL, COLLECTED, START, NOW) >Int COLLECTED +Int 3 [simplification]
+
+endmodule
+
+module VERIFICATION-HASKELL [symbolic, kore]
+    imports EVM
+
+    rule X <Int Csstore(SCHED, _, _, _) => false
+      requires Gsload       < SCHED > <=Int X
+       andBool Gsstoreset   < SCHED > <=Int X
+       andBool Gsstorereset < SCHED > <=Int X
+      [simplification]
+
+    rule Csstore(SCHED, _, _, _) <=Int X => true
+      requires Gsload       < SCHED > <=Int X
+       andBool Gsstoreset   < SCHED > <=Int X
+       andBool Gsstorereset < SCHED > <=Int X
+      [simplification]
+
 endmodule
 
 module VERIFICATION-JAVA [symbolic, kast]
