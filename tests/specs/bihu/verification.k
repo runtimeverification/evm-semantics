@@ -99,6 +99,9 @@ module VERIFICATION-HASKELL [symbolic, kore]
        andBool Gsstorereset < SCHED > <=Int X
       [simplification]
 
+    rule X -Int Y <Int Z  => X -Int Z <Int Y  [concrete(X, Z), symbolic(Y), simplification]
+    rule X <=Int Y -Int Z => Z <=Int Y -Int X [concrete(X, Y), symbolic(Z), simplification]
+
 endmodule
 
 module VERIFICATION-JAVA [symbolic, kast]
