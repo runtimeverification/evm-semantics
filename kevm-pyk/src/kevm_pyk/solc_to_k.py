@@ -29,13 +29,15 @@ from pyk.kast import (
     KVariable,
     build_assoc,
 )
-from pyk.kastManip import abstract_term_safely, substitute
+from pyk.kastManip import abstract_term_safely, flatten_label, substitute
+from pyk.kore.rpc import KoreClient, KoreServer, StuckResult
+from pyk.kore.syntax import And, Ceil, EVar, Pattern, Sort, SortApp
 from pyk.ktool import KPrint
 from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
-from pyk.utils import FrozenDict, intersperse
+from pyk.utils import FrozenDict, intersperse, single
 
 from .kevm import KEVM, Foundry
 from .utils import abstract_cell_vars
@@ -263,7 +265,7 @@ class Contract:
         return [self.subsort, self.production, self.macro_bin_runtime] + self.field_sentences + self.method_sentences
 
     def method_by_name(self, name: str) -> Optional['Contract.Method']:
-        methods = [method for method in self.methods if method.name == 'setUp']
+        methods = [method for method in self.methods if method.name == name]
         if len(methods) > 1:
             raise ValueError(f'Found multiple methods with name {name}, expected at most one')
         if not methods:
@@ -332,15 +334,18 @@ def contract_to_claims(kevm: KPrint, contract: Contract) -> Tuple[str, List[KCla
     empty_config = definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
     module_name = Contract.contract_to_module_name(contract.name, spec=True)
     test_methods = [method for method in contract.methods if method.name.startswith('test')]
-    claims = [_test_execution_claim(empty_config, contract, method) for method in test_methods]
+    setup_account = _setup_account(kevm, contract, empty_config)
+    claims = [_test_execution_claim(empty_config, contract, method, setup_account) for method in test_methods]
     return module_name, claims
 
 
-def _test_execution_claim(empty_config: KInner, contract: Contract, method: Contract.Method) -> KClaim:
+def _test_execution_claim(
+    empty_config: KInner, contract: Contract, method: Contract.Method, setup_account: Optional[KInner]
+) -> KClaim:
     claim_name = method.name.replace('_', '-')
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
-    init_term = _init_term(empty_config, contract.name, calldata=calldata, callvalue=callvalue)
+    init_term = _init_term(empty_config, contract.name, account=setup_account, calldata=calldata, callvalue=callvalue)
     init_cterm = _init_cterm(init_term)
     failing = method.name.startswith('testFail')
     final_cterm = _final_cterm(empty_config, contract.name, failing=failing)
@@ -356,6 +361,70 @@ def _default_claim(empty_config: KInner, contract_name: str) -> KClaim:
     return claim
 
 
+def _setup_account(kevm: KPrint, contract: Contract, empty_config: KInner) -> Optional[KInner]:
+    setup_method = contract.method_by_name('setUp')
+    if not setup_method:
+        return None
+    _LOGGER.info(f'Executing setUp method for: {contract.name}')
+    program = KEVM.bin_runtime(KApply(f'contract_{contract.name}'))
+    init_kast = _init_term(
+        empty_config,
+        contract.name,
+        account=KEVM.account_cell(
+            Foundry.address_TEST_CONTRACT(),
+            intToken(0),
+            program,
+            KApply('.Map'),
+            KApply('.Map'),
+            intToken(0),
+        ),
+        k_cell=KSequence(KEVM.execute()),
+        calldata=setup_method.calldata_cell(contract),
+        callvalue=setup_method.callvalue_cell,
+    )
+    init_kast = KApply('<generatedTop>', [init_kast, KApply('<generatedCounter>', [intToken(0)])])
+    init_kore = kevm.kast_to_kore(init_kast, sort=KSort('GeneratedTopCell'))
+    assert isinstance(init_kore, Pattern)
+    init_kore = _ensure_defined(init_kore, SortApp('SortGeneratedTopCell'))
+    with KoreServer(kevm.definition_dir, 'FOUNDRY-MAIN', port=3000):
+        with KoreClient(host='localhost', port=3000) as client:
+            exec_res = client.execute(init_kore)
+    if type(exec_res) is not StuckResult:
+        raise RuntimeError(f'Expected stuck state, found: {exec_res.reason}')
+    final_kore = exec_res.state.term
+    final_kast = kevm.kore_to_kast(final_kore)
+    assert isinstance(final_kast, KApply)
+
+    def child_cell(term: KApply, cell: str) -> KApply:
+        return single(arg for arg in term.args if type(arg) is KApply and arg.label.name == cell)
+
+    def extract_foundry_account(term: KApply) -> KInner:
+        term = child_cell(term, '<foundry>')
+        term = child_cell(term, '<kevm>')
+        term = child_cell(term, '<ethereum>')
+        term = child_cell(term, '<network>')
+        term = child_cell(term, '<accounts>')
+        _account_cells = flatten_label('_AccountCellMap_', term.args[0])
+        print([type(c) for c in _account_cells])
+        assert len(_account_cells) > 1
+        assert type(_account_cells[-1]) is KVariable
+        account_cells = [account_cell for account_cell in _account_cells if type(account_cell) is KApply]
+        assert len(_account_cells) == len(account_cells) + 1
+        assert all(account_cell.label.name == 'AccountCellMapItem' for account_cell in account_cells)
+        accounts = [child_cell(account_cell, '<account>') for account_cell in account_cells]
+        acct_ids = [child_cell(account_cell, '<acctID>') for account_cell in account_cells]
+        assert all(acct_id.arity == 1 for acct_id in acct_ids)
+        i = single(i for i, acct_id in enumerate(acct_ids) if acct_id.args[0] == Foundry.address_TEST_CONTRACT())
+        return accounts[i]
+
+    return extract_foundry_account(final_kast)
+
+
+def _ensure_defined(pattern: Pattern, sort: Sort) -> Pattern:
+    config_var = EVar('VarCT', sort)
+    return And(sort, And(sort, pattern, config_var), Ceil(sort, sort, config_var))
+
+
 def _init_cterm(init_term: KInner) -> CTerm:
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
@@ -366,18 +435,25 @@ def _init_term(
     empty_config: KInner,
     contract_name: str,
     *,
+    account: Optional[KInner] = None,
+    k_cell: Optional[KInner] = None,
     calldata: Optional[KInner] = None,
     callvalue: Optional[KInner] = None,
 ) -> KInner:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
-    account_cell = KEVM.account_cell(
-        Foundry.address_TEST_CONTRACT(),
-        intToken(0),
-        program,
-        KVariable('ACCT_STORAGE'),
-        KVariable('ACCT_ORIGSTORAGE'),
-        intToken(0),
+    account_cell = (
+        account
+        if account is not None
+        else KEVM.account_cell(
+            Foundry.address_TEST_CONTRACT(),
+            intToken(0),
+            program,
+            KVariable('ACCT_STORAGE'),
+            KVariable('ACCT_ORIGSTORAGE'),
+            intToken(0),
+        )
     )
+    k_cell = k_cell if k_cell is not None else KSequence(KEVM.execute(), KVariable('CONTINUATION'))
     init_subst = {
         'MODE_CELL': KApply('NORMAL'),
         'SCHEDULE_CELL': KApply('LONDON_EVM'),
@@ -410,7 +486,7 @@ def _init_term(
         'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
         'PC_CELL': intToken(0),
         'GAS_CELL': intToken(9223372036854775807),
-        'K_CELL': KSequence([KEVM.execute(), KVariable('CONTINUATION')]),
+        'K_CELL': k_cell,
         'ACCOUNTS_CELL': KEVM.accounts(
             [
                 account_cell,  # test contract address
