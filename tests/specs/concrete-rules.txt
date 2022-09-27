@@ -19,8 +19,6 @@ EVM.Csstore.new
 EVM.Csstore.old
 EVM.Cstorageaccess
 EVM.ecrec
-EVM.isPrecompiledAccount.false
-EVM.isPrecompiledAccount.true
 EVM.#memoryUsageUpdate.some
 EVM.Rsstore.new
 EVM.Rsstore.old
