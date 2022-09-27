@@ -5,11 +5,13 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, Iterable, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.kast import KApply, KInner, KLabel, KToken, KVariable
+from pyk.kast import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
 from pyk.kastManip import flatten_label, get_cell
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kprint import paren
-from pyk.prelude import Bool, build_assoc, intToken, stringToken
+from pyk.prelude.kbool import notBool
+from pyk.prelude.kint import intToken
+from pyk.prelude.string import stringToken
 
 from .utils import add_include_arg
 
@@ -95,6 +97,9 @@ class KEVM(KProve, KRun):
         symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
         # fmt: on
 
+    class Sorts:
+        KEVM_CELL: Final = KSort('KevmCell')
+
     @staticmethod
     def hook_namespaces() -> List[str]:
         return ['JSON', 'KRYPTO', 'BLOCKCHAIN']
@@ -175,27 +180,27 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def pow256() -> KApply:
-        return KApply('pow256_EVM-TYPES_Int', [])
+        return KApply('pow256_WORD_Int', [])
 
     @staticmethod
     def range_uint(width: int, i: KInner) -> KApply:
-        return KApply('#rangeUInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(width), i])
+        return KApply('#rangeUInt(_,_)_WORD_Bool_Int_Int', [intToken(width), i])
 
     @staticmethod
     def range_sint(width: int, i: KInner) -> KApply:
-        return KApply('#rangeSInt(_,_)_EVM-TYPES_Bool_Int_Int', [intToken(width), i])
+        return KApply('#rangeSInt(_,_)_WORD_Bool_Int_Int', [intToken(width), i])
 
     @staticmethod
     def range_address(i: KInner) -> KApply:
-        return KApply('#rangeAddress(_)_EVM-TYPES_Bool_Int', [i])
+        return KApply('#rangeAddress(_)_WORD_Bool_Int', [i])
 
     @staticmethod
     def range_bool(i: KInner) -> KApply:
-        return KApply('#rangeBool(_)_EVM-TYPES_Bool_Int', [i])
+        return KApply('#rangeBool(_)_WORD_Bool_Int', [i])
 
     @staticmethod
     def range_bytes(width: KInner, ba: KInner) -> KApply:
-        return KApply('#rangeBytes(_,_)_EVM-TYPES_Bool_Int_Int', [width, ba])
+        return KApply('#rangeBytes(_,_)_WORD_Bool_Int_Int', [width, ba])
 
     @staticmethod
     def bool_2_word(cond: KInner) -> KApply:
@@ -231,7 +236,7 @@ class KEVM(KProve, KRun):
         return KApply('contract_access_loc', [accessor])
 
     @staticmethod
-    def lookup(map: KInner, key: KInner):
+    def lookup(map: KInner, key: KInner) -> KApply:
         return KApply('#lookup(_,_)_EVM-TYPES_Int_Map_Int', [map, key])
 
     @staticmethod
@@ -289,7 +294,7 @@ class KEVM(KProve, KRun):
         return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
 
     @staticmethod
-    def bytearray_empty():
+    def bytearray_empty() -> KApply:
         return KApply('.ByteArray_EVM-TYPES_ByteArray')
 
     @staticmethod
@@ -318,7 +323,7 @@ class Foundry:
 
     @staticmethod
     def fail(s: KInner, dst: KInner) -> KApply:
-        return Bool.notBool(Foundry.success(s, dst))
+        return notBool(Foundry.success(s, dst))
 
     # address(uint160(uint256(keccak256("foundry default caller"))))
 
