@@ -500,9 +500,11 @@ Utils
     syntax KItem ::= "#loadAccount" Int [klabel(foundry_loadAccount)]
  // -----------------------------------------------------------------
     rule <k> #loadAccount ACCT => #accessAccounts ACCT ... </k>
+         <activeAccounts> ACCTS:Set </activeAccounts>
       requires ACCT in ACCTS
+
     rule <k> #loadAccount ACCT => #newAccount ACCT ~> #accessAccounts ACCT ... </k>
-          <activeAccounts> ACCTS:Set </activeAccounts>
+         <activeAccounts> ACCTS:Set </activeAccounts>
       requires notBool ACCT in ACCTS
 ```
 
