@@ -520,12 +520,11 @@ tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$
 	$(KEVM) prove $< $(KEVM_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS)                   \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
-tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
+tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                  \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
 	    --main-module $(KPROVE_MODULE)                                                                   \
 	    --syntax-module $(KPROVE_MODULE)                                                                 \
-	    --concrete-rules-file tests/specs/concrete-rules.txt                                             \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 tests/%.search: tests/%
