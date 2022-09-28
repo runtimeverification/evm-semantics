@@ -1,0 +1,36 @@
+name: 'With Docker'
+description: 'Run a given stage with Docker Image'
+inputs:
+  tag:
+    description: 'Docker image tag to use'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+  - name: 'Set up Docker'
+    env:
+      TAG_NAME: ${{ inputs.tag }}
+    run: |
+      Z3_VERSION=4.8.15
+      K_COMMIT="$(cat deps/k_release | cut --characters=2-)"
+
+      docker build . --file .github/workflows/Dockerfile.z3 \
+        --tag z3:${Z3_VERSION}
+
+      docker build . --file .github/workflows/Dockerfile           \
+        --tag runtimeverification/${TAG_NAME}                      \
+        --build-arg K_COMMIT=${K_COMMIT}                           \
+        --build-arg Z3_VERSION=${Z3_VERSION}                       \
+        --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
+
+      docker run                        \
+        --name ${TAG_NAME}              \
+        --rm -it                        \
+        --detach                        \
+        --workdir /opt/workspace        \
+        --user $(id -u):$(id -g)        \
+        -v ${HOME}:${HOME}              \
+        -v "$(pwd):/opt/workspace"      \
+        -v "/etc/passwd:/etc/passwd:ro" \
+        -v "/etc/group:/etc/group:ro"   \
+        runtimeverification/${TAG_NAME}

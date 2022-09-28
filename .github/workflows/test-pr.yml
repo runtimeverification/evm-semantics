@@ -19,27 +19,9 @@ jobs:
           submodules: recursive
           fetch-depth: 0
       - name: 'Set up Docker'
-        run: |
-          Z3_VERSION=4.8.15
-          K_COMMIT="$(cat deps/k_release | cut --characters=2-)"
-          docker build . --file .github/workflows/Dockerfile.z3 \
-            --tag z3:${Z3_VERSION}
-          docker build . --file .github/workflows/Dockerfile           \
-            --tag runtimeverification/kevm-ci-concrete                 \
-            --build-arg K_COMMIT=${K_COMMIT}                           \
-            --build-arg Z3_VERSION=${Z3_VERSION}                       \
-            --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
-          docker run                        \
-            --name kevm-ci-concrete         \
-            --rm -it                        \
-            --detach                        \
-            --workdir /opt/workspace        \
-            --user $(id -u):$(id -g)        \
-            -v ${HOME}:${HOME}              \
-            -v "$(pwd):/opt/workspace"      \
-            -v "/etc/passwd:/etc/passwd:ro" \
-            -v "/etc/group:/etc/group:ro"   \
-            runtimeverification/kevm-ci-concrete
+        uses: ./.github/actions/with-docker
+          with:
+            tag: kevm-ci-concrete
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-concrete /bin/bash -c 'make kevm-pyk venv -j`nproc`'
       - name: 'Build kevm'
@@ -71,21 +53,9 @@ jobs:
         with:
           submodules: recursive
       - name: 'Set up Docker'
-        run: |
-          docker build . --file .github/workflows/Dockerfile --tag runtimeverification/kevm-ci-java \
-            --build-arg BASE_IMAGE=ubuntu:jammy --build-arg LLVM_VERSION=14                         \
-            --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
-          docker run                        \
-            --name kevm-ci-java             \
-            --rm -it                        \
-            --detach                        \
-            --workdir /opt/workspace        \
-            --user $(id -u):$(id -g)        \
-            -v ${HOME}:${HOME}              \
-            -v "$(pwd):/opt/workspace"      \
-            -v "/etc/passwd:/etc/passwd:ro" \
-            -v "/etc/group:/etc/group:ro"   \
-            runtimeverification/kevm-ci-java
+        uses: ./.github/actions/with-docker
+          with:
+            tag: kevm-ci-java
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-java /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Test Java'
@@ -105,21 +75,9 @@ jobs:
         with:
           submodules: recursive
       - name: 'Set up Docker'
-        run: |
-          docker build . --file .github/workflows/Dockerfile --tag runtimeverification/kevm-ci-haskell \
-            --build-arg BASE_IMAGE=ubuntu:jammy --build-arg LLVM_VERSION=14                            \
-            --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
-          docker run                        \
-            --name kevm-ci-haskell          \
-            --rm -it                        \
-            --detach                        \
-            --workdir /opt/workspace        \
-            --user $(id -u):$(id -g)        \
-            -v ${HOME}:${HOME}              \
-            -v "$(pwd):/opt/workspace"      \
-            -v "/etc/passwd:/etc/passwd:ro" \
-            -v "/etc/group:/etc/group:ro"   \
-            runtimeverification/kevm-ci-haskell
+        uses: ./.github/actions/with-docker
+          with:
+            tag: kevm-ci-haskell
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-haskell /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Test Java'
@@ -139,21 +97,9 @@ jobs:
         with:
           submodules: recursive
       - name: 'Set up Docker'
-        run: |
-          docker build . --file .github/workflows/Dockerfile --tag runtimeverification/kevm-ci-foundry \
-            --build-arg BASE_IMAGE=ubuntu:jammy --build-arg LLVM_VERSION=14                            \
-            --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
-          docker run                        \
-            --name kevm-ci-foundry          \
-            --rm -it                        \
-            --detach                        \
-            --workdir /opt/workspace        \
-            --user $(id -u):$(id -g)        \
-            -v ${HOME}:${HOME}              \
-            -v "$(pwd):/opt/workspace"      \
-            -v "/etc/passwd:/etc/passwd:ro" \
-            -v "/etc/group:/etc/group:ro"   \
-            runtimeverification/kevm-ci-foundry
+        uses: ./.github/actions/with-docker
+          with:
+            tag: kevm-ci-foundry
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-foundry /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Test Java'
