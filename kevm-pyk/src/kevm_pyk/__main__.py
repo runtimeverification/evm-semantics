@@ -7,14 +7,14 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KRequire, KRule, KToken
+from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KRule, KToken
 from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
-from pyk.ktool.krun import _krun
+from pyk.ktool.krun import KPrint, _krun
 from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
-from .kevm import KEVM
+from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_claims, contract_to_main_module, solc_compile
 from .utils import KCFG_from_claim, KPrint_make_unparsing, KProve_prove_claim, add_include_arg
 
@@ -141,9 +141,11 @@ def exec_foundry_kompile(
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
 
+    foundry = Foundry(definition_dir, profile=profile)
+    empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
+
     bin_runtime_definition = _foundry_to_bin_runtime(
-        definition_dir=definition_dir,
-        profile=profile,
+        empty_config=empty_config,
         contracts=contracts,
         main_module=main_module,
         requires=requires,
@@ -153,9 +155,9 @@ def exec_foundry_kompile(
     if regen or not foundry_main_file.exists():
         with open(foundry_main_file, 'w') as fmf:
             _LOGGER.info(f'Writing file: {foundry_main_file}')
-            _kevm = KEVM(definition_dir=definition_dir)
-            _kprint = KPrint_make_unparsing(_kevm, extra_modules=bin_runtime_definition.modules)
-            KEVM._patch_symbol_table(_kprint.symbol_table)
+            _foundry = Foundry(definition_dir=definition_dir)
+            _kprint = KPrint_make_unparsing(_foundry, extra_modules=bin_runtime_definition.modules)
+            Foundry._patch_symbol_table(_kprint.symbol_table)
             fmf.write(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
     if regen or rekompile or not kompiled_timestamp.exists():
@@ -174,13 +176,8 @@ def exec_foundry_kompile(
     if reinit or not kcfgs_file.exists():
         _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
 
-        kevm = KEVM(foundry_definition_dir, main_file=foundry_main_file, profile=profile)
-        cfgs = _contract_to_claim_cfgs(
-            definition=kevm.definition,
-            definition_dir=definition_dir,
-            profile=profile,
-            contracts=contracts,
-        )
+        foundry = Foundry(foundry_definition_dir, profile=profile)
+        cfgs = _contract_to_claim_cfgs(kevm=foundry, contracts=contracts)
 
         with open(kcfgs_file, 'w') as kf:
             kf.write(json.dumps(cfgs))
@@ -208,16 +205,12 @@ def _contract_from_json(json_path: str) -> Contract:
 
 
 def _foundry_to_bin_runtime(
-    definition_dir: Path,
-    profile: bool,
+    empty_config: KInner,
     contracts: Iterable[Contract],
     main_module: Optional[str],
     requires: Iterable[str],
     imports: Iterable[str],
 ) -> KDefinition:
-    kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
-
     modules = []
     for contract in contracts:
         module = contract_to_main_module(contract, empty_config, imports=imports)
@@ -239,20 +232,15 @@ def _foundry_to_bin_runtime(
 
 
 def _contract_to_claim_cfgs(
-    definition: KDefinition,
-    definition_dir: Path,
-    profile: bool,
+    kevm: KPrint,
     contracts: Iterable[Contract],
 ) -> Dict[str, Dict]:
-    kevm = KEVM(definition_dir, profile=profile)
-    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
-
     cfgs: Dict[str, Dict] = {}
     for contract in contracts:
-        module_name, claims = contract_to_claims(contract, empty_config)
+        module_name, claims = contract_to_claims(kevm, contract)
         for claim in claims:
             cfg_label = f'{module_name}.{claim.att["label"]}'
-            cfgs[cfg_label] = KCFG_from_claim(definition, claim).to_dict()
+            cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
             _LOGGER.info(f'Produced KCFG: {cfg_label}')
 
     return cfgs

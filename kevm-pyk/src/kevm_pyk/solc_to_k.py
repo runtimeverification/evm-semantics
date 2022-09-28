@@ -30,6 +30,7 @@ from pyk.kast import (
     build_assoc,
 )
 from pyk.kastManip import abstract_term_safely, substitute
+from pyk.ktool import KPrint
 from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.ml import mlEqualsTrue
@@ -108,6 +109,9 @@ class Contract:
                 if not self.payable
                 else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
             )
+
+        def calldata_cell(self, contract: 'Contract') -> KInner:
+            return KApply(contract.klabel_method, [KApply(contract.klabel), self.application])
 
         @cached_property
         def application(self) -> KInner:
@@ -258,6 +262,14 @@ class Contract:
     def sentences(self) -> List[KSentence]:
         return [self.subsort, self.production, self.macro_bin_runtime] + self.field_sentences + self.method_sentences
 
+    def method_by_name(self, name: str) -> Optional['Contract.Method']:
+        methods = [method for method in self.methods if method.name == 'setUp']
+        if len(methods) > 1:
+            raise ValueError(f'Found multiple methods with name {name}, expected at most one')
+        if not methods:
+            return None
+        return methods[0]
+
 
 def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
 
@@ -315,7 +327,9 @@ def contract_to_main_module(contract: Contract, empty_config: KInner, imports: I
     return KFlatModule(module_name, contract.sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
 
 
-def contract_to_claims(contract: Contract, empty_config: KInner) -> Tuple[str, List[KClaim]]:
+def contract_to_claims(kevm: KPrint, contract: Contract) -> Tuple[str, List[KClaim]]:
+    definition = kevm.definition
+    empty_config = definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
     module_name = Contract.contract_to_module_name(contract.name, spec=True)
     test_methods = [method for method in contract.methods if method.name.startswith('test')]
     claims = [_test_execution_claim(empty_config, contract, method) for method in test_methods]
@@ -324,7 +338,7 @@ def contract_to_claims(contract: Contract, empty_config: KInner) -> Tuple[str, L
 
 def _test_execution_claim(empty_config: KInner, contract: Contract, method: Contract.Method) -> KClaim:
     claim_name = method.name.replace('_', '-')
-    calldata = KApply(contract.klabel_method, [KApply(contract.klabel), method.application])
+    calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
     init_term = _init_term(empty_config, contract.name, calldata=calldata, callvalue=callvalue)
     init_cterm = _init_cterm(init_term)
