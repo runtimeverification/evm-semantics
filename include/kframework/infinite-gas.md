@@ -124,11 +124,6 @@ module INFINITE-GAS-COMMON
     rule #gas(_)  <Int Csload(_, _) => false [simplification]
     rule #gas(_) >=Int Csload(_, _) => true  [simplification]
 
-    rule 0 <=Int Cmem(_, _)       => true  [simplification]
-    rule Cmem(_, _) <Int #gas(_)  => true  [simplification]
-    rule #gas(_) <Int Cmem(_, _)  => false [simplification]
-    rule Cmem(_, _) <=Int #gas(_) => true  [simplification]
-
     rule 0 <=Int Caddraccess(_, _)       => true  [simplification]
     rule Caddraccess(_, _) <Int #gas(_)  => true  [simplification]
     rule #gas(_) <Int Caddraccess(_, _)  => false [simplification]
