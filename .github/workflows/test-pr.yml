@@ -157,7 +157,7 @@ jobs:
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-foundry /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Test Java'
-        run: docker exec -t kevm-ci-foundry /bin/bash -c 'make test-prove -j6 TEST_SYMBOLIC_BACKEND=haskell'
+        run: docker exec -t kevm-ci-foundry /bin/bash -c 'make test-foundry -j2'
       - name: 'Tear down Docker'
         if: always()
         run: |
