@@ -248,7 +248,7 @@ function deal(address who, uint256 newBalance) external;
 `foundry.call.deal` will match when the `deal` cheat code function is called.
 The rule then takes from the function call data the target account, using `#asWord(#range(ARGS, 0, 32)`, and the new balance, using `#asWord(#range(LM, ARGSTART +Int 36, 32))`, and forwards them to the `#setBalance` production which updates the account accordingly.
 
-```k
+```{.k .bytes}
     rule [foundry.call.deal]:
          <k> #call_foundry 3364511341 ARGS => #setBalance #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
          <output> _ => .ByteArray </output>
@@ -264,7 +264,7 @@ function etch(address who, bytes calldata code) external;
 This rule then takes from the function call data the target account, using `#asWord(#range(ARGS, 0, 32)`, and the new bytecode, using `#range(ARGS, CODE_START, CODE_LENGTH)`, where `#asWord(#range(ARGS, 64, 32))` is used to determine the length of the second argument.
 The values are forwarded to the `#setCode` production which updates the account accordingly.
 
-```k
+```{.k .bytes}
     rule [foundry.call.etch]:
          <k> #call_foundry 3033974658 ARGS
           => #let CODE_START = 96 #in
@@ -412,7 +412,7 @@ function load(address account, bytes32 slot) external returns (bytes32);
 This rule loads the storage slot identified by `#asWord(#range(ARGS, 32, 32))` (referring to `slot` argument) from account `#asWord(#range(ARGS, 0, 32))` (referring to `account`).
 The value of the identified storage slot is placed in the `<output>` cell using the `#returnStorage` production.
 
-```k
+```{.k .bytes}
     rule [foundry.call.load]:
          <k> #call_foundry 1719639408 ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #returnStorage #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
 ```
@@ -426,7 +426,7 @@ function store(address account, bytes32 slot, bytes32 value) external;
 `foundry.call.store` will match when the `store` cheat code function is called.
 This rule then takes from the function call data the account using `#asWord(#range(ARGS, 0, 32))` and the new slot value using `#asWord(#range(ARGS, 32, 32))` and updates the slot denoted by `#asWord(#range(ARGS, 64, 32))`.
 
-```k
+```{.k .bytes}
     rule [foundry.call.store]:
          <k> #call_foundry 1892290747 ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setStorage #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) #asWord(#range(ARGS, 64, 32)) ... </k>
          <output> _ => .ByteArray </output>
