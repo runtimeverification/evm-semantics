@@ -20,8 +20,8 @@ jobs:
           fetch-depth: 0
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
-          with:
-            tag: kevm-ci-concrete
+        with:
+          tag: kevm-ci-concrete
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-concrete /bin/bash -c 'make kevm-pyk venv -j`nproc`'
       - name: 'Build kevm'
@@ -54,8 +54,8 @@ jobs:
           submodules: recursive
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
-          with:
-            tag: kevm-ci-java
+        with:
+          tag: kevm-ci-java
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-java /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Test Java'
@@ -76,8 +76,8 @@ jobs:
           submodules: recursive
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
-          with:
-            tag: kevm-ci-haskell
+        with:
+          tag: kevm-ci-haskell
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-haskell /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Test Java'
@@ -98,8 +98,8 @@ jobs:
           submodules: recursive
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
-          with:
-            tag: kevm-ci-foundry
+        with:
+          tag: kevm-ci-foundry
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-foundry /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Test Java'
