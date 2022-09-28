@@ -499,8 +499,11 @@ Utils
 ```k
     syntax KItem ::= "#loadAccount" Int [klabel(foundry_loadAccount)]
  // -----------------------------------------------------------------
-    rule <k> #loadAccount ACCT => #if ACCT in ACCTS #then . #else #newAccount ACCT #fi ~> #accessAccounts ACCT ... </k>
-         <activeAccounts> ACCTS:Set </activeAccounts>
+    rule <k> #loadAccount ACCT => #accessAccounts ACCT ... </k>
+      requires ACCT in ACCTS
+    rule <k> #loadAccount ACCT => #newAccount ACCT ~> #accessAccounts ACCT ... </k>
+          <activeAccounts> ACCTS:Set </activeAccounts>
+      requires notBool ACCT in ACCTS
 ```
 
 - `#finishCheatCode` is a production used to group togheter productions which are used on every cheat code.
