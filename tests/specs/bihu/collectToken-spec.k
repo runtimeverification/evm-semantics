@@ -107,19 +107,24 @@ _:Map
       andBool 0 <=Int NOW        andBool NOW        <Int (2 ^Int 256)
       andBool 0 <=Int CALL_DEPTH andBool CALL_DEPTH <Int 1024
       andBool 0 <=Int COLLECTED  andBool COLLECTED <Int (2 ^Int 256)
-      andBool COLLECTED ==Int 0
       andBool 0 <=Int BAL        andBool BAL       <Int (2 ^Int 256)
       andBool 0 <=Int START      andBool START     <Int (2 ^Int 256)
-      andBool 0 <=Int (COLLECTED +Int BAL) andBool (COLLECTED +Int BAL) *Int 31536000 <Int (2 ^Int 256)
+      andBool 0 <=Int (COLLECTED +Int BAL) andBool (COLLECTED +Int BAL) *Int 3153600 <Int (2 ^Int 256)
       andBool 0 <Int (NOW -Int START) andBool (NOW -Int START) <Int (2 ^Int 256)
       andBool START <Int NOW
-      andBool BAL >Int (COLLECTED +Int BAL) *Int (9 /Int 10)
       // canExtract >= 0
       andBool #accumulatedReleasedTokens(BAL, COLLECTED, START, NOW) >Int COLLECTED +Int 3
       // canExtract > balance
       andBool #accumulatedReleasedTokens(BAL, COLLECTED, START, NOW) <Int (BAL +Int COLLECTED) -Int 10
+      andBool COLLECTED <=Int @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int (COLLECTED +Int BAL) -Int @remainingTokens(COLLECTED +Int BAL, NOW, START)
       // Max Gas
       // andBool GASCAP >=Int (293 *Int ((NOW -Int START) /Int 31536000)) +Int 43000
-      ensures ?VALUE ==Int @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int BAL -Int @remainingTokens(COLLECTED +Int BAL, NOW, START)
+      ensures ?VALUE ==Int @canExtractThisYear(COLLECTED +Int BAL, NOW, START)
+      +Int BAL
+      -Int @remainingTokens(COLLECTED +Int BAL, NOW, START)
+      // ((#roundpower(BAL, 90, 100, (NOW -Int START) /Int 31536000) *Int 10 /Int 100) *Int ((NOW -Int START) modInt 31536000)) /Int 31536000
+      // + BAL
+      // - #roundpower(BAL, 90, 100, (NOW -Int START) /Int 31536000)
+      // answer: BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000
 
 endmodule

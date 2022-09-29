@@ -24,20 +24,28 @@ function collectToken(uint256 NOW, uint256 START) public nonPayable {
     }
 
     // v3 == v2
-    // v0 == (COLLECTED + BAL) * 90^(NOW - START) / 100^(NOW - START) <= COLLECTED + BAL
+    // v0
+    // = (COLLECTED + BAL) * (90/100)^((NOW - START) / 31536000)
+    // = #remainingTokens(COLLECTED + BAL, NOW, START)
+    // = #roundpower(COLLECTED + BAL, 90, 100, (NOW -Int START) /Int 31536000)
+    // <= COLLECTED + BAL = v1
 
     v6 = _SafeMul(10, v0);
 
-    // v6 = 9 * (COLLECTED + BAL) * (9/10)^(NOW-START-1)
+    // v6 = #roundpower(COLLECTED + BAL, 90, 100, (NOW -Int START) /Int 31536000) * 10
 
+    // this block has no effect on the reuslt
     v7 = v8 = v6 / 100 == 0;
     if (v6 / 100 != 0) {
         assert(v6 / 100); // ok
-        v7 = v6 / 100 * ((NOW - START) %Int 31536000) / (v6 / 100) == (NOW - START) %Int 31536000; // should I add to condition?
-    }
-    assert(v7); // ok
+        v7 = ((v6 / 100) * ((NOW - START) %Int 31536000)) / (v6 / 100) == (NOW - START) %Int 31536000; // should I add to condition?
+    }   assert(v7); // ok
 
     v10 = (((v6 / 100) * ((NOW - START) %Int 31536000)) / 31536000) + (v1 - v0) - _collectedTokens;
+    // @canExtractThisYear(COLLECTED + BAL, NOW, START) + (COLLECTED + BAL) - @remainingTokens - COLLECTED
+    // @canExtractThisYear(COLLECTED + BAL, NOW, START) + BAL - @remainingTokens
+
+
     // fails here
     assert(v10 <= v6 / 100 * ((NOW - START) %Int 31536000) / 31536000 + (v1 - v0)); // collectedTokens is nonnegative
 
@@ -56,18 +64,21 @@ function collectToken(uint256 NOW, uint256 START) public nonPayable {
     return 1;
 }
 
+// can't drop below zero (if START is bigger, than it gives 0)
+// do modulo arithmetic
 function _SafeSubAndMod(uint256 START, uint256 NOW) private {
     if (NOW < START) {
         v0 = v1 = 0;
     } else {
         v2 = NOW - START;
-        assert(v2 <= NOW); // ok
+        assert(v2 <= NOW); // ok, there is no overflow
         assert(31536000); // ok
         v0 = v3 = v2 / 31536000;
     }
     return v0;
 }
 
+// Multiply and if there's overflow, throw an exception
 function _SafeMul(uint256 varg0, uint256 varg1) private {
     v0 = varg1 * varg0;
     v1 = v2 = varg1 == 0;
