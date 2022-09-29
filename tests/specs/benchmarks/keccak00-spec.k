@@ -116,11 +116,6 @@ _
      andBool #rangeAddress(CALLEE_ID)
      andBool #rangeUInt(256, NOW)
      andBool #rangeUInt(128, BLOCK_NUM) // Solidity
-
-     // Account address normality
-     andBool CONTRACT_ID >Int 0 andBool (notBool #isPrecompiledAccount(CONTRACT_ID, BYZANTIUM))
-     andBool CALLEE_ID   >Int 0 andBool (notBool #isPrecompiledAccount(CALLEE_ID  , BYZANTIUM))
-
      andBool #rangeUInt(256, CONTRACT_BAL)
      andBool #rangeUInt(256, CALLEE_BAL)
      andBool #rangeNonce(CONTRACT_NONCE)
