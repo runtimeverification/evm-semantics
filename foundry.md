@@ -192,7 +192,7 @@ The rule has a higher priority than any other `CALL` rule and will match every c
 The function selector, represented as `#asWord(#range(LM, ARGSTART, 4))` and the call data `#range(LM, ARGSTART +Int 4, ARGWIDTH -Int 4)` are passed to the `#call_foundry` production, which will further rewrite using rules defined for implemented cheat codes.
 Finally, the rule for `#return_foundry` is used to end the execution of the `CALL` OpCode.
 
-```k
+```{.k .bytes}
     rule [foundry.call]:
          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #call_foundry #asWord(#range(LM, ARGSTART, 4)) #range(LM, ARGSTART +Int 4, ARGWIDTH -Int 4)
@@ -207,7 +207,7 @@ Finally, the rule for `#return_foundry` is used to end the execution of the `CAL
 We define two productions named `#return_foundry` and `#call_foundry`, which will be used by each cheat code.
 The rule `foundry.return` will rewrite the `#return_foundry` production into other productions that will place the output of the execution into the local memory, refund the gas value of the call and push the value `1` on the call stack.
 
-```k
+```{.k .bytes}
     syntax KItem ::= "#return_foundry" Int Int [klabel(foundry_return)]
                    | "#call_foundry" Int ByteArray [klabel(foundry_call)]
  // ---------------------------------------------------------------------
@@ -233,7 +233,7 @@ function assume(bool) external;
 This rule then takes a `bool` condition from the function call data, represented using the `ARGS` variable, and injects it into the execution path using the `#assume` production.
 `==K #bufStrict(32, 1)` is used to mark that the condition should hold.
 
-```k
+```{.k .bytes}
     rule [foundry.call.assume]:
          <k> #call_foundry 1281615202 ARGS => #assume(ARGS ==K #bufStrict(32, 1)) ... </k>
          <output> _ => .ByteArray </output>
@@ -284,7 +284,7 @@ function warp(uint256) external;
 `foundry.call.warp` will match when the `warp` cheat code function is called.
 This rule then takes the `uint256` value from the function call data which is represented as `ARGS` and updates the `<timestamp>` cell.
 
-```k
+```{.k .bytes}
     rule [foundry.call.warp]:
          <k> #call_foundry 3856056066 ARGS => . ... </k>
          <output> _ => .ByteArray </output>
@@ -300,7 +300,7 @@ function roll(uint256) external;
 `foundry.call.roll` will match when the `roll` cheat code function is called.
 This rule then takes the `uint256` value from the function call data which is represented as `ARGS` and updates the `<number>` cell.
 
-```k
+```{.k .bytes}
     rule [foundry.call.roll]:
          <k> #call_foundry 528174896 ARGS => . ... </k>
          <output> _ => .ByteArray </output>
@@ -316,7 +316,7 @@ function fee(uint256) external;
 `foundry.call.fee` will match when the `fee` cheat code function is called.
 This rule then takes the `uint256` value from the function call data which is represented as `ARGS` and updates the `<baseFee>` cell.
 
-```k
+```{.k .bytes}
     rule [foundry.call.fee]:
          <k> #call_foundry 968063664 ARGS => . ... </k>
          <output> _ => .ByteArray </output>
@@ -332,7 +332,7 @@ function chainId(uint256) external;
 `foundry.call.chainId` will match when the `chainId` cheat code function is called.
 This rule then takes the `uint256` value from the function call data which is represented as `ARGS` and updates the `<chainID>` cell.
 
-```k
+```{.k .bytes}
     rule [foundry.call.chainId]:
          <k> #call_foundry 1078582738 ARGS => . ... </k>
          <output> _ => .ByteArray </output>
@@ -348,7 +348,7 @@ function coinbase(address) external;
 `foundry.call.coinbase` will match when the `coinbase` cheat code function is called.
 This rule then takes the `uint256` value from the function call data which is represented as `ARGS` and updates the `<coinbase>` cell.
 
-```k
+```{.k .bytes}
     rule [foundry.call.coinbase]:
          <k> #call_foundry 4282924116 ARGS => . ... </k>
          <output> _ => .ByteArray </output>
@@ -365,7 +365,7 @@ function label(address addr, string calldata label) external;
 If an address is labelled, the label will show up in test traces instead of the address.
 However, there is no change on the state and therefore this rule just skips the cheatcode invocation.
 
-```k
+```{.k .bytes}
     rule [foundry.call.label]:
          <k> #call_foundry 3327641368 _ARGS => . ... </k>
          <output> _ => .ByteArray </output>
@@ -380,7 +380,7 @@ function getNonce(address account) external returns (uint64);
 `foundry.call.getNonce` will match when the `getNonce` cheat code function is called.
 This rule takes the `address` value from the function call data, which is represented as `ARGS`, and forwards it to the `#returnNonce` production, which will update the `<output>` cell with the `nonce` of the account.
 
-```k
+```{.k .bytes}
     rule [foundry.call.getNonce]:
          <k> #call_foundry 755185067 ARGS => #returnNonce #asWord(ARGS) ... </k>
 ```
@@ -396,7 +396,7 @@ This rule takes `uint256` private key from the function call data, which is repr
 The `<output>` cell will be updated with the value of the address generated from the private key using `#addrFromPrivateKey(#unparseByteStack(ARGS))`.
 `#bufStrict` is used to pad the value to a length of 32.
 
-```k
+```{.k .bytes}
     rule [foundry.call.addr]:
          <k> #call_foundry 4288775753 ARGS => . ... </k>
          <output> _ => #bufStrict(32, #addrFromPrivateKey(#unparseByteStack(ARGS))) </output>
