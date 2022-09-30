@@ -447,7 +447,7 @@ This rule then takes from the function call data the account using `#asWord(#ran
 
 Otherwise, ignore any other call to the Foundry contract.
 
-```k
+```{.k .bytes}
     rule [foundry.call.owise]:
          <k> #call_foundry _ _ => . ... </k> <output> _ => .ByteArray </output> [owise]
 ```
