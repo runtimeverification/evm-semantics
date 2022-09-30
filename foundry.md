@@ -235,8 +235,9 @@ This rule then takes a `bool` condition from the function call data, represented
 
 ```{.k .bytes}
     rule [foundry.call.assume]:
-         <k> #call_foundry 1281615202 ARGS => #assume(ARGS ==K #bufStrict(32, 1)) ... </k>
+         <k> #call_foundry SELECTOR ARGS => #assume(ARGS ==K #bufStrict(32, 1)) ... </k>
          <output> _ => .ByteArray </output>
+      requires SELECTOR ==Int selector ( "assume(bool)" )
 ```
 
 #### `deal` - Set a given balance to a given account.
@@ -250,8 +251,9 @@ The rule then takes from the function call data the target account, using `#asWo
 
 ```{.k .bytes}
     rule [foundry.call.deal]:
-         <k> #call_foundry 3364511341 ARGS => #setBalance #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setBalance #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
          <output> _ => .ByteArray </output>
+      requires SELECTOR ==Int selector ( "deal(address,uint256)" )
 ```
 
 #### `etch` - Sets the code of an account.
@@ -266,13 +268,14 @@ The values are forwarded to the `#setCode` production which updates the account 
 
 ```{.k .bytes}
     rule [foundry.call.etch]:
-         <k> #call_foundry 3033974658 ARGS
+         <k> #call_foundry SELECTOR ARGS
           => #let CODE_START = 96 #in
              #let CODE_LENGTH = #asWord(#range(ARGS, 64, 32)) #in
              #setCode #asWord(#range(ARGS, 0, 32)) #range(ARGS, CODE_START, CODE_LENGTH)
          ...
          </k>
          <output> _ => .ByteArray </output>
+      requires SELECTOR ==Int selector ( "etch(address,bytes)" )
 ```
 
 #### `warp` - Sets the block timestamp.
@@ -286,9 +289,10 @@ This rule then takes the `uint256` value from the function call data which is re
 
 ```{.k .bytes}
     rule [foundry.call.warp]:
-         <k> #call_foundry 3856056066 ARGS => . ... </k>
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
          <output> _ => .ByteArray </output>
          <timestamp> _ => #asWord(ARGS) </timestamp>
+      requires SELECTOR ==Int selector( "warp(uint256)" )
 ```
 
 #### `roll` - Sets the block number.
@@ -302,9 +306,10 @@ This rule then takes the `uint256` value from the function call data which is re
 
 ```{.k .bytes}
     rule [foundry.call.roll]:
-         <k> #call_foundry 528174896 ARGS => . ... </k>
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
          <output> _ => .ByteArray </output>
          <number> _ => #asWord(ARGS) </number>
+      requires SELECTOR ==Int selector ( "roll(uint256)" )
 ```
 
 #### `fee` - Sets the block base fee.
@@ -318,9 +323,10 @@ This rule then takes the `uint256` value from the function call data which is re
 
 ```{.k .bytes}
     rule [foundry.call.fee]:
-         <k> #call_foundry 968063664 ARGS => . ... </k>
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
          <output> _ => .ByteArray </output>
          <baseFee> _ => #asWord(ARGS) </baseFee>
+      requires SELECTOR ==Int selector ( "fee(uint256)" )
 ```
 
 #### `chainId` - Sets the chain ID.
@@ -334,9 +340,10 @@ This rule then takes the `uint256` value from the function call data which is re
 
 ```{.k .bytes}
     rule [foundry.call.chainId]:
-         <k> #call_foundry 1078582738 ARGS => . ... </k>
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
          <output> _ => .ByteArray </output>
          <chainID> _ => #asWord(ARGS) </chainID>
+      requires SELECTOR ==Int selector ( "chainId(uint256)" )
 ```
 
 #### `coinbase` - Sets the block coinbase.
@@ -350,9 +357,10 @@ This rule then takes the `uint256` value from the function call data which is re
 
 ```{.k .bytes}
     rule [foundry.call.coinbase]:
-         <k> #call_foundry 4282924116 ARGS => . ... </k>
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
          <output> _ => .ByteArray </output>
          <coinbase> _ => #asWord(ARGS) </coinbase>
+      requires SELECTOR ==Int selector ( "coinbase(address)" )
 ```
 
 #### `label` - Sets a label for a given address.
@@ -367,8 +375,9 @@ However, there is no change on the state and therefore this rule just skips the 
 
 ```{.k .bytes}
     rule [foundry.call.label]:
-         <k> #call_foundry 3327641368 _ARGS => . ... </k>
+         <k> #call_foundry SELECTOR _ARGS => . ... </k>
          <output> _ => .ByteArray </output>
+      requires SELECTOR ==Int selector ( "label(address,string)" )
 ```
 
 #### `getNonce` - Gets the nonce of the given account.
@@ -382,7 +391,8 @@ This rule takes the `address` value from the function call data, which is repres
 
 ```{.k .bytes}
     rule [foundry.call.getNonce]:
-         <k> #call_foundry 755185067 ARGS => #returnNonce #asWord(ARGS) ... </k>
+         <k> #call_foundry SELECTOR ARGS => #returnNonce #asWord(ARGS) ... </k>
+      requires SELECTOR ==Int selector ( "getNonce(address)" )
 ```
 
 #### `addr` - Computes the address for a given private key.
@@ -398,8 +408,9 @@ The `<output>` cell will be updated with the value of the address generated from
 
 ```{.k .bytes}
     rule [foundry.call.addr]:
-         <k> #call_foundry 4288775753 ARGS => . ... </k>
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
          <output> _ => #bufStrict(32, #addrFromPrivateKey(#unparseByteStack(ARGS))) </output>
+      requires SELECTOR ==Int selector ( "addr(uint256)" )
 ```
 
 #### `load` - Loads a storage slot from an address.
@@ -414,7 +425,8 @@ The value of the identified storage slot is placed in the `<output>` cell using 
 
 ```{.k .bytes}
     rule [foundry.call.load]:
-         <k> #call_foundry 1719639408 ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #returnStorage #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #returnStorage #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
+      requires SELECTOR ==Int selector ( "load(address,bytes32)" )
 ```
 
 #### `store` - Stores a value to an address' storage slot.
@@ -428,10 +440,17 @@ This rule then takes from the function call data the account using `#asWord(#ran
 
 ```{.k .bytes}
     rule [foundry.call.store]:
-         <k> #call_foundry 1892290747 ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setStorage #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) #asWord(#range(ARGS, 64, 32)) ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setStorage #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) #asWord(#range(ARGS, 64, 32)) ... </k>
          <output> _ => .ByteArray </output>
+      requires SELECTOR ==Int selector ( "store(address,bytes32,bytes32)" )
 ```
 
+Otherwise, ignore any other call to the Foundry contract.
+
+```k
+    rule [foundry.call.owise]:
+         <k> #call_foundry _ _ => . ... </k> <output> _ => .ByteArray </output> [owise]
+```
 Utils
 -----
 
@@ -516,6 +535,25 @@ Utils
          </account>
 ```
 
+ - selectors for cheat code functions.
+
+```k
+    syntax Int ::= selector ( String ) [alias, klabel(abi_selector), symbol, function, no-evaluators]
+ // -------------------------------------------------------------------------------------------------
+    rule ( selector ( "assume(bool)" )                   => 1281615202 )
+    rule ( selector ( "deal(address,uint256)" )          => 3364511341 )
+    rule ( selector ( "etch(address,bytes)" )            => 3033974658 )
+    rule ( selector ( "warp(uint256)" )                  => 3856056066 )
+    rule ( selector ( "roll(uint256)" )                  => 528174896  )
+    rule ( selector ( "fee(uint256)" )                   => 968063664  )
+    rule ( selector ( "chainId(uint256)" )               => 1078582738 )
+    rule ( selector ( "coinbase(address)" )              => 4282924116 )
+    rule ( selector ( "label(address,string)" )          => 3327641368 )
+    rule ( selector ( "getNonce(address)" )              => 755185067  )
+    rule ( selector ( "addr(uint256)" )                  => 4288775753 )
+    rule ( selector ( "load(address,bytes32)" )          => 1719639408 )
+    rule ( selector ( "store(address,bytes32,bytes32)" ) => 1892290747 )
+```
 ```k
 endmodule
 ```
