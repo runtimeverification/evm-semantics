@@ -132,10 +132,6 @@ module VERIFICATION
     rule X <=Int #ceil32(X)     => true   requires 0 <=Int X                       [simplification]
     rule #ceil32(X) <Int X      => false  requires 0 <=Int X                       [simplification]
     rule #ceil32(X) <=Int pow16 => true   requires 0 <=Int X andBool X <=Int pow16 [simplification]
-    
-    // for debugging ecrecoverloop00-sig1-invalid-spec
-    rule A  <Int B => #Not ( { true #Equals B <=Int A } ) [simplification]
-    rule A <=Int B => #Not ( { true #Equals B  <Int A } ) [simplification]
 
 endmodule
 
@@ -156,6 +152,10 @@ module VERIFICATION-HASKELL [symbolic, kore]
     rule ( #sizeByteArray(#ecrec( _, _, _, _ )) <=Int K ) => true requires 32 <=Int K [simplification]
 
     rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
+    
+    // <Int <=/=> <=Int (to debug ecreoverloop00-sig1-invalid-spec)
+    rule A  <Int B => #Not ( { true #Equals B <=Int A } ) [simplification]
+    rule A <=Int B => #Not ( { true #Equals B  <Int A } ) [simplification]
 
 endmodule
 
