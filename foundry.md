@@ -436,7 +436,7 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
 
      syntax KItem ::= "#setNonce" Int Int
  // ----------------------------------------------------------
-    rule <k> #setNonce ACCTID NONCE => 1 ~> #push ... </k>
+    rule <k> #setNonce ACCTID NONCE => . ... </k>
          <output> _ => .ByteArray </output>
          <account>
              <acctID> ACCTID </acctID>
