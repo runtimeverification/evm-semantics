@@ -78,6 +78,12 @@ module FOUNDRY
     imports FOUNDRY-SUCCESS
     imports FOUNDRY-CHEAT-CODES
     imports FOUNDRY-ACCOUNTS
+
+    configuration
+      <foundry>
+        <kevm/>
+        <cheatcodes/>
+      </foundry>
 endmodule
 ```
 
@@ -134,10 +140,30 @@ endmodule
 
 ### Foundry Cheat Codes
 
+The configuration of the Foundry Cheat Codes is defined as follwing:
+1. The `<prank>` subconfiguration stores values which are used during the execution of any kind of `prank` cheatcode:
+    - `<prevCaller>` keeps the current address of the contract that initiated the prank.
+    - `<prevOrigin>` keeps the current address of the `tx.origin` value.
+    - `<newCaller>` and `<newOrigin>` are addresses to be assigned after the prank call to `msg.sender` and `tx.origin`.
+    - `<depth>` records the current call depth at which the prank was invoked.
+    - `<singleCall>` tells whether the prank stops by itself after the next call or when a `stopPrank` cheat code is invoked.
+
 ```k
 module FOUNDRY-CHEAT-CODES
     imports EVM
     imports FOUNDRY-ACCOUNTS
+
+    configuration
+      <cheatcodes>
+        <prank>
+          <prevCaller> .Account </prevCaller>
+          <prevOrigin> .Account </prevOrigin>
+          <newCaller> .Account </newCaller>
+          <newOrigin> .Account </newOrigin>
+          <depth> 0 </depth>
+          <singleCall> false </singleCall>
+        </prank>
+      </cheatcodes>
 ```
 
 First we have some helpers in K which can:
@@ -153,9 +179,9 @@ First we have some helpers in K which can:
 
     rule <k> #assert(false) => . ... </k>
          <account>
-             <acctID> #address(FoundryCheat) </acctID>
-             <storage> STORAGE => STORAGE [ #loc(FoundryCheat . Failed) <- 1 ] </storage>
-             ...
+           <acctID> #address(FoundryCheat) </acctID>
+           <storage> STORAGE => STORAGE [ #loc(FoundryCheat . Failed) <- 1 ] </storage>
+           ...
          </account>
 ```
 
@@ -171,7 +197,7 @@ This rule then takes a `bool` condition using `#range(LM, ARGSTART +Int 4, 32)` 
 ```k
 
     rule [call.assume]:
-         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #assume(#range(LM, ARGSTART +Int 4, 32) ==K #bufStrict(32, 1)) ~> 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #assume(#range(LM, ARGSTART +Int 4, 32) ==K #bufStrict(32, 1)) ~> #finishCheatCode ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
@@ -190,20 +216,20 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32)`
 
 ```k
     rule [call.deal]:
-         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #setBalance(#asWord(#range(LM, ARGSTART +Int 4, 32)), #asWord(#range(LM, ARGSTART +Int 36, 32))) ~> 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #setBalance #asWord(#range(LM, ARGSTART +Int 4, 32)) #asWord(#range(LM, ARGSTART +Int 36, 32)) ~> #finishCheatCode ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3364511341 // selector ( "deal(address,uint256)" )
       [priority(40)]
 
-    syntax KItem ::= "#setBalance" "(" Int "," Int ")" [klabel(foundry_setBalance)]
- // -------------------------------------------------------------------------------
-    rule <k> #setBalance(ACCTID, NEWBAL) => . ... </k>
+    syntax KItem ::= "#setBalance" Int Int [klabel(foundry_setBalance)]
+ // -------------------------------------------------------------------
+    rule <k> #setBalance ACCTID NEWBAL => . ... </k>
          <account>
-             <acctID> ACCTID </acctID>
-             <balance> _ => NEWBAL </balance>
-             ...
+           <acctID> ACCTID </acctID>
+           <balance> _ => NEWBAL </balance>
+           ...
          </account>
 ```
 
@@ -222,8 +248,8 @@ The values are forwarded to the `#setCode` marker which updates the account acco
          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH
           => #let CODE_START = ARGSTART +Int 100 #in
              #let CODE_LENGTH = #asWord(#range(LM, ARGSTART +Int 68, 32)) #in
-             #setCode(#asWord(#range(LM, ARGSTART +Int 4, 32)), #range(LM, CODE_START, CODE_LENGTH))
-          ~> 1 ~> #push
+             #setCode #asWord(#range(LM, ARGSTART +Int 4, 32)) #range(LM, CODE_START, CODE_LENGTH)
+          ~> #finishCheatCode
          ...
          </k>
          <output> _ => .ByteArray </output>
@@ -232,13 +258,13 @@ The values are forwarded to the `#setCode` marker which updates the account acco
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 3033974658 // selector ( "etch(address,bytes)" )
       [priority(40)]
 
-    syntax KItem ::= "#setCode" "(" Int "," ByteArray ")" [klabel(foundry_setCode)]
- // -------------------------------------------------------------------------------
-    rule <k> #setCode(ACCTID, CODE) => . ... </k>
+    syntax KItem ::= "#setCode" Int ByteArray [klabel(foundry_setCode)]
+ // -------------------------------------------------------------------
+    rule <k> #setCode ACCTID CODE => . ... </k>
          <account>
-             <acctID> ACCTID </acctID>
-             <code> _ => #if #asWord(CODE) ==Int 0 #then .ByteArray:AccountCode #else {CODE}:>AccountCode #fi </code>
-             ...
+           <acctID> ACCTID </acctID>
+           <code> _ => #if #asWord(CODE) ==Int 0 #then .ByteArray:AccountCode #else {CODE}:>AccountCode #fi </code>
+           ...
          </account>
 ```
 
@@ -253,7 +279,7 @@ This rule then takes the uint256 value using `#asWord(#range(LM, ARGSTART +Int 4
 
 ```k
     rule [call.warp]:
-         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #finishCheatCode ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <timestamp> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </timestamp>
@@ -273,7 +299,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
 
 ```k
     rule [call.roll]:
-         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #finishCheatCode ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <number> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </number>
@@ -293,7 +319,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
 
 ```k
     rule [call.fee]:
-         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #finishCheatCode ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <baseFee> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </baseFee>
@@ -313,7 +339,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
 
 ```k
     rule [call.chainId]:
-         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #finishCheatCode ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <chainID> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </chainID>
@@ -333,7 +359,7 @@ This rule then takes the `uint256` value using `#asWord(#range(LM, ARGSTART +Int
 
 ```k
     rule [call.coinbase]:
-         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #finishCheatCode ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
          <coinbase> _ => #asWord(#range(LM, ARGSTART +Int 4, 32)) </coinbase>
@@ -354,7 +380,7 @@ However, there is no change on the state and therefore this rule just skips the 
 
 ```k
     rule [call.label]:
-         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => 1 ~> #push ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #finishCheatCode ... </k>
          <output> _ => .ByteArray </output>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
@@ -373,27 +399,20 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
 
 ```k
     rule [call.getNonce]:
-          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH
-           => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32))
-           ~> #getNonce #asWord(#range(LM, ARGSTART +Int 4, 32)) RETSTART RETWIDTH
-           ~> #refund GCALL ...
-          </k>
-          <callGas> GCALL => 0 </callGas>
-          <localMem> LM </localMem>
-       requires CHEAT_ADDR ==Int #address(FoundryCheat)
-        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 755185067 // selector ( "getNonce(address)" )
-     [priority(40)]
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32)) ~> #returnNonce #asWord(#range(LM, ARGSTART +Int 4, 32)) RETSTART RETWIDTH ~> #finishCheatCode ... </k>
+         <localMem> LM </localMem>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 755185067 // selector ( "getNonce(address)" )
+      [priority(40)]
 
-
-     syntax KItem ::= "#getNonce" Int Int Int
- // ------------------------------------------------
-    rule <k> #getNonce ACCTID RETSTART RETWIDTH => #setLocalMem RETSTART RETWIDTH #bufStrict(32, NONCE) ~> 1 ~> #push ...
-         </k>
+    syntax KItem ::= "#returnNonce" Int Int Int [klabel(foundry_returnNonce)]
+ // -------------------------------------------------------------------------
+    rule <k> #returnNonce ACCTID RETSTART RETWIDTH => #setLocalMem RETSTART RETWIDTH #bufStrict(32, NONCE) ... </k>
          <output> _ => #bufStrict(32, NONCE) </output>
          <account>
-             <acctID> ACCTID </acctID>
-             <nonce>  NONCE </nonce>
-             ...
+           <acctID> ACCTID </acctID>
+           <nonce>  NONCE  </nonce>
+           ...
          </account>
 ```
 
@@ -408,13 +427,9 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
 
 ```k
     rule [call.setNonce]:
-          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH
-           => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32))
-           ~> #setNonce #asWord(#range(LM, ARGSTART +Int 4, 32)) #asWord(#range(LM, ARGSTART +Int 36, 32))
-           ~> #refund GCALL ...
+          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32)) ~> #setNonce #asWord(#range(LM, ARGSTART +Int 4, 32)) #asWord(#range(LM, ARGSTART +Int 36, 32)) ~> #finishCheatCode ...
           </k>
           <localMem> LM </localMem>
-          <callGas> GCALL => 0 </callGas>
        requires CHEAT_ADDR ==Int #address(FoundryCheat)
         andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4175530839 // selector ( "setNonce(address,uint64)" )
      [priority(40)]
@@ -441,12 +456,12 @@ This rule takes `uint256` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` 
 
 ```k
     rule [call.addr]:
-          <k> CALL _ CHEAT_ADDR _ ARGSTART _ARGWIDTH RETSTART RETWIDTH => 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH #bufStrict(32, #addrFromPrivateKey(#unparseByteStack(#range(LM, ARGSTART +Int 4, 32)))) ... </k>
-          <output> _ => #bufStrict(32, #addrFromPrivateKey(#unparseByteStack(#range(LM, ARGSTART +Int 4, 32)))) </output>
-          <localMem> LM </localMem>
-       requires CHEAT_ADDR ==Int #address(FoundryCheat)
-        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4288775753 // selector ( "addr(uint256)" )
-     [priority(40)]
+         <k> CALL _ CHEAT_ADDR _ ARGSTART _ARGWIDTH RETSTART RETWIDTH => #setLocalMem RETSTART RETWIDTH #bufStrict(32, #addrFromPrivateKey(#unparseByteStack(#range(LM, ARGSTART +Int 4, 32)))) ~> #finishCheatCode ... </k>
+         <output> _ => #bufStrict(32, #addrFromPrivateKey(#unparseByteStack(#range(LM, ARGSTART +Int 4, 32)))) </output>
+         <localMem> LM </localMem>
+      requires CHEAT_ADDR ==Int #address(FoundryCheat)
+       andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4288775753 // selector ( "addr(uint256)" )
+      [priority(40)]
 ```
 
 #### `load` - Loads a storage slot from an address.
@@ -460,34 +475,21 @@ This rule then loads the storage slot identified by `#asWord(#range(LM, ARGSTART
 
 ```k
     rule [call.load]:
-         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH
-          => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32))
-          ~> #foundryVmLoad ARGSTART RETSTART RETWIDTH
-          ~> #refund GCALL ...
-         </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32)) ~> #returnStorage #asWord(#range(LM, ARGSTART +Int 4, 32)) #asWord(#range(LM, ARGSTART +Int 36, 32)) RETSTART RETWIDTH ~> #finishCheatCode ... </k>
          <localMem> LM </localMem>
-         <callGas> GCALL => 0 </callGas>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1719639408 // selector ( "load(address,bytes32)" )
       [priority(40)]
 
-
-    syntax KItem ::= "#foundryVmLoad" Int Int Int
- // ----------------------------------------------------------
-    rule <k> #foundryVmLoad ARGSTART RETSTART RETWIDTH
-          => #setLocalMem RETSTART RETWIDTH #bufStrict(32, #lookup(STORAGE, #asWord(#range(LM, ARGSTART +Int 36, 32))))
-          ~> 1 ~> #push ...
-         </k>
-         <output>
-           _ => #bufStrict(32, #lookup(STORAGE, #asWord(#range(LM, ARGSTART +Int 36, 32))))
-         </output>
+    syntax KItem ::= "#returnStorage" Int Int Int Int [klabel(foundry_returnStorage)]
+ // ---------------------------------------------------------------------------------
+    rule <k> #returnStorage ACCTID LOC RETSTART RETWIDTH => #setLocalMem RETSTART RETWIDTH #bufStrict(32, #lookup(STORAGE, LOC)) ... </k>
+         <output> _ => #bufStrict(32, #lookup(STORAGE, LOC)) </output>
          <account>
-             <acctID> ACCTID </acctID>
-             <storage> STORAGE </storage>
-             ...
+           <acctID> ACCTID </acctID>
+           <storage> STORAGE </storage>
+           ...
          </account>
-         <localMem> LM </localMem>
-      requires ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
 ```
 
 #### `store` - Stores a value to an address' storage slot.
@@ -501,29 +503,21 @@ This rule then takes the account using `#asWord(#range(LM, ARGSTART +Int 4, 32))
 
 ```k
     rule [call.store]:
-         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH
-          => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32))
-          ~> #foundryVmStore ARGSTART
-          ~> #refund GCALL ...
-         </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32)) ~> #setStorage #asWord(#range(LM, ARGSTART +Int 4, 32)) #asWord(#range(LM, ARGSTART +Int 36, 32)) #asWord(#range(LM, ARGSTART +Int 68, 32)) ~> #finishCheatCode ... </k>
          <localMem> LM </localMem>
-         <callGas> GCALL => 0 </callGas>
+         <output> _ => .ByteArray </output>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 1892290747 // selector ( "store(address,bytes32,bytes32)" )
       [priority(40)]
 
-
-    syntax KItem ::= "#foundryVmStore" Int
- // ----------------------------------------------------------
-    rule <k> #foundryVmStore ARGSTART => 1 ~> #push ... </k>
-         <output> _ => .ByteArray </output>
+    syntax KItem ::= "#setStorage" Int Int Int [klabel(foundry_setStorage)]
+ // -----------------------------------------------------------------------
+    rule <k> #setStorage ACCTID LOC VALUE => . ... </k>
          <account>
-             <acctID> ACCTID </acctID>
-             <storage> STORAGE => STORAGE [ #asWord(#range(LM, ARGSTART +Int 36, 32)) <- #asWord(#range(LM, ARGSTART +Int 68, 32)) ] </storage>
+           <acctID> ACCTID </acctID>
+           <storage> STORAGE => STORAGE [ LOC <- VALUE ] </storage>
              ...
          </account>
-         <localMem> LM </localMem>
-      requires ACCTID ==Int #asWord(#range(LM, ARGSTART +Int 4, 32))
 ```
 
 Utils
@@ -532,8 +526,8 @@ Utils
 - `#loadAccount ACCT` creates a new, empty account for `ACCT` if it does not already exist. Otherwise, it has no effect
 
 ```k
-    syntax KItem ::= "#loadAccount" Int
- // ---------------------------------
+    syntax KItem ::= "#loadAccount" Int [klabel(foundry_loadAccount)]
+ // -----------------------------------------------------------------
     rule <k> #loadAccount ACCT => #accessAccounts ACCT ... </k>
          <activeAccounts> ACCTS:Set </activeAccounts>
       requires ACCT in ACCTS
@@ -541,6 +535,15 @@ Utils
     rule <k> #loadAccount ACCT => #newAccount ACCT ~> #accessAccounts ACCT ... </k>
          <activeAccounts> ACCTS:Set </activeAccounts>
       requires notBool ACCT in ACCTS
+```
+
+- `#finishCheatCode` is a production used to group togheter productions which are used on every cheat code.
+
+```k
+    syntax KItem ::= "#finishCheatCode" [klabel(foundry_finishCheatCode)]
+ // ---------------------------------------------------------------------
+    rule <k> #finishCheatCode => 1 ~> #push ~> #refund GCALL ... </k>
+         <callGas> GCALL => 0 </callGas>
 ```
 
 ```k

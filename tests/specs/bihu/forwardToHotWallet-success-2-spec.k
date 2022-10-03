@@ -44,7 +44,7 @@ module FORWARDTOHOTWALLET-SUCCESS-2-SPEC
         <substate>
           <selfDestruct> _ </selfDestruct>
           <log> _ </log>
-          <refund> _ </refund> // TODO: more detail
+          <refund> _ => ?_ </refund> // TODO: more detail
           <accessedAccounts> _ => ?_ </accessedAccounts>
           <accessedStorage> _ => ?_ </accessedStorage>
         </substate>
