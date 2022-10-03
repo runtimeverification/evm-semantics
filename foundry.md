@@ -399,7 +399,7 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
 
 ```k
     rule [call.getNonce]:
-         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH => #returnNonce #asWord(#range(LM, ARGSTART +Int 4, 32)) RETSTART RETWIDTH ~> #finishCheatCode ... </k>
+         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH RETSTART RETWIDTH => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32)) ~> #returnNonce #asWord(#range(LM, ARGSTART +Int 4, 32)) RETSTART RETWIDTH ~> #finishCheatCode ... </k>
          <localMem> LM </localMem>
       requires CHEAT_ADDR ==Int #address(FoundryCheat)
        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 755185067 // selector ( "getNonce(address)" )
@@ -413,6 +413,35 @@ This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 3
            <acctID> ACCTID </acctID>
            <nonce>  NONCE  </nonce>
            ...
+         </account>
+```
+
+#### `setNonce` - Sets the nonce of the given account.
+
+```
+function setNonce(address account, uint64 nonce) external;
+```
+
+`call.setNonce` will match when the `setNonce` function is called at the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+This rule takes the `address` value using `#asWord(#range(LM, ARGSTART +Int 4, 32)` and `uint64` value corresponding to new nonce using `#asWord(#range(LM, ARGSTART +Int 36, 32)` and updates the `<nonce>` cell in the respective account.
+
+```k
+    rule [call.setNonce]:
+          <k> CALL _ CHEAT_ADDR _VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH => #loadAccount #asWord(#range(LM, ARGSTART +Int 4, 32)) ~> #setNonce #asWord(#range(LM, ARGSTART +Int 4, 32)) #asWord(#range(LM, ARGSTART +Int 36, 32)) ~> #finishCheatCode ...
+          </k>
+          <localMem> LM </localMem>
+       requires CHEAT_ADDR ==Int #address(FoundryCheat)
+        andBool #asWord(#range(LM, ARGSTART, 4)) ==Int 4175530839 // selector ( "setNonce(address,uint64)" )
+     [priority(40)]
+
+     syntax KItem ::= "#setNonce" Int Int
+ // ----------------------------------------------------------
+    rule <k> #setNonce ACCTID NONCE => . ... </k>
+         <output> _ => .ByteArray </output>
+         <account>
+             <acctID> ACCTID </acctID>
+             <nonce>  _ => NONCE  </nonce>
+             ...
          </account>
 ```
 
