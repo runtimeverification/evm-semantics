@@ -415,11 +415,11 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule B ==Bool false => notBool B [simplification]
 
-    rule #range(A ++ B, START, LENGTH) => #range(A, START, LENGTH)
-      requires #sizeByteArray(A) >=Int START +Int LENGTH [simplification, concrete(A), symbolic(B)]
+    rule #range(A ++ _B, START, LENGTH) => #range(A, START, LENGTH)
+      requires #sizeByteArray(A) >=Int START +Int LENGTH [simplification, concrete(A), symbolic(_B)]
 
     rule #range(A ++ B, START, LENGTH) => #range(B, START -Int #sizeByteArray(A), LENGTH)
       requires #sizeByteArray(A) <=Int START [simplification, concrete(A), symbolic(B)]
 
-    rule  #asWord ( #range ( #buf ( LEN , VALUE ) , 0 , LEN ) ) => VALUE [simplification, symbolic(VALUE)]
+    rule #asWord ( #range ( #buf ( LEN , VALUE ) , 0 , LEN ) ) => VALUE [simplification, symbolic(VALUE)]
 endmodule
