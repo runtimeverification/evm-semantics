@@ -210,7 +210,8 @@ We define two productions named `#return_foundry` and `#call_foundry`, which wil
 The rule `foundry.return` will rewrite the `#return_foundry` production into other productions that will place the output of the execution into the local memory, refund the gas value of the call and push the value `1` on the call stack.
 
 ```{.k .bytes}
-    syntax KItem ::= "#return_foundry" Int Int [klabel(foundry_return)]
+    syntax KItem ::= "#error_foundry" [klabel(foundry_error)]
+                   | "#return_foundry" Int Int [klabel(foundry_return)]
                    | "#call_foundry" Int ByteArray [klabel(foundry_call)]
  // ---------------------------------------------------------------------
     rule [foundry.return]:
@@ -463,11 +464,11 @@ This rule then takes from the function call data the account using `#asWord(#ran
       requires SELECTOR ==Int selector ( "store(address,bytes32,bytes32)" )
 ```
 
-Otherwise, ignore any other call to the Foundry contract.
+Otherwise, throw an error for any other call to the Foundry contract.
 
 ```{.k .bytes}
     rule [foundry.call.owise]:
-         <k> #call_foundry _ _ => . ... </k> <output> _ => .ByteArray </output> [owise]
+         <k> #call_foundry _ _ => #error_foundry ... </k> [owise]
 ```
 Utils
 -----

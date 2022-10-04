@@ -91,6 +91,8 @@ SetUpTest.testSetUpCalledSymbolic
 SignTest.testSign
 SnapshotTest.testSnapshot
 StoreTest.testAccesses
+StoreTest.testGasStoreWarmVM
+StoreTest.testGasLoadWarmVM
 TokenTest.test_1
 TokenTest.test_2
 ToStringTest.testAddressToString
