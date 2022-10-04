@@ -404,7 +404,7 @@ function setNonce(address account, uint64 nonce) external;
 `foundry.call.setNonce` will match when the `setNonce` function is called.
 This rule takes the `address` value and `uint64` value corresponding to new nonce using from the function call data, which is represented as `ARGS` forwards it to the `#setNonce` production, which will update the nonce of the account.
 
-```k
+```{.k .bytes}
     rule [foundry.call.setNonce]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setNonce #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
          <output> _ => .ByteArray </output>
