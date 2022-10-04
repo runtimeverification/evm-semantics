@@ -202,6 +202,7 @@ Finally, the rule for `#return_foundry` is used to end the execution of the `CAL
          ...
          </k>
          <localMem> LM </localMem>
+         <output> _ => .ByteArray </output>
     requires CHEAT_ADDR ==Int #address(FoundryCheat)
     [priority(40)]
 ```
@@ -239,7 +240,6 @@ This rule then takes a `bool` condition from the function call data, represented
 ```{.k .bytes}
     rule [foundry.call.assume]:
          <k> #call_foundry SELECTOR ARGS => #assume(ARGS ==K #bufStrict(32, 1)) ... </k>
-         <output> _ => .ByteArray </output>
       requires SELECTOR ==Int selector ( "assume(bool)" )
 ```
 
@@ -255,7 +255,6 @@ The rule then takes from the function call data the target account, using `#asWo
 ```{.k .bytes}
     rule [foundry.call.deal]:
          <k> #call_foundry SELECTOR ARGS => #setBalance #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
-         <output> _ => .ByteArray </output>
       requires SELECTOR ==Int selector ( "deal(address,uint256)" )
 ```
 
@@ -277,7 +276,6 @@ The values are forwarded to the `#setCode` production which updates the account 
              #setCode #asWord(#range(ARGS, 0, 32)) #range(ARGS, CODE_START, CODE_LENGTH)
          ...
          </k>
-         <output> _ => .ByteArray </output>
       requires SELECTOR ==Int selector ( "etch(address,bytes)" )
 ```
 
@@ -293,7 +291,6 @@ This rule then takes the `uint256` value from the function call data which is re
 ```{.k .bytes}
     rule [foundry.call.warp]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
-         <output> _ => .ByteArray </output>
          <timestamp> _ => #asWord(ARGS) </timestamp>
       requires SELECTOR ==Int selector( "warp(uint256)" )
 ```
@@ -310,7 +307,6 @@ This rule then takes the `uint256` value from the function call data which is re
 ```{.k .bytes}
     rule [foundry.call.roll]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
-         <output> _ => .ByteArray </output>
          <number> _ => #asWord(ARGS) </number>
       requires SELECTOR ==Int selector ( "roll(uint256)" )
 ```
@@ -327,7 +323,6 @@ This rule then takes the `uint256` value from the function call data which is re
 ```{.k .bytes}
     rule [foundry.call.fee]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
-         <output> _ => .ByteArray </output>
          <baseFee> _ => #asWord(ARGS) </baseFee>
       requires SELECTOR ==Int selector ( "fee(uint256)" )
 ```
@@ -344,7 +339,6 @@ This rule then takes the `uint256` value from the function call data which is re
 ```{.k .bytes}
     rule [foundry.call.chainId]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
-         <output> _ => .ByteArray </output>
          <chainID> _ => #asWord(ARGS) </chainID>
       requires SELECTOR ==Int selector ( "chainId(uint256)" )
 ```
@@ -361,7 +355,6 @@ This rule then takes the `uint256` value from the function call data which is re
 ```{.k .bytes}
     rule [foundry.call.coinbase]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
-         <output> _ => .ByteArray </output>
          <coinbase> _ => #asWord(ARGS) </coinbase>
       requires SELECTOR ==Int selector ( "coinbase(address)" )
 ```
@@ -379,7 +372,6 @@ However, there is no change on the state and therefore this rule just skips the 
 ```{.k .bytes}
     rule [foundry.call.label]:
          <k> #call_foundry SELECTOR _ARGS => . ... </k>
-         <output> _ => .ByteArray </output>
       requires SELECTOR ==Int selector ( "label(address,string)" )
 ```
 
@@ -410,7 +402,6 @@ This rule takes the `address` value and `uint64` value corresponding to new nonc
 ```{.k .bytes}
     rule [foundry.call.setNonce]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setNonce #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
-         <output> _ => .ByteArray </output>
       requires SELECTOR ==Int selector ( "setNonce(address,uint64)" )
 ```
 
@@ -460,7 +451,6 @@ This rule then takes from the function call data the account using `#asWord(#ran
 ```{.k .bytes}
     rule [foundry.call.store]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setStorage #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) #asWord(#range(ARGS, 64, 32)) ... </k>
-         <output> _ => .ByteArray </output>
       requires SELECTOR ==Int selector ( "store(address,bytes32,bytes32)" )
 ```
 
