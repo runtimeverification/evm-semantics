@@ -251,7 +251,7 @@ The rule then takes from the function call data the target account, using `#asWo
 
 ```{.k .bytes}
     rule [foundry.call.deal]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setBalance #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
+         <k> #call_foundry SELECTOR ARGS => #setBalance #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
          <output> _ => .ByteArray </output>
       requires SELECTOR ==Int selector ( "deal(address,uint256)" )
 ```
