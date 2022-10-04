@@ -73,6 +73,7 @@ This file describes the KEVM specification of the Foundry testing framework, whi
 ```k
 requires "evm.md"
 requires "hashed-locations.md"
+requires "abi.md"
 
 module FOUNDRY
     imports FOUNDRY-SUCCESS
@@ -151,6 +152,7 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
 ```k
 module FOUNDRY-CHEAT-CODES
     imports EVM
+    imports EVM-ABI
     imports FOUNDRY-ACCOUNTS
 
     configuration
@@ -567,8 +569,6 @@ Utils
  - selectors for cheat code functions.
 
 ```k
-    syntax Int ::= selector ( String ) [alias, klabel(abi_selector), symbol, function, no-evaluators]
- // -------------------------------------------------------------------------------------------------
     rule ( selector ( "assume(bool)" )                   => 1281615202 )
     rule ( selector ( "deal(address,uint256)" )          => 3364511341 )
     rule ( selector ( "etch(address,bytes)" )            => 3033974658 )
