@@ -421,6 +421,6 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule #range(A ++ B, START, LENGTH) => #range(B, START -Int #sizeByteArray(A), LENGTH)
       requires #sizeByteArray(A) <=Int START [simplification]
 
-    rule #range ( #buf ( LEN , VALUE ) , 0 , LEN ) => #buf (LEN, VALUE) [simplification]
+    rule #range ( BA:ByteArray , 0 , LEN ) => BA requires #sizeByteArray(BA) ==Int LEN [simplification]
 
 endmodule
