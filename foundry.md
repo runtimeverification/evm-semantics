@@ -146,6 +146,7 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<prevCaller>` keeps the current address of the contract that initiated the prank.
     - `<prevOrigin>` keeps the current address of the `tx.origin` value.
     - `<newCaller>` and `<newOrigin>` are addresses to be assigned after the prank call to `msg.sender` and `tx.origin`.
+    - `<active>` signals if a prank is active or not.
     - `<depth>` records the current call depth at which the prank was invoked.
     - `<singleCall>` tells whether the prank stops by itself after the next call or when a `stopPrank` cheat code is invoked.
 
@@ -162,6 +163,7 @@ module FOUNDRY-CHEAT-CODES
           <prevOrigin> .Account </prevOrigin>
           <newCaller> .Account </newCaller>
           <newOrigin> .Account </newOrigin>
+          <active> false </active>
           <depth> 0 </depth>
           <singleCall> false </singleCall>
         </prank>
@@ -454,16 +456,94 @@ This rule then takes from the function call data the account using `#asWord(#ran
       requires SELECTOR ==Int selector ( "store(address,bytes32,bytes32)" )
 ```
 
+Pranks
+------
+
+#### Injecting addresses in a call
+
+To inject the pranked `msg.sender` and `tx.origin` we add two new rules for the `#call` production, defined in [evm.md](./evm.md).
+These rules have a higher priority.
+The only difference between these rules is that one will also set the `tx.origin`, if required.
+First, will match only if the `<active>` cell has the `true` value, signaling that a prank is active, and if the current depth of the call is at the same level with the depth at which the prank was invoked.
+This is needed in order to prevent overwriting the caller for subcalls.
+Finally, the original sender of the transaction, `ACCTFROM` is changed to the new caller, `NCL`.
+
+```{.k .bytes}
+    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+         <callDepth> CD </callDepth>
+         <prank>
+            <newCaller> NCL </newCaller>
+            <newOrigin> .Account </newOrigin>
+            <active> true </active>
+            <depth> CD </depth>
+            ...
+         </prank>
+      requires NCL =/=K .Account
+       andBool ACCTFROM =/=Int NCL
+      [priority(40)]
+
+    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+         <callDepth> CD </callDepth>
+         <origin> _ => NOG </origin>
+         <prank>
+            <newCaller> NCL </newCaller>
+            <newOrigin> NOG </newOrigin>
+            <active> true </active>
+            <depth> CD </depth>
+            ...
+         </prank>
+      requires NCL =/=K .Account
+       andBool NOG =/=K .Account
+       andBool ACCTFROM =/=Int NCL
+      [priority(40)]
+```
+
+#### `startPrank` - Sets `msg.sender` and `tx.origin` for all subsequent calls until `stopPrank` is called.
+
+```
+function startPrank(address) external;
+function startPrank(address sender, address origin) external;
+```
+
+`foundry.call.startPrank` and `foundry.call.startPrankWithOrigin` will match when either of `startPrank` functions are called.
+The addresses which will be used to impersonate future calls are retrieved from the local memory using `#asWord(#range(ARGS, 0, 32)` for the sender, and `#asWord(#range(ARGS, 32, 32)` for the origin (only for the `foundry.call.startPrankWithOrigin` rule).
+The `#loadAccount` production is used to load accounts into the state if they are missing.
+
+```{.k .bytes}
+    rule [foundry.call.startPrank]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) ... </k>
+      requires SELECTOR ==Int selector ( "startPrank(address)" )
+
+    rule [foundry.call.startPrankWithOrigin]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount  #asWord(#range(ARGS, 0, 32)) ~> #loadAccount #asWord(#range(ARGS, 32, 32)) ~> #setPrankWithOrigin #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
+      requires SELECTOR ==Int selector ( "startPrank(address,address)" )
+```
+
+#### `stopPrank` - Stops impersonating `msg.sender` and `tx.origin`.
+
+```
+function stopPrank() external;
+```
+
+`foundry.call.stopPrank` will match when `stopPrank` function will be called. This rule will invoke `#endPrank` which will clean up the `<prank/>` subconfiguration and restore the previous values of the `msg.sender` and `tx.origin`.
+
+```{.k .bytes}
+    rule [foundry.call.stopPrank]:
+         <k> #call_foundry SELECTOR _ => #endPrank ... </k>
+      requires SELECTOR ==Int selector ( "stopPrank()" )
+```
+
 Otherwise, throw an error for any other call to the Foundry contract.
 
 ```{.k .bytes}
     rule [foundry.call.owise]:
          <k> #call_foundry _ _ => #error_foundry ... </k> [owise]
 ```
+
 Utils
 -----
 
-- `#loadAccount ACCT` creates a new, empty account for `ACCT` if it does not already exist. Otherwise, it has no effect
+- `#loadAccount ACCT` creates a new, empty account for `ACCT` if it does not already exist. Otherwise, it has no effect.
 
 ```k
     syntax KItem ::= "#loadAccount" Int [klabel(foundry_loadAccount)]
@@ -557,7 +637,62 @@ Utils
          </account>
 ```
 
- - selectors for cheat code functions.
+- `#setPrank NEWCALLER` will set the `<prank/>` subconfiguration for the given account.
+
+```k
+    syntax KItem ::= "#setPrank" Int [klabel(foundry_setPrank)]
+ // -----------------------------------------------------------
+    rule <k> #setPrank NEWCALLER => . ... </k>
+         <callDepth> CD </callDepth>
+         <caller> CL </caller>
+         <origin> OG </origin>
+         <prank>
+           <prevCaller> .Account => CL </prevCaller>
+           <prevOrigin> .Account => OG </prevOrigin>
+           <newCaller> _ => NEWCALLER </newCaller>
+           <active> false => true </active>
+           <depth> _ => CD </depth>
+           <singleCall> _ => false </singleCall>
+           ...
+         </prank>
+```
+
+- `#setPrankWithOrigin NEWCALLER NEWORIGIN` will set the `<prank/>` subconfiguration for the given account.
+
+```k
+    syntax KItem ::= "#setPrankWithOrigin" Int Int [klabel(foundry_setPrankWithOrigin)]
+ // -----------------------------------------------------------------------------------
+    rule <k> #setPrankWithOrigin NEWCALLER NEWORIGIN => . ... </k>
+         <callDepth> CD </callDepth>
+         <caller> CL </caller>
+         <origin> OG </origin>
+         <prank>
+           <prevCaller> .Account => CL </prevCaller>
+           <prevOrigin> .Account => OG </prevOrigin>
+           <newCaller> _ => NEWCALLER </newCaller>
+           <newOrigin> _ => NEWORIGIN </newOrigin>
+           <active> false => true </active>
+           <depth> _ => CD </depth>
+           <singleCall> _ => false </singleCall>
+         </prank>
+```
+
+- `#endPrank` will end the prank, restoring the previous caller and origin to the `<caller>` and `<origin>` cells in the configuration.
+
+```k
+    syntax KItem ::= "#endPrank" [klabel(foundry_endPrank)]
+ // -------------------------------------------------------
+    rule <k> #endPrank => . ... </k>
+        <caller> _ => CL </caller>
+        <origin> _ => OG </origin>
+        <prank>
+          <prevCaller> CL => .Account </prevCaller>
+          <prevOrigin> OG => .Account </prevOrigin>
+          <active> true => false </active>
+          ...
+        </prank>
+```
+- selectors for cheat code functions.
 
 ```k
     rule ( selector ( "assume(bool)" )                   => 1281615202 )
@@ -574,6 +709,9 @@ Utils
     rule ( selector ( "load(address,bytes32)" )          => 1719639408 )
     rule ( selector ( "store(address,bytes32,bytes32)" ) => 1892290747 )
     rule ( selector ( "setNonce(address,uint64)" )       => 4175530839 )
+    rule ( selector ( "startPrank(address)" )            => 105151830  )
+    rule ( selector ( "startPrank(address,address)" )    => 1169514616 )
+    rule ( selector ( "stopPrank()" )                    => 2428830011 )
 ```
 ```k
 endmodule
