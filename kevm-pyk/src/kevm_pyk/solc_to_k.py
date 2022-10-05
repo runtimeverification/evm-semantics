@@ -379,7 +379,7 @@ def _init_term(
         intToken(0),
     )
     init_subst = {
-        'MODE_CELL': KToken('NORMAL', 'Mode'),
+        'MODE_CELL': KApply('NORMAL'),
         'SCHEDULE_CELL': KApply('LONDON_EVM'),
         'STATUSCODE_CELL': KVariable('STATUSCODE'),
         'CALLSTACK_CELL': KApply('.List'),
