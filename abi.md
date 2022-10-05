@@ -455,6 +455,13 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
     rule #getNonIndexedArgs(.EventArgs)      => .TypedArgs
 ```
 
+### Function selectors
+
+```k
+    syntax Int ::= selector ( String ) [alias, klabel(abi_selector), symbol, function, no-evaluators]
+ // -------------------------------------------------------------------------------------------------
+```
+
 ```k
 endmodule
 ```
