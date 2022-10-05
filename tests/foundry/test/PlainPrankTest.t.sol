@@ -2,7 +2,6 @@
 pragma solidity =0.8.13;
 
 import "forge-std/Test.sol";
-import "src/Prank.sol";
 
 contract AdditionalToken {
     address public immutable owner;
@@ -29,32 +28,20 @@ contract PlainPrankTest is Test {
         assert(token.count() == 1);
     }
 
-    // function test_startPrankWithOrigin_true() public {
-    //     AdditionalToken token = new AdditionalToken();
-    //     vm.startPrank(address(token), address(token));
-    //     token.incrementCount();
-    //     vm.stopPrank();
-    //     assert(token.count() == 1);
-    // }
+    function test_startPrankWithOrigin_true() public {
+        AdditionalToken token = new AdditionalToken();
+        vm.startPrank(address(token), address(token));
+        token.incrementCount();
+        vm.stopPrank();
+        assert(token.count() == 1);
+    }
 
-    // function test_stopPrank_true() public {
-    //     vm.stopPrank();
-    //     vm.stopPrank();
-    // }
-
-    // function test_stopPrank_true2() public {
-    //     AdditionalToken token = new AdditionalToken();
-    //     vm.startPrank(address(token));
-    //     token.incrementCount();
-    //     assert(token.count() == 1);
-    // }
-
-    // function test_zeroPrank_true() public {
-    //     AdditionalToken token = new AdditionalToken();
-    //     vm.startPrank(address(0));
-    //     token.incrementCount();
-    //     vm.stopPrank();
-    //     assert(token.count() == 1);
-    // }
+    function test_startPrank_zeroAddress_true() public {
+        AdditionalToken token = new AdditionalToken();
+        vm.startPrank(address(0));
+        token.incrementCount();
+        vm.stopPrank();
+        assert(token.count() == 1);
+    }
 
 }
