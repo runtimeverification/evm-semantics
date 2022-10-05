@@ -153,9 +153,8 @@ module VERIFICATION-HASKELL [symbolic, kore]
 
     rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
     
-    // <Int <=/=> <=Int (to debug ecreoverloop00-sig1-invalid-spec)
-    rule A  <Int B => #Not ( { true #Equals B <=Int A } ) [simplification]
-    rule A <=Int B => #Not ( { true #Equals B  <Int A } ) [simplification]
+    // <Int => <=Int (to debug ecreoverloop00-sig1-invalid-spec)
+    rule A <Int B => A <=Int B [simplification] 
 
 endmodule
 
