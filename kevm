@@ -75,6 +75,7 @@ run_kompile() {
     ${pyk} || kompile_opts+=( --output-definition "${backend_dir}" )
     ${pyk} || kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
     ${pyk} || kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN" )
+    ${pyk} || ! ${debug} || kompile_opts+=( --debug )
 
     if [[ ! -z ${concrete_rules_file} ]]; then
         if [[ -f ${concrete_rules_file} ]]; then
