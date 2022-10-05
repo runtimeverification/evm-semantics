@@ -7,7 +7,7 @@ ARG Z3_VERSION
 FROM z3:${Z3_VERSION} as Z3
 
 ARG K_COMMIT
-FROM runtimeverificationinc/kframework-k:ubuntu-focal-${K_COMMIT}
+FROM runtimeverificationinc/kframework-k:ubuntu-jammy-${K_COMMIT}
 
 COPY --from=FOUNDRY /usr/local/bin/forge /usr/local/bin/forge
 COPY --from=FOUNDRY /usr/local/bin/anvil /usr/local/bin/anvil
@@ -24,6 +24,9 @@ RUN    apt-get update         \
     && apt-get install --yes  \
             cmake             \
             curl              \
+            libcrypto++-dev   \
+            libprocps-dev     \
+            libsecp256k1-dev  \
             libssl-dev        \
             protobuf-compiler \
             python3           \
