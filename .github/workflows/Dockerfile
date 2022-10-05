@@ -24,6 +24,7 @@ RUN    apt-get update         \
     && apt-get install --yes  \
             cmake             \
             curl              \
+            libssl-dev        \
             protobuf-compiler \
             python3           \
             python3-pip       \
