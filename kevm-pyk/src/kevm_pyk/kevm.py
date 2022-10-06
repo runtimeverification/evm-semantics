@@ -218,7 +218,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def bin_runtime(c: KInner) -> KApply:
-        return KApply('#binRuntime', [c])
+        return KApply('binRuntime', [c])
 
     @staticmethod
     def hashed_location(compiler: str, base: KInner, offset: KInner, member_offset: int = 0) -> KApply:
