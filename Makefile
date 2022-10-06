@@ -423,7 +423,7 @@ tests/%.run-expected: tests/% tests/%.expected
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
-tests/%.parse: tests/%
+tests/%.parse: tests/% $(KEVM_LIB)/kast-json.py $(KEVM_LIB)/kore-json.py
 	$(KEVM) kast $< kast $(KEVM_OPTS) $(KAST_OPTS) --backend $(TEST_CONCRETE_BACKEND) > $@-out
 	$(CHECK) $@-out $@-expected
 	$(KEEP_OUTPUTS) || rm -rf $@-out
