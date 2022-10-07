@@ -59,7 +59,7 @@ jobs:
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-java /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Test Java'
-        run: docker exec -t kevm-ci-java /bin/bash -c 'make test-prove -j2 TEST_SYMBOLIC_BACKEND=java'
+        run: docker exec -t kevm-ci-java /bin/bash -c 'make test-prove -j4 TEST_SYMBOLIC_BACKEND=java'
       - name: 'Tear down Docker'
         if: always()
         run: |
@@ -80,8 +80,8 @@ jobs:
           tag: kevm-ci-haskell
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-haskell /bin/bash -c 'make kevm-pyk venv -j2'
-      - name: 'Test Java'
-        run: docker exec -t kevm-ci-haskell /bin/bash -c 'make test-prove -j6 TEST_SYMBOLIC_BACKEND=haskell'
+      - name: 'Test Haskell'
+        run: docker exec -t kevm-ci-haskell /bin/bash -c 'make test-prove -j8 TEST_SYMBOLIC_BACKEND=haskell'
       - name: 'Tear down Docker'
         if: always()
         run: |
@@ -102,7 +102,7 @@ jobs:
           tag: kevm-ci-foundry
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-foundry /bin/bash -c 'make kevm-pyk venv -j2'
-      - name: 'Test Java'
+      - name: 'Test Foundry'
         run: docker exec -t kevm-ci-foundry /bin/bash -c 'make test-foundry -j2'
       - name: 'Tear down Docker'
         if: always()
