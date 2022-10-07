@@ -28,6 +28,7 @@ RUN    apt-get update         \
             libprocps-dev     \
             libsecp256k1-dev  \
             libssl-dev        \
+            netcat            \
             protobuf-compiler \
             python3           \
             python3-pip       \
