@@ -20,4 +20,9 @@ contract DealTest is Test {
         vm.deal(address(alice), value);
         assertEq(address(alice).balance, value);
     }
+
+    function testDealNonExistingAccount() public {
+        vm.deal(address(0), 1 ether);
+        assert(address(0).balance == 1 ether);
+    }
 }
