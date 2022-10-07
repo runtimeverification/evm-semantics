@@ -86,6 +86,8 @@ run_kompile() {
 
     case "${backend}" in
         haskell)   kompile_opts+=( --md-selector 'k & ! nobytes & ! node')                          ;;
+        foundry)   backend=haskell
+                   kompile_opts+=( --md-selector 'k & ! nobytes & ! node')                          ;;
         java)      kompile_opts+=( --md-selector 'k & ! bytes   & ! node')                          ;;
         llvm)      kompile_opts+=( --md-selector 'k & ! nobytes & ! node' )                         ;;&
         node)      kompile_opts+=( --md-selector 'k & ! nobytes & ! standalone' --no-llvm-kompile ) ;;&
@@ -456,15 +458,15 @@ cCHAINID_kast="#token(\"${chainid}\",\"Int\")"
 ! ${debug} || set -x
 
 case "$run_command-$backend" in
-    kompile-@(java|llvm|haskell|node) ) run_kompile         "$@" ;;
-    run-@(java|llvm|haskell)          ) run_krun            "$@" ;;
-    kast-@(java|llvm|haskell)         ) run_kast            "$@" ;;
-    interpret-@(llvm|haskell)         ) run_interpret       "$@" ;;
-    prove-@(java|haskell)             ) run_prove           "$@" ;;
-    search-@(java|haskell)            ) run_search          "$@" ;;
-    klab-view-*                       ) view_klab           "$@" ;;
-    solc-to-k-*                       ) run_solc            "$@" ;;
-    foundry-kompile-*                 ) run_foundry_kompile "$@" ;;
-    foundry-prove-*                   ) run_foundry_prove   "$@" ;;
+    kompile-@(java|llvm|haskell|node|foundry) ) run_kompile         "$@" ;;
+    run-@(java|llvm|haskell)                  ) run_krun            "$@" ;;
+    kast-@(java|llvm|haskell)                 ) run_kast            "$@" ;;
+    interpret-@(llvm|haskell)                 ) run_interpret       "$@" ;;
+    prove-@(java|haskell|foundry)             ) run_prove           "$@" ;;
+    search-@(java|haskell)                    ) run_search          "$@" ;;
+    klab-view-*                               ) view_klab           "$@" ;;
+    solc-to-k-*                               ) run_solc            "$@" ;;
+    foundry-kompile-*                         ) run_foundry_kompile "$@" ;;
+    foundry-prove-*                           ) run_foundry_prove   "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac

@@ -47,7 +47,7 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
-        build build-haskell build-llvm build-prove build-node build-kevm                                                         \
+        build build-haskell build-foundry build-llvm build-prove build-node build-kevm                                           \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
         test-prove test-failing-prove                                                                                            \
@@ -278,6 +278,26 @@ $(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_o
 	@mkdir -p $(dir $@)
 	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) && $(MAKE)
 
+# Foundry
+
+foundry_dir           := foundry
+foundry_main_module   := FOUNDRY
+foundry_syntax_module := $(foundry_main_module)
+foundry_main_file     := foundry.md
+foundry_main_filename := $(basename $(notdir $(foundry_main_file)))
+foundry_kompiled_dir  := $(foundry_dir)
+foundry_kompiled      := $(foundry_kompiled_dir)/definition.kore
+
+ifeq ($(UNAME_S),Darwin)
+$(KEVM_LIB)/$(foundry_kompiled): $(libsecp256k1_out)
+endif
+
+$(KEVM_LIB)/$(foundry_kompiled): $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
+	$(KOMPILE) --backend foundry                     \
+	    $(foundry_main_file) $(HASKELL_KOMPILE_OPTS) \
+	    --main-module $(foundry_main_module)         \
+	    --syntax-module $(foundry_syntax_module)     \
+	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 # Installing
 # ----------
@@ -287,6 +307,7 @@ install_bins := kevm    \
 
 install_libs := $(haskell_kompiled)                                        \
                 $(llvm_kompiled)                                           \
+                $(foundry_kompiled)                                        \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
                 kore-json.py                                               \
                 kast-json.py                                               \
@@ -325,6 +346,7 @@ build-llvm:     $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-haskell:  $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
 build-node:     $(KEVM_LIB)/$(node_kompiled)
 build-kevm:     $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes)
+build-foundry:  $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
@@ -496,7 +518,7 @@ tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	$(KEVM) foundry-prove tests/foundry/out -j4 $(KEVM_OPTS) $(KPROVE_OPTS) $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
 
-tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
+tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) venv
 	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
