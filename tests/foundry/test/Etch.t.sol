@@ -19,4 +19,10 @@ contract EtchTest is Test {
         assertEq(address(awesomeContract).code, code);
     }
 
+    function testEtchNonExistingAccount() public {
+        bytes memory code = abi.encodePacked("my code");
+        vm.etch(address(0), code);
+        assert(address(0).codehash == keccak256(code));
+    }
+
 }
