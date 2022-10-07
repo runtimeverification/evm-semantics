@@ -492,7 +492,7 @@ tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	$(KEVM) foundry-prove tests/foundry/out -j4 $(KEVM_OPTS) $(KPROVE_OPTS) $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
 
-tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv
+tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv $(lemma_includes)
 	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
