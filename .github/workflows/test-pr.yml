@@ -89,7 +89,7 @@ jobs:
 
   test-prove-foundry:
     name: 'Build and Test KEVM Foundry proofs'
-    needs: test-prove-java
+    needs: test-concrete-execution
     runs-on: [self-hosted, linux, normal]
     steps:
       - name: 'Check out code'
