@@ -152,9 +152,6 @@ module VERIFICATION-HASKELL [symbolic, kore]
     rule ( #sizeByteArray(#ecrec( _, _, _, _ )) <=Int K ) => true requires 32 <=Int K [simplification]
 
     rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
-    
-    // <Int => <=Int (to debug ecreoverloop00-sig1-invalid-spec)
-    rule A <Int B => A <=Int B [simplification] 
 
 endmodule
 
