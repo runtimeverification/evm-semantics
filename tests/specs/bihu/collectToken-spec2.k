@@ -1,39 +1,6 @@
 requires "verification.k"
 
-// fails at 6446 , 6851
-// both are probably caused by the same thing: failed jump caused by a failed assert:
-
-// chop ( COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 -Int COLLECTED:Int )
-// <=Int
-// COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000
-
-// JUMPI 719 bool2Word ( chop ( COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 -Int COLLECTED:Int ) <=Int COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 )
-
-// JUMPI 719 bool2Word ( chop ( COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 -Int COLLECTED:Int ) <=Int COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 )
-
-// Maybe the problem is this? (check the brackets around NOW - START)
-
-// JUMPI 719 bool2Word ( chop ( COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int (NOW:Int -Int START:Int) /Int 31536000 -Int COLLECTED:Int ) <=Int COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 )
-
-// check
-
-//      JUMPI 719 bool2Word ( chop ( COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 -Int COLLECTED:Int ) <=Int COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 )
-
-
-
-// #And { true #Equals chop ( COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 -Int COLLECTED:Int ) <=Int COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 }
-
-// #And { true #Equals COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 <Int chop ( COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 -Int COLLECTED:Int ) }
-
-
-
-// Newest result
-// #And { false #Equals chop ( COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 -Int COLLECTED:Int ) <=Int COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 }
-// #And { true #Equals chop ( COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 -Int COLLECTED:Int ) <=Int COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 }
-
-
-
-module COLLECTTOKEN-SPEC
+module COLLECTTOKEN-SPEC2
   imports VERIFICATION
 
   // collectToken
@@ -158,7 +125,7 @@ _:Map
           @remainingTokens(COLLECTED +Int BAL, NOW, START)
         <=Int @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int (COLLECTED +Int BAL)
       andBool
-        chop ( COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 -Int COLLECTED:Int ) <=Int COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000
+        COLLECTED <=Int COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000
       // Max Gas
       // andBool GASCAP >=Int (293 *Int ((NOW -Int START) /Int 31536000)) +Int 43000
       ensures ?VALUE ==Int @canExtractThisYear(COLLECTED +Int BAL, NOW, START)

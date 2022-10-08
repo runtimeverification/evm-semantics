@@ -4,6 +4,7 @@ requires "../lemmas.k"
 module VERIFICATION
     imports EDSL
     imports LEMMAS
+    imports K-EQUAL
 
   // ########################
   // Buffer Reasoning
@@ -59,7 +60,9 @@ module VERIFICATION
                  | "@canExtractThisYear" "(" Int "," Int "," Int ")" [macro]
  // ------------------------------------------------------------------------
     rule @remainingTokens(TOTAL, NOW, START) => #roundpower(TOTAL, 90, 100, (NOW -Int START) /Int 31536000)
-    rule @canExtractThisYear(TOTAL, NOW, START) => ((#roundpower(TOTAL, 90, 100, (NOW -Int START) /Int 31536000) *Int 10 /Int 100) *Int ((NOW -Int START) modInt 31536000)) /Int 31536000
+                                                // (COLLECTED + BAL) * (90 / 100)^(NOW - START)
+    rule @canExtractThisYear(TOTAL, NOW, START) =>
+    ((#roundpower(TOTAL, 90, 100, (NOW -Int START) /Int 31536000) *Int 10 /Int 100) *Int ((NOW -Int START) modInt 31536000)) /Int 31536000
 
   // ###############################
   // #accumulatedReleasedTokens
@@ -79,5 +82,7 @@ module VERIFICATION
 
     rule                 @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int ((COLLECTED +Int BAL) -Int @remainingTokens(COLLECTED +Int BAL, NOW, START)) -Int COLLECTED <Int pow256 => true  requires #accumulatedReleasedTokens(BAL, COLLECTED, START, NOW) >Int COLLECTED +Int 3 [simplification]
     rule                 @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int ((COLLECTED +Int BAL) -Int @remainingTokens(COLLECTED +Int BAL, NOW, START)) <Int pow256                => true  requires #accumulatedReleasedTokens(BAL, COLLECTED, START, NOW) >Int COLLECTED +Int 3 [simplification]
+
+    rule { true #Equals X <Int Y } => { false #Equals Y <=Int X } [simplification]
 
 endmodule

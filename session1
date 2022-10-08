@@ -1,0 +1,21 @@
+stepf 1000
+stepf 1000
+stepf 1000
+stepf 1000
+stepf 1000
+stepf 1000
+stepf 1000
+stepf 1000
+stepf 1000
+stepf 1000
+stepf 1000
+stepf 1000
+stepf 1000
+stepf 1000
+stepf 3000
+node 10584
+select 10584
+konfig
+select 11790
+konfig
+config | bash tests/specs/bihu/pykprint.sh tests/specs/bihu/verification/haskell/

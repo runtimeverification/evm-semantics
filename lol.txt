@@ -1,0 +1,1119 @@
+Config at node 21 is:
+/* Created: Kore.Internal.OrPattern.toTermLike */
+/* Spa */
+\and{SortGeneratedTopCell{}}(
+    /* Fn Sfa */
+    Lbl'-LT-'generatedTop'-GT-'{}(
+        /* Fn Sfa */
+        Lbl'-LT-'kevm'-GT-'{}(
+            /* Fl Fn D Sfa Cl */
+            Lbl'-LT-'k'-GT-'{}(
+                /* Fl Fn D Sfa Cl */
+                kseq{}(
+                    /* Fl Fn D Sfa Cli */
+                    /* Inj: */ inj{SortInternalOp{}, SortKItem{}}(
+                        /* Fl Fn D Sfa Cl */
+                        Lbl'Hash'next'LSqBUndsRSqBUnds'EVM'Unds'InternalOp'Unds'OpCode{}(
+                            /* Fl Fn D Sfa Cli */
+                            /* Inj: */ inj{SortNullStackOp{}, SortOpCode{}}(
+                                /* Fl Fn D Sfa Cl */
+                                LblCALLDATASIZE'Unds'EVM'Unds'NullStackOp{}()
+                            )
+                        )
+                    ),
+                    /* Fl Fn D Sfa Cl */
+                    kseq{}(
+                        /* Fl Fn D Sfa Cl */
+                        Lbl'Hash'execute'Unds'EVM'Unds'KItem{}(),
+                        /* Fl Fn D Sfa Cl */ dotk{}()
+                    )
+                )
+            ),
+            /* Fl Fn D Sfa Cl */
+            Lbl'-LT-'exit-code'-GT-'{}(
+                /* Fl Fn D Sfa Cl */ \dv{SortInt{}}("1")
+            ),
+            /* Fl Fn D Sfa Cl */
+            Lbl'-LT-'mode'-GT-'{}(/* Fl Fn D Sfa Cl */ LblNORMAL{}()),
+            /* Fl Fn D Sfa Cl */
+            Lbl'-LT-'schedule'-GT-'{}(
+                /* Fl Fn D Sfa Cl */ LblISTANBUL'Unds'EVM{}()
+            ),
+            /* Fn Sfa */
+            Lbl'-LT-'ethereum'-GT-'{}(
+                /* Fl Fn D Sfa */
+                Lbl'-LT-'evm'-GT-'{}(
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'output'-GT-'{}(
+                        /* Fl Fn D Sfa */ Var'Unds'Gen0:SortBytes{}
+                    ),
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'statusCode'-GT-'{}(
+                        /* Fl Fn D Sfa */ Var'Unds'Gen1:SortStatusCode{}
+                    ),
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'endPC'-GT-'{}(
+                        /* Fl Fn D Sfa */ Var'Unds'Gen2:SortInt{}
+                    ),
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'callStack'-GT-'{}(
+                        /* Fl Fn D Sfa */ Var'Unds'Gen4:SortList{}
+                    ),
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'interimStates'-GT-'{}(
+                        /* Fl Fn D Sfa */ Var'Unds'Gen6:SortList{}
+                    ),
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'touchedAccounts'-GT-'{}(
+                        /* Fl Fn D Sfa */ Var'Unds'Gen7:SortSet{}
+                    ),
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'callState'-GT-'{}(
+                        /* Fl Fn D Sfa Cl */
+                        Lbl'-LT-'program'-GT-'{}(
+                            /* Fl Fn D Sfa Cl */
+                            \dv{SortBytes{}}(
+                                "```@R`\x046\x10a\x00mW`\x005|\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x90\x04c\xff\xff\xff\xff\x16\x80c\x0eJ\xed?\x14a\x00rW\x80c@\xba\x12k\x14a\x00\x9bW\x80cx~\x917\x14a\x00\xdbW\x80c\xb6\x9e\xf8\xa8\x14a\x01\x04W\x80c\xb9>,\xdb\x14a\x01-W[`\x00\x80\xfd[4\x15a\x00}W`\x00\x80\xfd[a\x00\x85a\x01qV[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x00\xa6W`\x00\x80\xfd[a\x00\xc5`\x04\x80\x805\x90` \x01\x90\x91\x90\x805\x90` \x01\x90\x91\x90PPa\x01vV[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x00\xe6W`\x00\x80\xfd[a\x00\xeea\x01\xa8V[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x01\x0fW`\x00\x80\xfd[a\x01\x17a\x01\xaeV[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x018W`\x00\x80\xfd[a\x01W`\x04\x80\x805\x90` \x01\x90\x91\x90\x805\x90` \x01\x90\x91\x90PPa\x01\xb4V[`@Q\x80\x82\x15\x15\x15\x15\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[`\x0a\x81V[`\x00\x81\x83\x10a\x01\x9dWc\x01\xe13\x80a\x01\x8e\x84\x84a\x02\xbcV[\x81\x15\x15a\x01\x97W\xfe[\x04a\x01\xa0V[`\x00[\x90P\x92\x91PPV[`\x00T\x81V[`\x01T\x81V[`\x00\x80`\x00\x80`\x00\x80`\x00\x80\x88\x8a\x11\x15\x15a\x01\xceW`\x00\x80\xfd[a\x01\xdc`\x00T`\x01Ta\x02\xd5V[\x96P\x86\x95Pa\x01\xeb\x8a\x8aa\x01vV[\x94P`\x00\x93P[\x84\x84\x10\x15a\x02!Wa\x02\x12a\x02\x0b\x87`\x0a`d\x03a\x02\xeeV[`da\x03\x1cV[\x95P\x83\x80`\x01\x01\x94PPa\x01\xf2V[a\x026a\x02/\x87`\x0aa\x02\xeeV[`da\x03\x1cV[\x92Pa\x02`a\x02V\x84c\x01\xe13\x80\x8c\x8e\x03\x81\x15\x15a\x02PW\xfe[\x06a\x02\xeeV[c\x01\xe13\x80a\x03\x1cV[\x91P\x85\x87\x03\x82\x01\x90Pa\x02u\x81`\x00Ta\x02\xbcV[\x90P`\x01T\x81\x11\x15a\x02\x87W`\x01T\x90P[a\x02\x93`\x00T\x82a\x02\xd5V[`\x00\x81\x90UPa\x02\xa5`\x01T\x82a\x02\xbcV[`\x01\x81\x90UP`\x01\x97PPPPPPPP\x92\x91PPV[`\x00\x82\x82\x84\x03\x91P\x81\x11\x15\x15\x15a\x02\xcfW\xfe[\x92\x91PPV[`\x00\x82\x82\x84\x01\x91P\x81\x10\x15\x15\x15a\x02\xe8W\xfe[\x92\x91PPV[`\x00\x81\x83\x02\x90P`\x00\x83\x14\x80a\x03\x0eWP\x81\x83\x82\x81\x15\x15a\x03\x0bW\xfe[\x04\x14[\x15\x15a\x03\x16W\xfe[\x92\x91PPV[`\x00\x81\x83\x81\x15\x15a\x03)W\xfe[\x04\x90P\x92\x91PPV\x00\xa1ebzzr0X \xd8\xed\xee\xb4L\x83F\xec\xa198\\\xfa\xec\xdd\xeb\x8b\x02\xfc\xc3\x80\xc3\xb5Dstn\x81\x03\xffb\xe7\x00)"
+                            )
+                        ),
+                        /* Fl Fn D Sfa Cl */
+                        Lbl'-LT-'jumpDests'-GT-'{}(
+                            /* Fl Fn D Sfa Cl */
+                            /* InternalSet: */ Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("413")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("125")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("109")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("301")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("476")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("700")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("796")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("719")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("271")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("559")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("462")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("750")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("238")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("398")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("430")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("782")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("809")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("744")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("424")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("312")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("219")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("491")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("155")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("523")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("779")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("725")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("197")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("133")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("677")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("629")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("436")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("260")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("407")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("647")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("343")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("279")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("230")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("166")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("598")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("374")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("790")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("566")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("369")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("545")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("416")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("592")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("608")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("659")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("498")
+                                    )
+                                ),
+                            Lbl'Unds'Set'Unds'{}(
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("114")
+                                    )
+                                ),
+                                /* concrete element: */ LblSetItem{}(
+                                    /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                        \dv{SortInt{}}("530")
+                                    )
+                                )
+                            ))))))))))))))))))))))))))))))))))))))))))))))))))
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'id'-GT-'{}(
+                            /* Fl Fn D Sfa */
+                            /* Inj: */ inj{SortInt{}, SortAccount{}}(
+                                /* Fl Fn D Sfa */ VarACCT'Unds'ID:SortInt{}
+                            )
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'caller'-GT-'{}(
+                            /* Fl Fn D Sfa */
+                            /* Inj: */ inj{SortInt{}, SortAccount{}}(
+                                /* Fl Fn D Sfa */ VarCALLER'Unds'ID:SortInt{}
+                            )
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'callData'-GT-'{}(
+                            /* Fl Fn D Sfa */
+                            Lbl'UndsPlusPlusUndsUnds'EVM-TYPES'Unds'ByteArray'Unds'ByteArray'Unds'ByteArray{}(
+                                /* Fl Fn D Sfa Cl */
+                                \dv{SortBytes{}}("\xb9>,\xdb"),
+                                /* Fl Fn D Sfa */
+                                Lbl'UndsPlusPlusUndsUnds'EVM-TYPES'Unds'ByteArray'Unds'ByteArray'Unds'ByteArray{}(
+                                    /* Fl Fn D Sfa */
+                                    Lbl'Hash'buf'LParUndsCommUndsRParUnds'BUF-SYNTAX'Unds'ByteArray'Unds'Int'Unds'Int{}(
+                                        /* Fl Fn D Sfa Cl */
+                                        \dv{SortInt{}}("32"),
+                                        /* Fl Fn D Sfa */ VarNOW:SortInt{}
+                                    ),
+                                    /* Fl Fn D Sfa */
+                                    Lbl'Hash'buf'LParUndsCommUndsRParUnds'BUF-SYNTAX'Unds'ByteArray'Unds'Int'Unds'Int{}(
+                                        /* Fl Fn D Sfa Cl */
+                                        \dv{SortInt{}}("32"),
+                                        /* Fl Fn D Sfa */ VarSTART:SortInt{}
+                                    )
+                                )
+                            )
+                        ),
+                        /* Fl Fn D Sfa Cl */
+                        Lbl'-LT-'callValue'-GT-'{}(
+                            /* Fl Fn D Sfa Cl */ \dv{SortInt{}}("0")
+                        ),
+                        /* Fl Fn D Sfa Cl */
+                        Lbl'-LT-'wordStack'-GT-'{}(
+                            /* Fl Fn D Sfa Cl */
+                            Lbl'UndsColnUndsUnds'EVM-TYPES'Unds'WordStack'Unds'Int'Unds'WordStack{}(
+                                /* Fl Fn D Sfa Cl */ \dv{SortInt{}}("4"),
+                                /* Fl Fn D Sfa Cl */
+                                Lbl'Stop'WordStack'Unds'EVM-TYPES'Unds'WordStack{}()
+                            )
+                        ),
+                        /* Fl Fn D Sfa Cl */
+                        Lbl'-LT-'localMem'-GT-'{}(
+                            /* Fl Fn D Sfa Cl */
+                            \dv{SortBytes{}}(
+                                "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`"
+                            )
+                        ),
+                        /* Fl Fn D Sfa Cl */
+                        Lbl'-LT-'pc'-GT-'{}(
+                            /* Fl Fn D Sfa Cl */ \dv{SortInt{}}("7")
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'gas'-GT-'{}(
+                            /* Fl Fn D Sfa */
+                            LblinfGas{}(
+                                /* Fl Fn D Sfa */
+                                Lbl'UndsPlus'Int'Unds'{}(
+                                    /* Fl Fn D Sfa */ Var'Unds'VGAS:SortInt{},
+                                    /* Fl Fn D Sfa Cl */ \dv{SortInt{}}("-21")
+                                )
+                            )
+                        ),
+                        /* Fl Fn D Sfa Cl */
+                        Lbl'-LT-'memoryUsed'-GT-'{}(
+                            /* Fl Fn D Sfa Cl */ \dv{SortInt{}}("3")
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'callGas'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen14:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa Cl */
+                        Lbl'-LT-'static'-GT-'{}(
+                            /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("false")
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'callDepth'-GT-'{}(
+                            /* Fl Fn D Sfa */ VarCALL'Unds'DEPTH:SortInt{}
+                        )
+                    ),
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'substate'-GT-'{}(
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'selfDestruct'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen16:SortSet{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'log'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen17:SortList{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'refund'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen18:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'accessedAccounts'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen20:SortSet{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'accessedStorage'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen22:SortMap{}
+                        )
+                    ),
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'gasPrice'-GT-'{}(
+                        /* Fl Fn D Sfa */ Var'Unds'Gen24:SortInt{}
+                    ),
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'origin'-GT-'{}(
+                        /* Fl Fn D Sfa */
+                        /* Inj: */ inj{SortInt{}, SortAccount{}}(
+                            /* Fl Fn D Sfa */ VarORIGIN'Unds'ID:SortInt{}
+                        )
+                    ),
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'blockhashes'-GT-'{}(
+                        /* Fl Fn D Sfa */ Var'Unds'Gen25:SortList{}
+                    ),
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'block'-GT-'{}(
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'previousHash'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen26:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'ommersHash'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen27:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'coinbase'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen28:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'stateRoot'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen29:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'transactionsRoot'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen30:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'receiptsRoot'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen31:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'logsBloom'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen32:SortBytes{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'difficulty'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen33:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'number'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen34:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'gasLimit'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen35:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'gasUsed'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen36:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'timestamp'-GT-'{}(
+                            /* Fl Fn D Sfa */ VarNOW:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'extraData'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen37:SortBytes{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'mixHash'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen38:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'blockNonce'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen39:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'baseFee'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen40:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'-LT-'ommerBlockHeaders'-GT-'{}(
+                            /* Fl Fn D Sfa */ Var'Unds'Gen41:SortJSON{}
+                        )
+                    )
+                ),
+                /* Fn Sfa */
+                Lbl'-LT-'network'-GT-'{}(
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'chainID'-GT-'{}(
+                        /* Fl Fn D Sfa */ Var'Unds'Gen42:SortInt{}
+                    ),
+                    /* Fn Sfa */
+                    Lbl'-LT-'activeAccounts'-GT-'{}(
+                        /* Fn Sfa */
+                        /* InternalSet: */ Lbl'Unds'Set'Unds'{}(
+                            /* element: */ LblSetItem{}(
+                                /* Fl Fn D Sfa */
+                                /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                    /* Fl Fn D Sfa */ VarACCT'Unds'ID:SortInt{}
+                                )
+                            ),
+                            /* opaque child: */ /* Fl Fn D Sfa */
+                            Var'Unds'Gen43:SortSet{}
+                        )
+                    ),
+                    /* Fn Sfa */
+                    Lbl'-LT-'accounts'-GT-'{}(
+                        /* Fn Sfa */
+                        /* InternalMap: */ /* element: */ LblAccountCellMapItem{}(
+                            /* Fl Fn D Sfa */
+                            Lbl'-LT-'acctID'-GT-'{}(
+                                /* Fl Fn D Sfa */ VarACCT'Unds'ID:SortInt{}
+                            ),
+                            /* Fn Sfa */
+                            Lbl'-LT-'account'-GT-'{}(
+                                /* Fl Fn D Sfa */
+                                Lbl'-LT-'acctID'-GT-'{}(
+                                    /* Fl Fn D Sfa */ VarACCT'Unds'ID:SortInt{}
+                                ),
+                                /* Fl Fn D Sfa */
+                                Lbl'-LT-'balance'-GT-'{}(
+                                    /* Fl Fn D Sfa */ Var'Unds'Gen44:SortInt{}
+                                ),
+                                /* Fl Fn D Sfa Cl */
+                                Lbl'-LT-'code'-GT-'{}(
+                                    /* Fl Fn D Sfa Cli */
+                                    /* Inj: */ inj{SortBytes{}, SortAccountCode{}}(
+                                        /* Fl Fn D Sfa Cl */
+                                        \dv{SortBytes{}}(
+                                            "```@R`\x046\x10a\x00mW`\x005|\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x90\x04c\xff\xff\xff\xff\x16\x80c\x0eJ\xed?\x14a\x00rW\x80c@\xba\x12k\x14a\x00\x9bW\x80cx~\x917\x14a\x00\xdbW\x80c\xb6\x9e\xf8\xa8\x14a\x01\x04W\x80c\xb9>,\xdb\x14a\x01-W[`\x00\x80\xfd[4\x15a\x00}W`\x00\x80\xfd[a\x00\x85a\x01qV[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x00\xa6W`\x00\x80\xfd[a\x00\xc5`\x04\x80\x805\x90` \x01\x90\x91\x90\x805\x90` \x01\x90\x91\x90PPa\x01vV[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x00\xe6W`\x00\x80\xfd[a\x00\xeea\x01\xa8V[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x01\x0fW`\x00\x80\xfd[a\x01\x17a\x01\xaeV[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x018W`\x00\x80\xfd[a\x01W`\x04\x80\x805\x90` \x01\x90\x91\x90\x805\x90` \x01\x90\x91\x90PPa\x01\xb4V[`@Q\x80\x82\x15\x15\x15\x15\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[`\x0a\x81V[`\x00\x81\x83\x10a\x01\x9dWc\x01\xe13\x80a\x01\x8e\x84\x84a\x02\xbcV[\x81\x15\x15a\x01\x97W\xfe[\x04a\x01\xa0V[`\x00[\x90P\x92\x91PPV[`\x00T\x81V[`\x01T\x81V[`\x00\x80`\x00\x80`\x00\x80`\x00\x80\x88\x8a\x11\x15\x15a\x01\xceW`\x00\x80\xfd[a\x01\xdc`\x00T`\x01Ta\x02\xd5V[\x96P\x86\x95Pa\x01\xeb\x8a\x8aa\x01vV[\x94P`\x00\x93P[\x84\x84\x10\x15a\x02!Wa\x02\x12a\x02\x0b\x87`\x0a`d\x03a\x02\xeeV[`da\x03\x1cV[\x95P\x83\x80`\x01\x01\x94PPa\x01\xf2V[a\x026a\x02/\x87`\x0aa\x02\xeeV[`da\x03\x1cV[\x92Pa\x02`a\x02V\x84c\x01\xe13\x80\x8c\x8e\x03\x81\x15\x15a\x02PW\xfe[\x06a\x02\xeeV[c\x01\xe13\x80a\x03\x1cV[\x91P\x85\x87\x03\x82\x01\x90Pa\x02u\x81`\x00Ta\x02\xbcV[\x90P`\x01T\x81\x11\x15a\x02\x87W`\x01T\x90P[a\x02\x93`\x00T\x82a\x02\xd5V[`\x00\x81\x90UPa\x02\xa5`\x01T\x82a\x02\xbcV[`\x01\x81\x90UP`\x01\x97PPPPPPPP\x92\x91PPV[`\x00\x82\x82\x84\x03\x91P\x81\x11\x15\x15\x15a\x02\xcfW\xfe[\x92\x91PPV[`\x00\x82\x82\x84\x01\x91P\x81\x10\x15\x15\x15a\x02\xe8W\xfe[\x92\x91PPV[`\x00\x81\x83\x02\x90P`\x00\x83\x14\x80a\x03\x0eWP\x81\x83\x82\x81\x15\x15a\x03\x0bW\xfe[\x04\x14[\x15\x15a\x03\x16W\xfe[\x92\x91PPV[`\x00\x81\x83\x81\x15\x15a\x03)W\xfe[\x04\x90P\x92\x91PPV\x00\xa1ebzzr0X \xd8\xed\xee\xb4L\x83F\xec\xa198\\\xfa\xec\xdd\xeb\x8b\x02\xfc\xc3\x80\xc3\xb5Dstn\x81\x03\xffb\xe7\x00)"
+                                        )
+                                    )
+                                ),
+                                /* Fn Sfa */
+                                Lbl'-LT-'storage'-GT-'{}(
+                                    /* Fn Sfa */
+                                    /* InternalMap: */ Lbl'Unds'Map'Unds'{}(
+                                        /* concrete element: */ Lbl'UndsPipe'-'-GT-Unds'{}(
+                                            /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                                \dv{SortInt{}}("1")
+                                            ),
+                                            /* Fl Fn D Sfa */
+                                            /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                                /* Fl Fn D Sfa */
+                                                VarBAL:SortInt{}
+                                            )
+                                        ),
+                                    Lbl'Unds'Map'Unds'{}(
+                                        /* concrete element: */ Lbl'UndsPipe'-'-GT-Unds'{}(
+                                            /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                                \dv{SortInt{}}("0")
+                                            ),
+                                            /* Fl Fn D Sfa */
+                                            /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                                /* Fl Fn D Sfa */
+                                                VarCOLLECTED:SortInt{}
+                                            )
+                                        ),
+                                        /* opaque child: */ /* Fl Fn D Sfa */
+                                        Var'Unds'Gen45:SortMap{}
+                                    ))
+                                ),
+                                /* Fl Fn D Sfa */
+                                Lbl'-LT-'origStorage'-GT-'{}(
+                                    /* Fl Fn D Sfa */ Var'Unds'Gen46:SortMap{}
+                                ),
+                                /* Fl Fn D Sfa */
+                                Lbl'-LT-'nonce'-GT-'{}(
+                                    /* Fl Fn D Sfa */ Var'Unds'Gen47:SortInt{}
+                                )
+                            )
+                        )
+                    ),
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'txOrder'-GT-'{}(
+                        /* Fl Fn D Sfa */ Var'Unds'Gen48:SortList{}
+                    ),
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'txPending'-GT-'{}(
+                        /* Fl Fn D Sfa */ Var'Unds'Gen49:SortList{}
+                    ),
+                    /* Fl Fn D Sfa */
+                    Lbl'-LT-'messages'-GT-'{}(
+                        /* Fl Fn D Sfa */ Var'Unds'Gen50:SortMessageCellMap{}
+                    )
+                )
+            )
+        ),
+        /* Fl Fn D Sfa */
+        Lbl'-LT-'generatedCounter'-GT-'{}(
+            /* Fl Fn D Sfa */ Var'Unds'DotVar1:SortInt{}
+        )
+    ),
+    /* Sfa */
+    \and{SortGeneratedTopCell{}}(
+        /* Spa */
+        \and{SortGeneratedTopCell{}}(
+            /* Spa */
+            \and{SortGeneratedTopCell{}}(
+                /* Sfa */
+                \ceil{SortSet{}, SortGeneratedTopCell{}}(
+                    /* Fn Spa */
+                    /* InternalSet: */ Lbl'Unds'Set'Unds'{}(
+                        /* element: */ LblSetItem{}(
+                            /* Fl Fn D Sfa */
+                            /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                /* Fl Fn D Sfa */ VarACCT'Unds'ID:SortInt{}
+                            )
+                        ),
+                        /* opaque child: */ /* Fl Fn D Sfa */
+                        Var'Unds'Gen43:SortSet{}
+                    )
+                ),
+                /* Spa */
+                \and{SortGeneratedTopCell{}}(
+                    /* Sfa */
+                    \equals{SortBool{}, SortGeneratedTopCell{}}(
+                        /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("false"),
+                        /* Fl Fn D Sfa */
+                        Lbl'Unds'in'Unds'keys'LParUndsRParUnds'MAP'Unds'Bool'Unds'KItem'Unds'Map{}(
+                            /* Fl Fn D Sfa Cli */
+                            /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                /* Fl Fn D Sfa Cl */ \dv{SortInt{}}("0")
+                            ),
+                            /* Fl Fn D Sfa */ Var'Unds'Gen45:SortMap{}
+                        )
+                    ),
+                    /* Sfa */
+                    \equals{SortBool{}, SortGeneratedTopCell{}}(
+                        /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("false"),
+                        /* Fl Fn D Sfa */
+                        Lbl'Unds'in'Unds'keys'LParUndsRParUnds'MAP'Unds'Bool'Unds'KItem'Unds'Map{}(
+                            /* Fl Fn D Sfa Cli */
+                            /* Inj: */ inj{SortInt{}, SortKItem{}}(
+                                /* Fl Fn D Sfa Cl */ \dv{SortInt{}}("1")
+                            ),
+                            /* Fl Fn D Sfa */ Var'Unds'Gen45:SortMap{}
+                        )
+                    )
+                )
+            ),
+            /* Spa */
+            \and{SortGeneratedTopCell{}}(
+                /* Sfa */
+                \equals{SortBool{}, SortGeneratedTopCell{}}(
+                    /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("true"),
+                    /* Fn Sfa */
+                    Lbl'Unds-GT-'Int'Unds'{}(
+                        /* Fn Sfa */
+                        Lbl'Hash'accumulatedReleasedTokens'LParUndsCommUndsCommUndsCommUndsRParUnds'VERIFICATION'Unds'Int'Unds'Int'Unds'Int'Unds'Int'Unds'Int{}(
+                            /* Fl Fn D Sfa */ VarBAL:SortInt{},
+                            /* Fl Fn D Sfa */ VarCOLLECTED:SortInt{},
+                            /* Fl Fn D Sfa */ VarSTART:SortInt{},
+                            /* Fl Fn D Sfa */ VarNOW:SortInt{}
+                        ),
+                        /* Fl Fn D Sfa */
+                        Lbl'UndsPlus'Int'Unds'{}(
+                            /* Fl Fn D Sfa */ VarCOLLECTED:SortInt{},
+                            /* Fl Fn D Sfa Cl */ \dv{SortInt{}}("3")
+                        )
+                    )
+                ),
+                /* Spa */
+                \and{SortGeneratedTopCell{}}(
+                    /* Sfa */
+                    \equals{SortBool{}, SortGeneratedTopCell{}}(
+                        /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("true"),
+                        /* Fn Sfa */
+                        Lbl'Unds-LT-'Int'Unds'{}(
+                            /* Fn Sfa */
+                            Lbl'Hash'accumulatedReleasedTokens'LParUndsCommUndsCommUndsCommUndsRParUnds'VERIFICATION'Unds'Int'Unds'Int'Unds'Int'Unds'Int'Unds'Int{}(
+                                /* Fl Fn D Sfa */ VarBAL:SortInt{},
+                                /* Fl Fn D Sfa */ VarCOLLECTED:SortInt{},
+                                /* Fl Fn D Sfa */ VarSTART:SortInt{},
+                                /* Fl Fn D Sfa */ VarNOW:SortInt{}
+                            ),
+                            /* Fl Fn D Sfa */
+                            Lbl'UndsPlus'Int'Unds'{}(
+                                /* Fl Fn D Sfa */
+                                Lbl'UndsPlus'Int'Unds'{}(
+                                    /* Fl Fn D Sfa */ VarBAL:SortInt{},
+                                    /* Fl Fn D Sfa */ VarCOLLECTED:SortInt{}
+                                ),
+                                /* Fl Fn D Sfa Cl */ \dv{SortInt{}}("-10")
+                            )
+                        )
+                    ),
+                    /* Spa */
+                    \and{SortGeneratedTopCell{}}(
+                        /* Sfa */
+                        \equals{SortBool{}, SortGeneratedTopCell{}}(
+                            /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("true"),
+                            /* Fl Fn D Sfa */
+                            Lbl'Unds-LT-'Int'Unds'{}(
+                                /* Fl Fn D Sfa */
+                                Lbl'Unds'-Int'Unds'{}(
+                                    /* Fl Fn D Sfa */ VarNOW:SortInt{},
+                                    /* Fl Fn D Sfa */ VarSTART:SortInt{}
+                                ),
+                                /* Fl Fn D Sfa Cl */
+                                \dv{SortInt{}}("115792089237316195423570985008687907853269984665640564039457584007913129639936")
+                            )
+                        ),
+                        /* Sfa */
+                        \equals{SortBool{}, SortGeneratedTopCell{}}(
+                            /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("true"),
+                            /* Fl Fn D Sfa */
+                            Lbl'Unds-LT-'Int'Unds'{}(
+                                /* Fl Fn D Sfa */
+                                Lbl'UndsStar'Int'Unds'{}(
+                                    /* Fl Fn D Sfa */
+                                    Lbl'UndsPlus'Int'Unds'{}(
+                                        /* Fl Fn D Sfa */
+                                        VarCOLLECTED:SortInt{},
+                                        /* Fl Fn D Sfa */ VarBAL:SortInt{}
+                                    ),
+                                    /* Fl Fn D Sfa Cl */
+                                    \dv{SortInt{}}("3153600")
+                                ),
+                                /* Fl Fn D Sfa Cl */
+                                \dv{SortInt{}}("115792089237316195423570985008687907853269984665640564039457584007913129639936")
+                            )
+                        )
+                    )
+                )
+            )
+        ),
+        /* Spa */
+        \and{SortGeneratedTopCell{}}(
+            /* Sfa */
+            \equals{SortBool{}, SortGeneratedTopCell{}}(
+                /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("true"),
+                /* Fl Fn D Sfa */
+                Lbl'Unds-LT-'Int'Unds'{}(
+                    /* Fl Fn D Sfa Cl */ \dv{SortInt{}}("0"),
+                    /* Fl Fn D Sfa */
+                    Lbl'Unds'-Int'Unds'{}(
+                        /* Fl Fn D Sfa */ VarNOW:SortInt{},
+                        /* Fl Fn D Sfa */ VarSTART:SortInt{}
+                    )
+                )
+            ),
+            /* Spa */
+            \and{SortGeneratedTopCell{}}(
+                /* Spa */
+                \and{SortGeneratedTopCell{}}(
+                    /* Spa */
+                    \and{SortGeneratedTopCell{}}(
+                        /* Sfa */
+                        \equals{SortBool{}, SortGeneratedTopCell{}}(
+                            /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("true"),
+                            /* Fl Fn D Sfa */
+                            Lbl'Unds-LT-'Int'Unds'{}(
+                                /* Fl Fn D Sfa */ VarACCT'Unds'ID:SortInt{},
+                                /* Fl Fn D Sfa Cl */
+                                \dv{SortInt{}}("1461501637330902918203684832716283019655932542976")
+                            )
+                        ),
+                        /* Spa */
+                        \and{SortGeneratedTopCell{}}(
+                            /* Sfa */
+                            \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("true"),
+                                /* Fl Fn D Sfa */
+                                Lbl'Unds-LT-'Int'Unds'{}(
+                                    /* Fl Fn D Sfa */ VarBAL:SortInt{},
+                                    /* Fl Fn D Sfa Cl */
+                                    \dv{SortInt{}}("115792089237316195423570985008687907853269984665640564039457584007913129639936")
+                                )
+                            ),
+                            /* Sfa */
+                            \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("true"),
+                                /* Fl Fn D Sfa */
+                                Lbl'Unds-LT-'Int'Unds'{}(
+                                    /* Fl Fn D Sfa */
+                                    VarCALL'Unds'DEPTH:SortInt{},
+                                    /* Fl Fn D Sfa Cl */ \dv{SortInt{}}("1024")
+                                )
+                            )
+                        )
+                    ),
+                    /* Spa */
+                    \and{SortGeneratedTopCell{}}(
+                        /* Sfa */
+                        \equals{SortBool{}, SortGeneratedTopCell{}}(
+                            /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("true"),
+                            /* Fl Fn D Sfa */
+                            Lbl'Unds-LT-'Int'Unds'{}(
+                                /* Fl Fn D Sfa */ VarCALLER'Unds'ID:SortInt{},
+                                /* Fl Fn D Sfa Cl */
+                                \dv{SortInt{}}("1461501637330902918203684832716283019655932542976")
+                            )
+                        ),
+                        /* Spa */
+                        \and{SortGeneratedTopCell{}}(
+                            /* Sfa */
+                            \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("true"),
+                                /* Fl Fn D Sfa */
+                                Lbl'Unds-LT-'Int'Unds'{}(
+                                    /* Fl Fn D Sfa */ VarCOLLECTED:SortInt{},
+                                    /* Fl Fn D Sfa Cl */
+                                    \dv{SortInt{}}("115792089237316195423570985008687907853269984665640564039457584007913129639936")
+                                )
+                            ),
+                            /* Spa */
+                            \and{SortGeneratedTopCell{}}(
+                                /* Sfa */
+                                \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                    /* Fl Fn D Sfa Cl */
+                                    \dv{SortBool{}}("true"),
+                                    /* Fl Fn D Sfa */
+                                    Lbl'Unds-LT-'Int'Unds'{}(
+                                        /* Fl Fn D Sfa */ VarNOW:SortInt{},
+                                        /* Fl Fn D Sfa Cl */
+                                        \dv{SortInt{}}("115792089237316195423570985008687907853269984665640564039457584007913129639936")
+                                    )
+                                ),
+                                /* Sfa */
+                                \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                    /* Fl Fn D Sfa Cl */
+                                    \dv{SortBool{}}("true"),
+                                    /* Fl Fn D Sfa */
+                                    Lbl'Unds-LT-'Int'Unds'{}(
+                                        /* Fl Fn D Sfa */
+                                        VarORIGIN'Unds'ID:SortInt{},
+                                        /* Fl Fn D Sfa Cl */
+                                        \dv{SortInt{}}("1461501637330902918203684832716283019655932542976")
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                /* Spa */
+                \and{SortGeneratedTopCell{}}(
+                    /* Sfa */
+                    \equals{SortBool{}, SortGeneratedTopCell{}}(
+                        /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("true"),
+                        /* Fl Fn D Sfa */
+                        Lbl'Unds-LT-'Int'Unds'{}(
+                            /* Fl Fn D Sfa */ VarSTART:SortInt{},
+                            /* Fl Fn D Sfa Cl */
+                            \dv{SortInt{}}("115792089237316195423570985008687907853269984665640564039457584007913129639936")
+                        )
+                    ),
+                    /* Spa */
+                    \and{SortGeneratedTopCell{}}(
+                        /* Spa */
+                        \and{SortGeneratedTopCell{}}(
+                            /* Sfa */
+                            \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("true"),
+                                /* Fn Sfa */
+                                Lbl'Unds-LT-Eqls'Int'Unds'{}(
+                                    /* Fn Sfa */
+                                    Lbl'UndsPlus'Int'Unds'{}(
+                                        /* Fn Sfa */
+                                        Lbl'UndsStar'Int'Unds'{}(
+                                            /* Fl Fn D Sfa Cl */
+                                            \dv{SortInt{}}("293"),
+                                            /* Fn Sfa */
+                                            Lbl'UndsSlsh'Int'Unds'{}(
+                                                /* Fl Fn D Sfa */
+                                                Lbl'Unds'-Int'Unds'{}(
+                                                    /* Fl Fn D Sfa */
+                                                    VarNOW:SortInt{},
+                                                    /* Fl Fn D Sfa */
+                                                    VarSTART:SortInt{}
+                                                ),
+                                                /* Fl Fn D Sfa Cl */
+                                                \dv{SortInt{}}("31536000")
+                                            )
+                                        ),
+                                        /* Fl Fn D Sfa Cl */
+                                        \dv{SortInt{}}("43000")
+                                    ),
+                                    /* Fl Fn D Sfa */ VarGASCAP:SortInt{}
+                                )
+                            ),
+                            /* Spa */
+                            \and{SortGeneratedTopCell{}}(
+                                /* Sfa */
+                                \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                    /* Fl Fn D Sfa Cl */
+                                    \dv{SortBool{}}("true"),
+                                    /* Fl Fn D Sfa */
+                                    Lbl'Unds-LT-Eqls'Int'Unds'{}(
+                                        /* Fl Fn D Sfa Cl */
+                                        \dv{SortInt{}}("0"),
+                                        /* Fl Fn D Sfa */
+                                        Lbl'UndsPlus'Int'Unds'{}(
+                                            /* Fl Fn D Sfa */
+                                            VarCOLLECTED:SortInt{},
+                                            /* Fl Fn D Sfa */ VarBAL:SortInt{}
+                                        )
+                                    )
+                                ),
+                                /* Sfa */
+                                \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                    /* Fl Fn D Sfa Cl */
+                                    \dv{SortBool{}}("true"),
+                                    /* Fl Fn D Sfa */
+                                    Lbl'Unds-LT-Eqls'Int'Unds'{}(
+                                        /* Fl Fn D Sfa Cl */
+                                        \dv{SortInt{}}("0"),
+                                        /* Fl Fn D Sfa */
+                                        VarACCT'Unds'ID:SortInt{}
+                                    )
+                                )
+                            )
+                        ),
+                        /* Spa */
+                        \and{SortGeneratedTopCell{}}(
+                            /* Sfa */
+                            \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                /* Fl Fn D Sfa Cl */ \dv{SortBool{}}("true"),
+                                /* Fl Fn D Sfa */
+                                Lbl'Unds-LT-Eqls'Int'Unds'{}(
+                                    /* Fl Fn D Sfa Cl */ \dv{SortInt{}}("0"),
+                                    /* Fl Fn D Sfa */ VarBAL:SortInt{}
+                                )
+                            ),
+                            /* Spa */
+                            \and{SortGeneratedTopCell{}}(
+                                /* Spa */
+                                \and{SortGeneratedTopCell{}}(
+                                    /* Sfa */
+                                    \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                        /* Fl Fn D Sfa Cl */
+                                        \dv{SortBool{}}("true"),
+                                        /* Fl Fn D Sfa */
+                                        Lbl'Unds-LT-Eqls'Int'Unds'{}(
+                                            /* Fl Fn D Sfa Cl */
+                                            \dv{SortInt{}}("0"),
+                                            /* Fl Fn D Sfa */
+                                            VarCALL'Unds'DEPTH:SortInt{}
+                                        )
+                                    ),
+                                    /* Spa */
+                                    \and{SortGeneratedTopCell{}}(
+                                        /* Sfa */
+                                        \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                            /* Fl Fn D Sfa Cl */
+                                            \dv{SortBool{}}("true"),
+                                            /* Fl Fn D Sfa */
+                                            Lbl'Unds-LT-Eqls'Int'Unds'{}(
+                                                /* Fl Fn D Sfa Cl */
+                                                \dv{SortInt{}}("0"),
+                                                /* Fl Fn D Sfa */
+                                                VarCALLER'Unds'ID:SortInt{}
+                                            )
+                                        ),
+                                        /* Sfa */
+                                        \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                            /* Fl Fn D Sfa Cl */
+                                            \dv{SortBool{}}("true"),
+                                            /* Fl Fn D Sfa */
+                                            Lbl'Unds-LT-Eqls'Int'Unds'{}(
+                                                /* Fl Fn D Sfa Cl */
+                                                \dv{SortInt{}}("0"),
+                                                /* Fl Fn D Sfa */
+                                                VarCOLLECTED:SortInt{}
+                                            )
+                                        )
+                                    )
+                                ),
+                                /* Spa */
+                                \and{SortGeneratedTopCell{}}(
+                                    /* Sfa */
+                                    \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                        /* Fl Fn D Sfa Cl */
+                                        \dv{SortBool{}}("true"),
+                                        /* Fl Fn D Sfa */
+                                        Lbl'Unds-LT-Eqls'Int'Unds'{}(
+                                            /* Fl Fn D Sfa Cl */
+                                            \dv{SortInt{}}("0"),
+                                            /* Fl Fn D Sfa */ VarNOW:SortInt{}
+                                        )
+                                    ),
+                                    /* Spa */
+                                    \and{SortGeneratedTopCell{}}(
+                                        /* Sfa */
+                                        \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                            /* Fl Fn D Sfa Cl */
+                                            \dv{SortBool{}}("true"),
+                                            /* Fl Fn D Sfa */
+                                            Lbl'Unds-LT-Eqls'Int'Unds'{}(
+                                                /* Fl Fn D Sfa Cl */
+                                                \dv{SortInt{}}("0"),
+                                                /* Fl Fn D Sfa */
+                                                VarORIGIN'Unds'ID:SortInt{}
+                                            )
+                                        ),
+                                        /* Sfa */
+                                        \equals{SortBool{}, SortGeneratedTopCell{}}(
+                                            /* Fl Fn D Sfa Cl */
+                                            \dv{SortBool{}}("true"),
+                                            /* Fl Fn D Sfa */
+                                            Lbl'Unds-LT-Eqls'Int'Unds'{}(
+                                                /* Fl Fn D Sfa Cl */
+                                                \dv{SortInt{}}("0"),
+                                                /* Fl Fn D Sfa */
+                                                VarSTART:SortInt{}
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+)

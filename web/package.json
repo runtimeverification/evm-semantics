@@ -18,7 +18,8 @@
     "http-server": "^0.12.3"
   },
   "dependencies": {
-    "k-web-theme": "file:k-web-theme"
+    "k-web-theme": "file:k-web-theme",
+    "nvm": "^0.0.4"
   },
   "bugs": {
     "url": "https://github.com/runtimeverification/evm-semantics/issues"

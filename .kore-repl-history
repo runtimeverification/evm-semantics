@@ -1,94 +1,100 @@
-konfig
+exit
+save-session newest-session
+save-partial-proof 6446 partial_proof
+select 6446
 help
-config | pyk print tests/specs/bihu/verification/haskell lol.txt
-config | pyk print lol.txt tests/specs/bihu/verification/haskell
-config | pyk print tests/specs/bihu/verification/haskell lol.txt
-config | pyk print tests/specs/bihu/verification/haskell lol.txt
-config > lol.txt
-config | pyk print tests/specs/bihu/verification/haskell
-stepf 20
-config | pyk print tests/specs/bihu/verification/haskell
-config | pyk print tests/specs/bihu/verification/haskell ...
-config | pyk print tests/specs/bihu/verification/haskell
-config | kast -i kore -o pretty --definition tests/specs/bihu/verification/haskell /dev/stdin
-config | kast -i kore -o pretty --definition tests/specs/mcd/verification/haskell /dev/stdin
-config | kast -i kore -o pretty --definition . /dev/stdin
-config | kast -i kore -o pretty -d . /dev/stdin
-config | kast -i kore -o pretty --definition .build/usr/lib/kevm/haskell /dev/stdin
-stepf 20
-config | kast -i kore -o pretty --definition .build/usr/lib/kevm/haskell /dev/stdin
-config | kast -i kore -o pretty --definition .build/usr/lib/kevm/haskell /dev/stdin
-config | pyk print
 help
-h
-pyk print tests/specs/bihu/verification.k $(echo $(config))
-pyk print tests/specs/bihu/verification.k $(echo config)
-pyk print tests/specs/bihu/verification.k
-config | pyk print tests/specs/bihu/verification.k
-config | pyk print tests/specs/bihu/verification.k ...
-config | pyk print
-config | pyk
-config | pyk print -v
-config | pyk print tests/specs/bihu/verification.k ... -v
-config | pyk print tests/specs/bihu/verification.k ...
-config | pyk print tests/specs/bihu/verification.k
-config
-config | pyk print tests/specs/bihu/verification.k
-config | pyk print tests/specs/bihu/verification.k
-stepf 20
-config | pyk print tests/specs/bihu/verification.k
-config | pyk print tests/specs/bihu/verification.k
-config | pyk print ... tests/specs/bihu/verification.k
-config | pyk print ... tests/specs/bihu/verification
-config | pyk print ... tests/specs/bihu/verification/
-config | pyk print ... .
-config | pyk print ... tests/specs/bihu/verification/haskell
-config | pyk print tests/specs/bihu/verification/haskell ...
-config | pyk print ... ...
-config | pyk print
-config | pyk print ...
-ls
-konfig
-config | pyk print ...
-config |> pyk print ...
-config | pyk print ...
-config | pyk print ...<k></k>
-config | pyk print ... <k></k>
-config | pyk print 
-config | pyk print ...
-config | pyk print
-config | pyk print ...
-config | pyk print -h
-pyk print -h
-config | pyk print definition
-config | pyk print
-config | pyk print KCell
-config | pyk print "<k>"
-config | pyk print <kevm>
-config | pyk print kevm
-config | pyk print ...
-config | pyk print
-config | python3 pyk print
-config | python3 kevm-pyk print
-config | python3 kevm-pyk print ...
-config | kevm-pyk print ...
-config | kevm-pyk print
-graph
-graph
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>,<storage>"
+select 6447
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>,<storage>"
+select 6446
 help
-kevm-pyk
-pyk
-pyk print ...
-konfig3
-alias konfig3 = config | kast -i kore -o pretty --definition .build/usr/lib/kevm/haskell /dev/stdin
-alias konfig2 = config | kast -i kore -o pretty --definition .build/usr/lib/kevm/haskell /dev/stdin
-konfig2
-konfig
-alias konfig2 = config | kast -i kore -o pretty -d .build/usr/lib/kevm/haskell /dev/stdin --definition tests/specs/bihu/verification/haskell
-alias konfig = config | kast -i kore -o pretty -d .build/usr/lib/kevm/haskell /dev/stdin --definition tests/specs/bihu/verification/haskell
-konfig
-stepf 20
-konfig
-alias konfig = config | kast -i kore -o pretty -d .build/usr/lib/kevm/haskell /dev/stdin
-konfig
-config
+graph collapsed proof_newest3
+stepf 2000
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>,<storage>"
+select 6447
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>,<storage>"
+select 6448
+step 6447
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>,<storage>"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6446
+graph collapsed proof_newest3
+stepf 2000
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6851
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6446
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6445
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6447
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6851
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6852
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6853
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6855
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6854
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6856
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6855
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6854
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6850
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6858
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6860
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6861
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6862
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6863
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6865
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6864
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+select 6458
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>"
+select 6864
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>"
+select 6446
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>"
+select 6447 | config
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>"
+select 6447
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<pc>"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/"

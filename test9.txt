@@ -1,0 +1,452 @@
+If I start with COLLECTED = 0.
+
+ja@ja-pc:~/dev/evm-semantics/tests/specs/bihu$ kevm prove collectToken-spec.k --backend haskell --haskell-backend-command "kore-exec --smt-timeout 10000" --definition verification/haskell
+kore-exec: [5220465017] Warning (WarnStuckClaimState):
+    The configuration's term unifies with the destination's term, but the implication check between the conditions has failed. Location: /home/ja/dev/evm-semantics/tests/specs/bihu/collectToken-spec.k:8:5-123:142
+Context:
+    (InfoReachability) while checking the implication
+kore-exec: [5220484450] Warning (WarnUnexploredBranches):
+    16 branches were still unexplored when the action failed.
+  #Ceil ( SetItem ( ACCT_ID:Int )
+  _Gen43 )
+#And
+  #Not (
+
+    #Ceil ( #roundpower ( BAL , 90 , 100 , ( NOW -Int START ) /Int 31536000 ) )
+
+    #And
+
+    {
+      0
+    #Equals
+      #roundpower ( BAL , 90 , 100 , ( NOW -Int START ) /Int 31536000 ) *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 +Int BAL -Int #roundpower ( BAL , 90 , 100 , ( NOW -Int START ) /Int 31536000 )
+    }
+
+    #And
+    {
+      BAL
+    #Equals
+      BAL -Int #roundpower ( BAL , 90 , 100 , ( NOW -Int START ) /Int 31536000 ) *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 -Int BAL +Int #roundpower ( BAL , 90 , 100 , ( NOW -Int START ) /Int 31536000 )
+    }
+
+  )
+#And
+  <kevm>
+    <k>
+      #halt ~> .
+    </k>
+    <exit-code>
+      1
+    </exit-code>
+    <mode>
+      NORMAL
+    </mode>
+    <schedule>
+      ISTANBUL
+    </schedule>
+    <ethereum>
+      <evm>
+        <output>
+          b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
+        </output>
+        <statusCode>
+          EVMC_SUCCESS
+        </statusCode>
+        <endPC>
+          368
+        </endPC>
+        <callStack>
+          _Gen4
+        </callStack>
+        <interimStates>
+          _Gen6
+        </interimStates>
+        <touchedAccounts>
+          _Gen7
+        </touchedAccounts>
+        <callState>
+          <program>
+            b"```@R`\x046\x10a\x00mW`\x005|\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x90\x04c\xff\xff\xff\xff\x16\x80c\x0eJ\xed?\x14a\x00rW\x80c@\xba\x12k\x14a\x00\x9bW\x80cx~\x917\x14a\x00\xdbW\x80c\xb6\x9e\xf8\xa8\x14a\x01\x04W\x80c\xb9>,\xdb\x14a\x01-W[`\x00\x80\xfd[4\x15a\x00}W`\x00\x80\xfd[a\x00\x85a\x01qV[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x00\xa6W`\x00\x80\xfd[a\x00\xc5`\x04\x80\x805\x90` \x01\x90\x91\x90\x805\x90` \x01\x90\x91\x90PPa\x01vV[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x00\xe6W`\x00\x80\xfd[a\x00\xeea\x01\xa8V[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x01\x0fW`\x00\x80\xfd[a\x01\x17a\x01\xaeV[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x018W`\x00\x80\xfd[a\x01W`\x04\x80\x805\x90` \x01\x90\x91\x90\x805\x90` \x01\x90\x91\x90PPa\x01\xb4V[`@Q\x80\x82\x15\x15\x15\x15\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[`\n\x81V[`\x00\x81\x83\x10a\x01\x9dWc\x01\xe13\x80a\x01\x8e\x84\x84a\x02\xbcV[\x81\x15\x15a\x01\x97W\xfe[\x04a\x01\xa0V[`\x00[\x90P\x92\x91PPV[`\x00T\x81V[`\x01T\x81V[`\x00\x80`\x00\x80`\x00\x80`\x00\x80\x88\x8a\x11\x15\x15a\x01\xceW`\x00\x80\xfd[a\x01\xdc`\x00T`\x01Ta\x02\xd5V[\x96P\x86\x95Pa\x01\xeb\x8a\x8aa\x01vV[\x94P`\x00\x93P[\x84\x84\x10\x15a\x02!Wa\x02\x12a\x02\x0b\x87`\n`d\x03a\x02\xeeV[`da\x03\x1cV[\x95P\x83\x80`\x01\x01\x94PPa\x01\xf2V[a\x026a\x02/\x87`\na\x02\xeeV[`da\x03\x1cV[\x92Pa\x02`a\x02V\x84c\x01\xe13\x80\x8c\x8e\x03\x81\x15\x15a\x02PW\xfe[\x06a\x02\xeeV[c\x01\xe13\x80a\x03\x1cV[\x91P\x85\x87\x03\x82\x01\x90Pa\x02u\x81`\x00Ta\x02\xbcV[\x90P`\x01T\x81\x11\x15a\x02\x87W`\x01T\x90P[a\x02\x93`\x00T\x82a\x02\xd5V[`\x00\x81\x90UPa\x02\xa5`\x01T\x82a\x02\xbcV[`\x01\x81\x90UP`\x01\x97PPPPPPPP\x92\x91PPV[`\x00\x82\x82\x84\x03\x91P\x81\x11\x15\x15\x15a\x02\xcfW\xfe[\x92\x91PPV[`\x00\x82\x82\x84\x01\x91P\x81\x10\x15\x15\x15a\x02\xe8W\xfe[\x92\x91PPV[`\x00\x81\x83\x02\x90P`\x00\x83\x14\x80a\x03\x0eWP\x81\x83\x82\x81\x15\x15a\x03\x0bW\xfe[\x04\x14[\x15\x15a\x03\x16W\xfe[\x92\x91PPV[`\x00\x81\x83\x81\x15\x15a\x03)W\xfe[\x04\x90P\x92\x91PPV\x00\xa1ebzzr0X \xd8\xed\xee\xb4L\x83F\xec\xa198\\\xfa\xec\xdd\xeb\x8b\x02\xfc\xc3\x80\xc3\xb5Dstn\x81\x03\xffb\xe7\x00)"
+          </program>
+          <jumpDests>
+            SetItem ( 109 )
+            SetItem ( 114 )
+            SetItem ( 125 )
+            SetItem ( 133 )
+            SetItem ( 155 )
+            SetItem ( 166 )
+            SetItem ( 197 )
+            SetItem ( 219 )
+            SetItem ( 230 )
+            SetItem ( 238 )
+            SetItem ( 260 )
+            SetItem ( 271 )
+            SetItem ( 279 )
+            SetItem ( 301 )
+            SetItem ( 312 )
+            SetItem ( 343 )
+            SetItem ( 369 )
+            SetItem ( 374 )
+            SetItem ( 398 )
+            SetItem ( 407 )
+            SetItem ( 413 )
+            SetItem ( 416 )
+            SetItem ( 424 )
+            SetItem ( 430 )
+            SetItem ( 436 )
+            SetItem ( 462 )
+            SetItem ( 476 )
+            SetItem ( 491 )
+            SetItem ( 498 )
+            SetItem ( 523 )
+            SetItem ( 530 )
+            SetItem ( 545 )
+            SetItem ( 559 )
+            SetItem ( 566 )
+            SetItem ( 592 )
+            SetItem ( 598 )
+            SetItem ( 608 )
+            SetItem ( 629 )
+            SetItem ( 647 )
+            SetItem ( 659 )
+            SetItem ( 677 )
+            SetItem ( 700 )
+            SetItem ( 719 )
+            SetItem ( 725 )
+            SetItem ( 744 )
+            SetItem ( 750 )
+            SetItem ( 779 )
+            SetItem ( 782 )
+            SetItem ( 790 )
+            SetItem ( 796 )
+            SetItem ( 809 )
+          </jumpDests>
+          <id>
+            ACCT_ID:Int
+          </id>
+          <caller>
+            CALLER_ID:Int
+          </caller>
+          <callData>
+            b"\xb9>,\xdb" ++ #buf ( 32 , NOW ) ++ #buf ( 32 , START )
+          </callData>
+          <callValue>
+            0
+          </callValue>
+          <wordStack>
+            3107859675 : .WordStack
+          </wordStack>
+          <localMem>
+            b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
+          </localMem>
+          <pc>
+            368
+          </pc>
+          <gas>
+            #gas ( _VGAS -Int #if 0 ==Int BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 orBool notBool #lookup ( _Gen46 , 0 ) ==Int 0 #then 800 #else #if #lookup ( _Gen46 , 0 ) ==Int 0 #then 20000 #else 5000 #fi #fi -Int #if BAL ==Int BAL -Int BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 orBool notBool #lookup ( _Gen46 , 1 ) ==Int BAL #then 800 #else #if #lookup ( _Gen46 , 1 ) ==Int 0 #then 20000 #else 5000 #fi #fi +Int -6364 )
+          </gas>
+          <memoryUsed>
+            4
+          </memoryUsed>
+          <callGas>
+            _Gen14
+          </callGas>
+          <static>
+            false
+          </static>
+          <callDepth>
+            CALL_DEPTH
+          </callDepth>
+        </callState>
+        <substate>
+          <selfDestruct>
+            _Gen16
+          </selfDestruct>
+          <log>
+            _Gen17
+          </log>
+          <refund>
+            _Gen18 +Int #if notBool 0 ==Int BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 andBool #lookup ( _Gen46 , 0 ) ==Int 0 andBool BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 ==Int 0 #then 15000 #else #if notBool 0 ==Int BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 andBool notBool #lookup ( _Gen46 , 0 ) ==Int 0 andBool notBool #lookup ( _Gen46 , 0 ) ==Int 0 #then -15000 #else 0 #fi +Int #if notBool 0 ==Int BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 andBool #lookup ( _Gen46 , 0 ) ==Int BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 #then #if #lookup ( _Gen46 , 0 ) ==Int 0 #then 20000 #else 5000 #fi +Int -800 #else 0 #fi #fi +Int #if notBool BAL ==Int BAL -Int BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 andBool #lookup ( _Gen46 , 1 ) ==Int BAL andBool BAL -Int BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 ==Int 0 #then 15000 #else #if notBool BAL ==Int BAL -Int BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 andBool notBool #lookup ( _Gen46 , 1 ) ==Int BAL andBool notBool #lookup ( _Gen46 , 1 ) ==Int 0 #then #if BAL ==Int 0 #then -15000 #else #if BAL -Int BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 ==Int 0 #then 15000 #else 0 #fi #fi #else 0 #fi +Int #if notBool BAL ==Int BAL -Int BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 andBool #lookup ( _Gen46 , 1 ) ==Int BAL -Int BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000 #then #if #lookup ( _Gen46 , 1 ) ==Int 0 #then 20000 #else 5000 #fi +Int -800 #else 0 #fi #fi
+          </refund>
+          <accessedAccounts>
+            _Gen20
+          </accessedAccounts>
+          <accessedStorage>
+            _Gen22
+          </accessedStorage>
+        </substate>
+        <gasPrice>
+          _Gen24
+        </gasPrice>
+        <origin>
+          ORIGIN_ID:Int
+        </origin>
+        <blockhashes>
+          _Gen25
+        </blockhashes>
+        <block>
+          <previousHash>
+            _Gen26
+          </previousHash>
+          <ommersHash>
+            _Gen27
+          </ommersHash>
+          <coinbase>
+            _Gen28
+          </coinbase>
+          <stateRoot>
+            _Gen29
+          </stateRoot>
+          <transactionsRoot>
+            _Gen30
+          </transactionsRoot>
+          <receiptsRoot>
+            _Gen31
+          </receiptsRoot>
+          <logsBloom>
+            _Gen32
+          </logsBloom>
+          <difficulty>
+            _Gen33
+          </difficulty>
+          <number>
+            _Gen34
+          </number>
+          <gasLimit>
+            _Gen35
+          </gasLimit>
+          <gasUsed>
+            _Gen36
+          </gasUsed>
+          <timestamp>
+            NOW
+          </timestamp>
+          <extraData>
+            _Gen37
+          </extraData>
+          <mixHash>
+            _Gen38
+          </mixHash>
+          <blockNonce>
+            _Gen39
+          </blockNonce>
+          <baseFee>
+            _Gen40
+          </baseFee>
+          <ommerBlockHeaders>
+            _Gen41
+          </ommerBlockHeaders>
+        </block>
+      </evm>
+      <network>
+        <chainID>
+          _Gen42
+        </chainID>
+        <activeAccounts>
+          SetItem ( ACCT_ID:Int )
+          _Gen43
+        </activeAccounts>
+        <accounts>
+          <account>
+            <acctID>
+              ACCT_ID
+            </acctID>
+            <balance>
+              _Gen44
+            </balance>
+            <code>
+              b"```@R`\x046\x10a\x00mW`\x005|\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x90\x04c\xff\xff\xff\xff\x16\x80c\x0eJ\xed?\x14a\x00rW\x80c@\xba\x12k\x14a\x00\x9bW\x80cx~\x917\x14a\x00\xdbW\x80c\xb6\x9e\xf8\xa8\x14a\x01\x04W\x80c\xb9>,\xdb\x14a\x01-W[`\x00\x80\xfd[4\x15a\x00}W`\x00\x80\xfd[a\x00\x85a\x01qV[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x00\xa6W`\x00\x80\xfd[a\x00\xc5`\x04\x80\x805\x90` \x01\x90\x91\x90\x805\x90` \x01\x90\x91\x90PPa\x01vV[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x00\xe6W`\x00\x80\xfd[a\x00\xeea\x01\xa8V[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x01\x0fW`\x00\x80\xfd[a\x01\x17a\x01\xaeV[`@Q\x80\x82\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[4\x15a\x018W`\x00\x80\xfd[a\x01W`\x04\x80\x805\x90` \x01\x90\x91\x90\x805\x90` \x01\x90\x91\x90PPa\x01\xb4V[`@Q\x80\x82\x15\x15\x15\x15\x81R` \x01\x91PP`@Q\x80\x91\x03\x90\xf3[`\n\x81V[`\x00\x81\x83\x10a\x01\x9dWc\x01\xe13\x80a\x01\x8e\x84\x84a\x02\xbcV[\x81\x15\x15a\x01\x97W\xfe[\x04a\x01\xa0V[`\x00[\x90P\x92\x91PPV[`\x00T\x81V[`\x01T\x81V[`\x00\x80`\x00\x80`\x00\x80`\x00\x80\x88\x8a\x11\x15\x15a\x01\xceW`\x00\x80\xfd[a\x01\xdc`\x00T`\x01Ta\x02\xd5V[\x96P\x86\x95Pa\x01\xeb\x8a\x8aa\x01vV[\x94P`\x00\x93P[\x84\x84\x10\x15a\x02!Wa\x02\x12a\x02\x0b\x87`\n`d\x03a\x02\xeeV[`da\x03\x1cV[\x95P\x83\x80`\x01\x01\x94PPa\x01\xf2V[a\x026a\x02/\x87`\na\x02\xeeV[`da\x03\x1cV[\x92Pa\x02`a\x02V\x84c\x01\xe13\x80\x8c\x8e\x03\x81\x15\x15a\x02PW\xfe[\x06a\x02\xeeV[c\x01\xe13\x80a\x03\x1cV[\x91P\x85\x87\x03\x82\x01\x90Pa\x02u\x81`\x00Ta\x02\xbcV[\x90P`\x01T\x81\x11\x15a\x02\x87W`\x01T\x90P[a\x02\x93`\x00T\x82a\x02\xd5V[`\x00\x81\x90UPa\x02\xa5`\x01T\x82a\x02\xbcV[`\x01\x81\x90UP`\x01\x97PPPPPPPP\x92\x91PPV[`\x00\x82\x82\x84\x03\x91P\x81\x11\x15\x15\x15a\x02\xcfW\xfe[\x92\x91PPV[`\x00\x82\x82\x84\x01\x91P\x81\x10\x15\x15\x15a\x02\xe8W\xfe[\x92\x91PPV[`\x00\x81\x83\x02\x90P`\x00\x83\x14\x80a\x03\x0eWP\x81\x83\x82\x81\x15\x15a\x03\x0bW\xfe[\x04\x14[\x15\x15a\x03\x16W\xfe[\x92\x91PPV[`\x00\x81\x83\x81\x15\x15a\x03)W\xfe[\x04\x90P\x92\x91PPV\x00\xa1ebzzr0X \xd8\xed\xee\xb4L\x83F\xec\xa198\\\xfa\xec\xdd\xeb\x8b\x02\xfc\xc3\x80\xc3\xb5Dstn\x81\x03\xffb\xe7\x00)"
+            </code>
+            <storage>
+              0 |-> BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000
+              1 |-> BAL -Int
+
+              ?VALUE =
+              BAL *Int 10 /Int 100 *Int ( NOW -Int START ) /Int 31536000
+
+              @canExtractThisYear(COLLECTED +Int BAL, NOW, START) =
+              (
+                #roundpower(BAL, 90, 100, (NOW -Int START) /Int 31536000)
+                *Int 10
+                /Int 100
+              )
+              *Int ((NOW -Int START) modInt 31536000)) /Int 31536000
+              +Int BAL
+              -Int #roundpower(BAL, 90, 100, (NOW -Int START) /Int 31536000)
+
+              _Gen45
+            </storage>
+            <origStorage>
+              _Gen46
+            </origStorage>
+            <nonce>
+              _Gen47
+            </nonce>
+          </account>
+        </accounts>
+        <txOrder>
+          _Gen48
+        </txOrder>
+        <txPending>
+          _Gen49
+        </txPending>
+        <messages>
+          _Gen50
+        </messages>
+      </network>
+    </ethereum>
+  </kevm>
+#And
+  {
+    0
+  #Equals
+    BAL *Int 10 /Int 100
+  }
+#And
+  {
+    false
+  #Equals
+    0 in_keys ( _Gen45 )
+  }
+#And
+  {
+    false
+  #Equals
+    1 in_keys ( _Gen45 )
+  }
+#And
+  {
+    true
+  #Equals
+    0 <=Int ACCT_ID
+  }
+#And
+  {
+    true
+  #Equals
+    0 <=Int BAL
+  }
+#And
+  {
+    true
+  #Equals
+    0 <=Int CALLER_ID
+  }
+#And
+  {
+    true
+  #Equals
+    0 <=Int CALL_DEPTH
+  }
+#And
+  {
+    true
+  #Equals
+    0 <=Int NOW
+  }
+#And
+  {
+    true
+  #Equals
+    0 <=Int ORIGIN_ID
+  }
+#And
+  {
+    true
+  #Equals
+    0 <=Int START
+  }
+#And
+  {
+    true
+  #Equals
+    0 <Int BAL
+  }
+#And
+  {
+    true
+  #Equals
+    0 <Int NOW -Int START
+  }
+#And
+  {
+    true
+  #Equals
+    #accumulatedReleasedTokens ( BAL , 0 , START , NOW ) <Int BAL +Int -10
+  }
+#And
+  {
+    true
+  #Equals
+    #accumulatedReleasedTokens ( BAL , 0 , START , NOW ) >Int 3
+  }
+#And
+  {
+    true
+  #Equals
+    ( NOW -Int START ) /Int 31536000 <=Int 0
+  }
+#And
+  {
+    true
+  #Equals
+    ACCT_ID <Int pow160
+  }
+#And
+  {
+    true
+  #Equals
+    BAL *Int 31536000 <Int pow256
+  }
+#And
+  {
+    true
+  #Equals
+    BAL <Int pow256
+  }
+#And
+  {
+    true
+  #Equals
+    CALLER_ID <Int pow160
+  }
+#And
+  {
+    true
+  #Equals
+    CALL_DEPTH <Int 1024
+  }
+#And
+  {
+    true
+  #Equals
+    NOW -Int START <Int pow256
+  }
+#And
+  {
+    true
+  #Equals
+    NOW <Int pow256
+  }
+#And
+  {
+    true
+  #Equals
+    ORIGIN_ID <Int pow160
+  }
+#And
+  {
+    true
+  #Equals
+    START <Int NOW
+  }
+#And
+  {
+    true
+  #Equals
+    START <Int pow256
+  }
+[Error] Prover: backend terminated because the configuration cannot be
+rewritten further. See output for more details.
+
+

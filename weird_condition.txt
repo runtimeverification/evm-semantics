@@ -1,0 +1,34 @@
+#And #Ceil ( SetItem ( ACCT_ID:Int ) _Gen43:Set )
+#And #Not ( { 0 #Equals COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 } )
+#And #Not ( { 0 #Equals COLLECTED:Int +Int BAL:Int } )
+#And { false #Equals 0 in_keys ( _Gen45:Map ) }
+#And { false #Equals 1 in_keys ( _Gen45:Map ) }
+#And { true #Equals 0 <=Int ACCT_ID:Int }
+#And { true #Equals 0 <=Int BAL:Int }
+#And { true #Equals 0 <=Int CALLER_ID:Int }
+#And { true #Equals 0 <=Int CALL_DEPTH:Int }
+#And { true #Equals 0 <=Int COLLECTED:Int }
+#And { true #Equals 0 <=Int COLLECTED:Int +Int BAL:Int }
+#And { true #Equals 0 <=Int NOW:Int }
+#And { true #Equals 0 <=Int ORIGIN_ID:Int }
+#And { true #Equals 0 <=Int START:Int }
+#And { true #Equals 0 <Int NOW:Int -Int START:Int }
+#And { true #Equals #accumulatedReleasedTokens ( BAL:Int , COLLECTED:Int , START:Int , NOW:Int ) <Int BAL:Int +Int COLLECTED:Int +Int -10 }
+#And { true #Equals #accumulatedReleasedTokens ( BAL:Int , COLLECTED:Int , START:Int , NOW:Int ) >Int COLLECTED:Int +Int 3 }
+#And { true #Equals #roundpower ( COLLECTED:Int +Int BAL:Int , 90 , 100 , NOW:Int -Int START:Int /Int 31536000 ) <=Int #roundpower ( COLLECTED:Int +Int BAL:Int , 90 , 100 , NOW:Int -Int START:Int /Int 31536000 ) *Int 10 /Int 100 *Int NOW:Int -Int START:Int modInt 31536000 /Int 31536000 +Int COLLECTED:Int +Int BAL:Int }
+#And { true #Equals COLLECTED:Int +Int BAL:Int *Int 31536000 <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936 }
+#And { true #Equals NOW:Int -Int START:Int /Int 31536000 <=Int 0 }
+#And { true #Equals ACCT_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
+#And { true #Equals BAL:Int <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936 }
+#And { true #Equals CALLER_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
+#And { true #Equals CALL_DEPTH:Int <Int 1024 }
+#And { true #Equals COLLECTED:Int <=Int #roundpower ( COLLECTED:Int +Int BAL:Int , 90 , 100 , NOW:Int -Int START:Int /Int 31536000 ) *Int 10 /Int 100 *Int NOW:Int -Int START:Int modInt 31536000 /Int 31536000 +Int COLLECTED:Int +Int BAL:Int -Int #roundpower ( COLLECTED:Int +Int BAL:Int , 90 , 100 , NOW:Int -Int START:Int /Int 31536000 ) }
+#And { true #Equals COLLECTED:Int <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936 }
+#And { true #Equals NOW:Int -Int START:Int <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936 }
+#And { true #Equals NOW:Int <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936 }
+#And { true #Equals ORIGIN_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
+#And { true #Equals START:Int <Int NOW:Int }
+#And { true #Equals START:Int <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936 }
+
+#And { true #Equals chop ( COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 -Int COLLECTED:Int ) <=Int COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 }
+#And { true #Equals COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 <Int chop ( COLLECTED:Int +Int BAL:Int *Int 10 /Int 100 *Int NOW:Int -Int START:Int /Int 31536000 -Int COLLECTED:Int ) }
