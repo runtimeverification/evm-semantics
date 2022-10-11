@@ -292,7 +292,7 @@ ifeq ($(UNAME_S),Darwin)
 $(KEVM_LIB)/$(foundry_kompiled): $(libsecp256k1_out)
 endif
 
-$(KEVM_LIB)/$(foundry_kompiled): $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
+$(KEVM_LIB)/$(foundry_kompiled): $(kevm_includes) $(plugin_includes) $(lemma_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend foundry                     \
 	    $(foundry_main_file) $(HASKELL_KOMPILE_OPTS) \
 	    --main-module $(foundry_main_module)         \
