@@ -145,6 +145,9 @@
         kevm-pyk = prev.poetry2nix.mkPoetryApplication {
           python = prev.python39;
           projectDir = ./kevm-pyk;
+          groups = [];
+          # exclude dev dependencies
+          checkGroups = [];
           overrides = prev.poetry2nix.overrides.withDefaults
             (finalPython: prevPython: { pyk = prev.pyk; });
         };
