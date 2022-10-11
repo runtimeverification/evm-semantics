@@ -93,5 +93,6 @@ module SOLIDITY-FIELDS
     syntax Int ::= #hash ( Int , Int ) [function, klabel(contract_access_hash), symbol]
  // -----------------------------------------------------------------------------------
     rule #hash(I1, I2) => keccak(#bufStrict(32, I2) ++ #bufStrict(32, I1))
+
 endmodule
 ```

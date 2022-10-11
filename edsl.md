@@ -16,7 +16,6 @@ requires "optimizations.md"
 module EDSL
     imports BUF
     imports HASHED-LOCATIONS
-    imports FOUNDRY-ACCOUNTS
     imports EVM-ABI
     imports EVM-OPTIMIZATIONS
     imports INFINITE-GAS
