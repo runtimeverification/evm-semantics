@@ -67,7 +67,7 @@ run_kevm_pyk() {
 run_kompile() {
     local kompile_opts openssl_root
 
-    if ${pyk} && [[ "${backend}" != haskell ]]; then
+    if ${pyk} && [[ "${backend}" != haskell && "${backend}" != foundry ]]; then
         fatal "Command kompile with option --pyk only available for --backend haskell."
     fi
 
