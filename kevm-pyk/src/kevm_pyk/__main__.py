@@ -186,6 +186,22 @@ def exec_foundry_kompile(
         _LOGGER.info(f'Wrote file: {kcfgs_file}')
 
 
+def exec_act_to_k(
+    act_json: Path,
+    definition_dir: Path,
+    profile: bool,
+    includes: List[str],
+    md_selector: Optional[str],
+    regen: bool = False,
+    rekompile: bool = False,
+    reinit: bool = False,
+    requires: Iterable[str] = (),
+    imports: Iterable[str] = (),
+    **kwargs: Any,
+) -> None:
+    print('ffo')
+
+
 def _contract_json_paths(foundry_out: Path) -> List[str]:
     pattern = '*.t.sol/*.json'
     paths = foundry_out.glob(pattern)
@@ -576,6 +592,13 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Reinitialize kcfgs even if they already exist.',
     )
+
+    act_to_k = command_parser.add_parser(
+        'act-to-k',
+        help='Generate K definition for ACT specification.',
+        parents=[shared_args, k_args, k_gen_args, k_kompile_args],
+    )
+    act_to_k.add_argument('act_json', type=file_path, help='Path to ACT JSON.')
 
     foundry_prove_args = command_parser.add_parser(
         'foundry-prove',
