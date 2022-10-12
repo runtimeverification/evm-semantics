@@ -292,7 +292,7 @@ run_foundry_prove() {
 }
 
 run_act_to_k() {
-    run_kevm_pyk act-to-k "$@"
+    run_kevm_pyk act-to-k --definition "${backend_dir}" "$@"
 }
 
 # Main
