@@ -7,10 +7,28 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KRule, KToken
+from pyk.cterm import CTerm, build_claim
+from pyk.kast import (
+    KApply,
+    KAtt,
+    KClaim,
+    KDefinition,
+    KFlatModule,
+    KImport,
+    KInner,
+    KRequire,
+    KRewrite,
+    KRule,
+    KSort,
+    KToken,
+    KVariable,
+    Subst,
+)
 from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
 from pyk.ktool.krun import KPrint, _krun
+from pyk.prelude.kbool import FALSE
+from pyk.prelude.kint import intToken
 from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
@@ -199,7 +217,52 @@ def exec_act_to_k(
     imports: Iterable[str] = (),
     **kwargs: Any,
 ) -> None:
-    print('ffo')
+    with open(act_json, 'r') as aj:
+        act = json.loads(aj.read())
+    kevm = KEVM(definition_dir, profile=profile, use_directory=Path(definition_dir))
+    empty_config = kevm.definition.empty_config(KSort('KevmCell'))
+    function_name = act[1]['interface'][0:-2]
+    #function_name = act[1]['interface']
+    output = int(act[1]['returns']['expression'])
+    claim_name = f'{act[1]["contract"]}' # _{act[1]["name"]}'
+    program = KEVM.parse_bytestack(KToken('"0x6080604052348015600f57600080fd5b506004361060285760003560e01c806326121ff014602d575b600080fd5b600160405190815260200160405180910390f3fea26469706673582212202a7d22f727b02650019bc015a273e69c58391d639c256daab023a4d61325d8ce64736f6c63430008100033"', 'String'))
+    init_subst = {
+        'SCHEDULE_CELL': KApply('LONDON_EVM'),
+        'K_CELL': KEVM.execute(),
+        'MODE_CELL': KApply('NORMAL'),
+        'CALLDATA_CELL': KEVM.abi_calldata(function_name, []),
+        # 'CALLVALUE_CELL': KVariable('CALLVALUE_CELL'),
+        'CALLVALUE_CELL': intToken(0),
+        'PROGRAM_CELL': program,
+        'JUMPDESTS_CELL': KEVM.compute_valid_jumpdests(program),
+        'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
+        'STATIC_CELL': FALSE,
+        'MEMORYUSED_CELL': intToken(0),
+        'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
+        'PC_CELL': intToken(0),
+        'GAS_CELL': intToken(9223372036854775807),
+        'CALLSTACK_CELL': KApply('.List'),
+        'CALLDEPTH_CELL': intToken(0),
+        'ORIGIN_CELL': KVariable('ORIGIN_ID'),
+        'CALLER_CELL': KVariable('CALLER_ID'),
+        'ID_CELL': KVariable('CURRENT_ACCOUNT'),
+        'ENDPC_CELL': KVariable('ENDPC'),
+    }
+    final_subst = {
+        'K_CELL': KEVM.halt(),
+        'STATUSCODE_CELL': KApply('EVMC_SUCCESS_NETWORK_EndStatusCode'),
+        'OUTPUT_CELL': KApply(
+            '#buf(_,_)_BUF-SYNTAX_ByteArray_Int_Int', [intToken(32), intToken(output)]
+        ),
+        'PROGRAM_CELL': program,
+        'JUMPDESTS_CELL': KEVM.compute_valid_jumpdests(program),
+    }
+    init_config = Subst(init_subst)(empty_config)
+    final_config = Subst(final_subst)(empty_config)
+    claim, _ = build_claim(claim_name, CTerm(init_config), CTerm(final_config))
+    final_state = kevm.prove_claim(claim, claim_name)
+    #print(kevm.pretty_print(minimize_term(final_state)))
+    print(kevm.pretty_print(final_state))
 
 
 def _contract_json_paths(foundry_out: Path) -> List[str]:
