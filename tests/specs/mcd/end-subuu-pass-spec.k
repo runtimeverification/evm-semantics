@@ -13,7 +13,6 @@ module END-SUBUU-PASS-SPEC
         <evm>
           <output> VOutput => VOutput </output>
           <statusCode> _ => ?_ </statusCode>
-          <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
