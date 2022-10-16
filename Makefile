@@ -196,7 +196,7 @@ kevm_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_files))
 
 includes := $(kevm_includes) $(lemma_includes) $(plugin_includes) $(plugin_c_includes)
 
-$(KEVM_INCLUDE)/kframework/%.md: %.md
+$(KEVM_INCLUDE)/%: include/%
 	@mkdir -p $(dir $@)
 	install $< $@
 
