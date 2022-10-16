@@ -188,12 +188,7 @@ kevm_files := abi.md              \
               word.md
 
 kevm_lemmas := lemmas.k             \
-               int-simplification.k \
-               erc20/evm-symbolic.k \
-               mcd/bin_runtime.k    \
-               mcd/storage.k        \
-               mcd/verification.k   \
-               mcd/word-pack.k
+               int-simplification.k
 
 lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(kevm_lemmas))
 
