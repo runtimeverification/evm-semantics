@@ -147,17 +147,18 @@ k-deps:
 	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
 	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/kframework package/package
 
+plugin_k_include  := $(KEVM_INCLUDE)/kframework/plugin
 plugin_include    := $(KEVM_LIB)/blockchain-k-plugin/include
 plugin_k          := krypto.md
 plugin_c          := plugin_util.cpp crypto.cpp blake2.cpp plugin_util.h blake2.h
-plugin_includes   := $(patsubst %, $(plugin_include)/kframework/%, $(plugin_k))
-plugin_c_includes := $(patsubst %, $(plugin_include)/c/%,          $(plugin_c))
+plugin_includes   := $(patsubst %, $(plugin_k_include)/%, $(plugin_k))
+plugin_c_includes := $(patsubst %, $(plugin_include)/c/%, $(plugin_c))
 
 $(plugin_include)/c/%: $(PLUGIN_SUBMODULE)/plugin-c/%
 	@mkdir -p $(dir $@)
 	install $< $@
 
-$(plugin_include)/kframework/%: $(PLUGIN_SUBMODULE)/plugin/%
+$(plugin_k_include)/%: $(PLUGIN_SUBMODULE)/plugin/%
 	@mkdir -p $(dir $@)
 	install $< $@
 
