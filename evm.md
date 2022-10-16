@@ -262,8 +262,7 @@ Control Flow
     syntax KItem ::= "#halt" | "#end" StatusCode
  // --------------------------------------------
     rule <k> #end SC => #halt ... </k>
-         <statusCode> _ => SC     </statusCode>
-         <pc>         PCOUNT      </pc>
+         <statusCode> _ => SC </statusCode>
 
     rule <k> #halt ~> (_:Int    => .) ... </k>
     rule <k> #halt ~> (_:OpCode => .) ... </k>
