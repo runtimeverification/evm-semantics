@@ -55,7 +55,7 @@ run_kevm_pyk() {
     case "${pyk_command}" in
         kompile|run|prove|solc-to-k|foundry-kompile|foundry-prove)
             pyk_args=(--definition "${backend_dir}")
-            pyk_args+=(-I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework")
+            pyk_args+=(-I "${INSTALL_INCLUDE}/kframework")
             ;;
     esac
     ! ${verbose} || pyk_args+=(--verbose)
@@ -73,7 +73,7 @@ run_kompile() {
 
     kompile_opts=( "${run_file}" --emit-json )
     ${pyk} || kompile_opts+=( --output-definition "${backend_dir}" )
-    ${pyk} || kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
+    ${pyk} || kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" )
     ${pyk} || kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN" )
     ${pyk} || ! ${debug} || kompile_opts+=( --debug )
 
@@ -190,7 +190,7 @@ run_prove() {
     proof_args=("${run_file}")
     if ! ${pyk}; then
         proof_args+=(--definition "${backend_dir}")
-        proof_args+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
+        proof_args+=( -I "${INSTALL_INCLUDE}/kframework" )
         ! ${debug} || proof_args+=(--debug)
     fi
 
