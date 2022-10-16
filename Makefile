@@ -309,7 +309,7 @@ install_libs := $(haskell_kompiled)                                        \
                 release.md                                                 \
                 version
 
-$(KEVM_BIN)/kevm: kevm
+$(KEVM_BIN)/%: bin/%
 	@mkdir -p $(dir $@)
 	install $< $@
 
