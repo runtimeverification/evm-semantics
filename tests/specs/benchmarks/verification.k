@@ -1,4 +1,4 @@
-requires "../lemmas.k"
+requires "lemmas/lemmas.k"
 
 module VERIFICATION-COMMON
     imports LEMMAS
