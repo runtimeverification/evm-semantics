@@ -439,7 +439,7 @@ tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTes
 KEVM_PYK_DIR := ./kevm-pyk
 VENV_DIR     := $(BUILD_DIR)/venv
 PYK_ACTIVATE := . $(VENV_DIR)/bin/activate
-FOUNDRY_PAR  := 6
+FOUNDRY_PAR  := 4
 
 venv-clean:
 	rm -rf $(VENV_DIR)
