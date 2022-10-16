@@ -42,7 +42,8 @@ export PATH
 
 PLUGIN_SUBMODULE := $(DEPS_DIR)/plugin
 PLUGIN_SOURCE    := $(KEVM_INCLUDE)/kframework/blockchain-k-plugin/krypto.md
-export PLUGIN_SUBMODULE
+PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
+export PLUGIN_FULL_PATH
 
 
 .PHONY: all clean distclean                                                                                                      \
@@ -223,10 +224,11 @@ $(KEVM_LIB)/$(haskell_kompiled): $(libsecp256k1_out)
 endif
 
 $(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend haskell                     \
-	    $(haskell_main_file) $(HASKELL_KOMPILE_OPTS) \
-	    --main-module $(haskell_main_module)         \
-	    --syntax-module $(haskell_syntax_module)     \
+	$(KOMPILE) --backend haskell                        \
+	    $(KEVM_INCLUDE)/kframework/$(haskell_main_file) \
+	    $(HASKELL_KOMPILE_OPTS)                         \
+	    --main-module $(haskell_main_module)            \
+	    --syntax-module $(haskell_syntax_module)        \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 # Standalone
@@ -243,10 +245,10 @@ $(KEVM_LIB)/$(llvm_kompiled): $(libcryptopp_out)
 endif
 
 $(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend llvm                 \
-	    $(llvm_main_file)                     \
-	    --main-module $(llvm_main_module)     \
-	    --syntax-module $(llvm_syntax_module) \
+	$(KOMPILE) --backend llvm                        \
+	    $(KEVM_INCLUDE)/kframework/$(llvm_main_file) \
+	    --main-module $(llvm_main_module)            \
+	    --syntax-module $(llvm_syntax_module)        \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 # Node
@@ -261,10 +263,10 @@ node_kompiled      := $(node_dir)/build/kevm-vm
 export node_dir
 
 $(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend node                 \
-	    $(node_main_file)                     \
-	    --main-module $(node_main_module)     \
-	    --syntax-module $(node_syntax_module) \
+	$(KOMPILE) --backend node                        \
+	    $(KEVM_INCLUDE)/kframework/$(node_main_file) \
+	    --main-module $(node_main_module)            \
+	    --syntax-module $(node_syntax_module)        \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 $(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_out)
