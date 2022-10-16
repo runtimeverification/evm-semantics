@@ -388,6 +388,14 @@ module LEMMAS-HASKELL [symbolic, kore]
     // (pop)
     rule X <=Int chop ( X +Int Y ) => false  requires pow256 <=Int ( X +Int Y ) andBool #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
 
+    rule 0 <=Int (X |Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
+    rule 0 <=Int (X &Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
+
+    rule (X &Int Y) <Int Z      => true requires 0 <=Int X andBool 0 <=Int Y andBool (X <Int Z orBool Y <Int Z)          [simplification]
+    rule (X |Int Y) <Int pow256 => true requires 0 <=Int X andBool 0 <=Int Y andBool X <Int pow256 andBool Y <Int pow256 [simplification]
+
+    rule maxUInt160 &Int (X |Int (notMaxUInt160 &Int Y:Int)) => X requires #rangeUInt(160, X) andBool 0 <=Int Y [simplification]
+
   // ########################
   // Buffer Reasoning
   // ########################
