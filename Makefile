@@ -40,7 +40,7 @@ export C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH
 export PATH
 
-PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
+PLUGIN_SUBMODULE := $(DEPS_DIR)/plugin
 PLUGIN_SOURCE    := $(KEVM_INCLUDE)/kframework/blockchain-k-plugin/krypto.md
 export PLUGIN_SUBMODULE
 
