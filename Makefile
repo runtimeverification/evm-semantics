@@ -439,6 +439,7 @@ tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTes
 KEVM_PYK_DIR := ./kevm-pyk
 VENV_DIR     := $(BUILD_DIR)/venv
 PYK_ACTIVATE := . $(VENV_DIR)/bin/activate
+FOUNDRY_PAR  := 6
 
 venv-clean:
 	rm -rf $(VENV_DIR)
@@ -490,7 +491,7 @@ tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
 
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove tests/foundry/out -j4 $(KEVM_OPTS) $(KPROVE_OPTS) $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
+	$(KEVM) foundry-prove tests/foundry/out -j$(FOUNDRY_PAR) $(KEVM_OPTS) $(KPROVE_OPTS) $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
 
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(haskell_kompiled) venv $(lemma_includes)
 	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose
