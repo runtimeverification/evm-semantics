@@ -168,33 +168,30 @@ plugin-deps: $(plugin_includes) $(plugin_c_includes)
 
 KOMPILE := $(KEVM) kompile
 
-kevm_files := abi.md              \
-              asm.md              \
-              buf.md              \
-              data.md             \
-              driver.md           \
-              edsl.md             \
-              evm.md              \
-              evm-types.md        \
-              evm-node.md         \
-              foundry.md          \
-              hashed-locations.md \
-              infinite-gas.md     \
-              json-rpc.md         \
-              network.md          \
-              optimizations.md    \
-              serialization.md    \
-              state-utils.md      \
-              word.md
-
-kevm_lemmas := lemmas.k             \
-               int-simplification.k
-
-lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(kevm_lemmas))
+kevm_files := abi.md                      \
+              asm.md                      \
+              buf.md                      \
+              data.md                     \
+              driver.md                   \
+              edsl.md                     \
+              evm.md                      \
+              evm-types.md                \
+              evm-node.md                 \
+              foundry.md                  \
+              hashed-locations.md         \
+              infinite-gas.md             \
+              json-rpc.md                 \
+              network.md                  \
+              optimizations.md            \
+              serialization.md            \
+              state-utils.md              \
+              word.md                     \
+              lemmas/lemmas.k             \
+              lemmas/int-simplification.k
 
 kevm_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_files))
 
-includes := $(kevm_includes) $(lemma_includes) $(plugin_includes) $(plugin_c_includes)
+includes := $(kevm_includes) $(plugin_includes) $(plugin_c_includes)
 
 $(KEVM_INCLUDE)/%: include/%
 	@mkdir -p $(dir $@)
@@ -336,7 +333,7 @@ build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%
 build-llvm:     $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-haskell:  $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
 build-node:     $(KEVM_LIB)/$(node_kompiled)
-build-kevm:     $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes)
+build-kevm:     $(KEVM_BIN)/kevm $(kevm_includes) $(plugin_includes)
 build-foundry:  $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
@@ -537,7 +534,7 @@ tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$
 	$(KEVM) prove $< $(KEVM_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS)                   \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
-tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
+tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/concrete-rules.txt $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                  \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
 	    --main-module $(KPROVE_MODULE)                                                                   \
