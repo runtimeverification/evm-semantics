@@ -37,7 +37,6 @@ jobs:
       - name: 'Update nix flake inputs'
         run: |
           nix run .#update-from-submodules
-          git add flake.lock
-          git commit -m "sync flake.lock to submodules" || true
-      - run: |
-          git push
+          if git add flake.lock && git commit -m "sync flake.lock to submodules"; then
+            git push
+          fi
