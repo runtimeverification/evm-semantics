@@ -47,7 +47,7 @@ export PLUGIN_SUBMODULE
 
 .PHONY: all clean distclean                                                                                                      \
         deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
-        build build-haskell build-llvm build-prove build-node build-kevm                                                         \
+        build build-haskell build-llvm build-prove build-prove-haskell build-prove-java build-node build-kevm                    \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
         test-prove test-failing-prove                                                                                            \
@@ -589,38 +589,41 @@ prove_mcd_tests          := $(filter-out $(prove_skip_tests), $(wildcard $(prove
 prove_optimization_tests := $(filter-out $(prove_skip_tests), tests/specs/opcodes/evm-optimizations-spec.md)
 
 ## best-effort list of prove kompiled definitions to produce ahead of time
-prove_definitions :=                                                              \
-                     tests/specs/benchmarks/functional-spec/haskell/timestamp     \
-                     tests/specs/benchmarks/functional-spec/java/timestamp        \
-                     tests/specs/benchmarks/verification/haskell/timestamp        \
-                     tests/specs/benchmarks/verification/java/timestamp           \
-                     tests/specs/bihu/functional-spec/haskell/timestamp           \
-                     tests/specs/bihu/functional-spec/java/timestamp              \
-                     tests/specs/bihu/verification/haskell/timestamp              \
-                     tests/specs/bihu/verification/java/timestamp                 \
-                     tests/specs/erc20/verification/haskell/timestamp             \
-                     tests/specs/erc20/verification/java/timestamp                \
-                     tests/specs/examples/erc20-spec/haskell/timestamp            \
-                     tests/specs/examples/erc721-spec/haskell/timestamp           \
-                     tests/specs/examples/storage-spec/haskell/timestamp          \
-                     tests/specs/examples/solidity-code-spec/haskell/timestamp    \
-                     tests/specs/examples/solidity-code-spec/java/timestamp       \
-                     tests/specs/examples/sum-to-n-spec/haskell/timestamp         \
-                     tests/specs/examples/sum-to-n-spec/java/timestamp            \
-                     tests/specs/functional/infinite-gas-spec/haskell/timestamp   \
-                     tests/specs/functional/lemmas-no-smt-spec/haskell/timestamp  \
-                     tests/specs/functional/lemmas-no-smt-spec/java/timestamp     \
-                     tests/specs/functional/lemmas-spec/haskell/timestamp         \
-                     tests/specs/functional/lemmas-spec/java/timestamp            \
-                     tests/specs/functional/merkle-spec/haskell/timestamp         \
-                     tests/specs/functional/storageRoot-spec/haskell/timestamp    \
-                     tests/specs/mcd/functional-spec/haskell/timestamp            \
-                     tests/specs/mcd/functional-spec/java/timestamp               \
-                     tests/specs/mcd/verification/haskell/timestamp               \
-                     tests/specs/mcd/verification/java/timestamp                  \
-                     tests/specs/opcodes/evm-optimizations-spec/haskell/timestamp \
-                     tests/specs/opcodes/verification/java/timestamp
-build-prove: $(prove_definitions)
+prove_haskell_definitions :=                                                              \
+                             tests/specs/benchmarks/functional-spec/haskell/timestamp     \
+                             tests/specs/benchmarks/verification/haskell/timestamp        \
+                             tests/specs/bihu/functional-spec/haskell/timestamp           \
+                             tests/specs/bihu/verification/haskell/timestamp              \
+                             tests/specs/erc20/verification/haskell/timestamp             \
+                             tests/specs/examples/erc20-spec/haskell/timestamp            \
+                             tests/specs/examples/erc721-spec/haskell/timestamp           \
+                             tests/specs/examples/storage-spec/haskell/timestamp          \
+                             tests/specs/examples/solidity-code-spec/haskell/timestamp    \
+                             tests/specs/examples/sum-to-n-spec/haskell/timestamp         \
+                             tests/specs/functional/infinite-gas-spec/haskell/timestamp   \
+                             tests/specs/functional/lemmas-no-smt-spec/haskell/timestamp  \
+                             tests/specs/functional/lemmas-spec/haskell/timestamp         \
+                             tests/specs/functional/merkle-spec/haskell/timestamp         \
+                             tests/specs/functional/storageRoot-spec/haskell/timestamp    \
+                             tests/specs/mcd/functional-spec/haskell/timestamp            \
+                             tests/specs/mcd/verification/haskell/timestamp               \
+                             tests/specs/opcodes/evm-optimizations-spec/haskell/timestamp
+prove_java_definitions :=                                                              \
+                          tests/specs/benchmarks/functional-spec/java/timestamp        \
+                          tests/specs/benchmarks/verification/java/timestamp           \
+                          tests/specs/bihu/functional-spec/java/timestamp              \
+                          tests/specs/bihu/verification/java/timestamp                 \
+                          tests/specs/erc20/verification/java/timestamp                \
+                          tests/specs/examples/solidity-code-spec/java/timestamp       \
+                          tests/specs/examples/sum-to-n-spec/java/timestamp            \
+                          tests/specs/functional/lemmas-no-smt-spec/java/timestamp     \
+                          tests/specs/functional/lemmas-spec/java/timestamp            \
+                          tests/specs/mcd/functional-spec/java/timestamp               \
+                          tests/specs/mcd/verification/java/timestamp                  \
+                          tests/specs/opcodes/verification/java/timestamp
+build-prove-java: $(prove_java_definitions)
+build-prove-haskell: $(prove_haskell_definitions)
+build-prove: $(prove_java_definitions) $(prove_haskell_definitions)
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
 test-prove-benchmarks:    $(prove_benchmarks_tests:=.prove)
