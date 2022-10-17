@@ -132,8 +132,8 @@ def exec_foundry_kompile(
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
     kcfgs_file = foundry_definition_dir / 'kcfgs.json'
-    requires = ['lemmas/lemmas.k', 'lemmas/int-simplification.k'] + list(requires)
-    imports = ['LEMMAS', 'INT-SIMPLIFICATION'] + list(imports)
+    requires = ['foundry.md', 'lemmas/lemmas.k', 'lemmas/int-simplification.k'] + list(requires)
+    imports = ['FOUNDRY', 'LEMMAS', 'INT-SIMPLIFICATION'] + list(imports)
 
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
