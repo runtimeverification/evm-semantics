@@ -9,9 +9,20 @@ contract Token{
 
 contract DealTest is Test {
 
-    function testDeal(uint256 value) public {
+    function testDealConcrete() public {
+        Token alice = new Token();
+        vm.deal(address(alice), 256);
+        assertEq(address(alice).balance, 256);
+    }
+
+    function testDealSymbolic(uint256 value) public {
         Token alice = new Token();
         vm.deal(address(alice), value);
         assertEq(address(alice).balance, value);
+    }
+
+    function testDealNonExistingAccount() public {
+        vm.deal(address(0), 1 ether);
+        assert(address(0).balance == 1 ether);
     }
 }

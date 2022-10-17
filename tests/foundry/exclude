@@ -34,6 +34,7 @@ EnvTest.testEnvString
 EnvTest.testEnvStringArray
 EnvTest.testEnvUInt
 EnvTest.testEnvUIntArray
+EtchTest.testEtchSymbolic
 FfiTest.testffi
 FfiTest.testFFIFOO
 FfiTest.testFFIScript
@@ -68,6 +69,7 @@ MockCallTest.testMockCall
 MockCallTest.testMockCalls
 MockCallTest.testMockCallValue
 NonceTest.testNonce
+NonceTest.test_GetNonce_true
 NonceTest.test_GetNonce_false
 NonceTest.test_GetNonce_true
 NonceTest.testFail_GetNonce_true
@@ -89,6 +91,8 @@ SetUpTest.testSetUpCalledSymbolic
 SignTest.testSign
 SnapshotTest.testSnapshot
 StoreTest.testAccesses
+StoreTest.testGasStoreWarmVM
+StoreTest.testGasLoadWarmVM
 TokenTest.test_1
 TokenTest.test_2
 ToStringTest.testAddressToString
