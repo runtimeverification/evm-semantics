@@ -21,8 +21,7 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.JENKINS_GITHUB_PAT }}
-      - name: 'Set up Git'
-        run: |
+      - run: |
           git config user.name devops
           git config user.email devops@runtimeverification.com
       - name: 'Update release tag'
@@ -49,5 +48,5 @@ jobs:
         run: |
           nix run .#update-from-submodules
           if git add flake.lock && git commit -m "sync flake.lock to submodules"; then
-              git push
+            git push
           fi
