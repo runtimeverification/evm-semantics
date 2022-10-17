@@ -168,6 +168,10 @@ pipeline {
             dir('focal')  { unstash 'focal'  }
             sshagent(['rv-jenkins-github']) {
               sh '''
+                curl -L https://github.com/github/hub/releases/download/v2.14.0/hub-linux-amd64-2.14.0.tgz -o hub.tgz
+                tar -xzf hub.tgz
+                export PATH=$(pwd)/hub-linux-amd64-2.14.0/bin:$PATH
+
                 git clone 'ssh://github.com/runtimeverification/evm-semantics.git' kevm-release
                 cd kevm-release
                 git fetch --all
