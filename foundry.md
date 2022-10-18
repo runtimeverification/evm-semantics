@@ -97,13 +97,12 @@ Here we define their addresses, and important storage-locations.
 module FOUNDRY-ACCOUNTS
     imports SOLIDITY-FIELDS
 
+    syntax Int             ::= #address ( Contract ) [macro]
     syntax Contract        ::= FoundryContract
     syntax Field           ::= FoundryField
     syntax FoundryContract ::= "Foundry"      [klabel(contract_Foundry)]
                              | "FoundryTest"  [klabel(contract_FoundryTest)]
                              | "FoundryCheat" [klabel(contract_FoundryCheat)]
-    syntax Int ::= #address ( Contract ) [macro]
- // --------------------------------------------
  // -------------------------------------------------------------------------
     rule #address(Foundry)      => 137122462167341575662000267002353578582749290296  // 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38
     rule #address(FoundryTest)  => 1032069922050249630382865877677304880282300743300 // 0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84
