@@ -15,6 +15,7 @@ pipeline {
       steps { script { currentBuild.displayName = "PR ${env.CHANGE_ID}: ${env.CHANGE_TITLE}" } }
     }
     stage('Build and Test') {
+      when { branch 'master' }
       agent {
         dockerfile {
           additionalBuildArgs '--build-arg K_COMMIT="${K_VERSION}" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
@@ -165,7 +166,7 @@ pipeline {
       stages {
         stage('GitHub Release') {
           steps {
-            dir('focal')  { unstash 'focal'  }
+            // dir('focal')  { unstash 'focal'  }
             sshagent(['rv-jenkins-github']) {
               sh '''
                 curl -L https://github.com/github/hub/releases/download/v2.14.0/hub-linux-amd64-2.14.0.tgz -o hub.tgz
