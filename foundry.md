@@ -211,7 +211,7 @@ We define two productions named `#return_foundry` and `#call_foundry`, which wil
 The rule `foundry.return` will rewrite the `#return_foundry` production into other productions that will place the output of the execution into the local memory, refund the gas value of the call and push the value `1` on the call stack.
 
 ```{.k .bytes}
-    syntax KItem ::= "#error_foundry" [klabel(foundry_error)]
+    syntax KItem ::= "#error_foundry" Int [klabel(foundry_error)]
                    | "#return_foundry" Int Int [klabel(foundry_return)]
                    | "#call_foundry" Int ByteArray [klabel(foundry_call)]
  // ---------------------------------------------------------------------
@@ -459,7 +459,16 @@ Otherwise, throw an error for any other call to the Foundry contract.
 
 ```{.k .bytes}
     rule [foundry.call.owise]:
-         <k> #call_foundry _ _ => #error_foundry ... </k> [owise]
+         <k> #call_foundry SELECTOR _ => #error_foundry SELECTOR ... </k> [owise]
+```
+
+#### Catching unimplemented cheatcodes
+
+```{.k .bytes}
+    rule [foundry.error]:
+         <k> #error_foundry SELECTOR ~> #return_foundry RETSTART RETWIDTH => #return_foundry RETSTART RETWIDTH ~> #return_foundry RETSTART RETWIDTH ... </k>
+         <output> _ => #bufStrict(32, SELECTOR) </output>
+
 ```
 Utils
 -----
