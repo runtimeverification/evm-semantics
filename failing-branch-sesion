@@ -1,0 +1,24 @@
+step
+step 1
+stepf 1
+step
+step 200
+select 1
+step 200
+step 500
+step 1000
+select 977
+step 2000
+select 1071
+step 2000
+select 1532
+step 1000
+select 1974
+step 100
+config | bash pykprint.sh "tests/specs/bihu/verification/haskell/" "<k>,<pc>,<wordStack>,<statusCode>,<storage>"
+select 1974
+clear 1974
+clear
+step 1
+clear
+select 1974
