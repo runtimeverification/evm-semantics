@@ -65,7 +65,7 @@ jobs:
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop kevm-ci-java || true
+          docker stop --time=0 kevm-ci-java
 
   test-prove-haskell:
     name: 'Build and Test KEVM haskell proofs'
@@ -89,7 +89,7 @@ jobs:
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop kevm-ci-haskell || true
+          docker stop --time=0 kevm-ci-haskell 
 
   test-prove-foundry:
     name: 'Build and Test KEVM Foundry proofs'
@@ -111,7 +111,7 @@ jobs:
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop kevm-ci-foundry || true
+          docker stop --time=0 kevm-ci-foundry 
 
   nix:
     name: 'Nix'
@@ -121,7 +121,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v3
         with:
           # Check out pull request HEAD instead of merge commit.
           ref: ${{ github.event.pull_request.head.sha }}
