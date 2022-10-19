@@ -74,11 +74,13 @@ This file describes the KEVM specification of the Foundry testing framework, whi
 requires "evm.md"
 requires "hashed-locations.md"
 requires "abi.md"
+requires "edsl.md"
 
 module FOUNDRY
     imports FOUNDRY-SUCCESS
     imports FOUNDRY-CHEAT-CODES
     imports FOUNDRY-ACCOUNTS
+    imports BIN-RUNTIME
 
     configuration
       <foundry>
