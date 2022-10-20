@@ -151,10 +151,10 @@ pipeline {
       }
     }
     stage('Deploy') {
-      // when {
-      //   branch 'master'
-      //   beforeAgent true
-      // }
+      when {
+        branch 'master'
+        beforeAgent true
+      }
       agent {
         dockerfile {
           additionalBuildArgs '--build-arg K_COMMIT="${K_VERSION}" --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)'
@@ -171,9 +171,6 @@ pipeline {
                 curl -L https://github.com/github/hub/releases/download/v2.14.0/hub-linux-amd64-2.14.0.tgz -o hub.tgz
                 tar -xzf hub.tgz
                 export PATH=$(pwd)/hub-linux-amd64-2.14.0/bin:$PATH
-
-                which hub
-                exit 1
 
                 git clone 'ssh://github.com/runtimeverification/evm-semantics.git' kevm-release
                 cd kevm-release
