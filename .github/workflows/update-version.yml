@@ -11,17 +11,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-pr:
-    name: 'Update kevm_pyk Version'
+
+  update-versions:
+    name: 'Update K and kevm-pyk versions'
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
           submodules: recursive
+          token: ${{ secrets.JENKINS_GITHUB_PAT }}
       - run: |
           git config user.name devops
           git config user.email devops@runtimeverification.com
+      - name: 'Update release tag'
+        run: |
+          cd deps/k && git fetch --tags && cd ../..
+          K_VERSION="$(cd deps/k && git tag --points-at HEAD)"
+          echo "${K_VERSION}" > deps/k_release
+          if git add deps/k_release && git commit -m 'deps/k_release: update release file'; then
+              git push
+          fi
       - name: 'Install Nix'
         uses: cachix/install-nix-action@v15
         with:
@@ -37,7 +47,6 @@ jobs:
       - name: 'Update nix flake inputs'
         run: |
           nix run .#update-from-submodules
-          git add flake.lock
-          git commit -m "sync flake.lock to submodules" || true
-      - run: |
-          git push
+          if git add flake.lock && git commit -m "sync flake.lock to submodules"; then
+            git push
+          fi
