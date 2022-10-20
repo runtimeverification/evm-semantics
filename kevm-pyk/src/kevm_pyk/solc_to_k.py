@@ -330,11 +330,11 @@ def contract_to_main_module(contract: Contract, empty_config: KInner, imports: I
 def contract_to_cfgs(kevm: KPrint, contract: Contract) -> Dict[str, KCFG]:
     definition = kevm.definition
     empty_config = definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
-    cfgs = {method.name: _method_cfg(empty_config, contract, method) for method in contract.methods}
+    cfgs = {method.name: method_to_cfg(empty_config, contract, method) for method in contract.methods}
     return cfgs
 
 
-def _method_cfg(empty_config: KInner, contract: Contract, method: Contract.Method) -> KCFG:
+def method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Method) -> KCFG:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
     init_term = _init_term(empty_config, contract.name, calldata=calldata, callvalue=callvalue)
