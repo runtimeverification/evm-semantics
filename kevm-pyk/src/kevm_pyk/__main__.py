@@ -220,15 +220,12 @@ def _foundry_to_bin_runtime(
 def _contract_to_claim_cfgs(
     kevm: KPrint,
     contracts: Iterable[Contract],
-) -> Dict[str, Dict]:
-    cfgs: Dict[str, Dict] = {}
+) -> Dict[str, Dict[str, Dict]]:
+    cfgs: Dict[str, Dict[str, Dict]] = {}
     for contract in contracts:
         contract_cfgs = contract_to_cfgs(kevm, contract)
-        for method_name in contract_cfgs:
-            cfg_label = f'{contract.name}.{method_name}'
-            cfgs[cfg_label] = contract_cfgs[method_name].to_dict()
-            _LOGGER.info(f'Produced KCFG: {cfg_label}')
-
+        cfgs[contract.name] = {mname: contract_cfgs[mname].to_dict() for mname in contract_cfgs}
+        _LOGGER.info(f'Produced KCFGs for: {contract.name}')
     return cfgs
 
 
@@ -309,13 +306,14 @@ def exec_foundry_prove(
 
     _LOGGER.info(f'Reading file: {kcfgs_file}')
     with open(kcfgs_file, 'r') as kf:
-        kcfgs = {k: KCFG.from_dict(v) for k, v in json.loads(kf.read()).items()}
+        for contract_name, contract_kcfgs in json.loads(kf.read()).items():
+            kcfgs = {
+                f'{contract_name}.{method_name}': KCFG.from_dict(kcfg) for method_name, kcfg in contract_kcfgs.items()
+            }
 
-    tests = [Contract.contract_test_to_claim_id(_t) for _t in tests]
-    exclude_tests = [Contract.contract_test_to_claim_id(_t) for _t in exclude_tests]
     claim_names = set(kcfgs)
     _unfound_kcfgs: List[str] = []
-    if len(tests) > 0:
+    if len(list(tests)) > 0:
         kcfgs = {k: kcfg for k, kcfg in kcfgs.items() if k in tests}
     for _t in tests:
         if _t not in claim_names:
