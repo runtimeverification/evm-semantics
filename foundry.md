@@ -80,7 +80,7 @@ module FOUNDRY
     imports FOUNDRY-SUCCESS
     imports FOUNDRY-CHEAT-CODES
     imports FOUNDRY-ACCOUNTS
-    imports BIN-RUNTIME
+    imports EDSL
 
     configuration
       <foundry>

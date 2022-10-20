@@ -225,7 +225,7 @@ def _foundry_to_bin_runtime(
     bin_runtime_definition = KDefinition(
         _main_module.name,
         modules,
-        requires=(KRequire(req) for req in ['edsl.md'] + list(requires)),
+        requires=(KRequire(req) for req in list(requires)),
     )
 
     return bin_runtime_definition
