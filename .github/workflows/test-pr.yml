@@ -21,27 +21,27 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-concrete
+          tag: kevm-ci-concrete-${GITHUB_SHA}
       - name: 'Build kevm-pyk'
-        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make kevm-pyk venv -j`nproc`'
+        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j`nproc`'
       - name: 'Build kevm'
-        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make build-llvm build-node -j`nproc` RELEASE=true'
+        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-llvm build-node -j`nproc` RELEASE=true'
       - name: 'Test kevm-pyk'
-        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-kevm-pyk -j`nproc`'
+        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-kevm-pyk -j`nproc`'
       - name: 'Test conformance'
-        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-conformance -j`nproc` TEST_CONCRETE_BACKEND=llvm'
+        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-conformance -j`nproc` TEST_CONCRETE_BACKEND=llvm'
       - name: 'Test llvm krun'
-        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'
+        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'
       - name: 'Test kast'
-        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-parse -j`nproc` TEST_CONCRETE_BACKEND=llvm'
+        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-parse -j`nproc` TEST_CONCRETE_BACKEND=llvm'
       - name: 'Test failure tests'
-        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-failure -j`nproc` TEST_CONCRETE_BACKEND=llvm'
+        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-failure -j`nproc` TEST_CONCRETE_BACKEND=llvm'
       - name: 'Test node'
-        run: docker exec -t kevm-ci-concrete /bin/bash -c 'make test-node -j`nproc`'
+        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-node -j`nproc`'
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop --time=0 kevm-ci-concrete
+          docker stop --time=0 kevm-ci-concrete-${GITHUB_SHA}
 
   test-prove-java:
     name: 'Build and Test KEVM java proofs'
