@@ -30,7 +30,6 @@ from pyk.kast import (
 )
 from pyk.kastManip import abstract_term_safely, substitute
 from pyk.kcfg import KCFG
-from pyk.ktool import KPrint
 from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.ml import mlEqualsTrue
@@ -325,13 +324,6 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
 def contract_to_main_module(contract: Contract, empty_config: KInner, imports: Iterable[str] = ()) -> KFlatModule:
     module_name = Contract.contract_to_module_name(contract.name, spec=False)
     return KFlatModule(module_name, contract.sentences, [KImport(i) for i in list(imports)])
-
-
-def contract_to_cfgs(kevm: KPrint, contract: Contract) -> Dict[str, KCFG]:
-    definition = kevm.definition
-    empty_config = definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
-    cfgs = {method.name: method_to_cfg(empty_config, contract, method) for method in contract.methods}
-    return cfgs
 
 
 def method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Method) -> KCFG:

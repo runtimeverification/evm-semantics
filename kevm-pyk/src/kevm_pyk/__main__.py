@@ -10,12 +10,12 @@ from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KRule, KToken
 from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
-from pyk.ktool.krun import KPrint, _krun
+from pyk.ktool.krun import _krun
 from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
-from .solc_to_k import Contract, contract_to_cfgs, contract_to_main_module, method_to_cfg, solc_compile
+from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
 from .utils import KPrint_make_unparsing, KProve_prove_claim, add_include_arg
 
 T = TypeVar('T')
@@ -215,18 +215,6 @@ def _foundry_to_bin_runtime(
     )
 
     return bin_runtime_definition
-
-
-def _contract_to_claim_cfgs(
-    kevm: KPrint,
-    contracts: Iterable[Contract],
-) -> Dict[str, Dict[str, Dict]]:
-    cfgs: Dict[str, Dict[str, Dict]] = {}
-    for contract in contracts:
-        contract_cfgs = contract_to_cfgs(kevm, contract)
-        cfgs[contract.name] = {mname: contract_cfgs[mname].to_dict() for mname in contract_cfgs}
-        _LOGGER.info(f'Produced KCFGs for: {contract.name}')
-    return cfgs
 
 
 def exec_prove(
