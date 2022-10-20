@@ -55,7 +55,7 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-java-${GITHUB_SHA}
+          tag: kevm-ci-java-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-java-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Build Definitions'
@@ -79,7 +79,7 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-haskell-${GITHUB_SHA}
+          tag: kevm-ci-haskell-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Build Definitions'
@@ -103,7 +103,7 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-foundry-${GITHUB_SHA}
+          tag: kevm-ci-foundry-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Test Foundry'
