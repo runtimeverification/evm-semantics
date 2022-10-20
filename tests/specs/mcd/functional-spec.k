@@ -93,7 +93,7 @@ module FUNCTIONAL-SPEC
 
     claim <k> runLemma(#lookup( M:Map [ keccak(_) <- _ ], I:Int ))
            => doneLemma(#lookup( M , I )) ... </k>
-      requires 0 <=Int I andBool I <Int 10
+      requires #rangeSmall(I)
 
     // Memory operations
 

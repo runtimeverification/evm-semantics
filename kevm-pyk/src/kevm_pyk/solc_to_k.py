@@ -324,7 +324,7 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
 
 def contract_to_main_module(contract: Contract, empty_config: KInner, imports: Iterable[str] = ()) -> KFlatModule:
     module_name = Contract.contract_to_module_name(contract.name, spec=False)
-    return KFlatModule(module_name, contract.sentences, [KImport(i) for i in ['EDSL'] + list(imports)])
+    return KFlatModule(module_name, contract.sentences, [KImport(i) for i in list(imports)])
 
 
 def contract_to_claims(kevm: KPrint, contract: Contract) -> Tuple[str, List[KClaim]]:

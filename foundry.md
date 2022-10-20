@@ -74,11 +74,13 @@ This file describes the KEVM specification of the Foundry testing framework, whi
 requires "evm.md"
 requires "hashed-locations.md"
 requires "abi.md"
+requires "edsl.md"
 
 module FOUNDRY
     imports FOUNDRY-SUCCESS
     imports FOUNDRY-CHEAT-CODES
     imports FOUNDRY-ACCOUNTS
+    imports EDSL
 
     configuration
       <foundry>
@@ -97,6 +99,7 @@ Here we define their addresses, and important storage-locations.
 module FOUNDRY-ACCOUNTS
     imports SOLIDITY-FIELDS
 
+    syntax Int             ::= #address ( Contract ) [macro]
     syntax Contract        ::= FoundryContract
     syntax Field           ::= FoundryField
     syntax FoundryContract ::= "Foundry"      [klabel(contract_Foundry)]
@@ -252,11 +255,11 @@ function deal(address who, uint256 newBalance) external;
 ```
 
 `foundry.call.deal` will match when the `deal` cheat code function is called.
-The rule then takes from the function call data the target account, using `#asWord(#range(ARGS, 0, 32)`, and the new balance, using `#asWord(#range(LM, ARGSTART +Int 36, 32))`, and forwards them to the `#setBalance` production which updates the account accordingly.
+The rule then takes from the function call data the target account, using `#asWord(#range(ARGS, 0, 32)`, and the new balance, using `#asWord(#range(ARGS, 32, 32))`, and forwards them to the `#setBalance` production which updates the account accordingly.
 
 ```{.k .bytes}
     rule [foundry.call.deal]:
-         <k> #call_foundry SELECTOR ARGS => #setBalance #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setBalance #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
       requires SELECTOR ==Int selector ( "deal(address,uint256)" )
 ```
 
@@ -273,7 +276,8 @@ The values are forwarded to the `#setCode` production which updates the account 
 ```{.k .bytes}
     rule [foundry.call.etch]:
          <k> #call_foundry SELECTOR ARGS
-          => #let CODE_START = 96 #in
+          => #loadAccount #asWord(#range(ARGS, 0, 32))
+          ~> #let CODE_START = 96 #in
              #let CODE_LENGTH = #asWord(#range(ARGS, 64, 32)) #in
              #setCode #asWord(#range(ARGS, 0, 32)) #range(ARGS, CODE_START, CODE_LENGTH)
          ...
@@ -388,7 +392,7 @@ This rule takes the `address` value from the function call data, which is repres
 
 ```{.k .bytes}
     rule [foundry.call.getNonce]:
-         <k> #call_foundry SELECTOR ARGS => #returnNonce #asWord(ARGS) ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #returnNonce #asWord(ARGS) ... </k>
       requires SELECTOR ==Int selector ( "getNonce(address)" )
 ```
 
