@@ -21,7 +21,7 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-concrete-${GITHUB_SHA}
+          tag: kevm-ci-concrete-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j`nproc`'
       - name: 'Build kevm'
