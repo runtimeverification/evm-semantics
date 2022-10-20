@@ -55,17 +55,17 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-java
+          tag: kevm-ci-java-${GITHUB_SHA}
       - name: 'Build kevm-pyk'
-        run: docker exec -t kevm-ci-java /bin/bash -c 'make kevm-pyk venv -j2'
+        run: docker exec -t kevm-ci-java-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Build Definitions'
-        run: docker exec -t kevm-ci-java /bin/bash -c 'make build-prove-java -j2'
+        run: docker exec -t kevm-ci-java-${GITHUB_SHA} /bin/bash -c 'make build-prove-java -j2'
       - name: 'Prove Java'
-        run: docker exec -t kevm-ci-java /bin/bash -c 'make test-prove -j3 TEST_SYMBOLIC_BACKEND=java'
+        run: docker exec -t kevm-ci-java-${GITHUB_SHA} /bin/bash -c 'make test-prove -j3 TEST_SYMBOLIC_BACKEND=java'
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop --time=0 kevm-ci-java
+          docker stop --time=0 kevm-ci-java-${GITHUB_SHA}
 
   test-prove-haskell:
     name: 'Build and Test KEVM haskell proofs'
@@ -79,17 +79,17 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-haskell
+          tag: kevm-ci-haskell-${GITHUB_SHA}
       - name: 'Build kevm-pyk'
-        run: docker exec -t kevm-ci-haskell /bin/bash -c 'make kevm-pyk venv -j2'
+        run: docker exec -t kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Build Definitions'
-        run: docker exec -t kevm-ci-haskell /bin/bash -c 'make build-prove-haskell -j4'
+        run: docker exec -t kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make build-prove-haskell -j4'
       - name: 'Prove Haskell'
-        run: docker exec -t kevm-ci-haskell /bin/bash -c 'make test-prove -j6 TEST_SYMBOLIC_BACKEND=haskell'
+        run: docker exec -t kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove -j6 TEST_SYMBOLIC_BACKEND=haskell'
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop --time=0 kevm-ci-haskell 
+          docker stop --time=0 kevm-ci-haskell-${GITHUB_SHA} 
 
   test-prove-foundry:
     name: 'Build and Test KEVM Foundry proofs'
@@ -103,15 +103,15 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-foundry
+          tag: kevm-ci-foundry-${GITHUB_SHA}
       - name: 'Build kevm-pyk'
-        run: docker exec -t kevm-ci-foundry /bin/bash -c 'make kevm-pyk venv -j2'
+        run: docker exec -t kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Test Foundry'
-        run: docker exec -t kevm-ci-foundry /bin/bash -c 'make test-foundry -j2 FOUNDRY_PAR=4'
+        run: docker exec -t kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry -j2 FOUNDRY_PAR=4'
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop --time=0 kevm-ci-foundry 
+          docker stop --time=0 kevm-ci-foundry-${GITHUB_SHA} 
 
   nix:
     name: 'Nix'
