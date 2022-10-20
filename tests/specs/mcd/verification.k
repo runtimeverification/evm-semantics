@@ -205,9 +205,9 @@ module LEMMAS-MCD-COMMON
   // Keccak
   // ########################
 
-    rule keccak(_) ==Int I => false requires 0 <=Int I andBool I <Int 10 [simplification]
+    rule keccak(_) ==Int I => false requires #rangeSmall(I) [simplification]
     rule keccak(_) +Int I1 ==Int I2 => false
-      requires 0 <=Int I1 andBool I1 <Int 10 andBool 0 <=Int I2 andBool I2 <Int 10 [simplification]
+      requires #rangeSmall(I1) andBool #rangeSmall(I2) [simplification]
 
   // ########################
   // Word Reasoning
