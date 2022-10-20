@@ -331,8 +331,7 @@ def contract_to_claims(kevm: KPrint, contract: Contract) -> Tuple[str, List[KCla
     definition = kevm.definition
     empty_config = definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
     module_name = Contract.contract_to_module_name(contract.name, spec=True)
-    test_methods = [method for method in contract.methods if method.name.startswith('test')]
-    claims = [_test_execution_claim(empty_config, contract, method) for method in test_methods]
+    claims = [_test_execution_claim(empty_config, contract, method) for method in contract.methods]
     return module_name, claims
 
 
@@ -342,8 +341,9 @@ def _test_execution_claim(empty_config: KInner, contract: Contract, method: Cont
     callvalue = method.callvalue_cell
     init_term = _init_term(empty_config, contract.name, calldata=calldata, callvalue=callvalue)
     init_cterm = _init_cterm(init_term)
+    is_test = method.name.startswith('test')
     failing = method.name.startswith('testFail')
-    final_cterm = _final_cterm(empty_config, contract.name, failing=failing)
+    final_cterm = _final_cterm(empty_config, contract.name, failing=failing, is_test=is_test)
     claim, _ = build_claim(claim_name, init_cterm, final_cterm)
     return claim
 
@@ -431,15 +431,18 @@ def _init_term(
     return substitute(empty_config, init_subst)
 
 
-def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool) -> CTerm:
+def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True) -> CTerm:
     final_term = _final_term(empty_config, contract_name)
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
     foundry_success = Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post)
-    if not failing:
-        return CTerm(final_term).add_constraint(mlEqualsTrue(foundry_success))
-    else:
-        return CTerm(final_term).add_constraint(mlEqualsTrue(notBool(foundry_success)))
+    final_cterm = CTerm(final_term)
+    if is_test:
+        if not failing:
+            return final_cterm.add_constraint(mlEqualsTrue(foundry_success))
+        else:
+            return final_cterm.add_constraint(mlEqualsTrue(notBool(foundry_success)))
+    return final_cterm
 
 
 def _final_term(empty_config: KInner, contract_name: str) -> KInner:
