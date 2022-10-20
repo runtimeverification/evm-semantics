@@ -211,7 +211,7 @@ We define two productions named `#return_foundry` and `#call_foundry`, which wil
 The rule `foundry.return` will rewrite the `#return_foundry` production into other productions that will place the output of the execution into the local memory, refund the gas value of the call and push the value `1` on the call stack.
 
 ```{.k .bytes}
-    syntax KItem ::= "#error_foundry" Int [klabel(foundry_error)]
+    syntax KItem ::= "#error_foundry" String   [klabel(foundry_error)]
                    | "#return_foundry" Int Int [klabel(foundry_return)]
                    | "#call_foundry" Int ByteArray [klabel(foundry_call)]
  // ---------------------------------------------------------------------
@@ -223,6 +223,13 @@ The rule `foundry.return` will rewrite the `#return_foundry` production into oth
           ... </k>
          <output> OUT </output>
          <callGas> GCALL </callGas>
+```
+
+We define a new status code named `FOUNDRY_UNIMPLEMENTED`, which signals that the execution ran into an unimplemented cheat code.
+
+```{.k .bytes}
+    syntax ExceptionalStatusCode ::= "FOUNDRY_UNIMPLEMENTED"
+ // --------------------------------------------------------
 ```
 
 Below, we define rules for the `#call_foundry` production, handling the cheat codes.
@@ -459,15 +466,9 @@ Otherwise, throw an error for any other call to the Foundry contract.
 
 ```{.k .bytes}
     rule [foundry.call.owise]:
-         <k> #call_foundry SELECTOR _ => #error_foundry SELECTOR ... </k> [owise]
+         <k> #call_foundry SELECTOR _ => #error_foundry #unparseSelector(SELECTOR) ... </k>
+         <statusCode> _ => FOUNDRY_UNIMPLEMENTED </statusCode> [owise]
 ```
-
-#### Catching unimplemented cheatcodes
-
-```{.k .bytes}
-    rule [foundry.error]:
-         <k> #error_foundry SELECTOR ~> #return_foundry RETSTART RETWIDTH => #return_foundry RETSTART RETWIDTH ~> #return_foundry RETSTART RETWIDTH ... </k>
-         <output> _ => #bufStrict(32, SELECTOR) </output>
 
 ```
 Utils
@@ -584,6 +585,80 @@ Utils
     rule ( selector ( "load(address,bytes32)" )          => 1719639408 )
     rule ( selector ( "store(address,bytes32,bytes32)" ) => 1892290747 )
     rule ( selector ( "setNonce(address,uint64)" )       => 4175530839 )
+```
+
+ - `#unparseSelectors SELECTOR` is a production with hardcoded rules and values that returns the function signature of a given cheat code selector.
+
+```k
+    syntax String ::= "#unparseSelector" "(" Int ")" [alias, symbol, function, no-evaluators]
+ // -----------------------------------------------------------------------------------------
+    rule #unparseSelector ( 3812747940 ) => "sign(uint256,bytes32)"
+    rule #unparseSelector ( 2299921511 ) => "ffi(string[])"
+    rule #unparseSelector ( 1029252078 ) => "setEnv(string,string)"
+    rule #unparseSelector ( 2127686781 ) => "envBool(string)"
+    rule #unparseSelector ( 3247934751 ) => "envUint(string)"
+    rule #unparseSelector ( 2301234273 ) => "envInt(string)"
+    rule #unparseSelector ( 890066623  ) => "envAddress(string)"
+    rule #unparseSelector ( 2543095874 ) => "envBytes32(string)"
+    rule #unparseSelector ( 4168600345 ) => "envString(string)"
+    rule #unparseSelector ( 1299951366 ) => "envBytes(string)"
+    rule #unparseSelector ( 2863521455 ) => "envBool(string,string)"
+    rule #unparseSelector ( 4091461785 ) => "envUint(string,string)"
+    rule #unparseSelector ( 1108873552 ) => "envInt(string,string)"
+    rule #unparseSelector ( 2905717242 ) => "envAddress(string,string)"
+    rule #unparseSelector ( 1525821889 ) => "envBytes32(string,string)"
+    rule #unparseSelector ( 347089865  ) => "envString(string,string)"
+    rule #unparseSelector ( 3720504603 ) => "envBytes(string,string)"
+    rule #unparseSelector ( 3395723175 ) => "prank(address)"
+    rule #unparseSelector ( 105151830  ) => "startPrank(address)"
+    rule #unparseSelector ( 1206193358 ) => "prank(address,address)"
+    rule #unparseSelector ( 1169514616 ) => "startPrank(address,address)"
+    rule #unparseSelector ( 2428830011 ) => "stopPrank()"
+    rule #unparseSelector ( 4069379763 ) => "expectRevert(bytes)"
+    rule #unparseSelector ( 3273568480 ) => "expectRevert(bytes4)"
+    rule #unparseSelector ( 4102309908 ) => "expectRevert()"
+    rule #unparseSelector ( 644673801  ) => "record()"
+    rule #unparseSelector ( 1706857601 ) => "accesses(address)"
+    rule #unparseSelector ( 1226622914 ) => "expectEmit(bool,bool,bool,bool)"
+    rule #unparseSelector ( 2176505587 ) => "expectEmit(bool,bool,bool,bool,address)"
+    rule #unparseSelector ( 378193464  ) => "mockCall(address,bytes calldata,bytes)"
+    rule #unparseSelector ( 2168494993 ) => "mockCall(address,uint256,bytes,bytes)"
+    rule #unparseSelector ( 1071599125 ) => "clearMockedCalls()"
+    rule #unparseSelector ( 3177903156 ) => "expectCall(address,bytes)"
+    rule #unparseSelector ( 4077681571 ) => "expectCall(address,uint256,bytes)"
+    rule #unparseSelector ( 2367473957 ) => "getCode(string)"
+    rule #unparseSelector ( 2949218368 ) => "broadcast()"
+    rule #unparseSelector ( 3868601563 ) => "broadcast(address)"
+    rule #unparseSelector ( 2142579071 ) => "startBroadcast()"
+    rule #unparseSelector ( 2146183821 ) => "startBroadcast(address)"
+    rule #unparseSelector ( 1995103542 ) => "stopBroadcast()"
+    rule #unparseSelector ( 1626979089 ) => "readFile(string)"
+    rule #unparseSelector ( 1895126824 ) => "readLine(string)"
+    rule #unparseSelector ( 2306738839 ) => "writeFile(string,string)"
+    rule #unparseSelector ( 1637714303 ) => "writeLine(string,string)"
+    rule #unparseSelector ( 1220748319 ) => "closeFile(string)"
+    rule #unparseSelector ( 4054835277 ) => "removeFile(string)"
+    rule #unparseSelector ( 1456103998 ) => "toString(address)"
+    rule #unparseSelector ( 1907020045 ) => "toString(bytes)"
+    rule #unparseSelector ( 2971277800 ) => "toString(bytes32)"
+    rule #unparseSelector ( 1910302682 ) => "toString(bool)"
+    rule #unparseSelector ( 1761649582 ) => "toString(uint256)"
+    rule #unparseSelector ( 2736964622 ) => "toString(int256)"
+    rule #unparseSelector ( 1101999954 ) => "recordLogs()"
+    rule #unparseSelector ( 420828068  ) => "getRecordedLogs()"
+    rule #unparseSelector ( 2534502746 ) => "snapshot()"
+    rule #unparseSelector ( 1155002532 ) => "revertTo(uint256)"
+    rule #unparseSelector ( 1805892139 ) => "createFork(string,uint256)"
+    rule #unparseSelector ( 834286744  ) => "createFork(string)"
+    rule #unparseSelector ( 1911440973 ) => "createSelectFork(string,uint256)"
+    rule #unparseSelector ( 2556952628 ) => "createSelectFork(string)"
+    rule #unparseSelector ( 2663344167 ) => "selectFork(uint256)"
+    rule #unparseSelector ( 789593890  ) => "activeFork()"
+    rule #unparseSelector ( 3652973473 ) => "rollFork(uint256)"
+    rule #unparseSelector ( 3612115876 ) => "rollFork(uint256,uint256)"
+    rule #unparseSelector ( 2539285737 ) => "rpcUrl(string)"
+    rule #unparseSelector ( 2824504344 ) => "rpcUrls()"
+    rule #unparseSelector ( 1646872971 ) => "deriveKey(string,uint32)"
 ```
 ```k
 endmodule
