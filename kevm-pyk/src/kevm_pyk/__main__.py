@@ -15,7 +15,7 @@ from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
-from .solc_to_k import Contract, contract_to_cfgs, contract_to_main_module, solc_compile
+from .solc_to_k import Contract, contract_to_cfgs, contract_to_main_module, method_to_cfg, solc_compile
 from .utils import KPrint_make_unparsing, KProve_prove_claim, add_include_arg
 
 T = TypeVar('T')
@@ -291,7 +291,10 @@ def exec_foundry_prove(
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
-    kcfgs_file = definition_dir / 'kcfgs.json'
+    kcfgs_dir = definition_dir / 'kcfgs'
+    if not kcfgs_dir.exists():
+        kcfgs_dir.mkdir()
+    foundry = Foundry(definition_dir, profile=profile)
 
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
@@ -309,21 +312,25 @@ def exec_foundry_prove(
     if unfound_tests:
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
-    if reinit or not kcfgs_file.exists():
-        _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
-        foundry = Foundry(definition_dir, profile=profile)
-        cfgs = _contract_to_claim_cfgs(kevm=foundry, contracts=contracts)
-        with open(kcfgs_file, 'w') as kf:
-            kf.write(json.dumps(cfgs))
-            kf.close()
-        _LOGGER.info(f'Wrote file: {kcfgs_file}')
+    kcfgs: Dict[str, KCFG] = {}
+    for test in tests:
+        kcfg_file = kcfgs_dir / f'{test}.json'
+        if reinit or not kcfg_file.exists():
+            _LOGGER.info(f'Initializing KCFG for test: {test}')
+            contract_name, method_name = test.split('.')
+            contract = [c for c in contracts if c.name == contract_name][0]
+            method = [m for m in contract.methods if m.name == method_name][0]
+            empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
+            cfg = method_to_cfg(empty_config, contract, method)
+            kcfgs[test] = cfg
+            with open(kcfg_file, 'w') as kf:
+                kf.write(json.dumps(cfg.to_dict()))
+                kf.close()
+            _LOGGER.info(f'Wrote file: {kcfg_file}')
+        else:
+            with open(kcfg_file, 'r') as kf:
+                kcfgs[test] = KCFG.from_dict(json.loads(kf.read()))
 
-    _LOGGER.info(f'Reading file: {kcfgs_file}')
-    with open(kcfgs_file, 'r') as kf:
-        for contract_name, contract_kcfgs in json.loads(kf.read()).items():
-            kcfgs = {
-                f'{contract_name}.{method_name}': KCFG.from_dict(kcfg) for method_name, kcfg in contract_kcfgs.items()
-            }
     kcfgs = {tn: kcfg for tn, kcfg in kcfgs.items() if tn in tests}
 
     def _kcfg_unproven_to_claim(_kcfg: KCFG) -> KClaim:
