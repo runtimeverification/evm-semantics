@@ -293,11 +293,25 @@ def exec_foundry_prove(
     use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_file = definition_dir / 'kcfgs.json'
 
+    json_paths = _contract_json_paths(foundry_out)
+    contracts = [_contract_from_json(json_path) for json_path in json_paths]
+    all_tests = [f'{contract.name}.{method.name}' for contract in contracts for method in contract.methods]
+    unfound_tests: List[str] = []
+    tests = list(tests)
+    for _t in tests:
+        if _t not in all_tests:
+            unfound_tests.append(_t)
+    for _t in exclude_tests:
+        if _t not in all_tests:
+            unfound_tests.append(_t)
+        if _t in tests:
+            tests.remove(_t)
+    if unfound_tests:
+        raise ValueError(f'Test identifiers not found: {unfound_tests}')
+
     if reinit or not kcfgs_file.exists():
         _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
         foundry = Foundry(definition_dir, profile=profile)
-        json_paths = _contract_json_paths(foundry_out)
-        contracts = [_contract_from_json(json_path) for json_path in json_paths]
         cfgs = _contract_to_claim_cfgs(kevm=foundry, contracts=contracts)
         with open(kcfgs_file, 'w') as kf:
             kf.write(json.dumps(cfgs))
@@ -310,22 +324,7 @@ def exec_foundry_prove(
             kcfgs = {
                 f'{contract_name}.{method_name}': KCFG.from_dict(kcfg) for method_name, kcfg in contract_kcfgs.items()
             }
-
-    claim_names = set(kcfgs)
-    _unfound_kcfgs: List[str] = []
-    if len(list(tests)) > 0:
-        kcfgs = {k: kcfg for k, kcfg in kcfgs.items() if k in tests}
-    for _t in tests:
-        if _t not in claim_names:
-            _unfound_kcfgs.append(_t)
-    for _t in exclude_tests:
-        if _t not in claim_names:
-            _unfound_kcfgs.append(_t)
-        if _t in kcfgs:
-            kcfgs.pop(_t)
-    if _unfound_kcfgs:
-        _LOGGER.error(f'Missing KCFGs for tests: {_unfound_kcfgs}')
-        sys.exit(1)
+    kcfgs = {tn: kcfg for tn, kcfg in kcfgs.items() if tn in tests}
 
     def _kcfg_unproven_to_claim(_kcfg: KCFG) -> KClaim:
         return _kcfg.create_edge(_kcfg.get_unique_init().id, _kcfg.get_unique_target().id, mlTop(), depth=-1).to_claim()
