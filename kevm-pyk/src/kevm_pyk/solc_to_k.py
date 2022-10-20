@@ -30,6 +30,7 @@ from pyk.kast import (
     build_assoc,
 )
 from pyk.kastManip import abstract_term_safely, substitute
+from pyk.kcfg import KCFG
 from pyk.ktool import KPrint
 from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import intToken
@@ -327,16 +328,14 @@ def contract_to_main_module(contract: Contract, empty_config: KInner, imports: I
     return KFlatModule(module_name, contract.sentences, [KImport(i) for i in list(imports)])
 
 
-def contract_to_claims(kevm: KPrint, contract: Contract) -> Tuple[str, List[KClaim]]:
+def contract_to_cfgs(kevm: KPrint, contract: Contract) -> Dict[str, KCFG]:
     definition = kevm.definition
     empty_config = definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
-    module_name = Contract.contract_to_module_name(contract.name, spec=True)
-    claims = [_test_execution_claim(empty_config, contract, method) for method in contract.methods]
-    return module_name, claims
+    cfgs = {method.name: _method_cfg(empty_config, contract, method) for method in contract.methods}
+    return cfgs
 
 
-def _test_execution_claim(empty_config: KInner, contract: Contract, method: Contract.Method) -> KClaim:
-    claim_name = method.name.replace('_', '-')
+def _method_cfg(empty_config: KInner, contract: Contract, method: Contract.Method) -> KCFG:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
     init_term = _init_term(empty_config, contract.name, calldata=calldata, callvalue=callvalue)
@@ -344,8 +343,14 @@ def _test_execution_claim(empty_config: KInner, contract: Contract, method: Cont
     is_test = method.name.startswith('test')
     failing = method.name.startswith('testFail')
     final_cterm = _final_cterm(empty_config, contract.name, failing=failing, is_test=is_test)
-    claim, _ = build_claim(claim_name, init_cterm, final_cterm)
-    return claim
+
+    cfg = KCFG()
+    init_node = cfg.create_node(init_cterm)
+    cfg.add_init(init_node.id)
+    target_node = cfg.create_node(final_cterm)
+    cfg.add_target(target_node.id)
+
+    return cfg
 
 
 def _default_claim(empty_config: KInner, contract_name: str) -> KClaim:

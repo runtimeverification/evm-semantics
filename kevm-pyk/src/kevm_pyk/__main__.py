@@ -15,8 +15,8 @@ from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
-from .solc_to_k import Contract, contract_to_claims, contract_to_main_module, solc_compile
-from .utils import KCFG_from_claim, KPrint_make_unparsing, KProve_prove_claim, add_include_arg
+from .solc_to_k import Contract, contract_to_cfgs, contract_to_main_module, solc_compile
+from .utils import KPrint_make_unparsing, KProve_prove_claim, add_include_arg
 
 T = TypeVar('T')
 
@@ -223,10 +223,10 @@ def _contract_to_claim_cfgs(
 ) -> Dict[str, Dict]:
     cfgs: Dict[str, Dict] = {}
     for contract in contracts:
-        module_name, claims = contract_to_claims(kevm, contract)
-        for claim in claims:
-            cfg_label = f'{module_name}.{claim.att["label"]}'
-            cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
+        contract_cfgs = contract_to_cfgs(kevm, contract)
+        for method_name in contract_cfgs:
+            cfg_label = f'{contract.name}.{method_name}'
+            cfgs[cfg_label] = contract_cfgs[method_name].to_dict()
             _LOGGER.info(f'Produced KCFG: {cfg_label}')
 
     return cfgs
