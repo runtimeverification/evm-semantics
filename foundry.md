@@ -74,11 +74,13 @@ This file describes the KEVM specification of the Foundry testing framework, whi
 requires "evm.md"
 requires "hashed-locations.md"
 requires "abi.md"
+requires "edsl.md"
 
 module FOUNDRY
     imports FOUNDRY-SUCCESS
     imports FOUNDRY-CHEAT-CODES
     imports FOUNDRY-ACCOUNTS
+    imports EDSL
 
     configuration
       <foundry>
@@ -97,6 +99,7 @@ Here we define their addresses, and important storage-locations.
 module FOUNDRY-ACCOUNTS
     imports SOLIDITY-FIELDS
 
+    syntax Int             ::= #address ( Contract ) [macro]
     syntax Contract        ::= FoundryContract
     syntax Field           ::= FoundryField
     syntax FoundryContract ::= "Foundry"      [klabel(contract_Foundry)]

@@ -1,9 +1,9 @@
-requires "edsl.md"
+requires "foundry.md"
 requires "lemmas/lemmas.k"
 requires "lemmas/int-simplification.k"
 
 module ADDRTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -105,7 +105,7 @@ module ADDRTEST-BIN-RUNTIME
 endmodule
 
 module ASSUMETEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -219,7 +219,7 @@ module ASSUMETEST-BIN-RUNTIME
 endmodule
 
 module BLOCKPARAMSTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -333,7 +333,7 @@ module BLOCKPARAMSTEST-BIN-RUNTIME
 endmodule
 
 module BROADCASTTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -445,7 +445,7 @@ module BROADCASTTEST-BIN-RUNTIME
 endmodule
 
 module CONTRACTTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -531,7 +531,7 @@ module CONTRACTTEST-BIN-RUNTIME
 endmodule
 
 module CONTRACTBTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -638,7 +638,7 @@ module CONTRACTBTEST-BIN-RUNTIME
 endmodule
 
 module DEALTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -733,7 +733,7 @@ module DEALTEST-BIN-RUNTIME
 endmodule
 
 module TOKEN-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -747,7 +747,7 @@ module TOKEN-BIN-RUNTIME
 endmodule
 
 module EMITCONTRACTTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -841,7 +841,7 @@ module EMITCONTRACTTEST-BIN-RUNTIME
 endmodule
 
 module ENVTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -1031,7 +1031,7 @@ module ENVTEST-BIN-RUNTIME
 endmodule
 
 module ETCHTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -1125,7 +1125,7 @@ module ETCHTEST-BIN-RUNTIME
 endmodule
 
 module FFITEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -1235,7 +1235,7 @@ module FFITEST-BIN-RUNTIME
 endmodule
 
 module FILESTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -1329,7 +1329,7 @@ module FILESTEST-BIN-RUNTIME
 endmodule
 
 module FORKTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -1479,7 +1479,7 @@ module FORKTEST-BIN-RUNTIME
 endmodule
 
 module GETCODETEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -1570,7 +1570,7 @@ module GETCODETEST-BIN-RUNTIME
 endmodule
 
 module LABELTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -1648,7 +1648,7 @@ module LABELTEST-BIN-RUNTIME
 endmodule
 
 module LOOPSTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -1824,7 +1824,7 @@ module LOOPSTEST-BIN-RUNTIME
 endmodule
 
 module MOCKCALLTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -1926,7 +1926,7 @@ module MOCKCALLTEST-BIN-RUNTIME
 endmodule
 
 module NONCETEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -2061,7 +2061,7 @@ module NONCETEST-BIN-RUNTIME
 endmodule
 
 module OWNERUPONLYTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -2168,7 +2168,7 @@ module OWNERUPONLYTEST-BIN-RUNTIME
 endmodule
 
 module PRANKTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -2309,7 +2309,7 @@ module PRANKTEST-BIN-RUNTIME
 endmodule
 
 module RECORDLOGSTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -2400,7 +2400,7 @@ module RECORDLOGSTEST-BIN-RUNTIME
 endmodule
 
 module SAFETEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -2500,7 +2500,7 @@ module SAFETEST-BIN-RUNTIME
 endmodule
 
 module SETUPTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -2600,7 +2600,7 @@ module SETUPTEST-BIN-RUNTIME
 endmodule
 
 module SIGNTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -2686,7 +2686,7 @@ module SIGNTEST-BIN-RUNTIME
 endmodule
 
 module ASSERTTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -2742,7 +2742,7 @@ module ASSERTTEST-BIN-RUNTIME
 endmodule
 
 module SNAPSHOTTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -2833,7 +2833,7 @@ module SNAPSHOTTEST-BIN-RUNTIME
 endmodule
 
 module STORE-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -2854,7 +2854,7 @@ module STORE-BIN-RUNTIME
 endmodule
 
 module STORETEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -3004,7 +3004,7 @@ module STORETEST-BIN-RUNTIME
 endmodule
 
 module TOSTRINGTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -3122,7 +3122,7 @@ module TOSTRINGTEST-BIN-RUNTIME
 endmodule
 
 module TOKENTEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -3162,7 +3162,7 @@ module TOKENTEST-BIN-RUNTIME
 endmodule
 
 module UINTTYPETEST-BIN-RUNTIME
-    imports public EDSL
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
@@ -4082,6 +4082,7 @@ module FOUNDRY-MAIN
     imports public TOSTRINGTEST-BIN-RUNTIME
     imports public TOKENTEST-BIN-RUNTIME
     imports public UINTTYPETEST-BIN-RUNTIME
+    imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
