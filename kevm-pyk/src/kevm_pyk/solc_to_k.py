@@ -7,11 +7,10 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
-from pyk.cterm import CTerm, build_claim
+from pyk.cterm import CTerm
 from pyk.kast import (
     KApply,
     KAtt,
-    KClaim,
     KFlatModule,
     KImport,
     KInner,
@@ -351,14 +350,6 @@ def _method_cfg(empty_config: KInner, contract: Contract, method: Contract.Metho
     cfg.add_target(target_node.id)
 
     return cfg
-
-
-def _default_claim(empty_config: KInner, contract_name: str) -> KClaim:
-    init_term = _init_term(empty_config, contract_name)
-    init_cterm = _init_cterm(init_term)
-    final_cterm = _final_cterm(empty_config, contract_name, failing=False)
-    claim, _ = build_claim(contract_name.lower(), init_cterm, final_cterm)
-    return claim
 
 
 def _init_cterm(init_term: KInner) -> CTerm:
