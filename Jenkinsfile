@@ -165,7 +165,7 @@ pipeline {
       stages {
         stage('GitHub Release') {
           steps {
-            // dir('focal')  { unstash 'focal'  }
+            dir('focal')  { unstash 'focal'  }
             sshagent(['rv-jenkins-github']) {
               sh '''
                 curl -L https://github.com/github/hub/releases/download/v2.14.0/hub-linux-amd64-2.14.0.tgz -o hub.tgz
