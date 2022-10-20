@@ -173,7 +173,7 @@ def exec_foundry_kompile(
 
 
 def _contract_json_paths(foundry_out: Path) -> List[str]:
-    pattern = '*.t.sol/*.json'
+    pattern = '*.sol/*.json'
     paths = foundry_out.glob(pattern)
     json_paths = [str(path) for path in paths]
     json_paths = [json_path for json_path in json_paths if not json_path.endswith('.metadata.json')]
