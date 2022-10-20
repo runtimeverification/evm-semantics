@@ -118,7 +118,6 @@ def exec_foundry_kompile(
     md_selector: Optional[str],
     regen: bool = False,
     rekompile: bool = False,
-    reinit: bool = False,
     requires: Iterable[str] = (),
     imports: Iterable[str] = (),
     **kwargs: Any,
@@ -131,7 +130,6 @@ def exec_foundry_kompile(
     foundry_definition_dir = foundry_out / 'kompiled'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
-    kcfgs_file = foundry_definition_dir / 'kcfgs.json'
     requires = ['foundry.md', 'lemmas/lemmas.k', 'lemmas/int-simplification.k'] + list(requires)
     imports = ['FOUNDRY', 'LEMMAS', 'INT-SIMPLIFICATION'] + list(imports)
 
@@ -172,18 +170,6 @@ def exec_foundry_kompile(
             md_selector=md_selector,
             profile=profile,
         )
-
-    if reinit or not kcfgs_file.exists():
-        _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
-
-        foundry = Foundry(foundry_definition_dir, profile=profile)
-        cfgs = _contract_to_claim_cfgs(kevm=foundry, contracts=contracts)
-
-        with open(kcfgs_file, 'w') as kf:
-            kf.write(json.dumps(cfgs))
-            kf.close()
-
-        _LOGGER.info(f'Wrote file: {kcfgs_file}')
 
 
 def _contract_json_paths(foundry_out: Path) -> List[str]:
@@ -290,6 +276,7 @@ def exec_foundry_prove(
     debug_equations: List[str],
     bug_report: bool,
     depth: Optional[int],
+    reinit: bool = False,
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
     workers: int = 1,
@@ -308,6 +295,17 @@ def exec_foundry_prove(
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_file = definition_dir / 'kcfgs.json'
+
+    if reinit or not kcfgs_file.exists():
+        _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
+        foundry = Foundry(definition_dir, profile=profile)
+        json_paths = _contract_json_paths(foundry_out)
+        contracts = [_contract_from_json(json_path) for json_path in json_paths]
+        cfgs = _contract_to_claim_cfgs(kevm=foundry, contracts=contracts)
+        with open(kcfgs_file, 'w') as kf:
+            kf.write(json.dumps(cfgs))
+            kf.close()
+        _LOGGER.info(f'Wrote file: {kcfgs_file}')
 
     _LOGGER.info(f'Reading file: {kcfgs_file}')
     with open(kcfgs_file, 'r') as kf:
@@ -569,13 +567,6 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Rekompile foundry.k even if kompiled definition already exists.',
     )
-    foundry_kompile.add_argument(
-        '--reinit',
-        dest='reinit',
-        default=False,
-        action='store_true',
-        help='Reinitialize kcfgs even if they already exist.',
-    )
 
     foundry_prove_args = command_parser.add_parser(
         'foundry-prove',
@@ -598,6 +589,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=[],
         action='append',
         help='Skip listed tests, ContractName.TestName',
+    )
+    foundry_prove_args.add_argument(
+        '--reinit',
+        dest='reinit',
+        default=False,
+        action='store_true',
+        help='Reinitialize KCFGs even if they already exist.',
     )
 
     return parser
