@@ -96,7 +96,7 @@ def exec_solc_to_k(
     solc_json = solc_compile(contract_file, profile=profile)
     contract_json = solc_json['contracts'][contract_file.name][contract_name]
     contract = Contract(contract_name, contract_json, foundry=False)
-    contract_module = contract_to_main_module(contract, empty_config, imports=imports)
+    contract_module = contract_to_main_module(contract, empty_config, imports=['EDSL'] + imports)
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [contract_module.name] + imports]
     )
