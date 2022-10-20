@@ -96,7 +96,7 @@ def exec_solc_to_k(
     solc_json = solc_compile(contract_file, profile=profile)
     contract_json = solc_json['contracts'][contract_file.name][contract_name]
     contract = Contract(contract_name, contract_json, foundry=False)
-    contract_module = contract_to_main_module(contract, empty_config, imports=imports)
+    contract_module = contract_to_main_module(contract, empty_config, imports=['EDSL'] + imports)
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [contract_module.name] + imports]
     )
@@ -132,8 +132,8 @@ def exec_foundry_kompile(
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
     kcfgs_file = foundry_definition_dir / 'kcfgs.json'
-    requires = ['lemmas/lemmas.k', 'lemmas/int-simplification.k'] + list(requires)
-    imports = ['LEMMAS', 'INT-SIMPLIFICATION'] + list(imports)
+    requires = ['foundry.md', 'lemmas/lemmas.k', 'lemmas/int-simplification.k'] + list(requires)
+    imports = ['FOUNDRY', 'LEMMAS', 'INT-SIMPLIFICATION'] + list(imports)
 
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
@@ -225,7 +225,7 @@ def _foundry_to_bin_runtime(
     bin_runtime_definition = KDefinition(
         _main_module.name,
         modules,
-        requires=(KRequire(req) for req in ['edsl.md'] + list(requires)),
+        requires=(KRequire(req) for req in list(requires)),
     )
 
     return bin_runtime_definition
