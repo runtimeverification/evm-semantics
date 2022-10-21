@@ -260,6 +260,7 @@ def exec_foundry_prove(
     includes: List[str],
     debug_equations: List[str],
     bug_report: bool,
+    store_depth: int,
     depth: Optional[int],
     reinit: bool = False,
     tests: Iterable[str] = (),
@@ -274,8 +275,7 @@ def exec_foundry_prove(
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
     if workers <= 0:
-        _LOGGER.error(f'Must have at least one worker, found: --workers {workers}')
-        sys.exit(1)
+        raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
@@ -598,6 +598,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Reinitialize KCFGs even if they already exist.',
+    )
+    foundry_prove_args.add_argument(
+        '--store-depth',
+        dest='store_depth',
+        default=100,
+        type=int,
+        help='Store every Nth state in the KCFG for inspection.',
     )
 
     return parser
