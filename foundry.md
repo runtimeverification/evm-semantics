@@ -469,11 +469,10 @@ Otherwise, throw an error for any other call to the Foundry contract.
 
 ```{.k .bytes}
     rule [foundry.call.owise]:
-         <k> #call_foundry SELECTOR _ => #error_foundry #unparseSelector(SELECTOR) ... </k>
+         <k> #call_foundry SELECTOR _ => #error_foundry #unparseSelector (SELECTOR) ... </k>
          <statusCode> _ => FOUNDRY_UNIMPLEMENTED </statusCode> [owise]
 ```
 
-```
 Utils
 -----
 
@@ -590,10 +589,10 @@ Utils
     rule ( selector ( "setNonce(address,uint64)" )       => 4175530839 )
 ```
 
- - `#unparseSelectors SELECTOR` is a production with hardcoded rules and values that returns the function signature of a given cheat code selector.
+ - `#unparseSelector SELECTOR` is a production with hardcoded rules and values that returns the function signature of a given cheat code selector.
 
 ```k
-    syntax String ::= "#unparseSelector" "(" Int ")" [alias, symbol, function, no-evaluators]
+    syntax String ::= "#unparseSelector" "(" Int ")" [function, functional, klabel("foundry_unparseSelector")]
  // -----------------------------------------------------------------------------------------
     rule #unparseSelector ( 3812747940 ) => "sign(uint256,bytes32)"
     rule #unparseSelector ( 2299921511 ) => "ffi(string[])"
@@ -662,6 +661,7 @@ Utils
     rule #unparseSelector ( 2539285737 ) => "rpcUrl(string)"
     rule #unparseSelector ( 2824504344 ) => "rpcUrls()"
     rule #unparseSelector ( 1646872971 ) => "deriveKey(string,uint32)"
+    rule #unparseSelector ( _:Int )      => "unknownCheatCode" [owise]
 ```
 ```k
 endmodule
