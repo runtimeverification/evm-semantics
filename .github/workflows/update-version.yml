@@ -58,6 +58,6 @@ jobs:
       - name: 'Update nix flake inputs'
         run: |
           nix run .#update-from-submodules
-          nix flake update
+          git add flake.nix flake.lock && git commit -m 'flake.{nix,lock}: update Nix derivations' || true
       - name: 'Push updates'
         run: git push
