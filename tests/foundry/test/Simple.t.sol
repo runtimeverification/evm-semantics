@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity =0.8.13;
 
+import "forge-std/Test.sol";
+
 contract AssertTest {
     function setUp() public {}
 
@@ -16,7 +18,8 @@ contract AssertTest {
         assert(true);
     }
 
-    function testFail_assert_false() public pure {
+    function testFail_expect_revert() public{
+        vm.expectRevert();
         assert(false);
     }
 }
