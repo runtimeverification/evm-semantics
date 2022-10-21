@@ -319,8 +319,6 @@ def exec_foundry_prove(
             with open(kcfg_file, 'r') as kf:
                 kcfgs[test] = KCFG.from_dict(json.loads(kf.read()))
 
-    kcfgs = {tn: kcfg for tn, kcfg in kcfgs.items() if tn in tests}
-
     def _kcfg_unproven_to_claim(_kcfg: KCFG) -> KClaim:
         return _kcfg.create_edge(_kcfg.get_unique_init().id, _kcfg.get_unique_target().id, mlTop(), depth=-1).to_claim()
 
