@@ -322,27 +322,25 @@ def exec_foundry_prove(
     def _kcfg_unproven_to_claim(_kcfg: KCFG) -> KClaim:
         return _kcfg.create_edge(_kcfg.get_unique_init().id, _kcfg.get_unique_target().id, mlTop(), depth=-1).to_claim()
 
-    claims = [(kcfg_name.replace('.', '-'), _kcfg_unproven_to_claim(kcfg)) for kcfg_name, kcfg in kcfgs.items()]
-
     lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
 
-    def prove_it(_id_and_claim: Tuple[str, KClaim]) -> bool:
-        _claim_id, _claim = _id_and_claim
-        ret, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
+    def prove_it(_id_and_cfg: Tuple[str, KCFG]) -> bool:
+        _cfg_id, _cfg = _id_and_cfg
+        _claim = _kcfg_unproven_to_claim(cfg)
+        ret, result = KProve_prove_claim(foundry, _claim, _cfg_id, _LOGGER, depth=depth, lemmas=lemma_rules)
         if minimize:
             result = minimize_term(result)
-        print(f'Result for {_claim_id}:\n{foundry.pretty_print(result)}\n')
+        print(f'Result for {_cfg_id}:\n{foundry.pretty_print(result)}\n')
         return ret
 
     with ProcessPool(ncpus=workers) as process_pool:
-        results = process_pool.map(prove_it, claims)
+        results = process_pool.map(prove_it, kcfgs.items())
         process_pool.close()
 
-    failed_claims = [cid for ((cid, _), failed) in zip(claims, results) if failed]
-    if failed_claims:
-        print(f'Failed to prove KCFGs: {failed_claims}\n')
-
-    sys.exit(len(failed_claims))
+    failed_cfgs = [cid for ((cid, _), failed) in zip(kcfgs.items(), results) if failed]
+    if failed_cfgs:
+        print(f'Failed to prove KCFGs: {failed_cfgs}\n')
+    sys.exit(len(failed_cfgs))
 
 
 def exec_run(
