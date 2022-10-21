@@ -205,6 +205,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #lenOfHead(   #int256( _ )) => 32
     rule #lenOfHead(   #int128( _ )) => 32
 
+    rule #lenOfHead(   #bytes4( _ )) => 32
     rule #lenOfHead(  #bytes32( _ )) => 32
 
     rule #lenOfHead(     #bool( _ )) => 32
@@ -255,6 +256,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #isStaticType(   #int256( _ )) => true
     rule #isStaticType(   #int128( _ )) => true
 
+    rule #isStaticType(   #bytes4( _ )) => true
     rule #isStaticType(  #bytes32( _ )) => true
 
     rule #isStaticType(     #bool( _ )) => true
@@ -323,6 +325,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc( #int256( DATA )) => #bufStrict(32, #getValue( #int256( DATA )))
     rule #enc( #int128( DATA )) => #bufStrict(32, #getValue( #int128( DATA )))
 
+    rule #enc( #bytes4( DATA )) => #bufStrict(32, #getValue( #bytes4( DATA )))
     rule #enc(#bytes32( DATA )) => #bufStrict(32, #getValue(#bytes32( DATA )))
 
     rule #enc(   #bool( DATA )) => #bufStrict(32, #getValue(   #bool( DATA )))
@@ -380,6 +383,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #getValue( #int128( X )) => chop(X) requires #rangeSInt(128, X)
     rule #getValue( #int256( X )) => chop(X) requires #rangeSInt(256, X)
 
+    rule #getValue( #bytes4( X )) => X       requires #rangeUInt(32,  X)
     rule #getValue(#bytes32( X )) => X       requires #rangeUInt(256, X)
 
     syntax Int ::= #ceil32 ( Int ) [macro]
