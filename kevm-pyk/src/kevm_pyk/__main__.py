@@ -8,37 +8,25 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm, build_rule
-from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
-from pyk.kast.manip import flatten_label, get_cell, minimize_term, push_down_rewrites
+from pyk.kast.inner import KApply, KInner, KRewrite, KToken
+from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
-from pyk.kcfg import KCFG, KCFGViewer
+from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
 from pyk.ktool.kit import KIT
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
-from pyk.prelude.ml import is_top, mlTop
+from pyk.utils import shorten_hashes
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import (
-    KCFG__replace_node,
-    KDefinition__expand_macros,
-    KPrint_make_unparsing,
-    KProve_prove_claim,
-    add_include_arg,
-    sanitize_config,
-)
+from .utils import KDefinition__expand_macros, KPrint_make_unparsing, add_include_arg, write_cfg
 
 T = TypeVar('T')
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
-
-
-def write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
-    _cfgpath.write_text(_cfg.to_json())
-    _LOGGER.info(f'Updated CFG file: {_cfgpath}')
 
 
 def _ignore_arg(args: Dict[str, Any], arg: str, cli_option: str) -> None:
@@ -318,7 +306,8 @@ def exec_foundry_prove(
     includes: List[str],
     debug_equations: List[str],
     bug_report: bool,
-    depth: Optional[int],
+    max_depth: int,
+    max_iterations: Optional[int],
     reinit: bool = False,
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
@@ -326,7 +315,10 @@ def exec_foundry_prove(
     minimize: bool = True,
     lemmas: Iterable[str] = (),
     simplify_init: bool = True,
-    retry: bool = False,
+    break_every_step: bool = False,
+    break_on_calls: bool = False,
+    implication_every_block: bool = False,
+    rpc_base_port: int = 3010,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -335,6 +327,8 @@ def exec_foundry_prove(
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
+    if max_iterations is not None and max_iterations < 0:
+        raise ValueError(f'Must have a non-negative number of iterations, found: --max-iterations {max_iterations}')
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
@@ -342,6 +336,7 @@ def exec_foundry_prove(
     if not kcfgs_dir.exists():
         kcfgs_dir.mkdir()
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
+    kcfg_explore = KCFGExplore(foundry)
 
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
@@ -388,59 +383,68 @@ def exec_foundry_prove(
             target_term = cfg.get_unique_target().cterm.kast
             _LOGGER.info(f'Expanding macros in initial state for test: {test}')
             init_term = KDefinition__expand_macros(foundry.definition, init_term)
+            init_cterm = KEVM.add_invariant(CTerm(init_term))
             _LOGGER.info(f'Expanding macros in target state for test: {test}')
             target_term = KDefinition__expand_macros(foundry.definition, target_term)
-            if simplify_init:
-                _LOGGER.info(f'Simplifying initial state for test: {test}')
-                init_term = foundry.simplify(CTerm(init_term))
-                _LOGGER.info(f'Simplifying target state for test: {test}')
-                target_term = foundry.simplify(CTerm(target_term))
-            cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_term))
-            cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_term))
+            target_cterm = KEVM.add_invariant(CTerm(target_term))
+            cfg.replace_node(cfg.get_unique_init().id, init_cterm)
+            cfg.replace_node(cfg.get_unique_target().id, target_cterm)
             kcfgs[test] = (cfg, kcfg_file)
-            with open(kcfg_file, 'w') as kf:
-                kf.write(json.dumps(cfg.to_dict()))
-                kf.close()
-            _LOGGER.info(f'Wrote file: {kcfg_file}')
         else:
             with open(kcfg_file, 'r') as kf:
                 kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
 
-    lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
+    def _call_rpc(packed_args: Tuple[str, KCFG, Path, int]) -> bool:
+        _cfgid, _cfg, _cfgpath, _rpc_port = packed_args
+        terminal_rules = ['EVM.halt']
+        if break_every_step:
+            terminal_rules.append('EVM.step')
+        if break_on_calls:
+            terminal_rules.extend(
+                [
+                    'EVM.call',
+                    'EVM.callcode',
+                    'EVM.delegatecall',
+                    'EVM.staticcall',
+                    'EVM.create',
+                    'EVM.create2',
+                    'FOUNDRY.foundry.call',
+                ]
+            )
+        if simplify_init:
+            kcfg_explore.simplify(_cfgid, _cfg)
+        try:
+            _cfg = kcfg_explore.rpc_prove(
+                _cfgid,
+                _cfg,
+                cfg_path=_cfgpath,
+                rpc_port=_rpc_port,
+                is_terminal=KEVM.is_terminal,
+                extract_branches=KEVM.extract_branches,
+                max_iterations=max_iterations,
+                execute_depth=max_depth,
+                terminal_rules=terminal_rules,
+                implication_every_block=implication_every_block,
+            )
+            failure_nodes = _cfg.frontier + _cfg.stuck
+            if len(failure_nodes) == 0:
+                _LOGGER.info(f'Proof passed: {_cfgid}')
+                return True
+            else:
+                _LOGGER.error(f'Proof failed: {_cfgid}')
+                return False
 
-    def prove_it(_id_and_cfg: Tuple[str, Tuple[KCFG, Path]]) -> bool:
-        _cfg_id, (_cfg, _cfg_path) = _id_and_cfg
-        if len(_cfg.frontier) == 0:
-            return True
-        _init_node = _cfg.frontier[0]
-        _target_node = _cfg.get_unique_target()
-        _claim = KCFG.Edge(_init_node, _target_node, mlTop(), -1).to_claim()
-        _claim_id = _cfg_id.replace('.', '-').replace('_', '-')
-        _, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
-        if not is_top(result) and retry:
-            _LOGGER.warning(f'Retrying proof once: {_cfg_id}')
-            _, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
-        _cfg.add_expanded(_init_node.id)
-        if is_top(result):
-            _cfg.create_edge(_cfg.get_unique_init().id, _cfg.get_unique_target().id, mlTop(), -1)
-            _LOGGER.info(f'Proof passed: {_cfg_id}')
-        else:
-            _cfg.add_expanded(_init_node.id)
-            for result_state in flatten_label('#Or', result):
-                result_state = sanitize_config(foundry.definition, result_state)
-                new_node = _cfg.get_or_create_node(CTerm(result_state))
-                _cfg.create_edge(_cfg.get_unique_init().id, new_node.id, mlTop(), -1)
-                if minimize:
-                    result_state = minimize_term(result_state)
-                _LOGGER.error(f'Proof failed: {_cfg_id}\n{foundry.pretty_print(result_state)}')
-        write_cfg(_cfg, _cfg_path)
-        failure_nodes = _cfg.frontier + _cfg.stuck
-        return len(failure_nodes) == 0
+        except Exception as e:
+            _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}')
+            foundry.close()
+            return False
 
     with ProcessPool(ncpus=workers) as process_pool:
         foundry.close_kore_rpc()
-        results = process_pool.map(prove_it, kcfgs.items())
-        process_pool.close()
+        proof_problems = [
+            (cfgid, cfg, cfgpath, rpc_base_port + i) for i, (cfgid, (cfg, cfgpath)) in enumerate(kcfgs.items())
+        ]
+        results = process_pool.map(_call_rpc, proof_problems)
 
     failed = 0
     for (cid, _), succeeded in zip(kcfgs.items(), results, strict=True):
@@ -599,6 +603,18 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
     viewer = KCFGViewer(kcfg_file, foundry)
     viewer.run()
+
+
+def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, profile: bool, **kwargs: Any) -> None:
+    kcfgs_dir = foundry_out / 'kcfgs'
+    kcfg_file = kcfgs_dir / f'{test}.json'
+    with open(kcfg_file, 'r') as kf:
+        kcfg = KCFG.from_dict(json.loads(kf.read()))
+    for _node in kcfg.reachable_nodes(node, traverse_covers=True):
+        if not kcfg.is_target(_node.id):
+            _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
+            kcfg.remove_node(_node.id)
+    write_cfg(kcfg, kcfg_file)
 
 
 # Helpers
@@ -848,11 +864,46 @@ def _create_argument_parser() -> ArgumentParser:
         help='Do not simplify the initial and target states at startup.',
     )
     foundry_prove_args.add_argument(
-        '--retry',
-        dest='retry',
+        '--max-depth',
+        dest='max_depth',
+        default=100,
+        type=int,
+        help='Store every Nth state in the KCFG for inspection.',
+    )
+    foundry_prove_args.add_argument(
+        '--max-iterations',
+        dest='max_iterations',
+        default=None,
+        type=int,
+        help='Store every Nth state in the KCFG for inspection.',
+    )
+    foundry_prove_args.add_argument(
+        '--break-every-step',
+        dest='break_every_step',
         default=False,
         action='store_true',
-        help='Retry failing proofs once.',
+        help='Store a node for every EVM opcode step (expensive).',
+    )
+    foundry_prove_args.add_argument(
+        '--break-on-calls',
+        dest='break_on_calls',
+        default=False,
+        action='store_true',
+        help='Store a node for every EVM call made.',
+    )
+    foundry_prove_args.add_argument(
+        '--implication-every-block',
+        dest='implication_every_block',
+        default=False,
+        action='store_true',
+        help='Check subsumption into target state every basic block, not just at terminal nodes.',
+    )
+    foundry_prove_args.add_argument(
+        '--rpc-base-port',
+        dest='rpc_base_port',
+        default=3010,
+        type=int,
+        help='Base port to use for RPC server invocations.',
     )
 
     foundry_show_args = command_parser.add_parser(
@@ -906,6 +957,15 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_view_kcfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_view_kcfg_args.add_argument('test', type=str, help='View the CFG for this test.')
+
+    foundry_remove_node = command_parser.add_parser(
+        'foundry-remove-node',
+        help='Remove a node and its successors.',
+        parents=[shared_args],
+    )
+    foundry_remove_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
+    foundry_remove_node.add_argument('node', type=str, help='Node to remove CFG subgraph from.')
 
     return parser
 
