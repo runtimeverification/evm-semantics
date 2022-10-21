@@ -6,7 +6,7 @@ from typing import Any, Dict, Final, Iterable, List, Optional
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
+from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, build_assoc
 from pyk.kast.manip import flatten_label, get_cell
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kprint import paren
@@ -185,6 +185,37 @@ class KEVM(KProve, KRun):
         constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytearray(get_cell(config, 'CALLDATA_CELL')), KEVM.pow256())))
 
         return CTerm(mlAnd([config] + list(unique(constraints))))
+
+    @staticmethod
+    def extract_branches(cterm: CTerm) -> Iterable[KInner]:
+        config, *constraints = cterm
+        k_cell = get_cell(config, 'K_CELL')
+        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
+        pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
+        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
+        if subst := branch_pattern.match(k_cell):
+            cond = subst['###COND']
+            if cond_subst := KEVM.bool_2_word(KVariable('###BOOL_2_WORD')).match(cond):
+                cond = cond_subst['###BOOL_2_WORD']
+            else:
+                cond = KApply('_==Int_', [cond, intToken(0)])
+            return [mlEqualsTrue(cond), mlEqualsTrue(KApply('notBool_', [cond]))]
+        return []
+
+    @staticmethod
+    def is_terminal(cterm: CTerm) -> bool:
+        config, *_ = cterm
+        k_cell = get_cell(config, 'K_CELL')
+        # <k> #halt </k>
+        if k_cell == KEVM.halt():
+            return True
+        elif type(k_cell) is KSequence:
+            # <k> #halt ~> _ </k>
+            if k_cell and k_cell[0] == KEVM.halt():
+                # #Not (<k> #halt ~> #execute ~> _ </k>)
+                if len(k_cell) > 1 and k_cell[1] != KEVM.sharp_execute():
+                    return True
+        return False
 
     @staticmethod
     def halt() -> KApply:
