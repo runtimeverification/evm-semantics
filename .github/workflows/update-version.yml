@@ -27,7 +27,9 @@ jobs:
           git config user.email devops@runtimeverification.com
       - name: 'Update K Release tag'
         run: |
-          cd deps/k && git fetch --tags && cd ../..
+          cd deps/k
+          git fetch --tags
+          cd -
           K_VERSION="$(cd deps/k && git tag --points-at HEAD)"
           echo "${K_VERSION}" > deps/k_release
           git add deps/k_release && git commit -m 'deps/k_release: update release file' || true
@@ -35,7 +37,9 @@ jobs:
         run: |
           pyk_version="$(cat deps/pyk_release)"
           sed -i 's!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="[v0-9\.]*" }!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="'${pyk_version}'" }!' kevm-pyk/pyproject.toml
-          cd kevm-pyk && poetry update && cd -
+          cd kevm-pyk
+          poetry update
+          cd -
           git add kevm-pyk/ && git commit -m 'kevm-pyk/: sync poetry files' || true
       - name: 'Install Nix'
         uses: cachix/install-nix-action@v15
