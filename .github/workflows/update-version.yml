@@ -4,6 +4,7 @@ on:
     branches:
       - '_update-deps_runtimeverification_k'
       - '_update-deps_runtimeverification_blockchain-k-plugin'
+      - '_update-deps_runtimeverification_pyk'
   workflow_dispatch:
 # Stop in progress workflows on the same branch and same workflow to use latest committed code
 concurrency:
@@ -24,14 +25,18 @@ jobs:
       - run: |
           git config user.name devops
           git config user.email devops@runtimeverification.com
-      - name: 'Update release tag'
+      - name: 'Update K Release tag'
         run: |
           cd deps/k && git fetch --tags && cd ../..
           K_VERSION="$(cd deps/k && git tag --points-at HEAD)"
           echo "${K_VERSION}" > deps/k_release
-          if git add deps/k_release && git commit -m 'deps/k_release: update release file'; then
-              git push
-          fi
+          git add deps/k_release && git commit -m 'deps/k_release: update release file' || true
+      - name: 'Update pyk Release tag'
+        run: |
+          pyk_version="$(cat deps/pyk_release)"
+          sed -i kevm-pyk/pyproject.toml 's!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="[v0-9\.]*" }!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="'${pyk_version}'" }!'
+          cd kevm-pyk && poetry update && cd -
+          git add kevm-pyk/ && git commit -m 'kevm-pyk/: sync poetry files' || true
       - name: 'Install Nix'
         uses: cachix/install-nix-action@v15
         with:
@@ -47,6 +52,5 @@ jobs:
       - name: 'Update nix flake inputs'
         run: |
           nix run .#update-from-submodules
-          if git add flake.lock && git commit -m "sync flake.lock to submodules"; then
-            git push
-          fi
+      - name: 'Push updates'
+          git push
