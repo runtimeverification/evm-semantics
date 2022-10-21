@@ -282,7 +282,7 @@ def exec_foundry_prove(
     kcfgs_dir = definition_dir / 'kcfgs'
     if not kcfgs_dir.exists():
         kcfgs_dir.mkdir()
-    foundry = Foundry(definition_dir, profile=profile)
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
 
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
@@ -324,16 +324,14 @@ def exec_foundry_prove(
 
     claims = [(kcfg_name.replace('.', '-'), _kcfg_unproven_to_claim(kcfg)) for kcfg_name, kcfg in kcfgs.items()]
 
-    kevm = KEVM(definition_dir, profile=profile, use_directory=use_directory)
-
     lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
 
     def prove_it(_id_and_claim: Tuple[str, KClaim]) -> bool:
         _claim_id, _claim = _id_and_claim
-        ret, result = KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
+        ret, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
         if minimize:
             result = minimize_term(result)
-        print(f'Result for {_claim_id}:\n{kevm.pretty_print(result)}\n')
+        print(f'Result for {_claim_id}:\n{foundry.pretty_print(result)}\n')
         return ret
 
     with ProcessPool(ncpus=workers) as process_pool:
