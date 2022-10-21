@@ -56,6 +56,8 @@ jobs:
           extraPullNames: kore
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
       - name: 'Update nix flake inputs'
-        run: nix run .#update-from-submodules
+        run: |
+          nix run .#update-from-submodules
+          nix flake update
       - name: 'Push updates'
         run: git push
