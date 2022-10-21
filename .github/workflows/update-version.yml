@@ -34,7 +34,7 @@ jobs:
       - name: 'Update pyk Release tag'
         run: |
           pyk_version="$(cat deps/pyk_release)"
-          sed -i kevm-pyk/pyproject.toml 's!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="[v0-9\.]*" }!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="'${pyk_version}'" }!'
+          sed -i 's!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="[v0-9\.]*" }!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="'${pyk_version}'" }!' kevm-pyk/pyproject.toml
           cd kevm-pyk && poetry update && cd -
           git add kevm-pyk/ && git commit -m 'kevm-pyk/: sync poetry files' || true
       - name: 'Install Nix'
