@@ -5,9 +5,9 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, Iterable, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
-from pyk.kast.manip import flatten_label, get_cell
+from pyk.cterm import CTerm, remove_useless_constraints
+from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, build_assoc, build_cons
+from pyk.kast.manip import abstract_term_safely, flatten_label, get_cell, remove_constraints_for, set_cell
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.kprint import paren
@@ -218,6 +218,68 @@ class KEVM(KProve, KRun):
         constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytearray(get_cell(config, 'CALLDATA_CELL')), KEVM.pow128())))
 
         return CTerm(mlAnd([config] + list(unique(constraints))))
+
+    @staticmethod
+    def extract_branches(cterm: CTerm) -> Iterable[KInner]:
+        config, *constraints = cterm
+        k_cell = get_cell(config, 'K_CELL')
+        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
+        pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
+        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
+        if subst := branch_pattern.match(k_cell):
+            cond = subst['###COND']
+            if cond_subst := KEVM.bool_2_word(KVariable('###BOOL_2_WORD')).match(cond):
+                cond = cond_subst['###BOOL_2_WORD']
+            else:
+                cond = KApply('_==Int_', [cond, intToken(0)])
+            return [mlEqualsTrue(cond), mlEqualsTrue(KApply('notBool_', [cond]))]
+        return []
+
+    @staticmethod
+    def is_terminal(cterm: CTerm) -> bool:
+        config, *_ = cterm
+        k_cell = get_cell(config, 'K_CELL')
+        # <k> #halt </k>
+        if k_cell == KEVM.halt():
+            return True
+        elif type(k_cell) is KSequence:
+            # <k> #halt ~> _ </k>
+            if k_cell and k_cell[0] == KEVM.halt():
+                # #Not (<k> #halt ~> #execute ~> _ </k>)
+                if len(k_cell) > 1 and k_cell[1] != KEVM.sharp_execute():
+                    return True
+        return False
+
+    def abstract(self, cterm: CTerm) -> CTerm:
+        term = cterm.kast
+        gas_cell = get_cell(term, 'GAS_CELL')
+        if type(gas_cell) is not KVariable:
+            if not (
+                type(gas_cell) is KApply and gas_cell.label.name == 'infGas' and type(gas_cell.args[0]) is KVariable
+            ):
+                term = remove_constraints_for(['GAS_CELL'], term)
+                if type(gas_cell) is KApply and gas_cell.label.name == 'infGas':
+                    term = set_cell(term, 'GAS_CELL', KEVM.inf_gas(KVariable('GAS_CELL')))
+                else:
+                    term = set_cell(term, 'GAS_CELL', KVariable('GAS_CELL'))
+        # memoryused_cell = get_cell(term, 'MEMORYUSED_CELL')
+        # if type(memoryused_cell) is not KVariable or count_vars(term)[memoryused_cell.name] != 1:
+        #     term = remove_constraints_for(['MEMORYUSED_CELL'], term)
+        #     term = set_cell(term, 'MEMORYUSED_CELL', KVariable('MEMORYUSED_CELL'))
+        wordstack_cell = get_cell(term, 'WORDSTACK_CELL')
+        KApply('.WordStack_EVM-TYPES_WordStack')
+        cons_wordstack = '_:__EVM-TYPES_WordStack_Int_WordStack'
+        wordstack_items = flatten_label(cons_wordstack, wordstack_cell)
+        wordstack_head = [
+            (wi if type(wi) is KVariable or type(wi) is KToken else abstract_term_safely(wi, base_name='W'))
+            for wi in wordstack_items[0:-1]
+        ]
+        wordstack_tail = wordstack_items[-1]
+        wordstack_cell = build_cons(wordstack_tail, cons_wordstack, wordstack_head)
+        term = set_cell(term, 'WORDSTACK_CELL', wordstack_cell)
+        new_cterm = remove_useless_constraints(CTerm(term))
+        new_cterm = self.add_language_invariants(new_cterm)
+        return new_cterm
 
     @staticmethod
     def halt() -> KApply:
