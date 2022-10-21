@@ -35,6 +35,8 @@ jobs:
           git add deps/k_release && git commit -m 'deps/k_release: update release file' || true
       - name: 'Update pyk Release tag'
         run: |
+          curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 -
+          poetry --version
           pyk_version="$(cat deps/pyk_release)"
           sed -i 's!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="[v0-9\.]*" }!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="'${pyk_version}'" }!' kevm-pyk/pyproject.toml
           cd kevm-pyk
