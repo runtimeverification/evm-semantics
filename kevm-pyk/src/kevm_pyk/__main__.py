@@ -363,7 +363,7 @@ def exec_foundry_show_cfg(
     profile: bool,
     foundry_out: Path,
     test: str,
-    lemmas: Iterable[str] = (),
+    nodes: Iterable[str] = (),
     **kwargs: Any,
 ) -> None:
     definition_dir = foundry_out / 'kompiled'
@@ -375,6 +375,10 @@ def exec_foundry_show_cfg(
     with open(kcfg_file, 'r') as kf:
         kcfg = KCFG.from_dict(json.loads(kf.read()))
         list(map(print, kcfg.pretty(foundry)))
+    if nodes:
+        for node_id in nodes:
+            node = kcfg.node(node_id)
+            print(f'\n\nNode {node.id}:\n\n{foundry.pretty_print(minimize_term(node.cterm.kast))}\n')
 
 
 def exec_run(
@@ -632,6 +636,14 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_show_cfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_show_cfg_args.add_argument('test', type=str, help='Display the CFG for this test.')
+    foundry_show_cfg_args.add_argument(
+        '--node',
+        type=str,
+        dest='nodes',
+        default=[],
+        action='append',
+        help='List of nodes to display as well.',
+    )
 
     return parser
 
