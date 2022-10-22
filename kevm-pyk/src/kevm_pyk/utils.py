@@ -14,16 +14,16 @@ def KProve_prove_claim(  # noqa: N802
     depth: Optional[int] = None,
     lemmas: Iterable[KRule] = (),
 ) -> Tuple[bool, KInner]:
-    logger.info(f'Proving KCFG: {claim_id}')
+    logger.info(f'Proving claim: {claim_id}')
     prove_args = []
     if depth is not None:
         prove_args += ['--depth', str(depth)]
     result = kprove.prove_claim(claim, claim_id, args=prove_args, lemmas=lemmas)
     failed = False
     if type(result) is KApply and result.label.name == '#Top':
-        logger.info(f'Proved KCFG: {claim_id}')
+        logger.info(f'Proved claim: {claim_id}')
     else:
-        logger.error(f'Failed to prove KCFG: {claim_id}')
+        logger.error(f'Failed to prove claim: {claim_id}')
         failed = True
     return failed, result
 
