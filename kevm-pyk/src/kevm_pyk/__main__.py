@@ -359,6 +359,24 @@ def exec_foundry_prove(
     sys.exit(len(failed_cfgs))
 
 
+def exec_foundry_show_cfg(
+    profile: bool,
+    foundry_out: Path,
+    test: str,
+    lemmas: Iterable[str] = (),
+    **kwargs: Any,
+) -> None:
+    definition_dir = foundry_out / 'kompiled'
+    use_directory = foundry_out / 'specs'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    kcfgs_dir = definition_dir / 'kcfgs'
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
+    kcfg_file = kcfgs_dir / f'{test}.json'
+    with open(kcfg_file, 'r') as kf:
+        kcfg = KCFG.from_dict(json.loads(kf.read()))
+        list(map(print, kcfg.pretty(foundry)))
+
+
 def exec_run(
     definition_dir: Path,
     profile: bool,
@@ -606,6 +624,14 @@ def _create_argument_parser() -> ArgumentParser:
         type=int,
         help='Store every Nth state in the KCFG for inspection.',
     )
+
+    foundry_show_cfg_args = command_parser.add_parser(
+        'foundry-show-cfg',
+        help='Display a given Foundry CFG.',
+        parents=[shared_args, k_args],
+    )
+    foundry_show_cfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_show_cfg_args.add_argument('test', type=str, help='Display the CFG for this test.')
 
     return parser
 
