@@ -289,6 +289,8 @@ def exec_foundry_prove(
     all_tests = [f'{contract.name}.{method.name}' for contract in contracts for method in contract.methods]
     unfound_tests: List[str] = []
     tests = list(tests)
+    if not tests:
+        tests = all_tests
     for _t in tests:
         if _t not in all_tests:
             unfound_tests.append(_t)
@@ -297,6 +299,7 @@ def exec_foundry_prove(
             unfound_tests.append(_t)
         if _t in tests:
             tests.remove(_t)
+    _LOGGER.info(f'Running tests: {tests}')
     if unfound_tests:
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
