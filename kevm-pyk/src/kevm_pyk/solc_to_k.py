@@ -347,7 +347,10 @@ def method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Met
 def _init_cterm(init_term: KInner) -> CTerm:
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
-    return CTerm(init_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
+    init_cterm = CTerm(init_term)
+    init_cterm = KEVM.add_invariant(init_cterm)
+    init_cterm = init_cterm.add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
+    return init_cterm
 
 
 def _init_term(
