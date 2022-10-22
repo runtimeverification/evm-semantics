@@ -397,7 +397,7 @@ def exec_foundry_prove(
                 _LOGGER.info(f'Found basic block at depth {depth}: {shorten_hashes((curr_node.id, next_node.id))}.')
                 cfg.create_edge(curr_node.id, next_node.id, mlTop(), depth)
 
-            elif KEVM.is_terminal(next_node.cterm):
+            if KEVM.is_terminal(next_node.cterm):
                 cfg.add_expanded(next_node.id)
                 _LOGGER.info(f'Terminal node: {shorten_hashes((curr_node.id))}.')
 
