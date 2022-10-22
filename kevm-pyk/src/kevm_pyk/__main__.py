@@ -286,13 +286,25 @@ def exec_foundry_prove(
 
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
-    all_tests = [f'{contract.name}.{method.name}' for contract in contracts for method in contract.methods]
+    all_tests = [
+        f'{contract.name}.{method.name}'
+        for contract in contracts
+        if contract.name.endswith('Test')
+        for method in contract.methods
+        if method.name.startswith('test')
+    ]
+    all_non_tests = [
+        f'{contract.name}.{method.name}'
+        for contract in contracts
+        for method in contract.methods
+        if f'{contract.name}.{method.name}' not in all_tests
+    ]
     unfound_tests: List[str] = []
     tests = list(tests)
     if not tests:
         tests = all_tests
     for _t in tests:
-        if _t not in all_tests:
+        if _t not in (all_tests + all_non_tests):
             unfound_tests.append(_t)
     for _t in exclude_tests:
         if _t not in all_tests:
