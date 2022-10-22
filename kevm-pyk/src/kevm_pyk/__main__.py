@@ -369,6 +369,7 @@ def exec_foundry_prove(
 
         while cfg.frontier:
             curr_node = cfg.frontier[0]
+            cfg.add_expanded(curr_node.id)
             _LOGGER.info(f'Advancing proof from node: {shorten_hashes(curr_node.id)}')
             edge = KCFG.Edge(curr_node, target_node, mlTop(), -1)
             claim = edge.to_claim()
@@ -376,7 +377,6 @@ def exec_foundry_prove(
             depth, branching, result = foundry.get_claim_basic_block(
                 claim_id, claim, lemmas=lemma_rules, max_depth=max_depth
             )
-            cfg.add_expanded(curr_node.id)
 
             if result == mlTop():
                 cfg.create_edge(curr_node.id, target_node.id, mlTop(), depth)
