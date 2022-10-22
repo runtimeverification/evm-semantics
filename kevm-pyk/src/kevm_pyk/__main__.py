@@ -342,7 +342,8 @@ def exec_foundry_prove(
     def prove_it(_id_and_cfg: Tuple[str, KCFG]) -> bool:
         _cfg_id, _cfg = _id_and_cfg
         _claim = _kcfg_unproven_to_claim(cfg)
-        ret, result = KProve_prove_claim(foundry, _claim, _cfg_id, _LOGGER, depth=depth, lemmas=lemma_rules)
+        _claim_id = _cfg_id.replace('.', '-')
+        ret, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
         if minimize:
             result = minimize_term(result)
         print(f'Result for {_cfg_id}:\n{foundry.pretty_print(result)}\n')
