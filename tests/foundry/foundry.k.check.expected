@@ -444,6 +444,20 @@ module BROADCASTTEST-BIN-RUNTIME
 
 endmodule
 
+module CONTRACT-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= ContractContract
+    
+    syntax ContractContract ::= "Contract" [symbol(), klabel(contract_Contract)]
+    
+    rule  ( #binRuntime ( Contract ) => #parseByteStack ( "0x6080604052600080fdfea2646970667358221220f719aa262cc1b99b7e37851280c02555574c7f70119afa5d6c61eb2310a4d52064736f6c634300080d0033" ) )
+      
+
+endmodule
+
 module CONTRACTTEST-BIN-RUNTIME
     imports public FOUNDRY
     imports public LEMMAS
@@ -646,7 +660,7 @@ module DEALTEST-BIN-RUNTIME
     
     syntax DealTestContract ::= "DealTest" [symbol(), klabel(contract_DealTest)]
     
-    rule  ( #binRuntime ( DealTest ) => #parseByteStack ( "0x608060405234801561001057600080fd5b506004361061007d5760003560e01c80639a13b4601161005b5780639a13b460146100cc578063ba414fa6146100df578063f8ccbf47146100f7578063fa7626d41461010a57600080fd5b80631f9894c2146100825780633a7684631461008c5780637a4dc45c146100c4575b600080fd5b61008a610117565b005b6100a7737109709ecfa91a80626ff3989d68f67f5b1dd12d81565b6040516001600160a01b0390911681526020015b60405180910390f35b61008a6101d3565b61008a6100da366004610689565b61026a565b6100e7610324565b60405190151581526020016100bb565b6000546100e79062010000900460ff1681565b6000546100e79060ff1681565b60006040516101259061067d565b604051809103906000f080158015610141573d6000803e3d6000fd5b5060405163c88a5e6d60e01b81526001600160a01b03821660048201526101006024820152909150737109709ecfa91a80626ff3989d68f67f5b1dd12d9063c88a5e6d90604401600060405180830381600087803b1580156101a257600080fd5b505af11580156101b6573d6000803e3d6000fd5b505050506101d0816001600160a01b03163161010061044f565b50565b60405163c88a5e6d60e01b815260006004820152670de0b6b3a76400006024820152737109709ecfa91a80626ff3989d68f67f5b1dd12d9063c88a5e6d90604401600060405180830381600087803b15801561022e57600080fd5b505af1158015610242573d6000803e3d6000fd5b5050505060006001600160a01b031631670de0b6b3a764000014610268576102686106a2565b565b60006040516102789061067d565b604051809103906000f080158015610294573d6000803e3d6000fd5b5060405163c88a5e6d60e01b81526001600160a01b038216600482015260248101849052909150737109709ecfa91a80626ff3989d68f67f5b1dd12d9063c88a5e6d90604401600060405180830381600087803b1580156102f457600080fd5b505af1158015610308573d6000803e3d6000fd5b50505050610320816001600160a01b0316318361044f565b5050565b60008054610100900460ff16156103445750600054610100900460ff1690565b6000737109709ecfa91a80626ff3989d68f67f5b1dd12d3b1561044a5760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b828401528251808303840181526060830190935260009290916103d2917f667f9d70ca411d70ead50d8d5c22070dafc36ad75f3dcf5e7237b22ade9aecc4916080016106f3565b60408051601f19818403018152908290526103ec91610717565b6000604051808303816000865af19150503d8060008114610429576040519150601f19603f3d011682016040523d82523d6000602084013e61042e565b606091505b5091505080806020019051810190610446919061072a565b9150505b919050565b808214610320577f41304facd9323d75b11bcdd609cb38effffdb05710f7caf0e9b16c6d9d709f506040516104c09060208082526022908201527f4572726f723a2061203d3d2062206e6f7420736174697366696564205b75696e604082015261745d60f01b606082015260800190565b60405180910390a160408051818152600a81830152690808115e1c1958dd195960b21b60608201526020810183905290517fb2de2fbe801a0df6c0cbddfd448ba3c41d48a040ca35c56c8196ef0fcae721a89181900360800190a160408051818152600a8183015269080808081058dd1d585b60b21b60608201526020810184905290517fb2de2fbe801a0df6c0cbddfd448ba3c41d48a040ca35c56c8196ef0fcae721a89181900360800190a1610320737109709ecfa91a80626ff3989d68f67f5b1dd12d3b1561066c5760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b9282019290925260016060820152600091907f70ca10bbd0dbfd9020a9f4b13402c16cb120705e0d1c0aeab10fa353ae586fc49060800160408051601f198184030181529082905261060b92916020016106f3565b60408051601f198184030181529082905261062591610717565b6000604051808303816000865af19150503d8060008114610662576040519150601f19603f3d011682016040523d82523d6000602084013e610667565b606091505b505050505b6000805461ff001916610100179055565b605c8061074d83390190565b60006020828403121561069b57600080fd5b5035919050565b634e487b7160e01b600052600160045260246000fd5b6000815160005b818110156106d957602081850181015186830152016106bf565b818111156106e8576000828601525b509290920192915050565b6001600160e01b031983168152600061070f60048301846106b8565b949350505050565b600061072382846106b8565b9392505050565b60006020828403121561073c57600080fd5b8151801515811461072357600080fdfe6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea26469706673582212206ee69928542a087cd921c0a2449d6b2533a7c600f9767f3d067f71ef3d05929f64736f6c634300080d0033a2646970667358221220831006c438e9b9600859ba8360a929eef5cacc33e3089787600bb93c6b80e5f864736f6c634300080d0033" ) )
+    rule  ( #binRuntime ( DealTest ) => #parseByteStack ( "0x608060405234801561001057600080fd5b506004361061007d5760003560e01c80639a13b4601161005b5780639a13b460146100cc578063ba414fa6146100df578063f8ccbf47146100f7578063fa7626d41461010a57600080fd5b80631f9894c2146100825780633a7684631461008c5780637a4dc45c146100c4575b600080fd5b61008a610117565b005b6100a7737109709ecfa91a80626ff3989d68f67f5b1dd12d81565b6040516001600160a01b0390911681526020015b60405180910390f35b61008a6101d3565b61008a6100da366004610689565b61026a565b6100e7610324565b60405190151581526020016100bb565b6000546100e79062010000900460ff1681565b6000546100e79060ff1681565b60006040516101259061067d565b604051809103906000f080158015610141573d6000803e3d6000fd5b5060405163c88a5e6d60e01b81526001600160a01b03821660048201526101006024820152909150737109709ecfa91a80626ff3989d68f67f5b1dd12d9063c88a5e6d90604401600060405180830381600087803b1580156101a257600080fd5b505af11580156101b6573d6000803e3d6000fd5b505050506101d0816001600160a01b03163161010061044f565b50565b60405163c88a5e6d60e01b815260006004820152670de0b6b3a76400006024820152737109709ecfa91a80626ff3989d68f67f5b1dd12d9063c88a5e6d90604401600060405180830381600087803b15801561022e57600080fd5b505af1158015610242573d6000803e3d6000fd5b5050505060006001600160a01b031631670de0b6b3a764000014610268576102686106a2565b565b60006040516102789061067d565b604051809103906000f080158015610294573d6000803e3d6000fd5b5060405163c88a5e6d60e01b81526001600160a01b038216600482015260248101849052909150737109709ecfa91a80626ff3989d68f67f5b1dd12d9063c88a5e6d90604401600060405180830381600087803b1580156102f457600080fd5b505af1158015610308573d6000803e3d6000fd5b50505050610320816001600160a01b0316318361044f565b5050565b60008054610100900460ff16156103445750600054610100900460ff1690565b6000737109709ecfa91a80626ff3989d68f67f5b1dd12d3b1561044a5760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b828401528251808303840181526060830190935260009290916103d2917f667f9d70ca411d70ead50d8d5c22070dafc36ad75f3dcf5e7237b22ade9aecc4916080016106f3565b60408051601f19818403018152908290526103ec91610717565b6000604051808303816000865af19150503d8060008114610429576040519150601f19603f3d011682016040523d82523d6000602084013e61042e565b606091505b5091505080806020019051810190610446919061072a565b9150505b919050565b808214610320577f41304facd9323d75b11bcdd609cb38effffdb05710f7caf0e9b16c6d9d709f506040516104c09060208082526022908201527f4572726f723a2061203d3d2062206e6f7420736174697366696564205b75696e604082015261745d60f01b606082015260800190565b60405180910390a160408051818152600a81830152690808115e1c1958dd195960b21b60608201526020810183905290517fb2de2fbe801a0df6c0cbddfd448ba3c41d48a040ca35c56c8196ef0fcae721a89181900360800190a160408051818152600a8183015269080808081058dd1d585b60b21b60608201526020810184905290517fb2de2fbe801a0df6c0cbddfd448ba3c41d48a040ca35c56c8196ef0fcae721a89181900360800190a1610320737109709ecfa91a80626ff3989d68f67f5b1dd12d3b1561066c5760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b9282019290925260016060820152600091907f70ca10bbd0dbfd9020a9f4b13402c16cb120705e0d1c0aeab10fa353ae586fc49060800160408051601f198184030181529082905261060b92916020016106f3565b60408051601f198184030181529082905261062591610717565b6000604051808303816000865af19150503d8060008114610662576040519150601f19603f3d011682016040523d82523d6000602084013e610667565b606091505b505050505b6000805461ff001916610100179055565b605c8061074d83390190565b60006020828403121561069b57600080fd5b5035919050565b634e487b7160e01b600052600160045260246000fd5b6000815160005b818110156106d957602081850181015186830152016106bf565b818111156106e8576000828601525b509290920192915050565b6001600160e01b031983168152600061070f60048301846106b8565b949350505050565b600061072382846106b8565b9392505050565b60006020828403121561073c57600080fd5b8151801515811461072357600080fdfe6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea264697066735822122024f91ef8980778356105557430beeabeb3257fda3df3f99b09e00862a88090cf64736f6c634300080d0033a26469706673582212207d03b341a161c68449b4f2fed90d727e6a605529779c7e2d8587059542f1fa8664736f6c634300080d0033" ) )
       
     
     syntax Field ::= DealTestField
@@ -732,16 +746,40 @@ module DEALTEST-BIN-RUNTIME
 
 endmodule
 
-module TOKEN-BIN-RUNTIME
+module DEALTOKEN-BIN-RUNTIME
     imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
     
-    syntax Contract ::= TokenContract
+    syntax Contract ::= DealTokenContract
     
-    syntax TokenContract ::= "Token" [symbol(), klabel(contract_Token)]
+    syntax DealTokenContract ::= "DealToken" [symbol(), klabel(contract_DealToken)]
     
-    rule  ( #binRuntime ( Token ) => #parseByteStack ( "0x6080604052600080fdfea26469706673582212206ee69928542a087cd921c0a2449d6b2533a7c600f9767f3d067f71ef3d05929f64736f6c634300080d0033" ) )
+    rule  ( #binRuntime ( DealToken ) => #parseByteStack ( "0x6080604052600080fdfea264697066735822122024f91ef8980778356105557430beeabeb3257fda3df3f99b09e00862a88090cf64736f6c634300080d0033" ) )
+      
+
+endmodule
+
+module EXPECTEMIT-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= ExpectEmitContract
+    
+    syntax ExpectEmitContract ::= "ExpectEmit" [symbol(), klabel(contract_ExpectEmit)]
+    
+    rule  ( #binRuntime ( ExpectEmit ) => #parseByteStack ( "0x6080604052348015600f57600080fd5b506004361060285760003560e01c806392d0d15314602d575b600080fd5b60336035565b005b6040516105398082529033907fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef9060200160405180910390a356fea2646970667358221220c4ed2c9244ece564e9b30685992756e975e6e312d658109ba3d16f0a280c7e6d64736f6c634300080d0033" ) )
+      
+    
+    syntax ByteArray ::= ExpectEmitContract "." ExpectEmitMethod [function(), symbol(), klabel(method_ExpectEmit)]
+    
+    syntax ExpectEmitMethod ::= "t" "(" ")" [symbol(), klabel(method_ExpectEmit_t)]
+    
+    rule  ( ExpectEmit . t ( ) => #abiCallData ( "t" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "t" ) => 2463158611 )
       
 
 endmodule
@@ -1925,6 +1963,152 @@ module MOCKCALLTEST-BIN-RUNTIME
 
 endmodule
 
+module MYIERC20-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= MyIERC20Contract
+    
+    syntax MyIERC20Contract ::= "MyIERC20" [symbol(), klabel(contract_MyIERC20)]
+    
+    rule  ( #binRuntime ( MyIERC20 ) => #parseByteStack ( "0x" ) )
+      
+    
+    syntax ByteArray ::= MyIERC20Contract "." MyIERC20Method [function(), symbol(), klabel(method_MyIERC20)]
+    
+    syntax MyIERC20Method ::= "approve" "(" Int "," Int ")" [symbol(), klabel(method_MyIERC20_approve)]
+    
+    syntax MyIERC20Method ::= "balanceOf" "(" Int ")" [symbol(), klabel(method_MyIERC20_balanceOf)]
+    
+    syntax MyIERC20Method ::= "decimals" "(" ")" [symbol(), klabel(method_MyIERC20_decimals)]
+    
+    syntax MyIERC20Method ::= "symbol" "(" ")" [symbol(), klabel(method_MyIERC20_symbol)]
+    
+    syntax MyIERC20Method ::= "totalSupply" "(" ")" [symbol(), klabel(method_MyIERC20_totalSupply)]
+    
+    syntax MyIERC20Method ::= "transfer" "(" Int "," Int ")" [symbol(), klabel(method_MyIERC20_transfer)]
+    
+    syntax MyIERC20Method ::= "transferFrom" "(" Int "," Int "," Int ")" [symbol(), klabel(method_MyIERC20_transferFrom)]
+    
+    rule  ( MyIERC20 . approve ( V0_spender , V1_value ) => #abiCallData ( "approve" , #address ( V0_spender ) , #uint256 ( V1_value ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_spender )
+       andBool ( #rangeUInt ( 256 , V1_value )
+               ))
+      
+    
+    rule  ( MyIERC20 . balanceOf ( V0_ ) => #abiCallData ( "balanceOf" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( MyIERC20 . decimals ( ) => #abiCallData ( "decimals" , .TypedArgs ) )
+      
+    
+    rule  ( MyIERC20 . symbol ( ) => #abiCallData ( "symbol" , .TypedArgs ) )
+      
+    
+    rule  ( MyIERC20 . totalSupply ( ) => #abiCallData ( "totalSupply" , .TypedArgs ) )
+      
+    
+    rule  ( MyIERC20 . transfer ( V0_recipient , V1_amount ) => #abiCallData ( "transfer" , #address ( V0_recipient ) , #uint256 ( V1_amount ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_recipient )
+       andBool ( #rangeUInt ( 256 , V1_amount )
+               ))
+      
+    
+    rule  ( MyIERC20 . transferFrom ( V0_sender , V1_recipient , V2_amount ) => #abiCallData ( "transferFrom" , #address ( V0_sender ) , #address ( V1_recipient ) , #uint256 ( V2_amount ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_sender )
+       andBool ( #rangeAddress ( V1_recipient )
+       andBool ( #rangeUInt ( 256 , V2_amount )
+               )))
+      
+    
+    rule  ( selector ( "approve" ) => 157198259 )
+      
+    
+    rule  ( selector ( "balanceOf" ) => 1889567281 )
+      
+    
+    rule  ( selector ( "decimals" ) => 826074471 )
+      
+    
+    rule  ( selector ( "symbol" ) => 2514000705 )
+      
+    
+    rule  ( selector ( "totalSupply" ) => 404098525 )
+      
+    
+    rule  ( selector ( "transfer" ) => 2835717307 )
+      
+    
+    rule  ( selector ( "transferFrom" ) => 599290589 )
+      
+
+endmodule
+
+module MYTOKEN-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= MyTokenContract
+    
+    syntax MyTokenContract ::= "MyToken" [symbol(), klabel(contract_MyToken)]
+    
+    rule  ( #binRuntime ( MyToken ) => #parseByteStack ( "0x6080604052600436106100435760003560e01c80630c11dedd1461004f57806327e235e31461007557806370a08231146100a2578063fc0c546a146100d857600080fd5b3661004a57005b600080fd5b61006261005d36600461015b565b610110565b6040519081526020015b60405180910390f35b34801561008157600080fd5b5061006261009036600461015b565b60016020526000908152604090205481565b3480156100ae57600080fd5b506100626100bd36600461015b565b6001600160a01b031660009081526001602052604090205490565b3480156100e457600080fd5b506000546100f8906001600160a01b031681565b6040516001600160a01b03909116815260200161006c565b6001600160a01b03811660009081526001602052604081208054349190839061013a90849061018b565b9091555050506001600160a01b031660009081526001602052604090205490565b60006020828403121561016d57600080fd5b81356001600160a01b038116811461018457600080fd5b9392505050565b600082198211156101ac57634e487b7160e01b600052601160045260246000fd5b50019056fea2646970667358221220a2e1e3002801e60ab4a6f05c5032836800c3ac718b6d0aa0b4b7b6d2168805b464736f6c634300080d0033" ) )
+      
+    
+    syntax Field ::= MyTokenField
+    
+    syntax MyTokenField ::= "token" [symbol(), klabel(field_MyToken_token)]
+    
+    syntax MyTokenField ::= "balances" [symbol(), klabel(field_MyToken_balances)]
+    
+    rule  ( #loc ( MyToken . token ) => 0 )
+      
+    
+    rule  ( #loc ( MyToken . balances ) => 1 )
+      
+    
+    syntax ByteArray ::= MyTokenContract "." MyTokenMethod [function(), symbol(), klabel(method_MyToken)]
+    
+    syntax MyTokenMethod ::= "balanceOf" "(" Int ")" [symbol(), klabel(method_MyToken_balanceOf)]
+    
+    syntax MyTokenMethod ::= "balances" "(" Int ")" [symbol(), klabel(method_MyToken_balances)]
+    
+    syntax MyTokenMethod ::= "pay" "(" Int ")" [symbol(), klabel(method_MyToken_pay)]
+    
+    syntax MyTokenMethod ::= "token" "(" ")" [symbol(), klabel(method_MyToken_token)]
+    
+    rule  ( MyToken . balanceOf ( V0_user ) => #abiCallData ( "balanceOf" , #address ( V0_user ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_user )
+      
+    
+    rule  ( MyToken . balances ( V0_ ) => #abiCallData ( "balances" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( MyToken . pay ( V0_user ) => #abiCallData ( "pay" , #address ( V0_user ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_user )
+      
+    
+    rule  ( MyToken . token ( ) => #abiCallData ( "token" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "balanceOf" ) => 1889567281 )
+      
+    
+    rule  ( selector ( "balances" ) => 669136355 )
+      
+    
+    rule  ( selector ( "pay" ) => 202497757 )
+      
+    
+    rule  ( selector ( "token" ) => 4228666474 )
+      
+
+endmodule
+
 module NONCETEST-BIN-RUNTIME
     imports public FOUNDRY
     imports public LEMMAS
@@ -1972,21 +2156,21 @@ module NONCETEST-BIN-RUNTIME
     syntax NonceTestMethod ::= "testFail_GetNonce_false" "(" ")" [symbol(), klabel(method_NonceTest_testFail_GetNonce_false)]
     
     syntax NonceTestMethod ::= "testFail_GetNonce_true" "(" ")" [symbol(), klabel(method_NonceTest_testFail_GetNonce_true)]
-
+    
     syntax NonceTestMethod ::= "testNonce" "(" Int ")" [symbol(), klabel(method_NonceTest_testNonce)]
-
+    
     syntax NonceTestMethod ::= "test_GetNonce_false" "(" ")" [symbol(), klabel(method_NonceTest_test_GetNonce_false)]
-
+    
     syntax NonceTestMethod ::= "test_GetNonce_true" "(" ")" [symbol(), klabel(method_NonceTest_test_GetNonce_true)]
-
+    
     syntax NonceTestMethod ::= "test_Nonce_ExistentAddress" "(" ")" [symbol(), klabel(method_NonceTest_test_Nonce_ExistentAddress)]
-
+    
     syntax NonceTestMethod ::= "test_Nonce_NonExistentAddress" "(" ")" [symbol(), klabel(method_NonceTest_test_Nonce_NonExistentAddress)]
-
+    
     syntax NonceTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_NonceTest_vm)]
-
+    
     rule  ( NonceTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
-
+      
     
     rule  ( NonceTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
@@ -2011,14 +2195,14 @@ module NONCETEST-BIN-RUNTIME
       
     
     rule  ( NonceTest . test_GetNonce_true ( ) => #abiCallData ( "test_GetNonce_true" , .TypedArgs ) )
-
-
+      
+    
     rule  ( NonceTest . test_Nonce_ExistentAddress ( ) => #abiCallData ( "test_Nonce_ExistentAddress" , .TypedArgs ) )
-
-
+      
+    
     rule  ( NonceTest . test_Nonce_NonExistentAddress ( ) => #abiCallData ( "test_Nonce_NonExistentAddress" , .TypedArgs ) )
-
-
+      
+    
     rule  ( NonceTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
     
@@ -2047,15 +2231,62 @@ module NONCETEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_GetNonce_true" ) => 3968101798 )
-
-
+      
+    
     rule  ( selector ( "test_Nonce_ExistentAddress" ) => 1598387740 )
-
-
+      
+    
     rule  ( selector ( "test_Nonce_NonExistentAddress" ) => 2985064833 )
-
-
+      
+    
     rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
+module OWNERUPONLY-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= OwnerUpOnlyContract
+    
+    syntax OwnerUpOnlyContract ::= "OwnerUpOnly" [symbol(), klabel(contract_OwnerUpOnly)]
+    
+    rule  ( #binRuntime ( OwnerUpOnly ) => #parseByteStack ( "0x608060405234801561001057600080fd5b50600436106100415760003560e01c806306661abd146100465780638da5cb5b14610062578063d09de08a146100a1575b600080fd5b61004f60005481565b6040519081526020015b60405180910390f35b6100897f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b039091168152602001610059565b6100a96100ab565b005b336001600160a01b037f000000000000000000000000000000000000000000000000000000000000000016146100f3576040516282b42960e81b815260040160405180910390fd5b60008054908061010283610109565b9190505550565b60006001820161012957634e487b7160e01b600052601160045260246000fd5b506001019056fea2646970667358221220d97d79ce6005dfff95fc88f1bd8d0c967afa52d3d922a5bd033da4faf88f5ec264736f6c634300080d0033" ) )
+      
+    
+    syntax Field ::= OwnerUpOnlyField
+    
+    syntax OwnerUpOnlyField ::= "count" [symbol(), klabel(field_OwnerUpOnly_count)]
+    
+    rule  ( #loc ( OwnerUpOnly . count ) => 0 )
+      
+    
+    syntax ByteArray ::= OwnerUpOnlyContract "." OwnerUpOnlyMethod [function(), symbol(), klabel(method_OwnerUpOnly)]
+    
+    syntax OwnerUpOnlyMethod ::= "count" "(" ")" [symbol(), klabel(method_OwnerUpOnly_count)]
+    
+    syntax OwnerUpOnlyMethod ::= "increment" "(" ")" [symbol(), klabel(method_OwnerUpOnly_increment)]
+    
+    syntax OwnerUpOnlyMethod ::= "owner" "(" ")" [symbol(), klabel(method_OwnerUpOnly_owner)]
+    
+    rule  ( OwnerUpOnly . count ( ) => #abiCallData ( "count" , .TypedArgs ) )
+      
+    
+    rule  ( OwnerUpOnly . increment ( ) => #abiCallData ( "increment" , .TypedArgs ) )
+      
+    
+    rule  ( OwnerUpOnly . owner ( ) => #abiCallData ( "owner" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "count" ) => 107354813 )
+      
+    
+    rule  ( selector ( "increment" ) => 3500007562 )
+      
+    
+    rule  ( selector ( "owner" ) => 2376452955 )
       
 
 endmodule
@@ -2163,6 +2394,63 @@ module OWNERUPONLYTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
+module PRANK-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= PrankContract
+    
+    syntax PrankContract ::= "Prank" [symbol(), klabel(contract_Prank)]
+    
+    rule  ( #binRuntime ( Prank ) => #parseByteStack ( "0x608060405234801561001057600080fd5b506004361061004c5760003560e01c806306661abd146100515780631003e2d21461006d5780631dc05f17146100825780638da5cb5b14610095575b600080fd5b61005a60005481565b6040519081526020015b60405180910390f35b61008061007b366004610181565b6100d4565b005b610080610090366004610181565b610156565b6100bc7f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b039091168152602001610064565b336001600160a01b037f0000000000000000000000000000000000000000000000000000000000000000161461013d5760405162461bcd60e51b815260206004820152600a60248201526927b7363c9037bbb732b960b11b604482015260640160405180910390fd5b8060008082825461014e91906101b0565b909155505050565b321561016157600080fd5b80600054101561017057600080fd5b8060008082825461014e91906101c8565b60006020828403121561019357600080fd5b5035919050565b634e487b7160e01b600052601160045260246000fd5b600082198211156101c3576101c361019a565b500190565b6000828210156101da576101da61019a565b50039056fea2646970667358221220576c66ed00ea73f0e268ced3370e2f9eb32d0943dd3d09852caf3160c1aa619764736f6c634300080d0033" ) )
+      
+    
+    syntax Field ::= PrankField
+    
+    syntax PrankField ::= "count" [symbol(), klabel(field_Prank_count)]
+    
+    rule  ( #loc ( Prank . count ) => 0 )
+      
+    
+    syntax ByteArray ::= PrankContract "." PrankMethod [function(), symbol(), klabel(method_Prank)]
+    
+    syntax PrankMethod ::= "add" "(" Int ")" [symbol(), klabel(method_Prank_add)]
+    
+    syntax PrankMethod ::= "count" "(" ")" [symbol(), klabel(method_Prank_count)]
+    
+    syntax PrankMethod ::= "owner" "(" ")" [symbol(), klabel(method_Prank_owner)]
+    
+    syntax PrankMethod ::= "subtract" "(" Int ")" [symbol(), klabel(method_Prank_subtract)]
+    
+    rule  ( Prank . add ( V0_value ) => #abiCallData ( "add" , #uint256 ( V0_value ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_value )
+      
+    
+    rule  ( Prank . count ( ) => #abiCallData ( "count" , .TypedArgs ) )
+      
+    
+    rule  ( Prank . owner ( ) => #abiCallData ( "owner" , .TypedArgs ) )
+      
+    
+    rule  ( Prank . subtract ( V0_value ) => #abiCallData ( "subtract" , #uint256 ( V0_value ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_value )
+      
+    
+    rule  ( selector ( "add" ) => 268690130 )
+      
+    
+    rule  ( selector ( "count" ) => 107354813 )
+      
+    
+    rule  ( selector ( "owner" ) => 2376452955 )
+      
+    
+    rule  ( selector ( "subtract" ) => 499146519 )
       
 
 endmodule
@@ -2399,6 +2687,30 @@ module RECORDLOGSTEST-BIN-RUNTIME
 
 endmodule
 
+module SAFE-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= SafeContract
+    
+    syntax SafeContract ::= "Safe" [symbol(), klabel(contract_Safe)]
+    
+    rule  ( #binRuntime ( Safe ) => #parseByteStack ( "0x60806040526004361060205760003560e01c80633ccfd60b14602b57600080fd5b36602657005b600080fd5b348015603657600080fd5b50603d603f565b005b60405133904780156108fc02916000818181858888f19350505050158015606a573d6000803e3d6000fd5b5056fea2646970667358221220208050e56f5bea1e231c136f36e3b9b3d9540900983bf725155d1cab0cd8dfe564736f6c634300080d0033" ) )
+      
+    
+    syntax ByteArray ::= SafeContract "." SafeMethod [function(), symbol(), klabel(method_Safe)]
+    
+    syntax SafeMethod ::= "withdraw" "(" ")" [symbol(), klabel(method_Safe_withdraw)]
+    
+    rule  ( Safe . withdraw ( ) => #abiCallData ( "withdraw" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "withdraw" ) => 1020253707 )
+      
+
+endmodule
+
 module SAFETEST-BIN-RUNTIME
     imports public FOUNDRY
     imports public LEMMAS
@@ -2492,6 +2804,45 @@ module SAFETEST-BIN-RUNTIME
       
     
     rule  ( selector ( "testWithdrawFuzz" ) => 3503970826 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
+module SCRIPT-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= ScriptContract
+    
+    syntax ScriptContract ::= "Script" [symbol(), klabel(contract_Script)]
+    
+    rule  ( #binRuntime ( Script ) => #parseByteStack ( "0x" ) )
+      
+    
+    syntax Field ::= ScriptField
+    
+    syntax ScriptField ::= "IS_SCRIPT" [symbol(), klabel(field_Script_IS_SCRIPT)]
+    
+    rule  ( #loc ( Script . IS_SCRIPT ) => 0 )
+      
+    
+    syntax ByteArray ::= ScriptContract "." ScriptMethod [function(), symbol(), klabel(method_Script)]
+    
+    syntax ScriptMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_Script_IS_SCRIPT)]
+    
+    syntax ScriptMethod ::= "vm" "(" ")" [symbol(), klabel(method_Script_vm)]
+    
+    rule  ( Script . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( Script . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
       
     
     rule  ( selector ( "vm" ) => 980845667 )
@@ -3003,6 +3354,277 @@ module STORETEST-BIN-RUNTIME
 
 endmodule
 
+module TEST-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= TestContract
+    
+    syntax TestContract ::= "Test" [symbol(), klabel(contract_Test)]
+    
+    rule  ( #binRuntime ( Test ) => #parseByteStack ( "0x" ) )
+      
+    
+    syntax Field ::= TestField
+    
+    syntax TestField ::= "IS_TEST" [symbol(), klabel(field_Test_IS_TEST)]
+    
+    syntax TestField ::= "_failed" [symbol(), klabel(field_Test__failed)]
+    
+    syntax TestField ::= "IS_SCRIPT" [symbol(), klabel(field_Test_IS_SCRIPT)]
+    
+    syntax TestField ::= "stdstore" [symbol(), klabel(field_Test_stdstore)]
+    
+    rule  ( #loc ( Test . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( Test . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( Test . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( Test . stdstore ) => 1 )
+      
+    
+    syntax ByteArray ::= TestContract "." TestMethod [function(), symbol(), klabel(method_Test)]
+    
+    syntax TestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_Test_IS_SCRIPT)]
+    
+    syntax TestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_Test_IS_TEST)]
+    
+    syntax TestMethod ::= "failed" "(" ")" [symbol(), klabel(method_Test_failed)]
+    
+    syntax TestMethod ::= "vm" "(" ")" [symbol(), klabel(method_Test_vm)]
+    
+    rule  ( Test . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( Test . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( Test . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( Test . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
+module STDERROR-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= StdErrorContract
+    
+    syntax StdErrorContract ::= "stdError" [symbol(), klabel(contract_stdError)]
+    
+    rule  ( #binRuntime ( stdError ) => #parseByteStack ( "0x73000000000000000000000000000000000000000030146080604052600436106100a85760003560e01c8063ac3d92c611610070578063ac3d92c6146100eb578063b22dc54d14610101578063b67689da14610109578063d160e4de14610111578063fa784a441461011957600080fd5b806305ee8612146100ad57806310332977146100cb5780631de45560146100d35780638995290f146100db578063986c5f68146100e3575b600080fd5b6100b5610121565b6040516100c291906101ec565b60405180910390f35b6100b561015c565b6100b561016e565b6100b5610180565b6100b5610192565b6100b56040518060200160405280600081525081565b6100b56101a4565b6100b56101b6565b6100b56101c8565b6100b56101da565b604051603260248201526044015b60408051601f198184030181529190526020810180516001600160e01b0316634e487b7160e01b17905281565b6040516001602482015260440161012f565b6040516021602482015260440161012f565b6040516011602482015260440161012f565b6040516041602482015260440161012f565b6040516031602482015260440161012f565b6040516051602482015260440161012f565b6040516022602482015260440161012f565b6040516012602482015260440161012f565b600060208083528351808285015260005b81811015610219578581018301518582016040015282016101fd565b8181111561022b576000604083870101525b50601f01601f191692909201604001939250505056fea2646970667358221220123df24b7f624e3eaa058d8ec30bc8fbc59f6b13d03026623d0f5787ad3dcb8264736f6c634300080d0033" ) )
+      
+    
+    syntax ByteArray ::= StdErrorContract "." StdErrorMethod [function(), symbol(), klabel(method_stdError)]
+    
+    syntax StdErrorMethod ::= "arithmeticError" "(" ")" [symbol(), klabel(method_stdError_arithmeticError)]
+    
+    syntax StdErrorMethod ::= "assertionError" "(" ")" [symbol(), klabel(method_stdError_assertionError)]
+    
+    syntax StdErrorMethod ::= "divisionError" "(" ")" [symbol(), klabel(method_stdError_divisionError)]
+    
+    syntax StdErrorMethod ::= "encodeStorageError" "(" ")" [symbol(), klabel(method_stdError_encodeStorageError)]
+    
+    syntax StdErrorMethod ::= "enumConversionError" "(" ")" [symbol(), klabel(method_stdError_enumConversionError)]
+    
+    syntax StdErrorMethod ::= "indexOOBError" "(" ")" [symbol(), klabel(method_stdError_indexOOBError)]
+    
+    syntax StdErrorMethod ::= "lowLevelError" "(" ")" [symbol(), klabel(method_stdError_lowLevelError)]
+    
+    syntax StdErrorMethod ::= "memOverflowError" "(" ")" [symbol(), klabel(method_stdError_memOverflowError)]
+    
+    syntax StdErrorMethod ::= "popError" "(" ")" [symbol(), klabel(method_stdError_popError)]
+    
+    syntax StdErrorMethod ::= "zeroVarError" "(" ")" [symbol(), klabel(method_stdError_zeroVarError)]
+    
+    rule  ( stdError . arithmeticError ( ) => #abiCallData ( "arithmeticError" , .TypedArgs ) )
+      
+    
+    rule  ( stdError . assertionError ( ) => #abiCallData ( "assertionError" , .TypedArgs ) )
+      
+    
+    rule  ( stdError . divisionError ( ) => #abiCallData ( "divisionError" , .TypedArgs ) )
+      
+    
+    rule  ( stdError . encodeStorageError ( ) => #abiCallData ( "encodeStorageError" , .TypedArgs ) )
+      
+    
+    rule  ( stdError . enumConversionError ( ) => #abiCallData ( "enumConversionError" , .TypedArgs ) )
+      
+    
+    rule  ( stdError . indexOOBError ( ) => #abiCallData ( "indexOOBError" , .TypedArgs ) )
+      
+    
+    rule  ( stdError . lowLevelError ( ) => #abiCallData ( "lowLevelError" , .TypedArgs ) )
+      
+    
+    rule  ( stdError . memOverflowError ( ) => #abiCallData ( "memOverflowError" , .TypedArgs ) )
+      
+    
+    rule  ( stdError . popError ( ) => #abiCallData ( "popError" , .TypedArgs ) )
+      
+    
+    rule  ( stdError . zeroVarError ( ) => #abiCallData ( "zeroVarError" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "arithmeticError" ) => 2308253967 )
+      
+    
+    rule  ( selector ( "assertionError" ) => 271788407 )
+      
+    
+    rule  ( selector ( "divisionError" ) => 4202187332 )
+      
+    
+    rule  ( selector ( "encodeStorageError" ) => 3512788190 )
+      
+    
+    rule  ( selector ( "enumConversionError" ) => 501503328 )
+      
+    
+    rule  ( selector ( "indexOOBError" ) => 99517970 )
+      
+    
+    rule  ( selector ( "lowLevelError" ) => 2889716422 )
+      
+    
+    rule  ( selector ( "memOverflowError" ) => 2557239144 )
+      
+    
+    rule  ( selector ( "popError" ) => 2989344077 )
+      
+    
+    rule  ( selector ( "zeroVarError" ) => 3061221850 )
+      
+
+endmodule
+
+module STDMATH-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= StdMathContract
+    
+    syntax StdMathContract ::= "stdMath" [symbol(), klabel(contract_stdMath)]
+    
+    rule  ( #binRuntime ( stdMath ) => #parseByteStack ( "0x73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220ada2f27f44e724024917b604c512c1c20578588095600bf29d6557240faa52aa64736f6c634300080d0033" ) )
+      
+
+endmodule
+
+module STDSTORAGE-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= StdStorageContract
+    
+    syntax StdStorageContract ::= "stdStorage" [symbol(), klabel(contract_stdStorage)]
+    
+    rule  ( #binRuntime ( stdStorage ) => #parseByteStack ( "0x73000000000000000000000000000000000000000030146080604052600436106100355760003560e01c8063535849391461003a575b600080fd5b61004d6100483660046100f2565b61005f565b60405190815260200160405180910390f35b60008060006020855111610074578451610077565b60205b905060005b818110156100d25761008f8160086101bd565b8661009a83886101dc565b815181106100aa576100aa6101f4565b01602001516001600160f81b031916901c9290921791806100ca8161020a565b91505061007c565b5090949350505050565b634e487b7160e01b600052604160045260246000fd5b6000806040838503121561010557600080fd5b823567ffffffffffffffff8082111561011d57600080fd5b818501915085601f83011261013157600080fd5b813581811115610143576101436100dc565b604051601f8201601f19908116603f0116810190838211818310171561016b5761016b6100dc565b8160405282815288602084870101111561018457600080fd5b826020860160208301376000602093820184015298969091013596505050505050565b634e487b7160e01b600052601160045260246000fd5b60008160001904831182151516156101d7576101d76101a7565b500290565b600082198211156101ef576101ef6101a7565b500190565b634e487b7160e01b600052603260045260246000fd5b60006001820161021c5761021c6101a7565b506001019056fea2646970667358221220c2c037d3f1567d69c4ec6d7bde1962f8553acec82c19078ccce7d877a7c99ff864736f6c634300080d0033" ) )
+      
+    
+    syntax ByteArray ::= StdStorageContract "." StdStorageMethod [function(), symbol(), klabel(method_stdStorage)]
+    
+    syntax StdStorageMethod ::= "bytesToBytes32" "(" ByteArray "," Int ")" [symbol(), klabel(method_stdStorage_bytesToBytes32)]
+    
+    rule  ( stdStorage . bytesToBytes32 ( V0_b , V1_offset ) => #abiCallData ( "bytesToBytes32" , #bytes ( V0_b ) , #uint256 ( V1_offset ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V1_offset )
+      
+    
+    rule  ( selector ( "bytesToBytes32" ) => 1398294841 )
+      
+
+endmodule
+
+module TESTNUMBER-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= TestNumberContract
+    
+    syntax TestNumberContract ::= "TestNumber" [symbol(), klabel(contract_TestNumber)]
+    
+    rule  ( #binRuntime ( TestNumber ) => #parseByteStack ( "0x608060405234801561001057600080fd5b506004361061004c5760003560e01c80630d1972f314610051578063afe29f711461006d578063ba414fa614610080578063fa7626d414610098575b600080fd5b61005a60015481565b6040519081526020015b60405180910390f35b61005a61007b36600461022f565b6100a5565b610088610104565b6040519015158152602001610064565b6000546100889060ff1681565b600181905560405160009081907f0b2e13ff20ac7b474198655583edf70dedd2c1dc980e329c4fbb2fc0748b796b906100f6906020808252600490820152636865726560e01b604082015260600190565b60405180910390a192915050565b60008054610100900460ff16156101245750600054610100900460ff1690565b6000737109709ecfa91a80626ff3989d68f67f5b1dd12d3b1561022a5760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b828401528251808303840181526060830190935260009290916101b2917f667f9d70ca411d70ead50d8d5c22070dafc36ad75f3dcf5e7237b22ade9aecc491608001610283565b60408051601f19818403018152908290526101cc916102a7565b6000604051808303816000865af19150503d8060008114610209576040519150601f19603f3d011682016040523d82523d6000602084013e61020e565b606091505b509150508080602001905181019061022691906102ba565b9150505b919050565b60006020828403121561024157600080fd5b5035919050565b6000815160005b81811015610269576020818501810151868301520161024f565b81811115610278576000828601525b509290920192915050565b6001600160e01b031983168152600061029f6004830184610248565b949350505050565b60006102b38284610248565b9392505050565b6000602082840312156102cc57600080fd5b815180151581146102b357600080fdfea2646970667358221220cf7517df20a217a83ffd2ae9cc691adbe79f6a831c1449270897f25e247e94c564736f6c634300080d0033" ) )
+      
+    
+    syntax Field ::= TestNumberField
+    
+    syntax TestNumberField ::= "IS_TEST" [symbol(), klabel(field_TestNumber_IS_TEST)]
+    
+    syntax TestNumberField ::= "_failed" [symbol(), klabel(field_TestNumber__failed)]
+    
+    syntax TestNumberField ::= "testNumber" [symbol(), klabel(field_TestNumber_testNumber)]
+    
+    rule  ( #loc ( TestNumber . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( TestNumber . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( TestNumber . testNumber ) => 1 )
+      
+    
+    syntax ByteArray ::= TestNumberContract "." TestNumberMethod [function(), symbol(), klabel(method_TestNumber)]
+    
+    syntax TestNumberMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_TestNumber_IS_TEST)]
+    
+    syntax TestNumberMethod ::= "failed" "(" ")" [symbol(), klabel(method_TestNumber_failed)]
+    
+    syntax TestNumberMethod ::= "t" "(" Int ")" [symbol(), klabel(method_TestNumber_t)]
+    
+    syntax TestNumberMethod ::= "testNumber" "(" ")" [symbol(), klabel(method_TestNumber_testNumber)]
+    
+    rule  ( TestNumber . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( TestNumber . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( TestNumber . t ( V0_a ) => #abiCallData ( "t" , #uint256 ( V0_a ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_a )
+      
+    
+    rule  ( TestNumber . testNumber ( ) => #abiCallData ( "testNumber" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "t" ) => 2950864753 )
+      
+    
+    rule  ( selector ( "testNumber" ) => 219771635 )
+      
+
+endmodule
+
 module TOSTRINGTEST-BIN-RUNTIME
     imports public FOUNDRY
     imports public LEMMAS
@@ -3117,6 +3739,75 @@ module TOSTRINGTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
+module TOKEN-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= TokenContract
+    
+    syntax TokenContract ::= "Token" [symbol(), klabel(contract_Token)]
+    
+    rule  ( #binRuntime ( Token ) => #parseByteStack ( "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c8063a9059cbb14610030575b600080fd5b61004361003e3660046100c9565b610045565b005b610050338383610054565b5050565b6001600160a01b038316600090815260016020526040902054610078908290610117565b6001600160a01b0380851660009081526001602052604080822093909355908416815220546100a890829061012e565b6001600160a01b039092166000908152600160205260409020919091555050565b600080604083850312156100dc57600080fd5b82356001600160a01b03811681146100f357600080fd5b946020939093013593505050565b634e487b7160e01b600052601160045260246000fd5b60008282101561012957610129610101565b500390565b6000821982111561014157610141610101565b50019056fea2646970667358221220e48b937e7c9104a0808e115af1ee42e958a0c671314391ceab78b4d1e9009fe964736f6c634300080d0033" ) )
+      
+    
+    syntax Field ::= TokenField
+    
+    syntax TokenField ::= "x" [symbol(), klabel(field_Token_x)]
+    
+    syntax TokenField ::= "balances" [symbol(), klabel(field_Token_balances)]
+    
+    syntax TokenField ::= "allowances" [symbol(), klabel(field_Token_allowances)]
+    
+    syntax TokenField ::= "name" [symbol(), klabel(field_Token_name)]
+    
+    syntax TokenField ::= "y" [symbol(), klabel(field_Token_y)]
+    
+    syntax TokenField ::= "z" [symbol(), klabel(field_Token_z)]
+    
+    syntax TokenField ::= "a" [symbol(), klabel(field_Token_a)]
+    
+    syntax TokenField ::= "foos" [symbol(), klabel(field_Token_foos)]
+    
+    rule  ( #loc ( Token . x ) => 0 )
+      
+    
+    rule  ( #loc ( Token . balances ) => 1 )
+      
+    
+    rule  ( #loc ( Token . allowances ) => 2 )
+      
+    
+    rule  ( #loc ( Token . name ) => 3 )
+      
+    
+    rule  ( #loc ( Token . y ) => 4 )
+      
+    
+    rule  ( #loc ( Token . z ) => 4 )
+      
+    
+    rule  ( #loc ( Token . a ) => 4 )
+      
+    
+    rule  ( #loc ( Token . foos ) => 5 )
+      
+    
+    syntax ByteArray ::= TokenContract "." TokenMethod [function(), symbol(), klabel(method_Token)]
+    
+    syntax TokenMethod ::= "transfer" "(" Int "," Int ")" [symbol(), klabel(method_Token_transfer)]
+    
+    rule  ( Token . transfer ( V0_dst , V1_amount ) => #abiCallData ( "transfer" , #address ( V0_dst ) , #uint256 ( V1_amount ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_dst )
+       andBool ( #rangeUInt ( 256 , V1_amount )
+               ))
+      
+    
+    rule  ( selector ( "transfer" ) => 2835717307 )
       
 
 endmodule
@@ -4049,15 +4740,832 @@ module UINTTYPETEST-BIN-RUNTIME
 
 endmodule
 
+module VM-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= VmContract
+    
+    syntax VmContract ::= "Vm" [symbol(), klabel(contract_Vm)]
+    
+    rule  ( #binRuntime ( Vm ) => #parseByteStack ( "0x" ) )
+      
+    
+    syntax ByteArray ::= VmContract "." VmMethod [function(), symbol(), klabel(method_Vm)]
+    
+    syntax VmMethod ::= "accesses" "(" Int ")" [symbol(), klabel(method_Vm_accesses)]
+    
+    syntax VmMethod ::= "activeFork" "(" ")" [symbol(), klabel(method_Vm_activeFork)]
+    
+    syntax VmMethod ::= "addr" "(" Int ")" [symbol(), klabel(method_Vm_addr)]
+    
+    syntax VmMethod ::= "assume" "(" Int ")" [symbol(), klabel(method_Vm_assume)]
+    
+    syntax VmMethod ::= "broadcast" "(" ")" [symbol(), klabel(method_Vm_broadcast)]
+    
+    syntax VmMethod ::= "broadcast" "(" ")" [symbol(), klabel(method_Vm_broadcast)]
+    
+    syntax VmMethod ::= "chainId" "(" Int ")" [symbol(), klabel(method_Vm_chainId)]
+    
+    syntax VmMethod ::= "clearMockedCalls" "(" ")" [symbol(), klabel(method_Vm_clearMockedCalls)]
+    
+    syntax VmMethod ::= "closeFile" "(" String ")" [symbol(), klabel(method_Vm_closeFile)]
+    
+    syntax VmMethod ::= "coinbase" "(" Int ")" [symbol(), klabel(method_Vm_coinbase)]
+    
+    syntax VmMethod ::= "createFork" "(" String ")" [symbol(), klabel(method_Vm_createFork)]
+    
+    syntax VmMethod ::= "createFork" "(" String ")" [symbol(), klabel(method_Vm_createFork)]
+    
+    syntax VmMethod ::= "createSelectFork" "(" String "," Int ")" [symbol(), klabel(method_Vm_createSelectFork)]
+    
+    syntax VmMethod ::= "createSelectFork" "(" String "," Int ")" [symbol(), klabel(method_Vm_createSelectFork)]
+    
+    syntax VmMethod ::= "deal" "(" Int "," Int ")" [symbol(), klabel(method_Vm_deal)]
+    
+    syntax VmMethod ::= "deriveKey" "(" String "," Int ")" [symbol(), klabel(method_Vm_deriveKey)]
+    
+    syntax VmMethod ::= "deriveKey" "(" String "," Int ")" [symbol(), klabel(method_Vm_deriveKey)]
+    
+    syntax VmMethod ::= "envAddress" "(" String ")" [symbol(), klabel(method_Vm_envAddress)]
+    
+    syntax VmMethod ::= "envAddress" "(" String ")" [symbol(), klabel(method_Vm_envAddress)]
+    
+    syntax VmMethod ::= "envBool" "(" String ")" [symbol(), klabel(method_Vm_envBool)]
+    
+    syntax VmMethod ::= "envBool" "(" String ")" [symbol(), klabel(method_Vm_envBool)]
+    
+    syntax VmMethod ::= "envBytes" "(" String ")" [symbol(), klabel(method_Vm_envBytes)]
+    
+    syntax VmMethod ::= "envBytes" "(" String ")" [symbol(), klabel(method_Vm_envBytes)]
+    
+    syntax VmMethod ::= "envBytes32" "(" String "," String ")" [symbol(), klabel(method_Vm_envBytes32)]
+    
+    syntax VmMethod ::= "envBytes32" "(" String "," String ")" [symbol(), klabel(method_Vm_envBytes32)]
+    
+    syntax VmMethod ::= "envInt" "(" String "," String ")" [symbol(), klabel(method_Vm_envInt)]
+    
+    syntax VmMethod ::= "envInt" "(" String "," String ")" [symbol(), klabel(method_Vm_envInt)]
+    
+    syntax VmMethod ::= "envString" "(" String "," String ")" [symbol(), klabel(method_Vm_envString)]
+    
+    syntax VmMethod ::= "envString" "(" String "," String ")" [symbol(), klabel(method_Vm_envString)]
+    
+    syntax VmMethod ::= "envUint" "(" String ")" [symbol(), klabel(method_Vm_envUint)]
+    
+    syntax VmMethod ::= "envUint" "(" String ")" [symbol(), klabel(method_Vm_envUint)]
+    
+    syntax VmMethod ::= "etch" "(" Int "," ByteArray ")" [symbol(), klabel(method_Vm_etch)]
+    
+    syntax VmMethod ::= "expectCall" "(" Int "," ByteArray ")" [symbol(), klabel(method_Vm_expectCall)]
+    
+    syntax VmMethod ::= "expectCall" "(" Int "," ByteArray ")" [symbol(), klabel(method_Vm_expectCall)]
+    
+    syntax VmMethod ::= "expectEmit" "(" Int "," Int "," Int "," Int ")" [symbol(), klabel(method_Vm_expectEmit)]
+    
+    syntax VmMethod ::= "expectEmit" "(" Int "," Int "," Int "," Int ")" [symbol(), klabel(method_Vm_expectEmit)]
+    
+    syntax VmMethod ::= "expectRevert" "(" Int ")" [symbol(), klabel(method_Vm_expectRevert)]
+    
+    syntax VmMethod ::= "expectRevert" "(" Int ")" [symbol(), klabel(method_Vm_expectRevert)]
+    
+    syntax VmMethod ::= "expectRevert" "(" Int ")" [symbol(), klabel(method_Vm_expectRevert)]
+    
+    syntax VmMethod ::= "fee" "(" Int ")" [symbol(), klabel(method_Vm_fee)]
+    
+    syntax VmMethod ::= "ffi" "(" K ")" [symbol(), klabel(method_Vm_ffi)]
+    
+    syntax VmMethod ::= "getCode" "(" String ")" [symbol(), klabel(method_Vm_getCode)]
+    
+    syntax VmMethod ::= "getNonce" "(" Int ")" [symbol(), klabel(method_Vm_getNonce)]
+    
+    syntax VmMethod ::= "getRecordedLogs" "(" ")" [symbol(), klabel(method_Vm_getRecordedLogs)]
+    
+    syntax VmMethod ::= "label" "(" Int "," String ")" [symbol(), klabel(method_Vm_label)]
+    
+    syntax VmMethod ::= "load" "(" Int "," Int ")" [symbol(), klabel(method_Vm_load)]
+    
+    syntax VmMethod ::= "mockCall" "(" Int "," Int "," ByteArray "," ByteArray ")" [symbol(), klabel(method_Vm_mockCall)]
+    
+    syntax VmMethod ::= "mockCall" "(" Int "," Int "," ByteArray "," ByteArray ")" [symbol(), klabel(method_Vm_mockCall)]
+    
+    syntax VmMethod ::= "prank" "(" Int "," Int ")" [symbol(), klabel(method_Vm_prank)]
+    
+    syntax VmMethod ::= "prank" "(" Int "," Int ")" [symbol(), klabel(method_Vm_prank)]
+    
+    syntax VmMethod ::= "readFile" "(" String ")" [symbol(), klabel(method_Vm_readFile)]
+    
+    syntax VmMethod ::= "readLine" "(" String ")" [symbol(), klabel(method_Vm_readLine)]
+    
+    syntax VmMethod ::= "record" "(" ")" [symbol(), klabel(method_Vm_record)]
+    
+    syntax VmMethod ::= "recordLogs" "(" ")" [symbol(), klabel(method_Vm_recordLogs)]
+    
+    syntax VmMethod ::= "removeFile" "(" String ")" [symbol(), klabel(method_Vm_removeFile)]
+    
+    syntax VmMethod ::= "revertTo" "(" Int ")" [symbol(), klabel(method_Vm_revertTo)]
+    
+    syntax VmMethod ::= "roll" "(" Int ")" [symbol(), klabel(method_Vm_roll)]
+    
+    syntax VmMethod ::= "rollFork" "(" Int "," Int ")" [symbol(), klabel(method_Vm_rollFork)]
+    
+    syntax VmMethod ::= "rollFork" "(" Int "," Int ")" [symbol(), klabel(method_Vm_rollFork)]
+    
+    syntax VmMethod ::= "rpcUrl" "(" String ")" [symbol(), klabel(method_Vm_rpcUrl)]
+    
+    syntax VmMethod ::= "rpcUrls" "(" ")" [symbol(), klabel(method_Vm_rpcUrls)]
+    
+    syntax VmMethod ::= "selectFork" "(" Int ")" [symbol(), klabel(method_Vm_selectFork)]
+    
+    syntax VmMethod ::= "setEnv" "(" String "," String ")" [symbol(), klabel(method_Vm_setEnv)]
+    
+    syntax VmMethod ::= "setNonce" "(" Int "," Int ")" [symbol(), klabel(method_Vm_setNonce)]
+    
+    syntax VmMethod ::= "sign" "(" Int "," Int ")" [symbol(), klabel(method_Vm_sign)]
+    
+    syntax VmMethod ::= "snapshot" "(" ")" [symbol(), klabel(method_Vm_snapshot)]
+    
+    syntax VmMethod ::= "startBroadcast" "(" ")" [symbol(), klabel(method_Vm_startBroadcast)]
+    
+    syntax VmMethod ::= "startBroadcast" "(" ")" [symbol(), klabel(method_Vm_startBroadcast)]
+    
+    syntax VmMethod ::= "startPrank" "(" Int ")" [symbol(), klabel(method_Vm_startPrank)]
+    
+    syntax VmMethod ::= "startPrank" "(" Int ")" [symbol(), klabel(method_Vm_startPrank)]
+    
+    syntax VmMethod ::= "stopBroadcast" "(" ")" [symbol(), klabel(method_Vm_stopBroadcast)]
+    
+    syntax VmMethod ::= "stopPrank" "(" ")" [symbol(), klabel(method_Vm_stopPrank)]
+    
+    syntax VmMethod ::= "store" "(" Int "," Int "," Int ")" [symbol(), klabel(method_Vm_store)]
+    
+    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString)]
+    
+    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString)]
+    
+    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString)]
+    
+    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString)]
+    
+    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString)]
+    
+    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString)]
+    
+    syntax VmMethod ::= "warp" "(" Int ")" [symbol(), klabel(method_Vm_warp)]
+    
+    syntax VmMethod ::= "writeFile" "(" String "," String ")" [symbol(), klabel(method_Vm_writeFile)]
+    
+    syntax VmMethod ::= "writeLine" "(" String "," String ")" [symbol(), klabel(method_Vm_writeLine)]
+    
+    rule  ( Vm . accesses ( V0_ ) => #abiCallData ( "accesses" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . activeFork ( ) => #abiCallData ( "activeFork" , .TypedArgs ) )
+      
+    
+    rule  ( Vm . addr ( V0_ ) => #abiCallData ( "addr" , #uint256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
+      
+    
+    rule  ( Vm . assume ( V0_ ) => #abiCallData ( "assume" , #bool ( V0_ ) , .TypedArgs ) )
+       ensures #rangeBool ( V0_ )
+      
+    
+    rule  ( Vm . broadcast ( ) => #abiCallData ( "broadcast" , .TypedArgs ) )
+      
+    
+    rule  ( Vm . broadcast ( ) => #abiCallData ( "broadcast" , .TypedArgs ) )
+      
+    
+    rule  ( Vm . chainId ( V0_ ) => #abiCallData ( "chainId" , #uint256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
+      
+    
+    rule  ( Vm . clearMockedCalls ( ) => #abiCallData ( "clearMockedCalls" , .TypedArgs ) )
+      
+    
+    rule  ( Vm . closeFile ( V0_ ) => #abiCallData ( "closeFile" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . coinbase ( V0_ ) => #abiCallData ( "coinbase" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . createFork ( V0_ ) => #abiCallData ( "createFork" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . createFork ( V0_ ) => #abiCallData ( "createFork" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . createSelectFork ( V0_ , V1_ ) => #abiCallData ( "createSelectFork" , #string ( V0_ ) , #uint256 ( V1_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V1_ )
+      
+    
+    rule  ( Vm . createSelectFork ( V0_ , V1_ ) => #abiCallData ( "createSelectFork" , #string ( V0_ ) , #uint256 ( V1_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V1_ )
+      
+    
+    rule  ( Vm . deal ( V0_ , V1_ ) => #abiCallData ( "deal" , #address ( V0_ ) , #uint256 ( V1_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 256 , V1_ )
+               ))
+      
+    
+    rule  ( Vm . deriveKey ( V0_ , V1_ ) => #abiCallData ( "deriveKey" , #string ( V0_ ) , #uint32 ( V1_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 32 , V1_ )
+      
+    
+    rule  ( Vm . deriveKey ( V0_ , V1_ ) => #abiCallData ( "deriveKey" , #string ( V0_ ) , #uint32 ( V1_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 32 , V1_ )
+      
+    
+    rule  ( Vm . envAddress ( V0_ ) => #abiCallData ( "envAddress" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envAddress ( V0_ ) => #abiCallData ( "envAddress" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envBool ( V0_ ) => #abiCallData ( "envBool" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envBool ( V0_ ) => #abiCallData ( "envBool" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envBytes ( V0_ ) => #abiCallData ( "envBytes" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envBytes ( V0_ ) => #abiCallData ( "envBytes" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envBytes32 ( V0_ , V1_ ) => #abiCallData ( "envBytes32" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envBytes32 ( V0_ , V1_ ) => #abiCallData ( "envBytes32" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envInt ( V0_ , V1_ ) => #abiCallData ( "envInt" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envInt ( V0_ , V1_ ) => #abiCallData ( "envInt" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envString ( V0_ , V1_ ) => #abiCallData ( "envString" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envString ( V0_ , V1_ ) => #abiCallData ( "envString" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envUint ( V0_ ) => #abiCallData ( "envUint" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envUint ( V0_ ) => #abiCallData ( "envUint" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . etch ( V0_ , V1_ ) => #abiCallData ( "etch" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . expectCall ( V0_ , V1_ ) => #abiCallData ( "expectCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . expectCall ( V0_ , V1_ ) => #abiCallData ( "expectCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . expectEmit ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "expectEmit" , #bool ( V0_ ) , #bool ( V1_ ) , #bool ( V2_ ) , #bool ( V3_ ) , .TypedArgs ) )
+       ensures ( #rangeBool ( V0_ )
+       andBool ( #rangeBool ( V1_ )
+       andBool ( #rangeBool ( V2_ )
+       andBool ( #rangeBool ( V3_ )
+               ))))
+      
+    
+    rule  ( Vm . expectEmit ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "expectEmit" , #bool ( V0_ ) , #bool ( V1_ ) , #bool ( V2_ ) , #bool ( V3_ ) , .TypedArgs ) )
+       ensures ( #rangeBool ( V0_ )
+       andBool ( #rangeBool ( V1_ )
+       andBool ( #rangeBool ( V2_ )
+       andBool ( #rangeBool ( V3_ )
+               ))))
+      
+    
+    rule  ( Vm . expectRevert ( V0_ ) => #abiCallData ( "expectRevert" , #bytes4 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeBytes ( 4 , V0_ )
+      
+    
+    rule  ( Vm . expectRevert ( V0_ ) => #abiCallData ( "expectRevert" , #bytes4 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeBytes ( 4 , V0_ )
+      
+    
+    rule  ( Vm . expectRevert ( V0_ ) => #abiCallData ( "expectRevert" , #bytes4 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeBytes ( 4 , V0_ )
+      
+    
+    rule  ( Vm . fee ( V0_ ) => #abiCallData ( "fee" , #uint256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
+      
+    
+    rule  ( Vm . getCode ( V0_ ) => #abiCallData ( "getCode" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . getNonce ( V0_ ) => #abiCallData ( "getNonce" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . getRecordedLogs ( ) => #abiCallData ( "getRecordedLogs" , .TypedArgs ) )
+      
+    
+    rule  ( Vm . label ( V0_ , V1_ ) => #abiCallData ( "label" , #address ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . load ( V0_ , V1_ ) => #abiCallData ( "load" , #address ( V0_ ) , #bytes32 ( V1_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 256 , V1_ )
+               ))
+      
+    
+    rule  ( Vm . mockCall ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , #bytes ( V3_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 256 , V1_ )
+               ))
+      
+    
+    rule  ( Vm . mockCall ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , #bytes ( V3_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 256 , V1_ )
+               ))
+      
+    
+    rule  ( Vm . prank ( V0_ , V1_ ) => #abiCallData ( "prank" , #address ( V0_ ) , #address ( V1_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeAddress ( V1_ )
+               ))
+      
+    
+    rule  ( Vm . prank ( V0_ , V1_ ) => #abiCallData ( "prank" , #address ( V0_ ) , #address ( V1_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeAddress ( V1_ )
+               ))
+      
+    
+    rule  ( Vm . readFile ( V0_ ) => #abiCallData ( "readFile" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . readLine ( V0_ ) => #abiCallData ( "readLine" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . record ( ) => #abiCallData ( "record" , .TypedArgs ) )
+      
+    
+    rule  ( Vm . recordLogs ( ) => #abiCallData ( "recordLogs" , .TypedArgs ) )
+      
+    
+    rule  ( Vm . removeFile ( V0_ ) => #abiCallData ( "removeFile" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . revertTo ( V0_ ) => #abiCallData ( "revertTo" , #uint256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
+      
+    
+    rule  ( Vm . roll ( V0_ ) => #abiCallData ( "roll" , #uint256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
+      
+    
+    rule  ( Vm . rollFork ( V0_forkId , V1_blockNumber ) => #abiCallData ( "rollFork" , #uint256 ( V0_forkId ) , #uint256 ( V1_blockNumber ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_forkId )
+       andBool ( #rangeUInt ( 256 , V1_blockNumber )
+               ))
+      
+    
+    rule  ( Vm . rollFork ( V0_forkId , V1_blockNumber ) => #abiCallData ( "rollFork" , #uint256 ( V0_forkId ) , #uint256 ( V1_blockNumber ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_forkId )
+       andBool ( #rangeUInt ( 256 , V1_blockNumber )
+               ))
+      
+    
+    rule  ( Vm . rpcUrl ( V0_ ) => #abiCallData ( "rpcUrl" , #string ( V0_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . rpcUrls ( ) => #abiCallData ( "rpcUrls" , .TypedArgs ) )
+      
+    
+    rule  ( Vm . selectFork ( V0_ ) => #abiCallData ( "selectFork" , #uint256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
+      
+    
+    rule  ( Vm . setEnv ( V0_ , V1_ ) => #abiCallData ( "setEnv" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . setNonce ( V0_ , V1_ ) => #abiCallData ( "setNonce" , #address ( V0_ ) , #uint64 ( V1_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 64 , V1_ )
+               ))
+      
+    
+    rule  ( Vm . sign ( V0_ , V1_ ) => #abiCallData ( "sign" , #uint256 ( V0_ ) , #bytes32 ( V1_ ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_ )
+       andBool ( #rangeUInt ( 256 , V1_ )
+               ))
+      
+    
+    rule  ( Vm . snapshot ( ) => #abiCallData ( "snapshot" , .TypedArgs ) )
+      
+    
+    rule  ( Vm . startBroadcast ( ) => #abiCallData ( "startBroadcast" , .TypedArgs ) )
+      
+    
+    rule  ( Vm . startBroadcast ( ) => #abiCallData ( "startBroadcast" , .TypedArgs ) )
+      
+    
+    rule  ( Vm . startPrank ( V0_ ) => #abiCallData ( "startPrank" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . startPrank ( V0_ ) => #abiCallData ( "startPrank" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . stopBroadcast ( ) => #abiCallData ( "stopBroadcast" , .TypedArgs ) )
+      
+    
+    rule  ( Vm . stopPrank ( ) => #abiCallData ( "stopPrank" , .TypedArgs ) )
+      
+    
+    rule  ( Vm . store ( V0_ , V1_ , V2_ ) => #abiCallData ( "store" , #address ( V0_ ) , #bytes32 ( V1_ ) , #bytes32 ( V2_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 256 , V1_ )
+       andBool ( #rangeUInt ( 256 , V2_ )
+               )))
+      
+    
+    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . warp ( V0_ ) => #abiCallData ( "warp" , #uint256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
+      
+    
+    rule  ( Vm . writeFile ( V0_ , V1_ ) => #abiCallData ( "writeFile" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . writeLine ( V0_ , V1_ ) => #abiCallData ( "writeLine" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "accesses" ) => 1706857601 )
+      
+    
+    rule  ( selector ( "activeFork" ) => 789593890 )
+      
+    
+    rule  ( selector ( "addr" ) => 4288775753 )
+      
+    
+    rule  ( selector ( "assume" ) => 1281615202 )
+      
+    
+    rule  ( selector ( "broadcast" ) => 2949218368 )
+      
+    
+    rule  ( selector ( "broadcast" ) => 3868601563 )
+      
+    
+    rule  ( selector ( "chainId" ) => 1078582738 )
+      
+    
+    rule  ( selector ( "clearMockedCalls" ) => 1071599125 )
+      
+    
+    rule  ( selector ( "closeFile" ) => 1220748319 )
+      
+    
+    rule  ( selector ( "coinbase" ) => 4282924116 )
+      
+    
+    rule  ( selector ( "createFork" ) => 834286744 )
+      
+    
+    rule  ( selector ( "createFork" ) => 1805892139 )
+      
+    
+    rule  ( selector ( "createSelectFork" ) => 2556952628 )
+      
+    
+    rule  ( selector ( "createSelectFork" ) => 1911440973 )
+      
+    
+    rule  ( selector ( "deal" ) => 3364511341 )
+      
+    
+    rule  ( selector ( "deriveKey" ) => 1808477211 )
+      
+    
+    rule  ( selector ( "deriveKey" ) => 1646872971 )
+      
+    
+    rule  ( selector ( "envAddress" ) => 890066623 )
+      
+    
+    rule  ( selector ( "envAddress" ) => 2905717242 )
+      
+    
+    rule  ( selector ( "envBool" ) => 2127686781 )
+      
+    
+    rule  ( selector ( "envBool" ) => 2863521455 )
+      
+    
+    rule  ( selector ( "envBytes" ) => 1299951366 )
+      
+    
+    rule  ( selector ( "envBytes" ) => 3720504603 )
+      
+    
+    rule  ( selector ( "envBytes32" ) => 2543095874 )
+      
+    
+    rule  ( selector ( "envBytes32" ) => 1525821889 )
+      
+    
+    rule  ( selector ( "envInt" ) => 2301234273 )
+      
+    
+    rule  ( selector ( "envInt" ) => 1108873552 )
+      
+    
+    rule  ( selector ( "envString" ) => 4168600345 )
+      
+    
+    rule  ( selector ( "envString" ) => 347089865 )
+      
+    
+    rule  ( selector ( "envUint" ) => 3247934751 )
+      
+    
+    rule  ( selector ( "envUint" ) => 4091461785 )
+      
+    
+    rule  ( selector ( "etch" ) => 3033974658 )
+      
+    
+    rule  ( selector ( "expectCall" ) => 3177903156 )
+      
+    
+    rule  ( selector ( "expectCall" ) => 4077681571 )
+      
+    
+    rule  ( selector ( "expectEmit" ) => 1226622914 )
+      
+    
+    rule  ( selector ( "expectEmit" ) => 2176505587 )
+      
+    
+    rule  ( selector ( "expectRevert" ) => 4102309908 )
+      
+    
+    rule  ( selector ( "expectRevert" ) => 4069379763 )
+      
+    
+    rule  ( selector ( "expectRevert" ) => 3273568480 )
+      
+    
+    rule  ( selector ( "fee" ) => 968063664 )
+      
+    
+    rule  ( selector ( "ffi" ) => 2299921511 )
+      
+    
+    rule  ( selector ( "getCode" ) => 2367473957 )
+      
+    
+    rule  ( selector ( "getNonce" ) => 755185067 )
+      
+    
+    rule  ( selector ( "getRecordedLogs" ) => 420828068 )
+      
+    
+    rule  ( selector ( "label" ) => 3327641368 )
+      
+    
+    rule  ( selector ( "load" ) => 1719639408 )
+      
+    
+    rule  ( selector ( "mockCall" ) => 3110212580 )
+      
+    
+    rule  ( selector ( "mockCall" ) => 2168494993 )
+      
+    
+    rule  ( selector ( "prank" ) => 3395723175 )
+      
+    
+    rule  ( selector ( "prank" ) => 1206193358 )
+      
+    
+    rule  ( selector ( "readFile" ) => 1626979089 )
+      
+    
+    rule  ( selector ( "readLine" ) => 1895126824 )
+      
+    
+    rule  ( selector ( "record" ) => 644673801 )
+      
+    
+    rule  ( selector ( "recordLogs" ) => 1101999954 )
+      
+    
+    rule  ( selector ( "removeFile" ) => 4054835277 )
+      
+    
+    rule  ( selector ( "revertTo" ) => 1155002532 )
+      
+    
+    rule  ( selector ( "roll" ) => 528174896 )
+      
+    
+    rule  ( selector ( "rollFork" ) => 3652973473 )
+      
+    
+    rule  ( selector ( "rollFork" ) => 3612115876 )
+      
+    
+    rule  ( selector ( "rpcUrl" ) => 2539285737 )
+      
+    
+    rule  ( selector ( "rpcUrls" ) => 2824504344 )
+      
+    
+    rule  ( selector ( "selectFork" ) => 2663344167 )
+      
+    
+    rule  ( selector ( "setEnv" ) => 1029252078 )
+      
+    
+    rule  ( selector ( "setNonce" ) => 4175530839 )
+      
+    
+    rule  ( selector ( "sign" ) => 3812747940 )
+      
+    
+    rule  ( selector ( "snapshot" ) => 2534502746 )
+      
+    
+    rule  ( selector ( "startBroadcast" ) => 2142579071 )
+      
+    
+    rule  ( selector ( "startBroadcast" ) => 2146183821 )
+      
+    
+    rule  ( selector ( "startPrank" ) => 105151830 )
+      
+    
+    rule  ( selector ( "startPrank" ) => 1169514616 )
+      
+    
+    rule  ( selector ( "stopBroadcast" ) => 1995103542 )
+      
+    
+    rule  ( selector ( "stopPrank" ) => 2428830011 )
+      
+    
+    rule  ( selector ( "store" ) => 1892290747 )
+      
+    
+    rule  ( selector ( "toString" ) => 1456103998 )
+      
+    
+    rule  ( selector ( "toString" ) => 1910302682 )
+      
+    
+    rule  ( selector ( "toString" ) => 1907020045 )
+      
+    
+    rule  ( selector ( "toString" ) => 2971277800 )
+      
+    
+    rule  ( selector ( "toString" ) => 2736964622 )
+      
+    
+    rule  ( selector ( "toString" ) => 1761649582 )
+      
+    
+    rule  ( selector ( "warp" ) => 3856056066 )
+      
+    
+    rule  ( selector ( "writeFile" ) => 2306738839 )
+      
+    
+    rule  ( selector ( "writeLine" ) => 1637714303 )
+      
+
+endmodule
+
+module CONSOLE-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= ConsoleContract
+    
+    syntax ConsoleContract ::= "console" [symbol(), klabel(contract_console)]
+    
+    rule  ( #binRuntime ( console ) => #parseByteStack ( "0x73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122055cb7f21d69d5a68626bed666b69adc58fdc46d700fc111b3a1cc03e01c56ffd64736f6c634300080d0033" ) )
+      
+
+endmodule
+
+module CONSOLE2-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= Console2Contract
+    
+    syntax Console2Contract ::= "console2" [symbol(), klabel(contract_console2)]
+    
+    rule  ( #binRuntime ( console2 ) => #parseByteStack ( "0x73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122017af94728e4fd8592ef4392559b9c941d0bf92d7928b48a70203c5ea8bb219ad64736f6c634300080d0033" ) )
+      
+
+endmodule
+
+module DSTEST-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= DSTestContract
+    
+    syntax DSTestContract ::= "DSTest" [symbol(), klabel(contract_DSTest)]
+    
+    rule  ( #binRuntime ( DSTest ) => #parseByteStack ( "0x608060405234801561001057600080fd5b50600436106100365760003560e01c8063ba414fa61461003b578063fa7626d414610057575b600080fd5b610043610064565b604051901515815260200160405180910390f35b6000546100439060ff1681565b60008054610100900460ff16156100845750600054610100900460ff1690565b6000737109709ecfa91a80626ff3989d68f67f5b1dd12d3b1561018a5760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b82840152825180830384018152606083019093526000929091610112917f667f9d70ca411d70ead50d8d5c22070dafc36ad75f3dcf5e7237b22ade9aecc4916080016101ca565b60408051601f198184030181529082905261012c916101ee565b6000604051808303816000865af19150503d8060008114610169576040519150601f19603f3d011682016040523d82523d6000602084013e61016e565b606091505b50915050808060200190518101906101869190610201565b9150505b919050565b6000815160005b818110156101b05760208185018101518683015201610196565b818111156101bf576000828601525b509290920192915050565b6001600160e01b03198316815260006101e6600483018461018f565b949350505050565b60006101fa828461018f565b9392505050565b60006020828403121561021357600080fd5b815180151581146101fa57600080fdfea2646970667358221220a4c5a2ff7302bc039072f8279bb8bf78dbe36fdac7375a2648b1bb0aac1261e264736f6c634300080d0033" ) )
+      
+    
+    syntax Field ::= DSTestField
+    
+    syntax DSTestField ::= "IS_TEST" [symbol(), klabel(field_DSTest_IS_TEST)]
+    
+    syntax DSTestField ::= "_failed" [symbol(), klabel(field_DSTest__failed)]
+    
+    rule  ( #loc ( DSTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( DSTest . _failed ) => 0 )
+      
+    
+    syntax ByteArray ::= DSTestContract "." DSTestMethod [function(), symbol(), klabel(method_DSTest)]
+    
+    syntax DSTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_DSTest_IS_TEST)]
+    
+    syntax DSTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_DSTest_failed)]
+    
+    rule  ( DSTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( DSTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+
+endmodule
+
 module FOUNDRY-MAIN
     imports public ADDRTEST-BIN-RUNTIME
     imports public ASSUMETEST-BIN-RUNTIME
     imports public BLOCKPARAMSTEST-BIN-RUNTIME
     imports public BROADCASTTEST-BIN-RUNTIME
+    imports public CONTRACT-BIN-RUNTIME
     imports public CONTRACTTEST-BIN-RUNTIME
     imports public CONTRACTBTEST-BIN-RUNTIME
     imports public DEALTEST-BIN-RUNTIME
-    imports public TOKEN-BIN-RUNTIME
+    imports public DEALTOKEN-BIN-RUNTIME
+    imports public EXPECTEMIT-BIN-RUNTIME
     imports public EMITCONTRACTTEST-BIN-RUNTIME
     imports public ENVTEST-BIN-RUNTIME
     imports public ETCHTEST-BIN-RUNTIME
@@ -4068,20 +5576,36 @@ module FOUNDRY-MAIN
     imports public LABELTEST-BIN-RUNTIME
     imports public LOOPSTEST-BIN-RUNTIME
     imports public MOCKCALLTEST-BIN-RUNTIME
+    imports public MYIERC20-BIN-RUNTIME
+    imports public MYTOKEN-BIN-RUNTIME
     imports public NONCETEST-BIN-RUNTIME
+    imports public OWNERUPONLY-BIN-RUNTIME
     imports public OWNERUPONLYTEST-BIN-RUNTIME
+    imports public PRANK-BIN-RUNTIME
     imports public PRANKTEST-BIN-RUNTIME
     imports public RECORDLOGSTEST-BIN-RUNTIME
+    imports public SAFE-BIN-RUNTIME
     imports public SAFETEST-BIN-RUNTIME
+    imports public SCRIPT-BIN-RUNTIME
     imports public SETUPTEST-BIN-RUNTIME
     imports public SIGNTEST-BIN-RUNTIME
     imports public ASSERTTEST-BIN-RUNTIME
     imports public SNAPSHOTTEST-BIN-RUNTIME
     imports public STORE-BIN-RUNTIME
     imports public STORETEST-BIN-RUNTIME
+    imports public TEST-BIN-RUNTIME
+    imports public STDERROR-BIN-RUNTIME
+    imports public STDMATH-BIN-RUNTIME
+    imports public STDSTORAGE-BIN-RUNTIME
+    imports public TESTNUMBER-BIN-RUNTIME
     imports public TOSTRINGTEST-BIN-RUNTIME
+    imports public TOKEN-BIN-RUNTIME
     imports public TOKENTEST-BIN-RUNTIME
     imports public UINTTYPETEST-BIN-RUNTIME
+    imports public VM-BIN-RUNTIME
+    imports public CONSOLE-BIN-RUNTIME
+    imports public CONSOLE2-BIN-RUNTIME
+    imports public DSTEST-BIN-RUNTIME
     imports public FOUNDRY
     imports public LEMMAS
     imports public INT-SIMPLIFICATION
