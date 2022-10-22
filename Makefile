@@ -288,10 +288,11 @@ $(KEVM_LIB)/$(foundry_kompiled): $(libsecp256k1_out)
 endif
 
 $(KEVM_LIB)/$(foundry_kompiled): $(kevm_includes) $(plugin_includes) $(lemma_includes) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend foundry                     \
-	    $(foundry_main_file) $(HASKELL_KOMPILE_OPTS) \
-	    --main-module $(foundry_main_module)         \
-	    --syntax-module $(foundry_syntax_module)     \
+	$(KOMPILE) --backend foundry                        \
+	    $(KEVM_INCLUDE)/kframework/$(foundry_main_file) \
+	    --main-module $(foundry_main_module)            \
+	    --syntax-module $(foundry_syntax_module)        \
+	    $(HASKELL_KOMPILE_OPTS)                         \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 # Installing
