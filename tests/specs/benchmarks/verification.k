@@ -1,4 +1,6 @@
 requires "lemmas/lemmas.k"
+requires "infinite-gas.md"
+requires "abi.md"
 
 module VERIFICATION-COMMON
     imports LEMMAS
@@ -25,6 +27,7 @@ module VERIFICATION
     imports VERIFICATION-JAVA
     imports VERIFICATION-HASKELL
     imports INFINITE-GAS-JAVA-EXTRA
+    imports EVM-ABI
 
   // ########################
   // Map Reasoning
