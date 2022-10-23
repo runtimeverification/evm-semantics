@@ -370,7 +370,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "pyk"
-version = "0.1.25"
+version = "0.1.26"
 description = ""
 category = "main"
 optional = false
@@ -384,8 +384,8 @@ tinyrpc = {version = "^1.1.5", extras = ["gevent", "httpclient", "wsgi"]}
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.25"
-resolved_reference = "a328d14f08a1012eb882a440904dacdfedaae9aa"
+reference = "v0.1.26"
+resolved_reference = "6eae972d0df91d62060a93703458a1c05dd70304"
 
 [[package]]
 name = "requests"
@@ -542,7 +542,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "95cf9b94ea3be64ddbfd09bd99b648c5ffecbf500e651d363808739e6a7f9d94"
+content-hash = "559802b5047d747f220cebef148333d437cfcab8c2ccc5b92a59f3f3f2841969"
 
 [metadata.files]
 attrs = [
