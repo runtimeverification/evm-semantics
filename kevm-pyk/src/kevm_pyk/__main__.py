@@ -279,7 +279,7 @@ def exec_foundry_prove(
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
-    kcfgs_dir = definition_dir / 'kcfgs'
+    kcfgs_dir = foundry_out / 'kcfgs'
     if not kcfgs_dir.exists():
         kcfgs_dir.mkdir()
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
@@ -369,7 +369,7 @@ def exec_foundry_show_cfg(
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
-    kcfgs_dir = definition_dir / 'kcfgs'
+    kcfgs_dir = foundry_out / 'kcfgs'
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
     kcfg_file = kcfgs_dir / f'{test}.json'
     with open(kcfg_file, 'r') as kf:
