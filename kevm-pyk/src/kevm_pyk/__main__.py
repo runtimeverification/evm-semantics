@@ -281,6 +281,7 @@ def exec_foundry_prove(
     debug_equations: List[str],
     bug_report: bool,
     max_depth: int,
+    max_iterations: Optional[int],
     reinit: bool = False,
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
@@ -297,6 +298,8 @@ def exec_foundry_prove(
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
+    if max_iterations is not None and max_iterations <= 0:
+        raise ValueError(f'Must have at least one iteration, found: --max-iterations {max_iterations}')
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
@@ -373,8 +376,12 @@ def exec_foundry_prove(
     def prove_it(id_and_cfg: Tuple[str, Tuple[KCFG, Path]]) -> bool:
         cfgid, (cfg, cfgpath) = id_and_cfg
         target_node = cfg.get_unique_target()
+        iterations = 0
 
         while cfg.frontier:
+            if max_iterations is not None and max_iterations <= iterations:
+                break
+            iterations += 1
             curr_node = cfg.frontier[0]
             cfg.add_expanded(curr_node.id)
             _LOGGER.info(f'Advancing proof from node: {shorten_hashes(curr_node.id)}')
@@ -831,6 +838,13 @@ def _create_argument_parser() -> ArgumentParser:
         '--max-depth',
         dest='max_depth',
         default=250,
+        type=int,
+        help='Store every Nth state in the KCFG for inspection.',
+    )
+    foundry_prove_args.add_argument(
+        '--max-iterations',
+        dest='max_iterations',
+        default=None,
         type=int,
         help='Store every Nth state in the KCFG for inspection.',
     )
