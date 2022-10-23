@@ -355,6 +355,11 @@ def exec_foundry_prove(
 
     lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
 
+    def _write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
+        with open(_cfgpath, 'w') as cfgfile:
+            cfgfile.write(json.dumps(_cfg.to_dict()))
+            _LOGGER.info(f'Updated CFG file: {_cfgpath}')
+
     def prove_it(_id_and_cfg: Tuple[str, KCFG]) -> bool:
         _cfg_id, _cfg = _id_and_cfg
         _claim = _kcfg_unproven_to_claim(_cfg)
