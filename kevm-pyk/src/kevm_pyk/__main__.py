@@ -282,8 +282,8 @@ def exec_foundry_prove(
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
-    if max_iterations is not None and max_iterations <= 0:
-        raise ValueError(f'Must have at least one iteration, found: --max-iterations {max_iterations}')
+    if max_iterations is not None and max_iterations < 0:
+        raise ValueError(f'Must have a non-negative number of iterations, found: --max-iterations {max_iterations}')
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
