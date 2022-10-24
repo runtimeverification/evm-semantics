@@ -10,13 +10,13 @@ from pyk.cli_utils import dir_path, file_path
 from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KRule, KToken
 from pyk.kastManip import minimize_term
 from pyk.kcfg import KCFG
-from pyk.ktool.krun import KPrint, _krun
+from pyk.ktool.krun import _krun
 from pyk.prelude.ml import mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
-from .solc_to_k import Contract, contract_to_claims, contract_to_main_module, solc_compile
-from .utils import KCFG_from_claim, KPrint_make_unparsing, KProve_prove_claim, add_include_arg
+from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
+from .utils import KPrint_make_unparsing, KProve_prove_claim, add_include_arg
 
 T = TypeVar('T')
 
@@ -118,7 +118,6 @@ def exec_foundry_kompile(
     md_selector: Optional[str],
     regen: bool = False,
     rekompile: bool = False,
-    reinit: bool = False,
     requires: Iterable[str] = (),
     imports: Iterable[str] = (),
     **kwargs: Any,
@@ -131,7 +130,6 @@ def exec_foundry_kompile(
     foundry_definition_dir = foundry_out / 'kompiled'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
-    kcfgs_file = foundry_definition_dir / 'kcfgs.json'
     requires = ['foundry.md', 'lemmas/lemmas.k', 'lemmas/int-simplification.k'] + list(requires)
     imports = ['FOUNDRY', 'LEMMAS', 'INT-SIMPLIFICATION'] + list(imports)
 
@@ -173,21 +171,9 @@ def exec_foundry_kompile(
             profile=profile,
         )
 
-    if reinit or not kcfgs_file.exists():
-        _LOGGER.info(f'Initializing KCFGs: {kcfgs_file}')
-
-        foundry = Foundry(foundry_definition_dir, profile=profile)
-        cfgs = _contract_to_claim_cfgs(kevm=foundry, contracts=contracts)
-
-        with open(kcfgs_file, 'w') as kf:
-            kf.write(json.dumps(cfgs))
-            kf.close()
-
-        _LOGGER.info(f'Wrote file: {kcfgs_file}')
-
 
 def _contract_json_paths(foundry_out: Path) -> List[str]:
-    pattern = '*.t.sol/*.json'
+    pattern = '*.sol/*.json'
     paths = foundry_out.glob(pattern)
     json_paths = [str(path) for path in paths]
     json_paths = [json_path for json_path in json_paths if not json_path.endswith('.metadata.json')]
@@ -229,21 +215,6 @@ def _foundry_to_bin_runtime(
     )
 
     return bin_runtime_definition
-
-
-def _contract_to_claim_cfgs(
-    kevm: KPrint,
-    contracts: Iterable[Contract],
-) -> Dict[str, Dict]:
-    cfgs: Dict[str, Dict] = {}
-    for contract in contracts:
-        module_name, claims = contract_to_claims(kevm, contract)
-        for claim in claims:
-            cfg_label = f'{module_name}.{claim.att["label"]}'
-            cfgs[cfg_label] = KCFG_from_claim(kevm.definition, claim).to_dict()
-            _LOGGER.info(f'Produced KCFG: {cfg_label}')
-
-    return cfgs
 
 
 def exec_prove(
@@ -290,6 +261,7 @@ def exec_foundry_prove(
     debug_equations: List[str],
     bug_report: bool,
     depth: Optional[int],
+    reinit: bool = False,
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
     workers: int = 1,
@@ -307,56 +279,84 @@ def exec_foundry_prove(
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
-    kcfgs_file = definition_dir / 'kcfgs.json'
+    kcfgs_dir = definition_dir / 'kcfgs'
+    if not kcfgs_dir.exists():
+        kcfgs_dir.mkdir()
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
 
-    _LOGGER.info(f'Reading file: {kcfgs_file}')
-    with open(kcfgs_file, 'r') as kf:
-        kcfgs = {k: KCFG.from_dict(v) for k, v in json.loads(kf.read()).items()}
-
-    tests = [Contract.contract_test_to_claim_id(_t) for _t in tests]
-    exclude_tests = [Contract.contract_test_to_claim_id(_t) for _t in exclude_tests]
-    claim_names = set(kcfgs)
-    _unfound_kcfgs: List[str] = []
-    if len(tests) > 0:
-        kcfgs = {k: kcfg for k, kcfg in kcfgs.items() if k in tests}
+    json_paths = _contract_json_paths(foundry_out)
+    contracts = [_contract_from_json(json_path) for json_path in json_paths]
+    all_tests = [
+        f'{contract.name}.{method.name}'
+        for contract in contracts
+        if contract.name.endswith('Test')
+        for method in contract.methods
+        if method.name.startswith('test')
+    ]
+    all_non_tests = [
+        f'{contract.name}.{method.name}'
+        for contract in contracts
+        for method in contract.methods
+        if f'{contract.name}.{method.name}' not in all_tests
+    ]
+    unfound_tests: List[str] = []
+    tests = list(tests)
+    if not tests:
+        tests = all_tests
     for _t in tests:
-        if _t not in claim_names:
-            _unfound_kcfgs.append(_t)
+        if _t not in (all_tests + all_non_tests):
+            unfound_tests.append(_t)
     for _t in exclude_tests:
-        if _t not in claim_names:
-            _unfound_kcfgs.append(_t)
-        if _t in kcfgs:
-            kcfgs.pop(_t)
-    if _unfound_kcfgs:
-        _LOGGER.error(f'Missing KCFGs for tests: {_unfound_kcfgs}')
-        sys.exit(1)
+        if _t not in all_tests:
+            unfound_tests.append(_t)
+        if _t in tests:
+            tests.remove(_t)
+    _LOGGER.info(f'Running tests: {tests}')
+    if unfound_tests:
+        raise ValueError(f'Test identifiers not found: {unfound_tests}')
+
+    kcfgs: Dict[str, KCFG] = {}
+    for test in tests:
+        kcfg_file = kcfgs_dir / f'{test}.json'
+        if reinit or not kcfg_file.exists():
+            _LOGGER.info(f'Initializing KCFG for test: {test}')
+            contract_name, method_name = test.split('.')
+            contract = [c for c in contracts if c.name == contract_name][0]
+            method = [m for m in contract.methods if m.name == method_name][0]
+            empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
+            cfg = method_to_cfg(empty_config, contract, method)
+            kcfgs[test] = cfg
+            with open(kcfg_file, 'w') as kf:
+                kf.write(json.dumps(cfg.to_dict()))
+                kf.close()
+            _LOGGER.info(f'Wrote file: {kcfg_file}')
+        else:
+            with open(kcfg_file, 'r') as kf:
+                kcfgs[test] = KCFG.from_dict(json.loads(kf.read()))
 
     def _kcfg_unproven_to_claim(_kcfg: KCFG) -> KClaim:
         return _kcfg.create_edge(_kcfg.get_unique_init().id, _kcfg.get_unique_target().id, mlTop(), depth=-1).to_claim()
 
-    claims = [(kcfg_name.replace('.', '-'), _kcfg_unproven_to_claim(kcfg)) for kcfg_name, kcfg in kcfgs.items()]
-
-    kevm = KEVM(definition_dir, profile=profile, use_directory=use_directory)
-
     lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
 
-    def prove_it(_id_and_claim: Tuple[str, KClaim]) -> bool:
-        _claim_id, _claim = _id_and_claim
-        ret, result = KProve_prove_claim(kevm, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
+    def prove_it(_id_and_cfg: Tuple[str, KCFG]) -> bool:
+        _cfg_id, _cfg = _id_and_cfg
+        _claim = _kcfg_unproven_to_claim(_cfg)
+        _claim_id = _cfg_id.replace('.', '-').replace('_', '-')
+        ret, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
         if minimize:
             result = minimize_term(result)
-        print(f'Result for {_claim_id}:\n{kevm.pretty_print(result)}\n')
+        print(f'Result for {_cfg_id}:\n{foundry.pretty_print(result)}\n')
         return ret
 
     with ProcessPool(ncpus=workers) as process_pool:
-        results = process_pool.map(prove_it, claims)
+        results = process_pool.map(prove_it, kcfgs.items())
         process_pool.close()
 
-    failed_claims = [cid for ((cid, _), failed) in zip(claims, results) if failed]
-    if failed_claims:
-        print(f'Failed to prove KCFGs: {failed_claims}\n')
-
-    sys.exit(len(failed_claims))
+    failed_cfgs = [cid for ((cid, _), failed) in zip(kcfgs.items(), results) if failed]
+    if failed_cfgs:
+        print(f'Failed to prove KCFGs: {failed_cfgs}\n')
+    sys.exit(len(failed_cfgs))
 
 
 def exec_run(
@@ -569,13 +569,6 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Rekompile foundry.k even if kompiled definition already exists.',
     )
-    foundry_kompile.add_argument(
-        '--reinit',
-        dest='reinit',
-        default=False,
-        action='store_true',
-        help='Reinitialize kcfgs even if they already exist.',
-    )
 
     foundry_prove_args = command_parser.add_parser(
         'foundry-prove',
@@ -598,6 +591,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=[],
         action='append',
         help='Skip listed tests, ContractName.TestName',
+    )
+    foundry_prove_args.add_argument(
+        '--reinit',
+        dest='reinit',
+        default=False,
+        action='store_true',
+        help='Reinitialize KCFGs even if they already exist.',
     )
 
     return parser
