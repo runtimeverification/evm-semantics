@@ -26,7 +26,7 @@ module VERIFICATION
     imports VERIFICATION-COMMON
     imports VERIFICATION-JAVA
     imports VERIFICATION-HASKELL
-    imports INFINITE-GAS-JAVA-EXTRA
+    imports INFINITE-GAS
     imports EVM-ABI
 
   // ########################
