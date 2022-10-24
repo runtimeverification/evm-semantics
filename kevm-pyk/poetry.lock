@@ -370,7 +370,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "pyk"
-version = "0.1.26"
+version = "0.1.30"
 description = ""
 category = "main"
 optional = false
