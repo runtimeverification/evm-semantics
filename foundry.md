@@ -214,10 +214,10 @@ We define two productions named `#return_foundry` and `#call_foundry`, which wil
 The rule `foundry.return` will rewrite the `#return_foundry` production into other productions that will place the output of the execution into the local memory, refund the gas value of the call and push the value `1` on the call stack.
 
 ```{.k .bytes}
-    syntax KItem ::= "#error_foundry" String   [klabel(foundry_error)]
-                   | "#return_foundry" Int Int [klabel(foundry_return)]
+    syntax KItem ::= "#return_foundry" Int Int [klabel(foundry_return)]
                    | "#call_foundry" Int ByteArray [klabel(foundry_call)]
- // ---------------------------------------------------------------------
+                   | "#error_foundry" Int ByteArray [klabel(foundry_error)]
+ // -----------------------------------------------------------------------
     rule [foundry.return]:
          <k> #return_foundry RETSTART RETWIDTH
           => #setLocalMem RETSTART RETWIDTH OUT
@@ -469,8 +469,9 @@ Otherwise, throw an error for any other call to the Foundry contract.
 
 ```{.k .bytes}
     rule [foundry.call.owise]:
-         <k> #call_foundry SELECTOR _ => #error_foundry #unparseSelector (SELECTOR) ... </k>
-         <statusCode> _ => FOUNDRY_UNIMPLEMENTED </statusCode> [owise]
+         <k> #call_foundry SELECTOR ARGS => #error_foundry SELECTOR ARGS ... </k>
+         <statusCode> _ => FOUNDRY_UNIMPLEMENTED </statusCode>
+      [owise]
 ```
 
 Utils
@@ -589,80 +590,78 @@ Utils
     rule ( selector ( "setNonce(address,uint64)" )       => 4175530839 )
 ```
 
- - `#unparseSelector SELECTOR` is a production with hardcoded rules and values that returns the function signature of a given cheat code selector.
+- selectors for unimplemented cheat code functions.
 
 ```k
-    syntax String ::= "#unparseSelector" "(" Int ")" [function, functional, klabel("foundry_unparseSelector")]
- // -----------------------------------------------------------------------------------------
-    rule #unparseSelector ( 3812747940 ) => "sign(uint256,bytes32)"
-    rule #unparseSelector ( 2299921511 ) => "ffi(string[])"
-    rule #unparseSelector ( 1029252078 ) => "setEnv(string,string)"
-    rule #unparseSelector ( 2127686781 ) => "envBool(string)"
-    rule #unparseSelector ( 3247934751 ) => "envUint(string)"
-    rule #unparseSelector ( 2301234273 ) => "envInt(string)"
-    rule #unparseSelector ( 890066623  ) => "envAddress(string)"
-    rule #unparseSelector ( 2543095874 ) => "envBytes32(string)"
-    rule #unparseSelector ( 4168600345 ) => "envString(string)"
-    rule #unparseSelector ( 1299951366 ) => "envBytes(string)"
-    rule #unparseSelector ( 2863521455 ) => "envBool(string,string)"
-    rule #unparseSelector ( 4091461785 ) => "envUint(string,string)"
-    rule #unparseSelector ( 1108873552 ) => "envInt(string,string)"
-    rule #unparseSelector ( 2905717242 ) => "envAddress(string,string)"
-    rule #unparseSelector ( 1525821889 ) => "envBytes32(string,string)"
-    rule #unparseSelector ( 347089865  ) => "envString(string,string)"
-    rule #unparseSelector ( 3720504603 ) => "envBytes(string,string)"
-    rule #unparseSelector ( 3395723175 ) => "prank(address)"
-    rule #unparseSelector ( 105151830  ) => "startPrank(address)"
-    rule #unparseSelector ( 1206193358 ) => "prank(address,address)"
-    rule #unparseSelector ( 1169514616 ) => "startPrank(address,address)"
-    rule #unparseSelector ( 2428830011 ) => "stopPrank()"
-    rule #unparseSelector ( 4069379763 ) => "expectRevert(bytes)"
-    rule #unparseSelector ( 3273568480 ) => "expectRevert(bytes4)"
-    rule #unparseSelector ( 4102309908 ) => "expectRevert()"
-    rule #unparseSelector ( 644673801  ) => "record()"
-    rule #unparseSelector ( 1706857601 ) => "accesses(address)"
-    rule #unparseSelector ( 1226622914 ) => "expectEmit(bool,bool,bool,bool)"
-    rule #unparseSelector ( 2176505587 ) => "expectEmit(bool,bool,bool,bool,address)"
-    rule #unparseSelector ( 378193464  ) => "mockCall(address,bytes calldata,bytes)"
-    rule #unparseSelector ( 2168494993 ) => "mockCall(address,uint256,bytes,bytes)"
-    rule #unparseSelector ( 1071599125 ) => "clearMockedCalls()"
-    rule #unparseSelector ( 3177903156 ) => "expectCall(address,bytes)"
-    rule #unparseSelector ( 4077681571 ) => "expectCall(address,uint256,bytes)"
-    rule #unparseSelector ( 2367473957 ) => "getCode(string)"
-    rule #unparseSelector ( 2949218368 ) => "broadcast()"
-    rule #unparseSelector ( 3868601563 ) => "broadcast(address)"
-    rule #unparseSelector ( 2142579071 ) => "startBroadcast()"
-    rule #unparseSelector ( 2146183821 ) => "startBroadcast(address)"
-    rule #unparseSelector ( 1995103542 ) => "stopBroadcast()"
-    rule #unparseSelector ( 1626979089 ) => "readFile(string)"
-    rule #unparseSelector ( 1895126824 ) => "readLine(string)"
-    rule #unparseSelector ( 2306738839 ) => "writeFile(string,string)"
-    rule #unparseSelector ( 1637714303 ) => "writeLine(string,string)"
-    rule #unparseSelector ( 1220748319 ) => "closeFile(string)"
-    rule #unparseSelector ( 4054835277 ) => "removeFile(string)"
-    rule #unparseSelector ( 1456103998 ) => "toString(address)"
-    rule #unparseSelector ( 1907020045 ) => "toString(bytes)"
-    rule #unparseSelector ( 2971277800 ) => "toString(bytes32)"
-    rule #unparseSelector ( 1910302682 ) => "toString(bool)"
-    rule #unparseSelector ( 1761649582 ) => "toString(uint256)"
-    rule #unparseSelector ( 2736964622 ) => "toString(int256)"
-    rule #unparseSelector ( 1101999954 ) => "recordLogs()"
-    rule #unparseSelector ( 420828068  ) => "getRecordedLogs()"
-    rule #unparseSelector ( 2534502746 ) => "snapshot()"
-    rule #unparseSelector ( 1155002532 ) => "revertTo(uint256)"
-    rule #unparseSelector ( 1805892139 ) => "createFork(string,uint256)"
-    rule #unparseSelector ( 834286744  ) => "createFork(string)"
-    rule #unparseSelector ( 1911440973 ) => "createSelectFork(string,uint256)"
-    rule #unparseSelector ( 2556952628 ) => "createSelectFork(string)"
-    rule #unparseSelector ( 2663344167 ) => "selectFork(uint256)"
-    rule #unparseSelector ( 789593890  ) => "activeFork()"
-    rule #unparseSelector ( 3652973473 ) => "rollFork(uint256)"
-    rule #unparseSelector ( 3612115876 ) => "rollFork(uint256,uint256)"
-    rule #unparseSelector ( 2539285737 ) => "rpcUrl(string)"
-    rule #unparseSelector ( 2824504344 ) => "rpcUrls()"
-    rule #unparseSelector ( 1646872971 ) => "deriveKey(string,uint32)"
-    rule #unparseSelector ( _:Int )      => "unknownCheatCode" [owise]
+    rule #selector ( "sign(uint256,bytes32)")                   => 3812747940
+    rule #selector ( "ffi(string[])")                           => 2299921511
+    rule #selector ( "setEnv(string,string)")                   => 1029252078
+    rule #selector ( "envBool(string)")                         => 2127686781
+    rule #selector ( "envUint(string)")                         => 3247934751
+    rule #selector ( "envInt(string)")                          => 2301234273
+    rule #selector ( "envAddress(string)")                      => 890066623
+    rule #selector ( "envBytes32(string)")                      => 2543095874
+    rule #selector ( "envString(string)")                       => 4168600345
+    rule #selector ( "envBytes(string)")                        => 1299951366
+    rule #selector ( "envBool(string,string)")                  => 2863521455
+    rule #selector ( "envUint(string,string)")                  => 4091461785
+    rule #selector ( "envInt(string,string)")                   => 1108873552
+    rule #selector ( "envAddress(string,string)")               => 2905717242
+    rule #selector ( "envBytes32(string,string)")               => 1525821889
+    rule #selector ( "envString(string,string)")                => 347089865
+    rule #selector ( "envBytes(string,string)")                 => 3720504603
+    rule #selector ( "prank(address)")                          => 3395723175
+    rule #selector ( "startPrank(address)")                     => 105151830
+    rule #selector ( "prank(address,address)")                  => 1206193358
+    rule #selector ( "startPrank(address,address)")             => 1169514616
+    rule #selector ( "stopPrank()")                             => 2428830011
+    rule #selector ( "expectRevert(bytes)")                     => 4069379763
+    rule #selector ( "expectRevert(bytes4)")                    => 3273568480
+    rule #selector ( "expectRevert()")                          => 4102309908
+    rule #selector ( "record()")                                => 644673801
+    rule #selector ( "accesses(address)")                       => 1706857601
+    rule #selector ( "expectEmit(bool,bool,bool,bool)")         => 1226622914
+    rule #selector ( "expectEmit(bool,bool,bool,bool,address)") => 2176505587
+    rule #selector ( "mockCall(address,bytes calldata,bytes)")  => 378193464
+    rule #selector ( "mockCall(address,uint256,bytes,bytes)")   => 2168494993
+    rule #selector ( "clearMockedCalls()")                      => 1071599125
+    rule #selector ( "expectCall(address,bytes)")               => 3177903156
+    rule #selector ( "expectCall(address,uint256,bytes)")       => 4077681571
+    rule #selector ( "getCode(string)")                         => 2367473957
+    rule #selector ( "broadcast()")                             => 2949218368
+    rule #selector ( "broadcast(address)")                      => 3868601563
+    rule #selector ( "startBroadcast()")                        => 2142579071
+    rule #selector ( "startBroadcast(address)")                 => 2146183821
+    rule #selector ( "stopBroadcast()")                         => 1995103542
+    rule #selector ( "readFile(string)")                        => 1626979089
+    rule #selector ( "readLine(string)")                        => 1895126824
+    rule #selector ( "writeFile(string,string)")                => 2306738839
+    rule #selector ( "writeLine(string,string)")                => 1637714303
+    rule #selector ( "closeFile(string)")                       => 1220748319
+    rule #selector ( "removeFile(string)")                      => 4054835277
+    rule #selector ( "toString(address)")                       => 1456103998
+    rule #selector ( "toString(bytes)")                         => 1907020045
+    rule #selector ( "toString(bytes32)")                       => 2971277800
+    rule #selector ( "toString(bool)")                          => 1910302682
+    rule #selector ( "toString(uint256)")                       => 1761649582
+    rule #selector ( "toString(int256)")                        => 2736964622
+    rule #selector ( "recordLogs()")                            => 1101999954
+    rule #selector ( "getRecordedLogs()")                       => 420828068
+    rule #selector ( "snapshot()")                              => 2534502746
+    rule #selector ( "revertTo(uint256)")                       => 1155002532
+    rule #selector ( "createFork(string,uint256)")              => 1805892139
+    rule #selector ( "createFork(string)")                      => 834286744
+    rule #selector ( "createSelectFork(string,uint256)")        => 1911440973
+    rule #selector ( "createSelectFork(string)")                => 2556952628
+    rule #selector ( "selectFork(uint256)")                     => 2663344167
+    rule #selector ( "activeFork()")                            => 789593890
+    rule #selector ( "rollFork(uint256)")                       => 3652973473
+    rule #selector ( "rollFork(uint256,uint256)")               => 3612115876
+    rule #selector ( "rpcUrl(string)")                          => 2539285737
+    rule #selector ( "rpcUrls()")                               => 2824504344
+    rule #selector ( "deriveKey(string,uint32)")                => 1646872971
 ```
+
 ```k
 endmodule
 ```
