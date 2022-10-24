@@ -70,6 +70,7 @@ class KEVM(KProve, KRun):
     @staticmethod
     def _patch_symbol_table(symbol_table: Dict[str, Any]) -> None:
         # fmt: off
+        symbol_table['#Bottom']                                       = lambda: '#Bottom'
         symbol_table['_orBool_']                                      = paren(symbol_table['_orBool_'])
         symbol_table['_andBool_']                                     = paren(symbol_table['_andBool_'])
         symbol_table['_impliesBool_']                                 = paren(symbol_table['_impliesBool_'])
@@ -98,6 +99,7 @@ class KEVM(KProve, KRun):
         symbol_table['_>=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')
         symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
         symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
+        symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int']              = paren(symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int'])
         if 'typedArgs' in symbol_table:
             symbol_table['typedArgs'] = paren(symbol_table['typedArgs'])
         # fmt: on
