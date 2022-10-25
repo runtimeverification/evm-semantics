@@ -391,7 +391,7 @@ def exec_foundry_prove(
                     f'Target state reached at depth {depth}, inserted edge from {shorten_hashes((curr_node.id))} to {shorten_hashes((target_node.id))}.'
                 )
 
-            next_state = CTerm(result)
+            next_state = CTerm(sanitize_config(foundry.definition, result))
             next_node = cfg.get_or_create_node(next_state)
             if next_node != curr_node:
                 _LOGGER.info(f'Found basic block at depth {depth}: {shorten_hashes((curr_node.id, next_node.id))}.')
