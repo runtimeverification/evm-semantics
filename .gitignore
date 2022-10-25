@@ -12,6 +12,7 @@
 /tests/**/*.debug-log
 /tests/foundry/cache
 /tests/foundry/foundry.k
+/tests/foundry/foundry.k.check.stripped
 /tests/foundry/*.out
 /tests/foundry/out
 /tests/foundry/test/filecopy2.txt
