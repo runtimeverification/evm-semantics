@@ -22,7 +22,13 @@ from pyk.utils import shorten_hashes
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KCFG__replace_node, KDefinition__expand_macros, KPrint_make_unparsing, add_include_arg
+from .utils import (
+    KCFG__replace_node,
+    KDefinition__expand_macros,
+    KPrint_make_unparsing,
+    add_include_arg,
+    sanitize_config,
+)
 
 T = TypeVar('T')
 
@@ -398,7 +404,7 @@ def exec_foundry_prove(
                     f'Target state reached at depth {depth}, inserted edge from {shorten_hashes((curr_node.id))} to {shorten_hashes((target_node.id))}.'
                 )
 
-            next_state = CTerm(result)
+            next_state = CTerm(sanitize_config(foundry.definition, result))
             next_node = cfg.get_or_create_node(next_state)
             if next_node != curr_node:
                 _LOGGER.info(f'Found basic block at depth {depth}: {shorten_hashes((curr_node.id, next_node.id))}.')
