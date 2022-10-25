@@ -488,13 +488,16 @@ Catch reverts.
 ```{.k .bytes}
     rule <statusCode> EVMC_REVERT => EVMC_SUCCESS </statusCode>
          <k> #halt ~> #return _RETSTART _RETWIDTH ... </k>
+         <output> OUT </output>
          <callDepth> CD </callDepth>
          <expected>
            <expectedRevert> true => false </expectedRevert>
            <expectedDepth> CD </expectedDepth>
-           ...
+           <expectedBytes> EXPECTED </expectedBytes>
          </expected>
-       [priority(40)]
+      requires (EXPECTED =/=K .ByteArray andBool EXPECTED ==K OUT)
+        orBool EXPECTED ==K .ByteArray
+      [priority(40)]
 ```
 
 Change the status code from `EVMC_SUCCESS` to `EVMC_REVERT` if a revert is expected.
@@ -630,12 +633,12 @@ Utils
 ```k
     syntax KItem ::= "#setExpectRevert" ByteArray [klabel(foundry_setExpectedRevert)]
  // ---------------------------------------------------------------------------------
-    rule <k> #setExpectRevert .ByteArray => . ... </k>
+    rule <k> #setExpectRevert EXPECTED => . ... </k>
          <callDepth> CD </callDepth>
          <expected>
            <expectedRevert> false => true </expectedRevert>
            <expectedDepth> _ => CD +Int 1 </expectedDepth>
-           <expectedBytes> _ => .ByteArray </expectedBytes>
+           <expectedBytes> _ => EXPECTED </expectedBytes>
          </expected>
 ```
  - selectors for cheat code functions.
