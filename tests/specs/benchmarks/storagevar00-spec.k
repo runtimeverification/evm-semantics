@@ -13,7 +13,6 @@ module STORAGEVAR00-SPEC
       <evm>
         <output> _ => #encodeArgs(#uint256(N)) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
-        <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => ?_ </touchedAccounts>

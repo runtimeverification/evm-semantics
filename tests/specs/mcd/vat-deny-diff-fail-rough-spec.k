@@ -13,7 +13,6 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
         <evm>
           <output> _ => ?_ </output>
           <statusCode> _ => ?FAILURE:EndStatusCode </statusCode>
-          <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>

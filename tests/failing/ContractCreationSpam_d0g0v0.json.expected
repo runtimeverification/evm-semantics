@@ -19,9 +19,6 @@
       <statusCode>
         EVMC_OUT_OF_GAS
       </statusCode>
-      <endPC>
-        820
-      </endPC>
       <callStack>
         .List
       </callStack>
