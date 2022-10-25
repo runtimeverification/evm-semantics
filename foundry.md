@@ -145,13 +145,16 @@ endmodule
 ### Foundry Cheat Codes
 
 The configuration of the Foundry Cheat Codes is defined as follwing:
-1. The `<prank>` subconfiguration stores values which are used during the execution of any kind of `prank` cheatcode:
+1. The `<prank>` subconfiguration stores values which are used during the execution of any kind of `prank` cheat code:
     - `<prevCaller>` keeps the current address of the contract that initiated the prank.
     - `<prevOrigin>` keeps the current address of the `tx.origin` value.
     - `<newCaller>` and `<newOrigin>` are addresses to be assigned after the prank call to `msg.sender` and `tx.origin`.
     - `<depth>` records the current call depth at which the prank was invoked.
     - `<singleCall>` tells whether the prank stops by itself after the next call or when a `stopPrank` cheat code is invoked.
-
+2. The `<expected>` subconfiguration stores values used for the `expectRevert` cheat code.
+    - `<expectedRevert>` flags if the next call is expected to revert or not.
+    - `<expectedDepth>` records the depth at which the call is expected to revert.
+    - `<expectedBytes>` keeps the expected revert message as a ByteArray.
 ```k
 module FOUNDRY-CHEAT-CODES
     imports EVM
@@ -463,7 +466,7 @@ This rule then takes from the function call data the account using `#asWord(#ran
       requires SELECTOR ==Int selector ( "store(address,bytes32,bytes32)" )
 ```
 
-#### expectRevert
+#### expectRevert - expect the next call to revert.
 
 ```
 function expectRevert() external;
@@ -484,6 +487,7 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
 ```
 
 Catch reverts.
+If the current call depth is equal with the `expectedDepth` and the `expectedBytes` match the `<output>` cell, then replace the `EVMC_REVERT` status code with `EVMC_SUCCESS`.
 
 ```{.k .bytes}
     rule <statusCode> EVMC_REVERT => EVMC_SUCCESS </statusCode>
@@ -495,12 +499,12 @@ Catch reverts.
            <expectedDepth> CD </expectedDepth>
            <expectedBytes> EXPECTED </expectedBytes>
          </expected>
-      requires (EXPECTED =/=K .ByteArray andBool EXPECTED ==K OUT)
+      requires (EXPECTED =/=K .ByteArray andBool EXPECTED ==K #range(OUT, 4, #sizeByteArray(OUT) -Int 4))
         orBool EXPECTED ==K .ByteArray
       [priority(40)]
 ```
 
-Change the status code from `EVMC_SUCCESS` to `EVMC_REVERT` if a revert is expected.
+Change the status code from `EVMC_SUCCESS` to `EVMC_REVERT` if a revert is expected but the call succeded.
 
 ```{.k .bytes}
     rule <statusCode> EVMC_SUCCESS => EVMC_REVERT </statusCode>
@@ -628,7 +632,7 @@ Utils
          </account>
 ```
 
- - `#setExpectRevert`
+ - `#setExpectRevert` sets the `<expected>` subconfiguration with the current call depth and the expected message from `expectRevert`.
 
 ```k
     syntax KItem ::= "#setExpectRevert" ByteArray [klabel(foundry_setExpectedRevert)]

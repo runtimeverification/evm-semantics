@@ -1149,6 +1149,138 @@ module ETCHTEST-BIN-RUNTIME
 
 endmodule
 
+module EXPECTREVERTTEST-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= ExpectRevertTestContract
+    
+    syntax ExpectRevertTestContract ::= "ExpectRevertTest" [symbol(), klabel(contract_ExpectRevertTest)]
+    
+      
+    
+    syntax Field ::= ExpectRevertTestField
+    
+    syntax ExpectRevertTestField ::= "IS_TEST" [symbol(), klabel(field_ExpectRevertTest_IS_TEST)]
+    
+    syntax ExpectRevertTestField ::= "_failed" [symbol(), klabel(field_ExpectRevertTest__failed)]
+    
+    syntax ExpectRevertTestField ::= "IS_SCRIPT" [symbol(), klabel(field_ExpectRevertTest_IS_SCRIPT)]
+    
+    syntax ExpectRevertTestField ::= "stdstore" [symbol(), klabel(field_ExpectRevertTest_stdstore)]
+    
+    rule  ( #loc ( ExpectRevertTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( ExpectRevertTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( ExpectRevertTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( ExpectRevertTest . stdstore ) => 1 )
+      
+    
+    syntax ByteArray ::= ExpectRevertTestContract "." ExpectRevertTestMethod [function(), symbol(), klabel(method_ExpectRevertTest)]
+    
+    syntax ExpectRevertTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ExpectRevertTest_IS_SCRIPT)]
+    
+    syntax ExpectRevertTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ExpectRevertTest_IS_TEST)]
+    
+    syntax ExpectRevertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ExpectRevertTest_failed)]
+    
+    syntax ExpectRevertTestMethod ::= "testFail_expectRevert_false" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_false)]
+    
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_message" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_message)]
+    
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_true" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_true)]
+    
+    syntax ExpectRevertTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ExpectRevertTest_vm)]
+    
+    rule  ( ExpectRevertTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . testFail_expectRevert_false ( ) => #abiCallData ( "testFail_expectRevert_false" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . test_expectRevert_message ( ) => #abiCallData ( "test_expectRevert_message" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . test_expectRevert_true ( ) => #abiCallData ( "test_expectRevert_true" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testFail_expectRevert_false" ) => 2152588325 )
+      
+    
+    rule  ( selector ( "test_expectRevert_message" ) => 3706733127 )
+      
+    
+    rule  ( selector ( "test_expectRevert_true" ) => 2931127071 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
+module REVERTER-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= ReverterContract
+    
+    syntax ReverterContract ::= "Reverter" [symbol(), klabel(contract_Reverter)]
+    
+      
+    
+    syntax ByteArray ::= ReverterContract "." ReverterMethod [function(), symbol(), klabel(method_Reverter)]
+    
+    syntax ReverterMethod ::= "noRevert" "(" ")" [symbol(), klabel(method_Reverter_noRevert)]
+    
+    syntax ReverterMethod ::= "revertWithReason" "(" String ")" [symbol(), klabel(method_Reverter_revertWithReason)]
+    
+    syntax ReverterMethod ::= "revertWithoutReason" "(" ")" [symbol(), klabel(method_Reverter_revertWithoutReason)]
+    
+    rule  ( Reverter . noRevert ( ) => #abiCallData ( "noRevert" , .TypedArgs ) )
+      
+    
+    rule  ( Reverter . revertWithReason ( V0__a ) => #abiCallData ( "revertWithReason" , #string ( V0__a ) , .TypedArgs ) )
+      
+    
+    rule  ( Reverter . revertWithoutReason ( ) => #abiCallData ( "revertWithoutReason" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "noRevert" ) => 3072618433 )
+      
+    
+    rule  ( selector ( "revertWithReason" ) => 4154655617 )
+      
+    
+    rule  ( selector ( "revertWithoutReason" ) => 1097275021 )
+      
+
+endmodule
+
 module FFITEST-BIN-RUNTIME
     imports public FOUNDRY
     imports public LEMMAS
@@ -5519,6 +5651,8 @@ module FOUNDRY-MAIN
     imports public EMITCONTRACTTEST-BIN-RUNTIME
     imports public ENVTEST-BIN-RUNTIME
     imports public ETCHTEST-BIN-RUNTIME
+    imports public EXPECTREVERTTEST-BIN-RUNTIME
+    imports public REVERTER-BIN-RUNTIME
     imports public FFITEST-BIN-RUNTIME
     imports public FILESTEST-BIN-RUNTIME
     imports public FORKTEST-BIN-RUNTIME
