@@ -168,6 +168,11 @@ module FOUNDRY-CHEAT-CODES
           <depth> 0 </depth>
           <singleCall> false </singleCall>
         </prank>
+        <expected>
+          <expectedRevert> false </expectedRevert>
+          <expectedBytes> .ByteArray </expectedBytes>
+          <expectedDepth> 0 </expectedDepth>
+        </expected>
       </cheatcodes>
 ```
 
@@ -458,12 +463,69 @@ This rule then takes from the function call data the account using `#asWord(#ran
       requires SELECTOR ==Int selector ( "store(address,bytes32,bytes32)" )
 ```
 
+#### expectRevert
+
+```
+function expectRevert() external;
+function expectRevert(bytes4 msg) external;
+function expectRevert(bytes calldata msg) external;
+```
+
+Ignore all cheat code calls which take place while `expectRevert` is active.
+
+```{.k .bytes}
+    rule [foundry.call.ignoreCalls]:
+         <k> #call_foundry _ _ => . ... </k>
+         <expected>
+           <expectedRevert> true </expectedRevert>
+           ...
+         </expected>
+      [priority(35)]
+```
+
+Catch reverts.
+
+```{.k .bytes}
+    rule <statusCode> EVMC_REVERT => EVMC_SUCCESS </statusCode>
+         <k> #halt ~> #return _RETSTART _RETWIDTH ... </k>
+         <callDepth> CD </callDepth>
+         <expected>
+           <expectedRevert> true => false </expectedRevert>
+           <expectedDepth> CD </expectedDepth>
+           ...
+         </expected>
+       [priority(40)]
+```
+
+Change the status code from `EVMC_SUCCESS` to `EVMC_REVERT` if a revert is expected.
+
+```{.k .bytes}
+    rule <statusCode> EVMC_SUCCESS => EVMC_REVERT </statusCode>
+         <k> #halt ~> #return _RETSTART _RETWIDTH ... </k>
+         <callDepth> CD </callDepth>
+         <expected>
+           <expectedRevert> true => false </expectedRevert>
+           <expectedDepth> CD </expectedDepth>
+           ...
+         </expected>
+       [priority(40)]
+```
+
+If the `expectRevert()` selector is matched, call the `#setExpectRevert` production to initialize the `<expected>` subconfiguration.
+
+```{.k .bytes}
+    rule [foundry.call.expectRevert]:
+         <k> #call_foundry SELECTOR _ARGS => #setExpectRevert ... </k>
+      requires SELECTOR ==Int selector ( "expectRevert()" )
+```
+
 Otherwise, throw an error for any other call to the Foundry contract.
 
 ```{.k .bytes}
     rule [foundry.call.owise]:
          <k> #call_foundry _ _ => #error_foundry ... </k> [owise]
 ```
+
 Utils
 -----
 
@@ -561,6 +623,19 @@ Utils
          </account>
 ```
 
+ - `#setExpectRevert`
+
+```k
+    syntax KItem ::= "#setExpectRevert" [klabel(foundry_setExpectedRevert)]
+ // -----------------------------------------------------------------------
+    rule <k> #setExpectRevert => . ... </k>
+         <callDepth> CD </callDepth>
+         <expected>
+           <expectedRevert> false => true </expectedRevert>
+           <expectedDepth> _ => CD +Int 1 </expectedDepth>
+           ...
+         </expected>
+```
  - selectors for cheat code functions.
 
 ```k
@@ -578,6 +653,7 @@ Utils
     rule ( selector ( "load(address,bytes32)" )          => 1719639408 )
     rule ( selector ( "store(address,bytes32,bytes32)" ) => 1892290747 )
     rule ( selector ( "setNonce(address,uint64)" )       => 4175530839 )
+    rule ( selector ( "expectRevert()" )                 => 4102309908 )
 ```
 ```k
 endmodule
