@@ -507,7 +507,8 @@ $(foundry_out):
 	cd $(dir $@) && forge build
 
 tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
-	$(CHECK) $< $@.expected
+	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
+	$(CHECK) $@.stripped $@.expected
 
 tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
 
