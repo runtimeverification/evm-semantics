@@ -15,7 +15,6 @@ module FORWARDTOHOTWALLET-FAILURE-2-SPEC
       <evm>
         <output> _ => ?_ </output>
         <statusCode> _ => EVMC_REVERT </statusCode>
-        <endPC> _ => ?_ </endPC>
         <callStack> _ => ?_ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => ?_ </touchedAccounts>
