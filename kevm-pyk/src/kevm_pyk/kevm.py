@@ -64,14 +64,16 @@ class KEVM(KProve, KRun):
         command += add_include_arg(includes)
         if emit_json:
             command += ['--emit-json']
-        if not llvm_kompile:
-            command += ['--no-llvm-kompile']
-        if ccopts:
-            for ccopt in ccopts:
-                command += ['-ccopt', ccopt]
-        if 0 < optimization and optimization <= 3:
-            command += [f'-O{optimization}']
-        command += ['--concrete-rules', ','.join(KEVM.concrete_rules())]
+        if backend == KompileBackend.HASKELL:
+            command += ['--concrete-rules', ','.join(KEVM.concrete_rules())]
+        if backend == KompileBackend.LLVM:
+            if ccopts:
+                for ccopt in ccopts:
+                    command += ['-ccopt', ccopt]
+            if 0 < optimization and optimization <= 3:
+                command += [f'-O{optimization}']
+            if not llvm_kompile:
+                command += ['--no-llvm-kompile']
         try:
             run_process(command, logger=_LOGGER, profile=profile)
         except CalledProcessError as err:
