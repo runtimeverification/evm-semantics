@@ -13,7 +13,6 @@ module STORAGEVAR03-SPEC
       <evm>
         <output> _ => ?_ </output>
         <statusCode> _ => EVMC_REVERT </statusCode>
-        <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => ?_ </touchedAccounts>

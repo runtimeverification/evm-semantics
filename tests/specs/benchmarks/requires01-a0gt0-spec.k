@@ -13,7 +13,6 @@ module REQUIRES01-A0GT0-SPEC
       <evm>
         <output> _ => #encodeArgs(#uint256(5)) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
-        <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => ?_ </touchedAccounts>

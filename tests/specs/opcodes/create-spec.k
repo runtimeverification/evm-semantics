@@ -24,7 +24,6 @@ module CREATE-SPEC
               <evm>
                 <output> _ => .ByteArray </output>
                 <statusCode> _ => EVMC_SUCCESS </statusCode>
-                <endPC> _ => ?_ </endPC>
                 <callStack> _ </callStack>
                 <interimStates> _ </interimStates>
                 <touchedAccounts> _ => ?_ </touchedAccounts>
@@ -110,7 +109,6 @@ module CREATE-SPEC
               <evm>
                 <output> _ => #generatedCode </output>
                 <statusCode> _ => EVMC_SUCCESS </statusCode>
-                <endPC> _ => ?_ </endPC>
                 <callStack> _ </callStack>
                 <interimStates> _ </interimStates>
                 <touchedAccounts> _ => ?_ </touchedAccounts>
