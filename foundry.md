@@ -515,8 +515,10 @@ If the `expectRevert()` selector is matched, call the `#setExpectRevert` product
 
 ```{.k .bytes}
     rule [foundry.call.expectRevert]:
-         <k> #call_foundry SELECTOR _ARGS => #setExpectRevert ... </k>
+         <k> #call_foundry SELECTOR ARGS => #setExpectRevert ARGS ... </k>
       requires SELECTOR ==Int selector ( "expectRevert()" )
+        orBool SELECTOR ==Int selector ( "expectRevert(bytes4)" )
+        orBool SELECTOR ==Int selector ( "expectRevert(bytes)" )
 ```
 
 Otherwise, throw an error for any other call to the Foundry contract.
@@ -626,14 +628,14 @@ Utils
  - `#setExpectRevert`
 
 ```k
-    syntax KItem ::= "#setExpectRevert" [klabel(foundry_setExpectedRevert)]
- // -----------------------------------------------------------------------
-    rule <k> #setExpectRevert => . ... </k>
+    syntax KItem ::= "#setExpectRevert" ByteArray [klabel(foundry_setExpectedRevert)]
+ // ---------------------------------------------------------------------------------
+    rule <k> #setExpectRevert .ByteArray => . ... </k>
          <callDepth> CD </callDepth>
          <expected>
            <expectedRevert> false => true </expectedRevert>
            <expectedDepth> _ => CD +Int 1 </expectedDepth>
-           ...
+           <expectedBytes> _ => .ByteArray </expectedBytes>
          </expected>
 ```
  - selectors for cheat code functions.
@@ -654,6 +656,8 @@ Utils
     rule ( selector ( "store(address,bytes32,bytes32)" ) => 1892290747 )
     rule ( selector ( "setNonce(address,uint64)" )       => 4175530839 )
     rule ( selector ( "expectRevert()" )                 => 4102309908 )
+    rule ( selector ( "expectRevert(bytes4)" )           => 3273568480 )
+    rule ( selector ( "expectRevert(bytes)" )            => 4069379763 )
 ```
 ```k
 endmodule

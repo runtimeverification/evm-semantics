@@ -24,9 +24,15 @@ contract ExpectRevertTest is Test {
         reverter.revertWithoutReason();
     }
 
-    function test_expectRevert_false() public {
+    function testFail_expectRevert_false() public {
         Reverter reverter = new Reverter();
         vm.expectRevert();
         reverter.noRevert();
+    }
+
+    function test_expectRevert_message() public {
+        Reverter reverter = new Reverter();
+        vm.expectRevert(bytes("Revert Reason Here"));
+        reverter.revertWithReason("Revert Reason Here");
     }
 }
