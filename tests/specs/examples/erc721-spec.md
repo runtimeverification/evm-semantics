@@ -89,7 +89,6 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
-          <endPC>      _           => ?_ </endPC>
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
@@ -124,7 +123,6 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
-          <endPC>      _           => ?_ </endPC>
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
