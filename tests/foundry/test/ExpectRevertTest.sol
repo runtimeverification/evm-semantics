@@ -36,15 +36,15 @@ contract ExpectRevertTest is Test {
         reverter.revertWithReason("Revert Reason Here");
     }
 
-    // function testFail_expectRevert_bytes4() public {
-    //     Reverter reverter = new Reverter();
-    //     vm.expectRevert(bytes4("Revert"));
-    //     reverter.revertWithReason("But fail.");
-    // }
+    function testFail_expectRevert_bytes4() public {
+        Reverter reverter = new Reverter();
+        vm.expectRevert(bytes4("FAIL"));
+        reverter.revertWithReason("But fail.");
+    }
 
-    // function test_expectRevert_bytes4() public {
-    //     Reverter reverter = new Reverter();
-    //     vm.expectRevert(bytes4("Revert"));
-    //     reverter.revertWithReason("Revert");
-    // }
+    function test_expectRevert_bytes4() public {
+        Reverter reverter = new Reverter();
+        vm.expectRevert(bytes4("FAIL"));
+        reverter.revertWithReason("FAIL");
+    }
 }
