@@ -515,11 +515,11 @@ The `#loadAccount` production is used to load accounts into the state if they ar
 
 ```{.k .bytes}
     rule [foundry.call.startPrank]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) .Account ... </k>
       requires SELECTOR ==Int selector ( "startPrank(address)" )
 
     rule [foundry.call.startPrankWithOrigin]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount  #asWord(#range(ARGS, 0, 32)) ~> #loadAccount #asWord(#range(ARGS, 32, 32)) ~> #setPrankWithOrigin #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount  #asWord(#range(ARGS, 0, 32)) ~> #loadAccount #asWord(#range(ARGS, 32, 32)) ~> #setPrank #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
       requires SELECTOR ==Int selector ( "startPrank(address,address)" )
 ```
 
@@ -641,32 +641,12 @@ Utils
          </account>
 ```
 
-- `#setPrank NEWCALLER` will set the `<prank/>` subconfiguration for the given account.
+- `#setPrank NEWCALLER NEWORIGIN` will set the `<prank/>` subconfiguration for the given accounts.
 
 ```k
-    syntax KItem ::= "#setPrank" Int [klabel(foundry_setPrank)]
- // -----------------------------------------------------------
-    rule <k> #setPrank NEWCALLER => . ... </k>
-         <callDepth> CD </callDepth>
-         <caller> CL </caller>
-         <origin> OG </origin>
-         <prank>
-           <prevCaller> .Account => CL </prevCaller>
-           <prevOrigin> .Account => OG </prevOrigin>
-           <newCaller> _ => NEWCALLER </newCaller>
-           <active> false => true </active>
-           <depth> _ => CD </depth>
-           <singleCall> _ => false </singleCall>
-           ...
-         </prank>
-```
-
-- `#setPrankWithOrigin NEWCALLER NEWORIGIN` will set the `<prank/>` subconfiguration for the given account.
-
-```k
-    syntax KItem ::= "#setPrankWithOrigin" Int Int [klabel(foundry_setPrankWithOrigin)]
- // -----------------------------------------------------------------------------------
-    rule <k> #setPrankWithOrigin NEWCALLER NEWORIGIN => . ... </k>
+    syntax KItem ::= "#setPrank" Int Account [klabel(foundry_setPrank)]
+ // -------------------------------------------------------------------
+    rule <k> #setPrank NEWCALLER NEWORIGIN => . ... </k>
          <callDepth> CD </callDepth>
          <caller> CL </caller>
          <origin> OG </origin>

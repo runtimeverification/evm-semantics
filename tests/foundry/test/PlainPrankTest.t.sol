@@ -44,4 +44,16 @@ contract PlainPrankTest is Test {
         assert(token.count() == 1);
     }
 
+    function test_stopPrank_notExistent() public {
+        vm.stopPrank();
+        assert(true);
+    }
+
+    function testFail_startPrank_existingAlready() public {
+        vm.startPrank(address(0));
+        vm.startPrank(address(1));
+        vm.stopPrank();
+        vm.stopPrank();
+    }
+
 }
