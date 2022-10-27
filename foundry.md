@@ -155,6 +155,7 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<expectedRevert>` flags if the next call is expected to revert or not.
     - `<expectedDepth>` records the depth at which the call is expected to revert.
     - `<expectedBytes>` keeps the expected revert message as a ByteArray.
+
 ```k
 module FOUNDRY-CHEAT-CODES
     imports EVM
