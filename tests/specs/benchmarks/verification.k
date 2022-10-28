@@ -28,6 +28,7 @@ module VERIFICATION
     imports VERIFICATION-HASKELL
     imports INFINITE-GAS
     imports EVM-ABI
+    imports INFINITE-GAS-JAVA-EXTRA
 
   // ########################
   // Map Reasoning
