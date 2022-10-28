@@ -18,6 +18,10 @@ contract AssertTest is Test {
         assert(true);
     }
 
+    function testFail_assert_false() public pure {
+         assert(false);
+     }
+
     function testFail_expect_revert() public{
         vm.expectRevert();
         assert(false);
