@@ -1,9 +1,48 @@
 from logging import Logger
 from typing import Collection, Iterable, List, Optional, Tuple
 
+from pyk.cterm import CTerm
 from pyk.kast import KApply, KClaim, KDefinition, KFlatModule, KImport, KInner, KRule, KVariable
 from pyk.kastManip import abstract_term_safely, is_anon_var, split_config_and_constraints, split_config_from, substitute
+from pyk.kcfg import KCFG
 from pyk.ktool import KPrint, KProve
+
+
+def KCFG__replace_node(cfg: KCFG, node_id: str, new_cterm: CTerm) -> KCFG:  # noqa: N802
+
+    # Remove old node, record data
+    node = cfg.node(node_id)
+    in_edges = cfg.edges(target_id=node.id)
+    out_edges = cfg.edges(source_id=node.id)
+    in_covers = cfg.covers(target_id=node.id)
+    out_covers = cfg.covers(source_id=node.id)
+    init = cfg.is_init(node.id)
+    target = cfg.is_target(node.id)
+    expanded = cfg.is_expanded(node.id)
+    in_expanded = {edge.source.id: cfg.is_expanded(edge.source.id) for edge in in_edges}
+    cfg.remove_node(node.id)
+
+    # Add the new, update data
+    new_node = cfg.get_or_create_node(new_cterm)
+    for in_edge in in_edges:
+        cfg.create_edge(in_edge.source.id, new_node.id, in_edge.condition, in_edge.depth)
+    for out_edge in out_edges:
+        cfg.create_edge(new_node.id, out_edge.target.id, out_edge.condition, out_edge.depth)
+    for in_cover in in_covers:
+        cfg.create_cover(in_cover.source.id, new_node.id)
+    for out_cover in out_covers:
+        cfg.create_cover(new_node.id, out_cover.target.id)
+    if init:
+        cfg.add_init(new_node.id)
+    if target:
+        cfg.add_target(new_node.id)
+    if expanded:
+        cfg.add_expanded(new_node.id)
+    for nid in in_expanded:
+        if in_expanded[nid]:
+            cfg.add_expanded(nid)
+
+    return cfg
 
 
 def KProve_prove_claim(  # noqa: N802
