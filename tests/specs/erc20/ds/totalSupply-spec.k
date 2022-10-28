@@ -15,7 +15,6 @@ module TOTALSUPPLY-SPEC
       <evm>
         <output> _ => #buf(32, TOTAL) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
-        <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => ?_ </touchedAccounts>

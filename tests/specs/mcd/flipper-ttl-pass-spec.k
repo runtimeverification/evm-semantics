@@ -13,7 +13,6 @@ module FLIPPER-TTL-PASS-SPEC
         <evm>
           <output> _ => #buf(32, Ttl) </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
-          <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
