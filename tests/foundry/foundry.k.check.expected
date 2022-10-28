@@ -2460,11 +2460,15 @@ module PLAINPRANKTEST-BIN-RUNTIME
     
     syntax PlainPrankTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_PlainPrankTest_failed)]
     
+    syntax PlainPrankTestMethod ::= "testFail_startPrank_existingAlready" "(" ")" [symbol(), klabel(method_PlainPrankTest_testFail_startPrank_existingAlready)]
+    
     syntax PlainPrankTestMethod ::= "test_startPrankWithOrigin_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_startPrankWithOrigin_true)]
     
     syntax PlainPrankTestMethod ::= "test_startPrank_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_startPrank_true)]
     
     syntax PlainPrankTestMethod ::= "test_startPrank_zeroAddress_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_startPrank_zeroAddress_true)]
+    
+    syntax PlainPrankTestMethod ::= "test_stopPrank_notExistent" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_stopPrank_notExistent)]
     
     syntax PlainPrankTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_PlainPrankTest_vm)]
     
@@ -2477,6 +2481,9 @@ module PLAINPRANKTEST-BIN-RUNTIME
     rule  ( PlainPrankTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
+    rule  ( PlainPrankTest . testFail_startPrank_existingAlready ( ) => #abiCallData ( "testFail_startPrank_existingAlready" , .TypedArgs ) )
+      
+    
     rule  ( PlainPrankTest . test_startPrankWithOrigin_true ( ) => #abiCallData ( "test_startPrankWithOrigin_true" , .TypedArgs ) )
       
     
@@ -2484,6 +2491,9 @@ module PLAINPRANKTEST-BIN-RUNTIME
       
     
     rule  ( PlainPrankTest . test_startPrank_zeroAddress_true ( ) => #abiCallData ( "test_startPrank_zeroAddress_true" , .TypedArgs ) )
+      
+    
+    rule  ( PlainPrankTest . test_stopPrank_notExistent ( ) => #abiCallData ( "test_stopPrank_notExistent" , .TypedArgs ) )
       
     
     rule  ( PlainPrankTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
@@ -2498,6 +2508,9 @@ module PLAINPRANKTEST-BIN-RUNTIME
     rule  ( selector ( "failed" ) => 3124842406 )
       
     
+    rule  ( selector ( "testFail_startPrank_existingAlready" ) => 2262269573 )
+      
+    
     rule  ( selector ( "test_startPrankWithOrigin_true" ) => 1559633499 )
       
     
@@ -2505,6 +2518,9 @@ module PLAINPRANKTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_startPrank_zeroAddress_true" ) => 858618957 )
+      
+    
+    rule  ( selector ( "test_stopPrank_notExistent" ) => 279002555 )
       
     
     rule  ( selector ( "vm" ) => 980845667 )
