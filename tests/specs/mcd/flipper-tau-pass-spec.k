@@ -13,7 +13,6 @@ module FLIPPER-TAU-PASS-SPEC
         <evm>
           <output> _ => #buf(32, Tau) </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
-          <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
