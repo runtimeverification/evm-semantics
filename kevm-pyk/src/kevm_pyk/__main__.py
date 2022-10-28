@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
+from pyk.cterm import CTerm
 from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KRewrite, KRule, KToken
 from pyk.kastManip import minimize_term, push_down_rewrites
 from pyk.kcfg import KCFG
@@ -17,7 +18,7 @@ from pyk.prelude.ml import mlTop
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KPrint_make_unparsing, KProve_prove_claim, add_include_arg
+from .utils import KCFG__replace_node, KPrint_make_unparsing, KProve_prove_claim, add_include_arg, sanitize_config
 
 T = TypeVar('T')
 
@@ -269,6 +270,7 @@ def exec_foundry_prove(
     workers: int = 1,
     minimize: bool = True,
     lemmas: Iterable[str] = (),
+    simplify_init: bool = True,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -326,6 +328,13 @@ def exec_foundry_prove(
             method = [m for m in contract.methods if m.name == method_name][0]
             empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
             cfg = method_to_cfg(empty_config, contract, method)
+            if simplify_init:
+                _LOGGER.info(f'Simplifying initial state for test: {test}')
+                edge = KCFG.Edge(cfg.get_unique_init(), cfg.get_unique_target(), mlTop(), -1)
+                claim = edge.to_claim()
+                init_simplified = foundry.prove_claim(claim, 'simplify-init', args=['--depth', '0'])
+                init_simplified = sanitize_config(foundry.definition, init_simplified)
+                cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_simplified))
             kcfgs[test] = cfg
             with open(kcfg_file, 'w') as kf:
                 kf.write(json.dumps(cfg.to_dict()))
@@ -638,6 +647,19 @@ def _create_argument_parser() -> ArgumentParser:
         default=100,
         type=int,
         help='Store every Nth state in the KCFG for inspection.',
+    )
+    foundry_prove_args.add_argument(
+        '--simplify-init',
+        dest='simplify_init',
+        default=True,
+        action='store_true',
+        help='Simplify the initial state at startup.',
+    )
+    foundry_prove_args.add_argument(
+        '--no-simplify-init',
+        dest='simplify_init',
+        action='store_false',
+        help='Do not simplify the initial state at startup.',
     )
 
     foundry_show_cfg_args = command_parser.add_parser(
