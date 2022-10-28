@@ -662,20 +662,47 @@ Utils
 ```
 
 - `#endPrank` will end the prank, restoring the previous caller and origin to the `<caller>` and `<origin>` cells in the configuration.
+If the production is matched when no prank is active, it will be ignored.
 
 ```k
     syntax KItem ::= "#endPrank" [klabel(foundry_endPrank)]
  // -------------------------------------------------------
     rule <k> #endPrank => . ... </k>
+        <prank>
+          <prevCaller> .Account </prevCaller>
+          <prevOrigin> .Account </prevOrigin>
+          <active> false </active>
+          ...
+        </prank>
+
+    rule <k> #endPrank => #clearPrank ... </k>
         <caller> _ => CL </caller>
         <origin> _ => OG </origin>
         <prank>
-          <prevCaller> CL => .Account </prevCaller>
-          <prevOrigin> OG => .Account </prevOrigin>
-          <active> true => false </active>
+          <prevCaller> CL </prevCaller>
+          <prevOrigin> OG </prevOrigin>
           ...
         </prank>
+
 ```
+
+- `#clearPrank` will clear the prank subconfiguration.
+
+```k
+    syntax KItem ::= "#clearPrank" [klabel(foundry_clearPrank)]
+ // -----------------------------------------------------------
+    rule <k> #clearPrank => . ... </k>
+        <prank>
+          <prevCaller> _ => .Account </prevCaller>
+          <prevOrigin> _ => .Account </prevOrigin>
+          <newCaller> _ => .Account </newCaller>
+          <newOrigin> _ => .Account </newOrigin>
+          <active> _ => false </active>
+          <depth> _ => 0 </depth>
+          <singleCall> _ => false </singleCall>
+        </prank>
+```
+
 - selectors for cheat code functions.
 
 ```k
