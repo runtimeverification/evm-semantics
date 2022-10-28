@@ -13,7 +13,6 @@ module ENCODEPACKED-KECCAK01-SPEC
       <evm>
         <output> _ => #encodeArgs(#bytes32(keccak(1 : #encodeArgs(#uint256(A0))))) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
-        <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => ?_ </touchedAccounts>

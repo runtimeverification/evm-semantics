@@ -83,7 +83,6 @@ module STORAGE-SPEC
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
-          <endPC>      _           => ?_ </endPC>
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
@@ -118,7 +117,6 @@ module STORAGE-SPEC
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
-          <endPC>      _           => ?_ </endPC>
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 

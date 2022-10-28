@@ -15,7 +15,6 @@ module TRANSFER-FAILURE-1-SPEC
       <evm>
         <output> _ => #buf(32, 0) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
-        <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => ?_ </touchedAccounts>
