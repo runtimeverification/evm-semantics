@@ -2,7 +2,7 @@ name: 'Master Push'
 on:
   push:
     branches:
-      - master
+      - gh-releases
 
 jobs:
 
