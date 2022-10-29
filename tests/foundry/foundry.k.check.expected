@@ -3201,6 +3201,8 @@ module ASSERTTEST-BIN-RUNTIME
     
     syntax AssertTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_AssertTest_setUp)]
     
+    syntax AssertTestMethod ::= "testFail_assert_false" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_false)]
+    
     syntax AssertTestMethod ::= "testFail_assert_true" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_true)]
     
     syntax AssertTestMethod ::= "testFail_expect_revert" "(" ")" [symbol(), klabel(method_AssertTest_testFail_expect_revert)]
@@ -3221,6 +3223,9 @@ module ASSERTTEST-BIN-RUNTIME
       
     
     rule  ( AssertTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
+      
+    
+    rule  ( AssertTest . testFail_assert_false ( ) => #abiCallData ( "testFail_assert_false" , .TypedArgs ) )
       
     
     rule  ( AssertTest . testFail_assert_true ( ) => #abiCallData ( "testFail_assert_true" , .TypedArgs ) )
@@ -3248,6 +3253,9 @@ module ASSERTTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "setUp" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testFail_assert_false" ) => 2057948334 )
       
     
     rule  ( selector ( "testFail_assert_true" ) => 409427266 )
