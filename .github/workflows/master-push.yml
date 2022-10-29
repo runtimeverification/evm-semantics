@@ -70,3 +70,34 @@ jobs:
             -H "Authorization: Bearer ${GITHUB_TOKEN}"                              \
             https://api.github.com/repos/runtimeverification/evm-semantics/releases \
             -d '{"tag_name":"'${kevm_version}'","target_commitish":"'${GITHUB_HEAD_REF}'","draft":false,"prerelease":false,"generate_release_notes":false}'
+
+  gh-pages:
+    name: 'Publish GH Pages'
+    runs-on: ubuntu-latest
+    needs: make-release
+    steps:
+      - name: 'Check out gh-pages'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
+      - run: |
+         git config --global user.email 'devops@runtimeverification.com'
+         git config --global user.name  'RV DevOps'
+
+      - name: 'Publish gh-pages'
+        run: |
+          git checkout -B gh-pages
+          cd web
+          npm install
+          npm run build
+          npm run build-sitemap
+          cd -
+          mv web/public_content ./
+          rm -rf $(find . -maxdepth 1 -not -name public_content -a -not -name .git -a -not -path . -a -not -path .. -a -not -name CNAME)
+          mv public_content/* ./
+          rm -rf public_content
+          git add ./
+          git commit -m 'gh-pages: Updated the website'
+          git merge --strategy ours origin/gh-pages --allow-unrelated-histories
+          git push origin gh-pages
