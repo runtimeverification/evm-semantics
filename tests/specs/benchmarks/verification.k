@@ -1,9 +1,9 @@
 requires "lemmas/lemmas.k"
-requires "infinite-gas.md"
-requires "abi.md"
+requires "edsl.md"
 
 module VERIFICATION-COMMON
     imports LEMMAS
+    imports EDSL
 
   // ########################
   // Ecrecover
@@ -26,9 +26,6 @@ module VERIFICATION
     imports VERIFICATION-COMMON
     imports VERIFICATION-JAVA
     imports VERIFICATION-HASKELL
-    imports INFINITE-GAS
-    imports EVM-ABI
-    imports INFINITE-GAS-JAVA-EXTRA
 
   // ########################
   // Map Reasoning
@@ -162,6 +159,7 @@ endmodule
 module VERIFICATION-JAVA [symbolic, kast]
     imports VERIFICATION-COMMON
     imports K-REFLECTION
+    imports INFINITE-GAS-JAVA-EXTRA
 
   // ########################
   // Arithmetic
