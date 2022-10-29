@@ -55,8 +55,8 @@ jobs:
             drv=$(nix-store --query --deriver ${kevm})
             nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework
 
-  make-prerelease:
-    name: 'Cut Prerelease'
+  make-release:
+    name: 'Cut Release'
     runs-on: ubuntu-latest
     needs: nix-cache
     steps:
@@ -67,4 +67,4 @@ jobs:
             -H "Accept: application/vnd.github+json"                                \
             -H "Authorization: Bearer ${GITHUB_TOKEN}"                              \
             https://api.github.com/repos/runtimeverification/evm-semantics/releases \
-            -d '{"tag_name":"'${kevm_version}'","target_commitish":"'${GITHUB_HEAD_REF}'","draft":false,"prerelease":true,"generate_release_notes":false}'
+            -d '{"tag_name":"'${kevm_version}'","target_commitish":"'${GITHUB_HEAD_REF}'","draft":false,"prerelease":false,"generate_release_notes":false}'
