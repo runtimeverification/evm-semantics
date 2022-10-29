@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - gh-releases
+concurrency:
+  group: ${{ github.workflow }}
 
 jobs:
 
