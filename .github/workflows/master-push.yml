@@ -1,0 +1,56 @@
+name: 'Master Push'
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+
+  nix-cache:
+    name: 'Populate Nix Cache'
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            os: ubuntu-latest
+          - runner: macos-12
+            os: macos-12
+          - runner: MacM1
+            os: self-macos-12
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+
+      - name: 'Upgrade bash'
+        if: ${{ contains(matrix.os, 'macos') }}
+        run: brew install bash
+
+      - name: 'Install Nix'
+        if: ${{ !startsWith(matrix.os, 'self') }}
+        uses: cachix/install-nix-action@v15
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            substituters = http://cache.nixos.org https://cache.iog.io
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+
+      - name: 'Install Cachix'
+        if: ${{ !startsWith(matrix.os, 'self') }}
+        uses: cachix/cachix-action@v10
+        with:
+          name: k-framework
+          signingKey: '${{ secrets.RV_DEVOPS_CACHIX_TOKEN }}'
+          skipPush: true
+
+      - name: 'Build and cache KEVM'
+        uses: workflow/nix-shell-action@v3
+        env:
+          GC_DONT_GC: 1
+          CACHIX_AUTH_TOKEN: '${{ secrets.RV_DEVOPS_CACHIX_TOKEN }}'
+        with:
+          packages: jq
+          script: |
+            kevm=$(nix build .#kevm --json | jq -r '.[].outputs | to_entries[].value')
+            drv=$(nix-store --query --deriver ${kevm})
+            nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework
