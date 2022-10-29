@@ -2373,6 +2373,161 @@ module OWNERUPONLYTEST-BIN-RUNTIME
 
 endmodule
 
+module ADDITIONALTOKEN-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= AdditionalTokenContract
+    
+    syntax AdditionalTokenContract ::= "AdditionalToken" [symbol(), klabel(contract_AdditionalToken)]
+    
+      
+    
+    syntax Field ::= AdditionalTokenField
+    
+    syntax AdditionalTokenField ::= "count" [symbol(), klabel(field_AdditionalToken_count)]
+    
+    rule  ( #loc ( AdditionalToken . count ) => 0 )
+      
+    
+    syntax ByteArray ::= AdditionalTokenContract "." AdditionalTokenMethod [function(), symbol(), klabel(method_AdditionalToken)]
+    
+    syntax AdditionalTokenMethod ::= "count" "(" ")" [symbol(), klabel(method_AdditionalToken_count)]
+    
+    syntax AdditionalTokenMethod ::= "incrementCount" "(" ")" [symbol(), klabel(method_AdditionalToken_incrementCount)]
+    
+    syntax AdditionalTokenMethod ::= "owner" "(" ")" [symbol(), klabel(method_AdditionalToken_owner)]
+    
+    rule  ( AdditionalToken . count ( ) => #abiCallData ( "count" , .TypedArgs ) )
+      
+    
+    rule  ( AdditionalToken . incrementCount ( ) => #abiCallData ( "incrementCount" , .TypedArgs ) )
+      
+    
+    rule  ( AdditionalToken . owner ( ) => #abiCallData ( "owner" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "count" ) => 107354813 )
+      
+    
+    rule  ( selector ( "incrementCount" ) => 3842448270 )
+      
+    
+    rule  ( selector ( "owner" ) => 2376452955 )
+      
+
+endmodule
+
+module PLAINPRANKTEST-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= PlainPrankTestContract
+    
+    syntax PlainPrankTestContract ::= "PlainPrankTest" [symbol(), klabel(contract_PlainPrankTest)]
+    
+      
+    
+    syntax Field ::= PlainPrankTestField
+    
+    syntax PlainPrankTestField ::= "IS_TEST" [symbol(), klabel(field_PlainPrankTest_IS_TEST)]
+    
+    syntax PlainPrankTestField ::= "_failed" [symbol(), klabel(field_PlainPrankTest__failed)]
+    
+    syntax PlainPrankTestField ::= "IS_SCRIPT" [symbol(), klabel(field_PlainPrankTest_IS_SCRIPT)]
+    
+    syntax PlainPrankTestField ::= "stdstore" [symbol(), klabel(field_PlainPrankTest_stdstore)]
+    
+    rule  ( #loc ( PlainPrankTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( PlainPrankTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( PlainPrankTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( PlainPrankTest . stdstore ) => 1 )
+      
+    
+    syntax ByteArray ::= PlainPrankTestContract "." PlainPrankTestMethod [function(), symbol(), klabel(method_PlainPrankTest)]
+    
+    syntax PlainPrankTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_PlainPrankTest_IS_SCRIPT)]
+    
+    syntax PlainPrankTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_PlainPrankTest_IS_TEST)]
+    
+    syntax PlainPrankTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_PlainPrankTest_failed)]
+    
+    syntax PlainPrankTestMethod ::= "testFail_startPrank_existingAlready" "(" ")" [symbol(), klabel(method_PlainPrankTest_testFail_startPrank_existingAlready)]
+    
+    syntax PlainPrankTestMethod ::= "test_startPrankWithOrigin_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_startPrankWithOrigin_true)]
+    
+    syntax PlainPrankTestMethod ::= "test_startPrank_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_startPrank_true)]
+    
+    syntax PlainPrankTestMethod ::= "test_startPrank_zeroAddress_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_startPrank_zeroAddress_true)]
+    
+    syntax PlainPrankTestMethod ::= "test_stopPrank_notExistent" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_stopPrank_notExistent)]
+    
+    syntax PlainPrankTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_PlainPrankTest_vm)]
+    
+    rule  ( PlainPrankTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( PlainPrankTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( PlainPrankTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( PlainPrankTest . testFail_startPrank_existingAlready ( ) => #abiCallData ( "testFail_startPrank_existingAlready" , .TypedArgs ) )
+      
+    
+    rule  ( PlainPrankTest . test_startPrankWithOrigin_true ( ) => #abiCallData ( "test_startPrankWithOrigin_true" , .TypedArgs ) )
+      
+    
+    rule  ( PlainPrankTest . test_startPrank_true ( ) => #abiCallData ( "test_startPrank_true" , .TypedArgs ) )
+      
+    
+    rule  ( PlainPrankTest . test_startPrank_zeroAddress_true ( ) => #abiCallData ( "test_startPrank_zeroAddress_true" , .TypedArgs ) )
+      
+    
+    rule  ( PlainPrankTest . test_stopPrank_notExistent ( ) => #abiCallData ( "test_stopPrank_notExistent" , .TypedArgs ) )
+      
+    
+    rule  ( PlainPrankTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testFail_startPrank_existingAlready" ) => 2262269573 )
+      
+    
+    rule  ( selector ( "test_startPrankWithOrigin_true" ) => 1559633499 )
+      
+    
+    rule  ( selector ( "test_startPrank_true" ) => 243527947 )
+      
+    
+    rule  ( selector ( "test_startPrank_zeroAddress_true" ) => 858618957 )
+      
+    
+    rule  ( selector ( "test_stopPrank_notExistent" ) => 279002555 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
 module PRANK-BIN-RUNTIME
     imports public FOUNDRY
     imports public LEMMAS
@@ -5585,6 +5740,8 @@ module FOUNDRY-MAIN
     imports public NONCETEST-BIN-RUNTIME
     imports public OWNERUPONLY-BIN-RUNTIME
     imports public OWNERUPONLYTEST-BIN-RUNTIME
+    imports public ADDITIONALTOKEN-BIN-RUNTIME
+    imports public PLAINPRANKTEST-BIN-RUNTIME
     imports public PRANK-BIN-RUNTIME
     imports public PRANKTEST-BIN-RUNTIME
     imports public RECORDLOGSTEST-BIN-RUNTIME
