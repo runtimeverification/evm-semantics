@@ -2323,8 +2323,6 @@ endmodule
 
 module ADDITIONALTOKEN-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= AdditionalTokenContract
     
@@ -2369,8 +2367,6 @@ endmodule
 
 module PLAINPRANKTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= PlainPrankTestContract
     
