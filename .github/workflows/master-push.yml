@@ -5,6 +5,7 @@ on:
       - gh-releases
 concurrency:
   group: ${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
 
