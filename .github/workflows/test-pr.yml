@@ -27,7 +27,7 @@ jobs:
       - name: 'Update Version'
         run: |
           if git show origin/${GITHUB_BASE_REF}:package/version; then
-            og_version=$(git show origin/${GITHUB_BASE_REF}:package/version
+            og_version=$(git show origin/${GITHUB_BASE_REF}:package/version)
           else
             og_version=$(cat package/version)
           fi
