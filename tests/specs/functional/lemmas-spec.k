@@ -1,7 +1,9 @@
 requires "edsl.md"
+requires "lemmas/lemmas.k"
 
 module VERIFICATION
     imports EDSL
+    imports LEMMAS
 
     syntax StepSort ::= Map | ByteArray | Int | Bool
  // ------------------------------------------------
