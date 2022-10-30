@@ -4,6 +4,7 @@ AddrTest.testFail_addr_true
 AssertTest.test_assert_false
 AssertTest.testFail_assert_false
 AssertTest.testFail_assert_true
+AssertTest.testFail_expect_revert
 AssumeTest.test_assume_false
 AssumeTest.testFail_assume_false
 AssumeTest.testFail_assume_true
