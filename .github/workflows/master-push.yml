@@ -64,7 +64,7 @@ jobs:
     steps:
       - name: 'Make Release'
         run: |
-          kevm_version=$(cat package/version)
+          kevm_version=v$(cat package/version)
           curl -X POST                                                              \
             -H "Accept: application/vnd.github+json"                                \
             -H "Authorization: Bearer ${GITHUB_TOKEN}"                              \
