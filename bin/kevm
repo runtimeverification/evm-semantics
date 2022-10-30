@@ -287,9 +287,6 @@ run_solc() {
 }
 
 run_foundry_kompile() {
-    local contract_name
-
-    echo "${backend_dir}"
     run_kevm_pyk foundry-kompile --definition "${backend_dir}" "$@"
 }
 
