@@ -151,6 +151,7 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<prevCaller>` keeps the current address of the contract that initiated the prank.
     - `<prevOrigin>` keeps the current address of the `tx.origin` value.
     - `<newCaller>` and `<newOrigin>` are addresses to be assigned after the prank call to `msg.sender` and `tx.origin`.
+    - `<active>` signals if a prank is active or not.
     - `<depth>` records the current call depth at which the prank was invoked.
     - `<singleCall>` tells whether the prank stops by itself after the next call or when a `stopPrank` cheat code is invoked.
 
@@ -167,6 +168,7 @@ module FOUNDRY-CHEAT-CODES
           <prevOrigin> .Account </prevOrigin>
           <newCaller> .Account </newCaller>
           <newOrigin> .Account </newOrigin>
+          <active> false </active>
           <depth> 0 </depth>
           <singleCall> false </singleCall>
         </prank>
@@ -216,10 +218,10 @@ We define two productions named `#return_foundry` and `#call_foundry`, which wil
 The rule `foundry.return` will rewrite the `#return_foundry` production into other productions that will place the output of the execution into the local memory, refund the gas value of the call and push the value `1` on the call stack.
 
 ```{.k .bytes}
-    syntax KItem ::= "#error_foundry" [klabel(foundry_error)]
-                   | "#return_foundry" Int Int [klabel(foundry_return)]
+    syntax KItem ::= "#return_foundry" Int Int [klabel(foundry_return)]
                    | "#call_foundry" Int ByteArray [klabel(foundry_call)]
- // ---------------------------------------------------------------------
+                   | "#error_foundry" Int ByteArray [klabel(foundry_error)]
+ // -----------------------------------------------------------------------
     rule [foundry.return]:
          <k> #return_foundry RETSTART RETWIDTH
           => #setLocalMem RETSTART RETWIDTH OUT
@@ -228,6 +230,13 @@ The rule `foundry.return` will rewrite the `#return_foundry` production into oth
           ... </k>
          <output> OUT </output>
          <callGas> GCALL </callGas>
+```
+
+We define a new status code named `FOUNDRY_UNIMPLEMENTED`, which signals that the execution ran into an unimplemented cheat code.
+
+```{.k .bytes}
+    syntax ExceptionalStatusCode ::= "FOUNDRY_UNIMPLEMENTED"
+ // --------------------------------------------------------
 ```
 
 Below, we define rules for the `#call_foundry` production, handling the cheat codes.
@@ -460,16 +469,96 @@ This rule then takes from the function call data the account using `#asWord(#ran
       requires SELECTOR ==Int selector ( "store(address,bytes32,bytes32)" )
 ```
 
+Pranks
+------
+
+#### Injecting addresses in a call
+
+To inject the pranked `msg.sender` and `tx.origin` we add two new rules for the `#call` production, defined in [evm.md](./evm.md).
+These rules have a higher priority.
+The only difference between these rules is that one will also set the `tx.origin`, if required.
+First, will match only if the `<active>` cell has the `true` value, signaling that a prank is active, and if the current depth of the call is at the same level with the depth at which the prank was invoked.
+This is needed in order to prevent overwriting the caller for subcalls.
+Finally, the original sender of the transaction, `ACCTFROM` is changed to the new caller, `NCL`.
+
+```{.k .bytes}
+    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+         <callDepth> CD </callDepth>
+         <prank>
+            <newCaller> NCL </newCaller>
+            <newOrigin> .Account </newOrigin>
+            <active> true </active>
+            <depth> CD </depth>
+            ...
+         </prank>
+      requires NCL =/=K .Account
+       andBool ACCTFROM =/=Int NCL
+      [priority(40)]
+
+    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+         <callDepth> CD </callDepth>
+         <origin> _ => NOG </origin>
+         <prank>
+            <newCaller> NCL </newCaller>
+            <newOrigin> NOG </newOrigin>
+            <active> true </active>
+            <depth> CD </depth>
+            ...
+         </prank>
+      requires NCL =/=K .Account
+       andBool NOG =/=K .Account
+       andBool ACCTFROM =/=Int NCL
+      [priority(40)]
+```
+
+#### `startPrank` - Sets `msg.sender` and `tx.origin` for all subsequent calls until `stopPrank` is called.
+
+```
+function startPrank(address) external;
+function startPrank(address sender, address origin) external;
+```
+
+`foundry.call.startPrank` and `foundry.call.startPrankWithOrigin` will match when either of `startPrank` functions are called.
+The addresses which will be used to impersonate future calls are retrieved from the local memory using `#asWord(#range(ARGS, 0, 32)` for the sender, and `#asWord(#range(ARGS, 32, 32)` for the origin (only for the `foundry.call.startPrankWithOrigin` rule).
+The `#loadAccount` production is used to load accounts into the state if they are missing.
+
+```{.k .bytes}
+    rule [foundry.call.startPrank]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) .Account ... </k>
+      requires SELECTOR ==Int selector ( "startPrank(address)" )
+
+    rule [foundry.call.startPrankWithOrigin]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount  #asWord(#range(ARGS, 0, 32)) ~> #loadAccount #asWord(#range(ARGS, 32, 32)) ~> #setPrank #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
+      requires SELECTOR ==Int selector ( "startPrank(address,address)" )
+```
+
+#### `stopPrank` - Stops impersonating `msg.sender` and `tx.origin`.
+
+```
+function stopPrank() external;
+```
+
+`foundry.call.stopPrank` will match when `stopPrank` function will be called. This rule will invoke `#endPrank` which will clean up the `<prank/>` subconfiguration and restore the previous values of the `msg.sender` and `tx.origin`.
+
+```{.k .bytes}
+    rule [foundry.call.stopPrank]:
+         <k> #call_foundry SELECTOR _ => #endPrank ... </k>
+      requires SELECTOR ==Int selector ( "stopPrank()" )
+```
+
 Otherwise, throw an error for any other call to the Foundry contract.
 
 ```{.k .bytes}
     rule [foundry.call.owise]:
-         <k> #call_foundry _ _ => #error_foundry ... </k> [owise]
+         <k> #call_foundry SELECTOR ARGS => #error_foundry SELECTOR ARGS ... </k>
+         <statusCode> _ => FOUNDRY_UNIMPLEMENTED </statusCode>
+      [owise]
 ```
+
 Utils
 -----
 
-- `#loadAccount ACCT` creates a new, empty account for `ACCT` if it does not already exist. Otherwise, it has no effect
+- `#loadAccount ACCT` creates a new, empty account for `ACCT` if it does not already exist. Otherwise, it has no effect.
 
 ```k
     syntax KItem ::= "#loadAccount" Int [klabel(foundry_loadAccount)]
@@ -563,7 +652,69 @@ Utils
          </account>
 ```
 
- - selectors for cheat code functions.
+- `#setPrank NEWCALLER NEWORIGIN` will set the `<prank/>` subconfiguration for the given accounts.
+
+```k
+    syntax KItem ::= "#setPrank" Int Account [klabel(foundry_setPrank)]
+ // -------------------------------------------------------------------
+    rule <k> #setPrank NEWCALLER NEWORIGIN => . ... </k>
+         <callDepth> CD </callDepth>
+         <caller> CL </caller>
+         <origin> OG </origin>
+         <prank>
+           <prevCaller> .Account => CL </prevCaller>
+           <prevOrigin> .Account => OG </prevOrigin>
+           <newCaller> _ => NEWCALLER </newCaller>
+           <newOrigin> _ => NEWORIGIN </newOrigin>
+           <active> false => true </active>
+           <depth> _ => CD </depth>
+           <singleCall> _ => false </singleCall>
+         </prank>
+```
+
+- `#endPrank` will end the prank, restoring the previous caller and origin to the `<caller>` and `<origin>` cells in the configuration.
+If the production is matched when no prank is active, it will be ignored.
+
+```k
+    syntax KItem ::= "#endPrank" [klabel(foundry_endPrank)]
+ // -------------------------------------------------------
+    rule <k> #endPrank => . ... </k>
+        <prank>
+          <prevCaller> .Account </prevCaller>
+          <prevOrigin> .Account </prevOrigin>
+          <active> false </active>
+          ...
+        </prank>
+
+    rule <k> #endPrank => #clearPrank ... </k>
+        <caller> _ => CL </caller>
+        <origin> _ => OG </origin>
+        <prank>
+          <prevCaller> CL </prevCaller>
+          <prevOrigin> OG </prevOrigin>
+          ...
+        </prank>
+
+```
+
+- `#clearPrank` will clear the prank subconfiguration.
+
+```k
+    syntax KItem ::= "#clearPrank" [klabel(foundry_clearPrank)]
+ // -----------------------------------------------------------
+    rule <k> #clearPrank => . ... </k>
+        <prank>
+          <prevCaller> _ => .Account </prevCaller>
+          <prevOrigin> _ => .Account </prevOrigin>
+          <newCaller> _ => .Account </newCaller>
+          <newOrigin> _ => .Account </newOrigin>
+          <active> _ => false </active>
+          <depth> _ => 0 </depth>
+          <singleCall> _ => false </singleCall>
+        </prank>
+```
+
+- selectors for cheat code functions.
 
 ```k
     rule ( selector ( "assume(bool)" )                   => 1281615202 )
@@ -580,7 +731,83 @@ Utils
     rule ( selector ( "load(address,bytes32)" )          => 1719639408 )
     rule ( selector ( "store(address,bytes32,bytes32)" ) => 1892290747 )
     rule ( selector ( "setNonce(address,uint64)" )       => 4175530839 )
+    rule ( selector ( "startPrank(address)" )            => 105151830  )
+    rule ( selector ( "startPrank(address,address)" )    => 1169514616 )
+    rule ( selector ( "stopPrank()" )                    => 2428830011 )
 ```
+
+- selectors for unimplemented cheat code functions.
+
+```k
+    rule selector ( "sign(uint256,bytes32)" )                   => 3812747940
+    rule selector ( "ffi(string[])" )                           => 2299921511
+    rule selector ( "setEnv(string,string)" )                   => 1029252078
+    rule selector ( "envBool(string)" )                         => 2127686781
+    rule selector ( "envUint(string)" )                         => 3247934751
+    rule selector ( "envInt(string)" )                          => 2301234273
+    rule selector ( "envAddress(string)" )                      => 890066623
+    rule selector ( "envBytes32(string)" )                      => 2543095874
+    rule selector ( "envString(string)" )                       => 4168600345
+    rule selector ( "envBytes(string)" )                        => 1299951366
+    rule selector ( "envBool(string,string)" )                  => 2863521455
+    rule selector ( "envUint(string,string)" )                  => 4091461785
+    rule selector ( "envInt(string,string)" )                   => 1108873552
+    rule selector ( "envAddress(string,string)" )               => 2905717242
+    rule selector ( "envBytes32(string,string)" )               => 1525821889
+    rule selector ( "envString(string,string)" )                => 347089865
+    rule selector ( "envBytes(string,string)" )                 => 3720504603
+    rule selector ( "prank(address)" )                          => 3395723175
+    rule selector ( "startPrank(address)" )                     => 105151830
+    rule selector ( "prank(address,address)" )                  => 1206193358
+    rule selector ( "startPrank(address,address)" )             => 1169514616
+    rule selector ( "stopPrank()" )                             => 2428830011
+    rule selector ( "expectRevert(bytes)" )                     => 4069379763
+    rule selector ( "expectRevert(bytes4)" )                    => 3273568480
+    rule selector ( "expectRevert()" )                          => 4102309908
+    rule selector ( "record()" )                                => 644673801
+    rule selector ( "accesses(address)" )                       => 1706857601
+    rule selector ( "expectEmit(bool,bool,bool,bool)" )         => 1226622914
+    rule selector ( "expectEmit(bool,bool,bool,bool,address)" ) => 2176505587
+    rule selector ( "mockCall(address,bytes calldata,bytes)" )  => 378193464
+    rule selector ( "mockCall(address,uint256,bytes,bytes)" )   => 2168494993
+    rule selector ( "clearMockedCalls()" )                      => 1071599125
+    rule selector ( "expectCall(address,bytes)" )               => 3177903156
+    rule selector ( "expectCall(address,uint256,bytes)" )       => 4077681571
+    rule selector ( "getCode(string)" )                         => 2367473957
+    rule selector ( "broadcast()" )                             => 2949218368
+    rule selector ( "broadcast(address)" )                      => 3868601563
+    rule selector ( "startBroadcast()" )                        => 2142579071
+    rule selector ( "startBroadcast(address)" )                 => 2146183821
+    rule selector ( "stopBroadcast()" )                         => 1995103542
+    rule selector ( "readFile(string)" )                        => 1626979089
+    rule selector ( "readLine(string)" )                        => 1895126824
+    rule selector ( "writeFile(string,string)" )                => 2306738839
+    rule selector ( "writeLine(string,string)" )                => 1637714303
+    rule selector ( "closeFile(string)" )                       => 1220748319
+    rule selector ( "removeFile(string)" )                      => 4054835277
+    rule selector ( "toString(address)" )                       => 1456103998
+    rule selector ( "toString(bytes)" )                         => 1907020045
+    rule selector ( "toString(bytes32)" )                       => 2971277800
+    rule selector ( "toString(bool)" )                          => 1910302682
+    rule selector ( "toString(uint256)" )                       => 1761649582
+    rule selector ( "toString(int256)" )                        => 2736964622
+    rule selector ( "recordLogs()" )                            => 1101999954
+    rule selector ( "getRecordedLogs()" )                       => 420828068
+    rule selector ( "snapshot()" )                              => 2534502746
+    rule selector ( "revertTo(uint256)" )                       => 1155002532
+    rule selector ( "createFork(string,uint256)" )              => 1805892139
+    rule selector ( "createFork(string)" )                      => 834286744
+    rule selector ( "createSelectFork(string,uint256)" )        => 1911440973
+    rule selector ( "createSelectFork(string)" )                => 2556952628
+    rule selector ( "selectFork(uint256)" )                     => 2663344167
+    rule selector ( "activeFork()" )                            => 789593890
+    rule selector ( "rollFork(uint256)" )                       => 3652973473
+    rule selector ( "rollFork(uint256,uint256)" )               => 3612115876
+    rule selector ( "rpcUrl(string)" )                          => 2539285737
+    rule selector ( "rpcUrls()" )                               => 2824504344
+    rule selector ( "deriveKey(string,uint32)" )                => 1646872971
+```
+
 ```k
 endmodule
 ```
