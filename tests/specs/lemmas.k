@@ -45,6 +45,15 @@ module LEMMAS [symbolic]
     rule 0 <=Int bool2Word(_B)             => true   [simplification]
     rule         bool2Word(_B) <Int pow256 => true   [simplification]
 
+    rule bool2Word(A) |Int bool2Word(B) => bool2Word(A  orBool B) [simplification]
+    rule bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B) [simplification]
+
+    rule 1 |Int bool2Word(_B) => 1            [simplification]
+    rule 1 &Int bool2Word( B) => bool2Word(B) [simplification]
+
+    rule bool2Word(_B) |Int 1 => 1            [simplification]
+    rule bool2Word( B) &Int 1 => bool2Word(B) [simplification]
+
     rule notBool notBool B => B [simplification]
 
     // #newAddr range
@@ -243,15 +252,6 @@ module LEMMAS-JAVA [symbolic, kast]
   // ########################
   // Word Reasoning
   // ########################
-
-    rule bool2Word(A) |Int bool2Word(B) => bool2Word(A  orBool B) [simplification]
-    rule bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B) [simplification]
-
-    rule 1 |Int bool2Word(_B) => 1            [simplification]
-    rule 1 &Int bool2Word( B) => bool2Word(B) [simplification]
-
-    rule bool2Word(_B) |Int 1 => 1            [simplification]
-    rule bool2Word( B) &Int 1 => bool2Word(B) [simplification]
 
     rule bool2Word(A) =/=K 0 => A          [simplification]
     rule bool2Word(A) =/=K 1 => notBool(A) [simplification]
