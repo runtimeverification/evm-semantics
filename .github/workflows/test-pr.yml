@@ -61,7 +61,6 @@ jobs:
 
   test-concrete-execution:
     name: 'Build and Test KEVM concrete execution'
-    needs: version-bump
     runs-on: [self-hosted, linux, normal]
     steps:
       - name: 'Check out code'
