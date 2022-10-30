@@ -423,6 +423,7 @@ def exec_foundry_prove(
                     branch_node = cfg.get_or_create_node(branch_cterm)
                     cfg.create_edge(next_node.id, branch_node.id, branch, 0)
                     _LOGGER.info(f'Made split: {shorten_hashes((next_node.id, branch_node.id))}')
+                    # TODO: have to store case splits as rewrites because of how frontier is handled for covers
                     # cfg.create_cover(branch_node.id, next_node.id)
                     # _LOGGER.info(f'Made cover: {shorten_hashes((branch_node.id, next_node.id))}')
 
