@@ -13,7 +13,6 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
         <evm>
           <output> .ByteArray </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
-          <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
@@ -228,7 +227,6 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
         <evm>
           <output> VOutput => VOutput </output>
           <statusCode> _ => ?_ </statusCode>
-          <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
@@ -329,7 +327,6 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
         <evm>
           <output> VOutput => VOutput </output>
           <statusCode> _ => ?_ </statusCode>
-          <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
@@ -433,7 +430,6 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
         <evm>
           <output> .ByteArray </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
-          <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>

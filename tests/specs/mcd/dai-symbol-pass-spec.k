@@ -13,7 +13,6 @@ module DAI-SYMBOL-PASS-SPEC
         <evm>
           <output> _ => #asByteStackInWidthaux(32, 31, 32, #enc(#string("DAI"))) </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
-          <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>

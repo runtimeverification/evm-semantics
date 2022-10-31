@@ -19,9 +19,6 @@
       <statusCode>
         EVMC_SUCCESS
       </statusCode>
-      <endPC>
-        40
-      </endPC>
       <callStack>
         .List
       </callStack>

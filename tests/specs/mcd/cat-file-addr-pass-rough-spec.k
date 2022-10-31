@@ -13,7 +13,6 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
         <evm>
           <output> .ByteArray </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
-          <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>

@@ -13,7 +13,6 @@ module STATICLOOP00-A0LT10-SPEC
       <evm>
         <output> _ => #encodeArgs(#uint256(A0 +Int 3)) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
-        <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => ?_ </touchedAccounts>

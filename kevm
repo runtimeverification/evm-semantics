@@ -67,7 +67,7 @@ run_kevm_pyk() {
 run_kompile() {
     local kompile_opts openssl_root
 
-    if ${pyk} && [[ "${backend}" != haskell ]]; then
+    if ${pyk} && [[ "${backend}" != haskell && "${backend}" != foundry ]]; then
         fatal "Command kompile with option --pyk only available for --backend haskell."
     fi
 
@@ -75,6 +75,7 @@ run_kompile() {
     ${pyk} || kompile_opts+=( --output-definition "${backend_dir}" )
     ${pyk} || kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" -I "${plugin_include}/kframework" )
     ${pyk} || kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN" )
+    ${pyk} || ! ${debug} || kompile_opts+=( --debug )
 
     if [[ ! -z ${concrete_rules_file} ]]; then
         if [[ -f ${concrete_rules_file} ]]; then
@@ -85,10 +86,11 @@ run_kompile() {
     fi
 
     case "${backend}" in
-        haskell)   kompile_opts+=( --md-selector 'k & ! nobytes & ! node')                          ;;
-        java)      kompile_opts+=( --md-selector 'k & ! bytes   & ! node')                          ;;
-        llvm)      kompile_opts+=( --md-selector 'k & ! nobytes & ! node' )                         ;;&
-        node)      kompile_opts+=( --md-selector 'k & ! nobytes & ! standalone' --no-llvm-kompile ) ;;&
+        haskell|foundry)   backend=haskell
+                           kompile_opts+=( --md-selector 'k & ! nobytes & ! node')                          ;;
+        java)              kompile_opts+=( --md-selector 'k & ! bytes   & ! node')                          ;;
+        llvm)              kompile_opts+=( --md-selector 'k & ! nobytes & ! node' )                         ;;&
+        node)              kompile_opts+=( --md-selector 'k & ! nobytes & ! standalone' --no-llvm-kompile ) ;;&
         llvm|node) backend=llvm
                    kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
                    kompile_opts+=( -ccopt ${plugin_include}/c/plugin_util.cpp                                    )
@@ -195,7 +197,8 @@ run_prove() {
     [[ ! -f ${concrete_rules_file} ]] || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
 
     case "${backend}" in
-        haskell) ${pyk}   || ! ${bug_report}     || haskell_backend_command+=(--bug-report "${bug_report_name}")
+        haskell) proof_args+=(--md-selector 'k & ! nobytes & ! node')
+                 ${pyk}   || ! ${bug_report}     || haskell_backend_command+=(--bug-report "${bug_report_name}")
                  ! ${pyk} || ! ${bug_report}     || proof_args+=(--bug-report)
                  ! ${profile_haskell}            || haskell_backend_command+=(+RTS -l -ol${eventlog_name} -RTS)
                  [[ -z ${max_counterexamples} ]] || haskell_backend_command+=(--max-counterexamples ${max_counterexamples})
@@ -205,7 +208,7 @@ run_prove() {
                  [[ ${#haskell_backend_command[@]} -le 1 ]] || proof_args+=(--haskell-backend-command "${haskell_backend_command[*]}")
                  ;;
 
-        java)    proof_args+=(--format-failures)
+        java)    proof_args+=(--md-selector 'k & ! bytes   & ! node')
                  if ${debugger}; then
                      omit_cells='<substate> <jumpDests> <program> <code> <callGas> <touchedAccounts> <interimStates> <callStack> <callData> <block> <txOrder> <txPending> <messages>'
                      omit_labels='#mkCall________EVM #callWithCode_________EVM #create_____EVM #mkCreate_____EVM #newAddrCreate2 #finishCodeDeposit___EVM'
@@ -286,6 +289,7 @@ run_solc() {
 run_foundry_kompile() {
     local contract_name
 
+    echo "${backend_dir}"
     run_kevm_pyk foundry-kompile --definition "${backend_dir}" "$@"
 }
 
@@ -388,8 +392,8 @@ kevm_port='8545'
 kevm_host='127.0.0.1'
 [[ ! "${run_command}" == prove           ]] || backend=haskell
 [[ ! "${run_command}" == solc-to-k       ]] || backend=haskell
-[[ ! "${run_command}" == foundry-kompile ]] || backend=haskell
-[[ ! "${run_command}" == foundry-prove   ]] || backend=haskell
+[[ ! "${run_command}" == foundry-kompile ]] || backend=foundry
+[[ ! "${run_command}" == foundry-prove   ]] || backend=foundry
 [[ ! "${run_command}" == interpret       ]] || unparse=false
 args=()
 while [[ $# -gt 0 ]]; do
@@ -456,15 +460,15 @@ cCHAINID_kast="#token(\"${chainid}\",\"Int\")"
 ! ${debug} || set -x
 
 case "$run_command-$backend" in
-    kompile-@(java|llvm|haskell|node) ) run_kompile         "$@" ;;
-    run-@(java|llvm|haskell)          ) run_krun            "$@" ;;
-    kast-@(java|llvm|haskell)         ) run_kast            "$@" ;;
-    interpret-@(llvm|haskell)         ) run_interpret       "$@" ;;
-    prove-@(java|haskell)             ) run_prove           "$@" ;;
-    search-@(java|haskell)            ) run_search          "$@" ;;
-    klab-view-*                       ) view_klab           "$@" ;;
-    solc-to-k-*                       ) run_solc            "$@" ;;
-    foundry-kompile-*                 ) run_foundry_kompile "$@" ;;
-    foundry-prove-*                   ) run_foundry_prove   "$@" ;;
+    kompile-@(java|llvm|haskell|node|foundry) ) run_kompile         "$@" ;;
+    run-@(java|llvm|haskell)                  ) run_krun            "$@" ;;
+    kast-@(java|llvm|haskell)                 ) run_kast            "$@" ;;
+    interpret-@(llvm|haskell)                 ) run_interpret       "$@" ;;
+    prove-@(java|haskell|foundry)             ) run_prove           "$@" ;;
+    search-@(java|haskell)                    ) run_search          "$@" ;;
+    klab-view-*                               ) view_klab           "$@" ;;
+    solc-to-k-*                               ) run_solc            "$@" ;;
+    foundry-kompile-*                         ) run_foundry_kompile "$@" ;;
+    foundry-prove-*                           ) run_foundry_prove   "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac

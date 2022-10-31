@@ -82,9 +82,6 @@ module SOLIDITY-FIELDS
                             | ContractAccess "[" Int "]" [klabel(contract_access_index), symbol]
  // --------------------------------------------------------------------------------------------
 
-    syntax Int ::= #address ( Contract ) [macro]
- // --------------------------------------------
-
     syntax Int ::= #loc ( ContractAccess ) [function, klabel(contract_access_loc), symbol]
  // --------------------------------------------------------------------------------------
     rule #loc(_:Contract) => 0

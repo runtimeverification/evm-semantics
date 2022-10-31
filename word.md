@@ -260,6 +260,7 @@ Range of types
                   | #rangeAddress ( Int )             [alias]
                   | #rangeBytes   ( Int , Int )       [alias]
                   | #rangeNonce   ( Int )             [alias]
+                  | #rangeSmall   ( Int )             [alias]
  // ---------------------------------------------------------
     rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1
 
@@ -304,6 +305,7 @@ Range of types
     rule #rangeAddress (            X ) => #range ( minUInt160      <= X <  pow160          )
     rule #rangeBytes   (   N ,      X ) => #range ( 0               <= X <  1 <<Byte N      )
     rule #rangeNonce   (   X          ) => #range ( 0               <= X < maxUInt64        )
+    rule #rangeSmall   (   X          ) => #range ( 0               <= X < 10               )
 
     syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")" [macro]
                   | "#range" "(" Int "<"  Int "<=" Int ")" [macro]

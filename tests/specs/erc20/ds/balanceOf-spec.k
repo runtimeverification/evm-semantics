@@ -15,7 +15,6 @@ module BALANCEOF-SPEC
       <evm>
         <output> _ => #buf(32, BAL) </output>
         <statusCode> _ => EVMC_SUCCESS </statusCode>
-        <endPC> _ => ?_ </endPC>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
         <touchedAccounts> _ => ?_ </touchedAccounts>

@@ -50,9 +50,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
 //         <statusCode>
 //           EVMC SUCCESS
 //         </statusCode>
-//         <endPC>
 //           284
-//         </endPC>
 //         <callState>
 //           <program> DSValue_bin_runtime </program>
 //           <jumpDests> #computeValidJumpDests(DSValue_bin_runtime) </jumpDests>

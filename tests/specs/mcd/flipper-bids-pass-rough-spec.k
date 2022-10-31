@@ -13,7 +13,6 @@ module FLIPPER-BIDS-PASS-ROUGH-SPEC
         <evm>
           <output> _ => #buf(32, Bid) ++ #buf(32, Lot) ++ #buf(32, Guy) ++ #buf(32, Tic) ++ #buf(32, End) ++ #buf(32, Usr) ++ #buf(32, Gal) ++ #buf(32, Tab) </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
-          <endPC> _ => ?_ </endPC>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
