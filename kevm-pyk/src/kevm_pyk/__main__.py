@@ -395,7 +395,7 @@ def exec_foundry_show_cfg(
         list(map(print, kcfg.pretty(foundry)))
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
-        if minimize_term:
+        if minimize:
             kast = minimize_term(kast)
         print(f'\n\nNode {node_id}:\n\n{foundry.pretty_print(kast)}\n')
     for node_id_1, node_id_2 in node_deltas:
