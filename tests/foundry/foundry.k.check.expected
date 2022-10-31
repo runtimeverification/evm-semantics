@@ -1,11 +1,7 @@
 requires "foundry.md"
-requires "lemmas/lemmas.k"
-requires "lemmas/int-simplification.k"
 
 module ADDRTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= AddrTestContract
     
@@ -105,8 +101,6 @@ endmodule
 
 module ASSUMETEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= AssumeTestContract
     
@@ -218,8 +212,6 @@ endmodule
 
 module BLOCKPARAMSTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= BlockParamsTestContract
     
@@ -331,8 +323,6 @@ endmodule
 
 module BROADCASTTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= BroadcastTestContract
     
@@ -442,8 +432,6 @@ endmodule
 
 module CONTRACT-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= ContractContract
     
@@ -455,8 +443,6 @@ endmodule
 
 module CONTRACTTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= ContractTestContract
     
@@ -540,8 +526,6 @@ endmodule
 
 module CONTRACTBTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= ContractBTestContract
     
@@ -646,8 +630,6 @@ endmodule
 
 module DEALTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= DealTestContract
     
@@ -740,8 +722,6 @@ endmodule
 
 module DEALTOKEN-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= DealTokenContract
     
@@ -753,8 +733,6 @@ endmodule
 
 module EXPECTEMIT-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= ExpectEmitContract
     
@@ -776,8 +754,6 @@ endmodule
 
 module EMITCONTRACTTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= EmitContractTestContract
     
@@ -869,8 +845,6 @@ endmodule
 
 module ENVTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= EnvTestContract
     
@@ -1058,8 +1032,6 @@ endmodule
 
 module ETCHTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= EtchTestContract
     
@@ -1151,8 +1123,6 @@ endmodule
 
 module FFITEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= FfiTestContract
     
@@ -1260,8 +1230,6 @@ endmodule
 
 module FILESTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= FilesTestContract
     
@@ -1353,8 +1321,6 @@ endmodule
 
 module FORKTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= ForkTestContract
     
@@ -1502,8 +1468,6 @@ endmodule
 
 module GETCODETEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= GetCodeTestContract
     
@@ -1592,8 +1556,6 @@ endmodule
 
 module LABELTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= LabelTestContract
     
@@ -1669,8 +1631,6 @@ endmodule
 
 module LOOPSTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= LoopsTestContract
     
@@ -1844,8 +1804,6 @@ endmodule
 
 module MOCKCALLTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= MockCallTestContract
     
@@ -1945,8 +1903,6 @@ endmodule
 
 module MYIERC20-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= MyIERC20Contract
     
@@ -2027,8 +1983,6 @@ endmodule
 
 module MYTOKEN-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= MyTokenContract
     
@@ -2089,8 +2043,6 @@ endmodule
 
 module NONCETEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= NonceTestContract
     
@@ -2223,8 +2175,6 @@ endmodule
 
 module OWNERUPONLY-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= OwnerUpOnlyContract
     
@@ -2269,8 +2219,6 @@ endmodule
 
 module OWNERUPONLYTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= OwnerUpOnlyTestContract
     
@@ -2375,8 +2323,6 @@ endmodule
 
 module ADDITIONALTOKEN-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= AdditionalTokenContract
     
@@ -2421,8 +2367,6 @@ endmodule
 
 module PLAINPRANKTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= PlainPrankTestContract
     
@@ -2530,8 +2474,6 @@ endmodule
 
 module PRANK-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= PrankContract
     
@@ -2586,8 +2528,6 @@ endmodule
 
 module PRANKTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= PrankTestContract
     
@@ -2726,8 +2666,6 @@ endmodule
 
 module RECORDLOGSTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= RecordLogsTestContract
     
@@ -2816,8 +2754,6 @@ endmodule
 
 module SAFE-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= SafeContract
     
@@ -2839,8 +2775,6 @@ endmodule
 
 module SAFETEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= SafeTestContract
     
@@ -2938,8 +2872,6 @@ endmodule
 
 module SCRIPT-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= ScriptContract
     
@@ -2976,8 +2908,6 @@ endmodule
 
 module SETUPTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= SetUpTestContract
     
@@ -3075,8 +3005,6 @@ endmodule
 
 module SIGNTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= SignTestContract
     
@@ -3160,8 +3088,6 @@ endmodule
 
 module ASSERTTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= AssertTestContract
     
@@ -3277,8 +3203,6 @@ endmodule
 
 module SNAPSHOTTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= SnapshotTestContract
     
@@ -3367,8 +3291,6 @@ endmodule
 
 module STORE-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= StoreContract
     
@@ -3387,8 +3309,6 @@ endmodule
 
 module STORETEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= StoreTestContract
     
@@ -3536,8 +3456,6 @@ endmodule
 
 module TEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= TestContract
     
@@ -3605,8 +3523,6 @@ endmodule
 
 module STDERROR-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= StdErrorContract
     
@@ -3700,8 +3616,6 @@ endmodule
 
 module STDMATH-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= StdMathContract
     
@@ -3713,8 +3627,6 @@ endmodule
 
 module STDSTORAGE-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= StdStorageContract
     
@@ -3737,8 +3649,6 @@ endmodule
 
 module TESTNUMBER-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= TestNumberContract
     
@@ -3802,8 +3712,6 @@ endmodule
 
 module TOSTRINGTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= ToStringTestContract
     
@@ -3919,8 +3827,6 @@ endmodule
 
 module TOKEN-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= TokenContract
     
@@ -3987,8 +3893,6 @@ endmodule
 
 module TOKENTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= TokenTestContract
     
@@ -4026,8 +3930,6 @@ endmodule
 
 module UINTTYPETEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= UintTypeTestContract
     
@@ -4913,8 +4815,6 @@ endmodule
 
 module VM-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= VmContract
     
@@ -5655,8 +5555,6 @@ endmodule
 
 module CONSOLE-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= ConsoleContract
     
@@ -5668,8 +5566,6 @@ endmodule
 
 module CONSOLE2-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= Console2Contract
     
@@ -5681,8 +5577,6 @@ endmodule
 
 module DSTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= DSTestContract
     
@@ -5776,8 +5670,6 @@ module FOUNDRY-MAIN
     imports public CONSOLE2-BIN-RUNTIME
     imports public DSTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     
 
