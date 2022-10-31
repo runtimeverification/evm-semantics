@@ -3301,7 +3301,35 @@ module ASSERTTEST-BIN-RUNTIME
     
       
     
+    syntax Field ::= AssertTestField
+    
+    syntax AssertTestField ::= "IS_TEST" [symbol(), klabel(field_AssertTest_IS_TEST)]
+    
+    syntax AssertTestField ::= "_failed" [symbol(), klabel(field_AssertTest__failed)]
+    
+    syntax AssertTestField ::= "IS_SCRIPT" [symbol(), klabel(field_AssertTest_IS_SCRIPT)]
+    
+    syntax AssertTestField ::= "stdstore" [symbol(), klabel(field_AssertTest_stdstore)]
+    
+    rule  ( #loc ( AssertTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( AssertTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( AssertTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( AssertTest . stdstore ) => 1 )
+      
+    
     syntax ByteArray ::= AssertTestContract "." AssertTestMethod [function(), symbol(), klabel(method_AssertTest)]
+    
+    syntax AssertTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_AssertTest_IS_SCRIPT)]
+    
+    syntax AssertTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_AssertTest_IS_TEST)]
+    
+    syntax AssertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AssertTest_failed)]
     
     syntax AssertTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_AssertTest_setUp)]
     
@@ -3309,9 +3337,22 @@ module ASSERTTEST-BIN-RUNTIME
     
     syntax AssertTestMethod ::= "testFail_assert_true" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_true)]
     
+    syntax AssertTestMethod ::= "testFail_expect_revert" "(" ")" [symbol(), klabel(method_AssertTest_testFail_expect_revert)]
+    
     syntax AssertTestMethod ::= "test_assert_false" "(" ")" [symbol(), klabel(method_AssertTest_test_assert_false)]
     
     syntax AssertTestMethod ::= "test_assert_true" "(" ")" [symbol(), klabel(method_AssertTest_test_assert_true)]
+    
+    syntax AssertTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AssertTest_vm)]
+    
+    rule  ( AssertTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( AssertTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( AssertTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
     
     rule  ( AssertTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
@@ -3322,10 +3363,25 @@ module ASSERTTEST-BIN-RUNTIME
     rule  ( AssertTest . testFail_assert_true ( ) => #abiCallData ( "testFail_assert_true" , .TypedArgs ) )
       
     
+    rule  ( AssertTest . testFail_expect_revert ( ) => #abiCallData ( "testFail_expect_revert" , .TypedArgs ) )
+      
+    
     rule  ( AssertTest . test_assert_false ( ) => #abiCallData ( "test_assert_false" , .TypedArgs ) )
       
     
     rule  ( AssertTest . test_assert_true ( ) => #abiCallData ( "test_assert_true" , .TypedArgs ) )
+      
+    
+    rule  ( AssertTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
       
     
     rule  ( selector ( "setUp" ) => 177362148 )
@@ -3337,10 +3393,16 @@ module ASSERTTEST-BIN-RUNTIME
     rule  ( selector ( "testFail_assert_true" ) => 409427266 )
       
     
+    rule  ( selector ( "testFail_expect_revert" ) => 709747105 )
+      
+    
     rule  ( selector ( "test_assert_false" ) => 1574882301 )
       
     
     rule  ( selector ( "test_assert_true" ) => 906863826 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
       
 
 endmodule

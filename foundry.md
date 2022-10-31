@@ -225,10 +225,10 @@ We define two productions named `#return_foundry` and `#call_foundry`, which wil
 The rule `foundry.return` will rewrite the `#return_foundry` production into other productions that will place the output of the execution into the local memory, refund the gas value of the call and push the value `1` on the call stack.
 
 ```{.k .bytes}
-    syntax KItem ::= "#error_foundry" [klabel(foundry_error)]
-                   | "#return_foundry" Int Int [klabel(foundry_return)]
+    syntax KItem ::= "#return_foundry" Int Int [klabel(foundry_return)]
                    | "#call_foundry" Int ByteArray [klabel(foundry_call)]
- // ---------------------------------------------------------------------
+                   | "#error_foundry" Int ByteArray [klabel(foundry_error)]
+ // -----------------------------------------------------------------------
     rule [foundry.return]:
          <k> #return_foundry RETSTART RETWIDTH
           => #setLocalMem RETSTART RETWIDTH OUT
@@ -237,6 +237,13 @@ The rule `foundry.return` will rewrite the `#return_foundry` production into oth
           ... </k>
          <output> OUT </output>
          <callGas> GCALL </callGas>
+```
+
+We define a new status code named `FOUNDRY_UNIMPLEMENTED`, which signals that the execution ran into an unimplemented cheat code.
+
+```{.k .bytes}
+    syntax ExceptionalStatusCode ::= "FOUNDRY_UNIMPLEMENTED"
+ // --------------------------------------------------------
 ```
 
 Below, we define rules for the `#call_foundry` production, handling the cheat codes.
@@ -612,7 +619,9 @@ Otherwise, throw an error for any other call to the Foundry contract.
 
 ```{.k .bytes}
     rule [foundry.call.owise]:
-         <k> #call_foundry _ _ => #error_foundry ... </k> [owise]
+         <k> #call_foundry SELECTOR ARGS => #error_foundry SELECTOR ARGS ... </k>
+         <statusCode> _ => FOUNDRY_UNIMPLEMENTED </statusCode>
+      [owise]
 ```
 
 Utils
@@ -811,6 +820,79 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "startPrank(address,address)" )    => 1169514616 )
     rule ( selector ( "stopPrank()" )                    => 2428830011 )
 ```
+
+- selectors for unimplemented cheat code functions.
+
+```k
+    rule selector ( "sign(uint256,bytes32)" )                   => 3812747940
+    rule selector ( "ffi(string[])" )                           => 2299921511
+    rule selector ( "setEnv(string,string)" )                   => 1029252078
+    rule selector ( "envBool(string)" )                         => 2127686781
+    rule selector ( "envUint(string)" )                         => 3247934751
+    rule selector ( "envInt(string)" )                          => 2301234273
+    rule selector ( "envAddress(string)" )                      => 890066623
+    rule selector ( "envBytes32(string)" )                      => 2543095874
+    rule selector ( "envString(string)" )                       => 4168600345
+    rule selector ( "envBytes(string)" )                        => 1299951366
+    rule selector ( "envBool(string,string)" )                  => 2863521455
+    rule selector ( "envUint(string,string)" )                  => 4091461785
+    rule selector ( "envInt(string,string)" )                   => 1108873552
+    rule selector ( "envAddress(string,string)" )               => 2905717242
+    rule selector ( "envBytes32(string,string)" )               => 1525821889
+    rule selector ( "envString(string,string)" )                => 347089865
+    rule selector ( "envBytes(string,string)" )                 => 3720504603
+    rule selector ( "prank(address)" )                          => 3395723175
+    rule selector ( "startPrank(address)" )                     => 105151830
+    rule selector ( "prank(address,address)" )                  => 1206193358
+    rule selector ( "startPrank(address,address)" )             => 1169514616
+    rule selector ( "stopPrank()" )                             => 2428830011
+    rule selector ( "expectRevert(bytes)" )                     => 4069379763
+    rule selector ( "expectRevert(bytes4)" )                    => 3273568480
+    rule selector ( "expectRevert()" )                          => 4102309908
+    rule selector ( "record()" )                                => 644673801
+    rule selector ( "accesses(address)" )                       => 1706857601
+    rule selector ( "expectEmit(bool,bool,bool,bool)" )         => 1226622914
+    rule selector ( "expectEmit(bool,bool,bool,bool,address)" ) => 2176505587
+    rule selector ( "mockCall(address,bytes calldata,bytes)" )  => 378193464
+    rule selector ( "mockCall(address,uint256,bytes,bytes)" )   => 2168494993
+    rule selector ( "clearMockedCalls()" )                      => 1071599125
+    rule selector ( "expectCall(address,bytes)" )               => 3177903156
+    rule selector ( "expectCall(address,uint256,bytes)" )       => 4077681571
+    rule selector ( "getCode(string)" )                         => 2367473957
+    rule selector ( "broadcast()" )                             => 2949218368
+    rule selector ( "broadcast(address)" )                      => 3868601563
+    rule selector ( "startBroadcast()" )                        => 2142579071
+    rule selector ( "startBroadcast(address)" )                 => 2146183821
+    rule selector ( "stopBroadcast()" )                         => 1995103542
+    rule selector ( "readFile(string)" )                        => 1626979089
+    rule selector ( "readLine(string)" )                        => 1895126824
+    rule selector ( "writeFile(string,string)" )                => 2306738839
+    rule selector ( "writeLine(string,string)" )                => 1637714303
+    rule selector ( "closeFile(string)" )                       => 1220748319
+    rule selector ( "removeFile(string)" )                      => 4054835277
+    rule selector ( "toString(address)" )                       => 1456103998
+    rule selector ( "toString(bytes)" )                         => 1907020045
+    rule selector ( "toString(bytes32)" )                       => 2971277800
+    rule selector ( "toString(bool)" )                          => 1910302682
+    rule selector ( "toString(uint256)" )                       => 1761649582
+    rule selector ( "toString(int256)" )                        => 2736964622
+    rule selector ( "recordLogs()" )                            => 1101999954
+    rule selector ( "getRecordedLogs()" )                       => 420828068
+    rule selector ( "snapshot()" )                              => 2534502746
+    rule selector ( "revertTo(uint256)" )                       => 1155002532
+    rule selector ( "createFork(string,uint256)" )              => 1805892139
+    rule selector ( "createFork(string)" )                      => 834286744
+    rule selector ( "createSelectFork(string,uint256)" )        => 1911440973
+    rule selector ( "createSelectFork(string)" )                => 2556952628
+    rule selector ( "selectFork(uint256)" )                     => 2663344167
+    rule selector ( "activeFork()" )                            => 789593890
+    rule selector ( "rollFork(uint256)" )                       => 3652973473
+    rule selector ( "rollFork(uint256,uint256)" )               => 3612115876
+    rule selector ( "rpcUrl(string)" )                          => 2539285737
+    rule selector ( "rpcUrls()" )                               => 2824504344
+    rule selector ( "deriveKey(string,uint32)" )                => 1646872971
+```
+
 ```k
 endmodule
 ```
