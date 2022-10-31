@@ -7,9 +7,10 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KRule, KToken
-from pyk.kastManip import minimize_term
+from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KRewrite, KRule, KToken
+from pyk.kastManip import minimize_term, push_down_rewrites
 from pyk.kcfg import KCFG
+from pyk.ktool.kit import KIT
 from pyk.ktool.krun import _krun
 from pyk.prelude.ml import mlTop
 
@@ -364,6 +365,8 @@ def exec_foundry_show_cfg(
     foundry_out: Path,
     test: str,
     nodes: Iterable[str] = (),
+    node_deltas: Iterable[Tuple[str, str]] = (),
+    minimize: bool = True,
     **kwargs: Any,
 ) -> None:
     definition_dir = foundry_out / 'kompiled'
@@ -375,10 +378,18 @@ def exec_foundry_show_cfg(
     with open(kcfg_file, 'r') as kf:
         kcfg = KCFG.from_dict(json.loads(kf.read()))
         list(map(print, kcfg.pretty(foundry)))
-    if nodes:
-        for node_id in nodes:
-            node = kcfg.node(node_id)
-            print(f'\n\nNode {node.id}:\n\n{foundry.pretty_print(minimize_term(node.cterm.kast))}\n')
+    for node_id in nodes:
+        kast = kcfg.node(node_id).cterm.kast
+        if minimize_term:
+            kast = minimize_term(kast)
+        print(f'\n\nNode {node_id}:\n\n{foundry.pretty_print(kast)}\n')
+    for node_id_1, node_id_2 in node_deltas:
+        config_1 = kcfg.node(node_id_1).cterm.config
+        config_2 = kcfg.node(node_id_2).cterm.config
+        config_delta = push_down_rewrites(KRewrite(config_1, config_2))
+        if minimize:
+            config_delta = minimize_term(config_delta)
+        print(f'\n\nState Delta {node_id_1} => {node_id_2}:\n\n{foundry.pretty_print(config_delta)}\n')
 
 
 def exec_run(
@@ -643,6 +654,20 @@ def _create_argument_parser() -> ArgumentParser:
         default=[],
         action='append',
         help='List of nodes to display as well.',
+    )
+    foundry_show_cfg_args.add_argument(
+        '--node-delta',
+        type=KIT.arg_pair_of(str, str),
+        dest='node_deltas',
+        default=[],
+        action='append',
+        help='List of nodes to display delta for.',
+    )
+    foundry_show_cfg_args.add_argument(
+        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.'
+    )
+    foundry_show_cfg_args.add_argument(
+        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
     )
 
     return parser
