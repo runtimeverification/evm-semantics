@@ -31,14 +31,38 @@ module LEMMAS-SPEC
 
     claim <k> runLemma(#isPrecompiledAccount(#newAddr(TESTER_ACCT, 1), ISTANBUL)) => doneLemma(false) ... </k> requires #rangeAddress(TESTER_ACCT)
 
- // Arithmetic Comparisons
- // ----------------------
+ // Arithmetic
+ // ----------
 
     claim <k> runLemma(#rangeUInt(256, #lookup(M, KX) -Int #lookup(M, KY))) => doneLemma(true) ... </k>
       requires #rangeUInt(256, X) andBool X ==Int #lookup(M,  KX)
        andBool #rangeUInt(256, Y) andBool Y ==Int #lookup(M,  KY)
        andBool #rangeUInt(256, Z) andBool Z ==Int #lookup(M, _KZ)
        andBool #rangeUInt(256, (X -Int Y) -Int Z)
+
+    claim [address-reprojection]: <k> runLemma(((maxUInt160 &Int ((368263281805664599098893944405654396525700029268 |Int (115792089237316195423570985007226406215939081747436879206741300988257197096960 &Int X:Int)) modInt pow256)) modInt pow160))
+                                   => doneLemma(368263281805664599098893944405654396525700029268) ... </k>
+                                requires #rangeUInt(256, X)
+
+    claim [address-reprojection-1]: <k> runLemma(0 <=Int (368263281805664599098893944405654396525700029268 |Int (115792089237316195423570985007226406215939081747436879206741300988257197096960 &Int X:Int)))
+                                     => doneLemma(true) ... </k>
+                                  requires #rangeUInt(256, X)
+
+    claim [address-reprojection-2]: <k> runLemma(0 <=Int (115792089237316195423570985007226406215939081747436879206741300988257197096960 &Int X:Int))
+                                     => doneLemma(true) ... </k>
+                                  requires #rangeUInt(256, X)
+
+    claim [address-reprojection-4]: <k> runLemma((368263281805664599098893944405654396525700029268 |Int (115792089237316195423570985007226406215939081747436879206741300988257197096960 &Int X:Int)) <Int pow256)
+                                     => doneLemma(true) ... </k>
+                                  requires #rangeUInt(256, X)
+
+    claim [address-reprojection-5]: <k> runLemma((115792089237316195423570985007226406215939081747436879206741300988257197096960 &Int X:Int) <Int pow256)
+                                     => doneLemma(true) ... </k>
+                                  requires #rangeUInt(256, X)
+
+    claim [address-reprojection-6]: <k> runLemma(maxUInt160 &Int (368263281805664599098893944405654396525700029268 |Int (115792089237316195423570985007226406215939081747436879206741300988257197096960 &Int X:Int)))
+                                     => doneLemma(368263281805664599098893944405654396525700029268) ... </k>
+                                  requires #rangeUInt(256, X)
 
  // Buffer write simplifications
  // ----------------------------
