@@ -45,6 +45,15 @@ module LEMMAS [symbolic]
     rule 0 <=Int bool2Word(_B)             => true   [simplification]
     rule         bool2Word(_B) <Int pow256 => true   [simplification]
 
+    rule bool2Word(A) |Int bool2Word(B) => bool2Word(A  orBool B) [simplification]
+    rule bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B) [simplification]
+
+    rule 1 |Int bool2Word(_B) => 1            [simplification]
+    rule 1 &Int bool2Word( B) => bool2Word(B) [simplification]
+
+    rule bool2Word(_B) |Int 1 => 1            [simplification]
+    rule bool2Word( B) &Int 1 => bool2Word(B) [simplification]
+
     rule notBool notBool B => B [simplification]
 
     // #newAddr range
@@ -244,15 +253,6 @@ module LEMMAS-JAVA [symbolic, kast]
   // Word Reasoning
   // ########################
 
-    rule bool2Word(A) |Int bool2Word(B) => bool2Word(A  orBool B) [simplification]
-    rule bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B) [simplification]
-
-    rule 1 |Int bool2Word(_B) => 1            [simplification]
-    rule 1 &Int bool2Word( B) => bool2Word(B) [simplification]
-
-    rule bool2Word(_B) |Int 1 => 1            [simplification]
-    rule bool2Word( B) &Int 1 => bool2Word(B) [simplification]
-
     rule bool2Word(A) =/=K 0 => A          [simplification]
     rule bool2Word(A) =/=K 1 => notBool(A) [simplification]
 
@@ -387,6 +387,14 @@ module LEMMAS-HASKELL [symbolic, kore]
     // (check-sat)
     // (pop)
     rule X <=Int chop ( X +Int Y ) => false  requires pow256 <=Int ( X +Int Y ) andBool #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
+
+    rule 0 <=Int (X |Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
+    rule 0 <=Int (X &Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
+
+    rule (X &Int Y) <Int Z      => true requires 0 <=Int X andBool 0 <=Int Y andBool (X <Int Z orBool Y <Int Z)          [simplification]
+    rule (X |Int Y) <Int pow256 => true requires 0 <=Int X andBool 0 <=Int Y andBool X <Int pow256 andBool Y <Int pow256 [simplification]
+
+    rule maxUInt160 &Int (X |Int (notMaxUInt160 &Int Y:Int)) => X requires #rangeUInt(160, X) andBool 0 <=Int Y [simplification]
 
   // ########################
   // Buffer Reasoning
