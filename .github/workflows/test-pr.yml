@@ -106,6 +106,8 @@ jobs:
           tag: kevm-ci-foundry-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -t kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j2'
+      - name: 'Build Foundry'
+        run: docker exec -t kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
       - name: 'Test Foundry'
         run: docker exec -t kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry -j2 FOUNDRY_PAR=4'
       - name: 'Tear down Docker'
