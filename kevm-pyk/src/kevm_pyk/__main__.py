@@ -335,6 +335,12 @@ def exec_foundry_prove(
                 init_simplified = foundry.prove_claim(claim, 'simplify-init', args=['--depth', '0'])
                 init_simplified = sanitize_config(foundry.definition, init_simplified)
                 cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_simplified))
+                _LOGGER.info(f'Simplifying target state for test: {test}')
+                edge = KCFG.Edge(cfg.get_unique_target(), cfg.get_unique_init(), mlTop(), -1)
+                claim = edge.to_claim()
+                target_simplified = foundry.prove_claim(claim, 'simplify-target', args=['--depth', '0'])
+                target_simplified = sanitize_config(foundry.definition, target_simplified)
+                cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_simplified))
             kcfgs[test] = cfg
             with open(kcfg_file, 'w') as kf:
                 kf.write(json.dumps(cfg.to_dict()))
@@ -653,13 +659,13 @@ def _create_argument_parser() -> ArgumentParser:
         dest='simplify_init',
         default=True,
         action='store_true',
-        help='Simplify the initial state at startup.',
+        help='Simplify the initial and target states at startup.',
     )
     foundry_prove_args.add_argument(
         '--no-simplify-init',
         dest='simplify_init',
         action='store_false',
-        help='Do not simplify the initial state at startup.',
+        help='Do not simplify the initial and target states at startup.',
     )
 
     foundry_show_cfg_args = command_parser.add_parser(
