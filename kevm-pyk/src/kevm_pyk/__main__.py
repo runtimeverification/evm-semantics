@@ -369,10 +369,14 @@ def exec_foundry_prove(
         results = process_pool.map(prove_it, kcfgs.items())
         process_pool.close()
 
-    failed_cfgs = [cid for ((cid, _), failed) in zip(kcfgs.items(), results) if failed]
-    if failed_cfgs:
-        print(f'Failed to prove KCFGs: {failed_cfgs}\n')
-    sys.exit(len(failed_cfgs))
+    failed = 0
+    for (cid, _), succeeded in zip(kcfgs.items(), results):
+        if succeeded:
+            print(f'PASSED: {cid}')
+        else:
+            print(f'FAILED: {cid}')
+            failed += 1
+    sys.exit(failed)
 
 
 def exec_foundry_show_cfg(
