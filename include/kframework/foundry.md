@@ -482,20 +482,21 @@ This is needed in order to prevent overwriting the caller for subcalls.
 Finally, the original sender of the transaction, `ACCTFROM` is changed to the new caller, `NCL`.
 
 ```{.k .bytes}
-    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ~> ( . => #checkSinglePrank SP ) ... </k>
          <callDepth> CD </callDepth>
          <prank>
             <newCaller> NCL </newCaller>
             <newOrigin> .Account </newOrigin>
             <active> true </active>
             <depth> CD </depth>
+            <singleCall> SP </singleCall>
             ...
          </prank>
       requires NCL =/=K .Account
        andBool ACCTFROM =/=Int NCL
       [priority(40)]
 
-    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ~> ( . => #checkSinglePrank SP ) ... </k>
          <callDepth> CD </callDepth>
          <origin> _ => NOG </origin>
          <prank>
@@ -503,6 +504,7 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
             <newOrigin> NOG </newOrigin>
             <active> true </active>
             <depth> CD </depth>
+            <singleCall> SP </singleCall>
             ...
          </prank>
       requires NCL =/=K .Account
@@ -524,12 +526,29 @@ The `#loadAccount` production is used to load accounts into the state if they ar
 
 ```{.k .bytes}
     rule [foundry.call.startPrank]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) .Account ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) .Account false ... </k>
       requires SELECTOR ==Int selector ( "startPrank(address)" )
 
     rule [foundry.call.startPrankWithOrigin]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount  #asWord(#range(ARGS, 0, 32)) ~> #loadAccount #asWord(#range(ARGS, 32, 32)) ~> #setPrank #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #loadAccount #asWord(#range(ARGS, 32, 32)) ~> #setPrank #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) false ... </k>
       requires SELECTOR ==Int selector ( "startPrank(address,address)" )
+```
+
+#### `prank` - Impersonate `msg.sender` and `tx.origin` for only for the next call.
+
+```
+function prank(address) external;
+function prank(address sender, address origin) external;
+```
+
+```{.k .bytes}
+    rule [foundry.call.prank]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) .Account true ... </k>
+      requires SELECTOR ==Int selector ( "prank(address)" )
+
+    rule [foundry.call.rankWithOrigin]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #loadAccount #asWord(#range(ARGS, 32, 32)) ~> #setPrank #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) true ... </k>
+      requires SELECTOR ==Int selector ( "prank(address,address)" )
 ```
 
 #### `stopPrank` - Stops impersonating `msg.sender` and `tx.origin`.
@@ -652,12 +671,12 @@ Utils
          </account>
 ```
 
-- `#setPrank NEWCALLER NEWORIGIN` will set the `<prank/>` subconfiguration for the given accounts.
+- `#setPrank NEWCALLER NEWORIGIN ISSINGLECALL` will set the `<prank/>` subconfiguration for the given accounts.
 
 ```k
-    syntax KItem ::= "#setPrank" Int Account [klabel(foundry_setPrank)]
- // -------------------------------------------------------------------
-    rule <k> #setPrank NEWCALLER NEWORIGIN => . ... </k>
+    syntax KItem ::= "#setPrank" Int Account Bool [klabel(foundry_setPrank)]
+ // ------------------------------------------------------------------------
+    rule <k> #setPrank NEWCALLER NEWORIGIN SINGLEPRANK => . ... </k>
          <callDepth> CD </callDepth>
          <caller> CL </caller>
          <origin> OG </origin>
@@ -668,7 +687,7 @@ Utils
            <newOrigin> _ => NEWORIGIN </newOrigin>
            <active> false => true </active>
            <depth> _ => CD </depth>
-           <singleCall> _ => false </singleCall>
+           <singleCall> _ => SINGLEPRANK </singleCall>
          </prank>
 ```
 
@@ -712,6 +731,15 @@ If the production is matched when no prank is active, it will be ignored.
           <depth> _ => 0 </depth>
           <singleCall> _ => false </singleCall>
         </prank>
+```
+
+- `#checkSinglePrank SINGLEPRANK` will trigger the `#endPrank` rules after the end of a call, only if the `prank` cheat code was used.
+
+```k
+    syntax KItem ::= "#checkSinglePrank" Bool [klabel(foundry_checkSinglePrank)]
+ // ----------------------------------------------------------------------------
+    rule <k> #checkSinglePrank false => . ... </k>
+    rule <k> #checkSinglePrank true => #endPrank ... </k>
 ```
 
 - selectors for cheat code functions.
