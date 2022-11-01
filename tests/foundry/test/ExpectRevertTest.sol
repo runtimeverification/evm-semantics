@@ -17,6 +17,18 @@ contract Reverter {
     }
 }
 
+contract DepthReverter {
+    Reverter reverter;
+
+    constructor() {
+        reverter = new Reverter();
+    }
+
+    function revertAtNextDepth() public {
+        reverter.revertWithoutReason();
+    }
+
+}
 contract ExpectRevertTest is Test {
     function test_expectRevert_true() public {
         Reverter reverter = new Reverter();
@@ -46,5 +58,22 @@ contract ExpectRevertTest is Test {
         Reverter reverter = new Reverter();
         vm.expectRevert(bytes4("FAIL"));
         reverter.revertWithReason("FAIL");
+    }
+
+    function testFail_expectRevert_empty() public {
+        vm.expectRevert();
+    }
+
+    function testFail_expectRevert_multipleReverts() public {
+        Reverter reverter = new Reverter();
+        vm.expectRevert();
+        reverter.revertWithoutReason();
+        reverter.revertWithoutReason();
+    }
+
+    function test_ExpectRevert_increasedDepth() public {
+        DepthReverter reverter = new DepthReverter();
+        vm.expectRevert();
+        reverter.revertAtNextDepth();
     }
 }

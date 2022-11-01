@@ -134,10 +134,10 @@ Hence, checking if a `DSTest.assert*` has failed amounts to reading as a boolean
 module FOUNDRY-SUCCESS
     imports EVM
 
-    syntax Bool ::= "foundry_success" "(" StatusCode "," Int ")" [function, klabel(foundry_success), symbol]
- // --------------------------------------------------------------------------------------------------------
-    rule foundry_success(EVMC_SUCCESS, 0) => true
-    rule foundry_success(_, _)            => false [owise]
+    syntax Bool ::= "foundry_success" "(" StatusCode "," Int "," Bool ")" [function, klabel(foundry_success), symbol]
+ // -----------------------------------------------------------------------------------------------------------------
+    rule foundry_success(EVMC_SUCCESS, 0, false) => true
+    rule foundry_success(_, _, _)                => false [owise]
 
 endmodule
 ```
@@ -534,7 +534,6 @@ If the `expectRevert()` selector is matched, call the `#setExpectRevert` product
     rule [foundry.call.expectRevert]:
          <k> #call_foundry SELECTOR ARGS => #setExpectRevert ARGS ... </k>
       requires SELECTOR ==Int selector ( "expectRevert()" )
-        orBool SELECTOR ==Int selector ( "expectRevert(bytes4)" )
         orBool SELECTOR ==Int selector ( "expectRevert(bytes)" )
 ```
 
@@ -814,7 +813,6 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "store(address,bytes32,bytes32)" ) => 1892290747 )
     rule ( selector ( "setNonce(address,uint64)" )       => 4175530839 )
     rule ( selector ( "expectRevert()" )                 => 4102309908 )
-    rule ( selector ( "expectRevert(bytes4)" )           => 3273568480 )
     rule ( selector ( "expectRevert(bytes)" )            => 4069379763 )
     rule ( selector ( "startPrank(address)" )            => 105151830  )
     rule ( selector ( "startPrank(address,address)" )    => 1169514616 )
@@ -842,13 +840,9 @@ If the production is matched when no prank is active, it will be ignored.
     rule selector ( "envString(string,string)" )                => 347089865
     rule selector ( "envBytes(string,string)" )                 => 3720504603
     rule selector ( "prank(address)" )                          => 3395723175
-    rule selector ( "startPrank(address)" )                     => 105151830
     rule selector ( "prank(address,address)" )                  => 1206193358
-    rule selector ( "startPrank(address,address)" )             => 1169514616
     rule selector ( "stopPrank()" )                             => 2428830011
-    rule selector ( "expectRevert(bytes)" )                     => 4069379763
     rule selector ( "expectRevert(bytes4)" )                    => 3273568480
-    rule selector ( "expectRevert()" )                          => 4102309908
     rule selector ( "record()" )                                => 644673801
     rule selector ( "accesses(address)" )                       => 1706857601
     rule selector ( "expectEmit(bool,bool,bool,bool)" )         => 1226622914

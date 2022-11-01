@@ -36,6 +36,7 @@ EnvTest.testEnvStringArray
 EnvTest.testEnvUInt
 EnvTest.testEnvUIntArray
 EtchTest.testEtchSymbolic
+ExpectRevertTest.testFail_expectRevert_bytes4
 FfiTest.testffi
 FfiTest.testFFIFOO
 FfiTest.testFFIScript

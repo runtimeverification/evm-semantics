@@ -1149,6 +1149,36 @@ module ETCHTEST-BIN-RUNTIME
 
 endmodule
 
+module DEPTHREVERTER-BIN-RUNTIME
+    imports public FOUNDRY
+    imports public LEMMAS
+    imports public INT-SIMPLIFICATION
+    
+    syntax Contract ::= DepthReverterContract
+    
+    syntax DepthReverterContract ::= "DepthReverter" [symbol(), klabel(contract_DepthReverter)]
+    
+      
+    
+    syntax Field ::= DepthReverterField
+    
+    syntax DepthReverterField ::= "reverter" [symbol(), klabel(field_DepthReverter_reverter)]
+    
+    rule  ( #loc ( DepthReverter . reverter ) => 0 )
+      
+    
+    syntax ByteArray ::= DepthReverterContract "." DepthReverterMethod [function(), symbol(), klabel(method_DepthReverter)]
+    
+    syntax DepthReverterMethod ::= "revertAtNextDepth" "(" ")" [symbol(), klabel(method_DepthReverter_revertAtNextDepth)]
+    
+    rule  ( DepthReverter . revertAtNextDepth ( ) => #abiCallData ( "revertAtNextDepth" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "revertAtNextDepth" ) => 332278727 )
+      
+
+endmodule
+
 module EXPECTREVERTTEST-BIN-RUNTIME
     imports public FOUNDRY
     imports public LEMMAS
@@ -1190,7 +1220,17 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     
     syntax ExpectRevertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ExpectRevertTest_failed)]
     
+    syntax ExpectRevertTestMethod ::= "testFail_expectRevert_bytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_bytes4)]
+    
+    syntax ExpectRevertTestMethod ::= "testFail_expectRevert_empty" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_empty)]
+    
     syntax ExpectRevertTestMethod ::= "testFail_expectRevert_false" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_false)]
+    
+    syntax ExpectRevertTestMethod ::= "testFail_expectRevert_multipleReverts" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_multipleReverts)]
+    
+    syntax ExpectRevertTestMethod ::= "test_ExpectRevert_increasedDepth" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_ExpectRevert_increasedDepth)]
+    
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_bytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_bytes4)]
     
     syntax ExpectRevertTestMethod ::= "test_expectRevert_message" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_message)]
     
@@ -1207,7 +1247,22 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     rule  ( ExpectRevertTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
+    rule  ( ExpectRevertTest . testFail_expectRevert_bytes4 ( ) => #abiCallData ( "testFail_expectRevert_bytes4" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . testFail_expectRevert_empty ( ) => #abiCallData ( "testFail_expectRevert_empty" , .TypedArgs ) )
+      
+    
     rule  ( ExpectRevertTest . testFail_expectRevert_false ( ) => #abiCallData ( "testFail_expectRevert_false" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . testFail_expectRevert_multipleReverts ( ) => #abiCallData ( "testFail_expectRevert_multipleReverts" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . test_ExpectRevert_increasedDepth ( ) => #abiCallData ( "test_ExpectRevert_increasedDepth" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . test_expectRevert_bytes4 ( ) => #abiCallData ( "test_expectRevert_bytes4" , .TypedArgs ) )
       
     
     rule  ( ExpectRevertTest . test_expectRevert_message ( ) => #abiCallData ( "test_expectRevert_message" , .TypedArgs ) )
@@ -1228,7 +1283,22 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     rule  ( selector ( "failed" ) => 3124842406 )
       
     
+    rule  ( selector ( "testFail_expectRevert_bytes4" ) => 3540765930 )
+      
+    
+    rule  ( selector ( "testFail_expectRevert_empty" ) => 3691097669 )
+      
+    
     rule  ( selector ( "testFail_expectRevert_false" ) => 2152588325 )
+      
+    
+    rule  ( selector ( "testFail_expectRevert_multipleReverts" ) => 2539873268 )
+      
+    
+    rule  ( selector ( "test_ExpectRevert_increasedDepth" ) => 910856553 )
+      
+    
+    rule  ( selector ( "test_expectRevert_bytes4" ) => 1300765909 )
       
     
     rule  ( selector ( "test_expectRevert_message" ) => 3706733127 )
@@ -5868,6 +5938,7 @@ module FOUNDRY-MAIN
     imports public EMITCONTRACTTEST-BIN-RUNTIME
     imports public ENVTEST-BIN-RUNTIME
     imports public ETCHTEST-BIN-RUNTIME
+    imports public DEPTHREVERTER-BIN-RUNTIME
     imports public EXPECTREVERTTEST-BIN-RUNTIME
     imports public REVERTER-BIN-RUNTIME
     imports public FFITEST-BIN-RUNTIME
