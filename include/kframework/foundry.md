@@ -509,7 +509,11 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
        andBool NOG =/=K .Account
        andBool ACCTFROM =/=Int NCL
       [priority(40)]
+```
 
+We define a new rule for the `#halt ~> #return _ _` production that will trigger the `#endPrank` rules if the prank was set only for a single call.
+
+```{.k .bytes}
     rule <k> (. => #endPrank) ~> #halt ~> #return _RETSTART _RETWIDTH ... </k>
          <prank>
            <singleCall> true </singleCall>
