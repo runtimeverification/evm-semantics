@@ -25,6 +25,10 @@ Claims should always use `#bufStrict` in LHS and `#buf` in RHS.
     syntax ByteArray ::= #bufStrict ( Int , Int ) [function]
     syntax ByteArray ::= #buf ( Int , Int ) [function, functional, smtlib(buf)]
 
+    syntax Int ::= #ceil32 ( Int ) [macro]
+ // --------------------------------------
+    rule #ceil32(N) => (N up/Int 32) *Int 32
+
 endmodule
 
 module BUF

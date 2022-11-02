@@ -50,9 +50,9 @@ add_executable(kevm-vm
 	$ENV{NODE_DIR}/vm/kevm/semantics.cpp
 	$ENV{NODE_DIR}/plugin-c/blockchain.cpp
 	$ENV{NODE_DIR}/plugin-c/world.cpp
-	$ENV{PLUGIN_SUBMODULE}/plugin-c/blake2.cpp
-	$ENV{PLUGIN_SUBMODULE}/plugin-c/crypto.cpp
-	$ENV{PLUGIN_SUBMODULE}/plugin-c/plugin_util.cpp
+	$ENV{PLUGIN_FULL_PATH}/plugin-c/blake2.cpp
+	$ENV{PLUGIN_FULL_PATH}/plugin-c/crypto.cpp
+	$ENV{PLUGIN_FULL_PATH}/plugin-c/plugin_util.cpp
 	$ENV{LOCAL_LIB}/proto/proto/msg.pb.cc)
 
 if(UNIX AND NOT APPLE)
@@ -65,7 +65,7 @@ if (APPLE)
 endif()
 
 target_include_directories(kevm-vm
-	PUBLIC $ENV{PLUGIN_SUBMODULE}/plugin-c
+	PUBLIC $ENV{PLUGIN_FULL_PATH}/plugin-c
 	PUBLIC $ENV{LOCAL_LIB}/proto
 	PUBLIC $ENV{NODE_DIR}/plugin-c
 	PUBLIC $ENV{NODE_DIR}/vm

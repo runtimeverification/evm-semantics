@@ -40,9 +40,10 @@ export C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH
 export PATH
 
-PLUGIN_SUBMODULE := $(abspath $(DEPS_DIR)/plugin)
+PLUGIN_SUBMODULE := $(DEPS_DIR)/plugin
 PLUGIN_SOURCE    := $(KEVM_INCLUDE)/kframework/blockchain-k-plugin/krypto.md
-export PLUGIN_SUBMODULE
+PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
+export PLUGIN_FULL_PATH
 
 
 .PHONY: all clean distclean                                                                                                      \
@@ -147,17 +148,18 @@ k-deps:
 	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
 	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/kframework package/package
 
+plugin_k_include  := $(KEVM_INCLUDE)/kframework/plugin
 plugin_include    := $(KEVM_LIB)/blockchain-k-plugin/include
 plugin_k          := krypto.md
 plugin_c          := plugin_util.cpp crypto.cpp blake2.cpp plugin_util.h blake2.h
-plugin_includes   := $(patsubst %, $(plugin_include)/kframework/%, $(plugin_k))
-plugin_c_includes := $(patsubst %, $(plugin_include)/c/%,          $(plugin_c))
+plugin_includes   := $(patsubst %, $(plugin_k_include)/%, $(plugin_k))
+plugin_c_includes := $(patsubst %, $(plugin_include)/c/%, $(plugin_c))
 
 $(plugin_include)/c/%: $(PLUGIN_SUBMODULE)/plugin-c/%
 	@mkdir -p $(dir $@)
 	install $< $@
 
-$(plugin_include)/kframework/%: $(PLUGIN_SUBMODULE)/plugin/%
+$(plugin_k_include)/%: $(PLUGIN_SUBMODULE)/plugin/%
 	@mkdir -p $(dir $@)
 	install $< $@
 
@@ -168,40 +170,32 @@ plugin-deps: $(plugin_includes) $(plugin_c_includes)
 
 KOMPILE := $(KEVM) kompile
 
-kevm_files := abi.md              \
-              asm.md              \
-              buf.md              \
-              data.md             \
-              driver.md           \
-              edsl.md             \
-              evm.md              \
-              evm-types.md        \
-              evm-node.md         \
-              foundry.md          \
-              hashed-locations.md \
-              infinite-gas.md     \
-              json-rpc.md         \
-              network.md          \
-              optimizations.md    \
-              serialization.md    \
-              state-utils.md      \
-              word.md
-
-kevm_lemmas := lemmas.k             \
-               int-simplification.k \
-               erc20/evm-symbolic.k \
-               mcd/bin_runtime.k    \
-               mcd/storage.k        \
-               mcd/verification.k   \
-               mcd/word-pack.k
-
-lemma_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/lemmas/%, $(kevm_lemmas))
+kevm_files := abi.md                      \
+              asm.md                      \
+              buf.md                      \
+              data.md                     \
+              driver.md                   \
+              edsl.md                     \
+              evm.md                      \
+              evm-types.md                \
+              evm-node.md                 \
+              foundry.md                  \
+              hashed-locations.md         \
+              infinite-gas.md             \
+              json-rpc.md                 \
+              network.md                  \
+              optimizations.md            \
+              serialization.md            \
+              state-utils.md              \
+              word.md                     \
+              lemmas/lemmas.k             \
+              lemmas/int-simplification.k
 
 kevm_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_files))
 
-includes := $(kevm_includes) $(lemma_includes) $(plugin_includes) $(plugin_c_includes)
+includes := $(kevm_includes) $(plugin_includes) $(plugin_c_includes)
 
-$(KEVM_INCLUDE)/kframework/%.md: %.md
+$(KEVM_INCLUDE)/%: include/%
 	@mkdir -p $(dir $@)
 	install $< $@
 
@@ -209,7 +203,7 @@ $(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
 	@mkdir -p $(dir $@)
 	install $< $@
 
-KOMPILE_OPTS = -I $(INSTALL_INCLUDE)/kframework -I $(INSTALL_LIB)/blockchain-k-plugin/include/kframework
+KOMPILE_OPTS = -I $(INSTALL_INCLUDE)/kframework
 
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
@@ -230,10 +224,11 @@ $(KEVM_LIB)/$(haskell_kompiled): $(libsecp256k1_out)
 endif
 
 $(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend haskell                     \
-	    $(haskell_main_file) $(HASKELL_KOMPILE_OPTS) \
-	    --main-module $(haskell_main_module)         \
-	    --syntax-module $(haskell_syntax_module)     \
+	$(KOMPILE) --backend haskell                        \
+	    $(KEVM_INCLUDE)/kframework/$(haskell_main_file) \
+	    $(HASKELL_KOMPILE_OPTS)                         \
+	    --main-module $(haskell_main_module)            \
+	    --syntax-module $(haskell_syntax_module)        \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 # Standalone
@@ -250,10 +245,10 @@ $(KEVM_LIB)/$(llvm_kompiled): $(libcryptopp_out)
 endif
 
 $(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend llvm                 \
-	    $(llvm_main_file)                     \
-	    --main-module $(llvm_main_module)     \
-	    --syntax-module $(llvm_syntax_module) \
+	$(KOMPILE) --backend llvm                        \
+	    $(KEVM_INCLUDE)/kframework/$(llvm_main_file) \
+	    --main-module $(llvm_main_module)            \
+	    --syntax-module $(llvm_syntax_module)        \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 # Node
@@ -268,10 +263,10 @@ node_kompiled      := $(node_dir)/build/kevm-vm
 export node_dir
 
 $(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend node                 \
-	    $(node_main_file)                     \
-	    --main-module $(node_main_module)     \
-	    --syntax-module $(node_syntax_module) \
+	$(KOMPILE) --backend node                        \
+	    $(KEVM_INCLUDE)/kframework/$(node_main_file) \
+	    --main-module $(node_main_module)            \
+	    --syntax-module $(node_syntax_module)        \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 $(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_out)
@@ -293,10 +288,11 @@ $(KEVM_LIB)/$(foundry_kompiled): $(libsecp256k1_out)
 endif
 
 $(KEVM_LIB)/$(foundry_kompiled): $(kevm_includes) $(plugin_includes) $(lemma_includes) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend foundry                     \
-	    $(foundry_main_file) $(HASKELL_KOMPILE_OPTS) \
-	    --main-module $(foundry_main_module)         \
-	    --syntax-module $(foundry_syntax_module)     \
+	$(KOMPILE) --backend foundry                        \
+	    $(KEVM_INCLUDE)/kframework/$(foundry_main_file) \
+	    --main-module $(foundry_main_module)            \
+	    --syntax-module $(foundry_syntax_module)        \
+	    $(HASKELL_KOMPILE_OPTS)                         \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 # Installing
@@ -314,7 +310,7 @@ install_libs := $(haskell_kompiled)                                        \
                 release.md                                                 \
                 version
 
-$(KEVM_BIN)/kevm: kevm
+$(KEVM_BIN)/%: bin/%
 	@mkdir -p $(dir $@)
 	install $< $@
 
@@ -341,7 +337,7 @@ build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%
 build-llvm:     $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-haskell:  $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
 build-node:     $(KEVM_LIB)/$(node_kompiled)
-build-kevm:     $(KEVM_BIN)/kevm $(kevm_includes) $(lemma_includes) $(plugin_includes)
+build-kevm:     $(KEVM_BIN)/kevm $(kevm_includes) $(plugin_includes)
 build-foundry:  $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
@@ -543,7 +539,7 @@ tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$
 	$(KEVM) prove $< $(KEVM_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS)                   \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
-tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/concrete-rules.txt $(kevm_includes) $(lemma_includes) $(plugin_includes) $(KEVM_BIN)/kevm
+tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/concrete-rules.txt $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                  \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
 	    --main-module $(KPROVE_MODULE)                                                                   \
@@ -664,7 +660,7 @@ test-klab-prove: KPROVE_OPTS += --debugger
 test-klab-prove: $(smoke_tests_prove:=.prove)
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
-tests/specs/opcodes/evm-optimizations-spec.md: optimizations.md
+tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.md
 	cat $< | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
 
 # Parse Tests

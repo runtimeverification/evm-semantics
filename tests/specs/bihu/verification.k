@@ -1,5 +1,5 @@
 requires "edsl.md"
-requires "../lemmas.k"
+requires "lemmas/lemmas.k"
 
 module VERIFICATION
     imports EDSL
