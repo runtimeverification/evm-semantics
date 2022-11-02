@@ -515,12 +515,13 @@ We define a new rule for the `#halt ~> #return _ _` production that will trigger
 
 ```{.k .bytes}
     rule <k> (. => #endPrank) ~> #halt ~> #return _RETSTART _RETWIDTH ... </k>
+         <callDepth> CD </callDepth>
          <prank>
            <singleCall> true </singleCall>
+           <depth> CD </depth>
            ...
          </prank>
       [priority(40)]
-
 ```
 
 #### `startPrank` - Sets `msg.sender` and `tx.origin` for all subsequent calls until `stopPrank` is called.
