@@ -482,21 +482,20 @@ This is needed in order to prevent overwriting the caller for subcalls.
 Finally, the original sender of the transaction, `ACCTFROM` is changed to the new caller, `NCL`.
 
 ```{.k .bytes}
-    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ~> ( . => #checkSinglePrank SP ) ... </k>
+    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
          <callDepth> CD </callDepth>
          <prank>
             <newCaller> NCL </newCaller>
             <newOrigin> .Account </newOrigin>
             <active> true </active>
             <depth> CD </depth>
-            <singleCall> SP </singleCall>
             ...
          </prank>
       requires NCL =/=K .Account
        andBool ACCTFROM =/=Int NCL
       [priority(40)]
 
-    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ~> ( . => #checkSinglePrank SP ) ... </k>
+    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
          <callDepth> CD </callDepth>
          <origin> _ => NOG </origin>
          <prank>
@@ -504,13 +503,20 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
             <newOrigin> NOG </newOrigin>
             <active> true </active>
             <depth> CD </depth>
-            <singleCall> SP </singleCall>
             ...
          </prank>
       requires NCL =/=K .Account
        andBool NOG =/=K .Account
        andBool ACCTFROM =/=Int NCL
       [priority(40)]
+
+    rule <k> (. => #endPrank) ~> #halt ~> #return _RETSTART _RETWIDTH ... </k>
+         <prank>
+           <singleCall> true </singleCall>
+           ...
+         </prank>
+      [priority(40)]
+
 ```
 
 #### `startPrank` - Sets `msg.sender` and `tx.origin` for all subsequent calls until `stopPrank` is called.
@@ -731,15 +737,6 @@ If the production is matched when no prank is active, it will be ignored.
           <depth> _ => 0 </depth>
           <singleCall> _ => false </singleCall>
         </prank>
-```
-
-- `#checkSinglePrank SINGLEPRANK` will trigger the `#endPrank` rules after the end of a call, only if the `prank` cheat code was used.
-
-```k
-    syntax KItem ::= "#checkSinglePrank" Bool [klabel(foundry_checkSinglePrank)]
- // ----------------------------------------------------------------------------
-    rule <k> #checkSinglePrank false => . ... </k>
-    rule <k> #checkSinglePrank true => #endPrank ... </k>
 ```
 
 - selectors for cheat code functions.
