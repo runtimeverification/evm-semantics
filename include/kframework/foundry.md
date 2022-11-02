@@ -75,12 +75,14 @@ requires "evm.md"
 requires "hashed-locations.md"
 requires "abi.md"
 requires "edsl.md"
+requires "lemmas/lemmas.k"
 
 module FOUNDRY
     imports FOUNDRY-SUCCESS
     imports FOUNDRY-CHEAT-CODES
     imports FOUNDRY-ACCOUNTS
     imports EDSL
+    imports LEMMAS
 
     configuration
       <foundry>

@@ -1,6 +1,6 @@
 requires "edsl.md"
 requires "evm-symbolic.k"
-requires "../lemmas.k"
+requires "lemmas/lemmas.k"
 
 module VERIFICATION
     imports VERIFICATION-JAVA

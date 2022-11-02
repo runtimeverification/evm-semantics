@@ -1,5 +1,5 @@
 requires "edsl.md"
-requires "../int-simplification.k"
+requires "lemmas/int-simplification.k"
 
 module VERIFICATION
     imports EDSL
