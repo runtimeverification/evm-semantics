@@ -1,5 +1,5 @@
 requires "evm.md"
-requires "edsl.md"
+requires "buf.md"
 requires "int-simplification.k"
 
 module LEMMAS [symbolic]
@@ -83,21 +83,21 @@ module LEMMAS [symbolic]
 
     // #range
 
-    rule #range(_, _, K) => 
-         .ByteArray 
+    rule #range(_, _, K) =>
+         .ByteArray
       requires K <=Int 0 [simplification]
 
-    rule #range(M [ N := BUF:ByteArray ], L, K) => 
-         #let W = minInt(K, N -Int L) #in #range(M, L, W) ++ #range(M [ N := BUF ], N, K -Int W) 
+    rule #range(M [ N := BUF:ByteArray ], L, K) =>
+         #let W = minInt(K, N -Int L) #in #range(M, L, W) ++ #range(M [ N := BUF ], N, K -Int W)
       requires 0 <Int K andBool L <Int N [simplification]
 
-    rule #range(M [ N := BUF:ByteArray ], L, K) => 
+    rule #range(M [ N := BUF:ByteArray ], L, K) =>
            #let S = L -Int N #in
            #let W = minInt(K, #sizeByteArray(BUF) -Int S) #in
            BUF [ S .. W ] ++ #range(M, N +Int #sizeByteArray(BUF), K -Int W)
       requires 0 <Int K andBool N <=Int L andBool L <=Int N +Int #sizeByteArray(BUF) [simplification]
 
-    rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, K) 
+    rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, K)
       requires 0 <Int K andBool N +Int #sizeByteArray(BUF) <=Int L [simplification]
 
     rule #range( M [ N1 := BUF1:ByteArray ] [ N2 := BUF2:ByteArray ], L, K ) =>
@@ -151,7 +151,7 @@ endmodule
 
 module LEMMAS-JAVA [symbolic, kast]
     imports EVM
-    imports EDSL
+    imports BUF
     imports K-REFLECTION
 
   // ########################
@@ -273,7 +273,7 @@ endmodule
 module LEMMAS-HASKELL [symbolic, kore]
     imports INT-SYMBOLIC
     imports EVM
-    imports EDSL
+    imports BUF
 
   // ########################
   // Word Reasoning
@@ -405,7 +405,7 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule BA:ByteArray   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                       [simplification, concrete(BA)]
     rule #buf(32, DATA) ==K BA:ByteArray   =>          DATA  ==Int #asInteger(BA) requires #sizeByteArray(BA) <=Int 32 [simplification, concrete(BA)]
 
-    rule #range(M, N1 +Int N2, K) => #range(#range(M, N2, #sizeByteArray(M) -Int N2), N1, K) 
+    rule #range(M, N1 +Int N2, K) => #range(#range(M, N2, #sizeByteArray(M) -Int N2), N1, K)
       requires 0 <=Int N1 andBool 0 <=Int N2
       [simplification, concrete(N2), concrete(M)]
 
