@@ -1123,8 +1123,6 @@ endmodule
 
 module DEPTHREVERTER-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= DepthReverterContract
     
@@ -1153,8 +1151,6 @@ endmodule
 
 module EXPECTREVERTTEST-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= ExpectRevertTestContract
     
@@ -1286,8 +1282,6 @@ endmodule
 
 module REVERTER-BIN-RUNTIME
     imports public FOUNDRY
-    imports public LEMMAS
-    imports public INT-SIMPLIFICATION
     
     syntax Contract ::= ReverterContract
     
