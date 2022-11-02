@@ -472,7 +472,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "pyk"
-version = "0.1.37"
+version = "0.1.40"
 description = ""
 category = "main"
 optional = false
@@ -489,8 +489,8 @@ graphviz = "^0.20.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.37"
-resolved_reference = "8e927d5ae6865882071dec0497ca4d0ebca5961b"
+reference = "v0.1.40"
+resolved_reference = "ad2740b1de74bef5aa72fff3b8c7cd6e9f9bfdfa"
 
 [[package]]
 name = "requests"
@@ -591,7 +591,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "e836964658e187a9d1d44382783e54dcd3cf5e34a03ae4a17af706d6b5ac9b96"
+content-hash = "9f53c25f8fb9f49e1c5082e4cb3fa1553359220b6fdd2bade083423f5e2b4384"
 
 [metadata.files]
 aniso8601 = [
