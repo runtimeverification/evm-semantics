@@ -465,7 +465,8 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
         'EXPECTEDREVERT_CELL': KVariable('EXPECTEDREVERT_FINAL'),
     }
     return abstract_cell_vars(
-        substitute(empty_config, final_subst), [KVariable('STATUSCODE_FINAL'), KVariable('ACCOUNTS_FINAL'), KVariable('EXPECTEDREVERT_FINAL')]
+        substitute(empty_config, final_subst),
+        [KVariable('STATUSCODE_FINAL'), KVariable('ACCOUNTS_FINAL'), KVariable('EXPECTEDREVERT_FINAL')],
     )
 
 
