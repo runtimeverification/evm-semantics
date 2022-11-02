@@ -9,14 +9,14 @@ from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm, build_rule
 from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
-from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
+from pyk.kast.manip import flatten_label, get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG
 from pyk.kcfg_viewer.app import KCFGViewer
 from pyk.ktool.kit import KIT
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
-from pyk.prelude.ml import mlTop
+from pyk.prelude.ml import mlAnd, mlTop
 from pyk.utils import shorten_hashes
 
 from .gst_to_kore import gst_to_kore
@@ -393,7 +393,7 @@ def exec_foundry_prove(
             _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
             edge = KCFG.Edge(curr_node, target_node, mlTop(), -1)
             claim = edge.to_claim()
-            claim_id = f'gen-{curr_node.id}-to-{target_node.id}'
+            claim_id = f'gen-block-{curr_node.id}-to-{target_node.id}'
             depth, branching, result = foundry.get_claim_basic_block(
                 claim_id, claim, lemmas=lemma_rules, max_depth=max_depth
             )
@@ -418,23 +418,39 @@ def exec_foundry_prove(
                     _LOGGER.info(f'Terminal node {cfgid}: {shorten_hashes((curr_node.id))}.')
 
                 elif branching:
-                    branches = KEVM.extract_branches(next_state)
-                    if not branches:
-                        raise ValueError(
-                            f'Could not extract branch condition {cfgid}:\n{foundry.pretty_print(minimize_term(result))}'
-                        )
                     cfg.add_expanded(next_node.id)
-                    _LOGGER.info(
-                        f'Found {len(list(branches))} branches at depth {depth} for {cfgid}: {[foundry.pretty_print(b) for b in branches]}'
-                    )
-                    for branch in branches:
-                        branch_cterm = next_state.add_constraint(branch)
-                        branch_node = cfg.get_or_create_node(branch_cterm)
-                        cfg.create_edge(next_node.id, branch_node.id, branch, 0)
-                        _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((next_node.id, branch_node.id))}')
-                        # TODO: have to store case splits as rewrites because of how frontier is handled for covers
-                        # cfg.create_cover(branch_node.id, next_node.id)
-                        # _LOGGER.info(f'Made cover: {shorten_hashes((branch_node.id, next_node.id))}')
+                    branches = KEVM.extract_branches(next_state)
+                    if len(list(branches)) > 0:
+                        _LOGGER.info(
+                            f'Found {len(list(branches))} branches at depth {depth} for {cfgid}: {[foundry.pretty_print(b) for b in branches]}'
+                        )
+                        for branch in branches:
+                            branch_cterm = next_state.add_constraint(branch)
+                            branch_node = cfg.get_or_create_node(branch_cterm)
+                            cfg.create_edge(next_node.id, branch_node.id, branch, 0)
+                            _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((next_node.id, branch_node.id))}')
+                            # TODO: have to store case splits as rewrites because of how frontier is handled for covers
+                            # cfg.create_cover(branch_node.id, next_node.id)
+                            # _LOGGER.info(f'Made cover: {shorten_hashes((branch_node.id, next_node.id))}')
+                    else:
+                        _LOGGER.warning(
+                            f'Falling back to running backend for branch extraction {cfgid}:\n{foundry.pretty_print(minimize_term(result))}'
+                        )
+                        edge = KCFG.Edge(next_node, target_node, mlTop(), -1)
+                        claim = edge.to_claim()
+                        claim_id = f'gen-branch-{curr_node.id}-to-{target_node.id}'
+                        result = foundry.prove_claim(claim, claim_id, lemmas=lemma_rules, args=['--depth', '1'])
+                        branch_cterms = [CTerm(r) for r in flatten_label('#Or', result)]
+                        old_constraints = next_state.constraints
+                        new_constraints = [
+                            [c for c in s.constraints if c not in old_constraints] for s in branch_cterms
+                        ]
+                        _LOGGER.info(
+                            f'Found {len(list(branch_cterms))} branches manually ad depth 1 for {cfgid}: {[foundry.pretty_print(mlAnd(nc)) for nc in new_constraints]}'
+                        )
+                        for ns, nc in zip(branch_cterms, new_constraints, strict=True):
+                            branch_node = cfg.get_or_create_node(ns)
+                            cfg.create_edge(next_node.id, branch_node.id, mlAnd(nc), 1)
 
             write_cfg(cfg, cfgpath)
 
