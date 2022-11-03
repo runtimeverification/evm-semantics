@@ -559,7 +559,7 @@ function prank(address sender, address origin) external;
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) .Account true ... </k>
       requires SELECTOR ==Int selector ( "prank(address)" )
 
-    rule [foundry.call.rankWithOrigin]:
+    rule [foundry.call.prankWithOrigin]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #loadAccount #asWord(#range(ARGS, 32, 32)) ~> #setPrank #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) true ... </k>
       requires SELECTOR ==Int selector ( "prank(address,address)" )
 ```
