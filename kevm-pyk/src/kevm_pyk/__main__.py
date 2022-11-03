@@ -9,11 +9,11 @@ from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm
 from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KRewrite, KRule, KToken
-from pyk.kastManip import minimize_term, push_down_rewrites
+from pyk.kastManip import flatten_label, minimize_term, push_down_rewrites
 from pyk.kcfg import KCFG
 from pyk.ktool.kit import KIT
 from pyk.ktool.krun import _krun
-from pyk.prelude.ml import mlTop
+from pyk.prelude.ml import is_top, mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
@@ -355,20 +355,23 @@ def exec_foundry_prove(
 
     lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
 
-    def _write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
-        with open(_cfgpath, 'w') as cfgfile:
-            cfgfile.write(json.dumps(_cfg.to_dict()))
-            _LOGGER.info(f'Updated CFG file: {_cfgpath}')
-
     def prove_it(_id_and_cfg: Tuple[str, KCFG]) -> bool:
         _cfg_id, _cfg = _id_and_cfg
         _claim = _kcfg_unproven_to_claim(_cfg)
         _claim_id = _cfg_id.replace('.', '-').replace('_', '-')
         ret, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
-        if minimize:
-            result = minimize_term(result)
-        print(f'Result for {_cfg_id}:\n{foundry.pretty_print(result)}\n')
-        return ret
+        if is_top(result):
+            _cfg.create_edge(_cfg.get_unique_init().id, _cfg.get_unique_target().id, mlTop(), -1)
+            _LOGGER.info(f'Proof passed: {_cfg_id}')
+        else:
+            for result_state in flatten_label('#Or', result):
+                new_node = _cfg.get_or_create_node(CTerm(result_state))
+                _cfg.create_edge(_cfg.get_unique_init().id, new_node.id, mlTop(), -1)
+                if minimize:
+                    result_state = minimize_term(result_state)
+                _LOGGER.error(f'Proof failed: {_cfg_id}\n{foundry.pretty_print(result_state)}')
+        failure_nodes = cfg.frontier + cfg.stuck
+        return failure_nodes == 0
 
     with ProcessPool(ncpus=workers) as process_pool:
         results = process_pool.map(prove_it, kcfgs.items())
