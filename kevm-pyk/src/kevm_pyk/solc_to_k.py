@@ -379,6 +379,7 @@ def _init_term(
         'CALLER_CELL': KVariable('CALLER_ID'),
         'ACCESSEDACCOUNTS_CELL': KApply('.Set'),
         'ACCESSEDSTORAGE_CELL': KApply('.Map'),
+        'INTERIMSTATES_CELL': KApply('.List'),
         'ACTIVEACCOUNTS_CELL': build_assoc(
             KApply('.Set'),
             KLabel('_Set_'),
