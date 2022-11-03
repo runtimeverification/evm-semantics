@@ -511,16 +511,18 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
       [priority(40)]
 ```
 
-We define a new rule for the `#halt ~> #return _ _` production that will trigger the `#endPrank` rules if the prank was set only for a single call.
+We define a new rule for the `#halt ~> #return _ _` production that will trigger the `#endPrank` rules if the prank was set only for a single call and if the current call depth is equal to the depth at which `prank` was invoked plus one.
+
 
 ```{.k .bytes}
     rule <k> (. => #endPrank) ~> #halt ~> #return _RETSTART _RETWIDTH ... </k>
          <callDepth> CD </callDepth>
          <prank>
            <singleCall> true </singleCall>
-           <depth> CD </depth>
+           <depth> PD </depth>
            ...
          </prank>
+      requires CD ==Int PD +Int 1
       [priority(40)]
 ```
 
