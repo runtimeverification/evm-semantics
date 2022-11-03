@@ -262,7 +262,6 @@ def exec_foundry_prove(
     includes: List[str],
     debug_equations: List[str],
     bug_report: bool,
-    store_depth: int,
     depth: Optional[int],
     reinit: bool = False,
     tests: Iterable[str] = (),
