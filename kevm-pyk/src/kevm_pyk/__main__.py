@@ -677,13 +677,6 @@ def _create_argument_parser() -> ArgumentParser:
         help='Reinitialize KCFGs even if they already exist.',
     )
     foundry_prove_args.add_argument(
-        '--store-depth',
-        dest='store_depth',
-        default=100,
-        type=int,
-        help='Store every Nth state in the KCFG for inspection.',
-    )
-    foundry_prove_args.add_argument(
         '--simplify-init',
         dest='simplify_init',
         default=True,
