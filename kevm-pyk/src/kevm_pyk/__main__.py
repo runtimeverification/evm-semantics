@@ -382,7 +382,7 @@ def exec_foundry_prove(
                 _LOGGER.error(f'Proof failed: {_cfg_id}\n{foundry.pretty_print(result_state)}')
         _write_cfg(_cfg, _cfg_path)
         failure_nodes = cfg.frontier + cfg.stuck
-        return failure_nodes == 0
+        return len(failure_nodes) == 0
 
     with ProcessPool(ncpus=workers) as process_pool:
         results = process_pool.map(prove_it, kcfgs.items())
