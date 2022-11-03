@@ -411,6 +411,30 @@ def exec_foundry_show_cfg(
         print(f'\n\nState Delta {node_id_1} => {node_id_2}:\n\n{foundry.pretty_print(config_delta)}\n')
 
 
+def exec_foundry_list(
+    profile: bool,
+    foundry_out: Path,
+    details: bool = True,
+    **kwargs: Any,
+) -> None:
+    kcfgs_dir = foundry_out / 'kcfgs'
+    pattern = '*.json'
+    paths = kcfgs_dir.glob(pattern)
+    for kcfg_file in paths:
+        with open(kcfg_file, 'r') as kf:
+            kcfg = KCFG.from_dict(json.loads(kf.read()))
+        total_nodes = len(kcfg.nodes)
+        frontier_nodes = len(kcfg.frontier)
+        stuck_nodes = len(kcfg.stuck)
+        proven = 'passed' if frontier_nodes + stuck_nodes == 0 else 'failed'
+        print(f'{kcfg_file}: {proven}')
+        if details:
+            print(f'    nodes: {total_nodes}')
+            print(f'    frontier: {frontier_nodes}')
+            print(f'    stuck: {stuck_nodes}')
+            print()
+
+
 def exec_run(
     definition_dir: Path,
     profile: bool,
@@ -701,6 +725,17 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_show_cfg_args.add_argument(
         '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
     )
+
+    foundry_list_args = command_parser.add_parser(
+        'foundry-list',
+        help='List information about KCFGs on disk',
+        parents=[shared_args, k_args],
+    )
+    foundry_list_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_list_args.add_argument(
+        '--details', dest='details', default=True, action='store_true', help='Information about progress on each KCFG.'
+    )
+    foundry_list_args.add_argument('--no-details', dest='details', action='store_false', help='Just list the KCFGs.')
 
     return parser
 

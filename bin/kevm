@@ -298,6 +298,10 @@ run_foundry_show_cfg() {
     run_kevm_pyk foundry-show-cfg "$@"
 }
 
+run_foundry_list() {
+    run_kevm_pyk foundry-list "$@"
+}
+
 # Main
 # ----
 
@@ -313,8 +317,10 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                ${KEVM} kompile      [--backend (java|llvm|haskell)]           [--profile|--debug]             <main> <K arg>*
                ${KEVM} klab-view                                              [--profile|--debug]             <spec>
                ${KEVM} solc-to-k                                              [--profile|--debug]             <sol-file> <contract-name> <solc-arg>*
-               ${KEVM} foundry-kompile
-               ${KEVM} foundry-prove
+               ${KEVM} foundry-list         # see dedicated help menu
+               ${KEVM} foundry-cfg          # see dedicated help menu
+               ${KEVM} foundry-kompile      # see dedicated help menu
+               ${KEVM} foundry-prove        # see dedicated help menu
 
                ${KEVM} [help|--help|version|--version]
 
@@ -438,7 +444,7 @@ if ${pyk}; then
 fi
 
 # get the run file
-if [[ "${run_command}" != 'foundry-kompile' ]] && [[ "${run_command}" != 'foundry-prove' ]] && [[ "${run_command}" != 'foundry-show-cfg' ]]; then
+if [[ "${run_command}" != 'foundry-kompile' ]] && [[ "${run_command}" != 'foundry-prove' ]] && [[ "${run_command}" != 'foundry-show-cfg' ]] && [[ "${run_command}" != 'foundry-list' ]]; then
     run_file="$1" ; shift
     if [[ "${run_file}" == '-' ]]; then
         tmp_input="$(mktemp)"
@@ -471,5 +477,6 @@ case "$run_command-$backend" in
     foundry-kompile-*                         ) run_foundry_kompile  "$@" ;;
     foundry-prove-*                           ) run_foundry_prove    "$@" ;;
     foundry-show-cfg-*                        ) run_foundry_show_cfg "$@" ;;
+    foundry-list-*                            ) run_foundry_list     "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
