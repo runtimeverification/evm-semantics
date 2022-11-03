@@ -294,8 +294,8 @@ run_foundry_prove() {
     run_kevm_pyk foundry-prove "$@"
 }
 
-run_foundry_show_cfg() {
-    run_kevm_pyk foundry-show-cfg "$@"
+run_foundry_show() {
+    run_kevm_pyk foundry-show "$@"
 }
 
 run_foundry_list() {
@@ -318,7 +318,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                ${KEVM} klab-view                                              [--profile|--debug]             <spec>
                ${KEVM} solc-to-k                                              [--profile|--debug]             <sol-file> <contract-name> <solc-arg>*
                ${KEVM} foundry-list         # see dedicated help menu
-               ${KEVM} foundry-cfg          # see dedicated help menu
+               ${KEVM} foundry-show         # see dedicated help menu
                ${KEVM} foundry-kompile      # see dedicated help menu
                ${KEVM} foundry-prove        # see dedicated help menu
 
@@ -399,7 +399,8 @@ kevm_host='127.0.0.1'
 [[ ! "${run_command}" == solc-to-k        ]] || backend=haskell
 [[ ! "${run_command}" == foundry-kompile  ]] || backend=foundry
 [[ ! "${run_command}" == foundry-prove    ]] || backend=foundry
-[[ ! "${run_command}" == foundry-show-cfg ]] || backend=foundry
+[[ ! "${run_command}" == foundry-list     ]] || backend=foundry
+[[ ! "${run_command}" == foundry-show     ]] || backend=foundry
 [[ ! "${run_command}" == interpret        ]] || unparse=false
 args=()
 while [[ $# -gt 0 ]]; do
@@ -444,7 +445,7 @@ if ${pyk}; then
 fi
 
 # get the run file
-if [[ "${run_command}" != 'foundry-kompile' ]] && [[ "${run_command}" != 'foundry-prove' ]] && [[ "${run_command}" != 'foundry-show-cfg' ]] && [[ "${run_command}" != 'foundry-list' ]]; then
+if [[ "${run_command}" != 'foundry-kompile' ]] && [[ "${run_command}" != 'foundry-prove' ]] && [[ "${run_command}" != 'foundry-show' ]] && [[ "${run_command}" != 'foundry-list' ]]; then
     run_file="$1" ; shift
     if [[ "${run_file}" == '-' ]]; then
         tmp_input="$(mktemp)"
@@ -476,7 +477,7 @@ case "$run_command-$backend" in
     solc-to-k-*                               ) run_solc             "$@" ;;
     foundry-kompile-*                         ) run_foundry_kompile  "$@" ;;
     foundry-prove-*                           ) run_foundry_prove    "$@" ;;
-    foundry-show-cfg-*                        ) run_foundry_show_cfg "$@" ;;
+    foundry-show-*                            ) run_foundry_show     "$@" ;;
     foundry-list-*                            ) run_foundry_list     "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac

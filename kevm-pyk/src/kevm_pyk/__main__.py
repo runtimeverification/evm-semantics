@@ -379,7 +379,7 @@ def exec_foundry_prove(
     sys.exit(failed)
 
 
-def exec_foundry_show_cfg(
+def exec_foundry_show(
     profile: bool,
     foundry_out: Path,
     test: str,
@@ -696,14 +696,14 @@ def _create_argument_parser() -> ArgumentParser:
         help='Do not simplify the initial and target states at startup.',
     )
 
-    foundry_show_cfg_args = command_parser.add_parser(
-        'foundry-show-cfg',
+    foundry_show_args = command_parser.add_parser(
+        'foundry-show',
         help='Display a given Foundry CFG.',
         parents=[shared_args, k_args],
     )
-    foundry_show_cfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
-    foundry_show_cfg_args.add_argument('test', type=str, help='Display the CFG for this test.')
-    foundry_show_cfg_args.add_argument(
+    foundry_show_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
+    foundry_show_args.add_argument(
         '--node',
         type=str,
         dest='nodes',
@@ -711,7 +711,7 @@ def _create_argument_parser() -> ArgumentParser:
         action='append',
         help='List of nodes to display as well.',
     )
-    foundry_show_cfg_args.add_argument(
+    foundry_show_args.add_argument(
         '--node-delta',
         type=KIT.arg_pair_of(str, str),
         dest='node_deltas',
@@ -719,10 +719,10 @@ def _create_argument_parser() -> ArgumentParser:
         action='append',
         help='List of nodes to display delta for.',
     )
-    foundry_show_cfg_args.add_argument(
+    foundry_show_args.add_argument(
         '--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.'
     )
-    foundry_show_cfg_args.add_argument(
+    foundry_show_args.add_argument(
         '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
     )
 
