@@ -843,7 +843,6 @@ If the production is matched when no prank is active, it will be ignored.
     rule selector ( "envBytes(string,string)" )                 => 3720504603
     rule selector ( "prank(address)" )                          => 3395723175
     rule selector ( "prank(address,address)" )                  => 1206193358
-    rule selector ( "stopPrank()" )                             => 2428830011
     rule selector ( "expectRevert(bytes4)" )                    => 3273568480
     rule selector ( "record()" )                                => 644673801
     rule selector ( "accesses(address)" )                       => 1706857601
