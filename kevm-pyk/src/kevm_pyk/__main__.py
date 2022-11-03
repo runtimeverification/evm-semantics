@@ -446,7 +446,11 @@ def exec_foundry_list(
         total_nodes = len(kcfg.nodes)
         frontier_nodes = len(kcfg.frontier)
         stuck_nodes = len(kcfg.stuck)
-        proven = 'passed' if frontier_nodes + stuck_nodes == 0 else 'failed'
+        proven = 'failed'
+        if stuck_nodes == 0:
+            proven = 'pending'
+            if frontier_nodes == 0:
+                proven = 'passed'
         print(f'{kcfg_name}: {proven}')
         if details:
             print(f'    nodes: {total_nodes}')
