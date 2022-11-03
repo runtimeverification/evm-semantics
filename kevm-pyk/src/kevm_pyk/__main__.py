@@ -423,11 +423,12 @@ def exec_foundry_list(
     for kcfg_file in paths:
         with open(kcfg_file, 'r') as kf:
             kcfg = KCFG.from_dict(json.loads(kf.read()))
+        kcfg_name = kcfg_file.name[0:-5]
         total_nodes = len(kcfg.nodes)
         frontier_nodes = len(kcfg.frontier)
         stuck_nodes = len(kcfg.stuck)
         proven = 'passed' if frontier_nodes + stuck_nodes == 0 else 'failed'
-        print(f'{kcfg_file}: {proven}')
+        print(f'{kcfg_name}: {proven}')
         if details:
             print(f'    nodes: {total_nodes}')
             print(f'    frontier: {frontier_nodes}')
