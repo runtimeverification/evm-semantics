@@ -318,7 +318,7 @@ def exec_foundry_prove(
     if unfound_tests:
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
-    kcfgs: Dict[str, KCFG] = {}
+    kcfgs: Dict[str, Tuple[KCFG, Path]] = {}
     for test in tests:
         kcfg_file = kcfgs_dir / f'{test}.json'
         if reinit or not kcfg_file.exists():
@@ -341,22 +341,27 @@ def exec_foundry_prove(
                 target_simplified = foundry.prove_claim(claim, 'simplify-target', args=['--depth', '0'])
                 target_simplified = sanitize_config(foundry.definition, target_simplified)
                 cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_simplified))
-            kcfgs[test] = cfg
+            kcfgs[test] = (cfg, kcfg_file)
             with open(kcfg_file, 'w') as kf:
                 kf.write(json.dumps(cfg.to_dict()))
                 kf.close()
             _LOGGER.info(f'Wrote file: {kcfg_file}')
         else:
             with open(kcfg_file, 'r') as kf:
-                kcfgs[test] = KCFG.from_dict(json.loads(kf.read()))
+                kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
 
     def _kcfg_unproven_to_claim(_kcfg: KCFG) -> KClaim:
         return _kcfg.create_edge(_kcfg.get_unique_init().id, _kcfg.get_unique_target().id, mlTop(), depth=-1).to_claim()
 
     lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
 
-    def prove_it(_id_and_cfg: Tuple[str, KCFG]) -> bool:
-        _cfg_id, _cfg = _id_and_cfg
+    def _write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
+        with open(_cfgpath, 'w') as cfgfile:
+            cfgfile.write(json.dumps(_cfg.to_dict()))
+            _LOGGER.info(f'Updated CFG file: {_cfgpath}')
+
+    def prove_it(_id_and_cfg: Tuple[str, Tuple[KCFG, Path]]) -> bool:
+        _cfg_id, (_cfg, _cfg_path) = _id_and_cfg
         _claim = _kcfg_unproven_to_claim(_cfg)
         _claim_id = _cfg_id.replace('.', '-').replace('_', '-')
         ret, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
@@ -370,6 +375,7 @@ def exec_foundry_prove(
                 if minimize:
                     result_state = minimize_term(result_state)
                 _LOGGER.error(f'Proof failed: {_cfg_id}\n{foundry.pretty_print(result_state)}')
+        _write_cfg(_cfg, _cfg_path)
         failure_nodes = cfg.frontier + cfg.stuck
         return failure_nodes == 0
 
