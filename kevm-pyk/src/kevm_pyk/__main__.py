@@ -369,6 +369,7 @@ def exec_foundry_prove(
         _claim = KCFG.Edge(_init_node, _target_node, mlTop(), -1).to_claim()
         _claim_id = _cfg_id.replace('.', '-').replace('_', '-')
         ret, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
+        _cfg.add_expanded(_init_node.id)
         if is_top(result):
             _cfg.create_edge(_cfg.get_unique_init().id, _cfg.get_unique_target().id, mlTop(), -1)
             _LOGGER.info(f'Proof passed: {_cfg_id}')
