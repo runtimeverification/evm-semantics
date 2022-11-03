@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm
-from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KRewrite, KRule, KToken
+from pyk.kast import KApply, KAtt, KDefinition, KFlatModule, KImport, KInner, KRequire, KRewrite, KRule, KToken
 from pyk.kastManip import flatten_label, minimize_term, push_down_rewrites
 from pyk.kcfg import KCFG
 from pyk.ktool.kit import KIT
@@ -350,9 +350,6 @@ def exec_foundry_prove(
             with open(kcfg_file, 'r') as kf:
                 kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
 
-    def _kcfg_unproven_to_claim(_kcfg: KCFG) -> KClaim:
-        return _kcfg.create_edge(_kcfg.get_unique_init().id, _kcfg.get_unique_target().id, mlTop(), depth=-1).to_claim()
-
     lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
 
     def _write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
@@ -362,7 +359,11 @@ def exec_foundry_prove(
 
     def prove_it(_id_and_cfg: Tuple[str, Tuple[KCFG, Path]]) -> bool:
         _cfg_id, (_cfg, _cfg_path) = _id_and_cfg
-        _claim = _kcfg_unproven_to_claim(_cfg)
+        if len(_cfg.frontier) == 0:
+            return True
+        _init_node = _cfg.frontier[0]
+        _target_node = _cfg.get_unique_target()
+        _claim = KCFG.Edge(_init_node, _target_node, mlTop(), -1).to_claim()
         _claim_id = _cfg_id.replace('.', '-').replace('_', '-')
         ret, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
         if is_top(result):
@@ -370,6 +371,7 @@ def exec_foundry_prove(
             _LOGGER.info(f'Proof passed: {_cfg_id}')
         else:
             for result_state in flatten_label('#Or', result):
+                _cfg.add_expanded(_init_node.id)
                 new_node = _cfg.get_or_create_node(CTerm(result_state))
                 _cfg.create_edge(_cfg.get_unique_init().id, new_node.id, mlTop(), -1)
                 if minimize:
