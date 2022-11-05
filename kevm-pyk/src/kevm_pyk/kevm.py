@@ -377,6 +377,18 @@ class Foundry(KEVM):
     # address(uint160(uint256(keccak256("foundry default caller"))))
 
     @staticmethod
+    def loc_FOUNDRY_FAILED() -> KApply:  # noqa: N802
+        return KEVM.loc(
+            KApply(
+                'contract_access_field',
+                [
+                    KApply('FoundryCheat_FOUNDRY-ACCOUNTS_FoundryContract'),
+                    KApply('Failed_FOUNDRY-ACCOUNTS_FoundryField'),
+                ],
+            )
+        )
+
+    @staticmethod
     def address_CALLER() -> KToken:  # noqa: N802
         return intToken(0x1804C8AB1F12E6BBF3894D4083F33E07309D1F38)
 

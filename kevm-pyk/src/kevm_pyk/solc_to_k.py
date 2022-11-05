@@ -10,17 +10,7 @@ from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSequence, KSort, KVariable, build_assoc
 from pyk.kast.manip import abstract_term_safely, substitute
-from pyk.kast.outer import (
-    KFlatModule,
-    KImport,
-    KNonTerminal,
-    KProduction,
-    KProductionItem,
-    KRule,
-    KSentence,
-    KTerminal,
-    KToken,
-)
+from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KProductionItem, KRule, KSentence, KTerminal
 from pyk.kcfg import KCFG
 from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import intToken
@@ -337,11 +327,10 @@ def method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Met
 
 
 def _init_cterm(init_term: KInner) -> CTerm:
-    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
-    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
+    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), Foundry.loc_FOUNDRY_FAILED())
     init_cterm = CTerm(init_term)
     init_cterm = KEVM.add_invariant(init_cterm)
-    init_cterm = init_cterm.add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
+    init_cterm = init_cterm.add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, intToken(0)])))
     return init_cterm
 
 
@@ -424,8 +413,7 @@ def _init_term(
 
 def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True) -> CTerm:
     final_term = _final_term(empty_config, contract_name)
-    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
-    dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
+    dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), Foundry.loc_FOUNDRY_FAILED())
     foundry_success = Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post, KVariable('EXPECTEDREVERT_FINAL'))
     final_cterm = CTerm(final_term)
     if is_test:
