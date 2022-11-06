@@ -181,6 +181,13 @@ module FOUNDRY-CHEAT-CODES
           <expectedBytes> .ByteArray </expectedBytes>
           <expectedDepth> 0 </expectedDepth>
         </expected>
+        <expectedCall>
+          <isCallExpected> false </isCallExpected>
+          <expectedAddress> .Account </expectedAddress>
+          <expectedValue> 0 </expectedValue>
+          <expectedData> .ByteArray </expectedData>
+          <callType> .CallType </callType>
+       </expectedCall>
       </cheatcodes>
 ```
 
@@ -539,6 +546,39 @@ If the `expectRevert()` selector is matched, call the `#setExpectRevert` product
         orBool SELECTOR ==Int selector ( "expectRevert(bytes)" )
 ```
 
+Expecting Calls
+---------------
+
+
+First we define a sort to identify expected call types.
+
+```k
+    syntax CallType ::= ".CallType" | "Call" | "Code" | "Static" | "Delegate"
+```
+
+If the `expectStaticCall(address,bytes)` selector is matched, the rule will load the account into the state and add the `setExpecCall` to the K cell to initialize the `<expectedCall/>` subconfiguration with the given parameters.
+
+```{.k .bytes}
+    rule [foundry.call.expectStaticCall]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) Static ... </k>
+      requires SELECTOR ==Int selector ( "expectStaticCall(address,bytes)" )
+```
+
+When the `STATICCALL` opcode is executed, we check the address which is being called and the calldata value.
+
+```{.k .bytes}
+    rule <k> (. => #clearExpectCall) ~> STATICCALL _GCAP ACCTTO ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
+         <localMem> LM </localMem>
+         <expectedCall>
+           <isCallExpected> true </isCallExpected>
+           <expectedAddress> ACCTTO </expectedAddress>
+           <expectedData> DATA </expectedData>
+           <callType> Static </callType>
+           ...
+         </expectedCall>
+      requires #range(LM, ARGSTART, 1) ==K #range(DATA, 0, 1)
+```
+
 Pranks
 ------
 
@@ -736,6 +776,37 @@ Utils
          </expected>
 ```
 
+- `#setExpectCall` initializes the `<expectedCall>` subconfiguration with an expected `Address`, and `ByteArray` to match the calldata.
+`CallType` is used to specify what `CALL*` opcode is expected.
+
+```k
+    syntax KItem ::= "#setExpectCall" Account ByteArray CallType [klabel(foundry_setExpectCall)]
+ // --------------------------------------------------------------------------------------------
+    rule <k> #setExpectCall ACCT DATA CALLTYPE => . ... </k>
+         <expectedCall>
+           <isCallExpected> _ => true </isCallExpected>
+           <expectedAddress> _ => ACCT </expectedAddress>
+           <expectedData> _ => DATA </expectedData>
+           <callType> _ => CALLTYPE </callType>
+           ...
+         </expectedCall>
+```
+
+- `#clearExpectCall` restore the `<expectedCall>` subconfiguration to its initial values.
+
+```k
+    syntax KItem ::= "#clearExpectCall" [klabel(foundry_clearExpectCall)]
+ // ---------------------------------------------------------------------
+    rule <k> #clearExpectCall => . ... </k>
+         <expectedCall>
+           <isCallExpected> _ => false </isCallExpected>
+           <expectedAddress> _ => .Account </expectedAddress>
+           <expectedData> _ => .ByteArray </expectedData>
+           <callType> _ => .CallType </callType>
+           ...
+         </expectedCall>
+```
+
 - `#setPrank NEWCALLER NEWORIGIN` will set the `<prank/>` subconfiguration for the given accounts.
 
 ```k
@@ -800,25 +871,26 @@ If the production is matched when no prank is active, it will be ignored.
 - selectors for cheat code functions.
 
 ```k
-    rule ( selector ( "assume(bool)" )                   => 1281615202 )
-    rule ( selector ( "deal(address,uint256)" )          => 3364511341 )
-    rule ( selector ( "etch(address,bytes)" )            => 3033974658 )
-    rule ( selector ( "warp(uint256)" )                  => 3856056066 )
-    rule ( selector ( "roll(uint256)" )                  => 528174896  )
-    rule ( selector ( "fee(uint256)" )                   => 968063664  )
-    rule ( selector ( "chainId(uint256)" )               => 1078582738 )
-    rule ( selector ( "coinbase(address)" )              => 4282924116 )
-    rule ( selector ( "label(address,string)" )          => 3327641368 )
-    rule ( selector ( "getNonce(address)" )              => 755185067  )
-    rule ( selector ( "addr(uint256)" )                  => 4288775753 )
-    rule ( selector ( "load(address,bytes32)" )          => 1719639408 )
-    rule ( selector ( "store(address,bytes32,bytes32)" ) => 1892290747 )
-    rule ( selector ( "setNonce(address,uint64)" )       => 4175530839 )
-    rule ( selector ( "expectRevert()" )                 => 4102309908 )
-    rule ( selector ( "expectRevert(bytes)" )            => 4069379763 )
-    rule ( selector ( "startPrank(address)" )            => 105151830  )
-    rule ( selector ( "startPrank(address,address)" )    => 1169514616 )
-    rule ( selector ( "stopPrank()" )                    => 2428830011 )
+    rule ( selector ( "assume(bool)" )                      => 1281615202 )
+    rule ( selector ( "deal(address,uint256)" )             => 3364511341 )
+    rule ( selector ( "etch(address,bytes)" )               => 3033974658 )
+    rule ( selector ( "warp(uint256)" )                     => 3856056066 )
+    rule ( selector ( "roll(uint256)" )                     => 528174896  )
+    rule ( selector ( "fee(uint256)" )                      => 968063664  )
+    rule ( selector ( "chainId(uint256)" )                  => 1078582738 )
+    rule ( selector ( "coinbase(address)" )                 => 4282924116 )
+    rule ( selector ( "label(address,string)" )             => 3327641368 )
+    rule ( selector ( "getNonce(address)" )                 => 755185067  )
+    rule ( selector ( "addr(uint256)" )                     => 4288775753 )
+    rule ( selector ( "load(address,bytes32)" )             => 1719639408 )
+    rule ( selector ( "store(address,bytes32,bytes32)" )    => 1892290747 )
+    rule ( selector ( "setNonce(address,uint64)" )          => 4175530839 )
+    rule ( selector ( "expectRevert()" )                    => 4102309908 )
+    rule ( selector ( "expectRevert(bytes)" )               => 4069379763 )
+    rule ( selector ( "startPrank(address)" )               => 105151830  )
+    rule ( selector ( "startPrank(address,address)" )       => 1169514616 )
+    rule ( selector ( "stopPrank()" )                       => 2428830011 )
+    rule ( selector ( "expectStaticCall(address,bytes)" )   => 2232945516 )
 ```
 
 - selectors for unimplemented cheat code functions.
