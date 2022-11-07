@@ -374,8 +374,9 @@ def exec_foundry_prove(
             _cfg.create_edge(_cfg.get_unique_init().id, _cfg.get_unique_target().id, mlTop(), -1)
             _LOGGER.info(f'Proof passed: {_cfg_id}')
         else:
+            _cfg.add_expanded(_init_node.id)
             for result_state in flatten_label('#Or', result):
-                _cfg.add_expanded(_init_node.id)
+                result_state = sanitize_config(foundry.definition, result_state)
                 new_node = _cfg.get_or_create_node(CTerm(result_state))
                 _cfg.create_edge(_cfg.get_unique_init().id, new_node.id, mlTop(), -1)
                 if minimize:
