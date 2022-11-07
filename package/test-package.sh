@@ -47,5 +47,7 @@ kevm kompile --backend java tests/specs/erc20/verification.k \
     --debug
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --backend java --format-failures --debugger \
     --definition tests/specs/erc20/verification/java
-    
 fi
+
+cd tests/foundry
+./test-foundry.sh
