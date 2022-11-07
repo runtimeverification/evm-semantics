@@ -492,7 +492,7 @@ foundry_out := $(foundry_dir)/out
 test-foundry: KEVM_OPTS += --pyk --verbose --profile
 test-foundry: KEVM = $(PYK_ACTIVATE) && kevm
 test-foundry: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
-test-foundry: tests/foundry/foundry.k.check tests/foundry/out/kompiled/foundry.k.prove
+test-foundry: tests/foundry/foundry.k.check tests/foundry/out/kompiled/foundry.k.prove tests/foundry/interactive.out.check
 
 foundry-forge-build: $(foundry_out)
 
@@ -502,6 +502,10 @@ foundry-forge-test: foundry-forge-build
 $(foundry_out):
 	rm -rf $@
 	cd $(dir $@) && forge build
+
+tests/foundry/interactive.out.check: tests/foundry/out/kompiled/timestamp $(KEVM_BIN)/kevm
+	cd tests/foundry && ./test-foundry.sh > tests/foundry/interactive.out
+	$(CHECK) tests/foundry/interactive.out tests/foundry/interactive.expected
 
 tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
