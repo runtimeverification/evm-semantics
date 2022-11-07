@@ -504,7 +504,7 @@ $(foundry_out):
 	cd $(dir $@) && forge build
 
 tests/foundry/interactive.out.check: tests/foundry/out/kompiled/timestamp $(KEVM_BIN)/kevm
-	cd tests/foundry && ./test-foundry.sh > tests/foundry/interactive.out
+	$(PYK_ACTIVATE) && cd tests/foundry && ./test-foundry.sh > interactive.out
 	$(CHECK) tests/foundry/interactive.out tests/foundry/interactive.expected
 
 tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
