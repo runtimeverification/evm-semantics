@@ -1,4 +1,4 @@
-requires "../lemmas.k"
+requires "lemmas/lemmas.k"
 requires "bin_runtime.k"
 requires "storage.k"
 requires "word-pack.k"

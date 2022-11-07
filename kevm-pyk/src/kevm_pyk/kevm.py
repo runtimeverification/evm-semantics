@@ -70,6 +70,7 @@ class KEVM(KProve, KRun):
     @staticmethod
     def _patch_symbol_table(symbol_table: Dict[str, Any]) -> None:
         # fmt: off
+        symbol_table['#Bottom']                                       = lambda: '#Bottom'
         symbol_table['_orBool_']                                      = paren(symbol_table['_orBool_'])
         symbol_table['_andBool_']                                     = paren(symbol_table['_andBool_'])
         symbol_table['_impliesBool_']                                 = paren(symbol_table['_impliesBool_'])
@@ -78,6 +79,9 @@ class KEVM(KProve, KRun):
         symbol_table['_*Int_']                                        = paren(symbol_table['_*Int_'])
         symbol_table['_-Int_']                                        = paren(symbol_table['_-Int_'])
         symbol_table['_+Int_']                                        = paren(symbol_table['_+Int_'])
+        symbol_table['_&Int_']                                        = paren(symbol_table['_&Int_'])
+        symbol_table['_|Int_']                                        = paren(symbol_table['_|Int_'])
+        symbol_table['_modInt_']                                      = paren(symbol_table['_modInt_'])
         symbol_table['#Or']                                           = paren(symbol_table['#Or'])
         symbol_table['#And']                                          = paren(symbol_table['#And'])
         symbol_table['#Implies']                                      = paren(symbol_table['#Implies'])
@@ -87,14 +91,20 @@ class KEVM(KProve, KRun):
         symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)
         symbol_table['.AccountCellMap']                               = lambda: '.Bag'
         symbol_table['AccountCellMapItem']                            = lambda k, v: v
-        symbol_table['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray'] = lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]'
+        symbol_table['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray'] = paren(lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]')
         symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = lambda m, s, w: '(' + m + ' [ ' + s + ' .. ' + w + ' ]):ByteArray'
+        symbol_table['_:__EVM-TYPES_WordStack_Int_WordStack']         = paren(symbol_table['_:__EVM-TYPES_WordStack_Int_WordStack'])
         symbol_table['_<Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') <Word ('  + a2 + ')')
         symbol_table['_>Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') >Word ('  + a2 + ')')
         symbol_table['_<=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')
         symbol_table['_>=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')
         symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
         symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
+        symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int']              = paren(symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int'])
+        symbol_table['_++__EVM-TYPES_ByteArray_ByteArray_ByteArray']  = paren(symbol_table['_++__EVM-TYPES_ByteArray_ByteArray_ByteArray'])
+        symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = paren(symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'])
+        if 'typedArgs' in symbol_table:
+            symbol_table['typedArgs'] = paren(symbol_table['typedArgs'])
         # fmt: on
 
     class Sorts:
@@ -334,12 +344,12 @@ class Foundry(KEVM):
         KEVM._patch_symbol_table(symbol_table)
 
     @staticmethod
-    def success(s: KInner, dst: KInner) -> KApply:
-        return KApply('foundry_success ', [s, dst])
+    def success(s: KInner, dst: KInner, r: KInner) -> KApply:
+        return KApply('foundry_success ', [s, dst, r])
 
     @staticmethod
-    def fail(s: KInner, dst: KInner) -> KApply:
-        return notBool(Foundry.success(s, dst))
+    def fail(s: KInner, dst: KInner, r: KInner) -> KApply:
+        return notBool(Foundry.success(s, dst, r))
 
     # address(uint160(uint256(keccak256("foundry default caller"))))
 
