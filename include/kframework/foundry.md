@@ -549,7 +549,6 @@ If the `expectRevert()` selector is matched, call the `#setExpectRevert` product
 Expecting Calls
 ---------------
 
-
 First we define a sort to identify expected call types.
 
 ```k
@@ -564,6 +563,12 @@ If the `expectStaticCall(address,bytes)` selector is matched, the rule will load
       requires SELECTOR ==Int selector ( "expectStaticCall(address,bytes)" )
 ```
 
+```{.k .bytes}
+    rule [foundry.call.expectStaticCall]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) Delegate ... </k>
+      requires SELECTOR ==Int selector ( "expectDelegateCall(address,bytes)" )
+```
+
 When the `STATICCALL` opcode is executed, we check the address which is being called and the calldata value.
 
 ```{.k .bytes}
@@ -574,6 +579,21 @@ When the `STATICCALL` opcode is executed, we check the address which is being ca
            <expectedAddress> ACCTTO </expectedAddress>
            <expectedData> DATA </expectedData>
            <callType> Static </callType>
+           ...
+         </expectedCall>
+      requires #range(LM, ARGSTART, 1) ==K #range(DATA, 0, 1)
+```
+
+When the `DELEGATECALL` opcode is executed, we check the address which is being called and the calldata value.
+
+```{.k .bytes}
+    rule <k> (. => #clearExpectCall) ~> DELEGATECALL _GCAP ACCTTO ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
+         <localMem> LM </localMem>
+         <expectedCall>
+           <isCallExpected> true </isCallExpected>
+           <expectedAddress> ACCTTO </expectedAddress>
+           <expectedData> DATA </expectedData>
+           <callType> Delegate </callType>
            ...
          </expectedCall>
       requires #range(LM, ARGSTART, 1) ==K #range(DATA, 0, 1)
@@ -891,6 +911,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "startPrank(address,address)" )       => 1169514616 )
     rule ( selector ( "stopPrank()" )                       => 2428830011 )
     rule ( selector ( "expectStaticCall(address,bytes)" )   => 2232945516 )
+    rule ( selector ( "expectDelegateCall(address,bytes)" ) => 1030406631 )
 ```
 
 - selectors for unimplemented cheat code functions.
