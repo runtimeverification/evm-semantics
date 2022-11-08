@@ -159,7 +159,6 @@ UintTypeTest.test_uint80_fail
 UintTypeTest.test_uint88_fail
 UintTypeTest.test_uint8_fail
 UintTypeTest.test_uint96_fail
-UintTypeTest.test_uint256
 UintTypeTest.test_uint248
 UintTypeTest.test_uint240
 UintTypeTest.test_uint232
