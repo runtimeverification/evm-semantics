@@ -564,7 +564,7 @@ If the `expectStaticCall(address,bytes)` selector is matched, the rule will load
 ```
 
 ```{.k .bytes}
-    rule [foundry.call.expectStaticCall]:
+    rule [foundry.call.expectDelegateCall]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) Delegate ... </k>
       requires SELECTOR ==Int selector ( "expectDelegateCall(address,bytes)" )
 ```
