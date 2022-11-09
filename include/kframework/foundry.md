@@ -478,6 +478,21 @@ This rule then takes from the function call data the account using `#asWord(#ran
       requires SELECTOR ==Int selector ( "store(address,bytes32,bytes32)" )
 ```
 
+#### `symbolicStorage` - Makes the storage of the given address completely symbolic.
+
+```
+function symbolicStorage(address) external;
+```
+
+`foundry.call.symbolicStorage` will match when the `symbolicStorage` cheat code function is called.
+This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes its storage completely symbolic.
+
+```{.k .bytes}
+    rule [foundry.call.symbolicStorage]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setSymbolicStorage #asWord(#range(ARGS, 0, 32)) ... </k>
+      requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
+```
+
 #### expectRevert - expect the next call to revert.
 
 ```
@@ -722,6 +737,20 @@ Utils
          </account>
 ```
 
+`#setSymbolicStorage ACCTID` takes a given account and makes its storage fully symbolic
+
+```k
+     syntax KItem ::= "#setSymbolicStorage" Int [klabel(foundry_setNonce)]
+ // ----------------------------------------------------------------
+    rule <k> #setSymbolicStorage ACCTID => . ... </k>
+         <account>
+           <acctID> ACCTID </acctID>
+           <storage> _ => ?STORAGE </storage>
+           <origStorage> _ => ?STORAGE </origStorage>
+           ...
+         </account>
+```
+
 - `#setExpectRevert` sets the `<expected>` subconfiguration with the current call depth and the expected message from `expectRevert`.
 
 ```k
@@ -814,7 +843,8 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "load(address,bytes32)" )          => 1719639408 )
     rule ( selector ( "store(address,bytes32,bytes32)" ) => 1892290747 )
     rule ( selector ( "setNonce(address,uint64)" )       => 4175530839 )
-    rule ( selector ( "expectRevert()" )                 => 4102309908 )
+    rule ( selector ( "symbolicStorage(address)" )       => 769677742  )
+    rule ( selector ( "expe ctRevert()" )                 => 4102309908 )
     rule ( selector ( "expectRevert(bytes)" )            => 4069379763 )
     rule ( selector ( "startPrank(address)" )            => 105151830  )
     rule ( selector ( "startPrank(address,address)" )    => 1169514616 )
