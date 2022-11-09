@@ -121,7 +121,7 @@
 
             enableParallelBuilding = true;
 
-            buildInputs = [ (final.kevm k) prev.which prev.git ];
+            buildInputs = [ (final.kevm k) prev.which prev.git prev.curl ];
 
             buildPhase = ''
               mkdir -p tests/ethereum-tests/LegacyTests
