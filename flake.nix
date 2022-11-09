@@ -21,10 +21,10 @@
     pyk.url = "github:runtimeverification/pyk/v0.1.34";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
-
+    foundry.url = "github:shazow/foundry.nix";
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils, poetry2nix
-    , blockchain-k-plugin, ethereum-tests, ethereum-legacytests, rv-utils, pyk
+    , blockchain-k-plugin, ethereum-tests, ethereum-legacytests, rv-utils, pyk, foundry
     }:
     let
       buildInputs = pkgs: k:
@@ -167,6 +167,7 @@
             blockchain-k-plugin.overlay
             poetry2nix.overlay
             pyk.overlay
+            foundry.overlay
             overlay
           ];
         };

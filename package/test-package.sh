@@ -49,9 +49,5 @@ kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --backend java --for
     --definition tests/specs/erc20/verification/java
 fi
 
-curl -L https://foundry.paradigm.xyz | bash
-export PATH=$HOME/.foundry/bin:$PATH
-foundryup
-
 cd tests/foundry
 ./test-foundry.sh
