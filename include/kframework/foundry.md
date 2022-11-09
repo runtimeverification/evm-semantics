@@ -489,7 +489,7 @@ This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes 
 
 ```{.k .bytes}
     rule [foundry.call.symbolicStorage]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setSymbolicStorage #asWord(#range(ARGS, 0, 32)) ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setSymbolicStorage #asWord(ARGS) ... </k>
       requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
 ```
 
@@ -844,7 +844,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "store(address,bytes32,bytes32)" ) => 1892290747 )
     rule ( selector ( "setNonce(address,uint64)" )       => 4175530839 )
     rule ( selector ( "symbolicStorage(address)" )       => 769677742  )
-    rule ( selector ( "expe ctRevert()" )                 => 4102309908 )
+    rule ( selector ( "expectRevert()" )                 => 4102309908 )
     rule ( selector ( "expectRevert(bytes)" )            => 4069379763 )
     rule ( selector ( "startPrank(address)" )            => 105151830  )
     rule ( selector ( "startPrank(address,address)" )    => 1169514616 )
