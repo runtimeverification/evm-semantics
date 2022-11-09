@@ -181,13 +181,13 @@ module FOUNDRY-CHEAT-CODES
           <expectedBytes> .ByteArray </expectedBytes>
           <expectedDepth> 0 </expectedDepth>
         </expected>
-        <expectedCall>
-          <isCallExpected> false </isCallExpected>
+        <expectedOpcode>
+          <isOpcodeExpected> false </isOpcodeExpected>
           <expectedAddress> .Account </expectedAddress>
           <expectedValue> 0 </expectedValue>
           <expectedData> .ByteArray </expectedData>
-          <callType> .CallType </callType>
-       </expectedCall>
+          <opcodeType> .OpcodeType </opcodeType>
+       </expectedOpcode>
       </cheatcodes>
 ```
 
@@ -546,79 +546,132 @@ If the `expectRevert()` selector is matched, call the `#setExpectRevert` product
         orBool SELECTOR ==Int selector ( "expectRevert(bytes)" )
 ```
 
-Expecting Calls
----------------
+Expecting a specific opcode
+---------------------------
 
-First we define a sort to identify expected call types.
+First we define a sort to identify expected opcodes.
 
 ```k
-    syntax CallType ::= ".CallType" | "Call" | "Code" | "Static" | "Delegate"
+    syntax OpcodeType ::= ".OpcodeType" | "Call" | "Static" | "Delegate" | "Create" | "Create2"
 ```
 
-If the `expectStaticCall(address,bytes)` selector is matched, the rule will load the account into the state and add the `setExpecCall` to the K cell to initialize the `<expectedCall/>` subconfiguration with the given parameters.
+If the `expectStaticCall(address,bytes)` selector is matched, the rule will load the account into the state and add the `#setExpectOpcode` to the K cell to initialize the `<expectedOpcode/>` subconfiguration with the given parameters.
 
 ```{.k .bytes}
     rule [foundry.call.expectStaticCall]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) 0 Static ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) 0 Static ... </k>
       requires SELECTOR ==Int selector ( "expectStaticCall(address,bytes)" )
 ```
 
 ```{.k .bytes}
     rule [foundry.call.expectDelegateCall]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) 0 Delegate ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) 0 Delegate ... </k>
       requires SELECTOR ==Int selector ( "expectDelegateCall(address,bytes)" )
 ```
 
 ```{.k .bytes}
     rule [foundry.call.expectRegularCall]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) #asWord(#range(ARGS, 64, 32)) Call ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) #asWord(#range(ARGS, 64, 32)) Call ... </k>
       requires SELECTOR ==Int selector ( "expectRegularCall(address,uint256,bytes)" )
+```
+
+```{.k .bytes}
+    rule [foundry.call.expectCreate]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) #asWord(#range(ARGS, 64, 32)) Create ... </k>
+      requires SELECTOR ==Int selector ( "expectCreate(address,uint256,bytes)" )
+```
+
+```{.k .bytes}
+    rule [foundry.call.expectCreate2]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) #asWord(#range(ARGS, 64, 32)) Create2 ... </k>
+      requires SELECTOR ==Int selector ( "expectCreate2(address,uint256,bytes)" )
 ```
 
 When the `STATICCALL` opcode is executed, we check the address which is being called and the calldata value.
 
 ```{.k .bytes}
-    rule <k> (. => #clearExpectCall) ~> STATICCALL _GCAP ACCTTO ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
+    rule <k> (. => #clearExpectOpcode) ~> STATICCALL _GCAP ACCTTO ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
          <localMem> LM </localMem>
-         <expectedCall>
-           <isCallExpected> true </isCallExpected>
+         <expectedOpcode>
+           <isOpcodeExpected> true </isOpcodeExpected>
            <expectedAddress> ACCTTO </expectedAddress>
            <expectedData> DATA </expectedData>
-           <callType> Static </callType>
+           <opcodeType> Static </opcodeType>
            ...
-         </expectedCall>
+         </expectedOpcode>
       requires #range(LM, ARGSTART, 1) ==K #range(DATA, 0, 1)
+      [priority(40)]
 ```
 
 When the `DELEGATECALL` opcode is executed, we check the address which is being called and the calldata value.
 
 ```{.k .bytes}
-    rule <k> (. => #clearExpectCall) ~> DELEGATECALL _GCAP ACCTTO ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
+    rule <k> (. => #clearExpectOpcode) ~> DELEGATECALL _GCAP ACCTTO ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
          <localMem> LM </localMem>
-         <expectedCall>
-           <isCallExpected> true </isCallExpected>
+         <expectedOpcode>
+           <isOpcodeExpected> true </isOpcodeExpected>
            <expectedAddress> ACCTTO </expectedAddress>
            <expectedData> DATA </expectedData>
-           <callType> Delegate </callType>
+           <opcodeType> Delegate </opcodeType>
            ...
-         </expectedCall>
+         </expectedOpcode>
       requires #range(LM, ARGSTART, 1) ==K #range(DATA, 0, 1)
+      [priority(40)]
+
 ```
 
-When the `DELEGATECALL` opcode is executed, we check the address which is being called and the calldata value.
+When the `CALL` opcode is executed, we check the address which is being called and the calldata value.
 
 ```{.k .bytes}
-    rule <k> (. => #clearExpectCall) ~> CALL _GCAP ACCTTO VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
+    rule <k> (. => #clearExpectOpcode) ~> CALL _GCAP ACCTTO VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
          <localMem> LM </localMem>
-         <expectedCall>
-           <isCallExpected> true </isCallExpected>
+         <expectedOpcode>
+           <isOpcodeExpected> true </isOpcodeExpected>
            <expectedAddress> ACCTTO </expectedAddress>
            <expectedData> DATA </expectedData>
-           <callType> Delegate </callType>
+           <opcodeType> Call </opcodeType>
            <expectedValue> VALUE </expectedValue>
            ...
-         </expectedCall>
+         </expectedOpcode>
       requires #range(LM, ARGSTART, 1) ==K #range(DATA, 0, 1)
+      [priority(40)]
+
+```
+
+When the `CREATE` opcode is executed, we check the address which is being called and the calldata value.
+
+```{.k .bytes}
+    rule <k> (. => #clearExpectOpcode) ~> CREATE VALUE MEMSTART _MEMWIDTH </k>
+         <localMem> LM </localMem>
+         <id> ACCT </id>
+         <expectedOpcode>
+           <isOpcodeExpected> true </isOpcodeExpected>
+           <expectedAddress> ACCT </expectedAddress>
+           <expectedData> DATA </expectedData>
+           <opcodeType> Create </opcodeType>
+           <expectedValue> VALUE </expectedValue>
+           ...
+         </expectedOpcode>
+      requires #range(LM, MEMSTART, 1) ==K #range(DATA, 0, 1)
+      [priority(40)]
+```
+
+When the `CREATE2` opcode is executed, we check the address which is being called and the calldata value.
+
+```{.k .bytes}
+    rule <k> (. => #clearExpectOpcode) ~> CREATE2 VALUE MEMSTART _MEMWIDTH _SALT </k>
+         <localMem> LM </localMem>
+         <id> ACCT </id>
+         <expectedOpcode>
+           <isOpcodeExpected> true </isOpcodeExpected>
+           <expectedAddress> ACCT </expectedAddress>
+           <expectedData> DATA </expectedData>
+           <opcodeType> Create2 </opcodeType>
+           <expectedValue> VALUE </expectedValue>
+           ...
+         </expectedOpcode>
+      requires #range(LM, MEMSTART, 1) ==K #range(DATA, 0, 1)
+      [priority(40)]
 ```
 
 Pranks
@@ -818,36 +871,36 @@ Utils
          </expected>
 ```
 
-- `#setExpectCall` initializes the `<expectedCall>` subconfiguration with an expected `Address`, and `ByteArray` to match the calldata.
+- `#setExpectOpcode` initializes the `<expectedOpcode>` subconfiguration with an expected `Address`, and `ByteArray` to match the calldata.
 `CallType` is used to specify what `CALL*` opcode is expected.
 
 ```k
-    syntax KItem ::= "#setExpectCall" Account ByteArray Int CallType [klabel(foundry_setExpectCall)]
- // ------------------------------------------------------------------------------------------------
-    rule <k> #setExpectCall ACCT DATA VALUE CALLTYPE => . ... </k>
-         <expectedCall>
-           <isCallExpected> _ => true </isCallExpected>
+    syntax KItem ::= "#setExpectOpcode" Account ByteArray Int OpcodeType [klabel(foundry_setExpectOpcode)]
+ // ------------------------------------------------------------------------------------------------------
+    rule <k> #setExpectOpcode ACCT DATA VALUE OPTYPE => . ... </k>
+         <expectedOpcode>
+           <isOpcodeExpected> _ => true </isOpcodeExpected>
            <expectedAddress> _ => ACCT </expectedAddress>
            <expectedData> _ => DATA </expectedData>
            <expectedValue> _ => VALUE </expectedValue>
-           <callType> _ => CALLTYPE </callType>
+           <opcodeType> _ => OPTYPE </opcodeType>
            ...
-         </expectedCall>
+         </expectedOpcode>
 ```
 
-- `#clearExpectCall` restore the `<expectedCall>` subconfiguration to its initial values.
+- `#clearExpectOpcode` restore the `<expectedOpcode>` subconfiguration to its initial values.
 
 ```k
-    syntax KItem ::= "#clearExpectCall" [klabel(foundry_clearExpectCall)]
- // ---------------------------------------------------------------------
-    rule <k> #clearExpectCall => . ... </k>
-         <expectedCall>
-           <isCallExpected> _ => false </isCallExpected>
+    syntax KItem ::= "#clearExpectOpcode" [klabel(foundry_clearExpectOpcode)]
+ // -------------------------------------------------------------------------
+    rule <k> #clearExpectOpcode => . ... </k>
+         <expectedOpcode>
+           <isOpcodeExpected> _ => false </isOpcodeExpected>
            <expectedAddress> _ => .Account </expectedAddress>
            <expectedData> _ => .ByteArray </expectedData>
-           <callType> _ => .CallType </callType>
+           <opcodeType> _ => .OpcodeType </opcodeType>
            ...
-         </expectedCall>
+         </expectedOpcode>
 ```
 
 - `#setPrank NEWCALLER NEWORIGIN` will set the `<prank/>` subconfiguration for the given accounts.
@@ -936,6 +989,8 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "expectStaticCall(address,bytes)" )          => 2232945516 )
     rule ( selector ( "expectDelegateCall(address,bytes)" )        => 1030406631 )
     rule ( selector ( "expectRegularCall(address,uint256,bytes)" ) => 1973496647 )
+    rule ( selector ( "expectCreate(address,uint256,bytes)" )      => 658968394  )
+    rule ( selector ( "expectCreate2(address,uint256,bytes)" )     => 3854582462 )
 ```
 
 - selectors for unimplemented cheat code functions.

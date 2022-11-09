@@ -415,7 +415,7 @@ def _init_term(
             ]
         ),
         'EXPECTEDREVERT_CELL': FALSE,
-        'ISCALLEXPECTED_CELL': FALSE,
+        'ISOPCODEEXPECTED_CELL': FALSE,
     }
 
     if calldata is not None:
@@ -435,7 +435,7 @@ def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_
         KVariable('STATUSCODE_FINAL'),
         dst_failed_post,
         KVariable('EXPECTEDREVERT_FINAL'),
-        KVariable('ISCALLEXPECTED_FINAL'),
+        KVariable('ISOPCODEEXPECTED_FINAL'),
     )
     final_cterm = CTerm(final_term)
     if is_test:
@@ -470,7 +470,7 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             ]
         ),
         'EXPECTEDREVERT_CELL': KVariable('EXPECTEDREVERT_FINAL'),
-        'ISCALLEXPECTED_CELL': KVariable('ISCALLEXPECTED_FINAL'),
+        'ISOPCODEEXPECTED_CELL': KVariable('ISOPCODEEXPECTED_FINAL'),
     }
     return abstract_cell_vars(
         substitute(empty_config, final_subst),
@@ -478,7 +478,7 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             KVariable('STATUSCODE_FINAL'),
             KVariable('ACCOUNTS_FINAL'),
             KVariable('EXPECTEDREVERT_FINAL'),
-            KVariable('ISCALLEXPECTED_FINAL'),
+            KVariable('ISOPCODEEXPECTED_FINAL'),
         ],
     )
 
