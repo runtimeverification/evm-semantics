@@ -122,7 +122,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Check out code
+      - name: 'Check out code'
         uses: actions/checkout@v3
         with:
           # Check out pull request HEAD instead of merge commit.
@@ -138,5 +138,9 @@ jobs:
         with:
           name: k-framework
           authToken: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
+      - name: 'Install Foundry'
+        run: |
+          curl -L https://foundry.paradigm.xyz | bash
+          foundryup
       - name: 'Test KEVM'
         run: GC_DONT_GC=1 nix build .#kevm-test
