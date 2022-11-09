@@ -138,12 +138,5 @@ jobs:
         with:
           name: k-framework
           authToken: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
-      - name: 'Install Foundry'
-        run: |
-          curl -L https://foundry.paradigm.xyz | bash
-          export PATH=$HOME/.foundry/bin:$PATH
-          foundryup
       - name: 'Test KEVM'
-        run: |
-          export PATH=$HOME/.foundry/bin:$PATH
-          GC_DONT_GC=1 nix build .#kevm-test
+        run: GC_DONT_GC=1 nix build .#kevm-test
