@@ -559,14 +559,20 @@ If the `expectStaticCall(address,bytes)` selector is matched, the rule will load
 
 ```{.k .bytes}
     rule [foundry.call.expectStaticCall]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) Static ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) 0 Static ... </k>
       requires SELECTOR ==Int selector ( "expectStaticCall(address,bytes)" )
 ```
 
 ```{.k .bytes}
     rule [foundry.call.expectDelegateCall]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) Delegate ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) 0 Delegate ... </k>
       requires SELECTOR ==Int selector ( "expectDelegateCall(address,bytes)" )
+```
+
+```{.k .bytes}
+    rule [foundry.call.expectRegularCall]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) #asWord(#range(ARGS, 64, 32)) Call ... </k>
+      requires SELECTOR ==Int selector ( "expectRegularCall(address,uint256,bytes)" )
 ```
 
 When the `STATICCALL` opcode is executed, we check the address which is being called and the calldata value.
@@ -594,6 +600,22 @@ When the `DELEGATECALL` opcode is executed, we check the address which is being 
            <expectedAddress> ACCTTO </expectedAddress>
            <expectedData> DATA </expectedData>
            <callType> Delegate </callType>
+           ...
+         </expectedCall>
+      requires #range(LM, ARGSTART, 1) ==K #range(DATA, 0, 1)
+```
+
+When the `DELEGATECALL` opcode is executed, we check the address which is being called and the calldata value.
+
+```{.k .bytes}
+    rule <k> (. => #clearExpectCall) ~> CALL _GCAP ACCTTO VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
+         <localMem> LM </localMem>
+         <expectedCall>
+           <isCallExpected> true </isCallExpected>
+           <expectedAddress> ACCTTO </expectedAddress>
+           <expectedData> DATA </expectedData>
+           <callType> Delegate </callType>
+           <expectedValue> VALUE </expectedValue>
            ...
          </expectedCall>
       requires #range(LM, ARGSTART, 1) ==K #range(DATA, 0, 1)
@@ -800,13 +822,14 @@ Utils
 `CallType` is used to specify what `CALL*` opcode is expected.
 
 ```k
-    syntax KItem ::= "#setExpectCall" Account ByteArray CallType [klabel(foundry_setExpectCall)]
- // --------------------------------------------------------------------------------------------
-    rule <k> #setExpectCall ACCT DATA CALLTYPE => . ... </k>
+    syntax KItem ::= "#setExpectCall" Account ByteArray Int CallType [klabel(foundry_setExpectCall)]
+ // ------------------------------------------------------------------------------------------------
+    rule <k> #setExpectCall ACCT DATA VALUE CALLTYPE => . ... </k>
          <expectedCall>
            <isCallExpected> _ => true </isCallExpected>
            <expectedAddress> _ => ACCT </expectedAddress>
            <expectedData> _ => DATA </expectedData>
+           <expectedValue> _ => VALUE </expectedValue>
            <callType> _ => CALLTYPE </callType>
            ...
          </expectedCall>
@@ -891,27 +914,28 @@ If the production is matched when no prank is active, it will be ignored.
 - selectors for cheat code functions.
 
 ```k
-    rule ( selector ( "assume(bool)" )                      => 1281615202 )
-    rule ( selector ( "deal(address,uint256)" )             => 3364511341 )
-    rule ( selector ( "etch(address,bytes)" )               => 3033974658 )
-    rule ( selector ( "warp(uint256)" )                     => 3856056066 )
-    rule ( selector ( "roll(uint256)" )                     => 528174896  )
-    rule ( selector ( "fee(uint256)" )                      => 968063664  )
-    rule ( selector ( "chainId(uint256)" )                  => 1078582738 )
-    rule ( selector ( "coinbase(address)" )                 => 4282924116 )
-    rule ( selector ( "label(address,string)" )             => 3327641368 )
-    rule ( selector ( "getNonce(address)" )                 => 755185067  )
-    rule ( selector ( "addr(uint256)" )                     => 4288775753 )
-    rule ( selector ( "load(address,bytes32)" )             => 1719639408 )
-    rule ( selector ( "store(address,bytes32,bytes32)" )    => 1892290747 )
-    rule ( selector ( "setNonce(address,uint64)" )          => 4175530839 )
-    rule ( selector ( "expectRevert()" )                    => 4102309908 )
-    rule ( selector ( "expectRevert(bytes)" )               => 4069379763 )
-    rule ( selector ( "startPrank(address)" )               => 105151830  )
-    rule ( selector ( "startPrank(address,address)" )       => 1169514616 )
-    rule ( selector ( "stopPrank()" )                       => 2428830011 )
-    rule ( selector ( "expectStaticCall(address,bytes)" )   => 2232945516 )
-    rule ( selector ( "expectDelegateCall(address,bytes)" ) => 1030406631 )
+    rule ( selector ( "assume(bool)" )                             => 1281615202 )
+    rule ( selector ( "deal(address,uint256)" )                    => 3364511341 )
+    rule ( selector ( "etch(address,bytes)" )                      => 3033974658 )
+    rule ( selector ( "warp(uint256)" )                            => 3856056066 )
+    rule ( selector ( "roll(uint256)" )                            => 528174896  )
+    rule ( selector ( "fee(uint256)" )                             => 968063664  )
+    rule ( selector ( "chainId(uint256)" )                         => 1078582738 )
+    rule ( selector ( "coinbase(address)" )                        => 4282924116 )
+    rule ( selector ( "label(address,string)" )                    => 3327641368 )
+    rule ( selector ( "getNonce(address)" )                        => 755185067  )
+    rule ( selector ( "addr(uint256)" )                            => 4288775753 )
+    rule ( selector ( "load(address,bytes32)" )                    => 1719639408 )
+    rule ( selector ( "store(address,bytes32,bytes32)" )           => 1892290747 )
+    rule ( selector ( "setNonce(address,uint64)" )                 => 4175530839 )
+    rule ( selector ( "expectRevert()" )                           => 4102309908 )
+    rule ( selector ( "expectRevert(bytes)" )                      => 4069379763 )
+    rule ( selector ( "startPrank(address)" )                      => 105151830  )
+    rule ( selector ( "startPrank(address,address)" )              => 1169514616 )
+    rule ( selector ( "stopPrank()" )                              => 2428830011 )
+    rule ( selector ( "expectStaticCall(address,bytes)" )          => 2232945516 )
+    rule ( selector ( "expectDelegateCall(address,bytes)" )        => 1030406631 )
+    rule ( selector ( "expectRegularCall(address,uint256,bytes)" ) => 1973496647 )
 ```
 
 - selectors for unimplemented cheat code functions.
