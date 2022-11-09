@@ -144,4 +144,6 @@ jobs:
           export PATH=$HOME/.foundry/bin:$PATH
           foundryup
       - name: 'Test KEVM'
-        run: GC_DONT_GC=1 nix build .#kevm-test
+        run: |
+          export PATH=$HOME/.foundry/bin:$PATH
+          GC_DONT_GC=1 nix build .#kevm-test
