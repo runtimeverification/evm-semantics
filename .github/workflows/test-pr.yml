@@ -141,6 +141,7 @@ jobs:
       - name: 'Install Foundry'
         run: |
           curl -L https://foundry.paradigm.xyz | bash
+          export PATH=$HOME/.foundry/bin:$PATH
           foundryup
       - name: 'Test KEVM'
         run: GC_DONT_GC=1 nix build .#kevm-test
