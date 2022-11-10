@@ -414,6 +414,7 @@ def _init_term(
                 KVariable('ACCOUNTS_INIT'),
             ]
         ),
+        'SINGLECALL_CELL': FALSE,
         'EXPECTEDREVERT_CELL': FALSE,
         'ISOPCODEEXPECTED_CELL': FALSE,
     }
