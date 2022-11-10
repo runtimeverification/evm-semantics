@@ -13,8 +13,8 @@ contract AdditionalToken {
     }
 
     function incrementCount() public {
-        require(msg.sender != owner);
-        count = count + 1;
+        if(msg.sender != owner)
+            count = count + 1;
     }
 }
 
@@ -56,4 +56,11 @@ contract PlainPrankTest is Test {
         vm.stopPrank();
     }
 
+    function test_prank_zeroAddress_true() public {
+        AdditionalToken token = new AdditionalToken();
+        vm.prank(address(0));
+        token.incrementCount();
+        token.incrementCount();
+        assert(token.count() == 1);
+    }
 }
