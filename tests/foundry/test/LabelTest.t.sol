@@ -6,9 +6,8 @@ import "forge-std/Test.sol";
 contract LabelTest is Test {
 
     function testLabel() public {
-        address addrA = 0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8;
-        vm.label(addrA,"Alice");
+        vm.label(address(0), "Zero Address");
         //Just to check test trace
-        assertEq(addrA,0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8);
+        assert(true);
     }
 }
