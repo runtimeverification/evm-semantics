@@ -136,10 +136,10 @@ Hence, checking if a `DSTest.assert*` has failed amounts to reading as a boolean
 module FOUNDRY-SUCCESS
     imports EVM
 
-    syntax Bool ::= "foundry_success" "(" StatusCode "," Int ")" [function, klabel(foundry_success), symbol]
- // --------------------------------------------------------------------------------------------------------
-    rule foundry_success(EVMC_SUCCESS, 0) => true
-    rule foundry_success(_, _)            => false [owise]
+    syntax Bool ::= "foundry_success" "(" StatusCode "," Int "," Bool ")" [function, klabel(foundry_success), symbol]
+ // -----------------------------------------------------------------------------------------------------------------
+    rule foundry_success(EVMC_SUCCESS, 0, false) => true
+    rule foundry_success(_, _, _)                => false [owise]
 
 endmodule
 ```
@@ -147,13 +147,17 @@ endmodule
 ### Foundry Cheat Codes
 
 The configuration of the Foundry Cheat Codes is defined as follwing:
-1. The `<prank>` subconfiguration stores values which are used during the execution of any kind of `prank` cheatcode:
+1. The `<prank>` subconfiguration stores values which are used during the execution of any kind of `prank` cheat code:
     - `<prevCaller>` keeps the current address of the contract that initiated the prank.
     - `<prevOrigin>` keeps the current address of the `tx.origin` value.
     - `<newCaller>` and `<newOrigin>` are addresses to be assigned after the prank call to `msg.sender` and `tx.origin`.
     - `<active>` signals if a prank is active or not.
     - `<depth>` records the current call depth at which the prank was invoked.
     - `<singleCall>` tells whether the prank stops by itself after the next call or when a `stopPrank` cheat code is invoked.
+2. The `<expected>` subconfiguration stores values used for the `expectRevert` cheat code.
+    - `<expectedRevert>` flags if the next call is expected to revert or not.
+    - `<expectedDepth>` records the depth at which the call is expected to revert.
+    - `<expectedBytes>` keeps the expected revert message as a ByteArray.
 
 ```k
 module FOUNDRY-CHEAT-CODES
@@ -172,6 +176,11 @@ module FOUNDRY-CHEAT-CODES
           <depth> 0 </depth>
           <singleCall> false </singleCall>
         </prank>
+        <expected>
+          <expectedRevert> false </expectedRevert>
+          <expectedBytes> .ByteArray </expectedBytes>
+          <expectedDepth> 0 </expectedDepth>
+        </expected>
       </cheatcodes>
 ```
 
@@ -469,6 +478,67 @@ This rule then takes from the function call data the account using `#asWord(#ran
       requires SELECTOR ==Int selector ( "store(address,bytes32,bytes32)" )
 ```
 
+#### expectRevert - expect the next call to revert.
+
+```
+function expectRevert() external;
+function expectRevert(bytes4 msg) external;
+function expectRevert(bytes calldata msg) external;
+```
+
+Ignore all cheat code calls which take place while `expectRevert` is active.
+
+```{.k .bytes}
+    rule [foundry.call.ignoreCalls]:
+         <k> #call_foundry _ _ => . ... </k>
+         <expected>
+           <expectedRevert> true </expectedRevert>
+           ...
+         </expected>
+      [priority(35)]
+```
+
+Catch reverts.
+If the current call depth is equal with the `expectedDepth` and the `expectedBytes` match the `<output>` cell, then replace the `EVMC_REVERT` status code with `EVMC_SUCCESS`.
+
+```{.k .bytes}
+    rule <statusCode> EVMC_REVERT => EVMC_SUCCESS </statusCode>
+         <k> #halt ~> #return _RETSTART _RETWIDTH ... </k>
+         <output> OUT </output>
+         <callDepth> CD </callDepth>
+         <expected>
+           <expectedRevert> true => false </expectedRevert>
+           <expectedDepth> CD </expectedDepth>
+           <expectedBytes> EXPECTED </expectedBytes>
+         </expected>
+      requires (EXPECTED =/=K .ByteArray andBool EXPECTED ==K #range(OUT, 4, #sizeByteArray(OUT) -Int 4))
+        orBool EXPECTED ==K .ByteArray
+      [priority(40)]
+```
+
+Change the status code from `EVMC_SUCCESS` to `EVMC_REVERT` if a revert is expected but the call succeded.
+
+```{.k .bytes}
+    rule <statusCode> EVMC_SUCCESS => EVMC_REVERT </statusCode>
+         <k> #halt ~> #return _RETSTART _RETWIDTH ... </k>
+         <callDepth> CD </callDepth>
+         <expected>
+           <expectedRevert> true => false </expectedRevert>
+           <expectedDepth> CD </expectedDepth>
+           ...
+         </expected>
+       [priority(40)]
+```
+
+If the `expectRevert()` selector is matched, call the `#setExpectRevert` production to initialize the `<expected>` subconfiguration.
+
+```{.k .bytes}
+    rule [foundry.call.expectRevert]:
+         <k> #call_foundry SELECTOR ARGS => #setExpectRevert ARGS ... </k>
+      requires SELECTOR ==Int selector ( "expectRevert()" )
+        orBool SELECTOR ==Int selector ( "expectRevert(bytes)" )
+```
+
 Pranks
 ------
 
@@ -511,6 +581,21 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
       [priority(40)]
 ```
 
+We define a new rule for the `#halt ~> #return _ _` production that will trigger the `#endPrank` rules if the prank was set only for a single call and if the current call depth is equal to the depth at which `prank` was invoked plus one.
+
+
+```{.k .bytes}
+    rule <k> (. => #endPrank) ~> #halt ~> #return _RETSTART _RETWIDTH ... </k>
+         <callDepth> CD </callDepth>
+         <prank>
+           <singleCall> true </singleCall>
+           <depth> PD </depth>
+           ...
+         </prank>
+      requires CD ==Int PD +Int 1
+      [priority(40)]
+```
+
 #### `startPrank` - Sets `msg.sender` and `tx.origin` for all subsequent calls until `stopPrank` is called.
 
 ```
@@ -524,12 +609,29 @@ The `#loadAccount` production is used to load accounts into the state if they ar
 
 ```{.k .bytes}
     rule [foundry.call.startPrank]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) .Account ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) .Account false ... </k>
       requires SELECTOR ==Int selector ( "startPrank(address)" )
 
     rule [foundry.call.startPrankWithOrigin]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount  #asWord(#range(ARGS, 0, 32)) ~> #loadAccount #asWord(#range(ARGS, 32, 32)) ~> #setPrank #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #loadAccount #asWord(#range(ARGS, 32, 32)) ~> #setPrank #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) false ... </k>
       requires SELECTOR ==Int selector ( "startPrank(address,address)" )
+```
+
+#### `prank` - Impersonate `msg.sender` and `tx.origin` for only for the next call.
+
+```
+function prank(address) external;
+function prank(address sender, address origin) external;
+```
+
+```{.k .bytes}
+    rule [foundry.call.prank]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) .Account true ... </k>
+      requires SELECTOR ==Int selector ( "prank(address)" )
+
+    rule [foundry.call.prankWithOrigin]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #loadAccount #asWord(#range(ARGS, 32, 32)) ~> #setPrank #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) true ... </k>
+      requires SELECTOR ==Int selector ( "prank(address,address)" )
 ```
 
 #### `stopPrank` - Stops impersonating `msg.sender` and `tx.origin`.
@@ -652,12 +754,26 @@ Utils
          </account>
 ```
 
-- `#setPrank NEWCALLER NEWORIGIN` will set the `<prank/>` subconfiguration for the given accounts.
+- `#setExpectRevert` sets the `<expected>` subconfiguration with the current call depth and the expected message from `expectRevert`.
 
 ```k
-    syntax KItem ::= "#setPrank" Int Account [klabel(foundry_setPrank)]
- // -------------------------------------------------------------------
-    rule <k> #setPrank NEWCALLER NEWORIGIN => . ... </k>
+    syntax KItem ::= "#setExpectRevert" ByteArray [klabel(foundry_setExpectedRevert)]
+ // ---------------------------------------------------------------------------------
+    rule <k> #setExpectRevert EXPECTED => . ... </k>
+         <callDepth> CD </callDepth>
+         <expected>
+           <expectedRevert> false => true </expectedRevert>
+           <expectedDepth> _ => CD +Int 1 </expectedDepth>
+           <expectedBytes> _ => EXPECTED </expectedBytes>
+         </expected>
+```
+
+- `#setPrank NEWCALLER NEWORIGIN SINGLEPRANK` will set the `<prank/>` subconfiguration for the given accounts.
+
+```k
+    syntax KItem ::= "#setPrank" Int Account Bool [klabel(foundry_setPrank)]
+ // ------------------------------------------------------------------------
+    rule <k> #setPrank NEWCALLER NEWORIGIN SINGLEPRANK => . ... </k>
          <callDepth> CD </callDepth>
          <caller> CL </caller>
          <origin> OG </origin>
@@ -668,7 +784,7 @@ Utils
            <newOrigin> _ => NEWORIGIN </newOrigin>
            <active> false => true </active>
            <depth> _ => CD </depth>
-           <singleCall> _ => false </singleCall>
+           <singleCall> _ => SINGLEPRANK </singleCall>
          </prank>
 ```
 
@@ -694,7 +810,6 @@ If the production is matched when no prank is active, it will be ignored.
           <prevOrigin> OG </prevOrigin>
           ...
         </prank>
-
 ```
 
 - `#clearPrank` will clear the prank subconfiguration.
@@ -731,6 +846,8 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "load(address,bytes32)" )          => 1719639408 )
     rule ( selector ( "store(address,bytes32,bytes32)" ) => 1892290747 )
     rule ( selector ( "setNonce(address,uint64)" )       => 4175530839 )
+    rule ( selector ( "expectRevert()" )                 => 4102309908 )
+    rule ( selector ( "expectRevert(bytes)" )            => 4069379763 )
     rule ( selector ( "startPrank(address)" )            => 105151830  )
     rule ( selector ( "startPrank(address,address)" )    => 1169514616 )
     rule ( selector ( "stopPrank()" )                    => 2428830011 )
@@ -757,13 +874,8 @@ If the production is matched when no prank is active, it will be ignored.
     rule selector ( "envString(string,string)" )                => 347089865
     rule selector ( "envBytes(string,string)" )                 => 3720504603
     rule selector ( "prank(address)" )                          => 3395723175
-    rule selector ( "startPrank(address)" )                     => 105151830
     rule selector ( "prank(address,address)" )                  => 1206193358
-    rule selector ( "startPrank(address,address)" )             => 1169514616
-    rule selector ( "stopPrank()" )                             => 2428830011
-    rule selector ( "expectRevert(bytes)" )                     => 4069379763
     rule selector ( "expectRevert(bytes4)" )                    => 3273568480
-    rule selector ( "expectRevert()" )                          => 4102309908
     rule selector ( "record()" )                                => 644673801
     rule selector ( "accesses(address)" )                       => 1706857601
     rule selector ( "expectEmit(bool,bool,bool,bool)" )         => 1226622914
