@@ -177,7 +177,10 @@ jobs:
         with:
           # Check out pull request HEAD instead of merge commit.
           ref: ${{ github.event.pull_request.head.sha }}
-
+      - name: 'Set up Node'
+        uses: actions/setup-node@v3
+          with:
+            node-version: 16
       - name: 'Install Nix'
         uses: cachix/install-nix-action@v15
         with:
