@@ -596,6 +596,21 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
       [priority(40)]
 ```
 
+We define a new rule for the `#halt ~> #return _ _` production that will trigger the `#endPrank` rules if the prank was set only for a single call and if the current call depth is equal to the depth at which `prank` was invoked plus one.
+
+
+```{.k .bytes}
+    rule <k> (. => #endPrank) ~> #halt ~> #return _RETSTART _RETWIDTH ... </k>
+         <callDepth> CD </callDepth>
+         <prank>
+           <singleCall> true </singleCall>
+           <depth> PD </depth>
+           ...
+         </prank>
+      requires CD ==Int PD +Int 1
+      [priority(40)]
+```
+
 #### `startPrank` - Sets `msg.sender` and `tx.origin` for all subsequent calls until `stopPrank` is called.
 
 ```
@@ -609,12 +624,29 @@ The `#loadAccount` production is used to load accounts into the state if they ar
 
 ```{.k .bytes}
     rule [foundry.call.startPrank]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) .Account ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) .Account false ... </k>
       requires SELECTOR ==Int selector ( "startPrank(address)" )
 
     rule [foundry.call.startPrankWithOrigin]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount  #asWord(#range(ARGS, 0, 32)) ~> #loadAccount #asWord(#range(ARGS, 32, 32)) ~> #setPrank #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #loadAccount #asWord(#range(ARGS, 32, 32)) ~> #setPrank #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) false ... </k>
       requires SELECTOR ==Int selector ( "startPrank(address,address)" )
+```
+
+#### `prank` - Impersonate `msg.sender` and `tx.origin` for only for the next call.
+
+```
+function prank(address) external;
+function prank(address sender, address origin) external;
+```
+
+```{.k .bytes}
+    rule [foundry.call.prank]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) .Account true ... </k>
+      requires SELECTOR ==Int selector ( "prank(address)" )
+
+    rule [foundry.call.prankWithOrigin]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #loadAccount #asWord(#range(ARGS, 32, 32)) ~> #setPrank #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) true ... </k>
+      requires SELECTOR ==Int selector ( "prank(address,address)" )
 ```
 
 #### `stopPrank` - Stops impersonating `msg.sender` and `tx.origin`.
@@ -765,12 +797,12 @@ Utils
          </expected>
 ```
 
-- `#setPrank NEWCALLER NEWORIGIN` will set the `<prank/>` subconfiguration for the given accounts.
+- `#setPrank NEWCALLER NEWORIGIN SINGLEPRANK` will set the `<prank/>` subconfiguration for the given accounts.
 
 ```k
-    syntax KItem ::= "#setPrank" Int Account [klabel(foundry_setPrank)]
- // -------------------------------------------------------------------
-    rule <k> #setPrank NEWCALLER NEWORIGIN => . ... </k>
+    syntax KItem ::= "#setPrank" Int Account Bool [klabel(foundry_setPrank)]
+ // ------------------------------------------------------------------------
+    rule <k> #setPrank NEWCALLER NEWORIGIN SINGLEPRANK => . ... </k>
          <callDepth> CD </callDepth>
          <caller> CL </caller>
          <origin> OG </origin>
@@ -781,7 +813,7 @@ Utils
            <newOrigin> _ => NEWORIGIN </newOrigin>
            <active> false => true </active>
            <depth> _ => CD </depth>
-           <singleCall> _ => false </singleCall>
+           <singleCall> _ => SINGLEPRANK </singleCall>
          </prank>
 ```
 

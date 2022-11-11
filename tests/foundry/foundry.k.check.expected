@@ -1,5 +1,162 @@
 requires "foundry.md"
 
+module ACCOUNTPARAMSTEST-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= AccountParamsTestContract
+    
+    syntax AccountParamsTestContract ::= "AccountParamsTest" [symbol(), klabel(contract_AccountParamsTest)]
+    
+      
+    
+    syntax Field ::= AccountParamsTestField
+    
+    syntax AccountParamsTestField ::= "IS_TEST" [symbol(), klabel(field_AccountParamsTest_IS_TEST)]
+    
+    syntax AccountParamsTestField ::= "_failed" [symbol(), klabel(field_AccountParamsTest__failed)]
+    
+    syntax AccountParamsTestField ::= "IS_SCRIPT" [symbol(), klabel(field_AccountParamsTest_IS_SCRIPT)]
+    
+    syntax AccountParamsTestField ::= "stdstore" [symbol(), klabel(field_AccountParamsTest_stdstore)]
+    
+    rule  ( #loc ( AccountParamsTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( AccountParamsTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( AccountParamsTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( AccountParamsTest . stdstore ) => 1 )
+      
+    
+    syntax ByteArray ::= AccountParamsTestContract "." AccountParamsTestMethod [function(), symbol(), klabel(method_AccountParamsTest)]
+    
+    syntax AccountParamsTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_AccountParamsTest_IS_SCRIPT)]
+    
+    syntax AccountParamsTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_AccountParamsTest_IS_TEST)]
+    
+    syntax AccountParamsTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AccountParamsTest_failed)]
+    
+    syntax AccountParamsTestMethod ::= "testDealConcrete" "(" ")" [symbol(), klabel(method_AccountParamsTest_testDealConcrete)]
+    
+    syntax AccountParamsTestMethod ::= "testDealSymbolic" "(" Int ")" [symbol(), klabel(method_AccountParamsTest_testDealSymbolic)]
+    
+    syntax AccountParamsTestMethod ::= "testEtchConcrete" "(" ")" [symbol(), klabel(method_AccountParamsTest_testEtchConcrete)]
+    
+    syntax AccountParamsTestMethod ::= "testEtchSymbolic" "(" ByteArray ")" [symbol(), klabel(method_AccountParamsTest_testEtchSymbolic)]
+    
+    syntax AccountParamsTestMethod ::= "testFail_GetNonce_false" "(" ")" [symbol(), klabel(method_AccountParamsTest_testFail_GetNonce_false)]
+    
+    syntax AccountParamsTestMethod ::= "testFail_GetNonce_true" "(" ")" [symbol(), klabel(method_AccountParamsTest_testFail_GetNonce_true)]
+    
+    syntax AccountParamsTestMethod ::= "testNonceSymbolic" "(" Int ")" [symbol(), klabel(method_AccountParamsTest_testNonceSymbolic)]
+    
+    syntax AccountParamsTestMethod ::= "test_GetNonce_false" "(" ")" [symbol(), klabel(method_AccountParamsTest_test_GetNonce_false)]
+    
+    syntax AccountParamsTestMethod ::= "test_GetNonce_true" "(" ")" [symbol(), klabel(method_AccountParamsTest_test_GetNonce_true)]
+    
+    syntax AccountParamsTestMethod ::= "test_Nonce_ExistentAddress" "(" ")" [symbol(), klabel(method_AccountParamsTest_test_Nonce_ExistentAddress)]
+    
+    syntax AccountParamsTestMethod ::= "test_Nonce_NonExistentAddress" "(" ")" [symbol(), klabel(method_AccountParamsTest_test_Nonce_NonExistentAddress)]
+    
+    syntax AccountParamsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AccountParamsTest_vm)]
+    
+    rule  ( AccountParamsTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( AccountParamsTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( AccountParamsTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( AccountParamsTest . testDealConcrete ( ) => #abiCallData ( "testDealConcrete" , .TypedArgs ) )
+      
+    
+    rule  ( AccountParamsTest . testDealSymbolic ( V0_value ) => #abiCallData ( "testDealSymbolic" , #uint256 ( V0_value ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_value )
+      
+    
+    rule  ( AccountParamsTest . testEtchConcrete ( ) => #abiCallData ( "testEtchConcrete" , .TypedArgs ) )
+      
+    
+    rule  ( AccountParamsTest . testEtchSymbolic ( V0_code ) => #abiCallData ( "testEtchSymbolic" , #bytes ( V0_code ) , .TypedArgs ) )
+      
+    
+    rule  ( AccountParamsTest . testFail_GetNonce_false ( ) => #abiCallData ( "testFail_GetNonce_false" , .TypedArgs ) )
+      
+    
+    rule  ( AccountParamsTest . testFail_GetNonce_true ( ) => #abiCallData ( "testFail_GetNonce_true" , .TypedArgs ) )
+      
+    
+    rule  ( AccountParamsTest . testNonceSymbolic ( V0_newNonce ) => #abiCallData ( "testNonceSymbolic" , #uint64 ( V0_newNonce ) , .TypedArgs ) )
+       ensures #rangeUInt ( 64 , V0_newNonce )
+      
+    
+    rule  ( AccountParamsTest . test_GetNonce_false ( ) => #abiCallData ( "test_GetNonce_false" , .TypedArgs ) )
+      
+    
+    rule  ( AccountParamsTest . test_GetNonce_true ( ) => #abiCallData ( "test_GetNonce_true" , .TypedArgs ) )
+      
+    
+    rule  ( AccountParamsTest . test_Nonce_ExistentAddress ( ) => #abiCallData ( "test_Nonce_ExistentAddress" , .TypedArgs ) )
+      
+    
+    rule  ( AccountParamsTest . test_Nonce_NonExistentAddress ( ) => #abiCallData ( "test_Nonce_NonExistentAddress" , .TypedArgs ) )
+      
+    
+    rule  ( AccountParamsTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testDealConcrete" ) => 530093250 )
+      
+    
+    rule  ( selector ( "testDealSymbolic" ) => 2584982624 )
+      
+    
+    rule  ( selector ( "testEtchConcrete" ) => 807503996 )
+      
+    
+    rule  ( selector ( "testEtchSymbolic" ) => 2109411263 )
+      
+    
+    rule  ( selector ( "testFail_GetNonce_false" ) => 2393877859 )
+      
+    
+    rule  ( selector ( "testFail_GetNonce_true" ) => 1067907152 )
+      
+    
+    rule  ( selector ( "testNonceSymbolic" ) => 1310260491 )
+      
+    
+    rule  ( selector ( "test_GetNonce_false" ) => 3545243759 )
+      
+    
+    rule  ( selector ( "test_GetNonce_true" ) => 3968101798 )
+      
+    
+    rule  ( selector ( "test_Nonce_ExistentAddress" ) => 1598387740 )
+      
+    
+    rule  ( selector ( "test_Nonce_NonExistentAddress" ) => 2985064833 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
 module ADDRTEST-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -628,109 +785,6 @@ module CONTRACTBTEST-BIN-RUNTIME
 
 endmodule
 
-module DEALTEST-BIN-RUNTIME
-    imports public FOUNDRY
-    
-    syntax Contract ::= DealTestContract
-    
-    syntax DealTestContract ::= "DealTest" [symbol(), klabel(contract_DealTest)]
-    
-      
-    
-    syntax Field ::= DealTestField
-    
-    syntax DealTestField ::= "IS_TEST" [symbol(), klabel(field_DealTest_IS_TEST)]
-    
-    syntax DealTestField ::= "_failed" [symbol(), klabel(field_DealTest__failed)]
-    
-    syntax DealTestField ::= "IS_SCRIPT" [symbol(), klabel(field_DealTest_IS_SCRIPT)]
-    
-    syntax DealTestField ::= "stdstore" [symbol(), klabel(field_DealTest_stdstore)]
-    
-    rule  ( #loc ( DealTest . IS_TEST ) => 0 )
-      
-    
-    rule  ( #loc ( DealTest . _failed ) => 0 )
-      
-    
-    rule  ( #loc ( DealTest . IS_SCRIPT ) => 0 )
-      
-    
-    rule  ( #loc ( DealTest . stdstore ) => 1 )
-      
-    
-    syntax ByteArray ::= DealTestContract "." DealTestMethod [function(), symbol(), klabel(method_DealTest)]
-    
-    syntax DealTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_DealTest_IS_SCRIPT)]
-    
-    syntax DealTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_DealTest_IS_TEST)]
-    
-    syntax DealTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_DealTest_failed)]
-    
-    syntax DealTestMethod ::= "testDealConcrete" "(" ")" [symbol(), klabel(method_DealTest_testDealConcrete)]
-    
-    syntax DealTestMethod ::= "testDealNonExistingAccount" "(" ")" [symbol(), klabel(method_DealTest_testDealNonExistingAccount)]
-    
-    syntax DealTestMethod ::= "testDealSymbolic" "(" Int ")" [symbol(), klabel(method_DealTest_testDealSymbolic)]
-    
-    syntax DealTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_DealTest_vm)]
-    
-    rule  ( DealTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
-      
-    
-    rule  ( DealTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
-      
-    
-    rule  ( DealTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( DealTest . testDealConcrete ( ) => #abiCallData ( "testDealConcrete" , .TypedArgs ) )
-      
-    
-    rule  ( DealTest . testDealNonExistingAccount ( ) => #abiCallData ( "testDealNonExistingAccount" , .TypedArgs ) )
-      
-    
-    rule  ( DealTest . testDealSymbolic ( V0_value ) => #abiCallData ( "testDealSymbolic" , #uint256 ( V0_value ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_value )
-      
-    
-    rule  ( DealTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
-      
-    
-    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
-      
-    
-    rule  ( selector ( "IS_TEST" ) => 4202047188 )
-      
-    
-    rule  ( selector ( "failed" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "testDealConcrete" ) => 530093250 )
-      
-    
-    rule  ( selector ( "testDealNonExistingAccount" ) => 2051916892 )
-      
-    
-    rule  ( selector ( "testDealSymbolic" ) => 2584982624 )
-      
-    
-    rule  ( selector ( "vm" ) => 980845667 )
-      
-
-endmodule
-
-module DEALTOKEN-BIN-RUNTIME
-    imports public FOUNDRY
-    
-    syntax Contract ::= DealTokenContract
-    
-    syntax DealTokenContract ::= "DealToken" [symbol(), klabel(contract_DealToken)]
-    
-      
-
-endmodule
-
 module EXPECTEMIT-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -1023,97 +1077,6 @@ module ENVTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "testEnvUIntArray" ) => 551796351 )
-      
-    
-    rule  ( selector ( "vm" ) => 980845667 )
-      
-
-endmodule
-
-module ETCHTEST-BIN-RUNTIME
-    imports public FOUNDRY
-    
-    syntax Contract ::= EtchTestContract
-    
-    syntax EtchTestContract ::= "EtchTest" [symbol(), klabel(contract_EtchTest)]
-    
-      
-    
-    syntax Field ::= EtchTestField
-    
-    syntax EtchTestField ::= "IS_TEST" [symbol(), klabel(field_EtchTest_IS_TEST)]
-    
-    syntax EtchTestField ::= "_failed" [symbol(), klabel(field_EtchTest__failed)]
-    
-    syntax EtchTestField ::= "IS_SCRIPT" [symbol(), klabel(field_EtchTest_IS_SCRIPT)]
-    
-    syntax EtchTestField ::= "stdstore" [symbol(), klabel(field_EtchTest_stdstore)]
-    
-    rule  ( #loc ( EtchTest . IS_TEST ) => 0 )
-      
-    
-    rule  ( #loc ( EtchTest . _failed ) => 0 )
-      
-    
-    rule  ( #loc ( EtchTest . IS_SCRIPT ) => 0 )
-      
-    
-    rule  ( #loc ( EtchTest . stdstore ) => 1 )
-      
-    
-    syntax ByteArray ::= EtchTestContract "." EtchTestMethod [function(), symbol(), klabel(method_EtchTest)]
-    
-    syntax EtchTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_EtchTest_IS_SCRIPT)]
-    
-    syntax EtchTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_EtchTest_IS_TEST)]
-    
-    syntax EtchTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_EtchTest_failed)]
-    
-    syntax EtchTestMethod ::= "testEtchConcrete" "(" ")" [symbol(), klabel(method_EtchTest_testEtchConcrete)]
-    
-    syntax EtchTestMethod ::= "testEtchNonExistingAccount" "(" ")" [symbol(), klabel(method_EtchTest_testEtchNonExistingAccount)]
-    
-    syntax EtchTestMethod ::= "testEtchSymbolic" "(" ByteArray ")" [symbol(), klabel(method_EtchTest_testEtchSymbolic)]
-    
-    syntax EtchTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_EtchTest_vm)]
-    
-    rule  ( EtchTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
-      
-    
-    rule  ( EtchTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
-      
-    
-    rule  ( EtchTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( EtchTest . testEtchConcrete ( ) => #abiCallData ( "testEtchConcrete" , .TypedArgs ) )
-      
-    
-    rule  ( EtchTest . testEtchNonExistingAccount ( ) => #abiCallData ( "testEtchNonExistingAccount" , .TypedArgs ) )
-      
-    
-    rule  ( EtchTest . testEtchSymbolic ( V0_code ) => #abiCallData ( "testEtchSymbolic" , #bytes ( V0_code ) , .TypedArgs ) )
-      
-    
-    rule  ( EtchTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
-      
-    
-    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
-      
-    
-    rule  ( selector ( "IS_TEST" ) => 4202047188 )
-      
-    
-    rule  ( selector ( "failed" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "testEtchConcrete" ) => 807503996 )
-      
-    
-    rule  ( selector ( "testEtchNonExistingAccount" ) => 3888176803 )
-      
-    
-    rule  ( selector ( "testEtchSymbolic" ) => 2109411263 )
       
     
     rule  ( selector ( "vm" ) => 980845667 )
@@ -2237,138 +2200,6 @@ module MYTOKEN-BIN-RUNTIME
 
 endmodule
 
-module NONCETEST-BIN-RUNTIME
-    imports public FOUNDRY
-    
-    syntax Contract ::= NonceTestContract
-    
-    syntax NonceTestContract ::= "NonceTest" [symbol(), klabel(contract_NonceTest)]
-    
-      
-    
-    syntax Field ::= NonceTestField
-    
-    syntax NonceTestField ::= "IS_TEST" [symbol(), klabel(field_NonceTest_IS_TEST)]
-    
-    syntax NonceTestField ::= "_failed" [symbol(), klabel(field_NonceTest__failed)]
-    
-    syntax NonceTestField ::= "IS_SCRIPT" [symbol(), klabel(field_NonceTest_IS_SCRIPT)]
-    
-    syntax NonceTestField ::= "stdstore" [symbol(), klabel(field_NonceTest_stdstore)]
-    
-    rule  ( #loc ( NonceTest . IS_TEST ) => 0 )
-      
-    
-    rule  ( #loc ( NonceTest . _failed ) => 0 )
-      
-    
-    rule  ( #loc ( NonceTest . IS_SCRIPT ) => 0 )
-      
-    
-    rule  ( #loc ( NonceTest . stdstore ) => 1 )
-      
-    
-    syntax ByteArray ::= NonceTestContract "." NonceTestMethod [function(), symbol(), klabel(method_NonceTest)]
-    
-    syntax NonceTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_NonceTest_IS_SCRIPT)]
-    
-    syntax NonceTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_NonceTest_IS_TEST)]
-    
-    syntax NonceTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_NonceTest_failed)]
-    
-    syntax NonceTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_NonceTest_setUp)]
-    
-    syntax NonceTestMethod ::= "testFail_GetNonce_false" "(" ")" [symbol(), klabel(method_NonceTest_testFail_GetNonce_false)]
-    
-    syntax NonceTestMethod ::= "testFail_GetNonce_true" "(" ")" [symbol(), klabel(method_NonceTest_testFail_GetNonce_true)]
-    
-    syntax NonceTestMethod ::= "testNonce" "(" Int ")" [symbol(), klabel(method_NonceTest_testNonce)]
-    
-    syntax NonceTestMethod ::= "test_GetNonce_false" "(" ")" [symbol(), klabel(method_NonceTest_test_GetNonce_false)]
-    
-    syntax NonceTestMethod ::= "test_GetNonce_true" "(" ")" [symbol(), klabel(method_NonceTest_test_GetNonce_true)]
-    
-    syntax NonceTestMethod ::= "test_Nonce_ExistentAddress" "(" ")" [symbol(), klabel(method_NonceTest_test_Nonce_ExistentAddress)]
-    
-    syntax NonceTestMethod ::= "test_Nonce_NonExistentAddress" "(" ")" [symbol(), klabel(method_NonceTest_test_Nonce_NonExistentAddress)]
-    
-    syntax NonceTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_NonceTest_vm)]
-    
-    rule  ( NonceTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
-      
-    
-    rule  ( NonceTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
-      
-    
-    rule  ( NonceTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( NonceTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
-      
-    
-    rule  ( NonceTest . testFail_GetNonce_false ( ) => #abiCallData ( "testFail_GetNonce_false" , .TypedArgs ) )
-      
-    
-    rule  ( NonceTest . testFail_GetNonce_true ( ) => #abiCallData ( "testFail_GetNonce_true" , .TypedArgs ) )
-      
-    
-    rule  ( NonceTest . testNonce ( V0_newNonce ) => #abiCallData ( "testNonce" , #uint64 ( V0_newNonce ) , .TypedArgs ) )
-       ensures #rangeUInt ( 64 , V0_newNonce )
-      
-    
-    rule  ( NonceTest . test_GetNonce_false ( ) => #abiCallData ( "test_GetNonce_false" , .TypedArgs ) )
-      
-    
-    rule  ( NonceTest . test_GetNonce_true ( ) => #abiCallData ( "test_GetNonce_true" , .TypedArgs ) )
-      
-    
-    rule  ( NonceTest . test_Nonce_ExistentAddress ( ) => #abiCallData ( "test_Nonce_ExistentAddress" , .TypedArgs ) )
-      
-    
-    rule  ( NonceTest . test_Nonce_NonExistentAddress ( ) => #abiCallData ( "test_Nonce_NonExistentAddress" , .TypedArgs ) )
-      
-    
-    rule  ( NonceTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
-      
-    
-    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
-      
-    
-    rule  ( selector ( "IS_TEST" ) => 4202047188 )
-      
-    
-    rule  ( selector ( "failed" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "setUp" ) => 177362148 )
-      
-    
-    rule  ( selector ( "testFail_GetNonce_false" ) => 2393877859 )
-      
-    
-    rule  ( selector ( "testFail_GetNonce_true" ) => 1067907152 )
-      
-    
-    rule  ( selector ( "testNonce" ) => 3637501163 )
-      
-    
-    rule  ( selector ( "test_GetNonce_false" ) => 3545243759 )
-      
-    
-    rule  ( selector ( "test_GetNonce_true" ) => 3968101798 )
-      
-    
-    rule  ( selector ( "test_Nonce_ExistentAddress" ) => 1598387740 )
-      
-    
-    rule  ( selector ( "test_Nonce_NonExistentAddress" ) => 2985064833 )
-      
-    
-    rule  ( selector ( "vm" ) => 980845667 )
-      
-
-endmodule
-
 module OWNERUPONLY-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -2602,6 +2433,8 @@ module PLAINPRANKTEST-BIN-RUNTIME
     
     syntax PlainPrankTestMethod ::= "testFail_startPrank_existingAlready" "(" ")" [symbol(), klabel(method_PlainPrankTest_testFail_startPrank_existingAlready)]
     
+    syntax PlainPrankTestMethod ::= "test_prank_zeroAddress_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_prank_zeroAddress_true)]
+    
     syntax PlainPrankTestMethod ::= "test_startPrankWithOrigin_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_startPrankWithOrigin_true)]
     
     syntax PlainPrankTestMethod ::= "test_startPrank_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_startPrank_true)]
@@ -2622,6 +2455,9 @@ module PLAINPRANKTEST-BIN-RUNTIME
       
     
     rule  ( PlainPrankTest . testFail_startPrank_existingAlready ( ) => #abiCallData ( "testFail_startPrank_existingAlready" , .TypedArgs ) )
+      
+    
+    rule  ( PlainPrankTest . test_prank_zeroAddress_true ( ) => #abiCallData ( "test_prank_zeroAddress_true" , .TypedArgs ) )
       
     
     rule  ( PlainPrankTest . test_startPrankWithOrigin_true ( ) => #abiCallData ( "test_startPrankWithOrigin_true" , .TypedArgs ) )
@@ -2649,6 +2485,9 @@ module PLAINPRANKTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "testFail_startPrank_existingAlready" ) => 2262269573 )
+      
+    
+    rule  ( selector ( "test_prank_zeroAddress_true" ) => 3793950116 )
       
     
     rule  ( selector ( "test_startPrankWithOrigin_true" ) => 1559633499 )
@@ -4166,43 +4005,6 @@ module TOKEN-BIN-RUNTIME
       
     
     rule  ( selector ( "transfer" ) => 2835717307 )
-      
-
-endmodule
-
-module TOKENTEST-BIN-RUNTIME
-    imports public FOUNDRY
-    
-    syntax Contract ::= TokenTestContract
-    
-    syntax TokenTestContract ::= "TokenTest" [symbol(), klabel(contract_TokenTest)]
-    
-      
-    
-    syntax ByteArray ::= TokenTestContract "." TokenTestMethod [function(), symbol(), klabel(method_TokenTest)]
-    
-    syntax TokenTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_TokenTest_setUp)]
-    
-    syntax TokenTestMethod ::= "test_1" "(" ")" [symbol(), klabel(method_TokenTest_test_1)]
-    
-    syntax TokenTestMethod ::= "test_2" "(" ")" [symbol(), klabel(method_TokenTest_test_2)]
-    
-    rule  ( TokenTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
-      
-    
-    rule  ( TokenTest . test_1 ( ) => #abiCallData ( "test_1" , .TypedArgs ) )
-      
-    
-    rule  ( TokenTest . test_2 ( ) => #abiCallData ( "test_2" , .TypedArgs ) )
-      
-    
-    rule  ( selector ( "setUp" ) => 177362148 )
-      
-    
-    rule  ( selector ( "test_1" ) => 1715194256 )
-      
-    
-    rule  ( selector ( "test_2" ) => 2308879516 )
       
 
 endmodule
@@ -6715,6 +6517,7 @@ module DSTEST-BIN-RUNTIME
 endmodule
 
 module FOUNDRY-MAIN
+    imports public ACCOUNTPARAMSTEST-BIN-RUNTIME
     imports public ADDRTEST-BIN-RUNTIME
     imports public ASSUMETEST-BIN-RUNTIME
     imports public BLOCKPARAMSTEST-BIN-RUNTIME
@@ -6722,12 +6525,9 @@ module FOUNDRY-MAIN
     imports public CONTRACT-BIN-RUNTIME
     imports public CONTRACTTEST-BIN-RUNTIME
     imports public CONTRACTBTEST-BIN-RUNTIME
-    imports public DEALTEST-BIN-RUNTIME
-    imports public DEALTOKEN-BIN-RUNTIME
     imports public EXPECTEMIT-BIN-RUNTIME
     imports public EMITCONTRACTTEST-BIN-RUNTIME
     imports public ENVTEST-BIN-RUNTIME
-    imports public ETCHTEST-BIN-RUNTIME
     imports public DEPTHREVERTER-BIN-RUNTIME
     imports public EXPECTREVERTTEST-BIN-RUNTIME
     imports public REVERTER-BIN-RUNTIME
@@ -6740,7 +6540,6 @@ module FOUNDRY-MAIN
     imports public MOCKCALLTEST-BIN-RUNTIME
     imports public MYIERC20-BIN-RUNTIME
     imports public MYTOKEN-BIN-RUNTIME
-    imports public NONCETEST-BIN-RUNTIME
     imports public OWNERUPONLY-BIN-RUNTIME
     imports public OWNERUPONLYTEST-BIN-RUNTIME
     imports public ADDITIONALTOKEN-BIN-RUNTIME
@@ -6765,7 +6564,6 @@ module FOUNDRY-MAIN
     imports public TESTNUMBER-BIN-RUNTIME
     imports public TOSTRINGTEST-BIN-RUNTIME
     imports public TOKEN-BIN-RUNTIME
-    imports public TOKENTEST-BIN-RUNTIME
     imports public UINTTYPETEST-BIN-RUNTIME
     imports public VM-BIN-RUNTIME
     imports public VM2-BIN-RUNTIME
