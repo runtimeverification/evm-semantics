@@ -7,16 +7,18 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.kast import KApply, KAtt, KClaim, KDefinition, KFlatModule, KImport, KInner, KRequire, KRule, KToken
-from pyk.kastManip import minimize_term
+from pyk.cterm import CTerm
+from pyk.kast import KApply, KAtt, KDefinition, KFlatModule, KImport, KInner, KRequire, KRewrite, KRule, KToken
+from pyk.kastManip import flatten_label, minimize_term, push_down_rewrites
 from pyk.kcfg import KCFG
+from pyk.ktool.kit import KIT
 from pyk.ktool.krun import _krun
-from pyk.prelude.ml import mlTop
+from pyk.prelude.ml import is_top, mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KPrint_make_unparsing, KProve_prove_claim, add_include_arg
+from .utils import KCFG__replace_node, KPrint_make_unparsing, KProve_prove_claim, add_include_arg, sanitize_config
 
 T = TypeVar('T')
 
@@ -267,6 +269,7 @@ def exec_foundry_prove(
     workers: int = 1,
     minimize: bool = True,
     lemmas: Iterable[str] = (),
+    simplify_init: bool = True,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -274,12 +277,11 @@ def exec_foundry_prove(
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
     if workers <= 0:
-        _LOGGER.error(f'Must have at least one worker, found: --workers {workers}')
-        sys.exit(1)
+        raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
-    kcfgs_dir = definition_dir / 'kcfgs'
+    kcfgs_dir = foundry_out / 'kcfgs'
     if not kcfgs_dir.exists():
         kcfgs_dir.mkdir()
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
@@ -315,7 +317,7 @@ def exec_foundry_prove(
     if unfound_tests:
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
-    kcfgs: Dict[str, KCFG] = {}
+    kcfgs: Dict[str, Tuple[KCFG, Path]] = {}
     for test in tests:
         kcfg_file = kcfgs_dir / f'{test}.json'
         if reinit or not kcfg_file.exists():
@@ -325,38 +327,138 @@ def exec_foundry_prove(
             method = [m for m in contract.methods if m.name == method_name][0]
             empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
             cfg = method_to_cfg(empty_config, contract, method)
-            kcfgs[test] = cfg
+            if simplify_init:
+                _LOGGER.info(f'Simplifying initial state for test: {test}')
+                edge = KCFG.Edge(cfg.get_unique_init(), cfg.get_unique_target(), mlTop(), -1)
+                claim = edge.to_claim()
+                init_simplified = foundry.prove_claim(
+                    claim, f'simplify-init-{cfg.get_unique_init().id}', args=['--depth', '0']
+                )
+                init_simplified = sanitize_config(foundry.definition, init_simplified)
+                cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_simplified))
+                _LOGGER.info(f'Simplifying target state for test: {test}')
+                edge = KCFG.Edge(cfg.get_unique_target(), cfg.get_unique_init(), mlTop(), -1)
+                claim = edge.to_claim()
+                target_simplified = foundry.prove_claim(
+                    claim, f'simplify-target-{cfg.get_unique_target().id}', args=['--depth', '0']
+                )
+                target_simplified = sanitize_config(foundry.definition, target_simplified)
+                cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_simplified))
+            kcfgs[test] = (cfg, kcfg_file)
             with open(kcfg_file, 'w') as kf:
                 kf.write(json.dumps(cfg.to_dict()))
                 kf.close()
             _LOGGER.info(f'Wrote file: {kcfg_file}')
         else:
             with open(kcfg_file, 'r') as kf:
-                kcfgs[test] = KCFG.from_dict(json.loads(kf.read()))
-
-    def _kcfg_unproven_to_claim(_kcfg: KCFG) -> KClaim:
-        return _kcfg.create_edge(_kcfg.get_unique_init().id, _kcfg.get_unique_target().id, mlTop(), depth=-1).to_claim()
+                kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
 
     lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
 
-    def prove_it(_id_and_cfg: Tuple[str, KCFG]) -> bool:
-        _cfg_id, _cfg = _id_and_cfg
-        _claim = _kcfg_unproven_to_claim(_cfg)
+    def _write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
+        with open(_cfgpath, 'w') as cfgfile:
+            cfgfile.write(json.dumps(_cfg.to_dict()))
+            _LOGGER.info(f'Updated CFG file: {_cfgpath}')
+
+    def prove_it(_id_and_cfg: Tuple[str, Tuple[KCFG, Path]]) -> bool:
+        _cfg_id, (_cfg, _cfg_path) = _id_and_cfg
+        if len(_cfg.frontier) == 0:
+            return True
+        _init_node = _cfg.frontier[0]
+        _target_node = _cfg.get_unique_target()
+        _claim = KCFG.Edge(_init_node, _target_node, mlTop(), -1).to_claim()
         _claim_id = _cfg_id.replace('.', '-').replace('_', '-')
         ret, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
-        if minimize:
-            result = minimize_term(result)
-        print(f'Result for {_cfg_id}:\n{foundry.pretty_print(result)}\n')
-        return ret
+        _cfg.add_expanded(_init_node.id)
+        if is_top(result):
+            _cfg.create_edge(_cfg.get_unique_init().id, _cfg.get_unique_target().id, mlTop(), -1)
+            _LOGGER.info(f'Proof passed: {_cfg_id}')
+        else:
+            _cfg.add_expanded(_init_node.id)
+            for result_state in flatten_label('#Or', result):
+                result_state = sanitize_config(foundry.definition, result_state)
+                new_node = _cfg.get_or_create_node(CTerm(result_state))
+                _cfg.create_edge(_cfg.get_unique_init().id, new_node.id, mlTop(), -1)
+                if minimize:
+                    result_state = minimize_term(result_state)
+                _LOGGER.error(f'Proof failed: {_cfg_id}\n{foundry.pretty_print(result_state)}')
+        _write_cfg(_cfg, _cfg_path)
+        failure_nodes = _cfg.frontier + _cfg.stuck
+        return len(failure_nodes) == 0
 
     with ProcessPool(ncpus=workers) as process_pool:
         results = process_pool.map(prove_it, kcfgs.items())
         process_pool.close()
 
-    failed_cfgs = [cid for ((cid, _), failed) in zip(kcfgs.items(), results) if failed]
-    if failed_cfgs:
-        print(f'Failed to prove KCFGs: {failed_cfgs}\n')
-    sys.exit(len(failed_cfgs))
+    failed = 0
+    for (cid, _), succeeded in zip(kcfgs.items(), results):
+        if succeeded:
+            print(f'PASSED: {cid}')
+        else:
+            print(f'FAILED: {cid}')
+            failed += 1
+    sys.exit(failed)
+
+
+def exec_foundry_show(
+    profile: bool,
+    foundry_out: Path,
+    test: str,
+    nodes: Iterable[str] = (),
+    node_deltas: Iterable[Tuple[str, str]] = (),
+    minimize: bool = True,
+    **kwargs: Any,
+) -> None:
+    definition_dir = foundry_out / 'kompiled'
+    use_directory = foundry_out / 'specs'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    kcfgs_dir = foundry_out / 'kcfgs'
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
+    kcfg_file = kcfgs_dir / f'{test}.json'
+    with open(kcfg_file, 'r') as kf:
+        kcfg = KCFG.from_dict(json.loads(kf.read()))
+        list(map(print, kcfg.pretty(foundry)))
+    for node_id in nodes:
+        kast = kcfg.node(node_id).cterm.kast
+        if minimize:
+            kast = minimize_term(kast)
+        print(f'\n\nNode {node_id}:\n\n{foundry.pretty_print(kast)}\n')
+    for node_id_1, node_id_2 in node_deltas:
+        config_1 = kcfg.node(node_id_1).cterm.config
+        config_2 = kcfg.node(node_id_2).cterm.config
+        config_delta = push_down_rewrites(KRewrite(config_1, config_2))
+        if minimize:
+            config_delta = minimize_term(config_delta)
+        print(f'\n\nState Delta {node_id_1} => {node_id_2}:\n\n{foundry.pretty_print(config_delta)}\n')
+
+
+def exec_foundry_list(
+    profile: bool,
+    foundry_out: Path,
+    details: bool = True,
+    **kwargs: Any,
+) -> None:
+    kcfgs_dir = foundry_out / 'kcfgs'
+    pattern = '*.json'
+    paths = kcfgs_dir.glob(pattern)
+    for kcfg_file in paths:
+        with open(kcfg_file, 'r') as kf:
+            kcfg = KCFG.from_dict(json.loads(kf.read()))
+        kcfg_name = kcfg_file.name[0:-5]
+        total_nodes = len(kcfg.nodes)
+        frontier_nodes = len(kcfg.frontier)
+        stuck_nodes = len(kcfg.stuck)
+        proven = 'failed'
+        if stuck_nodes == 0:
+            proven = 'pending'
+            if frontier_nodes == 0:
+                proven = 'passed'
+        print(f'{kcfg_name}: {proven}')
+        if details:
+            print(f'    nodes: {total_nodes}')
+            print(f'    frontier: {frontier_nodes}')
+            print(f'    stuck: {stuck_nodes}')
+            print()
 
 
 def exec_run(
@@ -599,6 +701,60 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Reinitialize KCFGs even if they already exist.',
     )
+    foundry_prove_args.add_argument(
+        '--simplify-init',
+        dest='simplify_init',
+        default=True,
+        action='store_true',
+        help='Simplify the initial and target states at startup.',
+    )
+    foundry_prove_args.add_argument(
+        '--no-simplify-init',
+        dest='simplify_init',
+        action='store_false',
+        help='Do not simplify the initial and target states at startup.',
+    )
+
+    foundry_show_args = command_parser.add_parser(
+        'foundry-show',
+        help='Display a given Foundry CFG.',
+        parents=[shared_args, k_args],
+    )
+    foundry_show_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
+    foundry_show_args.add_argument(
+        '--node',
+        type=str,
+        dest='nodes',
+        default=[],
+        action='append',
+        help='List of nodes to display as well.',
+    )
+    foundry_show_args.add_argument(
+        '--node-delta',
+        type=KIT.arg_pair_of(str, str),
+        dest='node_deltas',
+        default=[],
+        action='append',
+        help='List of nodes to display delta for.',
+    )
+    foundry_show_args.add_argument(
+        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.'
+    )
+    foundry_show_args.add_argument(
+        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
+    )
+
+    foundry_list_args = command_parser.add_parser(
+        'foundry-list',
+        help='List information about KCFGs on disk',
+        parents=[shared_args, k_args],
+    )
+    foundry_list_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_list_args.add_argument(
+        '--details', dest='details', default=True, action='store_true', help='Information about progress on each KCFG.'
+    )
+    foundry_list_args.add_argument('--no-details', dest='details', action='store_false', help='Just list the KCFGs.')
 
     return parser
 
