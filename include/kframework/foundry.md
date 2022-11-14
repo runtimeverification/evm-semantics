@@ -657,6 +657,22 @@ Otherwise, throw an error for any other call to the Foundry contract.
       [owise]
 ```
 
+#### `sign` - Signs a digest with private key
+
+```
+function sign(uint256 privateKey, bytes32 digest) external returns (uint8 v, bytes32 r, bytes32 s);
+```
+
+`foundry.call.sign` will match when the `sign` cheat code function is called.
+This rule then takes from the function call data the `privateKey` using ... and the `digest` using ... and returns the signed data in [r,s,v] form.
+
+```{.k .bytes}
+    rule [foundry.call.sign]:
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
+         <output> _ => #parseByteStack(ECDSASign(#unparseByteStack(#range(ARGS, 32, 32)),#unparseByteStack(#range(ARGS,0,32)))) </output>
+      requires SELECTOR ==Int selector ( "sign(uint256,bytes32)" )
+```
+
 Utils
 -----
 
@@ -851,6 +867,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "startPrank(address)" )            => 105151830  )
     rule ( selector ( "startPrank(address,address)" )    => 1169514616 )
     rule ( selector ( "stopPrank()" )                    => 2428830011 )
+    rule ( selector ( "sign(uint256,bytes32)" )          => 3812747940 )
 ```
 
 - selectors for unimplemented cheat code functions.
