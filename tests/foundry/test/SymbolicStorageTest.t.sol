@@ -4,7 +4,7 @@ pragma solidity =0.8.13;
 import "forge-std/Test.sol";
 import "../src/Vm2.sol";
 
-contract SymbolicStorage is Test { 
+contract SymbolicStorageTest is Test { 
     address constant private VM_ADDRESS =
         address(bytes20(uint160(uint256(keccak256('hevm cheat code')))));
     Vm2 public constant vm2 = Vm2(VM_ADDRESS);
