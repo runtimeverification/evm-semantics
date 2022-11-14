@@ -664,7 +664,7 @@ function sign(uint256 privateKey, bytes32 digest) external returns (uint8 v, byt
 ```
 
 `foundry.call.sign` will match when the `sign` cheat code function is called.
-This rule then takes from the function call data the `privateKey` using ... and the `digest` using ... and returns the signed data in [r,s,v] form.
+This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`. To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM). This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings. The `ECDSASign` function returns the signed data in [r,s,v] form, which we convert to a bytearray using `#parseByteStack`.
 
 ```{.k .bytes}
     rule [foundry.call.sign]:
@@ -873,7 +873,6 @@ If the production is matched when no prank is active, it will be ignored.
 - selectors for unimplemented cheat code functions.
 
 ```k
-    rule selector ( "sign(uint256,bytes32)" )                   => 3812747940
     rule selector ( "ffi(string[])" )                           => 2299921511
     rule selector ( "setEnv(string,string)" )                   => 1029252078
     rule selector ( "envBool(string)" )                         => 2127686781
