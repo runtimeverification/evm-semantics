@@ -546,8 +546,8 @@ If the `expectRevert()` selector is matched, call the `#setExpectRevert` product
         orBool SELECTOR ==Int selector ( "expectRevert(bytes)" )
 ```
 
-Expecting a specific opcode
----------------------------
+Expecting a specific CALL/CREATE opcode
+---------------------------------------
 
 First we define a sort to identify expected opcodes.
 
@@ -555,39 +555,32 @@ First we define a sort to identify expected opcodes.
     syntax OpcodeType ::= ".OpcodeType" | "Call" | "Static" | "Delegate" | "Create" | "Create2"
 ```
 
-If the `expectStaticCall(address,bytes)` selector is matched, the rule will load the account into the state and add the `#setExpectOpcode` to the K cell to initialize the `<expectedOpcode/>` subconfiguration with the given parameters.
+If the `expec*OPCODE*` selector is matched, the rule will load the account into the state and add the `#setExpectOpcode` production to the K cell to initialize the `<expectedOpcode/>` subconfiguration with the given parameters.
 
 ```{.k .bytes}
     rule [foundry.call.expectStaticCall]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) 0 Static ... </k>
       requires SELECTOR ==Int selector ( "expectStaticCall(address,bytes)" )
-```
 
-```{.k .bytes}
     rule [foundry.call.expectDelegateCall]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) 0 Delegate ... </k>
       requires SELECTOR ==Int selector ( "expectDelegateCall(address,bytes)" )
-```
 
-```{.k .bytes}
     rule [foundry.call.expectRegularCall]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) #asWord(#range(ARGS, 64, 32)) Call ... </k>
       requires SELECTOR ==Int selector ( "expectRegularCall(address,uint256,bytes)" )
-```
 
-```{.k .bytes}
     rule [foundry.call.expectCreate]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) #asWord(#range(ARGS, 64, 32)) Create ... </k>
       requires SELECTOR ==Int selector ( "expectCreate(address,uint256,bytes)" )
-```
 
-```{.k .bytes}
     rule [foundry.call.expectCreate2]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) #asWord(#range(ARGS, 64, 32)) Create2 ... </k>
       requires SELECTOR ==Int selector ( "expectCreate2(address,uint256,bytes)" )
 ```
 
-When the `STATICCALL` opcode is executed, we check the address which is being called and the calldata value.
+Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CREATE2` opcodes is executed, we check if the `sender` address, `msg.value` and `calldata` match the expected values.
+`calldata` needs to match only the first byte.
 
 ```{.k .bytes}
     rule <k> (. => #clearExpectOpcode) ~> STATICCALL _GCAP ACCTTO ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
@@ -601,11 +594,7 @@ When the `STATICCALL` opcode is executed, we check the address which is being ca
          </expectedOpcode>
       requires #range(LM, ARGSTART, 1) ==K #range(DATA, 0, 1)
       [priority(40)]
-```
 
-When the `DELEGATECALL` opcode is executed, we check the address which is being called and the calldata value.
-
-```{.k .bytes}
     rule <k> (. => #clearExpectOpcode) ~> DELEGATECALL _GCAP ACCTTO ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
          <localMem> LM </localMem>
          <expectedOpcode>
@@ -618,11 +607,6 @@ When the `DELEGATECALL` opcode is executed, we check the address which is being 
       requires #range(LM, ARGSTART, 1) ==K #range(DATA, 0, 1)
       [priority(40)]
 
-```
-
-When the `CALL` opcode is executed, we check the address which is being called and the calldata value.
-
-```{.k .bytes}
     rule <k> (. => #clearExpectOpcode) ~> CALL _GCAP ACCTTO VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
          <localMem> LM </localMem>
          <expectedOpcode>
@@ -636,11 +620,6 @@ When the `CALL` opcode is executed, we check the address which is being called a
       requires #range(LM, ARGSTART, 1) ==K #range(DATA, 0, 1)
       [priority(40)]
 
-```
-
-When the `CREATE` opcode is executed, we check the address which is being called and the calldata value.
-
-```{.k .bytes}
     rule <k> (. => #clearExpectOpcode) ~> CREATE VALUE MEMSTART _MEMWIDTH </k>
          <localMem> LM </localMem>
          <id> ACCT </id>
@@ -654,11 +633,7 @@ When the `CREATE` opcode is executed, we check the address which is being called
          </expectedOpcode>
       requires #range(LM, MEMSTART, 1) ==K #range(DATA, 0, 1)
       [priority(40)]
-```
 
-When the `CREATE2` opcode is executed, we check the address which is being called and the calldata value.
-
-```{.k .bytes}
     rule <k> (. => #clearExpectOpcode) ~> CREATE2 VALUE MEMSTART _MEMWIDTH _SALT </k>
          <localMem> LM </localMem>
          <id> ACCT </id>
