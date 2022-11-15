@@ -420,6 +420,10 @@ def _init_term(
         'SINGLECALL_CELL': FALSE,
         'EXPECTEDREVERT_CELL': FALSE,
         'ISOPCODEEXPECTED_CELL': FALSE,
+        'EXPECTEDADDRESS_CELL': KToken('.Account', 'K'),
+        'EXPECTEDVALUE_CELL': intToken(0),
+        'EXPECTEDDATA_CELL': KToken ('.ByteArray', 'K'),
+        'OPCODETYPE_CELL': KToken('.OpcodeType', 'K'),
     }
 
     if calldata is not None:

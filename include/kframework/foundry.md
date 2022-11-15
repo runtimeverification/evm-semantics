@@ -559,23 +559,53 @@ If the `expec*OPCODE*` selector is matched, the rule will load the account into 
 
 ```{.k .bytes}
     rule [foundry.call.expectStaticCall]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) 0 Static ... </k>
+         <k> #call_foundry SELECTOR ARGS
+          => #loadAccount #asWord(#range(ARGS, 0, 32))
+          ~> #let CODE_START = 96 #in
+          #let DATA_LENGTH = #asWord(#range(ARGS, 64, 32)) #in
+          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, CODE_START, DATA_LENGTH) 0 Static
+          ...
+         </k>
       requires SELECTOR ==Int selector ( "expectStaticCall(address,bytes)" )
 
     rule [foundry.call.expectDelegateCall]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) 0 Delegate ... </k>
+         <k> #call_foundry SELECTOR ARGS
+          => #loadAccount #asWord(#range(ARGS, 0, 32))
+          ~> #let DATA_START = 96 #in
+          #let DATA_LENGTH = #asWord(#range(ARGS, 64, 32)) #in
+          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) 0 Delegate
+          ...
+         </k>
       requires SELECTOR ==Int selector ( "expectDelegateCall(address,bytes)" )
 
     rule [foundry.call.expectRegularCall]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) #asWord(#range(ARGS, 64, 32)) Call ... </k>
+         <k> #call_foundry SELECTOR ARGS
+          => #loadAccount #asWord(#range(ARGS, 0, 32))
+          ~> #let DATA_START = 128 #in
+          #let DATA_LENGTH = #asWord(#range(ARGS, 96, 32)) #in
+          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Call
+          ...
+         </k>
       requires SELECTOR ==Int selector ( "expectRegularCall(address,uint256,bytes)" )
 
     rule [foundry.call.expectCreate]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) #asWord(#range(ARGS, 64, 32)) Create ... </k>
+         <k> #call_foundry SELECTOR ARGS
+          => #loadAccount #asWord(#range(ARGS, 0, 32))
+          ~> #let DATA_START = 128 #in
+          #let DATA_LENGTH = #asWord(#range(ARGS, 96, 32)) #in
+          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Create
+          ...
+         </k>
       requires SELECTOR ==Int selector ( "expectCreate(address,uint256,bytes)" )
 
     rule [foundry.call.expectCreate2]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 32, 32) #asWord(#range(ARGS, 64, 32)) Create2 ... </k>
+         <k> #call_foundry SELECTOR ARGS
+          => #loadAccount #asWord(#range(ARGS, 0, 32))
+          ~> #let DATA_START = 128 #in
+          #let DATA_LENGTH = #asWord(#range(ARGS, 96, 32)) #in
+          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Create2
+          ...
+         </k>
       requires SELECTOR ==Int selector ( "expectCreate2(address,uint256,bytes)" )
 ```
 
@@ -583,7 +613,7 @@ Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CR
 `calldata` needs to match only the first byte.
 
 ```{.k .bytes}
-    rule <k> (. => #clearExpectOpcode) ~> STATICCALL _GCAP ACCTTO ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
+    rule <k> (. => #clearExpectOpcode) ~> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
          <localMem> LM </localMem>
          <expectedOpcode>
            <isOpcodeExpected> true </isOpcodeExpected>
@@ -592,10 +622,10 @@ Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CR
            <opcodeType> Static </opcodeType>
            ...
          </expectedOpcode>
-      requires #range(LM, ARGSTART, 1) ==K #range(DATA, 0, 1)
+      requires #range(LM, ARGSTART, ARGWIDTH) ==K #range(DATA, 0, ARGWIDTH)
       [priority(40)]
 
-    rule <k> (. => #clearExpectOpcode) ~> DELEGATECALL _GCAP ACCTTO ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
+    rule <k> (. => #clearExpectOpcode) ~> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
          <localMem> LM </localMem>
          <expectedOpcode>
            <isOpcodeExpected> true </isOpcodeExpected>
@@ -604,10 +634,10 @@ Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CR
            <opcodeType> Delegate </opcodeType>
            ...
          </expectedOpcode>
-      requires #range(LM, ARGSTART, 1) ==K #range(DATA, 0, 1)
+      requires #range(LM, ARGSTART, ARGWIDTH) ==K #range(DATA, 0, ARGWIDTH)
       [priority(40)]
 
-    rule <k> (. => #clearExpectOpcode) ~> CALL _GCAP ACCTTO VALUE ARGSTART _ARGWIDTH _RETSTART _RETWIDTH </k>
+    rule <k> (. => #clearExpectOpcode) ~> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
          <localMem> LM </localMem>
          <expectedOpcode>
            <isOpcodeExpected> true </isOpcodeExpected>
@@ -615,12 +645,11 @@ Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CR
            <expectedData> DATA </expectedData>
            <opcodeType> Call </opcodeType>
            <expectedValue> VALUE </expectedValue>
-           ...
          </expectedOpcode>
-      requires #range(LM, ARGSTART, 1) ==K #range(DATA, 0, 1)
+      requires #range(LM, ARGSTART, ARGWIDTH) ==K #range(DATA, 0, ARGWIDTH)
       [priority(40)]
 
-    rule <k> (. => #clearExpectOpcode) ~> CREATE VALUE MEMSTART _MEMWIDTH </k>
+    rule <k> (. => #clearExpectOpcode) ~> CREATE VALUE MEMSTART MEMWIDTH ... </k>
          <localMem> LM </localMem>
          <id> ACCT </id>
          <expectedOpcode>
@@ -629,12 +658,11 @@ Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CR
            <expectedData> DATA </expectedData>
            <opcodeType> Create </opcodeType>
            <expectedValue> VALUE </expectedValue>
-           ...
          </expectedOpcode>
-      requires #range(LM, MEMSTART, 1) ==K #range(DATA, 0, 1)
+      requires #range(LM, MEMSTART, MEMWIDTH) ==K #range(DATA, 0, MEMWIDTH)
       [priority(40)]
 
-    rule <k> (. => #clearExpectOpcode) ~> CREATE2 VALUE MEMSTART _MEMWIDTH _SALT </k>
+    rule <k> (. => #clearExpectOpcode) ~> CREATE2 VALUE MEMSTART MEMWIDTH _SALT ... </k>
          <localMem> LM </localMem>
          <id> ACCT </id>
          <expectedOpcode>
@@ -643,9 +671,8 @@ Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CR
            <expectedData> DATA </expectedData>
            <opcodeType> Create2 </opcodeType>
            <expectedValue> VALUE </expectedValue>
-           ...
          </expectedOpcode>
-      requires #range(LM, MEMSTART, 1) ==K #range(DATA, 0, 1)
+      requires #range(LM, MEMSTART, MEMWIDTH) ==K #range(DATA, 0, MEMWIDTH)
       [priority(40)]
 ```
 
@@ -891,7 +918,6 @@ Utils
            <expectedData> _ => DATA </expectedData>
            <expectedValue> _ => VALUE </expectedValue>
            <opcodeType> _ => OPTYPE </opcodeType>
-           ...
          </expectedOpcode>
 ```
 
@@ -906,7 +932,7 @@ Utils
            <expectedAddress> _ => .Account </expectedAddress>
            <expectedData> _ => .ByteArray </expectedData>
            <opcodeType> _ => .OpcodeType </opcodeType>
-           ...
+           <expectedValue> _ => 0 </expectedValue>
          </expectedOpcode>
 ```
 
