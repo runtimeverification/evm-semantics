@@ -422,7 +422,7 @@ def _init_term(
         'ISOPCODEEXPECTED_CELL': FALSE,
         'EXPECTEDADDRESS_CELL': KToken('.Account', 'K'),
         'EXPECTEDVALUE_CELL': intToken(0),
-        'EXPECTEDDATA_CELL': KToken ('.ByteArray', 'K'),
+        'EXPECTEDDATA_CELL': KToken('.ByteArray', 'K'),
         'OPCODETYPE_CELL': KToken('.OpcodeType', 'K'),
     }
 
