@@ -158,6 +158,12 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<expectedRevert>` flags if the next call is expected to revert or not.
     - `<expectedDepth>` records the depth at which the call is expected to revert.
     - `<expectedBytes>` keeps the expected revert message as a ByteArray.
+3. The `<expectOpcode>` subconfiguration stores values used for `expect*OPCODE*` cheat codes.
+    - `<isOpcodeExpected>` flags if a call opcode is expected.
+    - `<expectedAddress>` keeps the expected caller.
+    - `<expectedValue>` keeps expected `msg.value`.
+    - `<expectedData>` keeps expected `calldata`.
+    - `<opcodeType>` keeps track of what `CALL*` Opcode is expected.
 
 ```k
 module FOUNDRY-CHEAT-CODES
@@ -555,7 +561,7 @@ First we define a sort to identify expected opcodes.
     syntax OpcodeType ::= ".OpcodeType" | "Call" | "Static" | "Delegate" | "Create" | "Create2"
 ```
 
-If the `expec*OPCODE*` selector is matched, the rule will load the account into the state and add the `#setExpectOpcode` production to the K cell to initialize the `<expectedOpcode/>` subconfiguration with the given parameters.
+If the `expect*OPCODE*` selector is matched, the rule will load the account into the state and add the `#setExpectOpcode` production to the K cell to initialize the `<expectedOpcode/>` subconfiguration with the given parameters.
 
 ```{.k .bytes}
     rule [foundry.call.expectStaticCall]:
