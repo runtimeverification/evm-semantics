@@ -181,6 +181,11 @@ module FOUNDRY-CHEAT-CODES
           <expectedBytes> .ByteArray </expectedBytes>
           <expectedDepth> 0 </expectedDepth>
         </expected>
+        <expectEmit>
+          <recordEvent> true </recordEvent>
+          <isEventExpected> false </isEventExpected>
+          
+        </expectEmit>
       </cheatcodes>
 ```
 
@@ -646,6 +651,32 @@ function stopPrank() external;
     rule [foundry.call.stopPrank]:
          <k> #call_foundry SELECTOR _ => #endPrank ... </k>
       requires SELECTOR ==Int selector ( "stopPrank()" )
+```
+
+Expecting Events
+----------------
+```
+function expectEmit(bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData) external;
+function expectEmit(bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData, address emitter) external;
+```
+
+Assert a specific log is emitted before the end of the current function.
+
+Call the cheat code, specifying whether we should check the first, second or third topic, and the log data.
+Topic 0 is always checked.
+Emit the event we are supposed to see before the end of the current function.
+Perform the call.
+If the event is not available in the current scope (e.g. if we are using an interface, or an external smart contract), we can define the event ourselves with an identical event signature.
+
+There are 2 signatures:
+
+Without checking the emitter address: Asserts the topics match without checking the emitting address.
+With address: Asserts the topics match and that the emitting address matches.
+
+```{.k .bytes}
+    rule [foundry.call.expectEmit]:
+         <k> #call_foundry SELECTOR ARGS => #setExpectEmit ... </k>
+      requires SELECTOR ==Int selector ( "expectEmit(bool,bool,bool,bool)" )
 ```
 
 Otherwise, throw an error for any other call to the Foundry contract.
