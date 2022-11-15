@@ -85,7 +85,6 @@ SafeTest.testWithdrawFuzz
 SetUpTest.testSetUpCalled
 SetUpTest.testSetUpCalledSymbolic
 SignTest.testSign
-SymbolicStorageTest.testSymbolicStorage
 SnapshotTest.testSnapshot
 StoreTest.testAccesses
 StoreTest.testGasLoadWarmVM
