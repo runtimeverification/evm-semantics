@@ -664,12 +664,15 @@ function sign(uint256 privateKey, bytes32 digest) external returns (uint8 v, byt
 ```
 
 `foundry.call.sign` will match when the `sign` cheat code function is called.
-This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`. To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM). This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings. The `ECDSASign` function returns the signed data in [r,s,v] form, which we convert to a bytearray using `#parseByteStack`.
+This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`. 
+To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM). 
+This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings. 
+The `ECDSASign` function returns the signed data in [r,s,v] form, which we convert to a bytearray using `#parseByteStack`.
 
 ```{.k .bytes}
     rule [foundry.call.sign]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
-         <output> _ => #parseByteStack(ECDSASign(#unparseByteStack(#range(ARGS, 32, 32)),#unparseByteStack(#range(ARGS,0,32)))) </output>
+         <output> _ => #sign(#range(ARGS, 32, 32),#range(ARGS,0,32)) </output>
       requires SELECTOR ==Int selector ( "sign(uint256,bytes32)" )
 ```
 
@@ -843,6 +846,11 @@ If the production is matched when no prank is active, it will be ignored.
           <depth> _ => 0 </depth>
           <singleCall> _ => false </singleCall>
         </prank>
+```
+```k
+    syntax ByteArray ::= #sign ( ByteArray , ByteArray ) [function,klabel(foundry_setCode)]
+ // -----------------------------------------------------------
+    rule #sign(BA1, BA2) => #parseByteStack(ECDSASign(#unparseByteStack(BA1), #unparseByteStack(BA2))) [concrete]
 ```
 
 - selectors for cheat code functions.
