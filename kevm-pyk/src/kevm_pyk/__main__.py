@@ -8,8 +8,8 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm, build_rule
-from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
-from pyk.kast.manip import flatten_label, get_cell, minimize_term, push_down_rewrites
+from pyk.kast.inner import KApply, KInner, KRewrite, KToken
+from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG
 from pyk.kcfg_viewer.app import KCFGViewer
@@ -377,8 +377,6 @@ def exec_foundry_prove(
             with open(kcfg_file, 'r') as kf:
                 kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
 
-    lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
-
     def prove_it(id_and_cfg: Tuple[str, Tuple[KCFG, Path]]) -> bool:
         cfgid, (cfg, cfgpath) = id_and_cfg
         target_node = cfg.get_unique_target()
@@ -391,21 +389,16 @@ def exec_foundry_prove(
             curr_node = cfg.frontier[0]
             cfg.add_expanded(curr_node.id)
             _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
-            edge = KCFG.Edge(curr_node, target_node, mlTop(), -1)
-            claim = edge.to_claim()
-            claim_id = f'gen-block-{curr_node.id}-to-{target_node.id}'
-            depth, branching, result = foundry.get_claim_basic_block(
-                claim_id, claim, lemmas=lemma_rules, max_depth=max_depth
-            )
+            depth, cterm, next_cterms = foundry.execute(curr_node.cterm, depth=max_depth)
 
-            if result == mlTop():
+            if cterm == mlTop():
                 cfg.create_edge(curr_node.id, target_node.id, mlTop(), depth)
                 _LOGGER.info(
                     f'Target state reached at depth {depth} for {cfgid}: {shorten_hashes((curr_node.id, target_node.id))}.'
                 )
 
             else:
-                next_state = CTerm(sanitize_config(foundry.definition, result))
+                next_state = CTerm(sanitize_config(foundry.definition, cterm.kast))
                 next_node = cfg.get_or_create_node(next_state)
                 if next_node != curr_node:
                     _LOGGER.info(
@@ -417,7 +410,7 @@ def exec_foundry_prove(
                     cfg.add_expanded(next_node.id)
                     _LOGGER.info(f'Terminal node {cfgid}: {shorten_hashes((curr_node.id))}.')
 
-                elif branching:
+                elif len(next_cterms) > 1:
                     cfg.add_expanded(next_node.id)
                     branches = KEVM.extract_branches(next_state)
                     if len(list(branches)) > 0:
@@ -433,24 +426,16 @@ def exec_foundry_prove(
                             # cfg.create_cover(branch_node.id, next_node.id)
                             # _LOGGER.info(f'Made cover: {shorten_hashes((branch_node.id, next_node.id))}')
                     else:
-                        _LOGGER.warning(
-                            f'Falling back to running backend for branch extraction {cfgid}:\n{foundry.pretty_print(minimize_term(result))}'
-                        )
-                        edge = KCFG.Edge(next_node, target_node, mlTop(), -1)
-                        claim = edge.to_claim()
-                        claim_id = f'gen-branch-{curr_node.id}-to-{target_node.id}'
-                        result = foundry.prove_claim(claim, claim_id, lemmas=lemma_rules, args=['--depth', '1'])
-                        branch_cterms = [CTerm(r) for r in flatten_label('#Or', result)]
-                        old_constraints = next_state.constraints
-                        new_constraints = [
-                            [c for c in s.constraints if c not in old_constraints] for s in branch_cterms
+                        _LOGGER.warning(f'Falling back to extracted next states for {cfgid}:\n{next_node.id}')
+                        branch_constraints = [
+                            [c for c in s.constraints if c not in next_state.constraints] for s in next_cterms
                         ]
                         _LOGGER.info(
-                            f'Found {len(list(branch_cterms))} branches manually ad depth 1 for {cfgid}: {[foundry.pretty_print(mlAnd(nc)) for nc in new_constraints]}'
+                            f'Found {len(list(next_cterms))} branches manually at depth 1 for {cfgid}: {[foundry.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
                         )
-                        for ns, nc in zip(branch_cterms, new_constraints, strict=True):
-                            branch_node = cfg.get_or_create_node(ns)
-                            cfg.create_edge(next_node.id, branch_node.id, mlAnd(nc), 1)
+                        for bs, bc in zip(next_cterms, branch_constraints, strict=True):
+                            branch_node = cfg.get_or_create_node(bs)
+                            cfg.create_edge(next_node.id, branch_node.id, mlAnd(bc), 1)
 
             write_cfg(cfg, cfgpath)
 
