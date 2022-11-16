@@ -19,7 +19,7 @@ These may be useful for learning KEVM and K (newest to oldest):
 -   [Jello Paper], a nice presentation of this repository.
 -   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQNov) at [2017 Devcon3].
 -   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
--   [KEVM Paper at CSF'18/FLoC](http://fsl.cs.illinois.edu/index.php/KEVM:_A_Complete_Semantics_of_the_Ethereum_Virtual_Machine).
+-   [KEVM Paper at CSF'18/FLoC](https://fsl.cs.illinois.edu/publications/hildenbrandt-saxena-zhu-rodrigues-daian-guth-moore-zhang-park-rosu-2018-csf).
 
 To get support for KEVM, please join our [Discord Channel](https://discord.gg/EZtNj7gt).
 
@@ -28,24 +28,24 @@ Repository Structure
 
 The following files constitute the KEVM semantics:
 
--   [network.md](network.md) provides the status codes which are reported to an Ethereum client on execution exceptions.
--   [json-rpc.md](json-rpc.md) is an implementation of JSON RPC in K.
--   [evm-types.md](evm-types.md) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
--   [serialization.md](serialization.md) provides helpers for parsing and unparsing data (hex strings, recursive-length prefix, merkle trees, etc.).
--   [evm.md](evm.md) is the main KEVM semantics, containing the configuration and transition rules of EVM.
+-   [network.md](include/kframework/network.md) provides the status codes which are reported to an Ethereum client on execution exceptions.
+-   [json-rpc.md](include/kframework/json-rpc.md) is an implementation of JSON RPC in K.
+-   [evm-types.md](include/kframework/evm-types.md) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
+-   [serialization.md](include/kframework/serialization.md) provides helpers for parsing and unparsing data (hex strings, recursive-length prefix, merkle trees, etc.).
+-   [evm.md](include/kframework/evm.md) is the main KEVM semantics, containing the configuration and transition rules of EVM.
 
 These additional files extend the semantics to make the repository more useful:
 
--   [buf.md](buf.md) defines the `#buf` byte-buffer abstraction for use during symbolic execution.
--   [abi.md](abi.md) defines the [Contract ABI Specification](https://docs.soliditylang.org/en/v0.8.1/abi-spec.html) for use in proofs and easy contract/function specification.
--   [hashed-locations.md](hashed-locations.md) defines the `#hashedLocation` abstraction which makes it easier to specify Solidity-generate storage layouts.
--   [edsl.md](edsl.md) combines the previous three abstractions for ease-of-use.
--   [foundry.md](foundry.md) adds Foundry capabilities to KEVM.
+-   [buf.md](include/kframework/buf.md) defines the `#buf` byte-buffer abstraction for use during symbolic execution.
+-   [abi.md](include/kframework/abi.md) defines the [Contract ABI Specification](https://docs.soliditylang.org/en/v0.8.1/abi-spec.html) for use in proofs and easy contract/function specification.
+-   [hashed-locations.md](include/kframework/hashed-locations.md) defines the `#hashedLocation` abstraction which makes it easier to specify Solidity-generate storage layouts.
+-   [edsl.md](include/kframework/edsl.md) combines the previous three abstractions for ease-of-use.
+-   [foundry.md](include/kframework/foundry.md) adds Foundry capabilities to KEVM.
 
 These files are used for testing the semantics itself:
 
--   [state-utils.md](state-utils.md) provides functionality for EVM initialization, setup, and querying.
--   [driver.md](driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
+-   [state-utils.md](include/kframework/state-utils.md) provides functionality for EVM initialization, setup, and querying.
+-   [driver.md](include/kframework/driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
 
 Building from Source
 --------------------
@@ -122,7 +122,7 @@ After installing the Command Line Tools, [Homebrew](https://brew.sh/), and getti
 
 ```sh
 brew tap kframework/k
-brew install java automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python bash kframework/k/cryptopp@8.6.0 poetry solidity
+brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl protobuf python bash kframework/k/cryptopp@8.6.0 poetry solidity
 make libsecp256k1
 ```
 
@@ -398,9 +398,9 @@ Resources
 For more information about [The K Framework](https://kframework.org), refer to these sources:
 
 -   [The K Tutorial](https://kframework.org/k-distribution/pl-tutorial/)
--   [Semantics-Based Program Verifiers for All Languages](http://fsl.cs.illinois.edu/index.php/Semantics-Based_Program_Verifiers_for_All_Languages)
+-   [Semantics-Based Program Verifiers for All Languages](https://fsl.cs.illinois.edu/publications/stefanescu-park-yuwen-li-rosu-2016-oopsla)
 -   [Reachability Logic Resources](http://fsl.cs.illinois.edu/index.php/Reachability_Logic_in_K)
--   [Matching Logic Resources](http://fsl.cs.illinois.edu/index.php/Matching_Logic)
+-   [Matching Logic Resources](http://www.matching-logic.org/)
 -   [Logical Frameworks](https://dl.acm.org/doi/10.5555/208683.208700): Discussion of logical frameworks.
 
 [Jello Paper]: <https://jellopaper.org>
