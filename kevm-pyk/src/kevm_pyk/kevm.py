@@ -6,8 +6,8 @@ from typing import Any, Dict, Final, Iterable, List, Optional
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
-from pyk.kast import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
-from pyk.kastManip import flatten_label, get_cell
+from pyk.kast.inner import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
+from pyk.kast.manip import flatten_label, get_cell
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kprint import paren
 from pyk.prelude.kbool import notBool
@@ -190,7 +190,7 @@ class KEVM(KProve, KRun):
         return KApply('#halt_EVM_KItem')
 
     @staticmethod
-    def execute() -> KApply:
+    def sharp_execute() -> KApply:
         return KApply('#execute_EVM_KItem')
 
     @staticmethod

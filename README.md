@@ -119,7 +119,7 @@ After installing the Command Line Tools, [Homebrew](https://brew.sh/), and getti
 
 ```sh
 brew tap kframework/k
-brew install java automake libtool gmp mpfr pkg-config maven libffi openssl protobuf python bash kframework/k/cryptopp@8.6.0 poetry solidity
+brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl protobuf python bash kframework/k/cryptopp@8.6.0 poetry solidity
 make libsecp256k1
 ```
 
