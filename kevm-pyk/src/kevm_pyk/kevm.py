@@ -91,22 +91,6 @@ class KEVM(KProve, KRun):
     def _patch_symbol_table(symbol_table: Dict[str, Any]) -> None:
         # fmt: off
         symbol_table['#Bottom']                                       = lambda: '#Bottom'
-        symbol_table['_orBool_']                                      = paren(symbol_table['_orBool_'])
-        symbol_table['_andBool_']                                     = paren(symbol_table['_andBool_'])
-        symbol_table['_impliesBool_']                                 = paren(symbol_table['_impliesBool_'])
-        symbol_table['notBool_']                                      = paren(symbol_table['notBool_'])
-        symbol_table['_/Int_']                                        = paren(symbol_table['_/Int_'])
-        symbol_table['_*Int_']                                        = paren(symbol_table['_*Int_'])
-        symbol_table['_-Int_']                                        = paren(symbol_table['_-Int_'])
-        symbol_table['_+Int_']                                        = paren(symbol_table['_+Int_'])
-        symbol_table['_&Int_']                                        = paren(symbol_table['_&Int_'])
-        symbol_table['_|Int_']                                        = paren(symbol_table['_|Int_'])
-        symbol_table['_modInt_']                                      = paren(symbol_table['_modInt_'])
-        symbol_table['#Or']                                           = paren(symbol_table['#Or'])
-        symbol_table['#And']                                          = paren(symbol_table['#And'])
-        symbol_table['#Implies']                                      = paren(symbol_table['#Implies'])
-        symbol_table['_Set_']                                         = paren(symbol_table['_Set_'])
-        symbol_table['_|->_']                                         = paren(symbol_table['_|->_'])
         symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)
         symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)
         symbol_table['.AccountCellMap']                               = lambda: '.Bag'
@@ -119,14 +103,31 @@ class KEVM(KProve, KRun):
         symbol_table['_>=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')
         symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
         symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
-        symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int']              = paren(symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int'])
-        symbol_table['_++__EVM-TYPES_ByteArray_ByteArray_ByteArray']  = paren(symbol_table['_++__EVM-TYPES_ByteArray_ByteArray_ByteArray'])
-        symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = paren(symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'])
-        for symb in [
-            'typedArgs',
+        paren_symbols = [
+            '_|->_',
+            '#And',
+            '_andBool_',
+            '_++__EVM-TYPES_ByteArray_ByteArray_ByteArray',
+            '_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int',
+            '_[_]_EVM-TYPES_Int_WordStack_Int',
             '_:__EVM-TYPES_WordStack_Int_WordStack',
+            '#Implies',
+            '_impliesBool_',
+            '_&Int_',
+            '_*Int_',
+            '_+Int_',
+            '_-Int_',
+            '_/Int_',
+            '_|Int_',
+            '_modInt_',
+            'notBool_',
+            '#Or',
+            '_orBool_',
+            '_Set_',
+            'typedArgs',
             '_:_WS',
-        ]:
+        ]
+        for symb in paren_symbols:
             if symb in symbol_table:
                 symbol_table[symb] = paren(symbol_table[symb])
         # fmt: on
