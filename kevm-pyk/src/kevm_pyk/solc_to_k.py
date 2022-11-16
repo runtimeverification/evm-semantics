@@ -13,19 +13,13 @@ from pyk.kast.manip import abstract_term_safely, substitute
 from pyk.kast.outer import (
     KFlatModule,
     KImport,
-    KInner,
-    KLabel,
     KNonTerminal,
     KProduction,
     KProductionItem,
-    KRewrite,
     KRule,
     KSentence,
-    KSort,
     KTerminal,
     KToken,
-    KVariable,
-    build_assoc,
 )
 from pyk.kcfg import KCFG
 from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool

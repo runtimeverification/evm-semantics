@@ -6,22 +6,8 @@ from typing import Any, Dict, Final, Iterable, List, Optional
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
-from pyk.kast.inner import (
-    KApply,
-    KAst,
-    KInner,
-    KLabel,
-    KRewrite,
-    KSequence,
-    KSort,
-    KToken,
-    KVariable,
-    Subst,
-    build_assoc,
-    build_cons,
-)
-from pyk.kast.manip import flatten_label, free_vars, get_cell, split_config_from
-from pyk.kore.syntax import Pattern
+from pyk.kast.inner import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
+from pyk.kast.manip import flatten_label, get_cell
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kprint import paren
 from pyk.prelude.kbool import notBool
