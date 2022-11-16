@@ -8,9 +8,9 @@ from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
-from pyk.kast import (
-    KApply,
-    KAtt,
+from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSequence, KSort, KVariable, build_assoc
+from pyk.kast.manip import abstract_term_safely, substitute
+from pyk.kast.outer import (
     KFlatModule,
     KImport,
     KInner,
@@ -21,14 +21,12 @@ from pyk.kast import (
     KRewrite,
     KRule,
     KSentence,
-    KSequence,
     KSort,
     KTerminal,
     KToken,
     KVariable,
     build_assoc,
 )
-from pyk.kastManip import abstract_term_safely, substitute
 from pyk.kcfg import KCFG
 from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import intToken
