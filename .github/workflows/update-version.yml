@@ -47,7 +47,7 @@ jobs:
           git add kevm-pyk/ && git commit -m 'kevm-pyk/: sync poetry files' || true
       - name: 'Update plugin release tag'
         run: |
-          cd deps/blockchain-k-plugin
+          cd deps/plugin
           rev=$(git rev-parse HEAD)
           cd -
           echo ${rev} > deps/blockchain-k-plugin_release
