@@ -8,11 +8,12 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm
-from pyk.kast import KApply, KAtt, KDefinition, KFlatModule, KImport, KInner, KRequire, KRewrite, KRule, KToken
-from pyk.kastManip import flatten_label, minimize_term, push_down_rewrites
+from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
+from pyk.kast.manip import flatten_label, minimize_term, push_down_rewrites
+from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG
 from pyk.ktool.kit import KIT
-from pyk.ktool.krun import _krun
+from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_top, mlTop
 
 from .gst_to_kore import gst_to_kore
@@ -472,17 +473,16 @@ def exec_run(
     output: str,
     **kwargs: Any,
 ) -> None:
-    kevm = KEVM(definition_dir, profile=profile)
-    krun_args = []
-    if term:
-        krun_args += ['--term']
-    if parser is not None:
-        krun_args += ['--parser', parser]
-    if not expand_macros:
-        krun_args += ['--no-expand-macros']
-    # TODO: These are inlined into _krun
-    krun_args += ['--output', output]
-    krun_result = _krun(kevm.definition_dir, Path(input_file), depth=depth, args=krun_args, profile=profile)
+    krun_result = _krun(
+        definition_dir=Path(definition_dir),
+        input_file=Path(input_file),
+        depth=depth,
+        profile=profile,
+        term=term,
+        no_expand_macros=not expand_macros,
+        parser=parser,
+        output=KRunOutput[output.upper()],
+    )
     print(krun_result.stdout)
     sys.exit(krun_result.returncode)
 
