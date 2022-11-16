@@ -14,6 +14,7 @@ from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG
 from pyk.ktool.kit import KIT
 from pyk.ktool.krun import KRunOutput, _krun
+from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.ml import is_top, mlTop
 
 from .gst_to_kore import gst_to_kore
@@ -327,24 +328,16 @@ def exec_foundry_prove(
             contract_name, method_name = test.split('.')
             contract = [c for c in contracts if c.name == contract_name][0]
             method = [m for m in contract.methods if m.name == method_name][0]
-            empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
+            empty_config = foundry.definition.empty_config(GENERATED_TOP_CELL)
             cfg = method_to_cfg(empty_config, contract, method)
             if simplify_init:
                 _LOGGER.info(f'Simplifying initial state for test: {test}')
-                edge = KCFG.Edge(cfg.get_unique_init(), cfg.get_unique_target(), mlTop(), -1)
-                claim = edge.to_claim()
-                init_simplified = foundry.prove_claim(
-                    claim, f'simplify-init-{cfg.get_unique_init().id}', args=['--depth', '0']
-                )
-                init_simplified = sanitize_config(foundry.definition, init_simplified)
+                init_simplified = cfg.get_unique_init().cterm.kast
+                init_simplified = foundry.simplify(CTerm(init_simplified))
                 cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_simplified))
                 _LOGGER.info(f'Simplifying target state for test: {test}')
-                edge = KCFG.Edge(cfg.get_unique_target(), cfg.get_unique_init(), mlTop(), -1)
-                claim = edge.to_claim()
-                target_simplified = foundry.prove_claim(
-                    claim, f'simplify-target-{cfg.get_unique_target().id}', args=['--depth', '0']
-                )
-                target_simplified = sanitize_config(foundry.definition, target_simplified)
+                target_simplified = cfg.get_unique_target().cterm.kast
+                target_simplified = foundry.simplify(CTerm(target_simplified))
                 cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_simplified))
             kcfgs[test] = (cfg, kcfg_file)
             with open(kcfg_file, 'w') as kf:
