@@ -13,7 +13,7 @@ from pyk.kast.manip import abstract_term_safely, flatten_label, minimize_term, p
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG
 from pyk.ktool.kit import KIT
-from pyk.ktool.krun import _krun
+from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_top, mlTop
 
 from .gst_to_kore import gst_to_kore
@@ -473,17 +473,16 @@ def exec_run(
     output: str,
     **kwargs: Any,
 ) -> None:
-    kevm = KEVM(definition_dir, profile=profile)
-    krun_args = []
-    if term:
-        krun_args += ['--term']
-    if parser is not None:
-        krun_args += ['--parser', parser]
-    if not expand_macros:
-        krun_args += ['--no-expand-macros']
-    # TODO: These are inlined into _krun
-    krun_args += ['--output', output]
-    krun_result = _krun(kevm.definition_dir, Path(input_file), depth=depth, args=krun_args, profile=profile)
+    krun_result = _krun(
+        definition_dir=definition_dir,
+        input_file=Path(input_file),
+        depth=depth,
+        profile=profile,
+        term=term,
+        no_expand_macros=not expand_macros,
+        parser=parser,
+        output=KRunOutput[output],
+    )
     print(krun_result.stdout)
     sys.exit(krun_result.returncode)
 
