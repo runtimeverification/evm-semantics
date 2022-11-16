@@ -331,24 +331,14 @@ def exec_foundry_prove(
             contract_name, method_name = test.split('.')
             contract = [c for c in contracts if c.name == contract_name][0]
             method = [m for m in contract.methods if m.name == method_name][0]
-            empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
+            empty_config = foundry.definition.empty_config(GENERATED_TOP_CELL)
             cfg = method_to_cfg(empty_config, contract, method)
             if simplify_init:
                 _LOGGER.info(f'Simplifying initial state for test: {test}')
-                edge = KCFG.Edge(cfg.get_unique_init(), cfg.get_unique_target(), mlTop(), -1)
-                claim = edge.to_claim()
-                init_simplified = foundry.prove_claim(
-                    claim, f'simplify-init-{cfg.get_unique_init().id}', args=['--depth', '0']
-                )
-                init_simplified = sanitize_config(foundry.definition, init_simplified)
+                init_simplified = foundry.simplify(CTerm(init_simplified))
                 cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_simplified))
                 _LOGGER.info(f'Simplifying target state for test: {test}')
-                edge = KCFG.Edge(cfg.get_unique_target(), cfg.get_unique_init(), mlTop(), -1)
-                claim = edge.to_claim()
-                target_simplified = foundry.prove_claim(
-                    claim, f'simplify-target-{cfg.get_unique_target().id}', args=['--depth', '0']
-                )
-                target_simplified = sanitize_config(foundry.definition, target_simplified)
+                target_simplified = foundry.simplify(CTerm(target_simplified))
                 cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_simplified))
             kcfgs[test] = (cfg, kcfg_file)
             with open(kcfg_file, 'w') as kf:
@@ -378,21 +368,16 @@ def exec_foundry_prove(
             curr_node = cfg.frontier[0]
             cfg.add_expanded(curr_node.id)
             _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
-            edge = KCFG.Edge(curr_node, target_node, mlTop(), -1)
-            claim = edge.to_claim()
-            claim_id = f'gen-block-{curr_node.id}-to-{target_node.id}'
-            depth, branching, result = foundry.get_claim_basic_block(
-                claim_id, claim, lemmas=lemma_rules, max_depth=max_depth
-            )
+            depth, term, next_terms = foundry.execute(curr_node.cterm, depth=max_depth)
 
-            if result == mlTop():
+            if term == mlTop():
                 cfg.create_edge(curr_node.id, target_node.id, mlTop(), depth)
                 _LOGGER.info(
                     f'Target state reached at depth {depth} for {cfgid}: {shorten_hashes((curr_node.id, target_node.id))}.'
                 )
 
             else:
-                next_state = CTerm(sanitize_config(foundry.definition, result))
+                next_state = CTerm(sanitize_config(foundry.definition, term))
                 next_node = cfg.get_or_create_node(next_state)
                 if next_node != curr_node:
                     _LOGGER.info(
@@ -404,7 +389,7 @@ def exec_foundry_prove(
                     cfg.add_expanded(next_node.id)
                     _LOGGER.info(f'Terminal node {cfgid}: {shorten_hashes((curr_node.id))}.')
 
-                elif branching:
+                elif len(next_terms) > 1:
                     cfg.add_expanded(next_node.id)
                     branches = KEVM.extract_branches(next_state)
                     if len(list(branches)) > 0:
@@ -420,24 +405,17 @@ def exec_foundry_prove(
                             # cfg.create_cover(branch_node.id, next_node.id)
                             # _LOGGER.info(f'Made cover: {shorten_hashes((branch_node.id, next_node.id))}')
                     else:
-                        _LOGGER.warning(
-                            f'Falling back to running backend for branch extraction {cfgid}:\n{foundry.pretty_print(minimize_term(result))}'
-                        )
-                        edge = KCFG.Edge(next_node, target_node, mlTop(), -1)
-                        claim = edge.to_claim()
-                        claim_id = f'gen-branch-{curr_node.id}-to-{target_node.id}'
-                        result = foundry.prove_claim(claim, claim_id, lemmas=lemma_rules, args=['--depth', '1'])
-                        branch_cterms = [CTerm(r) for r in flatten_label('#Or', result)]
-                        old_constraints = next_state.constraints
-                        new_constraints = [
-                            [c for c in s.constraints if c not in old_constraints] for s in branch_cterms
+                        _LOGGER.warning(f'Falling back to extracted next states for {cfgid}:\n{next_node.id}')
+                        branch_cterms = [CTerm(nt) for nt in next_terms]
+                        branch_constraints = [
+                            [c for c in s.constraints if c not in next_state.constraints] for s in branch_cterms
                         ]
                         _LOGGER.info(
-                            f'Found {len(list(branch_cterms))} branches manually ad depth 1 for {cfgid}: {[foundry.pretty_print(mlAnd(nc)) for nc in new_constraints]}'
+                            f'Found {len(list(branch_cterms))} branches manually at depth 1 for {cfgid}: {[foundry.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
                         )
-                        for ns, nc in zip(branch_cterms, new_constraints):
-                            branch_node = cfg.get_or_create_node(ns)
-                            cfg.create_edge(next_node.id, branch_node.id, mlAnd(nc), 1)
+                        for bs, bc in zip(branch_cterms, branch_constraints):
+                            branch_node = cfg.get_or_create_node(bs)
+                            cfg.create_edge(next_node.id, branch_node.id, mlAnd(bc), 1)
 
             _write_cfg(cfg, cfgpath)
 
