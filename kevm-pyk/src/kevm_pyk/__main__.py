@@ -481,7 +481,7 @@ def exec_run(
         term=term,
         no_expand_macros=not expand_macros,
         parser=parser,
-        output=KRunOutput[output],
+        output=KRunOutput[output.upper()],
     )
     print(krun_result.stdout)
     sys.exit(krun_result.returncode)
