@@ -8,27 +8,19 @@ from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
-from pyk.kast import (
-    KApply,
-    KAtt,
+from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSequence, KSort, KVariable, build_assoc
+from pyk.kast.manip import abstract_term_safely, substitute
+from pyk.kast.outer import (
     KFlatModule,
     KImport,
-    KInner,
-    KLabel,
     KNonTerminal,
     KProduction,
     KProductionItem,
-    KRewrite,
     KRule,
     KSentence,
-    KSequence,
-    KSort,
     KTerminal,
     KToken,
-    KVariable,
-    build_assoc,
 )
-from pyk.kastManip import abstract_term_safely, substitute
 from pyk.kcfg import KCFG
 from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import intToken
@@ -347,7 +339,10 @@ def method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Met
 def _init_cterm(init_term: KInner) -> CTerm:
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
-    return CTerm(init_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
+    init_cterm = CTerm(init_term)
+    init_cterm = KEVM.add_invariant(init_cterm)
+    init_cterm = init_cterm.add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
+    return init_cterm
 
 
 def _init_term(
@@ -404,7 +399,7 @@ def _init_term(
         'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
         'PC_CELL': intToken(0),
         'GAS_CELL': intToken(9223372036854775807),
-        'K_CELL': KSequence([KEVM.execute(), KVariable('CONTINUATION')]),
+        'K_CELL': KSequence([KEVM.sharp_execute(), KVariable('CONTINUATION')]),
         'ACCOUNTS_CELL': KEVM.accounts(
             [
                 account_cell,  # test contract address
