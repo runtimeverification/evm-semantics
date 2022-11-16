@@ -407,7 +407,7 @@ def _init_term(
         'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
         'PC_CELL': intToken(0),
         'GAS_CELL': intToken(9223372036854775807),
-        'K_CELL': KSequence([KEVM.execute(), KVariable('CONTINUATION')]),
+        'K_CELL': KSequence([KEVM.sharp_execute(), KVariable('CONTINUATION')]),
         'ACCOUNTS_CELL': KEVM.accounts(
             [
                 account_cell,  # test contract address
