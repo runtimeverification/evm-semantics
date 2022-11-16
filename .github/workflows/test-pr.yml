@@ -27,10 +27,8 @@ jobs:
           poetry --version
       - name: 'Update Version'
         run: |
-          if git show origin/${GITHUB_BASE_REF}:package/version; then
-            og_version=$(git show origin/${GITHUB_BASE_REF}:package/version)
-            ./package/version.sh bump ${og_version}
-          fi
+          og_version=$(git show origin/${GITHUB_BASE_REF}:package/version)
+          ./package/version.sh bump ${og_version}
           ./package/version.sh sub
           git add --update && git commit --message "Set Version: $(cat package/version)" || true
       - name: 'Sync Poetry'
