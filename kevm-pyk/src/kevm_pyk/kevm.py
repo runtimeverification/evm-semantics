@@ -113,7 +113,6 @@ class KEVM(KProve, KRun):
         symbol_table['AccountCellMapItem']                            = lambda k, v: v
         symbol_table['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray'] = paren(lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]')
         symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = lambda m, s, w: '(' + m + ' [ ' + s + ' .. ' + w + ' ]):ByteArray'
-        symbol_table['_:__EVM-TYPES_WordStack_Int_WordStack']         = paren(symbol_table['_:__EVM-TYPES_WordStack_Int_WordStack'])
         symbol_table['_<Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') <Word ('  + a2 + ')')
         symbol_table['_>Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') >Word ('  + a2 + ')')
         symbol_table['_<=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')
@@ -123,8 +122,13 @@ class KEVM(KProve, KRun):
         symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int']              = paren(symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int'])
         symbol_table['_++__EVM-TYPES_ByteArray_ByteArray_ByteArray']  = paren(symbol_table['_++__EVM-TYPES_ByteArray_ByteArray_ByteArray'])
         symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = paren(symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'])
-        if 'typedArgs' in symbol_table:
-            symbol_table['typedArgs'] = paren(symbol_table['typedArgs'])
+        for symb in [
+            'typedArgs',
+            '_:__EVM-TYPES_WordStack_Int_WordStack',
+            '_:_WS',
+        ]:
+            if symb in symbol_table:
+                symbol_table[symb] = paren(symbol_table[symb])
         # fmt: on
 
     class Sorts:
