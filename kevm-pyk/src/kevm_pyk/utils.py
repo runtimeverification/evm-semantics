@@ -2,8 +2,8 @@ from logging import Logger
 from typing import Collection, Iterable, List, Optional, Tuple
 
 from pyk.cterm import CTerm
-from pyk.kast import KApply, KClaim, KDefinition, KFlatModule, KImport, KInner, KRule, KVariable
-from pyk.kastManip import (
+from pyk.kast.inner import KApply, KInner, KVariable
+from pyk.kast.manip import (
     abstract_term_safely,
     bool_to_ml_pred,
     bottom_up,
@@ -17,6 +17,7 @@ from pyk.kastManip import (
     substitute,
     undo_aliases,
 )
+from pyk.kast.outer import KClaim, KDefinition, KFlatModule, KImport, KRule
 from pyk.kcfg import KCFG
 from pyk.ktool import KPrint, KProve
 from pyk.prelude.kbool import FALSE
