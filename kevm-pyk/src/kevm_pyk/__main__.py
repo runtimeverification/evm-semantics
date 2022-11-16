@@ -345,6 +345,14 @@ def exec_foundry_prove(
     if unfound_tests:
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
+    # TODO: We should be using lemma_rules for execute endpoint
+    # lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
+
+    def _write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
+        with open(_cfgpath, 'w') as cfgfile:
+            cfgfile.write(json.dumps(_cfg.to_dict()))
+            _LOGGER.info(f'Updated CFG file: {_cfgpath}')
+
     kcfgs: Dict[str, Tuple[KCFG, Path]] = {}
     for test in tests:
         kcfg_file = kcfgs_dir / f'{test}.json'
@@ -369,10 +377,7 @@ def exec_foundry_prove(
             cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_term))
             cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_term))
             kcfgs[test] = (cfg, kcfg_file)
-            with open(kcfg_file, 'w') as kf:
-                kf.write(json.dumps(cfg.to_dict()))
-                kf.close()
-            _LOGGER.info(f'Wrote file: {kcfg_file}')
+            _write_cfg(cfg, kcfg_file)
         else:
             with open(kcfg_file, 'r') as kf:
                 kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
