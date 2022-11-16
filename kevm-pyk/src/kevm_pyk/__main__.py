@@ -474,7 +474,7 @@ def exec_run(
     **kwargs: Any,
 ) -> None:
     krun_result = _krun(
-        definition_dir=definition_dir,
+        definition_dir=Path(definition_dir),
         input_file=Path(input_file),
         depth=depth,
         profile=profile,
