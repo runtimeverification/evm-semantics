@@ -40,7 +40,7 @@ contract ExpectCallTest is Test {
         address addr = address(dummyContract);
         bytes memory data = abi.encodeWithSelector(dummyContract.numberA.selector);
         uint256 result = 0;
-        vm2.expectRegularCall(addr, data);
+        vm2.expectRegularCall(addr, 0, data);
 
         assembly {
             let status := call(16000, addr, 0, add(data, 32), mload(data), 0, 0)
