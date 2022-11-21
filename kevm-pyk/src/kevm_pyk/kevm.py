@@ -367,8 +367,8 @@ class Foundry(KEVM):
         KEVM._patch_symbol_table(symbol_table)
 
     @staticmethod
-    def success(s: KInner, dst: KInner, r: KInner) -> KApply:
-        return KApply('foundry_success ', [s, dst, r])
+    def success(s: KInner, dst: KInner, r: KInner, r1: KInner, r2: KInner) -> KApply:
+        return KApply('foundry_success ', [s, dst, r, r1, r2])
 
     @staticmethod
     def fail(s: KInner, dst: KInner, r: KInner) -> KApply:

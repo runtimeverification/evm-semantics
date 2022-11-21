@@ -136,10 +136,10 @@ Hence, checking if a `DSTest.assert*` has failed amounts to reading as a boolean
 module FOUNDRY-SUCCESS
     imports EVM
 
-    syntax Bool ::= "foundry_success" "(" StatusCode "," Int "," Bool ")" [function, klabel(foundry_success), symbol]
+    syntax Bool ::= "foundry_success" "(" StatusCode "," Int "," Bool "," Bool "," Bool ")" [function, klabel(foundry_success), symbol]
  // -----------------------------------------------------------------------------------------------------------------
-    rule foundry_success(EVMC_SUCCESS, 0, false) => true
-    rule foundry_success(_, _, _)                => false [owise]
+    rule foundry_success(EVMC_SUCCESS, 0, false, false, false) => true
+    rule foundry_success(_, _, _, _, _)                => false [owise]
 
 endmodule
 ```
@@ -182,9 +182,11 @@ module FOUNDRY-CHEAT-CODES
           <expectedDepth> 0 </expectedDepth>
         </expected>
         <expectEmit>
-          <recordEvent> true </recordEvent>
+          <recordEvent> false </recordEvent>
           <isEventExpected> false </isEventExpected>
-          
+          <checkedTopics> .List </checkedTopics>
+          <checkedData> false </checkedData>
+          <expectedEventAddress> .Account </expectedEventAddress>
         </expectEmit>
       </cheatcodes>
 ```
@@ -675,10 +677,58 @@ With address: Asserts the topics match and that the emitting address matches.
 
 ```{.k .bytes}
     rule [foundry.call.expectEmit]:
-         <k> #call_foundry SELECTOR ARGS => #setExpectEmit ... </k>
+         <k> #call_foundry SELECTOR ARGS => #setExpectEmit word2Bool(#asWord(#range(ARGS, 0, 32))) word2Bool(#asWord(#range(ARGS, 32, 32))) word2Bool(#asWord(#range(ARGS, 64, 32))) word2Bool(#asWord(#range(ARGS, 96, 32))) .Account ... </k>
       requires SELECTOR ==Int selector ( "expectEmit(bool,bool,bool,bool)" )
+
+    rule [foundry.call.expectEmitAddr]:
+         <k> #call_foundry SELECTOR ARGS => #setExpectEmit word2Bool(#asWord(#range(ARGS, 0, 32))) word2Bool(#asWord(#range(ARGS, 32, 32))) word2Bool(#asWord(#range(ARGS, 64, 32))) word2Bool(#asWord(#range(ARGS, 96, 32))) #asWord(#range(ARGS, 128, 32)) ... </k>
+      requires SELECTOR ==Int selector ( "expectEmit(bool,bool,bool,bool,address)" )
 ```
 
+```{.k .bytes}
+    rule <k> LOG(N) _MEMSTART _MEMWIDTH ... </k>
+         <expectEmit>
+          <recordEvent> true => false </recordEvent>
+          <isEventExpected> false => true </isEventExpected>
+          ...
+        </expectEmit>
+        <wordStack> WS </wordStack>
+      requires #sizeWordStack(WS) >=Int N
+      [priority(40)]
+
+    rule <k> (. => #clearExpectEmit) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
+         <log> _ ListItem({ _ | TOPICS | DATA }:SubstateLogEntry) </log>
+         <expectEmit>
+          <recordEvent> false </recordEvent>
+          <isEventExpected> true </isEventExpected>
+          <checkedTopics> CHECKS </checkedTopics>
+          <checkedData> CHECKDATA </checkedData>
+          <expectedEventAddress> .Account </expectedEventAddress>
+        </expectEmit>
+        <wordStack> WS </wordStack>
+        <localMem> LM </localMem>
+      requires #sizeWordStack(WS) >=Int N
+       andBool  #checkTopics(CHECKS, TOPICS, WordStack2List(#take(N, WS)))
+       andBool ((notBool CHECKDATA) orBool (#asWord(DATA) ==Int #asWord(#range(LM, MEMSTART, MEMWIDTH))))
+      [priority(40)]
+
+    rule <k> (. => #clearExpectEmit) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
+         <log> _ ListItem({ _ | TOPICS | DATA }:SubstateLogEntry) </log>
+         <id> ACCT </id>
+         <expectEmit>
+          <recordEvent> false </recordEvent>
+          <isEventExpected> true </isEventExpected>
+          <checkedTopics> CHECKS </checkedTopics>
+          <checkedData> CHECKDATA </checkedData>
+          <expectedEventAddress> ACCT </expectedEventAddress>
+        </expectEmit>
+        <wordStack> WS </wordStack>
+        <localMem> LM </localMem>
+      requires #sizeWordStack(WS) >=Int N
+       andBool  #checkTopics(CHECKS, TOPICS, WordStack2List(#take(N, WS)))
+       andBool ((notBool CHECKDATA) orBool (#asWord(DATA) ==Int #asWord(#range(LM, MEMSTART, MEMWIDTH))))
+      [priority(40)]
+```
 Otherwise, throw an error for any other call to the Foundry contract.
 
 ```{.k .bytes}
@@ -860,6 +910,50 @@ If the production is matched when no prank is active, it will be ignored.
         </prank>
 ```
 
+- `#setExpectEmit` will initialize the `<expectEmit/>` subconfiguration, based on the arguments provided with the `expectEmit` cheat code.
+
+```k
+    syntax KItem ::= "#setExpectEmit" Bool Bool Bool Bool Account [klabel(foundry_setExpectEmit)]
+ // ---------------------------------------------------------------------------------------------
+    rule <k> #setExpectEmit T1 T2 T3 CHECKDATA ACCT => . ... </k>
+         <expectEmit>
+           <recordEvent> _ => true </recordEvent>
+           <isEventExpected> _ => false </isEventExpected>
+           <checkedTopics> _ => ListItem(true) ListItem(T1) ListItem(T2) ListItem(T3) .List </checkedTopics>
+           <checkedData> _ => CHECKDATA </checkedData>
+           <expectedEventAddress> _ => ACCT </expectedEventAddress>
+         </expectEmit>
+```
+
+- `#clearExpectEmit` is used to clear the `<expectEmit/>` subconfiguration and restore initial values.
+
+```k
+    syntax KItem ::= "#clearExpectEmit" [klabel(foundry_clearExpectEmit)]
+ // ---------------------------------------------------------------------
+    rule <k> #clearExpectEmit => . ...</k>
+         <expectEmit>
+           <recordEvent> _ => false </recordEvent>
+           <isEventExpected> _ => false </isEventExpected>
+           <checkedTopics> _ => .List </checkedTopics>
+           <checkedData> _ => false </checkedData>
+           <expectedEventAddress> _ => .Account </expectedEventAddress>
+         </expectEmit>
+```
+
+- `#checkTopics` and `#checkTopic` are functions that compare the `TOPICS` of the expected `Event` with those of the currently emitted `Event`.
+
+```k
+    syntax Bool ::= "#checkTopic" "(" Bool "," Int "," Int ")" [function, klabel(foundry_checkTopic)]
+                  | "#checkTopics" "(" List "," List "," List ")" [function, klabel(foundry_checkTopics)]
+ // -----------------------------------------------------------------------------------------------------
+    rule #checkTopic(CHECK, V1, V2) => (notBool CHECK) orBool (V1 ==Int V2)
+
+    rule #checkTopics(.List, _, _) => true
+    rule #checkTopics(ListItem(true), L1, L2) => false requires L1 ==K .List orBool L2 ==K .List
+    rule #checkTopics(ListItem(false), L1, L2) => true requires L1 ==K .List orBool L2 ==K .List
+    rule #checkTopics(ListItem(CHECK) CHECKS, ListItem(V1) L1, ListItem(V2) L2) => #checkTopic(CHECK, V1, V2) andBool #checkTopics(CHECKS, L1, L2)
+```
+
 - selectors for cheat code functions.
 
 ```k
@@ -882,6 +976,8 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "startPrank(address)" )            => 105151830  )
     rule ( selector ( "startPrank(address,address)" )    => 1169514616 )
     rule ( selector ( "stopPrank()" )                    => 2428830011 )
+    rule selector ( "expectEmit(bool,bool,bool,bool)" )         => 1226622914
+    rule selector ( "expectEmit(bool,bool,bool,bool,address)" ) => 2176505587
 ```
 
 - selectors for unimplemented cheat code functions.
@@ -909,8 +1005,6 @@ If the production is matched when no prank is active, it will be ignored.
     rule selector ( "expectRevert(bytes4)" )                    => 3273568480
     rule selector ( "record()" )                                => 644673801
     rule selector ( "accesses(address)" )                       => 1706857601
-    rule selector ( "expectEmit(bool,bool,bool,bool)" )         => 1226622914
-    rule selector ( "expectEmit(bool,bool,bool,bool,address)" ) => 2176505587
     rule selector ( "mockCall(address,bytes calldata,bytes)" )  => 378193464
     rule selector ( "mockCall(address,uint256,bytes,bytes)" )   => 2168494993
     rule selector ( "clearMockedCalls()" )                      => 1071599125
