@@ -6,8 +6,8 @@ from typing import Any, Dict, Final, Iterable, List, Optional
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
-from pyk.kast.manip import flatten_label, get_cell
+from pyk.kast import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
+from pyk.kastManip import flatten_label, get_cell
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kprint import paren
 from pyk.prelude.kbool import notBool
@@ -190,7 +190,7 @@ class KEVM(KProve, KRun):
         return KApply('#halt_EVM_KItem')
 
     @staticmethod
-    def sharp_execute() -> KApply:
+    def execute() -> KApply:
         return KApply('#execute_EVM_KItem')
 
     @staticmethod
@@ -371,8 +371,8 @@ class Foundry(KEVM):
         return KApply('foundry_success ', [s, dst, r, r1, r2])
 
     @staticmethod
-    def fail(s: KInner, dst: KInner, r: KInner) -> KApply:
-        return notBool(Foundry.success(s, dst, r))
+    def fail(s: KInner, dst: KInner, r: KInner, r1: KInner, r2: KInner) -> KApply:
+        return notBool(Foundry.success(s, dst, r, r1, r2))
 
     # address(uint160(uint256(keccak256("foundry default caller"))))
 
