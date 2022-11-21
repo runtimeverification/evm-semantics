@@ -158,7 +158,12 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<expectedRevert>` flags if the next call is expected to revert or not.
     - `<expectedDepth>` records the depth at which the call is expected to revert.
     - `<expectedBytes>` keeps the expected revert message as a ByteArray.
-
+3. The `<expectEmit>` subconfiguration stores values used for the `expectEmit` cheat code.
+    - `<recordEvent>` flags if the next emitted Event should be recorded and held for future matches.
+    - `<isEventExpected>` flags if an Event is expected to match the one recorded previously.
+    - `<checkedTopics>` will store a list of `bool` values that flag if a topic should be checked or not.
+    - `<checkedData>` flags if the data field should be checked or not.
+    - `<expectedEventAddress>` stores the emitter of an expected Event.
 ```k
 module FOUNDRY-CHEAT-CODES
     imports EVM
