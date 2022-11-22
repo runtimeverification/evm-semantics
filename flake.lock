@@ -811,16 +811,16 @@
         "poetry2nix": "poetry2nix"
       },
       "locked": {
-        "lastModified": 1669128288,
-        "narHash": "sha256-urA+Jokm3TOi0EHrLyQb4etg+6MoqdMKgSDSQ1MKhTU=",
+        "lastModified": 1669131953,
+        "narHash": "sha256-0BYkyZc2lqdCo4JoUaQAEhOsmafF5TTnvfW9lkfyK7U=",
         "owner": "runtimeverification",
         "repo": "pyk",
-        "rev": "dfc990076f64056e280dccd28a469e66f665d1bb",
+        "rev": "8e5d2896077d5e705921d9624be98efd322ba0e1",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.64",
+        "ref": "v0.1.65",
         "repo": "pyk",
         "type": "github"
       }
