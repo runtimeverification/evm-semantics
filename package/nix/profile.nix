@@ -21,7 +21,7 @@ in stdenv.mkDerivation {
     cp -r ${kevm}/* .build/usr/
     ${kore-exec}/bin/kore-exec --version &> log
     make build-prove-haskell -j4
-    make test-prove-smoke TEST_SYMBOLIC_BACKEND=haskell KEVM='${profile}/bin/profile log timeout 3000 kevm' -j6 -k
+    make test-prove-smoke TEST_SYMBOLIC_BACKEND=haskell KEVM='${profile}/bin/profile log timeout 600 kevm' -j6 -k
   '';
   enableParallelBuilding = true;
   installPhase = ''
