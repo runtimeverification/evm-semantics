@@ -344,9 +344,11 @@ def exec_foundry_prove(
             cfg = method_to_cfg(empty_config, contract, method)
             if simplify_init:
                 _LOGGER.info(f'Simplifying initial state for test: {test}')
+                init_simplified = cfg.get_unique_init().cterm.kast
                 init_simplified = foundry.simplify(CTerm(init_simplified))
                 cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_simplified))
                 _LOGGER.info(f'Simplifying target state for test: {test}')
+                target_simplified = cfg.get_unique_target().cterm.kast
                 target_simplified = foundry.simplify(CTerm(target_simplified))
                 cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_simplified))
             kcfgs[test] = (cfg, kcfg_file)
