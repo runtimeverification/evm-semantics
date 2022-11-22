@@ -190,7 +190,7 @@ class KEVM(KProve, KRun):
         return KApply('#halt_EVM_KItem')
 
     @staticmethod
-    def execute() -> KApply:
+    def sharp_execute() -> KApply:
         return KApply('#execute_EVM_KItem')
 
     @staticmethod
