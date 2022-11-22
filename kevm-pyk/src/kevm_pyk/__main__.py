@@ -271,6 +271,7 @@ def exec_foundry_prove(
     minimize: bool = True,
     lemmas: Iterable[str] = (),
     simplify_init: bool = True,
+    retry: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -369,7 +370,10 @@ def exec_foundry_prove(
         _target_node = _cfg.get_unique_target()
         _claim = KCFG.Edge(_init_node, _target_node, mlTop(), -1).to_claim()
         _claim_id = _cfg_id.replace('.', '-').replace('_', '-')
-        ret, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
+        _, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
+        if not is_top(result) and retry:
+            _LOGGER.warning(f'Retrying proof once: {_cfg_id}')
+            _, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
         _cfg.add_expanded(_init_node.id)
         if is_top(result):
             _cfg.create_edge(_cfg.get_unique_init().id, _cfg.get_unique_target().id, mlTop(), -1)
@@ -713,6 +717,13 @@ def _create_argument_parser() -> ArgumentParser:
         dest='simplify_init',
         action='store_false',
         help='Do not simplify the initial and target states at startup.',
+    )
+    foundry_prove_args.add_argument(
+        '--retry',
+        dest='retry',
+        default=False,
+        action='store_true',
+        help='Retry failing proofs once.',
     )
 
     foundry_show_args = command_parser.add_parser(
