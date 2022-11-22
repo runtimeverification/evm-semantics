@@ -46,19 +46,19 @@ PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
 export PLUGIN_FULL_PATH
 
 
-.PHONY: all clean distclean                                                                                                      \
-        deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
-        build build-haskell build-foundry build-llvm build-prove build-prove-haskell build-prove-java build-node build-kevm      \
-        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
-        test-prove test-failing-prove                                                                                            \
-        test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
-        test-prove-mcd test-klab-prove                                                                                           \
-        test-parse test-failure test-foundry test-foundry-forge                                                                  \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
-        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean                                                       \
-        media media-pdf metropolis-theme                                                                                         \
-        install uninstall                                                                                                        \
+.PHONY: all clean distclean                                                                                                                  \
+        deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                                  \
+        build build-haskell build-foundry build-llvm build-prove build-prove-haskell build-prove-java build-node build-kevm                  \
+        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance             \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                              \
+        test-prove test-failing-prove                                                                                                        \
+        test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-smoke \
+        test-prove-mcd test-klab-prove                                                                                                       \
+        test-parse test-failure test-foundry test-foundry-forge                                                                              \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                           \
+        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean                                                                   \
+        media media-pdf metropolis-theme                                                                                                     \
+        install uninstall                                                                                                                    \
         venv venv-clean kevm-pyk
 .SECONDARY:
 
@@ -609,6 +609,7 @@ prove_bihu_tests         := $(filter-out $(prove_skip_tests), $(wildcard $(prove
 prove_examples_tests     := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k) $(wildcard $(prove_specs_dir)/examples/*-spec.md))
 prove_mcd_tests          := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
 prove_optimization_tests := $(filter-out $(prove_skip_tests), tests/specs/opcodes/evm-optimizations-spec.md)
+prove_smoke_tests        := $(shell cat tests/specs/smoke)
 
 ## best-effort list of prove kompiled definitions to produce ahead of time
 prove_haskell_definitions :=                                                              \
@@ -656,6 +657,7 @@ test-prove-bihu:          $(prove_bihu_tests:=.prove)
 test-prove-examples:      $(prove_examples_tests:=.prove)
 test-prove-mcd:           $(prove_mcd_tests:=.prove)
 test-prove-optimizations: $(prove_optimization_tests:=.prove)
+test-prove-smoke:         $(prove_smoke_tests:=.prove)
 
 test-failing-prove: $(prove_failing_tests:=.prove)
 
