@@ -14,6 +14,7 @@ from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG
 from pyk.ktool.kit import KIT
 from pyk.ktool.krun import KRunOutput, _krun
+from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.ml import mlAnd, mlTop
 from pyk.utils import shorten_hashes
 
