@@ -8,9 +8,9 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
-from pyk.kast.manip import flatten_label, minimize_term, push_down_rewrites
-from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
+from pyk.kast.inner import KApply, KInner, KRewrite
+from pyk.kast.manip import minimize_term, push_down_rewrites
+from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG
 from pyk.ktool.kit import KIT
 from pyk.ktool.krun import KRunOutput, _krun
