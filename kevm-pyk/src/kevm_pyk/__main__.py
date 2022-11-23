@@ -20,7 +20,14 @@ from pyk.prelude.ml import is_top, mlTop
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KCFG__replace_node, KPrint_make_unparsing, KProve_prove_claim, add_include_arg, sanitize_config
+from .utils import (
+    KCFG__replace_node,
+    KDefinition__expand_macros,
+    KPrint_make_unparsing,
+    KProve_prove_claim,
+    add_include_arg,
+    sanitize_config,
+)
 
 T = TypeVar('T')
 
@@ -330,15 +337,19 @@ def exec_foundry_prove(
             method = [m for m in contract.methods if m.name == method_name][0]
             empty_config = foundry.definition.empty_config(GENERATED_TOP_CELL)
             cfg = method_to_cfg(empty_config, contract, method)
+            init_term = cfg.get_unique_init().cterm.kast
+            target_term = cfg.get_unique_target().cterm.kast
+            _LOGGER.info(f'Expanding macros in initial state for test: {test}')
+            init_term = KDefinition__expand_macros(foundry.definition, init_term)
+            _LOGGER.info(f'Expanding macros in target state for test: {test}')
+            target_term = KDefinition__expand_macros(foundry.definition, target_term)
             if simplify_init:
                 _LOGGER.info(f'Simplifying initial state for test: {test}')
-                init_simplified = cfg.get_unique_init().cterm.kast
-                init_simplified = foundry.simplify(CTerm(init_simplified))
-                cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_simplified))
+                init_term = foundry.simplify(CTerm(init_term))
                 _LOGGER.info(f'Simplifying target state for test: {test}')
-                target_simplified = cfg.get_unique_target().cterm.kast
-                target_simplified = foundry.simplify(CTerm(target_simplified))
-                cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_simplified))
+                target_term = foundry.simplify(CTerm(target_term))
+            cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_term))
+            cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_term))
             kcfgs[test] = (cfg, kcfg_file)
             with open(kcfg_file, 'w') as kf:
                 kf.write(json.dumps(cfg.to_dict()))

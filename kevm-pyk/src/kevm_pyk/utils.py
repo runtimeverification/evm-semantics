@@ -23,6 +23,10 @@ from pyk.prelude.kbool import FALSE
 from pyk.prelude.ml import mlAnd
 
 
+def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # noqa: N802
+    return term
+
+
 def KCFG__replace_node(cfg: KCFG, node_id: str, new_cterm: CTerm) -> KCFG:  # noqa: N802
 
     # Remove old node, record data
