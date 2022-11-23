@@ -412,6 +412,11 @@ def _init_term(
         ),
         'SINGLECALL_CELL': FALSE,
         'EXPECTEDREVERT_CELL': FALSE,
+        'ISOPCODEEXPECTED_CELL': FALSE,
+        'EXPECTEDADDRESS_CELL': KToken('.Account', 'K'),
+        'EXPECTEDVALUE_CELL': intToken(0),
+        'EXPECTEDDATA_CELL': KToken('.ByteArray', 'K'),
+        'OPCODETYPE_CELL': KToken('.OpcodeType', 'K'),
         'RECORDEVENT_CELL': FALSE,
         'ISEVENTEXPECTED_CELL': FALSE,
     }
@@ -433,6 +438,7 @@ def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_
         KVariable('STATUSCODE_FINAL'),
         dst_failed_post,
         KVariable('EXPECTEDREVERT_FINAL'),
+        KVariable('ISOPCODEEXPECTED_FINAL'),
         KVariable('RECORDEVENT_FINAL'),
         KVariable('ISEVENTEXPECTED_FINAL'),
     )
@@ -469,6 +475,7 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             ]
         ),
         'EXPECTEDREVERT_CELL': KVariable('EXPECTEDREVERT_FINAL'),
+        'ISOPCODEEXPECTED_CELL': KVariable('ISOPCODEEXPECTED_FINAL'),
         'RECORDEVENT_CELL': KVariable('RECORDEVENT_FINAL'),
         'ISEVENTEXPECTED_CELL': KVariable('ISEVENTEXPECTED_FINAL'),
     }
@@ -478,6 +485,7 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             KVariable('STATUSCODE_FINAL'),
             KVariable('ACCOUNTS_FINAL'),
             KVariable('EXPECTEDREVERT_FINAL'),
+            KVariable('ISOPCODEEXPECTED_FINAL'),
             KVariable('RECORDEVENT_FINAL'),
             KVariable('ISEVENTEXPECTED_FINAL'),
         ],
