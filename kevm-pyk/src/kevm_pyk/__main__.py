@@ -376,7 +376,7 @@ def exec_foundry_prove(
             _LOGGER.info(
                 f'Checking subsumption into target state {cfgid}: {shorten_hashes((curr_node.id, target_node.id))}'
             )
-            if subst := foundry.check_implication(curr_node.cterm, target_node.cterm):
+            if subst := foundry.implies(curr_node.cterm, target_node.cterm):
                 cfg.create_cover(curr_node.id, target_node.id, witness=(subst, mlTop()))
                 _LOGGER.info(f'Subsumed into target node: {shorten_hashes((curr_node.id, target_node.id))}')
                 continue
