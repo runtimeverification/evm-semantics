@@ -396,53 +396,58 @@ def exec_foundry_prove(
             subsumption = foundry.implies(curr_node.cterm, target_node.cterm)
             if subsumption is not None:
                 final_subst, final_pred = subsumption
-                cfg.create_cover(curr_node.id, target_node.id, subst=final_subst, constraint=final_pred)
+                cfg.create_cover(curr_node.id, target_node.id)
                 _LOGGER.info(f'Subsumed into target node: {shorten_hashes((curr_node.id, target_node.id))}')
                 continue
 
             cfg.add_expanded(curr_node.id)
-            _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
-            depth, term, next_terms = foundry.execute(curr_node.cterm, depth=max_depth)
 
-            next_state = CTerm(sanitize_config(foundry.definition, term.kast))
-            next_node = cfg.get_or_create_node(next_state)
-            if next_node != curr_node:
-                _LOGGER.info(
-                    f'Found basic block at depth {depth} for {cfgid}: {shorten_hashes((curr_node.id, next_node.id))}.'
-                )
-                cfg.create_edge(curr_node.id, next_node.id, mlTop(), depth)
-
-            if KEVM.is_terminal(next_node.cterm):
-                cfg.add_expanded(next_node.id)
+            if KEVM.is_terminal(curr_node.cterm):
                 _LOGGER.info(f'Terminal node {cfgid}: {shorten_hashes((curr_node.id))}.')
                 continue
 
-            if len(next_terms) > 1:
-                cfg.add_expanded(next_node.id)
-                branches = KEVM.extract_branches(next_state)
-                if len(list(branches)) > 0:
-                    _LOGGER.info(
-                        f'Found {len(list(branches))} branches at depth {depth} for {cfgid}: {[foundry.pretty_print(b) for b in branches]}'
-                    )
-                    for branch in branches:
-                        branch_cterm = next_state.add_constraint(branch)
-                        branch_node = cfg.get_or_create_node(branch_cterm)
-                        cfg.create_edge(next_node.id, branch_node.id, branch, 0)
-                        _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((next_node.id, branch_node.id))}')
-                        # TODO: have to store case splits as rewrites because of how frontier is handled for covers
-                        # cfg.create_cover(branch_node.id, next_node.id)
-                        # _LOGGER.info(f'Made cover: {shorten_hashes((branch_node.id, next_node.id))}')
-                else:
-                    _LOGGER.warning(f'Falling back to extracted next states for {cfgid}:\n{next_node.id}')
-                    branch_constraints = [
-                        [c for c in s.constraints if c not in next_state.constraints] for s in next_terms
-                    ]
-                    _LOGGER.info(
-                        f'Found {len(list(next_terms))} branches manually at depth 1 for {cfgid}: {[foundry.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
-                    )
-                    for bs, bc in zip(next_terms, branch_constraints, strict=True):
-                        branch_node = cfg.get_or_create_node(bs)
-                        cfg.create_edge(next_node.id, branch_node.id, mlAnd(bc), 1)
+            _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
+            depth, term, next_terms = foundry.execute(curr_node.cterm, depth=max_depth)
+            if depth == 0:
+                _LOGGER.info(f'Found stuck node {cfgid}: {shorten_hashes(curr_node.id)}')
+                continue
+
+            next_state = CTerm(sanitize_config(foundry.definition, term.kast))
+            next_node = cfg.get_or_create_node(next_state)
+            _LOGGER.info(
+                f'Found basic block at depth {depth} for {cfgid}: {shorten_hashes((curr_node.id, next_node.id))}.'
+            )
+            cfg.create_edge(curr_node.id, next_node.id, mlTop(), depth)
+
+            if len(next_terms) == 0:
+                continue
+
+            if len(next_terms) == 1:
+                raise ValueError(f'Found a single successor term: {(depth, term, next_terms)}')
+
+            cfg.add_expanded(next_node.id)
+            branches = KEVM.extract_branches(next_state)
+            if len(list(branches)) > 0:
+                _LOGGER.info(
+                    f'Found {len(list(branches))} branches at depth {depth} for {cfgid}: {[foundry.pretty_print(b) for b in branches]}'
+                )
+                for branch in branches:
+                    branch_cterm = next_state.add_constraint(branch)
+                    branch_node = cfg.get_or_create_node(branch_cterm)
+                    cfg.create_edge(next_node.id, branch_node.id, branch, 0)
+                    _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((next_node.id, branch_node.id))}')
+                    # TODO: have to store case splits as rewrites because of how frontier is handled for covers
+                    # cfg.create_cover(branch_node.id, next_node.id)
+                    # _LOGGER.info(f'Made cover: {shorten_hashes((branch_node.id, next_node.id))}')
+            else:
+                _LOGGER.warning(f'Falling back to extracted next states for {cfgid}:\n{next_node.id}')
+                branch_constraints = [[c for c in s.constraints if c not in next_state.constraints] for s in next_terms]
+                _LOGGER.info(
+                    f'Found {len(list(next_terms))} branches manually at depth 1 for {cfgid}: {[foundry.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
+                )
+                for bs, bc in zip(next_terms, branch_constraints, strict=True):
+                    branch_node = cfg.get_or_create_node(bs)
+                    cfg.create_edge(next_node.id, branch_node.id, mlAnd(bc), 1)
 
             write_cfg(cfg, cfgpath)
 
