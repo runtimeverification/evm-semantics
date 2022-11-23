@@ -368,7 +368,7 @@ class Foundry(KEVM):
 
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner) -> KApply:
-        return KApply('foundry_success ', [s, dst, r])
+        return KApply('foundry_success', [s, dst, r])
 
     @staticmethod
     def fail(s: KInner, dst: KInner, r: KInner) -> KApply:
