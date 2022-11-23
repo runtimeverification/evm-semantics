@@ -367,6 +367,7 @@ def exec_foundry_prove(
         iterations = 0
 
         while cfg.frontier:
+            _write_cfg(cfg, cfgpath)
             if max_iterations is not None and max_iterations <= iterations:
                 break
             iterations += 1
@@ -430,7 +431,7 @@ def exec_foundry_prove(
                     branch_node = cfg.get_or_create_node(bs)
                     cfg.create_edge(next_node.id, branch_node.id, mlAnd(bc), 1)
 
-            _write_cfg(cfg, cfgpath)
+        _write_cfg(cfg, cfgpath)
 
         failure_nodes = cfg.frontier + cfg.stuck
         if len(failure_nodes) == 0:
