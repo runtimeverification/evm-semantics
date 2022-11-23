@@ -411,6 +411,11 @@ def _init_term(
         ),
         'SINGLECALL_CELL': FALSE,
         'EXPECTEDREVERT_CELL': FALSE,
+        'ISOPCODEEXPECTED_CELL': FALSE,
+        'EXPECTEDADDRESS_CELL': KToken('.Account', 'K'),
+        'EXPECTEDVALUE_CELL': intToken(0),
+        'EXPECTEDDATA_CELL': KToken('.ByteArray', 'K'),
+        'OPCODETYPE_CELL': KToken('.OpcodeType', 'K'),
     }
 
     if calldata is not None:
@@ -426,7 +431,12 @@ def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_
     final_term = _final_term(empty_config, contract_name)
     key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
     dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
-    foundry_success = Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post, KVariable('EXPECTEDREVERT_FINAL'))
+    foundry_success = Foundry.success(
+        KVariable('STATUSCODE_FINAL'),
+        dst_failed_post,
+        KVariable('EXPECTEDREVERT_FINAL'),
+        KVariable('ISOPCODEEXPECTED_FINAL'),
+    )
     final_cterm = CTerm(final_term)
     if is_test:
         if not failing:
@@ -460,10 +470,16 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             ]
         ),
         'EXPECTEDREVERT_CELL': KVariable('EXPECTEDREVERT_FINAL'),
+        'ISOPCODEEXPECTED_CELL': KVariable('ISOPCODEEXPECTED_FINAL'),
     }
     return abstract_cell_vars(
         substitute(empty_config, final_subst),
-        [KVariable('STATUSCODE_FINAL'), KVariable('ACCOUNTS_FINAL'), KVariable('EXPECTEDREVERT_FINAL')],
+        [
+            KVariable('STATUSCODE_FINAL'),
+            KVariable('ACCOUNTS_FINAL'),
+            KVariable('EXPECTEDREVERT_FINAL'),
+            KVariable('ISOPCODEEXPECTED_FINAL'),
+        ],
     )
 
 
