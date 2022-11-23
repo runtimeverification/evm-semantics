@@ -408,7 +408,6 @@ def _init_term(
         'OPCODETYPE_CELL': KApply('.OpcodeType_FOUNDRY-CHEAT-CODES_OpcodeType'),
         'RECORDEVENT_CELL': FALSE,
         'ISEVENTEXPECTED_CELL': FALSE,
-
     }
 
     if calldata is not None:
