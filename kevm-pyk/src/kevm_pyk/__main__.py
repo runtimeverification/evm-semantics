@@ -407,23 +407,23 @@ def exec_foundry_prove(
                 continue
 
             _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
-            depth, term, next_terms = foundry.execute(curr_node.cterm, depth=max_depth)
+            depth, cterm, next_cterms = foundry.execute(curr_node.cterm, depth=max_depth)
             if depth == 0:
                 _LOGGER.info(f'Found stuck node {cfgid}: {shorten_hashes(curr_node.id)}')
                 continue
 
-            next_state = CTerm(sanitize_config(foundry.definition, term.kast))
+            next_state = CTerm(sanitize_config(foundry.definition, cterm.kast))
             next_node = cfg.get_or_create_node(next_state)
             _LOGGER.info(
                 f'Found basic block at depth {depth} for {cfgid}: {shorten_hashes((curr_node.id, next_node.id))}.'
             )
             cfg.create_edge(curr_node.id, next_node.id, mlTop(), depth)
 
-            if len(next_terms) == 0:
+            if len(next_cterms) == 0:
                 continue
 
-            if len(next_terms) == 1:
-                raise ValueError(f'Found a single successor term: {(depth, term, next_terms)}')
+            if len(next_cterms) == 1:
+                raise ValueError(f'Found a single successor cterm: {(depth, cterm, next_cterms)}')
 
             cfg.add_expanded(next_node.id)
             branches = KEVM.extract_branches(next_state)
@@ -441,11 +441,13 @@ def exec_foundry_prove(
                     # _LOGGER.info(f'Made cover: {shorten_hashes((branch_node.id, next_node.id))}')
             else:
                 _LOGGER.warning(f'Falling back to extracted next states for {cfgid}:\n{next_node.id}')
-                branch_constraints = [[c for c in s.constraints if c not in next_state.constraints] for s in next_terms]
+                branch_constraints = [
+                    [c for c in s.constraints if c not in next_state.constraints] for s in next_cterms
+                ]
                 _LOGGER.info(
-                    f'Found {len(list(next_terms))} branches manually at depth 1 for {cfgid}: {[foundry.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
+                    f'Found {len(list(next_cterms))} branches manually at depth 1 for {cfgid}: {[foundry.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
                 )
-                for bs, bc in zip(next_terms, branch_constraints, strict=True):
+                for bs, bc in zip(next_cterms, branch_constraints, strict=True):
                     branch_node = cfg.get_or_create_node(bs)
                     cfg.create_edge(next_node.id, branch_node.id, mlAnd(bc), 1)
 
