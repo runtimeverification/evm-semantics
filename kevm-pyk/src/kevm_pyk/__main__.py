@@ -21,7 +21,7 @@ from pyk.utils import shorten_hashes
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KCFG__replace_node, KPrint_make_unparsing, add_include_arg, sanitize_config
+from .utils import KCFG__replace_node, KDefinition__expand_macros, KPrint_make_unparsing, add_include_arg
 
 T = TypeVar('T')
 
@@ -342,15 +342,19 @@ def exec_foundry_prove(
             method = [m for m in contract.methods if m.name == method_name][0]
             empty_config = foundry.definition.empty_config(GENERATED_TOP_CELL)
             cfg = method_to_cfg(empty_config, contract, method)
+            init_term = cfg.get_unique_init().cterm.kast
+            target_term = cfg.get_unique_target().cterm.kast
+            _LOGGER.info(f'Expanding macros in initial state for test: {test}')
+            init_term = KDefinition__expand_macros(foundry.definition, init_term)
+            _LOGGER.info(f'Expanding macros in target state for test: {test}')
+            target_term = KDefinition__expand_macros(foundry.definition, target_term)
             if simplify_init:
                 _LOGGER.info(f'Simplifying initial state for test: {test}')
-                init_simplified = cfg.get_unique_init().cterm.kast
-                init_simplified = foundry.simplify(CTerm(init_simplified))
-                cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_simplified))
+                init_term = foundry.simplify(CTerm(init_term))
                 _LOGGER.info(f'Simplifying target state for test: {test}')
-                target_simplified = cfg.get_unique_target().cterm.kast
-                target_simplified = foundry.simplify(CTerm(target_simplified))
-                cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_simplified))
+                target_term = foundry.simplify(CTerm(target_term))
+            cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_term))
+            cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_term))
             kcfgs[test] = (cfg, kcfg_file)
             _write_cfg(cfg, kcfg_file)
         else:
@@ -368,7 +372,7 @@ def exec_foundry_prove(
             iterations += 1
             curr_node = cfg.frontier[0]
 
-            if final_subst := foundry.check_implication(curr_node.cterm, target_node.cterm):
+            if foundry.check_implication(curr_node.cterm, target_node.cterm) is not None:
                 cfg.create_cover(curr_node.id, target_node.id)
                 _LOGGER.info(f'Subsumed into target node: {shorten_hashes((curr_node.id, target_node.id))}')
                 continue
@@ -380,12 +384,13 @@ def exec_foundry_prove(
                 continue
 
             _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
-            depth, cterm, next_cterms = foundry.execute(curr_node.cterm, depth=max_depth)
+            depth, cterm, next_cterms = foundry.execute(curr_node.cterm, depth=max_depth, terminal_rules=['EVM.halt'])
             if depth == 0:
                 _LOGGER.info(f'Found stuck node {cfgid}: {shorten_hashes(curr_node.id)}')
                 continue
 
-            next_state = CTerm(sanitize_config(foundry.definition, cterm.kast))
+            # next_state = CTerm(sanitize_config(foundry.definition, cterm.kast))
+            next_state = cterm
             next_node = cfg.get_or_create_node(next_state)
             _LOGGER.info(
                 f'Found basic block at depth {depth} for {cfgid}: {shorten_hashes((curr_node.id, next_node.id))}.'
