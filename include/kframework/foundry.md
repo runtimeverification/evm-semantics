@@ -136,10 +136,10 @@ Hence, checking if a `DSTest.assert*` has failed amounts to reading as a boolean
 module FOUNDRY-SUCCESS
     imports EVM
 
-    syntax Bool ::= "foundry_success" "(" StatusCode "," Int "," Bool ")" [function, klabel(foundry_success), symbol]
- // -----------------------------------------------------------------------------------------------------------------
-    rule foundry_success(EVMC_SUCCESS, 0, false) => true
-    rule foundry_success(_, _, _)                => false [owise]
+    syntax Bool ::= "foundry_success" "(" StatusCode "," Int "," Bool "," Bool ")" [function, klabel(foundry_success), symbol]
+ // --------------------------------------------------------------------------------------------------------------------------
+    rule foundry_success(EVMC_SUCCESS, 0, false, false) => true
+    rule foundry_success(_, _, _, _)                    => false [owise]
 
 endmodule
 ```
@@ -158,6 +158,12 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<expectedRevert>` flags if the next call is expected to revert or not.
     - `<expectedDepth>` records the depth at which the call is expected to revert.
     - `<expectedBytes>` keeps the expected revert message as a ByteArray.
+3. The `<expectOpcode>` subconfiguration stores values used for `expect*OPCODE*` cheat codes.
+    - `<isOpcodeExpected>` flags if a call opcode is expected.
+    - `<expectedAddress>` keeps the expected caller.
+    - `<expectedValue>` keeps expected `msg.value`.
+    - `<expectedData>` keeps expected `calldata`.
+    - `<opcodeType>` keeps track of what `CALL*` Opcode is expected.
 
 ```k
 module FOUNDRY-CHEAT-CODES
@@ -181,6 +187,13 @@ module FOUNDRY-CHEAT-CODES
           <expectedBytes> .ByteArray </expectedBytes>
           <expectedDepth> 0 </expectedDepth>
         </expected>
+        <expectedOpcode>
+          <isOpcodeExpected> false </isOpcodeExpected>
+          <expectedAddress> .Account </expectedAddress>
+          <expectedValue> 0 </expectedValue>
+          <expectedData> .ByteArray </expectedData>
+          <opcodeType> .OpcodeType </opcodeType>
+       </expectedOpcode>
       </cheatcodes>
 ```
 
@@ -539,6 +552,136 @@ If the `expectRevert()` selector is matched, call the `#setExpectRevert` product
         orBool SELECTOR ==Int selector ( "expectRevert(bytes)" )
 ```
 
+Expecting a specific CALL/CREATE opcode
+---------------------------------------
+
+First we define a sort to identify expected opcodes.
+
+```k
+    syntax OpcodeType ::= ".OpcodeType" | "Call" | "Static" | "Delegate" | "Create" | "Create2"
+```
+
+If the `expect*OPCODE*` selector is matched, the rule will load the account into the state and add the `#setExpectOpcode` production to the K cell to initialize the `<expectedOpcode/>` subconfiguration with the given parameters.
+
+```{.k .bytes}
+    rule [foundry.call.expectStaticCall]:
+         <k> #call_foundry SELECTOR ARGS
+          => #loadAccount #asWord(#range(ARGS, 0, 32))
+          ~> #let CODE_START = 96 #in
+          #let DATA_LENGTH = #asWord(#range(ARGS, 64, 32)) #in
+          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, CODE_START, DATA_LENGTH) 0 Static
+          ...
+         </k>
+      requires SELECTOR ==Int selector ( "expectStaticCall(address,bytes)" )
+
+    rule [foundry.call.expectDelegateCall]:
+         <k> #call_foundry SELECTOR ARGS
+          => #loadAccount #asWord(#range(ARGS, 0, 32))
+          ~> #let DATA_START = 96 #in
+          #let DATA_LENGTH = #asWord(#range(ARGS, 64, 32)) #in
+          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) 0 Delegate
+          ...
+         </k>
+      requires SELECTOR ==Int selector ( "expectDelegateCall(address,bytes)" )
+
+    rule [foundry.call.expectRegularCall]:
+         <k> #call_foundry SELECTOR ARGS
+          => #loadAccount #asWord(#range(ARGS, 0, 32))
+          ~> #let DATA_START = 128 #in
+          #let DATA_LENGTH = #asWord(#range(ARGS, 96, 32)) #in
+          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Call
+          ...
+         </k>
+      requires SELECTOR ==Int selector ( "expectRegularCall(address,uint256,bytes)" )
+
+    rule [foundry.call.expectCreate]:
+         <k> #call_foundry SELECTOR ARGS
+          => #loadAccount #asWord(#range(ARGS, 0, 32))
+          ~> #let DATA_START = 128 #in
+          #let DATA_LENGTH = #asWord(#range(ARGS, 96, 32)) #in
+          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Create
+          ...
+         </k>
+      requires SELECTOR ==Int selector ( "expectCreate(address,uint256,bytes)" )
+
+    rule [foundry.call.expectCreate2]:
+         <k> #call_foundry SELECTOR ARGS
+          => #loadAccount #asWord(#range(ARGS, 0, 32))
+          ~> #let DATA_START = 128 #in
+          #let DATA_LENGTH = #asWord(#range(ARGS, 96, 32)) #in
+          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Create2
+          ...
+         </k>
+      requires SELECTOR ==Int selector ( "expectCreate2(address,uint256,bytes)" )
+```
+
+Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CREATE2` opcodes is executed, we check if the `sender` address, `msg.value` and `calldata` match the expected values.
+`calldata` needs to match only the first byte.
+
+```{.k .bytes}
+    rule <k> (. => #clearExpectOpcode) ~> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
+         <localMem> LM </localMem>
+         <expectedOpcode>
+           <isOpcodeExpected> true </isOpcodeExpected>
+           <expectedAddress> ACCTTO </expectedAddress>
+           <expectedData> DATA </expectedData>
+           <opcodeType> Static </opcodeType>
+           ...
+         </expectedOpcode>
+      requires #range(LM, ARGSTART, ARGWIDTH) ==K #range(DATA, 0, ARGWIDTH)
+      [priority(40)]
+
+    rule <k> (. => #clearExpectOpcode) ~> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
+         <localMem> LM </localMem>
+         <expectedOpcode>
+           <isOpcodeExpected> true </isOpcodeExpected>
+           <expectedAddress> ACCTTO </expectedAddress>
+           <expectedData> DATA </expectedData>
+           <opcodeType> Delegate </opcodeType>
+           ...
+         </expectedOpcode>
+      requires #range(LM, ARGSTART, ARGWIDTH) ==K #range(DATA, 0, ARGWIDTH)
+      [priority(40)]
+
+    rule <k> (. => #clearExpectOpcode) ~> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
+         <localMem> LM </localMem>
+         <expectedOpcode>
+           <isOpcodeExpected> true </isOpcodeExpected>
+           <expectedAddress> ACCTTO </expectedAddress>
+           <expectedData> DATA </expectedData>
+           <opcodeType> Call </opcodeType>
+           <expectedValue> VALUE </expectedValue>
+         </expectedOpcode>
+      requires #range(LM, ARGSTART, ARGWIDTH) ==K #range(DATA, 0, ARGWIDTH)
+      [priority(40)]
+
+    rule <k> (. => #clearExpectOpcode) ~> CREATE VALUE MEMSTART MEMWIDTH ... </k>
+         <localMem> LM </localMem>
+         <id> ACCT </id>
+         <expectedOpcode>
+           <isOpcodeExpected> true </isOpcodeExpected>
+           <expectedAddress> ACCT </expectedAddress>
+           <expectedData> DATA </expectedData>
+           <opcodeType> Create </opcodeType>
+           <expectedValue> VALUE </expectedValue>
+         </expectedOpcode>
+      requires #range(LM, MEMSTART, MEMWIDTH) ==K #range(DATA, 0, MEMWIDTH)
+      [priority(40)]
+
+    rule <k> (. => #clearExpectOpcode) ~> CREATE2 VALUE MEMSTART MEMWIDTH _SALT ... </k>
+         <localMem> LM </localMem>
+         <id> ACCT </id>
+         <expectedOpcode>
+           <isOpcodeExpected> true </isOpcodeExpected>
+           <expectedAddress> ACCT </expectedAddress>
+           <expectedData> DATA </expectedData>
+           <opcodeType> Create2 </opcodeType>
+           <expectedValue> VALUE </expectedValue>
+         </expectedOpcode>
+      requires #range(LM, MEMSTART, MEMWIDTH) ==K #range(DATA, 0, MEMWIDTH)
+      [priority(40)]
+```
+
 Pranks
 ------
 
@@ -787,6 +930,37 @@ Utils
          </expected>
 ```
 
+- `#setExpectOpcode` initializes the `<expectedOpcode>` subconfiguration with an expected `Address`, and `ByteArray` to match the calldata.
+`CallType` is used to specify what `CALL*` opcode is expected.
+
+```k
+    syntax KItem ::= "#setExpectOpcode" Account ByteArray Int OpcodeType [klabel(foundry_setExpectOpcode)]
+ // ------------------------------------------------------------------------------------------------------
+    rule <k> #setExpectOpcode ACCT DATA VALUE OPTYPE => . ... </k>
+         <expectedOpcode>
+           <isOpcodeExpected> _ => true </isOpcodeExpected>
+           <expectedAddress> _ => ACCT </expectedAddress>
+           <expectedData> _ => DATA </expectedData>
+           <expectedValue> _ => VALUE </expectedValue>
+           <opcodeType> _ => OPTYPE </opcodeType>
+         </expectedOpcode>
+```
+
+- `#clearExpectOpcode` restore the `<expectedOpcode>` subconfiguration to its initial values.
+
+```k
+    syntax KItem ::= "#clearExpectOpcode" [klabel(foundry_clearExpectOpcode)]
+ // -------------------------------------------------------------------------
+    rule <k> #clearExpectOpcode => . ... </k>
+         <expectedOpcode>
+           <isOpcodeExpected> _ => false </isOpcodeExpected>
+           <expectedAddress> _ => .Account </expectedAddress>
+           <expectedData> _ => .ByteArray </expectedData>
+           <opcodeType> _ => .OpcodeType </opcodeType>
+           <expectedValue> _ => 0 </expectedValue>
+         </expectedOpcode>
+```
+
 - `#setPrank NEWCALLER NEWORIGIN SINGLEPRANK` will set the `<prank/>` subconfiguration for the given accounts.
 
 ```k
@@ -856,31 +1030,36 @@ If the production is matched when no prank is active, it will be ignored.
 - selectors for cheat code functions.
 
 ```k
-    rule ( selector ( "assume(bool)" )                   => 1281615202 )
-    rule ( selector ( "deal(address,uint256)" )          => 3364511341 )
-    rule ( selector ( "etch(address,bytes)" )            => 3033974658 )
-    rule ( selector ( "warp(uint256)" )                  => 3856056066 )
-    rule ( selector ( "roll(uint256)" )                  => 528174896  )
-    rule ( selector ( "fee(uint256)" )                   => 968063664  )
-    rule ( selector ( "chainId(uint256)" )               => 1078582738 )
-    rule ( selector ( "coinbase(address)" )              => 4282924116 )
-    rule ( selector ( "label(address,string)" )          => 3327641368 )
-    rule ( selector ( "getNonce(address)" )              => 755185067  )
-    rule ( selector ( "addr(uint256)" )                  => 4288775753 )
-    rule ( selector ( "load(address,bytes32)" )          => 1719639408 )
-    rule ( selector ( "store(address,bytes32,bytes32)" ) => 1892290747 )
-    rule ( selector ( "setNonce(address,uint64)" )       => 4175530839 )
-    rule ( selector ( "expectRevert()" )                 => 4102309908 )
-    rule ( selector ( "expectRevert(bytes)" )            => 4069379763 )
-    rule ( selector ( "startPrank(address)" )            => 105151830  )
-    rule ( selector ( "startPrank(address,address)" )    => 1169514616 )
-    rule ( selector ( "stopPrank()" )                    => 2428830011 )
-    rule ( selector ( "sign(uint256,bytes32)" )          => 3812747940 )
+    rule ( selector ( "assume(bool)" )                             => 1281615202 )
+    rule ( selector ( "deal(address,uint256)" )                    => 3364511341 )
+    rule ( selector ( "etch(address,bytes)" )                      => 3033974658 )
+    rule ( selector ( "warp(uint256)" )                            => 3856056066 )
+    rule ( selector ( "roll(uint256)" )                            => 528174896  )
+    rule ( selector ( "fee(uint256)" )                             => 968063664  )
+    rule ( selector ( "chainId(uint256)" )                         => 1078582738 )
+    rule ( selector ( "coinbase(address)" )                        => 4282924116 )
+    rule ( selector ( "label(address,string)" )                    => 3327641368 )
+    rule ( selector ( "getNonce(address)" )                        => 755185067  )
+    rule ( selector ( "addr(uint256)" )                            => 4288775753 )
+    rule ( selector ( "load(address,bytes32)" )                    => 1719639408 )
+    rule ( selector ( "store(address,bytes32,bytes32)" )           => 1892290747 )
+    rule ( selector ( "setNonce(address,uint64)" )                 => 4175530839 )
+    rule ( selector ( "expectRevert()" )                           => 4102309908 )
+    rule ( selector ( "expectRevert(bytes)" )                      => 4069379763 )
+    rule ( selector ( "startPrank(address)" )                      => 105151830  )
+    rule ( selector ( "startPrank(address,address)" )              => 1169514616 )
+    rule ( selector ( "stopPrank()" )                              => 2428830011 )
+    rule ( selector ( "expectStaticCall(address,bytes)" )          => 2232945516 )
+    rule ( selector ( "expectDelegateCall(address,bytes)" )        => 1030406631 )
+    rule ( selector ( "expectRegularCall(address,uint256,bytes)" ) => 1973496647 )
+    rule ( selector ( "expectCreate(address,uint256,bytes)" )      => 658968394  )
+    rule ( selector ( "expectCreate2(address,uint256,bytes)" )     => 3854582462 )
 ```
 
 - selectors for unimplemented cheat code functions.
 
 ```k
+    rule selector ( "sign(uint256,bytes32)" )                   => 3812747940
     rule selector ( "ffi(string[])" )                           => 2299921511
     rule selector ( "setEnv(string,string)" )                   => 1029252078
     rule selector ( "envBool(string)" )                         => 2127686781
