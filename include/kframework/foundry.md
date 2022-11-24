@@ -848,7 +848,7 @@ If the production is matched when no prank is active, it will be ignored.
         </prank>
 ```
 ```k
-    syntax ByteArray ::= #sign ( ByteArray , ByteArray ) [function,klabel(foundry_setCode)]
+    syntax ByteArray ::= #sign ( ByteArray , ByteArray ) [function,klabel(foundry_sign)]
  // -----------------------------------------------------------
     rule #sign(BA1, BA2) => #parseByteStack(ECDSASign(#unparseByteStack(BA1), #unparseByteStack(BA2))) [concrete]
 ```
