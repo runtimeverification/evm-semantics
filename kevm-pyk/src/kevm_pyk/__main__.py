@@ -376,8 +376,11 @@ def exec_foundry_prove(
             with open(kcfg_file, 'r') as kf:
                 kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
 
-    def prove_it(id_and_cfg: Tuple[str, Tuple[KCFG, Path]]) -> bool:
-        cfgid, (cfg, cfgpath) = id_and_cfg
+    def prove_it(id_cfg_port: Tuple[str, Tuple[KCFG, Path], int]) -> bool:
+        cfgid, (cfg, cfgpath), port = id_cfg_port
+        foundry.close_kore_rpc()
+        foundry.set_kore_rpc_port(port)
+
         target_node = cfg.get_unique_target()
         iterations = 0
 
@@ -460,7 +463,8 @@ def exec_foundry_prove(
 
     with ProcessPool(ncpus=workers) as process_pool:
         foundry.close_kore_rpc()
-        results = process_pool.map(prove_it, kcfgs.items())
+        proof_problems = [(k, v, 3010 + i) for i, (k, v) in enumerate(kcfgs.items())]
+        results = process_pool.map(prove_it, proof_problems)
         process_pool.close()
 
     failed = 0
