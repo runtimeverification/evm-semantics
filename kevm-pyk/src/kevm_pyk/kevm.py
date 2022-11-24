@@ -367,14 +367,26 @@ class Foundry(KEVM):
         KEVM._patch_symbol_table(symbol_table)
 
     @staticmethod
-    def success(s: KInner, dst: KInner, r: KInner) -> KApply:
-        return KApply('foundry_success ', [s, dst, r])
+    def success(s: KInner, dst: KInner, r: KInner, c: KInner) -> KApply:
+        return KApply('foundry_success', [s, dst, r, c])
 
     @staticmethod
-    def fail(s: KInner, dst: KInner, r: KInner) -> KApply:
-        return notBool(Foundry.success(s, dst, r))
+    def fail(s: KInner, dst: KInner, r: KInner, c: KInner) -> KApply:
+        return notBool(Foundry.success(s, dst, r, c))
 
     # address(uint160(uint256(keccak256("foundry default caller"))))
+
+    @staticmethod
+    def loc_FOUNDRY_FAILED() -> KApply:  # noqa: N802
+        return KEVM.loc(
+            KApply(
+                'contract_access_field',
+                [
+                    KApply('FoundryCheat_FOUNDRY-ACCOUNTS_FoundryContract'),
+                    KApply('Failed_FOUNDRY-ACCOUNTS_FoundryField'),
+                ],
+            )
+        )
 
     @staticmethod
     def address_CALLER() -> KToken:  # noqa: N802
