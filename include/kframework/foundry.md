@@ -999,10 +999,10 @@ Utils
          </account>
 ```
 
-`#setSymbolicStorage ACCTID` takes a given account and makes its storage fully symbolic
+`#setSymbolicStorage ACCTID` takes a given account and makes its storage fully symbolic.
 
 ```k
-     syntax KItem ::= "#setSymbolicStorage" Int [klabel(foundry_setNonce)]
+     syntax KItem ::= "#setSymbolicStorage" Int [klabel(foundry_setSymbolicStorage)]
  // ----------------------------------------------------------------
     rule <k> #setSymbolicStorage ACCTID => . ... </k>
          <account>
