@@ -396,6 +396,7 @@ def exec_foundry_prove(
         return len(failure_nodes) == 0
 
     with ProcessPool(ncpus=workers) as process_pool:
+        foundry.close_kore_rpc()
         results = process_pool.map(prove_it, kcfgs.items())
         process_pool.close()
 
