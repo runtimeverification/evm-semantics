@@ -445,6 +445,7 @@ def exec_foundry_prove(
             return False
 
     with ProcessPool(ncpus=workers) as process_pool:
+        foundry.close_kore_rpc()
         proof_problems = [(k, v, 3010 + i) for i, (k, v) in enumerate(kcfgs.items())]
         results = process_pool.map(prove_it, proof_problems)
         process_pool.close()
