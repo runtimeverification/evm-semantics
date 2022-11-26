@@ -353,8 +353,8 @@ def exec_foundry_prove(
                 init_term = foundry.simplify(CTerm(init_term))
                 _LOGGER.info(f'Simplifying target state for test: {test}')
                 target_term = foundry.simplify(CTerm(target_term))
-            cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_term))
-            cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_term))
+            cfg, _ = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_term))
+            cfg, _ = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_term))
             kcfgs[test] = (cfg, kcfg_file)
             _write_cfg(cfg, kcfg_file)
         else:

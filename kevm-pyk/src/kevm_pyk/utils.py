@@ -1,4 +1,4 @@
-from typing import Collection, Iterable, List
+from typing import Collection, Iterable, List, Tuple
 
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable
@@ -36,7 +36,7 @@ def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # no
     return term
 
 
-def KCFG__replace_node(cfg: KCFG, node_id: str, new_cterm: CTerm) -> KCFG:  # noqa: N802
+def KCFG__replace_node(cfg: KCFG, node_id: str, new_cterm: CTerm) -> Tuple[KCFG, str]:  # noqa: N802
 
     # Remove old node, record data
     node = cfg.node(node_id)
@@ -57,9 +57,9 @@ def KCFG__replace_node(cfg: KCFG, node_id: str, new_cterm: CTerm) -> KCFG:  # no
     for out_edge in out_edges:
         cfg.create_edge(new_node.id, out_edge.target.id, out_edge.condition, out_edge.depth)
     for in_cover in in_covers:
-        cfg.create_cover(in_cover.source.id, new_node.id)
+        cfg.create_cover(in_cover.source.id, new_node.id, subst=in_cover.subst, constraint=in_cover.constraint)
     for out_cover in out_covers:
-        cfg.create_cover(new_node.id, out_cover.target.id)
+        cfg.create_cover(new_node.id, out_cover.target.id, subst=in_cover.subst, constraint=in_cover.constraint)
     if init:
         cfg.add_init(new_node.id)
     if target:
@@ -70,7 +70,7 @@ def KCFG__replace_node(cfg: KCFG, node_id: str, new_cterm: CTerm) -> KCFG:  # no
         if in_expanded[nid]:
             cfg.add_expanded(nid)
 
-    return cfg
+    return (cfg, new_node.id)
 
 
 def KPrint_make_unparsing(_self: KPrint, extra_modules: Iterable[KFlatModule] = ()) -> KPrint:  # noqa: N802
