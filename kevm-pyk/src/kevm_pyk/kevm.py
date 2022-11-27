@@ -106,6 +106,7 @@ class KEVM(KProve, KRun):
         symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int']              = paren(symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int'])
         symbol_table['_++__EVM-TYPES_ByteArray_ByteArray_ByteArray']  = paren(symbol_table['_++__EVM-TYPES_ByteArray_ByteArray_ByteArray'])
         symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = paren(symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'])
+        symbol_table['_up/Int__EVM-TYPES_Int_Int_Int']                = paren(symbol_table['_up/Int__EVM-TYPES_Int_Int_Int'])
         if 'typedArgs' in symbol_table:
             symbol_table['typedArgs'] = paren(symbol_table['typedArgs'])
         # fmt: on
