@@ -16,7 +16,7 @@ from pyk.kcfg_viewer.app import KCFGViewer
 from pyk.ktool.kit import KIT
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
-from pyk.prelude.ml import mlAnd, mlTop
+from pyk.prelude.ml import is_bottom, is_top, mlAnd, mlTop
 from pyk.utils import shorten_hashes
 
 from .gst_to_kore import gst_to_kore
@@ -391,6 +391,22 @@ def exec_foundry_prove(
             iterations += 1
             curr_node = cfg.frontier[0]
 
+            _LOGGER.info(f'Simplifying {cfgid}: {shorten_hashes((curr_node.id))}')
+            _simplified = foundry.simplify(curr_node.cterm)
+            if is_bottom(_simplified):
+                cfg.create_cover(curr_node.id, cfg.get_unique_target().id, constraint=mlTop())
+                _LOGGER.info(
+                    f'Infeasible node marked as proven {cfgid}: {shorten_hashes((curr_node.id, cfg.get_unique_target().id))}'
+                )
+                continue
+            if is_top(_simplified):
+                raise ValueError(f'Found #Top node {cfgid}: {shorten_hashes((curr_node.id))}')
+            simplified = CTerm(_simplified)
+            if simplified != curr_node.cterm:
+                cfg, new_node_id = KCFG__replace_node(cfg, curr_node.id, simplified)
+                _LOGGER.info(f'Replaced with simplified node: {shorten_hashes((curr_node.id, new_node_id))}')
+                continue
+
             _LOGGER.info(
                 f'Checking subsumption into target state {cfgid}: {shorten_hashes((curr_node.id, target_node.id))}'
             )
@@ -403,13 +419,13 @@ def exec_foundry_prove(
 
             cfg.add_expanded(curr_node.id)
 
-            _LOGGER.info(f'Checking terminal node {cfgid}: {shorten_hashes((curr_node.id))}')
+            _LOGGER.info(f'Checking terminal {cfgid}: {shorten_hashes((curr_node.id))}')
             if KEVM.is_terminal(curr_node.cterm):
                 _LOGGER.info(f'Terminal node {cfgid}: {shorten_hashes((curr_node.id))}.')
                 continue
 
             _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
-            depth, cterm, next_cterms = foundry.execute(curr_node.cterm, depth=max_depth)
+            depth, cterm, next_cterms = foundry.execute(simplified, depth=max_depth, terminal_rules=['EVM.halt'])
             if depth == 0:
                 _LOGGER.info(f'Found stuck node {cfgid}: {shorten_hashes(curr_node.id)}')
                 continue
