@@ -142,7 +142,7 @@ jobs:
           name: runtimeverification
           extraPullNames: kore
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-          authToken: ${{ secrets.CACHIX_PRIVATE_TOKEN }}
+          authToken: ${{ secrets.CACHIX_RV_PRIVATE_TOKEN }}
 
       # - name: Check submodules
       #   run: GC_DONT_GC=1 nix run .#check-submodules
