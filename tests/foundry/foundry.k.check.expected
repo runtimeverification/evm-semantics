@@ -202,6 +202,8 @@ module ADDRTEST-BIN-RUNTIME
     
     syntax AddrTestMethod ::= "test_addr_false" "(" ")" [symbol(), klabel(method_AddrTest_test_addr_false)]
     
+    syntax AddrTestMethod ::= "test_addr_symbolic" "(" Int ")" [symbol(), klabel(method_AddrTest_test_addr_symbolic)]
+    
     syntax AddrTestMethod ::= "test_addr_true" "(" ")" [symbol(), klabel(method_AddrTest_test_addr_true)]
     
     syntax AddrTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AddrTest_vm)]
@@ -222,6 +224,10 @@ module ADDRTEST-BIN-RUNTIME
       
     
     rule  ( AddrTest . test_addr_false ( ) => #abiCallData ( "test_addr_false" , .TypedArgs ) )
+      
+    
+    rule  ( AddrTest . test_addr_symbolic ( V0_pk ) => #abiCallData ( "test_addr_symbolic" , #uint256 ( V0_pk ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_pk )
       
     
     rule  ( AddrTest . test_addr_true ( ) => #abiCallData ( "test_addr_true" , .TypedArgs ) )
@@ -246,6 +252,9 @@ module ADDRTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_addr_false" ) => 4124294109 )
+      
+    
+    rule  ( selector ( "test_addr_symbolic" ) => 3071220939 )
       
     
     rule  ( selector ( "test_addr_true" ) => 809049819 )
@@ -3601,117 +3610,6 @@ module STORETEST-BIN-RUNTIME
 
 endmodule
 
-module SYMBOLICSTORAGETEST-BIN-RUNTIME
-    imports public FOUNDRY
-    
-    syntax Contract ::= SymbolicStorageTestContract
-    
-    syntax SymbolicStorageTestContract ::= "SymbolicStorageTest" [symbol(), klabel(contract_SymbolicStorageTest)]
-    
-      
-    
-    syntax Field ::= SymbolicStorageTestField
-    
-    syntax SymbolicStorageTestField ::= "IS_TEST" [symbol(), klabel(field_SymbolicStorageTest_IS_TEST)]
-    
-    syntax SymbolicStorageTestField ::= "_failed" [symbol(), klabel(field_SymbolicStorageTest__failed)]
-    
-    syntax SymbolicStorageTestField ::= "IS_SCRIPT" [symbol(), klabel(field_SymbolicStorageTest_IS_SCRIPT)]
-    
-    syntax SymbolicStorageTestField ::= "stdstore" [symbol(), klabel(field_SymbolicStorageTest_stdstore)]
-    
-    rule  ( #loc ( SymbolicStorageTest . IS_TEST ) => 0 )
-      
-    
-    rule  ( #loc ( SymbolicStorageTest . _failed ) => 0 )
-      
-    
-    rule  ( #loc ( SymbolicStorageTest . IS_SCRIPT ) => 0 )
-      
-    
-    rule  ( #loc ( SymbolicStorageTest . stdstore ) => 1 )
-      
-    
-    syntax ByteArray ::= SymbolicStorageTestContract "." SymbolicStorageTestMethod [function(), symbol(), klabel(method_SymbolicStorageTest)]
-    
-    syntax SymbolicStorageTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_IS_SCRIPT)]
-    
-    syntax SymbolicStorageTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_IS_TEST)]
-    
-    syntax SymbolicStorageTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_failed)]
-    
-    syntax SymbolicStorageTestMethod ::= "testFail_SymbolicStorage" "(" Int ")" [symbol(), klabel(method_SymbolicStorageTest_testFail_SymbolicStorage)]
-    
-    syntax SymbolicStorageTestMethod ::= "testFail_SymbolicStorage1" "(" Int ")" [symbol(), klabel(method_SymbolicStorageTest_testFail_SymbolicStorage1)]
-    
-    syntax SymbolicStorageTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_vm)]
-    
-    syntax SymbolicStorageTestMethod ::= "vm2" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_vm2)]
-    
-    rule  ( SymbolicStorageTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
-      
-    
-    rule  ( SymbolicStorageTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
-      
-    
-    rule  ( SymbolicStorageTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( SymbolicStorageTest . testFail_SymbolicStorage ( V0_slot ) => #abiCallData ( "testFail_SymbolicStorage" , #uint256 ( V0_slot ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_slot )
-      
-    
-    rule  ( SymbolicStorageTest . testFail_SymbolicStorage1 ( V0_slot ) => #abiCallData ( "testFail_SymbolicStorage1" , #uint256 ( V0_slot ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_slot )
-      
-    
-    rule  ( SymbolicStorageTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
-      
-    
-    rule  ( SymbolicStorageTest . vm2 ( ) => #abiCallData ( "vm2" , .TypedArgs ) )
-      
-    
-    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
-      
-    
-    rule  ( selector ( "IS_TEST" ) => 4202047188 )
-      
-    
-    rule  ( selector ( "failed" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "testFail_SymbolicStorage" ) => 821477045 )
-      
-    
-    rule  ( selector ( "testFail_SymbolicStorage1" ) => 2899744320 )
-      
-    
-    rule  ( selector ( "vm" ) => 980845667 )
-      
-    
-    rule  ( selector ( "vm2" ) => 3092779695 )
-      
-
-endmodule
-
-module SYMBOLICSTORE-BIN-RUNTIME
-    imports public FOUNDRY
-    
-    syntax Contract ::= SymbolicStoreContract
-    
-    syntax SymbolicStoreContract ::= "SymbolicStore" [symbol(), klabel(contract_SymbolicStore)]
-    
-      
-    
-    syntax Field ::= SymbolicStoreField
-    
-    syntax SymbolicStoreField ::= "testNumber" [symbol(), klabel(field_SymbolicStore_testNumber)]
-    
-    rule  ( #loc ( SymbolicStore . testNumber ) => 0 )
-      
-
-endmodule
-
 module TEST-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -6698,8 +6596,6 @@ module FOUNDRY-MAIN
     imports public SNAPSHOTTEST-BIN-RUNTIME
     imports public STORE-BIN-RUNTIME
     imports public STORETEST-BIN-RUNTIME
-    imports public SYMBOLICSTORAGETEST-BIN-RUNTIME
-    imports public SYMBOLICSTORE-BIN-RUNTIME
     imports public TEST-BIN-RUNTIME
     imports public STDERROR-BIN-RUNTIME
     imports public STDMATH-BIN-RUNTIME
