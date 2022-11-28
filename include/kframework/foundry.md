@@ -1003,7 +1003,7 @@ Utils
 
 ```k
      syntax KItem ::= "#setSymbolicStorage" Int [klabel(foundry_setSymbolicStorage)]
- // ----------------------------------------------------------------
+ // --------------------------------------------------------------------------------
     rule <k> #setSymbolicStorage ACCTID => . ... </k>
          <account>
            <acctID> ACCTID </acctID>
