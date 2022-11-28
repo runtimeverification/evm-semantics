@@ -10,17 +10,7 @@ from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSequence, KSort, KVariable, build_assoc
 from pyk.kast.manip import abstract_term_safely, substitute
-from pyk.kast.outer import (
-    KFlatModule,
-    KImport,
-    KNonTerminal,
-    KProduction,
-    KProductionItem,
-    KRule,
-    KSentence,
-    KTerminal,
-    KToken,
-)
+from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KProductionItem, KRule, KSentence, KTerminal
 from pyk.kcfg import KCFG
 from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import intToken
@@ -337,11 +327,10 @@ def method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Met
 
 
 def _init_cterm(init_term: KInner) -> CTerm:
-    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
-    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
+    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), Foundry.loc_FOUNDRY_FAILED())
     init_cterm = CTerm(init_term)
     init_cterm = KEVM.add_invariant(init_cterm)
-    init_cterm = init_cterm.add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
+    init_cterm = init_cterm.add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, intToken(0)])))
     return init_cterm
 
 
@@ -370,6 +359,7 @@ def _init_term(
         'PROGRAM_CELL': program,
         'JUMPDESTS_CELL': KEVM.compute_valid_jumpdests(program),
         'ORIGIN_CELL': KVariable('ORIGIN_ID'),
+        'LOG_CELL': KApply('.List'),
         'ID_CELL': Foundry.address_TEST_CONTRACT(),
         'CALLER_CELL': KVariable('CALLER_ID'),
         'ACCESSEDACCOUNTS_CELL': KApply('.Set'),
@@ -389,10 +379,10 @@ def _init_term(
             ),
         ),
         'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
-        'PREVCALLER_CELL': KToken('.Account', 'K'),
-        'PREVORIGIN_CELL': KToken('.Account', 'K'),
-        'NEWCALLER_CELL': KToken('.Account', 'K'),
-        'NEWORIGIN_CELL': KToken('.Account', 'K'),
+        'PREVCALLER_CELL': KApply('.Account_EVM-TYPES_Account'),
+        'PREVORIGIN_CELL': KApply('.Account_EVM-TYPES_Account'),
+        'NEWCALLER_CELL': KApply('.Account_EVM-TYPES_Account'),
+        'NEWORIGIN_CELL': KApply('.Account_EVM-TYPES_Account'),
         'ACTIVE_CELL': FALSE,
         'STATIC_CELL': FALSE,
         'MEMORYUSED_CELL': intToken(0),
@@ -411,6 +401,13 @@ def _init_term(
         ),
         'SINGLECALL_CELL': FALSE,
         'EXPECTEDREVERT_CELL': FALSE,
+        'ISOPCODEEXPECTED_CELL': FALSE,
+        'EXPECTEDADDRESS_CELL': KApply('.Account_EVM-TYPES_Account'),
+        'EXPECTEDVALUE_CELL': intToken(0),
+        'EXPECTEDDATA_CELL': KApply('.ByteArray_EVM-TYPES_ByteArray'),
+        'OPCODETYPE_CELL': KApply('.OpcodeType_FOUNDRY-CHEAT-CODES_OpcodeType'),
+        'RECORDEVENT_CELL': FALSE,
+        'ISEVENTEXPECTED_CELL': FALSE,
     }
 
     if calldata is not None:
@@ -424,9 +421,15 @@ def _init_term(
 
 def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True) -> CTerm:
     final_term = _final_term(empty_config, contract_name)
-    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
-    dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
-    foundry_success = Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post, KVariable('EXPECTEDREVERT_FINAL'))
+    dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), Foundry.loc_FOUNDRY_FAILED())
+    foundry_success = Foundry.success(
+        KVariable('STATUSCODE_FINAL'),
+        dst_failed_post,
+        KVariable('EXPECTEDREVERT_FINAL'),
+        KVariable('ISOPCODEEXPECTED_FINAL'),
+        KVariable('RECORDEVENT_FINAL'),
+        KVariable('ISEVENTEXPECTED_FINAL'),
+    )
     final_cterm = CTerm(final_term)
     if is_test:
         if not failing:
@@ -460,10 +463,20 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             ]
         ),
         'EXPECTEDREVERT_CELL': KVariable('EXPECTEDREVERT_FINAL'),
+        'ISOPCODEEXPECTED_CELL': KVariable('ISOPCODEEXPECTED_FINAL'),
+        'RECORDEVENT_CELL': KVariable('RECORDEVENT_FINAL'),
+        'ISEVENTEXPECTED_CELL': KVariable('ISEVENTEXPECTED_FINAL'),
     }
     return abstract_cell_vars(
         substitute(empty_config, final_subst),
-        [KVariable('STATUSCODE_FINAL'), KVariable('ACCOUNTS_FINAL'), KVariable('EXPECTEDREVERT_FINAL')],
+        [
+            KVariable('STATUSCODE_FINAL'),
+            KVariable('ACCOUNTS_FINAL'),
+            KVariable('EXPECTEDREVERT_FINAL'),
+            KVariable('ISOPCODEEXPECTED_FINAL'),
+            KVariable('RECORDEVENT_FINAL'),
+            KVariable('ISEVENTEXPECTED_FINAL'),
+        ],
     )
 
 
