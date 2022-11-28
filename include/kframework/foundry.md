@@ -1192,6 +1192,9 @@ If the production is matched when no prank is active, it will be ignored.
 - selectors for unimplemented cheat code functions.
 
 ```k
+    rule selector ( "expectRegularCall(address,bytes)" )        => 3178868520
+    rule selector ( "expectNoCall()" )                          => 3861374088
+    rule selector ( "symbolicStorage(address)" )                => 769677742
     rule selector ( "sign(uint256,bytes32)" )                   => 3812747940
     rule selector ( "ffi(string[])" )                           => 2299921511
     rule selector ( "setEnv(string,string)" )                   => 1029252078
