@@ -8,11 +8,12 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm
-from pyk.kast import KApply, KAtt, KDefinition, KFlatModule, KImport, KInner, KRequire, KRewrite, KRule, KToken
-from pyk.kastManip import flatten_label, minimize_term, push_down_rewrites
+from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
+from pyk.kast.manip import flatten_label, minimize_term, push_down_rewrites
+from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG
 from pyk.ktool.kit import KIT
-from pyk.ktool.krun import _krun
+from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_top, mlTop
 
 from .gst_to_kore import gst_to_kore
@@ -270,6 +271,7 @@ def exec_foundry_prove(
     minimize: bool = True,
     lemmas: Iterable[str] = (),
     simplify_init: bool = True,
+    retry: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -368,7 +370,10 @@ def exec_foundry_prove(
         _target_node = _cfg.get_unique_target()
         _claim = KCFG.Edge(_init_node, _target_node, mlTop(), -1).to_claim()
         _claim_id = _cfg_id.replace('.', '-').replace('_', '-')
-        ret, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
+        _, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
+        if not is_top(result) and retry:
+            _LOGGER.warning(f'Retrying proof once: {_cfg_id}')
+            _, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
         _cfg.add_expanded(_init_node.id)
         if is_top(result):
             _cfg.create_edge(_cfg.get_unique_init().id, _cfg.get_unique_target().id, mlTop(), -1)
@@ -472,17 +477,16 @@ def exec_run(
     output: str,
     **kwargs: Any,
 ) -> None:
-    kevm = KEVM(definition_dir, profile=profile)
-    krun_args = []
-    if term:
-        krun_args += ['--term']
-    if parser is not None:
-        krun_args += ['--parser', parser]
-    if not expand_macros:
-        krun_args += ['--no-expand-macros']
-    # TODO: These are inlined into _krun
-    krun_args += ['--output', output]
-    krun_result = _krun(kevm.definition_dir, Path(input_file), depth=depth, args=krun_args, profile=profile)
+    krun_result = _krun(
+        definition_dir=Path(definition_dir),
+        input_file=Path(input_file),
+        depth=depth,
+        profile=profile,
+        term=term,
+        no_expand_macros=not expand_macros,
+        parser=parser,
+        output=KRunOutput[output.upper()],
+    )
     print(krun_result.stdout)
     sys.exit(krun_result.returncode)
 
@@ -713,6 +717,13 @@ def _create_argument_parser() -> ArgumentParser:
         dest='simplify_init',
         action='store_false',
         help='Do not simplify the initial and target states at startup.',
+    )
+    foundry_prove_args.add_argument(
+        '--retry',
+        dest='retry',
+        default=False,
+        action='store_true',
+        help='Retry failing proofs once.',
     )
 
     foundry_show_args = command_parser.add_parser(
