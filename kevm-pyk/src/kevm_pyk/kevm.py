@@ -31,12 +31,14 @@ class KEVM(KProve, KRun):
         main_file: Optional[Path] = None,
         use_directory: Optional[Path] = None,
         profile: bool = False,
+        kprove_command = 'kprove',
+        krun_command = 'krun',
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
         # Note that they say using `super` supports dependency injection, but I have never liked dependency injection anyway.
-        KProve.__init__(self, definition_dir, use_directory=use_directory, main_file=main_file, profile=profile)
-        KRun.__init__(self, definition_dir, use_directory=use_directory, profile=profile)
+        KProve.__init__(self, definition_dir, use_directory=use_directory, main_file=main_file, profile=profile, command=kprove_command)
+        KRun.__init__(self, definition_dir, use_directory=use_directory, profile=profile, command=krun_command)
         KEVM._patch_symbol_table(self.symbol_table)
 
     @staticmethod
