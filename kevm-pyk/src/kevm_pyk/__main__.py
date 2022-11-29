@@ -372,6 +372,7 @@ def exec_foundry_prove(
         while cfg.frontier:
             _write_cfg(cfg, cfgpath)
             if max_iterations is not None and max_iterations <= iterations:
+                _LOGGER.warning(f'Reached iteration bound: {max_iterations}')
                 break
             iterations += 1
             curr_node = cfg.frontier[0]
