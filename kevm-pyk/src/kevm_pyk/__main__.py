@@ -410,10 +410,10 @@ def exec_foundry_prove(
             _LOGGER.info(
                 f'Checking subsumption into target state {cfgid}: {shorten_hashes((curr_node.id, target_node.id))}'
             )
-            subsumption = foundry.implies(curr_node.cterm, target_node.cterm)
-            if subsumption is not None:
-                final_subst, final_pred = subsumption
-                cfg.create_cover(curr_node.id, target_node.id, subst=final_subst, constraint=final_pred)
+            impl = foundry.implies(curr_node.cterm, target_node.cterm)
+            if impl is not None:
+                subst, pred = impl
+                cfg.create_cover(curr_node.id, target_node.id, subst=subst, constraint=pred)
                 _LOGGER.info(f'Subsumed into target node: {shorten_hashes((curr_node.id, target_node.id))}')
                 continue
 
