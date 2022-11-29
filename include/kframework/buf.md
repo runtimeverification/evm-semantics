@@ -23,7 +23,7 @@ Claims should always use `#bufStrict` in LHS and `#buf` in RHS.
 
 ```k
     syntax ByteArray ::= #bufStrict ( Int , Int ) [function]
-    syntax ByteArray ::= #buf ( Int , Int ) [function, functional, smtlib(buf)]
+    syntax ByteArray ::= #buf ( Int , Int ) [function, total, smtlib(buf)]
 
     syntax Int ::= #ceil32 ( Int ) [macro]
  // --------------------------------------

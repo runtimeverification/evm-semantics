@@ -85,8 +85,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
  // ------------------------------------------------------------------------
     rule #signatureCallData( FNAME , ARGS ) => #parseByteStack(substrString(Keccak256(#generateSignature(FNAME, ARGS)), 0, 8))
 
-    syntax String ::= #generateSignature     ( String, TypedArgs ) [function, functional]
-                    | #generateSignatureArgs ( TypedArgs )         [function, functional]
+    syntax String ::= #generateSignature     ( String, TypedArgs ) [function, total]
+                    | #generateSignatureArgs ( TypedArgs )         [function, total]
  // -------------------------------------------------------------------------------------
     rule #generateSignature( FNAME , ARGS ) => FNAME +String "(" +String #generateSignatureArgs(ARGS) +String ")"
 
@@ -94,7 +94,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #generateSignatureArgs(TARGA:TypedArg, .TypedArgs)            => #typeName(TARGA)
     rule #generateSignatureArgs(TARGA:TypedArg, TARGB:TypedArg, TARGS) => #typeName(TARGA) +String "," +String #generateSignatureArgs(TARGB, TARGS)
 
-    syntax String ::= #typeName ( TypedArg ) [function, functional]
+    syntax String ::= #typeName ( TypedArg ) [function, total]
  // ---------------------------------------------------------------
     rule #typeName(   #address( _ )) => "address"
 
@@ -160,12 +160,12 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
         => #encodeArgsAux(ARGS, OFFSET +Int #sizeOfDynamicType(ARG), HEADS ++ #enc(#uint256(OFFSET)), TAILS ++ #enc(ARG))
       requires notBool(#isStaticType(ARG))
 
-    syntax Int ::= #lenOfHeads ( TypedArgs ) [function, functional]
+    syntax Int ::= #lenOfHeads ( TypedArgs ) [function, total]
  // ---------------------------------------------------------------
     rule #lenOfHeads(.TypedArgs) => 0
     rule #lenOfHeads(ARG, ARGS)  => #lenOfHead(ARG) +Int #lenOfHeads(ARGS)
 
-    syntax Int ::= #lenOfHead ( TypedArg ) [function, functional]
+    syntax Int ::= #lenOfHead ( TypedArg ) [function, total]
  // -------------------------------------------------------------
     rule #lenOfHead(  #address( _ )) => 32
 
@@ -216,7 +216,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #lenOfHead(#array(_, _, _)) => 32
 
-    syntax Bool ::= #isStaticType ( TypedArg ) [function, functional]
+    syntax Bool ::= #isStaticType ( TypedArg ) [function, total]
  // -----------------------------------------------------------------
     rule #isStaticType(  #address( _ )) => true
 
