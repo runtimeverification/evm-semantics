@@ -199,9 +199,10 @@ module FOUNDRY-CHEAT-CODES
           <expectedValue> 0 </expectedValue>
           <expectedData> .ByteArray </expectedData>
           <opcodeType> .OpcodeType </opcodeType>
-       </expectedOpcode>
+        </expectedOpcode>
         <expectEmit>
           <recordEvent> false </recordEvent>
+          <eventId> 0 </eventId>
           <isEventExpected> false </isEventExpected>
           <checkedTopics> .List </checkedTopics>
           <checkedData> false </checkedData>
@@ -854,20 +855,31 @@ With address: Asserts the topics match and that the emitting address matches.
          <expectEmit>
           <recordEvent> true => false </recordEvent>
           <isEventExpected> false => true </isEventExpected>
+          <eventId> 0 => size(LOGS) </eventId>
           ...
         </expectEmit>
+        <log> LOGS </log>
         <wordStack> WS </wordStack>
       requires #sizeWordStack(WS) >=Int N
       [priority(40)]
 
-    rule <k> (. => #clearExpectEmit) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
-         <log> _ ListItem({ _ | TOPICS | DATA }:SubstateLogEntry) </log>
+    rule <k> (. => LOGS[EVENTID]) ~> LOG(_) _MEMSTART _MEMWIDTH ... </k>
+         <log> LOGS </log>
          <expectEmit>
           <recordEvent> false </recordEvent>
           <isEventExpected> true </isEventExpected>
+          <eventId> EVENTID </eventId>
+          ...
+        </expectEmit>
+      requires size(LOGS) >Int EVENTID
+      [priority(40)]
+
+    rule <k> ({ _ | TOPICS | DATA }:SubstateLogEntry => #clearExpectEmit) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
+         <expectEmit>
           <checkedTopics> CHECKS </checkedTopics>
           <checkedData> CHECKDATA </checkedData>
           <expectedEventAddress> .Account </expectedEventAddress>
+          ...
         </expectEmit>
         <wordStack> WS </wordStack>
         <localMem> LM </localMem>
@@ -876,15 +888,13 @@ With address: Asserts the topics match and that the emitting address matches.
        andBool ((notBool CHECKDATA) orBool (#asWord(DATA) ==Int #asWord(#range(LM, MEMSTART, MEMWIDTH))))
       [priority(40)]
 
-    rule <k> (. => #clearExpectEmit) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
-         <log> _ ListItem({ _ | TOPICS | DATA }:SubstateLogEntry) </log>
-         <id> ACCT </id>
+    rule <k> ({ _ | TOPICS | DATA }:SubstateLogEntry => #clearExpectEmit) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
+        <id> ACCT </id>
          <expectEmit>
-          <recordEvent> false </recordEvent>
-          <isEventExpected> true </isEventExpected>
           <checkedTopics> CHECKS </checkedTopics>
           <checkedData> CHECKDATA </checkedData>
           <expectedEventAddress> ACCT </expectedEventAddress>
+          ...
         </expectEmit>
         <wordStack> WS </wordStack>
         <localMem> LM </localMem>
@@ -1131,6 +1141,7 @@ If the production is matched when no prank is active, it will be ignored.
            <checkedTopics> _ => ListItem(true) ListItem(T1) ListItem(T2) ListItem(T3) .List </checkedTopics>
            <checkedData> _ => CHECKDATA </checkedData>
            <expectedEventAddress> _ => ACCT </expectedEventAddress>
+           <eventId> _ => 0 </eventId>
          </expectEmit>
 ```
 
@@ -1146,6 +1157,7 @@ If the production is matched when no prank is active, it will be ignored.
            <checkedTopics> _ => .List </checkedTopics>
            <checkedData> _ => false </checkedData>
            <expectedEventAddress> _ => .Account </expectedEventAddress>
+           <eventId> _ => 0 </eventId>
          </expectEmit>
 ```
 
