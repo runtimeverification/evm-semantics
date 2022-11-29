@@ -504,6 +504,21 @@ This rule then takes from the function call data the account using `#asWord(#ran
       requires SELECTOR ==Int selector ( "store(address,bytes32,bytes32)" )
 ```
 
+#### `symbolicStorage` - Makes the storage of the given address completely symbolic.
+
+```
+function symbolicStorage(address) external;
+```
+
+`foundry.call.symbolicStorage` will match when the `symbolicStorage` cheat code function is called.
+This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes its storage completely symbolic.
+
+```{.k .bytes}
+    rule [foundry.call.symbolicStorage]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setSymbolicStorage #asWord(ARGS) ... </k>
+      requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
+```
+
 #### expectRevert - expect the next call to revert.
 
 ```
@@ -981,6 +996,20 @@ Utils
            <acctID> ACCTID </acctID>
            <storage> STORAGE => STORAGE [ LOC <- VALUE ] </storage>
              ...
+         </account>
+```
+
+`#setSymbolicStorage ACCTID` takes a given account and makes its storage fully symbolic.
+
+```k
+     syntax KItem ::= "#setSymbolicStorage" Int [klabel(foundry_setSymbolicStorage)]
+ // --------------------------------------------------------------------------------
+    rule <k> #setSymbolicStorage ACCTID => . ... </k>
+         <account>
+           <acctID> ACCTID </acctID>
+           <storage> _ => ?STORAGE </storage>
+           <origStorage> _ => ?STORAGE </origStorage>
+           ...
          </account>
 ```
 
