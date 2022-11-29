@@ -449,14 +449,8 @@ def exec_foundry_prove(
                 _LOGGER.info(
                     f'Found {len(list(branches))} branches at depth {depth} for {cfgid}: {[foundry.pretty_print(b) for b in branches]}'
                 )
-                for branch in branches:
-                    branch_cterm = cterm.add_constraint(branch)
-                    branch_node = cfg.get_or_create_node(branch_cterm)
-                    cfg.create_edge(next_node.id, branch_node.id, branch, 0)
-                    _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((next_node.id, branch_node.id))}')
-                    # TODO: have to store case splits as rewrites because of how frontier is handled for covers
-                    # cfg.create_cover(branch_node.id, next_node.id)
-                    # _LOGGER.info(f'Made cover: {shorten_hashes((branch_node.id, next_node.id))}')
+                splits = cfg.split_node(next_node.id, branches)
+                _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((next_node.id, splits))}')
             else:
                 _LOGGER.warning(f'Falling back to extracted next states for {cfgid}:\n{next_node.id}')
                 branch_constraints = [[c for c in s.constraints if c not in cterm.constraints] for s in next_cterms]
