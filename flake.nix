@@ -38,7 +38,7 @@
           llvmPackages.llvm
           cryptopp.dev
           gmp
-          graphviz
+          # graphviz
           mpfr
           openssl.dev
           pkg-config
