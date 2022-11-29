@@ -146,4 +146,4 @@ jobs:
       #   run: GC_DONT_GC=1 nix run .#check-submodules
 
       - name: Test KEVM
-        run: GC_DONT_GC=1 nix build .#kevm-test
+        run: GC_DONT_GC=1 nix build --print-build-logs .#kevm-test
