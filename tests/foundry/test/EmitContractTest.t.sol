@@ -6,6 +6,8 @@ import "src/EmitContract.sol";
 
 contract EmitContractTest is Test {
     event Transfer(address indexed from, address indexed to, uint256 amount);
+    event TransferFoo(address indexed from, address indexed to, uint256 amount);
+
 
     function testExpectEmit() public {
         ExpectEmit emitter = new ExpectEmit();
@@ -34,6 +36,14 @@ contract EmitContractTest is Test {
         // The event we expect
         emit Transfer(address(this), address(1337), 1337);
         // The event we get
+        emitter.t();
+    }
+
+    function testFailExpectEmitDifferentEvents() public {
+        ExpectEmit emitter = new ExpectEmit();
+        vm.expectEmit(true, true, false, true, address(emitter));
+        emit TransferFoo(address(this), address(1337), 1337);
+        emit Transfer(address(this), address(1337), 1337);
         emitter.t();
     }
 }
