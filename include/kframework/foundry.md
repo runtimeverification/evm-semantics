@@ -822,12 +822,18 @@ function stopPrank() external;
 
 Expecting Events
 ----------------
+
+Assert a specific log is emitted before the end of the current function.
+There are 2 signatures:
+
 ```
 function expectEmit(bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData) external;
 function expectEmit(bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData, address emitter) external;
 ```
 
-Assert a specific log is emitted before the end of the current function.
+Without checking the emitter address: Asserts the topics match without checking the emitting address.
+With address: Asserts the topics match and that the emitting address matches.
+
 
 Call the cheat code, specifying whether we should check the first, second or third topic, and the log data.
 Topic 0 is always checked.
@@ -835,10 +841,7 @@ Emit the event we are supposed to see before the end of the current function.
 Perform the call.
 If the event is not available in the current scope (e.g. if we are using an interface, or an external smart contract), we can define the event ourselves with an identical event signature.
 
-There are 2 signatures:
-
-Without checking the emitter address: Asserts the topics match without checking the emitting address.
-With address: Asserts the topics match and that the emitting address matches.
+`foundry.call.expectEmit` and `foundry.call.expectEmitAddr` are the rules which intercept the calls from the cheat code interface.
 
 ```{.k .bytes}
     rule [foundry.call.expectEmit]:
@@ -850,8 +853,14 @@ With address: Asserts the topics match and that the emitting address matches.
       requires SELECTOR ==Int selector ( "expectEmit(bool,bool,bool,bool,address)" )
 ```
 
+Then, we define rules for the `LOG(N)` Opcodes with higher priority than the ones in `evm.md`.
+The first one, `foundry.recordEvent` is used to record the event emitted right after the invocation of the `expectEmit` cheat code.
+Events are already recorded in the `<log>` cell as `SubstateLogEntry` elements.
+To record a specific event, we just store its index in `<eventId>` cell.
+
 ```{.k .bytes}
-    rule <k> LOG(N) _MEMSTART _MEMWIDTH ... </k>
+    rule [foundry.recordEvent]:
+         <k> LOG(N) _MEMSTART _MEMWIDTH ... </k>
          <expectEmit>
           <recordEvent> true => false </recordEvent>
           <isEventExpected> false => true </isEventExpected>
@@ -862,47 +871,47 @@ With address: Asserts the topics match and that the emitting address matches.
         <wordStack> WS </wordStack>
       requires #sizeWordStack(WS) >=Int N
       [priority(40)]
+```
 
-    rule <k> (. => LOGS[EVENTID]) ~> LOG(_) _MEMSTART _MEMWIDTH ... </k>
-         <log> LOGS </log>
+The second and third rules `foundry.checkEvent` and `foundry.checkEventAndEmitter` will try to match the event which is just about to be emitted with the event recorded previously in `LOGS[EVENTID]`.
+
+```{.k .bytes}
+    rule [foundry.checkEvent]:
+         <k> (. => #clearExpectEmit) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
          <expectEmit>
           <recordEvent> false </recordEvent>
           <isEventExpected> true </isEventExpected>
-          <eventId> EVENTID </eventId>
-          ...
-        </expectEmit>
-      requires size(LOGS) >Int EVENTID
-      [priority(40)]
-
-    rule <k> ({ _ | TOPICS | DATA }:SubstateLogEntry => #clearExpectEmit) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
-         <expectEmit>
           <checkedTopics> CHECKS </checkedTopics>
           <checkedData> CHECKDATA </checkedData>
           <expectedEventAddress> .Account </expectedEventAddress>
-          ...
+          <eventId> EVENTID </eventId>
         </expectEmit>
+        <log> LOGS </log>
         <wordStack> WS </wordStack>
         <localMem> LM </localMem>
       requires #sizeWordStack(WS) >=Int N
-       andBool  #checkTopics(CHECKS, TOPICS, WordStack2List(#take(N, WS)))
-       andBool ((notBool CHECKDATA) orBool (#asWord(DATA) ==Int #asWord(#range(LM, MEMSTART, MEMWIDTH))))
+       andBool #eventMatch({LOGS[EVENTID]}:>SubstateLogEntry, WordStack2List(#take(N, WS)), #range(LM, MEMSTART, MEMWIDTH), CHECKS, CHECKDATA)
       [priority(40)]
 
-    rule <k> ({ _ | TOPICS | DATA }:SubstateLogEntry => #clearExpectEmit) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
-        <id> ACCT </id>
+    rule [foundry.checkEventAndEmitter]:
+         <k> (. => #clearExpectEmit) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
+         <id> ACCT </id>
          <expectEmit>
+          <recordEvent> false </recordEvent>
+          <isEventExpected> true </isEventExpected>
           <checkedTopics> CHECKS </checkedTopics>
           <checkedData> CHECKDATA </checkedData>
           <expectedEventAddress> ACCT </expectedEventAddress>
-          ...
+          <eventId> EVENTID </eventId>
         </expectEmit>
+        <log> LOGS </log>
         <wordStack> WS </wordStack>
         <localMem> LM </localMem>
       requires #sizeWordStack(WS) >=Int N
-       andBool  #checkTopics(CHECKS, TOPICS, WordStack2List(#take(N, WS)))
-       andBool ((notBool CHECKDATA) orBool (#asWord(DATA) ==Int #asWord(#range(LM, MEMSTART, MEMWIDTH))))
+       andBool #eventMatch({LOGS[EVENTID]}:>SubstateLogEntry, WordStack2List(#take(N, WS)), #range(LM, MEMSTART, MEMWIDTH), CHECKS, CHECKDATA)
       [priority(40)]
 ```
+
 Otherwise, throw an error for any other call to the Foundry contract.
 
 ```{.k .bytes}
@@ -1159,6 +1168,15 @@ If the production is matched when no prank is active, it will be ignored.
            <expectedEventAddress> _ => .Account </expectedEventAddress>
            <eventId> _ => 0 </eventId>
          </expectEmit>
+```
+
+- `#eventMatch` is an auxiliary function that checks if an event stored as a log entry contains certain topics and external data.
+`TOPICS_A[N]` is going to be checked with `TOPICS_B[N]` only if `CHECKTOPICS[N]` is `True`.
+
+```k
+    syntax Bool ::= "#eventMatch" "(" SubstateLogEntry "," List "," ByteArray "," List "," Bool ")" [function, klabel(foundry_eventMatch)]
+ // -----------------------------------------------------------------------------------------------------------------------------
+    rule #eventMatch ({ _ACCT | TOPICS_A | DATA_A }:SubstateLogEntry, TOPICS_B, DATA_B, CHECKTOPICS, CHECKDATA) => #checkTopics(CHECKTOPICS, TOPICS_A, TOPICS_B) andBool ((notBool CHECKDATA) orBool (#asWord(DATA_A) ==Int #asWord(DATA_B)))
 ```
 
 - `#checkTopics` and `#checkTopic` are functions that compare the `TOPICS` of the expected `Event` with those of the currently emitted `Event`.
