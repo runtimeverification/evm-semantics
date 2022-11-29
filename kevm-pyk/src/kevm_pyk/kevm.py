@@ -106,6 +106,7 @@ class KEVM(KProve, KRun):
         symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int']              = paren(symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int'])
         symbol_table['_++__EVM-TYPES_ByteArray_ByteArray_ByteArray']  = paren(symbol_table['_++__EVM-TYPES_ByteArray_ByteArray_ByteArray'])
         symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = paren(symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'])
+        symbol_table['_up/Int__EVM-TYPES_Int_Int_Int']                = paren(symbol_table['_up/Int__EVM-TYPES_Int_Int_Int'])
         if 'typedArgs' in symbol_table:
             symbol_table['typedArgs'] = paren(symbol_table['typedArgs'])
         # fmt: on
@@ -367,12 +368,12 @@ class Foundry(KEVM):
         KEVM._patch_symbol_table(symbol_table)
 
     @staticmethod
-    def success(s: KInner, dst: KInner, r: KInner, c: KInner) -> KApply:
-        return KApply('foundry_success', [s, dst, r, c])
+    def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
+        return KApply('foundry_success', [s, dst, r, c, e1, e2])
 
     @staticmethod
-    def fail(s: KInner, dst: KInner, r: KInner, c: KInner) -> KApply:
-        return notBool(Foundry.success(s, dst, r, c))
+    def fail(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
+        return notBool(Foundry.success(s, dst, r, c, e1, e2))
 
     # address(uint160(uint256(keccak256("foundry default caller"))))
 
