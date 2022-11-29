@@ -28,12 +28,12 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 
 ```k
     syntax Int ::= bool2Word ( Bool ) [function, total, smtlib(bool2Word)]
- // ---------------------------------------------------------------------------
+ // ----------------------------------------------------------------------
     rule bool2Word( B:Bool ) => 1 requires B
     rule bool2Word( B:Bool ) => 0 requires notBool B
 
     syntax Bool ::= word2Bool ( Int ) [function, total]
- // --------------------------------------------------------
+ // ---------------------------------------------------
     rule word2Bool( W ) => false requires W  ==Int 0
     rule word2Bool( W ) => true  requires W =/=Int 0
 ```
@@ -44,7 +44,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 ```k
     syntax Int ::= sgn ( Int ) [function, total]
                  | abs ( Int ) [function, total]
- // -------------------------------------------------
+ // --------------------------------------------
     rule sgn(I) => -1 requires pow255 <=Int I andBool I <Int pow256
     rule sgn(I) =>  1 requires 0 <=Int I andBool I <Int pow255
     rule sgn(I) =>  0 requires I <Int 0 orBool pow256 <=Int I
@@ -66,7 +66,7 @@ You could alternatively calculate `I1 modInt I2`, then add one to the normal int
 
 ```k
     syntax Int ::= Int "up/Int" Int [function, total, smtlib(upDivInt)]
- // ------------------------------------------------------------------------
+ // -------------------------------------------------------------------
     rule              _I1 up/Int 0  => 0
     rule              _I1 up/Int I2 => 0                             requires I2 <Int 0
     rule               I1 up/Int 1  => I1
@@ -90,7 +90,7 @@ Warning: operands are assumed to be within the range of a 256 bit EVM word. Unbo
                  | Int "-Word" Int [function, total]
                  | Int "/Word" Int [function, total]
                  | Int "%Word" Int [function, total]
- // -----------------------------------------------------
+ // ------------------------------------------------
     rule W0 +Word W1 => chop( W0 +Int W1 )
     rule W0 -Word W1 => chop( W0 -Int W1 )
     rule W0 *Word W1 => chop( W0 *Int W1 )
@@ -107,7 +107,7 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
 ```k
     syntax Int ::= Int "^Word" Int       [function]
     syntax Int ::= powmod(Int, Int, Int) [function, total]
- // -----------------------------------------------------------
+ // ------------------------------------------------------
     rule W0 ^Word W1 => powmod(W0, W1, pow256)
 
     rule [powmod.nonzero]: powmod(W0, W1, W2) => W0 ^%Int W1 W2  requires W2 =/=Int 0
@@ -136,7 +136,7 @@ The `<op>Word` comparisons similarly lift K operators to EVM ones:
                  | Int "<=Word" Int [function, total]
                  | Int ">=Word" Int [function, total]
                  | Int "==Word" Int [function, total]
- // ------------------------------------------------------
+ // -------------------------------------------------
     rule W0 <Word  W1 => bool2Word(W0 <Int  W1)
     rule W0 >Word  W1 => bool2Word(W0 >Int  W1)
     rule W0 <=Word W1 => bool2Word(W0 <=Int W1)
@@ -148,7 +148,7 @@ The `<op>Word` comparisons similarly lift K operators to EVM ones:
 
 ```k
     syntax Int ::= Int "s<Word" Int [function, total]
- // ------------------------------------------------------
+ // -------------------------------------------------
     rule [s<Word.pp]: W0 s<Word W1 => W0 <Word W1           requires sgn(W0) ==K 1  andBool sgn(W1) ==K 1
     rule [s<Word.pn]: W0 s<Word W1 => bool2Word(false)      requires sgn(W0) ==K 1  andBool sgn(W1) ==K -1
     rule [s<Word.np]: W0 s<Word W1 => bool2Word(true)       requires sgn(W0) ==K -1 andBool sgn(W1) ==K 1
@@ -207,7 +207,7 @@ Bitwise logical operators are lifted from the integer versions.
 
 ```k
     syntax Int ::= signextend( Int , Int ) [function, total]
- // -------------------------------------------------------------
+ // --------------------------------------------------------
     rule [signextend.invalid]:  signextend(N, W) => W requires N >=Int 32 orBool N <Int 0
     rule [signextend.negative]: signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
     rule [signextend.positive]: signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
@@ -241,13 +241,13 @@ A cons-list is used for the EVM wordstack.
 
 ```k
     syntax WordStack ::= #take ( Int , WordStack ) [klabel(takeWordStack), function, total]
- // --------------------------------------------------------------------------------------------
+ // ---------------------------------------------------------------------------------------
     rule [#take.base]:      #take(N, _WS)                => .WordStack                      requires notBool N >Int 0
     rule [#take.zero-pad]:  #take(N, .WordStack)         => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
     rule [#take.recursive]: #take(N, (W : WS):WordStack) => W : #take(N -Int 1, WS)         requires N >Int 0
 
     syntax WordStack ::= #drop ( Int , WordStack ) [klabel(dropWordStack), function, total]
- // --------------------------------------------------------------------------------------------
+ // ---------------------------------------------------------------------------------------
     rule #drop(N, WS:WordStack)       => WS                                  requires notBool N >Int 0
     rule #drop(N, .WordStack)         => .WordStack                          requires         N >Int 0
     rule #drop(N, (W : WS):WordStack) => #drop(1, #drop(N -Int 1, (W : WS))) requires         N >Int 1
@@ -256,14 +256,14 @@ A cons-list is used for the EVM wordstack.
 
 ```{.k .bytes}
     syntax Bytes ::= #take ( Int , Bytes ) [klabel(takeBytes), function, total]
- // --------------------------------------------------------------------------------
+ // ---------------------------------------------------------------------------
     rule #take(N, _BS:Bytes) => .Bytes                                      requires                                        notBool N >Int 0
     rule #take(N,  BS:Bytes) => #padRightToWidth(N, .Bytes)                 requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
     rule #take(N,  BS:Bytes) => BS ++ #take(N -Int lengthBytes(BS), .Bytes) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
     rule #take(N,  BS:Bytes) => BS [ 0 .. N ]                               requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
 
     syntax Bytes ::= #drop ( Int , Bytes ) [klabel(dropBytes), function, total]
- // --------------------------------------------------------------------------------
+ // ---------------------------------------------------------------------------
     rule #drop(N, BS:Bytes) => BS                                  requires                                        notBool N >Int 0
     rule #drop(N, BS:Bytes) => .Bytes                              requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
     rule #drop(N, BS:Bytes) => .Bytes                              requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
@@ -277,13 +277,13 @@ A cons-list is used for the EVM wordstack.
 
 ```k
     syntax Int ::= WordStack "[" Int "]" [function, total]
- // -----------------------------------------------------------
+ // ------------------------------------------------------
     rule (W : _):WordStack [ N ] => W                  requires N ==Int 0
     rule WS:WordStack      [ N ] => #drop(N, WS) [ 0 ] requires N  >Int 0
     rule  _:WordStack      [ N ] => 0                  requires N  <Int 0
 
     syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function, total]
- // --------------------------------------------------------------------------
+ // ---------------------------------------------------------------------
     rule (_W0 : WS):WordStack [ N := W ] => W  : WS                     requires N ==Int 0
     rule ( W0 : WS):WordStack [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
     rule        WS :WordStack [ N := _ ] => WS                          requires N  <Int 0
@@ -296,7 +296,7 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax Int ::= #sizeWordStack ( WordStack )       [function, total, smtlib(sizeWordStack)]
                  | #sizeWordStack ( WordStack , Int ) [function, total, klabel(sizeWordStackAux), smtlib(sizeWordStackAux)]
- // ----------------------------------------------------------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------------------------------------------------
     rule #sizeWordStack ( WS ) => #sizeWordStack(WS, 0)
     rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
     rule #sizeWordStack ( _ : WS, SIZE )     => #sizeWordStack(WS, SIZE +Int 1)
@@ -313,7 +313,7 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax WordStack ::= #replicate    ( Int, Int )            [function, total]
                        | #replicateAux ( Int, Int, WordStack ) [function, total]
- // ---------------------------------------------------------------------------------
+ // ----------------------------------------------------------------------------
     rule #replicate   ( N,  A )     => #replicateAux(N, A, .WordStack)
     rule #replicateAux( N,  A, WS ) => #replicateAux(N -Int 1, A, A : WS) requires         N >Int 0
     rule #replicateAux( N, _A, WS ) => WS                                 requires notBool N >Int 0
@@ -323,7 +323,7 @@ A cons-list is used for the EVM wordstack.
 
 ```k
     syntax List ::= WordStack2List ( WordStack ) [function, total]
- // -------------------------------------------------------------------
+ // --------------------------------------------------------------
     rule WordStack2List(.WordStack) => .List
     rule WordStack2List(W : WS) => ListItem(W) WordStack2List(WS)
 ```
@@ -339,12 +339,12 @@ Most of EVM data is held in local memory.
 ```{.k .bytes}
     syntax Memory = Bytes
     syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, total, klabel(mapWriteBytes)]
- // -------------------------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------------------------
     rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS') requires START >=Int 0  [concrete]
     rule  _ [ START := _:ByteArray ] => .Memory                                                                  requires START  <Int 0  [concrete]
 
     syntax ByteArray ::= #range ( Memory , Int , Int ) [function, total]
- // -------------------------------------------------------------------------
+ // --------------------------------------------------------------------
     rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ] [concrete]
 
     syntax Memory ::= ".Memory" [macro]
@@ -359,13 +359,13 @@ Most of EVM data is held in local memory.
 ```{.k .nobytes}
     syntax Memory = Map
     syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, total]
- // --------------------------------------------------------------------------
+ // ---------------------------------------------------------------------
     rule [mapWriteBytes.base]:      WM[ _N := .WordStack ] => WM
     rule [mapWriteBytes.recursive]: WM[  N := W : WS     ] => (WM[N <- W])[N +Int 1 := WS]
 
     syntax ByteArray ::= #range ( Memory , Int , Int )             [function, total]
     syntax ByteArray ::= #range ( Memory , Int , Int , ByteArray ) [function, total, klabel(#rangeAux)]
- // --------------------------------------------------------------------------------------------------------
+ // ---------------------------------------------------------------------------------------------------
     rule [#range]:         #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack)
     rule [#rangeAux.base]: #range( _,  _END, WIDTH, WS) => WS requires notBool 0 <Int WIDTH
     rule [#rangeAux.rec]:  #range(WM,   END => END -Int 1, WIDTH => WIDTH -Int 1, WS => #lookupMemory(WM, END) : WS) requires 0 <Int WIDTH
@@ -401,11 +401,11 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule .ByteArray => .Bytes
 
     syntax Int ::= #asWord ( ByteArray ) [function, total, smtlib(asWord)]
- // ---------------------------------------------------------------------------
+ // ----------------------------------------------------------------------
     rule #asWord(WS) => chop(Bytes2Int(WS, BE, Unsigned)) [concrete]
 
     syntax Int ::= #asInteger ( ByteArray ) [function, total]
- // --------------------------------------------------------------
+ // ---------------------------------------------------------
     rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned) [concrete]
 
     syntax Account ::= #asAccount ( ByteArray ) [function]
@@ -414,27 +414,27 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule #asAccount(BS) => #asWord(BS) [owise]
 
     syntax ByteArray ::= #asByteStack ( Int ) [function, total]
- // ----------------------------------------------------------------
+ // -----------------------------------------------------------
     rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete]
 
     syntax ByteArray ::= ByteArray "++" ByteArray [function, total, right, klabel(_++_WS), smtlib(_plusWS_)]
- // -------------------------------------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------------------------------------
     rule WS ++ WS' => WS +Bytes WS' [concrete]
 
     syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, total]
- // --------------------------------------------------------------------------
+ // ---------------------------------------------------------------------
     rule                 _ [ START .. WIDTH ] => .ByteArray                      requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
     rule [bytesRange] : WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH)
       requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int #sizeByteArray(WS)
     rule                 _ [ _     .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0) [owise]
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, total, klabel(sizeByteArray), smtlib(sizeByteArray)]
- // ----------------------------------------------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => lengthBytes(WS) [concrete]
 
     syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, total]
                        | #padRightToWidth ( Int , ByteArray ) [function, total]
- // --------------------------------------------------------------------------------
+ // ---------------------------------------------------------------------------
     rule                        #padToWidth(N, BS)      =>               BS        requires notBool (N >=Int 0)
     rule [padToWidthNonEmpty] : #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0
     rule                        #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
@@ -448,7 +448,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule .ByteArray => .WordStack
 
     syntax Int ::= #asWord ( ByteArray ) [function, total, smtlib(asWord)]
- // ---------------------------------------------------------------------------
+ // ----------------------------------------------------------------------
     rule [#asWord.base-empty]:  #asWord( .WordStack     ) => 0
     rule [#asWord.base-single]: #asWord( W : .WordStack ) => W
     rule [#asWord.recursive]:   #asWord( W0 : W1 : WS   ) => #asWord(((W0 *Word 256) +Word W1) : WS)
@@ -477,16 +477,16 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule (W : WS)   ++ WS' => W : (WS ++ WS')
 
     syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, total, memo]
- // --------------------------------------------------------------------------------
+ // ---------------------------------------------------------------------------
     rule [ByteArray.range]: WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, total, smtlib(sizeByteArray), memo]
- // -----------------------------------------------------------------------------------------------
+ // ------------------------------------------------------------------------------------------
     rule #sizeByteArray ( WS ) => #sizeWordStack(WS) [concrete]
 
     syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, total, memo]
                        | #padRightToWidth ( Int , ByteArray ) [function, memo]
- // --------------------------------------------------------------------------------------
+ // ---------------------------------------------------------------------------------
     rule [#padToWidth]:      #padToWidth(N, WS)      => #replicateAux(N -Int #sizeByteArray(WS), 0, WS)
     rule [#padRightToWidth]: #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)
 ```
@@ -523,7 +523,7 @@ Storage/Memory Lookup
 ```k
     syntax Int ::= #lookup        ( Map , Int ) [function, total, smtlib(lookup)]
                  | #lookupMemory  ( Map , Int ) [function, total, smtlib(lookupMemory)]
- // ----------------------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------------
     rule [#lookup.some]:         #lookup(       (KEY |-> VAL:Int) _M, KEY ) => VAL modInt pow256
     rule [#lookup.none]:         #lookup(                          M, KEY ) => 0                 requires notBool KEY in_keys(M)
     //Impossible case, for completeness

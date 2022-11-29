@@ -87,7 +87,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax String ::= #generateSignature     ( String, TypedArgs ) [function, total]
                     | #generateSignatureArgs ( TypedArgs )         [function, total]
- // -------------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------------
     rule #generateSignature( FNAME , ARGS ) => FNAME +String "(" +String #generateSignatureArgs(ARGS) +String ")"
 
     rule #generateSignatureArgs(.TypedArgs)                            => ""
@@ -95,7 +95,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #generateSignatureArgs(TARGA:TypedArg, TARGB:TypedArg, TARGS) => #typeName(TARGA) +String "," +String #generateSignatureArgs(TARGB, TARGS)
 
     syntax String ::= #typeName ( TypedArg ) [function, total]
- // ---------------------------------------------------------------
+ // ----------------------------------------------------------
     rule #typeName(   #address( _ )) => "address"
 
     rule #typeName(   #uint256( _ )) => "uint256"
@@ -161,12 +161,12 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
       requires notBool(#isStaticType(ARG))
 
     syntax Int ::= #lenOfHeads ( TypedArgs ) [function, total]
- // ---------------------------------------------------------------
+ // ----------------------------------------------------------
     rule #lenOfHeads(.TypedArgs) => 0
     rule #lenOfHeads(ARG, ARGS)  => #lenOfHead(ARG) +Int #lenOfHeads(ARGS)
 
     syntax Int ::= #lenOfHead ( TypedArg ) [function, total]
- // -------------------------------------------------------------
+ // --------------------------------------------------------
     rule #lenOfHead(  #address( _ )) => 32
 
     rule #lenOfHead(  #uint256( _ )) => 32
@@ -217,7 +217,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #lenOfHead(#array(_, _, _)) => 32
 
     syntax Bool ::= #isStaticType ( TypedArg ) [function, total]
- // -----------------------------------------------------------------
+ // ------------------------------------------------------------
     rule #isStaticType(  #address( _ )) => true
 
     rule #isStaticType(  #uint256( _ )) => true

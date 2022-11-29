@@ -22,7 +22,7 @@ Address/Hash Helpers
 
 ```k
     syntax Int ::= keccak ( ByteArray ) [function, total, smtlib(smt_keccak)]
- // ------------------------------------------------------------------------------
+ // -------------------------------------------------------------------------
     rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))
 ```
 
@@ -139,7 +139,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
     rule #parseWord(S)  => String2Int(S) [owise]
 
     syntax String ::= #alignHexString ( String ) [function, total]
- // -------------------------------------------------------------------
+ // --------------------------------------------------------------
     rule #alignHexString(S) => S             requires         lengthString(S) modInt 2 ==Int 0
     rule #alignHexString(S) => "0" +String S requires notBool lengthString(S) modInt 2 ==Int 0
 ```

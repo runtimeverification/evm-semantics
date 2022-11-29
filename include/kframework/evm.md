@@ -341,7 +341,7 @@ The `#next [_]` operator initiates execution by:
     syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [function]
                   | #stackUnderflow ( WordStack , Int    ) [function, total]
                   | #stackOverflow  ( WordStack , OpCode ) [function]
- // -----------------------------------------------------------------------------
+ // ------------------------------------------------------------------------
     rule #stackUnderflow(WS        , OP:OpCode) => #stackUnderflow(WS, #stackNeeded(OP))
     rule #stackUnderflow(_         , N:Int    ) => false                         requires notBool (N >Int 0)
     rule #stackUnderflow(_ : WS    , N:Int    ) => #stackUnderflow(WS, N -Int 1) requires          N >Int 0
@@ -491,7 +491,7 @@ We make sure the given arguments (to be interpreted as addresses) are with 160 b
 
     syntax Bool ::= isAddr1Op ( OpCode ) [function, total]
                   | isAddr2Op ( OpCode ) [function, total]
- // -----------------------------------------------------------
+ // ------------------------------------------------------
 ```
 
 ```{.k .nobytes}
@@ -1337,7 +1337,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #precompiled?(ACCTCODE, SCHED) => .                                ... </k> requires notBool #isPrecompiledAccount(ACCTCODE, SCHED)
 
     syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [function, total, smtlib(isPrecompiledAccount)]
- // -------------------------------------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------------------------------------
     rule [isPrecompiledAccount.true]:  #isPrecompiledAccount(ACCTCODE, SCHED) => true  requires         ACCTCODE in #precompiledAccounts(SCHED)
     rule [isPrecompiledAccount.false]: #isPrecompiledAccount(ACCTCODE, SCHED) => false requires notBool ACCTCODE in #precompiledAccounts(SCHED)
 
@@ -1694,7 +1694,7 @@ Precompiled Contracts
     rule #precompiled(9) => BLAKE2F
 
     syntax Set ::= #precompiledAccounts ( Schedule ) [function, total]
- // -----------------------------------------------------------------------
+ // ------------------------------------------------------------------
     rule #precompiledAccounts(DEFAULT)           => SetItem(1) SetItem(2) SetItem(3) SetItem(4)
     rule #precompiledAccounts(FRONTIER)          => #precompiledAccounts(DEFAULT)
     rule #precompiledAccounts(HOMESTEAD)         => #precompiledAccounts(FRONTIER)
@@ -1882,7 +1882,7 @@ Overall Gas
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [function, total]
                   | #inStorageAux2 ( Set   ,           Int ) [function, total]
- // -------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------
     rule #inStorage(TS, ACCT, KEY) => #inStorageAux1(TS[ACCT], KEY) requires ACCT in_keys(TS)
     rule #inStorage(_, _, _)       => false                         [owise]
 
@@ -1946,7 +1946,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
                      orBool OP ==K REVERT
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function, total]
- // ----------------------------------------------------------------------------
+ // -----------------------------------------------------------------------
     rule [#memoryUsageUpdate.none]: #memoryUsageUpdate(MU,     _, WIDTH) => MU                                       requires notBool 0 <Int WIDTH
     rule [#memoryUsageUpdate.some]: #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires         0 <Int WIDTH
 ```
@@ -1956,13 +1956,13 @@ Access List Gas
 
 ```{.k .nobytes}
     syntax Bool ::= #usesAccessList ( OpCode ) [function, total]
- // -----------------------------------------------------------------
+ // ------------------------------------------------------------
     rule #usesAccessList(OP) => isAddr1Op(OP) orBool isAddr2Op(OP) orBool OP ==K SLOAD orBool OP ==K SSTORE
 ```
 
 ```{.k .bytes}
     syntax Bool ::= #usesAccessList ( OpCode ) [function, total]
- // -----------------------------------------------------------------
+ // ------------------------------------------------------------
     rule #usesAccessList(OP)     => true  requires isAddr1Op(OP)
     rule #usesAccessList(OP)     => true  requires isAddr2Op(OP)
     rule #usesAccessList(SLOAD)  => true
@@ -2228,7 +2228,7 @@ There are several helpers for calculating gas (most of them also specified in th
                  | Cextcodehash   ( Schedule )                               [function, total, smtlib(gas_Cextcodehash)  ]
                  | Cbalance       ( Schedule )                               [function, total, smtlib(gas_Cbalance)      ]
                  | Cmodexp        ( Schedule , ByteArray , Int , Int , Int ) [function, total, smtlib(gas_Cmodexp)       ]
- // ---------------------------------------------------------------------------------------------------------------------------
+ // ----------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
@@ -2326,7 +2326,7 @@ There are several helpers for calculating gas (most of them also specified in th
     rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .ByteArray andBool NONCE ==Int 0 andBool BAL ==Int 0
 
     syntax Int ::= #allBut64th ( Int ) [function, total, smtlib(gas_allBut64th)]
- // ---------------------------------------------------------------------------------
+ // ----------------------------------------------------------------------------
     rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
     rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
 ```
@@ -2394,7 +2394,7 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
 
 ```k
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, total]
- // ----------------------------------------------------------------------
+ // -----------------------------------------------------------------
 
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
@@ -2410,7 +2410,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
 ```k
     syntax Int ::= ScheduleConst "<" Schedule ">" [function, total]
- // --------------------------------------------------------------------
+ // ---------------------------------------------------------------
 
     syntax ScheduleConst ::= "Gzero"            | "Gbase"              | "Gverylow"      | "Glow"          | "Gmid"        | "Ghigh"
                            | "Gextcodesize"     | "Gextcodecopy"       | "Gbalance"      | "Gsload"        | "Gjumpdest"   | "Gsstoreset"
