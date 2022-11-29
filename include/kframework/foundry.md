@@ -1139,7 +1139,7 @@ If the production is matched when no prank is active, it will be ignored.
 ```
 ```k
     syntax ByteArray ::= #sign ( ByteArray , ByteArray ) [function,klabel(foundry_sign)]
- // -----------------------------------------------------------
+ // ------------------------------------------------------------------------------------
     rule #sign(BA1, BA2) => #parseByteStack(ECDSASign(#unparseByteStack(BA1), #unparseByteStack(BA2))) [concrete]
 ```
 
@@ -1216,6 +1216,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "expectCreate2(address,uint256,bytes)" )     => 3854582462 )
     rule ( selector ( "expectEmit(bool,bool,bool,bool)" )          => 1226622914 )
     rule ( selector ( "expectEmit(bool,bool,bool,bool,address)" )  => 2176505587 )
+    rule ( selector ( "sign(uint256,bytes32)" )                    => 3812747940 )
 ```
 
 - selectors for unimplemented cheat code functions.
@@ -1224,7 +1225,6 @@ If the production is matched when no prank is active, it will be ignored.
     rule selector ( "expectRegularCall(address,bytes)" )        => 3178868520
     rule selector ( "expectNoCall()" )                          => 3861374088
     rule selector ( "symbolicStorage(address)" )                => 769677742
-    rule selector ( "sign(uint256,bytes32)" )                   => 3812747940
     rule selector ( "ffi(string[])" )                           => 2299921511
     rule selector ( "setEnv(string,string)" )                   => 1029252078
     rule selector ( "envBool(string)" )                         => 2127686781
