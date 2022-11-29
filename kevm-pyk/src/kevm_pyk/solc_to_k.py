@@ -359,6 +359,7 @@ def _init_term(
         'PROGRAM_CELL': program,
         'JUMPDESTS_CELL': KEVM.compute_valid_jumpdests(program),
         'ORIGIN_CELL': KVariable('ORIGIN_ID'),
+        'LOG_CELL': KApply('.List'),
         'ID_CELL': Foundry.address_TEST_CONTRACT(),
         'CALLER_CELL': KVariable('CALLER_ID'),
         'ACCESSEDACCOUNTS_CELL': KApply('.Set'),
@@ -405,6 +406,8 @@ def _init_term(
         'EXPECTEDVALUE_CELL': intToken(0),
         'EXPECTEDDATA_CELL': KApply('.ByteArray_EVM-TYPES_ByteArray'),
         'OPCODETYPE_CELL': KApply('.OpcodeType_FOUNDRY-CHEAT-CODES_OpcodeType'),
+        'RECORDEVENT_CELL': FALSE,
+        'ISEVENTEXPECTED_CELL': FALSE,
     }
 
     if calldata is not None:
@@ -424,6 +427,8 @@ def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_
         dst_failed_post,
         KVariable('EXPECTEDREVERT_FINAL'),
         KVariable('ISOPCODEEXPECTED_FINAL'),
+        KVariable('RECORDEVENT_FINAL'),
+        KVariable('ISEVENTEXPECTED_FINAL'),
     )
     final_cterm = CTerm(final_term)
     if is_test:
@@ -459,6 +464,8 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
         ),
         'EXPECTEDREVERT_CELL': KVariable('EXPECTEDREVERT_FINAL'),
         'ISOPCODEEXPECTED_CELL': KVariable('ISOPCODEEXPECTED_FINAL'),
+        'RECORDEVENT_CELL': KVariable('RECORDEVENT_FINAL'),
+        'ISEVENTEXPECTED_CELL': KVariable('ISEVENTEXPECTED_FINAL'),
     }
     return abstract_cell_vars(
         substitute(empty_config, final_subst),
@@ -467,6 +474,8 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             KVariable('ACCOUNTS_FINAL'),
             KVariable('EXPECTEDREVERT_FINAL'),
             KVariable('ISOPCODEEXPECTED_FINAL'),
+            KVariable('RECORDEVENT_FINAL'),
+            KVariable('ISEVENTEXPECTED_FINAL'),
         ],
     )
 
