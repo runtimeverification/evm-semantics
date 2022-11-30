@@ -154,22 +154,23 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<active>` signals if a prank is active or not.
     - `<depth>` records the current call depth at which the prank was invoked.
     - `<singleCall>` tells whether the prank stops by itself after the next call or when a `stopPrank` cheat code is invoked.
-2. The `<expected>` subconfiguration stores values used for the `expectRevert` cheat code.
-    - `<expectedRevert>` flags if the next call is expected to revert or not.
-    - `<expectedDepth>` records the depth at which the call is expected to revert.
-    - `<expectedBytes>` keeps the expected revert message as a ByteArray.
-3. The `<expectOpcode>` subconfiguration stores values used for `expect*OPCODE*` cheat codes.
-    - `<isOpcodeExpected>` flags if a call opcode is expected.
-    - `<expectedAddress>` keeps the expected caller.
+2. The `<expectedRevert>` subconfiguration stores values used for the `expectRevert` cheat code.
+    - `<isRevertExpected>` flags if the next call is expected to revert or not.
+    - `<revertDepth>` records the depth at which the call is expected to revert.
+    - `<revertBytes>` keeps the expected revert message as a ByteArray.
+3. The `<expectedCall>` subconfiguration stores values used for `expectCall*` cheat codes.
+    - `<isCallExpected>` flags if a call opcode is expected.
+    - `<expectedCaller>` keeps the expected caller.
     - `<expectedValue>` keeps expected `msg.value`.
     - `<expectedData>` keeps expected `calldata`.
-    - `<opcodeType>` keeps track of what `CALL*` Opcode is expected.
-4. The `<expectEmit>` subconfiguration stores values used for the `expectEmit` cheat code.
+    - `<callType>` keeps track of what `CALL*` Opcode is expected.
+4. The `<expectedEvent>` subconfiguration stores values used for the `expectEmit` cheat code.
+    - `<eventId>` records the index of the Event which is expected in the list from the `<log>` cell.
     - `<recordEvent>` flags if the next emitted Event should be recorded and held for future matches.
     - `<isEventExpected>` flags if an Event is expected to match the one recorded previously.
     - `<checkedTopics>` will store a list of `bool` values that flag if a topic should be checked or not.
-    - `<checkedData>` flags if the data field should be checked or not.
-    - `<expectedEventAddress>` stores the emitter of an expected Event.
+    - `<isDataChecked>` flags if the data field should be checked or not.
+    - `<expectedEmitter>` stores the emitter of an expected Event.
 
 ```k
 module FOUNDRY-CHEAT-CODES
@@ -188,26 +189,28 @@ module FOUNDRY-CHEAT-CODES
           <depth> 0 </depth>
           <singleCall> false </singleCall>
         </prank>
-        <expected>
-          <expectedRevert> false </expectedRevert>
-          <expectedBytes> .ByteArray </expectedBytes>
-          <expectedDepth> 0 </expectedDepth>
-        </expected>
-        <expectedOpcode>
-          <isOpcodeExpected> false </isOpcodeExpected>
-          <expectedAddress> .Account </expectedAddress>
-          <expectedValue> 0 </expectedValue>
-          <expectedData> .ByteArray </expectedData>
-          <opcodeType> .OpcodeType </opcodeType>
-        </expectedOpcode>
-        <expectEmit>
-          <recordEvent> false </recordEvent>
-          <eventId> 0 </eventId>
-          <isEventExpected> false </isEventExpected>
-          <checkedTopics> .List </checkedTopics>
-          <checkedData> false </checkedData>
-          <expectedEventAddress> .Account </expectedEventAddress>
-        </expectEmit>
+        <expect>
+          <expectedRevert>
+            <isRevertExpected> false </isRevertExpected>
+            <revertBytes> .ByteArray </revertBytes>
+            <revertDepth> 0 </revertDepth>
+          </expectedRevert>
+          <expectedCall>
+            <isCallExpected> false </isCallExpected>
+            <expectedCaller> .Account </expectedCaller>
+            <expectedValue> 0 </expectedValue>
+            <expectedData> .ByteArray </expectedData>
+            <callType> .CallType </callType>
+          </expectedCall>
+          <expectedEvent>
+            <recordEvent> false </recordEvent>
+            <isEventExpected> false </isEventExpected>
+            <eventId> 0 </eventId>
+            <checkedTopics> .List </checkedTopics>
+            <isDataChecked> false </isDataChecked>
+            <expectedEmitter> .Account </expectedEmitter>
+          </expectedEvent>
+        </expect>
       </cheatcodes>
 ```
 
@@ -533,26 +536,26 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
 ```{.k .bytes}
     rule [foundry.call.ignoreCalls]:
          <k> #call_foundry _ _ => . ... </k>
-         <expected>
-           <expectedRevert> true </expectedRevert>
+         <expectedRevert>
+           <isRevertExpected> true </isRevertExpected>
            ...
-         </expected>
+         </expectedRevert>
       [priority(35)]
 ```
 
 Catch reverts.
-If the current call depth is equal with the `expectedDepth` and the `expectedBytes` match the `<output>` cell, then replace the `EVMC_REVERT` status code with `EVMC_SUCCESS`.
+If the current call depth is equal with the `revertDepth` and the `revertBytes` match the `<output>` cell, then replace the `EVMC_REVERT` status code with `EVMC_SUCCESS`.
 
 ```{.k .bytes}
     rule <statusCode> EVMC_REVERT => EVMC_SUCCESS </statusCode>
          <k> #halt ~> #return _RETSTART _RETWIDTH ... </k>
          <output> OUT </output>
          <callDepth> CD </callDepth>
-         <expected>
-           <expectedRevert> true => false </expectedRevert>
-           <expectedDepth> CD </expectedDepth>
-           <expectedBytes> EXPECTED </expectedBytes>
-         </expected>
+         <expectedRevert>
+           <isRevertExpected> true => false </isRevertExpected>
+           <revertDepth> CD </revertDepth>
+           <revertBytes> EXPECTED </revertBytes>
+         </expectedRevert>
       requires (EXPECTED =/=K .ByteArray andBool EXPECTED ==K #range(OUT, 4, #sizeByteArray(OUT) -Int 4))
         orBool EXPECTED ==K .ByteArray
       [priority(40)]
@@ -564,15 +567,15 @@ Change the status code from `EVMC_SUCCESS` to `EVMC_REVERT` if a revert is expec
     rule <statusCode> EVMC_SUCCESS => EVMC_REVERT </statusCode>
          <k> #halt ~> #return _RETSTART _RETWIDTH ... </k>
          <callDepth> CD </callDepth>
-         <expected>
-           <expectedRevert> true => false </expectedRevert>
-           <expectedDepth> CD </expectedDepth>
+         <expectedRevert>
+           <isRevertExpected> true => false </isRevertExpected>
+           <revertDepth> CD </revertDepth>
            ...
-         </expected>
+         </expectedRevert>
        [priority(40)]
 ```
 
-If the `expectRevert()` selector is matched, call the `#setExpectRevert` production to initialize the `<expected>` subconfiguration.
+If the `expectRevert()` selector is matched, call the `#setExpectRevert` production to initialize the `<expectedRevert>` subconfiguration.
 
 ```{.k .bytes}
     rule [foundry.call.expectRevert]:
@@ -587,10 +590,10 @@ Expecting a specific CALL/CREATE opcode
 First we define a sort to identify expected opcodes.
 
 ```k
-    syntax OpcodeType ::= ".OpcodeType" | "Call" | "Static" | "Delegate" | "Create" | "Create2"
+    syntax CallType ::= ".CallType" | "Call" | "Static" | "Delegate" | "Create" | "Create2"
 ```
 
-If the `expect*OPCODE*` selector is matched, the rule will load the account into the state and add the `#setExpectOpcode` production to the K cell to initialize the `<expectedOpcode/>` subconfiguration with the given parameters.
+If the `expect*OPCODE*` selector is matched, the rule will load the account into the state and add the `#setExpectOpcode` production to the K cell to initialize the `<expectedCall/>` subconfiguration with the given parameters.
 
 ```{.k .bytes}
     rule [foundry.call.expectStaticCall]:
@@ -650,63 +653,63 @@ Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CR
 ```{.k .bytes}
     rule <k> (. => #clearExpectOpcode) ~> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
          <localMem> LM </localMem>
-         <expectedOpcode>
-           <isOpcodeExpected> true </isOpcodeExpected>
-           <expectedAddress> ACCTTO </expectedAddress>
+         <expectedCall>
+           <isCallExpected> true </isCallExpected>
+           <expectedCaller> ACCTTO </expectedCaller>
            <expectedData> DATA </expectedData>
-           <opcodeType> Static </opcodeType>
+           <callType> Static </callType>
            ...
-         </expectedOpcode>
+         </expectedCall>
       requires #range(LM, ARGSTART, ARGWIDTH) ==K #range(DATA, 0, ARGWIDTH)
       [priority(40)]
 
     rule <k> (. => #clearExpectOpcode) ~> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
          <localMem> LM </localMem>
-         <expectedOpcode>
-           <isOpcodeExpected> true </isOpcodeExpected>
-           <expectedAddress> ACCTTO </expectedAddress>
+         <expectedCall>
+           <isCallExpected> true </isCallExpected>
+           <expectedCaller> ACCTTO </expectedCaller>
            <expectedData> DATA </expectedData>
-           <opcodeType> Delegate </opcodeType>
+           <callType> Delegate </callType>
            ...
-         </expectedOpcode>
+         </expectedCall>
       requires #range(LM, ARGSTART, ARGWIDTH) ==K #range(DATA, 0, ARGWIDTH)
       [priority(40)]
 
     rule <k> (. => #clearExpectOpcode) ~> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
          <localMem> LM </localMem>
-         <expectedOpcode>
-           <isOpcodeExpected> true </isOpcodeExpected>
-           <expectedAddress> ACCTTO </expectedAddress>
+         <expectedCall>
+           <isCallExpected> true </isCallExpected>
+           <expectedCaller> ACCTTO </expectedCaller>
            <expectedData> DATA </expectedData>
-           <opcodeType> Call </opcodeType>
+           <callType> Call </callType>
            <expectedValue> VALUE </expectedValue>
-         </expectedOpcode>
+         </expectedCall>
       requires #range(LM, ARGSTART, ARGWIDTH) ==K #range(DATA, 0, ARGWIDTH)
       [priority(40)]
 
     rule <k> (. => #clearExpectOpcode) ~> CREATE VALUE MEMSTART MEMWIDTH ... </k>
          <localMem> LM </localMem>
          <id> ACCT </id>
-         <expectedOpcode>
-           <isOpcodeExpected> true </isOpcodeExpected>
-           <expectedAddress> ACCT </expectedAddress>
+         <expectedCall>
+           <isCallExpected> true </isCallExpected>
+           <expectedCaller> ACCT </expectedCaller>
            <expectedData> DATA </expectedData>
-           <opcodeType> Create </opcodeType>
+           <callType> Create </callType>
            <expectedValue> VALUE </expectedValue>
-         </expectedOpcode>
+         </expectedCall>
       requires #range(LM, MEMSTART, MEMWIDTH) ==K #range(DATA, 0, MEMWIDTH)
       [priority(40)]
 
     rule <k> (. => #clearExpectOpcode) ~> CREATE2 VALUE MEMSTART MEMWIDTH _SALT ... </k>
          <localMem> LM </localMem>
          <id> ACCT </id>
-         <expectedOpcode>
-           <isOpcodeExpected> true </isOpcodeExpected>
-           <expectedAddress> ACCT </expectedAddress>
+         <expectedCall>
+           <isCallExpected> true </isCallExpected>
+           <expectedCaller> ACCT </expectedCaller>
            <expectedData> DATA </expectedData>
-           <opcodeType> Create2 </opcodeType>
+           <callType> Create2 </callType>
            <expectedValue> VALUE </expectedValue>
-         </expectedOpcode>
+         </expectedCall>
       requires #range(LM, MEMSTART, MEMWIDTH) ==K #range(DATA, 0, MEMWIDTH)
       [priority(40)]
 ```
@@ -861,12 +864,12 @@ To record a specific event, we just store its index in `<eventId>` cell.
 ```{.k .bytes}
     rule [foundry.recordEvent]:
          <k> LOG(N) _MEMSTART _MEMWIDTH ... </k>
-         <expectEmit>
+         <expectedEvent>
           <recordEvent> true => false </recordEvent>
           <isEventExpected> false => true </isEventExpected>
           <eventId> 0 => size(LOGS) </eventId>
           ...
-        </expectEmit>
+        </expectedEvent>
         <log> LOGS </log>
         <wordStack> WS </wordStack>
       requires #sizeWordStack(WS) >=Int N
@@ -878,14 +881,14 @@ The second and third rules `foundry.checkEvent` and `foundry.checkEventAndEmitte
 ```{.k .bytes}
     rule [foundry.checkEvent]:
          <k> (. => #clearExpectEmit) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
-         <expectEmit>
+         <expectedEvent>
           <recordEvent> false </recordEvent>
           <isEventExpected> true </isEventExpected>
           <checkedTopics> CHECKS </checkedTopics>
-          <checkedData> CHECKDATA </checkedData>
-          <expectedEventAddress> .Account </expectedEventAddress>
+          <isDataChecked> CHECKDATA </isDataChecked>
+          <expectedEmitter> .Account </expectedEmitter>
           <eventId> EVENTID </eventId>
-        </expectEmit>
+        </expectedEvent>
         <log> LOGS </log>
         <wordStack> WS </wordStack>
         <localMem> LM </localMem>
@@ -896,14 +899,14 @@ The second and third rules `foundry.checkEvent` and `foundry.checkEventAndEmitte
     rule [foundry.checkEventAndEmitter]:
          <k> (. => #clearExpectEmit) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
          <id> ACCT </id>
-         <expectEmit>
+         <expectedEvent>
           <recordEvent> false </recordEvent>
           <isEventExpected> true </isEventExpected>
           <checkedTopics> CHECKS </checkedTopics>
-          <checkedData> CHECKDATA </checkedData>
-          <expectedEventAddress> ACCT </expectedEventAddress>
+          <isDataChecked> CHECKDATA </isDataChecked>
+          <expectedEmitter> ACCT </expectedEmitter>
           <eventId> EVENTID </eventId>
-        </expectEmit>
+        </expectedEvent>
         <log> LOGS </log>
         <wordStack> WS </wordStack>
         <localMem> LM </localMem>
@@ -1032,49 +1035,49 @@ Utils
          </account>
 ```
 
-- `#setExpectRevert` sets the `<expected>` subconfiguration with the current call depth and the expected message from `expectRevert`.
+- `#setExpectRevert` sets the `<expectedRevert>` subconfiguration with the current call depth and the expected message from `expectRevert`.
 
 ```k
-    syntax KItem ::= "#setExpectRevert" ByteArray [klabel(foundry_setExpectedRevert)]
+    syntax KItem ::= "#setExpectRevert" ByteArray [klabel(foundry_setisRevertExpected)]
  // ---------------------------------------------------------------------------------
     rule <k> #setExpectRevert EXPECTED => . ... </k>
          <callDepth> CD </callDepth>
-         <expected>
-           <expectedRevert> false => true </expectedRevert>
-           <expectedDepth> _ => CD +Int 1 </expectedDepth>
-           <expectedBytes> _ => EXPECTED </expectedBytes>
-         </expected>
+         <expectedRevert>
+           <isRevertExpected> false => true </isRevertExpected>
+           <revertDepth> _ => CD +Int 1 </revertDepth>
+           <revertBytes> _ => EXPECTED </revertBytes>
+         </expectedRevert>
 ```
 
-- `#setExpectOpcode` initializes the `<expectedOpcode>` subconfiguration with an expected `Address`, and `ByteArray` to match the calldata.
+- `#setExpectOpcode` initializes the `<expectedCall>` subconfiguration with an expected `Address`, and `ByteArray` to match the calldata.
 `CallType` is used to specify what `CALL*` opcode is expected.
 
 ```k
-    syntax KItem ::= "#setExpectOpcode" Account ByteArray Int OpcodeType [klabel(foundry_setExpectOpcode)]
- // ------------------------------------------------------------------------------------------------------
+    syntax KItem ::= "#setExpectOpcode" Account ByteArray Int CallType [klabel(foundry_setExpectOpcode)]
+ // ----------------------------------------------------------------------------------------------------
     rule <k> #setExpectOpcode ACCT DATA VALUE OPTYPE => . ... </k>
-         <expectedOpcode>
-           <isOpcodeExpected> _ => true </isOpcodeExpected>
-           <expectedAddress> _ => ACCT </expectedAddress>
+         <expectedCall>
+           <isCallExpected> _ => true </isCallExpected>
+           <expectedCaller> _ => ACCT </expectedCaller>
            <expectedData> _ => DATA </expectedData>
            <expectedValue> _ => VALUE </expectedValue>
-           <opcodeType> _ => OPTYPE </opcodeType>
-         </expectedOpcode>
+           <callType> _ => OPTYPE </callType>
+         </expectedCall>
 ```
 
-- `#clearExpectOpcode` restore the `<expectedOpcode>` subconfiguration to its initial values.
+- `#clearExpectOpcode` restore the `<expectedCall>` subconfiguration to its initial values.
 
 ```k
     syntax KItem ::= "#clearExpectOpcode" [klabel(foundry_clearExpectOpcode)]
  // -------------------------------------------------------------------------
     rule <k> #clearExpectOpcode => . ... </k>
-         <expectedOpcode>
-           <isOpcodeExpected> _ => false </isOpcodeExpected>
-           <expectedAddress> _ => .Account </expectedAddress>
+         <expectedCall>
+           <isCallExpected> _ => false </isCallExpected>
+           <expectedCaller> _ => .Account </expectedCaller>
            <expectedData> _ => .ByteArray </expectedData>
-           <opcodeType> _ => .OpcodeType </opcodeType>
+           <callType> _ => .CallType </callType>
            <expectedValue> _ => 0 </expectedValue>
-         </expectedOpcode>
+         </expectedCall>
 ```
 
 - `#setPrank NEWCALLER NEWORIGIN SINGLEPRANK` will set the `<prank/>` subconfiguration for the given accounts.
@@ -1144,14 +1147,14 @@ If the production is matched when no prank is active, it will be ignored.
     syntax KItem ::= "#setExpectEmit" Bool Bool Bool Bool Account [klabel(foundry_setExpectEmit)]
  // ---------------------------------------------------------------------------------------------
     rule <k> #setExpectEmit T1 T2 T3 CHECKDATA ACCT => . ... </k>
-         <expectEmit>
+         <expectedEvent>
            <recordEvent> _ => true </recordEvent>
            <isEventExpected> _ => false </isEventExpected>
            <checkedTopics> _ => ListItem(true) ListItem(T1) ListItem(T2) ListItem(T3) .List </checkedTopics>
-           <checkedData> _ => CHECKDATA </checkedData>
-           <expectedEventAddress> _ => ACCT </expectedEventAddress>
+           <isDataChecked> _ => CHECKDATA </isDataChecked>
+           <expectedEmitter> _ => ACCT </expectedEmitter>
            <eventId> _ => 0 </eventId>
-         </expectEmit>
+         </expectedEvent>
 ```
 
 - `#clearExpectEmit` is used to clear the `<expectEmit/>` subconfiguration and restore initial values.
@@ -1160,14 +1163,14 @@ If the production is matched when no prank is active, it will be ignored.
     syntax KItem ::= "#clearExpectEmit" [klabel(foundry_clearExpectEmit)]
  // ---------------------------------------------------------------------
     rule <k> #clearExpectEmit => . ...</k>
-         <expectEmit>
+         <expectedEvent>
            <recordEvent> _ => false </recordEvent>
            <isEventExpected> _ => false </isEventExpected>
            <checkedTopics> _ => .List </checkedTopics>
-           <checkedData> _ => false </checkedData>
-           <expectedEventAddress> _ => .Account </expectedEventAddress>
+           <isDataChecked> _ => false </isDataChecked>
+           <expectedEmitter> _ => .Account </expectedEmitter>
            <eventId> _ => 0 </eventId>
-         </expectEmit>
+         </expectedEvent>
 ```
 
 - `#eventMatch` is an auxiliary function that checks if an event stored as a log entry contains certain topics and external data.

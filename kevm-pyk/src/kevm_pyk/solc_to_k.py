@@ -400,12 +400,12 @@ def _init_term(
             ]
         ),
         'SINGLECALL_CELL': FALSE,
-        'EXPECTEDREVERT_CELL': FALSE,
-        'ISOPCODEEXPECTED_CELL': FALSE,
-        'EXPECTEDADDRESS_CELL': KApply('.Account_EVM-TYPES_Account'),
+        'ISREVERTEXPECTED_CELL': FALSE,
+        'ISCALLEXPECTED_CELL': FALSE,
+        'EXPECTEDCALLER_CELL': KApply('.Account_EVM-TYPES_Account'),
         'EXPECTEDVALUE_CELL': intToken(0),
         'EXPECTEDDATA_CELL': KApply('.ByteArray_EVM-TYPES_ByteArray'),
-        'OPCODETYPE_CELL': KApply('.OpcodeType_FOUNDRY-CHEAT-CODES_OpcodeType'),
+        'CALLTYPE_CELL': KApply('.CallType_FOUNDRY-CHEAT-CODES_CallType'),
         'RECORDEVENT_CELL': FALSE,
         'ISEVENTEXPECTED_CELL': FALSE,
     }
@@ -425,8 +425,8 @@ def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_
     foundry_success = Foundry.success(
         KVariable('STATUSCODE_FINAL'),
         dst_failed_post,
-        KVariable('EXPECTEDREVERT_FINAL'),
-        KVariable('ISOPCODEEXPECTED_FINAL'),
+        KVariable('ISREVERTEXPECTED_FINAL'),
+        KVariable('ISCALLEXPECTED_FINAL'),
         KVariable('RECORDEVENT_FINAL'),
         KVariable('ISEVENTEXPECTED_FINAL'),
     )
