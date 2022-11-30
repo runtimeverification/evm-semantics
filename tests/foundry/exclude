@@ -17,6 +17,9 @@ ContractBTest.testCannotSubtract43
 ContractBTest.testFailSubtract43
 ContractBTest.testNumberIs42
 ContractTest.testExample
+EmitContractTest.testExpectEmit
+EmitContractTest.testExpectEmitDoNotCheckData
+EmitContractTest.testExpectEmitCheckEmitter
 EnvTest.testEnvAddress
 EnvTest.testEnvAddresseArray
 EnvTest.testEnvBool
