@@ -523,7 +523,8 @@ This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes 
       requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
 ```
 
-#### expectRevert - expect the next call to revert.
+Expecting Reverts
+-----------------
 
 ```
 function expectRevert() external;
@@ -575,11 +576,11 @@ Change the status code from `EVMC_SUCCESS` to `EVMC_REVERT` if a revert is expec
        [priority(40)]
 ```
 
-If the `expectRevert()` selector is matched, call the `#setExpectRevert` production to initialize the `<expectedRevert>` subconfiguration.
+If the `expectRevert()` selector is matched, call the `#setExpectedRevert` production to initialize the `<expectedRevert>` subconfiguration.
 
 ```{.k .bytes}
     rule [foundry.call.expectRevert]:
-         <k> #call_foundry SELECTOR ARGS => #setExpectRevert ARGS ... </k>
+         <k> #call_foundry SELECTOR ARGS => #setExpectedRevert ARGS ... </k>
       requires SELECTOR ==Int selector ( "expectRevert()" )
         orBool SELECTOR ==Int selector ( "expectRevert(bytes)" )
 ```
@@ -593,7 +594,7 @@ First we define a sort to identify expected opcodes.
     syntax CallType ::= ".CallType" | "Call" | "Static" | "Delegate" | "Create" | "Create2"
 ```
 
-If the `expect*OPCODE*` selector is matched, the rule will load the account into the state and add the `#setExpectOpcode` production to the K cell to initialize the `<expectedCall/>` subconfiguration with the given parameters.
+If the `expect*OPCODE*` selector is matched, the rule will load the account into the state and add the `#setExpectedCall` production to the K cell to initialize the `<expectedCall/>` subconfiguration with the given parameters.
 
 ```{.k .bytes}
     rule [foundry.call.expectStaticCall]:
@@ -601,7 +602,7 @@ If the `expect*OPCODE*` selector is matched, the rule will load the account into
           => #loadAccount #asWord(#range(ARGS, 0, 32))
           ~> #let CODE_START = 96 #in
           #let DATA_LENGTH = #asWord(#range(ARGS, 64, 32)) #in
-          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, CODE_START, DATA_LENGTH) 0 Static
+          #setExpectedCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, CODE_START, DATA_LENGTH) 0 Static
           ...
          </k>
       requires SELECTOR ==Int selector ( "expectStaticCall(address,bytes)" )
@@ -611,7 +612,7 @@ If the `expect*OPCODE*` selector is matched, the rule will load the account into
           => #loadAccount #asWord(#range(ARGS, 0, 32))
           ~> #let DATA_START = 96 #in
           #let DATA_LENGTH = #asWord(#range(ARGS, 64, 32)) #in
-          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) 0 Delegate
+          #setExpectedCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) 0 Delegate
           ...
          </k>
       requires SELECTOR ==Int selector ( "expectDelegateCall(address,bytes)" )
@@ -621,7 +622,7 @@ If the `expect*OPCODE*` selector is matched, the rule will load the account into
           => #loadAccount #asWord(#range(ARGS, 0, 32))
           ~> #let DATA_START = 128 #in
           #let DATA_LENGTH = #asWord(#range(ARGS, 96, 32)) #in
-          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Call
+          #setExpectedCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Call
           ...
          </k>
       requires SELECTOR ==Int selector ( "expectRegularCall(address,uint256,bytes)" )
@@ -631,7 +632,7 @@ If the `expect*OPCODE*` selector is matched, the rule will load the account into
           => #loadAccount #asWord(#range(ARGS, 0, 32))
           ~> #let DATA_START = 128 #in
           #let DATA_LENGTH = #asWord(#range(ARGS, 96, 32)) #in
-          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Create
+          #setExpectedCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Create
           ...
          </k>
       requires SELECTOR ==Int selector ( "expectCreate(address,uint256,bytes)" )
@@ -641,7 +642,7 @@ If the `expect*OPCODE*` selector is matched, the rule will load the account into
           => #loadAccount #asWord(#range(ARGS, 0, 32))
           ~> #let DATA_START = 128 #in
           #let DATA_LENGTH = #asWord(#range(ARGS, 96, 32)) #in
-          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Create2
+          #setExpectedCall #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Create2
           ...
          </k>
       requires SELECTOR ==Int selector ( "expectCreate2(address,uint256,bytes)" )
@@ -651,7 +652,7 @@ Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CR
 `calldata` needs to match only the first byte.
 
 ```{.k .bytes}
-    rule <k> (. => #clearExpectOpcode) ~> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
+    rule <k> (. => #clearExpectedCall) ~> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
          <localMem> LM </localMem>
          <expectedCall>
            <isCallExpected> true </isCallExpected>
@@ -663,7 +664,7 @@ Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CR
       requires #range(LM, ARGSTART, ARGWIDTH) ==K #range(DATA, 0, ARGWIDTH)
       [priority(40)]
 
-    rule <k> (. => #clearExpectOpcode) ~> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
+    rule <k> (. => #clearExpectedCall) ~> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
          <localMem> LM </localMem>
          <expectedCall>
            <isCallExpected> true </isCallExpected>
@@ -675,7 +676,7 @@ Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CR
       requires #range(LM, ARGSTART, ARGWIDTH) ==K #range(DATA, 0, ARGWIDTH)
       [priority(40)]
 
-    rule <k> (. => #clearExpectOpcode) ~> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
+    rule <k> (. => #clearExpectedCall) ~> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
          <localMem> LM </localMem>
          <expectedCall>
            <isCallExpected> true </isCallExpected>
@@ -687,7 +688,7 @@ Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CR
       requires #range(LM, ARGSTART, ARGWIDTH) ==K #range(DATA, 0, ARGWIDTH)
       [priority(40)]
 
-    rule <k> (. => #clearExpectOpcode) ~> CREATE VALUE MEMSTART MEMWIDTH ... </k>
+    rule <k> (. => #clearExpectedCall) ~> CREATE VALUE MEMSTART MEMWIDTH ... </k>
          <localMem> LM </localMem>
          <id> ACCT </id>
          <expectedCall>
@@ -700,7 +701,7 @@ Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CR
       requires #range(LM, MEMSTART, MEMWIDTH) ==K #range(DATA, 0, MEMWIDTH)
       [priority(40)]
 
-    rule <k> (. => #clearExpectOpcode) ~> CREATE2 VALUE MEMSTART MEMWIDTH _SALT ... </k>
+    rule <k> (. => #clearExpectedCall) ~> CREATE2 VALUE MEMSTART MEMWIDTH _SALT ... </k>
          <localMem> LM </localMem>
          <id> ACCT </id>
          <expectedCall>
@@ -711,6 +712,98 @@ Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CR
            <expectedValue> VALUE </expectedValue>
          </expectedCall>
       requires #range(LM, MEMSTART, MEMWIDTH) ==K #range(DATA, 0, MEMWIDTH)
+      [priority(40)]
+```
+
+Expecting Events
+----------------
+
+Assert a specific log is emitted before the end of the current function.
+There are 2 signatures:
+
+```
+function expectEmit(bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData) external;
+function expectEmit(bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData, address emitter) external;
+```
+
+Without checking the emitter address: Asserts the topics match without checking the emitting address.
+With address: Asserts the topics match and that the emitting address matches.
+
+
+Call the cheat code, specifying whether we should check the first, second or third topic, and the log data.
+Topic 0 is always checked.
+Emit the event we are supposed to see before the end of the current function.
+Perform the call.
+If the event is not available in the current scope (e.g. if we are using an interface, or an external smart contract), we can define the event ourselves with an identical event signature.
+
+`foundry.call.expectEmit` and `foundry.call.expectEmitAddr` are the rules which intercept the calls from the cheat code interface.
+
+```{.k .bytes}
+    rule [foundry.call.expectEmit]:
+         <k> #call_foundry SELECTOR ARGS => #setExpectedEvent word2Bool(#asWord(#range(ARGS, 0, 32))) word2Bool(#asWord(#range(ARGS, 32, 32))) word2Bool(#asWord(#range(ARGS, 64, 32))) word2Bool(#asWord(#range(ARGS, 96, 32))) .Account ... </k>
+      requires SELECTOR ==Int selector ( "expectEmit(bool,bool,bool,bool)" )
+
+    rule [foundry.call.expectEmitAddr]:
+         <k> #call_foundry SELECTOR ARGS => #setExpectedEvent word2Bool(#asWord(#range(ARGS, 0, 32))) word2Bool(#asWord(#range(ARGS, 32, 32))) word2Bool(#asWord(#range(ARGS, 64, 32))) word2Bool(#asWord(#range(ARGS, 96, 32))) #asWord(#range(ARGS, 128, 32)) ... </k>
+      requires SELECTOR ==Int selector ( "expectEmit(bool,bool,bool,bool,address)" )
+```
+
+Then, we define rules for the `LOG(N)` Opcodes with higher priority than the ones in `evm.md`.
+The first one, `foundry.recordEvent` is used to record the event emitted right after the invocation of the `expectEmit` cheat code.
+Events are already recorded in the `<log>` cell as `SubstateLogEntry` elements.
+To record a specific event, we just store its index in `<eventId>` cell.
+
+```{.k .bytes}
+    rule [foundry.recordEvent]:
+         <k> LOG(N) _MEMSTART _MEMWIDTH ... </k>
+         <expectedEvent>
+          <recordEvent> true => false </recordEvent>
+          <isEventExpected> false => true </isEventExpected>
+          <eventId> 0 => size(LOGS) </eventId>
+          ...
+        </expectedEvent>
+        <log> LOGS </log>
+        <wordStack> WS </wordStack>
+      requires #sizeWordStack(WS) >=Int N
+      [priority(40)]
+```
+
+The second and third rules `foundry.checkEvent` and `foundry.checkEventAndEmitter` will try to match the event which is just about to be emitted with the event recorded previously in `LOGS[EVENTID]`.
+
+```{.k .bytes}
+    rule [foundry.checkEvent]:
+         <k> (. => #clearExpectedEvent) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
+         <expectedEvent>
+          <recordEvent> false </recordEvent>
+          <isEventExpected> true </isEventExpected>
+          <checkedTopics> CHECKS </checkedTopics>
+          <isDataChecked> CHECKDATA </isDataChecked>
+          <expectedEmitter> .Account </expectedEmitter>
+          <eventId> EVENTID </eventId>
+        </expectedEvent>
+        <log> LOGS </log>
+        <wordStack> WS </wordStack>
+        <localMem> LM </localMem>
+      requires #sizeWordStack(WS) >=Int N
+       andBool #eventMatch({LOGS[EVENTID]}:>SubstateLogEntry, WordStack2List(#take(N, WS)), #range(LM, MEMSTART, MEMWIDTH), CHECKS, CHECKDATA)
+      [priority(40)]
+
+    rule [foundry.checkEventAndEmitter]:
+         <k> (. => #clearExpectedEvent) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
+         <id> ACCT </id>
+         <expectedEvent>
+          <recordEvent> false </recordEvent>
+          <isEventExpected> true </isEventExpected>
+          <checkedTopics> CHECKS </checkedTopics>
+          <isDataChecked> CHECKDATA </isDataChecked>
+          <expectedEmitter> ACCT </expectedEmitter>
+          <eventId> EVENTID </eventId>
+        </expectedEvent>
+        <log> LOGS </log>
+        <wordStack> WS </wordStack>
+        <localMem> LM </localMem>
+      requires #sizeWordStack(WS) >=Int N
+       andBool #eventMatch({LOGS[EVENTID]}:>SubstateLogEntry, WordStack2List(#take(N, WS)), #range(LM, MEMSTART, MEMWIDTH), CHECKS, CHECKDATA)
       [priority(40)]
 ```
 
@@ -821,98 +914,6 @@ function stopPrank() external;
     rule [foundry.call.stopPrank]:
          <k> #call_foundry SELECTOR _ => #endPrank ... </k>
       requires SELECTOR ==Int selector ( "stopPrank()" )
-```
-
-Expecting Events
-----------------
-
-Assert a specific log is emitted before the end of the current function.
-There are 2 signatures:
-
-```
-function expectEmit(bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData) external;
-function expectEmit(bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData, address emitter) external;
-```
-
-Without checking the emitter address: Asserts the topics match without checking the emitting address.
-With address: Asserts the topics match and that the emitting address matches.
-
-
-Call the cheat code, specifying whether we should check the first, second or third topic, and the log data.
-Topic 0 is always checked.
-Emit the event we are supposed to see before the end of the current function.
-Perform the call.
-If the event is not available in the current scope (e.g. if we are using an interface, or an external smart contract), we can define the event ourselves with an identical event signature.
-
-`foundry.call.expectEmit` and `foundry.call.expectEmitAddr` are the rules which intercept the calls from the cheat code interface.
-
-```{.k .bytes}
-    rule [foundry.call.expectEmit]:
-         <k> #call_foundry SELECTOR ARGS => #setExpectEmit word2Bool(#asWord(#range(ARGS, 0, 32))) word2Bool(#asWord(#range(ARGS, 32, 32))) word2Bool(#asWord(#range(ARGS, 64, 32))) word2Bool(#asWord(#range(ARGS, 96, 32))) .Account ... </k>
-      requires SELECTOR ==Int selector ( "expectEmit(bool,bool,bool,bool)" )
-
-    rule [foundry.call.expectEmitAddr]:
-         <k> #call_foundry SELECTOR ARGS => #setExpectEmit word2Bool(#asWord(#range(ARGS, 0, 32))) word2Bool(#asWord(#range(ARGS, 32, 32))) word2Bool(#asWord(#range(ARGS, 64, 32))) word2Bool(#asWord(#range(ARGS, 96, 32))) #asWord(#range(ARGS, 128, 32)) ... </k>
-      requires SELECTOR ==Int selector ( "expectEmit(bool,bool,bool,bool,address)" )
-```
-
-Then, we define rules for the `LOG(N)` Opcodes with higher priority than the ones in `evm.md`.
-The first one, `foundry.recordEvent` is used to record the event emitted right after the invocation of the `expectEmit` cheat code.
-Events are already recorded in the `<log>` cell as `SubstateLogEntry` elements.
-To record a specific event, we just store its index in `<eventId>` cell.
-
-```{.k .bytes}
-    rule [foundry.recordEvent]:
-         <k> LOG(N) _MEMSTART _MEMWIDTH ... </k>
-         <expectedEvent>
-          <recordEvent> true => false </recordEvent>
-          <isEventExpected> false => true </isEventExpected>
-          <eventId> 0 => size(LOGS) </eventId>
-          ...
-        </expectedEvent>
-        <log> LOGS </log>
-        <wordStack> WS </wordStack>
-      requires #sizeWordStack(WS) >=Int N
-      [priority(40)]
-```
-
-The second and third rules `foundry.checkEvent` and `foundry.checkEventAndEmitter` will try to match the event which is just about to be emitted with the event recorded previously in `LOGS[EVENTID]`.
-
-```{.k .bytes}
-    rule [foundry.checkEvent]:
-         <k> (. => #clearExpectEmit) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
-         <expectedEvent>
-          <recordEvent> false </recordEvent>
-          <isEventExpected> true </isEventExpected>
-          <checkedTopics> CHECKS </checkedTopics>
-          <isDataChecked> CHECKDATA </isDataChecked>
-          <expectedEmitter> .Account </expectedEmitter>
-          <eventId> EVENTID </eventId>
-        </expectedEvent>
-        <log> LOGS </log>
-        <wordStack> WS </wordStack>
-        <localMem> LM </localMem>
-      requires #sizeWordStack(WS) >=Int N
-       andBool #eventMatch({LOGS[EVENTID]}:>SubstateLogEntry, WordStack2List(#take(N, WS)), #range(LM, MEMSTART, MEMWIDTH), CHECKS, CHECKDATA)
-      [priority(40)]
-
-    rule [foundry.checkEventAndEmitter]:
-         <k> (. => #clearExpectEmit) ~> LOG(N) MEMSTART MEMWIDTH ... </k>
-         <id> ACCT </id>
-         <expectedEvent>
-          <recordEvent> false </recordEvent>
-          <isEventExpected> true </isEventExpected>
-          <checkedTopics> CHECKS </checkedTopics>
-          <isDataChecked> CHECKDATA </isDataChecked>
-          <expectedEmitter> ACCT </expectedEmitter>
-          <eventId> EVENTID </eventId>
-        </expectedEvent>
-        <log> LOGS </log>
-        <wordStack> WS </wordStack>
-        <localMem> LM </localMem>
-      requires #sizeWordStack(WS) >=Int N
-       andBool #eventMatch({LOGS[EVENTID]}:>SubstateLogEntry, WordStack2List(#take(N, WS)), #range(LM, MEMSTART, MEMWIDTH), CHECKS, CHECKDATA)
-      [priority(40)]
 ```
 
 Otherwise, throw an error for any other call to the Foundry contract.
@@ -1035,51 +1036,6 @@ Utils
          </account>
 ```
 
-- `#setExpectRevert` sets the `<expectedRevert>` subconfiguration with the current call depth and the expected message from `expectRevert`.
-
-```k
-    syntax KItem ::= "#setExpectRevert" ByteArray [klabel(foundry_setisRevertExpected)]
- // ---------------------------------------------------------------------------------
-    rule <k> #setExpectRevert EXPECTED => . ... </k>
-         <callDepth> CD </callDepth>
-         <expectedRevert>
-           <isRevertExpected> false => true </isRevertExpected>
-           <revertDepth> _ => CD +Int 1 </revertDepth>
-           <revertBytes> _ => EXPECTED </revertBytes>
-         </expectedRevert>
-```
-
-- `#setExpectOpcode` initializes the `<expectedCall>` subconfiguration with an expected `Address`, and `ByteArray` to match the calldata.
-`CallType` is used to specify what `CALL*` opcode is expected.
-
-```k
-    syntax KItem ::= "#setExpectOpcode" Account ByteArray Int CallType [klabel(foundry_setExpectOpcode)]
- // ----------------------------------------------------------------------------------------------------
-    rule <k> #setExpectOpcode ACCT DATA VALUE OPTYPE => . ... </k>
-         <expectedCall>
-           <isCallExpected> _ => true </isCallExpected>
-           <expectedCaller> _ => ACCT </expectedCaller>
-           <expectedData> _ => DATA </expectedData>
-           <expectedValue> _ => VALUE </expectedValue>
-           <callType> _ => OPTYPE </callType>
-         </expectedCall>
-```
-
-- `#clearExpectOpcode` restore the `<expectedCall>` subconfiguration to its initial values.
-
-```k
-    syntax KItem ::= "#clearExpectOpcode" [klabel(foundry_clearExpectOpcode)]
- // -------------------------------------------------------------------------
-    rule <k> #clearExpectOpcode => . ... </k>
-         <expectedCall>
-           <isCallExpected> _ => false </isCallExpected>
-           <expectedCaller> _ => .Account </expectedCaller>
-           <expectedData> _ => .ByteArray </expectedData>
-           <callType> _ => .CallType </callType>
-           <expectedValue> _ => 0 </expectedValue>
-         </expectedCall>
-```
-
 - `#setPrank NEWCALLER NEWORIGIN SINGLEPRANK` will set the `<prank/>` subconfiguration for the given accounts.
 
 ```k
@@ -1141,12 +1097,42 @@ If the production is matched when no prank is active, it will be ignored.
         </prank>
 ```
 
-- `#setExpectEmit` will initialize the `<expectEmit/>` subconfiguration, based on the arguments provided with the `expectEmit` cheat code.
+- `#setExpectedRevert` sets the `<expectedRevert>` subconfiguration with the current call depth and the expected message from `expectRevert`.
 
 ```k
-    syntax KItem ::= "#setExpectEmit" Bool Bool Bool Bool Account [klabel(foundry_setExpectEmit)]
- // ---------------------------------------------------------------------------------------------
-    rule <k> #setExpectEmit T1 T2 T3 CHECKDATA ACCT => . ... </k>
+    syntax KItem ::= "#setExpectedRevert" ByteArray [klabel(foundry_setisRevertExpected)]
+ // -------------------------------------------------------------------------------------
+    rule <k> #setExpectedRevert EXPECTED => . ... </k>
+         <callDepth> CD </callDepth>
+         <expectedRevert>
+           <isRevertExpected> false => true </isRevertExpected>
+           <revertDepth> _ => CD +Int 1 </revertDepth>
+           <revertBytes> _ => EXPECTED </revertBytes>
+         </expectedRevert>
+```
+
+- `#setExpectedCall` initializes the `<expectedCall>` subconfiguration with an expected `Address`, and `ByteArray` to match the calldata.
+`CallType` is used to specify what `CALL*` opcode is expected.
+
+```k
+    syntax KItem ::= "#setExpectedCall" Account ByteArray Int CallType [klabel(foundry_setExpectedCall)]
+ // ----------------------------------------------------------------------------------------------------
+    rule <k> #setExpectedCall ACCT DATA VALUE OPTYPE => . ... </k>
+         <expectedCall>
+           <isCallExpected> _ => true </isCallExpected>
+           <expectedCaller> _ => ACCT </expectedCaller>
+           <expectedData> _ => DATA </expectedData>
+           <expectedValue> _ => VALUE </expectedValue>
+           <callType> _ => OPTYPE </callType>
+         </expectedCall>
+```
+
+- `#setExpectedEvent` will initialize the `<expectEmit/>` subconfiguration, based on the arguments provided with the `expectEmit` cheat code.
+
+```k
+    syntax KItem ::= "#setExpectedEvent" Bool Bool Bool Bool Account [klabel(foundry_setExpectedEvent)]
+ // ---------------------------------------------------------------------------------------------------
+    rule <k> #setExpectedEvent T1 T2 T3 CHECKDATA ACCT => . ... </k>
          <expectedEvent>
            <recordEvent> _ => true </recordEvent>
            <isEventExpected> _ => false </isEventExpected>
@@ -1157,12 +1143,27 @@ If the production is matched when no prank is active, it will be ignored.
          </expectedEvent>
 ```
 
-- `#clearExpectEmit` is used to clear the `<expectEmit/>` subconfiguration and restore initial values.
+- `#clearExpectedCall` restores the `<expectedCall>` subconfiguration to its initial values.
 
 ```k
-    syntax KItem ::= "#clearExpectEmit" [klabel(foundry_clearExpectEmit)]
- // ---------------------------------------------------------------------
-    rule <k> #clearExpectEmit => . ...</k>
+    syntax KItem ::= "#clearExpectedCall" [klabel(foundry_clearExpectedCall)]
+ // -------------------------------------------------------------------------
+    rule <k> #clearExpectedCall => . ... </k>
+         <expectedCall>
+           <isCallExpected> _ => false </isCallExpected>
+           <expectedCaller> _ => .Account </expectedCaller>
+           <expectedData> _ => .ByteArray </expectedData>
+           <callType> _ => .CallType </callType>
+           <expectedValue> _ => 0 </expectedValue>
+         </expectedCall>
+```
+
+- `#clearExpectedEvent` is used to clear the `<expectEmit/>` subconfiguration and restore initial values.
+
+```k
+    syntax KItem ::= "#clearExpectedEvent" [klabel(foundry_clearExpectedEvent)]
+ // ---------------------------------------------------------------------------
+    rule <k> #clearExpectedEvent => . ...</k>
          <expectedEvent>
            <recordEvent> _ => false </recordEvent>
            <isEventExpected> _ => false </isEventExpected>
@@ -1178,7 +1179,7 @@ If the production is matched when no prank is active, it will be ignored.
 
 ```k
     syntax Bool ::= "#eventMatch" "(" SubstateLogEntry "," List "," ByteArray "," List "," Bool ")" [function, klabel(foundry_eventMatch)]
- // -----------------------------------------------------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------------------------------------------------------------------
     rule #eventMatch ({ _ACCT | TOPICS_A | DATA_A }:SubstateLogEntry, TOPICS_B, DATA_B, CHECKTOPICS, CHECKDATA) => #checkTopics(CHECKTOPICS, TOPICS_A, TOPICS_B) andBool ((notBool CHECKDATA) orBool (#asWord(DATA_A) ==Int #asWord(DATA_B)))
 ```
 
