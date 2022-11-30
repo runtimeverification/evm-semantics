@@ -234,6 +234,15 @@ class KEVM(KProve, KRun):
     def range_bytes(width: KInner, ba: KInner) -> KApply:
         return KApply('#rangeBytes(_,_)_WORD_Bool_Int_Int', [width, ba])
 
+    # We can realistically say that, when using memory or calldata, the size of
+    # the array is less than 2**128 bytes, which is still 300 quintillion
+    # exabytes. This will not realistically fit in a transaction, within any gas
+    # limit, or be possible to allocate on any machine, so this limit is a good
+    # working assumption.
+    @staticmethod
+    def range_array_calldata(ba: KInner) -> KApply:
+        return KApply('_<Int_', [KApply('#sizeByteArray(_)_EVM-TYPES_Int_ByteArray', [ba]), intToken(2**128)])
+
     @staticmethod
     def bool_2_word(cond: KInner) -> KApply:
         return KApply('bool2Word(_)_EVM-TYPES_Int_Bool', [cond])
