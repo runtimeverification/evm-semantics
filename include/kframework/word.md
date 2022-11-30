@@ -327,8 +327,8 @@ Range of types
 -   `chop` interprets an integer modulo `2^256`.
 
 ```k
-    syntax Int ::= chop ( Int ) [function, functional, smtlib(chop)]
- // ----------------------------------------------------------------
+    syntax Int ::= chop ( Int ) [function, total, smtlib(chop)]
+ // -----------------------------------------------------------
     rule chop ( I:Int ) => I modInt pow256 [concrete, smt-lemma]
 ```
 -   `_<<Byte_` shifts an integer 8 bits to the left.
