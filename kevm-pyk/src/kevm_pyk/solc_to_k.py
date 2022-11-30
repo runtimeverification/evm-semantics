@@ -399,6 +399,7 @@ def _init_term(
                 KVariable('ACCOUNTS_INIT'),
             ]
         ),
+        'TRACECALLS_CELL': KApply('.List'),
         'SINGLECALL_CELL': FALSE,
         'EXPECTEDREVERT_CELL': FALSE,
         'ISOPCODEEXPECTED_CELL': FALSE,

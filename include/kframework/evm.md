@@ -164,6 +164,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
           </network>
 
+        <traceCalls> .List </traceCalls>
         </ethereum>
       </kevm>
 
@@ -1330,6 +1331,10 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <caller> _ => ACCTFROM </caller>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <schedule> SCHED </schedule>
+         <traceCalls> ... .List => ListItem({ACCTFROM | ACCTTO | #unparseDataByteArray(ARGS)}) </traceCalls>
+
+    syntax TraceItem ::= "{" Account "|" Account "|" String "}"
+ // ----------------------------------------------------------
 
     syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
  // --------------------------------------------------------------
