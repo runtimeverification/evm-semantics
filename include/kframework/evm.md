@@ -1547,6 +1547,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
            ...
          </account>
+         <traceCalls> ... .List => ListItem({ACCTFROM | ACCTTO | "" }) </traceCalls>
+
 
     rule <k> #incrementNonce ACCT => . ... </k>
          <account>
