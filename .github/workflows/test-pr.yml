@@ -139,13 +139,11 @@ jobs:
       - name: 'Install Cachix'
         uses: cachix/cachix-action@v10
         with:
-          name: runtimeverification
-          extraPullNames: kore
-          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-          authToken: ${{ secrets.CACHIX_RV_PRIVATE_TOKEN }}
-
+          name: k-framework
+          authToken: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
+          
       # - name: Check submodules
       #   run: GC_DONT_GC=1 nix run .#check-submodules
 
       - name: Test KEVM
-        run: GC_DONT_GC=1 nix build .#kevm-test
+        run: GC_DONT_GC=1 nix build --print-build-logs .#kevm-test
