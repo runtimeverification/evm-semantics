@@ -76,4 +76,12 @@ contract ExpectRevertTest is Test {
         vm.expectRevert();
         reverter.revertAtNextDepth();
     }
+
+    function testFail_ExpectRevert_failAndSuccess() public {
+        Reverter reverter = new Reverter();
+        vm.expectRevert();
+        reverter.noRevert();
+        vm.expectRevert();
+        reverter.revertWithoutReason();
+        }
 }

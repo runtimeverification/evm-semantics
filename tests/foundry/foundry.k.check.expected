@@ -851,6 +851,8 @@ module EMITCONTRACTTEST-BIN-RUNTIME
     
     syntax EmitContractTestMethod ::= "testExpectEmitDoNotCheckData" "(" ")" [symbol(), klabel(method_EmitContractTest_testExpectEmitDoNotCheckData)]
     
+    syntax EmitContractTestMethod ::= "testFailExpectEmitDifferentEvents" "(" ")" [symbol(), klabel(method_EmitContractTest_testFailExpectEmitDifferentEvents)]
+    
     syntax EmitContractTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_EmitContractTest_vm)]
     
     rule  ( EmitContractTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
@@ -869,6 +871,9 @@ module EMITCONTRACTTEST-BIN-RUNTIME
       
     
     rule  ( EmitContractTest . testExpectEmitDoNotCheckData ( ) => #abiCallData ( "testExpectEmitDoNotCheckData" , .TypedArgs ) )
+      
+    
+    rule  ( EmitContractTest . testFailExpectEmitDifferentEvents ( ) => #abiCallData ( "testFailExpectEmitDifferentEvents" , .TypedArgs ) )
       
     
     rule  ( EmitContractTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
@@ -890,6 +895,9 @@ module EMITCONTRACTTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "testExpectEmitDoNotCheckData" ) => 4244930061 )
+      
+    
+    rule  ( selector ( "testFailExpectEmitDifferentEvents" ) => 3332086670 )
       
     
     rule  ( selector ( "vm" ) => 980845667 )
@@ -1263,6 +1271,8 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     
     syntax ExpectRevertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ExpectRevertTest_failed)]
     
+    syntax ExpectRevertTestMethod ::= "testFail_ExpectRevert_failAndSuccess" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_ExpectRevert_failAndSuccess)]
+    
     syntax ExpectRevertTestMethod ::= "testFail_expectRevert_bytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_bytes4)]
     
     syntax ExpectRevertTestMethod ::= "testFail_expectRevert_empty" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_empty)]
@@ -1288,6 +1298,9 @@ module EXPECTREVERTTEST-BIN-RUNTIME
       
     
     rule  ( ExpectRevertTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . testFail_ExpectRevert_failAndSuccess ( ) => #abiCallData ( "testFail_ExpectRevert_failAndSuccess" , .TypedArgs ) )
       
     
     rule  ( ExpectRevertTest . testFail_expectRevert_bytes4 ( ) => #abiCallData ( "testFail_expectRevert_bytes4" , .TypedArgs ) )
@@ -1324,6 +1337,9 @@ module EXPECTREVERTTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testFail_ExpectRevert_failAndSuccess" ) => 2386222785 )
       
     
     rule  ( selector ( "testFail_expectRevert_bytes4" ) => 3540765930 )

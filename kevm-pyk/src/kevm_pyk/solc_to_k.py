@@ -422,13 +422,23 @@ def _init_term(
 def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True) -> CTerm:
     final_term = _final_term(empty_config, contract_name)
     dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), Foundry.loc_FOUNDRY_FAILED())
+    expected_fields = KApply(
+        '_orBool_',
+        [
+            KVariable('ISREVERTEXPECTED_FINAL'),
+            KApply(
+                '_orBool_',
+                [
+                    KVariable('ISCALLEXPECTED_FINAL'),
+                    KApply('_orBool_', [KVariable('RECORDEVENT_FINAL'), KVariable('ISEVENTEXPECTED_FINAL')]),
+                ],
+            ),
+        ],
+    )
     foundry_success = Foundry.success(
         KVariable('STATUSCODE_FINAL'),
         dst_failed_post,
-        KVariable('ISREVERTEXPECTED_FINAL'),
-        KVariable('ISCALLEXPECTED_FINAL'),
-        KVariable('RECORDEVENT_FINAL'),
-        KVariable('ISEVENTEXPECTED_FINAL'),
+        expected_fields,
     )
     final_cterm = CTerm(final_term)
     if is_test:

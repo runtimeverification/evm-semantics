@@ -119,7 +119,7 @@ module FOUNDRY-ACCOUNTS
 endmodule
 ```
 
-The Foundry success predicate performs the same checks as [the `is_success` function from Foundry in `evm/src/executor/mod.rs`](https://github.com/foundry-rs/foundry/blob/e530c7325816e4256f62f4426bd9985dc54da831/evm/src/executor/mod.rs#L490).
+The Foundry success predicate includes the same checks as [the `is_success` function from Foundry in `evm/src/executor/mod.rs`](https://github.com/foundry-rs/foundry/blob/e530c7325816e4256f62f4426bd9985dc54da831/evm/src/executor/mod.rs#L490).
 
 These checks are:
 
@@ -130,16 +130,18 @@ The last condition is implemented in the [`fail()` function from `DSTest`](https
 If a DSTest assertion should fail, the `fail()` function stores `bytes32(uint256(0x01))` at the storage slot `bytes32("failed")`.
 Hence, checking if a `DSTest.assert*` has failed amounts to reading as a boolean the data from that particular storage slot.
 
+In addition, the third argument checks that there are not any reverts, calls or events expected.
+
 **TODO**: It should also be checked if the code present in the `FoundryCheat` account is non-empty, and return false if it is.
 
 ```k
 module FOUNDRY-SUCCESS
     imports EVM
 
-    syntax Bool ::= "foundry_success" "(" StatusCode "," Int "," Bool "," Bool "," Bool "," Bool ")" [function, klabel(foundry_success), symbol]
- // --------------------------------------------------------------------------------------------------------------------------------------------
-    rule foundry_success(EVMC_SUCCESS, 0, false, false, false, false) => true
-    rule foundry_success(_, _, _, _, _, _)                            => false [owise]
+    syntax Bool ::= "foundry_success" "(" StatusCode "," Int "," Bool ")" [function, klabel(foundry_success), symbol]
+ // -----------------------------------------------------------------------------------------------------------------
+    rule foundry_success(EVMC_SUCCESS, 0, false) => true
+    rule foundry_success(_, _, _)                => false [owise]
 
 endmodule
 ```
@@ -217,7 +219,8 @@ module FOUNDRY-CHEAT-CODES
 First we have some helpers in K which can:
 
 -   Inject a given boolean condition into's this execution's path condition, and
--   Check that a given boolean condition holds (recording failure if not).
+-   Check that a given boolean condition holds (recording failure if not), by
+-   Setting the `FoundryCheat . Failed` location to `True`.
 
 ```k
     syntax KItem ::= #assume ( Bool ) [klabel(foundry_assume), symbol]
@@ -225,12 +228,17 @@ First we have some helpers in K which can:
  // ------------------------------------------------------------------
     rule <k> #assume(B) => . ... </k> ensures B
 
-    rule <k> #assert(false) => . ... </k>
+    rule <k> #assert(false) => #markAsFailed ... </k>
+
+    syntax KItem ::= "#markAsFailed" [klabel(foundry_markAsFailed)]
+ // ---------------------------------------------------------------
+    rule <k> #markAsFailed => . ... </k>
          <account>
            <acctID> #address(FoundryCheat) </acctID>
            <storage> STORAGE => STORAGE [ #loc(FoundryCheat . Failed) <- 1 ] </storage>
            ...
          </account>
+
 ```
 
 #### Structure of execution
@@ -549,11 +557,11 @@ If the current call depth is equal with the `revertDepth` and the `revertBytes` 
 
 ```{.k .bytes}
     rule <statusCode> EVMC_REVERT => EVMC_SUCCESS </statusCode>
-         <k> #halt ~> #return _RETSTART _RETWIDTH ... </k>
+         <k> (. => #clearExpectedRevert) ~> #halt ~> #return _RETSTART _RETWIDTH ... </k>
          <output> OUT </output>
          <callDepth> CD </callDepth>
          <expectedRevert>
-           <isRevertExpected> true => false </isRevertExpected>
+           <isRevertExpected> true </isRevertExpected>
            <revertDepth> CD </revertDepth>
            <revertBytes> EXPECTED </revertBytes>
          </expectedRevert>
@@ -562,14 +570,14 @@ If the current call depth is equal with the `revertDepth` and the `revertBytes` 
       [priority(40)]
 ```
 
-Change the status code from `EVMC_SUCCESS` to `EVMC_REVERT` if a revert is expected but the call succeded.
+If a revert is expected but the next call succeeded, set the `FoundryCheat.Failed` location to true and change the status code to `EVMC_REVERT`.
 
 ```{.k .bytes}
     rule <statusCode> EVMC_SUCCESS => EVMC_REVERT </statusCode>
-         <k> #halt ~> #return _RETSTART _RETWIDTH ... </k>
+         <k> (. => #markAsFailed ~> #clearExpectedRevert) ~> #halt ~> #return _RETSTART _RETWIDTH ... </k>
          <callDepth> CD </callDepth>
          <expectedRevert>
-           <isRevertExpected> true => false </isRevertExpected>
+           <isRevertExpected> true </isRevertExpected>
            <revertDepth> CD </revertDepth>
            ...
          </expectedRevert>
@@ -1100,8 +1108,8 @@ If the production is matched when no prank is active, it will be ignored.
 - `#setExpectedRevert` sets the `<expectedRevert>` subconfiguration with the current call depth and the expected message from `expectRevert`.
 
 ```k
-    syntax KItem ::= "#setExpectedRevert" ByteArray [klabel(foundry_setisRevertExpected)]
- // -------------------------------------------------------------------------------------
+    syntax KItem ::= "#setExpectedRevert" ByteArray [klabel(foundry_setExpectedRevert)]
+ // -----------------------------------------------------------------------------------
     rule <k> #setExpectedRevert EXPECTED => . ... </k>
          <callDepth> CD </callDepth>
          <expectedRevert>
@@ -1141,6 +1149,19 @@ If the production is matched when no prank is active, it will be ignored.
            <expectedEmitter> _ => ACCT </expectedEmitter>
            <eventId> _ => 0 </eventId>
          </expectedEvent>
+```
+
+- `#clearExpectedRevert` restores the `<expectedRevert>` subconfiguration to its initial values.
+
+```k
+    syntax KItem ::= "#clearExpectedRevert" [klabel(foundry_clearExpectedRevert)]
+ // -----------------------------------------------------------------------------
+    rule <k> #clearExpectedRevert => . ... </k>
+         <expectedRevert>
+           <isRevertExpected> true => false </isRevertExpected>
+           <revertDepth> _ => 0 </revertDepth>
+           <revertBytes> _ => .ByteArray </revertBytes>
+         </expectedRevert>
 ```
 
 - `#clearExpectedCall` restores the `<expectedCall>` subconfiguration to its initial values.
