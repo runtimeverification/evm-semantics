@@ -12,9 +12,9 @@ from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSequence, KS
 from pyk.kast.manip import abstract_term_safely, substitute
 from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KProductionItem, KRule, KSentence, KTerminal
 from pyk.kcfg import KCFG
-from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
+from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool, BOOL
 from pyk.prelude.kint import intToken
-from pyk.prelude.ml import mlEqualsTrue
+from pyk.prelude.ml import mlEqualsTrue, mlEquals
 from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, intersperse
 
@@ -326,11 +326,28 @@ def method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Met
     return cfg
 
 
+def acct_not_in_map(acct: KInner, map: KInner) -> KApply:
+    return mlEqualsTrue(
+        notBool(
+            KApply(
+                '_in_keys(_)_MAP_Bool_KItem_Map',
+                [KApply('<acctID>', [acct]), map],
+            )
+        )
+    )
+
+
 def _init_cterm(init_term: KInner) -> CTerm:
     dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), Foundry.loc_FOUNDRY_FAILED())
     init_cterm = CTerm(init_term)
     init_cterm = KEVM.add_invariant(init_cterm)
     init_cterm = init_cterm.add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, intToken(0)])))
+    init_cterm = init_cterm.add_constraint(acct_not_in_map(Foundry.address_CALLER(), KVariable('ACCOUNTS_INIT')))
+    init_cterm = init_cterm.add_constraint(acct_not_in_map(Foundry.address_TEST_CONTRACT(), KVariable('ACCOUNTS_INIT')))
+    init_cterm = init_cterm.add_constraint(acct_not_in_map(Foundry.address_CHEATCODE(), KVariable('ACCOUNTS_INIT')))
+    init_cterm = init_cterm.add_constraint(
+        acct_not_in_map(Foundry.address_HARDHAT_CONSOLE(), KVariable('ACCOUNTS_INIT'))
+    )
     return init_cterm
 
 
