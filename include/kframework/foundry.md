@@ -902,6 +902,25 @@ Otherwise, throw an error for any other call to the Foundry contract.
       [owise]
 ```
 
+#### `sign` - Signs a digest with private key
+
+```
+function sign(uint256 privateKey, bytes32 digest) external returns (uint8 v, bytes32 r, bytes32 s);
+```
+
+`foundry.call.sign` will match when the `sign` cheat code function is called.
+This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`. 
+To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM). 
+This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings. 
+The `ECDSASign` function returns the signed data in [r,s,v] form, which we convert to a bytearray using `#parseByteStack`.
+
+```{.k .bytes}
+    rule [foundry.call.sign]:
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
+         <output> _ => #sign(#range(ARGS, 32, 32),#range(ARGS,0,32)) </output>
+      requires SELECTOR ==Int selector ( "sign(uint256,bytes32)" )
+```
+
 Utils
 -----
 
@@ -1118,6 +1137,11 @@ If the production is matched when no prank is active, it will be ignored.
           <singleCall> _ => false </singleCall>
         </prank>
 ```
+```k
+    syntax ByteArray ::= #sign ( ByteArray , ByteArray ) [function,klabel(foundry_sign)]
+ // ------------------------------------------------------------------------------------
+    rule #sign(BA1, BA2) => #parseByteStack(ECDSASign(#unparseByteStack(BA1), #unparseByteStack(BA2))) [concrete]
+```
 
 - `#setExpectEmit` will initialize the `<expectEmit/>` subconfiguration, based on the arguments provided with the `expectEmit` cheat code.
 
@@ -1192,6 +1216,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "expectCreate2(address,uint256,bytes)" )     => 3854582462 )
     rule ( selector ( "expectEmit(bool,bool,bool,bool)" )          => 1226622914 )
     rule ( selector ( "expectEmit(bool,bool,bool,bool,address)" )  => 2176505587 )
+    rule ( selector ( "sign(uint256,bytes32)" )                    => 3812747940 )
 ```
 
 - selectors for unimplemented cheat code functions.
@@ -1200,7 +1225,6 @@ If the production is matched when no prank is active, it will be ignored.
     rule selector ( "expectRegularCall(address,bytes)" )        => 3178868520
     rule selector ( "expectNoCall()" )                          => 3861374088
     rule selector ( "symbolicStorage(address)" )                => 769677742
-    rule selector ( "sign(uint256,bytes32)" )                   => 3812747940
     rule selector ( "ffi(string[])" )                           => 2299921511
     rule selector ( "setEnv(string,string)" )                   => 1029252078
     rule selector ( "envBool(string)" )                         => 2127686781
