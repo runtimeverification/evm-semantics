@@ -128,4 +128,6 @@ module INFINITE-GAS-SPEC
     claim <k> runLemma(Cgascap(ISTANBUL, #gas(_), #gas(_), 700) <Int 3) => doneLemma(false) ... </k>
     claim <k> runLemma(0 <=Int Cgascap(ISTANBUL, #gas(VGAS +Int -5413), #gas(VGAS +Int -5413), 700)) => doneLemma(true) ... </k>
 
+    claim [Cgascap-comparison]: <k> runLemma(3000 <=Int Cgascap(ISTANBUL, #gas(VGAS +Int -491), #gas(VGAS +Int -491), Cextra(ISTANBUL, true, 0, _))) => doneLemma(true) ... </k>
+
 endmodule
