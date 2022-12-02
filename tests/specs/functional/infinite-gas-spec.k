@@ -33,6 +33,8 @@ module INFINITE-GAS-SPEC
 
     claim <k> runLemma(((VGas -Int (#allBut64th(VGas +Int -2655) +Int 700)) +Int #allBut64th(VGas +Int -2655)) +Int -7244) => doneLemma(VGas +Int -7944) ... </k>
 
+    claim [allBut64th.1]: <k> runLemma(((VGAS +Int -32247) /Int 64) +Int #allBut64th(VGAS +Int -32247)) => doneLemma(VGAS +Int -32247) ... </k>
+
     claim <k> runLemma(X +Int (0 -Int ABI_wad)) => doneLemma(X -Int ABI_wad) ... </k>
 
     claim <k> runLemma(#memoryUsageUpdate(#memoryUsageUpdate(MEMORYUSED_CELL, 0, 32), 32, 32)) => doneLemma(#memoryUsageUpdate(MEMORYUSED_CELL, 32, 32)) ... </k>
