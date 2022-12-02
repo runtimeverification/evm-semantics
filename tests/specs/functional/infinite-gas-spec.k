@@ -77,18 +77,10 @@ module INFINITE-GAS-SPEC
                         => doneLemma(#gas((VGAS +Int Cgascap(ISTANBUL, VGAS +Int -5413, VGAS +Int -5413, 700)) +Int -6113)) ... </k>
 
     claim [Cgascap.2]: <k> runLemma( #gas(VGAS +Int -6113) +Int Cgascap(ISTANBUL, #gas(VGAS +Int -5413), #gas(VGAS +Int -5413), 700))
-                        => doneLemma(#gas((VGAS +Int Cgascap(ISTANBUL, VGAS +Int -5413, VGAS +Int -5413, 700)) +Int -6113)) ... </k>
+                        => doneLemma(#gas((VGAS +Int Cgascap(ISTANBUL, #gas(VGAS +Int -5413), #gas(VGAS +Int -5413), 700)) +Int -6113)) ... </k>
 
-    claim [Cgascap.3]: <k> runLemma( #gas((      #gas((VGAS -Int Cgascap(ISTANBUL, VGAS +Int -5413, VGAS +Int -5413, 700)) +Int -6113)
-                                            +Int Cgascap(ISTANBUL, #gas(VGAS +Int -5413), #gas(VGAS +Int -5413), 700))
-                                            +Int -1236
-                                         )
-                                   )
-                        => doneLemma(#gas(VGAS +Int -7349)) ... </k>
-
-    claim [Cgascap.4]: <k> runLemma(       Cgascap(ISTANBUL, #gas(VGas +Int -2924), #gas(VGas +Int -2924), Cextra(ISTANBUL, ISEMPTY, VALUE, ISWARM))  )
-                        => doneLemma( #gas(Cgascap(ISTANBUL,     (VGas +Int -2924),     (VGas +Int -2924), Cextra(ISTANBUL, ISEMPTY, VALUE, ISWARM))) ) ... </k>
-
+    claim [Cgascap.5]: <k> runLemma(  #gas(VGAS +Int -27277) -Int Cgascap(LONDON, 16000, #gas(VGAS +Int -27277), 100))
+                        => doneLemma( #gas(VGAS +Int -27277 -Int Cgascap(LONDON, 16000, #gas(VGAS +Int -27277), 100))) ... </k>
 
  // Infinite Gas comparisons
  // ------------------------
