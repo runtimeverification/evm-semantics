@@ -472,8 +472,8 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
                 KVariable('ACCOUNTS_FINAL'),
             ]
         ),
-        'EXPECTEDREVERT_CELL': KVariable('EXPECTEDREVERT_FINAL'),
-        'ISOPCODEEXPECTED_CELL': KVariable('ISOPCODEEXPECTED_FINAL'),
+        'ISREVERTEXPECTED_CELL': KVariable('ISREVERTEXPECTED_FINAL'),
+        'ISCALLEXPECTED_CELL': KVariable('ISCALLEXPECTED_FINAL'),
         'RECORDEVENT_CELL': KVariable('RECORDEVENT_FINAL'),
         'ISEVENTEXPECTED_CELL': KVariable('ISEVENTEXPECTED_FINAL'),
     }
@@ -482,8 +482,8 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
         [
             KVariable('STATUSCODE_FINAL'),
             KVariable('ACCOUNTS_FINAL'),
-            KVariable('EXPECTEDREVERT_FINAL'),
-            KVariable('ISOPCODEEXPECTED_FINAL'),
+            KVariable('ISREVERTEXPECTED_FINAL'),
+            KVariable('ISCALLEXPECTED_FINAL'),
             KVariable('RECORDEVENT_FINAL'),
             KVariable('ISEVENTEXPECTED_FINAL'),
         ],
