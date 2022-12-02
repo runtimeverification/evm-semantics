@@ -121,7 +121,7 @@ class KEVM(KProve, KRun):
     @staticmethod
     def concrete_rules() -> List[str]:
         return [
-            'EVM.allBut64th.pos',
+            'EVM.allBut64th',
             'EVM.Caddraccess',
             'EVM.Cbalance.new',
             'EVM.Cbalance.old',

@@ -141,8 +141,8 @@ module INFINITE-GAS-COMMON
     rule         Cextra(_, _, _, _) <Int #gas(_) => true [simplification]
     rule         Cextra(_, _, _, _) <Int pow256  => true [simplification]
 
-    rule 0 <=Int #allBut64th(_)                => true                          [simplification]
-    rule         #allBut64th(G)  <Int #gas(G') => true requires G <Int #gas(G') [simplification]
+    rule 0 <=Int #allBut64th(G)         => true requires 0 <=Int G  [simplification]
+    rule         #allBut64th(G) <Int G' => true requires G  <Int G' [simplification]
 
     rule 0 <=Int _:ScheduleConst < _:Schedule >               => true [simplification]
     rule         _:ScheduleConst < _:Schedule >  <Int #gas(_) => true [simplification]

@@ -66,6 +66,8 @@ module LEMMAS-SPEC
                                      => doneLemma(368263281805664599098893944405654396525700029268) ... </k>
                                   requires #rangeUInt(256, X)
 
+    claim [allBut64th-1]: <k> runLemma(((VGAS +Int -32247) /Int 64) +Int #allBut64th(VGAS +Int -32247)) => doneLemma(VGAS +Int -32247) ... </k>
+
  // Buffer write simplifications
  // ----------------------------
 
