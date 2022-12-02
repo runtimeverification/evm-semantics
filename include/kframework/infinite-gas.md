@@ -93,8 +93,6 @@ module INFINITE-GAS-COMMON
 
     rule #allBut64th(#gas(G)) => #gas(#allBut64th(G)) [simplification]
 
-    rule Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) requires #rangeUInt(256, GEXTRA) [simplification]
-
     rule _ <=Int #gas(_)        => true  [simplification]
     rule         #gas(_) <Int _ => false [simplification]
 
@@ -135,8 +133,9 @@ module INFINITE-GAS-COMMON
     rule 0 <=Int Cmem(_, N)              => true requires 0 <=Int N       [simplification]
     rule         Cmem(_, N) <Int #gas(G) => true requires N  <Int #gas(G) [simplification]
 
-    rule 0 <=Int Cgascap(_, _, _, _)                           => true                                                                                    [simplification]
-    rule         Cgascap(_, GCAP, GAVAIL, GEXTRA) <Int #gas(G) => true requires GCAP <Int #gas(G) andBool GAVAIL <Int #gas(G) andBool GEXTRA <Int #gas(G) [simplification]
+    rule 0 <=Int Cgascap(_, _, _, _)                    => true                                            [simplification]
+    rule         Cgascap(_, GCAP, _, _)          <Int G => true  requires 0 <=Int GCAP andBool GCAP <Int G [simplification]
+    rule         Cgascap(_, #gas(_), #gas(_), _) <Int _ => false                                           [simplification]
 
     rule 0 <=Int Cextra(_, _, _, _)              => true [simplification]
     rule         Cextra(_, _, _, _) <Int #gas(_) => true [simplification]
