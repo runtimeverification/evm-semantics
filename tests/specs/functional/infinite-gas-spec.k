@@ -49,11 +49,9 @@ module INFINITE-GAS-SPEC
 
     claim <k> runLemma(#gas((((VGas +Int -1259) -Int Csstore(ISTANBUL, 1, 1, Junk_0)) +Int -4339))) => doneLemma(#gas((VGas -Int Csstore(ISTANBUL, 1, 1, Junk_0)) +Int -5598)) ... </k>
 
-    claim <k> runLemma(#gas(#gas(G1) +Int #allBut64th(G2 +Int -3454))) => doneLemma(#gas(G1 +Int #allBut64th(G2 +Int -3454))) ... </k> requires #rangeUInt(256, G2)
-
-    claim <k> runLemma(#gas(#gas(G1 -Int G2) +Int #allBut64th(G3))) => doneLemma(#gas((G1 -Int G2) +Int #allBut64th(G3))) ... </k> requires 0 <Int G3
-    claim <k> runLemma(#gas(#gas(G1 -Int G2) -Int #allBut64th(G3))) => doneLemma(#gas((G1 -Int G2) -Int #allBut64th(G3))) ... </k> requires 0 <Int G3 andBool G3 <Int #gas(G1 -Int G2)
-
+    claim [allBut64th-1]: <k> runLemma(#gas(#gas(G1) +Int #allBut64th(G2 +Int -3454))) => doneLemma(#gas(G1 +Int #allBut64th(G2 +Int -3454))) ... </k> requires #rangeUInt(256, G2)
+    claim [allBut64th-3]: <k> runLemma(#gas(#gas(G1 -Int G2) +Int #allBut64th(G3))) => doneLemma(#gas((G1 -Int G2) +Int #allBut64th(G3))) ... </k> requires 0 <Int G3
+    claim [allBut64th-4]: <k> runLemma(#gas(#gas(G1 -Int G2) -Int #allBut64th(G3))) => doneLemma(#gas((G1 -Int G2) -Int #allBut64th(G3))) ... </k> requires 0 <Int G3 andBool G3 <Int #gas(G1 -Int G2)
 
     claim <k> runLemma(#gas(G) -Int Cmem(SCHED, #memoryUsageUpdate(MU, W0, 32))) => doneLemma(#gas(G -Int Cmem(SCHED, #memoryUsageUpdate(MU, W0, 32)))) ... </k>
            requires #rangeUInt(256, MU) andBool #rangeUInt(256, W0)
@@ -72,8 +70,6 @@ module INFINITE-GAS-SPEC
     claim [Cgascap-1]: <k> runLemma( #gas(VGAS +Int -6113) +Int Cgascap(ISTANBUL, VGAS +Int -5413, VGAS +Int -5413, 700))
                         => doneLemma(#gas((VGAS +Int Cgascap(ISTANBUL, VGAS +Int -5413, VGAS +Int -5413, 700)) +Int -6113)) ... </k>
 
-    claim [Cgascap-2]: <k> runLemma( #gas(VGAS +Int -6113) +Int Cgascap(ISTANBUL, #gas(VGAS +Int -5413), #gas(VGAS +Int -5413), 700))
-                        => doneLemma(#gas((VGAS +Int Cgascap(ISTANBUL, #gas(VGAS +Int -5413), #gas(VGAS +Int -5413), 700)) +Int -6113)) ... </k>
 
     claim [Cgascap-5]: <k> runLemma(  #gas(VGAS +Int -27277) -Int Cgascap(LONDON, 16000, #gas(VGAS +Int -27277), 100))
                         => doneLemma( #gas(VGAS +Int -27277 -Int Cgascap(LONDON, 16000, #gas(VGAS +Int -27277), 100))) ... </k>
