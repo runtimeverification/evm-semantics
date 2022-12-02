@@ -4,6 +4,7 @@ AccountParamsTest.testFail_GetNonce_false
 AddrTest.test_addr_false
 AddrTest.testFail_addr_false
 AddrTest.testFail_addr_true
+AddrTest.test_addr_symbolic
 AssertTest.test_assert_true
 AssertTest.test_assert_false
 AssertTest.testFail_assert_false
@@ -81,7 +82,7 @@ SafeTest.testWithdraw
 SafeTest.testWithdrawFuzz
 SetUpTest.testSetUpCalled
 SetUpTest.testSetUpCalledSymbolic
-SignTest.testSign
+SignTest.testSign_symbolic
 SnapshotTest.testSnapshot
 StoreTest.testAccesses
 StoreTest.testGasLoadWarmVM
