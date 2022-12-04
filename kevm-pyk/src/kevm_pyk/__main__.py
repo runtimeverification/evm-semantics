@@ -29,6 +29,12 @@ _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
+def _write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
+    with open(_cfgpath, 'w') as cfgfile:
+        cfgfile.write(json.dumps(_cfg.to_dict()))
+        _LOGGER.info(f'Updated CFG file: {_cfgpath}')
+
+
 def _ignore_arg(args: Dict[str, Any], arg: str, cli_option: str) -> None:
     if arg in args:
         if args[arg] is not None:
@@ -326,11 +332,6 @@ def exec_foundry_prove(
 
     # TODO: We should be using lemma_rules for execute endpoint
     # lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
-
-    def _write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
-        with open(_cfgpath, 'w') as cfgfile:
-            cfgfile.write(json.dumps(_cfg.to_dict()))
-            _LOGGER.info(f'Updated CFG file: {_cfgpath}')
 
     kcfgs: Dict[str, Tuple[KCFG, Path]] = {}
     for test in tests:
