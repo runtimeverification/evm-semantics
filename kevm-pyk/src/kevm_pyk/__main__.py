@@ -35,6 +35,12 @@ _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
+def _write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
+    with open(_cfgpath, 'w') as cfgfile:
+        cfgfile.write(json.dumps(_cfg.to_dict()))
+        _LOGGER.info(f'Updated CFG file: {_cfgpath}')
+
+
 def _ignore_arg(args: Dict[str, Any], arg: str, cli_option: str) -> None:
     if arg in args:
         if args[arg] is not None:
@@ -360,11 +366,6 @@ def exec_foundry_prove(
                 kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
 
     lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
-
-    def _write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
-        with open(_cfgpath, 'w') as cfgfile:
-            cfgfile.write(json.dumps(_cfg.to_dict()))
-            _LOGGER.info(f'Updated CFG file: {_cfgpath}')
 
     def prove_it(_id_and_cfg: Tuple[str, Tuple[KCFG, Path]]) -> bool:
         _cfg_id, (_cfg, _cfg_path) = _id_and_cfg
