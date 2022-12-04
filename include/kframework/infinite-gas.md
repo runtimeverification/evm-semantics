@@ -137,10 +137,11 @@ module INFINITE-GAS-COMMON
        andBool notBool Gstaticcalldepth << SCHED >>
       [simplification]
 
-    rule 0 <=Int Cgascap(_, _, _, _)                    => true                                            [simplification]
-    rule G <=Int Cgascap(_, GCAP, #gas(_), _)           => true  requires 0 <=Int G andBool G <=Int GCAP   [simplification]
-    rule         Cgascap(_, GCAP, _, _)          <Int G => true  requires 0 <=Int GCAP andBool GCAP <Int G [simplification]
-    rule         Cgascap(_, #gas(_), #gas(_), _) <Int _ => false                                           [simplification]
+    rule 0 <=Int Cgascap(_, _, _, _)                     => true                                            [simplification]
+    rule G <=Int Cgascap(_, GCAP, #gas(_), _)            => true  requires 0 <=Int G andBool G <=Int GCAP   [simplification]
+    rule         Cgascap(_, GCAP, #gas(_), _)     <Int G => false requires 0 <=Int G andBool G <=Int GCAP   [simplification]
+    rule         Cgascap(_, GCAP, _, _)           <Int G => true  requires 0 <=Int GCAP andBool GCAP <Int G [simplification]
+    rule         Cgascap(_, #gas(_), #gas(_), _)  <Int _ => false                                           [simplification]
 
     rule 0 <=Int Cextra(_, _, _, _)              => true [simplification]
     rule         Cextra(_, _, _, _) <Int #gas(_) => true [simplification]
