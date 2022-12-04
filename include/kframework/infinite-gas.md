@@ -87,11 +87,10 @@ module INFINITE-GAS-COMMON
     rule G /Int #gas(G') => 0               requires 0 <=Int G  andBool G  <Int #gas(G') [simplification]
 
     rule #gas(#gas(G)) => #gas(G) [simplification]
+    rule #gas(#gas(G) +Int G') => #gas(G +Int G') [simplification]
 
     rule minInt(#gas(G), #gas(G'))              => #gas(minInt(G, G'))              [simplification]
     rule #if B #then #gas(G) #else #gas(G') #fi => #gas(#if B #then G #else G' #fi) [simplification]
-
-    rule #allBut64th(#gas(G)) => #gas(#allBut64th(G)) [simplification]
 
     rule _ <=Int #gas(_)        => true  [simplification]
     rule         #gas(_) <Int _ => false [simplification]
@@ -146,6 +145,11 @@ module INFINITE-GAS-COMMON
     rule 0 <=Int Cextra(_, _, _, _)              => true [simplification]
     rule         Cextra(_, _, _, _) <Int #gas(_) => true [simplification]
     rule         Cextra(_, _, _, _) <Int pow256  => true [simplification]
+
+    rule #allBut64th(#gas(G))            => #gas(#allBut64th(G))         [simplification]
+    rule (G /Int 64) +Int #allBut64th(G) => G                            [simplification]
+    // TODO: Questionable lemma
+    rule #gas(G) +Int #allBut64th(G')    => #gas(G +Int #allBut64th(G')) [simplification]
 
     rule 0 <=Int #allBut64th(G)         => true requires 0 <=Int G  [simplification]
     rule         #allBut64th(G) <Int G' => true requires G  <Int G' [simplification]
