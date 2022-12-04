@@ -382,7 +382,7 @@ def exec_foundry_prove(
             _simplified = foundry.simplify(curr_node.cterm)
             if is_bottom(_simplified):
                 cfg.create_cover(curr_node.id, cfg.get_unique_target().id, constraint=mlTop())
-                _LOGGER.info(
+                _LOGGER.warning(
                     f'Infeasible node marked as proven {cfgid}: {shorten_hashes((curr_node.id, cfg.get_unique_target().id))}'
                 )
                 continue
@@ -429,7 +429,7 @@ def exec_foundry_prove(
             if len(next_cterms) == 1:
                 raise ValueError(f'Found a single successor cterm: {(depth, cterm, next_cterms)}')
 
-            _LOGGER.info(f'Extracting branchings from node in {cfgid}: {shorten_hashes((curr_node.id))}')
+            _LOGGER.info(f'Extracting branches from node in {cfgid}: {shorten_hashes((curr_node.id))}')
             cfg.add_expanded(next_node.id)
             branches = KEVM.extract_branches(cterm)
             if len(list(branches)) > 0:
