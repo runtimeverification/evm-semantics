@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm, build_rule
-from pyk.kast.inner import KApply, KInner, KRewrite, KToken
+from pyk.kast.inner import KApply, KInner, KRewrite, KToken, KVariable
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG
@@ -16,7 +16,7 @@ from pyk.kcfg_viewer.app import KCFGViewer
 from pyk.ktool.kit import KIT
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
-from pyk.prelude.ml import is_bottom, is_top, mlAnd, mlTop
+from pyk.prelude.ml import is_bottom, is_top, mlAnd, mlEqualsTrue, mlTop
 from pyk.utils import shorten_hashes
 
 from .gst_to_kore import gst_to_kore
@@ -448,14 +448,26 @@ def exec_foundry_prove(
                 splits = cfg.split_node(next_node.id, branches)
                 _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((next_node.id, splits))}')
             else:
-                _LOGGER.warning(f'Falling back to extracted next states for {cfgid}:\n{next_node.id}')
-                branch_constraints = [[c for c in s.constraints if c not in cterm.constraints] for s in next_cterms]
-                _LOGGER.info(
-                    f'Found {len(list(next_cterms))} branches manually at depth 1 for {cfgid}: {[foundry.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
-                )
-                for bs, bc in zip(next_cterms, branch_constraints, strict=True):
-                    branch_node = cfg.get_or_create_node(bs)
-                    cfg.create_edge(next_node.id, branch_node.id, mlAnd(bc), 1)
+                _LOGGER.info(f'Checking if real branch {cfgid}: {next_node.id}')
+                non_ceil_constraints = [c for c in next_node.cterm.constraints if mlEqualsTrue(KVariable('X')).match(c)]
+                non_ceil_cterm = CTerm(mlAnd([next_node.cterm.config] + non_ceil_constraints))
+                edge = KCFG.Edge(KCFG.Node(non_ceil_cterm), target_node, mlTop(), -1)
+                claim = edge.to_claim()
+                claim_id = f'check-branch-{next_node.id}-to-{target_node.id}'
+                depth, branching, result = foundry.get_claim_basic_block(claim_id, claim, max_depth=1)
+                if not branching:
+                    _LOGGER.info(f'Not real branch {cfgid}: {next_node.id}')
+                    new_next_node = cfg.get_or_create_node(CTerm(result))
+                    cfg.create_edge(next_node.id, new_next_node.id, mlTop(), 1)
+                else:
+                    _LOGGER.info(f'Real branch {cfgid}: {next_node.id}')
+                    branch_constraints = [[c for c in s.constraints if c not in cterm.constraints] for s in next_cterms]
+                    _LOGGER.info(
+                        f'Found {len(list(next_cterms))} branches manually at depth 1 for {cfgid}: {[foundry.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
+                    )
+                    for bs, bc in zip(next_cterms, branch_constraints, strict=True):
+                        branch_node = cfg.get_or_create_node(bs)
+                        cfg.create_edge(next_node.id, branch_node.id, mlAnd(bc), 1)
 
         write_cfg(cfg, cfgpath)
 
