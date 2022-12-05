@@ -154,10 +154,10 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<active>` signals if a prank is active or not.
     - `<depth>` records the current call depth at which the prank was invoked.
     - `<singleCall>` tells whether the prank stops by itself after the next call or when a `stopPrank` cheat code is invoked.
-2. The `<expected>` subconfiguration stores values used for the `expectRevert` cheat code.
-    - `<expectedRevert>` flags if the next call is expected to revert or not.
+2. The `<expectedRevert>` subconfiguration stores values used for the `expectRevert` cheat code.
+    - `<isRevertExpected>` flags if the next call is expected to revert or not.
     - `<expectedDepth>` records the depth at which the call is expected to revert.
-    - `<expectedBytes>` keeps the expected revert message as a ByteArray.
+    - `<expectedReason>` keeps the expected revert message as a ByteArray.
 3. The `<expectOpcode>` subconfiguration stores values used for `expect*OPCODE*` cheat codes.
     - `<isOpcodeExpected>` flags if a call opcode is expected.
     - `<expectedAddress>` keeps the expected caller.
@@ -188,11 +188,11 @@ module FOUNDRY-CHEAT-CODES
           <depth> 0 </depth>
           <singleCall> false </singleCall>
         </prank>
-        <expected>
-          <expectedRevert> false </expectedRevert>
-          <expectedBytes> .ByteArray </expectedBytes>
+        <expectedRevert>
+          <isRevertExpected> false </isRevertExpected>
+          <expectedReason> .ByteArray </expectedReason>
           <expectedDepth> 0 </expectedDepth>
-        </expected>
+        </expectedRevert>
         <expectedOpcode>
           <isOpcodeExpected> false </isOpcodeExpected>
           <expectedAddress> .Account </expectedAddress>
@@ -532,10 +532,10 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
 ```{.k .bytes}
     rule [foundry.call.ignoreCalls]:
          <k> #call_foundry _ _ => . ... </k>
-         <expected>
-           <expectedRevert> true </expectedRevert>
+         <expectedRevert>
+           <isRevertExpected> true </isRevertExpected>
            ...
-         </expected>
+         </expectedRevert>
       [priority(35)]
 ```
 
@@ -547,11 +547,11 @@ If the current call depth is equal with the `expectedDepth` and the `expectedByt
          <k> #halt ~> #return _RETSTART _RETWIDTH ... </k>
          <output> OUT </output>
          <callDepth> CD </callDepth>
-         <expected>
-           <expectedRevert> true => false </expectedRevert>
+         <expectedRevert>
+           <isRevertExpected> true => false </isRevertExpected>
            <expectedDepth> CD </expectedDepth>
-           <expectedBytes> EXPECTED </expectedBytes>
-         </expected>
+           <expectedReason> EXPECTED </expectedReason>
+         </expectedRevert>
       requires (EXPECTED =/=K .ByteArray andBool EXPECTED ==K #range(OUT, 4, #sizeByteArray(OUT) -Int 4))
         orBool EXPECTED ==K .ByteArray
       [priority(40)]
@@ -563,15 +563,15 @@ Change the status code from `EVMC_SUCCESS` to `EVMC_REVERT` if a revert is expec
     rule <statusCode> EVMC_SUCCESS => EVMC_REVERT </statusCode>
          <k> #halt ~> #return _RETSTART _RETWIDTH ... </k>
          <callDepth> CD </callDepth>
-         <expected>
-           <expectedRevert> true => false </expectedRevert>
+         <expectedRevert>
+           <isRevertExpected> true => false </isRevertExpected>
            <expectedDepth> CD </expectedDepth>
            ...
-         </expected>
+         </expectedRevert>
        [priority(40)]
 ```
 
-If the `expectRevert()` selector is matched, call the `#setExpectRevert` production to initialize the `<expected>` subconfiguration.
+If the `expectRevert()` selector is matched, call the `#setExpectRevert` production to initialize the `<expectedRevert>` subconfiguration.
 
 ```{.k .bytes}
     rule [foundry.call.expectRevert]:
@@ -1032,18 +1032,31 @@ Utils
          </account>
 ```
 
-- `#setExpectRevert` sets the `<expected>` subconfiguration with the current call depth and the expected message from `expectRevert`.
+- `#setExpectRevert` sets the `<expectedRevert>` subconfiguration with the current call depth and the expected message from `expectRevert`.
 
 ```k
-    syntax KItem ::= "#setExpectRevert" ByteArray [klabel(foundry_setExpectedRevert)]
- // ---------------------------------------------------------------------------------
+    syntax KItem ::= "#setExpectRevert" ByteArray [klabel(foundry_setExpectRevert)]
+ // -------------------------------------------------------------------------------
     rule <k> #setExpectRevert EXPECTED => . ... </k>
          <callDepth> CD </callDepth>
-         <expected>
-           <expectedRevert> false => true </expectedRevert>
+         <expectedRevert>
+           <isRevertExpected> false => true </isRevertExpected>
            <expectedDepth> _ => CD +Int 1 </expectedDepth>
-           <expectedBytes> _ => EXPECTED </expectedBytes>
-         </expected>
+           <expectedReason> _ => EXPECTED </expectedReason>
+         </expectedRevert>
+```
+
+- `#clearExpectRevert` sets the `<expectedRevert>` subconfiguration to initial values.
+
+```k
+    syntax KItem ::= "#clearExpectRevert" [klabel(foundry_clearExpectRevert)]
+ // -------------------------------------------------------------------------
+    rule <k> #clearExpectRevert => . ... </k>
+         <expectedRevert>
+           <isRevertExpected> _ => false </isRevertExpected>
+           <expectedDepth> _ => 0 </expectedDepth>
+           <expectedReason> _ => .ByteArray </expectedReason>
+         </expectedRevert>
 ```
 
 - `#setExpectOpcode` initializes the `<expectedOpcode>` subconfiguration with an expected `Address`, and `ByteArray` to match the calldata.
