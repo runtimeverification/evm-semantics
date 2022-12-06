@@ -387,6 +387,22 @@ def exec_foundry_prove(
             iterations += 1
             curr_node = cfg.frontier[0]
 
+            _LOGGER.info(
+                f'Checking subsumption into target state {cfgid}: {shorten_hashes((curr_node.id, target_node.id))}'
+            )
+            impl = foundry.implies(curr_node.cterm, target_node.cterm)
+            if impl is not None:
+                subst, pred = impl
+                cfg.create_cover(curr_node.id, target_node.id, subst=subst, constraint=pred)
+                _LOGGER.info(f'Subsumed into target node: {shorten_hashes((curr_node.id, target_node.id))}')
+                continue
+
+            _LOGGER.info(f'Checking terminal {cfgid}: {shorten_hashes((curr_node.id))}')
+            if KEVM.is_terminal(curr_node.cterm):
+                _LOGGER.info(f'Terminal node {cfgid}: {shorten_hashes((curr_node.id))}.')
+                cfg.add_expanded(curr_node.id)
+                continue
+
             _LOGGER.info(f'Simplifying {cfgid}: {shorten_hashes((curr_node.id))}')
             _simplified = foundry.simplify(curr_node.cterm)
             if is_bottom(_simplified):
@@ -400,25 +416,10 @@ def exec_foundry_prove(
             simplified = CTerm(_simplified)
             if simplified != curr_node.cterm:
                 cfg, new_node_id = KCFG__replace_node(cfg, curr_node.id, simplified)
+                curr_node = cfg.node(new_node_id)
                 _LOGGER.info(f'Replaced with simplified node: {shorten_hashes((curr_node.id, new_node_id))}')
-                continue
-
-            _LOGGER.info(
-                f'Checking subsumption into target state {cfgid}: {shorten_hashes((curr_node.id, target_node.id))}'
-            )
-            impl = foundry.implies(curr_node.cterm, target_node.cterm)
-            if impl is not None:
-                subst, pred = impl
-                cfg.create_cover(curr_node.id, target_node.id, subst=subst, constraint=pred)
-                _LOGGER.info(f'Subsumed into target node: {shorten_hashes((curr_node.id, target_node.id))}')
-                continue
 
             cfg.add_expanded(curr_node.id)
-
-            _LOGGER.info(f'Checking terminal {cfgid}: {shorten_hashes((curr_node.id))}')
-            if KEVM.is_terminal(curr_node.cterm):
-                _LOGGER.info(f'Terminal node {cfgid}: {shorten_hashes((curr_node.id))}.')
-                continue
 
             _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
             depth, cterm, next_cterms = foundry.execute(simplified, depth=max_depth, terminal_rules=['EVM.halt'])
@@ -438,8 +439,9 @@ def exec_foundry_prove(
             if len(next_cterms) == 1:
                 raise ValueError(f'Found a single successor cterm: {(depth, cterm, next_cterms)}')
 
-            _LOGGER.info(f'Extracting branches from node in {cfgid}: {shorten_hashes((curr_node.id))}')
             cfg.add_expanded(next_node.id)
+
+            _LOGGER.info(f'Extracting branches from node in {cfgid}: {shorten_hashes((curr_node.id))}')
             branches = KEVM.extract_branches(cterm)
             if len(list(branches)) > 0:
                 _LOGGER.info(
