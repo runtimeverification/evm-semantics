@@ -273,23 +273,25 @@ OpCode Execution
 
 ### Execution Macros
 
+```k
+    syntax MaybeOpCode ::= ".NoOpCode" | OpCode
+
+    syntax MaybeOpCode ::= "#lookupOpCode" "(" Int "," Schedule ")" [function, total]
+ // ---------------------------------------------------------------------------------
+    rule #lookupOpCode(W, SCHED) => #dasmOpCode(W, SCHED) requires #rangeUInt(8, W)
+    rule #lookupOpCode(_,     _) => .NoOpCode [owise]
+```
+
 -   `#execute` loads the next opcode (or halts with `EVMC_SUCCESS` if there is no next opcode).
 
 ```k
     syntax KItem ::= "#execute"
  // ---------------------------
     rule [halt]: <k> #halt ~> (#execute => .) ... </k>
-    rule [step]: <k> (. => #next [ #dasmOpCode(PGM [ PCOUNT ], SCHED) ]) ~> #execute ... </k>
-                 <pc> PCOUNT </pc>
+    rule [step]: <k> (. => #next [ #lookupOpCode(PGM[PCOUNT], SCHED) ]) ~> #execute ... </k>
                  <program> PGM </program>
+                 <pc> PCOUNT </pc>
                  <schedule> SCHED </schedule>
-      requires PCOUNT <Int #sizeByteArray(PGM)
-
-    rule <k> (. => #end EVMC_SUCCESS) ~> #execute ... </k>
-         <pc> PCOUNT </pc>
-         <program> PGM </program>
-         <output> _ => .ByteArray </output>
-      requires PCOUNT >=Int #sizeByteArray(PGM)
 ```
 
 ### Single Step
@@ -303,9 +305,12 @@ The `#next [_]` operator initiates execution by:
 4.  adjusting the program counter.
 
 ```k
-    syntax InternalOp ::= "#next" "[" OpCode "]"
- // --------------------------------------------
-    rule <k> #next [ OP ]
+    syntax InternalOp ::= "#next" "[" MaybeOpCode "]"
+ // -------------------------------------------------
+    rule <k> #next [ .NoOpCode ] => #end EVMC_SUCCESS ... </k>
+         <output> _ => .ByteArray </output>
+
+    rule <k> #next [ OP:OpCode ]
           => #if isAddr1Op(OP) orBool isAddr2Op(OP) #then #addr [ OP ] #else . #fi
           ~> #exec [ OP ]
           ~> #pc   [ OP ]
