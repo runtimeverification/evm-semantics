@@ -289,6 +289,7 @@ def exec_foundry_prove(
     minimize: bool = True,
     lemmas: Iterable[str] = (),
     simplify_init: bool = True,
+    auto_abstract: bool = False,
     retry: bool = False,
     **kwargs: Any,
 ) -> None:
@@ -402,6 +403,15 @@ def exec_foundry_prove(
                 _LOGGER.info(f'Terminal node {cfgid}: {shorten_hashes((curr_node.id))}.')
                 cfg.add_expanded(curr_node.id)
                 continue
+
+            if auto_abstract:
+                _LOGGER.info(f'Auto abstraction {cfgid}: {shorten_hashes((curr_node.id))}')
+                abstracted = foundry.abstract(curr_node.cterm)
+                if abstracted != curr_node.cterm:
+                    abstracted_node = cfg.get_or_create_node(abstracted)
+                    cfg.create_cover(curr_node.id, abstracted_node.id)
+                    _LOGGER.info(f'Abstracted node: {shorten_hashes((curr_node.id, abstracted_node.id))}')
+                    continue
 
             _LOGGER.info(f'Simplifying {cfgid}: {shorten_hashes((curr_node.id))}')
             _simplified = foundry.simplify(curr_node.cterm)
@@ -893,6 +903,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=None,
         type=int,
         help='Store every Nth state in the KCFG for inspection.',
+    )
+    foundry_prove_args.add_argument(
+        '--auto-abstract',
+        dest='auto_abstract',
+        default=False,
+        action='store_true',
+        help='Automatically abstract nodes on the frontier.',
     )
 
     foundry_show_args = command_parser.add_parser(
