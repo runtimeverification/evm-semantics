@@ -7,10 +7,10 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KRewrite
+from pyk.cterm import CTerm, build_claim, build_rule
+from pyk.kast.inner import KApply, KInner, KRewrite, Subst
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
-from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KVariable
+from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule, KVariable
 from pyk.kcfg import KCFG
 from pyk.ktool.kit import KIT
 from pyk.ktool.krun import KRunOutput, _krun
@@ -444,12 +444,12 @@ def exec_foundry_prove(
                 _LOGGER.info(f'Checking if real branch {cfgid}: {next_node.id}')
                 non_ceil_constraints = [c for c in next_node.cterm.constraints if mlEqualsTrue(KVariable('X')).match(c)]
                 non_ceil_cterm = CTerm(mlAnd([next_node.cterm.config] + non_ceil_constraints))
-                edge = KCFG.Edge(KCFG.Node(non_ceil_cterm), target_node, mlTop(), -1)
-                claim = edge.to_claim()
-                claim_id = f'check-branch-{next_node.id}-to-{target_node.id}'
+                claim_id = f'CHECK-BRANCH-{next_node.id}-TO-{target_node.id}'
+                claim, var_map = build_claim(claim_id, non_ceil_cterm, target_node.cterm)
                 depth, branching, result = foundry.get_claim_basic_block(claim_id, claim, max_depth=1)
                 if not branching:
                     _LOGGER.info(f'Not real branch {cfgid}: {next_node.id}')
+                    result = Subst(var_map)(result)
                     new_next_node = cfg.get_or_create_node(CTerm(result))
                     cfg.create_edge(next_node.id, new_next_node.id, mlTop(), 1)
                 else:
