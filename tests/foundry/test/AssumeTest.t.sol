@@ -24,4 +24,9 @@ contract AssumeTest is Test {
         vm.assume(a == b);
         assertEq(a, b);
     }
+
+    function testAssume(bool b) public {
+        vm.assume(b);
+        assertTrue(b);
+    }
 }
