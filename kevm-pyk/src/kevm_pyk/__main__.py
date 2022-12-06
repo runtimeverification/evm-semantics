@@ -9,7 +9,7 @@ from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KRewrite
-from pyk.kast.manip import minimize_term, push_down_rewrites
+from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KVariable
 from pyk.kcfg import KCFG
 from pyk.ktool.kit import KIT
@@ -501,9 +501,15 @@ def exec_foundry_show(
     kcfgs_dir = foundry_out / 'kcfgs'
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
     kcfg_file = kcfgs_dir / f'{test}.json'
+
+    def _node_pretty(_ct: CTerm) -> List[str]:
+        pc_str = f' pc: {foundry.pretty_print(get_cell(_ct.config, "PC_CELL"))}'
+        statuscode_str = f' statusCode: {foundry.pretty_print(get_cell(_ct.config, "STATUSCODE_CELL"))}'
+        return [pc_str, statuscode_str]
+
     with open(kcfg_file, 'r') as kf:
         kcfg = KCFG.from_dict(json.loads(kf.read()))
-        list(map(print, kcfg.pretty(foundry, minimize=minimize)))
+        list(map(print, kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)))
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
         if minimize:
