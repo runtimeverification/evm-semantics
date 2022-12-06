@@ -226,6 +226,11 @@ First we have some helpers in K which can:
      syntax KItem ::= "#markAsFailed" [klabel(foundry_markAsFailed)]
   // ---------------------------------------------------------------
      rule <k> #markAsFailed => . ... </k>
+          <account>
+             <acctID> #address(FoundryCheat) </acctID>
+             <storage> STORAGE => STORAGE [ #loc(FoundryCheat . Failed) <- 1 ] </storage>
+             ...
+           </account>
 ```
 
 #### Structure of execution
