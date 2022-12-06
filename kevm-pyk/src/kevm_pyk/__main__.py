@@ -411,6 +411,7 @@ def exec_foundry_show(
     test: str,
     nodes: Iterable[str] = (),
     node_deltas: Iterable[Tuple[str, str]] = (),
+    to_module: bool = False,
     minimize: bool = True,
     **kwargs: Any,
 ) -> None:
@@ -422,8 +423,8 @@ def exec_foundry_show(
     kcfg_file = kcfgs_dir / f'{test}.json'
 
     def _node_pretty(_ct: CTerm) -> List[str]:
-        pc_str = f' pc: {foundry.pretty_print(get_cell(_ct.config, "PC_CELL"))}'
-        statuscode_str = f' statusCode: {foundry.pretty_print(get_cell(_ct.config, "STATUSCODE_CELL"))}'
+        pc_str = f'pc: {foundry.pretty_print(get_cell(_ct.config, "PC_CELL"))}'
+        statuscode_str = f'statusCode: {foundry.pretty_print(get_cell(_ct.config, "STATUSCODE_CELL"))}'
         return [pc_str, statuscode_str]
 
     with open(kcfg_file, 'r') as kf:
@@ -441,6 +442,31 @@ def exec_foundry_show(
         if minimize:
             config_delta = minimize_term(config_delta)
         print(f'\n\nState Delta {node_id_1} => {node_id_2}:\n\n{foundry.pretty_print(config_delta)}\n')
+
+    if to_module:
+
+        def to_rule(edge: KCFG.Edge) -> KRule:
+            sentence_id = f'BASIC-BLOCK-{edge.source.id}-TO-{edge.target.id}'
+            init_cterm = CTerm(edge.source.cterm.config)
+            for c in edge.source.cterm.constraints:
+                assert type(c) is KApply
+                if c.label.name == '#Ceil':
+                    _LOGGER.warning(f'Ignoring Ceil condition: {c}')
+                else:
+                    init_cterm.add_constraint(c)
+            target_cterm = CTerm(edge.target.cterm.config)
+            for c in edge.source.cterm.constraints:
+                assert type(c) is KApply
+                if c.label.name == '#Ceil':
+                    _LOGGER.warning(f'Ignoring Ceil condition: {c}')
+                else:
+                    target_cterm.add_constraint(c)
+            rule, _ = build_rule(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm, priority=35)
+            return rule
+
+        rules = [to_rule(e) for e in kcfg.edges() if e.depth > 0]
+        new_module = KFlatModule('SUMMARY', rules)
+        print(foundry.pretty_print(new_module) + '\n')
 
 
 def exec_foundry_list(
@@ -760,6 +786,9 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_show_args.add_argument(
         '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
+    )
+    foundry_show_args.add_argument(
+        '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
     )
 
     foundry_list_args = command_parser.add_parser(
