@@ -5,9 +5,9 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, Iterable, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, build_assoc
-from pyk.kast.manip import flatten_label, get_cell
+from pyk.cterm import CTerm, remove_useless_constraints
+from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, build_assoc, build_cons
+from pyk.kast.manip import abstract_term_safely, flatten_label, get_cell, remove_constraints_for, set_cell
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kprint import paren
 from pyk.prelude.kbool import notBool
@@ -227,6 +227,55 @@ class KEVM(KProve, KRun):
                 if len(k_cell) > 1 and k_cell[1] != KEVM.sharp_execute():
                     return True
         return False
+
+    def add_language_invariants(self, cterm: CTerm) -> CTerm:
+        config, *constraints = cterm
+
+        word_stack = get_cell(config, 'WORDSTACK_CELL')
+        if type(word_stack) is not KVariable:
+            word_stack_items = flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', word_stack)
+            for i in word_stack_items[:-1]:
+                constraints.append(mlEqualsTrue(KEVM.range_uint(256, i)))
+
+        gas_cell = get_cell(config, 'GAS_CELL')
+        if not (type(gas_cell) is KApply and gas_cell.label.name == 'infGas'):
+            constraints.append(mlEqualsTrue(KEVM.range_uint(256, gas_cell)))
+        constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ID_CELL'))))
+        constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'CALLER_CELL'))))
+        constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytearray(get_cell(config, 'CALLDATA_CELL')), KEVM.pow256())))
+
+        return CTerm(mlAnd([config] + list(unique(constraints))))
+
+    def abstract(self, cterm: CTerm) -> CTerm:
+        term = cterm.kast
+        gas_cell = get_cell(term, 'GAS_CELL')
+        if type(gas_cell) is not KVariable:
+            if not (
+                type(gas_cell) is KApply and gas_cell.label.name == 'infGas' and type(gas_cell.args[0]) is KVariable
+            ):
+                term = remove_constraints_for(['GAS_CELL'], term)
+                if type(gas_cell) is KApply and gas_cell.label.name == 'infGas':
+                    term = set_cell(term, 'GAS_CELL', KEVM.inf_gas(KVariable('GAS_CELL')))
+                else:
+                    term = set_cell(term, 'GAS_CELL', KVariable('GAS_CELL'))
+        # memoryused_cell = get_cell(term, 'MEMORYUSED_CELL')
+        # if type(memoryused_cell) is not KVariable or count_vars(term)[memoryused_cell.name] != 1:
+        #     term = remove_constraints_for(['MEMORYUSED_CELL'], term)
+        #     term = set_cell(term, 'MEMORYUSED_CELL', KVariable('MEMORYUSED_CELL'))
+        wordstack_cell = get_cell(term, 'WORDSTACK_CELL')
+        KApply('.WordStack_EVM-TYPES_WordStack')
+        cons_wordstack = '_:__EVM-TYPES_WordStack_Int_WordStack'
+        wordstack_items = flatten_label(cons_wordstack, wordstack_cell)
+        wordstack_head = [
+            (wi if type(wi) is KVariable or type(wi) is KToken else abstract_term_safely(wi, base_name='W'))
+            for wi in wordstack_items[0:-1]
+        ]
+        wordstack_tail = wordstack_items[-1]
+        wordstack_cell = build_cons(wordstack_tail, cons_wordstack, wordstack_head)
+        term = set_cell(term, 'WORDSTACK_CELL', wordstack_cell)
+        new_cterm = remove_useless_constraints(CTerm(term))
+        new_cterm = self.add_language_invariants(new_cterm)
+        return new_cterm
 
     @staticmethod
     def halt() -> KApply:
