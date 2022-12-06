@@ -276,10 +276,10 @@ OpCode Execution
 ```k
     syntax MaybeOpCode ::= ".NoOpCode" | OpCode
 
-    syntax MaybeOpCode ::= "#lookupOpCode" "(" Int "," Schedule ")" [function, total]
- // ---------------------------------------------------------------------------------
-    rule #lookupOpCode(W, SCHED) => #dasmOpCode(W, SCHED) requires #rangeUInt(8, W)
-    rule #lookupOpCode(_,     _) => .NoOpCode [owise]
+    syntax MaybeOpCode ::= "#lookupOpCode" "(" ByteArray "," Int "," Schedule ")" [function, total]
+ // -----------------------------------------------------------------------------------------------
+    rule #lookupOpCode(BA, I, SCHED) => #dasmOpCode(BA[I], SCHED) requires 0 <=Int I andBool I <Int #sizeByteArray(BA)
+    rule #lookupOpCode(_, _, _)  => .NoOpCode [owise]
 ```
 
 -   `#execute` loads the next opcode (or halts with `EVMC_SUCCESS` if there is no next opcode).
@@ -288,7 +288,7 @@ OpCode Execution
     syntax KItem ::= "#execute"
  // ---------------------------
     rule [halt]: <k> #halt ~> (#execute => .) ... </k>
-    rule [step]: <k> (. => #next [ #lookupOpCode(PGM[PCOUNT], SCHED) ]) ~> #execute ... </k>
+    rule [step]: <k> (. => #next [ #lookupOpCode(PGM, PCOUNT, SCHED) ]) ~> #execute ... </k>
                  <program> PGM </program>
                  <pc> PCOUNT </pc>
                  <schedule> SCHED </schedule>
