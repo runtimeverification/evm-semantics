@@ -69,7 +69,7 @@ class Contract:
             assert prod_klabel is not None
             args: List[KInner] = []
             conjuncts: List[KInner] = []
-            for input_name, input_type in zip(self.arg_names, self.arg_types):
+            for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
                 args.append(KEVM.abi_type(input_type, KVariable(input_name)))
                 rp = _range_predicate(KVariable(input_name), input_type)
                 if rp is None:
