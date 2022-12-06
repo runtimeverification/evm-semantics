@@ -396,7 +396,7 @@ def exec_foundry_prove(
         process_pool.close()
 
     failed = 0
-    for (cid, _), succeeded in zip(kcfgs.items(), results):
+    for (cid, _), succeeded in zip(kcfgs.items(), results, strict=True):
         if succeeded:
             print(f'PASSED: {cid}')
         else:
