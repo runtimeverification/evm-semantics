@@ -432,7 +432,9 @@ def exec_foundry_prove(
             cfg.add_expanded(curr_node.id)
 
             _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
-            depth, cterm, next_cterms = foundry.execute(simplified, depth=max_depth, terminal_rules=['EVM.halt'])
+            depth, cterm, next_cterms = foundry.execute(
+                simplified, depth=max_depth, terminal_rules=['EVM.halt', 'EVM.step']
+            )
             if depth == 0:
                 _LOGGER.info(f'Found stuck node {cfgid}: {shorten_hashes(curr_node.id)}')
                 continue
