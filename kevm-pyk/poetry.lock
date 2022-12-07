@@ -492,7 +492,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "pyk"
-version = "0.1.82"
+version = "0.1.83"
 description = ""
 category = "main"
 optional = false
@@ -511,8 +511,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.82"
-resolved_reference = "60247757b4fceb576510d235342e0d7616d878bf"
+reference = "v0.1.83"
+resolved_reference = "2168e1864309ff4282096344a9042449d7d345de"
 
 [[package]]
 name = "pyperclip"
@@ -637,7 +637,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "aac5d5e0b224b08c942ae265ab90b471fb24ea71a7ad750c8e03a57db8599ac3"
+content-hash = "ee434434d474f15f9e4623eed833a4c9834d149a9254c8d8b4ecfdcbc98b0e0c"
 
 [metadata.files]
 aniso8601 = [
