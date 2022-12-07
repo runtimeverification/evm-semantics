@@ -273,6 +273,9 @@ OpCode Execution
 
 ### Execution Macros
 
+-   `#lookupOpCode` reads an OpCode from the program ByteArray, if the program-counter is within the bounds of the program, meaning that it points to an actual opcode.
+    It will return `.NoOpCode` otherwise.
+
 ```k
     syntax MaybeOpCode ::= ".NoOpCode" | OpCode
 
@@ -282,7 +285,7 @@ OpCode Execution
     rule #lookupOpCode(_, _, _)  => .NoOpCode [owise]
 ```
 
--   `#execute` loads the next opcode (or halts with `EVMC_SUCCESS` if there is no next opcode).
+-   `#execute` loads the next opcode.
 
 ```k
     syntax KItem ::= "#execute"
@@ -297,6 +300,7 @@ OpCode Execution
 ### Single Step
 
 If the program-counter points to an actual opcode, it's loaded into the `#next [_]` operator.
+If `.NoOpCode` is loaded into `#next [_]`, then it means that there is no next opcode and the execution will halt with an `EVMC_SUCCESS` status code.
 The `#next [_]` operator initiates execution by:
 
 1.  checking if there will be a stack over/underflow, or a static mode violation,
