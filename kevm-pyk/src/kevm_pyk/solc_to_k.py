@@ -12,7 +12,7 @@ from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSequence, KS
 from pyk.kast.manip import abstract_term_safely, substitute
 from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KProductionItem, KRule, KSentence, KTerminal
 from pyk.kcfg import KCFG
-from pyk.prelude.kbool import FALSE, andBool, notBool
+from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
@@ -571,8 +571,10 @@ def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
         return KEVM.range_uint(256, term)
     if type_label == 'int256':
         return KEVM.range_sint(256, term)
-    if type_label in {'bytes', 'string'}:
+    if type_label == 'bytes':
         return KEVM.range_uint(128, KEVM.size_bytearray(term))
+    if type_label == 'string':
+        return TRUE
 
     _LOGGER.warning(f'Unknown range predicate for type: {type_label}')
     return None
