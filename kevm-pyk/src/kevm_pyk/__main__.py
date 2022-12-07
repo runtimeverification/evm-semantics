@@ -141,14 +141,23 @@ def exec_foundry_kompile(
     foundry_definition_dir = foundry_out / 'kompiled'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
+    srcmap_dir = foundry_out / 'srcmaps'
     requires = ['foundry.md'] + list(requires)
     imports = ['FOUNDRY'] + list(imports)
 
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
+    if not srcmap_dir.exists():
+        srcmap_dir.mkdir()
 
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
+
+    for c in contracts:
+        srcmap_file = srcmap_dir / f'{c.name}.json'
+        with open(srcmap_file, 'w') as smf:
+            smf.write(json.dumps(c.srcmap))
+            _LOGGER.info(f'Wrote source map: {srcmap_file}')
 
     foundry = Foundry(definition_dir, profile=profile)
     empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
