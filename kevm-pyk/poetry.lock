@@ -445,7 +445,7 @@ flake8 = ">=3.9.1"
 
 [[package]]
 name = "platformdirs"
-version = "2.5.4"
+version = "2.6.0"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 category = "dev"
 optional = false
@@ -492,7 +492,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "pyk"
-version = "0.1.81"
+version = "0.1.82"
 description = ""
 category = "main"
 optional = false
@@ -511,8 +511,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.81"
-resolved_reference = "de4cc3d330419ea6ace32e05ffe58c52852e3f4d"
+reference = "v0.1.82"
+resolved_reference = "60247757b4fceb576510d235342e0d7616d878bf"
 
 [[package]]
 name = "pyperclip"
@@ -637,7 +637,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "c8feb3121156855d06868cf92e9a7723e5bbc024380d98afadb2d386e8388dec"
+content-hash = "aac5d5e0b224b08c942ae265ab90b471fb24ea71a7ad750c8e03a57db8599ac3"
 
 [metadata.files]
 aniso8601 = [
@@ -949,8 +949,8 @@ pep8-naming = [
     {file = "pep8_naming-0.13.2-py3-none-any.whl", hash = "sha256:59e29e55c478db69cffbe14ab24b5bd2cd615c0413edf790d47d3fb7ba9a4e23"},
 ]
 platformdirs = [
-    {file = "platformdirs-2.5.4-py3-none-any.whl", hash = "sha256:af0276409f9a02373d540bf8480021a048711d572745aef4b7842dad245eba10"},
-    {file = "platformdirs-2.5.4.tar.gz", hash = "sha256:1006647646d80f16130f052404c6b901e80ee4ed6bef6792e1f238a8969106f7"},
+    {file = "platformdirs-2.6.0-py3-none-any.whl", hash = "sha256:1a89a12377800c81983db6be069ec068eee989748799b946cce2a6e80dcc54ca"},
+    {file = "platformdirs-2.6.0.tar.gz", hash = "sha256:b46ffafa316e6b83b47489d240ce17173f123a9b9c83282141c3daf26ad9ac2e"},
 ]
 pox = [
     {file = "pox-0.3.2-py3-none-any.whl", hash = "sha256:56fe2f099ecd8a557b8948082504492de90e8598c34733c9b1fdeca8f7b6de61"},
