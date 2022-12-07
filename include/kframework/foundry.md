@@ -212,16 +212,12 @@ module FOUNDRY-CHEAT-CODES
 
 First we have some helpers in K which can:
 
--   Inject a given boolean condition into's this execution's path condition, and
--   Check that a given boolean condition holds (recording failure if not), by
--   Setting the `FoundryCheat . Failed` location to `True`.
+-   Inject a given boolean condition into's this execution's path condition
+-   Set the `FoundryCheat . Failed` location to `True`.
 ```k
     syntax KItem ::= #assume ( Bool ) [klabel(foundry_assume), symbol]
-                   | #assert ( Bool ) [klabel(foundry_assert), symbol]
  // ------------------------------------------------------------------
     rule <k> #assume(B) => . ... </k> ensures B
-
-    rule <k> #assert(false) => #markAsFailed ... </k>
 
      syntax KItem ::= "#markAsFailed" [klabel(foundry_markAsFailed)]
   // ---------------------------------------------------------------
