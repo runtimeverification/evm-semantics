@@ -432,9 +432,15 @@ def exec_foundry_prove(
             cfg.add_expanded(curr_node.id)
 
             _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
-            depth, cterm, next_cterms = foundry.execute(
-                simplified, depth=max_depth, terminal_rules=['EVM.halt', 'EVM.step']
-            )
+            depth = 0
+            cterm = simplified
+            for _i in range(10):
+                new_depth, cterm, next_cterms = foundry.execute(
+                    cterm, depth=max_depth, terminal_rules=['EVM.halt', 'EVM.step']
+                )
+                depth += new_depth
+                if len(next_cterms) > 0 or new_depth == 0 or KEVM.is_terminal(cterm):
+                    break
             if depth == 0:
                 _LOGGER.info(f'Found stuck node {cfgid}: {shorten_hashes(curr_node.id)}')
                 continue
