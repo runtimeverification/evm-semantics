@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm, build_claim, build_rule
-from pyk.kast.inner import KApply, KInner, KRewrite, Subst
+from pyk.kast.inner import KApply, KInner, KRewrite, KToken, Subst
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule, KVariable
 from pyk.kcfg import KCFG
@@ -521,13 +521,29 @@ def exec_foundry_show(
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
+    srcmap_dir = foundry_out / 'srcmaps'
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
     kcfg_file = kcfgs_dir / f'{test}.json'
+    contract = test.split('.')[0]
+    srcmap_file = srcmap_dir / f'{contract}.json'
+    srcmap: Optional[Dict[int, str]] = None
+    if srcmap_file.exists():
+        with open(srcmap_file, 'r') as sm:
+            srcmap = {int(k): v for k, v in json.loads(sm.read()).items()}
 
     def _node_pretty(_ct: CTerm) -> List[str]:
-        pc_str = f'pc: {foundry.pretty_print(get_cell(_ct.config, "PC_CELL"))}'
+        k_cell = foundry.pretty_print(get_cell(_ct.config, 'K_CELL')).replace('\n', ' ')
+        if len(k_cell) > 80:
+            k_cell = k_cell[0:80] + ' ...'
+        k_str = f'k: {k_cell}'
         statuscode_str = f'statusCode: {foundry.pretty_print(get_cell(_ct.config, "STATUSCODE_CELL"))}'
-        return [pc_str, statuscode_str]
+        _pc = get_cell(_ct.config, 'PC_CELL')
+        pc_str = f'pc: {foundry.pretty_print(_pc)}'
+        ret_strs = [k_str, statuscode_str, pc_str]
+        if type(_pc) is KToken and srcmap is not None:
+            pc = int(_pc.token)
+            ret_strs.append(f'srcmap: {srcmap[pc]}')
+        return ret_strs
 
     with open(kcfg_file, 'r') as kf:
         kcfg = KCFG.from_dict(json.loads(kf.read()))
