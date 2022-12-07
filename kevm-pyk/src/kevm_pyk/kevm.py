@@ -228,24 +228,6 @@ class KEVM(KProve, KRun):
                     return True
         return False
 
-    def add_language_invariants(self, cterm: CTerm) -> CTerm:
-        config, *constraints = cterm
-
-        word_stack = get_cell(config, 'WORDSTACK_CELL')
-        if type(word_stack) is not KVariable:
-            word_stack_items = flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', word_stack)
-            for i in word_stack_items[:-1]:
-                constraints.append(mlEqualsTrue(KEVM.range_uint(256, i)))
-
-        gas_cell = get_cell(config, 'GAS_CELL')
-        if not (type(gas_cell) is KApply and gas_cell.label.name == 'infGas'):
-            constraints.append(mlEqualsTrue(KEVM.range_uint(256, gas_cell)))
-        constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ID_CELL'))))
-        constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'CALLER_CELL'))))
-        constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytearray(get_cell(config, 'CALLDATA_CELL')), KEVM.pow256())))
-
-        return CTerm(mlAnd([config] + list(unique(constraints))))
-
     def abstract(self, cterm: CTerm) -> CTerm:
         term = cterm.kast
         gas_cell = get_cell(term, 'GAS_CELL')
@@ -274,7 +256,7 @@ class KEVM(KProve, KRun):
         wordstack_cell = build_cons(wordstack_tail, cons_wordstack, wordstack_head)
         term = set_cell(term, 'WORDSTACK_CELL', wordstack_cell)
         new_cterm = remove_useless_constraints(CTerm(term))
-        new_cterm = self.add_language_invariants(new_cterm)
+        new_cterm = self.add_invariant(new_cterm)
         return new_cterm
 
     @staticmethod
