@@ -485,7 +485,7 @@ def exec_foundry_prove(
                     _LOGGER.info(
                         f'Found {len(list(next_cterms))} branches manually at depth 1 for {cfgid}: {[foundry.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
                     )
-                    for bs, bc in zip(next_cterms, branch_constraints):
+                    for bs, bc in zip(next_cterms, branch_constraints, strict=True):
                         branch_node = cfg.get_or_create_node(bs)
                         cfg.create_edge(next_node.id, branch_node.id, mlAnd(bc), 1)
 
@@ -506,7 +506,7 @@ def exec_foundry_prove(
         process_pool.close()
 
     failed = 0
-    for (cid, _), succeeded in zip(kcfgs.items(), results):
+    for (cid, _), succeeded in zip(kcfgs.items(), results, strict=True):
         if succeeded:
             print(f'PASSED: {cid}')
         else:
