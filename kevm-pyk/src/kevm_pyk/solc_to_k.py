@@ -122,7 +122,7 @@ class Contract:
             contract_json['evm']['deployedBytecode']['object']
             if not foundry
             else contract_json['deployedBytecode']['object']
-        )
+        ).replace('0x', '')
         _methods = []
         if not foundry and 'evm' in contract_json and 'methodIdentifiers' in contract_json['evm']:
             _method_identifiers = contract_json['evm']['methodIdentifiers']
@@ -208,7 +208,9 @@ class Contract:
 
     @property
     def macro_bin_runtime(self) -> KRule:
-        return KRule(KRewrite(KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken(self.bytecode))))
+        return KRule(
+            KRewrite(KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken('0x' + self.bytecode)))
+        )
 
     @property
     def method_sentences(self) -> List[KSentence]:
