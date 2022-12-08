@@ -273,28 +273,34 @@ OpCode Execution
 
 ### Execution Macros
 
--   `#execute` loads the next opcode (or halts with `EVMC_SUCCESS` if there is no next opcode).
+-   `#lookupOpCode` reads an OpCode from the program ByteArray, if the program-counter is within the bounds of the program, meaning that it points to an actual opcode.
+    It will return `.NoOpCode` otherwise.
+
+```k
+    syntax MaybeOpCode ::= ".NoOpCode" | OpCode
+
+    syntax MaybeOpCode ::= "#lookupOpCode" "(" ByteArray "," Int "," Schedule ")" [function, total]
+ // -----------------------------------------------------------------------------------------------
+    rule #lookupOpCode(BA, I, SCHED) => #dasmOpCode(BA[I], SCHED) requires 0 <=Int I andBool I <Int #sizeByteArray(BA)
+    rule #lookupOpCode(_, _, _)  => .NoOpCode [owise]
+```
+
+-   `#execute` loads the next opcode.
 
 ```k
     syntax KItem ::= "#execute"
  // ---------------------------
     rule [halt]: <k> #halt ~> (#execute => .) ... </k>
-    rule [step]: <k> (. => #next [ #dasmOpCode(PGM [ PCOUNT ], SCHED) ]) ~> #execute ... </k>
-                 <pc> PCOUNT </pc>
+    rule [step]: <k> (. => #next [ #lookupOpCode(PGM, PCOUNT, SCHED) ]) ~> #execute ... </k>
                  <program> PGM </program>
+                 <pc> PCOUNT </pc>
                  <schedule> SCHED </schedule>
-      requires PCOUNT <Int #sizeByteArray(PGM)
-
-    rule <k> (. => #end EVMC_SUCCESS) ~> #execute ... </k>
-         <pc> PCOUNT </pc>
-         <program> PGM </program>
-         <output> _ => .ByteArray </output>
-      requires PCOUNT >=Int #sizeByteArray(PGM)
 ```
 
 ### Single Step
 
 If the program-counter points to an actual opcode, it's loaded into the `#next [_]` operator.
+If `.NoOpCode` is loaded into `#next [_]`, then it means that there is no next opcode and the execution will halt with an `EVMC_SUCCESS` status code.
 The `#next [_]` operator initiates execution by:
 
 1.  checking if there will be a stack over/underflow, or a static mode violation,
@@ -303,9 +309,12 @@ The `#next [_]` operator initiates execution by:
 4.  adjusting the program counter.
 
 ```k
-    syntax InternalOp ::= "#next" "[" OpCode "]"
- // --------------------------------------------
-    rule <k> #next [ OP ]
+    syntax InternalOp ::= "#next" "[" MaybeOpCode "]"
+ // -------------------------------------------------
+    rule <k> #next [ .NoOpCode ] => #end EVMC_SUCCESS ... </k>
+         <output> _ => .ByteArray </output>
+
+    rule <k> #next [ OP:OpCode ]
           => #if isAddr1Op(OP) orBool isAddr2Op(OP) #then #addr [ OP ] #else . #fi
           ~> #exec [ OP ]
           ~> #pc   [ OP ]
@@ -2724,8 +2733,8 @@ After interpreting the strings representing programs as a `WordStack`, it should
 -   `#dasmOpCode` interperets a `Int` as an `OpCode`.
 
 ```k
-    syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [function, memo]
- // -----------------------------------------------------------------
+    syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [function, memo, total]
+ // ------------------------------------------------------------------------
     rule #dasmOpCode(   0,     _ ) => STOP
     rule #dasmOpCode(   1,     _ ) => ADD
     rule #dasmOpCode(   2,     _ ) => MUL
