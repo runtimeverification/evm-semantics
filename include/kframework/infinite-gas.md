@@ -74,11 +74,13 @@ module INFINITE-GAS-COMMON
 
     syntax Int ::= #gas ( Int ) [function, total, no-evaluators, klabel(infGas), symbol, smtlib(infGas)]
  // ----------------------------------------------------------------------------------------------------
-    rule #gas(G) +Int G' => #gas(G +Int G') requires 0 <=Int G' orBool 0 -Int G' <Int #gas(G)  [simplification]
-    rule G +Int #gas(G') => #gas(G +Int G') requires 0 <=Int G  orBool 0 -Int G  <Int #gas(G') [simplification]
-
-    rule #gas(G) -Int G'       => #gas(G -Int G') requires 0 <=Int G' andBool G' <Int #gas(G) [simplification]
-    rule #gas(G) -Int #gas(G') => #gas(G -Int G')                                             [simplification]
+    // N.B.: These lemmas amount to defining \inf - \inf as \inf.
+    // In most mathematics, it's undefined it seems, so we get the choice!
+    // We make them lower priority than other rules.
+    rule #gas(G) +Int G'       => #gas(G +Int G') [simplification(60)]
+    rule G +Int #gas(G')       => #gas(G +Int G') [simplification(60)]
+    rule #gas(G) -Int G'       => #gas(G -Int G') [simplification(60)]
+    rule #gas(G) -Int #gas(G') => #gas(G -Int G') [simplification(60)]
 
     rule #gas(G) *Int G' => #gas(G *Int G') requires 0 <=Int G' [simplification]
     rule G *Int #gas(G') => #gas(G *Int G') requires 0 <=Int G  [simplification]
@@ -149,8 +151,6 @@ module INFINITE-GAS-COMMON
 
     rule #allBut64th(#gas(G))            => #gas(#allBut64th(G))         [simplification]
     rule (G /Int 64) +Int #allBut64th(G) => G                            [simplification]
-    // TODO: Questionable lemma
-    rule #gas(G) +Int #allBut64th(G')    => #gas(G +Int #allBut64th(G')) [simplification]
 
     rule 0 <=Int #allBut64th(G)         => true requires 0 <=Int G  [simplification]
     rule         #allBut64th(G) <Int G' => true requires G  <Int G' [simplification]
