@@ -400,7 +400,7 @@ def _init_term(
             ]
         ),
         'SINGLECALL_CELL': FALSE,
-        'EXPECTEDREVERT_CELL': FALSE,
+        'ISREVERTEXPECTED_CELL': FALSE,
         'ISOPCODEEXPECTED_CELL': FALSE,
         'EXPECTEDADDRESS_CELL': KApply('.Account_EVM-TYPES_Account'),
         'EXPECTEDVALUE_CELL': intToken(0),
@@ -425,7 +425,7 @@ def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_
     foundry_success = Foundry.success(
         KVariable('STATUSCODE_FINAL'),
         dst_failed_post,
-        KVariable('EXPECTEDREVERT_FINAL'),
+        KVariable('ISREVERTEXPECTED_FINAL'),
         KVariable('ISOPCODEEXPECTED_FINAL'),
         KVariable('RECORDEVENT_FINAL'),
         KVariable('ISEVENTEXPECTED_FINAL'),
@@ -462,7 +462,7 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
                 KVariable('ACCOUNTS_FINAL'),
             ]
         ),
-        'EXPECTEDREVERT_CELL': KVariable('EXPECTEDREVERT_FINAL'),
+        'ISREVERTEXPECTED_CELL': KVariable('ISREVERTEXPECTED_FINAL'),
         'ISOPCODEEXPECTED_CELL': KVariable('ISOPCODEEXPECTED_FINAL'),
         'RECORDEVENT_CELL': KVariable('RECORDEVENT_FINAL'),
         'ISEVENTEXPECTED_CELL': KVariable('ISEVENTEXPECTED_FINAL'),
@@ -472,7 +472,7 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
         [
             KVariable('STATUSCODE_FINAL'),
             KVariable('ACCOUNTS_FINAL'),
-            KVariable('EXPECTEDREVERT_FINAL'),
+            KVariable('ISREVERTEXPECTED_FINAL'),
             KVariable('ISOPCODEEXPECTED_FINAL'),
             KVariable('RECORDEVENT_FINAL'),
             KVariable('ISEVENTEXPECTED_FINAL'),

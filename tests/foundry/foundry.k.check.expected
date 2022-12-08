@@ -1351,6 +1351,8 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     
     syntax ExpectRevertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ExpectRevertTest_failed)]
     
+    syntax ExpectRevertTestMethod ::= "testFail_ExpectRevert_failAndSuccess" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_ExpectRevert_failAndSuccess)]
+    
     syntax ExpectRevertTestMethod ::= "testFail_expectRevert_bytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_bytes4)]
     
     syntax ExpectRevertTestMethod ::= "testFail_expectRevert_empty" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_empty)]
@@ -1362,6 +1364,8 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     syntax ExpectRevertTestMethod ::= "test_ExpectRevert_increasedDepth" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_ExpectRevert_increasedDepth)]
     
     syntax ExpectRevertTestMethod ::= "test_expectRevert_bytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_bytes4)]
+    
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_internalCall" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_internalCall)]
     
     syntax ExpectRevertTestMethod ::= "test_expectRevert_message" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_message)]
     
@@ -1376,6 +1380,9 @@ module EXPECTREVERTTEST-BIN-RUNTIME
       
     
     rule  ( ExpectRevertTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . testFail_ExpectRevert_failAndSuccess ( ) => #abiCallData ( "testFail_ExpectRevert_failAndSuccess" , .TypedArgs ) )
       
     
     rule  ( ExpectRevertTest . testFail_expectRevert_bytes4 ( ) => #abiCallData ( "testFail_expectRevert_bytes4" , .TypedArgs ) )
@@ -1396,6 +1403,9 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     rule  ( ExpectRevertTest . test_expectRevert_bytes4 ( ) => #abiCallData ( "test_expectRevert_bytes4" , .TypedArgs ) )
       
     
+    rule  ( ExpectRevertTest . test_expectRevert_internalCall ( ) => #abiCallData ( "test_expectRevert_internalCall" , .TypedArgs ) )
+      
+    
     rule  ( ExpectRevertTest . test_expectRevert_message ( ) => #abiCallData ( "test_expectRevert_message" , .TypedArgs ) )
       
     
@@ -1414,6 +1424,9 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     rule  ( selector ( "failed" ) => 3124842406 )
       
     
+    rule  ( selector ( "testFail_ExpectRevert_failAndSuccess" ) => 2386222785 )
+      
+    
     rule  ( selector ( "testFail_expectRevert_bytes4" ) => 3540765930 )
       
     
@@ -1430,6 +1443,9 @@ module EXPECTREVERTTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_expectRevert_bytes4" ) => 1300765909 )
+      
+    
+    rule  ( selector ( "test_expectRevert_internalCall" ) => 1766536967 )
       
     
     rule  ( selector ( "test_expectRevert_message" ) => 3706733127 )
