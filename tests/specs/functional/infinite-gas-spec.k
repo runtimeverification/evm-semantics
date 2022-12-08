@@ -79,6 +79,9 @@ module INFINITE-GAS-SPEC
     claim [Cgascap-6]: <k> runLemma(  Cgascap(ISTANBUL, #gas(VGas -Int CSSTORE), #gas(VGas -Int CSSTORE), Cextra(ISTANBUL, false, 0, B)) )
                         => doneLemma( #gas(#allBut64th(VGas -Int CSSTORE -Int Cextra(ISTANBUL, false, 0, B))) ) ... </k>
 
+    claim [Cgascap-7]: <k> runLemma(  (#gas(VGAS +Int -3209) -Int Cgascap(LONDON, #gas(VGAS +Int -3188), #gas(VGAS +Int -3209), 100)) +Int -100 )
+                        => doneLemma( #gas(VGAS -Int Cgascap(LONDON, #gas(VGAS +Int -3188), #gas(VGAS +Int -3209), 100) +Int -3309) ) ... </k>
+
  // Infinite Gas comparisons
  // ------------------------
 
