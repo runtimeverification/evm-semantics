@@ -44,7 +44,7 @@
           pkg-config
           procps
           protobuf
-          python310
+          python39
           secp256k1
           solc
           time
@@ -90,7 +90,7 @@
               substituteInPlace ./cmake/node/CMakeLists.txt \
                 --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
               substituteInPlace ./bin/kevm \
-                --replace 'execute python310 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
+                --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
             '';
 
             buildFlags =
@@ -142,7 +142,7 @@
           };
 
         kevm-pyk = prev.poetry2nix.mkPoetryApplication {
-          python = prev.python310;
+          python = prev.python39;
           projectDir = ./kevm-pyk;
           overrides = prev.poetry2nix.overrides.withDefaults
             (finalPython: prevPython: { pyk = prev.pyk; });
