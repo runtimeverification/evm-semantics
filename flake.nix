@@ -18,7 +18,7 @@
       "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
-    pyk.url = "github:runtimeverification/pyk/v0.1.75";
+    pyk.url = "github:runtimeverification/pyk/v0.1.83";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
 
@@ -90,7 +90,9 @@
               substituteInPlace ./cmake/node/CMakeLists.txt \
                 --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
               substituteInPlace ./bin/kevm \
-                --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
+                --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk' \
+                --replace 'execute kprove' 'execute ${k}/bin/kprove' \
+                --replace 'execute kompile' 'execute ${k}/bin/kompile'
             '';
 
             buildFlags =
@@ -142,10 +144,10 @@
           };
 
         kevm-pyk = prev.poetry2nix.mkPoetryApplication {
-          python = prev.python39;
+          python = prev.python310;
           projectDir = ./kevm-pyk;
           overrides = prev.poetry2nix.overrides.withDefaults
-            (finalPython: prevPython: { pyk = prev.pyk; });
+            (finalPython: prevPython: { pyk = prev.python310Packages.pyk; });
           groups = [];
           # We remove `"dev"` from `checkGroups`, so that poetry2nix does not try to resolve dev dependencies.
           checkGroups = [];
