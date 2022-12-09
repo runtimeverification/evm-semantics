@@ -377,6 +377,7 @@ def exec_foundry_prove(
             auto_abstract=KEVM.abstract,
             max_iterations=max_iterations,
             max_depth=max_depth,
+            terminal_rules=['EVM.step', 'EVM.halt'],
         )
 
     with ProcessPool(ncpus=workers) as process_pool:
