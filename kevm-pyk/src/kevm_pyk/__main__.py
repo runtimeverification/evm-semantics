@@ -7,8 +7,8 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.cterm import CTerm, build_claim, build_rule
-from pyk.kast.inner import KApply, KInner, KRewrite, KToken, KVariable, Subst
+from pyk.cterm import CTerm, build_rule
+from pyk.kast.inner import KApply, KInner, KRewrite, KToken
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG
@@ -16,23 +16,16 @@ from pyk.kcfg_viewer.app import KCFGViewer
 from pyk.ktool.kit import KIT
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
-from pyk.prelude.ml import is_bottom, is_top, mlAnd, mlEqualsTrue, mlTop
-from pyk.utils import shorten_hashes
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KCFG__replace_node, KDefinition__expand_macros, KPrint_make_unparsing, add_include_arg
+from .utils import KCFG__replace_node, KDefinition__expand_macros, KPrint_make_unparsing, add_include_arg, rpc_prove
 
 T = TypeVar('T')
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
-
-
-def write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
-    _cfgpath.write_text(_cfg.to_json())
-    _LOGGER.info(f'Updated CFG file: {_cfgpath}')
 
 
 def _ignore_arg(args: Dict[str, Any], arg: str, cli_option: str) -> None:
@@ -367,143 +360,22 @@ def exec_foundry_prove(
             cfg, _ = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_term))
             cfg, _ = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_term))
             kcfgs[test] = (cfg, kcfg_file)
-            write_cfg(cfg, kcfg_file)
         else:
             with open(kcfg_file, 'r') as kf:
                 kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
 
-    def prove_it(id_cfg_port: Tuple[str, Tuple[KCFG, Path], int]) -> bool:
-        cfgid, (cfg, cfgpath), port = id_cfg_port
-        foundry.close_kore_rpc()
-        foundry.set_kore_rpc_port(port)
-
-        target_node = cfg.get_unique_target()
-        iterations = 0
-
-        while cfg.frontier:
-            write_cfg(cfg, cfgpath)
-            if max_iterations is not None and max_iterations <= iterations:
-                _LOGGER.warning(f'Reached iteration bound: {max_iterations}')
-                break
-            iterations += 1
-            curr_node = cfg.frontier[0]
-
-            _LOGGER.info(
-                f'Checking subsumption into target state {cfgid}: {shorten_hashes((curr_node.id, target_node.id))}'
-            )
-            impl = foundry.implies(curr_node.cterm, target_node.cterm)
-            if impl is not None:
-                subst, pred = impl
-                cfg.create_cover(curr_node.id, target_node.id, subst=subst, constraint=pred)
-                _LOGGER.info(f'Subsumed into target node: {shorten_hashes((curr_node.id, target_node.id))}')
-                continue
-
-            _LOGGER.info(f'Checking terminal {cfgid}: {shorten_hashes((curr_node.id))}')
-            if KEVM.is_terminal(curr_node.cterm):
-                _LOGGER.info(f'Terminal node {cfgid}: {shorten_hashes((curr_node.id))}.')
-                cfg.add_expanded(curr_node.id)
-                continue
-
-            if auto_abstract:
-                _LOGGER.info(f'Auto abstraction {cfgid}: {shorten_hashes((curr_node.id))}')
-                abstracted = foundry.abstract(curr_node.cterm)
-                if abstracted != curr_node.cterm:
-                    abstracted_node = cfg.get_or_create_node(abstracted)
-                    cfg.create_cover(curr_node.id, abstracted_node.id)
-                    _LOGGER.info(f'Abstracted node: {shorten_hashes((curr_node.id, abstracted_node.id))}')
-                    continue
-
-            _LOGGER.info(f'Simplifying {cfgid}: {shorten_hashes((curr_node.id))}')
-            _simplified = foundry.simplify(curr_node.cterm)
-            if is_bottom(_simplified):
-                cfg.create_cover(curr_node.id, cfg.get_unique_target().id, constraint=mlTop())
-                _LOGGER.warning(
-                    f'Infeasible node marked as proven {cfgid}: {shorten_hashes((curr_node.id, cfg.get_unique_target().id))}'
-                )
-                continue
-            if is_top(_simplified):
-                raise ValueError(f'Found #Top node {cfgid}: {shorten_hashes((curr_node.id))}')
-            simplified = CTerm(_simplified)
-            if simplified != curr_node.cterm:
-                cfg, new_node_id = KCFG__replace_node(cfg, curr_node.id, simplified)
-                curr_node = cfg.node(new_node_id)
-                _LOGGER.info(f'Replaced with simplified node: {shorten_hashes((curr_node.id, new_node_id))}')
-
-            cfg.add_expanded(curr_node.id)
-
-            _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
-            depth = 0
-            cterm = simplified
-            for _i in range(10):
-                new_depth, cterm, next_cterms = foundry.execute(
-                    cterm, depth=max_depth, terminal_rules=['EVM.halt', 'EVM.step']
-                )
-                depth += new_depth
-                if len(next_cterms) > 0 or new_depth == 0 or KEVM.is_terminal(cterm):
-                    break
-            if depth == 0:
-                _LOGGER.info(f'Found stuck node {cfgid}: {shorten_hashes(curr_node.id)}')
-                continue
-
-            next_node = cfg.get_or_create_node(cterm)
-            cfg.create_edge(curr_node.id, next_node.id, mlTop(), depth)
-            _LOGGER.info(
-                f'Found basic block at depth {depth} for {cfgid}: {shorten_hashes((curr_node.id, next_node.id))}.'
-            )
-
-            if len(next_cterms) == 0:
-                continue
-
-            if len(next_cterms) == 1:
-                raise ValueError(f'Found a single successor cterm: {(depth, cterm, next_cterms)}')
-
-            cfg.add_expanded(next_node.id)
-
-            _LOGGER.info(f'Extracting branches from node in {cfgid}: {shorten_hashes((curr_node.id))}')
-            branches = KEVM.extract_branches(cterm)
-            if len(list(branches)) > 0:
-                _LOGGER.info(
-                    f'Found {len(list(branches))} branches at depth {depth} for {cfgid}: {[foundry.pretty_print(b) for b in branches]}'
-                )
-                splits = cfg.split_node(next_node.id, branches)
-                _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((next_node.id, splits))}')
-            else:
-                _LOGGER.info(f'Checking if real branch {cfgid}: {next_node.id}')
-                non_ceil_constraints = [c for c in next_node.cterm.constraints if mlEqualsTrue(KVariable('X')).match(c)]
-                non_ceil_cterm = CTerm(mlAnd([next_node.cterm.config] + non_ceil_constraints))
-                claim_id = f'CHECK-BRANCH-{next_node.id}-TO-{target_node.id}'
-                claim, var_map = build_claim(claim_id, non_ceil_cterm, target_node.cterm)
-                depth, branching, result = foundry.get_claim_basic_block(claim_id, claim, max_depth=1)
-                if not branching:
-                    _LOGGER.info(f'Not real branch {cfgid}: {next_node.id}')
-                    result = Subst(var_map)(result)
-                    new_next_node = cfg.get_or_create_node(CTerm(result))
-                    cfg.create_edge(next_node.id, new_next_node.id, mlTop(), 1)
-                else:
-                    _LOGGER.info(f'Real branch {cfgid}: {next_node.id}')
-                    branch_constraints = [[c for c in s.constraints if c not in cterm.constraints] for s in next_cterms]
-                    _LOGGER.info(
-                        f'Found {len(list(next_cterms))} branches manually at depth 1 for {cfgid}: {[foundry.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
-                    )
-                    for bs, bc in zip(next_cterms, branch_constraints, strict=True):
-                        branch_node = cfg.get_or_create_node(bs)
-                        cfg.create_edge(next_node.id, branch_node.id, mlAnd(bc), 1)
-
-        write_cfg(cfg, cfgpath)
-        foundry.close_kore_rpc()
-
-        failure_nodes = cfg.frontier + cfg.stuck
-        if len(failure_nodes) == 0:
-            _LOGGER.info(f'Proof passed: {cfgid}')
-            return True
-        else:
-            _LOGGER.error(f'Proof failed: {cfgid}')
-            return False
-
     with ProcessPool(ncpus=workers) as process_pool:
         foundry.close_kore_rpc()
         proof_problems = [(k, v, 3010 + i) for i, (k, v) in enumerate(kcfgs.items())]
-        results = process_pool.map(prove_it, proof_problems)
+        results = process_pool.map(
+            rpc_prove,
+            proof_problems,
+            is_terminal=KEVM.is_terminal,
+            extract_branches=KEVM.extract_branches,
+            auto_abstract=KEVM.abstract,
+            max_iterations=max_iterations,
+            max_depth=max_depth,
+        )
         process_pool.close()
 
     failed = 0
