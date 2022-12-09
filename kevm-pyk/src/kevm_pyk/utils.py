@@ -34,8 +34,21 @@ def rpc_prove(
     max_depth: Optional[int] = None,
     cut_point_rules: Iterable[str] = (),
     terminal_rules: Iterable[str] = (),
+    simplify_init: bool = True,
 ) -> bool:
     kprove.set_kore_rpc_port(rpc_port)
+
+    if simplify_init:
+        for node in cfg.nodes:
+            _LOGGER.info(f'Simplifying node {cfgid}: {shorten_hashes((node.id))}')
+            new_term = kprove.simplify(node.cterm)
+            if is_top(new_term):
+                raise ValueError(f'Node simplified to #Top {cfgid}: {shorten_hashes((node.id))}')
+            if is_bottom(new_term):
+                raise ValueError(f'Node simplified to #Bottom {cfgid}: {shorten_hashes((node.id))}')
+            if new_term != node.cterm.kast:
+                KCFG__replace_node(cfg, node.id, CTerm(new_term))
+    write_cfg(cfg, cfgpath)
 
     target_node = cfg.get_unique_target()
     iterations = 0
