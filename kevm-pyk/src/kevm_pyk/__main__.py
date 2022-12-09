@@ -366,7 +366,7 @@ def exec_foundry_prove(
             _rpc_port,
             is_terminal=KEVM.is_terminal,
             extract_branches=KEVM.extract_branches,
-            auto_abstract=KEVM.abstract,
+            auto_abstract=(KEVM.abstract if auto_abstract else None),
             max_iterations=max_iterations,
             max_depth=max_depth,
             terminal_rules=['EVM.step', 'EVM.halt'],
