@@ -23,16 +23,17 @@ def write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
 
 def rpc_prove(
     kprove: KProve,
-    id_cfg_port: Tuple[str, Tuple[KCFG, Path], int],
+    cfgid: str,
+    cfg: KCFG,
+    cfgpath: Path,
+    rpc_port: int,
     is_terminal: Optional[Callable[[CTerm], bool]] = None,
     extract_branches: Optional[Callable[[CTerm], Iterable[KInner]]] = None,
     auto_abstract: Optional[Callable[[CTerm], CTerm]] = None,
     max_iterations: Optional[int] = None,
     max_depth: Optional[int] = None,
 ) -> bool:
-    cfgid, (cfg, cfgpath), port = id_cfg_port
-    kprove.close_kore_rpc()
-    kprove.set_kore_rpc_port(port)
+    kprove.set_kore_rpc_port(rpc_port)
 
     target_node = cfg.get_unique_target()
     iterations = 0
