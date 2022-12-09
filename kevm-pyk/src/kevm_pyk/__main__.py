@@ -283,6 +283,7 @@ def exec_foundry_prove(
     lemmas: Iterable[str] = (),
     simplify_init: bool = True,
     auto_abstract: bool = False,
+    break_every_step: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -368,7 +369,7 @@ def exec_foundry_prove(
             auto_abstract=(KEVM.abstract if auto_abstract else None),
             max_iterations=max_iterations,
             max_depth=max_depth,
-            terminal_rules=['EVM.step', 'EVM.halt'],
+            terminal_rules=(['EVM.halt'] if not break_every_step else ['EVM.halt', 'EVM.step']),
             simplify_init=simplify_init,
         )
 
@@ -783,6 +784,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Automatically abstract nodes on the frontier.',
+    )
+    foundry_prove_args.add_argument(
+        '--break-every-step',
+        dest='break_every_step',
+        default=False,
+        action='store_true',
+        help='Store a node for every EVM opcode step (expensive).',
     )
 
     foundry_show_args = command_parser.add_parser(
