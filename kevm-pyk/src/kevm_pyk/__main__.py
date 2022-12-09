@@ -333,9 +333,6 @@ def exec_foundry_prove(
     if unfound_tests:
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
-    # TODO: We should be using lemma_rules for execute endpoint
-    # lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
-
     kcfgs: Dict[str, Tuple[KCFG, Path]] = {}
     for test in tests:
         kcfg_file = kcfgs_dir / f'{test}.json'
