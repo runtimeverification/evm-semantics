@@ -27,9 +27,19 @@ contract DepthReverter {
     function revertAtNextDepth() public {
         reverter.revertWithoutReason();
     }
-
 }
+
 contract ExpectRevertTest is Test {
+
+    function doRevert() internal {
+        require(false, "");
+    }
+
+    function test_expectRevert_internalCall() public {
+        vm.expectRevert();
+        doRevert();
+    }
+
     function test_expectRevert_true() public {
         Reverter reverter = new Reverter();
         vm.expectRevert();
@@ -75,5 +85,13 @@ contract ExpectRevertTest is Test {
         DepthReverter reverter = new DepthReverter();
         vm.expectRevert();
         reverter.revertAtNextDepth();
+    }
+
+    function testFail_ExpectRevert_failAndSuccess() public {
+         Reverter reverter = new Reverter();
+         vm.expectRevert();
+         reverter.noRevert();
+         vm.expectRevert();
+         reverter.revertWithoutReason();
     }
 }

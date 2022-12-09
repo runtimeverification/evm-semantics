@@ -8,8 +8,8 @@ from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSequence, KSort, KVariable, build_assoc
-from pyk.kast.manip import abstract_term_safely, substitute
+from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSequence, KSort, KVariable, Subst, build_assoc
+from pyk.kast.manip import abstract_term_safely
 from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KProductionItem, KRule, KSentence, KTerminal
 from pyk.kcfg import KCFG
 from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
@@ -69,7 +69,7 @@ class Contract:
             assert prod_klabel is not None
             args: List[KInner] = []
             conjuncts: List[KInner] = []
-            for input_name, input_type in zip(self.arg_names, self.arg_types):
+            for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
                 args.append(KEVM.abi_type(input_type, KVariable(input_name)))
                 rp = _range_predicate(KVariable(input_name), input_type)
                 if rp is None:
@@ -400,7 +400,7 @@ def _init_term(
             ]
         ),
         'SINGLECALL_CELL': FALSE,
-        'EXPECTEDREVERT_CELL': FALSE,
+        'ISREVERTEXPECTED_CELL': FALSE,
         'ISOPCODEEXPECTED_CELL': FALSE,
         'EXPECTEDADDRESS_CELL': KApply('.Account_EVM-TYPES_Account'),
         'EXPECTEDVALUE_CELL': intToken(0),
@@ -416,7 +416,7 @@ def _init_term(
     if callvalue is not None:
         init_subst['CALLVALUE_CELL'] = callvalue
 
-    return substitute(empty_config, init_subst)
+    return Subst(init_subst)(empty_config)
 
 
 def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True) -> CTerm:
@@ -425,7 +425,7 @@ def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_
     foundry_success = Foundry.success(
         KVariable('STATUSCODE_FINAL'),
         dst_failed_post,
-        KVariable('EXPECTEDREVERT_FINAL'),
+        KVariable('ISREVERTEXPECTED_FINAL'),
         KVariable('ISOPCODEEXPECTED_FINAL'),
         KVariable('RECORDEVENT_FINAL'),
         KVariable('ISEVENTEXPECTED_FINAL'),
@@ -462,17 +462,17 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
                 KVariable('ACCOUNTS_FINAL'),
             ]
         ),
-        'EXPECTEDREVERT_CELL': KVariable('EXPECTEDREVERT_FINAL'),
+        'ISREVERTEXPECTED_CELL': KVariable('ISREVERTEXPECTED_FINAL'),
         'ISOPCODEEXPECTED_CELL': KVariable('ISOPCODEEXPECTED_FINAL'),
         'RECORDEVENT_CELL': KVariable('RECORDEVENT_FINAL'),
         'ISEVENTEXPECTED_CELL': KVariable('ISEVENTEXPECTED_FINAL'),
     }
     return abstract_cell_vars(
-        substitute(empty_config, final_subst),
+        Subst(final_subst)(empty_config),
         [
             KVariable('STATUSCODE_FINAL'),
             KVariable('ACCOUNTS_FINAL'),
-            KVariable('EXPECTEDREVERT_FINAL'),
+            KVariable('ISREVERTEXPECTED_FINAL'),
             KVariable('ISOPCODEEXPECTED_FINAL'),
             KVariable('RECORDEVENT_FINAL'),
             KVariable('ISEVENTEXPECTED_FINAL'),

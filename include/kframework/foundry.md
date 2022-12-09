@@ -154,10 +154,10 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<active>` signals if a prank is active or not.
     - `<depth>` records the current call depth at which the prank was invoked.
     - `<singleCall>` tells whether the prank stops by itself after the next call or when a `stopPrank` cheat code is invoked.
-2. The `<expected>` subconfiguration stores values used for the `expectRevert` cheat code.
-    - `<expectedRevert>` flags if the next call is expected to revert or not.
+2. The `<expectedRevert>` subconfiguration stores values used for the `expectRevert` cheat code.
+    - `<isRevertExpected>` flags if the next call is expected to revert or not.
     - `<expectedDepth>` records the depth at which the call is expected to revert.
-    - `<expectedBytes>` keeps the expected revert message as a ByteArray.
+    - `<expectedReason>` keeps the expected revert message as a ByteArray.
 3. The `<expectOpcode>` subconfiguration stores values used for `expect*OPCODE*` cheat codes.
     - `<isOpcodeExpected>` flags if a call opcode is expected.
     - `<expectedAddress>` keeps the expected caller.
@@ -188,11 +188,11 @@ module FOUNDRY-CHEAT-CODES
           <depth> 0 </depth>
           <singleCall> false </singleCall>
         </prank>
-        <expected>
-          <expectedRevert> false </expectedRevert>
-          <expectedBytes> .ByteArray </expectedBytes>
+        <expectedRevert>
+          <isRevertExpected> false </isRevertExpected>
+          <expectedReason> .ByteArray </expectedReason>
           <expectedDepth> 0 </expectedDepth>
-        </expected>
+        </expectedRevert>
         <expectedOpcode>
           <isOpcodeExpected> false </isOpcodeExpected>
           <expectedAddress> .Account </expectedAddress>
@@ -212,21 +212,21 @@ module FOUNDRY-CHEAT-CODES
 
 First we have some helpers in K which can:
 
--   Inject a given boolean condition into's this execution's path condition, and
--   Check that a given boolean condition holds (recording failure if not).
-
+-   Inject a given boolean condition into's this execution's path condition
+-   Set the `FoundryCheat . Failed` location to `True`.
 ```k
     syntax KItem ::= #assume ( Bool ) [klabel(foundry_assume), symbol]
-                   | #assert ( Bool ) [klabel(foundry_assert), symbol]
  // ------------------------------------------------------------------
     rule <k> #assume(B) => . ... </k> ensures B
 
-    rule <k> #assert(false) => . ... </k>
-         <account>
-           <acctID> #address(FoundryCheat) </acctID>
-           <storage> STORAGE => STORAGE [ #loc(FoundryCheat . Failed) <- 1 ] </storage>
-           ...
-         </account>
+     syntax KItem ::= "#markAsFailed" [klabel(foundry_markAsFailed)]
+  // ---------------------------------------------------------------
+     rule <k> #markAsFailed => . ... </k>
+          <account>
+             <acctID> #address(FoundryCheat) </acctID>
+             <storage> STORAGE => STORAGE [ #loc(FoundryCheat . Failed) <- 1 ] </storage>
+             ...
+           </account>
 ```
 
 #### Structure of execution
@@ -532,46 +532,42 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
 ```{.k .bytes}
     rule [foundry.call.ignoreCalls]:
          <k> #call_foundry _ _ => . ... </k>
-         <expected>
-           <expectedRevert> true </expectedRevert>
+         <expectedRevert>
+           <isRevertExpected> true </isRevertExpected>
            ...
-         </expected>
+         </expectedRevert>
       [priority(35)]
 ```
 
-Catch reverts.
-If the current call depth is equal with the `expectedDepth` and the `expectedBytes` match the `<output>` cell, then replace the `EVMC_REVERT` status code with `EVMC_SUCCESS`.
-
 ```{.k .bytes}
-    rule <statusCode> EVMC_REVERT => EVMC_SUCCESS </statusCode>
-         <k> #halt ~> #return _RETSTART _RETWIDTH ... </k>
-         <output> OUT </output>
+    rule [foundry.handleExpectRevert]:
+         <k> (. => #checkRevertReason ~> #clearExpectRevert) ~> #halt ... </k>
+         <statusCode> SC </statusCode>
          <callDepth> CD </callDepth>
-         <expected>
-           <expectedRevert> true => false </expectedRevert>
-           <expectedDepth> CD </expectedDepth>
-           <expectedBytes> EXPECTED </expectedBytes>
-         </expected>
-      requires (EXPECTED =/=K .ByteArray andBool EXPECTED ==K #range(OUT, 4, #sizeByteArray(OUT) -Int 4))
-        orBool EXPECTED ==K .ByteArray
+         <expectedRevert>
+           <isRevertExpected> true </isRevertExpected>
+           <expectedDepth> ED </expectedDepth> 
+           ...
+         </expectedRevert>
+      requires CD <=Int ED
+       andBool SC =/=K EVMC_SUCCESS
       [priority(40)]
 ```
 
-Change the status code from `EVMC_SUCCESS` to `EVMC_REVERT` if a revert is expected but the call succeded.
-
 ```{.k .bytes}
-    rule <statusCode> EVMC_SUCCESS => EVMC_REVERT </statusCode>
-         <k> #halt ~> #return _RETSTART _RETWIDTH ... </k>
+    rule [foundry.handleExpectRevert.error]:
+         <k> (. => #markAsFailed ~> #clearExpectRevert) ~> #halt ... </k>
+         <statusCode> EVMC_SUCCESS => EVMC_REVERT </statusCode>
          <callDepth> CD </callDepth>
-         <expected>
-           <expectedRevert> true => false </expectedRevert>
-           <expectedDepth> CD </expectedDepth>
+         <expectedRevert>
+           <isRevertExpected> true </isRevertExpected>
+           <expectedDepth> ED </expectedDepth> 
            ...
-         </expected>
-       [priority(40)]
+         </expectedRevert>
+      requires CD <=Int ED
+      [priority(40)]
 ```
-
-If the `expectRevert()` selector is matched, call the `#setExpectRevert` production to initialize the `<expected>` subconfiguration.
+If the `expectRevert()` selector is matched, call the `#setExpectRevert` production to initialize the `<expectedRevert>` subconfiguration.
 
 ```{.k .bytes}
     rule [foundry.call.expectRevert]:
@@ -1032,18 +1028,64 @@ Utils
          </account>
 ```
 
-- `#setExpectRevert` sets the `<expected>` subconfiguration with the current call depth and the expected message from `expectRevert`.
+- `#setExpectRevert` sets the `<expectedRevert>` subconfiguration with the current call depth and the expected message from `expectRevert`.
 
 ```k
-    syntax KItem ::= "#setExpectRevert" ByteArray [klabel(foundry_setExpectedRevert)]
- // ---------------------------------------------------------------------------------
+    syntax KItem ::= "#setExpectRevert" ByteArray [klabel(foundry_setExpectRevert)]
+ // -------------------------------------------------------------------------------
     rule <k> #setExpectRevert EXPECTED => . ... </k>
          <callDepth> CD </callDepth>
-         <expected>
-           <expectedRevert> false => true </expectedRevert>
+         <expectedRevert>
+           <isRevertExpected> false => true </isRevertExpected>
            <expectedDepth> _ => CD +Int 1 </expectedDepth>
-           <expectedBytes> _ => EXPECTED </expectedBytes>
-         </expected>
+           <expectedReason> _ => EXPECTED </expectedReason>
+         </expectedRevert>
+```
+
+- `#clearExpectRevert` sets the `<expectedRevert>` subconfiguration to initial values.
+
+```k
+    syntax KItem ::= "#clearExpectRevert" [klabel(foundry_clearExpectRevert)]
+ // -------------------------------------------------------------------------
+    rule <k> #clearExpectRevert => . ... </k>
+         <expectedRevert>
+           <isRevertExpected> _ => false </isRevertExpected>
+           <expectedDepth> _ => 0 </expectedDepth>
+           <expectedReason> _ => .ByteArray </expectedReason>
+         </expectedRevert>
+```
+
+- `#handleExpectRevert` 
+
+```k
+    syntax KItem ::= "#checkRevertReason" [klabel(foundry_checkRevertReason)]
+ // -------------------------------------------------------------------------
+    rule <k> #checkRevertReason => . ... </k>
+         <statusCode> _ => EVMC_SUCCESS </statusCode>
+         <output> OUT </output>
+         <expectedRevert>
+           <expectedReason> REASON </expectedReason>
+           ...
+         </expectedRevert>
+      requires #matchReason(REASON, OUT)
+
+    rule <k> #checkRevertReason => #markAsFailed ... </k>
+         <output> OUT </output>
+         <expectedRevert>
+           <expectedReason> REASON </expectedReason>
+           ...
+         </expectedRevert>
+      requires notBool #matchReason(REASON, OUT)
+```
+
+- `#matchReason(REASON,OUT)` will check if the returned message matches the expected reason of the revert.
+Will also return true if REASON is `.ByteArray`.
+
+```k
+    syntax Bool ::= "#matchReason" "(" ByteArray "," ByteArray ")" [function, klabel(foundry_matchReason)]
+ // ------------------------------------------------------------------------------------------------------
+    rule #matchReason(REASON, _) => true requires REASON ==K .ByteArray
+    rule #matchReason(REASON, OUT) => REASON ==K #range(OUT, 4, #sizeByteArray(OUT) -Int 4) requires REASON =/=K .ByteArray
 ```
 
 - `#setExpectOpcode` initializes the `<expectedOpcode>` subconfiguration with an expected `Address`, and `ByteArray` to match the calldata.
