@@ -349,11 +349,6 @@ def exec_foundry_prove(
             init_term = KDefinition__expand_macros(foundry.definition, init_term)
             _LOGGER.info(f'Expanding macros in target state for test: {test}')
             target_term = KDefinition__expand_macros(foundry.definition, target_term)
-            if simplify_init:
-                _LOGGER.info(f'Simplifying initial state for test: {test}')
-                init_term = foundry.simplify(CTerm(init_term))
-                _LOGGER.info(f'Simplifying target state for test: {test}')
-                target_term = foundry.simplify(CTerm(target_term))
             cfg, _ = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_term))
             cfg, _ = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_term))
             kcfgs[test] = (cfg, kcfg_file)
@@ -375,6 +370,7 @@ def exec_foundry_prove(
             max_iterations=max_iterations,
             max_depth=max_depth,
             terminal_rules=['EVM.step', 'EVM.halt'],
+            simplify_init=simplify_init,
         )
 
     with ProcessPool(ncpus=workers) as process_pool:
