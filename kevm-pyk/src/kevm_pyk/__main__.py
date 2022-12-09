@@ -12,6 +12,7 @@ from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
 from pyk.kast.manip import flatten_label, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG
+from pyk.kcfg_viewer.app import KcfgViewer
 from pyk.ktool.kit import KIT
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -496,6 +497,16 @@ def exec_run(
     sys.exit(krun_result.returncode)
 
 
+def exec_view_kcfg(foundry_out: Path, kcfg_file: Path, profile: bool, **kwargs: Any) -> None:
+    definition_dir = foundry_out / 'kompiled'
+    use_directory = foundry_out / 'specs'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
+    printer = lambda _, node: foundry.pretty_print(node.cterm.kast)
+    viewer = KcfgViewer(kcfg_file, printer=printer)
+    viewer.run()
+
+
 # Helpers
 
 
@@ -771,6 +782,14 @@ def _create_argument_parser() -> ArgumentParser:
         '--details', dest='details', default=True, action='store_true', help='Information about progress on each KCFG.'
     )
     foundry_list_args.add_argument('--no-details', dest='details', action='store_false', help='Just list the KCFGs.')
+
+    view_kcfg_args = command_parser.add_parser(
+        'view-kcfg',
+        help='Display tree view of KCFG',
+        parents=[shared_args],
+    )
+    view_kcfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    view_kcfg_args.add_argument('kcfg_file', type=file_path, help='Path to KCFG JSON file')
 
     return parser
 
