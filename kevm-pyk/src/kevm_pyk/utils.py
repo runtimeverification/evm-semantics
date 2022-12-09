@@ -142,19 +142,19 @@ def rpc_prove(
             splits = cfg.split_node(next_node.id, branches)
             _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((next_node.id, splits))}')
         else:
-            _LOGGER.info(f'Checking if real branch {cfgid}: {next_node.id}')
+            _LOGGER.info(f'Checking if real branch {cfgid}: {shorten_hashes((next_node.id))}')
             non_ceil_constraints = [c for c in next_node.cterm.constraints if mlEqualsTrue(KVariable('X')).match(c)]
             non_ceil_cterm = CTerm(mlAnd([next_node.cterm.config] + non_ceil_constraints))
             claim_id = f'CHECK-BRANCH-{next_node.id}-TO-{target_node.id}'
             claim, var_map = build_claim(claim_id, non_ceil_cterm, target_node.cterm)
             depth, branching, result = kprove.get_claim_basic_block(claim_id, claim, max_depth=1)
             if not branching:
-                _LOGGER.info(f'Not real branch {cfgid}: {next_node.id}')
+                _LOGGER.info(f'Not real branch {cfgid}: {shorten_hashes((next_node.id))}')
                 result = Subst(var_map)(result)
                 new_next_node = cfg.get_or_create_node(CTerm(result))
                 cfg.create_edge(next_node.id, new_next_node.id, mlTop(), 1)
             else:
-                _LOGGER.info(f'Real branch {cfgid}: {next_node.id}')
+                _LOGGER.info(f'Real branch {cfgid}: {shorten_hashes((next_node.id))}')
                 branch_constraints = [[c for c in s.constraints if c not in cterm.constraints] for s in next_cterms]
                 _LOGGER.info(
                     f'Found {len(list(next_cterms))} branches manually at depth 1 for {cfgid}: {[kprove.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
