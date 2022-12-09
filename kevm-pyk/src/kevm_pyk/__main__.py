@@ -781,7 +781,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_prove_args.add_argument(
         '--max-depth',
         dest='max_depth',
-        default=250,
+        default=100,
         type=int,
         help='Store every Nth state in the KCFG for inspection.',
     )
