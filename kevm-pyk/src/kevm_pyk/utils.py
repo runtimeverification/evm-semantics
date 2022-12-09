@@ -94,7 +94,7 @@ def rpc_prove(
         _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
         depth = 0
         cterm = simplified
-        for _i in range(10):
+        while max_depth is None or depth < max_depth:
             new_depth, cterm, next_cterms = kprove.execute(
                 cterm, depth=max_depth, cut_point_rules=cut_point_rules, terminal_rules=terminal_rules
             )
