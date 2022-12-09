@@ -18,7 +18,7 @@
       "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
-    pyk.url = "github:runtimeverification/pyk/v0.1.80";
+    pyk.url = "github:runtimeverification/pyk/v0.1.84";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
 
@@ -44,7 +44,7 @@
           pkg-config
           procps
           protobuf
-          python39
+          python310
           secp256k1
           solc
           time
@@ -142,10 +142,10 @@
           };
 
         kevm-pyk = prev.poetry2nix.mkPoetryApplication {
-          python = prev.python39;
+          python = prev.python310;
           projectDir = ./kevm-pyk;
           overrides = prev.poetry2nix.overrides.withDefaults
-            (finalPython: prevPython: { pyk = prev.pyk; });
+            (finalPython: prevPython: { pyk = prev.python310Packages.pyk; });
           groups = [];
           # We remove `"dev"` from `checkGroups`, so that poetry2nix does not try to resolve dev dependencies.
           checkGroups = [];

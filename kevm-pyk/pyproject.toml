@@ -11,9 +11,9 @@ authors = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
 pathos = "*"
-pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="v0.1.80" }
+pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="v0.1.84" }
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"
