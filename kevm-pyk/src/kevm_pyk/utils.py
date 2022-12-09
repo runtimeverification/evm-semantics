@@ -105,18 +105,9 @@ def rpc_prove(
         cfg.add_expanded(curr_node.id)
 
         _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
-        depth = 0
-        cterm = simplified
-        while True:
-            new_depth, new_cterm, next_cterms = kprove.execute(
-                cterm, depth=max_depth, cut_point_rules=cut_point_rules, terminal_rules=terminal_rules
-            )
-            if max_depth is not None and max_depth < depth + new_depth:
-                break
-            cterm = new_cterm
-            depth += new_depth
-            if len(next_cterms) > 0 or new_depth == 0 or (is_terminal is not None and is_terminal(cterm)):
-                break
+        depth, cterm, next_cterms = kprove.execute(
+            simplified, depth=max_depth, cut_point_rules=cut_point_rules, terminal_rules=terminal_rules
+        )
         if depth == 0:
             _LOGGER.info(f'Found stuck node {cfgid}: {shorten_hashes(curr_node.id)}')
             continue
