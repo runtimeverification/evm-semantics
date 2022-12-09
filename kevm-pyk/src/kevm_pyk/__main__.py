@@ -490,6 +490,7 @@ def exec_foundry_prove(
                         cfg.create_edge(next_node.id, branch_node.id, mlAnd(bc), 1)
 
         write_cfg(cfg, cfgpath)
+        foundry.close_kore_rpc()
 
         failure_nodes = cfg.frontier + cfg.stuck
         if len(failure_nodes) == 0:
