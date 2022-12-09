@@ -250,7 +250,8 @@ class KEVM(KProve, KRun):
                     return True
         return False
 
-    def abstract(self, cterm: CTerm) -> CTerm:
+    @staticmethod
+    def abstract(cterm: CTerm) -> CTerm:
         term = cterm.kast
         gas_cell = get_cell(term, 'GAS_CELL')
         if type(gas_cell) is not KVariable:
@@ -278,7 +279,7 @@ class KEVM(KProve, KRun):
         wordstack_cell = build_cons(wordstack_tail, cons_wordstack, wordstack_head)
         term = set_cell(term, 'WORDSTACK_CELL', wordstack_cell)
         new_cterm = remove_useless_constraints(CTerm(term))
-        new_cterm = self.add_language_invariants(new_cterm)
+        new_cterm = KEVM.add_invariant(new_cterm)
         return new_cterm
 
     @staticmethod
