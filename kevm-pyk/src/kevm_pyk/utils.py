@@ -32,6 +32,8 @@ def rpc_prove(
     auto_abstract: Optional[Callable[[CTerm], CTerm]] = None,
     max_iterations: Optional[int] = None,
     max_depth: Optional[int] = None,
+    cut_point_rules: Iterable[str] = (),
+    terminal_rules: Iterable[str] = (),
 ) -> bool:
     kprove.set_kore_rpc_port(rpc_port)
 
@@ -94,7 +96,7 @@ def rpc_prove(
         cterm = simplified
         for _i in range(10):
             new_depth, cterm, next_cterms = kprove.execute(
-                cterm, depth=max_depth, terminal_rules=['EVM.halt', 'EVM.step']
+                cterm, depth=max_depth, cut_point_rules=cut_point_rules, terminal_rules=terminal_rules
             )
             depth += new_depth
             if len(next_cterms) > 0 or new_depth == 0 or (is_terminal is not None and is_terminal(cterm)):
