@@ -283,7 +283,6 @@ def exec_foundry_prove(
     lemmas: Iterable[str] = (),
     simplify_init: bool = True,
     auto_abstract: bool = False,
-    retry: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -763,13 +762,6 @@ def _create_argument_parser() -> ArgumentParser:
         dest='simplify_init',
         action='store_false',
         help='Do not simplify the initial and target states at startup.',
-    )
-    foundry_prove_args.add_argument(
-        '--retry',
-        dest='retry',
-        default=False,
-        action='store_true',
-        help='Retry failing proofs once.',
     )
     foundry_prove_args.add_argument(
         '--max-depth',
