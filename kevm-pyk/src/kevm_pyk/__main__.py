@@ -364,19 +364,25 @@ def exec_foundry_prove(
             with open(kcfg_file, 'r') as kf:
                 kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
 
-    with ProcessPool(ncpus=workers) as process_pool:
-        foundry.close_kore_rpc()
-        proof_problems = [(k, v, 3010 + i) for i, (k, v) in enumerate(kcfgs.items())]
-        results = process_pool.map(
-            rpc_prove,
-            proof_problems,
+    def _call_rpc(packed_args: Tuple[str, KCFG, Path, int]) -> bool:
+        _cfgid, _cfg, _cfgpath, _rpc_port = packed_args
+        return rpc_prove(
+            foundry,
+            _cfgid,
+            _cfg,
+            _cfgpath,
+            _rpc_port,
             is_terminal=KEVM.is_terminal,
             extract_branches=KEVM.extract_branches,
             auto_abstract=KEVM.abstract,
             max_iterations=max_iterations,
             max_depth=max_depth,
         )
-        process_pool.close()
+
+    with ProcessPool(ncpus=workers) as process_pool:
+        foundry.close_kore_rpc()
+        proof_problems = [(cfgid, cfg, cfgpath, 3010 + i) for i, (cfgid, (cfg, cfgpath)) in enumerate(kcfgs.items())]
+        results = process_pool.map(_call_rpc, proof_problems)
 
     failed = 0
     for (cid, _), succeeded in zip(kcfgs.items(), results, strict=True):
