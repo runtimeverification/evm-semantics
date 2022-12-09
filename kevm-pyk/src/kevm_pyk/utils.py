@@ -40,12 +40,12 @@ def rpc_prove(
 
     if simplify_init:
         for node in cfg.nodes:
-            _LOGGER.info(f'Simplifying node {cfgid}: {shorten_hashes((node.id))}')
+            _LOGGER.info(f'Simplifying node {cfgid}: {shorten_hashes(node.id)}')
             new_term = kprove.simplify(node.cterm)
             if is_top(new_term):
-                raise ValueError(f'Node simplified to #Top {cfgid}: {shorten_hashes((node.id))}')
+                raise ValueError(f'Node simplified to #Top {cfgid}: {shorten_hashes(node.id)}')
             if is_bottom(new_term):
-                raise ValueError(f'Node simplified to #Bottom {cfgid}: {shorten_hashes((node.id))}')
+                raise ValueError(f'Node simplified to #Bottom {cfgid}: {shorten_hashes(node.id)}')
             if new_term != node.cterm.kast:
                 KCFG__replace_node(cfg, node.id, CTerm(new_term))
     write_cfg(cfg, cfgpath)
@@ -71,14 +71,14 @@ def rpc_prove(
             _LOGGER.info(f'Subsumed into target node: {shorten_hashes((curr_node.id, target_node.id))}')
             continue
 
-        _LOGGER.info(f'Checking terminal {cfgid}: {shorten_hashes((curr_node.id))}')
+        _LOGGER.info(f'Checking terminal {cfgid}: {shorten_hashes(curr_node.id)}')
         if is_terminal is not None and is_terminal(curr_node.cterm):
-            _LOGGER.info(f'Terminal node {cfgid}: {shorten_hashes((curr_node.id))}.')
+            _LOGGER.info(f'Terminal node {cfgid}: {shorten_hashes(curr_node.id)}.')
             cfg.add_expanded(curr_node.id)
             continue
 
         if auto_abstract is not None:
-            _LOGGER.info(f'Auto abstraction {cfgid}: {shorten_hashes((curr_node.id))}')
+            _LOGGER.info(f'Auto abstraction {cfgid}: {shorten_hashes(curr_node.id)}')
             abstracted = auto_abstract(curr_node.cterm)
             if abstracted != curr_node.cterm:
                 abstracted_node = cfg.get_or_create_node(abstracted)
@@ -86,7 +86,7 @@ def rpc_prove(
                 _LOGGER.info(f'Abstracted node: {shorten_hashes((curr_node.id, abstracted_node.id))}')
                 continue
 
-        _LOGGER.info(f'Simplifying {cfgid}: {shorten_hashes((curr_node.id))}')
+        _LOGGER.info(f'Simplifying {cfgid}: {shorten_hashes(curr_node.id)}')
         _simplified = kprove.simplify(curr_node.cterm)
         if is_bottom(_simplified):
             cfg.create_cover(curr_node.id, cfg.get_unique_target().id, constraint=mlTop())
@@ -95,7 +95,7 @@ def rpc_prove(
             )
             continue
         if is_top(_simplified):
-            raise ValueError(f'Found #Top node {cfgid}: {shorten_hashes((curr_node.id))}')
+            raise ValueError(f'Found #Top node {cfgid}: {shorten_hashes(curr_node.id)}')
         simplified = CTerm(_simplified)
         if simplified != curr_node.cterm:
             cfg, new_node_id = KCFG__replace_node(cfg, curr_node.id, simplified)
@@ -133,7 +133,7 @@ def rpc_prove(
 
         cfg.add_expanded(next_node.id)
 
-        _LOGGER.info(f'Extracting branches from node in {cfgid}: {shorten_hashes((curr_node.id))}')
+        _LOGGER.info(f'Extracting branches from node in {cfgid}: {shorten_hashes(curr_node.id)}')
         branches = extract_branches(cterm) if extract_branches is not None else []
         if len(list(branches)) > 0:
             _LOGGER.info(
@@ -142,19 +142,19 @@ def rpc_prove(
             splits = cfg.split_node(next_node.id, branches)
             _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((next_node.id, splits))}')
         else:
-            _LOGGER.info(f'Checking if real branch {cfgid}: {shorten_hashes((next_node.id))}')
+            _LOGGER.info(f'Checking if real branch {cfgid}: {shorten_hashes(next_node.id)}')
             non_ceil_constraints = [c for c in next_node.cterm.constraints if mlEqualsTrue(KVariable('X')).match(c)]
             non_ceil_cterm = CTerm(mlAnd([next_node.cterm.config] + non_ceil_constraints))
             claim_id = f'CHECK-BRANCH-{next_node.id}-TO-{target_node.id}'
             claim, var_map = build_claim(claim_id, non_ceil_cterm, target_node.cterm)
             depth, branching, result = kprove.get_claim_basic_block(claim_id, claim, max_depth=1)
             if not branching:
-                _LOGGER.info(f'Not real branch {cfgid}: {shorten_hashes((next_node.id))}')
+                _LOGGER.info(f'Not real branch {cfgid}: {shorten_hashes(next_node.id)}')
                 result = Subst(var_map)(result)
                 new_next_node = cfg.get_or_create_node(CTerm(result))
                 cfg.create_edge(next_node.id, new_next_node.id, mlTop(), 1)
             else:
-                _LOGGER.info(f'Real branch {cfgid}: {shorten_hashes((next_node.id))}')
+                _LOGGER.info(f'Real branch {cfgid}: {shorten_hashes(next_node.id)}')
                 branch_constraints = [[c for c in s.constraints if c not in cterm.constraints] for s in next_cterms]
                 _LOGGER.info(
                     f'Found {len(list(next_cterms))} branches manually at depth 1 for {cfgid}: {[kprove.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
