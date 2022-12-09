@@ -8,8 +8,8 @@ from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSequence, KSort, KVariable, build_assoc
-from pyk.kast.manip import abstract_term_safely, substitute
+from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSequence, KSort, KVariable, Subst, build_assoc
+from pyk.kast.manip import abstract_term_safely
 from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KProductionItem, KRule, KSentence, KTerminal
 from pyk.kcfg import KCFG
 from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
@@ -416,7 +416,7 @@ def _init_term(
     if callvalue is not None:
         init_subst['CALLVALUE_CELL'] = callvalue
 
-    return substitute(empty_config, init_subst)
+    return Subst(init_subst)(empty_config)
 
 
 def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True) -> CTerm:
@@ -468,7 +468,7 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
         'ISEVENTEXPECTED_CELL': KVariable('ISEVENTEXPECTED_FINAL'),
     }
     return abstract_cell_vars(
-        substitute(empty_config, final_subst),
+        Subst(final_subst)(empty_config),
         [
             KVariable('STATUSCODE_FINAL'),
             KVariable('ACCOUNTS_FINAL'),
