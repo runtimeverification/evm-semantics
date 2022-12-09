@@ -217,7 +217,7 @@ websockets = ["websockets (>=10,<11)", "websockets (>=9,<10)"]
 
 [[package]]
 name = "graphene"
-version = "3.1.1"
+version = "3.2"
 description = "GraphQL Framework for Python"
 category = "main"
 optional = false
@@ -229,8 +229,8 @@ graphql-core = ">=3.1,<3.3"
 graphql-relay = ">=3.1,<3.3"
 
 [package.extras]
-dev = ["black (==22.3.0)", "coveralls (>=3.3,<4)", "flake8 (>=4,<5)", "iso8601 (>=1,<2)", "mock (>=4,<5)", "promise (>=2.3,<3)", "pytest (>=6,<7)", "pytest-asyncio (>=0.16,<2)", "pytest-benchmark (>=3.4,<4)", "pytest-cov (>=3,<4)", "pytest-mock (>=3,<4)", "pytz (==2022.1)", "snapshottest (>=0.6,<1)"]
-test = ["coveralls (>=3.3,<4)", "iso8601 (>=1,<2)", "mock (>=4,<5)", "promise (>=2.3,<3)", "pytest (>=6,<7)", "pytest-asyncio (>=0.16,<2)", "pytest-benchmark (>=3.4,<4)", "pytest-cov (>=3,<4)", "pytest-mock (>=3,<4)", "pytz (==2022.1)", "snapshottest (>=0.6,<1)"]
+dev = ["black (==22.3.0)", "coveralls (>=3.3,<4)", "flake8 (>=4,<5)", "iso8601 (>=1,<2)", "mock (>=4,<5)", "pytest (>=6,<7)", "pytest-asyncio (>=0.16,<2)", "pytest-benchmark (>=3.4,<4)", "pytest-cov (>=3,<4)", "pytest-mock (>=3,<4)", "pytz (==2022.1)", "snapshottest (>=0.6,<1)"]
+test = ["coveralls (>=3.3,<4)", "iso8601 (>=1,<2)", "mock (>=4,<5)", "pytest (>=6,<7)", "pytest-asyncio (>=0.16,<2)", "pytest-benchmark (>=3.4,<4)", "pytest-cov (>=3,<4)", "pytest-mock (>=3,<4)", "pytz (==2022.1)", "snapshottest (>=0.6,<1)"]
 
 [[package]]
 name = "graphql-core"
@@ -474,7 +474,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "pyk"
-version = "0.1.83"
+version = "0.1.84"
 description = ""
 category = "main"
 optional = false
@@ -493,8 +493,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.83"
-resolved_reference = "2168e1864309ff4282096344a9042449d7d345de"
+reference = "v0.1.84"
+resolved_reference = "e98c91c79f4c240b465c25d2bbee28782112e887"
 
 [[package]]
 name = "pyperclip"
@@ -607,7 +607,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "bc72bd32d2e518bdf12eb8eaf970aee2da5b9d7c7fa48bbfd21c773be84156eb"
+content-hash = "4e337134d410936d8c5738eed52383dfc60102ba797d4451c4f1255b5b3f06b0"
 
 [metadata.files]
 aniso8601 = [
@@ -694,8 +694,8 @@ gql = [
     {file = "gql-3.4.0.tar.gz", hash = "sha256:ca81aa8314fa88a8c57dd1ce34941278e0c352d762eb721edcba0387829ea7c0"},
 ]
 graphene = [
-    {file = "graphene-3.1.1-py2.py3-none-any.whl", hash = "sha256:1c0d43560a86536b7816bb05e3685beebf140118e091a9c445cd10f55acb20fd"},
-    {file = "graphene-3.1.1.tar.gz", hash = "sha256:ff251dbc39a6409106c41de444358d93b2c5588d161dce2245bea7d74b445c86"},
+    {file = "graphene-3.2-py2.py3-none-any.whl", hash = "sha256:8df657721284b1e6797644433c67c4906f21bb3c1f14ec80969f927abaa7ca5f"},
+    {file = "graphene-3.2.tar.gz", hash = "sha256:8eb652ccd51c672893d47e8efaed89871530844ccb387ca9f354837eaa948604"},
 ]
 graphql-core = [
     {file = "graphql-core-3.2.3.tar.gz", hash = "sha256:06d2aad0ac723e35b1cb47885d3e5c45e956a53bc1b209a9fc5369007fe46676"},
