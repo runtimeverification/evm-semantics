@@ -1,26 +1,11 @@
-from logging import Logger
-from typing import Collection, Iterable, List, Optional, Tuple
+from typing import Collection, Iterable, List, Tuple
 
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
-from pyk.kast.manip import (
-    abstract_term_safely,
-    bool_to_ml_pred,
-    bottom_up,
-    flatten_label,
-    free_vars,
-    is_anon_var,
-    ml_pred_to_bool,
-    remove_generated_cells,
-    split_config_and_constraints,
-    split_config_from,
-    undo_aliases,
-)
-from pyk.kast.outer import KClaim, KDefinition, KFlatModule, KImport, KRule
+from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
+from pyk.kast.outer import KDefinition, KFlatModule, KImport
 from pyk.kcfg import KCFG
-from pyk.ktool import KPrint, KProve
-from pyk.prelude.kbool import FALSE
-from pyk.prelude.ml import mlAnd
+from pyk.ktool import KPrint
 
 
 def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # noqa: N802
@@ -81,28 +66,6 @@ def KCFG__replace_node(cfg: KCFG, node_id: str, new_cterm: CTerm) -> Tuple[KCFG,
     return (cfg, new_node.id)
 
 
-def KProve_prove_claim(  # noqa: N802
-    kprove: KProve,
-    claim: KClaim,
-    claim_id: str,
-    logger: Logger,
-    depth: Optional[int] = None,
-    lemmas: Iterable[KRule] = (),
-) -> Tuple[bool, KInner]:
-    logger.info(f'Proving claim: {claim_id}')
-    prove_args = []
-    if depth is not None:
-        prove_args += ['--depth', str(depth)]
-    result = kprove.prove_claim(claim, claim_id, args=prove_args, lemmas=lemmas)
-    failed = False
-    if type(result) is KApply and result.label.name == '#Top':
-        logger.info(f'Proved claim: {claim_id}')
-    else:
-        logger.error(f'Failed to prove claim: {claim_id}')
-        failed = True
-    return failed, result
-
-
 def KPrint_make_unparsing(_self: KPrint, extra_modules: Iterable[KFlatModule] = ()) -> KPrint:  # noqa: N802
     modules = _self.definition.modules + tuple(extra_modules)
     main_module = KFlatModule('UNPARSING', [], [KImport(_m.name) for _m in modules])
@@ -124,35 +87,3 @@ def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> 
         if type(subst[s]) is KVariable and not is_anon_var(subst[s]) and subst[s] not in keep_vars:
             subst[s] = abstract_term_safely(KVariable('_'), base_name=s)
     return Subst(subst)(config)
-
-
-def sanitize_config(defn: KDefinition, init_term: KInner) -> KInner:
-    def _var_name(vname: str) -> str:
-        new_vname = vname
-        while new_vname.startswith('_') or new_vname.startswith('?'):
-            new_vname = new_vname[1:]
-        return new_vname
-
-    free_vars_subst = {vname: KVariable(_var_name(vname)) for vname in free_vars(init_term)}
-
-    # TODO: This is somewhat hacky. We shouldn't have to touch the config this much.
-    # Likely, the frontend should just be giving us initial states with these already in place.
-    def _remove_cell_map_definedness(_kast: KInner) -> KInner:
-        if type(_kast) is KApply:
-            if _kast.label.name.endswith('CellMap:in_keys'):
-                return FALSE
-            elif _kast.label.name.endswith('CellMapItem'):
-                return _kast.args[1]
-        return _kast
-
-    new_term = Subst(free_vars_subst)(init_term)
-    new_term = remove_generated_cells(new_term)
-    new_term = bottom_up(_remove_cell_map_definedness, new_term)
-
-    if not (type(new_term) is KApply and new_term.label.name in ['#Top', '#Bottom']):
-        config, constraint = split_config_and_constraints(new_term)
-        constraints = [bool_to_ml_pred(ml_pred_to_bool(c, unsafe=True)) for c in flatten_label('#And', constraint)]
-        new_term = mlAnd([config] + constraints)
-        new_term = undo_aliases(defn, new_term)
-
-    return new_term
