@@ -30,7 +30,7 @@ RUN    apt-get update         \
             libssl-dev        \
             netcat            \
             protobuf-compiler \
-            python3.10        \
+            python3           \
             python3-pip       \
             solc
 
