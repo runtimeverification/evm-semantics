@@ -373,8 +373,8 @@ def exec_foundry_prove(
                 terminal_rules=(['EVM.halt'] if not break_every_step else ['EVM.halt', 'EVM.step']),
                 simplify_init=simplify_init,
             )
-        except ValueError as ve:
-            _LOGGER.error(f'Proof crashed: {_cfgid}\n{ve}')
+        except Exception as e:
+            _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}')
             return False
 
     with ProcessPool(ncpus=workers) as process_pool:
