@@ -358,20 +358,24 @@ def exec_foundry_prove(
 
     def _call_rpc(packed_args: Tuple[str, KCFG, Path, int]) -> bool:
         _cfgid, _cfg, _cfgpath, _rpc_port = packed_args
-        return rpc_prove(
-            foundry,
-            _cfgid,
-            _cfg,
-            _cfgpath,
-            _rpc_port,
-            is_terminal=KEVM.is_terminal,
-            extract_branches=KEVM.extract_branches,
-            auto_abstract=(KEVM.abstract if auto_abstract else None),
-            max_iterations=max_iterations,
-            max_depth=max_depth,
-            terminal_rules=(['EVM.halt'] if not break_every_step else ['EVM.halt', 'EVM.step']),
-            simplify_init=simplify_init,
-        )
+        try:
+            return rpc_prove(
+                foundry,
+                _cfgid,
+                _cfg,
+                _cfgpath,
+                _rpc_port,
+                is_terminal=KEVM.is_terminal,
+                extract_branches=KEVM.extract_branches,
+                auto_abstract=(KEVM.abstract if auto_abstract else None),
+                max_iterations=max_iterations,
+                max_depth=max_depth,
+                terminal_rules=(['EVM.halt'] if not break_every_step else ['EVM.halt', 'EVM.step']),
+                simplify_init=simplify_init,
+            )
+        except ValueError as ve:
+            _LOGGER.error(f'Proof crashed: {_cfgid}\n{ve}')
+            return False
 
     with ProcessPool(ncpus=workers) as process_pool:
         foundry.close_kore_rpc()
