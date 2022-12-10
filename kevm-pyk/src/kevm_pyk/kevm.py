@@ -222,10 +222,10 @@ class KEVM(KProve, KRun):
         if k_cell == KEVM.halt():
             return True
         elif type(k_cell) is KSequence:
-            # <k> #halt ~> _ </k>
-            if k_cell and k_cell[0] == KEVM.halt():
-                # #Not (<k> #halt ~> #execute ~> _ </k>)
-                if len(k_cell) > 1 and k_cell[1] != KEVM.sharp_execute():
+            # <k> #halt ~> CONTINUATION </k>
+            if k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
+                # <callDepth> 0 </callDepth>
+                if get_cell(config, 'CALLDEPTH_CELL') == intToken(0):
                     return True
         return False
 
