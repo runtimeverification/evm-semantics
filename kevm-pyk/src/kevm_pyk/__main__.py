@@ -375,6 +375,7 @@ def exec_foundry_prove(
             )
         except Exception as e:
             _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}')
+            foundry.close()
             return False
 
     with ProcessPool(ncpus=workers) as process_pool:
