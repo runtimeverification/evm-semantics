@@ -448,10 +448,11 @@ def exec_foundry_show(
         if len(k_cell) > 80:
             k_cell = k_cell[0:80] + ' ...'
         k_str = f'k: {k_cell}'
+        calldepth_str = f'callDepth: {foundry.pretty_print(get_cell(_ct.config, "CALLDEPTH_CELL"))}'
         statuscode_str = f'statusCode: {foundry.pretty_print(get_cell(_ct.config, "STATUSCODE_CELL"))}'
         _pc = get_cell(_ct.config, 'PC_CELL')
         pc_str = f'pc: {foundry.pretty_print(_pc)}'
-        ret_strs = [k_str, statuscode_str, pc_str]
+        ret_strs = [k_str, calldepth_str, statuscode_str, pc_str]
         if type(_pc) is KToken and srcmap is not None:
             pc = int(_pc.token)
             ret_strs.append(f'srcmap: {srcmap[pc]}')
