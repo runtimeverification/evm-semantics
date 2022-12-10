@@ -108,13 +108,17 @@ def rpc_prove(
         depth, cterm, next_cterms = kprove.execute(
             simplified, depth=max_depth, cut_point_rules=cut_point_rules, terminal_rules=terminal_rules
         )
-        if depth == 0:
+        if len(next_cterms) == 0 and depth == 0:
             _LOGGER.info(f'Found stuck node {cfgid}: {shorten_hashes(curr_node.id)}')
             continue
 
-        next_node = cfg.get_or_create_node(cterm)
-        cfg.create_edge(curr_node.id, next_node.id, mlTop(), depth)
-        _LOGGER.info(f'Found basic block at depth {depth} for {cfgid}: {shorten_hashes((curr_node.id, next_node.id))}.')
+        if depth > 0:
+            next_node = cfg.get_or_create_node(cterm)
+            cfg.create_edge(curr_node.id, next_node.id, mlTop(), depth)
+            _LOGGER.info(
+                f'Found basic block at depth {depth} for {cfgid}: {shorten_hashes((curr_node.id, next_node.id))}.'
+            )
+            curr_node = next_node
 
         if len(next_cterms) == 0:
             continue
@@ -122,7 +126,7 @@ def rpc_prove(
         if len(next_cterms) == 1:
             raise ValueError(f'Found a single successor cterm: {(depth, cterm, next_cterms)}')
 
-        cfg.add_expanded(next_node.id)
+        cfg.add_expanded(curr_node.id)
 
         _LOGGER.info(f'Extracting branches from node in {cfgid}: {shorten_hashes(curr_node.id)}')
         branches = extract_branches(cterm) if extract_branches is not None else []
@@ -130,29 +134,29 @@ def rpc_prove(
             _LOGGER.info(
                 f'Found {len(list(branches))} branches at depth {depth} for {cfgid}: {[kprove.pretty_print(b) for b in branches]}'
             )
-            splits = cfg.split_node(next_node.id, branches)
-            _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((next_node.id, splits))}')
+            splits = cfg.split_node(curr_node.id, branches)
+            _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((curr_node.id, splits))}')
         else:
-            _LOGGER.info(f'Checking if real branch {cfgid}: {shorten_hashes(next_node.id)}')
-            non_ceil_constraints = [c for c in next_node.cterm.constraints if mlEqualsTrue(KVariable('X')).match(c)]
-            non_ceil_cterm = CTerm(mlAnd([next_node.cterm.config] + non_ceil_constraints))
-            claim_id = f'CHECK-BRANCH-{next_node.id}-TO-{target_node.id}'
+            _LOGGER.info(f'Checking if real branch {cfgid}: {shorten_hashes(curr_node.id)}')
+            non_ceil_constraints = [c for c in curr_node.cterm.constraints if mlEqualsTrue(KVariable('X')).match(c)]
+            non_ceil_cterm = CTerm(mlAnd([curr_node.cterm.config] + non_ceil_constraints))
+            claim_id = f'CHECK-BRANCH-{curr_node.id}-TO-{target_node.id}'
             claim, var_map = build_claim(claim_id, non_ceil_cterm, target_node.cterm)
             depth, branching, result = kprove.get_claim_basic_block(claim_id, claim, max_depth=1)
             if not branching:
-                _LOGGER.info(f'Not real branch {cfgid}: {shorten_hashes(next_node.id)}')
+                _LOGGER.info(f'Not real branch {cfgid}: {shorten_hashes(curr_node.id)}')
                 result = Subst(var_map)(result)
-                new_next_node = cfg.get_or_create_node(CTerm(result))
-                cfg.create_edge(next_node.id, new_next_node.id, mlTop(), 1)
+                next_node = cfg.get_or_create_node(CTerm(result))
+                cfg.create_edge(curr_node.id, next_node.id, mlTop(), 1)
             else:
-                _LOGGER.info(f'Real branch {cfgid}: {shorten_hashes(next_node.id)}')
+                _LOGGER.info(f'Real branch {cfgid}: {shorten_hashes(curr_node.id)}')
                 branch_constraints = [[c for c in s.constraints if c not in cterm.constraints] for s in next_cterms]
                 _LOGGER.info(
                     f'Found {len(list(next_cterms))} branches manually at depth 1 for {cfgid}: {[kprove.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
                 )
                 for bs, bc in zip(next_cterms, branch_constraints, strict=True):
                     branch_node = cfg.get_or_create_node(bs)
-                    cfg.create_edge(next_node.id, branch_node.id, mlAnd(bc), 1)
+                    cfg.create_edge(curr_node.id, branch_node.id, mlAnd(bc), 1)
 
     kprove.close_kore_rpc()
     write_cfg(cfg, cfgpath)
