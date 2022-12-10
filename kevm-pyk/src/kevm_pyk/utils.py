@@ -128,7 +128,7 @@ def rpc_prove(
 
         cfg.add_expanded(curr_node.id)
 
-        _LOGGER.info(f'Extracting branches from node in {cfgid}: {shorten_hashes(curr_node.id)}')
+        _LOGGER.info(f'Extracting branches from node {cfgid}: {shorten_hashes(curr_node.id)}')
         branches = extract_branches(cterm) if extract_branches is not None else []
         if len(list(branches)) > 0:
             _LOGGER.info(
