@@ -158,8 +158,8 @@ def rpc_prove(
                     branch_node = cfg.get_or_create_node(bs)
                     cfg.create_edge(curr_node.id, branch_node.id, mlAnd(bc), 1)
 
-    kprove.close_kore_rpc()
     write_cfg(cfg, cfgpath)
+    kprove.close()
 
     failure_nodes = cfg.frontier + cfg.stuck
     if len(failure_nodes) == 0:
