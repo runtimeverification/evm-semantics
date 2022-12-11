@@ -454,9 +454,10 @@ tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTes
 # solc-to-k
 # ---------
 
-KEVM_PYK_DIR := ./kevm-pyk
+PYTHON_BIN   := python3.10
 VENV_DIR     := $(BUILD_DIR)/venv
 PYK_ACTIVATE := . $(VENV_DIR)/bin/activate
+KEVM_PYK_DIR := ./kevm-pyk
 FOUNDRY_PAR  := 4
 
 venv-clean:
@@ -466,8 +467,8 @@ venv-clean:
 	rm -rf $(K_SUBMODULE)/pyk/build
 
 $(VENV_DIR)/pyvenv.cfg:
-	   virtualenv -p python3 $(VENV_DIR) \
-	&& $(PYK_ACTIVATE)                   \
+	   virtualenv -p $(PYTHON_BIN) $(VENV_DIR) \
+	&& $(PYK_ACTIVATE)                         \
 	&& pip install --editable $(KEVM_PYK_DIR)
 
 venv: $(VENV_DIR)/pyvenv.cfg
