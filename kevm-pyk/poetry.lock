@@ -791,7 +791,7 @@ files = [
 
 [[package]]
 name = "pyk"
-version = "0.1.85"
+version = "0.1.86"
 description = ""
 category = "main"
 optional = false
@@ -811,8 +811,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.85"
-resolved_reference = "6e6167e4d2415d3d0200f1367dac926fb8823240"
+reference = "v0.1.86"
+resolved_reference = "3085b3cf5e2190f7e7dc22a5f0958b27c1594805"
 
 [[package]]
 name = "pyperclip"
@@ -1036,4 +1036,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "1761416f9172570b183e118c48f386b59616bc0aa0c3828d08d6663e1c323762"
+content-hash = "bd48ef12482ba84a45dcc4839976d7482bdddafb131ad52580bd242c85b70259"
