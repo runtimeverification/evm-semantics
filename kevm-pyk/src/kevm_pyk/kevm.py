@@ -358,7 +358,14 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def accounts(accts: List[KInner]) -> KInner:
-        return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), accts)
+        wrapped_accounts: List[KInner] = []
+        for acct in accts:
+            if type(acct) is KApply and acct.label.name == '<account>':
+                acct_id = acct.args[0]
+                wrapped_accounts.append(KApply('AccountCellMapItem', [acct_id, acct]))
+            else:
+                wrapped_accounts.append(acct)
+        return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), wrapped_accounts)
 
 
 class Foundry(KEVM):
