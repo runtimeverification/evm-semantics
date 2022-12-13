@@ -2712,6 +2712,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                        )
 ```
 
+### Merge Schedule
+
+```k
+    syntax Schedule ::= "MERGE" [klabel(MERGE_EVM), symbol, smtlib(schedule_MERGE)]
+ // -------------------------------------------------------------------------------
+    rule SCHEDCONST    < MERGE > => SCHEDCONST < LONDON >
+    rule SCHEDFLAG     << MERGE >> => SCHEDFLAG << LONDON >>
+```
+
 EVM Program Representations
 ===========================
 
