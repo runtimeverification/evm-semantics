@@ -286,7 +286,7 @@ run_solc() {
     run_kevm_pyk solc-to-k "${run_file}" "${contract_name}" --definition "${backend_dir}" "$@"
 }
 
-run_foundry_view_kcfg() {
+run_foundry() {
     local foundry_command
     foundry_command=("${run_command}")
     if [[ "${run_command}" == foundry-kompile ]]; then
