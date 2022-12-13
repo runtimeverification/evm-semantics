@@ -455,7 +455,10 @@ def exec_foundry_show(
         ret_strs = [k_str, calldepth_str, statuscode_str, pc_str]
         if type(_pc) is KToken and srcmap is not None:
             pc = int(_pc.token)
-            ret_strs.append(f'srcmap: {srcmap[pc]}')
+            if pc in srcmap:
+                ret_strs.append(f'srcmap: {srcmap[pc]}')
+            else:
+                _LOGGER.warning(f'pc not found in srcmap: {pc}')
         return ret_strs
 
     with open(kcfg_file, 'r') as kf:
