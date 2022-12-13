@@ -222,3 +222,7 @@ def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> 
         if type(subst[s]) is KVariable and not is_anon_var(subst[s]) and subst[s] not in keep_vars:
             subst[s] = abstract_term_safely(KVariable('_'), base_name=s)
     return Subst(subst)(config)
+
+
+def replace_special_chars(inp: str, c: str) -> str:
+    return inp.replace('.', c).replace('-', c).replace('_', c).replace('/', c)
