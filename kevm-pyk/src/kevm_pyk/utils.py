@@ -102,7 +102,6 @@ def rpc_prove(
             _LOGGER.info(
                 f'Found basic block at depth {depth} for {cfgid}: {shorten_hashes((curr_node.id, next_node.id))}.'
             )
-            continue
 
         if len(next_cterms) == 1:
             raise ValueError(f'Found a single successor cterm: {(depth, cterm, next_cterms)}')
@@ -115,6 +114,10 @@ def rpc_prove(
             )
             splits = cfg.split_node(curr_node.id, branches)
             _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((curr_node.id, splits))}')
+            continue
+
+        if depth > 0:
+            continue
         else:
             _LOGGER.warning(f'Falling back to manual branch extraction {cfgid}: {shorten_hashes(curr_node.id)}')
             branch_constraints = [[c for c in s.constraints if c not in cterm.constraints] for s in next_cterms]
