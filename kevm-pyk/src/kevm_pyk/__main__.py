@@ -347,10 +347,12 @@ def exec_foundry_prove(
             target_term = cfg.get_unique_target().cterm.kast
             _LOGGER.info(f'Expanding macros in initial state for test: {test}')
             init_term = KDefinition__expand_macros(foundry.definition, init_term)
+            init_cterm = KEVM.add_invariant(CTerm(init_term))
             _LOGGER.info(f'Expanding macros in target state for test: {test}')
             target_term = KDefinition__expand_macros(foundry.definition, target_term)
-            cfg, _ = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_term))
-            cfg, _ = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_term))
+            target_cterm = KEVM.add_invariant(CTerm(target_term))
+            cfg, _ = KCFG__replace_node(cfg, cfg.get_unique_init().id, init_cterm)
+            cfg, _ = KCFG__replace_node(cfg, cfg.get_unique_target().id, target_cterm)
             kcfgs[test] = (cfg, kcfg_file)
         else:
             with open(kcfg_file, 'r') as kf:
