@@ -719,34 +719,34 @@ This is needed in order to prevent overwriting the caller for subcalls.
 Finally, the original sender of the transaction, `ACCTFROM` is changed to the new caller, `NCL`.
 
 ```{.k .bytes}
-    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+    rule [foundry.prank.injectCaller]:
+         <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
          <callDepth> CD </callDepth>
          <prank>
             <newCaller> NCL </newCaller>
             <newOrigin> .Account </newOrigin>
             <active> true </active>
-            <depth> PD </depth>
+            <depth> CD </depth>
             ...
          </prank>
       requires NCL =/=K .Account
        andBool ACCTFROM =/=Int NCL
-       andBool CD >=Int PD
       [priority(40)]
 
-    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+    rule [foundry.prank.injectCallerAndOrigin]:
+         <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
          <callDepth> CD </callDepth>
          <origin> _ => NOG </origin>
          <prank>
             <newCaller> NCL </newCaller>
             <newOrigin> NOG </newOrigin>
             <active> true </active>
-            <depth> PD </depth>
+            <depth> CD </depth>
             ...
          </prank>
       requires NCL =/=K .Account
        andBool NOG =/=K .Account
        andBool ACCTFROM =/=Int NCL
-       andBool CD >=Int PD
       [priority(40)]
 ```
 
