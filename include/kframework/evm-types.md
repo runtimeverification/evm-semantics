@@ -435,10 +435,10 @@ The local memory of execution is a byte-array (instead of a word-array).
     syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, total]
                        | #padRightToWidth ( Int , ByteArray ) [function, total]
  // ---------------------------------------------------------------------------
-    rule                        #padToWidth(N, BS)      =>               BS        requires notBool (N >=Int 0)
-    rule [padToWidthNonEmpty] : #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0
-    rule                        #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
-    rule                        #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0
+    rule                            #padToWidth(N, BS)      =>               BS        requires notBool (N >=Int 0)
+    rule [padToWidthNonEmpty]:      #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0
+    rule                            #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
+    rule [padRightToWidthNonEmpty]: #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0
 ```
 
 ```{.k .nobytes}
