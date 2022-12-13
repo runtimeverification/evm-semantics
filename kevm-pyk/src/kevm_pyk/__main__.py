@@ -497,9 +497,11 @@ def exec_run(
     sys.exit(krun_result.returncode)
 
 
-def exec_foundry_view_kcfg(foundry_out: Path, kcfg_file: Path, profile: bool, **kwargs: Any) -> None:
+def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs: Any) -> None:
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
+    kcfgs_dir = foundry_out / 'kcfgs'
+    kcfg_file = kcfgs_dir / f'{test}.json'
     use_directory.mkdir(parents=True, exist_ok=True)
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
     printer = lambda _, node: foundry.pretty_print(node.cterm.kast)
@@ -789,7 +791,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[shared_args],
     )
     foundry_view_kcfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
-    foundry_view_kcfg_args.add_argument('kcfg_file', type=file_path, help='Path to KCFG JSON file')
+    foundry_view_kcfg_args.add_argument('test', type=str, help='View the CFG for this test.')
 
     return parser
 
