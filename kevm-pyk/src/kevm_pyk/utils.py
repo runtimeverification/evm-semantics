@@ -95,6 +95,11 @@ def rpc_prove(
         depth, cterm, next_cterms = kprove.execute(
             curr_node.cterm, depth=max_depth, cut_point_rules=cut_point_rules, terminal_rules=terminal_rules
         )
+
+        # Nonsense case.
+        if len(next_cterms) == 1:
+            raise ValueError(f'Found a single successor cterm: {(depth, cterm, next_cterms)}')
+
         if len(next_cterms) == 0 and depth == 0:
             _LOGGER.info(f'Found stuck node {cfgid}: {shorten_hashes(curr_node.id)}')
             continue
@@ -106,21 +111,16 @@ def rpc_prove(
                 f'Found basic block at depth {depth} for {cfgid}: {shorten_hashes((curr_node.id, next_node.id))}.'
             )
 
-        if len(next_cterms) == 1:
-            raise ValueError(f'Found a single successor cterm: {(depth, cterm, next_cterms)}')
+            branches = extract_branches(cterm) if extract_branches is not None else []
+            if len(list(branches)) > 0:
+                cfg.add_expanded(next_node.id)
+                _LOGGER.info(
+                    f'Found {len(list(branches))} branches {cfgid}: {[kprove.pretty_print(b) for b in branches]}'
+                )
+                splits = cfg.split_node(next_node.id, branches)
+                _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((next_node.id, splits))}')
+                continue
 
-        _LOGGER.info(f'Extracting branches from node {cfgid}: {shorten_hashes(curr_node.id)}')
-        branches = extract_branches(cterm) if extract_branches is not None else []
-        if len(list(branches)) > 0:
-            _LOGGER.info(
-                f'Found {len(list(branches))} branches at depth {depth} for {cfgid}: {[kprove.pretty_print(b) for b in branches]}'
-            )
-            splits = cfg.split_node(curr_node.id, branches)
-            _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((curr_node.id, splits))}')
-            continue
-
-        if depth > 0:
-            continue
         else:
             _LOGGER.warning(f'Falling back to manual branch extraction {cfgid}: {shorten_hashes(curr_node.id)}')
             branch_constraints = [[c for c in s.constraints if c not in cterm.constraints] for s in next_cterms]
