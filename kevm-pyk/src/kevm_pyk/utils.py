@@ -35,6 +35,7 @@ def rpc_prove(
     cut_point_rules: Iterable[str] = (),
     terminal_rules: Iterable[str] = (),
     simplify_init: bool = True,
+    implication_every_block: bool = False,
 ) -> bool:
     kprove.set_kore_rpc_port(rpc_port)
 
@@ -61,21 +62,23 @@ def rpc_prove(
         iterations += 1
         curr_node = cfg.frontier[0]
 
-        _LOGGER.info(
-            f'Checking subsumption into target state {cfgid}: {shorten_hashes((curr_node.id, target_node.id))}'
-        )
-        impl = kprove.implies(curr_node.cterm, target_node.cterm)
-        if impl is not None:
-            subst, pred = impl
-            cfg.create_cover(curr_node.id, target_node.id, subst=subst, constraint=pred)
-            _LOGGER.info(f'Subsumed into target node: {shorten_hashes((curr_node.id, target_node.id))}')
-            continue
+        if implication_every_block or (is_terminal is not None and is_terminal(curr_node.cterm)):
+            _LOGGER.info(
+                f'Checking subsumption into target state {cfgid}: {shorten_hashes((curr_node.id, target_node.id))}'
+            )
+            impl = kprove.implies(curr_node.cterm, target_node.cterm)
+            if impl is not None:
+                subst, pred = impl
+                cfg.create_cover(curr_node.id, target_node.id, subst=subst, constraint=pred)
+                _LOGGER.info(f'Subsumed into target node: {shorten_hashes((curr_node.id, target_node.id))}')
+                continue
 
-        _LOGGER.info(f'Checking terminal {cfgid}: {shorten_hashes(curr_node.id)}')
-        if is_terminal is not None and is_terminal(curr_node.cterm):
-            _LOGGER.info(f'Terminal node {cfgid}: {shorten_hashes(curr_node.id)}.')
-            cfg.add_expanded(curr_node.id)
-            continue
+        if is_terminal is not None:
+            _LOGGER.info(f'Checking terminal {cfgid}: {shorten_hashes(curr_node.id)}')
+            if is_terminal(curr_node.cterm):
+                _LOGGER.info(f'Terminal node {cfgid}: {shorten_hashes(curr_node.id)}.')
+                cfg.add_expanded(curr_node.id)
+                continue
 
         if auto_abstract is not None:
             _LOGGER.info(f'Auto abstraction {cfgid}: {shorten_hashes(curr_node.id)}')

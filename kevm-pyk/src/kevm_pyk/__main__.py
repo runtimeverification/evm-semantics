@@ -284,6 +284,7 @@ def exec_foundry_prove(
     simplify_init: bool = True,
     auto_abstract: bool = False,
     break_every_step: bool = False,
+    implication_every_block: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -374,6 +375,7 @@ def exec_foundry_prove(
                 max_depth=max_depth,
                 terminal_rules=(['EVM.halt'] if not break_every_step else ['EVM.halt', 'EVM.step']),
                 simplify_init=simplify_init,
+                implication_every_block=implication_every_block,
             )
         except Exception as e:
             _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}')
@@ -798,6 +800,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Store a node for every EVM opcode step (expensive).',
+    )
+    foundry_prove_args.add_argument(
+        '--implication-every-block',
+        dest='implication_every_block',
+        default=False,
+        action='store_true',
+        help='Check subsumption into target state every basic block, not just at terminal nodes.',
     )
 
     foundry_show_args = command_parser.add_parser(
