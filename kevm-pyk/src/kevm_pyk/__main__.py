@@ -20,7 +20,15 @@ from pyk.prelude.k import GENERATED_TOP_CELL
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KCFG__replace_node, KDefinition__expand_macros, KPrint_make_unparsing, add_include_arg, rpc_prove
+from .utils import (
+    KCFG__replace_node,
+    KDefinition__expand_macros,
+    KPrint_make_unparsing,
+    add_include_arg,
+    rpc_prove,
+    shorten_hashes,
+    write_cfg,
+)
 
 T = TypeVar('T')
 
@@ -546,6 +554,17 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs
     viewer.run()
 
 
+def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, profile: bool, **kwargs: Any) -> None:
+    kcfgs_dir = foundry_out / 'kcfgs'
+    kcfg_file = kcfgs_dir / f'{test}.json'
+    with open(kcfg_file, 'r') as kf:
+        kcfg = KCFG.from_dict(json.loads(kf.read()))
+    for _node in kcfg.reachable_nodes(node, traverse_covers=True):
+        _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
+        kcfg.remove_node(_node.id)
+    write_cfg(kcfg, kcfg_file)
+
+
 # Helpers
 
 
@@ -860,6 +879,15 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_view_kcfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_view_kcfg_args.add_argument('test', type=str, help='View the CFG for this test.')
+
+    foundry_remove_node = command_parser.add_parser(
+        'foundry-remove-node',
+        help='Remove a node and its successors.',
+        parents=[shared_args],
+    )
+    foundry_remove_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
+    foundry_remove_node.add_argument('node', type=str, help='Node to remove CFG subgraph from.')
 
     return parser
 
