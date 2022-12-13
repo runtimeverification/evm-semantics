@@ -35,10 +35,9 @@ _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
-def _write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
-    with open(_cfgpath, 'w') as cfgfile:
-        cfgfile.write(json.dumps(_cfg.to_dict()))
-        _LOGGER.info(f'Updated CFG file: {_cfgpath}')
+def write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
+    _cfgpath.write_text(_cfg.to_json())
+    _LOGGER.info(f'Updated CFG file: {_cfgpath}')
 
 
 def _ignore_arg(args: Dict[str, Any], arg: str, cli_option: str) -> None:
@@ -392,7 +391,7 @@ def exec_foundry_prove(
                 if minimize:
                     result_state = minimize_term(result_state)
                 _LOGGER.error(f'Proof failed: {_cfg_id}\n{foundry.pretty_print(result_state)}')
-        _write_cfg(_cfg, _cfg_path)
+        write_cfg(_cfg, _cfg_path)
         failure_nodes = _cfg.frontier + _cfg.stuck
         return len(failure_nodes) == 0
 
