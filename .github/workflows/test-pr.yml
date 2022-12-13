@@ -11,7 +11,7 @@ jobs:
 
   test-concrete-execution:
     name: 'Build and Test KEVM concrete execution'
-    runs-on: [self-hosted, linux, normal]
+    runs-on: [self-hosted, linux, normal, github-runner-18]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
