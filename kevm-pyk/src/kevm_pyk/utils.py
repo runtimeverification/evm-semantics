@@ -3,13 +3,13 @@ import logging
 from pathlib import Path
 from typing import Callable, Collection, Final, Iterable, List, Optional, Tuple
 
-from pyk.cterm import CTerm, build_claim
+from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
 from pyk.kast.outer import KDefinition, KFlatModule, KImport
 from pyk.kcfg import KCFG
 from pyk.ktool import KPrint, KProve
-from pyk.prelude.ml import is_bottom, is_top, mlAnd, mlEqualsTrue, mlTop
+from pyk.prelude.ml import is_bottom, is_top, mlAnd, mlTop
 from pyk.utils import shorten_hashes
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -86,27 +86,11 @@ def rpc_prove(
                 _LOGGER.info(f'Abstracted node: {shorten_hashes((curr_node.id, abstracted_node.id))}')
                 continue
 
-        _LOGGER.info(f'Simplifying {cfgid}: {shorten_hashes(curr_node.id)}')
-        _simplified = kprove.simplify(curr_node.cterm)
-        if is_bottom(_simplified):
-            cfg.create_cover(curr_node.id, cfg.get_unique_target().id, constraint=mlTop())
-            _LOGGER.warning(
-                f'Infeasible node marked as proven {cfgid}: {shorten_hashes((curr_node.id, cfg.get_unique_target().id))}'
-            )
-            continue
-        if is_top(_simplified):
-            raise ValueError(f'Found #Top node {cfgid}: {shorten_hashes(curr_node.id)}')
-        simplified = CTerm(_simplified)
-        if simplified != curr_node.cterm:
-            cfg, new_node_id = KCFG__replace_node(cfg, curr_node.id, simplified)
-            curr_node = cfg.node(new_node_id)
-            _LOGGER.info(f'Replaced with simplified node: {shorten_hashes((curr_node.id, new_node_id))}')
-
         cfg.add_expanded(curr_node.id)
 
         _LOGGER.info(f'Advancing proof from node {cfgid}: {shorten_hashes(curr_node.id)}')
         depth, cterm, next_cterms = kprove.execute(
-            simplified, depth=max_depth, cut_point_rules=cut_point_rules, terminal_rules=terminal_rules
+            curr_node.cterm, depth=max_depth, cut_point_rules=cut_point_rules, terminal_rules=terminal_rules
         )
         if len(next_cterms) == 0 and depth == 0:
             _LOGGER.info(f'Found stuck node {cfgid}: {shorten_hashes(curr_node.id)}')
@@ -118,15 +102,10 @@ def rpc_prove(
             _LOGGER.info(
                 f'Found basic block at depth {depth} for {cfgid}: {shorten_hashes((curr_node.id, next_node.id))}.'
             )
-            curr_node = next_node
-
-        if len(next_cterms) == 0:
             continue
 
         if len(next_cterms) == 1:
             raise ValueError(f'Found a single successor cterm: {(depth, cterm, next_cterms)}')
-
-        cfg.add_expanded(curr_node.id)
 
         _LOGGER.info(f'Extracting branches from node {cfgid}: {shorten_hashes(curr_node.id)}')
         branches = extract_branches(cterm) if extract_branches is not None else []
@@ -137,26 +116,14 @@ def rpc_prove(
             splits = cfg.split_node(curr_node.id, branches)
             _LOGGER.info(f'Made split for {cfgid}: {shorten_hashes((curr_node.id, splits))}')
         else:
-            _LOGGER.info(f'Checking if real branch {cfgid}: {shorten_hashes(curr_node.id)}')
-            non_ceil_constraints = [c for c in curr_node.cterm.constraints if mlEqualsTrue(KVariable('X')).match(c)]
-            non_ceil_cterm = CTerm(mlAnd([curr_node.cterm.config] + non_ceil_constraints))
-            claim_id = f'CHECK-BRANCH-{curr_node.id}-TO-{target_node.id}'
-            claim, var_map = build_claim(claim_id, non_ceil_cterm, target_node.cterm)
-            depth, branching, result = kprove.get_claim_basic_block(claim_id, claim, max_depth=1)
-            if not branching:
-                _LOGGER.info(f'Not real branch {cfgid}: {shorten_hashes(curr_node.id)}')
-                result = Subst(var_map)(result)
-                next_node = cfg.get_or_create_node(CTerm(result))
-                cfg.create_edge(curr_node.id, next_node.id, mlTop(), 1)
-            else:
-                _LOGGER.info(f'Real branch {cfgid}: {shorten_hashes(curr_node.id)}')
-                branch_constraints = [[c for c in s.constraints if c not in cterm.constraints] for s in next_cterms]
-                _LOGGER.info(
-                    f'Found {len(list(next_cterms))} branches manually at depth 1 for {cfgid}: {[kprove.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
-                )
-                for bs, bc in zip(next_cterms, branch_constraints, strict=True):
-                    branch_node = cfg.get_or_create_node(bs)
-                    cfg.create_edge(curr_node.id, branch_node.id, mlAnd(bc), 1)
+            _LOGGER.warning(f'Falling back to manual branch extraction {cfgid}: {shorten_hashes(curr_node.id)}')
+            branch_constraints = [[c for c in s.constraints if c not in cterm.constraints] for s in next_cterms]
+            _LOGGER.info(
+                f'Found {len(list(next_cterms))} branches manually at depth 1 for {cfgid}: {[kprove.pretty_print(mlAnd(bc)) for bc in branch_constraints]}'
+            )
+            for bs, bc in zip(next_cterms, branch_constraints, strict=True):
+                branch_node = cfg.get_or_create_node(bs)
+                cfg.create_edge(curr_node.id, branch_node.id, mlAnd(bc), 1)
 
     write_cfg(cfg, cfgpath)
     kprove.close()
