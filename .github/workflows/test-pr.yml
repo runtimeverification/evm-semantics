@@ -11,7 +11,7 @@ jobs:
 
   test-concrete-execution:
     name: 'Build and Test KEVM concrete execution'
-    runs-on: [self-hosted, linux, normal, github-runner-18]
+    runs-on: [self-hosted, linux, normal, github-runner-9]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -25,7 +25,7 @@ jobs:
       - name: 'Build kevm-pyk'
         run: |
           cat $GITHUB_ENV
-          
+
           docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j`nproc`'
       - name: 'Build kevm'
         run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-llvm build-node -j`nproc` RELEASE=true'
