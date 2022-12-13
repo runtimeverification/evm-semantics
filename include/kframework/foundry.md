@@ -750,7 +750,7 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
       [priority(40)]
 ```
 
-We define a new rule for the `#halt` production that will trigger the `#endPrank` rules if the prank was set only for a single call and if the current call depth is equal to the depth at which `prank` was invoked plus one.
+We define a new rule for the `#halt ~> #return _ _` production that will trigger the `#endPrank` rules if the prank was set only for a single call and if the current call depth is equal to the depth at which `prank` was invoked plus one.
 
 
 ```{.k .bytes}
