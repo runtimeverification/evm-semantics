@@ -20,6 +20,16 @@ contract AdditionalToken {
 
 contract PlainPrankTest is Test {
 
+    function internalCounter() public view returns (bool) {
+        return msg.sender == address(15);
+    }
+
+    function testFail_startPrank_internalCall() public {
+        vm.assume(msg.sender != address(15));
+        vm.startPrank(address(15));
+        assert(internalCounter());
+    }
+
     function test_startPrank_true() public {
         AdditionalToken token = new AdditionalToken();
         vm.startPrank(address(token));

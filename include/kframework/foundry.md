@@ -725,11 +725,12 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
             <newCaller> NCL </newCaller>
             <newOrigin> .Account </newOrigin>
             <active> true </active>
-            <depth> CD </depth>
+            <depth> PD </depth>
             ...
          </prank>
       requires NCL =/=K .Account
        andBool ACCTFROM =/=Int NCL
+       andBool CD >=Int PD
       [priority(40)]
 
     rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
@@ -739,16 +740,17 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
             <newCaller> NCL </newCaller>
             <newOrigin> NOG </newOrigin>
             <active> true </active>
-            <depth> CD </depth>
+            <depth> PD </depth>
             ...
          </prank>
       requires NCL =/=K .Account
        andBool NOG =/=K .Account
        andBool ACCTFROM =/=Int NCL
+       andBool CD >=Int PD
       [priority(40)]
 ```
 
-We define a new rule for the `#halt ~> #return _ _` production that will trigger the `#endPrank` rules if the prank was set only for a single call and if the current call depth is equal to the depth at which `prank` was invoked plus one.
+We define a new rule for the `#halt` production that will trigger the `#endPrank` rules if the prank was set only for a single call and if the current call depth is equal to the depth at which `prank` was invoked plus one.
 
 
 ```{.k .bytes}
@@ -1145,20 +1147,19 @@ If the production is matched when no prank is active, it will be ignored.
 ```k
     syntax KItem ::= "#endPrank" [klabel(foundry_endPrank)]
  // -------------------------------------------------------
-    rule <k> #endPrank => . ... </k>
-        <prank>
-          <prevCaller> .Account </prevCaller>
-          <prevOrigin> .Account </prevOrigin>
-          <active> false </active>
-          ...
-        </prank>
-
     rule <k> #endPrank => #clearPrank ... </k>
         <caller> _ => CL </caller>
         <origin> _ => OG </origin>
         <prank>
           <prevCaller> CL </prevCaller>
           <prevOrigin> OG </prevOrigin>
+          <active> true </active>
+          ...
+        </prank>
+
+    rule <k> #endPrank => . ... </k>
+        <prank>
+          <active> false </active>
           ...
         </prank>
 ```

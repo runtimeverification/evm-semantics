@@ -2647,7 +2647,11 @@ module PLAINPRANKTEST-BIN-RUNTIME
     
     syntax PlainPrankTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_PlainPrankTest_failed)]
     
+    syntax PlainPrankTestMethod ::= "internalCounter" "(" ")" [symbol(), klabel(method_PlainPrankTest_internalCounter)]
+    
     syntax PlainPrankTestMethod ::= "testFail_startPrank_existingAlready" "(" ")" [symbol(), klabel(method_PlainPrankTest_testFail_startPrank_existingAlready)]
+    
+    syntax PlainPrankTestMethod ::= "testFail_startPrank_internalCall" "(" ")" [symbol(), klabel(method_PlainPrankTest_testFail_startPrank_internalCall)]
     
     syntax PlainPrankTestMethod ::= "test_prank_zeroAddress_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_prank_zeroAddress_true)]
     
@@ -2670,7 +2674,13 @@ module PLAINPRANKTEST-BIN-RUNTIME
     rule  ( PlainPrankTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
+    rule  ( PlainPrankTest . internalCounter ( ) => #abiCallData ( "internalCounter" , .TypedArgs ) )
+      
+    
     rule  ( PlainPrankTest . testFail_startPrank_existingAlready ( ) => #abiCallData ( "testFail_startPrank_existingAlready" , .TypedArgs ) )
+      
+    
+    rule  ( PlainPrankTest . testFail_startPrank_internalCall ( ) => #abiCallData ( "testFail_startPrank_internalCall" , .TypedArgs ) )
       
     
     rule  ( PlainPrankTest . test_prank_zeroAddress_true ( ) => #abiCallData ( "test_prank_zeroAddress_true" , .TypedArgs ) )
@@ -2700,7 +2710,13 @@ module PLAINPRANKTEST-BIN-RUNTIME
     rule  ( selector ( "failed" ) => 3124842406 )
       
     
+    rule  ( selector ( "internalCounter" ) => 2687914858 )
+      
+    
     rule  ( selector ( "testFail_startPrank_existingAlready" ) => 2262269573 )
+      
+    
+    rule  ( selector ( "testFail_startPrank_internalCall" ) => 3075676477 )
       
     
     rule  ( selector ( "test_prank_zeroAddress_true" ) => 3793950116 )
