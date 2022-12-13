@@ -161,6 +161,7 @@ class KEVM(KProve, KRun):
             'EVM-TYPES.bytesRange',
             'EVM-TYPES.mapWriteBytes.recursive',
             'EVM-TYPES.#padRightToWidth',
+            'EVM-TYPES.padRightToWidthNonEmpty',
             'EVM-TYPES.#padToWidth',
             'EVM-TYPES.padToWidthNonEmpty',
             'EVM-TYPES.powmod.nonzero',

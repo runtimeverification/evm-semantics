@@ -484,3 +484,36 @@ contract UintTypeTest {
     }
 
 }
+
+contract BytesTypeTest {
+    function setUp() public {}
+
+    /* Tests for bytes32 */
+    function test_bytes32(bytes32 x) public pure {
+        assert(x == x);
+        assert(type(uint256).max >= uint256(x));
+    }
+
+    function test_bytes32_fail(bytes32 x) public pure {
+        assert(type(uint256).max > uint256(x));
+    }
+
+    function testFail_bytes32(bytes32 x) public pure {
+        assert(type(uint256).max > uint256(x));
+    }
+
+
+    /* Tests for bytes4 */
+    function test_bytes4(bytes4 x) public pure {
+        assert(x == x);
+        assert(type(uint32).max >= uint32(x));
+    }
+
+    function test_bytes4_fail(bytes4 x) public pure {
+        assert(type(uint32).max > uint32(x));
+    }
+
+    function testFail_bytes4(bytes4 x) public pure {
+        assert(type(uint32).max > uint32(x));
+    }
+}
