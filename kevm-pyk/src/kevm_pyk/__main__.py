@@ -497,7 +497,7 @@ def exec_run(
     sys.exit(krun_result.returncode)
 
 
-def exec_view_kcfg(foundry_out: Path, kcfg_file: Path, profile: bool, **kwargs: Any) -> None:
+def exec_foundry_view_kcfg(foundry_out: Path, kcfg_file: Path, profile: bool, **kwargs: Any) -> None:
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
@@ -783,13 +783,13 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_list_args.add_argument('--no-details', dest='details', action='store_false', help='Just list the KCFGs.')
 
-    view_kcfg_args = command_parser.add_parser(
-        'view-kcfg',
+    foundry_view_kcfg_args = command_parser.add_parser(
+        'foundry-view-kcfg',
         help='Display tree view of KCFG',
         parents=[shared_args],
     )
-    view_kcfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
-    view_kcfg_args.add_argument('kcfg_file', type=file_path, help='Path to KCFG JSON file')
+    foundry_view_kcfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_view_kcfg_args.add_argument('kcfg_file', type=file_path, help='Path to KCFG JSON file')
 
     return parser
 
