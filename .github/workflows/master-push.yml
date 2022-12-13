@@ -1,0 +1,71 @@
+name: "Master Push"
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  nix-flake-release:
+    name: 'Nix flake release'
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-20.04
+            os: ubuntu-20.04
+          - runner: macos-12
+            os: macos-12
+          - runner: MacM1
+            os: self-macos-12
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+
+      - name: 'Upgrade bash'
+        if: ${{ contains(matrix.os, 'macos') }}
+        run: brew install bash
+
+      - name: 'Install Nix'
+        if: ${{ !startsWith(matrix.os, 'self') }}
+        uses: cachix/install-nix-action@v15
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            substituters = http://cache.nixos.org https://cache.iog.io
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+
+      - name: 'Install Cachix'
+        if: ${{ !startsWith(matrix.os, 'self') }}
+        uses: cachix/cachix-action@v10
+        with:
+          name: k-framework
+          authToken: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
+          skipPush: true
+
+      - name: 'Build and cache K Framework'
+        uses: workflow/nix-shell-action@v3
+        env:
+          GC_DONT_GC: 1
+          CACHIX_AUTH_TOKEN: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
+        with:
+          packages: jq
+          script: |
+            k=$(nix build .#k --json | jq -r '.[].outputs | to_entries[].value')
+            drv=$(nix-store --query --deriver ${k})
+            nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework
+
+  update-dependents:
+    name: 'Publish Release'
+    runs-on: ubuntu-20.04
+    environment: production
+    steps:
+      - name: Update dependents
+        env:
+          JENKINS_DEVOPS_TOKEN: ${{ secrets.JENKINS_DEVOPS_TOKEN }}
+        run: |
+          curl --fail 'https://ci.runtimeverification.com/jenkins/buildByToken/buildWithParameters' \
+              --data job=Devops/master                                                              \
+              --data token=$JENKINS_DEVOPS_TOKEN                                                    \
+              --data UPDATE_DEPS=true                                                               \
+              --data UPDATE_DEPS_REPO=runtimeverification/haskell-backend                           \
+              --data UPDATE_DEPS_VERSION=${GITHUB_SHA}
