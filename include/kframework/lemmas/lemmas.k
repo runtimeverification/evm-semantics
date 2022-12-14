@@ -27,6 +27,8 @@ module LEMMAS [symbolic]
     rule maxUInt48  &Int X <Int pow48  => true requires 0 <=Int X [simplification, smt-lemma]
     rule maxUInt160 &Int X <Int pow160 => true requires 0 <=Int X [simplification, smt-lemma]
 
+    rule (X /Int 64) +Int #allBut64th(X) => X [simplification]
+
   // ########################
   // Set Reasoning
   // ########################

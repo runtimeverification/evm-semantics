@@ -427,7 +427,7 @@ def exec_foundry_show(
     kcfg_file = kcfgs_dir / f'{test}.json'
     with open(kcfg_file, 'r') as kf:
         kcfg = KCFG.from_dict(json.loads(kf.read()))
-        list(map(print, kcfg.pretty(foundry)))
+        list(map(print, kcfg.pretty(foundry, omit_large_subst=minimize)))
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
         if minimize:
@@ -776,11 +776,11 @@ def _create_argument_parser() -> ArgumentParser:
 
 
 def _loglevel(args: Namespace) -> int:
-    if args.verbose or args.profile:
-        return logging.INFO
-
     if args.debug:
         return logging.DEBUG
+
+    if args.verbose or args.profile:
+        return logging.INFO
 
     return logging.WARNING
 

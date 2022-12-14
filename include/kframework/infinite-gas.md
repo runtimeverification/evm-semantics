@@ -74,11 +74,13 @@ module INFINITE-GAS-COMMON
 
     syntax Int ::= #gas ( Int ) [function, total, no-evaluators, klabel(infGas), symbol, smtlib(infGas)]
  // ----------------------------------------------------------------------------------------------------
-    rule #gas(G) +Int G' => #gas(G +Int G') requires 0 <=Int G' orBool 0 -Int G' <Int #gas(G)  [simplification]
-    rule G +Int #gas(G') => #gas(G +Int G') requires 0 <=Int G  orBool 0 -Int G  <Int #gas(G') [simplification]
-
-    rule #gas(G) -Int G'       => #gas(G -Int G') requires 0 <=Int G' andBool G' <Int #gas(G) [simplification]
-    rule #gas(G) -Int #gas(G') => #gas(G -Int G')                                             [simplification]
+    // N.B.: These lemmas amount to defining \inf - \inf as \inf.
+    // In most mathematics, it's undefined it seems, so we get the choice!
+    // We make them lower priority than other rules.
+    rule #gas(G) +Int G'       => #gas(G +Int G') [simplification(60)]
+    rule G +Int #gas(G')       => #gas(G +Int G') [simplification(60)]
+    rule #gas(G) -Int G'       => #gas(G -Int G') [simplification(60)]
+    rule #gas(G) -Int #gas(G') => #gas(G -Int G') [simplification(60)]
 
     rule #gas(G) *Int G' => #gas(G *Int G') requires 0 <=Int G' [simplification]
     rule G *Int #gas(G') => #gas(G *Int G') requires 0 <=Int G  [simplification]
@@ -87,13 +89,10 @@ module INFINITE-GAS-COMMON
     rule G /Int #gas(G') => 0               requires 0 <=Int G  andBool G  <Int #gas(G') [simplification]
 
     rule #gas(#gas(G)) => #gas(G) [simplification]
+    rule #gas(#gas(G) +Int G') => #gas(G +Int G') [simplification]
 
     rule minInt(#gas(G), #gas(G'))              => #gas(minInt(G, G'))              [simplification]
     rule #if B #then #gas(G) #else #gas(G') #fi => #gas(#if B #then G #else G' #fi) [simplification]
-
-    rule #allBut64th(#gas(G)) => #gas(#allBut64th(G)) [simplification]
-
-    rule Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) requires #rangeUInt(256, GEXTRA) [simplification]
 
     rule _ <=Int #gas(_)        => true  [simplification]
     rule         #gas(_) <Int _ => false [simplification]
@@ -124,11 +123,6 @@ module INFINITE-GAS-COMMON
     rule #gas(_)  <Int Csload(_, _) => false [simplification]
     rule #gas(_) >=Int Csload(_, _) => true  [simplification]
 
-    rule 0 <=Int Cmem(_, _)       => true  [simplification]
-    rule Cmem(_, _) <Int #gas(_)  => true  [simplification]
-    rule #gas(_) <Int Cmem(_, _)  => false [simplification]
-    rule Cmem(_, _) <=Int #gas(_) => true  [simplification]
-
     rule 0 <=Int Caddraccess(_, _)       => true  [simplification]
     rule Caddraccess(_, _) <Int #gas(_)  => true  [simplification]
     rule #gas(_) <Int Caddraccess(_, _)  => false [simplification]
@@ -140,15 +134,26 @@ module INFINITE-GAS-COMMON
     rule 0 <=Int Cmem(_, N)              => true requires 0 <=Int N       [simplification]
     rule         Cmem(_, N) <Int #gas(G) => true requires N  <Int #gas(G) [simplification]
 
-    rule 0 <=Int Cgascap(_, _, _, _)                           => true                                                                                    [simplification]
-    rule         Cgascap(_, GCAP, GAVAIL, GEXTRA) <Int #gas(G) => true requires GCAP <Int #gas(G) andBool GAVAIL <Int #gas(G) andBool GEXTRA <Int #gas(G) [simplification]
+    rule Cgascap(SCHED, GAVAIL, GAVAIL, GEXTRA) => #allBut64th(GAVAIL -Int GEXTRA)
+      requires 0 <=Int GEXTRA andBool GEXTRA <=Int GAVAIL
+       andBool notBool Gstaticcalldepth << SCHED >>
+      [simplification]
+
+    rule 0 <=Int Cgascap(_, _, _, _)                     => true                                            [simplification]
+    rule G <=Int Cgascap(_, GCAP, #gas(_), _)            => true  requires 0 <=Int G andBool G <=Int GCAP   [simplification]
+    rule         Cgascap(_, GCAP, #gas(_), _)     <Int G => false requires 0 <=Int G andBool G <=Int GCAP   [simplification]
+    rule         Cgascap(_, GCAP, _, _)           <Int G => true  requires 0 <=Int GCAP andBool GCAP <Int G [simplification]
+    rule         Cgascap(_, #gas(_), #gas(_), _)  <Int _ => false                                           [simplification]
 
     rule 0 <=Int Cextra(_, _, _, _)              => true [simplification]
     rule         Cextra(_, _, _, _) <Int #gas(_) => true [simplification]
     rule         Cextra(_, _, _, _) <Int pow256  => true [simplification]
 
-    rule 0 <=Int #allBut64th(_)                => true                          [simplification]
-    rule         #allBut64th(G)  <Int #gas(G') => true requires G <Int #gas(G') [simplification]
+    rule #allBut64th(#gas(G))            => #gas(#allBut64th(G))         [simplification]
+    rule (G /Int 64) +Int #allBut64th(G) => G                            [simplification]
+
+    rule 0 <=Int #allBut64th(G)         => true requires 0 <=Int G  [simplification]
+    rule         #allBut64th(G) <Int G' => true requires G  <Int G' [simplification]
 
     rule 0 <=Int _:ScheduleConst < _:Schedule >               => true [simplification]
     rule         _:ScheduleConst < _:Schedule >  <Int #gas(_) => true [simplification]

@@ -1,4 +1,4 @@
-EVM.allBut64th.pos
+EVM.allBut64th
 EVM.Caddraccess
 EVM.Cbalance.new
 EVM.Cbalance.old

@@ -2336,8 +2336,7 @@ There are several helpers for calculating gas (most of them also specified in th
 
     syntax Int ::= #allBut64th ( Int ) [function, total, smtlib(gas_allBut64th)]
  // ----------------------------------------------------------------------------
-    rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
-    rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
+    rule [allBut64th]: #allBut64th(N) => N -Int (N /Int 64)
 ```
 
 ```{.k .nobytes}
