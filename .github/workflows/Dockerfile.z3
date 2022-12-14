@@ -1,6 +1,4 @@
-ARG BASE_DISTRO
-ARG BASE_OS
-FROM ${BASE_OS}:${BASE_DISTRO}
+FROM ubuntu:jammy
 
 ENV TZ=America/Chicago
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone

@@ -4,10 +4,6 @@ inputs:
   tag:
     description: 'Docker image tag to use'
     required: true
-  dockerfile:
-    description: 'Hardcode the path of the dockerfile to use.'
-    required: false
-    default: .github/workflows/Dockerfile
 runs:
   using: 'composite'
   steps:
@@ -15,43 +11,29 @@ runs:
     shell: bash {0}
     env:
       TAG_NAME: ${{ inputs.tag }}
-      DOCKERFILE: ${{ inputs.dockerfile }}
     run: |
       set -euxo pipefail
 
       Z3_VERSION=4.8.15
-      K_VERSION="$(cat deps/k_release | cut --characters=2-)"
-      USER=$(id -un)
-      USER_ID=$(id -u)
-      GROUP=$(id -gn)
-      GROUP_ID=$(id -g)
-      BASE_OS=ubuntu
-      BASE_DISTRO=jammy
+      K_COMMIT="$(cat deps/k_release | cut --characters=2-)"
 
-      docker build .                                                  \
-          --build-arg USER=${USER} --build-arg USER_ID=${USER_ID}     \
-          --build-arg GROUP=${GROUP} --build-arg GROUP_ID=${GROUP_ID} \
-          --build-arg BASE_OS=${BASE_OS}                              \
-          --build-arg BASE_DISTRO=${BASE_DISTRO}                      \
-          --tag z3:${BASE_DISTRO}-${Z3_VERSION}                       \
-          --file ${SUBDIR}${DOCKERFILE}.z3
+      docker build . --file .github/workflows/Dockerfile.z3 \
+        --tag z3:${Z3_VERSION}
 
-      docker build . --file ${SUBDIR}${DOCKERFILE}                    \
-          --tag runtimeverification/${TAG_NAME}                       \
-          --build-arg BASE_OS=${BASE_OS}                              \
-          --build-arg BASE_DISTRO=${BASE_DISTRO}                      \
-          --build-arg Z3_VERSION=${Z3_VERSION}                        \
-          --build-arg K_VERSION=${K_VERSION}                          \
-          --build-arg USER=${USER} --build-arg USER_ID=${USER_ID}     \
-          --build-arg GROUP=${GROUP} --build-arg GROUP_ID=${GROUP_ID}
+      docker build . --file .github/workflows/Dockerfile           \
+        --tag runtimeverification/${TAG_NAME}                      \
+        --build-arg K_COMMIT=${K_COMMIT}                           \
+        --build-arg Z3_VERSION=${Z3_VERSION}                       \
+        --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
 
-      docker run                             \
-          --name ${TAG_NAME}                 \
-          --rm -it                           \
-          --detach                           \
-          --workdir /opt/workspace/${SUBDIR} \
-          --user ${USER}:${GROUP}            \
-          -v "$(pwd):/opt/workspace"         \
-          -v "/etc/passwd:/etc/passwd:ro"    \
-          -v "/etc/group:/etc/group:ro"      \
-          runtimeverification/${TAG_NAME}
+      docker run                        \
+        --name ${TAG_NAME}              \
+        --rm -it                        \
+        --detach                        \
+        --workdir /opt/workspace        \
+        --user $(id -u):$(id -g)        \
+        -v ${HOME}:${HOME}              \
+        -v "$(pwd):/opt/workspace"      \
+        -v "/etc/passwd:/etc/passwd:ro" \
+        -v "/etc/group:/etc/group:ro"   \
+        runtimeverification/${TAG_NAME}
