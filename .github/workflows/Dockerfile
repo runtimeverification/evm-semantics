@@ -4,7 +4,7 @@ FROM ghcr.io/foundry-rs/foundry:nightly-56dc7463ce2806c7b410bc605ff7f2916cdbe32a
 
 ARG K_COMMIT
 ARG Z3_VERSION
-FROM z3:${Z3_VERSION} as Z3
+FROM ghcr.io/runtimeverification/z3:${Z3_VERSION} as Z3
 
 ARG K_COMMIT
 FROM runtimeverificationinc/kframework-k:ubuntu-jammy-${K_COMMIT}
