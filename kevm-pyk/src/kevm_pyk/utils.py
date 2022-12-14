@@ -2,7 +2,7 @@ from logging import Logger
 from typing import Collection, Iterable, List, Optional, Tuple
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KVariable, Subst
+from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
     bool_to_ml_pred,
@@ -21,6 +21,27 @@ from pyk.kcfg import KCFG
 from pyk.ktool import KPrint, KProve
 from pyk.prelude.kbool import FALSE
 from pyk.prelude.ml import mlAnd
+
+
+def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # noqa: N802
+    def _expand_macros(_term: KInner) -> KInner:
+        if type(_term) is KApply:
+            prod = defn.production_for_klabel(_term.label)
+            if 'macro' in prod.att or 'alias' in prod.att or 'macro-rec' in prod.att or 'alias-rec' in prod.att:
+                for r in defn.macro_rules:
+                    assert type(r.body) is KRewrite
+                    _new_term = r.body.apply_top(_term)
+                    if _new_term != _term:
+                        _term = _new_term
+                        break
+        return _term
+
+    old_term = None
+    while term != old_term:
+        old_term = term
+        term = bottom_up(_expand_macros, term)
+
+    return term
 
 
 def KCFG__replace_node(cfg: KCFG, node_id: str, new_cterm: CTerm) -> KCFG:  # noqa: N802
