@@ -37,3 +37,4 @@ runs:
 
       docker cp . ${TAG_NAME}:/home/user
       docker exec ${TAG_NAME} chown -R user:user /home/user
+      docker exec -u user ${TAG_NAME} cat /home/user/deps/plugin/deps/libff/build/CMakeCache.txt
