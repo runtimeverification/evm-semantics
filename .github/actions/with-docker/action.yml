@@ -17,8 +17,8 @@ runs:
       Z3_VERSION=4.8.15
       K_COMMIT="$(cat deps/k_release | cut --characters=2-)"
 
-      # docker build . --file .github/workflows/Dockerfile.z3 \
-      #   --tag z3:${Z3_VERSION}
+      docker build . --file .github/workflows/Dockerfile.z3 \
+        --tag z3:${Z3_VERSION}
 
       docker build . --file .github/workflows/Dockerfile           \
         --tag runtimeverification/${TAG_NAME}                      \
