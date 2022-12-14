@@ -161,6 +161,7 @@ class KEVM(KProve, KRun):
             'EVM-TYPES.bytesRange',
             'EVM-TYPES.mapWriteBytes.recursive',
             'EVM-TYPES.#padRightToWidth',
+            'EVM-TYPES.padRightToWidthNonEmpty',
             'EVM-TYPES.#padToWidth',
             'EVM-TYPES.padToWidthNonEmpty',
             'EVM-TYPES.powmod.nonzero',
@@ -191,7 +192,7 @@ class KEVM(KProve, KRun):
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ID_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'CALLER_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ORIGIN_CELL'))))
-        constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytearray(get_cell(config, 'CALLDATA_CELL')), KEVM.pow256())))
+        constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytearray(get_cell(config, 'CALLDATA_CELL')), KEVM.pow128())))
 
         return CTerm(mlAnd([config] + list(unique(constraints))))
 
@@ -218,6 +219,10 @@ class KEVM(KProve, KRun):
     @staticmethod
     def jump_applied(pc: KInner) -> KApply:
         return KApply('___EVM_InternalOp_UnStackOp_Int', [KEVM.jump(), pc])
+
+    @staticmethod
+    def pow128() -> KApply:
+        return KApply('pow128_WORD_Int', [])
 
     @staticmethod
     def pow256() -> KApply:

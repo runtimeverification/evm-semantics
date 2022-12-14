@@ -136,10 +136,11 @@ module LEMMAS [symbolic]
 
     // sizeByteArray
 
-    rule #sizeByteArray(BUF1 ++ BUF2)            => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)      [simplification]
-    rule #sizeByteArray(#buf(SIZE, _))           => SIZE                                                [simplification]
-    rule #sizeByteArray(_MEM [ START .. WIDTH ]) => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
-    rule #sizeByteArray(#range(_, START, WIDTH)) => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+    rule #sizeByteArray(BUF1 ++ BUF2)                 => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)      [simplification]
+    rule #sizeByteArray(#buf(SIZE, _))                => SIZE                                                [simplification]
+    rule #sizeByteArray(_MEM [ START .. WIDTH ])      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+    rule #sizeByteArray(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+    rule #sizeByteArray(#padRightToWidth(WIDTH, BUF)) => WIDTH  requires #sizeByteArray(BUF) <=Int WIDTH     [simplification]
 
     // TODO: custom ==K unification doesn't work in Haskell yet
     // ++ unification
@@ -148,6 +149,12 @@ module LEMMAS [symbolic]
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
 
     rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeByteArray(WS) -Int (M /Int 8) ])  requires 0 <=Int M andBool M modInt 8 ==Int 0 [simplification]
+
+    rule #asWord(#padRightToWidth(32, BUF)) &Int notMaxUInt224 =>
+         #asWord(#padRightToWidth(32, BUF))
+      requires #sizeByteArray(BUF) <=Int 4 [simplification]
+
+    rule #padRightToWidth(_, BUF)[ 0 .. WIDTH ] => BUF requires #sizeByteArray(BUF) ==Int WIDTH [simplification]
 
 endmodule
 
