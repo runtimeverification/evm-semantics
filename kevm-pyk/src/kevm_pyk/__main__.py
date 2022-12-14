@@ -14,17 +14,30 @@ from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG
 from pyk.ktool.kit import KIT
 from pyk.ktool.krun import KRunOutput, _krun
+from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.ml import is_top, mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KCFG__replace_node, KPrint_make_unparsing, KProve_prove_claim, add_include_arg, sanitize_config
+from .utils import (
+    KCFG__replace_node,
+    KDefinition__expand_macros,
+    KPrint_make_unparsing,
+    KProve_prove_claim,
+    add_include_arg,
+    sanitize_config,
+)
 
 T = TypeVar('T')
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
+
+
+def write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
+    _cfgpath.write_text(_cfg.to_json())
+    _LOGGER.info(f'Updated CFG file: {_cfgpath}')
 
 
 def _ignore_arg(args: Dict[str, Any], arg: str, cli_option: str) -> None:
@@ -336,25 +349,21 @@ def exec_foundry_prove(
             contract_name, method_name = test.split('.')
             contract = [c for c in contracts if c.name == contract_name][0]
             method = [m for m in contract.methods if m.name == method_name][0]
-            empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
+            empty_config = foundry.definition.empty_config(GENERATED_TOP_CELL)
             cfg = method_to_cfg(empty_config, contract, method)
+            init_term = cfg.get_unique_init().cterm.kast
+            target_term = cfg.get_unique_target().cterm.kast
+            _LOGGER.info(f'Expanding macros in initial state for test: {test}')
+            init_term = KDefinition__expand_macros(foundry.definition, init_term)
+            _LOGGER.info(f'Expanding macros in target state for test: {test}')
+            target_term = KDefinition__expand_macros(foundry.definition, target_term)
             if simplify_init:
                 _LOGGER.info(f'Simplifying initial state for test: {test}')
-                edge = KCFG.Edge(cfg.get_unique_init(), cfg.get_unique_target(), mlTop(), -1)
-                claim = edge.to_claim()
-                init_simplified = foundry.prove_claim(
-                    claim, f'simplify-init-{cfg.get_unique_init().id}', args=['--depth', '0']
-                )
-                init_simplified = sanitize_config(foundry.definition, init_simplified)
-                cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_simplified))
+                init_term = foundry.simplify(CTerm(init_term))
                 _LOGGER.info(f'Simplifying target state for test: {test}')
-                edge = KCFG.Edge(cfg.get_unique_target(), cfg.get_unique_init(), mlTop(), -1)
-                claim = edge.to_claim()
-                target_simplified = foundry.prove_claim(
-                    claim, f'simplify-target-{cfg.get_unique_target().id}', args=['--depth', '0']
-                )
-                target_simplified = sanitize_config(foundry.definition, target_simplified)
-                cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_simplified))
+                target_term = foundry.simplify(CTerm(target_term))
+            cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_term))
+            cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_term))
             kcfgs[test] = (cfg, kcfg_file)
             with open(kcfg_file, 'w') as kf:
                 kf.write(json.dumps(cfg.to_dict()))
@@ -365,11 +374,6 @@ def exec_foundry_prove(
                 kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
 
     lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
-
-    def _write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
-        with open(_cfgpath, 'w') as cfgfile:
-            cfgfile.write(json.dumps(_cfg.to_dict()))
-            _LOGGER.info(f'Updated CFG file: {_cfgpath}')
 
     def prove_it(_id_and_cfg: Tuple[str, Tuple[KCFG, Path]]) -> bool:
         _cfg_id, (_cfg, _cfg_path) = _id_and_cfg
@@ -396,11 +400,12 @@ def exec_foundry_prove(
                 if minimize:
                     result_state = minimize_term(result_state)
                 _LOGGER.error(f'Proof failed: {_cfg_id}\n{foundry.pretty_print(result_state)}')
-        _write_cfg(_cfg, _cfg_path)
+        write_cfg(_cfg, _cfg_path)
         failure_nodes = _cfg.frontier + _cfg.stuck
         return len(failure_nodes) == 0
 
     with ProcessPool(ncpus=workers) as process_pool:
+        foundry.close_kore_rpc()
         results = process_pool.map(prove_it, kcfgs.items())
         process_pool.close()
 

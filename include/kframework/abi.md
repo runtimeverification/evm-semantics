@@ -325,7 +325,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc( #int256( DATA )) => #bufStrict(32, #getValue( #int256( DATA )))
     rule #enc( #int128( DATA )) => #bufStrict(32, #getValue( #int128( DATA )))
 
-    rule #enc( #bytes4( DATA )) => #bufStrict(32, #getValue( #bytes4( DATA )))
+    rule #enc( #bytes4( DATA )) => #padRightToWidth(32, #bufStrict(4, #getValue(#bytes4( DATA ))))
     rule #enc(#bytes32( DATA )) => #bufStrict(32, #getValue(#bytes32( DATA )))
 
     rule #enc(   #bool( DATA )) => #bufStrict(32, #getValue(   #bool( DATA )))
