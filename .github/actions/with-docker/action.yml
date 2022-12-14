@@ -4,10 +4,6 @@ inputs:
   tag:
     description: 'Docker image tag to use'
     required: true
-  subdir:
-    description: 'Subdirectory where code is cloned.'
-    required: false
-    default: ""
   dockerfile:
     description: 'Hardcode the path of the dockerfile to use.'
     required: false
@@ -19,7 +15,6 @@ runs:
     shell: bash {0}
     env:
       TAG_NAME: ${{ inputs.tag }}
-      SUBDIR: ${{ inputs.subdir }}
       DOCKERFILE: ${{ inputs.dockerfile }}
     run: |
       set -euxo pipefail
