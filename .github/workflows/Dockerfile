@@ -39,7 +39,7 @@ RUN    apt-get update         \
             solc
 
 RUN pip3 install virtualenv
-RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - && poetry --version
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - --version 1.2.2
 
 # The image is built specifically for an environment with this user/group
 ARG USER=github-user
