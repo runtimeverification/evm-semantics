@@ -3,9 +3,7 @@
 pragma solidity >=0.6.0 <0.9.0;
 pragma experimental ABIEncoderV2;
 
-import {Vm} from "forge-std/Vm.sol";
-
-interface Vm2 is Vm {
+interface Vm2 {
     // Expects a call using the CALL opcode to an address with the specified calldata.
     function expectRegularCall(address,bytes calldata) external;
     // Expects a call using the CALL opcode to an address with the specified msg.value and calldata.
