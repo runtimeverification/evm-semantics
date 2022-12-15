@@ -7,9 +7,9 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.cterm import CTerm
+from pyk.cterm import CTerm, build_rule
 from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
-from pyk.kast.manip import flatten_label, minimize_term, push_down_rewrites
+from pyk.kast.manip import flatten_label, get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG
 from pyk.ktool.kit import KIT
@@ -146,14 +146,23 @@ def exec_foundry_kompile(
     foundry_definition_dir = foundry_out / 'kompiled'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
+    srcmap_dir = foundry_out / 'srcmaps'
     requires = ['foundry.md'] + list(requires)
     imports = ['FOUNDRY'] + list(imports)
 
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
+    if not srcmap_dir.exists():
+        srcmap_dir.mkdir()
 
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
+
+    for c in contracts:
+        srcmap_file = srcmap_dir / f'{c.name}.json'
+        with open(srcmap_file, 'w') as smf:
+            smf.write(json.dumps(c.srcmap))
+            _LOGGER.info(f'Wrote source map: {srcmap_file}')
 
     foundry = Foundry(definition_dir, profile=profile)
     empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
@@ -416,6 +425,7 @@ def exec_foundry_show(
     test: str,
     nodes: Iterable[str] = (),
     node_deltas: Iterable[Tuple[str, str]] = (),
+    to_module: bool = False,
     minimize: bool = True,
     **kwargs: Any,
 ) -> None:
@@ -423,11 +433,37 @@ def exec_foundry_show(
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
+    srcmap_dir = foundry_out / 'srcmaps'
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
     kcfg_file = kcfgs_dir / f'{test}.json'
+    contract = test.split('.')[0]
+    srcmap_file = srcmap_dir / f'{contract}.json'
+    srcmap: Optional[Dict[int, str]] = None
+    if srcmap_file.exists():
+        with open(srcmap_file, 'r') as sm:
+            srcmap = {int(k): v for k, v in json.loads(sm.read()).items()}
+
+    def _node_pretty(_ct: CTerm) -> List[str]:
+        k_cell = foundry.pretty_print(get_cell(_ct.config, 'K_CELL')).replace('\n', ' ')
+        if len(k_cell) > 80:
+            k_cell = k_cell[0:80] + ' ...'
+        k_str = f'k: {k_cell}'
+        calldepth_str = f'callDepth: {foundry.pretty_print(get_cell(_ct.config, "CALLDEPTH_CELL"))}'
+        statuscode_str = f'statusCode: {foundry.pretty_print(get_cell(_ct.config, "STATUSCODE_CELL"))}'
+        _pc = get_cell(_ct.config, 'PC_CELL')
+        pc_str = f'pc: {foundry.pretty_print(_pc)}'
+        ret_strs = [k_str, calldepth_str, statuscode_str, pc_str]
+        if type(_pc) is KToken and srcmap is not None:
+            pc = int(_pc.token)
+            if pc in srcmap:
+                ret_strs.append(f'srcmap: {srcmap[pc]}')
+            else:
+                _LOGGER.warning(f'pc not found in srcmap: {pc}')
+        return ret_strs
+
     with open(kcfg_file, 'r') as kf:
         kcfg = KCFG.from_dict(json.loads(kf.read()))
-        list(map(print, kcfg.pretty(foundry)))
+        list(map(print, kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)))
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
         if minimize:
@@ -440,6 +476,31 @@ def exec_foundry_show(
         if minimize:
             config_delta = minimize_term(config_delta)
         print(f'\n\nState Delta {node_id_1} => {node_id_2}:\n\n{foundry.pretty_print(config_delta)}\n')
+
+    if to_module:
+
+        def to_rule(edge: KCFG.Edge) -> KRule:
+            sentence_id = f'BASIC-BLOCK-{edge.source.id}-TO-{edge.target.id}'
+            init_cterm = CTerm(edge.source.cterm.config)
+            for c in edge.source.cterm.constraints:
+                assert type(c) is KApply
+                if c.label.name == '#Ceil':
+                    _LOGGER.warning(f'Ignoring Ceil condition: {c}')
+                else:
+                    init_cterm.add_constraint(c)
+            target_cterm = CTerm(edge.target.cterm.config)
+            for c in edge.source.cterm.constraints:
+                assert type(c) is KApply
+                if c.label.name == '#Ceil':
+                    _LOGGER.warning(f'Ignoring Ceil condition: {c}')
+                else:
+                    target_cterm.add_constraint(c)
+            rule, _ = build_rule(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm, priority=35)
+            return rule
+
+        rules = [to_rule(e) for e in kcfg.edges() if e.depth > 0]
+        new_module = KFlatModule('SUMMARY', rules)
+        print(foundry.pretty_print(new_module) + '\n')
 
 
 def exec_foundry_list(
@@ -759,6 +820,9 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_show_args.add_argument(
         '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
+    )
+    foundry_show_args.add_argument(
+        '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
     )
 
     foundry_list_args = command_parser.add_parser(
