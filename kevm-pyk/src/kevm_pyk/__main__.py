@@ -12,7 +12,7 @@ from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
 from pyk.kast.manip import flatten_label, get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG
-from pyk.kcfg_viewer.app import KcfgViewer
+from pyk.kcfg_viewer.app import KCFGViewer
 from pyk.ktool.kit import KIT
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -565,8 +565,7 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs
     kcfg_file = kcfgs_dir / f'{test}.json'
     use_directory.mkdir(parents=True, exist_ok=True)
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
-    printer = lambda _, node: foundry.pretty_print(node.cterm.kast)
-    viewer = KcfgViewer(kcfg_file, printer=printer)
+    viewer = KCFGViewer(kcfg_file, foundry)
     viewer.run()
 
 
