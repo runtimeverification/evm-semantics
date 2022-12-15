@@ -400,8 +400,6 @@ def _init_term(
                 [
                     Foundry.address_TEST_CONTRACT(),
                     Foundry.address_CHEATCODE(),
-                    Foundry.address_CALLER(),
-                    Foundry.address_HARDHAT_CONSOLE(),
                 ],
             ),
         ),
