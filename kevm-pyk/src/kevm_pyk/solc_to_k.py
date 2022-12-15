@@ -109,6 +109,7 @@ class Contract:
     methods: Tuple[Method, ...]
     test_methods: Tuple[Method, ...]
     fields: FrozenDict
+    srcmap: Optional[Dict[int, str]]
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
         def _get_method_abi(_mname: str) -> Dict:
@@ -122,7 +123,7 @@ class Contract:
             contract_json['evm']['deployedBytecode']['object']
             if not foundry
             else contract_json['deployedBytecode']['object']
-        )
+        ).replace('0x', '')
         _methods = []
         if not foundry and 'evm' in contract_json and 'methodIdentifiers' in contract_json['evm']:
             _method_identifiers = contract_json['evm']['methodIdentifiers']
@@ -149,6 +150,29 @@ class Contract:
                     continue
                 _fields[_l] = _s
             self.fields = FrozenDict(_fields)
+
+        self.srcmap = None
+        if len(self.bytecode) > 0:
+            instr_to_pc = {}
+            pc = 0
+            instr = 0
+            bs = [int(self.bytecode[i : i + 2], 16) for i in range(0, len(self.bytecode), 2)]
+            while pc < len(bs):
+                b = bs[pc]
+                instr_to_pc[instr] = pc
+                if 0x60 <= b and b < 0x7F:
+                    push_width = b - 0x5F
+                    pc = pc + push_width
+                pc += 1
+                instr += 1
+
+            instr_srcmap = (
+                contract_json['evm']['deployedBytecode']['sourceMap']
+                if not foundry
+                else contract_json['deployedBytecode']['sourceMap']
+            ).split(';')
+
+            self.srcmap = {instr_to_pc[instr]: src for instr, src in enumerate(instr_srcmap)}
 
     @staticmethod
     def contract_to_module_name(c: str, spec: bool = True) -> str:
@@ -208,7 +232,9 @@ class Contract:
 
     @property
     def macro_bin_runtime(self) -> KRule:
-        return KRule(KRewrite(KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken(self.bytecode))))
+        return KRule(
+            KRewrite(KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken('0x' + self.bytecode)))
+        )
 
     @property
     def method_sentences(self) -> List[KSentence]:
@@ -275,6 +301,7 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
                         'storageLayout',
                         'evm.methodIdentifiers',
                         'evm.deployedBytecode.object',
+                        'evm.deployedBytecode.sourceMap',
                     ],
                 },
             },
