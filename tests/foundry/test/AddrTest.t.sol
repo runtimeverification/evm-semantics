@@ -31,11 +31,11 @@ contract AddrTest is Test, KEVMCheats {
         assert(true);
     }
 
-    function test_notBuiltinAddrress_concrete() public {
+    function test_notBuiltinAddress_concrete() public {
        assertTrue(notBuiltinAddress(address(110)));
     }
 
-    function test_notBuiltinAddrress_symbolic(address addr) public {
+    function test_notBuiltinAddress_symbolic(address addr) public {
        vm.assume(addr != address(1032069922050249630382865877677304880282300743300));
        vm.assume(addr != address(645326474426547203313410069153905908525362434349));
         assertTrue(notBuiltinAddress(addr));
