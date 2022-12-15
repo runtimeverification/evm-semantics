@@ -53,8 +53,8 @@ Address/Hash Helpers
     rule #sender("")  => .Account
     rule #sender(STR) => #addr(#parseHexWord(Keccak256(STR))) requires STR =/=String ""
 
-    syntax Int ::= #addrFromPrivateKey ( String ) [function]
- // --------------------------------------------------------
+    syntax Int ::= #addrFromPrivateKey ( String ) [function, concrete]
+ // ------------------------------------------------------------------
     rule #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256 ( Hex2Raw( ECDSAPubKey( Hex2Raw( KEY ) ) ) ) ) )
 ```
 
