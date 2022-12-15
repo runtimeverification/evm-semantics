@@ -14,6 +14,10 @@ AssumeTest.test_assume_false
 AssumeTest.testFail_assume_false
 AssumeTest.testFail_assume_true
 BroadcastTest.testDeploy
+BytesTypeTest.test_bytes32_fail
+BytesTypeTest.test_bytes4_fail
+BytesTypeTest.testFail_bytes32
+BytesTypeTest.testFail_bytes4
 ContractBTest.testCannotSubtract43
 ContractBTest.testFailSubtract43
 ContractBTest.testNumberIs42

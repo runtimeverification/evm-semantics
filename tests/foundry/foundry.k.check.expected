@@ -83,6 +83,7 @@ module ACCOUNTPARAMSTEST-BIN-RUNTIME
       
     
     rule  ( AccountParamsTest . testEtchSymbolic ( V0_code ) => #abiCallData ( "testEtchSymbolic" , #bytes ( V0_code ) , .TypedArgs ) )
+       ensures #rangeUInt ( 128 , #sizeByteArray ( V0_code ) )
       
     
     rule  ( AccountParamsTest . testFail_GetNonce_false ( ) => #abiCallData ( "testFail_GetNonce_false" , .TypedArgs ) )
@@ -787,6 +788,84 @@ module CONTRACTBTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "testNumberIs42" ) => 795542700 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
+module DYNAMICTYPES-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= DynamicTypesContract
+    
+    syntax DynamicTypesContract ::= "DynamicTypes" [symbol(), klabel(contract_DynamicTypes)]
+    
+      
+    
+    syntax Field ::= DynamicTypesField
+    
+    syntax DynamicTypesField ::= "IS_TEST" [symbol(), klabel(field_DynamicTypes_IS_TEST)]
+    
+    syntax DynamicTypesField ::= "_failed" [symbol(), klabel(field_DynamicTypes__failed)]
+    
+    syntax DynamicTypesField ::= "IS_SCRIPT" [symbol(), klabel(field_DynamicTypes_IS_SCRIPT)]
+    
+    syntax DynamicTypesField ::= "stdstore" [symbol(), klabel(field_DynamicTypes_stdstore)]
+    
+    rule  ( #loc ( DynamicTypes . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( DynamicTypes . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( DynamicTypes . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( DynamicTypes . stdstore ) => 1 )
+      
+    
+    syntax ByteArray ::= DynamicTypesContract "." DynamicTypesMethod [function(), symbol(), klabel(method_DynamicTypes)]
+    
+    syntax DynamicTypesMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_DynamicTypes_IS_SCRIPT)]
+    
+    syntax DynamicTypesMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_DynamicTypes_IS_TEST)]
+    
+    syntax DynamicTypesMethod ::= "failed" "(" ")" [symbol(), klabel(method_DynamicTypes_failed)]
+    
+    syntax DynamicTypesMethod ::= "test_dynamic_byte_read" "(" ByteArray "," Int ")" [symbol(), klabel(method_DynamicTypes_test_dynamic_byte_read)]
+    
+    syntax DynamicTypesMethod ::= "vm" "(" ")" [symbol(), klabel(method_DynamicTypes_vm)]
+    
+    rule  ( DynamicTypes . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( DynamicTypes . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( DynamicTypes . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( DynamicTypes . test_dynamic_byte_read ( V0_data , V1_offset ) => #abiCallData ( "test_dynamic_byte_read" , #bytes ( V0_data ) , #uint256 ( V1_offset ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 128 , #sizeByteArray ( V0_data ) )
+       andBool ( #rangeUInt ( 256 , V1_offset )
+               ))
+      
+    
+    rule  ( DynamicTypes . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "test_dynamic_byte_read" ) => 4003228173 )
       
     
     rule  ( selector ( "vm" ) => 980845667 )
@@ -3931,7 +4010,9 @@ module STDSTORAGE-BIN-RUNTIME
     syntax StdStorageMethod ::= "bytesToBytes32" "(" ByteArray "," Int ")" [symbol(), klabel(method_stdStorage_bytesToBytes32)]
     
     rule  ( stdStorage . bytesToBytes32 ( V0_b , V1_offset ) => #abiCallData ( "bytesToBytes32" , #bytes ( V0_b ) , #uint256 ( V1_offset ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V1_offset )
+       ensures ( #rangeUInt ( 128 , #sizeByteArray ( V0_b ) )
+       andBool ( #rangeUInt ( 256 , V1_offset )
+               ))
       
     
     rule  ( selector ( "bytesToBytes32" ) => 1398294841 )
@@ -4179,6 +4260,81 @@ module TOKEN-BIN-RUNTIME
       
     
     rule  ( selector ( "transfer" ) => 2835717307 )
+      
+
+endmodule
+
+module BYTESTYPETEST-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= BytesTypeTestContract
+    
+    syntax BytesTypeTestContract ::= "BytesTypeTest" [symbol(), klabel(contract_BytesTypeTest)]
+    
+      
+    
+    syntax ByteArray ::= BytesTypeTestContract "." BytesTypeTestMethod [function(), symbol(), klabel(method_BytesTypeTest)]
+    
+    syntax BytesTypeTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_BytesTypeTest_setUp)]
+    
+    syntax BytesTypeTestMethod ::= "testFail_bytes32" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_testFail_bytes32)]
+    
+    syntax BytesTypeTestMethod ::= "testFail_bytes4" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_testFail_bytes4)]
+    
+    syntax BytesTypeTestMethod ::= "test_bytes32" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes32)]
+    
+    syntax BytesTypeTestMethod ::= "test_bytes32_fail" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes32_fail)]
+    
+    syntax BytesTypeTestMethod ::= "test_bytes4" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes4)]
+    
+    syntax BytesTypeTestMethod ::= "test_bytes4_fail" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes4_fail)]
+    
+    rule  ( BytesTypeTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
+      
+    
+    rule  ( BytesTypeTest . testFail_bytes32 ( V0_x ) => #abiCallData ( "testFail_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_x )
+      
+    
+    rule  ( BytesTypeTest . testFail_bytes4 ( V0_x ) => #abiCallData ( "testFail_bytes4" , #bytes4 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeBytes ( 4 , V0_x )
+      
+    
+    rule  ( BytesTypeTest . test_bytes32 ( V0_x ) => #abiCallData ( "test_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_x )
+      
+    
+    rule  ( BytesTypeTest . test_bytes32_fail ( V0_x ) => #abiCallData ( "test_bytes32_fail" , #bytes32 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_x )
+      
+    
+    rule  ( BytesTypeTest . test_bytes4 ( V0_x ) => #abiCallData ( "test_bytes4" , #bytes4 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeBytes ( 4 , V0_x )
+      
+    
+    rule  ( BytesTypeTest . test_bytes4_fail ( V0_x ) => #abiCallData ( "test_bytes4_fail" , #bytes4 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeBytes ( 4 , V0_x )
+      
+    
+    rule  ( selector ( "setUp" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testFail_bytes32" ) => 4289330289 )
+      
+    
+    rule  ( selector ( "testFail_bytes4" ) => 3602852570 )
+      
+    
+    rule  ( selector ( "test_bytes32" ) => 3436986189 )
+      
+    
+    rule  ( selector ( "test_bytes32_fail" ) => 392713219 )
+      
+    
+    rule  ( selector ( "test_bytes4" ) => 2814412853 )
+      
+    
+    rule  ( selector ( "test_bytes4_fail" ) => 2510894010 )
       
 
 endmodule
@@ -5349,15 +5505,21 @@ module VM-BIN-RUNTIME
       
     
     rule  ( Vm . etch ( V0_ , V1_ ) => #abiCallData ( "etch" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V1_ ) )
+               ))
       
     
     rule  ( Vm . expectCall ( V0_ , V1_ ) => #abiCallData ( "expectCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V1_ ) )
+               ))
       
     
     rule  ( Vm . expectCall ( V0_ , V1_ ) => #abiCallData ( "expectCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V1_ ) )
+               ))
       
     
     rule  ( Vm . expectEmit ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "expectEmit" , #bool ( V0_ ) , #bool ( V1_ ) , #bool ( V2_ ) , #bool ( V3_ ) , .TypedArgs ) )
@@ -5415,13 +5577,17 @@ module VM-BIN-RUNTIME
     rule  ( Vm . mockCall ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , #bytes ( V3_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
        andBool ( #rangeUInt ( 256 , V1_ )
-               ))
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V2_ ) )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V3_ ) )
+               ))))
       
     
     rule  ( Vm . mockCall ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , #bytes ( V3_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
        andBool ( #rangeUInt ( 256 , V1_ )
-               ))
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V2_ ) )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V3_ ) )
+               ))))
       
     
     rule  ( Vm . prank ( V0_ , V1_ ) => #abiCallData ( "prank" , #address ( V0_ ) , #address ( V1_ ) , .TypedArgs ) )
@@ -6105,31 +6271,41 @@ module VM2-BIN-RUNTIME
       
     
     rule  ( Vm2 . etch ( V0_ , V1_ ) => #abiCallData ( "etch" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V1_ ) )
+               ))
       
     
     rule  ( Vm2 . expectCall ( V0_ , V1_ ) => #abiCallData ( "expectCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V1_ ) )
+               ))
       
     
     rule  ( Vm2 . expectCall ( V0_ , V1_ ) => #abiCallData ( "expectCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V1_ ) )
+               ))
       
     
     rule  ( Vm2 . expectCreate ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectCreate" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
        andBool ( #rangeUInt ( 256 , V1_ )
-               ))
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V2_ ) )
+               )))
       
     
     rule  ( Vm2 . expectCreate2 ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectCreate2" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
        andBool ( #rangeUInt ( 256 , V1_ )
-               ))
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V2_ ) )
+               )))
       
     
     rule  ( Vm2 . expectDelegateCall ( V0_ , V1_ ) => #abiCallData ( "expectDelegateCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V1_ ) )
+               ))
       
     
     rule  ( Vm2 . expectEmit ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "expectEmit" , #bool ( V0_ ) , #bool ( V1_ ) , #bool ( V2_ ) , #bool ( V3_ ) , .TypedArgs ) )
@@ -6154,13 +6330,15 @@ module VM2-BIN-RUNTIME
     rule  ( Vm2 . expectRegularCall ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectRegularCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
        andBool ( #rangeUInt ( 256 , V1_ )
-               ))
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V2_ ) )
+               )))
       
     
     rule  ( Vm2 . expectRegularCall ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectRegularCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
        andBool ( #rangeUInt ( 256 , V1_ )
-               ))
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V2_ ) )
+               )))
       
     
     rule  ( Vm2 . expectRevert ( V0_ ) => #abiCallData ( "expectRevert" , #bytes4 ( V0_ ) , .TypedArgs ) )
@@ -6176,7 +6354,9 @@ module VM2-BIN-RUNTIME
       
     
     rule  ( Vm2 . expectStaticCall ( V0_ , V1_ ) => #abiCallData ( "expectStaticCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V1_ ) )
+               ))
       
     
     rule  ( Vm2 . fee ( V0_ ) => #abiCallData ( "fee" , #uint256 ( V0_ ) , .TypedArgs ) )
@@ -6206,13 +6386,17 @@ module VM2-BIN-RUNTIME
     rule  ( Vm2 . mockCall ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , #bytes ( V3_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
        andBool ( #rangeUInt ( 256 , V1_ )
-               ))
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V2_ ) )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V3_ ) )
+               ))))
       
     
     rule  ( Vm2 . mockCall ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , #bytes ( V3_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
        andBool ( #rangeUInt ( 256 , V1_ )
-               ))
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V2_ ) )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V3_ ) )
+               ))))
       
     
     rule  ( Vm2 . prank ( V0_ , V1_ ) => #abiCallData ( "prank" , #address ( V0_ ) , #address ( V1_ ) , .TypedArgs ) )
@@ -6699,6 +6883,7 @@ module FOUNDRY-MAIN
     imports public CONTRACT-BIN-RUNTIME
     imports public CONTRACTTEST-BIN-RUNTIME
     imports public CONTRACTBTEST-BIN-RUNTIME
+    imports public DYNAMICTYPES-BIN-RUNTIME
     imports public EXPECTEMIT-BIN-RUNTIME
     imports public EMITCONTRACTTEST-BIN-RUNTIME
     imports public ENVTEST-BIN-RUNTIME
@@ -6741,6 +6926,7 @@ module FOUNDRY-MAIN
     imports public TESTNUMBER-BIN-RUNTIME
     imports public TOSTRINGTEST-BIN-RUNTIME
     imports public TOKEN-BIN-RUNTIME
+    imports public BYTESTYPETEST-BIN-RUNTIME
     imports public UINTTYPETEST-BIN-RUNTIME
     imports public VM-BIN-RUNTIME
     imports public VM2-BIN-RUNTIME
