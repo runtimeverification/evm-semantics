@@ -301,6 +301,7 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
                         'storageLayout',
                         'evm.methodIdentifiers',
                         'evm.deployedBytecode.object',
+                        'evm.deployedBytecode.sourceMap',
                     ],
                 },
             },
