@@ -171,6 +171,7 @@ class KEVM(KProve, KRun):
             'EVM-TYPES.signextend.negative',
             'EVM-TYPES.signextend.positive',
             'EVM-TYPES.upDivInt',
+            'SERIALIZATION.addrFromPrivateKey',
             'SERIALIZATION.keccak',
             'SERIALIZATION.#newAddr',
             'SERIALIZATION.#newAddrCreate2',
