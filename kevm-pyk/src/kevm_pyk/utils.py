@@ -1,4 +1,3 @@
-import json
 import logging
 from pathlib import Path
 from typing import Callable, Collection, Final, Iterable, List, Optional, Tuple
@@ -16,9 +15,8 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 def write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
-    with open(_cfgpath, 'w') as cfgfile:
-        cfgfile.write(json.dumps(_cfg.to_dict()))
-        _LOGGER.info(f'Updated CFG file: {_cfgpath}')
+    _cfgpath.write_text(_cfg.to_json())
+    _LOGGER.info(f'Updated CFG file: {_cfgpath}')
 
 
 def rpc_prove(
