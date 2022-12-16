@@ -400,8 +400,6 @@ def _init_term(
                 [
                     Foundry.address_TEST_CONTRACT(),
                     Foundry.address_CHEATCODE(),
-                    Foundry.address_CALLER(),
-                    Foundry.address_HARDHAT_CONSOLE(),
                 ],
             ),
         ),
@@ -420,9 +418,7 @@ def _init_term(
         'ACCOUNTS_CELL': KEVM.accounts(
             [
                 account_cell,  # test contract address
-                Foundry.account_CALLER(),
                 Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE')),
-                Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
                 KVariable('ACCOUNTS_INIT'),
             ]
         ),
@@ -483,9 +479,7 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
         'ACCOUNTS_CELL': KEVM.accounts(
             [
                 post_account_cell,  # test contract address
-                Foundry.account_CALLER(),
                 Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE_FINAL')),
-                Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
                 KVariable('ACCOUNTS_FINAL'),
             ]
         ),
