@@ -293,6 +293,7 @@ def exec_foundry_prove(
     auto_abstract: bool = False,
     break_every_step: bool = False,
     implication_every_block: bool = False,
+    rpc_base_port: int = 3010,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -392,7 +393,9 @@ def exec_foundry_prove(
 
     with ProcessPool(ncpus=workers) as process_pool:
         foundry.close_kore_rpc()
-        proof_problems = [(cfgid, cfg, cfgpath, 3010 + i) for i, (cfgid, (cfg, cfgpath)) in enumerate(kcfgs.items())]
+        proof_problems = [
+            (cfgid, cfg, cfgpath, rpc_base_port + i) for i, (cfgid, (cfg, cfgpath)) in enumerate(kcfgs.items())
+        ]
         results = process_pool.map(_call_rpc, proof_problems)
 
     failed = 0
@@ -826,6 +829,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Check subsumption into target state every basic block, not just at terminal nodes.',
+    )
+    foundry_prove_args.add_argument(
+        '--rpc-base-port',
+        dest='rpc_base_port',
+        default=3010,
+        type=int,
+        help='Base port to use for RPC server invocations.',
     )
 
     foundry_show_args = command_parser.add_parser(
