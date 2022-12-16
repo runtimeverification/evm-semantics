@@ -55,7 +55,7 @@ Address/Hash Helpers
 
     syntax Int ::= #addrFromPrivateKey ( String ) [function, klabel(addrFromPrivateKey)]
  // ------------------------------------------------------------------------------------
-    rule #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256 ( Hex2Raw( ECDSAPubKey( Hex2Raw( KEY ) ) ) ) ) )
+    rule [addrFromPrivateKey]: #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256 ( Hex2Raw( ECDSAPubKey( Hex2Raw( KEY ) ) ) ) ) )
 ```
 
 -   `#blockHeaderHash` computes the hash of a block header given all the block data.
