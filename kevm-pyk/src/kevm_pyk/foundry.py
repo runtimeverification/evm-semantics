@@ -6,8 +6,8 @@ from typing import Dict, Final, Iterable, List, Optional, Tuple
 
 from pyk.cli_utils import BugReport
 from pyk.cterm import CTerm, build_claim, build_rule
-from pyk.kast.inner import KApply, KInner, KRewrite, KToken
-from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
+from pyk.kast.inner import KApply, KInner, KRewrite
+from pyk.kast.manip import minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRuleLike
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.ktool.kompile import KompileBackend
@@ -226,28 +226,11 @@ def foundry_show(
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
-    contract = test.split('.')[0]
     srcmap_dir = foundry_out / 'srcmaps'
-    srcmap_file = srcmap_dir / f'{contract}.json'
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, srcmap_file=srcmap_file)
-
-    def _node_pretty(_ct: CTerm) -> List[str]:
-        k_cell = foundry.pretty_print(get_cell(_ct.config, 'K_CELL')).replace('\n', ' ')
-        if len(k_cell) > 80:
-            k_cell = k_cell[0:80] + ' ...'
-        k_str = f'k: {k_cell}'
-        calldepth_str = f'callDepth: {foundry.pretty_print(get_cell(_ct.config, "CALLDEPTH_CELL"))}'
-        statuscode_str = f'statusCode: {foundry.pretty_print(get_cell(_ct.config, "STATUSCODE_CELL"))}'
-        _pc = get_cell(_ct.config, 'PC_CELL')
-        pc_str = f'pc: {foundry.pretty_print(_pc)}'
-        ret_strs = [k_str, calldepth_str, statuscode_str, pc_str]
-        if type(_pc) is KToken and foundry.srcmap is not None:
-            pc = int(_pc.token)
-            if pc in foundry.srcmap:
-                ret_strs.append(f'srcmap: {foundry.srcmap[pc]}')
-            else:
-                _LOGGER.warning(f'pc not found in srcmap: {pc}')
-        return ret_strs
+    contract_name = test.split('.')[0]
+    foundry = Foundry(
+        definition_dir, profile=profile, use_directory=use_directory, srcmap_dir=srcmap_dir, contract_name=contract_name
+    )
 
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:

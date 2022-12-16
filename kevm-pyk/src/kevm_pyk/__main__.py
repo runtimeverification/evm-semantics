@@ -377,8 +377,12 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
+    srcmap_dir = foundry_out / 'srcmaps'
     use_directory.mkdir(parents=True, exist_ok=True)
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
+    contract_name = test.split('.')[0]
+    foundry = Foundry(
+        definition_dir, profile=profile, use_directory=use_directory, srcmap_dir=srcmap_dir, contract_name=contract_name
+    )
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
