@@ -8,8 +8,8 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm, build_rule
-from pyk.kast.inner import KApply, KInner, KRewrite, KToken
-from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
+from pyk.kast.inner import KApply, KInner, KRewrite
+from pyk.kast.manip import minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG
 from pyk.kcfg_viewer.app import KCFGViewer
@@ -428,27 +428,9 @@ def exec_foundry_show(
     srcmap_file = srcmap_dir / f'{contract}.json'
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, srcmap_file=srcmap_file)
 
-    def _node_pretty(_ct: CTerm) -> List[str]:
-        k_cell = foundry.pretty_print(get_cell(_ct.config, 'K_CELL')).replace('\n', ' ')
-        if len(k_cell) > 80:
-            k_cell = k_cell[0:80] + ' ...'
-        k_str = f'k: {k_cell}'
-        calldepth_str = f'callDepth: {foundry.pretty_print(get_cell(_ct.config, "CALLDEPTH_CELL"))}'
-        statuscode_str = f'statusCode: {foundry.pretty_print(get_cell(_ct.config, "STATUSCODE_CELL"))}'
-        _pc = get_cell(_ct.config, 'PC_CELL')
-        pc_str = f'pc: {foundry.pretty_print(_pc)}'
-        ret_strs = [k_str, calldepth_str, statuscode_str, pc_str]
-        if type(_pc) is KToken and srcmap is not None:
-            pc = int(_pc.token)
-            if pc in srcmap:
-                ret_strs.append(f'srcmap: {srcmap[pc]}')
-            else:
-                _LOGGER.warning(f'pc not found in srcmap: {pc}')
-        return ret_strs
-
     with open(kcfg_file, 'r') as kf:
         kcfg = KCFG.from_dict(json.loads(kf.read()))
-        list(map(print, kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)))
+        list(map(print, kcfg.pretty(foundry, minimize=minimize, node_printer=foundry.short_info)))
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
         if minimize:
@@ -549,7 +531,7 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs
     kcfg_file = kcfgs_dir / f'{test}.json'
     use_directory.mkdir(parents=True, exist_ok=True)
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
-    viewer = KCFGViewer(kcfg_file, foundry)
+    viewer = KCFGViewer(kcfg_file, foundry, node_printer=foundry.short_info)
     viewer.run()
 
 
