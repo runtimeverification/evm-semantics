@@ -53,11 +53,15 @@ def foundry_kompile(
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
 
+    contract_id_map: Dict[int, str] = {}
     for c in contracts:
         srcmap_file = srcmap_dir / f'{c.name}.json'
-        with open(srcmap_file, 'w') as smf:
-            smf.write(json.dumps(c.srcmap))
-            _LOGGER.info(f'Wrote source map: {srcmap_file}')
+        srcmap_file.write_text(json.dumps(c.srcmap))
+        _LOGGER.info(f'Wrote source map: {srcmap_file}')
+        contract_id_map[c.contract_id] = str(c.contract_path)
+    contract_id_map_path = srcmap_dir / 'contract_id_map.json'
+    contract_id_map_path.write_text(json.dumps(contract_id_map))
+    _LOGGER.info(f'Wrote contract id map: {contract_id_map_path}')
 
     foundry = Foundry(definition_dir, profile=profile)
     empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
