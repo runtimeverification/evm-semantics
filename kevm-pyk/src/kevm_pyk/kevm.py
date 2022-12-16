@@ -3,7 +3,7 @@ import logging
 import sys
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, Iterable, List, Optional
+from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm, remove_useless_constraints
@@ -17,7 +17,7 @@ from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlAnd, mlEqualsTrue
 from pyk.prelude.string import stringToken
 
-from .utils import add_include_arg
+from .utils import add_include_arg, byte_offset_to_lines
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -27,7 +27,11 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 class KEVM(KProve, KRun):
 
-    srcmap: Optional[Dict[int, str]]
+    _srcmap_dir: Optional[Path]
+    _contract_name: Optional[str]
+    _contract_ids: Dict[int, str]
+    _srcmaps: Dict[str, Dict[int, Tuple[int, int, int, str, int]]]
+    _contract_srcs: Dict[str, List[str]]
 
     def __init__(
         self,
@@ -37,7 +41,8 @@ class KEVM(KProve, KRun):
         profile: bool = False,
         kprove_command: str = 'kprove',
         krun_command: str = 'krun',
-        srcmap_file: Optional[Path] = None,
+        srcmap_dir: Optional[Path] = None,
+        contract_name: Optional[str] = None,
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -52,10 +57,15 @@ class KEVM(KProve, KRun):
         )
         KRun.__init__(self, definition_dir, use_directory=use_directory, profile=profile, command=krun_command)
         KEVM._patch_symbol_table(self.symbol_table)
-        self.srcmap = None
-        if srcmap_file is not None and srcmap_file.exists():
-            with open(srcmap_file, 'r') as sm:
-                self.srcmap = {int(k): v for k, v in json.loads(sm.read()).items()}
+        self._srcmap_dir = srcmap_dir
+        self._contract_name = contract_name
+        self._contract_ids = {}
+        self._srcmaps = {}
+        self._contract_srcs = {}
+        if self._srcmap_dir is not None:
+            self._contract_ids = {
+                int(k): v for k, v in json.loads((self._srcmap_dir / 'contract_id_map.json').read_text()).items()
+            }
 
     @staticmethod
     def kompile(
@@ -196,12 +206,34 @@ class KEVM(KProve, KRun):
         _pc = get_cell(cterm.config, 'PC_CELL')
         pc_str = f'pc: {self.pretty_print(_pc)}'
         ret_strs = [k_str, calldepth_str, statuscode_str, pc_str]
-        if type(_pc) is KToken and self.srcmap is not None:
-            pc = int(_pc.token)
-            if pc in self.srcmap:
-                ret_strs.append(f'srcmap: {self.srcmap[pc]}')
-            else:
-                _LOGGER.warning(f'pc not found in srcmap: {pc}')
+        if self._srcmap_dir is not None and self._contract_name is not None and self._contract_ids is not None:
+            if self._contract_name not in self._srcmaps:
+                _srcmap_pre = json.loads((self._srcmap_dir / f'{self._contract_name}.json').read_text())
+                _srcmap: Dict[int, Tuple[int, int, int, str, int]] = {}
+                for k, v in _srcmap_pre.items():
+                    s, l, f, j, m = v
+                    assert type(s) is int
+                    assert type(l) is int
+                    assert type(f) is int
+                    assert type(j) is str
+                    assert type(m) is int
+                    _srcmap[int(k)] = (s, l, f, j, m)
+                self._srcmaps[self._contract_name] = _srcmap
+            _srcmap = self._srcmaps[self._contract_name]
+            if type(_pc) is KToken:
+                pc = int(_pc.token)
+                if pc in _srcmap:
+                    s, l, f, j, m = _srcmap[pc]
+                    if f in self._contract_ids:
+                        contract_file = self._contract_ids[f]
+                        if contract_file not in self._contract_srcs:
+                            self._contract_srcs[contract_file] = (
+                                (self._srcmap_dir.parent.parent / contract_file).read_text().split('\n')
+                            )
+                        _, start, end = byte_offset_to_lines(self._contract_srcs[contract_file], s, l)
+                        ret_strs.append(f'src: {self._contract_ids[f]}:{start}:{end}')
+                else:
+                    _LOGGER.warning(f'pc not found in srcmap: {pc}')
         return ret_strs
 
     @staticmethod
@@ -467,7 +499,8 @@ class Foundry(KEVM):
         main_file: Optional[Path] = None,
         use_directory: Optional[Path] = None,
         profile: bool = False,
-        srcmap_file: Optional[Path] = None,
+        srcmap_dir: Optional[Path] = None,
+        contract_name: Optional[str] = None,
     ) -> None:
         # copied from KEVM class and adapted to inherit KPrint instead
         KEVM.__init__(
@@ -476,7 +509,8 @@ class Foundry(KEVM):
             main_file=main_file,
             use_directory=use_directory,
             profile=profile,
-            srcmap_file=srcmap_file,
+            srcmap_dir=srcmap_dir,
+            contract_name=contract_name,
         )
         Foundry._patch_symbol_table(self.symbol_table)
 

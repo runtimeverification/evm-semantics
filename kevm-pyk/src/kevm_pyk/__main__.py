@@ -428,9 +428,10 @@ def exec_foundry_show(
     kcfgs_dir = foundry_out / 'kcfgs'
     srcmap_dir = foundry_out / 'srcmaps'
     kcfg_file = kcfgs_dir / f'{test}.json'
-    contract = test.split('.')[0]
-    srcmap_file = srcmap_dir / f'{contract}.json'
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, srcmap_file=srcmap_file)
+    contract_name = test.split('.')[0]
+    foundry = Foundry(
+        definition_dir, profile=profile, use_directory=use_directory, srcmap_dir=srcmap_dir, contract_name=contract_name
+    )
 
     with open(kcfg_file, 'r') as kf:
         kcfg = KCFG.from_dict(json.loads(kf.read()))
@@ -533,8 +534,12 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
     kcfg_file = kcfgs_dir / f'{test}.json'
+    srcmap_dir = foundry_out / 'srcmaps'
     use_directory.mkdir(parents=True, exist_ok=True)
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
+    contract_name = test.split('.')[0]
+    foundry = Foundry(
+        definition_dir, profile=profile, use_directory=use_directory, srcmap_dir=srcmap_dir, contract_name=contract_name
+    )
     viewer = KCFGViewer(kcfg_file, foundry, node_printer=foundry.short_info)
     viewer.run()
 
