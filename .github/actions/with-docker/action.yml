@@ -24,16 +24,16 @@ runs:
         --tag runtimeverification/${TAG_NAME}                      \
         --build-arg K_COMMIT=${K_COMMIT}                           \
         --build-arg Z3_VERSION=${Z3_VERSION}                       \
-        --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
 
       docker run                        \
         --name ${TAG_NAME}              \
-        --rm -it                        \
+        --rm                            \
+        --interactive                   \
+        --tty                           \
         --detach                        \
-        --workdir /opt/workspace        \
-        --user $(id -u):$(id -g)        \
-        -v ${HOME}:${HOME}              \
-        -v "$(pwd):/opt/workspace"      \
-        -v "/etc/passwd:/etc/passwd:ro" \
-        -v "/etc/group:/etc/group:ro"   \
+        --user root                     \
+        --workdir /home/user            \
         runtimeverification/${TAG_NAME}
+
+      docker cp . ${TAG_NAME}:/home/user
+      docker exec ${TAG_NAME} chown -R user:user /home/user
