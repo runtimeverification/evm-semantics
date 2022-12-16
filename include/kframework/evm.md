@@ -1469,7 +1469,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```k
     syntax CallOp ::= "CALL"
  // ------------------------
-    rule <k> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule [call]:
+         <k> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -1480,7 +1481,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
-    rule <k> CALLCODE _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule [callcode]:
+         <k> CALLCODE _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTFROM ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -1491,7 +1493,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
-    rule <k> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule [delegatecall]:
+         <k> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
           ~> #call ACCTAPPFROM ACCTFROM ACCTTO 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -1504,7 +1507,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     syntax CallSixOp ::= "STATICCALL"
  // ---------------------------------
-    rule <k> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule [staticcall]:
+         <k> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
           ~> #call ACCTFROM ACCTTO ACCTTO 0 0 #range(LM, ARGSTART, ARGWIDTH) true
           ~> #return RETSTART RETWIDTH
@@ -1623,7 +1627,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```k
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
-    rule <k> CREATE VALUE MEMSTART MEMWIDTH
+    rule [create]:
+         <k> CREATE VALUE MEMSTART MEMWIDTH
           => #accessAccounts #newAddr(ACCT, NONCE)
           ~> #checkCall ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
@@ -1644,7 +1649,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```k
     syntax QuadStackOp ::= "CREATE2"
  // --------------------------------
-    rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
+    rule [create2]:
+         <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
           => #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #checkCall ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
