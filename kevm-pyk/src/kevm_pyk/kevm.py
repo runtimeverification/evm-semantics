@@ -171,6 +171,7 @@ class KEVM(KProve, KRun):
             'EVM-TYPES.signextend.negative',
             'EVM-TYPES.signextend.positive',
             'EVM-TYPES.upDivInt',
+            'SERIALIZATION.addrFromPrivateKey',
             'SERIALIZATION.keccak',
             'SERIALIZATION.#newAddr',
             'SERIALIZATION.#newAddrCreate2',
@@ -411,16 +412,6 @@ class Foundry(KEVM):
         )
 
     @staticmethod
-    def address_CALLER() -> KToken:  # noqa: N802
-        return intToken(0x1804C8AB1F12E6BBF3894D4083F33E07309D1F38)
-
-    @staticmethod
-    def account_CALLER() -> KApply:  # noqa: N802
-        return KEVM.account_cell(
-            Foundry.address_CALLER(), intToken(0), KEVM.bytearray_empty(), KApply('.Map'), KApply('.Map'), intToken(0)
-        )
-
-    @staticmethod
     def address_TEST_CONTRACT() -> KToken:  # noqa: N802
         return intToken(0xB4C79DAB8F259C7AEE6E5B2AA729821864227E84)
 
@@ -448,23 +439,6 @@ class Foundry(KEVM):
             intToken(0),
             KToken('b"\\x00"', 'Bytes'),
             store_var,
-            KApply('.Map'),
-            intToken(0),
-        )
-
-    @staticmethod
-    def address_HARDHAT_CONSOLE() -> KToken:  # noqa: N802
-        return intToken(0x000000000000000000636F6E736F6C652E6C6F67)
-
-    # Hardhat console address (0x000000000000000000636F6e736F6c652e6c6f67)
-    # https://github.com/nomiclabs/hardhat/blob/master/packages/hardhat-core/console.sol
-    @staticmethod
-    def account_HARDHAT_CONSOLE_ADDRESS() -> KApply:  # noqa: N802
-        return KEVM.account_cell(
-            Foundry.address_HARDHAT_CONSOLE(),
-            intToken(0),
-            KEVM.bytearray_empty(),
-            KApply('.Map'),
             KApply('.Map'),
             intToken(0),
         )
