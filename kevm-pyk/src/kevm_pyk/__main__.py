@@ -296,6 +296,7 @@ def exec_foundry_prove(
     simplify_init: bool = True,
     auto_abstract: bool = False,
     break_every_step: bool = False,
+    break_on_calls: bool = False,
     implication_every_block: bool = False,
     rpc_base_port: int = 3010,
     **kwargs: Any,
@@ -374,6 +375,21 @@ def exec_foundry_prove(
 
     def _call_rpc(packed_args: Tuple[str, KCFG, Path, int]) -> bool:
         _cfgid, _cfg, _cfgpath, _rpc_port = packed_args
+        terminal_rules = ['EVM.halt']
+        if break_every_step:
+            terminal_rules.append('EVM.step')
+        if break_on_calls:
+            terminal_rules.extend(
+                [
+                    'EVM.call',
+                    'EVM.callcode',
+                    'EVM.delegatecall',
+                    'EVM.staticcall',
+                    'EVM.create',
+                    'EVM.create2',
+                    'FOUNDRY.foundry.call',
+                ]
+            )
         try:
             return rpc_prove(
                 foundry,
@@ -386,7 +402,7 @@ def exec_foundry_prove(
                 auto_abstract=(KEVM.abstract if auto_abstract else None),
                 max_iterations=max_iterations,
                 max_depth=max_depth,
-                terminal_rules=(['EVM.halt'] if not break_every_step else ['EVM.halt', 'EVM.step']),
+                terminal_rules=terminal_rules,
                 simplify_init=simplify_init,
                 implication_every_block=implication_every_block,
             )
@@ -809,6 +825,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Store a node for every EVM opcode step (expensive).',
+    )
+    foundry_prove_args.add_argument(
+        '--break-on-calls',
+        dest='break_on_calls',
+        default=False,
+        action='store_true',
+        help='Store a node for every EVM call made.',
     )
     foundry_prove_args.add_argument(
         '--implication-every-block',
