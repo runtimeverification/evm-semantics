@@ -238,7 +238,8 @@ Finally, the rule for `#return_foundry` is used to end the execution of the `CAL
 
 ```{.k .bytes}
     rule [foundry.call]:
-         <k> ( #call _ACCTFROM CHEAT_ADDR _ACCTCODE _VALUE _APPVALUE ARGS _STATIC
+         <k> (#checkCall _ _
+          ~> #call _ CHEAT_ADDR _ _ _ ARGS _
           ~> #return RETSTART RETWIDTH )
           => #call_foundry #asWord(#range(ARGS, 0, 4)) #range(ARGS, 4, #sizeByteArray(ARGS) -Int 4)
           ~> #return_foundry RETSTART RETWIDTH
