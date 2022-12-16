@@ -4264,81 +4264,6 @@ module TOKEN-BIN-RUNTIME
 
 endmodule
 
-module BYTESTYPETEST-BIN-RUNTIME
-    imports public FOUNDRY
-    
-    syntax Contract ::= BytesTypeTestContract
-    
-    syntax BytesTypeTestContract ::= "BytesTypeTest" [symbol(), klabel(contract_BytesTypeTest)]
-    
-      
-    
-    syntax ByteArray ::= BytesTypeTestContract "." BytesTypeTestMethod [function(), symbol(), klabel(method_BytesTypeTest)]
-    
-    syntax BytesTypeTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_BytesTypeTest_setUp)]
-    
-    syntax BytesTypeTestMethod ::= "testFail_bytes32" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_testFail_bytes32)]
-    
-    syntax BytesTypeTestMethod ::= "testFail_bytes4" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_testFail_bytes4)]
-    
-    syntax BytesTypeTestMethod ::= "test_bytes32" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes32)]
-    
-    syntax BytesTypeTestMethod ::= "test_bytes32_fail" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes32_fail)]
-    
-    syntax BytesTypeTestMethod ::= "test_bytes4" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes4)]
-    
-    syntax BytesTypeTestMethod ::= "test_bytes4_fail" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes4_fail)]
-    
-    rule  ( BytesTypeTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
-      
-    
-    rule  ( BytesTypeTest . testFail_bytes32 ( V0_x ) => #abiCallData ( "testFail_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_x )
-      
-    
-    rule  ( BytesTypeTest . testFail_bytes4 ( V0_x ) => #abiCallData ( "testFail_bytes4" , #bytes4 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeBytes ( 4 , V0_x )
-      
-    
-    rule  ( BytesTypeTest . test_bytes32 ( V0_x ) => #abiCallData ( "test_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_x )
-      
-    
-    rule  ( BytesTypeTest . test_bytes32_fail ( V0_x ) => #abiCallData ( "test_bytes32_fail" , #bytes32 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_x )
-      
-    
-    rule  ( BytesTypeTest . test_bytes4 ( V0_x ) => #abiCallData ( "test_bytes4" , #bytes4 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeBytes ( 4 , V0_x )
-      
-    
-    rule  ( BytesTypeTest . test_bytes4_fail ( V0_x ) => #abiCallData ( "test_bytes4_fail" , #bytes4 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeBytes ( 4 , V0_x )
-      
-    
-    rule  ( selector ( "setUp" ) => 177362148 )
-      
-    
-    rule  ( selector ( "testFail_bytes32" ) => 4289330289 )
-      
-    
-    rule  ( selector ( "testFail_bytes4" ) => 3602852570 )
-      
-    
-    rule  ( selector ( "test_bytes32" ) => 3436986189 )
-      
-    
-    rule  ( selector ( "test_bytes32_fail" ) => 392713219 )
-      
-    
-    rule  ( selector ( "test_bytes4" ) => 2814412853 )
-      
-    
-    rule  ( selector ( "test_bytes4_fail" ) => 2510894010 )
-      
-
-endmodule
-
 module UINTTYPETEST-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -6926,7 +6851,6 @@ module FOUNDRY-MAIN
     imports public TESTNUMBER-BIN-RUNTIME
     imports public TOSTRINGTEST-BIN-RUNTIME
     imports public TOKEN-BIN-RUNTIME
-    imports public BYTESTYPETEST-BIN-RUNTIME
     imports public UINTTYPETEST-BIN-RUNTIME
     imports public VM-BIN-RUNTIME
     imports public VM2-BIN-RUNTIME
