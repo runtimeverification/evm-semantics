@@ -15,7 +15,7 @@ from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.kbool import notBool
-from pyk.prelude.kint import intToken, ltInt
+from pyk.prelude.kint import INT, intToken, ltInt
 from pyk.prelude.ml import mlAnd, mlEqualsTrue
 from pyk.prelude.string import stringToken
 
@@ -26,7 +26,6 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 class KEVM(KProve, KRun):
-
     srcmap: Optional[Dict[int, str]]
 
     def __init__(
@@ -223,6 +222,13 @@ class KEVM(KProve, KRun):
         for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
             if cell in subst:
                 ret_strs.append(f'{name}: {self.pretty_print(subst[cell])}')
+        _pc = get_cell(cterm.config, 'PC_CELL')
+        if type(_pc) is KToken and _pc.sort == INT and self.srcmap is not None:
+            pc = int(_pc.token)
+            if pc in self.srcmap:
+                ret_strs.append(f'srcmap: {self.srcmap[pc]}')
+            else:
+                _LOGGER.warning(f'pc not found in srcmap: {pc}')
         return ret_strs
 
     @staticmethod

@@ -248,7 +248,7 @@ def foundry_show(
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    list(map(print, kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)))
+    list(map(print, kcfg.pretty(foundry, minimize=minimize, node_printer=foundry.short_info)))
 
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
