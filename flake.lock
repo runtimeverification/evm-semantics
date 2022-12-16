@@ -307,11 +307,11 @@
         "z3-src": "z3-src"
       },
       "locked": {
-        "lastModified": 1670848231,
-        "narHash": "sha256-7+CfWGtNVaxffx0lmzK4wPYg1eW6mNMsJ78f0bHuiCk=",
+        "lastModified": 1671028997,
+        "narHash": "sha256-y+ldnZaFVjDav7egSPx4tJs8fEn+/bv/kTjf+gJsDmc=",
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "dc423c103ba595c4056c597ec0900fa5545745c5",
+        "rev": "5a3472be3a9e1dd4d00853fe04bf283b50698825",
         "type": "github"
       },
       "original": {
@@ -429,11 +429,11 @@
         "rv-utils": "rv-utils"
       },
       "locked": {
-        "lastModified": 1671049681,
-        "narHash": "sha256-+6kbM21xxA9ZadjzCvZMg937qugkMZ3OpvXzpDzXnMw=",
+        "lastModified": 1671122887,
+        "narHash": "sha256-bDQfyrX4Ps8Yek+MKmZYwFrrYokUI2PJpyHYJFiOXsA=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "a1a0fe05c8cfc830bda5529685964308d8452026",
+        "rev": "1524e9d19f9611c2ed89a6adf80c166fa190c816",
         "type": "github"
       },
       "original": {
@@ -716,11 +716,11 @@
     },
     "nixpkgs_4": {
       "locked": {
-        "lastModified": 1670700605,
-        "narHash": "sha256-5dlpATkcyITpdtMflhltuD+A3RNpsVI1Mb+dtKkll6Y=",
+        "lastModified": 1670980281,
+        "narHash": "sha256-g0t/SmQca/JBEd+3Ry1qFgDfDK8ME9AM6EP4YUl8/lo=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "7b9eeb856cbf976482fa8d1cb295ea03fb3e1277",
+        "rev": "5cb48ea3c19ce2e5746a44d6b91847396bd28c1f",
         "type": "github"
       },
       "original": {
@@ -811,16 +811,16 @@
         "poetry2nix": "poetry2nix"
       },
       "locked": {
-        "lastModified": 1670927304,
-        "narHash": "sha256-lDvnvSVRecv74GXQZsBKzHp+6gxOQXgva+mHl1HbMzU=",
+        "lastModified": 1671115427,
+        "narHash": "sha256-iveSiR51zOeGqprD6DiOQj50oDYybqKp00cH8xE710Q=",
         "owner": "runtimeverification",
         "repo": "pyk",
-        "rev": "7947bddeefcf53fb608481e63e9b6e2bc29b0b2f",
+        "rev": "f5e0663e050a35436c0bb5f8b5a25ad2299bd776",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.88",
+        "ref": "v0.1.89",
         "repo": "pyk",
         "type": "github"
       }
