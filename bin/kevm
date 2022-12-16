@@ -286,20 +286,13 @@ run_solc() {
     run_kevm_pyk solc-to-k "${run_file}" "${contract_name}" --definition "${backend_dir}" "$@"
 }
 
-run_foundry_kompile() {
-    run_kevm_pyk foundry-kompile --definition "${backend_dir}" "$@"
-}
-
-run_foundry_prove() {
-    run_kevm_pyk foundry-prove "$@"
-}
-
-run_foundry_show() {
-    run_kevm_pyk foundry-show "$@"
-}
-
-run_foundry_list() {
-    run_kevm_pyk foundry-list "$@"
+run_foundry() {
+    local foundry_command
+    foundry_command=("${run_command}")
+    if [[ "${run_command}" == foundry-kompile ]]; then
+        foundry_command+=(--definition "${backend_dir}")
+    fi
+    run_kevm_pyk "${foundry_command[@]}" "$@"
 }
 
 # Main
@@ -317,10 +310,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                ${KEVM} kompile      [--backend (java|llvm|haskell)]           [--profile|--debug]             <main> <K arg>*
                ${KEVM} klab-view                                              [--profile|--debug]             <spec>
                ${KEVM} solc-to-k                                              [--profile|--debug]             <sol-file> <contract-name> <solc-arg>*
-               ${KEVM} foundry-list         # see dedicated help menu
-               ${KEVM} foundry-show         # see dedicated help menu
-               ${KEVM} foundry-kompile      # see dedicated help menu
-               ${KEVM} foundry-prove        # see dedicated help menu
+               ${KEVM} foundry-[kompile|prove|show|view-kcfg]         # see dedicated help menu
 
                ${KEVM} [help|--help|version|--version]
 
@@ -332,8 +322,6 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
            ${KEVM} kompile         : Run kompile with arguments setup to include KEVM parameters as defaults
            ${KEVM} klab-view       : View the statelog associated with a given program or spec
            ${KEVM} solc-to-k       : Generate helper K modules for verifying a given contract
-           ${KEVM} foundry-kompile : See: ${KEVM} foundry-kompile --help
-           ${KEVM} foundry-prove   : See: ${KEVM} foundry-prove --help
 
            ${KEVM} help    : Display this help message.
            ${KEVM} version : Display the versions of KEVM, K, Kore, and Z3 in use.
@@ -395,13 +383,10 @@ branching_allowed=
 haskell_backend_command=(kore-exec)
 kevm_port='8545'
 kevm_host='127.0.0.1'
-[[ ! "${run_command}" == prove            ]] || backend=haskell
-[[ ! "${run_command}" == solc-to-k        ]] || backend=haskell
-[[ ! "${run_command}" == foundry-kompile  ]] || backend=foundry
-[[ ! "${run_command}" == foundry-prove    ]] || backend=foundry
-[[ ! "${run_command}" == foundry-list     ]] || backend=foundry
-[[ ! "${run_command}" == foundry-show     ]] || backend=foundry
-[[ ! "${run_command}" == interpret        ]] || unparse=false
+[[ ! "${run_command}" == prove     ]] || backend=haskell
+[[ ! "${run_command}" == solc-to-k ]] || backend=haskell
+[[ ! "${run_command}" == foundry-* ]] || backend=foundry
+[[ ! "${run_command}" == interpret ]] || unparse=false
 args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -445,7 +430,7 @@ if ${pyk}; then
 fi
 
 # get the run file
-if [[ "${run_command}" != 'foundry-kompile' ]] && [[ "${run_command}" != 'foundry-prove' ]] && [[ "${run_command}" != 'foundry-show' ]] && [[ "${run_command}" != 'foundry-list' ]]; then
+if [[ "${run_command}" != foundry-* ]]; then
     run_file="$1" ; shift
     if [[ "${run_file}" == '-' ]]; then
         tmp_input="$(mktemp)"
@@ -467,17 +452,14 @@ cCHAINID_kast="#token(\"${chainid}\",\"Int\")"
 ! ${debug} || set -x
 
 case "$run_command-$backend" in
-    kompile-@(java|llvm|haskell|node|foundry) ) run_kompile          "$@" ;;
-    run-@(java|llvm|haskell)                  ) run_krun             "$@" ;;
-    kast-@(java|llvm|haskell)                 ) run_kast             "$@" ;;
-    interpret-@(llvm|haskell)                 ) run_interpret        "$@" ;;
-    prove-@(java|haskell|foundry)             ) run_prove            "$@" ;;
-    search-@(java|haskell)                    ) run_search           "$@" ;;
-    klab-view-*                               ) view_klab            "$@" ;;
-    solc-to-k-*                               ) run_solc             "$@" ;;
-    foundry-kompile-*                         ) run_foundry_kompile  "$@" ;;
-    foundry-prove-*                           ) run_foundry_prove    "$@" ;;
-    foundry-show-*                            ) run_foundry_show     "$@" ;;
-    foundry-list-*                            ) run_foundry_list     "$@" ;;
+    kompile-@(java|llvm|haskell|node|foundry) ) run_kompile   "$@" ;;
+    run-@(java|llvm|haskell)                  ) run_krun      "$@" ;;
+    kast-@(java|llvm|haskell)                 ) run_kast      "$@" ;;
+    interpret-@(llvm|haskell)                 ) run_interpret "$@" ;;
+    prove-@(java|haskell|foundry)             ) run_prove     "$@" ;;
+    search-@(java|haskell)                    ) run_search    "$@" ;;
+    klab-view-*                               ) view_klab     "$@" ;;
+    solc-to-k-*                               ) run_solc      "$@" ;;
+    foundry-*                                 ) run_foundry   "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
