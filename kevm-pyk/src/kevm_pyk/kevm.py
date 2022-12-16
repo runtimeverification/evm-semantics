@@ -1,7 +1,8 @@
+import json
 import logging
 import sys
 from pathlib import Path
-from typing import Final, Iterable, List, Optional
+from typing import Dict, Final, Iterable, List, Optional
 
 from pyk.cli_utils import BugReport
 from pyk.cterm import CTerm
@@ -25,6 +26,9 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 class KEVM(KProve, KRun):
+
+    srcmap: Optional[Dict[int, str]]
+
     def __init__(
         self,
         definition_dir: Path,
@@ -35,6 +39,7 @@ class KEVM(KProve, KRun):
         krun_command: str = 'krun',
         extra_unparsing_modules: Iterable[KFlatModule] = (),
         bug_report: Optional[BugReport] = None,
+        srcmap_file: Optional[Path] = None,
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -58,6 +63,10 @@ class KEVM(KProve, KRun):
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
         )
+        self.srcmap = None
+        if srcmap_file is not None and srcmap_file.exists():
+            with open(srcmap_file, 'r') as sm:
+                self.srcmap = {int(k): v for k, v in json.loads(sm.read()).items()}
 
     @staticmethod
     def kompile(
@@ -449,6 +458,7 @@ class Foundry(KEVM):
         profile: bool = False,
         extra_unparsing_modules: Iterable[KFlatModule] = (),
         bug_report: Optional[BugReport] = None,
+        srcmap_file: Optional[Path] = None,
     ) -> None:
         # copied from KEVM class and adapted to inherit KPrint instead
         KEVM.__init__(
@@ -459,6 +469,7 @@ class Foundry(KEVM):
             profile=profile,
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
+            srcmap_file=srcmap_file,
         )
 
     class Sorts:

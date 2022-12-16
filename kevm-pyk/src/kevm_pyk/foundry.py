@@ -225,11 +225,7 @@ def foundry_show(
     contract = test.split('.')[0]
     srcmap_dir = foundry_out / 'srcmaps'
     srcmap_file = srcmap_dir / f'{contract}.json'
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
-    srcmap: Optional[Dict[int, str]] = None
-    if srcmap_file.exists():
-        with open(srcmap_file, 'r') as sm:
-            srcmap = {int(k): v for k, v in json.loads(sm.read()).items()}
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, srcmap_file=srcmap_file)
 
     def _node_pretty(_ct: CTerm) -> List[str]:
         k_cell = foundry.pretty_print(get_cell(_ct.config, 'K_CELL')).replace('\n', ' ')
@@ -241,10 +237,10 @@ def foundry_show(
         _pc = get_cell(_ct.config, 'PC_CELL')
         pc_str = f'pc: {foundry.pretty_print(_pc)}'
         ret_strs = [k_str, calldepth_str, statuscode_str, pc_str]
-        if type(_pc) is KToken and srcmap is not None:
+        if type(_pc) is KToken and foundry.srcmap is not None:
             pc = int(_pc.token)
-            if pc in srcmap:
-                ret_strs.append(f'srcmap: {srcmap[pc]}')
+            if pc in foundry.srcmap:
+                ret_strs.append(f'srcmap: {foundry.srcmap[pc]}')
             else:
                 _LOGGER.warning(f'pc not found in srcmap: {pc}')
         return ret_strs
