@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 from pathlib import Path
@@ -25,6 +26,9 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 class KEVM(KProve, KRun):
+
+    srcmap: Optional[Dict[int, str]]
+
     def __init__(
         self,
         definition_dir: Path,
@@ -33,6 +37,7 @@ class KEVM(KProve, KRun):
         profile: bool = False,
         kprove_command: str = 'kprove',
         krun_command: str = 'krun',
+        srcmap_file: Optional[Path] = None,
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -47,6 +52,10 @@ class KEVM(KProve, KRun):
         )
         KRun.__init__(self, definition_dir, use_directory=use_directory, profile=profile, command=krun_command)
         KEVM._patch_symbol_table(self.symbol_table)
+        self.srcmap = None
+        if srcmap_file is not None and srcmap_file.exists():
+            with open(srcmap_file, 'r') as sm:
+                self.srcmap = {int(k): v for k, v in json.loads(sm.read()).items()}
 
     @staticmethod
     def kompile(
@@ -440,9 +449,17 @@ class Foundry(KEVM):
         main_file: Optional[Path] = None,
         use_directory: Optional[Path] = None,
         profile: bool = False,
+        srcmap_file: Optional[Path] = None,
     ) -> None:
         # copied from KEVM class and adapted to inherit KPrint instead
-        KEVM.__init__(self, definition_dir, main_file=main_file, use_directory=use_directory, profile=profile)
+        KEVM.__init__(
+            self,
+            definition_dir,
+            main_file=main_file,
+            use_directory=use_directory,
+            profile=profile,
+            srcmap_file=srcmap_file,
+        )
         Foundry._patch_symbol_table(self.symbol_table)
 
     class Sorts:
