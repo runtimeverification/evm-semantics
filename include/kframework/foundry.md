@@ -717,7 +717,8 @@ This is needed in order to prevent overwriting the caller for subcalls.
 Finally, the original sender of the transaction, `ACCTFROM` is changed to the new caller, `NCL`.
 
 ```{.k .bytes}
-    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+    rule [foundry.prank.injectCaller]:
+         <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
          <callDepth> CD </callDepth>
          <prank>
             <newCaller> NCL </newCaller>
@@ -730,7 +731,8 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
        andBool ACCTFROM =/=Int NCL
       [priority(40)]
 
-    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+    rule [foundry.prank.injectCallerAndOrigin]:
+         <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
          <callDepth> CD </callDepth>
          <origin> _ => NOG </origin>
          <prank>
@@ -1143,20 +1145,19 @@ If the production is matched when no prank is active, it will be ignored.
 ```k
     syntax KItem ::= "#endPrank" [klabel(foundry_endPrank)]
  // -------------------------------------------------------
-    rule <k> #endPrank => . ... </k>
-        <prank>
-          <prevCaller> .Account </prevCaller>
-          <prevOrigin> .Account </prevOrigin>
-          <active> false </active>
-          ...
-        </prank>
-
     rule <k> #endPrank => #clearPrank ... </k>
         <caller> _ => CL </caller>
         <origin> _ => OG </origin>
         <prank>
           <prevCaller> CL </prevCaller>
           <prevOrigin> OG </prevOrigin>
+          <active> true </active>
+          ...
+        </prank>
+
+    rule <k> #endPrank => . ... </k>
+        <prank>
+          <active> false </active>
           ...
         </prank>
 ```
