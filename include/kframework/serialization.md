@@ -53,9 +53,9 @@ Address/Hash Helpers
     rule #sender("")  => .Account
     rule #sender(STR) => #addr(#parseHexWord(Keccak256(STR))) requires STR =/=String ""
 
-    syntax Int ::= #addrFromPrivateKey ( String ) [function]
- // --------------------------------------------------------
-    rule #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256 ( Hex2Raw( ECDSAPubKey( Hex2Raw( KEY ) ) ) ) ) )
+    syntax Int ::= #addrFromPrivateKey ( String ) [function, klabel(addrFromPrivateKey)]
+ // ------------------------------------------------------------------------------------
+    rule [addrFromPrivateKey]: #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256 ( Hex2Raw( ECDSAPubKey( Hex2Raw( KEY ) ) ) ) ) )
 ```
 
 -   `#blockHeaderHash` computes the hash of a block header given all the block data.
