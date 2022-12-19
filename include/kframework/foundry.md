@@ -104,11 +104,9 @@ module FOUNDRY-ACCOUNTS
     syntax Int             ::= #address ( Contract ) [macro]
     syntax Contract        ::= FoundryContract
     syntax Field           ::= FoundryField
-    syntax FoundryContract ::= "Foundry"      [klabel(contract_Foundry)]
-                             | "FoundryTest"  [klabel(contract_FoundryTest)]
+    syntax FoundryContract ::= "FoundryTest"  [klabel(contract_FoundryTest)]
                              | "FoundryCheat" [klabel(contract_FoundryCheat)]
  // -------------------------------------------------------------------------
-    rule #address(Foundry)      => 137122462167341575662000267002353578582749290296  // 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38
     rule #address(FoundryTest)  => 1032069922050249630382865877677304880282300743300 // 0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84
     rule #address(FoundryCheat) => 645326474426547203313410069153905908525362434349  // 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
 
@@ -720,7 +718,8 @@ This is needed in order to prevent overwriting the caller for subcalls.
 Finally, the original sender of the transaction, `ACCTFROM` is changed to the new caller, `NCL`.
 
 ```{.k .bytes}
-    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+    rule [foundry.prank.injectCaller]:
+         <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
          <callDepth> CD </callDepth>
          <prank>
             <newCaller> NCL </newCaller>
@@ -733,7 +732,8 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
        andBool ACCTFROM =/=Int NCL
       [priority(40)]
 
-    rule <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+    rule [foundry.prank.injectCallerAndOrigin]:
+         <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
          <callDepth> CD </callDepth>
          <origin> _ => NOG </origin>
          <prank>
@@ -1146,20 +1146,19 @@ If the production is matched when no prank is active, it will be ignored.
 ```k
     syntax KItem ::= "#endPrank" [klabel(foundry_endPrank)]
  // -------------------------------------------------------
-    rule <k> #endPrank => . ... </k>
-        <prank>
-          <prevCaller> .Account </prevCaller>
-          <prevOrigin> .Account </prevOrigin>
-          <active> false </active>
-          ...
-        </prank>
-
     rule <k> #endPrank => #clearPrank ... </k>
         <caller> _ => CL </caller>
         <origin> _ => OG </origin>
         <prank>
           <prevCaller> CL </prevCaller>
           <prevOrigin> OG </prevOrigin>
+          <active> true </active>
+          ...
+        </prank>
+
+    rule <k> #endPrank => . ... </k>
+        <prank>
+          <active> false </active>
           ...
         </prank>
 ```
