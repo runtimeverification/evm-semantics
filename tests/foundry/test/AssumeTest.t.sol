@@ -26,10 +26,7 @@ contract AssumeTest is Test {
     }
 
     function test_assume_staticCall(bool a) public {
-        address addr = address(vm);
-        assembly {
-            let status := staticcall(16000, addr, add(a, 32), mload(a), 0, 0)
-        }
-        assertTrue(a);
+        address(vm).staticcall(abi.encodeWithSignature("assume(bool)", a));
+        assert(a);
     }
 }
