@@ -90,7 +90,7 @@
               substituteInPlace ./cmake/node/CMakeLists.txt \
                 --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
               substituteInPlace ./bin/kevm \
-                --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
+                --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk pyk.packages.${prev.system}.pyk-python310}/bin/kevm-pyk'
             '';
 
             buildFlags = [ "POETRY_RUN=" ] ++
@@ -141,11 +141,11 @@
             '';
           };
 
-        kevm-pyk = prev.poetry2nix.mkPoetryApplication {
+        kevm-pyk = pyk: prev.poetry2nix.mkPoetryApplication {
           python = prev.python310;
           projectDir = ./kevm-pyk;
           overrides = prev.poetry2nix.overrides.withDefaults
-            (finalPython: prevPython: { pyk = prev.python310Packages.pyk; });
+            (finalPython: prevPython: { inherit pyk; });
           groups = [];
           # We remove `"dev"` from `checkGroups`, so that poetry2nix does not try to resolve dev dependencies.
           checkGroups = [];
@@ -191,7 +191,7 @@
         };
 
         packages = {
-          inherit (pkgs) kevm-pyk;
+          kevm-pyk = pkgs.kevm-pyk pyk.packages.${system}.pyk-python310;
           inherit kevm;
           kevm-test = pkgs.kevm-test k-framework.packages.${system}.k;
 
