@@ -2,15 +2,20 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
+    # JT's
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    k-framework.inputs.nixpkgs.follows = "nixpkgs";
+    
+    # Orig
     k-framework.url = "github:runtimeverification/k";
-    nixpkgs.follows = "k-framework/nixpkgs";
+    #nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.url = "github:runtimeverification/rv-nix-tools";
     poetry2nix.follows = "pyk/poetry2nix";
     blockchain-k-plugin.url =
       "github:runtimeverification/blockchain-k-plugin/8fdc74e3caf254aa3952393dbb0368d2c98c321a";
     blockchain-k-plugin.inputs.flake-utils.follows = "k-framework/flake-utils";
-    blockchain-k-plugin.inputs.nixpkgs.follows = "k-framework/nixpkgs";
+    blockchain-k-plugin.inputs.nixpkgs.follows = "nixpkgs";
     ethereum-tests.url =
       "github:ethereum/tests/6401889dec4eee58e808fd178fb2c7f628a3e039";
     ethereum-tests.flake = false;
@@ -20,7 +25,7 @@
     haskell-backend.follows = "k-framework/haskell-backend";
     pyk.url = "github:runtimeverification/pyk/v0.1.89";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
-    pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
+    pyk.inputs.nixpkgs.follows = "nixpkgs";
 
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils, poetry2nix

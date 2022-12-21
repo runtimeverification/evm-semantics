@@ -44,7 +44,6 @@
         ],
         "libff": "libff",
         "nixpkgs": [
-          "k-framework",
           "nixpkgs"
         ],
         "secp256k1": "secp256k1",
@@ -425,7 +424,9 @@
         "haskell-backend": "haskell-backend",
         "llvm-backend": "llvm-backend",
         "mavenix": "mavenix_2",
-        "nixpkgs": "nixpkgs_4",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
         "rv-utils": "rv-utils"
       },
       "locked": {
@@ -716,17 +717,18 @@
     },
     "nixpkgs_4": {
       "locked": {
-        "lastModified": 1670980281,
-        "narHash": "sha256-g0t/SmQca/JBEd+3Ry1qFgDfDK8ME9AM6EP4YUl8/lo=",
+        "lastModified": 1671458120,
+        "narHash": "sha256-2+k/OONN4OF21TeoNjKB5sXVZv6Zvm/uEyQIW9OYCg8=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "5cb48ea3c19ce2e5746a44d6b91847396bd28c1f",
+        "rev": "e37ef84b478fa8da0ced96522adfd956fde9047a",
         "type": "github"
       },
       "original": {
-        "id": "nixpkgs",
-        "ref": "nixos-22.05",
-        "type": "indirect"
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
       }
     },
     "nixpkgs_5": {
@@ -805,7 +807,6 @@
           "flake-utils"
         ],
         "nixpkgs": [
-          "k-framework",
           "nixpkgs"
         ],
         "poetry2nix": "poetry2nix"
@@ -856,10 +857,7 @@
           "haskell-backend"
         ],
         "k-framework": "k-framework",
-        "nixpkgs": [
-          "k-framework",
-          "nixpkgs"
-        ],
+        "nixpkgs": "nixpkgs_4",
         "poetry2nix": [
           "pyk",
           "poetry2nix"
