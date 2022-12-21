@@ -489,6 +489,22 @@ test-foundry: KEVM_OPTS += --pyk --verbose --profile
 test-foundry: KEVM = $(POETRY_RUN) kevm
 test-foundry: tests/foundry/foundry.k.check tests/foundry/out/kompiled/foundry.k.prove
 
+foundry-llvm: $(foundry_out)/llvm/interpreter
+
+.PHONY: $(foundry_out)/llvm/interpreter
+$(foundry_out)/llvm/interpreter: KOMPILE := kompile
+$(foundry_out)/llvm/interpreter: KOMPILE_OPTS =
+$(foundry_out)/llvm/interpreter: $(KEVM_BIN)/kevm build-llvm
+	$(KOMPILE) \
+		--backend llvm \
+		$(KEVM_INCLUDE)/kframework/$(foundry_main_file) \
+		--main-module $(foundry_main_module)            \
+		--syntax-module $(foundry_syntax_module)        \
+		--md-selector 'k & ! nobytes & ! node'          \
+		-I $(KEVM_INCLUDE)/kframework                   \
+		--output-definition $(dir $@)                   \
+		--llvm-kompile-type c
+
 foundry-forge-build: $(foundry_out)
 
 foundry-forge-test: foundry-forge-build
