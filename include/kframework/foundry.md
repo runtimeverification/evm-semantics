@@ -544,7 +544,7 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
-           <expectedDepth> ED </expectedDepth> 
+           <expectedDepth> ED </expectedDepth>
            ...
          </expectedRevert>
       requires CD <=Int ED
@@ -559,7 +559,7 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
-           <expectedDepth> ED </expectedDepth> 
+           <expectedDepth> ED </expectedDepth>
            ...
          </expectedRevert>
       requires CD <=Int ED
@@ -817,6 +817,7 @@ function stopPrank() external;
 
 Expecting Events
 ----------------
+
 ```
 function expectEmit(bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData) external;
 function expectEmit(bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData, address emitter) external;
@@ -905,9 +906,9 @@ function sign(uint256 privateKey, bytes32 digest) external returns (uint8 v, byt
 ```
 
 `foundry.call.sign` will match when the `sign` cheat code function is called.
-This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`. 
-To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM). 
-This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings. 
+This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`.
+To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM).
+This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings.
 The `ECDSASign` function returns the signed data in [r,s,v] form, which we convert to a bytearray using `#parseByteStack`.
 
 ```{.k .bytes}
@@ -1055,7 +1056,7 @@ Utils
          </expectedRevert>
 ```
 
-- `#handleExpectRevert` 
+- `#handleExpectRevert`
 
 ```k
     syntax KItem ::= "#checkRevertReason" [klabel(foundry_checkRevertReason)]
