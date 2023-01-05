@@ -857,6 +857,7 @@ This is useful when writing tests that depend on the gas used, and so a specific
     rule [foundry.call.setGas]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
          <gas> _ => #asWord(ARGS) </gas>
+         <callGas> _ => 0 </callGas>
       requires SELECTOR ==Int selector ( "setGas(uint256)" )
 ```
 
