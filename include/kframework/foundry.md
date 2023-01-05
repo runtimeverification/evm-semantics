@@ -843,6 +843,23 @@ function stopPrank() external;
       requires SELECTOR ==Int selector ( "stopPrank()" )
 ```
 
+Gas Manipulation
+----------------
+
+```
+function setGas(uint256 newGas) external;
+```
+
+Set the current gas left (reported by `GAS` opcode) to a specific amount.
+This is useful when writing tests that depend on the gas used, and so a specific concrete amount is needed instead of the default infinite gas.
+
+```{.k .bytes}
+    rule [foundry.call.setGas]:
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
+         <gas> _ => #asWord(ARGS) </gas>
+      requires SELECTOR ==Int selector ( "setGas(uint256)" )
+```
+
 Expecting Events
 ----------------
 ```
@@ -1402,6 +1419,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "prank(address,address)" )                   => 1206193358 )
     rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )
     rule ( selector ( "allowChangesToStorage(address,uint256)" )   => 4207417100 )
+    rule ( selector ( "setGas(uint256)" )                          => 3713137314 )
 ```
 
 - selectors for unimplemented cheat code functions.
