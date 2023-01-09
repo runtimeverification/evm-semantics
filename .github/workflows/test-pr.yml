@@ -140,6 +140,7 @@ jobs:
           sudo apt-add-repository ppa:deadsnakes/ppa
           sudo apt-get install --yes python3.10
       - name: 'Install Nix'
+        if: ${{ !startsWith(matrix.os, 'self') }}
         uses: cachix/install-nix-action@v15
         with:
           install_url: https://releases.nixos.org/nix/nix-2.7.0/install
