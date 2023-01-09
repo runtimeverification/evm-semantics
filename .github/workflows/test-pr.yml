@@ -119,8 +119,14 @@ jobs:
     name: 'Nix'
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-latest]
-    runs-on: ${{ matrix.os }}
+        include:
+          - runner: ubuntu-20.04
+            os: ubuntu-20.04
+          - runner: macos-12
+            os: macos-12
+          - runner: MacM1
+            os: self-macos-12
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
