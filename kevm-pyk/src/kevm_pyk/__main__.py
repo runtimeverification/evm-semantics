@@ -11,8 +11,7 @@ from pyk.cterm import CTerm, build_rule
 from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
 from pyk.kast.manip import flatten_label, get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
-from pyk.kcfg import KCFG
-from pyk.kcfg_viewer.app import KCFGViewer
+from pyk.kcfg import KCFG, KCFGViewer
 from pyk.ktool.kit import KIT
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
