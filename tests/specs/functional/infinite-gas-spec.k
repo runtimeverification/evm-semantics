@@ -87,8 +87,12 @@ module INFINITE-GAS-SPEC
     claim <k> runLemma(       Cgascap(ISTANBUL, #gas(VGas +Int -2924), #gas(VGas +Int -2924), Cextra(ISTANBUL, ISEMPTY, VALUE, ISWARM))  )
            => doneLemma( #gas(Cgascap(ISTANBUL,     (VGas +Int -2924),     (VGas +Int -2924), Cextra(ISTANBUL, ISEMPTY, VALUE, ISWARM))) ) ... </k>
 
-    claim [Csstore.non-infinite]:
+    claim [Csstore.finite-1]:
           <k> runLemma( 332990722 <Int Csstore(LONDON , ((256 |Int ((115792089237316195423570985008687907853269984665640564039457584007913129574655 &Int #lookup(ACCT_STORAGE, 0))))), #lookup(ACCT_STORAGE, 0), _) )
+           => doneLemma( false ) ... </k>
+
+    claim [Csstore.finite-2]:
+          <k> runLemma( 323722 -Int Csstore(LONDON, pow8 |Int 115792089237316195423570985008687907853269984665640564039457584007913129574655 &Int #lookup(ACCT_STORAGE, 0), #lookup(ACCT_STORAGE, 0), _) <Int 0 )
            => doneLemma( false ) ... </k>
 
  // Infinite Gas comparisons

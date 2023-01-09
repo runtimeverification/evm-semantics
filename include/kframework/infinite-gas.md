@@ -134,7 +134,8 @@ module INFINITE-GAS-COMMON
     rule #gas(_) <Int Caddraccess(_, _)  => false [simplification]
     rule Caddraccess(_, _) <=Int #gas(_) => true  [simplification]
 
-    rule G <Int Csstore(SCHED, _, _, _) => false requires Gsstoreset < SCHED > <Int G [simplification(60)]
+    rule G <Int Csstore(SCHED, _, _, _)  => false requires Gsstoreset < SCHED >  <Int G [simplification(60)]
+    rule Csstore(SCHED, _, _, _) <=Int G => true  requires Gsstoreset < SCHED > <=Int G [simplification(60)]
 
     rule 0 <=Int Csstore(_, _, _, _)              => true [simplification]
     rule         Csstore(_, _, _, _) <Int #gas(_) => true [simplification]

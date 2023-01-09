@@ -64,6 +64,8 @@ module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
     rule I1 +Int C   <Int I2         => I1          <Int I2 -Int C  [concrete(C), simplification]
     rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         [concrete(C1, C3), simplification]
     rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         [concrete(C1, C3), simplification]
+    rule C1 -Int I2  <Int C3         => C1 -Int C3  <Int I2         [concrete(C1, C3), simplification]
+    rule C1         <=Int C2 -Int I3 => I3         <=Int C2 -Int C1 [concrete(C1, C2), simplification]
 
 endmodule
 
