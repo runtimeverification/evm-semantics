@@ -23,7 +23,7 @@ jobs:
         with:
           tag: kevm-ci-concrete-${{ github.sha }}
       - name: 'Build kevm-pyk'
-        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv'
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Build kevm'
         run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-llvm build-node -j`nproc` RELEASE=true'
       - name: 'Test kevm-pyk'
