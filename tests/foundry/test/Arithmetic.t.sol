@@ -62,14 +62,72 @@ contract ArithmeticTest is Test {
         assertTrue(c2 <= c1);
     }
 
-    function test_wmul_strictly_increasing(uint a, uint b) external {
-        uint c = wmul2(a, b);
+    function test_wmul_increasing_overflow(uint a, uint b) public {
+        uint c = wmul(a, b);
         assertTrue(a < c && b < c);
     }
+    // { true #Equals ( ( 115792089237316195423570985008687907853269984665640564039457584007913129639935 /Int VV0_a_3c5818c8 ) ) <Int VV1_b_3c5818c8 }
+    // { true #Equals ( ( maxUInt256 /Int VV0_a_3c5818c8 ) ) <Int VV1_b_3c5818c8 }
 
-    function test_wmul_increasing(uint a, uint b) external {
-        uint c = wmul2(a, b);
-        assertTrue(a <= c && b <= c);
+    function test_wmul_increasing(uint a, uint b) public {
+        if (b <= MAX_INT / a) {
+            uint c = wmul(a, b);
+            assertTrue(a < c && b < c);
+        }
+    }
+    // { true #Equals VV0_a_3c5818c8 ==K 0 }
+
+    function test_wmul_increasing_positive(uint a, uint b) public {
+        if (0 < a && 0 < b) {
+            if (b <= MAX_INT / a) {
+                uint c = wmul(a, b);
+                assertTrue(a < c && b < c);
+            }
+        }
+    }
+    // { true #Equals ( ( ( ( VV0_a_3c5818c8 *Int VV1_b_3c5818c8 ) ) /Int 1000000000000000000 ) ) <=Int VV0_a_3c5818c8 }
+
+    function test_wmul_increasing_gt_one(uint a, uint b) public {
+        if (WAD < a && WAD < b) {
+            if (b <= MAX_INT / a) {
+                uint c = wmul(a, b);
+                assertTrue(a < c && b < c);
+            }
+        }
+    }
+    // #Top
+
+    function test_wmul_weakly_increasing_positive(uint a, uint b) public {
+        if (0 < a && 0 < b) {
+            if (b <= MAX_INT / a) {
+                uint c = wmul(a, b);
+                assertTrue(a <= c && b <= c);
+            }
+        }
+    }
+    // { true #Equals VV0_a_3c5818c8 <=Int ( ( chop ( ( ( VV0_a_3c5818c8 *Int VV1_b_3c5818c8 ) ) ) /Int 1000000000000000000 ) ) }
+    // { true #Equals VV1_b_3c5818c8 <=Int ( ( chop ( ( ( VV0_a_3c5818c8 *Int VV1_b_3c5818c8 ) ) ) /Int 1000000000000000000 ) ) }
+    // { true #Equals VV1_b_3c5818c8 <=Int ( ( 115792089237316195423570985008687907853269984665640564039457584007913129639935 /Int VV0_a_3c5818c8 ) ) }
+    // add lemma: rule X *Int Y <Int pow256 => true requires Y <=Int maxUInt256 /Int X [simplification]
+
+    function test_wmul_wdiv_inverse_underflow(uint a, uint b) public {
+        if (0 < a && 0 < b) {
+            if (b <= MAX_INT / a) {
+                uint c = wdiv(wmul(a, b), b);
+                assertEq(a, c);
+            }
+        }
+    }
+    // { true #Equals maxUInt256 /Word ( ( ( ( VV0_a_3c5818c8 *Int VV1_b_3c5818c8 ) ) /Int 1000000000000000000 ) ) <Int 1000000000000000000 }
+
+    // not passing
+    function test_wmul_wdiv_inverse(uint a, uint b) public {
+        if (WAD < a && WAD < b) {
+            if (b <= MAX_INT / a) {
+                uint c = wdiv(wmul(a, b), b);
+                assertEq(a, c);
+            }
+        }
     }
 
     function test_wdiv_rounding(uint a, uint b) external {
