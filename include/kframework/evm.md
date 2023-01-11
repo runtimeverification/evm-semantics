@@ -1912,8 +1912,8 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 -   `#memoryUsageUpdate` is the function `M` in appendix H of the YellowPaper which helps track the memory used.
 
 ```k
-    syntax Int ::= #memory ( OpCode , Int ) [function]
- // --------------------------------------------------
+    syntax Int ::= #memory ( OpCode , Int ) [function, total]
+ // ---------------------------------------------------------
     rule #memory ( MLOAD INDEX     , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
     rule #memory ( MSTORE INDEX _  , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
     rule #memory ( MSTORE8 INDEX _ , MU ) => #memoryUsageUpdate(MU, INDEX, 1)
@@ -1936,8 +1936,8 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
     rule #memory ( _ , MU ) => MU [owise]
 
-    syntax Bool ::= #usesMemory ( OpCode ) [function]
- // -------------------------------------------------
+    syntax Bool ::= #usesMemory ( OpCode ) [function, total]
+ // --------------------------------------------------------
     rule #usesMemory(OP) => isLogOp(OP)
                      orBool isCallOp(OP)
                      orBool isCallSixOp(OP)
