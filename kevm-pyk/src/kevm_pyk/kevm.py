@@ -32,12 +32,21 @@ class KEVM(KProve, KRun):
         main_file: Optional[Path] = None,
         use_directory: Optional[Path] = None,
         profile: bool = False,
+        kprove_command: str = 'kprove',
+        krun_command: str = 'krun',
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
         # Note that they say using `super` supports dependency injection, but I have never liked dependency injection anyway.
-        KProve.__init__(self, definition_dir, use_directory=use_directory, main_file=main_file, profile=profile)
-        KRun.__init__(self, definition_dir, use_directory=use_directory, profile=profile)
+        KProve.__init__(
+            self,
+            definition_dir,
+            use_directory=use_directory,
+            main_file=main_file,
+            profile=profile,
+            command=kprove_command,
+        )
+        KRun.__init__(self, definition_dir, use_directory=use_directory, profile=profile, command=krun_command)
         KEVM._patch_symbol_table(self.symbol_table)
 
     @staticmethod
@@ -103,6 +112,12 @@ class KEVM(KProve, KRun):
         symbol_table['_>=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')
         symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
         symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
+        symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int']              = paren(symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int'])
+        symbol_table['_++__EVM-TYPES_ByteArray_ByteArray_ByteArray']  = paren(symbol_table['_++__EVM-TYPES_ByteArray_ByteArray_ByteArray'])
+        symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = paren(symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'])
+        symbol_table['_up/Int__EVM-TYPES_Int_Int_Int']                = paren(symbol_table['_up/Int__EVM-TYPES_Int_Int_Int'])
+        if 'typedArgs' in symbol_table:
+            symbol_table['typedArgs'] = paren(symbol_table['typedArgs'])
         paren_symbols = [
             '_|->_',
             '#And',
@@ -173,6 +188,7 @@ class KEVM(KProve, KRun):
             'EVM-TYPES.bytesRange',
             'EVM-TYPES.mapWriteBytes.recursive',
             'EVM-TYPES.#padRightToWidth',
+            'EVM-TYPES.padRightToWidthNonEmpty',
             'EVM-TYPES.#padToWidth',
             'EVM-TYPES.padToWidthNonEmpty',
             'EVM-TYPES.powmod.nonzero',
@@ -182,6 +198,7 @@ class KEVM(KProve, KRun):
             'EVM-TYPES.signextend.negative',
             'EVM-TYPES.signextend.positive',
             'EVM-TYPES.upDivInt',
+            'SERIALIZATION.addrFromPrivateKey',
             'SERIALIZATION.keccak',
             'SERIALIZATION.#newAddr',
             'SERIALIZATION.#newAddrCreate2',
@@ -203,7 +220,7 @@ class KEVM(KProve, KRun):
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ID_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'CALLER_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ORIGIN_CELL'))))
-        constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytearray(get_cell(config, 'CALLDATA_CELL')), KEVM.pow256())))
+        constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytearray(get_cell(config, 'CALLDATA_CELL')), KEVM.pow128())))
 
         return CTerm(mlAnd([config] + list(unique(constraints))))
 
@@ -230,6 +247,10 @@ class KEVM(KProve, KRun):
     @staticmethod
     def jump_applied(pc: KInner) -> KApply:
         return KApply('___EVM_InternalOp_UnStackOp_Int', [KEVM.jump(), pc])
+
+    @staticmethod
+    def pow128() -> KApply:
+        return KApply('pow128_WORD_Int', [])
 
     @staticmethod
     def pow256() -> KApply:
@@ -366,7 +387,14 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def accounts(accts: List[KInner]) -> KInner:
-        return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), accts)
+        wrapped_accounts: List[KInner] = []
+        for acct in accts:
+            if type(acct) is KApply and acct.label.name == '<account>':
+                acct_id = acct.args[0]
+                wrapped_accounts.append(KApply('AccountCellMapItem', [acct_id, acct]))
+            else:
+                wrapped_accounts.append(acct)
+        return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), wrapped_accounts)
 
 
 class Foundry(KEVM):
@@ -389,23 +417,25 @@ class Foundry(KEVM):
         KEVM._patch_symbol_table(symbol_table)
 
     @staticmethod
-    def success(s: KInner, dst: KInner, r: KInner) -> KApply:
-        return KApply('foundry_success ', [s, dst, r])
+    def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
+        return KApply('foundry_success', [s, dst, r, c, e1, e2])
 
     @staticmethod
-    def fail(s: KInner, dst: KInner, r: KInner) -> KApply:
-        return notBool(Foundry.success(s, dst, r))
+    def fail(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
+        return notBool(Foundry.success(s, dst, r, c, e1, e2))
 
     # address(uint160(uint256(keccak256("foundry default caller"))))
 
     @staticmethod
-    def address_CALLER() -> KToken:  # noqa: N802
-        return intToken(0x1804C8AB1F12E6BBF3894D4083F33E07309D1F38)
-
-    @staticmethod
-    def account_CALLER() -> KApply:  # noqa: N802
-        return KEVM.account_cell(
-            Foundry.address_CALLER(), intToken(0), KEVM.bytearray_empty(), KApply('.Map'), KApply('.Map'), intToken(0)
+    def loc_FOUNDRY_FAILED() -> KApply:  # noqa: N802
+        return KEVM.loc(
+            KApply(
+                'contract_access_field',
+                [
+                    KApply('FoundryCheat_FOUNDRY-ACCOUNTS_FoundryContract'),
+                    KApply('Failed_FOUNDRY-ACCOUNTS_FoundryField'),
+                ],
+            )
         )
 
     @staticmethod
@@ -436,23 +466,6 @@ class Foundry(KEVM):
             intToken(0),
             KToken('b"\\x00"', 'Bytes'),
             store_var,
-            KApply('.Map'),
-            intToken(0),
-        )
-
-    @staticmethod
-    def address_HARDHAT_CONSOLE() -> KToken:  # noqa: N802
-        return intToken(0x000000000000000000636F6E736F6C652E6C6F67)
-
-    # Hardhat console address (0x000000000000000000636F6e736F6c652e6c6f67)
-    # https://github.com/nomiclabs/hardhat/blob/master/packages/hardhat-core/console.sol
-    @staticmethod
-    def account_HARDHAT_CONSOLE_ADDRESS() -> KApply:  # noqa: N802
-        return KEVM.account_cell(
-            Foundry.address_HARDHAT_CONSOLE(),
-            intToken(0),
-            KEVM.bytearray_empty(),
-            KApply('.Map'),
             KApply('.Map'),
             intToken(0),
         )

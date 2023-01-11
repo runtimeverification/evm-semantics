@@ -14,7 +14,7 @@ build:
 	poetry build
 
 poetry-install:
-	poetry install
+	poetry install -vvv
 
 POETRY_RUN := poetry run
 

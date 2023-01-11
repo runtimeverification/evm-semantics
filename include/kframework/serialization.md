@@ -21,8 +21,8 @@ Address/Hash Helpers
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 ```k
-    syntax Int ::= keccak ( ByteArray ) [function, functional, smtlib(smt_keccak)]
- // ------------------------------------------------------------------------------
+    syntax Int ::= keccak ( ByteArray ) [function, total, smtlib(smt_keccak)]
+ // -------------------------------------------------------------------------
     rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))
 ```
 
@@ -53,9 +53,9 @@ Address/Hash Helpers
     rule #sender("")  => .Account
     rule #sender(STR) => #addr(#parseHexWord(Keccak256(STR))) requires STR =/=String ""
 
-    syntax Int ::= #addrFromPrivateKey ( String ) [function]
- // --------------------------------------------------------
-    rule #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256 ( Hex2Raw( ECDSAPubKey( Hex2Raw( KEY ) ) ) ) ) )
+    syntax Int ::= #addrFromPrivateKey ( String ) [function, klabel(addrFromPrivateKey)]
+ // ------------------------------------------------------------------------------------
+    rule [addrFromPrivateKey]: #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256 ( Hex2Raw( ECDSAPubKey( Hex2Raw( KEY ) ) ) ) ) )
 ```
 
 -   `#blockHeaderHash` computes the hash of a block header given all the block data.
@@ -138,8 +138,8 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
     rule #parseWord(S)  => #parseHexWord(S) requires lengthString(S) >=Int 2 andBool substrString(S, 0, 2) ==String "0x"
     rule #parseWord(S)  => String2Int(S) [owise]
 
-    syntax String ::= #alignHexString ( String ) [function, functional]
- // -------------------------------------------------------------------
+    syntax String ::= #alignHexString ( String ) [function, total]
+ // --------------------------------------------------------------
     rule #alignHexString(S) => S             requires         lengthString(S) modInt 2 ==Int 0
     rule #alignHexString(S) => "0" +String S requires notBool lengthString(S) modInt 2 ==Int 0
 ```

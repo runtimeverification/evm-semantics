@@ -2,7 +2,7 @@ from logging import Logger
 from typing import Collection, Iterable, List, Optional, Tuple
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KVariable
+from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
     bool_to_ml_pred,
@@ -14,7 +14,6 @@ from pyk.kast.manip import (
     remove_generated_cells,
     split_config_and_constraints,
     split_config_from,
-    substitute,
     undo_aliases,
 )
 from pyk.kast.outer import KClaim, KDefinition, KFlatModule, KImport, KRule
@@ -22,6 +21,27 @@ from pyk.kcfg import KCFG
 from pyk.ktool import KPrint, KProve
 from pyk.prelude.kbool import FALSE
 from pyk.prelude.ml import mlAnd
+
+
+def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # noqa: N802
+    def _expand_macros(_term: KInner) -> KInner:
+        if type(_term) is KApply:
+            prod = defn.production_for_klabel(_term.label)
+            if 'macro' in prod.att or 'alias' in prod.att or 'macro-rec' in prod.att or 'alias-rec' in prod.att:
+                for r in defn.macro_rules:
+                    assert type(r.body) is KRewrite
+                    _new_term = r.body.apply_top(_term)
+                    if _new_term != _term:
+                        _term = _new_term
+                        break
+        return _term
+
+    old_term = None
+    while term != old_term:
+        old_term = term
+        term = bottom_up(_expand_macros, term)
+
+    return term
 
 
 def KCFG__replace_node(cfg: KCFG, node_id: str, new_cterm: CTerm) -> KCFG:  # noqa: N802
@@ -103,7 +123,7 @@ def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> 
     for s in subst:
         if type(subst[s]) is KVariable and not is_anon_var(subst[s]) and subst[s] not in keep_vars:
             subst[s] = abstract_term_safely(KVariable('_'), base_name=s)
-    return substitute(config, subst)
+    return Subst(subst)(config)
 
 
 def sanitize_config(defn: KDefinition, init_term: KInner) -> KInner:
@@ -125,7 +145,7 @@ def sanitize_config(defn: KDefinition, init_term: KInner) -> KInner:
                 return _kast.args[1]
         return _kast
 
-    new_term = substitute(init_term, free_vars_subst)
+    new_term = Subst(free_vars_subst)(init_term)
     new_term = remove_generated_cells(new_term)
     new_term = bottom_up(_remove_cell_map_definedness, new_term)
 

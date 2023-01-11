@@ -4,6 +4,7 @@ AccountParamsTest.testFail_GetNonce_false
 AddrTest.test_addr_false
 AddrTest.testFail_addr_false
 AddrTest.testFail_addr_true
+AddrTest.test_addr_symbolic
 AssertTest.test_assert_true
 AssertTest.test_assert_false
 AssertTest.testFail_assert_false
@@ -13,13 +14,14 @@ AssumeTest.test_assume_false
 AssumeTest.testFail_assume_false
 AssumeTest.testFail_assume_true
 BroadcastTest.testDeploy
+BytesTypeTest.test_bytes32_fail
+BytesTypeTest.test_bytes4_fail
+BytesTypeTest.testFail_bytes32
+BytesTypeTest.testFail_bytes4
 ContractBTest.testCannotSubtract43
 ContractBTest.testFailSubtract43
 ContractBTest.testNumberIs42
 ContractTest.testExample
-EmitContractTest.testExpectEmit
-EmitContractTest.testExpectEmitCheckEmitter
-EmitContractTest.testExpectEmitDoNotCheckData
 EnvTest.testEnvAddress
 EnvTest.testEnvAddresseArray
 EnvTest.testEnvBool
@@ -84,7 +86,7 @@ SafeTest.testWithdraw
 SafeTest.testWithdrawFuzz
 SetUpTest.testSetUpCalled
 SetUpTest.testSetUpCalledSymbolic
-SignTest.testSign
+SignTest.testSign_symbolic
 SnapshotTest.testSnapshot
 StoreTest.testAccesses
 StoreTest.testGasLoadWarmVM
