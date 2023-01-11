@@ -534,10 +534,10 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
     rule <k> #pc [ OP ] => . ... </k>
          <pc> PCOUNT => PCOUNT +Int #widthOp(OP) </pc>
 
-    syntax Int ::= #widthOp ( OpCode ) [function]
- // ---------------------------------------------
+    syntax Int ::= #widthOp ( OpCode ) [function, total]
+ // ----------------------------------------------------
     rule #widthOp(PUSH(N)) => 1 +Int N
-    rule #widthOp(OP)      => 1        requires notBool isPushOp(OP)
+    rule #widthOp(_)       => 1        [owise]
 ```
 
 After executing a transaction, it's necessary to have the effect of the substate log recorded.
