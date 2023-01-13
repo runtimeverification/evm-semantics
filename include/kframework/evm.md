@@ -534,10 +534,10 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
     rule <k> #pc [ OP ] => . ... </k>
          <pc> PCOUNT => PCOUNT +Int #widthOp(OP) </pc>
 
-    syntax Int ::= #widthOp ( OpCode ) [function]
- // ---------------------------------------------
+    syntax Int ::= #widthOp ( OpCode ) [function, total]
+ // ----------------------------------------------------
     rule #widthOp(PUSH(N)) => 1 +Int N
-    rule #widthOp(OP)      => 1        requires notBool isPushOp(OP)
+    rule #widthOp(_)       => 1        [owise]
 ```
 
 After executing a transaction, it's necessary to have the effect of the substate log recorded.
@@ -1912,8 +1912,8 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 -   `#memoryUsageUpdate` is the function `M` in appendix H of the YellowPaper which helps track the memory used.
 
 ```k
-    syntax Int ::= #memory ( OpCode , Int ) [function]
- // --------------------------------------------------
+    syntax Int ::= #memory ( OpCode , Int ) [function, total]
+ // ---------------------------------------------------------
     rule #memory ( MLOAD INDEX     , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
     rule #memory ( MSTORE INDEX _  , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
     rule #memory ( MSTORE8 INDEX _ , MU ) => #memoryUsageUpdate(MU, INDEX, 1)
@@ -1936,8 +1936,8 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
     rule #memory ( _ , MU ) => MU [owise]
 
-    syntax Bool ::= #usesMemory ( OpCode ) [function]
- // -------------------------------------------------
+    syntax Bool ::= #usesMemory ( OpCode ) [function, total]
+ // --------------------------------------------------------
     rule #usesMemory(OP) => isLogOp(OP)
                      orBool isCallOp(OP)
                      orBool isCallSixOp(OP)
