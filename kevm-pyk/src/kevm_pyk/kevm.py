@@ -15,7 +15,6 @@ from pyk.prelude.kbool import notBool
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlAnd, mlEqualsTrue
 from pyk.prelude.string import stringToken
-from pyk.utils import unique
 
 from .utils import add_include_arg
 
@@ -217,7 +216,7 @@ class KEVM(KProve, KRun):
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ORIGIN_CELL'))))
         constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytearray(get_cell(config, 'CALLDATA_CELL')), KEVM.pow128())))
 
-        return CTerm(mlAnd([config] + list(unique(constraints))))
+        return CTerm(mlAnd([config] + constraints))
 
     @staticmethod
     def extract_branches(cterm: CTerm) -> Iterable[KInner]:
