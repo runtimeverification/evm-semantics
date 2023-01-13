@@ -5,7 +5,6 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
-from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm, build_rule
 from pyk.kast.inner import KApply, KInner, KRewrite, KToken
@@ -21,7 +20,7 @@ from pyk.utils import shorten_hashes
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KDefinition__expand_macros, KPrint_make_unparsing, add_include_arg, write_cfg
+from .utils import KDefinition__expand_macros, KPrint_make_unparsing, add_include_arg, parallel_kcfg_explore, write_cfg
 
 T = TypeVar('T')
 
@@ -388,65 +387,21 @@ def exec_foundry_prove(
             with open(kcfg_file, 'r') as kf:
                 kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
 
-    def _call_rpc(packed_args: Tuple[str, KCFG, Path, int]) -> bool:
-        _cfgid, _cfg, _cfgpath, _rpc_port = packed_args
-        terminal_rules = ['EVM.halt']
-        if break_every_step:
-            terminal_rules.append('EVM.step')
-        if break_on_calls:
-            terminal_rules.extend(
-                [
-                    'EVM.call',
-                    'EVM.callcode',
-                    'EVM.delegatecall',
-                    'EVM.staticcall',
-                    'EVM.create',
-                    'EVM.create2',
-                    'FOUNDRY.foundry.call',
-                ]
-            )
-        if simplify_init:
-            kcfg_explore.simplify(_cfgid, _cfg)
-        try:
-            _cfg = kcfg_explore.rpc_prove(
-                _cfgid,
-                _cfg,
-                cfg_path=_cfgpath,
-                rpc_port=_rpc_port,
-                is_terminal=KEVM.is_terminal,
-                extract_branches=KEVM.extract_branches,
-                max_iterations=max_iterations,
-                execute_depth=max_depth,
-                terminal_rules=terminal_rules,
-                implication_every_block=implication_every_block,
-            )
-            failure_nodes = _cfg.frontier + _cfg.stuck
-            if len(failure_nodes) == 0:
-                _LOGGER.info(f'Proof passed: {_cfgid}')
-                return True
-            else:
-                _LOGGER.error(f'Proof failed: {_cfgid}')
-                return False
-
-        except Exception as e:
-            _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}')
-            foundry.close()
-            return False
-
-    with ProcessPool(ncpus=workers) as process_pool:
-        foundry.close_kore_rpc()
-        proof_problems = [
-            (cfgid, cfg, cfgpath, rpc_base_port + i) for i, (cfgid, (cfg, cfgpath)) in enumerate(kcfgs.items())
-        ]
-        results = process_pool.map(_call_rpc, proof_problems)
-
-    failed = 0
-    for (cid, _), succeeded in zip(kcfgs.items(), results, strict=True):
-        if succeeded:
-            print(f'PASSED: {cid}')
-        else:
-            print(f'FAILED: {cid}')
-            failed += 1
+    proof_problems = [(cfgid, cfg, cfgpath) for (cfgid, (cfg, cfgpath)) in kcfgs.items()]
+    failed = parallel_kcfg_explore(
+        kcfg_explore,
+        proof_problems,
+        max_depth=max_depth,
+        max_iterations=max_iterations,
+        workers=workers,
+        simplify_init=simplify_init,
+        break_every_step=break_every_step,
+        break_on_calls=break_on_calls,
+        implication_every_block=implication_every_block,
+        rpc_base_port=rpc_base_port,
+        is_terminal=KEVM.is_terminal,
+        extract_branches=KEVM.extract_branches,
+    )
     sys.exit(failed)
 
 

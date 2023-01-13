@@ -1,14 +1,89 @@
 import logging
 from pathlib import Path
-from typing import Collection, Final, Iterable, List
+from typing import Callable, Collection, Final, Iterable, List, Optional, Tuple
 
+from pathos.pools import ProcessPool  # type: ignore
+from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
 from pyk.kast.outer import KDefinition, KFlatModule, KImport
-from pyk.kcfg import KCFG
+from pyk.kcfg import KCFG, KCFGExplore
 from pyk.ktool import KPrint
 
 _LOGGER: Final = logging.getLogger(__name__)
+
+
+def parallel_kcfg_explore(
+    kcfg_explore: KCFGExplore,
+    proof_problems: Iterable[Tuple[str, KCFG, Path]],
+    max_depth: int = 100,
+    max_iterations: Optional[int] = None,
+    workers: int = 1,
+    simplify_init: bool = True,
+    break_every_step: bool = False,
+    break_on_calls: bool = False,
+    implication_every_block: bool = False,
+    rpc_base_port: int = 3010,
+    is_terminal: Optional[Callable[[CTerm], bool]] = None,
+    extract_branches: Optional[Callable[[CTerm], Iterable[KInner]]] = None,
+) -> int:
+    def _call_rpc(packed_args: Tuple[int, Tuple[str, KCFG, Path]]) -> bool:
+        _proof_index, (_cfgid, _cfg, _cfgpath) = packed_args
+        terminal_rules = ['EVM.halt']
+        if break_every_step:
+            terminal_rules.append('EVM.step')
+        if break_on_calls:
+            terminal_rules.extend(
+                [
+                    'EVM.call',
+                    'EVM.callcode',
+                    'EVM.delegatecall',
+                    'EVM.staticcall',
+                    'EVM.create',
+                    'EVM.create2',
+                    'FOUNDRY.foundry.call',
+                ]
+            )
+        if simplify_init:
+            kcfg_explore.simplify(_cfgid, _cfg)
+        try:
+            _cfg = kcfg_explore.rpc_prove(
+                _cfgid,
+                _cfg,
+                cfg_path=_cfgpath,
+                rpc_port=(rpc_base_port + _proof_index),
+                is_terminal=is_terminal,
+                extract_branches=extract_branches,
+                max_iterations=max_iterations,
+                execute_depth=max_depth,
+                terminal_rules=terminal_rules,
+                implication_every_block=implication_every_block,
+            )
+            failure_nodes = _cfg.frontier + _cfg.stuck
+            if len(failure_nodes) == 0:
+                _LOGGER.info(f'Proof passed: {_cfgid}')
+                return True
+            else:
+                _LOGGER.error(f'Proof failed: {_cfgid}')
+                return False
+
+        except Exception as e:
+            _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}')
+            kcfg_explore.close()
+            return False
+
+    with ProcessPool(ncpus=workers) as process_pool:
+        kcfg_explore.close()
+        results = process_pool.map(_call_rpc, proof_problems)
+
+    failed = 0
+    for (cid, _, _), succeeded in zip(proof_problems, results, strict=True):
+        if succeeded:
+            print(f'PASSED: {cid}')
+        else:
+            print(f'FAILED: {cid}')
+            failed += 1
+    return failed
 
 
 def write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
