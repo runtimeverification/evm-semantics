@@ -37,6 +37,7 @@ contract ArithmeticTest is Test {
         assertTrue(m >= x && m >= y);
     }
 
+    uint constant MAX_INT = (2 ** 256) - 1;
     uint constant WAD = 10 ** 18;
     uint constant RAY = 10 ** 27;
 
@@ -63,7 +64,7 @@ contract ArithmeticTest is Test {
     }
 
     function test_wmul_increasing_overflow(uint a, uint b) public {
-        uint c = wmul(a, b);
+        uint c = wmul2(a, b);
         assertTrue(a < c && b < c);
     }
     // { true #Equals ( ( 115792089237316195423570985008687907853269984665640564039457584007913129639935 /Int VV0_a_3c5818c8 ) ) <Int VV1_b_3c5818c8 }
@@ -71,7 +72,7 @@ contract ArithmeticTest is Test {
 
     function test_wmul_increasing(uint a, uint b) public {
         if (b <= MAX_INT / a) {
-            uint c = wmul(a, b);
+            uint c = wmul2(a, b);
             assertTrue(a < c && b < c);
         }
     }
@@ -80,7 +81,7 @@ contract ArithmeticTest is Test {
     function test_wmul_increasing_positive(uint a, uint b) public {
         if (0 < a && 0 < b) {
             if (b <= MAX_INT / a) {
-                uint c = wmul(a, b);
+                uint c = wmul2(a, b);
                 assertTrue(a < c && b < c);
             }
         }
@@ -90,7 +91,7 @@ contract ArithmeticTest is Test {
     function test_wmul_increasing_gt_one(uint a, uint b) public {
         if (WAD < a && WAD < b) {
             if (b <= MAX_INT / a) {
-                uint c = wmul(a, b);
+                uint c = wmul2(a, b);
                 assertTrue(a < c && b < c);
             }
         }
@@ -100,7 +101,7 @@ contract ArithmeticTest is Test {
     function test_wmul_weakly_increasing_positive(uint a, uint b) public {
         if (0 < a && 0 < b) {
             if (b <= MAX_INT / a) {
-                uint c = wmul(a, b);
+                uint c = wmul2(a, b);
                 assertTrue(a <= c && b <= c);
             }
         }
@@ -113,7 +114,7 @@ contract ArithmeticTest is Test {
     function test_wmul_wdiv_inverse_underflow(uint a, uint b) public {
         if (0 < a && 0 < b) {
             if (b <= MAX_INT / a) {
-                uint c = wdiv(wmul(a, b), b);
+                uint c = wdiv2(wmul2(a, b), b);
                 assertEq(a, c);
             }
         }
@@ -124,7 +125,7 @@ contract ArithmeticTest is Test {
     function test_wmul_wdiv_inverse(uint a, uint b) public {
         if (WAD < a && WAD < b) {
             if (b <= MAX_INT / a) {
-                uint c = wdiv(wmul(a, b), b);
+                uint c = wdiv2(wmul2(a, b), b);
                 assertEq(a, c);
             }
         }
