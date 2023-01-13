@@ -277,7 +277,6 @@ def exec_prove(
     minimize: bool = True,
     **kwargs: Any,
 ) -> None:
-    _ignore_arg(kwargs, 'lemmas', '--lemma')
     kevm = KEVM(definition_dir, profile=profile)
     prove_args = add_include_arg(includes)
     haskell_args = []
@@ -313,7 +312,6 @@ def exec_foundry_prove(
     exclude_tests: Iterable[str] = (),
     workers: int = 1,
     minimize: bool = True,
-    lemmas: Iterable[str] = (),
     simplify_init: bool = True,
     break_every_step: bool = False,
     break_on_calls: bool = False,
@@ -652,13 +650,6 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Generate a haskell-backend bug report for the execution.',
-    )
-    kprove_args.add_argument(
-        '--lemma',
-        dest='lemmas',
-        default=[],
-        action='append',
-        help='Additional lemmas to include as simplification rules during execution.',
     )
     kprove_args.add_argument(
         '--minimize', dest='minimize', default=True, action='store_true', help='Minimize prover output.'
