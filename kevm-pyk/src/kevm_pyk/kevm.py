@@ -76,7 +76,7 @@ class KEVM(KProve, KRun):
         command += add_include_arg(includes)
         if emit_json:
             command += ['--emit-json']
-        if backend == KompileBackend.HASKELL:
+        if backend in [KompileBackend.HASKELL, KompileBackend.JAVA]:
             command += ['--concrete-rules', ','.join(KEVM.concrete_rules())]
         if backend == KompileBackend.LLVM:
             if ccopts:
