@@ -261,6 +261,23 @@
         "type": "github"
       }
     },
+    "fmt-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1661615830,
+        "narHash": "sha256-rP6ymyRc7LnKxUXwPpzhHOQvpJkpnRFOt2ctvUNlYI0=",
+        "owner": "fmtlib",
+        "repo": "fmt",
+        "rev": "a33701196adfad74917046096bf5a2aa0ab0bb50",
+        "type": "github"
+      },
+      "original": {
+        "owner": "fmtlib",
+        "ref": "9.1.0",
+        "repo": "fmt",
+        "type": "github"
+      }
+    },
     "ghc-8.6.5-iohk": {
       "flake": false,
       "locked": {
@@ -429,11 +446,11 @@
         "rv-utils": "rv-utils"
       },
       "locked": {
-        "lastModified": 1673387026,
-        "narHash": "sha256-jJg+wCuYc/RrZBkBMxiJSkil3M5RWSaMiPoNHta4w8A=",
+        "lastModified": 1673535899,
+        "narHash": "sha256-522ZEzyYtVdlxecFLEhgG6obJBgNic9e80LdFQRjI5k=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "b66bb89c81e9bbb602410ae375cc8700e08efc13",
+        "rev": "3c5e1c329dc69085ac3878583985d52cfc420a9c",
         "type": "github"
       },
       "original": {
@@ -461,6 +478,7 @@
     },
     "llvm-backend": {
       "inputs": {
+        "fmt-src": "fmt-src",
         "immer-src": "immer-src",
         "mavenix": "mavenix",
         "nixpkgs": [
@@ -473,11 +491,11 @@
         "utils": "utils_2"
       },
       "locked": {
-        "lastModified": 1671535444,
-        "narHash": "sha256-UU3WFGVtluJtDHMDQ2A1ejFczl8OdmQ1xpRWXAoE7FY=",
+        "lastModified": 1673445912,
+        "narHash": "sha256-sTmdRP+8hhFDSpZJIHuZvv7KcTh7IUAcUOSlv8lLxeA=",
         "owner": "runtimeverification",
         "repo": "llvm-backend",
-        "rev": "71e70d036f43f0deccf425ce07408d1c88d8fd81",
+        "rev": "7ab825115b081a8d6ddd9c8bc29f9a1f52de3da4",
         "type": "github"
       },
       "original": {
