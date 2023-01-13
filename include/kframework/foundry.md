@@ -168,7 +168,12 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<checkedTopics>` will store a list of `bool` values that flag if a topic should be checked or not.
     - `<checkedData>` flags if the data field should be checked or not.
     - `<expectedEventAddress>` stores the emitter of an expected Event.
-
+5. The `<whitelist>` subconfiguration stores addresses that can be called and storage slots that can be accessed/modified during the execution.
+    - `<isCallWhitelistActive>` flags if the whitelist mode is enabled for calls.
+    - `<isStorageWhitelistActive>` flags if the whitelist mode is enabled for storage changes.
+    - `<addressSet>` - stores the address whitelist.
+    - `<storageAccountList>` - stores the address whitelist for storage.
+    - `<storageSlotList>` - stores the slot whitelist.
 ```k
 module FOUNDRY-CHEAT-CODES
     imports EVM
@@ -197,7 +202,7 @@ module FOUNDRY-CHEAT-CODES
           <expectedValue> 0 </expectedValue>
           <expectedData> .ByteArray </expectedData>
           <opcodeType> .OpcodeType </opcodeType>
-       </expectedOpcode>
+        </expectedOpcode>
         <expectEmit>
           <recordEvent> false </recordEvent>
           <isEventExpected> false </isEventExpected>
@@ -205,6 +210,15 @@ module FOUNDRY-CHEAT-CODES
           <checkedData> false </checkedData>
           <expectedEventAddress> .Account </expectedEventAddress>
         </expectEmit>
+        <whitelist>
+          <isCallWhitelistActive> false </isCallWhitelistActive>
+          <isStorageWhitelistActive> false </isStorageWhitelistActive>
+          <addressSet> .Set </addressSet>
+          <storageAccess>
+            <storageAccountList> .Set </storageAccountList>
+            <storageSlotList> .Set </storageSlotList>
+          </storageAccess>
+        </whitelist>
       </cheatcodes>
 ```
 
@@ -254,7 +268,8 @@ The rule `foundry.return` will rewrite the `#return_foundry` production into oth
     syntax KItem ::= "#return_foundry" Int Int [klabel(foundry_return)]
                    | "#call_foundry" Int ByteArray [klabel(foundry_call)]
                    | "#error_foundry" Int ByteArray [klabel(foundry_error)]
- // -----------------------------------------------------------------------
+                   | "#error_foundry" Int [klabel(foundry_error_call)]
+ // ------------------------------------------------------------------
     rule [foundry.return]:
          <k> #return_foundry RETSTART RETWIDTH
           => #setLocalMem RETSTART RETWIDTH OUT
@@ -265,10 +280,13 @@ The rule `foundry.return` will rewrite the `#return_foundry` production into oth
          <callGas> GCALL </callGas>
 ```
 
-We define a new status code named `FOUNDRY_UNIMPLEMENTED`, which signals that the execution ran into an unimplemented cheat code.
+We define a new status codes:
+ - `FOUNDRY_UNIMPLEMENTED`, which signals that the execution ran into an unimplemented cheat code.
+ - `FOUNDRY_WHITELISTCALL`, which signals that an address outside the whitelist has been called during the execution.
 
 ```{.k .bytes}
     syntax ExceptionalStatusCode ::= "FOUNDRY_UNIMPLEMENTED"
+                                   | "FOUNDRY_WHITELISTCALL"
  // --------------------------------------------------------
 ```
 
@@ -515,6 +533,36 @@ This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes 
     rule [foundry.call.symbolicStorage]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setSymbolicStorage #asWord(ARGS) ... </k>
       requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
+```
+
+Restricting the accounts that can be called in KEVM
+---------------------------------------------------
+
+```{.k .bytes}
+    rule [foundry.catchNonWhitelistedCalls]:
+         <k> #call _ ACCTTO _ _ _ _ false => #error_foundry ACCTTO ... </k>
+         <statusCode> _ => FOUNDRY_WHITELISTCALL </statusCode>
+         <whitelist>
+           <isCallWhitelistActive> true </isCallWhitelistActive>
+           <addressSet> ACCTS </addressSet>
+           ...
+         </whitelist>
+      requires notBool ACCTTO in ACCTS
+      [priority(40)]
+```
+
+#### `allowCallsToAddress` - Add an account address to a whitelist.
+
+```
+function allowCallsToAddress(address) external;
+```
+
+Adds an account address to the whitelist. The execution of the modified KEVM will stop when a call has been made to an address which is not in the whitelist.
+
+```{.k .bytes}
+    rule [foundry.allowCallsToAddress]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #addAddressToWhitelist #asWord(ARGS) ... </k>
+         requires SELECTOR ==Int selector ( "allowCallsToAddress(address)" )
 ```
 
 #### expectRevert - expect the next call to revert.
@@ -1228,6 +1276,18 @@ If the production is matched when no prank is active, it will be ignored.
     rule #checkTopics(ListItem(CHECK) CHECKS, ListItem(V1) L1, ListItem(V2) L2) => #checkTopic(CHECK, V1, V2) andBool #checkTopics(CHECKS, L1, L2)
 ```
 
+- `#addAddressToWhitelist` enables the whitelist restriction for calls and adds an address to the whitelist.
+
+```k
+    syntax KItem ::= "#addAddressToWhitelist" Int [klabel(foundry_addAddressToWhitelist)]
+ // -------------------------------------------------------------------------------------
+    rule <k> #addAddressToWhitelist ACCT => . ... </k>
+        <whitelist>
+          <isCallWhitelistActive> _ => true </isCallWhitelistActive>
+          <addressSet>  ACCTS => ACCTS SetItem(ACCT) </addressSet>
+          ...
+        </whitelist>
+```
 - selectors for cheat code functions.
 
 ```k
@@ -1258,6 +1318,8 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "expectEmit(bool,bool,bool,bool)" )          => 1226622914 )
     rule ( selector ( "expectEmit(bool,bool,bool,bool,address)" )  => 2176505587 )
     rule ( selector ( "sign(uint256,bytes32)" )                    => 3812747940 )
+    rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )
+    rule ( selector ( "allowChangesToStorage(address,uint256)" )   => 4207417100 )
 ```
 
 - selectors for unimplemented cheat code functions.
