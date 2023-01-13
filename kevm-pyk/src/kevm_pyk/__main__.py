@@ -139,8 +139,8 @@ def exec_foundry_kompile(
     definition_dir: Path,
     profile: bool,
     foundry_out: Path,
-    includes: List[str],
-    md_selector: Optional[str],
+    md_selector: Optional[str] = None,
+    includes: Iterable[str] = (),
     regen: bool = False,
     rekompile: bool = False,
     requires: Iterable[str] = (),
@@ -302,7 +302,6 @@ def exec_prove(
 def exec_foundry_prove(
     profile: bool,
     foundry_out: Path,
-    includes: List[str],
     max_depth: int = 100,
     max_iterations: Optional[int] = None,
     reinit: bool = False,
