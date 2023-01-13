@@ -1986,6 +1986,10 @@ module KEVMCHEATSBASE-BIN-RUNTIME
     
     syntax ByteArray ::= KEVMCheatsBaseContract "." KEVMCheatsBaseMethod [function(), symbol(), klabel(method_KEVMCheatsBase)]
     
+    syntax KEVMCheatsBaseMethod ::= "allowCallsToAddress" "(" Int ")" [symbol(), klabel(method_KEVMCheatsBase_allowCallsToAddress)]
+    
+    syntax KEVMCheatsBaseMethod ::= "allowChangesToStorage" "(" Int "," Int ")" [symbol(), klabel(method_KEVMCheatsBase_allowChangesToStorage)]
+    
     syntax KEVMCheatsBaseMethod ::= "expectCreate" "(" Int "," Int "," ByteArray ")" [symbol(), klabel(method_KEVMCheatsBase_expectCreate)]
     
     syntax KEVMCheatsBaseMethod ::= "expectCreate2" "(" Int "," Int "," ByteArray ")" [symbol(), klabel(method_KEVMCheatsBase_expectCreate2)]
@@ -2001,6 +2005,16 @@ module KEVMCHEATSBASE-BIN-RUNTIME
     syntax KEVMCheatsBaseMethod ::= "expectStaticCall" "(" Int "," ByteArray ")" [symbol(), klabel(method_KEVMCheatsBase_expectStaticCall)]
     
     syntax KEVMCheatsBaseMethod ::= "symbolicStorage" "(" Int ")" [symbol(), klabel(method_KEVMCheatsBase_symbolicStorage)]
+    
+    rule  ( KEVMCheatsBase . allowCallsToAddress ( V0_ ) => #abiCallData ( "allowCallsToAddress" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( KEVMCheatsBase . allowChangesToStorage ( V0_ , V1_ ) => #abiCallData ( "allowChangesToStorage" , #address ( V0_ ) , #uint256 ( V1_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 256 , V1_ )
+               ))
+      
     
     rule  ( KEVMCheatsBase . expectCreate ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectCreate" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
@@ -2047,6 +2061,12 @@ module KEVMCHEATSBASE-BIN-RUNTIME
     
     rule  ( KEVMCheatsBase . symbolicStorage ( V0_ ) => #abiCallData ( "symbolicStorage" , #address ( V0_ ) , .TypedArgs ) )
        ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( selector ( "allowCallsToAddress" ) => 1850795572 )
+      
+    
+    rule  ( selector ( "allowChangesToStorage" ) => 4207417100 )
       
     
     rule  ( selector ( "expectCreate" ) => 658968394 )
