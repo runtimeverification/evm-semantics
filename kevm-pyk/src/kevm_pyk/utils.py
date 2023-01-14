@@ -86,7 +86,8 @@ def parallel_kcfg_explore(
 
     with ProcessPool(ncpus=workers) as process_pool:
         kcfg_explore.close()
-        results = process_pool.map(_call_rpc, proof_problems)
+        _proof_problems = [(_id, _cfg, _i) for _i, (_id, _cfg) in enumerate(proof_problems.items())]
+        results = process_pool.map(_call_rpc, _proof_problems)
 
     failed = 0
     for cid, succeeded in zip(proof_problems.keys(), results, strict=True):
