@@ -362,7 +362,7 @@ def exec_foundry_prove(
     if unfound_tests:
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
-    kcfgs: Dict[str, Tuple[KCFG, Path]] = {}
+    kcfgs: Dict[str, KCFG] = {}
     for test in tests:
         kcfg_file = kcfgs_dir / f'{test}.json'
         if reinit or not kcfg_file.exists():
@@ -382,15 +382,14 @@ def exec_foundry_prove(
             target_cterm = KEVM.add_invariant(CTerm(target_term))
             cfg.replace_node(cfg.get_unique_init().id, init_cterm)
             cfg.replace_node(cfg.get_unique_target().id, target_cterm)
-            kcfgs[test] = (cfg, kcfg_file)
+            kcfgs[test] = cfg
         else:
             with open(kcfg_file, 'r') as kf:
-                kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
+                kcfgs[test] = KCFG.from_dict(json.loads(kf.read()))
 
-    proof_problems = [(cfgid, cfg, cfgpath) for (cfgid, (cfg, cfgpath)) in kcfgs.items()]
     failed = parallel_kcfg_explore(
         kcfg_explore,
-        proof_problems,
+        kcfgs,
         max_depth=max_depth,
         max_iterations=max_iterations,
         workers=workers,

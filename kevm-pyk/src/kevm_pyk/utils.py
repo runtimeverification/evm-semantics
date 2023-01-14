@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Callable, Collection, Final, Iterable, List, Optional, Tuple
+from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
@@ -15,7 +15,8 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 def parallel_kcfg_explore(
     kcfg_explore: KCFGExplore,
-    proof_problems: Iterable[Tuple[str, KCFG, Path]],
+    proof_problems: Dict[str, KCFG],
+    save_directory: Optional[Path] = None,
     max_depth: int = 100,
     max_iterations: Optional[int] = None,
     workers: int = 1,
@@ -27,8 +28,8 @@ def parallel_kcfg_explore(
     is_terminal: Optional[Callable[[CTerm], bool]] = None,
     extract_branches: Optional[Callable[[CTerm], Iterable[KInner]]] = None,
 ) -> int:
-    def _call_rpc(packed_args: Tuple[int, Tuple[str, KCFG, Path]]) -> bool:
-        _proof_index, (_cfgid, _cfg, _cfgpath) = packed_args
+    def _call_rpc(packed_args: Tuple[str, KCFG, int]) -> bool:
+        _cfgid, _cfg, _index = packed_args
         terminal_rules = ['EVM.halt']
         if break_every_step:
             terminal_rules.append('EVM.step')
@@ -50,8 +51,8 @@ def parallel_kcfg_explore(
             _cfg = kcfg_explore.rpc_prove(
                 _cfgid,
                 _cfg,
-                cfg_path=_cfgpath,
-                rpc_port=(rpc_base_port + _proof_index),
+                cfg_path=None if save_directory is None else save_directory / f'{_cfgid}.json',
+                rpc_port=rpc_base_port + _index,
                 is_terminal=is_terminal,
                 extract_branches=extract_branches,
                 max_iterations=max_iterations,
@@ -77,7 +78,7 @@ def parallel_kcfg_explore(
         results = process_pool.map(_call_rpc, proof_problems)
 
     failed = 0
-    for (cid, _, _), succeeded in zip(proof_problems, results, strict=True):
+    for cid, succeeded in zip(proof_problems.keys(), results, strict=True):
         if succeeded:
             print(f'PASSED: {cid}')
         else:
