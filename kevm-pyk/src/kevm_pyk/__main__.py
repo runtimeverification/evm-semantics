@@ -270,6 +270,7 @@ def exec_prove(
     bug_report: bool,
     save_directory: Optional[Path] = None,
     spec_module: Optional[str] = None,
+    md_selector: Optional[str] = None,
     depth: Optional[int] = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
@@ -290,7 +291,12 @@ def exec_prove(
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
     claims = kevm.get_claims(
-        spec_file, spec_module_name=spec_module, claim_labels=claim_labels, exclude_claim_labels=exclude_claim_labels
+        spec_file,
+        spec_module_name=spec_module,
+        include_dirs=[Path(i) for i in includes],
+        md_selector=md_selector,
+        claim_labels=claim_labels,
+        exclude_claim_labels=exclude_claim_labels,
     )
 
     _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
@@ -605,6 +611,12 @@ def _create_argument_parser() -> ArgumentParser:
     k_args.add_argument('--syntax-module', default=None, type=str, help='Name of the syntax module.')
     k_args.add_argument('--spec-module', default=None, type=str, help='Name of the spec module.')
     k_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
+    k_args.add_argument(
+        '--md-selector',
+        type=str,
+        default='k & ! nobytes & ! node',
+        help='Code selector expression to use when reading markdown.',
+    )
 
     kprove_args = ArgumentParser(add_help=False)
     kprove_args.add_argument(
@@ -625,12 +637,6 @@ def _create_argument_parser() -> ArgumentParser:
 
     k_kompile_args = ArgumentParser(add_help=False)
     k_kompile_args.add_argument('--backend', type=KompileBackend, help='[llvm|haskell]')
-    k_kompile_args.add_argument(
-        '--md-selector',
-        type=str,
-        default='k & ! nobytes & ! node',
-        help='Code selector expression to use when reading markdown.',
-    )
     k_kompile_args.add_argument(
         '--emit-json',
         dest='emit_json',
