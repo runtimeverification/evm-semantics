@@ -20,7 +20,7 @@ from pyk.utils import shorten_hashes
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KDefinition__expand_macros, KPrint_make_unparsing, add_include_arg, parallel_kcfg_explore, write_cfg
+from .utils import KDefinition__expand_macros, KPrint_make_unparsing, parallel_kcfg_explore, write_cfg
 
 T = TypeVar('T')
 
@@ -267,35 +267,50 @@ def exec_prove(
     profile: bool,
     spec_file: Path,
     includes: List[str],
-    debug_equations: List[str],
     bug_report: bool,
-    spec_module: Optional[str],
-    depth: Optional[int],
-    claims: Iterable[str] = (),
-    exclude_claims: Iterable[str] = (),
+    save_directory: Optional[Path] = None,
+    spec_module: Optional[str] = None,
+    depth: Optional[int] = None,
+    claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] = (),
     minimize: bool = True,
+    max_depth: int = 100,
+    max_iterations: Optional[int] = None,
+    reinit: bool = False,
+    workers: int = 1,
+    simplify_init: bool = True,
+    break_every_step: bool = False,
+    break_on_calls: bool = False,
+    implication_every_block: bool = False,
+    rpc_base_port: int = 3010,
     **kwargs: Any,
 ) -> None:
-    kevm = KEVM(definition_dir, profile=profile)
-    prove_args = add_include_arg(includes)
-    haskell_args = []
-    for de in debug_equations:
-        haskell_args += ['--debug-equation', de]
-    if bug_report:
-        haskell_args += ['--bug-report', str(spec_file.with_suffix(''))]
-    if depth is not None:
-        prove_args += ['--depth', str(depth)]
-    if claims:
-        prove_args += ['--claims', ','.join(claims)]
-    if exclude_claims:
-        prove_args += ['--exclude', ','.join(exclude_claims)]
-    final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
-    if minimize:
-        final_state = minimize_term(final_state)
-    print(kevm.pretty_print(final_state) + '\n')
-    if not (type(final_state) is KApply and final_state.label.name == '#Top'):
-        _LOGGER.error('Proof failed!')
-        sys.exit(1)
+    kevm = KEVM(definition_dir, use_directory=save_directory, profile=profile)
+    kcfg_explore = KCFGExplore(kevm)
+
+    _LOGGER.info(f'Extracting claims from file: {spec_file}')
+    claims = kevm.get_claims(
+        spec_file, spec_module_name=spec_module, claim_labels=claim_labels, exclude_claim_labels=exclude_claim_labels
+    )
+
+    _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
+    proof_problems = {c.label: KCFG.from_claim(kevm.definition, c) for c in claims}
+
+    failed = parallel_kcfg_explore(
+        kcfg_explore,
+        proof_problems,
+        max_depth=max_depth,
+        max_iterations=max_iterations,
+        workers=workers,
+        simplify_init=simplify_init,
+        break_every_step=break_every_step,
+        break_on_calls=break_on_calls,
+        implication_every_block=implication_every_block,
+        rpc_base_port=rpc_base_port,
+        is_terminal=KEVM.is_terminal,
+        extract_branches=KEVM.extract_branches,
+    )
+    sys.exit(failed)
 
 
 def exec_foundry_prove(
@@ -685,12 +700,12 @@ def _create_argument_parser() -> ArgumentParser:
     prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args])
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
     prove_args.add_argument(
-        '--claim', type=str, dest='claims', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
+        '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
     )
     prove_args.add_argument(
         '--exclude-claim',
         type=str,
-        dest='exclude_claims',
+        dest='exclude_claim_labels',
         action='append',
         help='Skip listed claims, MODULE_NAME.claim-id',
     )
