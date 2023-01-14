@@ -1,3 +1,4 @@
+import hashlib
 import logging
 from pathlib import Path
 from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple
@@ -48,10 +49,20 @@ def parallel_kcfg_explore(
         if simplify_init:
             kcfg_explore.simplify(_cfgid, _cfg)
         try:
+            cfg_path = None
+            if save_directory is not None:
+                if _cfgid.isalnum():
+                    _cfg_path = _cfgid
+                else:
+                    hash = hashlib.sha256()
+                    hash.update(_cfgid.encode('utf-8'))
+                    _cfg_path = str(hash.hexdigest())
+                    _LOGGER.info(f'Using hashed path for storing KCFG: {_cfgid} -> {_cfg_path}')
+                cfg_path = save_directory / f'{_cfg_path}.json'
             _cfg = kcfg_explore.rpc_prove(
                 _cfgid,
                 _cfg,
-                cfg_path=None if save_directory is None else save_directory / f'{_cfgid}.json',
+                cfg_path=cfg_path,
                 rpc_port=rpc_base_port + _index,
                 is_terminal=is_terminal,
                 extract_branches=extract_branches,

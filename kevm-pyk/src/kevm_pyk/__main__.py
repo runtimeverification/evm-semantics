@@ -305,6 +305,7 @@ def exec_prove(
     failed = parallel_kcfg_explore(
         kcfg_explore,
         proof_problems,
+        save_directory=save_directory,
         max_depth=max_depth,
         max_iterations=max_iterations,
         workers=workers,
@@ -705,6 +706,9 @@ def _create_argument_parser() -> ArgumentParser:
 
     prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args])
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
+    prove_args.add_argument(
+        '--save-directory', dest='save_directory', type=dir_path, help='Directory to store KCFGs in.'
+    )
     prove_args.add_argument(
         '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
     )
