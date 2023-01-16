@@ -334,13 +334,13 @@ module ALLOWCHANGESTEST-BIN-RUNTIME
     
     syntax AllowChangesTestMethod ::= "test" "(" ")" [symbol(), klabel(method_AllowChangesTest_test)]
     
-    syntax AllowChangesTestMethod ::= "testAllow" "(" Int ")" [symbol(), klabel(method_AllowChangesTest_testAllow)]
+    syntax AllowChangesTestMethod ::= "testAllow" "(" ")" [symbol(), klabel(method_AllowChangesTest_testAllow)]
     
-    syntax AllowChangesTestMethod ::= "testAllow_fail" "(" Int ")" [symbol(), klabel(method_AllowChangesTest_testAllow_fail)]
+    syntax AllowChangesTestMethod ::= "testAllow_fail" "(" ")" [symbol(), klabel(method_AllowChangesTest_testAllow_fail)]
     
-    syntax AllowChangesTestMethod ::= "testFailAllowCallsToAddress" "(" Int ")" [symbol(), klabel(method_AllowChangesTest_testFailAllowCallsToAddress)]
+    syntax AllowChangesTestMethod ::= "testFailAllowCallsToAddress" "(" ")" [symbol(), klabel(method_AllowChangesTest_testFailAllowCallsToAddress)]
     
-    syntax AllowChangesTestMethod ::= "testFailAllowChangesToStorage" "(" Int ")" [symbol(), klabel(method_AllowChangesTest_testFailAllowChangesToStorage)]
+    syntax AllowChangesTestMethod ::= "testFailAllowChangesToStorage" "(" ")" [symbol(), klabel(method_AllowChangesTest_testFailAllowChangesToStorage)]
     
     syntax AllowChangesTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AllowChangesTest_vm)]
     
@@ -359,20 +359,16 @@ module ALLOWCHANGESTEST-BIN-RUNTIME
     rule  ( AllowChangesTest . test ( ) => #abiCallData ( "test" , .TypedArgs ) )
       
     
-    rule  ( AllowChangesTest . testAllow ( V0_newValue ) => #abiCallData ( "testAllow" , #uint256 ( V0_newValue ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_newValue )
+    rule  ( AllowChangesTest . testAllow ( ) => #abiCallData ( "testAllow" , .TypedArgs ) )
       
     
-    rule  ( AllowChangesTest . testAllow_fail ( V0_newValue ) => #abiCallData ( "testAllow_fail" , #uint256 ( V0_newValue ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_newValue )
+    rule  ( AllowChangesTest . testAllow_fail ( ) => #abiCallData ( "testAllow_fail" , .TypedArgs ) )
       
     
-    rule  ( AllowChangesTest . testFailAllowCallsToAddress ( V0_newValue ) => #abiCallData ( "testFailAllowCallsToAddress" , #uint256 ( V0_newValue ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_newValue )
+    rule  ( AllowChangesTest . testFailAllowCallsToAddress ( ) => #abiCallData ( "testFailAllowCallsToAddress" , .TypedArgs ) )
       
     
-    rule  ( AllowChangesTest . testFailAllowChangesToStorage ( V0_newValue ) => #abiCallData ( "testFailAllowChangesToStorage" , #uint256 ( V0_newValue ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_newValue )
+    rule  ( AllowChangesTest . testFailAllowChangesToStorage ( ) => #abiCallData ( "testFailAllowChangesToStorage" , .TypedArgs ) )
       
     
     rule  ( AllowChangesTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
@@ -393,16 +389,16 @@ module ALLOWCHANGESTEST-BIN-RUNTIME
     rule  ( selector ( "test" ) => 4171824493 )
       
     
-    rule  ( selector ( "testAllow" ) => 30294130 )
+    rule  ( selector ( "testAllow" ) => 3693132891 )
       
     
-    rule  ( selector ( "testAllow_fail" ) => 329382111 )
+    rule  ( selector ( "testAllow_fail" ) => 4129570225 )
       
     
-    rule  ( selector ( "testFailAllowCallsToAddress" ) => 1125508549 )
+    rule  ( selector ( "testFailAllowCallsToAddress" ) => 1262828121 )
       
     
-    rule  ( selector ( "testFailAllowChangesToStorage" ) => 498388302 )
+    rule  ( selector ( "testFailAllowChangesToStorage" ) => 1529992487 )
       
     
     rule  ( selector ( "vm" ) => 980845667 )
