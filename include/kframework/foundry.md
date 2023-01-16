@@ -974,7 +974,7 @@ function allowChangesToStorage(address,uint256) external;
 
 ```{.k .bytes}
     rule [foundry.allowStorageSlotToAddress]:
-         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #addStorageSlotToWhitelist { #asWord(#range(ARGS, 0, 32)) | #asWord(#range(ARGS, 1, 32)) } ... </k>
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #addStorageSlotToWhitelist { #asWord(#range(ARGS, 0, 32)) | #asWord(#range(ARGS, 32, 32)) } ... </k>
          requires SELECTOR ==Int selector ( "allowChangesToStorage(address,uint256)" )
 ```
 
@@ -1335,8 +1335,8 @@ If the production is matched when no prank is active, it will be ignored.
 
 ```k
     syntax KItem ::= "#addStorageSlotToWhitelist" StorageSlot [klabel(foundry_addStorageSlotToWhitelist)]
- // ----------------------------------------------------------------------------------------------------
-    rule <k> #addAddressToWhitelist SLOT => . ... </k>
+ // -----------------------------------------------------------------------------------------------------
+    rule <k> #addStorageSlotToWhitelist SLOT => . ... </k>
         <whitelist>
           <isStorageWhitelistActive> _ => true </isStorageWhitelistActive>
           <storageSlotSet> WLIST => WLIST SetItem(SLOT) </storageSlotSet>
