@@ -22,14 +22,13 @@ pipeline {
         }
       }
       stages {
-        // Must come before build/prove for proper testing
         stage('Build Pyk') {
           options { timeout(time: 1, unit: 'MINUTES') }
-          steps { sh 'make kevm-pyk' }
+          steps { sh 'make kevm-pyk venv -j2' }
         }
         stage('Build') {
           options { timeout(time: 15, unit: 'MINUTES') }
-          steps { sh 'make venv build build-prove RELEASE=true -j4' }
+          steps { sh 'make build build-prove RELEASE=true -j4' }
         }
         stage('Test Pyk') {
           options { timeout(time: 1, unit: 'MINUTES') }
@@ -155,6 +154,10 @@ pipeline {
             dir('focal')  { unstash 'focal'  }
             sshagent(['rv-jenkins-github']) {
               sh '''
+                curl -L https://github.com/github/hub/releases/download/v2.14.0/hub-linux-amd64-2.14.0.tgz -o hub.tgz
+                tar -xzf hub.tgz
+                export PATH=$(pwd)/hub-linux-amd64-2.14.0/bin:$PATH
+
                 git clone 'ssh://github.com/runtimeverification/evm-semantics.git' kevm-release
                 cd kevm-release
                 git fetch --all
