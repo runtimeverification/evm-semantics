@@ -59,6 +59,6 @@ contract AllowChangesTest is Test, KEVMCheats {
 		kevm.allowCallsToAddress(address(canChange));
 		kevm.allowChangesToStorage(address(canChange), 0);
 
-		canChange.changeValue1(234521);
+		canChange.changeValue2(234521);
 	}
 }
