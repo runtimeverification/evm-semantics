@@ -22,43 +22,43 @@ contract AllowChangesTest is Test, KEVMCheats {
 		assertTrue(true);
 	}
 	
-	function testAllow(uint256 newValue) public {
+	function testAllow() public {
 		ValueStore canChange = new ValueStore();
 		ValueStore cannotChange = new ValueStore();
 
 		kevm.allowCallsToAddress(address(canChange));
 		kevm.allowChangesToStorage(address(canChange), 0);
 
-		canChange.changeValue1(newValue);
+		canChange.changeValue1(85);
 	}
 
-	function testFailAllowCallsToAddress(uint256 newValue) public {
+	function testFailAllowCallsToAddress() public {
 		ValueStore canChange = new ValueStore();
 		ValueStore cannotChange = new ValueStore();
 
 		kevm.allowCallsToAddress(address(canChange));
 		kevm.allowChangesToStorage(address(canChange), 0);
 
-		cannotChange.changeValue1(newValue);
+		cannotChange.changeValue1(10245);
 	}
 
-	function testFailAllowChangesToStorage(uint256 newValue) public {
+	function testFailAllowChangesToStorage() public {
 		ValueStore canChange = new ValueStore();
 		ValueStore cannotChange = new ValueStore();
 
 		kevm.allowCallsToAddress(address(canChange));
 		kevm.allowChangesToStorage(address(canChange), 0);
 
-		canChange.changeValue2(newValue);
+		canChange.changeValue2(23452);
 	}
 
-	function testAllow_fail(uint256 newValue) public {
+	function testAllow_fail() public {
 		ValueStore canChange = new ValueStore();
 		ValueStore cannotChange = new ValueStore();
 
 		kevm.allowCallsToAddress(address(canChange));
 		kevm.allowChangesToStorage(address(canChange), 0);
 
-		canChange.changeValue1(newValue);
+		canChange.changeValue1(234521);
 	}
 }
