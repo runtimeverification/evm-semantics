@@ -87,6 +87,8 @@
             patches = [ ./package/nix/kevm.patch ];
 
             postPatch = ''
+              substituteInPlace ./Makefile \
+                --replace 'PYK_ACTIVATE := . $(VENV_DIR)/bin/activate' 'PYK_ACTIVATE := true'
               substituteInPlace ./cmake/node/CMakeLists.txt \
                 --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
               substituteInPlace ./bin/kevm \
