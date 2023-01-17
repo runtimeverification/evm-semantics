@@ -168,7 +168,11 @@ plugin-deps: $(plugin_includes) $(plugin_c_includes)
 # Building
 # --------
 
-KOMPILE := $(KEVM) kompile
+KEVM_PYK_DIR := ./kevm-pyk
+VENV_DIR     := $(BUILD_DIR)/venv
+PYK_ACTIVATE := . $(VENV_DIR)/bin/activate
+
+KOMPILE := $(PYK_ACTIVATE) && $(KEVM) kompile --pyk
 
 kevm_files := abi.md                      \
               asm.md                      \
@@ -485,14 +489,12 @@ foundry-clean:
 	rm -f  tests/foundry/foundry.rule-profile
 
 tests/foundry/%: KEVM = $(PYK_ACTIVATE) && kevm
-tests/foundry/%: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 
 foundry_dir  := tests/foundry
 foundry_out := $(foundry_dir)/out
 
 test-foundry: KEVM_OPTS += --pyk --verbose --profile
 test-foundry: KEVM = $(PYK_ACTIVATE) && kevm
-test-foundry: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 test-foundry: tests/foundry/foundry.k.check tests/foundry/out/kompiled/foundry.k.prove
 
 foundry-forge-build: $(foundry_out)
@@ -521,7 +523,6 @@ tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompi
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
 tests/specs/examples/%-bin-runtime.k: KEVM = $(PYK_ACTIVATE) && kevm
-tests/specs/examples/%-bin-runtime.k: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) venv
@@ -543,12 +544,11 @@ tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$
 	$(KEVM) prove $< $(KEVM_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS)                   \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
-tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/concrete-rules.txt $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
+tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                  \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
 	    --main-module $(KPROVE_MODULE)                                                                   \
 	    --syntax-module $(KPROVE_MODULE)                                                                 \
-	    --concrete-rules-file tests/specs/concrete-rules.txt                                             \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 tests/%.search: tests/%
