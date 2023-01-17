@@ -65,11 +65,7 @@ run_kevm_pyk() {
 # User Commands
 
 run_kompile() {
-    local kompile_opts openssl_root
-
-    if ${pyk} && [[ "${backend}" != haskell && "${backend}" != foundry ]]; then
-        fatal "Command kompile with option --pyk only available for --backend haskell."
-    fi
+    local ccopts ccopt kompile_opts openssl_root
 
     kompile_opts=( "${run_file}" --emit-json )
     ${pyk} || kompile_opts+=( --output-definition "${backend_dir}" )
@@ -92,25 +88,35 @@ run_kompile() {
         llvm)              kompile_opts+=( --md-selector 'k & ! nobytes & ! node' )                         ;;&
         node)              kompile_opts+=( --md-selector 'k & ! nobytes & ! standalone' --no-llvm-kompile ) ;;&
         llvm|node) backend=llvm
-                   kompile_opts+=( -ccopt -L${libff_dir}/lib -ccopt -I${libff_dir}/include                       )
-                   kompile_opts+=( -ccopt ${plugin_include}/c/plugin_util.cpp                                    )
-                   kompile_opts+=( -ccopt ${plugin_include}/c/crypto.cpp                                         )
-                   kompile_opts+=( -ccopt ${plugin_include}/c/blake2.cpp                                         )
-                   kompile_opts+=( -ccopt -g -ccopt -std=c++14                                                   )
-                   kompile_opts+=( -ccopt -lff -ccopt -lcryptopp -ccopt -lsecp256k1 -ccopt -lssl -ccopt -lcrypto )
+                   ccopts+=( -L${libff_dir}/lib -I${libff_dir}/include  )
+                   ccopts+=( ${plugin_include}/c/plugin_util.cpp        )
+                   ccopts+=( ${plugin_include}/c/crypto.cpp             )
+                   ccopts+=( ${plugin_include}/c/blake2.cpp             )
+                   ccopts+=( -g -std=c++14                              )
+                   ccopts+=( -lff -lcryptopp -lsecp256k1 -lssl -lcrypto )
                    if [[ "$(uname -s)" == 'Linux' ]]; then
-                       kompile_opts+=( -ccopt -lprocps )
+                       ccopts+=( -lprocps )
                    elif [[ "$(uname -s)" == 'Darwin' ]]; then
                        openssl_root="$(brew --prefix openssl)"
                        brew_root="$(brew --prefix)"
-                       kompile_opts+=( -ccopt -I${brew_root}/include -ccopt -L/${brew_root}/lib -ccopt -I${openssl_root}/include -ccopt -L${openssl_root}/lib )
-                       kompile_opts+=( -ccopt -I${libcryptopp_dir}/include -ccopt -L/${libcryptopp_dir}/lib )
+                       ccopts+=( -I${brew_root}/include -L/${brew_root}/lib -I${openssl_root}/include -L${openssl_root}/lib )
+                       ccopts+=( -I${libcryptopp_dir}/include -L/${libcryptopp_dir}/lib                                     )
                    fi
+                   for ccopt in "${ccopts[@]}"; do
+                       if ${pyk}; then
+                           kompile_opts+=(-ccopt="${ccopt}")
+                       else
+                           kompile_opts+=(-ccopt "${ccopt}")
+                       fi
+                   done
                    ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
 
-    ${pyk} || kompile_opts+=( --backend ${backend} )
+    kompile_opts+=(--backend ${backend})
+    if ${pyk} && ${debug}; then
+        kompile_opts+=( --debug )
+    fi
 
     if ${pyk}; then
         run_kevm_pyk kompile "${kompile_opts[@]}" "$@"

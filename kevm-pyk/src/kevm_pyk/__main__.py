@@ -13,6 +13,7 @@ from pyk.kast.manip import flatten_label, get_cell, minimize_term, push_down_rew
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG, KCFGViewer
 from pyk.ktool.kit import KIT
+from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.ml import is_top, mlTop
@@ -75,6 +76,7 @@ def exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, *
 
 def exec_kompile(
     definition_dir: Path,
+    backend: KompileBackend,
     profile: bool,
     main_file: Path,
     emit_json: bool,
@@ -82,10 +84,25 @@ def exec_kompile(
     main_module: Optional[str],
     syntax_module: Optional[str],
     md_selector: Optional[str],
+    ccopts: Iterable[str] = (),
+    llvm_kompile: bool = True,
+    o0: bool = False,
+    o1: bool = False,
+    o2: bool = False,
+    o3: bool = False,
+    debug: bool = False,
     **kwargs: Any,
 ) -> None:
+    optimization = 0
+    if o1:
+        optimization = 1
+    if o2:
+        optimization = 2
+    if o3:
+        optimization = 3
     KEVM.kompile(
         definition_dir,
+        backend,
         main_file,
         emit_json=emit_json,
         includes=includes,
@@ -93,6 +110,10 @@ def exec_kompile(
         syntax_module_name=syntax_module,
         md_selector=md_selector,
         profile=profile,
+        debug=debug,
+        ccopts=ccopts,
+        llvm_kompile=llvm_kompile,
+        optimization=optimization,
     )
 
 
@@ -136,11 +157,19 @@ def exec_foundry_kompile(
     rekompile: bool = False,
     requires: Iterable[str] = (),
     imports: Iterable[str] = (),
+    ccopts: Iterable[str] = (),
+    llvm_kompile: bool = True,
+    debug: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
+    _ignore_arg(kwargs, 'backend', f'--backend {kwargs["backend"]}')
+    _ignore_arg(kwargs, 'o0', '-O0')
+    _ignore_arg(kwargs, 'o1', '-O1')
+    _ignore_arg(kwargs, 'o2', '-O2')
+    _ignore_arg(kwargs, 'o3', '-O3')
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
     foundry_definition_dir = foundry_out / 'kompiled'
@@ -187,6 +216,7 @@ def exec_foundry_kompile(
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
         KEVM.kompile(
             foundry_definition_dir,
+            KompileBackend.HASKELL,
             foundry_main_file,
             emit_json=True,
             includes=includes,
@@ -194,6 +224,9 @@ def exec_foundry_kompile(
             syntax_module_name=syntax_module,
             md_selector=md_selector,
             profile=profile,
+            debug=debug,
+            ccopts=ccopts,
+            llvm_kompile=llvm_kompile,
         )
 
 
@@ -619,6 +652,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
 
     k_kompile_args = ArgumentParser(add_help=False)
+    k_kompile_args.add_argument('--backend', type=KompileBackend, help='[llvm|haskell]')
     k_kompile_args.add_argument(
         '--md-selector',
         type=str,
@@ -635,6 +669,24 @@ def _create_argument_parser() -> ArgumentParser:
     k_kompile_args.add_argument(
         '--no-emit-json', dest='emit_json', action='store_false', help='Do not JSON definition after compilation.'
     )
+    k_kompile_args.add_argument(
+        '-ccopt',
+        dest='ccopts',
+        default=[],
+        action='append',
+        help='Additional arguments to pass to llvm-kompile.',
+    )
+    k_kompile_args.add_argument(
+        '--no-llvm-kompile',
+        dest='llvm_kompile',
+        default=True,
+        action='store_false',
+        help='Do not run llvm-kompile process.',
+    )
+    k_kompile_args.add_argument('-O0', dest='o0', default=False, action='store_true', help='Optimization level 0.')
+    k_kompile_args.add_argument('-O1', dest='o1', default=False, action='store_true', help='Optimization level 1.')
+    k_kompile_args.add_argument('-O2', dest='o2', default=False, action='store_true', help='Optimization level 2.')
+    k_kompile_args.add_argument('-O3', dest='o3', default=False, action='store_true', help='Optimization level 3.')
 
     evm_chain_args = ArgumentParser(add_help=False)
     evm_chain_args.add_argument(
