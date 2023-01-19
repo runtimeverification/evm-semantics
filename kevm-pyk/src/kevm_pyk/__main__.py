@@ -320,6 +320,12 @@ def exec_prove(
     sys.exit(failed)
 
 
+def exec_view_kcfg(definition_dir: Path, kcfg_file: Path, profile: bool, **kwargs: Any) -> None:
+    kevm = KEVM(definition_dir, profile=profile)
+    viewer = KCFGViewer(kcfg_file, kevm, node_printer=kevm.short_info)
+    viewer.run()
+
+
 def exec_foundry_prove(
     profile: bool,
     foundry_out: Path,
@@ -719,6 +725,13 @@ def _create_argument_parser() -> ArgumentParser:
         action='append',
         help='Skip listed claims, MODULE_NAME.claim-id',
     )
+
+    view_kcfg_args = command_parser.add_parser(
+        'view-kcfg',
+        help='Display tree view of KCFG',
+        parents=[shared_args, k_args],
+    )
+    view_kcfg_args.add_argument('kcfg_file', type=file_path, help='Path to KCFG to view.')
 
     run_args = command_parser.add_parser(
         'run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args, k_args]
