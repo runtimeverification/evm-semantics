@@ -265,8 +265,6 @@ The rule `foundry.return` will rewrite the `#return_foundry` production into oth
     syntax KItem ::= "#return_foundry" Int Int       [klabel(foundry_return)]
                    | "#call_foundry" Int ByteArray     [klabel(foundry_call)]
                    | "#error_foundry" Int ByteArray   [klabel(foundry_error)]
-                   | "#error_foundry" Int        [klabel(foundry_error_call)]
-                   | "#error_foundry" Int Int [klabel(foundry_error_storage)]
  // -------------------------------------------------------------------------
     rule [foundry.return]:
          <k> #return_foundry RETSTART RETWIDTH
@@ -924,8 +922,7 @@ If the address is not in the whitelist `WLIST` then `KEVM` goes into an error st
 
 ```{.k .bytes}
     rule [foundry.catchNonWhitelistedCalls]:
-         <k> #call _ ACCTTO _ _ _ _ false => #error_foundry ACCTTO ... </k>
-         <statusCode> _ => FOUNDRY_WHITELISTCALL </statusCode>
+         <k> #call _ ACCTTO _ _ _ _ false => #end FOUNDRY_WHITELISTCALL ... </k>
          <whitelist>
            <isCallWhitelistActive> true </isCallWhitelistActive>
            <addressSet> WLIST </addressSet>
@@ -940,7 +937,7 @@ If the pair is not present in the whitelist `WLIST` then `KEVM` goes into an err
 
 ```{.k .bytes}
     rule [foundry.catchNonWhitelistedStorageChanges]:
-         <k> SSTORE INDEX _ => #error_foundry ACCT INDEX ... </k>
+         <k> SSTORE INDEX _ => #end FOUNDRY_WHITELISTSTORAGE ... </k>
          <id> ACCT </id>
          <statusCode> _ => FOUNDRY_WHITELISTSTORAGE </statusCode>
          <whitelist>
