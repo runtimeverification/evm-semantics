@@ -918,11 +918,13 @@ A `StorageSlot` pair is formed from an address and a storage index.
 ```
 
 The `ACCTTO` value is checked for each call while the whitelist restriction is enabled for calls.
-If the address is not in the whitelist `WLIST` then `KEVM` goes into an error state providing the `ACCTTO` value. 
+If the address is not in the whitelist `WLIST` then `KEVM` goes into an error state providing the `ACCTTO` value.
 
 ```{.k .bytes}
     rule [foundry.catchNonWhitelistedCalls]:
-         <k> #call _ ACCTTO _ _ _ _ false => #end FOUNDRY_WHITELISTCALL ... </k>
+         <k> (#call _ ACCTTO _ _ _ _ false
+          ~> #popCallStack
+          ~> #popWorldState) => #end FOUNDRY_WHITELISTCALL ... </k>
          <whitelist>
            <isCallWhitelistActive> true </isCallWhitelistActive>
            <addressSet> WLIST </addressSet>
