@@ -37,6 +37,7 @@
           clang
           llvmPackages.llvm
           cryptopp.dev
+          fmt
           gmp
           # graphviz
           mpfr
