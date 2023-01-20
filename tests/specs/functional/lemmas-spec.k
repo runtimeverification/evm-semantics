@@ -136,7 +136,7 @@ module LEMMAS-SPEC
     claim <k> runLemma ( #range(_M [ 32 := (0 : 1 : 2 : .ByteArray)         ] , 33 , 2) ) => doneLemma( (1 : 2 : .ByteArray)                      ) ... </k>
     claim <k> runLemma ( #range( M [ 32 := (0 : 1 : 2 : .ByteArray)         ] , 33 , 3) ) => doneLemma( (1 : 2 :  .ByteArray) ++ #range(M, 35, 1) ) ... </k>
 
-    claim [nestedRange]: <k> runLemma ( #range ( #range ( ( BA:ByteArray ++ #buf ( 32 , X ) ) , 4 , 64 ) , 32 , 32 ) ) => doneLemma ( #range ( BA ++ #buf ( 32 , X ) , 36 , 32 ) ) ... </k>
+    claim [nestedRange]: <k> runLemma ( #range ( #range ( BA:ByteArray , 4 , 64 ) , 32 , 32 ) ) => doneLemma ( #range ( BA , 36 , 32 ) ) ... </k>
 
  // #buf simplification
  // -------------------
