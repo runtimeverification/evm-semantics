@@ -336,6 +336,8 @@ module ASSUMETEST-BIN-RUNTIME
     
     syntax AssumeTestMethod ::= "test_assume_false" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_assume_false)]
     
+    syntax AssumeTestMethod ::= "test_assume_staticCall" "(" Int ")" [symbol(), klabel(method_AssumeTest_test_assume_staticCall)]
+    
     syntax AssumeTestMethod ::= "test_assume_true" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_assume_true)]
     
     syntax AssumeTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AssumeTest_vm)]
@@ -367,6 +369,10 @@ module ASSUMETEST-BIN-RUNTIME
                ))
       
     
+    rule  ( AssumeTest . test_assume_staticCall ( V0_a ) => #abiCallData ( "test_assume_staticCall" , #bool ( V0_a ) , .TypedArgs ) )
+       ensures #rangeBool ( V0_a )
+      
+    
     rule  ( AssumeTest . test_assume_true ( V0_a , V1_b ) => #abiCallData ( "test_assume_true" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
@@ -392,6 +398,9 @@ module ASSUMETEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_assume_false" ) => 3827036084 )
+      
+    
+    rule  ( selector ( "test_assume_staticCall" ) => 1479621703 )
       
     
     rule  ( selector ( "test_assume_true" ) => 1861181564 )
