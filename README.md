@@ -190,20 +190,19 @@ make plugin-deps
 
 ### Building
 
+First, you need to create a new virtual environment for the build:
+
+```sh
+make venv
+```
+
 Finally, you can build the semantics.
 
 ```sh
 make build
 ```
 
-And you need to set up the virtual environment:
-
-```sh
-make venv
-```
-
-Which should output (towards the end), a line like this: `. .build/venv/bin/activate`.
-You should run this line in your shell, then you are in the virtual environment:
+Before using KEVM, you should always run this line in your shell to load the virtual environment:
 
 ```sh
 . .build/venv/bin/activate
