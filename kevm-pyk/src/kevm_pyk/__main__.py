@@ -10,7 +10,7 @@ from pyk.cterm import CTerm, build_rule
 from pyk.kast.inner import KApply, KInner, KRewrite, KToken
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
-from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
+from pyk.kcfg import KCFG, KCFGViewer
 from pyk.ktool.kit import KIT
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
@@ -287,7 +287,6 @@ def exec_prove(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir, use_directory=save_directory, profile=profile)
-    kcfg_explore = KCFGExplore(kevm)
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
     claims = kevm.get_claims(
@@ -303,7 +302,7 @@ def exec_prove(
     proof_problems = {c.label: KCFG.from_claim(kevm.definition, c) for c in claims}
 
     failed = parallel_kcfg_explore(
-        kcfg_explore,
+        kevm,
         proof_problems,
         save_directory=save_directory,
         max_depth=max_depth,
@@ -357,7 +356,6 @@ def exec_foundry_prove(
     if not kcfgs_dir.exists():
         kcfgs_dir.mkdir()
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
-    kcfg_explore = KCFGExplore(foundry)
 
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
@@ -416,7 +414,7 @@ def exec_foundry_prove(
                 kcfgs[test] = KCFG.from_dict(json.loads(kf.read()))
 
     failed = parallel_kcfg_explore(
-        kcfg_explore,
+        foundry,
         kcfgs,
         max_depth=max_depth,
         max_iterations=max_iterations,

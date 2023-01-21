@@ -9,13 +9,13 @@ from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
 from pyk.kast.outer import KDefinition, KFlatModule, KImport
 from pyk.kcfg import KCFG, KCFGExplore
-from pyk.ktool import KPrint
+from pyk.ktool import KPrint, KProve
 
 _LOGGER: Final = logging.getLogger(__name__)
 
 
 def parallel_kcfg_explore(
-    kcfg_explore: KCFGExplore,
+    kprove: KProve,
     proof_problems: Dict[str, KCFG],
     save_directory: Optional[Path] = None,
     max_depth: int = 100,
@@ -46,46 +46,44 @@ def parallel_kcfg_explore(
                     'FOUNDRY.foundry.call',
                 ]
             )
-        if simplify_init:
-            kcfg_explore.simplify(_cfgid, _cfg)
-        try:
-            cfg_path = None
-            if save_directory is not None:
-                if _cfgid.isalnum():
-                    _cfg_path = _cfgid
+        with KCFGExplore(kprove, port=(rpc_base_port + _index)) as kcfg_explore:
+            if simplify_init:
+                kcfg_explore.simplify(_cfgid, _cfg)
+            try:
+                cfg_path = None
+                if save_directory is not None:
+                    if _cfgid.isalnum():
+                        _cfg_path = _cfgid
+                    else:
+                        hash = hashlib.sha256()
+                        hash.update(_cfgid.encode('utf-8'))
+                        _cfg_path = str(hash.hexdigest())
+                        _LOGGER.info(f'Using hashed path for storing KCFG: {_cfgid} -> {_cfg_path}')
+                    cfg_path = save_directory / f'{_cfg_path}.json'
+                _cfg = kcfg_explore.all_path_reachability_prove(
+                    _cfgid,
+                    _cfg,
+                    cfg_path=cfg_path,
+                    is_terminal=is_terminal,
+                    extract_branches=extract_branches,
+                    max_iterations=max_iterations,
+                    execute_depth=max_depth,
+                    terminal_rules=terminal_rules,
+                    implication_every_block=implication_every_block,
+                )
+                failure_nodes = _cfg.frontier + _cfg.stuck
+                if len(failure_nodes) == 0:
+                    _LOGGER.info(f'Proof passed: {_cfgid}')
+                    return True
                 else:
-                    hash = hashlib.sha256()
-                    hash.update(_cfgid.encode('utf-8'))
-                    _cfg_path = str(hash.hexdigest())
-                    _LOGGER.info(f'Using hashed path for storing KCFG: {_cfgid} -> {_cfg_path}')
-                cfg_path = save_directory / f'{_cfg_path}.json'
-            _cfg = kcfg_explore.rpc_prove(
-                _cfgid,
-                _cfg,
-                cfg_path=cfg_path,
-                rpc_port=rpc_base_port + _index,
-                is_terminal=is_terminal,
-                extract_branches=extract_branches,
-                max_iterations=max_iterations,
-                execute_depth=max_depth,
-                terminal_rules=terminal_rules,
-                implication_every_block=implication_every_block,
-            )
-            failure_nodes = _cfg.frontier + _cfg.stuck
-            if len(failure_nodes) == 0:
-                _LOGGER.info(f'Proof passed: {_cfgid}')
-                return True
-            else:
-                _LOGGER.error(f'Proof failed: {_cfgid}')
+                    _LOGGER.error(f'Proof failed: {_cfgid}')
+                    return False
+
+            except Exception as e:
+                _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}')
                 return False
 
-        except Exception as e:
-            _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}')
-            kcfg_explore.close()
-            return False
-
     with ProcessPool(ncpus=workers) as process_pool:
-        kcfg_explore.close()
         _proof_problems = [(_id, _cfg, _i) for _i, (_id, _cfg) in enumerate(proof_problems.items())]
         results = process_pool.map(_call_rpc, _proof_problems)
 
