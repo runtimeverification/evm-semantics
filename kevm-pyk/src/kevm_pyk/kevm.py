@@ -198,6 +198,18 @@ class KEVM(KProve, KRun):
             'SERIALIZATION.#newAddrCreate2',
         ]
 
+    def short_info(self, cterm: CTerm) -> List[str]:
+        k_cell = self.pretty_print(get_cell(cterm.config, 'K_CELL')).replace('\n', ' ')
+        if len(k_cell) > 80:
+            k_cell = k_cell[0:80] + ' ...'
+        k_str = f'k: {k_cell}'
+        calldepth_str = f'callDepth: {self.pretty_print(get_cell(cterm.config, "CALLDEPTH_CELL"))}'
+        statuscode_str = f'statusCode: {self.pretty_print(get_cell(cterm.config, "STATUSCODE_CELL"))}'
+        _pc = get_cell(cterm.config, 'PC_CELL')
+        pc_str = f'pc: {self.pretty_print(_pc)}'
+        ret_strs = [k_str, calldepth_str, statuscode_str, pc_str]
+        return ret_strs
+
     @staticmethod
     def add_invariant(cterm: CTerm) -> CTerm:
         config, *constraints = cterm
