@@ -7,7 +7,14 @@ from typing import Any, Dict, Final, Iterable, List, Optional
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm, remove_useless_constraints
 from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, build_assoc, build_cons
-from pyk.kast.manip import abstract_term_safely, flatten_label, get_cell, remove_constraints_for, set_cell
+from pyk.kast.manip import (
+    abstract_term_safely,
+    flatten_label,
+    get_cell,
+    remove_constraints_for,
+    set_cell,
+    split_config_from,
+)
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.kprint import paren
@@ -199,15 +206,15 @@ class KEVM(KProve, KRun):
         ]
 
     def short_info(self, cterm: CTerm) -> List[str]:
-        k_cell = self.pretty_print(get_cell(cterm.config, 'K_CELL')).replace('\n', ' ')
+        _, subst = split_config_from(cterm.config)
+        k_cell = self.pretty_print(subst['K_CELL']).replace('\n', ' ')
         if len(k_cell) > 80:
             k_cell = k_cell[0:80] + ' ...'
         k_str = f'k: {k_cell}'
-        calldepth_str = f'callDepth: {self.pretty_print(get_cell(cterm.config, "CALLDEPTH_CELL"))}'
-        statuscode_str = f'statusCode: {self.pretty_print(get_cell(cterm.config, "STATUSCODE_CELL"))}'
-        _pc = get_cell(cterm.config, 'PC_CELL')
-        pc_str = f'pc: {self.pretty_print(_pc)}'
-        ret_strs = [k_str, calldepth_str, statuscode_str, pc_str]
+        ret_strs = [k_str]
+        for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
+            if cell in subst:
+                ret_strs.append(f'{name}: {self.pretty_print(subst[cell])}')
         return ret_strs
 
     @staticmethod
