@@ -1,5 +1,7 @@
 import hashlib
 import logging
+import socket
+from contextlib import closing
 from pathlib import Path
 from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple
 
@@ -14,6 +16,13 @@ from pyk.ktool import KPrint, KProve
 _LOGGER: Final = logging.getLogger(__name__)
 
 
+def find_free_port(host: str = 'localhost') -> int:
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind((host, 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return s.getsockname()[1]
+
+
 def parallel_kcfg_explore(
     kprove: KProve,
     proof_problems: Dict[str, KCFG],
@@ -25,7 +34,7 @@ def parallel_kcfg_explore(
     break_every_step: bool = False,
     break_on_calls: bool = False,
     implication_every_block: bool = False,
-    rpc_base_port: int = 3010,
+    rpc_base_port: Optional[int] = None,
     is_terminal: Optional[Callable[[CTerm], bool]] = None,
     extract_branches: Optional[Callable[[CTerm], Iterable[KInner]]] = None,
 ) -> int:
@@ -46,7 +55,8 @@ def parallel_kcfg_explore(
                     'FOUNDRY.foundry.call',
                 ]
             )
-        with KCFGExplore(kprove, port=(rpc_base_port + _index)) as kcfg_explore:
+        base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
+        with KCFGExplore(kprove, port=(base_port + _index)) as kcfg_explore:
             if simplify_init:
                 kcfg_explore.simplify(_cfgid, _cfg)
             try:

@@ -283,7 +283,7 @@ def exec_prove(
     break_every_step: bool = False,
     break_on_calls: bool = False,
     implication_every_block: bool = False,
-    rpc_base_port: int = 3010,
+    rpc_base_port: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir, use_directory=save_directory, profile=profile)
@@ -338,7 +338,7 @@ def exec_foundry_prove(
     break_every_step: bool = False,
     break_on_calls: bool = False,
     implication_every_block: bool = False,
-    rpc_base_port: int = 3010,
+    rpc_base_port: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -607,6 +607,14 @@ def _create_argument_parser() -> ArgumentParser:
     shared_args.add_argument('--profile', default=False, action='store_true', help='Coarse process-level profiling.')
     shared_args.add_argument('--workers', '-j', default=1, type=int, help='Number of processes to run in parallel.')
 
+    rpc_args = ArgumentParser(add_help=False)
+    rpc_args.add_argument(
+        '--rpc-base-port',
+        dest='rpc_base_port',
+        type=int,
+        help='Base port to use for RPC server invocations.',
+    )
+
     k_args = ArgumentParser(add_help=False)
     k_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
     k_args.add_argument(
@@ -708,7 +716,9 @@ def _create_argument_parser() -> ArgumentParser:
     )
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
 
-    prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args])
+    prove_args = command_parser.add_parser(
+        'prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args, rpc_args]
+    )
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
     prove_args.add_argument(
         '--save-directory', dest='save_directory', type=dir_path, help='Directory to store KCFGs in.'
@@ -801,7 +811,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_prove_args = command_parser.add_parser(
         'foundry-prove',
         help='Run Foundry Proof.',
-        parents=[shared_args, k_args, kprove_args],
+        parents=[shared_args, k_args, kprove_args, rpc_args],
     )
     foundry_prove_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_prove_args.add_argument(
@@ -874,13 +884,6 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Check subsumption into target state every basic block, not just at terminal nodes.',
-    )
-    foundry_prove_args.add_argument(
-        '--rpc-base-port',
-        dest='rpc_base_port',
-        default=3010,
-        type=int,
-        help='Base port to use for RPC server invocations.',
     )
 
     foundry_show_args = command_parser.add_parser(
