@@ -38,6 +38,7 @@ EnvTest.testEnvUInt
 EnvTest.testEnvUIntArray
 ExpectRevertTest.testFail_expectRevert_bytes4
 ExpectRevertTest.test_expectRevert_bytes4
+ExpectRevertTest.test_expectRevert_encodedSymbolic
 FfiTest.testffi
 FfiTest.testFFIFOO
 FfiTest.testFFIScript

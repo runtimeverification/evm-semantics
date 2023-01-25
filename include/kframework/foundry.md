@@ -518,7 +518,8 @@ This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes 
       requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
 ```
 
-#### expectRevert - expect the next call to revert.
+Expecting the next call to revert
+---------------------------------
 
 ```
 function expectRevert() external;
@@ -526,7 +527,7 @@ function expectRevert(bytes4 msg) external;
 function expectRevert(bytes calldata msg) external;
 ```
 
-Ignore all cheat code calls which take place while `expectRevert` is active.
+All cheat code calls which take place while `expectRevert` is active are ignored.
 
 ```{.k .bytes}
     rule [foundry.call.ignoreCalls]:
@@ -538,10 +539,16 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
       [priority(35)]
 ```
 
+
+The `#halt` production is used to examine the end of each call in KEVM.
+If the call depth of the current call is lower than the call depth of the `expectRevert` cheat code and the `<statusCode>` is not `EVMC_SUCCESS`, the `#checkRevertReason` will be used to compare the output of the call with the expect reason provided.
+`#abiCallData("expectRevert", #bytes(OUT))` is used to encode the output of the execution in order to match the encoding of the reason.
+
 ```{.k .bytes}
     rule [foundry.handleExpectRevert]:
          <k> (. => #checkRevertReason ~> #clearExpectRevert) ~> #halt ... </k>
          <statusCode> SC </statusCode>
+         <output> OUT => #abiCallData("expectRevert", #bytes(OUT)) </output>
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
@@ -552,6 +559,8 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
        andBool SC =/=K EVMC_SUCCESS
       [priority(40)]
 ```
+
+If the call is successful, a revert is triggered and the `FAILED` location of the `Foundry` contract is set to `true` using `#markAsFailed`.
 
 ```{.k .bytes}
     rule [foundry.handleExpectRevert.error]:
@@ -566,6 +575,7 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
       requires CD <=Int ED
       [priority(40)]
 ```
+
 If the `expectRevert()` selector is matched, call the `#setExpectRevert` production to initialize the `<expectedRevert>` subconfiguration.
 
 ```{.k .bytes}
@@ -1055,8 +1065,7 @@ Utils
            <expectedReason> _ => .ByteArray </expectedReason>
          </expectedRevert>
 ```
-
-- `#handleExpectRevert` 
+- `#checkRevertReason` will compare the contents of the `<output>` cell with the ByteArray from `<expectReason>`.
 
 ```k
     syntax KItem ::= "#checkRevertReason" [klabel(foundry_checkRevertReason)]
