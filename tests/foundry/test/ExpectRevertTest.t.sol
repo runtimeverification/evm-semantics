@@ -96,7 +96,7 @@ contract ExpectRevertTest is Test {
          reverter.revertWithoutReason();
     }
 
-    function test_ExpectRevert_encodedSymbolic(address controller) public {
+    function test_expectRevert_encodedSymbolic(address controller) public {
         vm.startPrank(controller);
         vm.expectRevert(
             abi.encodeWithSelector(
