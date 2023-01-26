@@ -567,7 +567,7 @@ def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, profile: b
 
 
 def exec_foundry_simplify_node(
-    foundry_out: Path, test: str, node: str, profile: bool, replace: bool = False, **kwargs: Any
+    foundry_out: Path, test: str, node: str, profile: bool, replace: bool = False, minimize: bool = True, **kwargs: Any
 ) -> None:
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
@@ -578,10 +578,11 @@ def exec_foundry_simplify_node(
     with open(kcfg_file, 'r') as kf:
         cfg = KCFG.from_dict(json.loads(kf.read()))
     cterm = cfg.node(node).cterm
-    new_cterm = CTerm(foundry.simplify(cterm))
-    print(f'Simplified: {foundry.pretty_print(new_cterm.kast)}')
+    new_term = foundry.simplify(cterm)
+    new_term_minimized = new_term if not minimize else minimize_term(new_term)
+    print(f'Simplified: {foundry.pretty_print(new_term_minimized)}')
     if replace:
-        cfg, _ = KCFG__replace_node(cfg, node, new_cterm)
+        cfg, _ = KCFG__replace_node(cfg, node, CTerm(new_term_minimized))
         write_cfg(cfg, kcfg_file)
 
 
@@ -933,6 +934,12 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_simplify_node.add_argument('node', type=str, help='Node to simplify in CFG.')
     foundry_simplify_node.add_argument(
         '--replace', default=False, help='Replace the original node with the simplified variant in the graph.'
+    )
+    foundry_simplify_node.add_argument(
+        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.'
+    )
+    foundry_simplify_node.add_argument(
+        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
     )
 
     return parser
