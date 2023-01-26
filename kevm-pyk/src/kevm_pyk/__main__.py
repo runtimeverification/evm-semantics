@@ -592,7 +592,7 @@ def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, profile: b
 
 
 def exec_foundry_simplify_node(
-    foundry_out: Path, test: str, node: str, profile: bool, replace: bool = False, **kwargs: Any
+    foundry_out: Path, test: str, node: str, profile: bool, replace: bool = False, minimize: bool = True, **kwargs: Any
 ) -> None:
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
@@ -605,10 +605,11 @@ def exec_foundry_simplify_node(
     cterm = cfg.node(node).cterm
     port = find_free_port()
     with KCFGExplore(foundry, port=port) as kcfg_explore:
-        new_cterm = CTerm(kcfg_explore.cterm_simplify(cterm))
-    print(f'Simplified: {foundry.pretty_print(new_cterm.kast)}')
+        new_term = kcfg_explore.cterm_simplify(cterm)
+    new_term_minimized = new_term if not minimize else minimize_term(new_term)
+    print(f'Simplified:\n{foundry.pretty_print(new_term_minimized)}')
     if replace:
-        cfg.replace_node(node, new_cterm)
+        cfg.replace_node(node, CTerm(new_term))
         write_cfg(cfg, kcfg_file)
 
 
@@ -984,6 +985,12 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_simplify_node.add_argument('node', type=str, help='Node to simplify in CFG.')
     foundry_simplify_node.add_argument(
         '--replace', default=False, help='Replace the original node with the simplified variant in the graph.'
+    )
+    foundry_simplify_node.add_argument(
+        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.'
+    )
+    foundry_simplify_node.add_argument(
+        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
     )
 
     return parser
