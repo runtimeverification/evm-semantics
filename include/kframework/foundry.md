@@ -168,6 +168,11 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<checkedTopics>` will store a list of `bool` values that flag if a topic should be checked or not.
     - `<checkedData>` flags if the data field should be checked or not.
     - `<expectedEventAddress>` stores the emitter of an expected Event.
+5. The `<whitelist>` subconfiguration stores addresses that can be called and storage slots that can be accessed/modified during the execution.
+    - `<isCallWhitelistActive>` flags if the whitelist mode is enabled for calls.
+    - `<isStorageWhitelistActive>` flags if the whitelist mode is enabled for storage changes.
+    - `<addressSet>` - stores the address whitelist.
+    - `<storageSlotSet>` - stores the storage whitelist containing pairs of addresses and storage indexes.
 
 ```k
 module FOUNDRY-CHEAT-CODES
@@ -197,7 +202,7 @@ module FOUNDRY-CHEAT-CODES
           <expectedValue> 0 </expectedValue>
           <expectedData> .ByteArray </expectedData>
           <opcodeType> .OpcodeType </opcodeType>
-       </expectedOpcode>
+        </expectedOpcode>
         <expectEmit>
           <recordEvent> false </recordEvent>
           <isEventExpected> false </isEventExpected>
@@ -205,6 +210,12 @@ module FOUNDRY-CHEAT-CODES
           <checkedData> false </checkedData>
           <expectedEventAddress> .Account </expectedEventAddress>
         </expectEmit>
+        <whitelist>
+          <isCallWhitelistActive> false </isCallWhitelistActive>
+          <isStorageWhitelistActive> false </isStorageWhitelistActive>
+          <addressSet> .Set </addressSet>
+          <storageSlotSet> .Set </storageSlotSet>
+        </whitelist>
       </cheatcodes>
 ```
 
@@ -252,10 +263,10 @@ We define two productions named `#return_foundry` and `#call_foundry`, which wil
 The rule `foundry.return` will rewrite the `#return_foundry` production into other productions that will place the output of the execution into the local memory, refund the gas value of the call and push the value `1` on the call stack.
 
 ```{.k .bytes}
-    syntax KItem ::= "#return_foundry" Int Int [klabel(foundry_return)]
-                   | "#call_foundry" Int ByteArray [klabel(foundry_call)]
-                   | "#error_foundry" Int ByteArray [klabel(foundry_error)]
- // -----------------------------------------------------------------------
+    syntax KItem ::= "#return_foundry" Int Int       [klabel(foundry_return)]
+                   | "#call_foundry" Int ByteArray     [klabel(foundry_call)]
+                   | "#error_foundry" Int ByteArray   [klabel(foundry_error)]
+ // -------------------------------------------------------------------------
     rule [foundry.return]:
          <k> #return_foundry RETSTART RETWIDTH
           => #setLocalMem RETSTART RETWIDTH OUT
@@ -266,11 +277,16 @@ The rule `foundry.return` will rewrite the `#return_foundry` production into oth
          <callGas> GCALL </callGas>
 ```
 
-We define a new status code named `FOUNDRY_UNIMPLEMENTED`, which signals that the execution ran into an unimplemented cheat code.
+We define a new status codes:
+ - `FOUNDRY_UNIMPLEMENTED`, which signals that the execution ran into an unimplemented cheat code.
+ - `FOUNDRY_WHITELISTCALL`, which signals that an address outside the whitelist has been called during the execution.
+ - `FOUNDRY_WHITELISTSTORAGE`, which signals that a storage index of an address outside the whitelist has been changed during the execution.
 
 ```{.k .bytes}
     syntax ExceptionalStatusCode ::= "FOUNDRY_UNIMPLEMENTED"
- // --------------------------------------------------------
+                                   | "FOUNDRY_WHITELISTCALL"
+                                   | "FOUNDRY_WHITELISTSTORAGE"
+ // -----------------------------------------------------------
 ```
 
 Below, we define rules for the `#call_foundry` production, handling the cheat codes.
@@ -890,14 +906,78 @@ With address: Asserts the topics match and that the emitting address matches.
        andBool ((notBool CHECKDATA) orBool (#asWord(DATA) ==Int #asWord(#range(LM, MEMSTART, MEMWIDTH))))
       [priority(40)]
 ```
-Otherwise, throw an error for any other call to the Foundry contract.
+
+
+Restricting the accounts that can be called in KEVM
+---------------------------------------------------
+
+A `StorageSlot` pair is formed from an address and a storage index.
 
 ```{.k .bytes}
-    rule [foundry.call.owise]:
-         <k> #call_foundry SELECTOR ARGS => #error_foundry SELECTOR ARGS ... </k>
-         <statusCode> _ => FOUNDRY_UNIMPLEMENTED </statusCode>
-      [owise]
+    syntax StorageSlot ::= "{" Int "|" Int "}"
+ // ------------------------------------------
 ```
+
+The `ACCTTO` value is checked for each call while the whitelist restriction is enabled for calls.
+If the address is not in the whitelist `WLIST` then `KEVM` goes into an error state providing the `ACCTTO` value.
+
+```{.k .bytes}
+    rule [foundry.catchNonWhitelistedCalls]:
+         <k> (#call _ ACCTTO _ _ _ _ false
+          ~> #popCallStack
+          ~> #popWorldState) => #end FOUNDRY_WHITELISTCALL ... </k>
+         <whitelist>
+           <isCallWhitelistActive> true </isCallWhitelistActive>
+           <addressSet> WLIST </addressSet>
+           ...
+         </whitelist>
+      requires notBool ACCTTO in WLIST
+      [priority(40)]
+```
+
+When the storage whitelist restriction is enabled, the `SSTORE` operation will check if the address and the storage index are in the whitelist.
+If the pair is not present in the whitelist `WLIST` then `KEVM` goes into an error state providing the address and the storage index values.
+
+```{.k .bytes}
+    rule [foundry.catchNonWhitelistedStorageChanges]:
+         <k> SSTORE INDEX _ => #end FOUNDRY_WHITELISTSTORAGE ... </k>
+         <id> ACCT </id>
+         <statusCode> _ => FOUNDRY_WHITELISTSTORAGE </statusCode>
+         <whitelist>
+           <isStorageWhitelistActive> true </isStorageWhitelistActive>
+           <storageSlotSet> WLIST </storageSlotSet>
+           ...
+         </whitelist>
+      requires notBool {ACCT|INDEX} in WLIST
+      [priority(40)]
+```
+
+#### `allowCallsToAddress` - Add an account address to a whitelist.
+
+```
+function allowCallsToAddress(address) external;
+```
+
+Adds an account address to the whitelist. The execution of the modified KEVM will stop when a call has been made to an address which is not in the whitelist.
+
+```{.k .bytes}
+    rule [foundry.allowCallsToAddress]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #addAddressToWhitelist #asWord(ARGS) ... </k>
+         requires SELECTOR ==Int selector ( "allowCallsToAddress(address)" )
+```
+
+#### `allowChangesToStorage` - Add an account address and a storage slot to a whitelist.
+
+```
+function allowChangesToStorage(address,uint256) external;
+```
+
+```{.k .bytes}
+    rule [foundry.allowStorageSlotToAddress]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #addStorageSlotToWhitelist { #asWord(#range(ARGS, 0, 32)) | #asWord(#range(ARGS, 32, 32)) } ... </k>
+         requires SELECTOR ==Int selector ( "allowChangesToStorage(address,uint256)" )
+```
+
 
 #### `sign` - Signs a digest with private key
 
@@ -916,6 +996,15 @@ The `ECDSASign` function returns the signed data in [r,s,v] form, which we conve
          <k> #call_foundry SELECTOR ARGS => . ... </k>
          <output> _ => #sign(#range(ARGS, 32, 32),#range(ARGS,0,32)) </output>
       requires SELECTOR ==Int selector ( "sign(uint256,bytes32)" )
+```
+
+Otherwise, throw an error for any other call to the Foundry contract.
+
+```{.k .bytes}
+    rule [foundry.call.owise]:
+         <k> #call_foundry SELECTOR ARGS => #error_foundry SELECTOR ARGS ... </k>
+         <statusCode> _ => FOUNDRY_UNIMPLEMENTED </statusCode>
+      [owise]
 ```
 
 Utils
@@ -1229,6 +1318,32 @@ If the production is matched when no prank is active, it will be ignored.
     rule #checkTopics(ListItem(CHECK) CHECKS, ListItem(V1) L1, ListItem(V2) L2) => #checkTopic(CHECK, V1, V2) andBool #checkTopics(CHECKS, L1, L2)
 ```
 
+- `#addAddressToWhitelist` enables the whitelist restriction for calls and adds an address to the whitelist.
+
+```k
+    syntax KItem ::= "#addAddressToWhitelist" Int [klabel(foundry_addAddressToWhitelist)]
+ // -------------------------------------------------------------------------------------
+    rule <k> #addAddressToWhitelist ACCT => . ... </k>
+        <whitelist>
+          <isCallWhitelistActive> _ => true </isCallWhitelistActive>
+          <addressSet>  WLIST => WLIST SetItem(ACCT) </addressSet>
+          ...
+        </whitelist>
+```
+
+- `#addStorageSlotToWhitelist` enables the whitelist restriction for storage chagnes and adds a `StorageSlot` item to the whitelist.
+
+```k
+    syntax KItem ::= "#addStorageSlotToWhitelist" StorageSlot [klabel(foundry_addStorageSlotToWhitelist)]
+ // -----------------------------------------------------------------------------------------------------
+    rule <k> #addStorageSlotToWhitelist SLOT => . ... </k>
+        <whitelist>
+          <isStorageWhitelistActive> _ => true </isStorageWhitelistActive>
+          <storageSlotSet> WLIST => WLIST SetItem(SLOT) </storageSlotSet>
+          ...
+        </whitelist>
+```
+
 - selectors for cheat code functions.
 
 ```k
@@ -1259,6 +1374,8 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "expectEmit(bool,bool,bool,bool)" )          => 1226622914 )
     rule ( selector ( "expectEmit(bool,bool,bool,bool,address)" )  => 2176505587 )
     rule ( selector ( "sign(uint256,bytes32)" )                    => 3812747940 )
+    rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )
+    rule ( selector ( "allowChangesToStorage(address,uint256)" )   => 4207417100 )
 ```
 
 - selectors for unimplemented cheat code functions.
