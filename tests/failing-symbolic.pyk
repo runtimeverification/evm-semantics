@@ -50,6 +50,7 @@ tests/specs/erc20/hkg/transfer-success-2-spec.k
 tests/specs/examples/sum-to-n-spec.k
 tests/specs/functional/infinite-gas-spec.k
 tests/specs/functional/lemmas-no-smt-spec.k
+tests/specs/functional/lemmas-spec.k
 tests/specs/functional/merkle-spec.k
 tests/specs/functional/storageRoot-spec.k
 tests/specs/mcd/cat-exhaustiveness-spec.k
