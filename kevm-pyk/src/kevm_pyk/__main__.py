@@ -591,6 +591,25 @@ def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, profile: b
     write_cfg(kcfg, kcfg_file)
 
 
+def exec_foundry_simplify_node(
+    foundry_out: Path, test: str, node: str, profile: bool, replace: bool = False, **kwargs: Any
+) -> None:
+    definition_dir = foundry_out / 'kompiled'
+    use_directory = foundry_out / 'specs'
+    kcfgs_dir = foundry_out / 'kcfgs'
+    kcfg_file = kcfgs_dir / f'{test}.json'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
+    with open(kcfg_file, 'r') as kf:
+        cfg = KCFG.from_dict(json.loads(kf.read()))
+    cterm = cfg.node(node).cterm
+    new_cterm = CTerm(foundry.simplify(cterm))
+    print(f'Simplified: {foundry.pretty_print(new_cterm.kast)}')
+    if replace:
+        cfg, _ = KCFG__replace_node(cfg, node, new_cterm)
+        write_cfg(cfg, kcfg_file)
+
+
 # Helpers
 
 
@@ -952,6 +971,18 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_remove_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
     foundry_remove_node.add_argument('node', type=str, help='Node to remove CFG subgraph from.')
+
+    foundry_simplify_node = command_parser.add_parser(
+        'foundry-simplify-node',
+        help='Simplify a given node, and potentially replace it.',
+        parents=[shared_args],
+    )
+    foundry_simplify_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_simplify_node.add_argument('test', type=str, help='Simplify node in this CFG.')
+    foundry_simplify_node.add_argument('node', type=str, help='Node to simplify in CFG.')
+    foundry_simplify_node.add_argument(
+        '--replace', default=False, help='Replace the original node with the simplified variant in the graph.'
+    )
 
     return parser
 
