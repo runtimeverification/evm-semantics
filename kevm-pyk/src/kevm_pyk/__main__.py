@@ -10,7 +10,7 @@ from pyk.cterm import CTerm, build_rule
 from pyk.kast.inner import KApply, KInner, KRewrite, KToken
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
-from pyk.kcfg import KCFG, KCFGViewer
+from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
 from pyk.ktool.kit import KIT
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
@@ -20,7 +20,7 @@ from pyk.utils import shorten_hashes
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KDefinition__expand_macros, KPrint_make_unparsing, parallel_kcfg_explore, write_cfg
+from .utils import KDefinition__expand_macros, KPrint_make_unparsing, find_free_port, parallel_kcfg_explore, write_cfg
 
 T = TypeVar('T')
 
@@ -603,10 +603,12 @@ def exec_foundry_simplify_node(
     with open(kcfg_file, 'r') as kf:
         cfg = KCFG.from_dict(json.loads(kf.read()))
     cterm = cfg.node(node).cterm
-    new_cterm = CTerm(foundry.simplify(cterm))
+    port = find_free_port()
+    with KCFGExplore(foundry, port=port) as kcfg_explore:
+        new_cterm = CTerm(kcfg_explore.cterm_simplify(cterm))
     print(f'Simplified: {foundry.pretty_print(new_cterm.kast)}')
     if replace:
-        cfg, _ = KCFG__replace_node(cfg, node, new_cterm)
+        cfg.replace_node(node, new_cterm)
         write_cfg(cfg, kcfg_file)
 
 
@@ -975,7 +977,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',
         help='Simplify a given node, and potentially replace it.',
-        parents=[shared_args],
+        parents=[shared_args, rpc_args],
     )
     foundry_simplify_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_simplify_node.add_argument('test', type=str, help='Simplify node in this CFG.')
