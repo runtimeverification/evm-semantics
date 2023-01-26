@@ -302,7 +302,7 @@ def exec_prove(
     proof_problems = {c.label: KCFG.from_claim(kevm.definition, c) for c in claims}
     if simplify_init:
         with KCFGExplore(kevm, port=find_free_port()) as kcfg_explore:
-            proof_problems = {claim: kcfg_explore(claim, cfg) for claim, cfg in proof_problems.items()}
+            proof_problems = {claim: kcfg_explore.simplify(claim, cfg) for claim, cfg in proof_problems.items()}
 
     failed = parallel_kcfg_explore(
         kevm,
