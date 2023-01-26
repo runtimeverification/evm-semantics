@@ -282,7 +282,7 @@ def exec_prove(
     simplify_init: bool = True,
     break_every_step: bool = False,
     break_on_calls: bool = False,
-    implication_every_block: bool = False,
+    implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
@@ -337,7 +337,7 @@ def exec_foundry_prove(
     simplify_init: bool = True,
     break_every_step: bool = False,
     break_on_calls: bool = False,
-    implication_every_block: bool = False,
+    implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
@@ -614,6 +614,33 @@ def _create_argument_parser() -> ArgumentParser:
         type=int,
         help='Base port to use for RPC server invocations.',
     )
+    rpc_args.add_argument(
+        '--break-every-step',
+        dest='break_every_step',
+        default=False,
+        action='store_true',
+        help='Store a node for every EVM opcode step (expensive).',
+    )
+    rpc_args.add_argument(
+        '--break-on-calls',
+        dest='break_on_calls',
+        default=False,
+        action='store_true',
+        help='Store a node for every EVM call made.',
+    )
+    rpc_args.add_argument(
+        '--implication-every-block',
+        dest='implication_every_block',
+        default=True,
+        action='store_true',
+        help='Check subsumption into target state every basic block, not just at terminal nodes.',
+    )
+    rpc_args.add_argument(
+        '--no-implication-every-block',
+        dest='implication_every_block',
+        action='store_false',
+        help='Do not check subsumption into target state every basic block, not just at terminal nodes.',
+    )
 
     k_args = ArgumentParser(add_help=False)
     k_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
@@ -863,27 +890,6 @@ def _create_argument_parser() -> ArgumentParser:
         default=None,
         type=int,
         help='Store every Nth state in the KCFG for inspection.',
-    )
-    foundry_prove_args.add_argument(
-        '--break-every-step',
-        dest='break_every_step',
-        default=False,
-        action='store_true',
-        help='Store a node for every EVM opcode step (expensive).',
-    )
-    foundry_prove_args.add_argument(
-        '--break-on-calls',
-        dest='break_on_calls',
-        default=False,
-        action='store_true',
-        help='Store a node for every EVM call made.',
-    )
-    foundry_prove_args.add_argument(
-        '--implication-every-block',
-        dest='implication_every_block',
-        default=False,
-        action='store_true',
-        help='Check subsumption into target state every basic block, not just at terminal nodes.',
     )
 
     foundry_show_args = command_parser.add_parser(
