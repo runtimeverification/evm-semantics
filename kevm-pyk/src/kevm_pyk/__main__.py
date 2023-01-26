@@ -11,7 +11,7 @@ from pyk.cterm import CTerm, build_rule
 from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
 from pyk.kast.manip import flatten_label, get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
-from pyk.kcfg import KCFG, KCFGViewer
+from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
 from pyk.ktool.kit import KIT
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
@@ -391,10 +391,11 @@ def exec_foundry_prove(
             _LOGGER.info(f'Expanding macros in target state for test: {test}')
             target_term = KDefinition__expand_macros(foundry.definition, target_term)
             if simplify_init:
-                _LOGGER.info(f'Simplifying initial state for test: {test}')
-                init_term = foundry.simplify(CTerm(init_term))
-                _LOGGER.info(f'Simplifying target state for test: {test}')
-                target_term = foundry.simplify(CTerm(target_term))
+                with KCFGExplore(foundry, port=3010) as kcfg_explore:
+                    _LOGGER.info(f'Simplifying initial state for test: {test}')
+                    init_term = kcfg_explore.cterm_simplify(CTerm(init_term))
+                    _LOGGER.info(f'Simplifying target state for test: {test}')
+                    target_term = kcfg_explore.cterm_simplify(CTerm(target_term))
             cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_term))
             cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_term))
             kcfgs[test] = (cfg, kcfg_file)
@@ -438,7 +439,6 @@ def exec_foundry_prove(
         return len(failure_nodes) == 0
 
     with ProcessPool(ncpus=workers) as process_pool:
-        foundry.close_kore_rpc()
         results = process_pool.map(prove_it, kcfgs.items())
         process_pool.close()
 
