@@ -230,18 +230,19 @@ First we have some helpers in K which can:
 #### Structure of execution
 
 The `foundry.call` rule is used to inject specific behaviour for each cheat code.
-The rule has a higher priority than any other `CALL` rule and will match every call made to the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
-The function selector, represented as `#asWord(#range(LM, ARGSTART, 4))` and the call data `#range(LM, ARGSTART +Int 4, ARGWIDTH -Int 4)` are passed to the `#call_foundry` production, which will further rewrite using rules defined for implemented cheat codes.
+The rule has a higher priority than any other `#call` rule and will match every call made to the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+The function selector, represented as `#asWord(#range(ARGS, 0, 4))` and the call data `#range(ARGS, 4, #sizeByteArray(ARGS) -Int 4)` are passed to the `#call_foundry` production, which will further rewrite using rules defined for implemented cheat codes.
 Finally, the rule for `#return_foundry` is used to end the execution of the `CALL` OpCode.
 
 ```{.k .bytes}
     rule [foundry.call]:
-         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #call_foundry #asWord(#range(LM, ARGSTART, 4)) #range(LM, ARGSTART +Int 4, ARGWIDTH -Int 4)
+         <k> (#checkCall _ _
+          ~> #call _ CHEAT_ADDR _ _ _ ARGS _
+          ~> #return RETSTART RETWIDTH )
+          => #call_foundry #asWord(#range(ARGS, 0, 4)) #range(ARGS, 4, #sizeByteArray(ARGS) -Int 4)
           ~> #return_foundry RETSTART RETWIDTH
          ...
          </k>
-         <localMem> LM </localMem>
          <output> _ => .ByteArray </output>
     requires CHEAT_ADDR ==Int #address(FoundryCheat)
     [priority(40)]

@@ -438,4 +438,8 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule #range ( BA:ByteArray , 0 , LEN ) => BA requires #sizeByteArray(BA) ==Int LEN [simplification]
 
+    rule ( #buf ( 32 , X ) [ 0 .. 28 ] ):ByteArray => #buf(28, 0) requires #rangeUInt ( 32 , X ) [simplification]
+
+    rule ( #range ( #range ( BA:ByteArray , S0 , L0 ) , S1 , L1 ) ) => #range ( BA , S0 +Int S1 , minInt ( L1 , L0 -Int S1 ) ) ++ #buf ( maxInt ( 0 , L1 -Int ( L0 -Int S1 ) ) , 0 )
+      requires 0 <=Int S0 andBool 0 <=Int L0 andBool 0 <=Int S1 andBool 0 <=Int L1 [simplification]
 endmodule
