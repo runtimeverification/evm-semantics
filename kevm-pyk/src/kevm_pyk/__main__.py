@@ -300,6 +300,9 @@ def exec_prove(
 
     _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
     proof_problems = {c.label: KCFG.from_claim(kevm.definition, c) for c in claims}
+    if simplify_init:
+        with KCFGExplore(kevm, port=find_free_port()) as kcfg_explore:
+            proof_problems = {claim: kcfg_explore(claim, cfg) for claim, cfg in proof_problems.items()}
 
     failed = parallel_kcfg_explore(
         kevm,
@@ -308,7 +311,6 @@ def exec_prove(
         max_depth=max_depth,
         max_iterations=max_iterations,
         workers=workers,
-        simplify_init=simplify_init,
         break_every_step=break_every_step,
         break_on_calls=break_on_calls,
         implication_every_block=implication_every_block,
@@ -408,6 +410,9 @@ def exec_foundry_prove(
             target_cterm = KEVM.add_invariant(CTerm(target_term))
             cfg.replace_node(cfg.get_unique_init().id, init_cterm)
             cfg.replace_node(cfg.get_unique_target().id, target_cterm)
+            if simplify_init:
+                with KCFGExplore(foundry, port=find_free_port()) as kcfg_explore:
+                    cfg = kcfg_explore.simplify(test, cfg)
             kcfgs[test] = cfg
         else:
             with open(kcfg_file, 'r') as kf:
@@ -419,7 +424,6 @@ def exec_foundry_prove(
         max_depth=max_depth,
         max_iterations=max_iterations,
         workers=workers,
-        simplify_init=simplify_init,
         break_every_step=break_every_step,
         break_on_calls=break_on_calls,
         implication_every_block=implication_every_block,

@@ -30,7 +30,6 @@ def parallel_kcfg_explore(
     max_depth: int = 100,
     max_iterations: Optional[int] = None,
     workers: int = 1,
-    simplify_init: bool = True,
     break_every_step: bool = False,
     break_on_calls: bool = False,
     implication_every_block: bool = False,
@@ -56,20 +55,19 @@ def parallel_kcfg_explore(
                 ]
             )
         base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
+        cfg_path = None
+        if save_directory is not None:
+            if _cfgid.isalnum():
+                _cfg_path = _cfgid
+            else:
+                hash = hashlib.sha256()
+                hash.update(_cfgid.encode('utf-8'))
+                _cfg_path = str(hash.hexdigest())
+                _LOGGER.info(f'Using hashed path for storing KCFG: {_cfgid} -> {_cfg_path}')
+            cfg_path = save_directory / f'{_cfg_path}.json'
+
         with KCFGExplore(kprove, port=(base_port + _index)) as kcfg_explore:
-            if simplify_init:
-                kcfg_explore.simplify(_cfgid, _cfg)
             try:
-                cfg_path = None
-                if save_directory is not None:
-                    if _cfgid.isalnum():
-                        _cfg_path = _cfgid
-                    else:
-                        hash = hashlib.sha256()
-                        hash.update(_cfgid.encode('utf-8'))
-                        _cfg_path = str(hash.hexdigest())
-                        _LOGGER.info(f'Using hashed path for storing KCFG: {_cfgid} -> {_cfg_path}')
-                    cfg_path = save_directory / f'{_cfg_path}.json'
                 _cfg = kcfg_explore.all_path_reachability_prove(
                     _cfgid,
                     _cfg,
@@ -81,17 +79,17 @@ def parallel_kcfg_explore(
                     terminal_rules=terminal_rules,
                     implication_every_block=implication_every_block,
                 )
-                failure_nodes = _cfg.frontier + _cfg.stuck
-                if len(failure_nodes) == 0:
-                    _LOGGER.info(f'Proof passed: {_cfgid}')
-                    return True
-                else:
-                    _LOGGER.error(f'Proof failed: {_cfgid}')
-                    return False
-
             except Exception as e:
                 _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}')
                 return False
+
+        failure_nodes = _cfg.frontier + _cfg.stuck
+        if len(failure_nodes) == 0:
+            _LOGGER.info(f'Proof passed: {_cfgid}')
+            return True
+        else:
+            _LOGGER.error(f'Proof failed: {_cfgid}')
+            return False
 
     with ProcessPool(ncpus=workers) as process_pool:
         _proof_problems = [(_id, _cfg, _i) for _i, (_id, _cfg) in enumerate(proof_problems.items())]
