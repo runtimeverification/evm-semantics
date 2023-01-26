@@ -25,7 +25,7 @@ jobs:
       - name: 'Build kevm-pyk'
         run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j2'
       - name: 'Build kevm'
-        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-llvm build-node -j`nproc` RELEASE=true'
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-llvm -j`nproc` RELEASE=true'
       - name: 'Test kevm-pyk'
         run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-kevm-pyk -j`nproc`'
       - name: 'Test conformance'
@@ -36,8 +36,6 @@ jobs:
         run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-parse -j`nproc` TEST_CONCRETE_BACKEND=llvm'
       - name: 'Test failure tests'
         run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-failure -j`nproc` TEST_CONCRETE_BACKEND=llvm'
-      - name: 'Test node'
-        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-node -j`nproc`'
       - name: 'Tear down Docker'
         if: always()
         run: |

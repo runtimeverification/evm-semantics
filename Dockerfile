@@ -34,7 +34,6 @@ RUN    apt-get update            \
             solc                 \
             netcat-openbsd       \
             pkg-config           \
-            protobuf-compiler    \
             python3              \
             python3-pip          \
             python-pygments      \

@@ -91,8 +91,7 @@ sudo apt-get install --yes                                                      
             libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev       \
             libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-10       \
             llvm-10-tools make maven netcat-openbsd openjdk-11-jdk pkg-config          \
-            protobuf-compiler python3 python3-dev python3-pip rapidjson-dev time      \
-            zlib1g-dev
+            python3 python3-dev python3-pip rapidjson-dev time zlib1g-dev
 pip3 install poetry
 ```
 
@@ -110,7 +109,7 @@ On ArchLinux:
 sudo pacman -S                                               \
     base base-devel boost clang cmake crypto++ curl git gmp  \
     gflags jdk-openjdk jemalloc libsecp256k1 lld llvm maven  \
-    mpfr protobuf python stack yaml-cpp zlib
+    mpfr python stack yaml-cpp zlib
 ```
 
 #### macOS
@@ -119,7 +118,7 @@ After installing the Command Line Tools, [Homebrew](https://brew.sh/), and getti
 
 ```sh
 brew tap kframework/k
-brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl protobuf python bash kframework/k/cryptopp@8.6.0 poetry solidity
+brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl python bash kframework/k/cryptopp@8.6.0 poetry solidity
 make libsecp256k1
 ```
 

@@ -5,11 +5,9 @@ UNAME_S := $(shell uname -s)
 
 DEPS_DIR      := deps
 BUILD_DIR     := .build
-NODE_DIR      := $(abspath node)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 LOCAL_LIB     := $(BUILD_LOCAL)/lib
 LOCAL_BIN     := $(BUILD_LOCAL)/bin
-export NODE_DIR
 export LOCAL_LIB
 
 INSTALL_PREFIX  := /usr
@@ -47,10 +45,10 @@ export PLUGIN_FULL_PATH
 
 
 .PHONY: all clean distclean                                                                                                                  \
-        deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                                  \
-        build build-haskell build-foundry build-llvm build-prove build-prove-haskell build-prove-java build-node build-kevm                  \
+        deps k-deps plugin-deps libsecp256k1 libff                                                                                           \
+        build build-haskell build-foundry build-llvm build-prove build-prove-haskell build-prove-java build-kevm                             \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance             \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                              \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain                                                        \
         test-prove test-failing-prove                                                                                                        \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-smoke \
         test-prove-mcd test-klab-prove                                                                                                       \
@@ -77,12 +75,10 @@ distclean:
 libsecp256k1_out := $(LOCAL_LIB)/pkgconfig/libsecp256k1.pc
 libff_out        := $(KEVM_LIB)/libff/lib/libff.a
 libcryptopp_out  := $(KEVM_LIB)/cryptopp/lib/libcryptopp.a
-protobuf_out     := $(LOCAL_LIB)/proto/proto/msg.pb.cc
 
 libsecp256k1: $(libsecp256k1_out)
 libff:        $(libff_out)
 libcryptopp : $(libcryptopp_out)
-protobuf:     $(protobuf_out)
 
 $(libsecp256k1_out): $(PLUGIN_SUBMODULE)/deps/secp256k1/autogen.sh
 	cd $(PLUGIN_SUBMODULE)/deps/secp256k1                                 \
@@ -111,10 +107,6 @@ $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
 	    && make -s -j4                                                                                          \
 	    && make install DESTDIR=$(CURDIR)/$(BUILD_DIR)
-
-$(protobuf_out): $(NODE_DIR)/proto/msg.proto
-	@mkdir -p $(LOCAL_LIB)/proto
-	protoc --cpp_out=$(LOCAL_LIB)/proto -I $(NODE_DIR) $(NODE_DIR)/proto/msg.proto
 
 $(libcryptopp_out): $(PLUGIN_SUBMODULE)/deps/cryptopp/GNUmakefile
 	cd $(PLUGIN_SUBMODULE)/deps/cryptopp                            \
@@ -182,7 +174,6 @@ kevm_files := abi.md                      \
               edsl.md                     \
               evm.md                      \
               evm-types.md                \
-              evm-node.md                 \
               foundry.md                  \
               hashed-locations.md         \
               infinite-gas.md             \
@@ -255,28 +246,6 @@ $(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_inc
 	    --syntax-module $(llvm_syntax_module)        \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
-# Node
-
-node_dir           := node
-node_main_module   := EVM-NODE
-node_syntax_module := $(node_main_module)
-node_main_file     := evm-node.md
-node_main_filename := $(basename $(notdir $(node_main_file)))
-node_kore          := $(node_dir)/definition.kore
-node_kompiled      := $(node_dir)/build/kevm-vm
-export node_dir
-
-$(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend node                        \
-	    $(KEVM_INCLUDE)/kframework/$(node_main_file) \
-	    --main-module $(node_main_module)            \
-	    --syntax-module $(node_syntax_module)        \
-	    $(KOMPILE_OPTS) $(KEVM_OPTS)
-
-$(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_out)
-	@mkdir -p $(dir $@)
-	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) && $(MAKE)
-
 # Foundry
 
 foundry_dir           := foundry
@@ -302,8 +271,7 @@ $(KEVM_LIB)/$(foundry_kompiled): $(kevm_includes) $(plugin_includes) $(lemma_inc
 # Installing
 # ----------
 
-install_bins := kevm    \
-                kevm-vm
+install_bins := kevm
 
 install_libs := $(haskell_kompiled)                                        \
                 $(llvm_kompiled)                                           \
@@ -315,10 +283,6 @@ install_libs := $(haskell_kompiled)                                        \
                 version
 
 $(KEVM_BIN)/%: bin/%
-	@mkdir -p $(dir $@)
-	install $< $@
-
-$(KEVM_BIN)/kevm-vm: $(KEVM_LIB)/$(node_kompiled)
 	@mkdir -p $(dir $@)
 	install $< $@
 
@@ -340,7 +304,6 @@ build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%
 
 build-llvm:     $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-haskell:  $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
-build-node:     $(KEVM_LIB)/$(node_kompiled)
 build-kevm:     $(KEVM_BIN)/kevm $(kevm_includes) $(plugin_includes)
 build-foundry:  $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
 
@@ -709,23 +672,6 @@ test-interactive-search: $(search_tests:=.search)
 
 test-interactive-help:
 	$(KEVM) help
-
-proto_tester := $(LOCAL_BIN)/proto_tester
-proto-tester: $(proto_tester)
-$(proto_tester): tests/vm/proto_tester.cpp
-	@mkdir -p $(LOCAL_BIN)
-	$(CXX) -I $(LOCAL_LIB)/proto $(protobuf_out) $< -o $@ -lprotobuf -lpthread
-
-node_tests:=$(wildcard tests/vm/*.bin)
-test-node: $(node_tests:=.run-node)
-
-tests/vm/%.run-node: tests/vm/%.expected $(KEVM_BIN)/kevm-vm $(proto_tester)
-	bash -c " \
-	  kevm-vm 8888 127.0.0.1 & \
-	  while ! netcat -z 127.0.0.1 8888; do sleep 0.1; done; \
-	  netcat -N 127.0.0.1 8888 < tests/vm/$* > tests/vm/$*.out; \
-	  kill %kevm-vm || true"
-	$(proto_tester) $< tests/vm/$*.out
 
 # Media
 # -----

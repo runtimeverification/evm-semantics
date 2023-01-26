@@ -50,7 +50,6 @@ pipeline {
             stage('LLVM krun')     { steps { sh 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm' } }
             stage('LLVM Kast')     { steps { sh 'make test-parse TEST_CONCRETE_BACKEND=llvm'           } }
             stage('Failing tests') { steps { sh 'make test-failure TEST_CONCRETE_BACKEND=llvm'         } }
-            stage('KEVM VM')       { steps { sh 'make test-node'                                       } }
             stage('KEVM help')     { steps { sh './kevm help'                                          } }
           }
         }

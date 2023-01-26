@@ -29,7 +29,6 @@ RUN    apt-get update         \
             libsecp256k1-dev  \
             libssl-dev        \
             netcat            \
-            protobuf-compiler \
             python3           \
             python3-pip       \
             solc

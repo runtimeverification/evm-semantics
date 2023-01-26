@@ -43,7 +43,6 @@
           openssl.dev
           pkg-config
           procps
-          protobuf
           python310
           secp256k1
           solc
@@ -89,8 +88,6 @@
             postPatch = ''
               substituteInPlace ./Makefile \
                 --replace 'PYK_ACTIVATE := . $(VENV_DIR)/bin/activate' 'PYK_ACTIVATE := true'
-              substituteInPlace ./cmake/node/CMakeLists.txt \
-                --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
               substituteInPlace ./bin/kevm \
                 --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
             '';
