@@ -838,14 +838,14 @@ ppft = ">=1.7.6.6"
 
 [[package]]
 name = "pathspec"
-version = "0.10.3"
+version = "0.11.0"
 description = "Utility library for gitignore style pattern matching of file paths."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pathspec-0.10.3-py3-none-any.whl", hash = "sha256:3c95343af8b756205e2aba76e843ba9520a24dd84f68c22b9f93251507509dd6"},
-    {file = "pathspec-0.10.3.tar.gz", hash = "sha256:56200de4077d9d0791465aa9095a01d421861e405b5096955051deefd697d6f6"},
+    {file = "pathspec-0.11.0-py3-none-any.whl", hash = "sha256:3a66eb970cbac598f9e5ccb5b2cf58930cd8e3ed86d393d541eaf2d8b1705229"},
+    {file = "pathspec-0.11.0.tar.gz", hash = "sha256:64d338d4e0914e91c1792321e6907b5a593f1ab1851de7fc269557a21b30ebbc"},
 ]
 
 [[package]]
@@ -947,7 +947,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.101"
+version = "0.1.102"
 description = ""
 category = "main"
 optional = false
@@ -968,8 +968,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.101"
-resolved_reference = "fd617c6835c547e987c57200b5dd71db6288b7f9"
+reference = "v0.1.102"
+resolved_reference = "d416610a8024cf02f7277fd76d0d4a7edfd5a0a5"
 
 [[package]]
 name = "pyperclip"
@@ -1248,4 +1248,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "7a6966e20bc4d695f06b96b9fb2435b817bde7510c25953d2b959ab2629cfa2b"
+content-hash = "52ab1509c384269d96db7a07d29f580e02e298b6cb1ee799c8e4047e011cbf47"
