@@ -6,6 +6,8 @@ AddrTest.test_addr_true
 AddrTest.testFail_addr_false
 AddrTest.testFail_addr_true
 AddrTest.test_addr_symbolic
+AllowChangesTest.test
+AllowChangesTest.testAllow_fail
 AssertTest.test_assert_true
 AssertTest.test_assert_false
 AssertTest.testFail_assert_false
