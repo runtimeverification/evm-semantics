@@ -560,8 +560,9 @@ def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, profile: b
     with open(kcfg_file, 'r') as kf:
         kcfg = KCFG.from_dict(json.loads(kf.read()))
     for _node in kcfg.reachable_nodes(node, traverse_covers=True):
-        _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
-        kcfg.remove_node(_node.id)
+        if not kcfg.is_target(_node.id):
+            _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
+            kcfg.remove_node(_node.id)
     write_cfg(kcfg, kcfg_file)
 
 
