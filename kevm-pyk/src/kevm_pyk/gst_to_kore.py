@@ -12,7 +12,7 @@ def schedule_to_kore(schedule: str) -> str:
 
 
 def chainid_to_kore(chainid: int) -> str:
-    return "\\dv{SortInt{}}(" + f'"{chainid}")'
+    return r'\dv{SortInt{}}("' + str(chainid) + '")'
 
 
 def mode_to_kore(mode: str) -> str:
