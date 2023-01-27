@@ -301,7 +301,7 @@ def exec_prove(
         with KCFGExplore(kevm, port=find_free_port()) as kcfg_explore:
             proof_problems = {claim: kcfg_explore.simplify(claim, cfg) for claim, cfg in proof_problems.items()}
 
-    failed = parallel_kcfg_explore(
+    results = parallel_kcfg_explore(
         kevm,
         proof_problems,
         save_directory=save_directory,
@@ -315,6 +315,13 @@ def exec_prove(
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
     )
+    failed = 0
+    for pid, r in results.items():
+        if r:
+            print(f'PROOF PASSED: {pid}')
+        else:
+            failed += 1
+            print(f'PROOF FAILED: {pid}')
     sys.exit(failed)
 
 
@@ -415,7 +422,7 @@ def exec_foundry_prove(
             with open(kcfg_file, 'r') as kf:
                 kcfgs[test] = KCFG.from_dict(json.loads(kf.read()))
 
-    failed = parallel_kcfg_explore(
+    results = parallel_kcfg_explore(
         foundry,
         kcfgs,
         max_depth=max_depth,
@@ -428,6 +435,13 @@ def exec_foundry_prove(
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
     )
+    failed = 0
+    for pid, r in results.items():
+        if r:
+            print(f'PROOF PASSED: {pid}')
+        else:
+            failed += 1
+            print(f'PROOF FAILED: {pid}')
     sys.exit(failed)
 
 

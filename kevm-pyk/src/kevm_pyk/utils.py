@@ -36,7 +36,7 @@ def parallel_kcfg_explore(
     rpc_base_port: Optional[int] = None,
     is_terminal: Optional[Callable[[CTerm], bool]] = None,
     extract_branches: Optional[Callable[[CTerm], Iterable[KInner]]] = None,
-) -> int:
+) -> Dict[str, bool]:
     def _call_rpc(packed_args: Tuple[str, KCFG, int]) -> bool:
         _cfgid, _cfg, _index = packed_args
         terminal_rules = ['EVM.halt']
@@ -95,14 +95,7 @@ def parallel_kcfg_explore(
         _proof_problems = [(_id, _cfg, _i) for _i, (_id, _cfg) in enumerate(proof_problems.items())]
         results = process_pool.map(_call_rpc, _proof_problems)
 
-    failed = 0
-    for cid, succeeded in zip(proof_problems, results, strict=True):
-        if succeeded:
-            print(f'PASSED: {cid}')
-        else:
-            print(f'FAILED: {cid}')
-            failed += 1
-    return failed
+    return {pid: result for pid, result in zip(proof_problems, results, strict=True)}
 
 
 def write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
