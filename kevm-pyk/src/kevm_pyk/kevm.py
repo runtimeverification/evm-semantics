@@ -282,7 +282,6 @@ class KEVM(KProve, KRun):
                 else:
                     term = set_cell(term, 'GAS_CELL', KVariable('GAS_CELL'))
         wordstack_cell = get_cell(term, 'WORDSTACK_CELL')
-        KApply('.WordStack_EVM-TYPES_WordStack')
         cons_wordstack = '_:__EVM-TYPES_WordStack_Int_WordStack'
         wordstack_items = flatten_label(cons_wordstack, wordstack_cell)
         wordstack_head = [
