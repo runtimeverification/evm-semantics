@@ -42,8 +42,6 @@ RUN    apt-get update            \
             z3                   \
             zlib1g-dev
 
-RUN pip3 install virtualenv
-
 RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-4.8.15 \
     && cd z3                                                         \
     && python3 scripts/mk_make.py                                    \
@@ -60,7 +58,7 @@ RUN    apt-get update               \
 
 RUN curl -sSL https://get.haskellstack.org/ | sh
 
-RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - && poetry --version
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - --version 1.3.2
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000

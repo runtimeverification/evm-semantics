@@ -33,7 +33,8 @@ $ cd ../..
 *Kompile to KEVM specification (inside virtual environment):*
 
 ```sh
-(venv) $ kevm foundry-kompile tests/foundry/out
+$ make shell
+(kevm-pyk-py3.10) $ kevm foundry-kompile tests/foundry/out
 WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
 WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
 WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
@@ -54,14 +55,17 @@ WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for ty
 WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
 WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
 WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+$ exit
 ```
 
 *And discharge some specific test as a proof obligation (inside virtual environment):*
 
 ```sh
-(venv) $ kevm foundry-prove tests/foundry/out --test AssertTest.test_assert_true
+$ make shell
+(kevm-pyk-py3.10) $ kevm foundry-prove tests/foundry/out --test AssertTest.test_assert_true
 WARNING 2022-09-11 15:37:31,956 __main__ - Ignoring command-line option: --definition: /home/dev/src/evm-semantics/.build/usr/lib/kevm/haskell
 #Top
+$ exit
 ```
 
 Foundry Module for KEVM
