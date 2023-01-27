@@ -425,6 +425,7 @@ def exec_foundry_prove(
     results = parallel_kcfg_explore(
         foundry,
         kcfgs,
+        save_directory=kcfgs_dir,
         max_depth=max_depth,
         max_iterations=max_iterations,
         workers=workers,
