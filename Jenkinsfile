@@ -24,7 +24,7 @@ pipeline {
       stages {
         stage('Build Pyk') {
           options { timeout(time: 1, unit: 'MINUTES') }
-          steps { sh 'make kevm-pyk venv -j2' }
+          steps { sh 'make kevm-pyk' }
         }
         stage('Build') {
           options { timeout(time: 15, unit: 'MINUTES') }
