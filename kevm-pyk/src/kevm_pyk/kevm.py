@@ -281,10 +281,6 @@ class KEVM(KProve, KRun):
                     term = set_cell(term, 'GAS_CELL', KEVM.inf_gas(KVariable('GAS_CELL')))
                 else:
                     term = set_cell(term, 'GAS_CELL', KVariable('GAS_CELL'))
-        # memoryused_cell = get_cell(term, 'MEMORYUSED_CELL')
-        # if type(memoryused_cell) is not KVariable or count_vars(term)[memoryused_cell.name] != 1:
-        #     term = remove_constraints_for(['MEMORYUSED_CELL'], term)
-        #     term = set_cell(term, 'MEMORYUSED_CELL', KVariable('MEMORYUSED_CELL'))
         wordstack_cell = get_cell(term, 'WORDSTACK_CELL')
         KApply('.WordStack_EVM-TYPES_WordStack')
         cons_wordstack = '_:__EVM-TYPES_WordStack_Int_WordStack'
