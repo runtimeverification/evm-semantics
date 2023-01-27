@@ -96,7 +96,7 @@ def parallel_kcfg_explore(
         results = process_pool.map(_call_rpc, _proof_problems)
 
     failed = 0
-    for cid, succeeded in zip(proof_problems.keys(), results, strict=True):
+    for cid, succeeded in zip(proof_problems, results, strict=True):
         if succeeded:
             print(f'PASSED: {cid}')
         else:
