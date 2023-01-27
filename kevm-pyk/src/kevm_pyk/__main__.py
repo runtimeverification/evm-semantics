@@ -271,13 +271,10 @@ def exec_prove(
     save_directory: Optional[Path] = None,
     spec_module: Optional[str] = None,
     md_selector: Optional[str] = None,
-    depth: Optional[int] = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
-    minimize: bool = True,
     max_depth: int = 100,
     max_iterations: Optional[int] = None,
-    reinit: bool = False,
     workers: int = 1,
     simplify_init: bool = True,
     break_every_step: bool = False,
@@ -669,6 +666,33 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_false',
         help='Do not check subsumption into target state every basic block, not just at terminal nodes.',
     )
+    explore_args.add_argument(
+        '--simplify-init',
+        dest='simplify_init',
+        default=True,
+        action='store_true',
+        help='Simplify the initial and target states at startup.',
+    )
+    explore_args.add_argument(
+        '--no-simplify-init',
+        dest='simplify_init',
+        action='store_false',
+        help='Do not simplify the initial and target states at startup.',
+    )
+    explore_args.add_argument(
+        '--max-depth',
+        dest='max_depth',
+        default=100,
+        type=int,
+        help='Store every Nth state in the KCFG for inspection.',
+    )
+    explore_args.add_argument(
+        '--max-iterations',
+        dest='max_iterations',
+        default=None,
+        type=int,
+        help='Store every Nth state in the KCFG for inspection.',
+    )
 
     k_args = ArgumentParser(add_help=False)
     k_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
@@ -891,33 +915,6 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Reinitialize KCFGs even if they already exist.',
-    )
-    foundry_prove_args.add_argument(
-        '--simplify-init',
-        dest='simplify_init',
-        default=True,
-        action='store_true',
-        help='Simplify the initial and target states at startup.',
-    )
-    foundry_prove_args.add_argument(
-        '--no-simplify-init',
-        dest='simplify_init',
-        action='store_false',
-        help='Do not simplify the initial and target states at startup.',
-    )
-    foundry_prove_args.add_argument(
-        '--max-depth',
-        dest='max_depth',
-        default=100,
-        type=int,
-        help='Store every Nth state in the KCFG for inspection.',
-    )
-    foundry_prove_args.add_argument(
-        '--max-iterations',
-        dest='max_iterations',
-        default=None,
-        type=int,
-        help='Store every Nth state in the KCFG for inspection.',
     )
 
     foundry_show_args = command_parser.add_parser(
