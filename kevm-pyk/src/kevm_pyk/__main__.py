@@ -640,28 +640,30 @@ def _create_argument_parser() -> ArgumentParser:
         type=int,
         help='Base port to use for RPC server invocations.',
     )
-    rpc_args.add_argument(
+
+    explore_args = ArgumentParser(add_help=False)
+    explore_args.add_argument(
         '--break-every-step',
         dest='break_every_step',
         default=False,
         action='store_true',
         help='Store a node for every EVM opcode step (expensive).',
     )
-    rpc_args.add_argument(
+    explore_args.add_argument(
         '--break-on-calls',
         dest='break_on_calls',
         default=False,
         action='store_true',
         help='Store a node for every EVM call made.',
     )
-    rpc_args.add_argument(
+    explore_args.add_argument(
         '--implication-every-block',
         dest='implication_every_block',
         default=True,
         action='store_true',
         help='Check subsumption into target state every basic block, not just at terminal nodes.',
     )
-    rpc_args.add_argument(
+    explore_args.add_argument(
         '--no-implication-every-block',
         dest='implication_every_block',
         action='store_false',
@@ -770,7 +772,7 @@ def _create_argument_parser() -> ArgumentParser:
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
 
     prove_args = command_parser.add_parser(
-        'prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args, rpc_args]
+        'prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args, rpc_args, explore_args]
     )
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
     prove_args.add_argument(
@@ -864,7 +866,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_prove_args = command_parser.add_parser(
         'foundry-prove',
         help='Run Foundry Proof.',
-        parents=[shared_args, k_args, kprove_args, rpc_args],
+        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args],
     )
     foundry_prove_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_prove_args.add_argument(
