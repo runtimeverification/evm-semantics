@@ -20,14 +20,7 @@ from pyk.utils import shorten_hashes
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import (
-    KDefinition__expand_macros,
-    KPrint_make_unparsing,
-    cfg_file_name,
-    find_free_port,
-    parallel_kcfg_explore,
-    write_cfg,
-)
+from .utils import KDefinition__expand_macros, KPrint_make_unparsing, find_free_port, parallel_kcfg_explore
 
 T = TypeVar('T')
 
@@ -332,9 +325,12 @@ def exec_prove(
     sys.exit(failed)
 
 
-def exec_view_kcfg(definition_dir: Path, kcfg_file: Path, profile: bool, **kwargs: Any) -> None:
+def exec_view_kcfg(definition_dir: Path, claim: str, kcfgs_dir: Path, profile: bool, **kwargs: Any) -> None:
     kevm = KEVM(definition_dir, profile=profile)
-    viewer = KCFGViewer(kcfg_file, kevm, node_printer=kevm.short_info)
+    kcfg = KCFGExplore.read_cfg(claim, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {claim} from {kcfgs_dir}')
+    viewer = KCFGViewer(kcfg, kevm, node_printer=kevm.short_info)
     viewer.run()
 
 
@@ -403,31 +399,31 @@ def exec_foundry_prove(
 
     kcfgs: Dict[str, KCFG] = {}
     for test in tests:
-        kcfg_file = kcfgs_dir / f'{test}.json'
-        if reinit or not kcfg_file.exists():
+        kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+        if kcfg is not None and not reinit:
+            kcfgs[test] = kcfg
+        else:
             _LOGGER.info(f'Initializing KCFG for test: {test}')
             contract_name, method_name = test.split('.')
             contract = [c for c in contracts if c.name == contract_name][0]
             method = [m for m in contract.methods if m.name == method_name][0]
             empty_config = foundry.definition.empty_config(GENERATED_TOP_CELL)
-            cfg = method_to_cfg(empty_config, contract, method)
-            init_term = cfg.get_unique_init().cterm.kast
-            target_term = cfg.get_unique_target().cterm.kast
+            kcfg = method_to_cfg(empty_config, contract, method)
+            init_term = kcfg.get_unique_init().cterm.kast
+            target_term = kcfg.get_unique_target().cterm.kast
             _LOGGER.info(f'Expanding macros in initial state for test: {test}')
             init_term = KDefinition__expand_macros(foundry.definition, init_term)
             init_cterm = KEVM.add_invariant(CTerm(init_term))
             _LOGGER.info(f'Expanding macros in target state for test: {test}')
             target_term = KDefinition__expand_macros(foundry.definition, target_term)
             target_cterm = KEVM.add_invariant(CTerm(target_term))
-            cfg.replace_node(cfg.get_unique_init().id, init_cterm)
-            cfg.replace_node(cfg.get_unique_target().id, target_cterm)
+            kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
+            kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
             if simplify_init:
                 with KCFGExplore(foundry, port=find_free_port()) as kcfg_explore:
-                    cfg = kcfg_explore.simplify(test, cfg)
-            kcfgs[test] = cfg
-        else:
-            with open(kcfg_file, 'r') as kf:
-                kcfgs[test] = KCFG.from_dict(json.loads(kf.read()))
+                    kcfg = kcfg_explore.simplify(test, kcfg)
+            kcfgs[test] = kcfg
+            KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
     results = parallel_kcfg_explore(
         foundry,
@@ -467,7 +463,6 @@ def exec_foundry_show(
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
-    kcfg_file = kcfgs_dir / f'{cfg_file_name(test)}.json'
     contract = test.split('.')[0]
     srcmap_dir = foundry_out / 'srcmaps'
     srcmap_file = srcmap_dir / f'{contract}.json'
@@ -495,14 +490,17 @@ def exec_foundry_show(
                 _LOGGER.warning(f'pc not found in srcmap: {pc}')
         return ret_strs
 
-    with open(kcfg_file, 'r') as kf:
-        kcfg = KCFG.from_dict(json.loads(kf.read()))
-        list(map(print, kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)))
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    list(map(print, kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)))
+
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
         if minimize:
             kast = minimize_term(kast)
         print(f'\n\nNode {node_id}:\n\n{foundry.pretty_print(kast)}\n')
+
     for node_id_1, node_id_2 in node_deltas:
         config_1 = kcfg.node(node_id_1).cterm.config
         config_2 = kcfg.node(node_id_2).cterm.config
@@ -547,9 +545,9 @@ def exec_foundry_list(
     pattern = '*.json'
     paths = kcfgs_dir.glob(pattern)
     for kcfg_file in paths:
-        with open(kcfg_file, 'r') as kf:
-            kcfg = KCFG.from_dict(json.loads(kf.read()))
-        kcfg_name = kcfg_file.name[0:-5]
+        kcfg_json = json.loads(Path(kcfg_file).read_text())
+        cfg_id = kcfg_json['cfgid']
+        kcfg = KCFG.from_dict(kcfg_json)
         total_nodes = len(kcfg.nodes)
         frontier_nodes = len(kcfg.frontier)
         stuck_nodes = len(kcfg.stuck)
@@ -558,8 +556,9 @@ def exec_foundry_list(
             proven = 'pending'
             if frontier_nodes == 0:
                 proven = 'passed'
-        print(f'{kcfg_name}: {proven}')
+        print(f'{cfg_id}: {proven}')
         if details:
+            print(f'    path: {kcfg_file}')
             print(f'    nodes: {total_nodes}')
             print(f'    frontier: {frontier_nodes}')
             print(f'    stuck: {stuck_nodes}')
@@ -595,23 +594,25 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
-    kcfg_file = kcfgs_dir / f'{cfg_file_name(test)}.json'
     use_directory.mkdir(parents=True, exist_ok=True)
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
-    viewer = KCFGViewer(kcfg_file, foundry)
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    viewer = KCFGViewer(kcfg, foundry)
     viewer.run()
 
 
 def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, profile: bool, **kwargs: Any) -> None:
     kcfgs_dir = foundry_out / 'kcfgs'
-    kcfg_file = kcfgs_dir / f'{test}.json'
-    with open(kcfg_file, 'r') as kf:
-        kcfg = KCFG.from_dict(json.loads(kf.read()))
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
     for _node in kcfg.reachable_nodes(node, traverse_covers=True):
         if not kcfg.is_target(_node.id):
             _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
             kcfg.remove_node(_node.id)
-    write_cfg(kcfg, kcfg_file)
+    KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
 
 def exec_foundry_simplify_node(
@@ -620,20 +621,20 @@ def exec_foundry_simplify_node(
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
-    kcfg_file = kcfgs_dir / f'{test}.json'
     use_directory.mkdir(parents=True, exist_ok=True)
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
-    with open(kcfg_file, 'r') as kf:
-        cfg = KCFG.from_dict(json.loads(kf.read()))
-    cterm = cfg.node(node).cterm
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    cterm = kcfg.node(node).cterm
     port = find_free_port()
     with KCFGExplore(foundry, port=port) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
     new_term_minimized = new_term if not minimize else minimize_term(new_term)
     print(f'Simplified:\n{foundry.pretty_print(new_term_minimized)}')
     if replace:
-        cfg.replace_node(node, CTerm(new_term))
-        write_cfg(cfg, kcfg_file)
+        kcfg.replace_node(node, CTerm(new_term))
+        KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
 
 # Helpers
@@ -821,9 +822,7 @@ def _create_argument_parser() -> ArgumentParser:
         'prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args, rpc_args, explore_args]
     )
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    prove_args.add_argument(
-        '--save-directory', dest='save_directory', type=dir_path, help='Directory to store KCFGs in.'
-    )
+    prove_args.add_argument('--save-directory', dest='kcfgs_dir', type=dir_path, help='Directory to store KCFGs in.')
     prove_args.add_argument(
         '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
     )
@@ -840,7 +839,10 @@ def _create_argument_parser() -> ArgumentParser:
         help='Display tree view of KCFG',
         parents=[shared_args, k_args],
     )
-    view_kcfg_args.add_argument('kcfg_file', type=file_path, help='Path to KCFG to view.')
+    view_kcfg_args.add_argument(
+        'save_directory', type=dir_path, help='Path to where KCFGs are stored (--save-directory option to prove).'
+    )
+    view_kcfg_args.add_argument('claim', type=str, help='Claim identifier to load CFG for.')
 
     run_args = command_parser.add_parser(
         'run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args, k_args]
