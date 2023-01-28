@@ -650,6 +650,61 @@ def exec_foundry_simplify_node(
         KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
 
+def exec_foundry_step_node(
+    foundry_out: Path,
+    test: str,
+    node: str,
+    profile: bool,
+    repeat: int = 1,
+    minimize: bool = True,
+    bug_report: bool = False,
+    **kwargs: Any,
+) -> None:
+    if repeat < 1:
+        raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
+    definition_dir = foundry_out / 'kompiled'
+    use_directory = foundry_out / 'specs'
+    kcfgs_dir = foundry_out / 'kcfgs'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    br = None if not bug_report else BugReport(Path(f'{test}.bug_report'))
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    port = find_free_port()
+    with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
+        for _i in range(repeat):
+            kcfg, node = kcfg_explore.step(test, kcfg, node)
+            KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+
+
+def exec_foundry_section_edge(
+    foundry_out: Path,
+    test: str,
+    edge: Tuple[str, str],
+    profile: bool,
+    sections: int = 2,
+    replace: bool = False,
+    minimize: bool = True,
+    bug_report: bool = False,
+    **kwargs: Any,
+) -> None:
+    definition_dir = foundry_out / 'kompiled'
+    use_directory = foundry_out / 'specs'
+    kcfgs_dir = foundry_out / 'kcfgs'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    br = None if not bug_report else BugReport(Path(f'{test}.bug_report'))
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    port = find_free_port()
+    source_id, target_id = edge
+    with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
+        kcfg, _ = kcfg_explore.section_edge(test, kcfg, source_id=source_id, target_id=target_id, sections=sections)
+    KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+
+
 # Helpers
 
 
@@ -726,14 +781,14 @@ def _create_argument_parser() -> ArgumentParser:
         dest='max_depth',
         default=100,
         type=int,
-        help='Store every Nth state in the KCFG for inspection.',
+        help='Store every Nth state in the CFG for inspection.',
     )
     explore_args.add_argument(
         '--max-iterations',
         dest='max_iterations',
         default=None,
         type=int,
-        help='Store every Nth state in the KCFG for inspection.',
+        help='Store every Nth state in the CFG for inspection.',
     )
 
     k_args = ArgumentParser(add_help=False)
@@ -835,7 +890,7 @@ def _create_argument_parser() -> ArgumentParser:
         'prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args, rpc_args, explore_args]
     )
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    prove_args.add_argument('--save-directory', dest='kcfgs_dir', type=dir_path, help='Directory to store KCFGs in.')
+    prove_args.add_argument('--save-directory', dest='kcfgs_dir', type=dir_path, help='Directory to store CFGs in.')
     prove_args.add_argument(
         '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
     )
@@ -849,11 +904,11 @@ def _create_argument_parser() -> ArgumentParser:
 
     view_kcfg_args = command_parser.add_parser(
         'view-kcfg',
-        help='Display tree view of KCFG',
+        help='Display tree view of CFG',
         parents=[shared_args, k_args],
     )
     view_kcfg_args.add_argument(
-        'save_directory', type=dir_path, help='Path to where KCFGs are stored (--save-directory option to prove).'
+        'save_directory', type=dir_path, help='Path to where CFGs are stored (--save-directory option to prove).'
     )
     view_kcfg_args.add_argument('claim', type=str, help='Claim identifier to load CFG for.')
 
@@ -951,7 +1006,7 @@ def _create_argument_parser() -> ArgumentParser:
         dest='reinit',
         default=False,
         action='store_true',
-        help='Reinitialize KCFGs even if they already exist.',
+        help='Reinitialize CFGs even if they already exist.',
     )
 
     foundry_show_args = command_parser.add_parser(
@@ -989,18 +1044,18 @@ def _create_argument_parser() -> ArgumentParser:
 
     foundry_list_args = command_parser.add_parser(
         'foundry-list',
-        help='List information about KCFGs on disk',
+        help='List information about CFGs on disk',
         parents=[shared_args, k_args],
     )
     foundry_list_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_list_args.add_argument(
-        '--details', dest='details', default=True, action='store_true', help='Information about progress on each KCFG.'
+        '--details', dest='details', default=True, action='store_true', help='Information about progress on each CFG.'
     )
-    foundry_list_args.add_argument('--no-details', dest='details', action='store_false', help='Just list the KCFGs.')
+    foundry_list_args.add_argument('--no-details', dest='details', action='store_false', help='Just list the CFGs.')
 
     foundry_view_kcfg_args = command_parser.add_parser(
         'foundry-view-kcfg',
-        help='Display tree view of KCFG',
+        help='Display tree view of CFG',
         parents=[shared_args],
     )
     foundry_view_kcfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
@@ -1031,6 +1086,30 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_simplify_node.add_argument(
         '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
+    )
+
+    foundry_step_node = command_parser.add_parser(
+        'foundry-step-node',
+        help='Step from a given node, adding it to the CFG.',
+        parents=[shared_args, rpc_args],
+    )
+    foundry_step_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
+    foundry_step_node.add_argument('node', type=str, help='Node to step from in CFG.')
+    foundry_step_node.add_argument(
+        '--repeat', type=int, default=1, help='How many node expansions to do from the given start node (>= 1).'
+    )
+
+    foundry_section_edge = command_parser.add_parser(
+        'foundry-section-edge',
+        help='Given an edge in the graph, cut it into sections to get intermediate nodes.',
+        parents=[shared_args, rpc_args],
+    )
+    foundry_section_edge.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_section_edge.add_argument('test', type=str, help='Section edge in this CFG.')
+    foundry_section_edge.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
+    foundry_section_edge.add_argument(
+        '--sections', type=int, default=2, help='Number of sections to make from edge (>= 2).'
     )
 
     return parser
