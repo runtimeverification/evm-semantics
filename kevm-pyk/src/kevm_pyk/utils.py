@@ -23,6 +23,12 @@ def find_free_port(host: str = 'localhost') -> int:
         return s.getsockname()[1]
 
 
+def cfg_file_name(cfgid: str) -> str:
+    hash = hashlib.sha256()
+    hash.update(cfgid.encode('utf-8'))
+    return str(hash.hexdigest())
+
+
 def parallel_kcfg_explore(
     kprove: KProve,
     proof_problems: Dict[str, KCFG],
@@ -57,13 +63,8 @@ def parallel_kcfg_explore(
         base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
         cfg_path = None
         if save_directory is not None:
-            if _cfgid.isalnum():
-                _cfg_path = _cfgid
-            else:
-                hash = hashlib.sha256()
-                hash.update(_cfgid.encode('utf-8'))
-                _cfg_path = str(hash.hexdigest())
-                _LOGGER.info(f'Using hashed path for storing KCFG: {_cfgid} -> {_cfg_path}')
+            _cfg_path = cfg_file_name(_cfgid)
+            _LOGGER.info(f'Using hashed path for storing KCFG: {_cfgid} -> {_cfg_path}')
             cfg_path = save_directory / f'{_cfg_path}.json'
 
         with KCFGExplore(kprove, port=(base_port + _index)) as kcfg_explore:
