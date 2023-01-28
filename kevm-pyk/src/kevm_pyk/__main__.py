@@ -655,6 +655,7 @@ def exec_foundry_step_node(
     test: str,
     node: str,
     profile: bool,
+    repeat: int = 1,
     minimize: bool = True,
     bug_report: bool = False,
     **kwargs: Any,
@@ -670,7 +671,7 @@ def exec_foundry_step_node(
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
     port = find_free_port()
     with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
-        kcfg = kcfg_explore.step(test, kcfg, node)
+        kcfg = kcfg_explore.step(test, kcfg, node, repeat=repeat)
     KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
 
@@ -1092,6 +1093,9 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_step_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
     foundry_step_node.add_argument('node', type=str, help='Node to step from in CFG.')
+    foundry_step_node.add_argument(
+        '--repeat', type=int, default=1, help='How many node expansions to do from the given start node (>= 1).'
+    )
 
     foundry_bisect_edge = command_parser.add_parser(
         'foundry-bisect-edge',
