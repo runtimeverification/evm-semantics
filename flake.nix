@@ -49,7 +49,6 @@
           secp256k1
           solc
           time
-          virtualenv
         ] ++ lib.optional (!stdenv.isDarwin) elfutils
         ++ lib.optionals stdenv.isDarwin [ automake libtool ];
 

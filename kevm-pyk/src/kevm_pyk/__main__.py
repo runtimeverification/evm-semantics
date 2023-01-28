@@ -20,7 +20,14 @@ from pyk.utils import shorten_hashes
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KDefinition__expand_macros, KPrint_make_unparsing, find_free_port, parallel_kcfg_explore, write_cfg
+from .utils import (
+    KDefinition__expand_macros,
+    KPrint_make_unparsing,
+    cfg_file_name,
+    find_free_port,
+    parallel_kcfg_explore,
+    write_cfg,
+)
 
 T = TypeVar('T')
 
@@ -425,6 +432,7 @@ def exec_foundry_prove(
     results = parallel_kcfg_explore(
         foundry,
         kcfgs,
+        save_directory=kcfgs_dir,
         max_depth=max_depth,
         max_iterations=max_iterations,
         workers=workers,
@@ -459,11 +467,11 @@ def exec_foundry_show(
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
-    srcmap_dir = foundry_out / 'srcmaps'
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
-    kcfg_file = kcfgs_dir / f'{test}.json'
+    kcfg_file = kcfgs_dir / f'{cfg_file_name(test)}.json'
     contract = test.split('.')[0]
+    srcmap_dir = foundry_out / 'srcmaps'
     srcmap_file = srcmap_dir / f'{contract}.json'
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
     srcmap: Optional[Dict[int, str]] = None
     if srcmap_file.exists():
         with open(srcmap_file, 'r') as sm:
@@ -587,7 +595,7 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
-    kcfg_file = kcfgs_dir / f'{test}.json'
+    kcfg_file = kcfgs_dir / f'{cfg_file_name(test)}.json'
     use_directory.mkdir(parents=True, exist_ok=True)
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
     viewer = KCFGViewer(kcfg_file, foundry)
