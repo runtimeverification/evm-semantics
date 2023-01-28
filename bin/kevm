@@ -58,8 +58,9 @@ run_kevm_pyk() {
             pyk_args+=(-I "${INSTALL_INCLUDE}/kframework")
             ;;
     esac
-    ! ${verbose} || pyk_args+=(--verbose)
-    ! ${debug}   || pyk_args+=(--debug)
+    ! ${verbose}    || pyk_args+=(--verbose)
+    ! ${debug}      || pyk_args+=(--debug)
+    ! ${bug_report} || pyk_args+=(--bug-report)
     execute python3 -m kevm_pyk "${pyk_command}" "$@" "${pyk_args[@]}"
 }
 
