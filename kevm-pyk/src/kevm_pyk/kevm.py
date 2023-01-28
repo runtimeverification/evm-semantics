@@ -4,7 +4,7 @@ from pathlib import Path
 from subprocess import CalledProcessError
 from typing import Any, Dict, Final, Iterable, List, Optional
 
-from pyk.cli_utils import run_process
+from pyk.cli_utils import BugReport, run_process
 from pyk.cterm import CTerm, remove_useless_constraints
 from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, build_assoc, build_cons
 from pyk.kast.manip import (
@@ -41,6 +41,7 @@ class KEVM(KProve, KRun):
         profile: bool = False,
         kprove_command: str = 'kprove',
         krun_command: str = 'krun',
+        bug_report: Optional[BugReport] = None,
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -52,8 +53,16 @@ class KEVM(KProve, KRun):
             main_file=main_file,
             profile=profile,
             command=kprove_command,
+            bug_report=bug_report,
         )
-        KRun.__init__(self, definition_dir, use_directory=use_directory, profile=profile, command=krun_command)
+        KRun.__init__(
+            self,
+            definition_dir,
+            use_directory=use_directory,
+            profile=profile,
+            command=krun_command,
+            bug_report=bug_report,
+        )
         KEVM._patch_symbol_table(self.symbol_table)
 
     @staticmethod
@@ -476,9 +485,17 @@ class Foundry(KEVM):
         main_file: Optional[Path] = None,
         use_directory: Optional[Path] = None,
         profile: bool = False,
+        bug_report: Optional[BugReport] = None,
     ) -> None:
         # copied from KEVM class and adapted to inherit KPrint instead
-        KEVM.__init__(self, definition_dir, main_file=main_file, use_directory=use_directory, profile=profile)
+        KEVM.__init__(
+            self,
+            definition_dir,
+            main_file=main_file,
+            use_directory=use_directory,
+            profile=profile,
+            bug_report=bug_report,
+        )
         Foundry._patch_symbol_table(self.symbol_table)
 
     class Sorts:
