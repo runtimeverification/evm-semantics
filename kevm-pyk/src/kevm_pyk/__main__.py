@@ -599,7 +599,7 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    viewer = KCFGViewer(kcfg, foundry)
+    viewer = KCFGViewer(kcfg, foundry, node_printer=foundry.short_info)
     viewer.run()
 
 
