@@ -67,6 +67,7 @@ tests/specs/mcd/end-subuu-pass-spec.k
 tests/specs/mcd/flapper-tend-guy-diff-pass-rough-spec.k
 tests/specs/mcd/flapper-yank-pass-rough-spec.k
 tests/specs/mcd/flipper-bids-pass-rough-spec.k
+tests/specs/mcd/flipper-ttl-pass-spec.k
 tests/specs/mcd/flopper-cage-pass-spec.k
 tests/specs/mcd/flopper-dent-guy-diff-tic-not-0-pass-rough-spec.k
 tests/specs/mcd/flopper-dent-guy-same-pass-rough-spec.k
@@ -76,6 +77,7 @@ tests/specs/mcd/flopper-tick-pass-rough-spec.k
 tests/specs/mcd/functional-spec.k
 tests/specs/mcd/gemjoin-exit-pass-rough-spec.k
 tests/specs/mcd/pot-join-pass-rough-spec.k
+tests/specs/mcd/vat-deny-diff-fail-rough-spec.k
 tests/specs/mcd/vat-flux-diff-pass-rough-spec.k
 tests/specs/mcd/vat-fold-pass-rough-spec.k
 tests/specs/mcd/vat-fork-diff-pass-rough-spec.k
