@@ -675,7 +675,7 @@ def exec_foundry_step_node(
     KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
 
-def exec_foundry_bisect_edge(
+def exec_foundry_section_edge(
     foundry_out: Path,
     test: str,
     edge: Tuple[str, str],
@@ -698,7 +698,7 @@ def exec_foundry_bisect_edge(
     port = find_free_port()
     source_id, target_id = edge
     with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
-        kcfg = kcfg_explore.bisect_edge(test, kcfg, source_id=source_id, target_id=target_id, sections=sections)
+        kcfg = kcfg_explore.section_edge(test, kcfg, source_id=source_id, target_id=target_id, sections=sections)
     KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
 
@@ -1097,15 +1097,15 @@ def _create_argument_parser() -> ArgumentParser:
         '--repeat', type=int, default=1, help='How many node expansions to do from the given start node (>= 1).'
     )
 
-    foundry_bisect_edge = command_parser.add_parser(
-        'foundry-bisect-edge',
+    foundry_section_edge = command_parser.add_parser(
+        'foundry-section-edge',
         help='Given an edge in the graph, cut it into sections to get intermediate nodes.',
         parents=[shared_args, rpc_args],
     )
-    foundry_bisect_edge.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
-    foundry_bisect_edge.add_argument('test', type=str, help='Bisect edge in this CFG.')
-    foundry_bisect_edge.add_argument('edge', type=KIT.arg_pair_of(str, str), help='Edge to bisect in CFG.')
-    foundry_bisect_edge.add_argument(
+    foundry_section_edge.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_section_edge.add_argument('test', type=str, help='Section edge in this CFG.')
+    foundry_section_edge.add_argument('edge', type=KIT.arg_pair_of(str, str), help='Edge to section in CFG.')
+    foundry_section_edge.add_argument(
         '--sections', type=int, default=2, help='Number of sections to make from edge (>= 2).'
     )
 
