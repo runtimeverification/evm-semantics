@@ -1573,6 +1573,8 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     
     syntax ExpectRevertTestMethod ::= "test_expectRevert_bytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_bytes4)]
     
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_encodedSymbolic" "(" Int ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_encodedSymbolic)]
+    
     syntax ExpectRevertTestMethod ::= "test_expectRevert_internalCall" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_internalCall)]
     
     syntax ExpectRevertTestMethod ::= "test_expectRevert_message" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_message)]
@@ -1609,6 +1611,10 @@ module EXPECTREVERTTEST-BIN-RUNTIME
       
     
     rule  ( ExpectRevertTest . test_expectRevert_bytes4 ( ) => #abiCallData ( "test_expectRevert_bytes4" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . test_expectRevert_encodedSymbolic ( V0_controller ) => #abiCallData ( "test_expectRevert_encodedSymbolic" , #address ( V0_controller ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_controller )
       
     
     rule  ( ExpectRevertTest . test_expectRevert_internalCall ( ) => #abiCallData ( "test_expectRevert_internalCall" , .TypedArgs ) )
@@ -1651,6 +1657,9 @@ module EXPECTREVERTTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_expectRevert_bytes4" ) => 1300765909 )
+      
+    
+    rule  ( selector ( "test_expectRevert_encodedSymbolic" ) => 27292786 )
       
     
     rule  ( selector ( "test_expectRevert_internalCall" ) => 1766536967 )

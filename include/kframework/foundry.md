@@ -538,7 +538,8 @@ This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes 
       requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
 ```
 
-#### expectRevert - expect the next call to revert.
+Expecting the next call to revert
+---------------------------------
 
 ```
 function expectRevert() external;
@@ -546,7 +547,7 @@ function expectRevert(bytes4 msg) external;
 function expectRevert(bytes calldata msg) external;
 ```
 
-Ignore all cheat code calls which take place while `expectRevert` is active.
+All cheat code calls which take place while `expectRevert` is active are ignored.
 
 ```{.k .bytes}
     rule [foundry.call.ignoreCalls]:
@@ -557,6 +558,9 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
          </expectedRevert>
       [priority(35)]
 ```
+
+The `#halt` production is used to examine the end of each call in KEVM.
+If the call depth of the current call is lower than the call depth of the `expectRevert` cheat code and the `<statusCode>` is not `EVMC_SUCCESS`, the `#checkRevertReason` will be used to compare the output of the call with the expect reason provided.
 
 ```{.k .bytes}
     rule [foundry.handleExpectRevert]:
@@ -573,6 +577,8 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
       [priority(40)]
 ```
 
+If the call is successful, a revert is triggered and the `FAILED` location of the `Foundry` contract is set to `true` using `#markAsFailed`.
+
 ```{.k .bytes}
     rule [foundry.handleExpectRevert.error]:
          <k> (. => #markAsFailed ~> #clearExpectRevert) ~> #halt ... </k>
@@ -586,6 +592,7 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
       requires CD <=Int ED
       [priority(40)]
 ```
+
 If the `expectRevert()` selector is matched, call the `#setExpectRevert` production to initialize the `<expectedRevert>` subconfiguration.
 
 ```{.k .bytes}
@@ -1149,7 +1156,19 @@ Utils
          </expectedRevert>
 ```
 
-- `#handleExpectRevert` 
+- `#encodeOutput` - will encode the output ByteArray to match the encoding of the ByteArray in `<expectedReason>` cell.
+    - If the `revert` instruction  and the `expectRevert` cheat code are used with with a custom error, then `expectRevert` will store the message with the encoding `abi.encode(abi.encodeWithSelector(CustomError.selector, 1, 2))`, while the output cell will contain only the `abi.encodeWithSelector(CustomError.selector, 1, 2)`.
+    - If the `revert` instruction  and the `expectRevert` cheat code are used with with a string, then `expectRevert` will store the only the encoded string, while the `<output>` cell will store the encoded built-in error `Error(string)`.
+    Since the encoding `abi.encode(abi.encodeWithSelector(CustomError.selector, 1, 2))` cannot be easily decoded when symbolic variables are used, the `<output>` ByteArray is encoded again when the default `Error(string)` is not used.
+
+```k
+    syntax ByteArray ::= "#encodeOutput" "(" ByteArray ")" [function, total, klabel(foundry_encodeOutput)]
+ // ------------------------------------------------------------------------------------------------------
+    rule #encodeOutput(BA) => #abiCallData("expectRevert", #bytes(BA)) requires notBool #range(BA, 0, 4) ==K Int2Bytes(4, selector("Error(string)"), BE)
+    rule #encodeOutput(BA) => BA [owise]
+```
+
+- `#checkRevertReason` will compare the contents of the `<output>` cell with the ByteArray from `<expectReason>`.
 
 ```k
     syntax KItem ::= "#checkRevertReason" [klabel(foundry_checkRevertReason)]
@@ -1161,7 +1180,7 @@ Utils
            <expectedReason> REASON </expectedReason>
            ...
          </expectedRevert>
-      requires #matchReason(REASON, OUT)
+      requires #matchReason(REASON, #encodeOutput(OUT))
 
     rule <k> #checkRevertReason => #markAsFailed ... </k>
          <output> OUT </output>
@@ -1169,7 +1188,7 @@ Utils
            <expectedReason> REASON </expectedReason>
            ...
          </expectedRevert>
-      requires notBool #matchReason(REASON, OUT)
+      requires notBool #matchReason(REASON, #encodeOutput(OUT))
 ```
 
 - `#matchReason(REASON,OUT)` will check if the returned message matches the expected reason of the revert.
@@ -1378,6 +1397,9 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "expectEmit(bool,bool,bool,bool)" )          => 1226622914 )
     rule ( selector ( "expectEmit(bool,bool,bool,bool,address)" )  => 2176505587 )
     rule ( selector ( "sign(uint256,bytes32)" )                    => 3812747940 )
+    rule ( selector ( "symbolicStorage(address)" )                 => 769677742  )
+    rule ( selector ( "prank(address)" )                           => 3395723175 )
+    rule ( selector ( "prank(address,address)" )                   => 1206193358 )
     rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )
     rule ( selector ( "allowChangesToStorage(address,uint256)" )   => 4207417100 )
 ```
@@ -1387,7 +1409,6 @@ If the production is matched when no prank is active, it will be ignored.
 ```k
     rule selector ( "expectRegularCall(address,bytes)" )        => 3178868520
     rule selector ( "expectNoCall()" )                          => 3861374088
-    rule selector ( "symbolicStorage(address)" )                => 769677742
     rule selector ( "ffi(string[])" )                           => 2299921511
     rule selector ( "setEnv(string,string)" )                   => 1029252078
     rule selector ( "envBool(string)" )                         => 2127686781
@@ -1404,8 +1425,6 @@ If the production is matched when no prank is active, it will be ignored.
     rule selector ( "envBytes32(string,string)" )               => 1525821889
     rule selector ( "envString(string,string)" )                => 347089865
     rule selector ( "envBytes(string,string)" )                 => 3720504603
-    rule selector ( "prank(address)" )                          => 3395723175
-    rule selector ( "prank(address,address)" )                  => 1206193358
     rule selector ( "expectRevert(bytes4)" )                    => 3273568480
     rule selector ( "record()" )                                => 644673801
     rule selector ( "accesses(address)" )                       => 1706857601
@@ -1449,6 +1468,11 @@ If the production is matched when no prank is active, it will be ignored.
     rule selector ( "deriveKey(string,uint32)" )                => 1646872971
 ```
 
+- selector for Solidity built-in Error
+
+```k
+    rule ( selector ( "Error(string)" ) => 147028384 )
+```
 ```k
 endmodule
 ```
