@@ -6,8 +6,9 @@ import "../src/KEVMCheats.sol";
 
 contract GasTest is Test, KEVMCheats {
     function testSetGas() public {
-        kevm.setGas(333000);
-        uint256 gasLeft = gasleft();
-        assertEq(gasLeft, 333000);
+        kevm.infiniteGas();
+        uint256 gasLeftBefore = gasleft();
+        uint256 gasLeftAfter  = gasleft();
+        assert(gasLeftBefore <= gasLeftAfter);
     }
 }

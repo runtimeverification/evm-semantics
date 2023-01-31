@@ -24,7 +24,7 @@ interface KEVMCheatsBase {
     // Adds an address and a storage slot to the whitelist.
     function allowChangesToStorage(address,uint256) external;
     // Set the current <gas> cell
-    function setGas(uint256) external;
+    function infiniteGas() external;
 }
 
 abstract contract KEVMCheats {
