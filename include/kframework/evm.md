@@ -311,7 +311,8 @@ The `#next [_]` operator initiates execution by:
 ```k
     syntax InternalOp ::= "#next" "[" MaybeOpCode "]"
  // -------------------------------------------------
-    rule <k> #next [ .NoOpCode ] => #end EVMC_SUCCESS ... </k>
+    rule [endcode]:
+         <k> #next [ .NoOpCode ] => #end EVMC_SUCCESS ... </k>
          <output> _ => .ByteArray </output>
 
     rule <k> #next [ OP:OpCode ]
@@ -1076,18 +1077,21 @@ The `JUMP*` family of operations affect the current program counter.
 ```k
     syntax NullStackOp ::= "STOP"
  // -----------------------------
-    rule <k> STOP => #end EVMC_SUCCESS ... </k>
+    rule [stop]:
+         <k> STOP => #end EVMC_SUCCESS ... </k>
          <output> _ => .ByteArray </output>
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
-    rule <k> RETURN RETSTART RETWIDTH => #end EVMC_SUCCESS ... </k>
+    rule [return]:
+         <k> RETURN RETSTART RETWIDTH => #end EVMC_SUCCESS ... </k>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
 
     syntax BinStackOp ::= "REVERT"
  // ------------------------------
-    rule <k> REVERT RETSTART RETWIDTH => #end EVMC_REVERT ... </k>
+    rule [revert]:
+         <k> REVERT RETSTART RETWIDTH => #end EVMC_REVERT ... </k>
          <output> _ => #range(LM, RETSTART, RETWIDTH) </output>
          <localMem> LM </localMem>
 ```
@@ -1667,7 +1671,8 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 ```k
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+    rule [selfdestruct.self]:
+         <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
          <account>
@@ -1678,7 +1683,8 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
          <output> _ => .ByteArray </output>
       requires ACCT =/=Int ACCTTO
 
-    rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
+    rule [selfdestruct.other]:
+         <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
          <account>
