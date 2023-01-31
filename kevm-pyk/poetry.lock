@@ -969,7 +969,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.106"
+version = "0.1.108"
 description = ""
 category = "main"
 optional = false
@@ -991,7 +991,7 @@ tomli = "^2.0.1"
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
 reference = "single-step"
-resolved_reference = "3c163461f04d2352b5ae3807f7267ed83bd1ab31"
+resolved_reference = "91459b7637062f7c83539be10f384fda3746dcdb"
 
 [[package]]
 name = "pyperclip"
