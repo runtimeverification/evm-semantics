@@ -52,6 +52,12 @@ def parallel_kcfg_explore(
                     'EVM.staticcall',
                     'EVM.create',
                     'EVM.create2',
+                    'EVM.endcode',
+                    'EVM.stop',
+                    'EVM.return',
+                    'EVM.revert',
+                    'EVM.selfdestruct.self',
+                    'EVM.selfdestruct.other',
                     'FOUNDRY.foundry.call',
                 ]
             )
