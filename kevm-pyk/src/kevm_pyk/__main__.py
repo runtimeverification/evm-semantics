@@ -660,6 +660,8 @@ def exec_foundry_step_node(
     bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
+    if repeat < 1:
+        raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
@@ -671,8 +673,9 @@ def exec_foundry_step_node(
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
     port = find_free_port()
     with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
-        kcfg = kcfg_explore.step(test, kcfg, node, repeat=repeat)
-    KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+        for _i in range(repeat):
+            kcfg, node = kcfg_explore.step(test, kcfg, node)
+            KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
 
 def exec_foundry_section_edge(
@@ -698,7 +701,7 @@ def exec_foundry_section_edge(
     port = find_free_port()
     source_id, target_id = edge
     with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
-        kcfg = kcfg_explore.section_edge(test, kcfg, source_id=source_id, target_id=target_id, sections=sections)
+        kcfg, _ = kcfg_explore.section_edge(test, kcfg, source_id=source_id, target_id=target_id, sections=sections)
     KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
 
