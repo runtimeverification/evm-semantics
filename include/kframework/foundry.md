@@ -569,7 +569,7 @@ If the call depth of the current call is lower than the call depth of the `expec
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
-           <expectedDepth> ED </expectedDepth> 
+           <expectedDepth> ED </expectedDepth>
            ...
          </expectedRevert>
       requires CD <=Int ED
@@ -586,7 +586,7 @@ If the call is successful, a revert is triggered and the `FAILED` location of th
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
-           <expectedDepth> ED </expectedDepth> 
+           <expectedDepth> ED </expectedDepth>
            ...
          </expectedRevert>
       requires CD <=Int ED
@@ -843,8 +843,27 @@ function stopPrank() external;
       requires SELECTOR ==Int selector ( "stopPrank()" )
 ```
 
+Gas Manipulation
+----------------
+
+```
+function setGas(uint256 newGas) external;
+```
+
+Set the current gas left (reported by `GAS` opcode) to a specific amount.
+This is useful when writing tests that depend on the gas used, and so a specific concrete amount is needed instead of the default infinite gas.
+
+```{.k .bytes}
+    rule [foundry.call.setGas]:
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
+         <gas> _ => #asWord(ARGS) </gas>
+         <callGas> _ => 0 </callGas>
+      requires SELECTOR ==Int selector ( "setGas(uint256)" )
+```
+
 Expecting Events
 ----------------
+
 ```
 function expectEmit(bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData) external;
 function expectEmit(bool checkTopic1, bool checkTopic2, bool checkTopic3, bool checkData, address emitter) external;
@@ -997,9 +1016,9 @@ function sign(uint256 privateKey, bytes32 digest) external returns (uint8 v, byt
 ```
 
 `foundry.call.sign` will match when the `sign` cheat code function is called.
-This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`. 
-To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM). 
-This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings. 
+This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`.
+To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM).
+This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings.
 The `ECDSASign` function returns the signed data in [r,s,v] form, which we convert to a bytearray using `#parseByteStack`.
 
 ```{.k .bytes}
@@ -1162,13 +1181,10 @@ Utils
     Since the encoding `abi.encode(abi.encodeWithSelector(CustomError.selector, 1, 2))` cannot be easily decoded when symbolic variables are used, the `<output>` ByteArray is encoded again when the default `Error(string)` is not used.
 
 ```k
-    syntax KItem ::= "#encodeOutput" [klabel(foundry_encodeOutput)]
- // ---------------------------------------------------------------
-    rule <k> #encodeOutput => . ... </k>
-         <output> OUT => #abiCallData("expectRevert", #bytes(OUT)) </output>
-      requires notBool #range(OUT, 0, 4) ==K Int2Bytes(4, selector("Error(string)"), BE)
-
-    rule <k> #encodeOutput => . ... </k> [owise]
+    syntax ByteArray ::= "#encodeOutput" "(" ByteArray ")" [function, total, klabel(foundry_encodeOutput)]
+ // ------------------------------------------------------------------------------------------------------
+    rule #encodeOutput(BA) => #abiCallData("expectRevert", #bytes(BA)) requires notBool #range(BA, 0, 4) ==K Int2Bytes(4, selector("Error(string)"), BE)
+    rule #encodeOutput(BA) => BA [owise]
 ```
 
 - `#checkRevertReason` will compare the contents of the `<output>` cell with the ByteArray from `<expectReason>`.
@@ -1183,7 +1199,7 @@ Utils
            <expectedReason> REASON </expectedReason>
            ...
          </expectedRevert>
-      requires #matchReason(REASON, OUT)
+      requires #matchReason(REASON, #encodeOutput(OUT))
 
     rule <k> #checkRevertReason => #markAsFailed ... </k>
          <output> OUT </output>
@@ -1191,7 +1207,7 @@ Utils
            <expectedReason> REASON </expectedReason>
            ...
          </expectedRevert>
-      requires notBool #matchReason(REASON, OUT)
+      requires notBool #matchReason(REASON, #encodeOutput(OUT))
 ```
 
 - `#matchReason(REASON,OUT)` will check if the returned message matches the expected reason of the revert.
@@ -1405,6 +1421,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "prank(address,address)" )                   => 1206193358 )
     rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )
     rule ( selector ( "allowChangesToStorage(address,uint256)" )   => 4207417100 )
+    rule ( selector ( "setGas(uint256)" )                          => 3713137314 )
 ```
 
 - selectors for unimplemented cheat code functions.
