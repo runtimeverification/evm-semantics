@@ -564,7 +564,7 @@ If the call depth of the current call is lower than the call depth of the `expec
 
 ```{.k .bytes}
     rule [foundry.handleExpectRevert]:
-         <k> (. => #encodeOutput ~> #checkRevertReason ~> #clearExpectRevert) ~> #halt ... </k>
+         <k> (. => #checkRevertReason ~> #clearExpectRevert) ~> #halt ... </k>
          <statusCode> SC </statusCode>
          <callDepth> CD </callDepth>
          <expectedRevert>
