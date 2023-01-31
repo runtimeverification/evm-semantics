@@ -564,8 +564,9 @@ If the call depth of the current call is lower than the call depth of the `expec
 
 ```{.k .bytes}
     rule [foundry.handleExpectRevert]:
-         <k> (. => #encodeOutput ~> #checkRevertReason ~> #clearExpectRevert) ~> #halt ... </k>
+         <k> (. => #checkRevertReason ~> #clearExpectRevert) ~> #halt ... </k>
          <statusCode> SC </statusCode>
+         <output> OUT => #encodeOutput(OUT) </output>
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
@@ -1162,13 +1163,10 @@ Utils
     Since the encoding `abi.encode(abi.encodeWithSelector(CustomError.selector, 1, 2))` cannot be easily decoded when symbolic variables are used, the `<output>` ByteArray is encoded again when the default `Error(string)` is not used.
 
 ```k
-    syntax KItem ::= "#encodeOutput" [klabel(foundry_encodeOutput)]
- // ---------------------------------------------------------------
-    rule <k> #encodeOutput => . ... </k>
-         <output> OUT => #abiCallData("expectRevert", #bytes(OUT)) </output>
-      requires notBool #range(OUT, 0, 4) ==K Int2Bytes(4, selector("Error(string)"), BE)
-
-    rule <k> #encodeOutput => . ... </k> [owise]
+    syntax ByteArray ::= "#encodeOutput" "(" ByteArray ")" [function, total, klabel(foundry_encodeOutput)]
+ // ------------------------------------------------------------------------------------------------------
+    rule #encodeOutput(BA) => #abiCallData("expectRevert", #bytes(BA)) requires notBool #range(BA, 0, 4) ==K Int2Bytes(4, selector("Error(string)"), BE)
+    rule #encodeOutput(BA) => BA [owise]
 ```
 
 - `#checkRevertReason` will compare the contents of the `<output>` cell with the ByteArray from `<expectReason>`.
