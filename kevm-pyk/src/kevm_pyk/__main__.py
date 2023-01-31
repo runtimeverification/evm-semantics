@@ -598,7 +598,8 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs
     kcfg_file = kcfgs_dir / f'{cfg_file_name(test)}.json'
     use_directory.mkdir(parents=True, exist_ok=True)
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
-    viewer = KCFGViewer(kcfg_file, foundry)
+    kcfg = KCFG.from_json(kcfg_file.read_text())
+    viewer = KCFGViewer(kcfg, foundry)
     viewer.run()
 
 
