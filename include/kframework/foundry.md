@@ -33,7 +33,8 @@ $ cd ../..
 *Kompile to KEVM specification (inside virtual environment):*
 
 ```sh
-(venv) $ kevm foundry-kompile tests/foundry/out
+$ make shell
+(kevm-pyk-py3.10) $ kevm foundry-kompile tests/foundry/out
 WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
 WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
 WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
@@ -54,14 +55,17 @@ WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for ty
 WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
 WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
 WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
+$ exit
 ```
 
 *And discharge some specific test as a proof obligation (inside virtual environment):*
 
 ```sh
-(venv) $ kevm foundry-prove tests/foundry/out --test AssertTest.test_assert_true
+$ make shell
+(kevm-pyk-py3.10) $ kevm foundry-prove tests/foundry/out --test AssertTest.test_assert_true
 WARNING 2022-09-11 15:37:31,956 __main__ - Ignoring command-line option: --definition: /home/dev/src/evm-semantics/.build/usr/lib/kevm/haskell
 #Top
+$ exit
 ```
 
 Foundry Module for KEVM
@@ -168,6 +172,11 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<checkedTopics>` will store a list of `bool` values that flag if a topic should be checked or not.
     - `<checkedData>` flags if the data field should be checked or not.
     - `<expectedEventAddress>` stores the emitter of an expected Event.
+5. The `<whitelist>` subconfiguration stores addresses that can be called and storage slots that can be accessed/modified during the execution.
+    - `<isCallWhitelistActive>` flags if the whitelist mode is enabled for calls.
+    - `<isStorageWhitelistActive>` flags if the whitelist mode is enabled for storage changes.
+    - `<addressSet>` - stores the address whitelist.
+    - `<storageSlotSet>` - stores the storage whitelist containing pairs of addresses and storage indexes.
 
 ```k
 module FOUNDRY-CHEAT-CODES
@@ -197,7 +206,7 @@ module FOUNDRY-CHEAT-CODES
           <expectedValue> 0 </expectedValue>
           <expectedData> .ByteArray </expectedData>
           <opcodeType> .OpcodeType </opcodeType>
-       </expectedOpcode>
+        </expectedOpcode>
         <expectEmit>
           <recordEvent> false </recordEvent>
           <isEventExpected> false </isEventExpected>
@@ -205,6 +214,12 @@ module FOUNDRY-CHEAT-CODES
           <checkedData> false </checkedData>
           <expectedEventAddress> .Account </expectedEventAddress>
         </expectEmit>
+        <whitelist>
+          <isCallWhitelistActive> false </isCallWhitelistActive>
+          <isStorageWhitelistActive> false </isStorageWhitelistActive>
+          <addressSet> .Set </addressSet>
+          <storageSlotSet> .Set </storageSlotSet>
+        </whitelist>
       </cheatcodes>
 ```
 
@@ -230,18 +245,19 @@ First we have some helpers in K which can:
 #### Structure of execution
 
 The `foundry.call` rule is used to inject specific behaviour for each cheat code.
-The rule has a higher priority than any other `CALL` rule and will match every call made to the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
-The function selector, represented as `#asWord(#range(LM, ARGSTART, 4))` and the call data `#range(LM, ARGSTART +Int 4, ARGWIDTH -Int 4)` are passed to the `#call_foundry` production, which will further rewrite using rules defined for implemented cheat codes.
+The rule has a higher priority than any other `#call` rule and will match every call made to the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
+The function selector, represented as `#asWord(#range(ARGS, 0, 4))` and the call data `#range(ARGS, 4, #sizeByteArray(ARGS) -Int 4)` are passed to the `#call_foundry` production, which will further rewrite using rules defined for implemented cheat codes.
 Finally, the rule for `#return_foundry` is used to end the execution of the `CALL` OpCode.
 
 ```{.k .bytes}
     rule [foundry.call]:
-         <k> CALL _ CHEAT_ADDR _VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #call_foundry #asWord(#range(LM, ARGSTART, 4)) #range(LM, ARGSTART +Int 4, ARGWIDTH -Int 4)
+         <k> (#checkCall _ _
+          ~> #call _ CHEAT_ADDR _ _ _ ARGS _
+          ~> #return RETSTART RETWIDTH )
+          => #call_foundry #asWord(#range(ARGS, 0, 4)) #range(ARGS, 4, #sizeByteArray(ARGS) -Int 4)
           ~> #return_foundry RETSTART RETWIDTH
          ...
          </k>
-         <localMem> LM </localMem>
          <output> _ => .ByteArray </output>
     requires CHEAT_ADDR ==Int #address(FoundryCheat)
     [priority(40)]
@@ -251,10 +267,10 @@ We define two productions named `#return_foundry` and `#call_foundry`, which wil
 The rule `foundry.return` will rewrite the `#return_foundry` production into other productions that will place the output of the execution into the local memory, refund the gas value of the call and push the value `1` on the call stack.
 
 ```{.k .bytes}
-    syntax KItem ::= "#return_foundry" Int Int [klabel(foundry_return)]
-                   | "#call_foundry" Int ByteArray [klabel(foundry_call)]
-                   | "#error_foundry" Int ByteArray [klabel(foundry_error)]
- // -----------------------------------------------------------------------
+    syntax KItem ::= "#return_foundry" Int Int       [klabel(foundry_return)]
+                   | "#call_foundry" Int ByteArray     [klabel(foundry_call)]
+                   | "#error_foundry" Int ByteArray   [klabel(foundry_error)]
+ // -------------------------------------------------------------------------
     rule [foundry.return]:
          <k> #return_foundry RETSTART RETWIDTH
           => #setLocalMem RETSTART RETWIDTH OUT
@@ -265,11 +281,16 @@ The rule `foundry.return` will rewrite the `#return_foundry` production into oth
          <callGas> GCALL </callGas>
 ```
 
-We define a new status code named `FOUNDRY_UNIMPLEMENTED`, which signals that the execution ran into an unimplemented cheat code.
+We define a new status codes:
+ - `FOUNDRY_UNIMPLEMENTED`, which signals that the execution ran into an unimplemented cheat code.
+ - `FOUNDRY_WHITELISTCALL`, which signals that an address outside the whitelist has been called during the execution.
+ - `FOUNDRY_WHITELISTSTORAGE`, which signals that a storage index of an address outside the whitelist has been changed during the execution.
 
 ```{.k .bytes}
     syntax ExceptionalStatusCode ::= "FOUNDRY_UNIMPLEMENTED"
- // --------------------------------------------------------
+                                   | "FOUNDRY_WHITELISTCALL"
+                                   | "FOUNDRY_WHITELISTSTORAGE"
+ // -----------------------------------------------------------
 ```
 
 Below, we define rules for the `#call_foundry` production, handling the cheat codes.
@@ -517,7 +538,8 @@ This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes 
       requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
 ```
 
-#### expectRevert - expect the next call to revert.
+Expecting the next call to revert
+---------------------------------
 
 ```
 function expectRevert() external;
@@ -525,7 +547,7 @@ function expectRevert(bytes4 msg) external;
 function expectRevert(bytes calldata msg) external;
 ```
 
-Ignore all cheat code calls which take place while `expectRevert` is active.
+All cheat code calls which take place while `expectRevert` is active are ignored.
 
 ```{.k .bytes}
     rule [foundry.call.ignoreCalls]:
@@ -536,6 +558,9 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
          </expectedRevert>
       [priority(35)]
 ```
+
+The `#halt` production is used to examine the end of each call in KEVM.
+If the call depth of the current call is lower than the call depth of the `expectRevert` cheat code and the `<statusCode>` is not `EVMC_SUCCESS`, the `#checkRevertReason` will be used to compare the output of the call with the expect reason provided.
 
 ```{.k .bytes}
     rule [foundry.handleExpectRevert]:
@@ -552,6 +577,8 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
       [priority(40)]
 ```
 
+If the call is successful, a revert is triggered and the `FAILED` location of the `Foundry` contract is set to `true` using `#markAsFailed`.
+
 ```{.k .bytes}
     rule [foundry.handleExpectRevert.error]:
          <k> (. => #markAsFailed ~> #clearExpectRevert) ~> #halt ... </k>
@@ -565,6 +592,7 @@ Ignore all cheat code calls which take place while `expectRevert` is active.
       requires CD <=Int ED
       [priority(40)]
 ```
+
 If the `expectRevert()` selector is matched, call the `#setExpectRevert` production to initialize the `<expectedRevert>` subconfiguration.
 
 ```{.k .bytes}
@@ -890,14 +918,78 @@ With address: Asserts the topics match and that the emitting address matches.
        andBool ((notBool CHECKDATA) orBool (#asWord(DATA) ==Int #asWord(#range(LM, MEMSTART, MEMWIDTH))))
       [priority(40)]
 ```
-Otherwise, throw an error for any other call to the Foundry contract.
+
+
+Restricting the accounts that can be called in KEVM
+---------------------------------------------------
+
+A `StorageSlot` pair is formed from an address and a storage index.
 
 ```{.k .bytes}
-    rule [foundry.call.owise]:
-         <k> #call_foundry SELECTOR ARGS => #error_foundry SELECTOR ARGS ... </k>
-         <statusCode> _ => FOUNDRY_UNIMPLEMENTED </statusCode>
-      [owise]
+    syntax StorageSlot ::= "{" Int "|" Int "}"
+ // ------------------------------------------
 ```
+
+The `ACCTTO` value is checked for each call while the whitelist restriction is enabled for calls.
+If the address is not in the whitelist `WLIST` then `KEVM` goes into an error state providing the `ACCTTO` value.
+
+```{.k .bytes}
+    rule [foundry.catchNonWhitelistedCalls]:
+         <k> (#call _ ACCTTO _ _ _ _ false
+          ~> #popCallStack
+          ~> #popWorldState) => #end FOUNDRY_WHITELISTCALL ... </k>
+         <whitelist>
+           <isCallWhitelistActive> true </isCallWhitelistActive>
+           <addressSet> WLIST </addressSet>
+           ...
+         </whitelist>
+      requires notBool ACCTTO in WLIST
+      [priority(40)]
+```
+
+When the storage whitelist restriction is enabled, the `SSTORE` operation will check if the address and the storage index are in the whitelist.
+If the pair is not present in the whitelist `WLIST` then `KEVM` goes into an error state providing the address and the storage index values.
+
+```{.k .bytes}
+    rule [foundry.catchNonWhitelistedStorageChanges]:
+         <k> SSTORE INDEX _ => #end FOUNDRY_WHITELISTSTORAGE ... </k>
+         <id> ACCT </id>
+         <statusCode> _ => FOUNDRY_WHITELISTSTORAGE </statusCode>
+         <whitelist>
+           <isStorageWhitelistActive> true </isStorageWhitelistActive>
+           <storageSlotSet> WLIST </storageSlotSet>
+           ...
+         </whitelist>
+      requires notBool {ACCT|INDEX} in WLIST
+      [priority(40)]
+```
+
+#### `allowCallsToAddress` - Add an account address to a whitelist.
+
+```
+function allowCallsToAddress(address) external;
+```
+
+Adds an account address to the whitelist. The execution of the modified KEVM will stop when a call has been made to an address which is not in the whitelist.
+
+```{.k .bytes}
+    rule [foundry.allowCallsToAddress]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #addAddressToWhitelist #asWord(ARGS) ... </k>
+         requires SELECTOR ==Int selector ( "allowCallsToAddress(address)" )
+```
+
+#### `allowChangesToStorage` - Add an account address and a storage slot to a whitelist.
+
+```
+function allowChangesToStorage(address,uint256) external;
+```
+
+```{.k .bytes}
+    rule [foundry.allowStorageSlotToAddress]:
+         <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #addStorageSlotToWhitelist { #asWord(#range(ARGS, 0, 32)) | #asWord(#range(ARGS, 32, 32)) } ... </k>
+         requires SELECTOR ==Int selector ( "allowChangesToStorage(address,uint256)" )
+```
+
 
 #### `sign` - Signs a digest with private key
 
@@ -916,6 +1008,15 @@ The `ECDSASign` function returns the signed data in [r,s,v] form, which we conve
          <k> #call_foundry SELECTOR ARGS => . ... </k>
          <output> _ => #sign(#range(ARGS, 32, 32),#range(ARGS,0,32)) </output>
       requires SELECTOR ==Int selector ( "sign(uint256,bytes32)" )
+```
+
+Otherwise, throw an error for any other call to the Foundry contract.
+
+```{.k .bytes}
+    rule [foundry.call.owise]:
+         <k> #call_foundry SELECTOR ARGS => #error_foundry SELECTOR ARGS ... </k>
+         <statusCode> _ => FOUNDRY_UNIMPLEMENTED </statusCode>
+      [owise]
 ```
 
 Utils
@@ -1056,7 +1157,19 @@ Utils
          </expectedRevert>
 ```
 
-- `#handleExpectRevert`
+- `#encodeOutput` - will encode the output ByteArray to match the encoding of the ByteArray in `<expectedReason>` cell.
+    - If the `revert` instruction  and the `expectRevert` cheat code are used with with a custom error, then `expectRevert` will store the message with the encoding `abi.encode(abi.encodeWithSelector(CustomError.selector, 1, 2))`, while the output cell will contain only the `abi.encodeWithSelector(CustomError.selector, 1, 2)`.
+    - If the `revert` instruction  and the `expectRevert` cheat code are used with with a string, then `expectRevert` will store the only the encoded string, while the `<output>` cell will store the encoded built-in error `Error(string)`.
+    Since the encoding `abi.encode(abi.encodeWithSelector(CustomError.selector, 1, 2))` cannot be easily decoded when symbolic variables are used, the `<output>` ByteArray is encoded again when the default `Error(string)` is not used.
+
+```k
+    syntax ByteArray ::= "#encodeOutput" "(" ByteArray ")" [function, total, klabel(foundry_encodeOutput)]
+ // ------------------------------------------------------------------------------------------------------
+    rule #encodeOutput(BA) => #abiCallData("expectRevert", #bytes(BA)) requires notBool #range(BA, 0, 4) ==K Int2Bytes(4, selector("Error(string)"), BE)
+    rule #encodeOutput(BA) => BA [owise]
+```
+
+- `#checkRevertReason` will compare the contents of the `<output>` cell with the ByteArray from `<expectReason>`.
 
 ```k
     syntax KItem ::= "#checkRevertReason" [klabel(foundry_checkRevertReason)]
@@ -1068,7 +1181,7 @@ Utils
            <expectedReason> REASON </expectedReason>
            ...
          </expectedRevert>
-      requires #matchReason(REASON, OUT)
+      requires #matchReason(REASON, #encodeOutput(OUT))
 
     rule <k> #checkRevertReason => #markAsFailed ... </k>
          <output> OUT </output>
@@ -1076,7 +1189,7 @@ Utils
            <expectedReason> REASON </expectedReason>
            ...
          </expectedRevert>
-      requires notBool #matchReason(REASON, OUT)
+      requires notBool #matchReason(REASON, #encodeOutput(OUT))
 ```
 
 - `#matchReason(REASON,OUT)` will check if the returned message matches the expected reason of the revert.
@@ -1229,6 +1342,32 @@ If the production is matched when no prank is active, it will be ignored.
     rule #checkTopics(ListItem(CHECK) CHECKS, ListItem(V1) L1, ListItem(V2) L2) => #checkTopic(CHECK, V1, V2) andBool #checkTopics(CHECKS, L1, L2)
 ```
 
+- `#addAddressToWhitelist` enables the whitelist restriction for calls and adds an address to the whitelist.
+
+```k
+    syntax KItem ::= "#addAddressToWhitelist" Int [klabel(foundry_addAddressToWhitelist)]
+ // -------------------------------------------------------------------------------------
+    rule <k> #addAddressToWhitelist ACCT => . ... </k>
+        <whitelist>
+          <isCallWhitelistActive> _ => true </isCallWhitelistActive>
+          <addressSet>  WLIST => WLIST SetItem(ACCT) </addressSet>
+          ...
+        </whitelist>
+```
+
+- `#addStorageSlotToWhitelist` enables the whitelist restriction for storage chagnes and adds a `StorageSlot` item to the whitelist.
+
+```k
+    syntax KItem ::= "#addStorageSlotToWhitelist" StorageSlot [klabel(foundry_addStorageSlotToWhitelist)]
+ // -----------------------------------------------------------------------------------------------------
+    rule <k> #addStorageSlotToWhitelist SLOT => . ... </k>
+        <whitelist>
+          <isStorageWhitelistActive> _ => true </isStorageWhitelistActive>
+          <storageSlotSet> WLIST => WLIST SetItem(SLOT) </storageSlotSet>
+          ...
+        </whitelist>
+```
+
 - selectors for cheat code functions.
 
 ```k
@@ -1259,6 +1398,11 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "expectEmit(bool,bool,bool,bool)" )          => 1226622914 )
     rule ( selector ( "expectEmit(bool,bool,bool,bool,address)" )  => 2176505587 )
     rule ( selector ( "sign(uint256,bytes32)" )                    => 3812747940 )
+    rule ( selector ( "symbolicStorage(address)" )                 => 769677742  )
+    rule ( selector ( "prank(address)" )                           => 3395723175 )
+    rule ( selector ( "prank(address,address)" )                   => 1206193358 )
+    rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )
+    rule ( selector ( "allowChangesToStorage(address,uint256)" )   => 4207417100 )
 ```
 
 - selectors for unimplemented cheat code functions.
@@ -1266,7 +1410,6 @@ If the production is matched when no prank is active, it will be ignored.
 ```k
     rule selector ( "expectRegularCall(address,bytes)" )        => 3178868520
     rule selector ( "expectNoCall()" )                          => 3861374088
-    rule selector ( "symbolicStorage(address)" )                => 769677742
     rule selector ( "ffi(string[])" )                           => 2299921511
     rule selector ( "setEnv(string,string)" )                   => 1029252078
     rule selector ( "envBool(string)" )                         => 2127686781
@@ -1283,8 +1426,6 @@ If the production is matched when no prank is active, it will be ignored.
     rule selector ( "envBytes32(string,string)" )               => 1525821889
     rule selector ( "envString(string,string)" )                => 347089865
     rule selector ( "envBytes(string,string)" )                 => 3720504603
-    rule selector ( "prank(address)" )                          => 3395723175
-    rule selector ( "prank(address,address)" )                  => 1206193358
     rule selector ( "expectRevert(bytes4)" )                    => 3273568480
     rule selector ( "record()" )                                => 644673801
     rule selector ( "accesses(address)" )                       => 1706857601
@@ -1328,6 +1469,11 @@ If the production is matched when no prank is active, it will be ignored.
     rule selector ( "deriveKey(string,uint32)" )                => 1646872971
 ```
 
+- selector for Solidity built-in Error
+
+```k
+    rule ( selector ( "Error(string)" ) => 147028384 )
+```
 ```k
 endmodule
 ```

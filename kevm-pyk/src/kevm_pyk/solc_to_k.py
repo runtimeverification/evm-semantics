@@ -431,6 +431,10 @@ def _init_term(
         'OPCODETYPE_CELL': KApply('.OpcodeType_FOUNDRY-CHEAT-CODES_OpcodeType'),
         'RECORDEVENT_CELL': FALSE,
         'ISEVENTEXPECTED_CELL': FALSE,
+        'ISCALLWHITELISTACTIVE_CELL': FALSE,
+        'ISSTORAGEWHITELISTACTIVE_CELL': FALSE,
+        'ADDRESSSET_CELL': KApply('.Set'),
+        'STORAGESLOTSET_CELL': KApply('.Set'),
     }
 
     if calldata is not None:
@@ -487,6 +491,10 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
         'ISOPCODEEXPECTED_CELL': KVariable('ISOPCODEEXPECTED_FINAL'),
         'RECORDEVENT_CELL': KVariable('RECORDEVENT_FINAL'),
         'ISEVENTEXPECTED_CELL': KVariable('ISEVENTEXPECTED_FINAL'),
+        'ISCALLWHITELISTACTIVE_CELL': KVariable('ISCALLWHITELISTACTIVE_FINAL'),
+        'ISSTORAGEWHITELISTACTIVE_CELL': KVariable('ISSTORAGEWHITELISTACTIVE_FINAL'),
+        'ADDRESSSET_CELL': KVariable('ADDRESSSET_FINAL'),
+        'STORAGESLOTSET_CELL': KVariable('STORAGESLOTSET_FINAL'),
     }
     return abstract_cell_vars(
         Subst(final_subst)(empty_config),
@@ -497,6 +505,10 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             KVariable('ISOPCODEEXPECTED_FINAL'),
             KVariable('RECORDEVENT_FINAL'),
             KVariable('ISEVENTEXPECTED_FINAL'),
+            KVariable('ISCALLWHITELISTACTIVE_FINAL'),
+            KVariable('ISSTORAGEWHITELISTACTIVE_FINAL'),
+            KVariable('ADDRESSSET_FINAL'),
+            KVariable('STORAGESLOTSET_FINAL'),
         ],
     )
 

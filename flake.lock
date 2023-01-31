@@ -203,11 +203,11 @@
     "flake-compat": {
       "flake": false,
       "locked": {
-        "lastModified": 1668681692,
-        "narHash": "sha256-Ht91NGdewz8IQLtWZ9LCeNXMSXHUss+9COoqu6JLmXU=",
+        "lastModified": 1673956053,
+        "narHash": "sha256-4gtG9iQuiKITOjNQQeQIpoIB6b16fm+504Ch3sNKLd8=",
         "owner": "edolstra",
         "repo": "flake-compat",
-        "rev": "009399224d5e398d03b22badca40a37ac85412a1",
+        "rev": "35bb57c0c8d8b62bbfd284272c928ceb64ddbde9",
         "type": "github"
       },
       "original": {
@@ -261,6 +261,23 @@
         "type": "github"
       }
     },
+    "fmt-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1661615830,
+        "narHash": "sha256-rP6ymyRc7LnKxUXwPpzhHOQvpJkpnRFOt2ctvUNlYI0=",
+        "owner": "fmtlib",
+        "repo": "fmt",
+        "rev": "a33701196adfad74917046096bf5a2aa0ab0bb50",
+        "type": "github"
+      },
+      "original": {
+        "owner": "fmtlib",
+        "ref": "9.1.0",
+        "repo": "fmt",
+        "type": "github"
+      }
+    },
     "ghc-8.6.5-iohk": {
       "flake": false,
       "locked": {
@@ -307,11 +324,11 @@
         "z3-src": "z3-src"
       },
       "locked": {
-        "lastModified": 1671028997,
-        "narHash": "sha256-y+ldnZaFVjDav7egSPx4tJs8fEn+/bv/kTjf+gJsDmc=",
+        "lastModified": 1674481453,
+        "narHash": "sha256-G92XtV2O4NVr/THUt3y1i75Ne32tOkg0QB5B9hGJC/E=",
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "5a3472be3a9e1dd4d00853fe04bf283b50698825",
+        "rev": "4b04a36a24bc9188401230e7937b577ea83484af",
         "type": "github"
       },
       "original": {
@@ -429,11 +446,11 @@
         "rv-utils": "rv-utils"
       },
       "locked": {
-        "lastModified": 1671122887,
-        "narHash": "sha256-bDQfyrX4Ps8Yek+MKmZYwFrrYokUI2PJpyHYJFiOXsA=",
+        "lastModified": 1675049223,
+        "narHash": "sha256-KFMp2rbGmM0+gGP5IJaOagybDhhURA+1AycMr8Habmw=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "1524e9d19f9611c2ed89a6adf80c166fa190c816",
+        "rev": "052032390977fed4677e1d01549e337b3e70b184",
         "type": "github"
       },
       "original": {
@@ -461,6 +478,7 @@
     },
     "llvm-backend": {
       "inputs": {
+        "fmt-src": "fmt-src",
         "immer-src": "immer-src",
         "mavenix": "mavenix",
         "nixpkgs": [
@@ -473,11 +491,11 @@
         "utils": "utils_2"
       },
       "locked": {
-        "lastModified": 1671011014,
-        "narHash": "sha256-HwJpbMFec97hHPAUDT4jdxX2nsWse58Xa/YQtlVx3II=",
+        "lastModified": 1674837926,
+        "narHash": "sha256-HuuhNqOsAdFwZnd0C8rcqLXtJcXIY3X4pxt5obkCjxE=",
         "owner": "runtimeverification",
         "repo": "llvm-backend",
-        "rev": "c0077076a1ae598782549d45cc04b45ac87b1882",
+        "rev": "fd2f7cc89cee542ba873c7f73f100a277e948d17",
         "type": "github"
       },
       "original": {
@@ -716,11 +734,11 @@
     },
     "nixpkgs_4": {
       "locked": {
-        "lastModified": 1670980281,
-        "narHash": "sha256-g0t/SmQca/JBEd+3Ry1qFgDfDK8ME9AM6EP4YUl8/lo=",
+        "lastModified": 1672580127,
+        "narHash": "sha256-3lW3xZslREhJogoOkjeZtlBtvFMyxHku7I/9IVehhT8=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "5cb48ea3c19ce2e5746a44d6b91847396bd28c1f",
+        "rev": "0874168639713f547c05947c76124f78441ea46c",
         "type": "github"
       },
       "original": {
@@ -811,16 +829,16 @@
         "poetry2nix": "poetry2nix"
       },
       "locked": {
-        "lastModified": 1671115427,
-        "narHash": "sha256-iveSiR51zOeGqprD6DiOQj50oDYybqKp00cH8xE710Q=",
+        "lastModified": 1674838979,
+        "narHash": "sha256-HyNStacSCezetN+OKfhNeY4fU/xph8gnshmlv1dZQEM=",
         "owner": "runtimeverification",
         "repo": "pyk",
-        "rev": "f5e0663e050a35436c0bb5f8b5a25ad2299bd776",
+        "rev": "b45cbc2de5e5f6db0e339c0f38934cc7bd65fd16",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.89",
+        "ref": "v0.1.105",
         "repo": "pyk",
         "type": "github"
       }

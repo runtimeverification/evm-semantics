@@ -19,6 +19,10 @@ interface KEVMCheatsBase {
     function expectCreate2(address,uint256,bytes calldata) external;
     // Makes the storage of the given address completely symbolic.
     function symbolicStorage(address) external;
+    // Adds an address to the whitelist.
+    function allowCallsToAddress(address) external;
+    // Adds an address and a storage slot to the whitelist.
+    function allowChangesToStorage(address,uint256) external;
 }
 
 abstract contract KEVMCheats {
