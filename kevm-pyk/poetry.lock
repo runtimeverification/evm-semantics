@@ -991,7 +991,7 @@ tomli = "^2.0.1"
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
 reference = "single-step"
-resolved_reference = "91459b7637062f7c83539be10f384fda3746dcdb"
+resolved_reference = "4a74f667730b44db09a496fb1eaa3b8576036930"
 
 [[package]]
 name = "pyperclip"
