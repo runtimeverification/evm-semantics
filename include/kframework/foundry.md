@@ -566,7 +566,6 @@ If the call depth of the current call is lower than the call depth of the `expec
     rule [foundry.handleExpectRevert]:
          <k> (. => #checkRevertReason ~> #clearExpectRevert) ~> #halt ... </k>
          <statusCode> SC </statusCode>
-         <output> OUT => #encodeOutput(OUT) </output>
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
@@ -1181,7 +1180,7 @@ Utils
            <expectedReason> REASON </expectedReason>
            ...
          </expectedRevert>
-      requires #matchReason(REASON, OUT)
+      requires #matchReason(REASON, #encodeOutput(OUT))
 
     rule <k> #checkRevertReason => #markAsFailed ... </k>
          <output> OUT </output>
@@ -1189,7 +1188,7 @@ Utils
            <expectedReason> REASON </expectedReason>
            ...
          </expectedRevert>
-      requires notBool #matchReason(REASON, OUT)
+      requires notBool #matchReason(REASON, #encodeOutput(OUT))
 ```
 
 - `#matchReason(REASON,OUT)` will check if the returned message matches the expected reason of the revert.
