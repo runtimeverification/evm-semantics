@@ -1,4 +1,3 @@
-import hashlib
 import logging
 import socket
 from contextlib import closing
@@ -21,12 +20,6 @@ def find_free_port(host: str = 'localhost') -> int:
         s.bind((host, 0))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return s.getsockname()[1]
-
-
-def cfg_file_name(cfgid: str) -> str:
-    hash = hashlib.sha256()
-    hash.update(cfgid.encode('utf-8'))
-    return str(hash.hexdigest())
 
 
 def parallel_kcfg_explore(
@@ -61,18 +54,13 @@ def parallel_kcfg_explore(
                 ]
             )
         base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
-        cfg_path = None
-        if save_directory is not None:
-            _cfg_path = cfg_file_name(_cfgid)
-            _LOGGER.info(f'Using hashed path for storing KCFG: {_cfgid} -> {_cfg_path}')
-            cfg_path = save_directory / f'{_cfg_path}.json'
 
         with KCFGExplore(kprove, port=(base_port + _index)) as kcfg_explore:
             try:
                 _cfg = kcfg_explore.all_path_reachability_prove(
                     _cfgid,
                     _cfg,
-                    cfg_path=cfg_path,
+                    cfg_dir=save_directory,
                     is_terminal=is_terminal,
                     extract_branches=extract_branches,
                     max_iterations=max_iterations,
@@ -97,11 +85,6 @@ def parallel_kcfg_explore(
         results = process_pool.map(_call_rpc, _proof_problems)
 
     return {pid: result for pid, result in zip(proof_problems, results, strict=True)}
-
-
-def write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
-    _cfgpath.write_text(_cfg.to_json())
-    _LOGGER.info(f'Updated CFG file: {_cfgpath}')
 
 
 def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # noqa: N802
