@@ -6,14 +6,15 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
 from pyk.cli_utils import BugReport, dir_path, file_path
-from pyk.cterm import CTerm, build_rule
+from pyk.cterm import CTerm, build_claim, build_rule
 from pyk.kast.inner import KApply, KInner, KRewrite, KToken
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
-from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
+from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRuleLike
 from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
+from pyk.prelude.ml import mlTop
 from pyk.utils import shorten_hashes
 
 from .gst_to_kore import gst_to_kore
@@ -516,7 +517,7 @@ def exec_foundry_show(
 
     if to_module:
 
-        def to_rule(edge: KCFG.Edge) -> KRule:
+        def to_rule(edge: KCFG.Edge, claim: bool = False) -> KRuleLike:
             sentence_id = f'BASIC-BLOCK-{edge.source.id}-TO-{edge.target.id}'
             init_cterm = CTerm(edge.source.cterm.config)
             for c in edge.source.cterm.constraints:
@@ -532,11 +533,16 @@ def exec_foundry_show(
                     _LOGGER.warning(f'Ignoring Ceil condition: {c}')
                 else:
                     target_cterm.add_constraint(c)
-            rule, _ = build_rule(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm, priority=35)
+            rule: KRuleLike
+            if not claim:
+                rule, _ = build_rule(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm, priority=35)
+            else:
+                rule, _ = build_claim(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm)
             return rule
 
         rules = [to_rule(e) for e in kcfg.edges() if e.depth > 0]
-        new_module = KFlatModule('SUMMARY', rules)
+        claims = [to_rule(KCFG.Edge(nd, kcfg.get_unique_target(), mlTop(), -1), claim=True) for nd in kcfg.frontier]
+        new_module = KFlatModule('SUMMARY', rules + claims)
         print(foundry.pretty_print(new_module) + '\n')
 
 
