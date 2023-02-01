@@ -96,6 +96,8 @@ SnapshotTest.testSnapshot
 StoreTest.testAccesses
 StoreTest.testGasLoadWarmVM
 StoreTest.testGasStoreWarmVM
+SymbolicStorageTest.testFail_SymbolicStorage
+SymbolicStorageTest.testFail_SymbolicStorage1
 ToStringTest.testAddressToString
 ToStringTest.testBoolToString
 ToStringTest.testBytes32ToString
