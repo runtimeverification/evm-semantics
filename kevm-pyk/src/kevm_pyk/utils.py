@@ -45,7 +45,6 @@ def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # no
 
 
 def KCFG__replace_node(cfg: KCFG, node_id: str, new_cterm: CTerm) -> KCFG:  # noqa: N802
-
     # Remove old node, record data
     node = cfg.node(node_id)
     in_edges = cfg.edges(target_id=node.id)
