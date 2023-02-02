@@ -955,6 +955,21 @@ files = [
 dill = ["dill (>=0.3.6)"]
 
 [[package]]
+name = "pybind11"
+version = "2.10.3"
+description = "Seamless operability between C++11 and Python"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "pybind11-2.10.3-py3-none-any.whl", hash = "sha256:123e303f39ad5de97ddfa4f1f473cb85881a0a94ee5714eb3c37e2405371fc12"},
+    {file = "pybind11-2.10.3.tar.gz", hash = "sha256:08cfe6d4f73746447cc85a400c8169a91608b8a00c5feecd8ff251a70565d12f"},
+]
+
+[package.extras]
+global = ["pybind11-global (==2.10.3)"]
+
+[[package]]
 name = "pycodestyle"
 version = "2.10.0"
 description = "Python style guide checker"
@@ -995,7 +1010,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.114"
+version = "0.1.115"
 description = ""
 category = "main"
 optional = false
@@ -1010,14 +1025,15 @@ gql = {version = "^3.4.0", extras = ["requests"]}
 graphene = "^3.1.1"
 graphql-server = "^3.0.0b5"
 graphviz = "^0.20.1"
+pybind11 = "^2.10.3"
 textual = "^0.10.1"
 tomli = "^2.0.1"
 
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.114"
-resolved_reference = "ac14c7e0df8e1ea425128fab8f627b07655b23d9"
+reference = "v0.1.115"
+resolved_reference = "15531b71ef212a925856e138b4306ce411a6572d"
 
 [[package]]
 name = "pyperclip"
@@ -1296,4 +1312,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "3a3388d1a79de928521c91bb0e1cdecd570bbaf4b852ace29fa954f7763ed067"
+content-hash = "553202938ee516e25e1ebb1fab14e95b6f39097458adc119918edf040b6cc3b0"
