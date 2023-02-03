@@ -2,15 +2,16 @@ import logging
 import sys
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, Iterable, List, Optional
+from typing import Final, Iterable, List, Optional
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
 from pyk.kast.manip import flatten_label, get_cell
+from pyk.kast.outer import KDefinition
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kompile import KompileBackend
-from pyk.ktool.kprint import paren
+from pyk.ktool.kprint import SymbolTable, paren
 from pyk.prelude.kbool import notBool
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlAnd, mlEqualsTrue
@@ -34,6 +35,7 @@ class KEVM(KProve, KRun):
         profile: bool = False,
         kprove_command: str = 'kprove',
         krun_command: str = 'krun',
+        definition: Optional[KDefinition] = None,
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -45,9 +47,18 @@ class KEVM(KProve, KRun):
             main_file=main_file,
             profile=profile,
             command=kprove_command,
+            definition=definition,
+            patch_symbol_table=KEVM._patch_symbol_table_kevm,
         )
-        KRun.__init__(self, definition_dir, use_directory=use_directory, profile=profile, command=krun_command)
-        KEVM._patch_symbol_table(self.symbol_table)
+        KRun.__init__(
+            self,
+            definition_dir,
+            use_directory=use_directory,
+            profile=profile,
+            command=krun_command,
+            definition=definition,
+            patch_symbol_table=KEVM._patch_symbol_table_kevm,
+        )
 
     @staticmethod
     def kompile(
@@ -97,7 +108,7 @@ class KEVM(KProve, KRun):
         return KEVM(definition_dir, main_file=main_file)
 
     @staticmethod
-    def _patch_symbol_table(symbol_table: Dict[str, Any]) -> None:
+    def _patch_symbol_table_kevm(symbol_table: SymbolTable) -> None:
         # fmt: off
         symbol_table['#Bottom']                                       = lambda: '#Bottom'
         symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)
@@ -399,17 +410,20 @@ class Foundry(KEVM):
         main_file: Optional[Path] = None,
         use_directory: Optional[Path] = None,
         profile: bool = False,
+        definition: Optional[KDefinition] = None,
     ) -> None:
         # copied from KEVM class and adapted to inherit KPrint instead
-        KEVM.__init__(self, definition_dir, main_file=main_file, use_directory=use_directory, profile=profile)
-        Foundry._patch_symbol_table(self.symbol_table)
+        KEVM.__init__(
+            self,
+            definition_dir,
+            main_file=main_file,
+            use_directory=use_directory,
+            profile=profile,
+            definition=definition,
+        )
 
     class Sorts:
         FOUNDRY_CELL: Final = KSort('FoundryCell')
-
-    @staticmethod
-    def _patch_symbol_table(symbol_table: Dict[str, Any]) -> None:
-        KEVM._patch_symbol_table(symbol_table)
 
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:

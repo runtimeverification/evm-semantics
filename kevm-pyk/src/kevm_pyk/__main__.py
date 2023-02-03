@@ -23,8 +23,8 @@ from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
 from .utils import (
     KCFG__replace_node,
+    KDefinition__add_modules,
     KDefinition__expand_macros,
-    KPrint_make_unparsing,
     KProve_prove_claim,
     add_include_arg,
     sanitize_config,
@@ -139,11 +139,15 @@ def exec_solc_to_k(
     )
     _spec_module = KFlatModule(spec_module if spec_module else 'SPEC')
     modules = (contract_module, _main_module, _spec_module)
-    bin_runtime_definition = KDefinition(
+    _bin_runtime_definition = KDefinition(
         _main_module.name, modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
     )
-    _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
-    KEVM._patch_symbol_table(_kprint.symbol_table)
+    bin_runtime_definition = KDefinition__add_modules(_bin_runtime_definition, 'UNPARSING', modules)
+    _kprint = KEVM(
+        definition_dir,
+        profile=profile,
+        definition=bin_runtime_definition,
+    )
     print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
 
@@ -196,20 +200,19 @@ def exec_foundry_kompile(
     foundry = Foundry(definition_dir, profile=profile)
     empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
 
-    bin_runtime_definition = _foundry_to_bin_runtime(
-        empty_config=empty_config,
-        contracts=contracts,
-        main_module=main_module,
-        requires=requires,
-        imports=imports,
-    )
-
     if regen or not foundry_main_file.exists():
+        bin_runtime_definition = _foundry_to_bin_runtime(
+            empty_config=empty_config,
+            contracts=contracts,
+            main_module=main_module,
+            requires=requires,
+            imports=imports,
+        )
         with open(foundry_main_file, 'w') as fmf:
             _LOGGER.info(f'Writing file: {foundry_main_file}')
             _foundry = Foundry(definition_dir=definition_dir)
-            _kprint = KPrint_make_unparsing(_foundry, extra_modules=bin_runtime_definition.modules)
-            Foundry._patch_symbol_table(_kprint.symbol_table)
+            _new_defn = KDefinition__add_modules(_foundry.definition, 'UNPARSING', bin_runtime_definition.modules)
+            _kprint = Foundry(definition_dir=definition_dir, definition=_new_defn)
             fmf.write(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
     if regen or rekompile or not kompiled_timestamp.exists():
