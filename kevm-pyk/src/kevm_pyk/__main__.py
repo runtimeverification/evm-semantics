@@ -10,7 +10,7 @@ from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm, build_rule
 from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
 from pyk.kast.manip import flatten_label, get_cell, minimize_term, push_down_rewrites
-from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
+from pyk.kast.outer import KDefinition, KFlatModule, KFlatModuleList, KImport, KRequire, KRule
 from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
 from pyk.ktool.kit import KIT
 from pyk.ktool.kompile import KompileBackend
@@ -21,14 +21,7 @@ from pyk.prelude.ml import is_top, mlTop
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import (
-    KCFG__replace_node,
-    KDefinition__add_modules,
-    KDefinition__expand_macros,
-    KProve_prove_claim,
-    add_include_arg,
-    sanitize_config,
-)
+from .utils import KCFG__replace_node, KDefinition__expand_macros, KProve_prove_claim, add_include_arg, sanitize_config
 
 T = TypeVar('T')
 
@@ -123,7 +116,6 @@ def exec_solc_to_k(
     contract_file: Path,
     contract_name: str,
     main_module: Optional[str],
-    spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
     **kwargs: Any,
@@ -137,16 +129,14 @@ def exec_solc_to_k(
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [contract_module.name] + imports]
     )
-    _spec_module = KFlatModule(spec_module if spec_module else 'SPEC')
-    modules = (contract_module, _main_module, _spec_module)
-    _bin_runtime_definition = KDefinition(
+    modules = (contract_module, _main_module)
+    bin_runtime_definition = KDefinition(
         _main_module.name, modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
     )
-    bin_runtime_definition = KDefinition__add_modules(_bin_runtime_definition, 'UNPARSING', modules)
     _kprint = KEVM(
         definition_dir,
         profile=profile,
-        definition=bin_runtime_definition,
+        extra_unparsing_modules=KFlatModuleList('UNPARSING', modules),
     )
     print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
@@ -210,10 +200,11 @@ def exec_foundry_kompile(
         )
         with open(foundry_main_file, 'w') as fmf:
             _LOGGER.info(f'Writing file: {foundry_main_file}')
-            _foundry = Foundry(definition_dir=definition_dir)
-            _new_defn = KDefinition__add_modules(_foundry.definition, 'UNPARSING', bin_runtime_definition.modules)
-            _kprint = Foundry(definition_dir=definition_dir, definition=_new_defn)
-            fmf.write(_kprint.pretty_print(bin_runtime_definition) + '\n')
+            _foundry = Foundry(
+                definition_dir=definition_dir,
+                extra_unparsing_modules=KFlatModuleList('UNPARSING', bin_runtime_definition.modules),
+            )
+            fmf.write(_foundry.pretty_print(bin_runtime_definition) + '\n')
 
     if regen or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')

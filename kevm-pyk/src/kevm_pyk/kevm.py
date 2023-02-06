@@ -8,7 +8,7 @@ from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
 from pyk.kast.manip import flatten_label, get_cell
-from pyk.kast.outer import KDefinition
+from pyk.kast.outer import KFlatModuleList
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.kprint import SymbolTable, paren
@@ -35,7 +35,7 @@ class KEVM(KProve, KRun):
         profile: bool = False,
         kprove_command: str = 'kprove',
         krun_command: str = 'krun',
-        definition: Optional[KDefinition] = None,
+        extra_unparsing_modules: Optional[KFlatModuleList] = None,
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -47,8 +47,7 @@ class KEVM(KProve, KRun):
             main_file=main_file,
             profile=profile,
             command=kprove_command,
-            definition=definition,
-            patch_symbol_table=KEVM._patch_symbol_table_kevm,
+            extra_unparsing_modules=extra_unparsing_modules,
         )
         KRun.__init__(
             self,
@@ -56,8 +55,7 @@ class KEVM(KProve, KRun):
             use_directory=use_directory,
             profile=profile,
             command=krun_command,
-            definition=definition,
-            patch_symbol_table=KEVM._patch_symbol_table_kevm,
+            extra_unparsing_modules=extra_unparsing_modules,
         )
 
     @staticmethod
@@ -107,8 +105,8 @@ class KEVM(KProve, KRun):
             raise
         return KEVM(definition_dir, main_file=main_file)
 
-    @staticmethod
-    def _patch_symbol_table_kevm(symbol_table: SymbolTable) -> None:
+    @classmethod
+    def _patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
         # fmt: off
         symbol_table['#Bottom']                                       = lambda: '#Bottom'
         symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)
@@ -410,7 +408,7 @@ class Foundry(KEVM):
         main_file: Optional[Path] = None,
         use_directory: Optional[Path] = None,
         profile: bool = False,
-        definition: Optional[KDefinition] = None,
+        extra_unparsing_modules: Optional[KFlatModuleList] = None,
     ) -> None:
         # copied from KEVM class and adapted to inherit KPrint instead
         KEVM.__init__(
@@ -419,7 +417,7 @@ class Foundry(KEVM):
             main_file=main_file,
             use_directory=use_directory,
             profile=profile,
-            definition=definition,
+            extra_unparsing_modules=extra_unparsing_modules,
         )
 
     class Sorts:
