@@ -8,7 +8,7 @@ from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
 from pyk.kast.manip import flatten_label, get_cell
-from pyk.kast.outer import KFlatModuleList
+from pyk.kast.outer import KFlatModule
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.kprint import SymbolTable, paren
@@ -35,7 +35,7 @@ class KEVM(KProve, KRun):
         profile: bool = False,
         kprove_command: str = 'kprove',
         krun_command: str = 'krun',
-        extra_unparsing_modules: Optional[KFlatModuleList] = None,
+        extra_unparsing_modules: Iterable[KFlatModule] = (),
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -408,7 +408,7 @@ class Foundry(KEVM):
         main_file: Optional[Path] = None,
         use_directory: Optional[Path] = None,
         profile: bool = False,
-        extra_unparsing_modules: Optional[KFlatModuleList] = None,
+        extra_unparsing_modules: Iterable[KFlatModule] = (),
     ) -> None:
         # copied from KEVM class and adapted to inherit KPrint instead
         KEVM.__init__(

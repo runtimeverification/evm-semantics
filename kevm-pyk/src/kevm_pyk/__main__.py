@@ -10,7 +10,7 @@ from pyk.cli_utils import dir_path, file_path
 from pyk.cterm import CTerm, build_rule
 from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
 from pyk.kast.manip import flatten_label, get_cell, minimize_term, push_down_rewrites
-from pyk.kast.outer import KDefinition, KFlatModule, KFlatModuleList, KImport, KRequire, KRule
+from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
 from pyk.ktool.kit import KIT
 from pyk.ktool.kompile import KompileBackend
@@ -136,7 +136,7 @@ def exec_solc_to_k(
     _kprint = KEVM(
         definition_dir,
         profile=profile,
-        extra_unparsing_modules=KFlatModuleList('UNPARSING', modules),
+        extra_unparsing_modules=modules,
     )
     print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
@@ -202,7 +202,7 @@ def exec_foundry_kompile(
             _LOGGER.info(f'Writing file: {foundry_main_file}')
             _foundry = Foundry(
                 definition_dir=definition_dir,
-                extra_unparsing_modules=KFlatModuleList('UNPARSING', bin_runtime_definition.modules),
+                extra_unparsing_modules=bin_runtime_definition.modules,
             )
             fmf.write(_foundry.pretty_print(bin_runtime_definition) + '\n')
 
