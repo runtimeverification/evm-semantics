@@ -921,5 +921,5 @@ def _loglevel(args: Namespace) -> int:
     return logging.WARNING
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
