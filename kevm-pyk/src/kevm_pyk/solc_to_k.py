@@ -131,7 +131,7 @@ class Contract:
             _method_identifiers = contract_json['methodIdentifiers']
         else:
             _method_identifiers = []
-            _LOGGER.warning(f'Could not find member \'methodIdentifiers\' while processing contract: {self.name}')
+            _LOGGER.warning(f"Could not find member 'methodIdentifiers' while processing contract: {self.name}")
         for msig in _method_identifiers:
             mname = msig.split('(')[0]
             mid = int(_method_identifiers[msig], 16)
@@ -139,7 +139,7 @@ class Contract:
             _methods.append(_m)
         self.methods = tuple(_methods)
         if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
-            _LOGGER.warning(f'Could not find member \'storageLayout\' while processing contract: {self.name}')
+            _LOGGER.warning(f"Could not find member 'storageLayout' while processing contract: {self.name}")
             self.fields = FrozenDict({})
         else:
             _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
