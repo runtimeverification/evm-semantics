@@ -130,8 +130,19 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <acctID>      0                      </acctID>
                 <balance>     0                      </balance>
                 <code>        .ByteArray:AccountCode </code>
+```
+
+> AlgoEVM
+
                 <storage>     .Map                   </storage>
                 <origStorage> .Map                   </origStorage>
+
+```k
+                <storage>     (.Map):Storage         </storage>
+                <origStorage> (.Map):Storage         </origStorage>
+```
+
+```k
                 <nonce>       0                      </nonce>
               </account>
             </accounts>
@@ -1251,13 +1262,27 @@ These rules reach into the network state and load/store from account storage:
 
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
+
     rule <k> SSTORE INDEX NEW => . ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
+           <storage> STORAGE => STORAGE [INDEX <- NEW] </storage> 
            ...
-         </account>
+         </account> [priority(20)]
+
+```
+
+> AlgoEVM
+
+```k
+    rule <k> SSTORE INDEX NEW => . ... </k>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> STORAGE => #write(STORAGE, INDEX, NEW) </storage> 
+           ...
+         </account> [priority(40)]
 ```
 
 ### Call Operations

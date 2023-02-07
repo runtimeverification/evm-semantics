@@ -7,13 +7,31 @@ Both are implemented using K's `Int`.
 
 ```k
 requires "word.md"
+```
 
+> AlgoEVM
+
+```k
+module STORAGE
+    imports MAP
+    syntax Storage ::= Map | #write(Storage, Int, Int) [function]
+    rule #write(S:Map, I, V) => S [I <- V]
+endmodule
+```
+
+```k
 module EVM-TYPES
     imports STRING
     imports COLLECTIONS
     imports K-EQUAL
     imports JSON
     imports WORD
+```
+
+> AlgoEVM
+
+```k
+    imports STORAGE
 ```
 
 Utilities
@@ -520,9 +538,17 @@ Storage/Memory Lookup
 
 `#lookup*` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
-```k
     syntax Int ::= #lookup        ( Map , Int ) [function, total, smtlib(lookup)]
                  | #lookupMemory  ( Map , Int ) [function, total, smtlib(lookupMemory)]
+
+> ALgoEVM
+
+```k
+    syntax Int ::= #lookup        ( Storage , Int ) [function, total, smtlib(lookup)]
+                 | #lookupMemory  ( Storage , Int ) [function, total, smtlib(lookupMemory)]
+```
+
+```k
  // -----------------------------------------------------------------------------------
     rule [#lookup.some]:         #lookup(       (KEY |-> VAL:Int) _M, KEY ) => VAL modInt pow256
     rule [#lookup.none]:         #lookup(                          M, KEY ) => 0                 requires notBool KEY in_keys(M)
