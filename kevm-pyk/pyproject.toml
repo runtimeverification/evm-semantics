@@ -1,5 +1,5 @@
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
@@ -21,9 +21,13 @@ black = "*"
 flake8 = "*"
 flake8-bugbear = "*"
 flake8-comprehensions = "*"
+flake8-quotes = "*"
 isort = "*"
 mypy = "*"
 pep8-naming = "*"
+pytest = "*"
+pytest-mock = "*"
+pytest-xdist = "*"
 
 [tool.poetry.scripts]
 kevm-pyk = "kevm_pyk.__main__:main"
