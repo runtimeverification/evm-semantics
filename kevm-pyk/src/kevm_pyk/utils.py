@@ -8,9 +8,9 @@ from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
-from pyk.kast.outer import KDefinition, KFlatModule, KImport
+from pyk.kast.outer import KDefinition
 from pyk.kcfg import KCFG, KCFGExplore
-from pyk.ktool import KPrint, KProve
+from pyk.ktool import KProve
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -106,16 +106,6 @@ def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # no
         term = bottom_up(_expand_macros, term)
 
     return term
-
-
-def KPrint_make_unparsing(_self: KPrint, extra_modules: Iterable[KFlatModule] = ()) -> KPrint:  # noqa: N802
-    modules = _self.definition.modules + tuple(extra_modules)
-    main_module = KFlatModule('UNPARSING', [], [KImport(_m.name) for _m in modules])
-    defn = KDefinition('UNPARSING', (main_module,) + modules)
-    kprint = KPrint(_self.definition_dir)
-    kprint._definition = defn
-    kprint._symbol_table = None
-    return kprint
 
 
 def add_include_arg(includes: Iterable[str]) -> List[str]:
