@@ -16,9 +16,9 @@ from pyk.kast.manip import (
     split_config_from,
     undo_aliases,
 )
-from pyk.kast.outer import KClaim, KDefinition, KFlatModule, KImport, KRule
+from pyk.kast.outer import KClaim, KDefinition, KRule
 from pyk.kcfg import KCFG
-from pyk.ktool import KPrint, KProve
+from pyk.ktool import KProve
 from pyk.prelude.kbool import FALSE
 from pyk.prelude.ml import mlAnd
 
@@ -100,16 +100,6 @@ def KProve_prove_claim(  # noqa: N802
         logger.error(f'Failed to prove claim: {claim_id}')
         failed = True
     return failed, result
-
-
-def KPrint_make_unparsing(_self: KPrint, extra_modules: Iterable[KFlatModule] = ()) -> KPrint:  # noqa: N802
-    modules = _self.definition.modules + tuple(extra_modules)
-    main_module = KFlatModule('UNPARSING', [], [KImport(_m.name) for _m in modules])
-    defn = KDefinition('UNPARSING', (main_module,) + modules)
-    kprint = KPrint(_self.definition_dir)
-    kprint._definition = defn
-    kprint._symbol_table = None
-    return kprint
 
 
 def add_include_arg(includes: Iterable[str]) -> List[str]:
