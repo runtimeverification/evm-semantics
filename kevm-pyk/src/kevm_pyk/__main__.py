@@ -662,12 +662,15 @@ def exec_foundry_step_node(
     node: str,
     profile: bool,
     repeat: int = 1,
+    depth: int = 1,
     minimize: bool = True,
     bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
     if repeat < 1:
         raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
+    if depth < 1:
+        raise ValueError(f'Expected positive value for --depth, got: {depth}')
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
@@ -680,7 +683,7 @@ def exec_foundry_step_node(
     port = find_free_port()
     with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
         for _i in range(repeat):
-            kcfg, node = kcfg_explore.step(test, kcfg, node)
+            kcfg, node = kcfg_explore.step(test, kcfg, node, depth=depth)
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
 
@@ -1104,6 +1107,9 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_step_node.add_argument('node', type=str, help='Node to step from in CFG.')
     foundry_step_node.add_argument(
         '--repeat', type=int, default=1, help='How many node expansions to do from the given start node (>= 1).'
+    )
+    foundry_step_node.add_argument(
+        '--depth', type=int, default=1, help='How many steps to take from initial node on edge.'
     )
 
     foundry_section_edge = command_parser.add_parser(
