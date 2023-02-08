@@ -41,6 +41,10 @@ contract LoopsTest is Test {
         assertEq(expected, actual);
     }
 
+    function testSumTo100() public {
+        testSumToN(100);
+    }
+
     function testSumToNBroken(uint256 n) public {
         // This test should fail
         vm.assume(n <= 100); // We need this to keep the test running time low
@@ -48,7 +52,7 @@ contract LoopsTest is Test {
         uint256 actual = sumToNBroken(n);
         assertEq(expected, actual);
     }
-    
+
     function max(uint256[] memory numbers) internal pure returns (uint256) {
         uint256 result = 0;
         for (uint256 i = 0; i < numbers.length; i++) {
