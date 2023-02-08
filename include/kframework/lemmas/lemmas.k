@@ -134,10 +134,11 @@ module LEMMAS [symbolic]
 
     // sizeByteArray
 
-    rule #sizeByteArray(BUF1 ++ BUF2)            => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)      [simplification]
-    rule #sizeByteArray(#buf(SIZE, _))           => SIZE                                                [simplification]
-    rule #sizeByteArray(_MEM [ START .. WIDTH ]) => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
-    rule #sizeByteArray(#range(_, START, WIDTH)) => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+    rule #sizeByteArray(BUF1 ++ BUF2)                 => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)      [simplification]
+    rule #sizeByteArray(#buf(SIZE, _))                => SIZE                                                [simplification]
+    rule #sizeByteArray(_MEM [ START .. WIDTH ])      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+    rule #sizeByteArray(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+    rule #sizeByteArray(#padRightToWidth(WIDTH, BUF)) => WIDTH  requires #sizeByteArray(BUF) <=Int WIDTH     [simplification]
 
     // TODO: custom ==K unification doesn't work in Haskell yet
     // ++ unification
@@ -146,6 +147,12 @@ module LEMMAS [symbolic]
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
 
     rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeByteArray(WS) -Int (M /Int 8) ])  requires 0 <=Int M andBool M modInt 8 ==Int 0 [simplification]
+
+    rule #asWord(#padRightToWidth(32, BUF)) &Int notMaxUInt224 =>
+         #asWord(#padRightToWidth(32, BUF))
+      requires #sizeByteArray(BUF) <=Int 4 [simplification]
+
+    rule #padRightToWidth(_, BUF)[ 0 .. WIDTH ] => BUF requires #sizeByteArray(BUF) ==Int WIDTH [simplification]
 
 endmodule
 
@@ -431,4 +438,8 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule #range ( BA:ByteArray , 0 , LEN ) => BA requires #sizeByteArray(BA) ==Int LEN [simplification]
 
+    rule ( #buf ( 32 , X ) [ 0 .. 28 ] ):ByteArray => #buf(28, 0) requires #rangeUInt ( 32 , X ) [simplification]
+
+    rule ( #range ( #range ( BA:ByteArray , S0 , L0 ) , S1 , L1 ) ) => #range ( BA , S0 +Int S1 , minInt ( L1 , L0 -Int S1 ) ) ++ #buf ( maxInt ( 0 , L1 -Int ( L0 -Int S1 ) ) , 0 )
+      requires 0 <=Int S0 andBool 0 <=Int L0 andBool 0 <=Int S1 andBool 0 <=Int L1 [simplification]
 endmodule

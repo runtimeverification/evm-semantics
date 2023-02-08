@@ -59,12 +59,12 @@ export PLUGIN_FULL_PATH
         test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean                                                                   \
         media media-pdf metropolis-theme                                                                                                     \
         install uninstall                                                                                                                    \
-        venv venv-clean kevm-pyk
+        poetry-env poetry shell kevm-pyk
 .SECONDARY:
 
 all: build
 
-clean: foundry-clean venv-clean
+clean: foundry-clean
 	rm -rf $(KEVM_BIN) $(KEVM_LIB)
 
 distclean:
@@ -168,7 +168,24 @@ plugin-deps: $(plugin_includes) $(plugin_c_includes)
 # Building
 # --------
 
-KOMPILE := $(KEVM) kompile
+PYTHON_BIN   := python3.10
+KEVM_PYK_DIR := ./kevm-pyk
+POETRY       := poetry -C $(KEVM_PYK_DIR)
+POETRY_RUN   := $(POETRY) -- run
+
+poetry-env:
+	$(POETRY) env use $(PYTHON_BIN)
+
+poetry: poetry-env
+	$(POETRY) install
+
+shell: poetry
+	$(POETRY) shell
+
+kevm-pyk: poetry-env
+	$(MAKE) -C $(KEVM_PYK_DIR)
+
+KOMPILE := $(POETRY_RUN) $(KEVM) kompile --pyk
 
 kevm_files := abi.md                      \
               asm.md                      \
@@ -447,34 +464,14 @@ tests/%.parse: tests/% $(KEVM_LIB)/kast-json.py $(KEVM_LIB)/kore-json.py
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json $(KEVM_BIN)/kevm
-	$(PYK_ACTIVATE) && $(KEVM) kast $< kore $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
+	$(POETRY_RUN) $(KEVM) kast $< kore $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
 	$(CHECK) tests/interactive/$*.gst-to-kore.out tests/interactive/$*.gst-to-kore.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/interactive/$*.gst-to-kore.out
 
 # solc-to-k
 # ---------
 
-KEVM_PYK_DIR := ./kevm-pyk
-VENV_DIR     := $(BUILD_DIR)/venv
-PYK_ACTIVATE := . $(VENV_DIR)/bin/activate
 FOUNDRY_PAR  := 4
-
-venv-clean:
-	rm -rf $(VENV_DIR)
-	rm -rf $(KEVM_LIB)/kframework/lib/python3.8
-	rm -rf $(KEVM_LIB)/kframework/local/lib/python3.10
-	rm -rf $(K_SUBMODULE)/pyk/build
-
-$(VENV_DIR)/pyvenv.cfg:
-	   virtualenv -p python3 $(VENV_DIR) \
-	&& $(PYK_ACTIVATE)                   \
-	&& pip install --editable $(KEVM_PYK_DIR)
-
-venv: $(VENV_DIR)/pyvenv.cfg
-	@echo $(PYK_ACTIVATE)
-
-kevm-pyk:
-	$(MAKE) -C $(KEVM_PYK_DIR)
 
 foundry-clean:
 	rm -rf tests/foundry/cache
@@ -483,15 +480,13 @@ foundry-clean:
 	rm -f  tests/foundry/foundry.k
 	rm -f  tests/foundry/foundry.rule-profile
 
-tests/foundry/%: KEVM = $(PYK_ACTIVATE) && kevm
-tests/foundry/%: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
+tests/foundry/%: KEVM = $(POETRY_RUN) kevm
 
 foundry_dir  := tests/foundry
 foundry_out := $(foundry_dir)/out
 
 test-foundry: KEVM_OPTS += --pyk --verbose --profile
-test-foundry: KEVM = $(PYK_ACTIVATE) && kevm
-test-foundry: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
+test-foundry: KEVM = $(POETRY_RUN) kevm
 test-foundry: tests/foundry/foundry.k.check tests/foundry/out/kompiled/foundry.k.prove
 
 foundry-forge-build: $(foundry_out)
@@ -515,26 +510,25 @@ tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
 	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
 
-tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) venv $(lemma_includes)
+tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
 	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
-tests/specs/examples/%-bin-runtime.k: KEVM = $(PYK_ACTIVATE) && kevm
-tests/specs/examples/%-bin-runtime.k: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
+tests/specs/examples/%-bin-runtime.k: KEVM = $(POETRY_RUN) kevm
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
-tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
 	$(KEVM) solc-to-k $< ERC20 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
 
 tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
-tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
 	$(KEVM) solc-to-k $< ERC721 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
 
 tests/specs/examples/storage-spec/haskell/timestamp: tests/specs/examples/storage-bin-runtime.k
-tests/specs/examples/storage-bin-runtime.k: tests/specs/examples/Storage.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+tests/specs/examples/storage-bin-runtime.k: tests/specs/examples/Storage.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
 	$(KEVM) solc-to-k $< Storage $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module STORAGE-VERIFICATION > $@
 
-tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
 	$(KEVM) solc-to-k $< Empty $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
 
 .SECONDEXPANSION:
@@ -542,12 +536,11 @@ tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$
 	$(KEVM) prove $< $(KEVM_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS)                   \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
-tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/concrete-rules.txt $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
+tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                  \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
 	    --main-module $(KPROVE_MODULE)                                                                   \
 	    --syntax-module $(KPROVE_MODULE)                                                                 \
-	    --concrete-rules-file tests/specs/concrete-rules.txt                                             \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 tests/%.search: tests/%
@@ -692,9 +685,9 @@ kevm_pyk_tests :=                                                               
                   tests/specs/examples/erc721-bin-runtime.k
 
 test-kevm-pyk: KEVM_OPTS += --pyk --verbose --profile
-test-kevm-pyk: KEVM = $(PYK_ACTIVATE) && kevm
-test-kevm-pyk: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
-test-kevm-pyk: $(kevm_pyk_tests) venv
+test-kevm-pyk: KEVM = $(POETRY_RUN) kevm
+test-kevm-pyk: KOMPILE = $(POETRY_RUN) kevm kompile
+test-kevm-pyk: $(kevm_pyk_tests) poetry
 
 # Interactive Tests
 
