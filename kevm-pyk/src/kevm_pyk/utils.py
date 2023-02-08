@@ -54,8 +54,14 @@ def parallel_kcfg_explore(
                 ]
             )
         base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
+        booster_port = 10000 + rpc_base_port if rpc_base_port is not None else find_free_port()
 
-        with KCFGExplore(kprove, port=(base_port + _index)) as kcfg_explore:
+        with KCFGExplore(
+            kprove,
+            port=(base_port + _index),
+            booster_rpc_command=['hs-backend-booster', '-l', 'Rewrite'],
+            booster_port=booster_port,
+        ) as kcfg_explore:
             try:
                 _cfg = kcfg_explore.all_path_reachability_prove(
                     _cfgid,
