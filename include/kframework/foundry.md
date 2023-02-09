@@ -1195,7 +1195,7 @@ Utils
  // -------------------------------------------------------------------------
     rule <k> #checkRevertReason => . ... </k>
          <statusCode> _ => EVMC_SUCCESS </statusCode>
-         <output> OUT </output>
+         <output> OUT => .ByteArray </output>
          <expectedRevert>
            <expectedReason> REASON </expectedReason>
            ...
