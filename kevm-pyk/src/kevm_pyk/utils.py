@@ -117,10 +117,10 @@ def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # no
 def KPrint_make_unparsing(_self: KPrint, extra_modules: Iterable[KFlatModule] = ()) -> KPrint:  # noqa: N802
     modules = _self.definition.modules + tuple(extra_modules)
     main_module = KFlatModule('UNPARSING', [], [KImport(_m.name) for _m in modules])
-    # defn = KDefinition('UNPARSING', (main_module,) + modules)
-    kprint = KPrint(_self.definition_dir, extra_unparsing_modules=[main_module])
-    # kprint._definition = defn
-    # kprint._symbol_table = None
+    defn = KDefinition('UNPARSING', (main_module,) + modules)
+    kprint = KPrint(_self.definition_dir)
+    kprint._definition = defn
+    kprint._symbol_table = None
     return kprint
 
 

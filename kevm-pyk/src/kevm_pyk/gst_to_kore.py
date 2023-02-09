@@ -20,6 +20,7 @@ def mode_to_kore(mode: str) -> str:
 
 
 def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, chainid: int) -> None:
+
     with open(gst_file) as data_file:
         data = json.load(data_file, object_pairs_hook=OrderedDict)
 
