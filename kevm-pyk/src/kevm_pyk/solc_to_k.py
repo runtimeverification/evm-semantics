@@ -279,7 +279,6 @@ class Contract:
 
 
 def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
-
     # TODO: add check to kevm:
     # solc version should be >=0.8.0 due to:
     # https://github.com/ethereum/solidity/issues/10276
