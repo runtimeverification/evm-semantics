@@ -951,21 +951,6 @@ files = [
 dill = ["dill (>=0.3.6)"]
 
 [[package]]
-name = "pybind11"
-version = "2.10.3"
-description = "Seamless operability between C++11 and Python"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "pybind11-2.10.3-py3-none-any.whl", hash = "sha256:123e303f39ad5de97ddfa4f1f473cb85881a0a94ee5714eb3c37e2405371fc12"},
-    {file = "pybind11-2.10.3.tar.gz", hash = "sha256:08cfe6d4f73746447cc85a400c8169a91608b8a00c5feecd8ff251a70565d12f"},
-]
-
-[package.extras]
-global = ["pybind11-global (==2.10.3)"]
-
-[[package]]
 name = "pycodestyle"
 version = "2.10.0"
 description = "Python style guide checker"
@@ -1006,7 +991,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.121"
+version = "0.1.108"
 description = ""
 category = "main"
 optional = false
@@ -1021,7 +1006,6 @@ gql = {version = "^3.4.0", extras = ["requests"]}
 graphene = "^3.1.1"
 graphql-server = "^3.0.0b5"
 graphviz = "^0.20.1"
-pybind11 = "^2.10.3"
 textual = "^0.10.1"
 tomli = "^2.0.1"
 
@@ -1029,7 +1013,7 @@ tomli = "^2.0.1"
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
 reference = "jb/booster-prototype-2"
-resolved_reference = "b876004bc15c8241a4dd04d7c9562f40086fe218"
+resolved_reference = "f66503d1e6f8aaac1938b7a5f9679deeaf38de2f"
 
 [[package]]
 name = "pyperclip"
