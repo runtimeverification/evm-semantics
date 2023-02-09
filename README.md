@@ -13,7 +13,7 @@ These may be useful for learning KEVM and K (newest to oldest):
 -   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
 -   [KEVM Paper at CSF'18/FLoC](https://fsl.cs.illinois.edu/publications/hildenbrandt-saxena-zhu-rodrigues-daian-guth-moore-zhang-park-rosu-2018-csf).
 
-To get support for KEVM, please join our [Discord Channel](https://discord.gg/EZtNj7gt).
+To get support for KEVM, please join our [Discord Channel](https://discord.com/invite/CurfmXNtbN).
 
 Repository Structure
 --------------------
