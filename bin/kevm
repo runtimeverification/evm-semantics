@@ -83,9 +83,9 @@ run_kompile() {
 
     case "${backend}" in
         haskell|foundry)   backend=haskell
-                           kompile_opts+=( --md-selector 'k & ! nobytes & ! node')                          ;;
-        llvm)              kompile_opts+=( --md-selector 'k & ! nobytes & ! node' )                         ;;&
-        node)              kompile_opts+=( --md-selector 'k & ! nobytes & ! standalone' --no-llvm-kompile ) ;;&
+                           kompile_opts+=( --md-selector 'k & ! node')                          ;;
+        llvm)              kompile_opts+=( --md-selector 'k & ! node' )                         ;;&
+        node)              kompile_opts+=( --md-selector 'k & ! standalone' --no-llvm-kompile ) ;;&
         llvm|node) backend=llvm
                    ccopts+=( -L${libff_dir}/lib -I${libff_dir}/include  )
                    ccopts+=( ${plugin_include}/c/plugin_util.cpp        )
@@ -192,7 +192,7 @@ run_prove() {
     [[ ! -f ${concrete_rules_file} ]] || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
 
     case "${backend}" in
-        haskell) proof_args+=(--md-selector 'k & ! nobytes & ! node')
+        haskell) proof_args+=(--md-selector 'k & ! node')
                  ${pyk}   || ! ${bug_report}     || haskell_backend_command+=(--bug-report "${bug_report_name}")
                  ! ${pyk} || ! ${bug_report}     || proof_args+=(--bug-report)
                  ! ${profile_haskell}            || haskell_backend_command+=(+RTS -l -ol${eventlog_name} -RTS)
