@@ -1,7 +1,7 @@
 KEVM: Semantics of EVM in K
 ===========================
 
-In this repository we provide a model of the EVM in K.
+In this repository, we provide a model of the EVM in K.
 
 Documentation/Support
 ---------------------
@@ -13,24 +13,24 @@ These may be useful for learning KEVM and K (newest to oldest):
 -   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
 -   [KEVM Paper at CSF'18/FLoC](https://fsl.cs.illinois.edu/publications/hildenbrandt-saxena-zhu-rodrigues-daian-guth-moore-zhang-park-rosu-2018-csf).
 
-To get support for KEVM, please join our [Discord Channel](https://discord.gg/EZtNj7gt).
+To get support for KEVM, please join our [Discord Channel](https://discord.com/invite/CurfmXNtbN).
 
 Repository Structure
 --------------------
 
 The following files constitute the KEVM semantics:
 
--   [network.md](include/kframework/network.md) provides the status codes which are reported to an Ethereum client on execution exceptions.
+-   [network.md](include/kframework/network.md) provides the status codes reported to an Ethereum client on execution exceptions.
 -   [json-rpc.md](include/kframework/json-rpc.md) is an implementation of JSON RPC in K.
--   [evm-types.md](include/kframework/evm-types.md) provides the (functional) data of EVM (256 bit words, wordstacks, etc...).
--   [serialization.md](include/kframework/serialization.md) provides helpers for parsing and unparsing data (hex strings, recursive-length prefix, merkle trees, etc.).
--   [evm.md](include/kframework/evm.md) is the main KEVM semantics, containing the configuration and transition rules of EVM.
+-   [evm-types.md](include/kframework/evm-types.md) provides the (functional) data of EVM (256-bit words, wordstacks, etc...).
+-   [serialization.md](include/kframework/serialization.md) provides helpers for parsing and unparsing data (hex strings, recursive-length prefix, Merkle trees, etc.).
+-   [evm.md](include/kframework/evm.md) is the main KEVM semantics, containing EVM’s configuration and transition rules.
 
 These additional files extend the semantics to make the repository more useful:
 
 -   [buf.md](include/kframework/buf.md) defines the `#buf` byte-buffer abstraction for use during symbolic execution.
 -   [abi.md](include/kframework/abi.md) defines the [Contract ABI Specification](https://docs.soliditylang.org/en/v0.8.1/abi-spec.html) for use in proofs and easy contract/function specification.
--   [hashed-locations.md](include/kframework/hashed-locations.md) defines the `#hashedLocation` abstraction which makes it easier to specify Solidity-generate storage layouts.
+-   [hashed-locations.md](include/kframework/hashed-locations.md) defines the `#hashedLocation` abstraction used to specify Solidity-generated storage layouts.
 -   [edsl.md](include/kframework/edsl.md) combines the previous three abstractions for ease-of-use.
 -   [foundry.md](include/kframework/foundry.md) adds Foundry capabilities to KEVM.
 
@@ -39,12 +39,35 @@ These files are used for testing the semantics itself:
 -   [state-utils.md](include/kframework/state-utils.md) provides functionality for EVM initialization, setup, and querying.
 -   [driver.md](include/kframework/driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
 
-Installing/Building
--------------------
+Installing
+----------
 
-### K Backends
+If you’re on a system that supports [Nix](https://nixos.org/download.html), the fastest way to install KEVM is to use the kup package manager.
 
-There are three backends of K available: LLVM (default) for concrete execution and Haskell (default) and Java for symbolic execution.
+```sh
+bash <(curl https://kframework.org/install)
+kup install kevm
+```
+
+You can update it using the following:
+
+```sh
+kup update kevm
+```
+
+And list available versions using:
+
+```sh
+kup list
+```
+
+This will take care of all the dependencies and specific versions used by KEVM.
+**NOTE**: The first run will take longer to fetch all the libraries and compile sources. (30m to 1h)
+
+Building from source
+--------------------
+
+There are three backends of K available: LLVM (default) for concrete execution and Haskell (default), and Java for symbolic execution.
 This repository generates the build-products for each backend in `.build/usr/lib/kevm`.
 
 ### System Dependencies
@@ -57,16 +80,12 @@ The following are needed for building/running KEVM:
 -   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
 -   [Z3](https://github.com/Z3Prover/z3) version 4.8.15
 
-For the exact dependencies check the Dockerfile.
+For the exact dependencies, check the Dockerfile.
 
 #### Installing Z3
 
-KEVM requires Z3 version 4.8.15, which you may need to install from a source
-build if your package manager supplies a different version. To do so, follow the
-instructions
-[here](https://github.com/Z3Prover/z3#building-z3-using-make-and-gccclang) after
-checking out the correct tag in the Z3 repository:
-
+KEVM requires Z3 version 4.8.15, which you may need to install from a source build if your package manager supplies a different version.
+To do so, follow the instructions [here](https://github.com/Z3Prover/z3#building-z3-using-make-and-gccclang) after checking out the correct tag in the Z3 repository:
 ```sh
 git clone https://github.com/Z3Prover/z3.git
 cd z3
@@ -77,9 +96,8 @@ make
 sudo make install
 ```
 
-On macOS, it is easiest to install Z3 from Homebrew. If you do wish to install
-from source, make sure to install it to an appropriate prefix (e.g. `/usr/local`
-on Intel machines).
+On macOS, it is easiest to install Z3 from Homebrew.
+If you wish to install from the source, install it to an appropriate prefix (e.g. `/usr/local` on Intel machines).
 
 #### Ubuntu
 
@@ -123,13 +141,11 @@ brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 open
 make libsecp256k1
 ```
 
-**NOTE**: Previous versions of these instructions required the user to use either the homebrew version of `flex` or the xcode command line tools version, with the wrong option giving an error.
+**NOTE**: Previous versions of these instructions required the user to use either the homebrew version of `flex` or the XCode command line tools version, with the wrong option giving an error.
 The current recommendation is to use the homebrew version.
 
-If you are building on an Apple Silicon machine, ensure that your `PATH` is set
-up correctly before running `make deps` or `make k-deps`. You can do so using
-[`direnv`](https://direnv.net/) by copying `macos-envrc` to `.envrc`, then
-running `direnv allow`.
+If you are building on an Apple Silicon machine, ensure that your `PATH` is set up correctly before running `make deps` or `make k-deps`.
+You can do so using [`direnv`](https://direnv.net/) by copying `macos-envrc` to `.envrc`, then running `direnv allow`.
 
 If the build on macOS still fails, you can also try adding the following lines to the top of your `Makefile` under `UNAME_S`:
 
@@ -157,8 +173,8 @@ export PATH=$HOME/.local/bin:$PATH
 
 #### K Framework
 
-The `Makefile` and `kevm` will work with either a (i) globally installed K, or (ii) a K submodule included in this repository.
-For contributing to `kevm`, it is highly recommended to go with (ii) because otherwise some of the build scripts might not work.
+The `Makefile` and `kevm` will work with either a (i) globally installed K or a (ii) K submodule included in this repository.
+For contributing to `kevm`, it is highly recommended to go with (ii) because some of the build scripts might not work otherwise.
 Follow these instructions to get and build the K submodule:
 
 ```sh
@@ -172,8 +188,7 @@ If you don't need either the LLVM or Haskell backend, there are flags to skip th
 make k-deps SKIP_LLVM=true SKIP_HASKELL=true
 ```
 
-On an Apple Silicon machine, an additional flag to `make` is required to
-correctly build the Haskell backend:
+On an Apple Silicon machine, an additional flag to `make` is required to correctly build the Haskell backend:
 
 ```sh
 make k-deps APPLE_SILICON=true
@@ -196,6 +211,8 @@ You need to set up a virtual environment using Poetry:
 make poetry
 ```
 
+Note the following prerequsites: `python 3.8.*`, `pip >= 20.0.2`, `poetry >= 1.3.2`.
+
 Finally, you can build the semantics.
 
 ```sh
@@ -205,8 +222,14 @@ make build
 Running Tests
 -------------
 
+To execute tests from the [Ethereum Test Set], the submodule needs to be fetched first.
+
+```sh
+git submodule update --init --recursive  -- tests/ethereum-tests
+```
+
 The tests are run using the supplied `Makefile`.
-First, run `make build-prove` to generate some of the tests from the markdown files.
+First, run `make build-prove` to generate tests from the markdown files.
 
 The following subsume all other tests:
 
@@ -223,17 +246,16 @@ These are the individual test-suites (all of these can be suffixed with `-all` t
 When running tests with the `Makefile`, you can specify the `TEST_CONCRETE_BACKEND` (for concrete tests), or `TEST_SYMBOLIC_BACKEND` (for proofs).
 
 For Developers
--------------
+--------------
 
 After building, the `kevm` executable will be located in the `.build/usr/bin` directory.
-The one in the project root is a build artifact, don't use it.
 To make sure you are using the correct `kevm`, add this directory to your `PATH`:
 
 ```sh
 export PATH=$(pwd)/.build/usr/bin:$PATH
 ```
 
-Alternatively, if you work on multiple checkouts of `evm-semantics`, or other semantics, you could add the relative path `.build/usr/bin` to your `PATH`.
+Alternatively, if you work on multiple checkouts of `evm-semantics` or other semantics, you could add the relative path `.build/usr/bin` to your `PATH`.
 Do note, however, that this is a security concern.
 
 You can call `kevm help` to get a quick summary of how to use the script.
@@ -272,60 +294,58 @@ To set up nix flakes you will need to be on `nix` 2.4 or higher and follow the i
 For example, if you are on a standard Linux distribution, such as Ubuntu, first [install nix](https://nixos.org/download.html#download-nix)
 and then enable flakes by editing either `~/.config/nix/nix.conf` or `/etc/nix/nix.conf` and adding:
 
-```
+```sh
 experimental-features = nix-command flakes
 ```
 
 This is needed to expose the Nix 2.0 CLI and flakes support that are hidden behind feature-flags.
 
 
-By default, Nix will build the project and its transitive dependencies from
-source, which can take up to an hour. We recommend setting up
-[the binary cache](https://app.cachix.org/cache/kore) to speed up the build
-process significantly. You will also need to add the following sections to `/etc/nix/nix.conf` or, if you are a trusted user, `~/.config/nix/nix.conf` (if you don't know what a "trusted user" is, you probably want to do the former):
+By default, Nix will build the project and its transitive dependencies from source, which can take up to an hour.
+We recommend setting up [the binary cache](https://app.cachix.org/cache/kore) to speed up the build process significantly.
+You will also need to add the following sections to `/etc/nix/nix.conf` or, if you are a trusted user, `~/.config/nix/nix.conf` (if you don't know what a "trusted user" is, you probably want to do the former):
 
-```
+```sh
 trusted-public-keys = ... hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
 substituters = ... https://cache.iog.io
 ```
 
 i.e. if the file was originally
 
-```
+```sh
 substituters = https://cache.nixos.org
 trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
 ```
 
 it will now read
 
-```
+```sh
 substituters = https://cache.nixos.org https://cache.iog.io
 trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
 ```
 
 To build KEVM, run:
 
-```bash
+```sh
 nix build .#kevm
 ```
 
 This will build all of KEVM and K and put a link to the resulting binaries in the `result/` folder.
 
 
-_Note: Mac users, especially those running M1/M2 Macs may find nix segfaulting on occasion. If this happens, try running the nix command like this: `GC_DONT_GC=1 nix build .`_
-
+**NOTE**: Mac users, especially those running M1/M2 Macs may find nix segfaulting on occasion. If this happens, try running the nix command like this: `GC_DONT_GC=1 nix build .`
 
 If you want to temporarily add the `kevm` binary to the current shell, run
 
-```bash
+```sh
 nix shell .#kevm
 ```
 
 ### Profiling with Nix
 
-Nix can also be used to quickly profile different versions of the haskell backend. Simply run
+Nix can also be used to quickly profile different versions of the Haskell backend. Simply run:
 
-```
+```sh
 nix build github:runtimeverification/evm-semantics#profile \
   --override-input k-framework/haskell-backend github:runtimeverification/haskell-backend/<HASH> \
   -o prof-<HASH>
@@ -333,23 +353,23 @@ nix build github:runtimeverification/evm-semantics#profile \
 
 replacing `<HASH>` with the commit you want to run profiling against.
 
-If you want to profile against a working version of the haskell backend repo, simply `cd` into the root of the repo and run
+If you want to profile against a working version of the Haskell backend repository, simply `cd` into the root of the repo and run:
 
-```
+```sh
 nix build github:runtimeverification/evm-semantics#profile \
   --override-input k-framework/haskell-backend $(pwd) \
   -o prof-my-feature
 ```
 
-To compare profiles, you can use
+To compare profiles, you can use:
 
-```
+```sh
 nix run github:runtimeverification/evm-semantics#compare-profiles -- prof-my-feature prof-<HASH>
 ```
 
-This will produce a nice table with the times for both versions of haskell-backend.
-Noe that `#profile` pre-pends the output of `kore-exec --version` to the profile run, which is then used as a tag by the `#compare-profiles` script.
-Therefore, any profiled local checkout of haskell-backend will report as `dirty-ghc8107` in the resulting table.
+This will produce a nice table with the times for both versions of the haskell-backend.
+Note that `#profile` pre-pends the output of `kore-exec --version` to the profile run, which is then used as a tag by the `#compare-profiles` script.
+Therefore, any profiled local checkout of the haskell-backend will report as `dirty-ghc8107` in the resulting table.
 
 ### Keeping `.build` up-to-date while developing
 
@@ -387,14 +407,14 @@ Resources
 
 For more information about [The K Framework](https://kframework.org), refer to these sources:
 
--   [The K Tutorial](https://kframework.org/k-distribution/pl-tutorial/)
+-   [The K Tutorial](https://github.com/runtimeverification/k/tree/master/k-distribution/k-tutorial)
 -   [Semantics-Based Program Verifiers for All Languages](https://fsl.cs.illinois.edu/publications/stefanescu-park-yuwen-li-rosu-2016-oopsla)
 -   [Reachability Logic Resources](http://fsl.cs.illinois.edu/index.php/Reachability_Logic_in_K)
 -   [Matching Logic Resources](http://www.matching-logic.org/)
 -   [Logical Frameworks](https://dl.acm.org/doi/10.5555/208683.208700): Discussion of logical frameworks.
 
 [Jello Paper]: <https://jellopaper.org>
-[2017 Devcon3]: <https://ethereumfoundation.org/devcon3/>
+[2017 Devcon3]: <https://archive.devcon.org/archive/watch?edition=3&order=desc&sort=edition>
 [K Reachability Logic Prover]: <http://fsl.cs.illinois.edu/FSL/papers/2016/stefanescu-park-yuwen-li-rosu-2016-oopsla/stefanescu-park-yuwen-li-rosu-2016-oopsla-public.pdf>
 [K Editor Support]: <https://github.com/kframework/k-editor-support>
 [Ethereum Test Set]: <https://github.com/ethereum/tests>
