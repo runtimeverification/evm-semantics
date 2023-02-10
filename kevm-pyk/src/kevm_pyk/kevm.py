@@ -2,14 +2,16 @@ import logging
 import sys
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, Iterable, List, Optional
+from typing import Final, Iterable, List, Optional
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
 from pyk.kast.manip import flatten_label, get_cell
+from pyk.kast.outer import KFlatModule
 from pyk.ktool import KProve, KRun
-from pyk.ktool.kprint import paren
+from pyk.ktool.kompile import KompileBackend
+from pyk.ktool.kprint import SymbolTable, paren
 from pyk.prelude.kbool import notBool
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlAnd, mlEqualsTrue
@@ -33,6 +35,7 @@ class KEVM(KProve, KRun):
         profile: bool = False,
         kprove_command: str = 'kprove',
         krun_command: str = 'krun',
+        extra_unparsing_modules: Iterable[KFlatModule] = (),
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -44,13 +47,21 @@ class KEVM(KProve, KRun):
             main_file=main_file,
             profile=profile,
             command=kprove_command,
+            extra_unparsing_modules=extra_unparsing_modules,
         )
-        KRun.__init__(self, definition_dir, use_directory=use_directory, profile=profile, command=krun_command)
-        KEVM._patch_symbol_table(self.symbol_table)
+        KRun.__init__(
+            self,
+            definition_dir,
+            use_directory=use_directory,
+            profile=profile,
+            command=krun_command,
+            extra_unparsing_modules=extra_unparsing_modules,
+        )
 
     @staticmethod
     def kompile(
         definition_dir: Path,
+        backend: KompileBackend,
         main_file: Path,
         emit_json: bool = True,
         includes: Iterable[str] = (),
@@ -58,9 +69,15 @@ class KEVM(KProve, KRun):
         syntax_module_name: Optional[str] = None,
         md_selector: Optional[str] = None,
         profile: bool = False,
+        debug: bool = False,
+        ccopts: Iterable[str] = (),
+        llvm_kompile: bool = True,
+        optimization: int = 0,
     ) -> 'KEVM':
         command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
-        command += ['--backend', 'haskell']
+        if debug:
+            command += ['--debug']
+        command += ['--backend', backend.value]
         command += ['--main-module', main_module_name] if main_module_name else []
         command += ['--syntax-module', syntax_module_name] if syntax_module_name else []
         command += ['--md-selector', md_selector] if md_selector else []
@@ -68,7 +85,16 @@ class KEVM(KProve, KRun):
         command += add_include_arg(includes)
         if emit_json:
             command += ['--emit-json']
-        command += ['--concrete-rules', ','.join(KEVM.concrete_rules())]
+        if backend in [KompileBackend.HASKELL, KompileBackend.JAVA]:
+            command += ['--concrete-rules', ','.join(KEVM.concrete_rules())]
+        if backend == KompileBackend.LLVM:
+            if ccopts:
+                for ccopt in ccopts:
+                    command += ['-ccopt', ccopt]
+            if 0 < optimization and optimization <= 3:
+                command += [f'-O{optimization}']
+            if not llvm_kompile:
+                command += ['--no-llvm-kompile']
         try:
             run_process(command, logger=_LOGGER, profile=profile)
         except CalledProcessError as err:
@@ -79,45 +105,50 @@ class KEVM(KProve, KRun):
             raise
         return KEVM(definition_dir, main_file=main_file)
 
-    @staticmethod
-    def _patch_symbol_table(symbol_table: Dict[str, Any]) -> None:
+    @classmethod
+    def _patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
         # fmt: off
         symbol_table['#Bottom']                                       = lambda: '#Bottom'
-        symbol_table['_orBool_']                                      = paren(symbol_table['_orBool_'])
-        symbol_table['_andBool_']                                     = paren(symbol_table['_andBool_'])
-        symbol_table['_impliesBool_']                                 = paren(symbol_table['_impliesBool_'])
-        symbol_table['notBool_']                                      = paren(symbol_table['notBool_'])
-        symbol_table['_/Int_']                                        = paren(symbol_table['_/Int_'])
-        symbol_table['_*Int_']                                        = paren(symbol_table['_*Int_'])
-        symbol_table['_-Int_']                                        = paren(symbol_table['_-Int_'])
-        symbol_table['_+Int_']                                        = paren(symbol_table['_+Int_'])
-        symbol_table['_&Int_']                                        = paren(symbol_table['_&Int_'])
-        symbol_table['_|Int_']                                        = paren(symbol_table['_|Int_'])
-        symbol_table['_modInt_']                                      = paren(symbol_table['_modInt_'])
-        symbol_table['#Or']                                           = paren(symbol_table['#Or'])
-        symbol_table['#And']                                          = paren(symbol_table['#And'])
-        symbol_table['#Implies']                                      = paren(symbol_table['#Implies'])
-        symbol_table['_Set_']                                         = paren(symbol_table['_Set_'])
-        symbol_table['_|->_']                                         = paren(symbol_table['_|->_'])
         symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)
         symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)
         symbol_table['.AccountCellMap']                               = lambda: '.Bag'
         symbol_table['AccountCellMapItem']                            = lambda k, v: v
         symbol_table['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray'] = paren(lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]')
         symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = lambda m, s, w: '(' + m + ' [ ' + s + ' .. ' + w + ' ]):ByteArray'
-        symbol_table['_:__EVM-TYPES_WordStack_Int_WordStack']         = paren(symbol_table['_:__EVM-TYPES_WordStack_Int_WordStack'])
         symbol_table['_<Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') <Word ('  + a2 + ')')
         symbol_table['_>Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') >Word ('  + a2 + ')')
         symbol_table['_<=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')
         symbol_table['_>=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')
         symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
         symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
-        symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int']              = paren(symbol_table['_[_]_EVM-TYPES_Int_WordStack_Int'])
-        symbol_table['_++__EVM-TYPES_ByteArray_ByteArray_ByteArray']  = paren(symbol_table['_++__EVM-TYPES_ByteArray_ByteArray_ByteArray'])
-        symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = paren(symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'])
-        symbol_table['_up/Int__EVM-TYPES_Int_Int_Int']                = paren(symbol_table['_up/Int__EVM-TYPES_Int_Int_Int'])
-        if 'typedArgs' in symbol_table:
-            symbol_table['typedArgs'] = paren(symbol_table['typedArgs'])
+        paren_symbols = [
+            '_|->_',
+            '#And',
+            '_andBool_',
+            '_++__EVM-TYPES_ByteArray_ByteArray_ByteArray',
+            '_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int',
+            '_[_]_EVM-TYPES_Int_WordStack_Int',
+            '_:__EVM-TYPES_WordStack_Int_WordStack',
+            '#Implies',
+            '_impliesBool_',
+            '_&Int_',
+            '_*Int_',
+            '_+Int_',
+            '_-Int_',
+            '_/Int_',
+            '_|Int_',
+            '_modInt_',
+            'notBool_',
+            '#Or',
+            '_orBool_',
+            '_Set_',
+            'typedArgs',
+            '_up/Int__EVM-TYPES_Int_Int_Int',
+            '_:_WS',
+        ]
+        for symb in paren_symbols:
+            if symb in symbol_table:
+                symbol_table[symb] = paren(symbol_table[symb])
         # fmt: on
 
     class Sorts:
@@ -377,17 +408,20 @@ class Foundry(KEVM):
         main_file: Optional[Path] = None,
         use_directory: Optional[Path] = None,
         profile: bool = False,
+        extra_unparsing_modules: Iterable[KFlatModule] = (),
     ) -> None:
         # copied from KEVM class and adapted to inherit KPrint instead
-        KEVM.__init__(self, definition_dir, main_file=main_file, use_directory=use_directory, profile=profile)
-        Foundry._patch_symbol_table(self.symbol_table)
+        KEVM.__init__(
+            self,
+            definition_dir,
+            main_file=main_file,
+            use_directory=use_directory,
+            profile=profile,
+            extra_unparsing_modules=extra_unparsing_modules,
+        )
 
     class Sorts:
         FOUNDRY_CELL: Final = KSort('FoundryCell')
-
-    @staticmethod
-    def _patch_symbol_table(symbol_table: Dict[str, Any]) -> None:
-        KEVM._patch_symbol_table(symbol_table)
 
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
