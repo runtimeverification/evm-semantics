@@ -1169,6 +1169,7 @@ Utils
     syntax KItem ::= "#clearExpectRevert" [klabel(foundry_clearExpectRevert)]
  // -------------------------------------------------------------------------
     rule <k> #clearExpectRevert => . ... </k>
+         <output> _ => #buf (32, 0) </output>
          <expectedRevert>
            <isRevertExpected> _ => false </isRevertExpected>
            <expectedDepth> _ => 0 </expectedDepth>
@@ -1195,7 +1196,7 @@ Utils
  // -------------------------------------------------------------------------
     rule <k> #checkRevertReason => . ... </k>
          <statusCode> _ => EVMC_SUCCESS </statusCode>
-         <output> OUT => #buf (32, 0) </output>
+         <output> OUT </output>
          <expectedRevert>
            <expectedReason> REASON </expectedReason>
            ...
