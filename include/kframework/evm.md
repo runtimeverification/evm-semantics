@@ -261,8 +261,9 @@ Control Flow
 ```k
     syntax KItem ::= "#halt" | "#end" StatusCode
  // --------------------------------------------
-    rule [end]: <k> #end SC => #halt ... </k>
-                <statusCode> _ => SC </statusCode>
+    rule [end]:
+         <k> #end SC => #halt ... </k>
+         <statusCode> _ => SC </statusCode>
 
     rule <k> #halt ~> (_:Int    => .) ... </k>
     rule <k> #halt ~> (_:OpCode => .) ... </k>
@@ -290,11 +291,14 @@ OpCode Execution
 ```k
     syntax KItem ::= "#execute"
  // ---------------------------
-    rule [halt]: <k> #halt ~> (#execute => .) ... </k>
-    rule [step]: <k> (. => #next [ #lookupOpCode(PGM, PCOUNT, SCHED) ]) ~> #execute ... </k>
-                 <program> PGM </program>
-                 <pc> PCOUNT </pc>
-                 <schedule> SCHED </schedule>
+    rule [halt]:
+         <k> #halt ~> (#execute => .) ... </k>
+
+    rule [step]:
+         <k> (. => #next [ #lookupOpCode(PGM, PCOUNT, SCHED) ]) ~> #execute ... </k>
+         <program> PGM </program>
+         <pc> PCOUNT </pc>
+         <schedule> SCHED </schedule>
 ```
 
 ### Single Step
