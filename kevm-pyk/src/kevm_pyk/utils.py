@@ -2,17 +2,20 @@ import logging
 import socket
 from contextlib import closing
 from pathlib import Path
-from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple
+from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
-from pyk.kast.outer import KDefinition, KFlatModule, KImport
+from pyk.kast.outer import KDefinition
 from pyk.kcfg import KCFG, KCFGExplore
-from pyk.ktool import KPrint, KProve
+from pyk.ktool import KProve
 
 _LOGGER: Final = logging.getLogger(__name__)
+
+T1 = TypeVar('T1')
+T2 = TypeVar('T2')
 
 
 def find_free_port(host: str = 'localhost') -> int:
@@ -87,6 +90,19 @@ def parallel_kcfg_explore(
     return {pid: result for pid, result in zip(proof_problems, results, strict=True)}
 
 
+def arg_pair_of(
+    fst_type: Callable[[str], T1], snd_type: Callable[[str], T2], delim: str = ','
+) -> Callable[[str], Tuple[T1, T2]]:
+    def parse(s: str) -> Tuple[T1, T2]:
+        elems = s.split(delim)
+        length = len(elems)
+        if length != 2:
+            raise ValueError(f'Expected 2 elements, found {length}')
+        return fst_type(elems[0]), snd_type(elems[1])
+
+    return parse
+
+
 def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # noqa: N802
     def _expand_macros(_term: KInner) -> KInner:
         if type(_term) is KApply:
@@ -106,16 +122,6 @@ def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # no
         term = bottom_up(_expand_macros, term)
 
     return term
-
-
-def KPrint_make_unparsing(_self: KPrint, extra_modules: Iterable[KFlatModule] = ()) -> KPrint:  # noqa: N802
-    modules = _self.definition.modules + tuple(extra_modules)
-    main_module = KFlatModule('UNPARSING', [], [KImport(_m.name) for _m in modules])
-    defn = KDefinition('UNPARSING', (main_module,) + modules)
-    kprint = KPrint(_self.definition_dir)
-    kprint._definition = defn
-    kprint._symbol_table = None
-    return kprint
 
 
 def add_include_arg(includes: Iterable[str]) -> List[str]:

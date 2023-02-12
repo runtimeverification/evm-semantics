@@ -11,7 +11,6 @@ from pyk.kast.inner import KApply, KInner, KRewrite, KToken
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
-from pyk.ktool.kit import KIT
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -20,7 +19,7 @@ from pyk.utils import shorten_hashes
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KDefinition__expand_macros, KPrint_make_unparsing, find_free_port, parallel_kcfg_explore
+from .utils import KDefinition__expand_macros, arg_pair_of, find_free_port, parallel_kcfg_explore
 
 T = TypeVar('T')
 
@@ -110,7 +109,6 @@ def exec_solc_to_k(
     contract_file: Path,
     contract_name: str,
     main_module: Optional[str],
-    spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
     **kwargs: Any,
@@ -124,13 +122,15 @@ def exec_solc_to_k(
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [contract_module.name] + imports]
     )
-    _spec_module = KFlatModule(spec_module if spec_module else 'SPEC')
-    modules = (contract_module, _main_module, _spec_module)
+    modules = (contract_module, _main_module)
     bin_runtime_definition = KDefinition(
         _main_module.name, modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
     )
-    _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
-    KEVM._patch_symbol_table(_kprint.symbol_table)
+    _kprint = KEVM(
+        definition_dir,
+        profile=profile,
+        extra_unparsing_modules=modules,
+    )
     print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
 
@@ -183,21 +183,21 @@ def exec_foundry_kompile(
     foundry = Foundry(definition_dir, profile=profile)
     empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
 
-    bin_runtime_definition = _foundry_to_bin_runtime(
-        empty_config=empty_config,
-        contracts=contracts,
-        main_module=main_module,
-        requires=requires,
-        imports=imports,
-    )
-
     if regen or not foundry_main_file.exists():
+        bin_runtime_definition = _foundry_to_bin_runtime(
+            empty_config=empty_config,
+            contracts=contracts,
+            main_module=main_module,
+            requires=requires,
+            imports=imports,
+        )
         with open(foundry_main_file, 'w') as fmf:
             _LOGGER.info(f'Writing file: {foundry_main_file}')
-            _foundry = Foundry(definition_dir=definition_dir)
-            _kprint = KPrint_make_unparsing(_foundry, extra_modules=bin_runtime_definition.modules)
-            Foundry._patch_symbol_table(_kprint.symbol_table)
-            fmf.write(_kprint.pretty_print(bin_runtime_definition) + '\n')
+            _foundry = Foundry(
+                definition_dir=definition_dir,
+                extra_unparsing_modules=bin_runtime_definition.modules,
+            )
+            fmf.write(_foundry.pretty_print(bin_runtime_definition) + '\n')
 
     if regen or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
@@ -958,7 +958,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_show_args.add_argument(
         '--node-delta',
-        type=KIT.arg_pair_of(str, str),
+        type=arg_pair_of(str, str),
         dest='node_deltas',
         default=[],
         action='append',
@@ -1033,5 +1033,5 @@ def _loglevel(args: Namespace) -> int:
     return logging.WARNING
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
