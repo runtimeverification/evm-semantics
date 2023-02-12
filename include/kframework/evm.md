@@ -261,7 +261,8 @@ Control Flow
 ```k
     syntax KItem ::= "#halt" | "#end" StatusCode
  // --------------------------------------------
-    rule <k> #end SC => #halt ... </k>
+    rule [end]:
+         <k> #end SC => #halt ... </k>
          <statusCode> _ => SC </statusCode>
 
     rule <k> #halt ~> (_:Int    => .) ... </k>
@@ -290,11 +291,14 @@ OpCode Execution
 ```k
     syntax KItem ::= "#execute"
  // ---------------------------
-    rule [halt]: <k> #halt ~> (#execute => .) ... </k>
-    rule [step]: <k> (. => #next [ #lookupOpCode(PGM, PCOUNT, SCHED) ]) ~> #execute ... </k>
-                 <program> PGM </program>
-                 <pc> PCOUNT </pc>
-                 <schedule> SCHED </schedule>
+    rule [halt]:
+         <k> #halt ~> (#execute => .) ... </k>
+
+    rule [step]:
+         <k> (. => #next [ #lookupOpCode(PGM, PCOUNT, SCHED) ]) ~> #execute ... </k>
+         <program> PGM </program>
+         <pc> PCOUNT </pc>
+         <schedule> SCHED </schedule>
 ```
 
 ### Single Step
@@ -1425,14 +1429,16 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
-    rule <statusCode> _:ExceptionalStatusCode </statusCode>
+    rule [return.exception]:
+         <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> #halt ~> #return _ _
           => #popCallStack ~> #popWorldState ~> 0 ~> #push
          ...
          </k>
          <output> _ => .ByteArray </output>
 
-    rule <statusCode> EVMC_REVERT </statusCode>
+    rule [return.revert]:
+         <statusCode> EVMC_REVERT </statusCode>
          <k> #halt ~> #return RETSTART RETWIDTH
           => #popCallStack ~> #popWorldState
           ~> 0 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
@@ -1441,7 +1447,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <output> OUT </output>
          <gas> GAVAIL </gas>
 
-    rule <statusCode> EVMC_SUCCESS </statusCode>
+    rule [return.success]:
+         <statusCode> EVMC_SUCCESS </statusCode>
          <k> #halt ~> #return RETSTART RETWIDTH
           => #popCallStack ~> #dropWorldState
           ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT

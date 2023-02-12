@@ -140,6 +140,18 @@ module INFINITE-GAS-COMMON
     rule 0 <=Int Csstore(_, _, _, _)              => true [simplification]
     rule         Csstore(_, _, _, _) <Int #gas(_) => true [simplification]
 
+    rule G <Int Csstore(SCHED, _, _, _) => false
+      requires Gsload       < SCHED > <=Int G
+       andBool Gsstoreset   < SCHED > <=Int G
+       andBool Gsstorereset < SCHED > <=Int G
+      [simplification]
+
+    rule Csstore(SCHED, _, _, _) <=Int G => true
+      requires Gsload       < SCHED > <=Int G
+       andBool Gsstoreset   < SCHED > <=Int G
+       andBool Gsstorereset < SCHED > <=Int G
+      [simplification]
+
     rule 0 <=Int Cmem(_, N)              => true requires 0 <=Int N       [simplification]
     rule         Cmem(_, N) <Int #gas(G) => true requires N  <Int #gas(G) [simplification]
 
