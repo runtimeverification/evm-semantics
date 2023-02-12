@@ -34,7 +34,7 @@ def parallel_kcfg_explore(
     max_iterations: Optional[int] = None,
     workers: int = 1,
     break_every_step: bool = False,
-    break_on_calls: bool = False,
+    break_on_calls: bool = True,
     implication_every_block: bool = False,
     rpc_base_port: Optional[int] = None,
     is_terminal: Optional[Callable[[CTerm], bool]] = None,

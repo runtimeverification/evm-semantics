@@ -279,7 +279,7 @@ def exec_prove(
     workers: int = 1,
     simplify_init: bool = True,
     break_every_step: bool = False,
-    break_on_calls: bool = False,
+    break_on_calls: bool = True,
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
     **kwargs: Any,
@@ -348,7 +348,7 @@ def exec_foundry_prove(
     workers: int = 1,
     simplify_init: bool = True,
     break_every_step: bool = False,
-    break_on_calls: bool = False,
+    break_on_calls: bool = True,
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
@@ -755,9 +755,15 @@ def _create_argument_parser() -> ArgumentParser:
     explore_args.add_argument(
         '--break-on-calls',
         dest='break_on_calls',
-        default=False,
+        default=True,
         action='store_true',
         help='Store a node for every EVM call made.',
+    )
+    explore_args.add_argument(
+        '--no-break-on-calls',
+        dest='break_on_calls',
+        action='store_false',
+        help='Do not store a node for every EVM call made.',
     )
     explore_args.add_argument(
         '--implication-every-block',
