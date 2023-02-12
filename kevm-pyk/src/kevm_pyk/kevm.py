@@ -5,16 +5,9 @@ from subprocess import CalledProcessError
 from typing import Final, Iterable, List, Optional
 
 from pyk.cli_utils import run_process
-from pyk.cterm import CTerm, remove_useless_constraints
-from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, build_assoc, build_cons
-from pyk.kast.manip import (
-    abstract_term_safely,
-    flatten_label,
-    get_cell,
-    remove_constraints_for,
-    set_cell,
-    split_config_from,
-)
+from pyk.cterm import CTerm
+from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, build_assoc
+from pyk.kast.manip import flatten_label, get_cell, split_config_from
 from pyk.kast.outer import KFlatModule
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kompile import KompileBackend
@@ -276,33 +269,6 @@ class KEVM(KProve, KRun):
                 if get_cell(config, 'CALLDEPTH_CELL') == intToken(0):
                     return True
         return False
-
-    @staticmethod
-    def abstract(cterm: CTerm) -> CTerm:
-        term = cterm.kast
-        gas_cell = get_cell(term, 'GAS_CELL')
-        if type(gas_cell) is not KVariable:
-            if not (
-                type(gas_cell) is KApply and gas_cell.label.name == 'infGas' and type(gas_cell.args[0]) is KVariable
-            ):
-                term = remove_constraints_for(['GAS_CELL'], term)
-                if type(gas_cell) is KApply and gas_cell.label.name == 'infGas':
-                    term = set_cell(term, 'GAS_CELL', KEVM.inf_gas(KVariable('GAS_CELL')))
-                else:
-                    term = set_cell(term, 'GAS_CELL', KVariable('GAS_CELL'))
-        wordstack_cell = get_cell(term, 'WORDSTACK_CELL')
-        cons_wordstack = '_:__EVM-TYPES_WordStack_Int_WordStack'
-        wordstack_items = flatten_label(cons_wordstack, wordstack_cell)
-        wordstack_head = [
-            (wi if type(wi) is KVariable or type(wi) is KToken else abstract_term_safely(wi, base_name='W'))
-            for wi in wordstack_items[0:-1]
-        ]
-        wordstack_tail = wordstack_items[-1]
-        wordstack_cell = build_cons(wordstack_tail, cons_wordstack, wordstack_head)
-        term = set_cell(term, 'WORDSTACK_CELL', wordstack_cell)
-        new_cterm = remove_useless_constraints(CTerm(term))
-        new_cterm = KEVM.add_invariant(new_cterm)
-        return new_cterm
 
     @staticmethod
     def halt() -> KApply:
