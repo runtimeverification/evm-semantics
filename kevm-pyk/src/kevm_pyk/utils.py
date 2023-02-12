@@ -18,19 +18,6 @@ T1 = TypeVar('T1')
 T2 = TypeVar('T2')
 
 
-def arg_pair_of(
-    fst_type: Callable[[str], T1], snd_type: Callable[[str], T2], delim: str = ','
-) -> Callable[[str], Tuple[T1, T2]]:
-    def parse(s: str) -> Tuple[T1, T2]:
-        elems = s.split(delim)
-        length = len(elems)
-        if length != 2:
-            raise ValueError(f'Expected 2 elements, found {length}')
-        return fst_type(elems[0]), snd_type(elems[1])
-
-    return parse
-
-
 def find_free_port(host: str = 'localhost') -> int:
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
         s.bind((host, 0))
@@ -101,6 +88,19 @@ def parallel_kcfg_explore(
         results = process_pool.map(_call_rpc, _proof_problems)
 
     return {pid: result for pid, result in zip(proof_problems, results, strict=True)}
+
+
+def arg_pair_of(
+    fst_type: Callable[[str], T1], snd_type: Callable[[str], T2], delim: str = ','
+) -> Callable[[str], Tuple[T1, T2]]:
+    def parse(s: str) -> Tuple[T1, T2]:
+        elems = s.split(delim)
+        length = len(elems)
+        if length != 2:
+            raise ValueError(f'Expected 2 elements, found {length}')
+        return fst_type(elems[0]), snd_type(elems[1])
+
+    return parse
 
 
 def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # noqa: N802
