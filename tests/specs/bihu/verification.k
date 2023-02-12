@@ -4,7 +4,6 @@ requires "lemmas/lemmas.k"
 module VERIFICATION
     imports EDSL
     imports LEMMAS
-    imports VERIFICATION-JAVA
     imports VERIFICATION-HASKELL
 
   // ########################
@@ -101,31 +100,5 @@ module VERIFICATION-HASKELL [symbolic, kore]
 
     rule X -Int Y <Int Z  => X -Int Z <Int Y  [concrete(X, Z), symbolic(Y), simplification]
     rule X <=Int Y -Int Z => Z <=Int Y -Int X [concrete(X, Y), symbolic(Z), simplification]
-
-endmodule
-
-module VERIFICATION-JAVA [symbolic, kast]
-    imports EVM
-
- // Csstore rule
-
-    rule Csstore(SCHED, NEW, CURR, ORIG)
-      => #if CURR ==Int NEW orBool ORIG =/=Int CURR
-           #then Gsload < SCHED >
-           #else #if ORIG ==Int 0
-                   #then Gsstoreset < SCHED >
-                   #else Gsstorereset < SCHED >
-                 #fi
-         #fi
-      requires Ghasdirtysstore << SCHED >>
-      [simplification]
-
-    rule Csstore(SCHED, NEW, CURR, _ORIG)
-      => #if CURR ==Int 0 andBool NEW =/=Int 0
-           #then Gsstoreset < SCHED >
-           #else Gsstorereset < SCHED >
-         #fi
-      requires notBool Ghasdirtysstore << SCHED >>
-      [simplification]
 
 endmodule

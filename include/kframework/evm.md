@@ -413,18 +413,7 @@ The `#next [_]` operator initiates execution by:
  // ---------------------------------------------------------------
 ```
 
-```{.k .nobytes}
-    rule #changesState(CALL, _ : _ : VALUE : _) => VALUE =/=Int 0
-    rule #changesState(OP,   _)                 => ( isLogOp(OP)
-                                              orBool OP ==K SSTORE
-                                              orBool OP ==K CREATE
-                                              orBool OP ==K CREATE2
-                                              orBool OP ==K SELFDESTRUCT
-                                                   )
-      requires notBool OP ==K CALL
-```
-
-```{.k .bytes}
+```k
     rule #changesState(CALL         , _ : _ : VALUE : _) => true  requires VALUE =/=Int 0
     rule #changesState(LOG(_)       , _)                 => true
     rule #changesState(SSTORE       , _)                 => true
@@ -505,14 +494,6 @@ We make sure the given arguments (to be interpreted as addresses) are with 160 b
     syntax Bool ::= isAddr1Op ( OpCode ) [function, total]
                   | isAddr2Op ( OpCode ) [function, total]
  // ------------------------------------------------------
-```
-
-```{.k .nobytes}
-    rule isAddr1Op(OP) => OP ==K BALANCE orBool OP ==K SELFDESTRUCT orBool OP ==K EXTCODEHASH orBool OP ==K EXTCODESIZE orBool OP ==K EXTCODECOPY
-    rule isAddr2Op(OP) => isCallOp(OP) orBool isCallSixOp(OP)
-```
-
-```{.k .bytes}
     rule isAddr1Op(BALANCE)      => true
     rule isAddr1Op(SELFDESTRUCT) => true
     rule isAddr1Op(EXTCODEHASH)  => true
@@ -1403,15 +1384,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
                  | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
  // ---------------------------------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
-```
 
-```{.k .nobytes}
-    rule #computeValidJumpDests(.WordStack, _, RESULT) => List2Set(RESULT)
-    rule #computeValidJumpDests(91 : WS   , I, RESULT) => #computeValidJumpDests(WS                            , I +Int 1              , ListItem(I) RESULT)
-    rule #computeValidJumpDests( W : WS   , I, RESULT) => #computeValidJumpDests(#drop(#widthOpCode(W), W : WS), I +Int #widthOpCode(W),             RESULT) requires W =/=Int 91
-```
-
-```{.k .bytes}
     syntax Set ::= #computeValidJumpDestsWithinBound(ByteArray, Int, List) [function]
  // ---------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
@@ -1891,16 +1864,7 @@ Overall Gas
     rule <k> _G:Int ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
     rule <k>  G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
     rule <k>  G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
-```
 
-```{.k .nobytes}
-    syntax Bool ::= #inStorage ( Map , Account , Int ) [function]
- // -------------------------------------------------------------
-    rule #inStorage(TS, ACCT, _ )  => false                  requires notBool ACCT in_keys(TS)
-    rule #inStorage(TS, ACCT, KEY) => KEY in {TS[ACCT]}:>Set requires         ACCT in_keys(TS)
-```
-
-```{.k .bytes}
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [function, total]
                   | #inStorageAux2 ( Set   ,           Int ) [function, total]
@@ -1976,13 +1940,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 Access List Gas
 ---------------
 
-```{.k .nobytes}
-    syntax Bool ::= #usesAccessList ( OpCode ) [function, total]
- // ------------------------------------------------------------
-    rule #usesAccessList(OP) => isAddr1Op(OP) orBool isAddr2Op(OP) orBool OP ==K SLOAD orBool OP ==K SSTORE
-```
-
-```{.k .bytes}
+```k
     syntax Bool ::= #usesAccessList ( OpCode ) [function, total]
  // ------------------------------------------------------------
     rule #usesAccessList(OP)     => true  requires isAddr1Op(OP)
@@ -1990,9 +1948,7 @@ Access List Gas
     rule #usesAccessList(SLOAD)  => true
     rule #usesAccessList(SSTORE) => true
     rule #usesAccessList(_)      => false [owise]
-```
 
-```k
     syntax InternalOp ::= "#access" "[" OpCode "]"
  // --------------------------------------------
     rule <k> #access [ OP ] => #gasAccess(SCHED, OP) ~> #deductGas ... </k>
@@ -2351,19 +2307,7 @@ There are several helpers for calculating gas (most of them also specified in th
  // ----------------------------------------------------------------------------
     rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
     rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
-```
 
-```{.k .nobytes}
-    syntax Int ::= G0 ( Schedule , ByteArray , Bool ) [function]
- // ------------------------------------------------------------
-    rule G0(SCHED, .WordStack, true)  => Gtxcreate    < SCHED >
-    rule G0(SCHED, .WordStack, false) => Gtransaction < SCHED >
-
-    rule G0(SCHED, N : REST, ISCREATE) => Gtxdatazero    < SCHED > +Int G0(SCHED, REST, ISCREATE) requires N ==Int 0
-    rule G0(SCHED, N : REST, ISCREATE) => Gtxdatanonzero < SCHED > +Int G0(SCHED, REST, ISCREATE) requires N =/=Int 0
-```
-
-```{.k .bytes}
     syntax Int ::= G0 ( Schedule , ByteArray , Bool )           [function]
                  | G0 ( Schedule , ByteArray , Int , Int, Int ) [function, klabel(G0data)]
                  | G0 ( Schedule , Bool )                       [function, klabel(G0base)]
@@ -2375,9 +2319,7 @@ There are several helpers for calculating gas (most of them also specified in th
 
     rule G0(    _,  _, I, I, R) => R
     rule G0(SCHED, WS, I, J, R) => G0(SCHED, WS, I +Int 1, J, R +Int #if WS[I] ==Int 0 #then Gtxdatazero < SCHED > #else Gtxdatanonzero < SCHED > #fi) [owise]
-```
 
-```k
     syntax Int ::= "G*" "(" Int "," Int "," Int "," Schedule ")" [function]
  // -----------------------------------------------------------------------
     rule G*(GAVAIL, GLIMIT, REFUND, SCHED) => GAVAIL +Int minInt((GLIMIT -Int GAVAIL) /Int Rmaxquotient < SCHED >, REFUND)

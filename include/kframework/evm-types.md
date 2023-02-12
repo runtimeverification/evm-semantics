@@ -230,7 +230,7 @@ A cons-list is used for the EVM wordstack.
  // --------------------------------------------------------------------
 ```
 
-```{.k .bytes}
+```k
     syntax Bytes ::= Int ":" Bytes [function]
  // -----------------------------------------
     rule I : BS => Int2Bytes(1, I, BE) ++ BS requires I <Int 256
@@ -254,7 +254,7 @@ A cons-list is used for the EVM wordstack.
     rule #drop(1, (_ : WS):WordStack) => WS
 ```
 
-```{.k .bytes}
+```k
     syntax Bytes ::= #take ( Int , Bytes ) [klabel(takeBytes), function, total]
  // ---------------------------------------------------------------------------
     rule #take(N, _BS:Bytes) => .Bytes                                      requires                                        notBool N >Int 0
@@ -336,7 +336,7 @@ Most of EVM data is held in local memory.
 -   `WM [ N := WS ]` assigns a contiguous chunk of `WM` to `WS` starting at position `W`.
 -   `#range(WM, START, WIDTH)` reads off `WIDTH` elements from `WM` beginning at position `START` (padding with zeros as needed).
 
-```{.k .bytes}
+```k
     syntax Memory = Bytes
     syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, total, klabel(mapWriteBytes)]
  // --------------------------------------------------------------------------------------------
@@ -356,29 +356,6 @@ Most of EVM data is held in local memory.
     rule WM [ IDX := VAL ] => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ]
 ```
 
-```{.k .nobytes}
-    syntax Memory = Map
-    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, total]
- // ---------------------------------------------------------------------
-    rule [mapWriteBytes.base]:      WM[ _N := .WordStack ] => WM
-    rule [mapWriteBytes.recursive]: WM[  N := W : WS     ] => (WM[N <- W])[N +Int 1 := WS]
-
-    syntax ByteArray ::= #range ( Memory , Int , Int )             [function, total]
-    syntax ByteArray ::= #range ( Memory , Int , Int , ByteArray ) [function, total, klabel(#rangeAux)]
- // ---------------------------------------------------------------------------------------------------
-    rule [#range]:         #range(WM, START, WIDTH) => #range(WM, START +Int WIDTH -Int 1, WIDTH, .WordStack)
-    rule [#rangeAux.base]: #range( _,  _END, WIDTH, WS) => WS requires notBool 0 <Int WIDTH
-    rule [#rangeAux.rec]:  #range(WM,   END => END -Int 1, WIDTH => WIDTH -Int 1, WS => #lookupMemory(WM, END) : WS) requires 0 <Int WIDTH
-
-    syntax Memory ::= ".Memory" [macro]
- // -----------------------------------
-    rule .Memory => .Map
-
-    syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
- // --------------------------------------------------------
-    rule WM [ IDX := VAL:Int ] => WM [ IDX <- VAL ]
-```
-
 Byte Arrays
 -----------
 
@@ -394,7 +371,7 @@ The local memory of execution is a byte-array (instead of a word-array).
 -   `#sizeByteArray` calculates the size of a `ByteArray`.
 -   `#padToWidth(N, WS)` and `#padRightToWidth` make sure that a `WordStack` is the correct size.
 
-```{.k .bytes}
+```k
     syntax ByteArray = Bytes
     syntax ByteArray ::= ".ByteArray" [macro]
  // -----------------------------------------
@@ -439,56 +416,6 @@ The local memory of execution is a byte-array (instead of a word-array).
     rule [padToWidthNonEmpty]:      #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0
     rule                            #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
     rule [padRightToWidthNonEmpty]: #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0
-```
-
-```{.k .nobytes}
-    syntax ByteArray = WordStack
-    syntax ByteArray ::= ".ByteArray" [macro]
- // -----------------------------------------
-    rule .ByteArray => .WordStack
-
-    syntax Int ::= #asWord ( ByteArray ) [function, total, smtlib(asWord)]
- // ----------------------------------------------------------------------
-    rule [#asWord.base-empty]:  #asWord( .WordStack     ) => 0
-    rule [#asWord.base-single]: #asWord( W : .WordStack ) => W
-    rule [#asWord.recursive]:   #asWord( W0 : W1 : WS   ) => #asWord(((W0 *Word 256) +Word W1) : WS)
-
-    syntax Int ::= #asInteger ( ByteArray ) [function]
- // --------------------------------------------------
-    rule #asInteger( .WordStack     ) => 0
-    rule #asInteger( W : .WordStack ) => W
-    rule #asInteger( W0 : W1 : WS   ) => #asInteger(((W0 *Int 256) +Int W1) : WS)
-
-    syntax Account ::= #asAccount ( ByteArray ) [function]
- // ------------------------------------------------------
-    rule #asAccount( .WordStack ) => .Account
-    rule #asAccount( W : WS     ) => #asWord(W : WS)
-
-    syntax ByteArray ::= #asByteStack ( Int )             [function, total]
-                       | #asByteStack ( Int , ByteArray ) [function, klabel(#asByteStackAux), smtlib(asByteStack)]
- // --------------------------------------------------------------------------------------------------------------
-    rule [#asByteStack]:              #asByteStack( W )      => #asByteStack( W , .WordStack )
-    rule [#asByteStackAux.base]:      #asByteStack( 0 , WS ) => WS
-    rule [#asByteStackAux.recursive]: #asByteStack( W , WS ) => #asByteStack( W /Int 256 , W modInt 256 : WS ) requires W =/=K 0
-
-    syntax ByteArray ::= ByteArray "++" ByteArray [function, memo, right, klabel(_++_WS), smtlib(_plusWS_)]
- // -------------------------------------------------------------------------------------------------------
-    rule .WordStack ++ WS' => WS'
-    rule (W : WS)   ++ WS' => W : (WS ++ WS')
-
-    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, total, memo]
- // ---------------------------------------------------------------------------
-    rule [ByteArray.range]: WS [ START .. WIDTH ] => #take(WIDTH, #drop(START, WS))
-
-    syntax Int ::= #sizeByteArray ( ByteArray ) [function, total, smtlib(sizeByteArray), memo]
- // ------------------------------------------------------------------------------------------
-    rule #sizeByteArray ( WS ) => #sizeWordStack(WS) [concrete]
-
-    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, total, memo]
-                       | #padRightToWidth ( Int , ByteArray ) [function, memo]
- // ---------------------------------------------------------------------------------
-    rule [#padToWidth]:      #padToWidth(N, WS)      => #replicateAux(N -Int #sizeByteArray(WS), 0, WS)
-    rule [#padRightToWidth]: #padRightToWidth(N, WS) => WS ++ #replicate(N -Int #sizeByteArray(WS), 0)
 ```
 
 Accounts
