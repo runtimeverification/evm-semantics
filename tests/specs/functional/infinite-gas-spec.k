@@ -118,6 +118,7 @@ module INFINITE-GAS-SPEC
     claim <k> runLemma(minInt(#if _ #then #gas(_) #else #gas(_) #fi, #gas(_)) <=Int #if _:Int ==Int 0 #then #gas(VGas -Int Csstore(_, _, _,_)) #else #gas(VGas +Int -344) #fi) => doneLemma(true)  ... </k>
 
     claim [Csstore-1]: <k> runLemma(9223372036854696114 -Int Csstore(LONDON, _, _, _) <Int 8) => doneLemma(false) ... </k>
+    claim [Csstore-2]: <k> runLemma(8 <=Int 9223372036854763220 -Int Csstore(LONDON, _, _, _)) => doneLemma(true) ... </k>
 
     claim <k> runLemma(#allBut64th(#gas(_G)) <Int #gas(_G')) => doneLemma(false) ... </k>
 
