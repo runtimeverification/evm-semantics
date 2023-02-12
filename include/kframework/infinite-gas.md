@@ -11,46 +11,7 @@ In particular, this means that `#gas(_) <Int #gas(_) => false`, and `#gas(_) <=I
 requires "evm.md"
 
 module INFINITE-GAS
-    imports INFINITE-GAS-JAVA
     imports INFINITE-GAS-HASKELL
-endmodule
-
-module INFINITE-GAS-JAVA [kast]
-    imports INFINITE-GAS-COMMON
-    imports K-REFLECTION
-
-    rule #gas(_) <=Int C => false requires #isConcrete(C) [simplification]
-    rule C <=Int #gas(_) => true  requires #isConcrete(C) [simplification]
-
-    // TODO: figure out how to safely use these to replace the associativity
-    //       rules in lemmas.k by organizing them into int-simplification.k
-    rule C1 +Int S2 => S2 +Int C1 requires #isConcrete(C1) andBool notBool #isConcrete(S2) [simplification]
-
-    rule S1 +Int (C2 -Int S3) => (S1 -Int S3) +Int C2 requires #isConcrete(C2) andBool (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S3)) [simplification]
-    rule S1 -Int (C2 -Int S3) => (S1 +Int S3) -Int C2 requires #isConcrete(C2) andBool (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S3)) [simplification]
-
-    rule (I1 +Int C2) +Int S3 => (I1 +Int S3) +Int C2 requires #isConcrete(C2) andBool notBool #isConcrete(S3) [simplification]
-    rule (I1 +Int C2) -Int S3 => (I1 -Int S3) +Int C2 requires #isConcrete(C2) andBool notBool #isConcrete(S3) [simplification]
-    rule (I1 -Int C2) +Int S3 => (I1 +Int S3) -Int C2 requires #isConcrete(C2) andBool notBool #isConcrete(S3) [simplification]
-    rule (I1 -Int C2) -Int S3 => (I1 -Int S3) -Int C2 requires #isConcrete(C2) andBool notBool #isConcrete(S3) [simplification]
-
-    rule (S1 +Int C2) +Int C3 => S1 +Int (C2 +Int C3) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
-    rule (S1 +Int C2) -Int C3 => S1 +Int (C2 -Int C3) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
-    rule (S1 -Int C2) +Int C3 => S1 +Int (C3 -Int C2) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
-    rule (S1 -Int C2) -Int C3 => S1 -Int (C2 +Int C3) requires #isConcrete(C2) andBool #isConcrete(C3) andBool notBool #isConcrete(S1) [simplification]
-endmodule
-
-module INFINITE-GAS-JAVA-EXTRA [kast]
-    imports INFINITE-GAS-JAVA
-
-    // These lemmas conflict with a lemma in `bihu` proofs about `chop(I1 + (I2 - I3))`.
-    // Because these are just for Java backend, we pull them out and re-include them where they are needed (`mcd` and `benchmarks`).
-    // When Java backend is removed, we can delete this module anyway.
-
-    rule S1 +Int (S2 +Int I3) => (S1 +Int S2) +Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
-    rule S1 +Int (S2 -Int I3) => (S1 +Int S2) -Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
-    rule S1 -Int (S2 +Int I3) => (S1 -Int S2) -Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
-    rule S1 -Int (S2 -Int I3) => (S1 -Int S2) +Int I3 requires (notBool #isConcrete(S1)) andBool (notBool #isConcrete(S2)) [simplification]
 endmodule
 
 module INFINITE-GAS-HASKELL [kore]
