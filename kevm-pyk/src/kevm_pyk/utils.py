@@ -2,7 +2,7 @@ import logging
 import socket
 from contextlib import closing
 from pathlib import Path
-from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple
+from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
@@ -13,6 +13,22 @@ from pyk.kcfg import KCFG, KCFGExplore
 from pyk.ktool import KProve
 
 _LOGGER: Final = logging.getLogger(__name__)
+
+T1 = TypeVar('T1')
+T2 = TypeVar('T2')
+
+
+def arg_pair_of(
+    fst_type: Callable[[str], T1], snd_type: Callable[[str], T2], delim: str = ','
+) -> Callable[[str], Tuple[T1, T2]]:
+    def parse(s: str) -> Tuple[T1, T2]:
+        elems = s.split(delim)
+        length = len(elems)
+        if length != 2:
+            raise ValueError(f'Expected 2 elements, found {length}')
+        return fst_type(elems[0]), snd_type(elems[1])
+
+    return parse
 
 
 def find_free_port(host: str = 'localhost') -> int:

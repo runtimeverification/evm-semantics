@@ -11,7 +11,6 @@ from pyk.kast.inner import KApply, KInner, KRewrite, KToken
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
-from pyk.ktool.kit import KIT
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -20,7 +19,7 @@ from pyk.utils import shorten_hashes
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KDefinition__expand_macros, find_free_port, parallel_kcfg_explore
+from .utils import KDefinition__expand_macros, arg_pair_of, find_free_port, parallel_kcfg_explore
 
 T = TypeVar('T')
 
@@ -959,7 +958,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_show_args.add_argument(
         '--node-delta',
-        type=KIT.arg_pair_of(str, str),
+        type=arg_pair_of(str, str),
         dest='node_deltas',
         default=[],
         action='append',
