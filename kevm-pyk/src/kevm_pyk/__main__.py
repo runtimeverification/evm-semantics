@@ -788,7 +788,7 @@ def _create_argument_parser() -> ArgumentParser:
     explore_args.add_argument(
         '--max-depth',
         dest='max_depth',
-        default=100,
+        default=1000,
         type=int,
         help='Store every Nth state in the CFG for inspection.',
     )
