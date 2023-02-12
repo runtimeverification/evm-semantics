@@ -56,6 +56,10 @@ def parallel_kcfg_explore(
                     'EVM.create',
                     'EVM.create2',
                     'FOUNDRY.foundry.call',
+                    'EVM.end',
+                    'EVM.return.exception',
+                    'EVM.return.revert',
+                    'EVM.return.success',
                 ]
             )
         base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
