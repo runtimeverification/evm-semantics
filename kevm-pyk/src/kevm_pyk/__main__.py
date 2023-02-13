@@ -12,7 +12,6 @@ from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
 from pyk.kast.manip import flatten_label, get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
-from pyk.ktool.kit import KIT
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -24,9 +23,9 @@ from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_co
 from .utils import (
     KCFG__replace_node,
     KDefinition__expand_macros,
-    KPrint_make_unparsing,
     KProve_prove_claim,
     add_include_arg,
+    arg_pair_of,
     sanitize_config,
 )
 
@@ -123,7 +122,6 @@ def exec_solc_to_k(
     contract_file: Path,
     contract_name: str,
     main_module: Optional[str],
-    spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
     **kwargs: Any,
@@ -137,13 +135,15 @@ def exec_solc_to_k(
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [contract_module.name] + imports]
     )
-    _spec_module = KFlatModule(spec_module if spec_module else 'SPEC')
-    modules = (contract_module, _main_module, _spec_module)
+    modules = (contract_module, _main_module)
     bin_runtime_definition = KDefinition(
         _main_module.name, modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
     )
-    _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
-    KEVM._patch_symbol_table(_kprint.symbol_table)
+    _kprint = KEVM(
+        definition_dir,
+        profile=profile,
+        extra_unparsing_modules=modules,
+    )
     print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
 
@@ -196,21 +196,21 @@ def exec_foundry_kompile(
     foundry = Foundry(definition_dir, profile=profile)
     empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
 
-    bin_runtime_definition = _foundry_to_bin_runtime(
-        empty_config=empty_config,
-        contracts=contracts,
-        main_module=main_module,
-        requires=requires,
-        imports=imports,
-    )
-
     if regen or not foundry_main_file.exists():
+        bin_runtime_definition = _foundry_to_bin_runtime(
+            empty_config=empty_config,
+            contracts=contracts,
+            main_module=main_module,
+            requires=requires,
+            imports=imports,
+        )
         with open(foundry_main_file, 'w') as fmf:
             _LOGGER.info(f'Writing file: {foundry_main_file}')
-            _foundry = Foundry(definition_dir=definition_dir)
-            _kprint = KPrint_make_unparsing(_foundry, extra_modules=bin_runtime_definition.modules)
-            Foundry._patch_symbol_table(_kprint.symbol_table)
-            fmf.write(_kprint.pretty_print(bin_runtime_definition) + '\n')
+            _foundry = Foundry(
+                definition_dir=definition_dir,
+                extra_unparsing_modules=bin_runtime_definition.modules,
+            )
+            fmf.write(_foundry.pretty_print(bin_runtime_definition) + '\n')
 
     if regen or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
@@ -597,7 +597,8 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs
     kcfg_file = kcfgs_dir / f'{test}.json'
     use_directory.mkdir(parents=True, exist_ok=True)
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
-    viewer = KCFGViewer(kcfg_file, foundry)
+    kcfg = KCFG.from_json(kcfg_file.read_text())
+    viewer = KCFGViewer(kcfg, foundry)
     viewer.run()
 
 
@@ -656,7 +657,7 @@ def _create_argument_parser() -> ArgumentParser:
     k_kompile_args.add_argument(
         '--md-selector',
         type=str,
-        default='k & ! nobytes & ! node',
+        default='k & ! node',
         help='Code selector expression to use when reading markdown.',
     )
     k_kompile_args.add_argument(
@@ -872,7 +873,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_show_args.add_argument(
         '--node-delta',
-        type=KIT.arg_pair_of(str, str),
+        type=arg_pair_of(str, str),
         dest='node_deltas',
         default=[],
         action='append',
@@ -920,5 +921,5 @@ def _loglevel(args: Namespace) -> int:
     return logging.WARNING
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

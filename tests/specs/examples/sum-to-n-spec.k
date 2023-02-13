@@ -9,8 +9,6 @@ module VERIFICATION
       => N +Int #sizeWordStack ( WS , 0 )
       requires N =/=K 0 [simplification]
 
- // lemma only required by java backend
- // -----------------------------------
     rule bool2Word(A) ==K 0 => notBool(A) [simplification]
 
     rule chop(I) => I requires #rangeUInt(256, I) [simplification]
