@@ -59,7 +59,7 @@ def parallel_kcfg_explore(
         with KCFGExplore(
             kprove,
             port=(base_port + _index),
-            booster_rpc_command=['hs-backend-booster', '-l', 'Rewrite'],
+            booster_rpc_command=['hs-backend-booster', '-l', 'Rewrite', '--llvm-backend-library', 'tests/foundry/out/llvm/interpreter'],
             booster_port=booster_port,
         ) as kcfg_explore:
             try:
