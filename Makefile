@@ -492,10 +492,8 @@ test-foundry: tests/foundry/foundry.k.check tests/foundry/out/kompiled/foundry.k
 foundry-llvm: $(foundry_out)/llvm/interpreter
 
 .PHONY: $(foundry_out)/llvm/interpreter
-$(foundry_out)/llvm/interpreter: KOMPILE := kompile
-$(foundry_out)/llvm/interpreter: KOMPILE_OPTS =
 $(foundry_out)/llvm/interpreter: $(KEVM_BIN)/kevm build-llvm
-	$(KOMPILE) \
+	kompile \
 		--backend llvm \
 		$(KEVM_INCLUDE)/kframework/$(foundry_main_file) \
 		--main-module $(foundry_main_module)            \
