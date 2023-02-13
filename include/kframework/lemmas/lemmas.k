@@ -111,8 +111,8 @@ module LEMMAS [symbolic]
     rule #lookup ( _M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 )  requires K1 ==Int  K2 [simplification]
     rule #lookup (  M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 )  requires K1 =/=Int K2 [simplification]
 
-    rule 0 <=Int #lookup( _M:Map , _ )             => true [simplification, smt-lemma]
-    rule         #lookup( _M:Map , _ ) <Int pow256 => true [simplification, smt-lemma]
+    rule 0 <=Int #lookup( _M:Storage , _ )             => true [simplification, smt-lemma]
+    rule         #lookup( _M:Storage , _ ) <Int pow256 => true [simplification, smt-lemma]
 
     // re-order assignments
     rule MEM [ K1 := BUF1:ByteArray ] [ K2 := BUF2:ByteArray ] => MEM [ K2 := BUF2 ] [ K1 := BUF1 ]  requires         #sizeByteArray(BUF2) <=Int K1 -Int K2                   andBool K2  <Int K1 [simplification]

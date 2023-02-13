@@ -130,19 +130,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <acctID>      0                      </acctID>
                 <balance>     0                      </balance>
                 <code>        .ByteArray:AccountCode </code>
-```
-
-> AlgoEVM
-
-                <storage>     .Map                   </storage>
-                <origStorage> .Map                   </origStorage>
-
-```k
                 <storage>     (.Map):Storage         </storage>
                 <origStorage> (.Map):Storage         </origStorage>
-```
-
-```k
                 <nonce>       0                      </nonce>
               </account>
             </accounts>

@@ -135,5 +135,4 @@ module FUNCTIONAL-SPEC
 
     claim <k> runLemma((maxUInt160 &Int M) /Int (maxUInt160 +Int 1)) => doneLemma(0) </k>
       requires M >Int 0
-
 endmodule

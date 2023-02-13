@@ -504,5 +504,4 @@ module LEMMAS-MCD-COMMON
     rule X:Int ==Int A:Int orBool X ==Int B:Int orBool X ==Int C:Int orBool X ==Int D:Int => X ==Int D
          requires X =/=Int A andBool X =/=Int B andBool X =/=Int C
          [simplification]
-
 endmodule
