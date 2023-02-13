@@ -318,8 +318,20 @@ The `#next [_]` operator initiates execution by:
     rule <k> #next [ .NoOpCode ] => #end EVMC_SUCCESS ... </k>
          <output> _ => .ByteArray </output>
 
+// refactored to avoid append(.K, _) in the K cell
+    // rule <k> #next [ OP:OpCode ]
+    //       => #if isAddr1Op(OP) orBool isAddr2Op(OP) #then #addr [ OP ] #else . #fi
+    //       ~> #exec [ OP ]
+    //       ~> #pc   [ OP ]
+    //      ...
+    //      </k>
+    //      <wordStack> WS </wordStack>
+    //      <static> STATIC:Bool </static>
+    //   requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
+    //    andBool notBool ( STATIC andBool #changesState(OP, WS) )
+
     rule <k> #next [ OP:OpCode ]
-          => #if isAddr1Op(OP) orBool isAddr2Op(OP) #then #addr [ OP ] #else . #fi
+          => #addr [ OP ]
           ~> #exec [ OP ]
           ~> #pc   [ OP ]
          ...
@@ -328,6 +340,18 @@ The `#next [_]` operator initiates execution by:
          <static> STATIC:Bool </static>
       requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
        andBool notBool ( STATIC andBool #changesState(OP, WS) )
+       andBool (isAddr1Op(OP) orBool isAddr2Op(OP))
+
+    rule <k> #next [ OP:OpCode ]
+          => #exec [ OP ]
+          ~> #pc   [ OP ]
+         ...
+         </k>
+         <wordStack> WS </wordStack>
+         <static> STATIC:Bool </static>
+      requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
+       andBool notBool ( STATIC andBool #changesState(OP, WS) )
+       andBool notBool (isAddr1Op(OP) orBool isAddr2Op(OP))
 
     rule <k> #next [ OP ] => #end EVMC_STACK_UNDERFLOW ... </k>
          <wordStack> WS </wordStack>
@@ -1841,13 +1865,51 @@ Overall Gas
 ```k
     syntax InternalOp ::= "#gas" "[" OpCode "," OpCode "]"
  // ------------------------------------------------------
+
+// refactored to avoid append(.K, _) in the K cell
+    // rule <k> #gas [ OP , AOP ]
+    //       => #if #usesMemory(OP) #then #memory [ AOP ] #else .K #fi
+    //       ~> #gas [ AOP ]
+    //       ~> #if Ghasaccesslist << SCHED >> andBool #usesAccessList(OP) #then #access [ AOP ] #else .K #fi
+    //      ...
+    //     </k>
+    //     <schedule> SCHED </schedule>
+
     rule <k> #gas [ OP , AOP ]
-          => #if #usesMemory(OP) #then #memory [ AOP ] #else .K #fi
+          => #memory [ AOP ]
           ~> #gas [ AOP ]
-          ~> #if Ghasaccesslist << SCHED >> andBool #usesAccessList(OP) #then #access [ AOP ] #else .K #fi
+          ~> #access [ AOP ]
          ...
         </k>
         <schedule> SCHED </schedule>
+      requires #usesMemory(OP)
+       andBool (Ghasaccesslist << SCHED >> andBool #usesAccessList(OP))
+
+    rule <k> #gas [ OP , AOP ]
+          => #gas [ AOP ]
+          ~> #access [ AOP ]
+         ...
+        </k>
+        <schedule> SCHED </schedule>
+      requires notBool #usesMemory(OP)
+       andBool (Ghasaccesslist << SCHED >> andBool #usesAccessList(OP))
+
+    rule <k> #gas [ OP , AOP ]
+          => #memory [ AOP ]
+          ~> #gas [ AOP ]
+         ...
+        </k>
+        <schedule> SCHED </schedule>
+      requires #usesMemory(OP)
+       andBool notBool (Ghasaccesslist << SCHED >> andBool #usesAccessList(OP))
+
+    rule <k> #gas [ OP , AOP ]
+          => #gas [ AOP ]
+         ...
+        </k>
+        <schedule> SCHED </schedule>
+      requires notBool #usesMemory(OP)
+       andBool notBool (Ghasaccesslist << SCHED >> andBool #usesAccessList(OP))
 
     rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
