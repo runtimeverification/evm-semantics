@@ -382,7 +382,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> check "account" : { (_ACCT:Int) : { "balance" : ((VAL:String)      => #parseWord(VAL)) } }        ... </k>
     rule <k> check "account" : { (_ACCT:Int) : { "nonce"   : ((VAL:String)      => #parseWord(VAL)) } }        ... </k>
     rule <k> check "account" : { (_ACCT:Int) : { "code"    : ((CODE:String)     => #parseByteStack(CODE)) } }  ... </k>
-    rule <k> check "account" : { (_ACCT:Int) : { "storage" : ({ STORAGE:JSONs } => #parseMap({ STORAGE })) } } ... </k>
+    rule <k> check "account" : 
+      { (_ACCT:Int) : { "storage" : ({ STORAGE:JSONs } => #parseMap({ STORAGE })) } } ... </k>
 
     rule <mode> EXECMODE </mode>
          <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
@@ -402,10 +403,10 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
            <nonce> NONCE </nonce>
            ...
          </account>
-
-    rule <k> check "account" : { ACCT : { "storage" : (STORAGE:Map) } } => . ... </k>
+    
+    rule <k> check "account" : { ACCT : { "storage" : STORAGE } } => . ... </k>
          <account>
-           <acctID> ACCT </acctID>
+          <acctID> ACCT </acctID>
            <storage> ACCTSTORAGE </storage>
            ...
          </account>

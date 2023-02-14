@@ -130,8 +130,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <acctID>      0                      </acctID>
                 <balance>     0                      </balance>
                 <code>        .ByteArray:AccountCode </code>
-                <storage>     .Map                   </storage>
-                <origStorage> .Map                   </origStorage>
+                <storage>     (.Map):Storage         </storage>
+                <origStorage> (.Map):Storage         </origStorage>
                 <nonce>       0                      </nonce>
               </account>
             </accounts>
@@ -261,8 +261,7 @@ Control Flow
 ```k
     syntax KItem ::= "#halt" | "#end" StatusCode
  // --------------------------------------------
-    rule [end]:
-         <k> #end SC => #halt ... </k>
+    rule <k> #end SC => #halt ... </k>
          <statusCode> _ => SC </statusCode>
 
     rule <k> #halt ~> (_:Int    => .) ... </k>
@@ -291,14 +290,11 @@ OpCode Execution
 ```k
     syntax KItem ::= "#execute"
  // ---------------------------
-    rule [halt]:
-         <k> #halt ~> (#execute => .) ... </k>
-
-    rule [step]:
-         <k> (. => #next [ #lookupOpCode(PGM, PCOUNT, SCHED) ]) ~> #execute ... </k>
-         <program> PGM </program>
-         <pc> PCOUNT </pc>
-         <schedule> SCHED </schedule>
+    rule [halt]: <k> #halt ~> (#execute => .) ... </k>
+    rule [step]: <k> (. => #next [ #lookupOpCode(PGM, PCOUNT, SCHED) ]) ~> #execute ... </k>
+                 <program> PGM </program>
+                 <pc> PCOUNT </pc>
+                 <schedule> SCHED </schedule>
 ```
 
 ### Single Step
@@ -1236,13 +1232,27 @@ These rules reach into the network state and load/store from account storage:
 
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
+
     rule <k> SSTORE INDEX NEW => . ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
+           <storage> STORAGE => STORAGE [INDEX <- NEW] </storage> 
            ...
-         </account>
+         </account> [priority(20)]
+
+```
+
+> AlgoEVM
+
+```k
+    rule <k> SSTORE INDEX NEW => . ... </k>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> STORAGE => #write(STORAGE, INDEX, NEW) </storage> 
+           ...
+         </account> [priority(40)]
 ```
 
 ### Call Operations
@@ -1402,16 +1412,14 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
-    rule [return.exception]:
-         <statusCode> _:ExceptionalStatusCode </statusCode>
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> #halt ~> #return _ _
           => #popCallStack ~> #popWorldState ~> 0 ~> #push
          ...
          </k>
          <output> _ => .ByteArray </output>
 
-    rule [return.revert]:
-         <statusCode> EVMC_REVERT </statusCode>
+    rule <statusCode> EVMC_REVERT </statusCode>
          <k> #halt ~> #return RETSTART RETWIDTH
           => #popCallStack ~> #popWorldState
           ~> 0 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
@@ -1420,8 +1428,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <output> OUT </output>
          <gas> GAVAIL </gas>
 
-    rule [return.success]:
-         <statusCode> EVMC_SUCCESS </statusCode>
+    rule <statusCode> EVMC_SUCCESS </statusCode>
          <k> #halt ~> #return RETSTART RETWIDTH
           => #popCallStack ~> #dropWorldState
           ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
@@ -1449,8 +1456,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```k
     syntax CallOp ::= "CALL"
  // ------------------------
-    rule [call]:
-         <k> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule <k> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -1461,8 +1467,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     syntax CallOp ::= "CALLCODE"
  // ----------------------------
-    rule [callcode]:
-         <k> CALLCODE _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule <k> CALLCODE _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTFROM ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -1473,8 +1478,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     syntax CallSixOp ::= "DELEGATECALL"
  // -----------------------------------
-    rule [delegatecall]:
-         <k> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule <k> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
           ~> #call ACCTAPPFROM ACCTFROM ACCTTO 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -1487,8 +1491,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     syntax CallSixOp ::= "STATICCALL"
  // ---------------------------------
-    rule [staticcall]:
-         <k> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
+    rule <k> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
           => #checkCall ACCTFROM 0
           ~> #call ACCTFROM ACCTTO ACCTTO 0 0 #range(LM, ARGSTART, ARGWIDTH) true
           ~> #return RETSTART RETWIDTH
@@ -1607,8 +1610,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```k
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
-    rule [create]:
-         <k> CREATE VALUE MEMSTART MEMWIDTH
+    rule <k> CREATE VALUE MEMSTART MEMWIDTH
           => #accessAccounts #newAddr(ACCT, NONCE)
           ~> #checkCall ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
@@ -1629,8 +1631,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```k
     syntax QuadStackOp ::= "CREATE2"
  // --------------------------------
-    rule [create2]:
-         <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
+    rule <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
           => #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #checkCall ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)

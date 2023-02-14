@@ -912,11 +912,11 @@ def _create_argument_parser() -> ArgumentParser:
 
 
 def _loglevel(args: Namespace) -> int:
-    if args.debug:
-        return logging.DEBUG
-
     if args.verbose or args.profile:
         return logging.INFO
+
+    if args.debug:
+        return logging.DEBUG
 
     return logging.WARNING
 

@@ -136,5 +136,4 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
         (_ => ?_)
       </account>
       requires notBool (255 &Int (#lookup( ACCT_STORAGE , 1 ) /Int 1461501637330902918203684832716283019655932542976)) ==Int 0 // from counterexample
-
 endmodule

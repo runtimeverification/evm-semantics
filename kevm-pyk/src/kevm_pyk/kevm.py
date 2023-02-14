@@ -12,7 +12,6 @@ from pyk.kast.outer import KFlatModule
 from pyk.ktool import KProve, KRun
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.kprint import SymbolTable, paren
-from pyk.prelude.bytes import bytesToken
 from pyk.prelude.kbool import notBool
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlAnd, mlEqualsTrue
@@ -472,7 +471,7 @@ class Foundry(KEVM):
         return KEVM.account_cell(
             Foundry.address_CHEATCODE(),  # Hardcoded for now
             intToken(0),
-            bytesToken('\x00'),
+            KToken('b"\\x00"', 'Bytes'),
             store_var,
             KApply('.Map'),
             intToken(0),
