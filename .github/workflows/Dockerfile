@@ -32,7 +32,8 @@ RUN    apt-get update         \
             protobuf-compiler \
             python3           \
             python3-pip       \
-            solc
+            solc              \
+            git
 
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - --version 1.3.2
 
