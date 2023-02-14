@@ -569,7 +569,7 @@ If the call depth of the current call is lower than the call depth of the `expec
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
-           <expectedDepth> ED </expectedDepth> 
+           <expectedDepth> ED </expectedDepth>
            ...
          </expectedRevert>
       requires CD <=Int ED
@@ -586,7 +586,7 @@ If the call is successful, a revert is triggered and the `FAILED` location of th
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
-           <expectedDepth> ED </expectedDepth> 
+           <expectedDepth> ED </expectedDepth>
            ...
          </expectedRevert>
       requires CD <=Int ED
@@ -997,9 +997,9 @@ function sign(uint256 privateKey, bytes32 digest) external returns (uint8 v, byt
 ```
 
 `foundry.call.sign` will match when the `sign` cheat code function is called.
-This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`. 
-To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM). 
-This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings. 
+This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`.
+To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM).
+This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings.
 The `ECDSASign` function returns the signed data in [r,s,v] form, which we convert to a bytearray using `#parseByteStack`.
 
 ```k
@@ -1149,6 +1149,7 @@ Utils
     syntax KItem ::= "#clearExpectRevert" [klabel(foundry_clearExpectRevert)]
  // -------------------------------------------------------------------------
     rule <k> #clearExpectRevert => . ... </k>
+         <output> _ => #buf (32, 0) </output>
          <expectedRevert>
            <isRevertExpected> _ => false </isRevertExpected>
            <expectedDepth> _ => 0 </expectedDepth>
