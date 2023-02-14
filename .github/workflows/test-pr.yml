@@ -129,5 +129,7 @@ jobs:
         with:
           name: k-framework
           authToken: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
+      - name: Install Git
+        run: apt-get update && apt-get install --yes git
       - name: 'Test KEVM'
         run: GC_DONT_GC=1 nix build --print-build-logs .#kevm-test
