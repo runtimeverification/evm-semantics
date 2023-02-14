@@ -315,7 +315,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def lookup(map: KInner, key: KInner) -> KApply:
-        return KApply('#lookup(_,_)_EVM-TYPES_Int_Map_Int', [map, key])
+        return KApply('#lookup(_,_)_EVM-TYPES_Int_Storage_Int', [map, key])
 
     @staticmethod
     def abi_calldata(name: str, args: List[KInner]) -> KApply:
