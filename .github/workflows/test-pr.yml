@@ -43,30 +43,6 @@ jobs:
         run: |
           docker stop --time=0 kevm-ci-concrete-${GITHUB_SHA}
 
-  test-prove-java:
-    name: 'Build and Test KEVM java proofs'
-    needs: test-concrete-execution
-    runs-on: [self-hosted, linux, normal]
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          tag: kevm-ci-java-${{ github.sha }}
-      - name: 'Build kevm-pyk'
-        run: docker exec -u user kevm-ci-java-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk'
-      - name: 'Build Definitions'
-        run: docker exec -u user kevm-ci-java-${GITHUB_SHA} /bin/bash -c 'make build-prove-java -j2'
-      - name: 'Prove Java'
-        run: docker exec -u user kevm-ci-java-${GITHUB_SHA} /bin/bash -c 'make test-prove -j3 TEST_SYMBOLIC_BACKEND=java'
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-ci-java-${GITHUB_SHA}
-
   test-prove-haskell:
     name: 'Build and Test KEVM haskell proofs'
     needs: test-concrete-execution
