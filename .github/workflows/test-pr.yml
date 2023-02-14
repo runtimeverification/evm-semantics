@@ -96,8 +96,8 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: ubuntu-20.04
-            os: ubuntu-20.04
+          - runner: [self-hosted, ephemeral]
+            os: self-linux
           - runner: macos-12
             os: macos-12
           - runner: MacM1
