@@ -131,6 +131,6 @@ jobs:
           authToken: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
       - name: Install Git
         if: ${{ !startsWith(matrix.os, 'self') }}
-        run: apt-get update && apt-get install --yes git
+        run: sudo apt-get update && sudo apt-get install --yes git
       - name: 'Test KEVM'
         run: GC_DONT_GC=1 nix build --print-build-logs .#kevm-test
