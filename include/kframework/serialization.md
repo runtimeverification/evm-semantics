@@ -133,7 +133,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
  // --------------------------------------------------
     rule #parseHexWord("")   => 0
     rule #parseHexWord("0x") => 0
-    rule #parseHexWord(S)    => CastInt( String2Base(replaceAll(S, "0x", ""), 16) ) requires (S =/=String "") andBool (S =/=String "0x")
+    rule #parseHexWord(S)    => WatchInt( String2Base(replaceAll(S, "0x", ""), 16) ) requires (S =/=String "") andBool (S =/=String "0x")
 
     rule #parseWord("") => 0
     rule #parseWord(S)  => #parseHexWord(S) requires lengthString(S) >=Int 2 andBool substrString(S, 0, 2) ==String "0x"
