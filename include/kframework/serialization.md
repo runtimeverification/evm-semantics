@@ -127,7 +127,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 -   `#parseAccessListStorageKeys` interprets a JSON list object as a Set, casting each string element as a `Word`.
 
 ```k
-    syntax Int ::= WatchInt(String) [function]
+    syntax Int ::= WatchInt(Int) [function]
     syntax Int ::= #parseHexWord ( String ) [function]
                  | #parseWord    ( String ) [function]
  // --------------------------------------------------
