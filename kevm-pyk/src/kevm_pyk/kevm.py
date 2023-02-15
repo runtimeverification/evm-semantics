@@ -9,9 +9,10 @@ from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
 from pyk.kast.manip import flatten_label, get_cell
 from pyk.kast.outer import KFlatModule
-from pyk.ktool import KProve, KRun
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.kprint import SymbolTable, paren
+from pyk.ktool.kprove import KProve
+from pyk.ktool.krun import KRun
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.kbool import notBool
 from pyk.prelude.kint import intToken, ltInt
