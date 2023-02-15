@@ -61,24 +61,23 @@ Address/Hash Helpers
 -   `#blockHeaderHash` computes the hash of a block header given all the block data.
 
 ```k
-    syntax Int ::= CastInt(String) [function]
     syntax Int ::= #blockHeaderHash( Int , Int , Int , Int , Int , Int , ByteArray , Int , Int , Int , Int , Int , ByteArray , Int , Int ) [function, klabel(blockHeaderHash), symbol]
                  | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderStr), symbol]
                  | #blockHeaderHash( Int , Int , Int , Int , Int , Int , ByteArray , Int , Int , Int , Int , Int , ByteArray , Int , Int , Int) [function, klabel(blockHeaderHashBaseFee), symbol]
                  | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderBaseFeeStr), symbol]
  // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     rule #blockHeaderHash(HP:String, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
-         => CastInt( Keccak256 ( #rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN ] ) ))
+         => #parseHexWord( Keccak256( #rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN ] ) ) )
 
     rule #blockHeaderHash(HP:Int, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
-         => CastInt( Keccak256 ( #rlpEncode( [ #wordBytes(HP), #wordBytes(HO), #addrBytes(HC)
+         => #parseHexWord( Keccak256( #rlpEncode( [ #wordBytes(HP), #wordBytes(HO), #addrBytes(HC)
                                                   , #wordBytes(HR), #wordBytes(HT), #wordBytes(HE)
                                                   , HB, HD, HI, HL, HG, HS, HX
                                                   , #wordBytes(HM), #padToWidth(8, #asByteStack(HN))
                                                   ]
-                                           )
-                              )
-                   )
+                                                )
+                                    )
+                         )
 
     rule #blockHeaderHash(HP:String, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)
          => #parseHexWord( Keccak256( #rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF ] ) ) )
@@ -128,12 +127,13 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
 -   `#parseAccessListStorageKeys` interprets a JSON list object as a Set, casting each string element as a `Word`.
 
 ```k
+    syntax Int ::= CastInt(String) [function]
     syntax Int ::= #parseHexWord ( String ) [function]
                  | #parseWord    ( String ) [function]
  // --------------------------------------------------
     rule #parseHexWord("")   => 0
     rule #parseHexWord("0x") => 0
-    rule #parseHexWord(S)    => String2Base(replaceAll(S, "0x", ""), 16) requires (S =/=String "") andBool (S =/=String "0x")
+    rule #parseHexWord(S)    => CastInt(replaceAll(S, "0x", "")) requires (S =/=String "") andBool (S =/=String "0x")
 
     rule #parseWord("") => 0
     rule #parseWord(S)  => #parseHexWord(S) requires lengthString(S) >=Int 2 andBool substrString(S, 0, 2) ==String "0x"
