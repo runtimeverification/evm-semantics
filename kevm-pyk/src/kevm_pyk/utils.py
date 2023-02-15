@@ -18,7 +18,7 @@ from pyk.kast.manip import (
 )
 from pyk.kast.outer import KClaim, KDefinition, KRule
 from pyk.kcfg import KCFG
-from pyk.ktool import KProve
+from pyk.ktool.kprove import KProve
 from pyk.prelude.kbool import FALSE
 from pyk.prelude.ml import mlAnd
 
