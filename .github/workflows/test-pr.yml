@@ -109,12 +109,6 @@ jobs:
         with:
           # Check out pull request HEAD instead of merge commit.
           ref: ${{ github.event.pull_request.head.sha }}
-      - name: 'Install Python3.10'
-        if: ${{ !contains(matrix.os, 'macos') }}
-        run: |
-          sudo apt-get install --yes software-properties-common
-          sudo apt-add-repository ppa:deadsnakes/ppa
-          sudo apt-get install --yes python3.10
       - name: 'Install Nix'
         if: ${{ !startsWith(matrix.os, 'self') }}
         uses: cachix/install-nix-action@v15
