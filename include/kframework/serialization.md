@@ -61,22 +61,22 @@ Address/Hash Helpers
 -   `#blockHeaderHash` computes the hash of a block header given all the block data.
 
 ```k
+    syntax Int ::= CastInt(String) [function]
     syntax Int ::= #blockHeaderHash( Int , Int , Int , Int , Int , Int , ByteArray , Int , Int , Int , Int , Int , ByteArray , Int , Int ) [function, klabel(blockHeaderHash), symbol]
                  | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderStr), symbol]
                  | #blockHeaderHash( Int , Int , Int , Int , Int , Int , ByteArray , Int , Int , Int , Int , Int , ByteArray , Int , Int , Int) [function, klabel(blockHeaderHashBaseFee), symbol]
                  | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderBaseFeeStr), symbol]
  // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     rule #blockHeaderHash(HP:String, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
-         => #parseHexWord( Keccak256( #rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN ] ) ) )
+         => CastInt(#rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN ] ))
 
     rule #blockHeaderHash(HP:Int, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
-         => #parseHexWord( Keccak256( #rlpEncode( [ #wordBytes(HP), #wordBytes(HO), #addrBytes(HC)
+         => CastInt( #rlpEncode( [ #wordBytes(HP), #wordBytes(HO), #addrBytes(HC)
                                                   , #wordBytes(HR), #wordBytes(HT), #wordBytes(HE)
                                                   , HB, HD, HI, HL, HG, HS, HX
                                                   , #wordBytes(HM), #padToWidth(8, #asByteStack(HN))
                                                   ]
                                                 )
-                                    )
                          )
 
     rule #blockHeaderHash(HP:String, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)
