@@ -2,7 +2,7 @@ import logging
 import socket
 from contextlib import closing
 from pathlib import Path
-from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
+from typing import Callable, Collection, Dict, Final, Iterable, Optional, Tuple, TypeVar
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
@@ -122,10 +122,6 @@ def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # no
         term = bottom_up(_expand_macros, term)
 
     return term
-
-
-def add_include_arg(includes: Iterable[str]) -> List[str]:
-    return [arg for include in includes for arg in ['-I', include]]
 
 
 def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> KInner:
