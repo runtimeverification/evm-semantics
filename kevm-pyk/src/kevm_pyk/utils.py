@@ -10,7 +10,7 @@ from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
 from pyk.kast.outer import KDefinition
 from pyk.kcfg import KCFG, KCFGExplore
-from pyk.ktool import KProve
+from pyk.ktool.kprove import KProve
 
 _LOGGER: Final = logging.getLogger(__name__)
 
