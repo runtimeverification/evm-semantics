@@ -42,7 +42,7 @@ These files are used for testing the semantics itself:
 Installing
 ----------
 
-If you’re on a system that supports [Nix](https://nixos.org/download.html), the fastest way to install KEVM is to use the kup package manager.
+If you’re on a system that supports [Nix](https://nixos.org/download.html), the fastest way to install KEVM is to use the [kup package manager].
 
 ```sh
 bash <(curl https://kframework.org/install)
@@ -219,6 +219,9 @@ Finally, you can build the semantics.
 make build
 ```
 
+You can build specific targets using `build-llvm`, `build-Haskell`, or `build-foundry`. 
+For more information, refer to the [Makefile].
+
 Running Tests
 -------------
 
@@ -229,7 +232,7 @@ git submodule update --init --recursive  -- tests/ethereum-tests
 ```
 
 The tests are run using the supplied `Makefile`.
-First, run `make build-prove` to generate tests from the markdown files.
+Run `make build-prove` to generate tests from the markdown files.
 
 The following subsume all other tests:
 
@@ -420,3 +423,5 @@ For more information about [The K Framework](https://kframework.org), refer to t
 [Ethereum Test Set]: <https://github.com/ethereum/tests>
 [Verified Smart Contracts]: <https://github.com/runtimeverification/verified-smart-contracts>
 [eDSL]: <https://github.com/runtimeverification/verified-smart-contracts/blob/master/resources/edsl.md>
+[kup package manager]: <https://github.com/runtimeverification/kup>
+[Makefile]: <./Makefile>

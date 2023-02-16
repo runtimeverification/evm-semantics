@@ -1,20 +1,51 @@
 Foundry Specifications
 ======================
 
-**UNDER CONSTRUCTION**
+**ACTIVE DEVELOPMENT**
+
+The Foundry integration allows users to take Solidity property tests and generate K specifications which can be executed using the Haskell symbolic backend.
+
+Before executing any of the KEVM instructions, make sure that you have the following:
+   1. Successfully built or installed KEVM,
+   2. The`kevm` binary is on your PATH,
+   3. Activated the virtual environment (*applicable only for builds from source*).
+
+Below we are providing an example usage and a description of all the commands you can use with KEVM to improve your experience.
+
+Available Commands
+------------------
+
+Basic commands are (and each can be passed --help):
+
+- `kevm foundry-kompile`: Kompile a definition, generating claims for each Foundry test.
+The best options are:
+   - `--regen` - needed if Solidity sources change,
+   - `-rekompile` - needed if K lemmas change, or K definition changes,
+   - `--require` - for adding an extra K file with lemmas, 
+   - `--module-import` - importing an extra K module in one of the added K files with lemmas.
+
+- `kevm foundry-prove`: Run a given proof using the KCFG-based prover (not supporting loops yet, need to fall back to typical K for that).
+The best options are:
+   - `—reinit` - want to start over from scratch,
+   - `—no-simplify-init` - do not want to invoke simplification on all the original nodes, can be faster,
+   - `—max-depth` - increase the space between saved nodes; bigger is faster,
+   - `—max-iterations` - maximum number of nodes to store in KCFG before giving on attempting proof for that run,
+   - `—break-every-step` - save a state every opcode, slow, good for debugging,
+   - `—break-on-calls` - save a state every time a call is made, good to turn on.
+
+- `kevm foundry-show`: Display the given KCFG so far as text. 
+Options are:
+   - `—no-minimize` - do not omit all the gory details, 
+   - `—node` - can be a repeated option, display more information about a given node   hash,
+   - `—node-delta` - displays the delta between two given nodes in the KCFG.
+
+- `kevm foundry-view-kcfg`: Launch the more interactive exploration of the KCFG (can be done while exploration is running, must Ctrl-C + relaunch to view updates to KCFG).
 
 Example Usage
 -------------
 
-From the root of the [KEVM repository](/README.md), after having:
+The first step is to ensure the Solidity codebase is compiled and the `out/` directory is generated.
 
--   Successfully built (or installed) KEVM, and
--   Have `kevm` on `PATH`, and
--   Have stepped into the virtual environment (see the [README](/README.md)).
-
-KEVM supports Foundry specifications via two CLI utilities, `foundry-kompile` and `foundry-prove`.
-To get help, you can do `kevm foundry-kompile --help` and `kevm foundry-prove --help`.
-Each command takes as input the Foundry `out/` directory.
 For example, in the root of this repository, you can run:
 
 *Build Foundry Project:*
@@ -22,50 +53,18 @@ For example, in the root of this repository, you can run:
 ```sh
 $ cd tests/foundry
 $ forge build
-[⠊] Compiling...
-[⠑] Compiling 44 files with 0.8.13
-[⠊] Solc 0.8.13 finished in 3.58s
-Compiler run successful (with warnings)
-
-$ cd ../..
 ```
 
-*Kompile to KEVM specification (inside virtual environment):*
+*Kompile to generate K specifications:*
 
 ```sh
-$ make shell
-(kevm-pyk-py3.10) $ kevm foundry-kompile tests/foundry/out
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unknown range predicate for type: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unsupported ABI type for method LoopsTest.method_LoopsTest_testMax, will not generate calldata sugar: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unknown range predicate for type: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unsupported ABI type for method LoopsTest.method_LoopsTest_testMaxBroken, will not generate calldata sugar: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unknown range predicate for type: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unsupported ABI type for method LoopsTest.method_LoopsTest_testSort, will not generate calldata sugar: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unknown range predicate for type: uint256[]
-WARNING 2022-09-11 15:36:00,448 kevm_pyk.solc_to_k - Unsupported ABI type for method LoopsTest.method_LoopsTest_testSortBroken, will not generate calldata sugar: uint256[]
-WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
-WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
-WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
-WARNING 2022-09-11 15:36:00,449 kevm_pyk.solc_to_k - Using generic sort K for type: uint256[]
-$ exit
+$ kevm foundry-kompile out/
 ```
 
 *And discharge some specific test as a proof obligation (inside virtual environment):*
 
 ```sh
-$ make shell
-(kevm-pyk-py3.10) $ kevm foundry-prove tests/foundry/out --test AssertTest.test_assert_true
-WARNING 2022-09-11 15:37:31,956 __main__ - Ignoring command-line option: --definition: /home/dev/src/evm-semantics/.build/usr/lib/kevm/haskell
-#Top
-$ exit
+$ kevm foundry-prove out/ --test AssertTest.test_assert_true
 ```
 
 Foundry Module for KEVM
