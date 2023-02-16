@@ -62,7 +62,7 @@ def parallel_kcfg_explore(
             booster_rpc_command=[
                 'hs-backend-booster',
                 '-l',
-                'Rewrite',
+                'error',
                 '--llvm-backend-library',
                 'tests/foundry/out/llvm/interpreter',
             ],
