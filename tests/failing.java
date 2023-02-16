@@ -1,7 +1,0 @@
-tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmEnvironmentalInfo/calldatacopy_DataIndexTooHigh2.json
-tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmEnvironmentalInfo/calldatacopy_DataIndexTooHigh2_return.json
-tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmEnvironmentalInfo/calldatacopy_DataIndexTooHigh.json
-tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmEnvironmentalInfo/calldatacopy_DataIndexTooHigh_return.json
-tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmEnvironmentalInfo/calldataload_BigOffset.json
-tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmEnvironmentalInfo/calldataloadSizeTooHigh.json
-tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmEnvironmentalInfo/codecopy_DataIndexTooHigh.json

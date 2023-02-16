@@ -40,17 +40,7 @@ Operator `#revOps` can be used to reverse a program.
  // -------------------------------------------------------
 ```
 
-```{.k .nobytes}
-    syntax ByteArray ::= #asmOpCodes ( OpCodes, ByteArray ) [function, klabel(#asmOpCodesAux)]
- // ------------------------------------------------------------------------------------------
-    rule #asmOpCodes( OPS ) => #asmOpCodes(#revOps(OPS), .ByteArray)
-
-    rule #asmOpCodes( PUSH(N, W) ; OCS, WS ) => #asmOpCodes(OCS, #asmOpCode(PUSH(N)) : (#padToWidth(N, #asByteStack(W)) ++ WS))
-    rule #asmOpCodes( OP ; OCS, WS ) => #asmOpCodes(OCS, #asmOpCode(OP) : WS) requires PUSH(_, _) :/=K OP
-    rule #asmOpCodes( .OpCodes, WS ) => WS
-```
-
-```{.k .bytes}
+```k
     syntax ByteArray ::= #asmOpCodes ( OpCodes, StringBuffer ) [function, klabel(#asmOpCodesAux)]
  // ---------------------------------------------------------------------------------------------
     rule #asmOpCodes( OPS ) => #asmOpCodes(OPS, .StringBuffer)

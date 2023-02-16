@@ -7,9 +7,6 @@ In this file are defined the basic components for EVM words.
 module WORD
     imports INT
     imports BOOL
-```
-
-```{.k .bytes}
     imports BYTES
 ```
 

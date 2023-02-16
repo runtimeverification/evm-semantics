@@ -12,7 +12,6 @@ from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
 from pyk.kast.manip import flatten_label, get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
 from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
-from pyk.ktool.kit import KIT
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -21,7 +20,14 @@ from pyk.prelude.ml import is_top, mlTop
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KCFG__replace_node, KDefinition__expand_macros, KProve_prove_claim, add_include_arg, sanitize_config
+from .utils import (
+    KCFG__replace_node,
+    KDefinition__expand_macros,
+    KProve_prove_claim,
+    add_include_arg,
+    arg_pair_of,
+    sanitize_config,
+)
 
 T = TypeVar('T')
 
@@ -651,7 +657,7 @@ def _create_argument_parser() -> ArgumentParser:
     k_kompile_args.add_argument(
         '--md-selector',
         type=str,
-        default='k & ! nobytes & ! node',
+        default='k & ! node',
         help='Code selector expression to use when reading markdown.',
     )
     k_kompile_args.add_argument(
@@ -867,7 +873,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_show_args.add_argument(
         '--node-delta',
-        type=KIT.arg_pair_of(str, str),
+        type=arg_pair_of(str, str),
         dest='node_deltas',
         default=[],
         action='append',
@@ -906,11 +912,11 @@ def _create_argument_parser() -> ArgumentParser:
 
 
 def _loglevel(args: Namespace) -> int:
-    if args.verbose or args.profile:
-        return logging.INFO
-
     if args.debug:
         return logging.DEBUG
+
+    if args.verbose or args.profile:
+        return logging.INFO
 
     return logging.WARNING
 

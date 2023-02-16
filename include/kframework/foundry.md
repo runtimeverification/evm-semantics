@@ -249,7 +249,7 @@ The rule has a higher priority than any other `#call` rule and will match every 
 The function selector, represented as `#asWord(#range(ARGS, 0, 4))` and the call data `#range(ARGS, 4, #sizeByteArray(ARGS) -Int 4)` are passed to the `#call_foundry` production, which will further rewrite using rules defined for implemented cheat codes.
 Finally, the rule for `#return_foundry` is used to end the execution of the `CALL` OpCode.
 
-```{.k .bytes}
+```k
     rule [foundry.call]:
          <k> (#checkCall _ _
           ~> #call _ CHEAT_ADDR _ _ _ ARGS _
@@ -266,7 +266,7 @@ Finally, the rule for `#return_foundry` is used to end the execution of the `CAL
 We define two productions named `#return_foundry` and `#call_foundry`, which will be used by each cheat code.
 The rule `foundry.return` will rewrite the `#return_foundry` production into other productions that will place the output of the execution into the local memory, refund the gas value of the call and push the value `1` on the call stack.
 
-```{.k .bytes}
+```k
     syntax KItem ::= "#return_foundry" Int Int       [klabel(foundry_return)]
                    | "#call_foundry" Int ByteArray     [klabel(foundry_call)]
                    | "#error_foundry" Int ByteArray   [klabel(foundry_error)]
@@ -286,7 +286,7 @@ We define a new status codes:
  - `FOUNDRY_WHITELISTCALL`, which signals that an address outside the whitelist has been called during the execution.
  - `FOUNDRY_WHITELISTSTORAGE`, which signals that a storage index of an address outside the whitelist has been changed during the execution.
 
-```{.k .bytes}
+```k
     syntax ExceptionalStatusCode ::= "FOUNDRY_UNIMPLEMENTED"
                                    | "FOUNDRY_WHITELISTCALL"
                                    | "FOUNDRY_WHITELISTSTORAGE"
@@ -305,7 +305,7 @@ function assume(bool) external;
 This rule then takes a `bool` condition from the function call data, represented using the `ARGS` variable, and injects it into the execution path using the `#assume` production.
 `==K #bufStrict(32, 1)` is used to mark that the condition should hold.
 
-```{.k .bytes}
+```k
     rule [foundry.call.assume]:
          <k> #call_foundry SELECTOR ARGS => #assume(ARGS ==K #bufStrict(32, 1)) ... </k>
       requires SELECTOR ==Int selector ( "assume(bool)" )
@@ -320,7 +320,7 @@ function deal(address who, uint256 newBalance) external;
 `foundry.call.deal` will match when the `deal` cheat code function is called.
 The rule then takes from the function call data the target account, using `#asWord(#range(ARGS, 0, 32)`, and the new balance, using `#asWord(#range(ARGS, 32, 32))`, and forwards them to the `#setBalance` production which updates the account accordingly.
 
-```{.k .bytes}
+```k
     rule [foundry.call.deal]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setBalance #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
       requires SELECTOR ==Int selector ( "deal(address,uint256)" )
@@ -336,7 +336,7 @@ function etch(address who, bytes calldata code) external;
 This rule then takes from the function call data the target account, using `#asWord(#range(ARGS, 0, 32)`, and the new bytecode, using `#range(ARGS, CODE_START, CODE_LENGTH)`, where `#asWord(#range(ARGS, 64, 32))` is used to determine the length of the second argument.
 The values are forwarded to the `#setCode` production which updates the account accordingly.
 
-```{.k .bytes}
+```k
     rule [foundry.call.etch]:
          <k> #call_foundry SELECTOR ARGS
           => #loadAccount #asWord(#range(ARGS, 0, 32))
@@ -357,7 +357,7 @@ function warp(uint256) external;
 `foundry.call.warp` will match when the `warp` cheat code function is called.
 This rule then takes the `uint256` value from the function call data which is represented as `ARGS` and updates the `<timestamp>` cell.
 
-```{.k .bytes}
+```k
     rule [foundry.call.warp]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
          <timestamp> _ => #asWord(ARGS) </timestamp>
@@ -373,7 +373,7 @@ function roll(uint256) external;
 `foundry.call.roll` will match when the `roll` cheat code function is called.
 This rule then takes the `uint256` value from the function call data which is represented as `ARGS` and updates the `<number>` cell.
 
-```{.k .bytes}
+```k
     rule [foundry.call.roll]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
          <number> _ => #asWord(ARGS) </number>
@@ -389,7 +389,7 @@ function fee(uint256) external;
 `foundry.call.fee` will match when the `fee` cheat code function is called.
 This rule then takes the `uint256` value from the function call data which is represented as `ARGS` and updates the `<baseFee>` cell.
 
-```{.k .bytes}
+```k
     rule [foundry.call.fee]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
          <baseFee> _ => #asWord(ARGS) </baseFee>
@@ -405,7 +405,7 @@ function chainId(uint256) external;
 `foundry.call.chainId` will match when the `chainId` cheat code function is called.
 This rule then takes the `uint256` value from the function call data which is represented as `ARGS` and updates the `<chainID>` cell.
 
-```{.k .bytes}
+```k
     rule [foundry.call.chainId]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
          <chainID> _ => #asWord(ARGS) </chainID>
@@ -421,7 +421,7 @@ function coinbase(address) external;
 `foundry.call.coinbase` will match when the `coinbase` cheat code function is called.
 This rule then takes the `uint256` value from the function call data which is represented as `ARGS` and updates the `<coinbase>` cell.
 
-```{.k .bytes}
+```k
     rule [foundry.call.coinbase]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
          <coinbase> _ => #asWord(ARGS) </coinbase>
@@ -438,7 +438,7 @@ function label(address addr, string calldata label) external;
 If an address is labelled, the label will show up in test traces instead of the address.
 However, there is no change on the state and therefore this rule just skips the cheatcode invocation.
 
-```{.k .bytes}
+```k
     rule [foundry.call.label]:
          <k> #call_foundry SELECTOR _ARGS => . ... </k>
       requires SELECTOR ==Int selector ( "label(address,string)" )
@@ -453,7 +453,7 @@ function getNonce(address account) external returns (uint64);
 `foundry.call.getNonce` will match when the `getNonce` cheat code function is called.
 This rule takes the `address` value from the function call data, which is represented as `ARGS`, and forwards it to the `#returnNonce` production, which will update the `<output>` cell with the `nonce` of the account.
 
-```{.k .bytes}
+```k
     rule [foundry.call.getNonce]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #returnNonce #asWord(ARGS) ... </k>
       requires SELECTOR ==Int selector ( "getNonce(address)" )
@@ -468,7 +468,7 @@ function setNonce(address account, uint64 nonce) external;
 `foundry.call.setNonce` will match when the `setNonce` function is called.
 This rule takes the `address` value and `uint64` value corresponding to new nonce using from the function call data, which is represented as `ARGS` forwards it to the `#setNonce` production, which will update the nonce of the account.
 
-```{.k .bytes}
+```k
     rule [foundry.call.setNonce]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setNonce #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
       requires SELECTOR ==Int selector ( "setNonce(address,uint64)" )
@@ -485,7 +485,7 @@ This rule takes `uint256` private key from the function call data, which is repr
 The `<output>` cell will be updated with the value of the address generated from the private key using `#addrFromPrivateKey(#unparseByteStack(ARGS))`.
 `#bufStrict` is used to pad the value to a length of 32.
 
-```{.k .bytes}
+```k
     rule [foundry.call.addr]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
          <output> _ => #bufStrict(32, #addrFromPrivateKey(#unparseByteStack(ARGS))) </output>
@@ -502,7 +502,7 @@ function load(address account, bytes32 slot) external returns (bytes32);
 This rule loads the storage slot identified by `#asWord(#range(ARGS, 32, 32))` (referring to `slot` argument) from account `#asWord(#range(ARGS, 0, 32))` (referring to `account`).
 The value of the identified storage slot is placed in the `<output>` cell using the `#returnStorage` production.
 
-```{.k .bytes}
+```k
     rule [foundry.call.load]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #returnStorage #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) ... </k>
       requires SELECTOR ==Int selector ( "load(address,bytes32)" )
@@ -517,7 +517,7 @@ function store(address account, bytes32 slot, bytes32 value) external;
 `foundry.call.store` will match when the `store` cheat code function is called.
 This rule then takes from the function call data the account using `#asWord(#range(ARGS, 0, 32))` and the new slot value using `#asWord(#range(ARGS, 32, 32))` and updates the slot denoted by `#asWord(#range(ARGS, 64, 32))`.
 
-```{.k .bytes}
+```k
     rule [foundry.call.store]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(#range(ARGS, 0, 32)) ~> #setStorage #asWord(#range(ARGS, 0, 32)) #asWord(#range(ARGS, 32, 32)) #asWord(#range(ARGS, 64, 32)) ... </k>
       requires SELECTOR ==Int selector ( "store(address,bytes32,bytes32)" )
@@ -532,7 +532,7 @@ function symbolicStorage(address) external;
 `foundry.call.symbolicStorage` will match when the `symbolicStorage` cheat code function is called.
 This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes its storage completely symbolic.
 
-```{.k .bytes}
+```k
     rule [foundry.call.symbolicStorage]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setSymbolicStorage #asWord(ARGS) ... </k>
       requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
@@ -549,7 +549,7 @@ function expectRevert(bytes calldata msg) external;
 
 All cheat code calls which take place while `expectRevert` is active are ignored.
 
-```{.k .bytes}
+```k
     rule [foundry.call.ignoreCalls]:
          <k> #call_foundry _ _ => . ... </k>
          <expectedRevert>
@@ -562,7 +562,7 @@ All cheat code calls which take place while `expectRevert` is active are ignored
 The `#halt` production is used to examine the end of each call in KEVM.
 If the call depth of the current call is lower than the call depth of the `expectRevert` cheat code and the `<statusCode>` is not `EVMC_SUCCESS`, the `#checkRevertReason` will be used to compare the output of the call with the expect reason provided.
 
-```{.k .bytes}
+```k
     rule [foundry.handleExpectRevert]:
          <k> (. => #checkRevertReason ~> #clearExpectRevert) ~> #halt ... </k>
          <statusCode> SC </statusCode>
@@ -579,7 +579,7 @@ If the call depth of the current call is lower than the call depth of the `expec
 
 If the call is successful, a revert is triggered and the `FAILED` location of the `Foundry` contract is set to `true` using `#markAsFailed`.
 
-```{.k .bytes}
+```k
     rule [foundry.handleExpectRevert.error]:
          <k> (. => #markAsFailed ~> #clearExpectRevert) ~> #halt ... </k>
          <statusCode> EVMC_SUCCESS => EVMC_REVERT </statusCode>
@@ -595,7 +595,7 @@ If the call is successful, a revert is triggered and the `FAILED` location of th
 
 If the `expectRevert()` selector is matched, call the `#setExpectRevert` production to initialize the `<expectedRevert>` subconfiguration.
 
-```{.k .bytes}
+```k
     rule [foundry.call.expectRevert]:
          <k> #call_foundry SELECTOR ARGS => #setExpectRevert ARGS ... </k>
       requires SELECTOR ==Int selector ( "expectRevert()" )
@@ -613,7 +613,7 @@ First we define a sort to identify expected opcodes.
 
 If the `expect*OPCODE*` selector is matched, the rule will load the account into the state and add the `#setExpectOpcode` production to the K cell to initialize the `<expectedOpcode/>` subconfiguration with the given parameters.
 
-```{.k .bytes}
+```k
     rule [foundry.call.expectStaticCall]:
          <k> #call_foundry SELECTOR ARGS
           => #loadAccount #asWord(#range(ARGS, 0, 32))
@@ -668,7 +668,7 @@ If the `expect*OPCODE*` selector is matched, the rule will load the account into
 Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CREATE2` opcodes is executed, we check if the `sender` address, `msg.value` and `calldata` match the expected values.
 `calldata` needs to match only the first byte.
 
-```{.k .bytes}
+```k
     rule <k> (. => #clearExpectOpcode) ~> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH _RETSTART _RETWIDTH ... </k>
          <localMem> LM </localMem>
          <expectedOpcode>
@@ -744,7 +744,7 @@ First, will match only if the `<active>` cell has the `true` value, signaling th
 This is needed in order to prevent overwriting the caller for subcalls.
 Finally, the original sender of the transaction, `ACCTFROM` is changed to the new caller, `NCL`.
 
-```{.k .bytes}
+```k
     rule [foundry.prank.injectCaller]:
          <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
          <callDepth> CD </callDepth>
@@ -779,7 +779,7 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
 We define a new rule for the `#halt ~> #return _ _` production that will trigger the `#endPrank` rules if the prank was set only for a single call and if the current call depth is equal to the depth at which `prank` was invoked plus one.
 
 
-```{.k .bytes}
+```k
     rule <k> (. => #endPrank) ~> #halt ~> #return _RETSTART _RETWIDTH ... </k>
          <callDepth> CD </callDepth>
          <prank>
@@ -802,7 +802,7 @@ function startPrank(address sender, address origin) external;
 The addresses which will be used to impersonate future calls are retrieved from the local memory using `#asWord(#range(ARGS, 0, 32)` for the sender, and `#asWord(#range(ARGS, 32, 32)` for the origin (only for the `foundry.call.startPrankWithOrigin` rule).
 The `#loadAccount` production is used to load accounts into the state if they are missing.
 
-```{.k .bytes}
+```k
     rule [foundry.call.startPrank]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) .Account false ... </k>
       requires SELECTOR ==Int selector ( "startPrank(address)" )
@@ -819,7 +819,7 @@ function prank(address) external;
 function prank(address sender, address origin) external;
 ```
 
-```{.k .bytes}
+```k
     rule [foundry.call.prank]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setPrank #asWord(ARGS) .Account true ... </k>
       requires SELECTOR ==Int selector ( "prank(address)" )
@@ -837,7 +837,7 @@ function stopPrank() external;
 
 `foundry.call.stopPrank` will match when `stopPrank` function will be called. This rule will invoke `#endPrank` which will clean up the `<prank/>` subconfiguration and restore the previous values of the `msg.sender` and `tx.origin`.
 
-```{.k .bytes}
+```k
     rule [foundry.call.stopPrank]:
          <k> #call_foundry SELECTOR _ => #endPrank ... </k>
       requires SELECTOR ==Int selector ( "stopPrank()" )
@@ -863,7 +863,7 @@ There are 2 signatures:
 Without checking the emitter address: Asserts the topics match without checking the emitting address.
 With address: Asserts the topics match and that the emitting address matches.
 
-```{.k .bytes}
+```k
     rule [foundry.call.expectEmit]:
          <k> #call_foundry SELECTOR ARGS => #setExpectEmit word2Bool(#asWord(#range(ARGS, 0, 32))) word2Bool(#asWord(#range(ARGS, 32, 32))) word2Bool(#asWord(#range(ARGS, 64, 32))) word2Bool(#asWord(#range(ARGS, 96, 32))) .Account ... </k>
       requires SELECTOR ==Int selector ( "expectEmit(bool,bool,bool,bool)" )
@@ -873,7 +873,7 @@ With address: Asserts the topics match and that the emitting address matches.
       requires SELECTOR ==Int selector ( "expectEmit(bool,bool,bool,bool,address)" )
 ```
 
-```{.k .bytes}
+```k
     rule <k> LOG(N) _MEMSTART _MEMWIDTH ... </k>
          <expectEmit>
           <recordEvent> true => false </recordEvent>
@@ -924,7 +924,7 @@ Restricting the accounts that can be called in KEVM
 
 A `StorageSlot` pair is formed from an address and a storage index.
 
-```{.k .bytes}
+```k
     syntax StorageSlot ::= "{" Int "|" Int "}"
  // ------------------------------------------
 ```
@@ -932,7 +932,7 @@ A `StorageSlot` pair is formed from an address and a storage index.
 The `ACCTTO` value is checked for each call while the whitelist restriction is enabled for calls.
 If the address is not in the whitelist `WLIST` then `KEVM` goes into an error state providing the `ACCTTO` value.
 
-```{.k .bytes}
+```k
     rule [foundry.catchNonWhitelistedCalls]:
          <k> (#call _ ACCTTO _ _ _ _ false
           ~> #popCallStack
@@ -949,7 +949,7 @@ If the address is not in the whitelist `WLIST` then `KEVM` goes into an error st
 When the storage whitelist restriction is enabled, the `SSTORE` operation will check if the address and the storage index are in the whitelist.
 If the pair is not present in the whitelist `WLIST` then `KEVM` goes into an error state providing the address and the storage index values.
 
-```{.k .bytes}
+```k
     rule [foundry.catchNonWhitelistedStorageChanges]:
          <k> SSTORE INDEX _ => #end FOUNDRY_WHITELISTSTORAGE ... </k>
          <id> ACCT </id>
@@ -971,7 +971,7 @@ function allowCallsToAddress(address) external;
 
 Adds an account address to the whitelist. The execution of the modified KEVM will stop when a call has been made to an address which is not in the whitelist.
 
-```{.k .bytes}
+```k
     rule [foundry.allowCallsToAddress]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #addAddressToWhitelist #asWord(ARGS) ... </k>
          requires SELECTOR ==Int selector ( "allowCallsToAddress(address)" )
@@ -983,7 +983,7 @@ Adds an account address to the whitelist. The execution of the modified KEVM wil
 function allowChangesToStorage(address,uint256) external;
 ```
 
-```{.k .bytes}
+```k
     rule [foundry.allowStorageSlotToAddress]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #addStorageSlotToWhitelist { #asWord(#range(ARGS, 0, 32)) | #asWord(#range(ARGS, 32, 32)) } ... </k>
          requires SELECTOR ==Int selector ( "allowChangesToStorage(address,uint256)" )
@@ -1002,7 +1002,7 @@ To perform the signature we use the `ECDSASign ( String, String )` function (fro
 This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings. 
 The `ECDSASign` function returns the signed data in [r,s,v] form, which we convert to a bytearray using `#parseByteStack`.
 
-```{.k .bytes}
+```k
     rule [foundry.call.sign]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
          <output> _ => #sign(#range(ARGS, 32, 32),#range(ARGS,0,32)) </output>
@@ -1011,7 +1011,7 @@ The `ECDSASign` function returns the signed data in [r,s,v] form, which we conve
 
 Otherwise, throw an error for any other call to the Foundry contract.
 
-```{.k .bytes}
+```k
     rule [foundry.call.owise]:
          <k> #call_foundry SELECTOR ARGS => #error_foundry SELECTOR ARGS ... </k>
          <statusCode> _ => FOUNDRY_UNIMPLEMENTED </statusCode>

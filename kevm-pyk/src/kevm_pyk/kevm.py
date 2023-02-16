@@ -9,9 +9,11 @@ from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
 from pyk.kast.manip import flatten_label, get_cell
 from pyk.kast.outer import KFlatModule
-from pyk.ktool import KProve, KRun
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.kprint import SymbolTable, paren
+from pyk.ktool.kprove import KProve
+from pyk.ktool.krun import KRun
+from pyk.prelude.bytes import bytesToken
 from pyk.prelude.kbool import notBool
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlAnd, mlEqualsTrue
@@ -85,7 +87,7 @@ class KEVM(KProve, KRun):
         command += add_include_arg(includes)
         if emit_json:
             command += ['--emit-json']
-        if backend in [KompileBackend.HASKELL, KompileBackend.JAVA]:
+        if backend == KompileBackend.HASKELL:
             command += ['--concrete-rules', ','.join(KEVM.concrete_rules())]
         if backend == KompileBackend.LLVM:
             if ccopts:
@@ -471,7 +473,7 @@ class Foundry(KEVM):
         return KEVM.account_cell(
             Foundry.address_CHEATCODE(),  # Hardcoded for now
             intToken(0),
-            KToken('b"\\x00"', 'Bytes'),
+            bytesToken('\x00'),
             store_var,
             KApply('.Map'),
             intToken(0),
