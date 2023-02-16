@@ -1,15 +1,13 @@
 import logging
 import sys
 from pathlib import Path
-from subprocess import CalledProcessError
 from typing import Final, Iterable, List, Optional
 
-from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
 from pyk.kast.manip import flatten_label, get_cell
 from pyk.kast.outer import KFlatModule
-from pyk.ktool.kompile import KompileBackend
+from pyk.ktool.kompile import KompileBackend, kompile
 from pyk.ktool.kprint import SymbolTable, paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
@@ -19,8 +17,6 @@ from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlAnd, mlEqualsTrue
 from pyk.prelude.string import stringToken
 from pyk.utils import unique
-
-from .utils import add_include_arg
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -76,33 +72,28 @@ class KEVM(KProve, KRun):
         llvm_kompile: bool = True,
         optimization: int = 0,
     ) -> 'KEVM':
-        command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
-        if debug:
-            command += ['--debug']
-        command += ['--backend', backend.value]
-        command += ['--main-module', main_module_name] if main_module_name else []
-        command += ['--syntax-module', syntax_module_name] if syntax_module_name else []
-        command += ['--md-selector', md_selector] if md_selector else []
-        command += ['--hook-namespaces', ' '.join(KEVM.hook_namespaces())]
-        command += add_include_arg(includes)
-        if emit_json:
-            command += ['--emit-json']
-        if backend == KompileBackend.HASKELL:
-            command += ['--concrete-rules', ','.join(KEVM.concrete_rules())]
-        if backend == KompileBackend.LLVM:
-            if ccopts:
-                for ccopt in ccopts:
-                    command += ['-ccopt', ccopt]
-            if 0 < optimization and optimization <= 3:
-                command += [f'-O{optimization}']
-            if not llvm_kompile:
-                command += ['--no-llvm-kompile']
         try:
-            run_process(command, logger=_LOGGER, profile=profile)
-        except CalledProcessError as err:
-            sys.stderr.write(f'\nkompile stdout:\n{err.stdout}\n')
-            sys.stderr.write(f'\nkompile stderr:\n{err.stderr}\n')
-            sys.stderr.write(f'\nkompile returncode:\n{err.returncode}\n')
+            kompile(
+                main_file=main_file,
+                output_dir=definition_dir,
+                backend=backend,
+                emit_json=emit_json,
+                include_dirs=[include for include in includes if Path(include).exists()],
+                main_module=main_module_name,
+                syntax_module=syntax_module_name,
+                md_selector=md_selector,
+                hook_namespaces=KEVM.hook_namespaces(),
+                debug=debug,
+                concrete_rules=KEVM.concrete_rules() if backend == KompileBackend.HASKELL else (),
+                ccopts=ccopts,
+                no_llvm_kompile=not llvm_kompile,
+                opt_level=optimization or None,
+                profile=profile,
+            )
+        except RuntimeError as err:
+            sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')
+            sys.stderr.write(f'\nkompile stderr:\n{err.args[2]}\n')
+            sys.stderr.write(f'\nkompile returncode:\n{err.args[3]}\n')
             sys.stderr.flush()
             raise
         return KEVM(definition_dir, main_file=main_file)
