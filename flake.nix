@@ -17,7 +17,7 @@
       "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
-    pyk.url = "github:runtimeverification/pyk/v0.1.54";
+    pyk.url = "github:runtimeverification/pyk/v0.1.136";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
 
@@ -36,18 +36,18 @@
           clang
           llvmPackages.llvm
           cryptopp.dev
+          fmt
           gmp
-          graphviz
+          # graphviz
           mpfr
           openssl.dev
           pkg-config
           procps
           protobuf
-          python39
+          python310
           secp256k1
           solc
           time
-          virtualenv
         ] ++ lib.optional (!stdenv.isDarwin) elfutils
         ++ lib.optionals stdenv.isDarwin [ automake libtool ];
 
@@ -92,7 +92,7 @@
                 --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
             '';
 
-            buildFlags =
+            buildFlags = [ "POETRY_RUN=" ] ++
               prev.lib.optional (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
               "APPLE_SILICON=true";
             enableParallelBuilding = true;
@@ -141,10 +141,10 @@
           };
 
         kevm-pyk = prev.poetry2nix.mkPoetryApplication {
-          python = prev.python39;
+          python = prev.python310;
           projectDir = ./kevm-pyk;
           overrides = prev.poetry2nix.overrides.withDefaults
-            (finalPython: prevPython: { pyk = prev.pyk; });
+            (finalPython: prevPython: { pyk = prev.python310Packages.pyk; });
           groups = [];
           # We remove `"dev"` from `checkGroups`, so that poetry2nix does not try to resolve dev dependencies.
           checkGroups = [];

@@ -21,8 +21,8 @@ Address/Hash Helpers
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 ```k
-    syntax Int ::= keccak ( ByteArray ) [function, functional, smtlib(smt_keccak)]
- // ------------------------------------------------------------------------------
+    syntax Int ::= keccak ( ByteArray ) [function, total, smtlib(smt_keccak)]
+ // -------------------------------------------------------------------------
     rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))
 ```
 
@@ -53,9 +53,9 @@ Address/Hash Helpers
     rule #sender("")  => .Account
     rule #sender(STR) => #addr(#parseHexWord(Keccak256(STR))) requires STR =/=String ""
 
-    syntax Int ::= #addrFromPrivateKey ( String ) [function]
- // --------------------------------------------------------
-    rule #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256 ( Hex2Raw( ECDSAPubKey( Hex2Raw( KEY ) ) ) ) ) )
+    syntax Int ::= #addrFromPrivateKey ( String ) [function, klabel(addrFromPrivateKey)]
+ // ------------------------------------------------------------------------------------
+    rule [addrFromPrivateKey]: #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256 ( Hex2Raw( ECDSAPubKey( Hex2Raw( KEY ) ) ) ) ) )
 ```
 
 -   `#blockHeaderHash` computes the hash of a block header given all the block data.
@@ -138,13 +138,11 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
     rule #parseWord(S)  => #parseHexWord(S) requires lengthString(S) >=Int 2 andBool substrString(S, 0, 2) ==String "0x"
     rule #parseWord(S)  => String2Int(S) [owise]
 
-    syntax String ::= #alignHexString ( String ) [function, functional]
- // -------------------------------------------------------------------
+    syntax String ::= #alignHexString ( String ) [function, total]
+ // --------------------------------------------------------------
     rule #alignHexString(S) => S             requires         lengthString(S) modInt 2 ==Int 0
     rule #alignHexString(S) => "0" +String S requires notBool lengthString(S) modInt 2 ==Int 0
-```
 
-```{.k .bytes}
     syntax ByteArray ::= #parseHexBytes     ( String ) [function]
                        | #parseHexBytesAux  ( String ) [function]
                        | #parseByteStack    ( String ) [function, memo]
@@ -158,26 +156,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `ByteArray`s, and `M
       requires lengthString(S) >=Int 2
 
     rule #parseByteStackRaw(S) => String2Bytes(S)
-```
 
-```{.k .nobytes}
-    syntax ByteArray ::= #parseHexBytes     ( String ) [function]
-                       | #parseHexBytesAux  ( String ) [function]
-                       | #parseByteStack    ( String ) [function]
-                       | #parseByteStackRaw ( String ) [function]
- // -------------------------------------------------------------
-    rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
-
-    rule #parseHexBytes(S)  => #parseHexBytesAux(#alignHexString(S))
-    rule #parseHexBytesAux("") => .WordStack
-    rule #parseHexBytesAux(S)  => #parseHexWord(substrString(S, 0, 2)) : #parseHexBytesAux(substrString(S, 2, lengthString(S)))
-       requires lengthString(S) >=Int 2
-
-    rule #parseByteStackRaw(S) => ordChar(substrString(S, 0, 1)) : #parseByteStackRaw(substrString(S, 1, lengthString(S))) requires lengthString(S) >=Int 1
-    rule #parseByteStackRaw("") => .WordStack
-```
-
-```k
     syntax Map ::= #parseMap ( JSON ) [function]
  // --------------------------------------------
     rule #parseMap( { .JSONs                      } ) => .Map
@@ -204,23 +183,11 @@ We need to interperet a `ByteArray` as a `String` again so that we can call `Kec
 -   `#unparseByteStack` turns a stack of bytes (as a `ByteArray`) into a `String`.
 -   `#padByte` ensures that the `String` interperetation of a `Int` is wide enough.
 
-```{.k .bytes}
+```k
     syntax String ::= #unparseByteStack ( ByteArray ) [function, klabel(unparseByteStack), symbol]
  // ----------------------------------------------------------------------------------------------
     rule #unparseByteStack(WS) => Bytes2String(WS)
-```
 
-```{.k .nobytes}
-    syntax String ::= #unparseByteStack ( ByteArray )                [function, klabel(unparseByteStack), symbol]
-                    | #unparseByteStack ( ByteArray , StringBuffer ) [function, klabel(#unparseByteStackAux)]
- // ---------------------------------------------------------------------------------------------------------
-    rule #unparseByteStack ( WS ) => #unparseByteStack(WS, .StringBuffer)
-
-    rule #unparseByteStack( .WordStack, BUFFER ) => StringBuffer2String(BUFFER)
-    rule #unparseByteStack( W : WS, BUFFER )     => #unparseByteStack(WS, BUFFER +String chrChar(W modInt (2 ^Int 8)))
-```
-
-```k
     syntax String ::= #padByte( String ) [function]
  // -----------------------------------------------
     rule #padByte( S ) => S             requires lengthString(S) ==K 2

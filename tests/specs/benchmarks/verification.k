@@ -24,7 +24,6 @@ endmodule
 
 module VERIFICATION
     imports VERIFICATION-COMMON
-    imports VERIFICATION-JAVA
     imports VERIFICATION-HASKELL
 
   // ########################
@@ -153,23 +152,5 @@ module VERIFICATION-HASKELL [symbolic, kore]
     rule ( #sizeByteArray(#ecrec( _, _, _, _ )) <=Int K ) => true requires 32 <=Int K [simplification]
 
     rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
-
-endmodule
-
-module VERIFICATION-JAVA [symbolic, kast]
-    imports VERIFICATION-COMMON
-    imports K-REFLECTION
-    imports INFINITE-GAS-JAVA-EXTRA
-
-  // ########################
-  // Arithmetic
-  // ########################
-
-    rule chop(X +Int Y) => X +Int Y
-      requires #range(0 <= X <= pow16)
-       andBool #range(0 <= Y <  pow16)
-      [simplification]
-
-    rule X +Int Y <Int Z => X <Int Z -Int Y requires #isConcrete(Y) [simplification]
 
 endmodule

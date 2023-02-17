@@ -193,23 +193,16 @@ make plugin-deps
 
 ### Building
 
+You need to set up a virtual environment using Poetry:
+
+```sh
+make poetry
+```
+
 Finally, you can build the semantics.
 
 ```sh
 make build
-```
-
-And you need to set up the virtual environment:
-
-```sh
-make venv
-```
-
-Which should output (towards the end), a line like this: `. .build/venv/bin/activate`.
-You should run this line in your shell, then you are in the virtual environment:
-
-```sh
-. .build/venv/bin/activate
 ```
 
 Running Tests

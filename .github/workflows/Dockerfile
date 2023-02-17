@@ -1,6 +1,6 @@
 ARG K_COMMIT
 ARG Z3_VERSION
-FROM ghcr.io/foundry-rs/foundry:nightly-56dc7463ce2806c7b410bc605ff7f2916cdbe32a as FOUNDRY
+FROM ghcr.io/foundry-rs/foundry:nightly-aeba75e4799f1e11e3daba98d967b83e286b0c4a as FOUNDRY
 
 ARG K_COMMIT
 ARG Z3_VERSION
@@ -34,8 +34,7 @@ RUN    apt-get update         \
             python3-pip       \
             solc
 
-RUN pip3 install virtualenv
-RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - && poetry --version
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - --version 1.3.2
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000

@@ -7,24 +7,37 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import dir_path, file_path
-from pyk.cterm import CTerm
+from pyk.cterm import CTerm, build_rule
 from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
-from pyk.kast.manip import flatten_label, minimize_term, push_down_rewrites
+from pyk.kast.manip import flatten_label, get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
-from pyk.kcfg import KCFG
-from pyk.ktool.kit import KIT
+from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
+from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
+from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.ml import is_top, mlTop
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import KCFG__replace_node, KPrint_make_unparsing, KProve_prove_claim, add_include_arg, sanitize_config
+from .utils import (
+    KCFG__replace_node,
+    KDefinition__expand_macros,
+    KProve_prove_claim,
+    add_include_arg,
+    arg_pair_of,
+    sanitize_config,
+)
 
 T = TypeVar('T')
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
+
+
+def write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
+    _cfgpath.write_text(_cfg.to_json())
+    _LOGGER.info(f'Updated CFG file: {_cfgpath}')
 
 
 def _ignore_arg(args: Dict[str, Any], arg: str, cli_option: str) -> None:
@@ -62,6 +75,7 @@ def exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, *
 
 def exec_kompile(
     definition_dir: Path,
+    backend: KompileBackend,
     profile: bool,
     main_file: Path,
     emit_json: bool,
@@ -69,10 +83,25 @@ def exec_kompile(
     main_module: Optional[str],
     syntax_module: Optional[str],
     md_selector: Optional[str],
+    ccopts: Iterable[str] = (),
+    llvm_kompile: bool = True,
+    o0: bool = False,
+    o1: bool = False,
+    o2: bool = False,
+    o3: bool = False,
+    debug: bool = False,
     **kwargs: Any,
 ) -> None:
+    optimization = 0
+    if o1:
+        optimization = 1
+    if o2:
+        optimization = 2
+    if o3:
+        optimization = 3
     KEVM.kompile(
         definition_dir,
+        backend,
         main_file,
         emit_json=emit_json,
         includes=includes,
@@ -80,6 +109,10 @@ def exec_kompile(
         syntax_module_name=syntax_module,
         md_selector=md_selector,
         profile=profile,
+        debug=debug,
+        ccopts=ccopts,
+        llvm_kompile=llvm_kompile,
+        optimization=optimization,
     )
 
 
@@ -89,7 +122,6 @@ def exec_solc_to_k(
     contract_file: Path,
     contract_name: str,
     main_module: Optional[str],
-    spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
     **kwargs: Any,
@@ -103,13 +135,15 @@ def exec_solc_to_k(
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [contract_module.name] + imports]
     )
-    _spec_module = KFlatModule(spec_module if spec_module else 'SPEC')
-    modules = (contract_module, _main_module, _spec_module)
+    modules = (contract_module, _main_module)
     bin_runtime_definition = KDefinition(
         _main_module.name, modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
     )
-    _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
-    KEVM._patch_symbol_table(_kprint.symbol_table)
+    _kprint = KEVM(
+        definition_dir,
+        profile=profile,
+        extra_unparsing_modules=modules,
+    )
     print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
 
@@ -123,48 +157,66 @@ def exec_foundry_kompile(
     rekompile: bool = False,
     requires: Iterable[str] = (),
     imports: Iterable[str] = (),
+    ccopts: Iterable[str] = (),
+    llvm_kompile: bool = True,
+    debug: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
+    _ignore_arg(kwargs, 'backend', f'--backend {kwargs["backend"]}')
+    _ignore_arg(kwargs, 'o0', '-O0')
+    _ignore_arg(kwargs, 'o1', '-O1')
+    _ignore_arg(kwargs, 'o2', '-O2')
+    _ignore_arg(kwargs, 'o3', '-O3')
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
     foundry_definition_dir = foundry_out / 'kompiled'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
+    srcmap_dir = foundry_out / 'srcmaps'
     requires = ['foundry.md'] + list(requires)
     imports = ['FOUNDRY'] + list(imports)
 
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
+    if not srcmap_dir.exists():
+        srcmap_dir.mkdir()
 
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
 
+    for c in contracts:
+        srcmap_file = srcmap_dir / f'{c.name}.json'
+        with open(srcmap_file, 'w') as smf:
+            smf.write(json.dumps(c.srcmap))
+            _LOGGER.info(f'Wrote source map: {srcmap_file}')
+
     foundry = Foundry(definition_dir, profile=profile)
     empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
 
-    bin_runtime_definition = _foundry_to_bin_runtime(
-        empty_config=empty_config,
-        contracts=contracts,
-        main_module=main_module,
-        requires=requires,
-        imports=imports,
-    )
-
     if regen or not foundry_main_file.exists():
+        bin_runtime_definition = _foundry_to_bin_runtime(
+            empty_config=empty_config,
+            contracts=contracts,
+            main_module=main_module,
+            requires=requires,
+            imports=imports,
+        )
         with open(foundry_main_file, 'w') as fmf:
             _LOGGER.info(f'Writing file: {foundry_main_file}')
-            _foundry = Foundry(definition_dir=definition_dir)
-            _kprint = KPrint_make_unparsing(_foundry, extra_modules=bin_runtime_definition.modules)
-            Foundry._patch_symbol_table(_kprint.symbol_table)
-            fmf.write(_kprint.pretty_print(bin_runtime_definition) + '\n')
+            _foundry = Foundry(
+                definition_dir=definition_dir,
+                extra_unparsing_modules=bin_runtime_definition.modules,
+            )
+            fmf.write(_foundry.pretty_print(bin_runtime_definition) + '\n')
 
     if regen or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
         KEVM.kompile(
             foundry_definition_dir,
+            KompileBackend.HASKELL,
             foundry_main_file,
             emit_json=True,
             includes=includes,
@@ -172,6 +224,9 @@ def exec_foundry_kompile(
             syntax_module_name=syntax_module,
             md_selector=md_selector,
             profile=profile,
+            debug=debug,
+            ccopts=ccopts,
+            llvm_kompile=llvm_kompile,
         )
 
 
@@ -327,25 +382,22 @@ def exec_foundry_prove(
             contract_name, method_name = test.split('.')
             contract = [c for c in contracts if c.name == contract_name][0]
             method = [m for m in contract.methods if m.name == method_name][0]
-            empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
+            empty_config = foundry.definition.empty_config(GENERATED_TOP_CELL)
             cfg = method_to_cfg(empty_config, contract, method)
+            init_term = cfg.get_unique_init().cterm.kast
+            target_term = cfg.get_unique_target().cterm.kast
+            _LOGGER.info(f'Expanding macros in initial state for test: {test}')
+            init_term = KDefinition__expand_macros(foundry.definition, init_term)
+            _LOGGER.info(f'Expanding macros in target state for test: {test}')
+            target_term = KDefinition__expand_macros(foundry.definition, target_term)
             if simplify_init:
-                _LOGGER.info(f'Simplifying initial state for test: {test}')
-                edge = KCFG.Edge(cfg.get_unique_init(), cfg.get_unique_target(), mlTop(), -1)
-                claim = edge.to_claim()
-                init_simplified = foundry.prove_claim(
-                    claim, f'simplify-init-{cfg.get_unique_init().id}', args=['--depth', '0']
-                )
-                init_simplified = sanitize_config(foundry.definition, init_simplified)
-                cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_simplified))
-                _LOGGER.info(f'Simplifying target state for test: {test}')
-                edge = KCFG.Edge(cfg.get_unique_target(), cfg.get_unique_init(), mlTop(), -1)
-                claim = edge.to_claim()
-                target_simplified = foundry.prove_claim(
-                    claim, f'simplify-target-{cfg.get_unique_target().id}', args=['--depth', '0']
-                )
-                target_simplified = sanitize_config(foundry.definition, target_simplified)
-                cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_simplified))
+                with KCFGExplore(foundry, port=3010) as kcfg_explore:
+                    _LOGGER.info(f'Simplifying initial state for test: {test}')
+                    init_term = kcfg_explore.cterm_simplify(CTerm(init_term))
+                    _LOGGER.info(f'Simplifying target state for test: {test}')
+                    target_term = kcfg_explore.cterm_simplify(CTerm(target_term))
+            cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_term))
+            cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_term))
             kcfgs[test] = (cfg, kcfg_file)
             with open(kcfg_file, 'w') as kf:
                 kf.write(json.dumps(cfg.to_dict()))
@@ -356,11 +408,6 @@ def exec_foundry_prove(
                 kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
 
     lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
-
-    def _write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
-        with open(_cfgpath, 'w') as cfgfile:
-            cfgfile.write(json.dumps(_cfg.to_dict()))
-            _LOGGER.info(f'Updated CFG file: {_cfgpath}')
 
     def prove_it(_id_and_cfg: Tuple[str, Tuple[KCFG, Path]]) -> bool:
         _cfg_id, (_cfg, _cfg_path) = _id_and_cfg
@@ -387,7 +434,7 @@ def exec_foundry_prove(
                 if minimize:
                     result_state = minimize_term(result_state)
                 _LOGGER.error(f'Proof failed: {_cfg_id}\n{foundry.pretty_print(result_state)}')
-        _write_cfg(_cfg, _cfg_path)
+        write_cfg(_cfg, _cfg_path)
         failure_nodes = _cfg.frontier + _cfg.stuck
         return len(failure_nodes) == 0
 
@@ -396,7 +443,7 @@ def exec_foundry_prove(
         process_pool.close()
 
     failed = 0
-    for (cid, _), succeeded in zip(kcfgs.items(), results):
+    for (cid, _), succeeded in zip(kcfgs.items(), results, strict=True):
         if succeeded:
             print(f'PASSED: {cid}')
         else:
@@ -411,6 +458,7 @@ def exec_foundry_show(
     test: str,
     nodes: Iterable[str] = (),
     node_deltas: Iterable[Tuple[str, str]] = (),
+    to_module: bool = False,
     minimize: bool = True,
     **kwargs: Any,
 ) -> None:
@@ -418,11 +466,37 @@ def exec_foundry_show(
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
+    srcmap_dir = foundry_out / 'srcmaps'
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
     kcfg_file = kcfgs_dir / f'{test}.json'
+    contract = test.split('.')[0]
+    srcmap_file = srcmap_dir / f'{contract}.json'
+    srcmap: Optional[Dict[int, str]] = None
+    if srcmap_file.exists():
+        with open(srcmap_file, 'r') as sm:
+            srcmap = {int(k): v for k, v in json.loads(sm.read()).items()}
+
+    def _node_pretty(_ct: CTerm) -> List[str]:
+        k_cell = foundry.pretty_print(get_cell(_ct.config, 'K_CELL')).replace('\n', ' ')
+        if len(k_cell) > 80:
+            k_cell = k_cell[0:80] + ' ...'
+        k_str = f'k: {k_cell}'
+        calldepth_str = f'callDepth: {foundry.pretty_print(get_cell(_ct.config, "CALLDEPTH_CELL"))}'
+        statuscode_str = f'statusCode: {foundry.pretty_print(get_cell(_ct.config, "STATUSCODE_CELL"))}'
+        _pc = get_cell(_ct.config, 'PC_CELL')
+        pc_str = f'pc: {foundry.pretty_print(_pc)}'
+        ret_strs = [k_str, calldepth_str, statuscode_str, pc_str]
+        if type(_pc) is KToken and srcmap is not None:
+            pc = int(_pc.token)
+            if pc in srcmap:
+                ret_strs.append(f'srcmap: {srcmap[pc]}')
+            else:
+                _LOGGER.warning(f'pc not found in srcmap: {pc}')
+        return ret_strs
+
     with open(kcfg_file, 'r') as kf:
         kcfg = KCFG.from_dict(json.loads(kf.read()))
-        list(map(print, kcfg.pretty(foundry)))
+        list(map(print, kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)))
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
         if minimize:
@@ -435,6 +509,31 @@ def exec_foundry_show(
         if minimize:
             config_delta = minimize_term(config_delta)
         print(f'\n\nState Delta {node_id_1} => {node_id_2}:\n\n{foundry.pretty_print(config_delta)}\n')
+
+    if to_module:
+
+        def to_rule(edge: KCFG.Edge) -> KRule:
+            sentence_id = f'BASIC-BLOCK-{edge.source.id}-TO-{edge.target.id}'
+            init_cterm = CTerm(edge.source.cterm.config)
+            for c in edge.source.cterm.constraints:
+                assert type(c) is KApply
+                if c.label.name == '#Ceil':
+                    _LOGGER.warning(f'Ignoring Ceil condition: {c}')
+                else:
+                    init_cterm.add_constraint(c)
+            target_cterm = CTerm(edge.target.cterm.config)
+            for c in edge.source.cterm.constraints:
+                assert type(c) is KApply
+                if c.label.name == '#Ceil':
+                    _LOGGER.warning(f'Ignoring Ceil condition: {c}')
+                else:
+                    target_cterm.add_constraint(c)
+            rule, _ = build_rule(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm, priority=35)
+            return rule
+
+        rules = [to_rule(e) for e in kcfg.edges() if e.depth > 0]
+        new_module = KFlatModule('SUMMARY', rules)
+        print(foundry.pretty_print(new_module) + '\n')
 
 
 def exec_foundry_list(
@@ -491,6 +590,18 @@ def exec_run(
     sys.exit(krun_result.returncode)
 
 
+def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs: Any) -> None:
+    definition_dir = foundry_out / 'kompiled'
+    use_directory = foundry_out / 'specs'
+    kcfgs_dir = foundry_out / 'kcfgs'
+    kcfg_file = kcfgs_dir / f'{test}.json'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
+    kcfg = KCFG.from_json(kcfg_file.read_text())
+    viewer = KCFGViewer(kcfg, foundry)
+    viewer.run()
+
+
 # Helpers
 
 
@@ -542,10 +653,11 @@ def _create_argument_parser() -> ArgumentParser:
     )
 
     k_kompile_args = ArgumentParser(add_help=False)
+    k_kompile_args.add_argument('--backend', type=KompileBackend, help='[llvm|haskell]')
     k_kompile_args.add_argument(
         '--md-selector',
         type=str,
-        default='k & ! nobytes & ! node',
+        default='k & ! node',
         help='Code selector expression to use when reading markdown.',
     )
     k_kompile_args.add_argument(
@@ -558,6 +670,24 @@ def _create_argument_parser() -> ArgumentParser:
     k_kompile_args.add_argument(
         '--no-emit-json', dest='emit_json', action='store_false', help='Do not JSON definition after compilation.'
     )
+    k_kompile_args.add_argument(
+        '-ccopt',
+        dest='ccopts',
+        default=[],
+        action='append',
+        help='Additional arguments to pass to llvm-kompile.',
+    )
+    k_kompile_args.add_argument(
+        '--no-llvm-kompile',
+        dest='llvm_kompile',
+        default=True,
+        action='store_false',
+        help='Do not run llvm-kompile process.',
+    )
+    k_kompile_args.add_argument('-O0', dest='o0', default=False, action='store_true', help='Optimization level 0.')
+    k_kompile_args.add_argument('-O1', dest='o1', default=False, action='store_true', help='Optimization level 1.')
+    k_kompile_args.add_argument('-O2', dest='o2', default=False, action='store_true', help='Optimization level 2.')
+    k_kompile_args.add_argument('-O3', dest='o3', default=False, action='store_true', help='Optimization level 3.')
 
     evm_chain_args = ArgumentParser(add_help=False)
     evm_chain_args.add_argument(
@@ -743,7 +873,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_show_args.add_argument(
         '--node-delta',
-        type=KIT.arg_pair_of(str, str),
+        type=arg_pair_of(str, str),
         dest='node_deltas',
         default=[],
         action='append',
@@ -754,6 +884,9 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_show_args.add_argument(
         '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
+    )
+    foundry_show_args.add_argument(
+        '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
     )
 
     foundry_list_args = command_parser.add_parser(
@@ -767,18 +900,26 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_list_args.add_argument('--no-details', dest='details', action='store_false', help='Just list the KCFGs.')
 
+    foundry_view_kcfg_args = command_parser.add_parser(
+        'foundry-view-kcfg',
+        help='Display tree view of KCFG',
+        parents=[shared_args],
+    )
+    foundry_view_kcfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_view_kcfg_args.add_argument('test', type=str, help='View the CFG for this test.')
+
     return parser
 
 
 def _loglevel(args: Namespace) -> int:
-    if args.verbose or args.profile:
-        return logging.INFO
-
     if args.debug:
         return logging.DEBUG
+
+    if args.verbose or args.profile:
+        return logging.INFO
 
     return logging.WARNING
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

@@ -83,6 +83,7 @@ module ACCOUNTPARAMSTEST-BIN-RUNTIME
       
     
     rule  ( AccountParamsTest . testEtchSymbolic ( V0_code ) => #abiCallData ( "testEtchSymbolic" , #bytes ( V0_code ) , .TypedArgs ) )
+       ensures #rangeUInt ( 128 , #sizeByteArray ( V0_code ) )
       
     
     rule  ( AccountParamsTest . testFail_GetNonce_false ( ) => #abiCallData ( "testFail_GetNonce_false" , .TypedArgs ) )
@@ -196,13 +197,21 @@ module ADDRTEST-BIN-RUNTIME
     
     syntax AddrTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AddrTest_failed)]
     
+    syntax AddrTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_AddrTest_kevm)]
+    
     syntax AddrTestMethod ::= "testFail_addr_false" "(" ")" [symbol(), klabel(method_AddrTest_testFail_addr_false)]
     
     syntax AddrTestMethod ::= "testFail_addr_true" "(" ")" [symbol(), klabel(method_AddrTest_testFail_addr_true)]
     
     syntax AddrTestMethod ::= "test_addr_false" "(" ")" [symbol(), klabel(method_AddrTest_test_addr_false)]
     
+    syntax AddrTestMethod ::= "test_addr_symbolic" "(" Int ")" [symbol(), klabel(method_AddrTest_test_addr_symbolic)]
+    
     syntax AddrTestMethod ::= "test_addr_true" "(" ")" [symbol(), klabel(method_AddrTest_test_addr_true)]
+    
+    syntax AddrTestMethod ::= "test_notBuiltinAddress_concrete" "(" ")" [symbol(), klabel(method_AddrTest_test_notBuiltinAddress_concrete)]
+    
+    syntax AddrTestMethod ::= "test_notBuiltinAddress_symbolic" "(" Int ")" [symbol(), klabel(method_AddrTest_test_notBuiltinAddress_symbolic)]
     
     syntax AddrTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AddrTest_vm)]
     
@@ -215,6 +224,9 @@ module ADDRTEST-BIN-RUNTIME
     rule  ( AddrTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
+    rule  ( AddrTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
+      
+    
     rule  ( AddrTest . testFail_addr_false ( ) => #abiCallData ( "testFail_addr_false" , .TypedArgs ) )
       
     
@@ -224,7 +236,18 @@ module ADDRTEST-BIN-RUNTIME
     rule  ( AddrTest . test_addr_false ( ) => #abiCallData ( "test_addr_false" , .TypedArgs ) )
       
     
+    rule  ( AddrTest . test_addr_symbolic ( V0_pk ) => #abiCallData ( "test_addr_symbolic" , #uint256 ( V0_pk ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_pk )
+      
+    
     rule  ( AddrTest . test_addr_true ( ) => #abiCallData ( "test_addr_true" , .TypedArgs ) )
+      
+    
+    rule  ( AddrTest . test_notBuiltinAddress_concrete ( ) => #abiCallData ( "test_notBuiltinAddress_concrete" , .TypedArgs ) )
+      
+    
+    rule  ( AddrTest . test_notBuiltinAddress_symbolic ( V0_addr ) => #abiCallData ( "test_notBuiltinAddress_symbolic" , #address ( V0_addr ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_addr )
       
     
     rule  ( AddrTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
@@ -239,6 +262,9 @@ module ADDRTEST-BIN-RUNTIME
     rule  ( selector ( "failed" ) => 3124842406 )
       
     
+    rule  ( selector ( "kevm" ) => 3601001590 )
+      
+    
     rule  ( selector ( "testFail_addr_false" ) => 3302866643 )
       
     
@@ -248,10 +274,193 @@ module ADDRTEST-BIN-RUNTIME
     rule  ( selector ( "test_addr_false" ) => 4124294109 )
       
     
+    rule  ( selector ( "test_addr_symbolic" ) => 3071220939 )
+      
+    
     rule  ( selector ( "test_addr_true" ) => 809049819 )
       
     
+    rule  ( selector ( "test_notBuiltinAddress_concrete" ) => 2409208231 )
+      
+    
+    rule  ( selector ( "test_notBuiltinAddress_symbolic" ) => 2160641203 )
+      
+    
     rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
+module ALLOWCHANGESTEST-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= AllowChangesTestContract
+    
+    syntax AllowChangesTestContract ::= "AllowChangesTest" [symbol(), klabel(contract_AllowChangesTest)]
+    
+      
+    
+    syntax Field ::= AllowChangesTestField
+    
+    syntax AllowChangesTestField ::= "IS_TEST" [symbol(), klabel(field_AllowChangesTest_IS_TEST)]
+    
+    syntax AllowChangesTestField ::= "_failed" [symbol(), klabel(field_AllowChangesTest__failed)]
+    
+    syntax AllowChangesTestField ::= "IS_SCRIPT" [symbol(), klabel(field_AllowChangesTest_IS_SCRIPT)]
+    
+    syntax AllowChangesTestField ::= "stdstore" [symbol(), klabel(field_AllowChangesTest_stdstore)]
+    
+    rule  ( #loc ( AllowChangesTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( AllowChangesTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( AllowChangesTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( AllowChangesTest . stdstore ) => 1 )
+      
+    
+    syntax ByteArray ::= AllowChangesTestContract "." AllowChangesTestMethod [function(), symbol(), klabel(method_AllowChangesTest)]
+    
+    syntax AllowChangesTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_AllowChangesTest_IS_SCRIPT)]
+    
+    syntax AllowChangesTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_AllowChangesTest_IS_TEST)]
+    
+    syntax AllowChangesTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AllowChangesTest_failed)]
+    
+    syntax AllowChangesTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_AllowChangesTest_kevm)]
+    
+    syntax AllowChangesTestMethod ::= "test" "(" ")" [symbol(), klabel(method_AllowChangesTest_test)]
+    
+    syntax AllowChangesTestMethod ::= "testAllow" "(" ")" [symbol(), klabel(method_AllowChangesTest_testAllow)]
+    
+    syntax AllowChangesTestMethod ::= "testAllow_fail" "(" ")" [symbol(), klabel(method_AllowChangesTest_testAllow_fail)]
+    
+    syntax AllowChangesTestMethod ::= "testFailAllowCallsToAddress" "(" ")" [symbol(), klabel(method_AllowChangesTest_testFailAllowCallsToAddress)]
+    
+    syntax AllowChangesTestMethod ::= "testFailAllowChangesToStorage" "(" ")" [symbol(), klabel(method_AllowChangesTest_testFailAllowChangesToStorage)]
+    
+    syntax AllowChangesTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AllowChangesTest_vm)]
+    
+    rule  ( AllowChangesTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( AllowChangesTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( AllowChangesTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( AllowChangesTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
+      
+    
+    rule  ( AllowChangesTest . test ( ) => #abiCallData ( "test" , .TypedArgs ) )
+      
+    
+    rule  ( AllowChangesTest . testAllow ( ) => #abiCallData ( "testAllow" , .TypedArgs ) )
+      
+    
+    rule  ( AllowChangesTest . testAllow_fail ( ) => #abiCallData ( "testAllow_fail" , .TypedArgs ) )
+      
+    
+    rule  ( AllowChangesTest . testFailAllowCallsToAddress ( ) => #abiCallData ( "testFailAllowCallsToAddress" , .TypedArgs ) )
+      
+    
+    rule  ( AllowChangesTest . testFailAllowChangesToStorage ( ) => #abiCallData ( "testFailAllowChangesToStorage" , .TypedArgs ) )
+      
+    
+    rule  ( AllowChangesTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "kevm" ) => 3601001590 )
+      
+    
+    rule  ( selector ( "test" ) => 4171824493 )
+      
+    
+    rule  ( selector ( "testAllow" ) => 3693132891 )
+      
+    
+    rule  ( selector ( "testAllow_fail" ) => 4129570225 )
+      
+    
+    rule  ( selector ( "testFailAllowCallsToAddress" ) => 1262828121 )
+      
+    
+    rule  ( selector ( "testFailAllowChangesToStorage" ) => 1529992487 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
+module VALUESTORE-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= ValueStoreContract
+    
+    syntax ValueStoreContract ::= "ValueStore" [symbol(), klabel(contract_ValueStore)]
+    
+      
+    
+    syntax Field ::= ValueStoreField
+    
+    syntax ValueStoreField ::= "value1" [symbol(), klabel(field_ValueStore_value1)]
+    
+    syntax ValueStoreField ::= "value2" [symbol(), klabel(field_ValueStore_value2)]
+    
+    rule  ( #loc ( ValueStore . value1 ) => 0 )
+      
+    
+    rule  ( #loc ( ValueStore . value2 ) => 1 )
+      
+    
+    syntax ByteArray ::= ValueStoreContract "." ValueStoreMethod [function(), symbol(), klabel(method_ValueStore)]
+    
+    syntax ValueStoreMethod ::= "changeValue1" "(" Int ")" [symbol(), klabel(method_ValueStore_changeValue1)]
+    
+    syntax ValueStoreMethod ::= "changeValue2" "(" Int ")" [symbol(), klabel(method_ValueStore_changeValue2)]
+    
+    syntax ValueStoreMethod ::= "value1" "(" ")" [symbol(), klabel(method_ValueStore_value1)]
+    
+    syntax ValueStoreMethod ::= "value2" "(" ")" [symbol(), klabel(method_ValueStore_value2)]
+    
+    rule  ( ValueStore . changeValue1 ( V0_newValue ) => #abiCallData ( "changeValue1" , #uint256 ( V0_newValue ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_newValue )
+      
+    
+    rule  ( ValueStore . changeValue2 ( V0_newValue ) => #abiCallData ( "changeValue2" , #uint256 ( V0_newValue ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_newValue )
+      
+    
+    rule  ( ValueStore . value1 ( ) => #abiCallData ( "value1" , .TypedArgs ) )
+      
+    
+    rule  ( ValueStore . value2 ( ) => #abiCallData ( "value2" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "changeValue1" ) => 1634438405 )
+      
+    
+    rule  ( selector ( "changeValue2" ) => 367426214 )
+      
+    
+    rule  ( selector ( "value1" ) => 808665403 )
+      
+    
+    rule  ( selector ( "value2" ) => 1563665023 )
       
 
 endmodule
@@ -301,6 +510,8 @@ module ASSUMETEST-BIN-RUNTIME
     
     syntax AssumeTestMethod ::= "test_assume_false" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_assume_false)]
     
+    syntax AssumeTestMethod ::= "test_assume_staticCall" "(" Int ")" [symbol(), klabel(method_AssumeTest_test_assume_staticCall)]
+    
     syntax AssumeTestMethod ::= "test_assume_true" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_assume_true)]
     
     syntax AssumeTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AssumeTest_vm)]
@@ -332,6 +543,10 @@ module ASSUMETEST-BIN-RUNTIME
                ))
       
     
+    rule  ( AssumeTest . test_assume_staticCall ( V0_a ) => #abiCallData ( "test_assume_staticCall" , #bool ( V0_a ) , .TypedArgs ) )
+       ensures #rangeBool ( V0_a )
+      
+    
     rule  ( AssumeTest . test_assume_true ( V0_a , V1_b ) => #abiCallData ( "test_assume_true" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
@@ -357,6 +572,9 @@ module ASSUMETEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_assume_false" ) => 3827036084 )
+      
+    
+    rule  ( selector ( "test_assume_staticCall" ) => 1479621703 )
       
     
     rule  ( selector ( "test_assume_true" ) => 1861181564 )
@@ -785,6 +1003,84 @@ module CONTRACTBTEST-BIN-RUNTIME
 
 endmodule
 
+module DYNAMICTYPES-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= DynamicTypesContract
+    
+    syntax DynamicTypesContract ::= "DynamicTypes" [symbol(), klabel(contract_DynamicTypes)]
+    
+      
+    
+    syntax Field ::= DynamicTypesField
+    
+    syntax DynamicTypesField ::= "IS_TEST" [symbol(), klabel(field_DynamicTypes_IS_TEST)]
+    
+    syntax DynamicTypesField ::= "_failed" [symbol(), klabel(field_DynamicTypes__failed)]
+    
+    syntax DynamicTypesField ::= "IS_SCRIPT" [symbol(), klabel(field_DynamicTypes_IS_SCRIPT)]
+    
+    syntax DynamicTypesField ::= "stdstore" [symbol(), klabel(field_DynamicTypes_stdstore)]
+    
+    rule  ( #loc ( DynamicTypes . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( DynamicTypes . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( DynamicTypes . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( DynamicTypes . stdstore ) => 1 )
+      
+    
+    syntax ByteArray ::= DynamicTypesContract "." DynamicTypesMethod [function(), symbol(), klabel(method_DynamicTypes)]
+    
+    syntax DynamicTypesMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_DynamicTypes_IS_SCRIPT)]
+    
+    syntax DynamicTypesMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_DynamicTypes_IS_TEST)]
+    
+    syntax DynamicTypesMethod ::= "failed" "(" ")" [symbol(), klabel(method_DynamicTypes_failed)]
+    
+    syntax DynamicTypesMethod ::= "test_dynamic_byte_read" "(" ByteArray "," Int ")" [symbol(), klabel(method_DynamicTypes_test_dynamic_byte_read)]
+    
+    syntax DynamicTypesMethod ::= "vm" "(" ")" [symbol(), klabel(method_DynamicTypes_vm)]
+    
+    rule  ( DynamicTypes . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( DynamicTypes . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( DynamicTypes . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( DynamicTypes . test_dynamic_byte_read ( V0_data , V1_offset ) => #abiCallData ( "test_dynamic_byte_read" , #bytes ( V0_data ) , #uint256 ( V1_offset ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 128 , #sizeByteArray ( V0_data ) )
+       andBool ( #rangeUInt ( 256 , V1_offset )
+               ))
+      
+    
+    rule  ( DynamicTypes . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "test_dynamic_byte_read" ) => 4003228173 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
 module EXPECTEMIT-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -1144,13 +1440,13 @@ module EXPECTCALLTEST-BIN-RUNTIME
     
     syntax ExpectCallTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ExpectCallTest_failed)]
     
+    syntax ExpectCallTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_ExpectCallTest_kevm)]
+    
     syntax ExpectCallTestMethod ::= "testExpectRegularCall" "(" ")" [symbol(), klabel(method_ExpectCallTest_testExpectRegularCall)]
     
     syntax ExpectCallTestMethod ::= "testExpectStaticCall" "(" ")" [symbol(), klabel(method_ExpectCallTest_testExpectStaticCall)]
     
     syntax ExpectCallTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ExpectCallTest_vm)]
-    
-    syntax ExpectCallTestMethod ::= "vm2" "(" ")" [symbol(), klabel(method_ExpectCallTest_vm2)]
     
     rule  ( ExpectCallTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -1159,6 +1455,9 @@ module EXPECTCALLTEST-BIN-RUNTIME
       
     
     rule  ( ExpectCallTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectCallTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
       
     
     rule  ( ExpectCallTest . testExpectRegularCall ( ) => #abiCallData ( "testExpectRegularCall" , .TypedArgs ) )
@@ -1170,9 +1469,6 @@ module EXPECTCALLTEST-BIN-RUNTIME
     rule  ( ExpectCallTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
     
-    rule  ( ExpectCallTest . vm2 ( ) => #abiCallData ( "vm2" , .TypedArgs ) )
-      
-    
     rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
       
     
@@ -1182,6 +1478,9 @@ module EXPECTCALLTEST-BIN-RUNTIME
     rule  ( selector ( "failed" ) => 3124842406 )
       
     
+    rule  ( selector ( "kevm" ) => 3601001590 )
+      
+    
     rule  ( selector ( "testExpectRegularCall" ) => 676731872 )
       
     
@@ -1189,9 +1488,6 @@ module EXPECTCALLTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "vm" ) => 980845667 )
-      
-    
-    rule  ( selector ( "vm2" ) => 3092779695 )
       
 
 endmodule
@@ -1263,6 +1559,8 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     
     syntax ExpectRevertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ExpectRevertTest_failed)]
     
+    syntax ExpectRevertTestMethod ::= "testFail_ExpectRevert_failAndSuccess" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_ExpectRevert_failAndSuccess)]
+    
     syntax ExpectRevertTestMethod ::= "testFail_expectRevert_bytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_bytes4)]
     
     syntax ExpectRevertTestMethod ::= "testFail_expectRevert_empty" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_empty)]
@@ -1274,6 +1572,10 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     syntax ExpectRevertTestMethod ::= "test_ExpectRevert_increasedDepth" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_ExpectRevert_increasedDepth)]
     
     syntax ExpectRevertTestMethod ::= "test_expectRevert_bytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_bytes4)]
+    
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_encodedSymbolic" "(" Int ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_encodedSymbolic)]
+    
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_internalCall" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_internalCall)]
     
     syntax ExpectRevertTestMethod ::= "test_expectRevert_message" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_message)]
     
@@ -1288,6 +1590,9 @@ module EXPECTREVERTTEST-BIN-RUNTIME
       
     
     rule  ( ExpectRevertTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . testFail_ExpectRevert_failAndSuccess ( ) => #abiCallData ( "testFail_ExpectRevert_failAndSuccess" , .TypedArgs ) )
       
     
     rule  ( ExpectRevertTest . testFail_expectRevert_bytes4 ( ) => #abiCallData ( "testFail_expectRevert_bytes4" , .TypedArgs ) )
@@ -1308,6 +1613,13 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     rule  ( ExpectRevertTest . test_expectRevert_bytes4 ( ) => #abiCallData ( "test_expectRevert_bytes4" , .TypedArgs ) )
       
     
+    rule  ( ExpectRevertTest . test_expectRevert_encodedSymbolic ( V0_controller ) => #abiCallData ( "test_expectRevert_encodedSymbolic" , #address ( V0_controller ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_controller )
+      
+    
+    rule  ( ExpectRevertTest . test_expectRevert_internalCall ( ) => #abiCallData ( "test_expectRevert_internalCall" , .TypedArgs ) )
+      
+    
     rule  ( ExpectRevertTest . test_expectRevert_message ( ) => #abiCallData ( "test_expectRevert_message" , .TypedArgs ) )
       
     
@@ -1326,6 +1638,9 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     rule  ( selector ( "failed" ) => 3124842406 )
       
     
+    rule  ( selector ( "testFail_ExpectRevert_failAndSuccess" ) => 2386222785 )
+      
+    
     rule  ( selector ( "testFail_expectRevert_bytes4" ) => 3540765930 )
       
     
@@ -1342,6 +1657,12 @@ module EXPECTREVERTTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_expectRevert_bytes4" ) => 1300765909 )
+      
+    
+    rule  ( selector ( "test_expectRevert_encodedSymbolic" ) => 27292786 )
+      
+    
+    rule  ( selector ( "test_expectRevert_internalCall" ) => 1766536967 )
       
     
     rule  ( selector ( "test_expectRevert_message" ) => 3706733127 )
@@ -1821,6 +2142,147 @@ module GETCODETEST-BIN-RUNTIME
       
     
     rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
+module KEVMCHEATS-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= KEVMCheatsContract
+    
+    syntax KEVMCheatsContract ::= "KEVMCheats" [symbol(), klabel(contract_KEVMCheats)]
+    
+      
+    
+    syntax ByteArray ::= KEVMCheatsContract "." KEVMCheatsMethod [function(), symbol(), klabel(method_KEVMCheats)]
+    
+    syntax KEVMCheatsMethod ::= "kevm" "(" ")" [symbol(), klabel(method_KEVMCheats_kevm)]
+    
+    rule  ( KEVMCheats . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "kevm" ) => 3601001590 )
+      
+
+endmodule
+
+module KEVMCHEATSBASE-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= KEVMCheatsBaseContract
+    
+    syntax KEVMCheatsBaseContract ::= "KEVMCheatsBase" [symbol(), klabel(contract_KEVMCheatsBase)]
+    
+      
+    
+    syntax ByteArray ::= KEVMCheatsBaseContract "." KEVMCheatsBaseMethod [function(), symbol(), klabel(method_KEVMCheatsBase)]
+    
+    syntax KEVMCheatsBaseMethod ::= "allowCallsToAddress" "(" Int ")" [symbol(), klabel(method_KEVMCheatsBase_allowCallsToAddress)]
+    
+    syntax KEVMCheatsBaseMethod ::= "allowChangesToStorage" "(" Int "," Int ")" [symbol(), klabel(method_KEVMCheatsBase_allowChangesToStorage)]
+    
+    syntax KEVMCheatsBaseMethod ::= "expectCreate" "(" Int "," Int "," ByteArray ")" [symbol(), klabel(method_KEVMCheatsBase_expectCreate)]
+    
+    syntax KEVMCheatsBaseMethod ::= "expectCreate2" "(" Int "," Int "," ByteArray ")" [symbol(), klabel(method_KEVMCheatsBase_expectCreate2)]
+    
+    syntax KEVMCheatsBaseMethod ::= "expectDelegateCall" "(" Int "," ByteArray ")" [symbol(), klabel(method_KEVMCheatsBase_expectDelegateCall)]
+    
+    syntax KEVMCheatsBaseMethod ::= "expectNoCall" "(" ")" [symbol(), klabel(method_KEVMCheatsBase_expectNoCall)]
+    
+    syntax KEVMCheatsBaseMethod ::= "expectRegularCall" "(" Int "," Int "," ByteArray ")" [symbol(), klabel(method_KEVMCheatsBase_expectRegularCall)]
+    
+    syntax KEVMCheatsBaseMethod ::= "expectRegularCall" "(" Int "," Int "," ByteArray ")" [symbol(), klabel(method_KEVMCheatsBase_expectRegularCall)]
+    
+    syntax KEVMCheatsBaseMethod ::= "expectStaticCall" "(" Int "," ByteArray ")" [symbol(), klabel(method_KEVMCheatsBase_expectStaticCall)]
+    
+    syntax KEVMCheatsBaseMethod ::= "symbolicStorage" "(" Int ")" [symbol(), klabel(method_KEVMCheatsBase_symbolicStorage)]
+    
+    rule  ( KEVMCheatsBase . allowCallsToAddress ( V0_ ) => #abiCallData ( "allowCallsToAddress" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( KEVMCheatsBase . allowChangesToStorage ( V0_ , V1_ ) => #abiCallData ( "allowChangesToStorage" , #address ( V0_ ) , #uint256 ( V1_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 256 , V1_ )
+               ))
+      
+    
+    rule  ( KEVMCheatsBase . expectCreate ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectCreate" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 256 , V1_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V2_ ) )
+               )))
+      
+    
+    rule  ( KEVMCheatsBase . expectCreate2 ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectCreate2" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 256 , V1_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V2_ ) )
+               )))
+      
+    
+    rule  ( KEVMCheatsBase . expectDelegateCall ( V0_ , V1_ ) => #abiCallData ( "expectDelegateCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V1_ ) )
+               ))
+      
+    
+    rule  ( KEVMCheatsBase . expectNoCall ( ) => #abiCallData ( "expectNoCall" , .TypedArgs ) )
+      
+    
+    rule  ( KEVMCheatsBase . expectRegularCall ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectRegularCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 256 , V1_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V2_ ) )
+               )))
+      
+    
+    rule  ( KEVMCheatsBase . expectRegularCall ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectRegularCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 256 , V1_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V2_ ) )
+               )))
+      
+    
+    rule  ( KEVMCheatsBase . expectStaticCall ( V0_ , V1_ ) => #abiCallData ( "expectStaticCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V1_ ) )
+               ))
+      
+    
+    rule  ( KEVMCheatsBase . symbolicStorage ( V0_ ) => #abiCallData ( "symbolicStorage" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( selector ( "allowCallsToAddress" ) => 1850795572 )
+      
+    
+    rule  ( selector ( "allowChangesToStorage" ) => 4207417100 )
+      
+    
+    rule  ( selector ( "expectCreate" ) => 658968394 )
+      
+    
+    rule  ( selector ( "expectCreate2" ) => 3854582462 )
+      
+    
+    rule  ( selector ( "expectDelegateCall" ) => 1030406631 )
+      
+    
+    rule  ( selector ( "expectNoCall" ) => 3861374088 )
+      
+    
+    rule  ( selector ( "expectRegularCall" ) => 3178868520 )
+      
+    
+    rule  ( selector ( "expectRegularCall" ) => 1973496647 )
+      
+    
+    rule  ( selector ( "expectStaticCall" ) => 2232945516 )
+      
+    
+    rule  ( selector ( "symbolicStorage" ) => 769677742 )
       
 
 endmodule
@@ -2543,7 +3005,11 @@ module PLAINPRANKTEST-BIN-RUNTIME
     
     syntax PlainPrankTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_PlainPrankTest_failed)]
     
+    syntax PlainPrankTestMethod ::= "internalCounter" "(" ")" [symbol(), klabel(method_PlainPrankTest_internalCounter)]
+    
     syntax PlainPrankTestMethod ::= "testFail_startPrank_existingAlready" "(" ")" [symbol(), klabel(method_PlainPrankTest_testFail_startPrank_existingAlready)]
+    
+    syntax PlainPrankTestMethod ::= "testFail_startPrank_internalCall" "(" ")" [symbol(), klabel(method_PlainPrankTest_testFail_startPrank_internalCall)]
     
     syntax PlainPrankTestMethod ::= "test_prank_zeroAddress_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_prank_zeroAddress_true)]
     
@@ -2566,7 +3032,13 @@ module PLAINPRANKTEST-BIN-RUNTIME
     rule  ( PlainPrankTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
+    rule  ( PlainPrankTest . internalCounter ( ) => #abiCallData ( "internalCounter" , .TypedArgs ) )
+      
+    
     rule  ( PlainPrankTest . testFail_startPrank_existingAlready ( ) => #abiCallData ( "testFail_startPrank_existingAlready" , .TypedArgs ) )
+      
+    
+    rule  ( PlainPrankTest . testFail_startPrank_internalCall ( ) => #abiCallData ( "testFail_startPrank_internalCall" , .TypedArgs ) )
       
     
     rule  ( PlainPrankTest . test_prank_zeroAddress_true ( ) => #abiCallData ( "test_prank_zeroAddress_true" , .TypedArgs ) )
@@ -2596,7 +3068,13 @@ module PLAINPRANKTEST-BIN-RUNTIME
     rule  ( selector ( "failed" ) => 3124842406 )
       
     
+    rule  ( selector ( "internalCounter" ) => 2687914858 )
+      
+    
     rule  ( selector ( "testFail_startPrank_existingAlready" ) => 2262269573 )
+      
+    
+    rule  ( selector ( "testFail_startPrank_internalCall" ) => 3075676477 )
       
     
     rule  ( selector ( "test_prank_zeroAddress_true" ) => 3793950116 )
@@ -3193,6 +3671,8 @@ module SIGNTEST-BIN-RUNTIME
     
     syntax SignTestMethod ::= "testSign" "(" ")" [symbol(), klabel(method_SignTest_testSign)]
     
+    syntax SignTestMethod ::= "testSign_symbolic" "(" Int ")" [symbol(), klabel(method_SignTest_testSign_symbolic)]
+    
     syntax SignTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_SignTest_vm)]
     
     rule  ( SignTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
@@ -3208,6 +3688,10 @@ module SIGNTEST-BIN-RUNTIME
       
     
     rule  ( SignTest . testSign ( ) => #abiCallData ( "testSign" , .TypedArgs ) )
+      
+    
+    rule  ( SignTest . testSign_symbolic ( V0_pk ) => #abiCallData ( "testSign_symbolic" , #uint256 ( V0_pk ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_pk )
       
     
     rule  ( SignTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
@@ -3226,6 +3710,9 @@ module SIGNTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "testSign" ) => 3985576159 )
+      
+    
+    rule  ( selector ( "testSign_symbolic" ) => 2942025997 )
       
     
     rule  ( selector ( "vm" ) => 980845667 )
@@ -3601,6 +4088,117 @@ module STORETEST-BIN-RUNTIME
 
 endmodule
 
+module SYMBOLICSTORAGETEST-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= SymbolicStorageTestContract
+    
+    syntax SymbolicStorageTestContract ::= "SymbolicStorageTest" [symbol(), klabel(contract_SymbolicStorageTest)]
+    
+      
+    
+    syntax Field ::= SymbolicStorageTestField
+    
+    syntax SymbolicStorageTestField ::= "IS_TEST" [symbol(), klabel(field_SymbolicStorageTest_IS_TEST)]
+    
+    syntax SymbolicStorageTestField ::= "_failed" [symbol(), klabel(field_SymbolicStorageTest__failed)]
+    
+    syntax SymbolicStorageTestField ::= "IS_SCRIPT" [symbol(), klabel(field_SymbolicStorageTest_IS_SCRIPT)]
+    
+    syntax SymbolicStorageTestField ::= "stdstore" [symbol(), klabel(field_SymbolicStorageTest_stdstore)]
+    
+    rule  ( #loc ( SymbolicStorageTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( SymbolicStorageTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( SymbolicStorageTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( SymbolicStorageTest . stdstore ) => 1 )
+      
+    
+    syntax ByteArray ::= SymbolicStorageTestContract "." SymbolicStorageTestMethod [function(), symbol(), klabel(method_SymbolicStorageTest)]
+    
+    syntax SymbolicStorageTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_IS_SCRIPT)]
+    
+    syntax SymbolicStorageTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_IS_TEST)]
+    
+    syntax SymbolicStorageTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_failed)]
+    
+    syntax SymbolicStorageTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_kevm)]
+    
+    syntax SymbolicStorageTestMethod ::= "testFail_SymbolicStorage" "(" Int ")" [symbol(), klabel(method_SymbolicStorageTest_testFail_SymbolicStorage)]
+    
+    syntax SymbolicStorageTestMethod ::= "testFail_SymbolicStorage1" "(" Int ")" [symbol(), klabel(method_SymbolicStorageTest_testFail_SymbolicStorage1)]
+    
+    syntax SymbolicStorageTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_vm)]
+    
+    rule  ( SymbolicStorageTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicStorageTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicStorageTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicStorageTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicStorageTest . testFail_SymbolicStorage ( V0_slot ) => #abiCallData ( "testFail_SymbolicStorage" , #uint256 ( V0_slot ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_slot )
+      
+    
+    rule  ( SymbolicStorageTest . testFail_SymbolicStorage1 ( V0_slot ) => #abiCallData ( "testFail_SymbolicStorage1" , #uint256 ( V0_slot ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_slot )
+      
+    
+    rule  ( SymbolicStorageTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "kevm" ) => 3601001590 )
+      
+    
+    rule  ( selector ( "testFail_SymbolicStorage" ) => 821477045 )
+      
+    
+    rule  ( selector ( "testFail_SymbolicStorage1" ) => 2899744320 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
+module SYMBOLICSTORE-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= SymbolicStoreContract
+    
+    syntax SymbolicStoreContract ::= "SymbolicStore" [symbol(), klabel(contract_SymbolicStore)]
+    
+      
+    
+    syntax Field ::= SymbolicStoreField
+    
+    syntax SymbolicStoreField ::= "testNumber" [symbol(), klabel(field_SymbolicStore_testNumber)]
+    
+    rule  ( #loc ( SymbolicStore . testNumber ) => 0 )
+      
+
+endmodule
+
 module TEST-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -3786,7 +4384,9 @@ module STDSTORAGE-BIN-RUNTIME
     syntax StdStorageMethod ::= "bytesToBytes32" "(" ByteArray "," Int ")" [symbol(), klabel(method_stdStorage_bytesToBytes32)]
     
     rule  ( stdStorage . bytesToBytes32 ( V0_b , V1_offset ) => #abiCallData ( "bytesToBytes32" , #bytes ( V0_b ) , #uint256 ( V1_offset ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V1_offset )
+       ensures ( #rangeUInt ( 128 , #sizeByteArray ( V0_b ) )
+       andBool ( #rangeUInt ( 256 , V1_offset )
+               ))
       
     
     rule  ( selector ( "bytesToBytes32" ) => 1398294841 )
@@ -4034,6 +4634,81 @@ module TOKEN-BIN-RUNTIME
       
     
     rule  ( selector ( "transfer" ) => 2835717307 )
+      
+
+endmodule
+
+module BYTESTYPETEST-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= BytesTypeTestContract
+    
+    syntax BytesTypeTestContract ::= "BytesTypeTest" [symbol(), klabel(contract_BytesTypeTest)]
+    
+      
+    
+    syntax ByteArray ::= BytesTypeTestContract "." BytesTypeTestMethod [function(), symbol(), klabel(method_BytesTypeTest)]
+    
+    syntax BytesTypeTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_BytesTypeTest_setUp)]
+    
+    syntax BytesTypeTestMethod ::= "testFail_bytes32" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_testFail_bytes32)]
+    
+    syntax BytesTypeTestMethod ::= "testFail_bytes4" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_testFail_bytes4)]
+    
+    syntax BytesTypeTestMethod ::= "test_bytes32" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes32)]
+    
+    syntax BytesTypeTestMethod ::= "test_bytes32_fail" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes32_fail)]
+    
+    syntax BytesTypeTestMethod ::= "test_bytes4" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes4)]
+    
+    syntax BytesTypeTestMethod ::= "test_bytes4_fail" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes4_fail)]
+    
+    rule  ( BytesTypeTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
+      
+    
+    rule  ( BytesTypeTest . testFail_bytes32 ( V0_x ) => #abiCallData ( "testFail_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_x )
+      
+    
+    rule  ( BytesTypeTest . testFail_bytes4 ( V0_x ) => #abiCallData ( "testFail_bytes4" , #bytes4 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeBytes ( 4 , V0_x )
+      
+    
+    rule  ( BytesTypeTest . test_bytes32 ( V0_x ) => #abiCallData ( "test_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_x )
+      
+    
+    rule  ( BytesTypeTest . test_bytes32_fail ( V0_x ) => #abiCallData ( "test_bytes32_fail" , #bytes32 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_x )
+      
+    
+    rule  ( BytesTypeTest . test_bytes4 ( V0_x ) => #abiCallData ( "test_bytes4" , #bytes4 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeBytes ( 4 , V0_x )
+      
+    
+    rule  ( BytesTypeTest . test_bytes4_fail ( V0_x ) => #abiCallData ( "test_bytes4_fail" , #bytes4 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeBytes ( 4 , V0_x )
+      
+    
+    rule  ( selector ( "setUp" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testFail_bytes32" ) => 4289330289 )
+      
+    
+    rule  ( selector ( "testFail_bytes4" ) => 3602852570 )
+      
+    
+    rule  ( selector ( "test_bytes32" ) => 3436986189 )
+      
+    
+    rule  ( selector ( "test_bytes32_fail" ) => 392713219 )
+      
+    
+    rule  ( selector ( "test_bytes4" ) => 2814412853 )
+      
+    
+    rule  ( selector ( "test_bytes4_fail" ) => 2510894010 )
       
 
 endmodule
@@ -5204,15 +5879,21 @@ module VM-BIN-RUNTIME
       
     
     rule  ( Vm . etch ( V0_ , V1_ ) => #abiCallData ( "etch" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V1_ ) )
+               ))
       
     
     rule  ( Vm . expectCall ( V0_ , V1_ ) => #abiCallData ( "expectCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V1_ ) )
+               ))
       
     
     rule  ( Vm . expectCall ( V0_ , V1_ ) => #abiCallData ( "expectCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V1_ ) )
+               ))
       
     
     rule  ( Vm . expectEmit ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "expectEmit" , #bool ( V0_ ) , #bool ( V1_ ) , #bool ( V2_ ) , #bool ( V3_ ) , .TypedArgs ) )
@@ -5270,13 +5951,17 @@ module VM-BIN-RUNTIME
     rule  ( Vm . mockCall ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , #bytes ( V3_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
        andBool ( #rangeUInt ( 256 , V1_ )
-               ))
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V2_ ) )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V3_ ) )
+               ))))
       
     
     rule  ( Vm . mockCall ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , #bytes ( V3_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
        andBool ( #rangeUInt ( 256 , V1_ )
-               ))
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V2_ ) )
+       andBool ( #rangeUInt ( 128 , #sizeByteArray ( V3_ ) )
+               ))))
       
     
     rule  ( Vm . prank ( V0_ , V1_ ) => #abiCallData ( "prank" , #address ( V0_ ) , #address ( V1_ ) , .TypedArgs ) )
@@ -5663,825 +6348,6 @@ module VM-BIN-RUNTIME
 
 endmodule
 
-module VM2-BIN-RUNTIME
-    imports public FOUNDRY
-    
-    syntax Contract ::= Vm2Contract
-    
-    syntax Vm2Contract ::= "Vm2" [symbol(), klabel(contract_Vm2)]
-    
-      
-    
-    syntax ByteArray ::= Vm2Contract "." Vm2Method [function(), symbol(), klabel(method_Vm2)]
-    
-    syntax Vm2Method ::= "accesses" "(" Int ")" [symbol(), klabel(method_Vm2_accesses)]
-    
-    syntax Vm2Method ::= "activeFork" "(" ")" [symbol(), klabel(method_Vm2_activeFork)]
-    
-    syntax Vm2Method ::= "addr" "(" Int ")" [symbol(), klabel(method_Vm2_addr)]
-    
-    syntax Vm2Method ::= "assume" "(" Int ")" [symbol(), klabel(method_Vm2_assume)]
-    
-    syntax Vm2Method ::= "broadcast" "(" ")" [symbol(), klabel(method_Vm2_broadcast)]
-    
-    syntax Vm2Method ::= "broadcast" "(" ")" [symbol(), klabel(method_Vm2_broadcast)]
-    
-    syntax Vm2Method ::= "chainId" "(" Int ")" [symbol(), klabel(method_Vm2_chainId)]
-    
-    syntax Vm2Method ::= "clearMockedCalls" "(" ")" [symbol(), klabel(method_Vm2_clearMockedCalls)]
-    
-    syntax Vm2Method ::= "closeFile" "(" String ")" [symbol(), klabel(method_Vm2_closeFile)]
-    
-    syntax Vm2Method ::= "coinbase" "(" Int ")" [symbol(), klabel(method_Vm2_coinbase)]
-    
-    syntax Vm2Method ::= "createFork" "(" String ")" [symbol(), klabel(method_Vm2_createFork)]
-    
-    syntax Vm2Method ::= "createFork" "(" String ")" [symbol(), klabel(method_Vm2_createFork)]
-    
-    syntax Vm2Method ::= "createSelectFork" "(" String "," Int ")" [symbol(), klabel(method_Vm2_createSelectFork)]
-    
-    syntax Vm2Method ::= "createSelectFork" "(" String "," Int ")" [symbol(), klabel(method_Vm2_createSelectFork)]
-    
-    syntax Vm2Method ::= "deal" "(" Int "," Int ")" [symbol(), klabel(method_Vm2_deal)]
-    
-    syntax Vm2Method ::= "deriveKey" "(" String "," Int ")" [symbol(), klabel(method_Vm2_deriveKey)]
-    
-    syntax Vm2Method ::= "deriveKey" "(" String "," Int ")" [symbol(), klabel(method_Vm2_deriveKey)]
-    
-    syntax Vm2Method ::= "envAddress" "(" String ")" [symbol(), klabel(method_Vm2_envAddress)]
-    
-    syntax Vm2Method ::= "envAddress" "(" String ")" [symbol(), klabel(method_Vm2_envAddress)]
-    
-    syntax Vm2Method ::= "envBool" "(" String ")" [symbol(), klabel(method_Vm2_envBool)]
-    
-    syntax Vm2Method ::= "envBool" "(" String ")" [symbol(), klabel(method_Vm2_envBool)]
-    
-    syntax Vm2Method ::= "envBytes" "(" String ")" [symbol(), klabel(method_Vm2_envBytes)]
-    
-    syntax Vm2Method ::= "envBytes" "(" String ")" [symbol(), klabel(method_Vm2_envBytes)]
-    
-    syntax Vm2Method ::= "envBytes32" "(" String "," String ")" [symbol(), klabel(method_Vm2_envBytes32)]
-    
-    syntax Vm2Method ::= "envBytes32" "(" String "," String ")" [symbol(), klabel(method_Vm2_envBytes32)]
-    
-    syntax Vm2Method ::= "envInt" "(" String "," String ")" [symbol(), klabel(method_Vm2_envInt)]
-    
-    syntax Vm2Method ::= "envInt" "(" String "," String ")" [symbol(), klabel(method_Vm2_envInt)]
-    
-    syntax Vm2Method ::= "envString" "(" String "," String ")" [symbol(), klabel(method_Vm2_envString)]
-    
-    syntax Vm2Method ::= "envString" "(" String "," String ")" [symbol(), klabel(method_Vm2_envString)]
-    
-    syntax Vm2Method ::= "envUint" "(" String ")" [symbol(), klabel(method_Vm2_envUint)]
-    
-    syntax Vm2Method ::= "envUint" "(" String ")" [symbol(), klabel(method_Vm2_envUint)]
-    
-    syntax Vm2Method ::= "etch" "(" Int "," ByteArray ")" [symbol(), klabel(method_Vm2_etch)]
-    
-    syntax Vm2Method ::= "expectCall" "(" Int "," ByteArray ")" [symbol(), klabel(method_Vm2_expectCall)]
-    
-    syntax Vm2Method ::= "expectCall" "(" Int "," ByteArray ")" [symbol(), klabel(method_Vm2_expectCall)]
-    
-    syntax Vm2Method ::= "expectCreate" "(" Int "," Int "," ByteArray ")" [symbol(), klabel(method_Vm2_expectCreate)]
-    
-    syntax Vm2Method ::= "expectCreate2" "(" Int "," Int "," ByteArray ")" [symbol(), klabel(method_Vm2_expectCreate2)]
-    
-    syntax Vm2Method ::= "expectDelegateCall" "(" Int "," ByteArray ")" [symbol(), klabel(method_Vm2_expectDelegateCall)]
-    
-    syntax Vm2Method ::= "expectEmit" "(" Int "," Int "," Int "," Int ")" [symbol(), klabel(method_Vm2_expectEmit)]
-    
-    syntax Vm2Method ::= "expectEmit" "(" Int "," Int "," Int "," Int ")" [symbol(), klabel(method_Vm2_expectEmit)]
-    
-    syntax Vm2Method ::= "expectNoCall" "(" ")" [symbol(), klabel(method_Vm2_expectNoCall)]
-    
-    syntax Vm2Method ::= "expectRegularCall" "(" Int "," Int "," ByteArray ")" [symbol(), klabel(method_Vm2_expectRegularCall)]
-    
-    syntax Vm2Method ::= "expectRegularCall" "(" Int "," Int "," ByteArray ")" [symbol(), klabel(method_Vm2_expectRegularCall)]
-    
-    syntax Vm2Method ::= "expectRevert" "(" Int ")" [symbol(), klabel(method_Vm2_expectRevert)]
-    
-    syntax Vm2Method ::= "expectRevert" "(" Int ")" [symbol(), klabel(method_Vm2_expectRevert)]
-    
-    syntax Vm2Method ::= "expectRevert" "(" Int ")" [symbol(), klabel(method_Vm2_expectRevert)]
-    
-    syntax Vm2Method ::= "expectStaticCall" "(" Int "," ByteArray ")" [symbol(), klabel(method_Vm2_expectStaticCall)]
-    
-    syntax Vm2Method ::= "fee" "(" Int ")" [symbol(), klabel(method_Vm2_fee)]
-    
-    syntax Vm2Method ::= "ffi" "(" K ")" [symbol(), klabel(method_Vm2_ffi)]
-    
-    syntax Vm2Method ::= "getCode" "(" String ")" [symbol(), klabel(method_Vm2_getCode)]
-    
-    syntax Vm2Method ::= "getNonce" "(" Int ")" [symbol(), klabel(method_Vm2_getNonce)]
-    
-    syntax Vm2Method ::= "getRecordedLogs" "(" ")" [symbol(), klabel(method_Vm2_getRecordedLogs)]
-    
-    syntax Vm2Method ::= "label" "(" Int "," String ")" [symbol(), klabel(method_Vm2_label)]
-    
-    syntax Vm2Method ::= "load" "(" Int "," Int ")" [symbol(), klabel(method_Vm2_load)]
-    
-    syntax Vm2Method ::= "mockCall" "(" Int "," Int "," ByteArray "," ByteArray ")" [symbol(), klabel(method_Vm2_mockCall)]
-    
-    syntax Vm2Method ::= "mockCall" "(" Int "," Int "," ByteArray "," ByteArray ")" [symbol(), klabel(method_Vm2_mockCall)]
-    
-    syntax Vm2Method ::= "prank" "(" Int "," Int ")" [symbol(), klabel(method_Vm2_prank)]
-    
-    syntax Vm2Method ::= "prank" "(" Int "," Int ")" [symbol(), klabel(method_Vm2_prank)]
-    
-    syntax Vm2Method ::= "readFile" "(" String ")" [symbol(), klabel(method_Vm2_readFile)]
-    
-    syntax Vm2Method ::= "readLine" "(" String ")" [symbol(), klabel(method_Vm2_readLine)]
-    
-    syntax Vm2Method ::= "record" "(" ")" [symbol(), klabel(method_Vm2_record)]
-    
-    syntax Vm2Method ::= "recordLogs" "(" ")" [symbol(), klabel(method_Vm2_recordLogs)]
-    
-    syntax Vm2Method ::= "removeFile" "(" String ")" [symbol(), klabel(method_Vm2_removeFile)]
-    
-    syntax Vm2Method ::= "revertTo" "(" Int ")" [symbol(), klabel(method_Vm2_revertTo)]
-    
-    syntax Vm2Method ::= "roll" "(" Int ")" [symbol(), klabel(method_Vm2_roll)]
-    
-    syntax Vm2Method ::= "rollFork" "(" Int "," Int ")" [symbol(), klabel(method_Vm2_rollFork)]
-    
-    syntax Vm2Method ::= "rollFork" "(" Int "," Int ")" [symbol(), klabel(method_Vm2_rollFork)]
-    
-    syntax Vm2Method ::= "rpcUrl" "(" String ")" [symbol(), klabel(method_Vm2_rpcUrl)]
-    
-    syntax Vm2Method ::= "rpcUrls" "(" ")" [symbol(), klabel(method_Vm2_rpcUrls)]
-    
-    syntax Vm2Method ::= "selectFork" "(" Int ")" [symbol(), klabel(method_Vm2_selectFork)]
-    
-    syntax Vm2Method ::= "setEnv" "(" String "," String ")" [symbol(), klabel(method_Vm2_setEnv)]
-    
-    syntax Vm2Method ::= "setNonce" "(" Int "," Int ")" [symbol(), klabel(method_Vm2_setNonce)]
-    
-    syntax Vm2Method ::= "sign" "(" Int "," Int ")" [symbol(), klabel(method_Vm2_sign)]
-    
-    syntax Vm2Method ::= "snapshot" "(" ")" [symbol(), klabel(method_Vm2_snapshot)]
-    
-    syntax Vm2Method ::= "startBroadcast" "(" ")" [symbol(), klabel(method_Vm2_startBroadcast)]
-    
-    syntax Vm2Method ::= "startBroadcast" "(" ")" [symbol(), klabel(method_Vm2_startBroadcast)]
-    
-    syntax Vm2Method ::= "startPrank" "(" Int ")" [symbol(), klabel(method_Vm2_startPrank)]
-    
-    syntax Vm2Method ::= "startPrank" "(" Int ")" [symbol(), klabel(method_Vm2_startPrank)]
-    
-    syntax Vm2Method ::= "stopBroadcast" "(" ")" [symbol(), klabel(method_Vm2_stopBroadcast)]
-    
-    syntax Vm2Method ::= "stopPrank" "(" ")" [symbol(), klabel(method_Vm2_stopPrank)]
-    
-    syntax Vm2Method ::= "store" "(" Int "," Int "," Int ")" [symbol(), klabel(method_Vm2_store)]
-    
-    syntax Vm2Method ::= "symbolicStorage" "(" Int ")" [symbol(), klabel(method_Vm2_symbolicStorage)]
-    
-    syntax Vm2Method ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm2_toString)]
-    
-    syntax Vm2Method ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm2_toString)]
-    
-    syntax Vm2Method ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm2_toString)]
-    
-    syntax Vm2Method ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm2_toString)]
-    
-    syntax Vm2Method ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm2_toString)]
-    
-    syntax Vm2Method ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm2_toString)]
-    
-    syntax Vm2Method ::= "warp" "(" Int ")" [symbol(), klabel(method_Vm2_warp)]
-    
-    syntax Vm2Method ::= "writeFile" "(" String "," String ")" [symbol(), klabel(method_Vm2_writeFile)]
-    
-    syntax Vm2Method ::= "writeLine" "(" String "," String ")" [symbol(), klabel(method_Vm2_writeLine)]
-    
-    rule  ( Vm2 . accesses ( V0_ ) => #abiCallData ( "accesses" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . activeFork ( ) => #abiCallData ( "activeFork" , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . addr ( V0_ ) => #abiCallData ( "addr" , #uint256 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_ )
-      
-    
-    rule  ( Vm2 . assume ( V0_ ) => #abiCallData ( "assume" , #bool ( V0_ ) , .TypedArgs ) )
-       ensures #rangeBool ( V0_ )
-      
-    
-    rule  ( Vm2 . broadcast ( ) => #abiCallData ( "broadcast" , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . broadcast ( ) => #abiCallData ( "broadcast" , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . chainId ( V0_ ) => #abiCallData ( "chainId" , #uint256 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_ )
-      
-    
-    rule  ( Vm2 . clearMockedCalls ( ) => #abiCallData ( "clearMockedCalls" , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . closeFile ( V0_ ) => #abiCallData ( "closeFile" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . coinbase ( V0_ ) => #abiCallData ( "coinbase" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . createFork ( V0_ ) => #abiCallData ( "createFork" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . createFork ( V0_ ) => #abiCallData ( "createFork" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . createSelectFork ( V0_ , V1_ ) => #abiCallData ( "createSelectFork" , #string ( V0_ ) , #uint256 ( V1_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V1_ )
-      
-    
-    rule  ( Vm2 . createSelectFork ( V0_ , V1_ ) => #abiCallData ( "createSelectFork" , #string ( V0_ ) , #uint256 ( V1_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V1_ )
-      
-    
-    rule  ( Vm2 . deal ( V0_ , V1_ ) => #abiCallData ( "deal" , #address ( V0_ ) , #uint256 ( V1_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
-               ))
-      
-    
-    rule  ( Vm2 . deriveKey ( V0_ , V1_ ) => #abiCallData ( "deriveKey" , #string ( V0_ ) , #uint32 ( V1_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 32 , V1_ )
-      
-    
-    rule  ( Vm2 . deriveKey ( V0_ , V1_ ) => #abiCallData ( "deriveKey" , #string ( V0_ ) , #uint32 ( V1_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 32 , V1_ )
-      
-    
-    rule  ( Vm2 . envAddress ( V0_ ) => #abiCallData ( "envAddress" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . envAddress ( V0_ ) => #abiCallData ( "envAddress" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . envBool ( V0_ ) => #abiCallData ( "envBool" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . envBool ( V0_ ) => #abiCallData ( "envBool" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . envBytes ( V0_ ) => #abiCallData ( "envBytes" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . envBytes ( V0_ ) => #abiCallData ( "envBytes" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . envBytes32 ( V0_ , V1_ ) => #abiCallData ( "envBytes32" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . envBytes32 ( V0_ , V1_ ) => #abiCallData ( "envBytes32" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . envInt ( V0_ , V1_ ) => #abiCallData ( "envInt" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . envInt ( V0_ , V1_ ) => #abiCallData ( "envInt" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . envString ( V0_ , V1_ ) => #abiCallData ( "envString" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . envString ( V0_ , V1_ ) => #abiCallData ( "envString" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . envUint ( V0_ ) => #abiCallData ( "envUint" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . envUint ( V0_ ) => #abiCallData ( "envUint" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . etch ( V0_ , V1_ ) => #abiCallData ( "etch" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . expectCall ( V0_ , V1_ ) => #abiCallData ( "expectCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . expectCall ( V0_ , V1_ ) => #abiCallData ( "expectCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . expectCreate ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectCreate" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
-               ))
-      
-    
-    rule  ( Vm2 . expectCreate2 ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectCreate2" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
-               ))
-      
-    
-    rule  ( Vm2 . expectDelegateCall ( V0_ , V1_ ) => #abiCallData ( "expectDelegateCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . expectEmit ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "expectEmit" , #bool ( V0_ ) , #bool ( V1_ ) , #bool ( V2_ ) , #bool ( V3_ ) , .TypedArgs ) )
-       ensures ( #rangeBool ( V0_ )
-       andBool ( #rangeBool ( V1_ )
-       andBool ( #rangeBool ( V2_ )
-       andBool ( #rangeBool ( V3_ )
-               ))))
-      
-    
-    rule  ( Vm2 . expectEmit ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "expectEmit" , #bool ( V0_ ) , #bool ( V1_ ) , #bool ( V2_ ) , #bool ( V3_ ) , .TypedArgs ) )
-       ensures ( #rangeBool ( V0_ )
-       andBool ( #rangeBool ( V1_ )
-       andBool ( #rangeBool ( V2_ )
-       andBool ( #rangeBool ( V3_ )
-               ))))
-      
-    
-    rule  ( Vm2 . expectNoCall ( ) => #abiCallData ( "expectNoCall" , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . expectRegularCall ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectRegularCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
-               ))
-      
-    
-    rule  ( Vm2 . expectRegularCall ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectRegularCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
-               ))
-      
-    
-    rule  ( Vm2 . expectRevert ( V0_ ) => #abiCallData ( "expectRevert" , #bytes4 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeBytes ( 4 , V0_ )
-      
-    
-    rule  ( Vm2 . expectRevert ( V0_ ) => #abiCallData ( "expectRevert" , #bytes4 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeBytes ( 4 , V0_ )
-      
-    
-    rule  ( Vm2 . expectRevert ( V0_ ) => #abiCallData ( "expectRevert" , #bytes4 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeBytes ( 4 , V0_ )
-      
-    
-    rule  ( Vm2 . expectStaticCall ( V0_ , V1_ ) => #abiCallData ( "expectStaticCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . fee ( V0_ ) => #abiCallData ( "fee" , #uint256 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_ )
-      
-    
-    rule  ( Vm2 . getCode ( V0_ ) => #abiCallData ( "getCode" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . getNonce ( V0_ ) => #abiCallData ( "getNonce" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . getRecordedLogs ( ) => #abiCallData ( "getRecordedLogs" , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . label ( V0_ , V1_ ) => #abiCallData ( "label" , #address ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . load ( V0_ , V1_ ) => #abiCallData ( "load" , #address ( V0_ ) , #bytes32 ( V1_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
-               ))
-      
-    
-    rule  ( Vm2 . mockCall ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , #bytes ( V3_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
-               ))
-      
-    
-    rule  ( Vm2 . mockCall ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , #bytes ( V3_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
-               ))
-      
-    
-    rule  ( Vm2 . prank ( V0_ , V1_ ) => #abiCallData ( "prank" , #address ( V0_ ) , #address ( V1_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeAddress ( V1_ )
-               ))
-      
-    
-    rule  ( Vm2 . prank ( V0_ , V1_ ) => #abiCallData ( "prank" , #address ( V0_ ) , #address ( V1_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeAddress ( V1_ )
-               ))
-      
-    
-    rule  ( Vm2 . readFile ( V0_ ) => #abiCallData ( "readFile" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . readLine ( V0_ ) => #abiCallData ( "readLine" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . record ( ) => #abiCallData ( "record" , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . recordLogs ( ) => #abiCallData ( "recordLogs" , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . removeFile ( V0_ ) => #abiCallData ( "removeFile" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . revertTo ( V0_ ) => #abiCallData ( "revertTo" , #uint256 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_ )
-      
-    
-    rule  ( Vm2 . roll ( V0_ ) => #abiCallData ( "roll" , #uint256 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_ )
-      
-    
-    rule  ( Vm2 . rollFork ( V0_forkId , V1_blockNumber ) => #abiCallData ( "rollFork" , #uint256 ( V0_forkId ) , #uint256 ( V1_blockNumber ) , .TypedArgs ) )
-       ensures ( #rangeUInt ( 256 , V0_forkId )
-       andBool ( #rangeUInt ( 256 , V1_blockNumber )
-               ))
-      
-    
-    rule  ( Vm2 . rollFork ( V0_forkId , V1_blockNumber ) => #abiCallData ( "rollFork" , #uint256 ( V0_forkId ) , #uint256 ( V1_blockNumber ) , .TypedArgs ) )
-       ensures ( #rangeUInt ( 256 , V0_forkId )
-       andBool ( #rangeUInt ( 256 , V1_blockNumber )
-               ))
-      
-    
-    rule  ( Vm2 . rpcUrl ( V0_ ) => #abiCallData ( "rpcUrl" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . rpcUrls ( ) => #abiCallData ( "rpcUrls" , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . selectFork ( V0_ ) => #abiCallData ( "selectFork" , #uint256 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_ )
-      
-    
-    rule  ( Vm2 . setEnv ( V0_ , V1_ ) => #abiCallData ( "setEnv" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . setNonce ( V0_ , V1_ ) => #abiCallData ( "setNonce" , #address ( V0_ ) , #uint64 ( V1_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 64 , V1_ )
-               ))
-      
-    
-    rule  ( Vm2 . sign ( V0_ , V1_ ) => #abiCallData ( "sign" , #uint256 ( V0_ ) , #bytes32 ( V1_ ) , .TypedArgs ) )
-       ensures ( #rangeUInt ( 256 , V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
-               ))
-      
-    
-    rule  ( Vm2 . snapshot ( ) => #abiCallData ( "snapshot" , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . startBroadcast ( ) => #abiCallData ( "startBroadcast" , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . startBroadcast ( ) => #abiCallData ( "startBroadcast" , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . startPrank ( V0_ ) => #abiCallData ( "startPrank" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . startPrank ( V0_ ) => #abiCallData ( "startPrank" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . stopBroadcast ( ) => #abiCallData ( "stopBroadcast" , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . stopPrank ( ) => #abiCallData ( "stopPrank" , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . store ( V0_ , V1_ , V2_ ) => #abiCallData ( "store" , #address ( V0_ ) , #bytes32 ( V1_ ) , #bytes32 ( V2_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
-       andBool ( #rangeUInt ( 256 , V2_ )
-               )))
-      
-    
-    rule  ( Vm2 . symbolicStorage ( V0_ ) => #abiCallData ( "symbolicStorage" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
-      
-    
-    rule  ( Vm2 . warp ( V0_ ) => #abiCallData ( "warp" , #uint256 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_ )
-      
-    
-    rule  ( Vm2 . writeFile ( V0_ , V1_ ) => #abiCallData ( "writeFile" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm2 . writeLine ( V0_ , V1_ ) => #abiCallData ( "writeLine" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
-      
-    
-    rule  ( selector ( "accesses" ) => 1706857601 )
-      
-    
-    rule  ( selector ( "activeFork" ) => 789593890 )
-      
-    
-    rule  ( selector ( "addr" ) => 4288775753 )
-      
-    
-    rule  ( selector ( "assume" ) => 1281615202 )
-      
-    
-    rule  ( selector ( "broadcast" ) => 2949218368 )
-      
-    
-    rule  ( selector ( "broadcast" ) => 3868601563 )
-      
-    
-    rule  ( selector ( "chainId" ) => 1078582738 )
-      
-    
-    rule  ( selector ( "clearMockedCalls" ) => 1071599125 )
-      
-    
-    rule  ( selector ( "closeFile" ) => 1220748319 )
-      
-    
-    rule  ( selector ( "coinbase" ) => 4282924116 )
-      
-    
-    rule  ( selector ( "createFork" ) => 834286744 )
-      
-    
-    rule  ( selector ( "createFork" ) => 1805892139 )
-      
-    
-    rule  ( selector ( "createSelectFork" ) => 2556952628 )
-      
-    
-    rule  ( selector ( "createSelectFork" ) => 1911440973 )
-      
-    
-    rule  ( selector ( "deal" ) => 3364511341 )
-      
-    
-    rule  ( selector ( "deriveKey" ) => 1808477211 )
-      
-    
-    rule  ( selector ( "deriveKey" ) => 1646872971 )
-      
-    
-    rule  ( selector ( "envAddress" ) => 890066623 )
-      
-    
-    rule  ( selector ( "envAddress" ) => 2905717242 )
-      
-    
-    rule  ( selector ( "envBool" ) => 2127686781 )
-      
-    
-    rule  ( selector ( "envBool" ) => 2863521455 )
-      
-    
-    rule  ( selector ( "envBytes" ) => 1299951366 )
-      
-    
-    rule  ( selector ( "envBytes" ) => 3720504603 )
-      
-    
-    rule  ( selector ( "envBytes32" ) => 2543095874 )
-      
-    
-    rule  ( selector ( "envBytes32" ) => 1525821889 )
-      
-    
-    rule  ( selector ( "envInt" ) => 2301234273 )
-      
-    
-    rule  ( selector ( "envInt" ) => 1108873552 )
-      
-    
-    rule  ( selector ( "envString" ) => 4168600345 )
-      
-    
-    rule  ( selector ( "envString" ) => 347089865 )
-      
-    
-    rule  ( selector ( "envUint" ) => 3247934751 )
-      
-    
-    rule  ( selector ( "envUint" ) => 4091461785 )
-      
-    
-    rule  ( selector ( "etch" ) => 3033974658 )
-      
-    
-    rule  ( selector ( "expectCall" ) => 3177903156 )
-      
-    
-    rule  ( selector ( "expectCall" ) => 4077681571 )
-      
-    
-    rule  ( selector ( "expectCreate" ) => 658968394 )
-      
-    
-    rule  ( selector ( "expectCreate2" ) => 3854582462 )
-      
-    
-    rule  ( selector ( "expectDelegateCall" ) => 1030406631 )
-      
-    
-    rule  ( selector ( "expectEmit" ) => 1226622914 )
-      
-    
-    rule  ( selector ( "expectEmit" ) => 2176505587 )
-      
-    
-    rule  ( selector ( "expectNoCall" ) => 3861374088 )
-      
-    
-    rule  ( selector ( "expectRegularCall" ) => 3178868520 )
-      
-    
-    rule  ( selector ( "expectRegularCall" ) => 1973496647 )
-      
-    
-    rule  ( selector ( "expectRevert" ) => 4102309908 )
-      
-    
-    rule  ( selector ( "expectRevert" ) => 4069379763 )
-      
-    
-    rule  ( selector ( "expectRevert" ) => 3273568480 )
-      
-    
-    rule  ( selector ( "expectStaticCall" ) => 2232945516 )
-      
-    
-    rule  ( selector ( "fee" ) => 968063664 )
-      
-    
-    rule  ( selector ( "ffi" ) => 2299921511 )
-      
-    
-    rule  ( selector ( "getCode" ) => 2367473957 )
-      
-    
-    rule  ( selector ( "getNonce" ) => 755185067 )
-      
-    
-    rule  ( selector ( "getRecordedLogs" ) => 420828068 )
-      
-    
-    rule  ( selector ( "label" ) => 3327641368 )
-      
-    
-    rule  ( selector ( "load" ) => 1719639408 )
-      
-    
-    rule  ( selector ( "mockCall" ) => 3110212580 )
-      
-    
-    rule  ( selector ( "mockCall" ) => 2168494993 )
-      
-    
-    rule  ( selector ( "prank" ) => 3395723175 )
-      
-    
-    rule  ( selector ( "prank" ) => 1206193358 )
-      
-    
-    rule  ( selector ( "readFile" ) => 1626979089 )
-      
-    
-    rule  ( selector ( "readLine" ) => 1895126824 )
-      
-    
-    rule  ( selector ( "record" ) => 644673801 )
-      
-    
-    rule  ( selector ( "recordLogs" ) => 1101999954 )
-      
-    
-    rule  ( selector ( "removeFile" ) => 4054835277 )
-      
-    
-    rule  ( selector ( "revertTo" ) => 1155002532 )
-      
-    
-    rule  ( selector ( "roll" ) => 528174896 )
-      
-    
-    rule  ( selector ( "rollFork" ) => 3652973473 )
-      
-    
-    rule  ( selector ( "rollFork" ) => 3612115876 )
-      
-    
-    rule  ( selector ( "rpcUrl" ) => 2539285737 )
-      
-    
-    rule  ( selector ( "rpcUrls" ) => 2824504344 )
-      
-    
-    rule  ( selector ( "selectFork" ) => 2663344167 )
-      
-    
-    rule  ( selector ( "setEnv" ) => 1029252078 )
-      
-    
-    rule  ( selector ( "setNonce" ) => 4175530839 )
-      
-    
-    rule  ( selector ( "sign" ) => 3812747940 )
-      
-    
-    rule  ( selector ( "snapshot" ) => 2534502746 )
-      
-    
-    rule  ( selector ( "startBroadcast" ) => 2142579071 )
-      
-    
-    rule  ( selector ( "startBroadcast" ) => 2146183821 )
-      
-    
-    rule  ( selector ( "startPrank" ) => 105151830 )
-      
-    
-    rule  ( selector ( "startPrank" ) => 1169514616 )
-      
-    
-    rule  ( selector ( "stopBroadcast" ) => 1995103542 )
-      
-    
-    rule  ( selector ( "stopPrank" ) => 2428830011 )
-      
-    
-    rule  ( selector ( "store" ) => 1892290747 )
-      
-    
-    rule  ( selector ( "symbolicStorage" ) => 769677742 )
-      
-    
-    rule  ( selector ( "toString" ) => 1456103998 )
-      
-    
-    rule  ( selector ( "toString" ) => 1910302682 )
-      
-    
-    rule  ( selector ( "toString" ) => 1907020045 )
-      
-    
-    rule  ( selector ( "toString" ) => 2971277800 )
-      
-    
-    rule  ( selector ( "toString" ) => 2736964622 )
-      
-    
-    rule  ( selector ( "toString" ) => 1761649582 )
-      
-    
-    rule  ( selector ( "warp" ) => 3856056066 )
-      
-    
-    rule  ( selector ( "writeFile" ) => 2306738839 )
-      
-    
-    rule  ( selector ( "writeLine" ) => 1637714303 )
-      
-
-endmodule
-
 module CONSOLE-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -6548,12 +6414,15 @@ endmodule
 module FOUNDRY-MAIN
     imports public ACCOUNTPARAMSTEST-BIN-RUNTIME
     imports public ADDRTEST-BIN-RUNTIME
+    imports public ALLOWCHANGESTEST-BIN-RUNTIME
+    imports public VALUESTORE-BIN-RUNTIME
     imports public ASSUMETEST-BIN-RUNTIME
     imports public BLOCKPARAMSTEST-BIN-RUNTIME
     imports public BROADCASTTEST-BIN-RUNTIME
     imports public CONTRACT-BIN-RUNTIME
     imports public CONTRACTTEST-BIN-RUNTIME
     imports public CONTRACTBTEST-BIN-RUNTIME
+    imports public DYNAMICTYPES-BIN-RUNTIME
     imports public EXPECTEMIT-BIN-RUNTIME
     imports public EMITCONTRACTTEST-BIN-RUNTIME
     imports public ENVTEST-BIN-RUNTIME
@@ -6566,6 +6435,8 @@ module FOUNDRY-MAIN
     imports public FILESTEST-BIN-RUNTIME
     imports public FORKTEST-BIN-RUNTIME
     imports public GETCODETEST-BIN-RUNTIME
+    imports public KEVMCHEATS-BIN-RUNTIME
+    imports public KEVMCHEATSBASE-BIN-RUNTIME
     imports public LABELTEST-BIN-RUNTIME
     imports public LOOPSTEST-BIN-RUNTIME
     imports public MOCKCALLTEST-BIN-RUNTIME
@@ -6587,6 +6458,8 @@ module FOUNDRY-MAIN
     imports public SNAPSHOTTEST-BIN-RUNTIME
     imports public STORE-BIN-RUNTIME
     imports public STORETEST-BIN-RUNTIME
+    imports public SYMBOLICSTORAGETEST-BIN-RUNTIME
+    imports public SYMBOLICSTORE-BIN-RUNTIME
     imports public TEST-BIN-RUNTIME
     imports public STDERROR-BIN-RUNTIME
     imports public STDMATH-BIN-RUNTIME
@@ -6594,9 +6467,9 @@ module FOUNDRY-MAIN
     imports public TESTNUMBER-BIN-RUNTIME
     imports public TOSTRINGTEST-BIN-RUNTIME
     imports public TOKEN-BIN-RUNTIME
+    imports public BYTESTYPETEST-BIN-RUNTIME
     imports public UINTTYPETEST-BIN-RUNTIME
     imports public VM-BIN-RUNTIME
-    imports public VM2-BIN-RUNTIME
     imports public CONSOLE-BIN-RUNTIME
     imports public CONSOLE2-BIN-RUNTIME
     imports public DSTEST-BIN-RUNTIME
