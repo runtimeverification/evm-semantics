@@ -5,15 +5,16 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
-from pyk.cli_utils import dir_path, file_path
-from pyk.cterm import CTerm, build_rule
+from pyk.cli_utils import BugReport, dir_path, file_path
+from pyk.cterm import CTerm, build_claim, build_rule
 from pyk.kast.inner import KApply, KInner, KRewrite, KToken
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
-from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
+from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRuleLike
 from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
+from pyk.prelude.ml import mlTop
 from pyk.utils import shorten_hashes
 
 from .gst_to_kore import gst_to_kore
@@ -267,7 +268,7 @@ def exec_prove(
     profile: bool,
     spec_file: Path,
     includes: List[str],
-    bug_report: bool,
+    bug_report: bool = False,
     save_directory: Optional[Path] = None,
     spec_module: Optional[str] = None,
     md_selector: Optional[str] = None,
@@ -278,12 +279,13 @@ def exec_prove(
     workers: int = 1,
     simplify_init: bool = True,
     break_every_step: bool = False,
-    break_on_calls: bool = False,
+    break_on_calls: bool = True,
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
-    kevm = KEVM(definition_dir, use_directory=save_directory, profile=profile)
+    br = None if not bug_report else BugReport(spec_file.with_suffix('.bug_report'))
+    kevm = KEVM(definition_dir, use_directory=save_directory, profile=profile, bug_report=br)
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
     claims = kevm.get_claims(
@@ -298,7 +300,7 @@ def exec_prove(
     _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
     proof_problems = {c.label: KCFG.from_claim(kevm.definition, c) for c in claims}
     if simplify_init:
-        with KCFGExplore(kevm, port=find_free_port()) as kcfg_explore:
+        with KCFGExplore(kevm, port=find_free_port(), bug_report=br) as kcfg_explore:
             proof_problems = {claim: kcfg_explore.simplify(claim, cfg) for claim, cfg in proof_problems.items()}
 
     results = parallel_kcfg_explore(
@@ -314,6 +316,7 @@ def exec_prove(
         rpc_base_port=rpc_base_port,
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
+        bug_report=br,
     )
     failed = 0
     for pid, r in results.items():
@@ -325,11 +328,11 @@ def exec_prove(
     sys.exit(failed)
 
 
-def exec_view_kcfg(definition_dir: Path, claim: str, kcfgs_dir: Path, profile: bool, **kwargs: Any) -> None:
+def exec_view_kcfg(definition_dir: Path, claim: str, save_directory: Path, profile: bool, **kwargs: Any) -> None:
     kevm = KEVM(definition_dir, profile=profile)
-    kcfg = KCFGExplore.read_cfg(claim, kcfgs_dir)
+    kcfg = KCFGExplore.read_cfg(claim, save_directory)
     if kcfg is None:
-        raise ValueError(f'Could not load CFG {claim} from {kcfgs_dir}')
+        raise ValueError(f'Could not load CFG {claim} from {save_directory}')
     viewer = KCFGViewer(kcfg, kevm, node_printer=kevm.short_info)
     viewer.run()
 
@@ -345,9 +348,10 @@ def exec_foundry_prove(
     workers: int = 1,
     simplify_init: bool = True,
     break_every_step: bool = False,
-    break_on_calls: bool = False,
+    break_on_calls: bool = True,
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
+    bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -364,7 +368,8 @@ def exec_foundry_prove(
     kcfgs_dir = foundry_out / 'kcfgs'
     if not kcfgs_dir.exists():
         kcfgs_dir.mkdir()
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
+    br = None if not bug_report else BugReport(foundry_out / 'bug_report')
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
 
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
@@ -420,7 +425,7 @@ def exec_foundry_prove(
             kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
             kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
             if simplify_init:
-                with KCFGExplore(foundry, port=find_free_port()) as kcfg_explore:
+                with KCFGExplore(foundry, port=find_free_port(), bug_report=br) as kcfg_explore:
                     kcfg = kcfg_explore.simplify(test, kcfg)
             kcfgs[test] = kcfg
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
@@ -438,6 +443,7 @@ def exec_foundry_prove(
         rpc_base_port=rpc_base_port,
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
+        bug_report=br,
     )
     failed = 0
     for pid, r in results.items():
@@ -511,7 +517,7 @@ def exec_foundry_show(
 
     if to_module:
 
-        def to_rule(edge: KCFG.Edge) -> KRule:
+        def to_rule(edge: KCFG.Edge, claim: bool = False) -> KRuleLike:
             sentence_id = f'BASIC-BLOCK-{edge.source.id}-TO-{edge.target.id}'
             init_cterm = CTerm(edge.source.cterm.config)
             for c in edge.source.cterm.constraints:
@@ -527,11 +533,16 @@ def exec_foundry_show(
                     _LOGGER.warning(f'Ignoring Ceil condition: {c}')
                 else:
                     target_cterm.add_constraint(c)
-            rule, _ = build_rule(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm, priority=35)
+            rule: KRuleLike
+            if not claim:
+                rule, _ = build_rule(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm, priority=35)
+            else:
+                rule, _ = build_claim(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm)
             return rule
 
         rules = [to_rule(e) for e in kcfg.edges() if e.depth > 0]
-        new_module = KFlatModule('SUMMARY', rules)
+        claims = [to_rule(KCFG.Edge(nd, kcfg.get_unique_target(), mlTop(), -1), claim=True) for nd in kcfg.frontier]
+        new_module = KFlatModule('SUMMARY', rules + claims)
         print(foundry.pretty_print(new_module) + '\n')
 
 
@@ -616,25 +627,91 @@ def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, profile: b
 
 
 def exec_foundry_simplify_node(
-    foundry_out: Path, test: str, node: str, profile: bool, replace: bool = False, minimize: bool = True, **kwargs: Any
+    foundry_out: Path,
+    test: str,
+    node: str,
+    profile: bool,
+    replace: bool = False,
+    minimize: bool = True,
+    bug_report: bool = False,
+    **kwargs: Any,
 ) -> None:
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
     use_directory.mkdir(parents=True, exist_ok=True)
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
+    br = None if not bug_report else BugReport(Path(f'{test}.bug_report'))
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
     cterm = kcfg.node(node).cterm
     port = find_free_port()
-    with KCFGExplore(foundry, port=port) as kcfg_explore:
+    with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
     new_term_minimized = new_term if not minimize else minimize_term(new_term)
     print(f'Simplified:\n{foundry.pretty_print(new_term_minimized)}')
     if replace:
         kcfg.replace_node(node, CTerm(new_term))
         KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+
+
+def exec_foundry_step_node(
+    foundry_out: Path,
+    test: str,
+    node: str,
+    profile: bool,
+    repeat: int = 1,
+    depth: int = 1,
+    minimize: bool = True,
+    bug_report: bool = False,
+    **kwargs: Any,
+) -> None:
+    if repeat < 1:
+        raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
+    if depth < 1:
+        raise ValueError(f'Expected positive value for --depth, got: {depth}')
+    definition_dir = foundry_out / 'kompiled'
+    use_directory = foundry_out / 'specs'
+    kcfgs_dir = foundry_out / 'kcfgs'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    br = None if not bug_report else BugReport(Path(f'{test}.bug_report'))
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    port = find_free_port()
+    with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
+        for _i in range(repeat):
+            kcfg, node = kcfg_explore.step(test, kcfg, node, depth=depth)
+            KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+
+
+def exec_foundry_section_edge(
+    foundry_out: Path,
+    test: str,
+    edge: Tuple[str, str],
+    profile: bool,
+    sections: int = 2,
+    replace: bool = False,
+    minimize: bool = True,
+    bug_report: bool = False,
+    **kwargs: Any,
+) -> None:
+    definition_dir = foundry_out / 'kompiled'
+    use_directory = foundry_out / 'specs'
+    kcfgs_dir = foundry_out / 'kcfgs'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    br = None if not bug_report else BugReport(Path(f'{test}.bug_report'))
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    port = find_free_port()
+    source_id, target_id = edge
+    with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
+        kcfg, _ = kcfg_explore.section_edge(test, kcfg, source_id=source_id, target_id=target_id, sections=sections)
+    KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
 
 # Helpers
@@ -660,6 +737,12 @@ def _create_argument_parser() -> ArgumentParser:
         type=int,
         help='Base port to use for RPC server invocations.',
     )
+    rpc_args.add_argument(
+        '--bug-report',
+        default=False,
+        action='store_true',
+        help='Generate a haskell-backend bug report for the execution.',
+    )
 
     explore_args = ArgumentParser(add_help=False)
     explore_args.add_argument(
@@ -672,9 +755,15 @@ def _create_argument_parser() -> ArgumentParser:
     explore_args.add_argument(
         '--break-on-calls',
         dest='break_on_calls',
-        default=False,
+        default=True,
         action='store_true',
         help='Store a node for every EVM call made.',
+    )
+    explore_args.add_argument(
+        '--no-break-on-calls',
+        dest='break_on_calls',
+        action='store_false',
+        help='Do not store a node for every EVM call made.',
     )
     explore_args.add_argument(
         '--implication-every-block',
@@ -705,16 +794,16 @@ def _create_argument_parser() -> ArgumentParser:
     explore_args.add_argument(
         '--max-depth',
         dest='max_depth',
-        default=100,
+        default=1000,
         type=int,
-        help='Store every Nth state in the KCFG for inspection.',
+        help='Store every Nth state in the CFG for inspection.',
     )
     explore_args.add_argument(
         '--max-iterations',
         dest='max_iterations',
         default=None,
         type=int,
-        help='Store every Nth state in the KCFG for inspection.',
+        help='Store every Nth state in the CFG for inspection.',
     )
 
     k_args = ArgumentParser(add_help=False)
@@ -736,12 +825,6 @@ def _create_argument_parser() -> ArgumentParser:
     kprove_args = ArgumentParser(add_help=False)
     kprove_args.add_argument(
         '--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.'
-    )
-    kprove_args.add_argument(
-        '--bug-report',
-        default=False,
-        action='store_true',
-        help='Generate a haskell-backend bug report for the execution.',
     )
     kprove_args.add_argument(
         '--minimize', dest='minimize', default=True, action='store_true', help='Minimize prover output.'
@@ -822,7 +905,7 @@ def _create_argument_parser() -> ArgumentParser:
         'prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args, rpc_args, explore_args]
     )
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    prove_args.add_argument('--save-directory', dest='kcfgs_dir', type=dir_path, help='Directory to store KCFGs in.')
+    prove_args.add_argument('--save-directory', dest='kcfgs_dir', type=dir_path, help='Directory to store CFGs in.')
     prove_args.add_argument(
         '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
     )
@@ -836,11 +919,11 @@ def _create_argument_parser() -> ArgumentParser:
 
     view_kcfg_args = command_parser.add_parser(
         'view-kcfg',
-        help='Display tree view of KCFG',
+        help='Display tree view of CFG',
         parents=[shared_args, k_args],
     )
     view_kcfg_args.add_argument(
-        'save_directory', type=dir_path, help='Path to where KCFGs are stored (--save-directory option to prove).'
+        'save_directory', type=dir_path, help='Path to where CFGs are stored (--save-directory option to prove).'
     )
     view_kcfg_args.add_argument('claim', type=str, help='Claim identifier to load CFG for.')
 
@@ -938,7 +1021,7 @@ def _create_argument_parser() -> ArgumentParser:
         dest='reinit',
         default=False,
         action='store_true',
-        help='Reinitialize KCFGs even if they already exist.',
+        help='Reinitialize CFGs even if they already exist.',
     )
 
     foundry_show_args = command_parser.add_parser(
@@ -976,18 +1059,18 @@ def _create_argument_parser() -> ArgumentParser:
 
     foundry_list_args = command_parser.add_parser(
         'foundry-list',
-        help='List information about KCFGs on disk',
+        help='List information about CFGs on disk',
         parents=[shared_args, k_args],
     )
     foundry_list_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_list_args.add_argument(
-        '--details', dest='details', default=True, action='store_true', help='Information about progress on each KCFG.'
+        '--details', dest='details', default=True, action='store_true', help='Information about progress on each CFG.'
     )
-    foundry_list_args.add_argument('--no-details', dest='details', action='store_false', help='Just list the KCFGs.')
+    foundry_list_args.add_argument('--no-details', dest='details', action='store_false', help='Just list the CFGs.')
 
     foundry_view_kcfg_args = command_parser.add_parser(
         'foundry-view-kcfg',
-        help='Display tree view of KCFG',
+        help='Display tree view of CFG',
         parents=[shared_args],
     )
     foundry_view_kcfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
@@ -1018,6 +1101,33 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_simplify_node.add_argument(
         '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
+    )
+
+    foundry_step_node = command_parser.add_parser(
+        'foundry-step-node',
+        help='Step from a given node, adding it to the CFG.',
+        parents=[shared_args, rpc_args],
+    )
+    foundry_step_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
+    foundry_step_node.add_argument('node', type=str, help='Node to step from in CFG.')
+    foundry_step_node.add_argument(
+        '--repeat', type=int, default=1, help='How many node expansions to do from the given start node (>= 1).'
+    )
+    foundry_step_node.add_argument(
+        '--depth', type=int, default=1, help='How many steps to take from initial node on edge.'
+    )
+
+    foundry_section_edge = command_parser.add_parser(
+        'foundry-section-edge',
+        help='Given an edge in the graph, cut it into sections to get intermediate nodes.',
+        parents=[shared_args, rpc_args],
+    )
+    foundry_section_edge.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_section_edge.add_argument('test', type=str, help='Section edge in this CFG.')
+    foundry_section_edge.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
+    foundry_section_edge.add_argument(
+        '--sections', type=int, default=2, help='Number of sections to make from edge (>= 2).'
     )
 
     return parser
