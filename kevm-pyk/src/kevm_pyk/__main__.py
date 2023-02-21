@@ -328,11 +328,11 @@ def exec_prove(
     sys.exit(failed)
 
 
-def exec_view_kcfg(definition_dir: Path, claim: str, kcfgs_dir: Path, profile: bool, **kwargs: Any) -> None:
+def exec_view_kcfg(definition_dir: Path, claim: str, save_directory: Path, profile: bool, **kwargs: Any) -> None:
     kevm = KEVM(definition_dir, profile=profile)
-    kcfg = KCFGExplore.read_cfg(claim, kcfgs_dir)
+    kcfg = KCFGExplore.read_cfg(claim, save_directory)
     if kcfg is None:
-        raise ValueError(f'Could not load CFG {claim} from {kcfgs_dir}')
+        raise ValueError(f'Could not load CFG {claim} from {save_directory}')
     viewer = KCFGViewer(kcfg, kevm, node_printer=kevm.short_info)
     viewer.run()
 
