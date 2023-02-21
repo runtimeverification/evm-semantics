@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Final, Iterable, List, Optional
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
-from pyk.kast.manip import flatten_label, get_cell
+from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, build_assoc
+from pyk.kast.manip import flatten_label, get_cell, split_config_from
 from pyk.kast.outer import KFlatModule
 from pyk.ktool.kompile import KompileBackend, kompile
 from pyk.ktool.kprint import SymbolTable, paren
@@ -16,7 +16,6 @@ from pyk.prelude.kbool import notBool
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlAnd, mlEqualsTrue
 from pyk.prelude.string import stringToken
-from pyk.utils import unique
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -201,6 +200,18 @@ class KEVM(KProve, KRun):
             'SERIALIZATION.#newAddrCreate2',
         ]
 
+    def short_info(self, cterm: CTerm) -> List[str]:
+        _, subst = split_config_from(cterm.config)
+        k_cell = self.pretty_print(subst['K_CELL']).replace('\n', ' ')
+        if len(k_cell) > 80:
+            k_cell = k_cell[0:80] + ' ...'
+        k_str = f'k: {k_cell}'
+        ret_strs = [k_str]
+        for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
+            if cell in subst:
+                ret_strs.append(f'{name}: {self.pretty_print(subst[cell])}')
+        return ret_strs
+
     @staticmethod
     def add_invariant(cterm: CTerm) -> CTerm:
         config, *constraints = cterm
@@ -219,7 +230,38 @@ class KEVM(KProve, KRun):
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ORIGIN_CELL'))))
         constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytearray(get_cell(config, 'CALLDATA_CELL')), KEVM.pow128())))
 
-        return CTerm(mlAnd([config] + list(unique(constraints))))
+        return CTerm(mlAnd([config] + constraints))
+
+    @staticmethod
+    def extract_branches(cterm: CTerm) -> Iterable[KInner]:
+        config, *constraints = cterm
+        k_cell = get_cell(config, 'K_CELL')
+        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
+        pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
+        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
+        if subst := branch_pattern.match(k_cell):
+            cond = subst['###COND']
+            if cond_subst := KEVM.bool_2_word(KVariable('###BOOL_2_WORD')).match(cond):
+                cond = cond_subst['###BOOL_2_WORD']
+            else:
+                cond = KApply('_==Int_', [cond, intToken(0)])
+            return [mlEqualsTrue(cond), mlEqualsTrue(KApply('notBool_', [cond]))]
+        return []
+
+    @staticmethod
+    def is_terminal(cterm: CTerm) -> bool:
+        config, *_ = cterm
+        k_cell = get_cell(config, 'K_CELL')
+        # <k> #halt </k>
+        if k_cell == KEVM.halt():
+            return True
+        elif type(k_cell) is KSequence:
+            # <k> #halt ~> CONTINUATION </k>
+            if k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
+                # <callDepth> 0 </callDepth>
+                if get_cell(config, 'CALLDEPTH_CELL') == intToken(0):
+                    return True
+        return False
 
     @staticmethod
     def halt() -> KApply:
