@@ -2,7 +2,7 @@ import logging
 import socket
 from contextlib import closing
 from pathlib import Path
-from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
+from typing import Callable, Collection, Dict, Final, Iterable, Optional, Tuple, TypeVar
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
@@ -10,7 +10,7 @@ from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
 from pyk.kast.outer import KDefinition
 from pyk.kcfg import KCFG, KCFGExplore
-from pyk.ktool import KProve
+from pyk.ktool.kprove import KProve
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -122,10 +122,6 @@ def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # no
         term = bottom_up(_expand_macros, term)
 
     return term
-
-
-def add_include_arg(includes: Iterable[str]) -> List[str]:
-    return [arg for include in includes for arg in ['-I', include]]
 
 
 def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> KInner:

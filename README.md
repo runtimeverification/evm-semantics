@@ -44,7 +44,7 @@ Installing/Building
 
 ### K Backends
 
-There are three backends of K available: LLVM (default) for concrete execution and Haskell (default) and Java for symbolic execution.
+There are two backends of K available: LLVM for concrete execution and Haskell for symbolic execution.
 This repository generates the build-products for each backend in `.build/usr/lib/kevm`.
 
 ### System Dependencies
