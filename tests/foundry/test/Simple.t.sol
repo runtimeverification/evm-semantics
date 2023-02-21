@@ -26,4 +26,12 @@ contract AssertTest is Test {
         vm.expectRevert();
         assert(false);
     }
+
+    function test_revert_branch(uint x, uint y) public{
+        if (x < y) {
+            assert(true);
+        } else {
+            assert(false);
+        }
+    }
 }
