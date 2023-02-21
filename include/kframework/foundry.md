@@ -183,6 +183,7 @@ module FOUNDRY-CHEAT-CODES
     imports EVM
     imports EVM-ABI
     imports FOUNDRY-ACCOUNTS
+    imports INFINITE-GAS
 
     configuration
       <cheatcodes>
