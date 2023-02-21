@@ -856,7 +856,7 @@ This is useful for running tests without them running out of gas.
 
 ```{.k .bytes}
     rule [foundry.call.infiniteGas]:
-         <k> #call_foundry SELECTOR ARGS => . ... </k>
+         <k> #call_foundry SELECTOR _ARGS => . ... </k>
          <gas> _ => #gas(?_VGAS) </gas>
          <callGas> _ => #gas(?_VCALLGAS) </callGas>
       requires SELECTOR ==Int selector ( "infiniteGas()" )
