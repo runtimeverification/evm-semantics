@@ -18,8 +18,6 @@ from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlAnd, mlEqualsTrue
 from pyk.prelude.string import stringToken
 
-from .utils import add_include_arg
-
 _LOGGER: Final = logging.getLogger(__name__)
 
 
