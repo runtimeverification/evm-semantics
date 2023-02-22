@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Callable, Collection, Dict, Final, Iterable, Optional, Tuple, TypeVar
 
 from pathos.pools import ProcessPool  # type: ignore
+from pyk.cli_utils import BugReport
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
@@ -33,11 +34,12 @@ def parallel_kcfg_explore(
     max_iterations: Optional[int] = None,
     workers: int = 1,
     break_every_step: bool = False,
-    break_on_calls: bool = False,
+    break_on_calls: bool = True,
     implication_every_block: bool = False,
     rpc_base_port: Optional[int] = None,
     is_terminal: Optional[Callable[[CTerm], bool]] = None,
     extract_branches: Optional[Callable[[CTerm], Iterable[KInner]]] = None,
+    bug_report: Optional[BugReport] = None,
 ) -> Dict[str, bool]:
     def _call_rpc(packed_args: Tuple[str, KCFG, int]) -> bool:
         _cfgid, _cfg, _index = packed_args
@@ -54,11 +56,15 @@ def parallel_kcfg_explore(
                     'EVM.create',
                     'EVM.create2',
                     'FOUNDRY.foundry.call',
+                    'EVM.end',
+                    'EVM.return.exception',
+                    'EVM.return.revert',
+                    'EVM.return.success',
                 ]
             )
         base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
 
-        with KCFGExplore(kprove, port=(base_port + _index)) as kcfg_explore:
+        with KCFGExplore(kprove, port=(base_port + _index), bug_report=bug_report) as kcfg_explore:
             try:
                 _cfg = kcfg_explore.all_path_reachability_prove(
                     _cfgid,
