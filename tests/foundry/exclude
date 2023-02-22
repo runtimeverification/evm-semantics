@@ -8,11 +8,15 @@ AddrTest.testFail_addr_false
 AddrTest.testFail_addr_true
 AllowChangesTest.test
 AllowChangesTest.testAllow_fail
+ArithmeticTest.test_max1_broken
+ArithmeticTest.test_wmul_increasing_overflow
+ArithmeticTest.test_wmul_rounding
 AssertTest.test_assert_false
 AssertTest.test_assert_true
 AssertTest.testFail_assert_false
 AssertTest.testFail_assert_true
 AssertTest.testFail_expect_revert
+AssertTest.test_revert_branch
 AssumeTest.test_assume_false
 AssumeTest.testFail_assume_false
 AssumeTest.testFail_assume_true
