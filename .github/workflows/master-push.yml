@@ -63,6 +63,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: nix-cache
     steps:
+      - name: Checkout Version
+        uses: actions/checkout@v3
+
       - name: 'Make Release'
         run: |
           kevm_version=v$(cat package/version)
