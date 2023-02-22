@@ -284,7 +284,7 @@ def exec_prove(
     rpc_base_port: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
-    br = None if not bug_report else BugReport(spec_file.with_suffix('.bug_report'))
+    br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
     kevm = KEVM(definition_dir, use_directory=save_directory, profile=profile, bug_report=br)
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
