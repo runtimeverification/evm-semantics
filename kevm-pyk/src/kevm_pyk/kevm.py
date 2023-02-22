@@ -1,15 +1,13 @@
 import logging
 import sys
 from pathlib import Path
-from subprocess import CalledProcessError
 from typing import Final, Iterable, List, Optional
 
-from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KLabel, KSort, KToken, KVariable, build_assoc
-from pyk.kast.manip import flatten_label, get_cell
+from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, build_assoc
+from pyk.kast.manip import flatten_label, get_cell, split_config_from
 from pyk.kast.outer import KFlatModule
-from pyk.ktool.kompile import KompileBackend
+from pyk.ktool.kompile import KompileBackend, kompile
 from pyk.ktool.kprint import SymbolTable, paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
@@ -18,9 +16,6 @@ from pyk.prelude.kbool import notBool
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlAnd, mlEqualsTrue
 from pyk.prelude.string import stringToken
-from pyk.utils import unique
-
-from .utils import add_include_arg
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -76,33 +71,28 @@ class KEVM(KProve, KRun):
         llvm_kompile: bool = True,
         optimization: int = 0,
     ) -> 'KEVM':
-        command = ['kompile', '--output-definition', str(definition_dir), str(main_file)]
-        if debug:
-            command += ['--debug']
-        command += ['--backend', backend.value]
-        command += ['--main-module', main_module_name] if main_module_name else []
-        command += ['--syntax-module', syntax_module_name] if syntax_module_name else []
-        command += ['--md-selector', md_selector] if md_selector else []
-        command += ['--hook-namespaces', ' '.join(KEVM.hook_namespaces())]
-        command += add_include_arg(includes)
-        if emit_json:
-            command += ['--emit-json']
-        if backend == KompileBackend.HASKELL:
-            command += ['--concrete-rules', ','.join(KEVM.concrete_rules())]
-        if backend == KompileBackend.LLVM:
-            if ccopts:
-                for ccopt in ccopts:
-                    command += ['-ccopt', ccopt]
-            if 0 < optimization and optimization <= 3:
-                command += [f'-O{optimization}']
-            if not llvm_kompile:
-                command += ['--no-llvm-kompile']
         try:
-            run_process(command, logger=_LOGGER, profile=profile)
-        except CalledProcessError as err:
-            sys.stderr.write(f'\nkompile stdout:\n{err.stdout}\n')
-            sys.stderr.write(f'\nkompile stderr:\n{err.stderr}\n')
-            sys.stderr.write(f'\nkompile returncode:\n{err.returncode}\n')
+            kompile(
+                main_file=main_file,
+                output_dir=definition_dir,
+                backend=backend,
+                emit_json=emit_json,
+                include_dirs=[include for include in includes if Path(include).exists()],
+                main_module=main_module_name,
+                syntax_module=syntax_module_name,
+                md_selector=md_selector,
+                hook_namespaces=KEVM.hook_namespaces(),
+                debug=debug,
+                concrete_rules=KEVM.concrete_rules() if backend == KompileBackend.HASKELL else (),
+                ccopts=ccopts,
+                no_llvm_kompile=not llvm_kompile,
+                opt_level=optimization or None,
+                profile=profile,
+            )
+        except RuntimeError as err:
+            sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')
+            sys.stderr.write(f'\nkompile stderr:\n{err.args[2]}\n')
+            sys.stderr.write(f'\nkompile returncode:\n{err.args[3]}\n')
             sys.stderr.flush()
             raise
         return KEVM(definition_dir, main_file=main_file)
@@ -210,6 +200,18 @@ class KEVM(KProve, KRun):
             'SERIALIZATION.#newAddrCreate2',
         ]
 
+    def short_info(self, cterm: CTerm) -> List[str]:
+        _, subst = split_config_from(cterm.config)
+        k_cell = self.pretty_print(subst['K_CELL']).replace('\n', ' ')
+        if len(k_cell) > 80:
+            k_cell = k_cell[0:80] + ' ...'
+        k_str = f'k: {k_cell}'
+        ret_strs = [k_str]
+        for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
+            if cell in subst:
+                ret_strs.append(f'{name}: {self.pretty_print(subst[cell])}')
+        return ret_strs
+
     @staticmethod
     def add_invariant(cterm: CTerm) -> CTerm:
         config, *constraints = cterm
@@ -228,7 +230,38 @@ class KEVM(KProve, KRun):
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ORIGIN_CELL'))))
         constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytearray(get_cell(config, 'CALLDATA_CELL')), KEVM.pow128())))
 
-        return CTerm(mlAnd([config] + list(unique(constraints))))
+        return CTerm(mlAnd([config] + constraints))
+
+    @staticmethod
+    def extract_branches(cterm: CTerm) -> Iterable[KInner]:
+        config, *constraints = cterm
+        k_cell = get_cell(config, 'K_CELL')
+        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
+        pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
+        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
+        if subst := branch_pattern.match(k_cell):
+            cond = subst['###COND']
+            if cond_subst := KEVM.bool_2_word(KVariable('###BOOL_2_WORD')).match(cond):
+                cond = cond_subst['###BOOL_2_WORD']
+            else:
+                cond = KApply('_==Int_', [cond, intToken(0)])
+            return [mlEqualsTrue(cond), mlEqualsTrue(KApply('notBool_', [cond]))]
+        return []
+
+    @staticmethod
+    def is_terminal(cterm: CTerm) -> bool:
+        config, *_ = cterm
+        k_cell = get_cell(config, 'K_CELL')
+        # <k> #halt </k>
+        if k_cell == KEVM.halt():
+            return True
+        elif type(k_cell) is KSequence:
+            # <k> #halt ~> CONTINUATION </k>
+            if k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
+                # <callDepth> 0 </callDepth>
+                if get_cell(config, 'CALLDEPTH_CELL') == intToken(0):
+                    return True
+        return False
 
     @staticmethod
     def halt() -> KApply:
