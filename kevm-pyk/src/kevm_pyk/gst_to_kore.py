@@ -12,15 +12,14 @@ def schedule_to_kore(schedule: str) -> str:
 
 
 def chainid_to_kore(chainid: int) -> str:
-    return "\\dv{SortInt{}}(" + f'"{chainid}")'
+    return r'\dv{SortInt{}}("' + str(chainid) + '")'
 
 
 def mode_to_kore(mode: str) -> str:
-    return f'Lbl{mode}' + "{}()"
+    return f'Lbl{mode}' + '{}()'
 
 
 def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, chainid: int) -> None:
-
     with open(gst_file) as data_file:
         data = json.load(data_file, object_pairs_hook=OrderedDict)
 
@@ -49,7 +48,7 @@ def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, ch
                 out_stream.write('LblJSONs{}(')
                 _print_kast(elem)
                 out_stream.write(',')
-            out_stream.write('Lbl\'Stop\'List\'LBraQuot\'JSONs\'QuotRBraUnds\'JSONs{}()')
+            out_stream.write("Lbl'Stop'List'LBraQuot'JSONs'QuotRBraUnds'JSONs{}()")
             for _ in _data:
                 out_stream.write(')')
             out_stream.write(')')
@@ -61,7 +60,7 @@ def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, ch
                 out_stream.write(',')
                 _print_kast(value)
                 out_stream.write('),')
-            out_stream.write('Lbl\'Stop\'List\'LBraQuot\'JSONs\'QuotRBraUnds\'JSONs{}()')
+            out_stream.write("Lbl'Stop'List'LBraQuot'JSONs'QuotRBraUnds'JSONs{}()")
             for _ in _data:
                 out_stream.write(')')
             out_stream.write(')')
@@ -77,14 +76,14 @@ def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, ch
         out_stream.write(s)
 
     def _print_config_map_entry(k: str, v: str, vsort: str, vprint: Callable[[Any], None]) -> None:
-        out_stream.write('Lbl\'UndsPipe\'-\'-GT-Unds\'{}(')
+        out_stream.write("Lbl'UndsPipe'-'-GT-Unds'{}(")
         _print_sort_injection('KConfigVar', 'KItem', k, _print_k_config_var)
         out_stream.write(',')
         _print_sort_injection(vsort, 'KItem', v, vprint)
         out_stream.write(')')
 
     out_stream.write(
-        'LblinitGeneratedTopCell{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Unds\'Map\'Unds\'{}(Lbl\'Stop\'Map{}(),'
+        "LblinitGeneratedTopCell{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Unds'Map'Unds'{}(Lbl'Stop'Map{}(),"
     )
     _print_config_map_entry('PGM', data, 'JSON', _print_kast)
     out_stream.write('),')

@@ -136,8 +136,11 @@ module LEMMAS-SPEC
     claim <k> runLemma ( #range(_M [ 32 := (0 : 1 : 2 : .ByteArray)         ] , 33 , 2) ) => doneLemma( (1 : 2 : .ByteArray)                      ) ... </k>
     claim <k> runLemma ( #range( M [ 32 := (0 : 1 : 2 : .ByteArray)         ] , 33 , 3) ) => doneLemma( (1 : 2 :  .ByteArray) ++ #range(M, 35, 1) ) ... </k>
 
+    claim [nestedRange]: <k> runLemma ( #range ( #range ( BA:ByteArray , 4 , 64 ) , 32 , 32 ) ) => doneLemma ( #range ( BA , 36 , 32 ) ) ... </k>
+
  // #buf simplification
  // -------------------
+    claim [bufExtractPadding]: <k> runLemma ( #asWord ( ( #buf ( 32 , X ) [ 0 .. 28 ] ):ByteArray ) ) => doneLemma ( 0 ) ... </k> requires #rangeUInt(32, X)
 
     claim <k> runLemma ( #buf( 32 , bool2Word ( B:Bool ) ) ==K #buf( 32 , 1 )     ) => doneLemma( B ==K true ) ... </k>
     claim <k> runLemma ( #buf( 32 , I:Int )                ==K #buf( 32 , 1 )     ) => doneLemma( I ==K 1    ) ... </k>

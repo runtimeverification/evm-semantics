@@ -44,7 +44,7 @@ Installing/Building
 
 ### K Backends
 
-There are three backends of K available: LLVM (default) for concrete execution and Haskell (default) and Java for symbolic execution.
+There are two backends of K available: LLVM for concrete execution and Haskell for symbolic execution.
 This repository generates the build-products for each backend in `.build/usr/lib/kevm`.
 
 ### System Dependencies
@@ -190,23 +190,16 @@ make plugin-deps
 
 ### Building
 
+You need to set up a virtual environment using Poetry:
+
+```sh
+make poetry
+```
+
 Finally, you can build the semantics.
 
 ```sh
 make build
-```
-
-And you need to set up the virtual environment:
-
-```sh
-make venv
-```
-
-Which should output (towards the end), a line like this: `. .build/venv/bin/activate`.
-You should run this line in your shell, then you are in the virtual environment:
-
-```sh
-. .build/venv/bin/activate
 ```
 
 Running Tests

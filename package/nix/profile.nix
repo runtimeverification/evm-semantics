@@ -2,7 +2,7 @@
 
 let
   profile = writeScriptBin "profile" ''
-    #! ${stdenv.shell}        
+    #! ${stdenv.shell}
     set -euo pipefail
     test_log="$1" ; shift
     exit_status='0'
@@ -20,7 +20,7 @@ in stdenv.mkDerivation {
     substituteInPlace ./Makefile \
       --replace 'venv: $(VENV_DIR)/pyvenv.cfg' 'venv:'
   '';
-  
+
   buildPhase = ''
     mkdir -p .build/usr
     cp -r ${kevm}/* .build/usr/

@@ -1,5 +1,5 @@
 from logging import Logger
-from typing import Collection, Iterable, List, Optional, Tuple
+from typing import Callable, Collection, Iterable, List, Optional, Tuple, TypeVar
 
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
@@ -16,11 +16,27 @@ from pyk.kast.manip import (
     split_config_from,
     undo_aliases,
 )
-from pyk.kast.outer import KClaim, KDefinition, KFlatModule, KImport, KRule
+from pyk.kast.outer import KClaim, KDefinition, KRule
 from pyk.kcfg import KCFG
-from pyk.ktool import KPrint, KProve
+from pyk.ktool import KProve
 from pyk.prelude.kbool import FALSE
 from pyk.prelude.ml import mlAnd
+
+T1 = TypeVar('T1')
+T2 = TypeVar('T2')
+
+
+def arg_pair_of(
+    fst_type: Callable[[str], T1], snd_type: Callable[[str], T2], delim: str = ','
+) -> Callable[[str], Tuple[T1, T2]]:
+    def parse(s: str) -> Tuple[T1, T2]:
+        elems = s.split(delim)
+        length = len(elems)
+        if length != 2:
+            raise ValueError(f'Expected 2 elements, found {length}')
+        return fst_type(elems[0]), snd_type(elems[1])
+
+    return parse
 
 
 def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # noqa: N802
@@ -45,7 +61,6 @@ def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # no
 
 
 def KCFG__replace_node(cfg: KCFG, node_id: str, new_cterm: CTerm) -> KCFG:  # noqa: N802
-
     # Remove old node, record data
     node = cfg.node(node_id)
     in_edges = cfg.edges(target_id=node.id)
@@ -101,16 +116,6 @@ def KProve_prove_claim(  # noqa: N802
         logger.error(f'Failed to prove claim: {claim_id}')
         failed = True
     return failed, result
-
-
-def KPrint_make_unparsing(_self: KPrint, extra_modules: Iterable[KFlatModule] = ()) -> KPrint:  # noqa: N802
-    modules = _self.definition.modules + tuple(extra_modules)
-    main_module = KFlatModule('UNPARSING', [], [KImport(_m.name) for _m in modules])
-    defn = KDefinition('UNPARSING', (main_module,) + modules)
-    kprint = KPrint(_self.definition_dir)
-    kprint._definition = defn
-    kprint._symbol_table = None
-    return kprint
 
 
 def add_include_arg(includes: Iterable[str]) -> List[str]:
