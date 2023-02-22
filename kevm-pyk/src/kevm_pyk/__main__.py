@@ -905,7 +905,9 @@ def _create_argument_parser() -> ArgumentParser:
         'prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args, rpc_args, explore_args]
     )
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    prove_args.add_argument('--save-directory', dest='kcfgs_dir', type=dir_path, help='Directory to store CFGs in.')
+    prove_args.add_argument(
+        '--save-directory', dest='save_directory', type=dir_path, help='Directory to store CFGs in.'
+    )
     prove_args.add_argument(
         '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
     )
