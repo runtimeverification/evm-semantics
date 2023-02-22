@@ -50,7 +50,7 @@ jobs:
           nix flake update
           git add flake.nix flake.lock && git commit -m 'flake.{nix,lock}: update Nix derivations' || true
       - name: 'Push updates'
-        run: git push
+        run: git push origin HEAD:${GITHUB_HEAD_REF}
 
   test-concrete-execution:
     name: 'Build and Test KEVM concrete execution'
