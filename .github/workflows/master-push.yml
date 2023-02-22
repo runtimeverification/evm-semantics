@@ -43,14 +43,14 @@ jobs:
         uses: cachix/cachix-action@v10
         with:
           name: k-framework
-          signingKey: '${{ secrets.RV_DEVOPS_CACHIX_TOKEN }}'
+          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
           skipPush: true
 
       - name: 'Build and cache KEVM'
         uses: workflow/nix-shell-action@v3.0.3
         env:
           GC_DONT_GC: 1
-          CACHIX_AUTH_TOKEN: '${{ secrets.RV_DEVOPS_CACHIX_TOKEN }}'
+          CACHIX_AUTH_TOKEN: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
         with:
           packages: jq
           script: |
