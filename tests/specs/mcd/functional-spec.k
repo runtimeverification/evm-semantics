@@ -135,4 +135,11 @@ module FUNCTIONAL-SPEC
 
     claim <k> runLemma((maxUInt160 &Int M) /Int (maxUInt160 +Int 1)) => doneLemma(0) </k>
       requires M >Int 0
+
+    // claim <k> runLemma((#lookup ( #write ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , TIME ) ++ b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x04" ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , TIME ) ++ b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x04" ) ) +Int ABI_tab ) , 5 ) +Int ABI_tab) <Int pow256) => doneLemma(true) </k>
+    
+    // claim <k> runLemma(
+    //            (#lookup (
+    //              #write ( ACCT_ID_STORAGE:Storage , keccak ( X ) ,
+    //                #lookup ( ACCT_ID_STORAGE , keccak ( X ) ) +Int ABI_tab ) , 5 ) +Int ABI_tab) <Int pow256) => doneLemma(true) </k>
 endmodule
