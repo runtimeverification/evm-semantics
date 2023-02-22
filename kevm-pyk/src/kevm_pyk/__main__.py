@@ -368,7 +368,7 @@ def exec_foundry_prove(
     kcfgs_dir = foundry_out / 'kcfgs'
     if not kcfgs_dir.exists():
         kcfgs_dir.mkdir()
-    br = None if not bug_report else BugReport(foundry_out / 'bug_report')
+    br = BugReport(foundry_out / 'bug_report') if bug_report else None
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
 
     json_paths = _contract_json_paths(foundry_out)
@@ -517,7 +517,7 @@ def exec_foundry_show(
 
     if to_module:
 
-        def to_rule(edge: KCFG.Edge, claim: bool = False) -> KRuleLike:
+        def to_rule(edge: KCFG.Edge, *, claim: bool = False) -> KRuleLike:
             sentence_id = f'BASIC-BLOCK-{edge.source.id}-TO-{edge.target.id}'
             init_cterm = CTerm(edge.source.cterm.config)
             for c in edge.source.cterm.constraints:
@@ -534,10 +534,10 @@ def exec_foundry_show(
                 else:
                     target_cterm.add_constraint(c)
             rule: KRuleLike
-            if not claim:
-                rule, _ = build_rule(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm, priority=35)
-            else:
+            if claim:
                 rule, _ = build_claim(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm)
+            else:
+                rule, _ = build_rule(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm, priority=35)
             return rule
 
         rules = [to_rule(e) for e in kcfg.edges() if e.depth > 0]
@@ -640,7 +640,7 @@ def exec_foundry_simplify_node(
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
     use_directory.mkdir(parents=True, exist_ok=True)
-    br = None if not bug_report else BugReport(Path(f'{test}.bug_report'))
+    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
@@ -675,7 +675,7 @@ def exec_foundry_step_node(
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
     use_directory.mkdir(parents=True, exist_ok=True)
-    br = None if not bug_report else BugReport(Path(f'{test}.bug_report'))
+    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
@@ -702,7 +702,7 @@ def exec_foundry_section_edge(
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
     use_directory.mkdir(parents=True, exist_ok=True)
-    br = None if not bug_report else BugReport(Path(f'{test}.bug_report'))
+    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
