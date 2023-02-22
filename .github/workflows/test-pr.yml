@@ -26,7 +26,6 @@ jobs:
           poetry --version
       - name: 'Update Version'
         run: |
-          ./package/version.sh bump $(git show origin/${GITHUB_BASE_REF}:package/version)
           ./package/version.sh sub
           git add --update && git commit --message "Set Version: $(cat package/version)" || true
       - name: 'Sync Poetry'
