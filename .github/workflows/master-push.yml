@@ -2,7 +2,7 @@ name: 'Master Push'
 on:
   push:
     branches:
-      - gh-releases
+      - 'master'
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
