@@ -149,6 +149,7 @@ jobs:
             os: macos-12
           - runner: MacM1
             os: self-macos-12
+    needs: version-bump
     runs-on: ${{ matrix.runner }}
     steps:
       - name: 'Check out code'

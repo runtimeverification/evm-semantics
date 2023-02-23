@@ -14,7 +14,7 @@ concurrency:
 jobs:
 
   update-versions:
-    name: 'Update K and kevm-pyk versions'
+    name: 'Update dependency versions'
     runs-on: ubuntu-20.04
     steps:
       - name: 'Check out code'
