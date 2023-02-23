@@ -61,8 +61,7 @@ jobs:
         uses: cachix/install-nix-action@v15
         with:
           extra_nix_config: |
-            substituters = http://cache.nixos.org https://cache.iog.io
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       - uses: cachix/cachix-action@v10
         with:
           name: k-framework

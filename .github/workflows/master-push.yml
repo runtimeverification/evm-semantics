@@ -24,20 +24,15 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
-
       - name: 'Upgrade bash'
         if: ${{ contains(matrix.os, 'macos') }}
         run: brew install bash
-
       - name: 'Install Nix'
         if: ${{ !startsWith(matrix.os, 'self') }}
         uses: cachix/install-nix-action@v15
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-            substituters = http://cache.nixos.org https://cache.iog.io
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
-
       - name: 'Install Cachix'
         if: ${{ !startsWith(matrix.os, 'self') }}
         uses: cachix/cachix-action@v10
@@ -45,7 +40,6 @@ jobs:
           name: k-framework
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
           skipPush: true
-
       - name: 'Build and cache KEVM'
         uses: workflow/nix-shell-action@v3.0.3
         env:
@@ -63,9 +57,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: nix-cache
     steps:
-      - name: Checkout Version
+      - name: 'Check out code'
         uses: actions/checkout@v3
-
       - name: 'Make Release'
         run: |
           kevm_version=v$(cat package/version)
@@ -88,7 +81,6 @@ jobs:
       - run: |
          git config --global user.email 'devops@runtimeverification.com'
          git config --global user.name  'RV DevOps'
-
       - name: 'Publish gh-pages'
         run: |
           git checkout -B gh-pages
