@@ -7,12 +7,7 @@ module VERIFICATION
     imports LEMMAS
     imports STORAGE
 
-// ALGOEVM
-// -------
-
     syntax StepSort ::= Storage | ByteArray | Int | Bool
-
- //    syntax StepSort ::= Map | ByteArray | Int | Bool
  // ------------------------------------------------
 
     syntax KItem ::= runLemma ( StepSort )

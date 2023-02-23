@@ -1243,7 +1243,7 @@ These rules reach into the network state and load/store from account storage:
 
 ```
 
-> AlgoEVM
+> For transactional memory.
 
 ```k
     rule <k> SSTORE INDEX NEW => . ... </k>
