@@ -41,14 +41,13 @@ jobs:
         uses: cachix/install-nix-action@v15
         with:
           extra_nix_config: |
-            substituters = http://cache.nixos.org https://cache.iog.io
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       - name: 'Install Cachix'
         uses: cachix/cachix-action@v10
         with:
-          name: runtimeverification
-          extraPullNames: kore
-          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
+          name: k-framework
+          authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
+          skipPush: true
       - name: 'Update nix flake inputs'
         run: |
           nix flake update
@@ -58,6 +57,7 @@ jobs:
 
   test-concrete-execution:
     name: 'Build and Test KEVM concrete execution'
+    needs: version-bump
     runs-on: [self-hosted, linux, normal]
     steps:
       - name: 'Check out code'
@@ -70,49 +70,25 @@ jobs:
         with:
           tag: kevm-ci-concrete-${{ github.sha }}
       - name: 'Build kevm-pyk'
-        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j`nproc`'
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk'
       - name: 'Build kevm'
-        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-llvm build-node -j`nproc` RELEASE=true'
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-llvm build-node -j`nproc` RELEASE=true'
       - name: 'Test kevm-pyk'
-        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-kevm-pyk -j`nproc`'
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-kevm-pyk -j`nproc`'
       - name: 'Test conformance'
-        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-conformance -j`nproc` TEST_CONCRETE_BACKEND=llvm'
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-conformance -j`nproc` TEST_CONCRETE_BACKEND=llvm'
       - name: 'Test llvm krun'
-        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'
       - name: 'Test kast'
-        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-parse -j`nproc` TEST_CONCRETE_BACKEND=llvm'
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-parse -j`nproc` TEST_CONCRETE_BACKEND=llvm'
       - name: 'Test failure tests'
-        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-failure -j`nproc` TEST_CONCRETE_BACKEND=llvm'
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-failure -j`nproc` TEST_CONCRETE_BACKEND=llvm'
       - name: 'Test node'
-        run: docker exec -t kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-node -j`nproc`'
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-node -j`nproc`'
       - name: 'Tear down Docker'
         if: always()
         run: |
           docker stop --time=0 kevm-ci-concrete-${GITHUB_SHA}
-
-  test-prove-java:
-    name: 'Build and Test KEVM java proofs'
-    needs: test-concrete-execution
-    runs-on: [self-hosted, linux, normal]
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          tag: kevm-ci-java-${{ github.sha }}
-      - name: 'Build kevm-pyk'
-        run: docker exec -t kevm-ci-java-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j2'
-      - name: 'Build Definitions'
-        run: docker exec -t kevm-ci-java-${GITHUB_SHA} /bin/bash -c 'make build-prove-java -j2'
-      - name: 'Prove Java'
-        run: docker exec -t kevm-ci-java-${GITHUB_SHA} /bin/bash -c 'make test-prove -j3 TEST_SYMBOLIC_BACKEND=java'
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-ci-java-${GITHUB_SHA}
 
   test-prove-haskell:
     name: 'Build and Test KEVM haskell proofs'
@@ -128,15 +104,15 @@ jobs:
         with:
           tag: kevm-ci-haskell-${{ github.sha }}
       - name: 'Build kevm-pyk'
-        run: docker exec -t kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j2'
+        run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk'
       - name: 'Build Definitions'
-        run: docker exec -t kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make build-prove-haskell -j4'
+        run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make build-prove-haskell -j4'
       - name: 'Prove Haskell'
-        run: docker exec -t kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove -j6 TEST_SYMBOLIC_BACKEND=haskell'
+        run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove -j9 TEST_SYMBOLIC_BACKEND=haskell'
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop --time=0 kevm-ci-haskell-${GITHUB_SHA} 
+          docker stop --time=0 kevm-ci-haskell-${GITHUB_SHA}
 
   test-prove-foundry:
     name: 'Build and Test KEVM Foundry proofs'
@@ -152,50 +128,53 @@ jobs:
         with:
           tag: kevm-ci-foundry-${{ github.sha }}
       - name: 'Build kevm-pyk'
-        run: docker exec -t kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk venv -j2'
+        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk'
       - name: 'Build Foundry'
-        run: docker exec -t kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
+        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
       - name: 'Test Foundry'
-        run: docker exec -t kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry -j2 FOUNDRY_PAR=4'
+        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry -j2 FOUNDRY_PAR=12'
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop --time=0 kevm-ci-foundry-${GITHUB_SHA} 
+          docker stop --time=0 kevm-ci-foundry-${GITHUB_SHA}
 
   nix:
     name: 'Nix'
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-    needs: version-bump
-    runs-on: ${{ matrix.os }}
+        include:
+          - runner: ubuntu-20.04
+            os: ubuntu-20.04
+          - runner: macos-12
+            os: macos-12
+          - runner: MacM1
+            os: self-macos-12
+    runs-on: ${{ matrix.runner }}
     steps:
-      - name: Check out code
+      - name: 'Check out code'
         uses: actions/checkout@v3
         with:
           # Check out pull request HEAD instead of merge commit.
           ref: ${{ github.event.pull_request.head.sha }}
-      - name: 'Set up Node'
-        uses: actions/setup-node@v3
-          with:
-            node-version: 16
+      - name: 'Install Python3.10'
+        if: ${{ !contains(matrix.os, 'macos') }}
+        run: |
+          sudo apt-get install --yes software-properties-common
+          sudo apt-add-repository ppa:deadsnakes/ppa
+          sudo apt-get install --yes python3.10
       - name: 'Install Nix'
+        if: ${{ !startsWith(matrix.os, 'self') }}
         uses: cachix/install-nix-action@v15
         with:
           install_url: https://releases.nixos.org/nix/nix-2.7.0/install
           extra_nix_config: |
             substituters = http://cache.nixos.org https://cache.iog.io
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
-
       - name: 'Install Cachix'
+        if: ${{ !startsWith(matrix.os, 'self') }}
         uses: cachix/cachix-action@v10
         with:
-          name: runtimeverification
-          extraPullNames: kore
-          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-
-      # - name: Check submodules
-      #   run: GC_DONT_GC=1 nix run .#check-submodules
-
-      - name: Test KEVM
-        run: GC_DONT_GC=1 nix build .#kevm-test
+          name: k-framework
+          authToken: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
+      - name: 'Test KEVM'
+        run: GC_DONT_GC=1 nix build --print-build-logs .#kevm-test

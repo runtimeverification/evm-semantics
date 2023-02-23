@@ -8,19 +8,9 @@ from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSequence, KSort, KVariable, build_assoc
-from pyk.kast.manip import abstract_term_safely, substitute
-from pyk.kast.outer import (
-    KFlatModule,
-    KImport,
-    KNonTerminal,
-    KProduction,
-    KProductionItem,
-    KRule,
-    KSentence,
-    KTerminal,
-    KToken,
-)
+from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSequence, KSort, KVariable, Subst, build_assoc
+from pyk.kast.manip import abstract_term_safely
+from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KProductionItem, KRule, KSentence, KTerminal
 from pyk.kcfg import KCFG
 from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import intToken
@@ -79,7 +69,7 @@ class Contract:
             assert prod_klabel is not None
             args: List[KInner] = []
             conjuncts: List[KInner] = []
-            for input_name, input_type in zip(self.arg_names, self.arg_types):
+            for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
                 args.append(KEVM.abi_type(input_type, KVariable(input_name)))
                 rp = _range_predicate(KVariable(input_name), input_type)
                 if rp is None:
@@ -119,6 +109,7 @@ class Contract:
     methods: Tuple[Method, ...]
     test_methods: Tuple[Method, ...]
     fields: FrozenDict
+    srcmap: Optional[Dict[int, str]]
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
         def _get_method_abi(_mname: str) -> Dict:
@@ -132,7 +123,7 @@ class Contract:
             contract_json['evm']['deployedBytecode']['object']
             if not foundry
             else contract_json['deployedBytecode']['object']
-        )
+        ).replace('0x', '')
         _methods = []
         if not foundry and 'evm' in contract_json and 'methodIdentifiers' in contract_json['evm']:
             _method_identifiers = contract_json['evm']['methodIdentifiers']
@@ -140,7 +131,7 @@ class Contract:
             _method_identifiers = contract_json['methodIdentifiers']
         else:
             _method_identifiers = []
-            _LOGGER.warning(f'Could not find member \'methodIdentifiers\' while processing contract: {self.name}')
+            _LOGGER.warning(f"Could not find member 'methodIdentifiers' while processing contract: {self.name}")
         for msig in _method_identifiers:
             mname = msig.split('(')[0]
             mid = int(_method_identifiers[msig], 16)
@@ -148,7 +139,7 @@ class Contract:
             _methods.append(_m)
         self.methods = tuple(_methods)
         if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
-            _LOGGER.warning(f'Could not find member \'storageLayout\' while processing contract: {self.name}')
+            _LOGGER.warning(f"Could not find member 'storageLayout' while processing contract: {self.name}")
             self.fields = FrozenDict({})
         else:
             _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
@@ -159,6 +150,29 @@ class Contract:
                     continue
                 _fields[_l] = _s
             self.fields = FrozenDict(_fields)
+
+        self.srcmap = None
+        if len(self.bytecode) > 0:
+            instr_to_pc = {}
+            pc = 0
+            instr = 0
+            bs = [int(self.bytecode[i : i + 2], 16) for i in range(0, len(self.bytecode), 2)]
+            while pc < len(bs):
+                b = bs[pc]
+                instr_to_pc[instr] = pc
+                if 0x60 <= b and b < 0x7F:
+                    push_width = b - 0x5F
+                    pc = pc + push_width
+                pc += 1
+                instr += 1
+
+            instr_srcmap = (
+                contract_json['evm']['deployedBytecode']['sourceMap']
+                if not foundry
+                else contract_json['deployedBytecode']['sourceMap']
+            ).split(';')
+
+            self.srcmap = {instr_to_pc[instr]: src for instr, src in enumerate(instr_srcmap)}
 
     @staticmethod
     def contract_to_module_name(c: str, spec: bool = True) -> str:
@@ -218,7 +232,9 @@ class Contract:
 
     @property
     def macro_bin_runtime(self) -> KRule:
-        return KRule(KRewrite(KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken(self.bytecode))))
+        return KRule(
+            KRewrite(KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken('0x' + self.bytecode)))
+        )
 
     @property
     def method_sentences(self) -> List[KSentence]:
@@ -263,7 +279,6 @@ class Contract:
 
 
 def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
-
     # TODO: add check to kevm:
     # solc version should be >=0.8.0 due to:
     # https://github.com/ethereum/solidity/issues/10276
@@ -285,6 +300,7 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
                         'storageLayout',
                         'evm.methodIdentifiers',
                         'evm.deployedBytecode.object',
+                        'evm.deployedBytecode.sourceMap',
                     ],
                 },
             },
@@ -337,11 +353,10 @@ def method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Met
 
 
 def _init_cterm(init_term: KInner) -> CTerm:
-    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
-    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
+    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), Foundry.loc_FOUNDRY_FAILED())
     init_cterm = CTerm(init_term)
     init_cterm = KEVM.add_invariant(init_cterm)
-    init_cterm = init_cterm.add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
+    init_cterm = init_cterm.add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, intToken(0)])))
     return init_cterm
 
 
@@ -370,6 +385,7 @@ def _init_term(
         'PROGRAM_CELL': program,
         'JUMPDESTS_CELL': KEVM.compute_valid_jumpdests(program),
         'ORIGIN_CELL': KVariable('ORIGIN_ID'),
+        'LOG_CELL': KApply('.List'),
         'ID_CELL': Foundry.address_TEST_CONTRACT(),
         'CALLER_CELL': KVariable('CALLER_ID'),
         'ACCESSEDACCOUNTS_CELL': KApply('.Set'),
@@ -383,16 +399,14 @@ def _init_term(
                 [
                     Foundry.address_TEST_CONTRACT(),
                     Foundry.address_CHEATCODE(),
-                    Foundry.address_CALLER(),
-                    Foundry.address_HARDHAT_CONSOLE(),
                 ],
             ),
         ),
         'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
-        'PREVCALLER_CELL': KToken('.Account', 'K'),
-        'PREVORIGIN_CELL': KToken('.Account', 'K'),
-        'NEWCALLER_CELL': KToken('.Account', 'K'),
-        'NEWORIGIN_CELL': KToken('.Account', 'K'),
+        'PREVCALLER_CELL': KApply('.Account_EVM-TYPES_Account'),
+        'PREVORIGIN_CELL': KApply('.Account_EVM-TYPES_Account'),
+        'NEWCALLER_CELL': KApply('.Account_EVM-TYPES_Account'),
+        'NEWORIGIN_CELL': KApply('.Account_EVM-TYPES_Account'),
         'ACTIVE_CELL': FALSE,
         'STATIC_CELL': FALSE,
         'MEMORYUSED_CELL': intToken(0),
@@ -403,14 +417,23 @@ def _init_term(
         'ACCOUNTS_CELL': KEVM.accounts(
             [
                 account_cell,  # test contract address
-                Foundry.account_CALLER(),
                 Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE')),
-                Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
                 KVariable('ACCOUNTS_INIT'),
             ]
         ),
         'SINGLECALL_CELL': FALSE,
-        'EXPECTEDREVERT_CELL': FALSE,
+        'ISREVERTEXPECTED_CELL': FALSE,
+        'ISOPCODEEXPECTED_CELL': FALSE,
+        'EXPECTEDADDRESS_CELL': KApply('.Account_EVM-TYPES_Account'),
+        'EXPECTEDVALUE_CELL': intToken(0),
+        'EXPECTEDDATA_CELL': KApply('.ByteArray_EVM-TYPES_ByteArray'),
+        'OPCODETYPE_CELL': KApply('.OpcodeType_FOUNDRY-CHEAT-CODES_OpcodeType'),
+        'RECORDEVENT_CELL': FALSE,
+        'ISEVENTEXPECTED_CELL': FALSE,
+        'ISCALLWHITELISTACTIVE_CELL': FALSE,
+        'ISSTORAGEWHITELISTACTIVE_CELL': FALSE,
+        'ADDRESSSET_CELL': KApply('.Set'),
+        'STORAGESLOTSET_CELL': KApply('.Set'),
     }
 
     if calldata is not None:
@@ -419,14 +442,20 @@ def _init_term(
     if callvalue is not None:
         init_subst['CALLVALUE_CELL'] = callvalue
 
-    return substitute(empty_config, init_subst)
+    return Subst(init_subst)(empty_config)
 
 
 def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True) -> CTerm:
     final_term = _final_term(empty_config, contract_name)
-    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
-    dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
-    foundry_success = Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post, KVariable('EXPECTEDREVERT_FINAL'))
+    dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), Foundry.loc_FOUNDRY_FAILED())
+    foundry_success = Foundry.success(
+        KVariable('STATUSCODE_FINAL'),
+        dst_failed_post,
+        KVariable('ISREVERTEXPECTED_FINAL'),
+        KVariable('ISOPCODEEXPECTED_FINAL'),
+        KVariable('RECORDEVENT_FINAL'),
+        KVariable('ISEVENTEXPECTED_FINAL'),
+    )
     final_cterm = CTerm(final_term)
     if is_test:
         if not failing:
@@ -453,17 +482,33 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
         'ACCOUNTS_CELL': KEVM.accounts(
             [
                 post_account_cell,  # test contract address
-                Foundry.account_CALLER(),
                 Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE_FINAL')),
-                Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
                 KVariable('ACCOUNTS_FINAL'),
             ]
         ),
-        'EXPECTEDREVERT_CELL': KVariable('EXPECTEDREVERT_FINAL'),
+        'ISREVERTEXPECTED_CELL': KVariable('ISREVERTEXPECTED_FINAL'),
+        'ISOPCODEEXPECTED_CELL': KVariable('ISOPCODEEXPECTED_FINAL'),
+        'RECORDEVENT_CELL': KVariable('RECORDEVENT_FINAL'),
+        'ISEVENTEXPECTED_CELL': KVariable('ISEVENTEXPECTED_FINAL'),
+        'ISCALLWHITELISTACTIVE_CELL': KVariable('ISCALLWHITELISTACTIVE_FINAL'),
+        'ISSTORAGEWHITELISTACTIVE_CELL': KVariable('ISSTORAGEWHITELISTACTIVE_FINAL'),
+        'ADDRESSSET_CELL': KVariable('ADDRESSSET_FINAL'),
+        'STORAGESLOTSET_CELL': KVariable('STORAGESLOTSET_FINAL'),
     }
     return abstract_cell_vars(
-        substitute(empty_config, final_subst),
-        [KVariable('STATUSCODE_FINAL'), KVariable('ACCOUNTS_FINAL'), KVariable('EXPECTEDREVERT_FINAL')],
+        Subst(final_subst)(empty_config),
+        [
+            KVariable('STATUSCODE_FINAL'),
+            KVariable('ACCOUNTS_FINAL'),
+            KVariable('ISREVERTEXPECTED_FINAL'),
+            KVariable('ISOPCODEEXPECTED_FINAL'),
+            KVariable('RECORDEVENT_FINAL'),
+            KVariable('ISEVENTEXPECTED_FINAL'),
+            KVariable('ISCALLWHITELISTACTIVE_FINAL'),
+            KVariable('ISSTORAGEWHITELISTACTIVE_FINAL'),
+            KVariable('ADDRESSSET_FINAL'),
+            KVariable('STORAGESLOTSET_FINAL'),
+        ],
     )
 
 
@@ -532,7 +577,9 @@ def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
         return KEVM.range_uint(256, term)
     if type_label == 'int256':
         return KEVM.range_sint(256, term)
-    if type_label in {'bytes', 'string'}:
+    if type_label == 'bytes':
+        return KEVM.range_uint(128, KEVM.size_bytearray(term))
+    if type_label == 'string':
         return TRUE
 
     _LOGGER.warning(f'Unknown range predicate for type: {type_label}')

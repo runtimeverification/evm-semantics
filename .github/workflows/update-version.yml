@@ -4,7 +4,7 @@ on:
     branches:
       - '_update-deps_runtimeverification_k'
       - '_update-deps_runtimeverification_blockchain-k-plugin'
-      - '_update-deps_runtimeverification_pyk'
+      - '_update-deps/runtimeverification/pyk'
   workflow_dispatch:
 # Stop in progress workflows on the same branch and same workflow to use latest committed code
 concurrency:
@@ -14,8 +14,8 @@ concurrency:
 jobs:
 
   update-versions:
-    name: 'Update dependency versions'
-    runs-on: ubuntu-latest
+    name: 'Update K and kevm-pyk versions'
+    runs-on: ubuntu-20.04
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -25,6 +25,11 @@ jobs:
       - run: |
           git config user.name devops
           git config user.email devops@runtimeverification.com
+      - name: 'Install Python3.10'
+        run: |
+          sudo apt-get install --yes software-properties-common
+          sudo apt-add-repository ppa:deadsnakes/ppa
+          sudo apt-get install --yes python3.10
       - name: 'Update K Release tag'
         run: |
           cd deps/k
@@ -61,7 +66,7 @@ jobs:
       - uses: cachix/cachix-action@v10
         with:
           name: k-framework
-          signingKey: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
+          authToken: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
       - name: 'Update nix flake inputs'
         run: |
           nix run .#update-from-submodules

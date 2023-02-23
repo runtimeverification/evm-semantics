@@ -12,8 +12,6 @@ endmodule
 
 module LEMMAS-MCD
     imports LEMMAS-MCD-HASKELL
-    imports LEMMAS-MCD-JAVA
-    imports INFINITE-GAS-JAVA-EXTRA
 
 endmodule
 
@@ -162,27 +160,6 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
 
 endmodule
 
-module LEMMAS-MCD-JAVA [symbolic, kast]
-    imports LEMMAS-MCD-COMMON
-
-  // ########################
-  // Arithmetic
-  // ########################
-
-    rule sgn(chop(X)) ==K  1 => 0 <=Int X requires #rangeSInt(256, X) [simplification]
-    rule sgn(chop(X)) ==K -1 => X  <Int 0 requires #rangeSInt(256, X) [simplification]
-
-    rule chop(X) ==K 0 => X ==K 0 requires #rangeSInt(256, X) [simplification]
-
-  // ########################
-  // Range
-  // ########################
-
-    rule #range(M:Memory [ K <- V ]                        , START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)  requires #isConcrete(K)  andBool #isConcrete(V) andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START andBool K +Int 1                    ==Int START +Int WIDTH [simplification]
-    rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS')        ], START, WIDTH)  requires #isConcrete(K)  andBool #isConcrete(V) andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START andBool K +Int 1                    ==Int K'
-                                                                                                                                  andBool #isConcrete(K') andBool #isConcrete(VS')                                                                andBool K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH [simplification]
-
-endmodule
 
 module LEMMAS-MCD-COMMON
     imports LEMMAS-MCD-SYNTAX

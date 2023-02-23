@@ -24,4 +24,9 @@ contract AssumeTest is Test {
         vm.assume(a == b);
         assertEq(a, b);
     }
+
+    function test_assume_staticCall(bool a) public {
+        address(vm).staticcall(abi.encodeWithSignature("assume(bool)", a));
+        assert(a);
+    }
 }

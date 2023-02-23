@@ -1,14 +1,14 @@
-diff --git a/kevm b/kevm
-index b77303c..9770f29 100755
+diff --git a/bin/kevm b/bin/kevm
+index a38c7d5ca..424f5fd3e 100755
 --- a/bin/kevm
 +++ b/bin/kevm
-@@ -96,9 +96,6 @@ run_kompile() {
+@@ -97,9 +97,6 @@ run_kompile() {
                     if [[ "$(uname -s)" == 'Linux' ]]; then
-                        kompile_opts+=( -ccopt -lprocps )
+                        ccopts+=( -lprocps )
                     elif [[ "$(uname -s)" == 'Darwin' ]]; then
 -                       openssl_root="$(brew --prefix openssl)"
 -                       brew_root="$(brew --prefix)"
--                       kompile_opts+=( -ccopt -I${brew_root}/include -ccopt -L/${brew_root}/lib -ccopt -I${openssl_root}/include -ccopt -L${openssl_root}/lib )
-                        kompile_opts+=( -ccopt -I${libcryptopp_dir}/include -ccopt -L/${libcryptopp_dir}/lib )
+-                       ccopts+=( -I${brew_root}/include -L/${brew_root}/lib -I${openssl_root}/include -L${openssl_root}/lib )
+                        ccopts+=( -I${libcryptopp_dir}/include -L/${libcryptopp_dir}/lib                                     )
                     fi
-                    ;;
+                    for ccopt in "${ccopts[@]}"; do

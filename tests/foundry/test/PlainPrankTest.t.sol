@@ -20,6 +20,19 @@ contract AdditionalToken {
 
 contract PlainPrankTest is Test {
 
+    function internalCounter() public view returns (bool) {
+        return msg.sender == address(15);
+    }
+
+    function testFail_startPrank_internalCall() public {
+        // The vm.assume is required only by KEVM in order to have this test passing. It is required
+        // because the `msg.sender` in KEVM specs is a symbolic `CALLER_ID` while in foundry it is a
+        // concrete, hardcoded address.
+        vm.assume(msg.sender != address(15));
+        vm.startPrank(address(15));
+        assert(internalCounter());
+    }
+
     function test_startPrank_true() public {
         AdditionalToken token = new AdditionalToken();
         vm.startPrank(address(token));

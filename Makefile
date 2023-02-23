@@ -46,25 +46,25 @@ PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
 export PLUGIN_FULL_PATH
 
 
-.PHONY: all clean distclean                                                                                                      \
-        deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                      \
-        build build-haskell build-foundry build-llvm build-prove build-prove-haskell build-prove-java build-node build-kevm      \
-        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
-        test-prove test-failing-prove                                                                                            \
-        test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples      \
-        test-prove-mcd test-klab-prove                                                                                           \
-        test-parse test-failure test-foundry test-foundry-forge                                                                  \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
-        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean                                                       \
-        media media-pdf metropolis-theme                                                                                         \
-        install uninstall                                                                                                        \
-        venv venv-clean kevm-pyk
+.PHONY: all clean distclean                                                                                                                  \
+        deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                                  \
+        build build-haskell build-foundry build-llvm build-prove build-prove-haskell build-node build-kevm                                   \
+        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance             \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                              \
+        test-prove test-failing-prove                                                                                                        \
+        test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-smoke \
+        test-prove-mcd test-klab-prove                                                                                                       \
+        test-parse test-failure test-foundry test-foundry-forge                                                                              \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                           \
+        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean                                                                   \
+        media media-pdf metropolis-theme                                                                                                     \
+        install uninstall                                                                                                                    \
+        poetry-env poetry shell kevm-pyk
 .SECONDARY:
 
 all: build
 
-clean: foundry-clean venv-clean
+clean: foundry-clean
 	rm -rf $(KEVM_BIN) $(KEVM_LIB)
 
 distclean:
@@ -168,7 +168,24 @@ plugin-deps: $(plugin_includes) $(plugin_c_includes)
 # Building
 # --------
 
-KOMPILE := $(KEVM) kompile
+PYTHON_BIN   := python3.10
+KEVM_PYK_DIR := ./kevm-pyk
+POETRY       := poetry -C $(KEVM_PYK_DIR)
+POETRY_RUN   := $(POETRY) -- run
+
+poetry-env:
+	$(POETRY) env use $(PYTHON_BIN)
+
+poetry: poetry-env
+	$(POETRY) install
+
+shell: poetry
+	$(POETRY) shell
+
+kevm-pyk: poetry-env
+	$(MAKE) -C $(KEVM_PYK_DIR)
+
+KOMPILE := $(POETRY_RUN) $(KEVM) kompile --pyk
 
 kevm_files := abi.md                      \
               asm.md                      \
@@ -447,34 +464,14 @@ tests/%.parse: tests/% $(KEVM_LIB)/kast-json.py $(KEVM_LIB)/kore-json.py
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json $(KEVM_BIN)/kevm
-	$(PYK_ACTIVATE) && $(KEVM) kast $< kore $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
+	$(POETRY_RUN) $(KEVM) kast $< kore $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
 	$(CHECK) tests/interactive/$*.gst-to-kore.out tests/interactive/$*.gst-to-kore.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/interactive/$*.gst-to-kore.out
 
 # solc-to-k
 # ---------
 
-KEVM_PYK_DIR := ./kevm-pyk
-VENV_DIR     := $(BUILD_DIR)/venv
-PYK_ACTIVATE := . $(VENV_DIR)/bin/activate
 FOUNDRY_PAR  := 4
-
-venv-clean:
-	rm -rf $(VENV_DIR)
-	rm -rf $(KEVM_LIB)/kframework/lib/python3.8
-	rm -rf $(KEVM_LIB)/kframework/local/lib/python3.10
-	rm -rf $(K_SUBMODULE)/pyk/build
-
-$(VENV_DIR)/pyvenv.cfg:
-	   virtualenv -p python3 $(VENV_DIR) \
-	&& $(PYK_ACTIVATE)                   \
-	&& pip install --editable $(KEVM_PYK_DIR)
-
-venv: $(VENV_DIR)/pyvenv.cfg
-	@echo $(PYK_ACTIVATE)
-
-kevm-pyk:
-	$(MAKE) -C $(KEVM_PYK_DIR)
 
 foundry-clean:
 	rm -rf tests/foundry/cache
@@ -483,15 +480,13 @@ foundry-clean:
 	rm -f  tests/foundry/foundry.k
 	rm -f  tests/foundry/foundry.rule-profile
 
-tests/foundry/%: KEVM = $(PYK_ACTIVATE) && kevm
-tests/foundry/%: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
+tests/foundry/%: KEVM = $(POETRY_RUN) kevm
 
 foundry_dir  := tests/foundry
 foundry_out := $(foundry_dir)/out
 
 test-foundry: KEVM_OPTS += --pyk --verbose --profile
-test-foundry: KEVM = $(PYK_ACTIVATE) && kevm
-test-foundry: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
+test-foundry: KEVM = $(POETRY_RUN) kevm
 test-foundry: tests/foundry/foundry.k.check tests/foundry/out/kompiled/foundry.k.prove
 
 foundry-forge-build: $(foundry_out)
@@ -511,43 +506,41 @@ tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
 
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	$(KEVM) foundry-prove tests/foundry/out                              \
-	    -j$(FOUNDRY_PAR) --no-simplify-init                              \
+	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
 	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
 	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
 
-tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) venv $(lemma_includes)
+tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
 	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
-tests/specs/examples/%-bin-runtime.k: KEVM = $(PYK_ACTIVATE) && kevm
-tests/specs/examples/%-bin-runtime.k: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
+tests/specs/examples/%-bin-runtime.k: KEVM = $(POETRY_RUN) kevm
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
-tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
 	$(KEVM) solc-to-k $< ERC20 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
 
 tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
-tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
 	$(KEVM) solc-to-k $< ERC721 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
 
 tests/specs/examples/storage-spec/haskell/timestamp: tests/specs/examples/storage-bin-runtime.k
-tests/specs/examples/storage-bin-runtime.k: tests/specs/examples/Storage.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+tests/specs/examples/storage-bin-runtime.k: tests/specs/examples/Storage.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
 	$(KEVM) solc-to-k $< Storage $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module STORAGE-VERIFICATION > $@
 
-tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) venv
+tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
 	$(KEVM) solc-to-k $< Empty $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
-	$(KEVM) prove $< $(KEVM_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS)                   \
+	$(POETRY_RUN) $(KEVM) prove $< $(KEVM_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS) \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
-tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) tests/specs/concrete-rules.txt $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
+tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
 	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                  \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
 	    --main-module $(KPROVE_MODULE)                                                                   \
 	    --syntax-module $(KPROVE_MODULE)                                                                 \
-	    --concrete-rules-file tests/specs/concrete-rules.txt                                             \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 tests/%.search: tests/%
@@ -599,6 +592,7 @@ test-bchain: $(passing_bchain_tests:=.run)
 
 prove_specs_dir          := tests/specs
 prove_failing_tests      := $(shell cat tests/failing-symbolic.$(TEST_SYMBOLIC_BACKEND))
+prove_pyk_failing_tests  := $(shell cat tests/failing-symbolic.pyk)
 prove_slow_tests         := $(shell cat tests/slow.$(TEST_SYMBOLIC_BACKEND))
 prove_skip_tests         := $(prove_failing_tests) $(prove_slow_tests)
 prove_benchmarks_tests   := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/benchmarks/*-spec.k))
@@ -609,6 +603,9 @@ prove_bihu_tests         := $(filter-out $(prove_skip_tests), $(wildcard $(prove
 prove_examples_tests     := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k) $(wildcard $(prove_specs_dir)/examples/*-spec.md))
 prove_mcd_tests          := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
 prove_optimization_tests := $(filter-out $(prove_skip_tests), tests/specs/opcodes/evm-optimizations-spec.md)
+prove_all_tests          := $(prove_benchmarks_tests) $(prove_functional_tests) $(prove_opcodes_tests) $(prove_erc20_tests) $(prove_bihu_tests) $(prove_examples_tests) $(prove_mcd_tests) $(prove_optimization_tests)
+prove_pyk_tests          := $(filter-out $(prove_pyk_failing_tests), $(prove_all_tests))
+prove_smoke_tests        := $(shell cat tests/specs/smoke)
 
 ## best-effort list of prove kompiled definitions to produce ahead of time
 prove_haskell_definitions :=                                                              \
@@ -630,22 +627,8 @@ prove_haskell_definitions :=                                                    
                              tests/specs/mcd/functional-spec/haskell/timestamp            \
                              tests/specs/mcd/verification/haskell/timestamp               \
                              tests/specs/opcodes/evm-optimizations-spec/haskell/timestamp
-prove_java_definitions :=                                                              \
-                          tests/specs/benchmarks/functional-spec/java/timestamp        \
-                          tests/specs/benchmarks/verification/java/timestamp           \
-                          tests/specs/bihu/functional-spec/java/timestamp              \
-                          tests/specs/bihu/verification/java/timestamp                 \
-                          tests/specs/erc20/verification/java/timestamp                \
-                          tests/specs/examples/solidity-code-spec/java/timestamp       \
-                          tests/specs/examples/sum-to-n-spec/java/timestamp            \
-                          tests/specs/functional/lemmas-no-smt-spec/java/timestamp     \
-                          tests/specs/functional/lemmas-spec/java/timestamp            \
-                          tests/specs/mcd/functional-spec/java/timestamp               \
-                          tests/specs/mcd/verification/java/timestamp                  \
-                          tests/specs/opcodes/verification/java/timestamp
-build-prove-java: $(prove_java_definitions)
 build-prove-haskell: $(prove_haskell_definitions)
-build-prove: $(prove_java_definitions) $(prove_haskell_definitions)
+build-prove: $(prove_haskell_definitions)
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
 test-prove-benchmarks:    $(prove_benchmarks_tests:=.prove)
@@ -656,11 +639,14 @@ test-prove-bihu:          $(prove_bihu_tests:=.prove)
 test-prove-examples:      $(prove_examples_tests:=.prove)
 test-prove-mcd:           $(prove_mcd_tests:=.prove)
 test-prove-optimizations: $(prove_optimization_tests:=.prove)
+test-prove-smoke:         $(prove_smoke_tests:=.prove)
 
 test-failing-prove: $(prove_failing_tests:=.prove)
 
 test-klab-prove: KPROVE_OPTS += --debugger
 test-klab-prove: $(smoke_tests_prove:=.prove)
+
+$(prove_pyk_tests:=.prove): KPROVE_OPTS += --pyk --max-depth 1000
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.md
@@ -690,9 +676,9 @@ kevm_pyk_tests :=                                                               
                   tests/specs/examples/erc721-bin-runtime.k
 
 test-kevm-pyk: KEVM_OPTS += --pyk --verbose --profile
-test-kevm-pyk: KEVM = $(PYK_ACTIVATE) && kevm
-test-kevm-pyk: KOMPILE = $(PYK_ACTIVATE) && kevm kompile
-test-kevm-pyk: $(kevm_pyk_tests) venv
+test-kevm-pyk: KEVM = $(POETRY_RUN) kevm
+test-kevm-pyk: KOMPILE = $(POETRY_RUN) kevm kompile
+test-kevm-pyk: $(kevm_pyk_tests) poetry
 
 # Interactive Tests
 

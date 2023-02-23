@@ -3,7 +3,7 @@
 
 ## Installation
 
-Prerequsites: `python 3.8.*`, `pip >= 20.0.2`, `poetry >= 1.1.14`.
+Prerequsites: `python 3.8.*`, `pip >= 20.0.2`, `poetry >= 1.3.2`.
 
 ```bash
 make build
