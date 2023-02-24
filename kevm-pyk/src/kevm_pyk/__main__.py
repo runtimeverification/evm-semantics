@@ -14,7 +14,7 @@ from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.utils import shorten_hashes, single
 
-from .foundry import foundry_kompile, foundry_prove, foundry_show
+from .foundry import foundry_kompile, foundry_list, foundry_prove, foundry_show
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
@@ -334,28 +334,11 @@ def exec_foundry_list(
     details: bool = True,
     **kwargs: Any,
 ) -> None:
-    kcfgs_dir = foundry_out / 'kcfgs'
-    pattern = '*.json'
-    paths = kcfgs_dir.glob(pattern)
-    for kcfg_file in paths:
-        kcfg_json = json.loads(Path(kcfg_file).read_text())
-        cfg_id = kcfg_json['cfgid']
-        kcfg = KCFG.from_dict(kcfg_json)
-        total_nodes = len(kcfg.nodes)
-        frontier_nodes = len(kcfg.frontier)
-        stuck_nodes = len(kcfg.stuck)
-        proven = 'failed'
-        if stuck_nodes == 0:
-            proven = 'pending'
-            if frontier_nodes == 0:
-                proven = 'passed'
-        print(f'{cfg_id}: {proven}')
-        if details:
-            print(f'    path: {kcfg_file}')
-            print(f'    nodes: {total_nodes}')
-            print(f'    frontier: {frontier_nodes}')
-            print(f'    stuck: {stuck_nodes}')
-            print()
+    foundry_list(
+        profile=profile,
+        foundry_out=foundry_out,
+        details=details,
+    )
 
 
 def exec_run(

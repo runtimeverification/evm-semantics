@@ -298,6 +298,35 @@ def foundry_show(
         print(foundry.pretty_print(new_module) + '\n')
 
 
+def foundry_list(
+    profile: bool,
+    foundry_out: Path,
+    details: bool = True,
+) -> None:
+    kcfgs_dir = foundry_out / 'kcfgs'
+    pattern = '*.json'
+    paths = kcfgs_dir.glob(pattern)
+    for kcfg_file in paths:
+        kcfg_json = json.loads(Path(kcfg_file).read_text())
+        cfg_id = kcfg_json['cfgid']
+        kcfg = KCFG.from_dict(kcfg_json)
+        total_nodes = len(kcfg.nodes)
+        frontier_nodes = len(kcfg.frontier)
+        stuck_nodes = len(kcfg.stuck)
+        proven = 'failed'
+        if stuck_nodes == 0:
+            proven = 'pending'
+            if frontier_nodes == 0:
+                proven = 'passed'
+        print(f'{cfg_id}: {proven}')
+        if details:
+            print(f'    path: {kcfg_file}')
+            print(f'    nodes: {total_nodes}')
+            print(f'    frontier: {frontier_nodes}')
+            print(f'    stuck: {stuck_nodes}')
+            print()
+
+
 def _write_cfg(cfg: KCFG, path: Path) -> None:
     path.write_text(cfg.to_json())
     _LOGGER.info(f'Updated CFG file: {path}')
