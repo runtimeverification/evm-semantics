@@ -1,0 +1,99 @@
+name: 'Master Push'
+on:
+  push:
+    branches:
+      - 'master'
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+
+  nix-cache:
+    name: 'Populate Nix Cache'
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            os: ubuntu-latest
+          - runner: macos-12
+            os: macos-12
+          - runner: MacM1
+            os: self-macos-12
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+      - name: 'Upgrade bash'
+        if: ${{ contains(matrix.os, 'macos') }}
+        run: brew install bash
+      - name: 'Install Nix'
+        if: ${{ !startsWith(matrix.os, 'self') }}
+        uses: cachix/install-nix-action@v15
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      - name: 'Install Cachix'
+        if: ${{ !startsWith(matrix.os, 'self') }}
+        uses: cachix/cachix-action@v10
+        with:
+          name: k-framework
+          signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
+          skipPush: true
+      - name: 'Build and cache KEVM'
+        uses: workflow/nix-shell-action@v3.0.3
+        env:
+          GC_DONT_GC: 1
+          CACHIX_AUTH_TOKEN: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
+        with:
+          packages: jq
+          script: |
+            kevm=$(nix build .#kevm --json | jq -r '.[].outputs | to_entries[].value')
+            drv=$(nix-store --query --deriver ${kevm})
+            nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework
+
+  make-release:
+    name: 'Cut Release'
+    runs-on: ubuntu-latest
+    needs: nix-cache
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+      - name: 'Make Release'
+        run: |
+          kevm_version=v$(cat package/version)
+          curl -X POST                                                              \
+            -H "Accept: application/vnd.github+json"                                \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}"                              \
+            https://api.github.com/repos/runtimeverification/evm-semantics/releases \
+            -d '{"tag_name":"'${kevm_version}'","target_commitish":"'${GITHUB_HEAD_REF}'","draft":false,"prerelease":false,"generate_release_notes":false}'
+
+  gh-pages:
+    name: 'Publish GH Pages'
+    runs-on: ubuntu-latest
+    needs: make-release
+    steps:
+      - name: 'Check out gh-pages'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
+      - run: |
+         git config --global user.email 'devops@runtimeverification.com'
+         git config --global user.name  'RV DevOps'
+      - name: 'Publish gh-pages'
+        run: |
+          git checkout -B gh-pages
+          cd web
+          npm install
+          npm run build
+          npm run build-sitemap
+          cd -
+          mv web/public_content ./
+          rm -rf $(find . -maxdepth 1 -not -name public_content -a -not -name .git -a -not -path . -a -not -path .. -a -not -name CNAME)
+          mv public_content/* ./
+          rm -rf public_content
+          git add ./
+          git commit -m 'gh-pages: Updated the website'
+          git merge --strategy ours origin/gh-pages --allow-unrelated-histories
+          git push origin gh-pages
