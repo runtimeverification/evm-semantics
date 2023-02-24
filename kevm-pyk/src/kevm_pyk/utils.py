@@ -64,7 +64,16 @@ def parallel_kcfg_explore(
             )
         base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
 
-        with KCFGExplore(kprove, port=(base_port + _index), bug_report=bug_report) as kcfg_explore:
+        with KCFGExplore(
+            kprove,
+            port=(base_port + _index),
+            bug_report=bug_report,
+            kore_rpc_command=[
+                'hs-booster-proxy',
+                '--llvm-backend-library',
+                'tests/foundry/out/llvm/interpreter',
+            ],
+        ) as kcfg_explore:
             try:
                 _cfg = kcfg_explore.all_path_reachability_prove(
                     _cfgid,
