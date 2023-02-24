@@ -3,6 +3,14 @@ KEVM: Semantics of EVM in K
 
 In this repository, we provide a model of the EVM in K.
 
+Fast Installation
+-----------------
+
+-   `bash <(curl https://kframework.org/install)`: install [the `kup` utility](https://github.com/runtimeverification/kup)
+-   `kup install kevm`: install KEVM.
+-   `kup list kevm`: list available KEVM versions.
+-   `kup update kevm`: update to latest KEVM version.
+
 Documentation/Support
 ---------------------
 
@@ -72,7 +80,7 @@ This repository generates the build-products for each backend in `.build/usr/lib
 
 ### System Dependencies
 
-The following are needed for building/running KEVM:
+First install the following tools:
 
 -   [git](https://git-scm.com/)
 -   GNU [Bison](https://www.gnu.org/software/bison/), [Flex](https://github.com/westes/flex), and [Autoconf](http://www.gnu.org/software/autoconf/).
