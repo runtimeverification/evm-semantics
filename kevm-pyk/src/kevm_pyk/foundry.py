@@ -399,6 +399,32 @@ def foundry_step_node(
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
 
+def foundry_section_edge(
+    foundry_out: Path,
+    test: str,
+    edge: Tuple[str, str],
+    profile: bool,
+    sections: int = 2,
+    replace: bool = False,
+    minimize: bool = True,
+    bug_report: bool = False,
+) -> None:
+    definition_dir = foundry_out / 'kompiled'
+    use_directory = foundry_out / 'specs'
+    kcfgs_dir = foundry_out / 'kcfgs'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    port = find_free_port()
+    source_id, target_id = edge
+    with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
+        kcfg, _ = kcfg_explore.section_edge(test, kcfg, source_id=source_id, target_id=target_id, sections=sections)
+    KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+
+
 def _write_cfg(cfg: KCFG, path: Path) -> None:
     path.write_text(cfg.to_json())
     _LOGGER.info(f'Updated CFG file: {path}')

@@ -17,6 +17,7 @@ from .foundry import (
     foundry_list,
     foundry_prove,
     foundry_remove_node,
+    foundry_section_edge,
     foundry_show,
     foundry_simplify_node,
     foundry_step_node,
@@ -444,20 +445,16 @@ def exec_foundry_section_edge(
     bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
-    definition_dir = foundry_out / 'kompiled'
-    use_directory = foundry_out / 'specs'
-    kcfgs_dir = foundry_out / 'kcfgs'
-    use_directory.mkdir(parents=True, exist_ok=True)
-    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
-    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    port = find_free_port()
-    source_id, target_id = edge
-    with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(test, kcfg, source_id=source_id, target_id=target_id, sections=sections)
-    KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+    foundry_section_edge(
+        foundry_out=foundry_out,
+        test=test,
+        edge=edge,
+        profile=profile,
+        sections=sections,
+        replace=replace,
+        minimize=minimize,
+        bug_report=bug_report,
+    )
 
 
 # Helpers
