@@ -13,6 +13,7 @@ from pyk.kcfg import KCFG, KCFGExplore
 from pyk.ktool.kompile import KompileBackend
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.ml import mlTop
+from pyk.utils import shorten_hashes
 
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, method_to_cfg
@@ -325,6 +326,47 @@ def foundry_list(
             print(f'    frontier: {frontier_nodes}')
             print(f'    stuck: {stuck_nodes}')
             print()
+
+
+def foundry_remove_node(foundry_out: Path, test: str, node: str, profile: bool) -> None:
+    kcfgs_dir = foundry_out / 'kcfgs'
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    for _node in kcfg.reachable_nodes(node, traverse_covers=True):
+        if not kcfg.is_target(_node.id):
+            _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
+            kcfg.remove_node(_node.id)
+    KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+
+
+def foundry_simplify_node(
+    foundry_out: Path,
+    test: str,
+    node: str,
+    profile: bool,
+    replace: bool = False,
+    minimize: bool = True,
+    bug_report: bool = False,
+) -> None:
+    definition_dir = foundry_out / 'kompiled'
+    use_directory = foundry_out / 'specs'
+    kcfgs_dir = foundry_out / 'kcfgs'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    cterm = kcfg.node(node).cterm
+    port = find_free_port()
+    with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
+        new_term = kcfg_explore.cterm_simplify(cterm)
+    new_term_minimized = new_term if not minimize else minimize_term(new_term)
+    print(f'Simplified:\n{foundry.pretty_print(new_term_minimized)}')
+    if replace:
+        kcfg.replace_node(node, CTerm(new_term))
+        KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
 
 def _write_cfg(cfg: KCFG, path: Path) -> None:

@@ -12,9 +12,9 @@ from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
-from pyk.utils import shorten_hashes, single
+from pyk.utils import single
 
-from .foundry import foundry_kompile, foundry_list, foundry_prove, foundry_show
+from .foundry import foundry_kompile, foundry_list, foundry_prove, foundry_remove_node, foundry_show
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
@@ -380,15 +380,7 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs
 
 
 def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, profile: bool, **kwargs: Any) -> None:
-    kcfgs_dir = foundry_out / 'kcfgs'
-    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    for _node in kcfg.reachable_nodes(node, traverse_covers=True):
-        if not kcfg.is_target(_node.id):
-            _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
-            kcfg.remove_node(_node.id)
-    KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+    foundry_remove_node(foundry_out=foundry_out, test=test, node=node, profile=profile)
 
 
 def exec_foundry_simplify_node(
