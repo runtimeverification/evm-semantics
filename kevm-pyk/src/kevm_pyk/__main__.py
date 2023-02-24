@@ -19,6 +19,7 @@ from .foundry import (
     foundry_remove_node,
     foundry_show,
     foundry_simplify_node,
+    foundry_step_node,
 )
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
@@ -420,24 +421,16 @@ def exec_foundry_step_node(
     bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
-    if repeat < 1:
-        raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
-    if depth < 1:
-        raise ValueError(f'Expected positive value for --depth, got: {depth}')
-    definition_dir = foundry_out / 'kompiled'
-    use_directory = foundry_out / 'specs'
-    kcfgs_dir = foundry_out / 'kcfgs'
-    use_directory.mkdir(parents=True, exist_ok=True)
-    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
-    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    port = find_free_port()
-    with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
-        for _i in range(repeat):
-            kcfg, node = kcfg_explore.step(test, kcfg, node, depth=depth)
-            KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+    foundry_step_node(
+        foundry_out=foundry_out,
+        test=test,
+        node=node,
+        profile=profile,
+        repeat=repeat,
+        depth=depth,
+        minimize=minimize,
+        bug_report=bug_report,
+    )
 
 
 def exec_foundry_section_edge(
