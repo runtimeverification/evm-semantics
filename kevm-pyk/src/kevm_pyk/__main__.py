@@ -6,17 +6,15 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
 from pyk.cli_utils import BugReport, dir_path, file_path
-from pyk.cterm import CTerm, build_claim, build_rule
-from pyk.kast.inner import KApply, KRewrite, KToken
-from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
-from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRuleLike
+from pyk.cterm import CTerm
+from pyk.kast.manip import minimize_term
+from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
-from pyk.prelude.ml import mlTop
 from pyk.utils import shorten_hashes, single
 
-from .foundry import foundry_kompile, foundry_prove
+from .foundry import foundry_kompile, foundry_prove, foundry_show
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
@@ -319,85 +317,15 @@ def exec_foundry_show(
     minimize: bool = True,
     **kwargs: Any,
 ) -> None:
-    definition_dir = foundry_out / 'kompiled'
-    use_directory = foundry_out / 'specs'
-    use_directory.mkdir(parents=True, exist_ok=True)
-    kcfgs_dir = foundry_out / 'kcfgs'
-    contract = test.split('.')[0]
-    srcmap_dir = foundry_out / 'srcmaps'
-    srcmap_file = srcmap_dir / f'{contract}.json'
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
-    srcmap: Optional[Dict[int, str]] = None
-    if srcmap_file.exists():
-        with open(srcmap_file, 'r') as sm:
-            srcmap = {int(k): v for k, v in json.loads(sm.read()).items()}
-
-    def _node_pretty(_ct: CTerm) -> List[str]:
-        k_cell = foundry.pretty_print(get_cell(_ct.config, 'K_CELL')).replace('\n', ' ')
-        if len(k_cell) > 80:
-            k_cell = k_cell[0:80] + ' ...'
-        k_str = f'k: {k_cell}'
-        calldepth_str = f'callDepth: {foundry.pretty_print(get_cell(_ct.config, "CALLDEPTH_CELL"))}'
-        statuscode_str = f'statusCode: {foundry.pretty_print(get_cell(_ct.config, "STATUSCODE_CELL"))}'
-        _pc = get_cell(_ct.config, 'PC_CELL')
-        pc_str = f'pc: {foundry.pretty_print(_pc)}'
-        ret_strs = [k_str, calldepth_str, statuscode_str, pc_str]
-        if type(_pc) is KToken and srcmap is not None:
-            pc = int(_pc.token)
-            if pc in srcmap:
-                ret_strs.append(f'srcmap: {srcmap[pc]}')
-            else:
-                _LOGGER.warning(f'pc not found in srcmap: {pc}')
-        return ret_strs
-
-    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    list(map(print, kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)))
-
-    for node_id in nodes:
-        kast = kcfg.node(node_id).cterm.kast
-        if minimize:
-            kast = minimize_term(kast)
-        print(f'\n\nNode {node_id}:\n\n{foundry.pretty_print(kast)}\n')
-
-    for node_id_1, node_id_2 in node_deltas:
-        config_1 = kcfg.node(node_id_1).cterm.config
-        config_2 = kcfg.node(node_id_2).cterm.config
-        config_delta = push_down_rewrites(KRewrite(config_1, config_2))
-        if minimize:
-            config_delta = minimize_term(config_delta)
-        print(f'\n\nState Delta {node_id_1} => {node_id_2}:\n\n{foundry.pretty_print(config_delta)}\n')
-
-    if to_module:
-
-        def to_rule(edge: KCFG.Edge, *, claim: bool = False) -> KRuleLike:
-            sentence_id = f'BASIC-BLOCK-{edge.source.id}-TO-{edge.target.id}'
-            init_cterm = CTerm(edge.source.cterm.config)
-            for c in edge.source.cterm.constraints:
-                assert type(c) is KApply
-                if c.label.name == '#Ceil':
-                    _LOGGER.warning(f'Ignoring Ceil condition: {c}')
-                else:
-                    init_cterm.add_constraint(c)
-            target_cterm = CTerm(edge.target.cterm.config)
-            for c in edge.source.cterm.constraints:
-                assert type(c) is KApply
-                if c.label.name == '#Ceil':
-                    _LOGGER.warning(f'Ignoring Ceil condition: {c}')
-                else:
-                    target_cterm.add_constraint(c)
-            rule: KRuleLike
-            if claim:
-                rule, _ = build_claim(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm)
-            else:
-                rule, _ = build_rule(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm, priority=35)
-            return rule
-
-        rules = [to_rule(e) for e in kcfg.edges() if e.depth > 0]
-        claims = [to_rule(KCFG.Edge(nd, kcfg.get_unique_target(), mlTop(), -1), claim=True) for nd in kcfg.frontier]
-        new_module = KFlatModule('SUMMARY', rules + claims)
-        print(foundry.pretty_print(new_module) + '\n')
+    foundry_show(
+        profile=profile,
+        foundry_out=foundry_out,
+        test=test,
+        nodes=nodes,
+        node_deltas=node_deltas,
+        to_module=to_module,
+        minimize=minimize,
+    )
 
 
 def exec_foundry_list(
