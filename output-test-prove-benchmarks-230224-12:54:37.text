@@ -1,0 +1,69 @@
+kevm prove tests/specs/benchmarks/address00-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+kevm prove tests/specs/benchmarks/bytes00-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+kevm prove tests/specs/benchmarks/ecrecover00-siginvalid-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+kevm prove tests/specs/benchmarks/ecrecover00-sigvalid-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+kevm prove tests/specs/benchmarks/encode-keccak00-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+kevm prove tests/specs/benchmarks/encodepacked-keccak01-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+kevm prove tests/specs/benchmarks/functional-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/functional-spec/haskell
+kevm prove tests/specs/benchmarks/keccak00-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+#Top
+[Warning] Compiler: Variable 'B' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/data/RV/evm-semantics/tests/specs/benchmarks/functional-spec.k)
+	Location(18,34,18,35)
+	18 |	    claim <k> runLemma (#range ( B [ 128 := #ecrec ( #buf ( 32 , HASH ) ,
+#buf ( 32 , SIGV ) , #buf ( 32 , SIGR ) , #buf ( 32 , SIGS ) ) ] [ 160 := #buf
+( 32 , HASH ) ] [ 192 := #buf ( 32 , SIGV ) ] [ 224 := #buf ( 32 , SIGR ) ] [
+256 := #buf ( 32 , SIGS ) ] [ 160 := #padToWidth ( 32 , #asByteStack ( #asWord
+( #ecrec ( #buf ( 32 , HASH ) , #buf ( 32 , SIGV ) , #buf ( 32 , SIGR ) , #buf
+( 32 , SIGS ) ) ) ) ) ] , 160 , 32 )) => doneLemma (#buf(32, RECOVERED)) ...
+</k>
+	   .	                                 ^
+kevm prove tests/specs/benchmarks/overflow00-nooverflow-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+#Top
+kevm prove tests/specs/benchmarks/overflow00-overflow-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+#Top
+kevm prove tests/specs/benchmarks/requires01-a0gt0-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+#Top
+kevm prove tests/specs/benchmarks/requires01-a0le0-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+#Top
+kevm prove tests/specs/benchmarks/staticarray00-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+#Top
+kevm prove tests/specs/benchmarks/staticloop00-a0lt10-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+#Top
+kevm prove tests/specs/benchmarks/storagevar00-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+#Top
+kevm prove tests/specs/benchmarks/storagevar01-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+#Top
+kevm prove tests/specs/benchmarks/storagevar02-nooverflow-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+#Top
+kevm prove tests/specs/benchmarks/storagevar02-overflow-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+#Top
+kevm prove tests/specs/benchmarks/storagevar03-spec.k  --backend haskell                    \
+    --definition tests/specs/benchmarks/verification/haskell
+#Top
+#Top
+#Top
+#Top
+#Top
+#Top
+#Top
+#Top
