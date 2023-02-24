@@ -6,15 +6,20 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
 from pyk.cli_utils import BugReport, dir_path, file_path
-from pyk.cterm import CTerm
-from pyk.kast.manip import minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.utils import single
 
-from .foundry import foundry_kompile, foundry_list, foundry_prove, foundry_remove_node, foundry_show
+from .foundry import (
+    foundry_kompile,
+    foundry_list,
+    foundry_prove,
+    foundry_remove_node,
+    foundry_show,
+    foundry_simplify_node,
+)
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
@@ -393,24 +398,15 @@ def exec_foundry_simplify_node(
     bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
-    definition_dir = foundry_out / 'kompiled'
-    use_directory = foundry_out / 'specs'
-    kcfgs_dir = foundry_out / 'kcfgs'
-    use_directory.mkdir(parents=True, exist_ok=True)
-    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
-    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    cterm = kcfg.node(node).cterm
-    port = find_free_port()
-    with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
-        new_term = kcfg_explore.cterm_simplify(cterm)
-    new_term_minimized = new_term if not minimize else minimize_term(new_term)
-    print(f'Simplified:\n{foundry.pretty_print(new_term_minimized)}')
-    if replace:
-        kcfg.replace_node(node, CTerm(new_term))
-        KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+    foundry_simplify_node(
+        foundry_out=foundry_out,
+        test=test,
+        node=node,
+        profile=profile,
+        replace=replace,
+        minimize=minimize,
+        bug_report=bug_report,
+    )
 
 
 def exec_foundry_step_node(
