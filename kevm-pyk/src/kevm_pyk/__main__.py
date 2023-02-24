@@ -15,7 +15,7 @@ from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.ml import mlTop
-from pyk.utils import shorten_hashes
+from pyk.utils import shorten_hashes, single
 
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, Foundry
@@ -328,9 +328,31 @@ def exec_prove(
     sys.exit(failed)
 
 
-def exec_view_kcfg(definition_dir: Path, claim: str, save_directory: Path, profile: bool, **kwargs: Any) -> None:
+def exec_view_kcfg(
+    definition_dir: Path,
+    spec_file: Path,
+    save_directory: Path,
+    profile: bool,
+    includes: List[str],
+    claim_label: Optional[str] = None,
+    spec_module: Optional[str] = None,
+    md_selector: Optional[str] = None,
+    **kwargs: Any,
+) -> None:
     kevm = KEVM(definition_dir, profile=profile)
-    kcfg = KCFGExplore.read_cfg(claim, save_directory)
+
+    _LOGGER.info(f'Extracting claims from file: {spec_file}')
+    claim = single(
+        kevm.get_claims(
+            spec_file,
+            spec_module_name=spec_module,
+            include_dirs=[Path(i) for i in includes],
+            md_selector=md_selector,
+            claim_labels=([claim_label] if claim_label is not None else None),
+        )
+    )
+
+    kcfg = KCFGExplore.read_cfg(claim.label, save_directory)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {claim} from {save_directory}')
     viewer = KCFGViewer(kcfg, kevm, node_printer=kevm.short_info)
@@ -818,7 +840,7 @@ def _create_argument_parser() -> ArgumentParser:
     k_args.add_argument(
         '--md-selector',
         type=str,
-        default='k & ! nobytes & ! node',
+        default='k & ! node',
         help='Code selector expression to use when reading markdown.',
     )
 
@@ -905,7 +927,9 @@ def _create_argument_parser() -> ArgumentParser:
         'prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args, rpc_args, explore_args]
     )
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    prove_args.add_argument('--save-directory', dest='kcfgs_dir', type=dir_path, help='Directory to store CFGs in.')
+    prove_args.add_argument(
+        '--save-directory', dest='save_directory', type=dir_path, help='Directory to store CFGs in.'
+    )
     prove_args.add_argument(
         '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
     )
@@ -925,7 +949,8 @@ def _create_argument_parser() -> ArgumentParser:
     view_kcfg_args.add_argument(
         'save_directory', type=dir_path, help='Path to where CFGs are stored (--save-directory option to prove).'
     )
-    view_kcfg_args.add_argument('claim', type=str, help='Claim identifier to load CFG for.')
+    view_kcfg_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
+    view_kcfg_args.add_argument('--claim', type=str, dest='claim_label', help='Claim identifier to load CFG for.')
 
     run_args = command_parser.add_parser(
         'run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args, k_args]
