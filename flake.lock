@@ -502,11 +502,11 @@
         "z3-src": "z3-src"
       },
       "locked": {
-        "lastModified": 1677110667,
-        "narHash": "sha256-Z8SXi8hYYfhlGKphJkGwPmVoGDg5N1n6miBShwlT1w8=",
+        "lastModified": 1676407552,
+        "narHash": "sha256-oktSNO6s0jgDyle5+5qgoYFBjC1gKbLUU5F199KhLu8=",
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "6b574836fb2af7265cab719ccdae6b960fea6f72",
+        "rev": "477c5d1328394f6dab84acfc1c3945ecd37c9083",
         "type": "github"
       },
       "original": {
