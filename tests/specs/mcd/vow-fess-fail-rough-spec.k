@@ -70,7 +70,7 @@ module VOW-FESS-FAIL-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vow_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
+              <storage> ACCT_ID_STORAGE:Map => ?_ACCT_ID_STORAGE:Map </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vow => ?_ </nonce>
             </account>
@@ -102,9 +102,9 @@ module VOW-FESS-FAIL-ROUGH-SPEC
        andBool (#rangeUInt(256, Junk_1)
        andBool (#rangeUInt(256, Junk_2)))))))))
 
-       andBool #lookup(ACCT_ID_STORAGE, #Vow.wards[CALLER_ID]) ==Int May
-       andBool #lookup(ACCT_ID_STORAGE, #Vow.sin[TIME]) ==Int Sin_era
-       andBool #lookup(ACCT_ID_STORAGE, #Vow.Sin) ==Int Sin
+       andBool #lookup(ACCT_ID_STORAGE:Map, #Vow.wards[CALLER_ID]) ==Int May
+       andBool #lookup(ACCT_ID_STORAGE:Map, #Vow.sin[TIME]) ==Int Sin_era
+       andBool #lookup(ACCT_ID_STORAGE:Map, #Vow.Sin) ==Int Sin
        andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vow.wards[CALLER_ID]) ==Int Junk_0
        andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vow.sin[TIME]) ==Int Junk_1
        andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vow.Sin) ==Int Junk_2
@@ -187,7 +187,7 @@ module VOW-FESS-FAIL-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vow_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
+              <storage> ACCT_ID_STORAGE:Map => ACCT_ID_STORAGE:Map  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vow => ?_ </nonce>
             </account>
