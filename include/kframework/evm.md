@@ -1237,22 +1237,9 @@ These rules reach into the network state and load/store from account storage:
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> STORAGE => STORAGE [INDEX <- NEW] </storage> 
-           ...
-         </account> [priority(20)]
-
-```
-
-> For transactional memory.
-
-```k
-    rule <k> SSTORE INDEX NEW => . ... </k>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
            <storage> STORAGE => #write(STORAGE, INDEX, NEW) </storage> 
            ...
-         </account> [priority(40)]
+         </account> 
 ```
 
 ### Call Operations
