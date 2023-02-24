@@ -6,10 +6,12 @@ In this repository, we provide a model of the EVM in K.
 Fast Installation
 -----------------
 
--   `bash <(curl https://kframework.org/install)`: install [the `kup` utility](https://github.com/runtimeverification/kup)
+-   `bash <(curl https://kframework.org/install)`: install [kup package manager]
 -   `kup install kevm`: install KEVM.
 -   `kup list kevm`: list available KEVM versions.
 -   `kup update kevm`: update to latest KEVM version.
+
+**NOTE**: The first run will take longer to fetch all the libraries and compile sources. (30m to 1h)
 
 Documentation/Support
 ---------------------
@@ -47,31 +49,6 @@ These files are used for testing the semantics itself:
 -   [state-utils.md](include/kframework/state-utils.md) provides functionality for EVM initialization, setup, and querying.
 -   [driver.md](include/kframework/driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
 
-Installing
-----------
-
-If you’re on a system that supports [Nix](https://nixos.org/download.html), the fastest way to install KEVM is to use the [kup package manager].
-
-```sh
-bash <(curl https://kframework.org/install)
-kup install kevm
-```
-
-You can update it using the following:
-
-```sh
-kup update kevm
-```
-
-And list available versions using:
-
-```sh
-kup list
-```
-
-This will take care of all the dependencies and specific versions used by KEVM.
-**NOTE**: The first run will take longer to fetch all the libraries and compile sources. (30m to 1h)
-
 Building from source
 --------------------
 
@@ -85,7 +62,6 @@ First install the following tools:
 -   [git](https://git-scm.com/)
 -   GNU [Bison](https://www.gnu.org/software/bison/), [Flex](https://github.com/westes/flex), and [Autoconf](http://www.gnu.org/software/autoconf/).
 -   GNU [libmpfr](https://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
--   Java 8 JDK (eg. [OpenJDK](http://openjdk.java.net/))
 -   [Z3](https://github.com/Z3Prover/z3) version 4.8.15
 
 For the exact dependencies, check the Dockerfile.
@@ -415,6 +391,8 @@ Resources
 
 -   [EVM Yellowpaper](https://github.com/ethereum/yellowpaper): Original specification of EVM.
 -   [LEM Semantics of EVM](https://github.com/pirapira/eth-isabelle)
+-   [EVM Opcode Interactive Reference](https://www.evm.codes/?fork=merge)
+-   [Solidity ABI Encoding](https://docs.soliditylang.org/en/v0.8.19/abi-spec.html)
 
 For more information about [The K Framework](https://kframework.org), refer to these sources:
 
