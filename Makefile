@@ -339,22 +339,22 @@ $(KEVM_LIB)/%.py: scripts/%.py
 	@mkdir -p $(dir $@)
 	install $< $@
 
-$(KEVM_LIB)/version:
+$(KEVM_LIB)/version: package/version
 	@mkdir -p $(dir $@)
-	echo $(KEVM_RELEASE_TAG) > $@
+	install $< $@
 
 $(KEVM_LIB)/release.md: INSTALL.md
 	@mkdir -p $(dir $@)
-	echo "KEVM Release $(KEVM_RELEASE_TAG)"  > $@
-	echo                                    >> $@
-	cat INSTALL.md                          >> $@
+	echo "KEVM Release $(shell cat package/version)"  > $@
+	echo                                             >> $@
+	cat INSTALL.md                                   >> $@
 
 build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
 
 build-llvm:     $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-haskell:  $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
 build-node:     $(KEVM_LIB)/$(node_kompiled)
-build-kevm:     $(KEVM_BIN)/kevm $(kevm_includes) $(plugin_includes)
+build-kevm:     $(KEVM_BIN)/kevm $(KEVM_LIB)/version $(kevm_includes) $(plugin_includes)
 build-foundry:  $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
