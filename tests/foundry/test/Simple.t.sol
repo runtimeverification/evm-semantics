@@ -22,8 +22,18 @@ contract AssertTest is Test {
          assert(false);
      }
 
-    function testFail_expect_revert() public{
+    function testFail_expect_revert() public {
         vm.expectRevert();
         assert(false);
+    }
+
+    function test_source_map() public pure returns (uint) {
+        uint x = 0;
+        uint y = 1;
+        uint z = 2;
+        uint a = x + y;
+        uint b = z - y;
+        uint c = a * b;
+        return a + b + c;
     }
 }
