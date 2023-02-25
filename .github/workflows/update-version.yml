@@ -56,11 +56,11 @@ jobs:
           echo ${rev} > deps/blockchain-k-plugin_release
           git add deps/blockchain-k-plugin_release && git commit -m 'deps/blockchain-k-plugin_release: update release file' || true
       - name: 'Install Nix/Cachix'
-        uses: cachix/install-nix-action@v15
+        uses: cachix/install-nix-action@v19
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - uses: cachix/cachix-action@v10
+      - uses: cachix/cachix-action@v12
         with:
           name: k-framework
           authToken: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
