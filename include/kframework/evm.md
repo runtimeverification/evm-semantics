@@ -1044,11 +1044,8 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
-    rule <k> JUMPI _DEST I => . ... </k>
-      requires I ==Int 0
-
-    rule <k> JUMPI  DEST I => JUMP DEST ... </k>
-      requires I =/=Int 0
+    rule [jumpi.false]: <k> JUMPI _DEST I => .         ... </k> requires I  ==Int 0
+    rule [jumpi.true]:  <k> JUMPI  DEST I => JUMP DEST ... </k> requires I =/=Int 0
 
     syntax InternalOp ::= "#endBasicBlock"
  // --------------------------------------
