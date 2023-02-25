@@ -72,6 +72,8 @@ def parallel_kcfg_explore(
                     'EVM.return.exception',
                     'EVM.return.revert',
                     'EVM.return.success',
+                    'EVM.jumpi.true',
+                    'EVM.jumpi.false',
                 ]
             )
         base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
