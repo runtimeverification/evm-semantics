@@ -10,7 +10,7 @@ contract GasTest is Test, KEVMCheats {
         uint256 gasLeftBefore = gasleft();
         uint256 x = 345;
         uint256 y = 928;
-        uint256 z = x - y;
+        uint256 z = y - x;
         uint256 gasLeftAfter  = gasleft();
         assert(gasLeftBefore <= gasLeftAfter);
         assert(gasLeftAfter <= gasLeftBefore);
