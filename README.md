@@ -6,7 +6,7 @@ In this repository, we provide a model of the EVM in K.
 Fast Installation
 -----------------
 
--   `bash <(curl https://kframework.org/install)`: install [kup package manager]
+-   `bash <(curl https://kframework.org/install)`: install [kup package manager].
 -   `kup install kevm`: install KEVM.
 -   `kup list kevm`: list available KEVM versions.
 -   `kup update kevm`: update to latest KEVM version.
@@ -64,8 +64,6 @@ First install the following tools:
 -   GNU [libmpfr](https://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
 -   [Z3](https://github.com/Z3Prover/z3) version 4.8.15
 
-For the exact dependencies, check the Dockerfile.
-
 #### Installing Z3
 
 KEVM requires Z3 version 4.8.15, which you may need to install from a source build if your package manager supplies a different version.
@@ -89,11 +87,11 @@ On Ubuntu >= 18.04 (for example):
 
 ```sh
 sudo apt-get install --yes                                                             \
-            autoconf bison clang-10 cmake curl flex gcc jq libboost-test-dev           \
+            autoconf bison clang-12 cmake curl flex gcc jq libboost-test-dev           \
             libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev       \
-            libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-10       \
-            llvm-10-tools make maven netcat-openbsd openjdk-11-jdk pkg-config          \
-            protobuf-compiler python3 python3-dev python3-pip rapidjson-dev time      \
+            libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-12       \
+            llvm-12-tools make maven netcat-openbsd openjdk-11-jdk pkg-config          \
+            protobuf-compiler python3 python3-dev python3-pip rapidjson-dev time       \
             zlib1g-dev
 pip3 install poetry
 ```
