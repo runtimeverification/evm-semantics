@@ -2,7 +2,7 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Dict, Final, Iterable, List, Optional, Tuple
+from typing import Dict, Final, Iterable, List, Optional, Tuple, Union
 
 from pyk.cli_utils import BugReport
 from pyk.cterm import CTerm
@@ -224,17 +224,7 @@ class KEVM(KProve, KRun):
             'SERIALIZATION.#newAddrCreate2',
         ]
 
-    def short_info(self, cterm: CTerm) -> List[str]:
-        _, subst = split_config_from(cterm.config)
-        k_cell = self.pretty_print(subst['K_CELL']).replace('\n', ' ')
-        if len(k_cell) > 80:
-            k_cell = k_cell[0:80] + ' ...'
-        k_str = f'k: {k_cell}'
-        ret_strs = [k_str]
-        for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
-            if cell in subst:
-                ret_strs.append(f'{name}: {self.pretty_print(subst[cell])}')
-        _pc = get_cell(cterm.config, 'PC_CELL')
+    def srcmap_data(self, pc: int) -> Optional[Union[Tuple[int, int, int, str, int], Tuple[str, int, int]]]:
         if self._srcmap_dir is not None and self._contract_name is not None and self._contract_ids is not None:
             if self._contract_name not in self._srcmaps:
                 _srcmap_pre = json.loads((self._srcmap_dir / f'{self._contract_name}.json').read_text())
@@ -249,20 +239,36 @@ class KEVM(KProve, KRun):
                     _srcmap[int(k)] = (s, l, f, j, m)
                 self._srcmaps[self._contract_name] = _srcmap
             _srcmap = self._srcmaps[self._contract_name]
-            if type(_pc) is KToken and _pc.sort == INT:
-                pc = int(_pc.token)
-                if pc in _srcmap:
-                    s, l, f, j, m = _srcmap[pc]
-                    if f in self._contract_ids:
-                        contract_file = self._contract_ids[f]
-                        if contract_file not in self._contract_srcs:
-                            self._contract_srcs[contract_file] = (
-                                (self._srcmap_dir.parent.parent / contract_file).read_text().split('\n')
-                            )
-                        _, start, end = byte_offset_to_lines(self._contract_srcs[contract_file], s, l)
-                        ret_strs.append(f'src: {self._contract_ids[f]}:{start}:{end}')
+            if pc in _srcmap:
+                s, l, f, j, m = _srcmap[pc]
+                if f in self._contract_ids:
+                    contract_file = self._contract_ids[f]
+                    if contract_file not in self._contract_srcs:
+                        self._contract_srcs[contract_file] = (
+                            (self._srcmap_dir.parent.parent / contract_file).read_text().split('\n')
+                        )
+                    _, start, end = byte_offset_to_lines(self._contract_srcs[contract_file], s, l)
+                    return (self._contract_ids[f], start, end)
                 else:
-                    _LOGGER.warning(f'pc not found in srcmap: {pc}')
+                    return (s, l, f, j, m)
+            else:
+                _LOGGER.warning(f'pc not found in srcmap: {pc}')
+        return None
+
+    def short_info(self, cterm: CTerm) -> List[str]:
+        _, subst = split_config_from(cterm.config)
+        k_cell = self.pretty_print(subst['K_CELL']).replace('\n', ' ')
+        if len(k_cell) > 80:
+            k_cell = k_cell[0:80] + ' ...'
+        k_str = f'k: {k_cell}'
+        ret_strs = [k_str]
+        for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
+            if cell in subst:
+                ret_strs.append(f'{name}: {self.pretty_print(subst[cell])}')
+        _pc = get_cell(cterm.config, 'PC_CELL')
+        if type(_pc) is KToken and _pc.sort == INT:
+            srcmap = self.srcmap_data(int(_pc.token))
+            ret_strs.append(f'src: {srcmap}')
         return ret_strs
 
     @staticmethod
