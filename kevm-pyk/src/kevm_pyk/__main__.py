@@ -271,7 +271,7 @@ def exec_view_kcfg(
     kcfg = KCFGExplore.read_cfg(claim.label, save_directory)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {claim} from {save_directory}')
-    viewer = KCFGViewer(kcfg, kevm, node_printer=kevm.short_info)
+    viewer = KCFGViewer(kcfg, kevm, node_printer=kevm.short_info, custom_view=kevm.custom_view)
     viewer.run()
 
 
@@ -381,12 +381,17 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs
     use_directory.mkdir(parents=True, exist_ok=True)
     contract_name = test.split('.')[0]
     foundry = Foundry(
-        definition_dir, profile=profile, use_directory=use_directory, srcmap_dir=srcmap_dir, contract_name=contract_name
+        definition_dir,
+        profile=profile,
+        use_directory=use_directory,
+        srcmap_dir=srcmap_dir,
+        contract_name=contract_name,
+        contract_srcs_dir=foundry_out.parent,
     )
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    viewer = KCFGViewer(kcfg, foundry, node_printer=foundry.short_info)
+    viewer = KCFGViewer(kcfg, foundry, node_printer=foundry.short_info, custom_view=foundry.custom_view)
     viewer.run()
 
 

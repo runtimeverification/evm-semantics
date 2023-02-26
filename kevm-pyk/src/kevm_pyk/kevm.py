@@ -9,6 +9,8 @@ from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, build_assoc
 from pyk.kast.manip import flatten_label, get_cell, split_config_from
 from pyk.kast.outer import KFlatModule
+from pyk.kcfg import KCFG
+from pyk.kcfg.tui import KCFGElem
 from pyk.ktool.kompile import KompileBackend, kompile
 from pyk.ktool.kprint import SymbolTable, paren
 from pyk.ktool.kprove import KProve
@@ -33,6 +35,7 @@ class KEVM(KProve, KRun):
     _contract_ids: Dict[int, str]
     _srcmaps: Dict[str, Dict[int, Tuple[int, int, int, str, int]]]
     _contract_srcs: Dict[str, List[str]]
+    _contract_srcs_dir: Optional[Path]
 
     def __init__(
         self,
@@ -46,6 +49,7 @@ class KEVM(KProve, KRun):
         bug_report: Optional[BugReport] = None,
         srcmap_dir: Optional[Path] = None,
         contract_name: Optional[str] = None,
+        contract_srcs_dir: Optional[Path] = None,
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -74,6 +78,7 @@ class KEVM(KProve, KRun):
         self._contract_ids = {}
         self._srcmaps = {}
         self._contract_srcs = {}
+        self._contract_srcs_dir = contract_srcs_dir
         if self._srcmap_dir is not None:
             self._contract_ids = {
                 int(k): v for k, v in json.loads((self._srcmap_dir / 'contract_id_map.json').read_text()).items()
@@ -270,6 +275,35 @@ class KEVM(KProve, KRun):
             srcmap = self.srcmap_data(int(_pc.token))
             ret_strs.append(f'src: {srcmap}')
         return ret_strs
+
+    def solidity_src(self, pc: int) -> Iterable[str]:
+        srcmap_data = self.srcmap_data(pc)
+        if srcmap_data is not None:
+            if len(srcmap_data) == 5:
+                return [f'NO FILEMAP FOR SOURCEMAP: {srcmap_data}']
+            elif len(srcmap_data) == 3:
+                _path, start, end, *_ = srcmap_data
+                assert type(_path) is str
+                assert type(start) is int
+                assert type(end) is int
+                base_path = self._contract_srcs_dir if self._contract_srcs_dir is not None else Path('./')
+                path = base_path / _path
+                if path.exists() and path.is_file():
+                    lines = path.read_text().split('\n')
+                    prefix_lines = [f'   {l}' for l in lines[:start]]
+                    actual_lines = [f' | {l}' for l in lines[start:end]]
+                    suffix_lines = [f'   {l}' for l in lines[end:]]
+                    return prefix_lines + actual_lines + suffix_lines
+                else:
+                    return [f'NO FILE FOR SOURCEMAP DATA: {srcmap_data}']
+        return [f'NO SOURCEMAP DATA: {srcmap_data}']
+
+    def custom_view(self, element: KCFGElem) -> Iterable[str]:
+        if type(element) is KCFG.Node:
+            pc_cell = get_cell(element.cterm.config, 'PC_CELL')
+            if type(pc_cell) is KToken and pc_cell.sort == INT:
+                return self.solidity_src(int(pc_cell.token))
+        return ['NO DATA']
 
     @staticmethod
     def add_invariant(cterm: CTerm) -> CTerm:
@@ -506,6 +540,7 @@ class Foundry(KEVM):
         bug_report: Optional[BugReport] = None,
         srcmap_dir: Optional[Path] = None,
         contract_name: Optional[str] = None,
+        contract_srcs_dir: Optional[Path] = None,
     ) -> None:
         # copied from KEVM class and adapted to inherit KPrint instead
         KEVM.__init__(
@@ -518,6 +553,7 @@ class Foundry(KEVM):
             bug_report=bug_report,
             srcmap_dir=srcmap_dir,
             contract_name=contract_name,
+            contract_srcs_dir=contract_srcs_dir,
         )
 
     class Sorts:
