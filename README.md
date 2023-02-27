@@ -86,7 +86,7 @@ If you wish to install from the source, install it to an appropriate prefix (e.g
 
 #### Ubuntu
 
-On Ubuntu >= 18.04 (for example):
+On Ubuntu >= 22.04 (for example):
 
 ```sh
 sudo apt-get install --yes                                                             \
@@ -126,8 +126,7 @@ brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 open
 make libsecp256k1
 ```
 
-**NOTE**: Previous versions of these instructions required the user to use either the homebrew version of `flex` or the XCode command line tools version, with the wrong option giving an error.
-The current recommendation is to use the homebrew version.
+**NOTE**: It is recommended to use the homebrew version of `flex` and XCode.
 
 If you are building on an Apple Silicon machine, ensure that your `PATH` is set up correctly before running `make deps` or `make k-deps`.
 You can do so using [`direnv`](https://direnv.net/) by copying `macos-envrc` to `.envrc`, then running `direnv allow`.

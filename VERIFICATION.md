@@ -8,10 +8,10 @@ In `tests/specs/examples`, you can find a few examples to get you started on pro
 
 Example 1: Sum to N
 -------------------
+
 Have a look at the [sum-to-n-spec.k] file.
 It has two modules:
-  - `VERIFICATION` - containing the EVM program 
- and a few `simplification` rules.
+  - `VERIFICATION` - containing the EVM program and a few `simplification` rules.
   - `SUM-TO-N-SPEC` - containing the claims which will be executed.
 
 The first step is kompiling the `.k` file with the below command.
@@ -71,6 +71,7 @@ Here, `--claim` tells the prover to run only the `decimals` spec from the `ERC20
 
 More to know
 ------------
+
 To prove one of the specifications:
 
 ```sh
