@@ -97,7 +97,6 @@ In addition to this, you can use `kevm view-kcfg` to get a visualization.
   - `spec_file` is the file to look in for specifications. This file is read like with `kevm prove —pyk …`; the `KProve.get_claims` invokes the frontend.
   - `--claim claim_label` option is added, but unlike the `kevm prove --pyk ...`, you can only repeat it once. This option lets you select an individual claim out of the `spec_file`; if not supplied, it’s assumed that only one spec is present.
   - `--spec-module spec_module` is also an inherited option.
-- Updates the `tests/failing-symbolic.pyk` list to remove a bunch of working on RPC prover.
 
 A running example:
 
