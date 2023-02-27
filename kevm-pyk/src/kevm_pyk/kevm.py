@@ -1,20 +1,25 @@
+import json
 import logging
 import sys
 from pathlib import Path
-from typing import Final, Iterable, List, Optional
+from typing import Dict, Final, Iterable, List, Optional, Tuple, Union
 
 from pyk.cli_utils import BugReport
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KVariable, build_assoc
+from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, build_assoc
 from pyk.kast.manip import flatten_label, get_cell, split_config_from
 from pyk.kast.outer import KFlatModule
+from pyk.kcfg import KCFG
+from pyk.kcfg.tui import KCFGElem
 from pyk.ktool.kompile import KompileBackend, kompile
 from pyk.ktool.kprint import SymbolTable, paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
-from pyk.prelude.kint import intToken, ltInt
+from pyk.prelude.kint import INT, intToken, ltInt
 from pyk.prelude.ml import mlAnd, mlEqualsTrue
 from pyk.prelude.string import stringToken
+
+from .utils import byte_offset_to_lines
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -23,6 +28,13 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 class KEVM(KProve, KRun):
+    _srcmap_dir: Optional[Path]
+    _contract_name: Optional[str]
+    _contract_ids: Dict[int, str]
+    _srcmaps: Dict[str, Dict[int, Tuple[int, int, int, str, int]]]
+    _contract_srcs: Dict[str, List[str]]
+    _contract_srcs_dir: Optional[Path]
+
     def __init__(
         self,
         definition_dir: Path,
@@ -33,6 +45,9 @@ class KEVM(KProve, KRun):
         krun_command: str = 'krun',
         extra_unparsing_modules: Iterable[KFlatModule] = (),
         bug_report: Optional[BugReport] = None,
+        srcmap_dir: Optional[Path] = None,
+        contract_name: Optional[str] = None,
+        contract_srcs_dir: Optional[Path] = None,
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -56,6 +71,16 @@ class KEVM(KProve, KRun):
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
         )
+        self._srcmap_dir = srcmap_dir
+        self._contract_name = contract_name
+        self._contract_ids = {}
+        self._srcmaps = {}
+        self._contract_srcs = {}
+        self._contract_srcs_dir = contract_srcs_dir
+        if self._srcmap_dir is not None:
+            self._contract_ids = {
+                int(k): v for k, v in json.loads((self._srcmap_dir / 'contract_id_map.json').read_text()).items()
+            }
 
     @staticmethod
     def kompile(
@@ -202,6 +227,37 @@ class KEVM(KProve, KRun):
             'SERIALIZATION.#newAddrCreate2',
         ]
 
+    def srcmap_data(self, pc: int) -> Optional[Union[Tuple[int, int, int, str, int], Tuple[str, int, int]]]:
+        if self._srcmap_dir is not None and self._contract_name is not None and self._contract_ids is not None:
+            if self._contract_name not in self._srcmaps:
+                _srcmap_pre = json.loads((self._srcmap_dir / f'{self._contract_name}.json').read_text())
+                _srcmap: Dict[int, Tuple[int, int, int, str, int]] = {}
+                for k, v in _srcmap_pre.items():
+                    s, l, f, j, m = v
+                    assert type(s) is int
+                    assert type(l) is int
+                    assert type(f) is int
+                    assert type(j) is str
+                    assert type(m) is int
+                    _srcmap[int(k)] = (s, l, f, j, m)
+                self._srcmaps[self._contract_name] = _srcmap
+            _srcmap = self._srcmaps[self._contract_name]
+            if pc in _srcmap:
+                s, l, f, j, m = _srcmap[pc]
+                if f in self._contract_ids:
+                    contract_file = self._contract_ids[f]
+                    if contract_file not in self._contract_srcs:
+                        self._contract_srcs[contract_file] = (
+                            (self._srcmap_dir.parent.parent / contract_file).read_text().split('\n')
+                        )
+                    _, start, end = byte_offset_to_lines(self._contract_srcs[contract_file], s, l)
+                    return (self._contract_ids[f], start, end)
+                else:
+                    return (s, l, f, j, m)
+            else:
+                _LOGGER.warning(f'pc not found in srcmap: {pc}')
+        return None
+
     def short_info(self, cterm: CTerm) -> List[str]:
         _, subst = split_config_from(cterm.config)
         k_cell = self.pretty_print(subst['K_CELL']).replace('\n', ' ')
@@ -212,7 +268,40 @@ class KEVM(KProve, KRun):
         for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
             if cell in subst:
                 ret_strs.append(f'{name}: {self.pretty_print(subst[cell])}')
+        _pc = get_cell(cterm.config, 'PC_CELL')
+        if type(_pc) is KToken and _pc.sort == INT:
+            srcmap = self.srcmap_data(int(_pc.token))
+            ret_strs.append(f'src: {srcmap}')
         return ret_strs
+
+    def solidity_src(self, pc: int) -> Iterable[str]:
+        srcmap_data = self.srcmap_data(pc)
+        if srcmap_data is not None:
+            if len(srcmap_data) == 5:
+                return [f'NO FILEMAP FOR SOURCEMAP: {srcmap_data}']
+            elif len(srcmap_data) == 3:
+                _path, start, end, *_ = srcmap_data
+                assert type(_path) is str
+                assert type(start) is int
+                assert type(end) is int
+                base_path = self._contract_srcs_dir if self._contract_srcs_dir is not None else Path('./')
+                path = base_path / _path
+                if path.exists() and path.is_file():
+                    lines = path.read_text().split('\n')
+                    prefix_lines = [f'   {l}' for l in lines[:start]]
+                    actual_lines = [f' | {l}' for l in lines[start:end]]
+                    suffix_lines = [f'   {l}' for l in lines[end:]]
+                    return prefix_lines + actual_lines + suffix_lines
+                else:
+                    return [f'NO FILE FOR SOURCEMAP DATA: {srcmap_data}']
+        return [f'NO SOURCEMAP DATA: {srcmap_data}']
+
+    def custom_view(self, element: KCFGElem) -> Iterable[str]:
+        if type(element) is KCFG.Node:
+            pc_cell = get_cell(element.cterm.config, 'PC_CELL')
+            if type(pc_cell) is KToken and pc_cell.sort == INT:
+                return self.solidity_src(int(pc_cell.token))
+        return ['NO DATA']
 
     @staticmethod
     def add_invariant(cterm: CTerm) -> CTerm:
