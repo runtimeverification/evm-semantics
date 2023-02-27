@@ -18,12 +18,15 @@ Documentation/Support
 
 These may be useful for learning KEVM and K (newest to oldest):
 
+-   [K, KEVM and Foundry Integration overview](https://www.youtube.com/watch?v=9PLnQStkiUo)
 -   [Jello Paper], a nice presentation of this repository.
 -   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQNov) at [2017 Devcon3].
 -   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
 -   [KEVM Paper at CSF'18/FLoC](https://fsl.cs.illinois.edu/publications/hildenbrandt-saxena-zhu-rodrigues-daian-guth-moore-zhang-park-rosu-2018-csf).
 
 To get support for KEVM, please join our [Discord Channel](https://discord.com/invite/CurfmXNtbN).
+
+If you want to start proving with KEVM, refer to [VERIFICATION.md].
 
 Repository Structure
 --------------------
@@ -233,7 +236,7 @@ When running tests with the `Makefile`, you can specify the `TEST_CONCRETE_BACKE
 For Developers
 --------------
 
-After building, the `kevm` executable will be located in the `.build/usr/bin` directory.
+If built from the source, the `kevm` executable will be in the `.build/usr/bin` directory.
 To make sure you are using the correct `kevm`, add this directory to your `PATH`:
 
 ```sh
@@ -251,25 +254,15 @@ Run the file `tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmet
 kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json --schedule DEFAULT --mode VMTESTS
 ```
 
-To run proofs, you can similarly use `kevm`.
-For example, to prove one of the specifications:
+### Keeping in mind while developing
+Always have your build up-to-date.
 
-```sh
-kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --verif-module VERIFICATION
-```
-
-You can also debug proofs interactively:
-
-```sh
-kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --verif-module VERIFICATION --debugger --debug-script kscript --backend haskell
-```
-
-Here, `kscript` is a file containing `kore-repl` commands.
-For example, we advise to put an alias for outputting the current configuration as a pretty-printed term (as opposed to raw `kore` term):
-
-```sh
-alias konfig = config | kast -i kore -o pretty -d .build/usr/lib/kevm/haskell /dev/stdin
-```
+- If using the kup package manager, run `kup install kevm --version .` to install the local version.
+- If building from source:
+    -   `make build` needs to be re-run if you touch any of this repos files.
+    -   `make deps` needs to be re-run if there is an update of the K submodule (you did `git submodule update --init --recursive -- deps/k` and it actually did something).
+    -   If both `deps` and `build` need to be re-run, you need to do `deps` first.
+    -   `make clean` is a safe way to remove the `.build` directory, but then you need to re-run `make deps` (should be quick this time) and `make build`.
 
 ### Building with Nix
 
@@ -356,13 +349,6 @@ This will produce a nice table with the times for both versions of the haskell-b
 Note that `#profile` pre-pends the output of `kore-exec --version` to the profile run, which is then used as a tag by the `#compare-profiles` script.
 Therefore, any profiled local checkout of the haskell-backend will report as `dirty-ghc8107` in the resulting table.
 
-### Keeping `.build` up-to-date while developing
-
--   `make build` needs to be re-run if you touch any of this repos files.
--   `make deps` needs to be re-run if there is an update of the K submodule (you did `git submodule update --init --recursive -- deps/k` and it actually did something).
--   If both `deps` and `build` need to be re-run, you need to do `deps` first.
--   `make clean` is a safe way to remove the `.build` directory, but then you need to re-run `make deps` (should be quick this time) and `make build`.
-
 Media
 -----
 
@@ -409,3 +395,4 @@ For more information about [The K Framework](https://kframework.org), refer to t
 [eDSL]: <https://github.com/runtimeverification/verified-smart-contracts/blob/master/resources/edsl.md>
 [kup package manager]: <https://github.com/runtimeverification/kup>
 [Makefile]: <./Makefile>
+[VERIFICATION.md]: <./VERIFICATION.md>
