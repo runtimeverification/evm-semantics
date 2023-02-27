@@ -473,12 +473,11 @@ def foundry_simplify_node(
     port = find_free_port()
     with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
-    if minimize:
-        new_term = minimize_term(new_term)
     if replace:
         kcfg.replace_node(node, CTerm(new_term))
         KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
-    return foundry.pretty_print(new_term)
+    res_term = minimize_term(new_term) if minimize else new_term
+    return foundry.pretty_print(res_term)
 
 
 def foundry_step_node(
