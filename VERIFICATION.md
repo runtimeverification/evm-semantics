@@ -74,21 +74,13 @@ More to know
 To prove one of the specifications:
 
 ```sh
-kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --verif-module VERIFICATION
+kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --definition tests/specs/erc20/verification/haskell
 ```
 
 You can also debug proofs interactively:
 
 ```sh
-kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --verif-module VERIFICATION --debugger --debug-script kscript --backend haskell
-```
-
-Here, `kscript` is a file containing `kore-repl` commands.
-For example, we advise to put an alias for outputting the current configuration as a pretty-printed term (as opposed to raw `kore` term):
-
-```sh
-alias konfig = config | kast -i kore -o pretty -d .build/usr/lib/kevm/haskell /dev/stdin
-```
+kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --definition tests/specs/erc20/verification/haskell --debugger
 
 In addition to this, you can use `kevm view-kcfg` to get a visualization.
 
