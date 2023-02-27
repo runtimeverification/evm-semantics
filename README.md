@@ -259,6 +259,7 @@ Always have your build up-to-date.
 
 - If using the kup package manager, run `kup install kevm --version .` to install the local version.
 - If building from source:
+    -   `make poetry` needs to be re-run if you touch any of the `kevm-pyk` code.
     -   `make build` needs to be re-run if you touch any of this repos files.
     -   `make deps` needs to be re-run if there is an update of the K submodule (you did `git submodule update --init --recursive -- deps/k` and it actually did something).
     -   If both `deps` and `build` need to be re-run, you need to do `deps` first.
