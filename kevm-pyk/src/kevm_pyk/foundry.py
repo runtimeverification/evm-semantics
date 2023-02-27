@@ -459,7 +459,7 @@ def foundry_simplify_node(
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
-) -> None:
+) -> str:
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
@@ -473,11 +473,12 @@ def foundry_simplify_node(
     port = find_free_port()
     with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
-    new_term_minimized = new_term if not minimize else minimize_term(new_term)
-    print(f'Simplified:\n{foundry.pretty_print(new_term_minimized)}')
+    if minimize:
+        new_term = minimize_term(new_term)
     if replace:
         kcfg.replace_node(node, CTerm(new_term))
         KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+    return foundry.pretty_print(new_term)
 
 
 def foundry_step_node(

@@ -391,7 +391,7 @@ def exec_foundry_simplify_node(
     bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
-    foundry_simplify_node(
+    pretty_term = foundry_simplify_node(
         foundry_out=foundry_out,
         test=test,
         node=node,
@@ -399,6 +399,7 @@ def exec_foundry_simplify_node(
         minimize=minimize,
         bug_report=bug_report,
     )
+    print(f'Simplified:\n{pretty_term}')
 
 
 def exec_foundry_step_node(
