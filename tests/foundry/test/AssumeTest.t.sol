@@ -29,4 +29,16 @@ contract AssumeTest is Test {
         address(vm).staticcall(abi.encodeWithSignature("assume(bool)", a));
         assert(a);
     }
+
+    function test_multi_assume(address alice, address bob) public {
+        vm.assume(alice != address(120209876281281145568259943));
+        vm.assume(alice != address(137122462167341575662000267002353578582749290296));
+        vm.assume(alice != address(645326474426547203313410069153905908525362434349));
+        vm.assume(alice != address(1032069922050249630382865877677304880282300743300));
+
+        vm.assume(bob != address(120209876281281145568259943));
+        vm.assume(bob != address(137122462167341575662000267002353578582749290296));
+        vm.assume(bob != address(645326474426547203313410069153905908525362434349));
+        vm.assume(bob != address(1032069922050249630382865877677304880282300743300));
+    }
 }

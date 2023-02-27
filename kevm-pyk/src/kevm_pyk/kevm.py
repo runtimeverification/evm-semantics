@@ -5,15 +5,13 @@ from typing import Final, Iterable, List, Optional
 
 from pyk.cli_utils import BugReport
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, build_assoc
+from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KVariable, build_assoc
 from pyk.kast.manip import flatten_label, get_cell, split_config_from
 from pyk.kast.outer import KFlatModule
 from pyk.ktool.kompile import KompileBackend, kompile
 from pyk.ktool.kprint import SymbolTable, paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
-from pyk.prelude.bytes import bytesToken
-from pyk.prelude.kbool import notBool
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlAnd, mlEqualsTrue
 from pyk.prelude.string import stringToken
@@ -438,82 +436,3 @@ class KEVM(KProve, KRun):
             else:
                 wrapped_accounts.append(acct)
         return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), wrapped_accounts)
-
-
-class Foundry(KEVM):
-    def __init__(
-        self,
-        definition_dir: Path,
-        main_file: Optional[Path] = None,
-        use_directory: Optional[Path] = None,
-        profile: bool = False,
-        extra_unparsing_modules: Iterable[KFlatModule] = (),
-        bug_report: Optional[BugReport] = None,
-    ) -> None:
-        # copied from KEVM class and adapted to inherit KPrint instead
-        KEVM.__init__(
-            self,
-            definition_dir,
-            main_file=main_file,
-            use_directory=use_directory,
-            profile=profile,
-            extra_unparsing_modules=extra_unparsing_modules,
-            bug_report=bug_report,
-        )
-
-    class Sorts:
-        FOUNDRY_CELL: Final = KSort('FoundryCell')
-
-    @staticmethod
-    def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
-        return KApply('foundry_success', [s, dst, r, c, e1, e2])
-
-    @staticmethod
-    def fail(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
-        return notBool(Foundry.success(s, dst, r, c, e1, e2))
-
-    # address(uint160(uint256(keccak256("foundry default caller"))))
-
-    @staticmethod
-    def loc_FOUNDRY_FAILED() -> KApply:  # noqa: N802
-        return KEVM.loc(
-            KApply(
-                'contract_access_field',
-                [
-                    KApply('FoundryCheat_FOUNDRY-ACCOUNTS_FoundryContract'),
-                    KApply('Failed_FOUNDRY-ACCOUNTS_FoundryField'),
-                ],
-            )
-        )
-
-    @staticmethod
-    def address_TEST_CONTRACT() -> KToken:  # noqa: N802
-        return intToken(0xB4C79DAB8F259C7AEE6E5B2AA729821864227E84)
-
-    @staticmethod
-    def account_TEST_CONTRACT_ADDRESS() -> KApply:  # noqa: N802
-        return KEVM.account_cell(
-            Foundry.address_TEST_CONTRACT(),
-            intToken(0),
-            KVariable('TEST_CODE'),
-            KApply('.Map'),
-            KApply('.Map'),
-            intToken(0),
-        )
-
-    @staticmethod
-    def address_CHEATCODE() -> KToken:  # noqa: N802
-        return intToken(0x7109709ECFA91A80626FF3989D68F67F5B1DD12D)
-
-    # Same address as the one used in DappTools's HEVM
-    # address(bytes20(uint160(uint256(keccak256('hevm cheat code')))))
-    @staticmethod
-    def account_CHEATCODE_ADDRESS(store_var: KInner) -> KApply:  # noqa: N802
-        return KEVM.account_cell(
-            Foundry.address_CHEATCODE(),  # Hardcoded for now
-            intToken(0),
-            bytesToken('\x00'),
-            store_var,
-            KApply('.Map'),
-            intToken(0),
-        )
