@@ -72,6 +72,8 @@ def parallel_kcfg_explore(
                 'hs-booster-proxy',
                 '--llvm-backend-library',
                 'tests/foundry/out/llvm/interpreter',
+                '-l',
+                'warn',
             ],
         ) as kcfg_explore:
             try:
