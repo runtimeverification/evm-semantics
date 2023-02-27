@@ -6,21 +6,17 @@ import gevent
 import gevent.pywsgi
 import gevent.queue
 from pyk.cli_utils import loglevel
-from tinyrpc.dispatch import RPCDispatcher, public
+from tinyrpc.dispatch import RPCDispatcher
 from tinyrpc.protocols.jsonrpc import JSONRPCProtocol
 from tinyrpc.server.gevent import RPCServer, RPCServerGreenlets
 from tinyrpc.transports.wsgi import WsgiServerTransport
+
+from .controller import FoundryController
 
 LOGGER: Final = logging.getLogger(__name__)
 LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 DEFAULT_SERVER_HOST: Final = 'localhost'
 DEFAULT_SERVER_PORT: Final = 43242
-
-
-class FoundryController:
-    @public
-    def hello(self) -> str:
-        return 'hello'
 
 
 class FoundryServer:

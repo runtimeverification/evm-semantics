@@ -26,6 +26,8 @@ from .foundry import (
 )
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
+from .rpc.client import FoundryClient
+from .rpc.server import DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
 from .utils import arg_pair_of, find_free_port, parallel_kcfg_explore
 
@@ -318,16 +320,28 @@ def exec_foundry_show(
     node_deltas: Iterable[Tuple[str, str]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    kaas: Optional[Tuple[str, int]] = None,
     **kwargs: Any,
 ) -> None:
-    output = foundry_show(
-        foundry_out=foundry_out,
-        test=test,
-        nodes=nodes,
-        node_deltas=node_deltas,
-        to_module=to_module,
-        minimize=minimize,
-    )
+    if kaas:
+        client = FoundryClient(*kaas)
+        output = client.show(
+            foundry_out=foundry_out,
+            test=test,
+            nodes=nodes,
+            node_deltas=node_deltas,
+            to_module=to_module,
+            minimize=minimize,
+        )
+    else:
+        output = foundry_show(
+            foundry_out=foundry_out,
+            test=test,
+            nodes=nodes,
+            node_deltas=node_deltas,
+            to_module=to_module,
+            minimize=minimize,
+        )
     print(output)
 
 
@@ -453,6 +467,10 @@ def _create_argument_parser() -> ArgumentParser:
             return [elem_type(elem) for elem in s.split(delim)]
 
         return parse
+
+    def host_port(s: str) -> Tuple[str, int]:
+        host, port_str = s.split(':')
+        return host, int(port_str)
 
     shared_args = ArgumentParser(add_help=False)
     shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
@@ -763,6 +781,14 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_show_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
+    foundry_show_args.add_argument(
+        '--kaas',
+        metavar='HOST:PORT',
+        nargs='?',
+        const=(DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT),
+        type=host_port,
+        help='KaaS mode',
+    )
     foundry_show_args.add_argument(
         '--node',
         type=str,

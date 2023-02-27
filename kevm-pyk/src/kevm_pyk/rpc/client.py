@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import Iterable, Tuple
+
 from tinyrpc import RPCClient, RPCProxy
 from tinyrpc.protocols.jsonrpc import JSONRPCProtocol
 from tinyrpc.transports.http import HttpPostClientTransport
@@ -12,5 +15,21 @@ class FoundryClient:
         client = RPCClient(protocol, transport)
         self._proxy = client.get_proxy()
 
-    def hello(self) -> None:
-        print(self._proxy.hello())
+    def show(
+        self,
+        *,
+        foundry_out: Path,
+        test: str,
+        nodes: Iterable[str] = (),
+        node_deltas: Iterable[Tuple[str, str]] = (),
+        to_module: bool = False,
+        minimize: bool = True,
+    ) -> str:
+        return self._proxy.show(
+            foundry_out=str(foundry_out),
+            test=test,
+            nodes=nodes,
+            node_deltas=node_deltas,
+            to_module=to_module,
+            minimize=minimize,
+        )
