@@ -1,6 +1,5 @@
 import json
 import logging
-import sys
 from pathlib import Path
 from typing import Dict, Final, Iterable, List, Optional, Tuple
 
@@ -188,7 +187,7 @@ def foundry_prove(
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
-) -> None:
+) -> Dict[str, bool]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
@@ -261,7 +260,7 @@ def foundry_prove(
             kcfgs[test] = kcfg
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
-    results = parallel_kcfg_explore(
+    return parallel_kcfg_explore(
         foundry,
         kcfgs,
         save_directory=kcfgs_dir,
@@ -276,14 +275,6 @@ def foundry_prove(
         extract_branches=KEVM.extract_branches,
         bug_report=br,
     )
-    failed = 0
-    for pid, r in results.items():
-        if r:
-            print(f'PROOF PASSED: {pid}')
-        else:
-            failed += 1
-            print(f'PROOF FAILED: {pid}')
-    sys.exit(failed)
 
 
 def foundry_show(

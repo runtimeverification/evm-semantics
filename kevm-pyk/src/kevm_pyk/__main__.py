@@ -286,7 +286,7 @@ def exec_foundry_prove(
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
-    foundry_prove(
+    results = foundry_prove(
         foundry_out=foundry_out,
         max_depth=max_depth,
         max_iterations=max_iterations,
@@ -301,6 +301,14 @@ def exec_foundry_prove(
         rpc_base_port=rpc_base_port,
         bug_report=bug_report,
     )
+    failed = 0
+    for pid, r in results.items():
+        if r:
+            print(f'PROOF PASSED: {pid}')
+        else:
+            failed += 1
+            print(f'PROOF FAILED: {pid}')
+    sys.exit(failed)
 
 
 def exec_foundry_show(
