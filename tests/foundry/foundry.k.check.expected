@@ -465,6 +465,224 @@ module VALUESTORE-BIN-RUNTIME
 
 endmodule
 
+module ARITHMETICTEST-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= ArithmeticTestContract
+    
+    syntax ArithmeticTestContract ::= "ArithmeticTest" [symbol(), klabel(contract_ArithmeticTest)]
+    
+      
+    
+    syntax Field ::= ArithmeticTestField
+    
+    syntax ArithmeticTestField ::= "IS_TEST" [symbol(), klabel(field_ArithmeticTest_IS_TEST)]
+    
+    syntax ArithmeticTestField ::= "_failed" [symbol(), klabel(field_ArithmeticTest__failed)]
+    
+    syntax ArithmeticTestField ::= "IS_SCRIPT" [symbol(), klabel(field_ArithmeticTest_IS_SCRIPT)]
+    
+    syntax ArithmeticTestField ::= "stdstore" [symbol(), klabel(field_ArithmeticTest_stdstore)]
+    
+    rule  ( #loc ( ArithmeticTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( ArithmeticTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( ArithmeticTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( ArithmeticTest . stdstore ) => 1 )
+      
+    
+    syntax ByteArray ::= ArithmeticTestContract "." ArithmeticTestMethod [function(), symbol(), klabel(method_ArithmeticTest)]
+    
+    syntax ArithmeticTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ArithmeticTest_IS_SCRIPT)]
+    
+    syntax ArithmeticTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ArithmeticTest_IS_TEST)]
+    
+    syntax ArithmeticTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ArithmeticTest_failed)]
+    
+    syntax ArithmeticTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_ArithmeticTest_setUp)]
+    
+    syntax ArithmeticTestMethod ::= "test_decreasing_div" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_decreasing_div)]
+    
+    syntax ArithmeticTestMethod ::= "test_max1" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max1)]
+    
+    syntax ArithmeticTestMethod ::= "test_max1_broken" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max1_broken)]
+    
+    syntax ArithmeticTestMethod ::= "test_max2" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max2)]
+    
+    syntax ArithmeticTestMethod ::= "test_wdiv_rounding" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wdiv_rounding)]
+    
+    syntax ArithmeticTestMethod ::= "test_wmul_increasing" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing)]
+    
+    syntax ArithmeticTestMethod ::= "test_wmul_increasing_gt_one" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_gt_one)]
+    
+    syntax ArithmeticTestMethod ::= "test_wmul_increasing_overflow" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_overflow)]
+    
+    syntax ArithmeticTestMethod ::= "test_wmul_increasing_positive" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_positive)]
+    
+    syntax ArithmeticTestMethod ::= "test_wmul_rounding" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_rounding)]
+    
+    syntax ArithmeticTestMethod ::= "test_wmul_wdiv_inverse" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_wdiv_inverse)]
+    
+    syntax ArithmeticTestMethod ::= "test_wmul_wdiv_inverse_underflow" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_wdiv_inverse_underflow)]
+    
+    syntax ArithmeticTestMethod ::= "test_wmul_weakly_increasing_positive" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_weakly_increasing_positive)]
+    
+    syntax ArithmeticTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ArithmeticTest_vm)]
+    
+    rule  ( ArithmeticTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( ArithmeticTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( ArithmeticTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( ArithmeticTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
+      
+    
+    rule  ( ArithmeticTest . test_decreasing_div ( V0_a , V1_b ) => #abiCallData ( "test_decreasing_div" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( ArithmeticTest . test_max1 ( V0_a , V1_b ) => #abiCallData ( "test_max1" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( ArithmeticTest . test_max1_broken ( V0_a , V1_b ) => #abiCallData ( "test_max1_broken" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( ArithmeticTest . test_max2 ( V0_x , V1_y ) => #abiCallData ( "test_max2" , #uint256 ( V0_x ) , #uint256 ( V1_y ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_x )
+       andBool ( #rangeUInt ( 256 , V1_y )
+               ))
+      
+    
+    rule  ( ArithmeticTest . test_wdiv_rounding ( V0_a , V1_b ) => #abiCallData ( "test_wdiv_rounding" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( ArithmeticTest . test_wmul_increasing ( V0_a , V1_b ) => #abiCallData ( "test_wmul_increasing" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( ArithmeticTest . test_wmul_increasing_gt_one ( V0_a , V1_b ) => #abiCallData ( "test_wmul_increasing_gt_one" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( ArithmeticTest . test_wmul_increasing_overflow ( V0_a , V1_b ) => #abiCallData ( "test_wmul_increasing_overflow" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( ArithmeticTest . test_wmul_increasing_positive ( V0_a , V1_b ) => #abiCallData ( "test_wmul_increasing_positive" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( ArithmeticTest . test_wmul_rounding ( V0_a , V1_b ) => #abiCallData ( "test_wmul_rounding" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( ArithmeticTest . test_wmul_wdiv_inverse ( V0_a , V1_b ) => #abiCallData ( "test_wmul_wdiv_inverse" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( ArithmeticTest . test_wmul_wdiv_inverse_underflow ( V0_a , V1_b ) => #abiCallData ( "test_wmul_wdiv_inverse_underflow" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( ArithmeticTest . test_wmul_weakly_increasing_positive ( V0_a , V1_b ) => #abiCallData ( "test_wmul_weakly_increasing_positive" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_a )
+       andBool ( #rangeUInt ( 256 , V1_b )
+               ))
+      
+    
+    rule  ( ArithmeticTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp" ) => 177362148 )
+      
+    
+    rule  ( selector ( "test_decreasing_div" ) => 1011519306 )
+      
+    
+    rule  ( selector ( "test_max1" ) => 1625765100 )
+      
+    
+    rule  ( selector ( "test_max1_broken" ) => 2809107068 )
+      
+    
+    rule  ( selector ( "test_max2" ) => 434746443 )
+      
+    
+    rule  ( selector ( "test_wdiv_rounding" ) => 345004095 )
+      
+    
+    rule  ( selector ( "test_wmul_increasing" ) => 2784670501 )
+      
+    
+    rule  ( selector ( "test_wmul_increasing_gt_one" ) => 899022695 )
+      
+    
+    rule  ( selector ( "test_wmul_increasing_overflow" ) => 1123042280 )
+      
+    
+    rule  ( selector ( "test_wmul_increasing_positive" ) => 490103800 )
+      
+    
+    rule  ( selector ( "test_wmul_rounding" ) => 4261140569 )
+      
+    
+    rule  ( selector ( "test_wmul_wdiv_inverse" ) => 3719613508 )
+      
+    
+    rule  ( selector ( "test_wmul_wdiv_inverse_underflow" ) => 2736038219 )
+      
+    
+    rule  ( selector ( "test_wmul_weakly_increasing_positive" ) => 1421647895 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
 module ASSUMETEST-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -514,6 +732,8 @@ module ASSUMETEST-BIN-RUNTIME
     
     syntax AssumeTestMethod ::= "test_assume_true" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_assume_true)]
     
+    syntax AssumeTestMethod ::= "test_multi_assume" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_multi_assume)]
+    
     syntax AssumeTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AssumeTest_vm)]
     
     rule  ( AssumeTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
@@ -553,6 +773,12 @@ module ASSUMETEST-BIN-RUNTIME
                ))
       
     
+    rule  ( AssumeTest . test_multi_assume ( V0_alice , V1_bob ) => #abiCallData ( "test_multi_assume" , #address ( V0_alice ) , #address ( V1_bob ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_alice )
+       andBool ( #rangeAddress ( V1_bob )
+               ))
+      
+    
     rule  ( AssumeTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
     
@@ -578,6 +804,9 @@ module ASSUMETEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_assume_true" ) => 1861181564 )
+      
+    
+    rule  ( selector ( "test_multi_assume" ) => 2625007844 )
       
     
     rule  ( selector ( "vm" ) => 980845667 )
@@ -3739,6 +3968,8 @@ module ASSERTTEST-BIN-RUNTIME
     
     syntax AssertTestField ::= "stdstore" [symbol(), klabel(field_AssertTest_stdstore)]
     
+    syntax AssertTestField ::= "y" [symbol(), klabel(field_AssertTest_y)]
+    
     rule  ( #loc ( AssertTest . IS_TEST ) => 0 )
       
     
@@ -3749,6 +3980,9 @@ module ASSERTTEST-BIN-RUNTIME
       
     
     rule  ( #loc ( AssertTest . stdstore ) => 1 )
+      
+    
+    rule  ( #loc ( AssertTest . y ) => 8 )
       
     
     syntax ByteArray ::= AssertTestContract "." AssertTestMethod [function(), symbol(), klabel(method_AssertTest)]
@@ -3770,6 +4004,10 @@ module ASSERTTEST-BIN-RUNTIME
     syntax AssertTestMethod ::= "test_assert_false" "(" ")" [symbol(), klabel(method_AssertTest_test_assert_false)]
     
     syntax AssertTestMethod ::= "test_assert_true" "(" ")" [symbol(), klabel(method_AssertTest_test_assert_true)]
+    
+    syntax AssertTestMethod ::= "test_assert_true_branch" "(" Int ")" [symbol(), klabel(method_AssertTest_test_assert_true_branch)]
+    
+    syntax AssertTestMethod ::= "test_revert_branch" "(" Int "," Int ")" [symbol(), klabel(method_AssertTest_test_revert_branch)]
     
     syntax AssertTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AssertTest_vm)]
     
@@ -3800,6 +4038,16 @@ module ASSERTTEST-BIN-RUNTIME
     rule  ( AssertTest . test_assert_true ( ) => #abiCallData ( "test_assert_true" , .TypedArgs ) )
       
     
+    rule  ( AssertTest . test_assert_true_branch ( V0_x ) => #abiCallData ( "test_assert_true_branch" , #uint256 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_x )
+      
+    
+    rule  ( AssertTest . test_revert_branch ( V0_x , V1_y ) => #abiCallData ( "test_revert_branch" , #uint256 ( V0_x ) , #uint256 ( V1_y ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 256 , V0_x )
+       andBool ( #rangeUInt ( 256 , V1_y )
+               ))
+      
+    
     rule  ( AssertTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
     
@@ -3828,6 +4076,12 @@ module ASSERTTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_assert_true" ) => 906863826 )
+      
+    
+    rule  ( selector ( "test_assert_true_branch" ) => 3267411143 )
+      
+    
+    rule  ( selector ( "test_revert_branch" ) => 2349784459 )
       
     
     rule  ( selector ( "vm" ) => 980845667 )
@@ -6416,6 +6670,7 @@ module FOUNDRY-MAIN
     imports public ADDRTEST-BIN-RUNTIME
     imports public ALLOWCHANGESTEST-BIN-RUNTIME
     imports public VALUESTORE-BIN-RUNTIME
+    imports public ARITHMETICTEST-BIN-RUNTIME
     imports public ASSUMETEST-BIN-RUNTIME
     imports public BLOCKPARAMSTEST-BIN-RUNTIME
     imports public BROADCASTTEST-BIN-RUNTIME
