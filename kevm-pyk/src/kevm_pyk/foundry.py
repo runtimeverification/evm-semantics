@@ -20,7 +20,7 @@ from pyk.utils import shorten_hashes
 
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_main_module
-from .utils import KDefinition__expand_macros, abstract_cell_vars, find_free_port, parallel_kcfg_explore
+from .utils import KDefinition__expand_macros, abstract_cell_vars, cfg_dump_dot, find_free_port, parallel_kcfg_explore
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -379,6 +379,23 @@ def foundry_show(
         claims = [to_rule(KCFG.Edge(nd, kcfg.get_unique_target(), mlTop(), -1), claim=True) for nd in kcfg.frontier]
         new_module = KFlatModule('SUMMARY', rules + claims)
         print(foundry.pretty_print(new_module) + '\n')
+
+
+def foundry_to_dot(
+    profile: bool,
+    foundry_out: Path,
+    test: str,
+) -> None:
+    definition_dir = foundry_out / 'kompiled'
+    use_directory = foundry_out / 'specs'
+    use_directory.mkdir(parents=True, exist_ok=True)
+    kcfgs_dir = foundry_out / 'kcfgs'
+    srcmap_dir = foundry_out / 'srcmaps'
+    contract_name = test.split('.')[0]
+    foundry = Foundry(
+        definition_dir, profile=profile, use_directory=use_directory, srcmap_dir=srcmap_dir, contract_name=contract_name
+    )
+    cfg_dump_dot(foundry, test, kcfgs_dir)
 
 
 def foundry_list(
