@@ -151,24 +151,24 @@ def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> 
 
 
 def cfg_dump_dot(kprint: KPrint, cfg_id: str, kcfgs_dir: Path) -> None:
-    blobs_dir = kcfgs_dir / 'blobs'
-    if not blobs_dir.exists():
-        blobs_dir.mkdir()
-    elif not blobs_dir.is_dir():
-        raise ValueError(f'Not a directory: {blobs_dir}')
+    dot_dir = kcfgs_dir / 'dot'
+    if not dot_dir.exists():
+        dot_dir.mkdir()
+    elif not dot_dir.is_dir():
+        raise ValueError(f'Not a directory: {dot_dir}')
 
     kcfg = KCFGExplore.read_cfg(cfg_id, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {cfg_id} from {kcfgs_dir}')
 
-    dot_file = blobs_dir / f'{cfg_id}.dot'
+    dot_file = dot_dir / f'{cfg_id}.dot'
     dot_file.write_text(kcfg.to_dot(kprint))
     _LOGGER.info(f'Wrote DOT file {cfg_id}: {dot_file}')
 
     for node in kcfg.nodes:
-        node_file = blobs_dir / f'node_config_{node.id}.txt'
-        node_minimized_file = blobs_dir / f'node_config_minimized_{node.id}.txt'
-        node_constraint_file = blobs_dir / f'node_constraint_{node.id}.txt'
+        node_file = dot_dir / f'node_config_{node.id}.txt'
+        node_minimized_file = dot_dir / f'node_config_minimized_{node.id}.txt'
+        node_constraint_file = dot_dir / f'node_constraint_{node.id}.txt'
 
         config = node.cterm.config
         if not node_file.exists():
@@ -184,9 +184,9 @@ def cfg_dump_dot(kprint: KPrint, cfg_id: str, kcfgs_dir: Path) -> None:
             _LOGGER.info(f'Wrote node file {cfg_id}: {node_constraint_file}')
 
     for edge in kcfg.edges():
-        edge_file = blobs_dir / f'edge_config_{edge.source.id}_{edge.target.id}.txt'
-        edge_minimized_file = blobs_dir / f'edge_config_minimized_{edge.source.id}_{edge.target.id}.txt'
-        edge_constraint_file = blobs_dir / f'edge_constraint_{edge.source.id}_{edge.target.id}.txt'
+        edge_file = dot_dir / f'edge_config_{edge.source.id}_{edge.target.id}.txt'
+        edge_minimized_file = dot_dir / f'edge_config_minimized_{edge.source.id}_{edge.target.id}.txt'
+        edge_constraint_file = dot_dir / f'edge_constraint_{edge.source.id}_{edge.target.id}.txt'
 
         config = push_down_rewrites(KRewrite(edge.source.cterm.config, edge.target.cterm.config))
         if not edge_file.exists():
@@ -201,8 +201,8 @@ def cfg_dump_dot(kprint: KPrint, cfg_id: str, kcfgs_dir: Path) -> None:
             _LOGGER.info(f'Wrote edge file {cfg_id}: {edge_constraint_file}')
 
     for cover in kcfg.covers():
-        cover_file = blobs_dir / f'cover_config_{cover.source.id}_{cover.target.id}.txt'
-        cover_constraint_file = blobs_dir / f'cover_constraint_{cover.source.id}_{cover.target.id}.txt'
+        cover_file = dot_dir / f'cover_config_{cover.source.id}_{cover.target.id}.txt'
+        cover_constraint_file = dot_dir / f'cover_constraint_{cover.source.id}_{cover.target.id}.txt'
 
         subst_equalities = flatten_label('#And', cover.subst.ml_pred)
 
