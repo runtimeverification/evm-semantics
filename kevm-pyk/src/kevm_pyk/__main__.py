@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
-from pyk.cli_utils import BugReport, dir_path, file_path
+from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
 from pyk.ktool.kompile import KompileBackend
@@ -650,7 +650,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
     prove_args.add_argument(
-        '--save-directory', dest='save_directory', type=dir_path, help='Directory to store CFGs in.'
+        '--save-directory', dest='save_directory', type=ensure_dir_path, help='Directory to store CFGs in.'
     )
     prove_args.add_argument(
         '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'

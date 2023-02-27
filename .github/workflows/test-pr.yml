@@ -38,12 +38,12 @@ jobs:
           cd ..
           git add kevm-pyk/poetry.lock && git commit --message 'kevm-pyk/: sync poetry files' || true
       - name: 'Install Nix'
-        uses: cachix/install-nix-action@v15
+        uses: cachix/install-nix-action@v19
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       - name: 'Install Cachix'
-        uses: cachix/cachix-action@v10
+        uses: cachix/cachix-action@v12
         with:
           name: k-framework
           authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
@@ -165,13 +165,13 @@ jobs:
           sudo apt-get install --yes python3.10
       - name: 'Install Nix'
         if: ${{ !startsWith(matrix.os, 'self') }}
-        uses: cachix/install-nix-action@v15
+        uses: cachix/install-nix-action@v19
         with:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       - name: 'Install Cachix'
         if: ${{ !startsWith(matrix.os, 'self') }}
-        uses: cachix/cachix-action@v10
+        uses: cachix/cachix-action@v12
         with:
           name: k-framework
           authToken: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'

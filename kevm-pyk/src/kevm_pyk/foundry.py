@@ -156,7 +156,7 @@ def foundry_kompile(
             _LOGGER.info(f'Writing file: {foundry_main_file}')
             _foundry = Foundry(
                 definition_dir=definition_dir,
-                extra_unparsing_modules=bin_runtime_definition.modules,
+                extra_unparsing_modules=bin_runtime_definition.all_modules,
             )
             fmf.write(_foundry.pretty_print(bin_runtime_definition) + '\n')
 
