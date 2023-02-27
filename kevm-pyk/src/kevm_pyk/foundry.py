@@ -284,7 +284,7 @@ def foundry_show(
     node_deltas: Iterable[Tuple[str, str]] = (),
     to_module: bool = False,
     minimize: bool = True,
-) -> None:
+) -> str:
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
@@ -319,13 +319,20 @@ def foundry_show(
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    list(map(print, kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)))
+
+    res_lines: List[str] = []
+    res_lines += kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)
 
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
         if minimize:
             kast = minimize_term(kast)
-        print(f'\n\nNode {node_id}:\n\n{foundry.pretty_print(kast)}\n')
+        res_lines.append('')
+        res_lines.append('')
+        res_lines.append(f'Node {node_id}:')
+        res_lines.append('')
+        res_lines.append(foundry.pretty_print(kast))
+        res_lines.append('')
 
     for node_id_1, node_id_2 in node_deltas:
         config_1 = kcfg.node(node_id_1).cterm.config
@@ -333,7 +340,12 @@ def foundry_show(
         config_delta = push_down_rewrites(KRewrite(config_1, config_2))
         if minimize:
             config_delta = minimize_term(config_delta)
-        print(f'\n\nState Delta {node_id_1} => {node_id_2}:\n\n{foundry.pretty_print(config_delta)}\n')
+        res_lines.append('')
+        res_lines.append('')
+        res_lines.append(f'State Delta {node_id_1} => {node_id_2}:')
+        res_lines.append('')
+        res_lines.append(foundry.pretty_print(config_delta))
+        res_lines.append('')
 
     if to_module:
 
@@ -363,7 +375,10 @@ def foundry_show(
         rules = [to_rule(e) for e in kcfg.edges() if e.depth > 0]
         claims = [to_rule(KCFG.Edge(nd, kcfg.get_unique_target(), mlTop(), -1), claim=True) for nd in kcfg.frontier]
         new_module = KFlatModule('SUMMARY', rules + claims)
-        print(foundry.pretty_print(new_module) + '\n')
+        res_lines.append(foundry.pretty_print(new_module))
+        res_lines.append('')
+
+    return '\n'.join(res_lines)
 
 
 def foundry_to_dot(foundry_out: Path, test: str) -> None:

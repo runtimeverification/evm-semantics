@@ -320,7 +320,7 @@ def exec_foundry_show(
     minimize: bool = True,
     **kwargs: Any,
 ) -> None:
-    foundry_show(
+    output = foundry_show(
         foundry_out=foundry_out,
         test=test,
         nodes=nodes,
@@ -328,6 +328,7 @@ def exec_foundry_show(
         to_module=to_module,
         minimize=minimize,
     )
+    print(output)
 
 
 def exec_foundry_to_dot(foundry_out: Path, test: str, **kwargs: Any) -> None:
