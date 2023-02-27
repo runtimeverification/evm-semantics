@@ -334,15 +334,11 @@ def exec_foundry_to_dot(foundry_out: Path, test: str, **kwargs: Any) -> None:
     foundry_to_dot(foundry_out=foundry_out, test=test)
 
 
-def exec_foundry_list(
-    foundry_out: Path,
-    details: bool = True,
-    **kwargs: Any,
-) -> None:
-    foundry_list(
-        foundry_out=foundry_out,
-        details=details,
-    )
+def exec_foundry_list(foundry_out: Path, details: bool = True, **kwargs: Any) -> None:
+    stats = foundry_list(foundry_out=foundry_out)
+    delim = '\n\n' if details else '\n'
+    output = delim.join(stat.pretty(details=details) for stat in stats)
+    print(output)
 
 
 def exec_run(

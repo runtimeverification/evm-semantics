@@ -1,9 +1,9 @@
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Final, Iterable, List, Optional, Tuple
+from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple
 
-from pyk.cli_utils import BugReport
+from pyk.cli_utils import BugReport, check_file_path
 from pyk.cterm import CTerm, build_claim, build_rule
 from pyk.kast.inner import KApply, KInner, KLabel, KRewrite, KSequence, KSort, KToken, KVariable, Subst, build_assoc
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
@@ -375,32 +375,54 @@ def foundry_to_dot(foundry_out: Path, test: str) -> None:
     cfg_dump_dot(foundry, test, kcfgs_dir)
 
 
-def foundry_list(
-    foundry_out: Path,
-    details: bool = True,
-) -> None:
-    kcfgs_dir = foundry_out / 'kcfgs'
-    pattern = '*.json'
-    paths = kcfgs_dir.glob(pattern)
-    for kcfg_file in paths:
-        kcfg_json = json.loads(Path(kcfg_file).read_text())
-        cfg_id = kcfg_json['cfgid']
-        kcfg = KCFG.from_dict(kcfg_json)
-        total_nodes = len(kcfg.nodes)
-        frontier_nodes = len(kcfg.frontier)
-        stuck_nodes = len(kcfg.stuck)
+class CfgStat(NamedTuple):
+    path: Path
+    cfg_id: int
+    proven: str
+    total_nodes: int
+    frontier_nodes: int
+    stuck_nodes: int
+
+    @staticmethod
+    def from_file(path: Path) -> 'CfgStat':
+        check_file_path(path)
+        cfg_json = json.loads(path.read_text())
+        cfg_id = cfg_json['cfgid']
+        cfg = KCFG.from_dict(cfg_json)
+        total_nodes = len(cfg.nodes)
+        frontier_nodes = len(cfg.frontier)
+        stuck_nodes = len(cfg.stuck)
+
         proven = 'failed'
         if stuck_nodes == 0:
             proven = 'pending'
             if frontier_nodes == 0:
                 proven = 'passed'
-        print(f'{cfg_id}: {proven}')
+
+        return CfgStat(
+            path=path,
+            cfg_id=cfg_id,
+            proven=proven,
+            total_nodes=total_nodes,
+            frontier_nodes=frontier_nodes,
+            stuck_nodes=stuck_nodes,
+        )
+
+    def pretty(self, *, details: bool = True) -> str:
+        lines = []
+        lines.append(f'{self.cfg_id}: {self.proven}')
         if details:
-            print(f'    path: {kcfg_file}')
-            print(f'    nodes: {total_nodes}')
-            print(f'    frontier: {frontier_nodes}')
-            print(f'    stuck: {stuck_nodes}')
-            print()
+            lines.append(f'    path: {self.path}')
+            lines.append(f'    nodes: {self.total_nodes}')
+            lines.append(f'    frontier: {self.frontier_nodes}')
+            lines.append(f'    stuck: {self.stuck_nodes}')
+        return '\n'.join(lines)
+
+
+def foundry_list(foundry_out: Path) -> List[CfgStat]:
+    kcfgs_dir = foundry_out / 'kcfgs'
+    paths = kcfgs_dir.glob('*.json')
+    return [CfgStat.from_file(path) for path in paths]
 
 
 def foundry_remove_node(foundry_out: Path, test: str, node: str) -> None:
