@@ -13,6 +13,7 @@ from pyk.ktool.krun import KRunOutput, _krun
 from pyk.utils import single
 
 from .foundry import (
+    Foundry,
     foundry_kompile,
     foundry_list,
     foundry_prove,
@@ -23,7 +24,7 @@ from .foundry import (
     foundry_step_node,
 )
 from .gst_to_kore import gst_to_kore
-from .kevm import KEVM, Foundry
+from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
 from .utils import arg_pair_of, find_free_port, parallel_kcfg_explore
 
