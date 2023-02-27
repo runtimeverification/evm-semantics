@@ -14,6 +14,7 @@ authors = [
 python = "^3.10"
 pathos = "*"
 pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="v0.1.157" }
+tinyrpc = { version = "^1.1.6", extras = [ "httpclient", "wsgi" ] }
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"
@@ -31,6 +32,7 @@ pytest-xdist = "*"
 
 [tool.poetry.scripts]
 kevm-pyk = "kevm_pyk.__main__:main"
+kevm-server = "kevm_pyk.rpc.server:main"
 
 [tool.isort]
 profile = "black"
@@ -50,3 +52,11 @@ skip-string-normalization = true
 
 [tool.mypy]
 disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = "gevent.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tinyrpc.*"
+ignore_missing_imports = true
