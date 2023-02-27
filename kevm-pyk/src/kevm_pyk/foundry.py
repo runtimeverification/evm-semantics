@@ -390,11 +390,7 @@ def foundry_to_dot(
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
-    srcmap_dir = foundry_out / 'srcmaps'
-    contract_name = test.split('.')[0]
-    foundry = Foundry(
-        definition_dir, profile=profile, use_directory=use_directory, srcmap_dir=srcmap_dir, contract_name=contract_name
-    )
+    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
     cfg_dump_dot(foundry, test, kcfgs_dir)
 
 
