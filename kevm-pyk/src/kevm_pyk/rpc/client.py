@@ -46,3 +46,22 @@ class FoundryClient:
             test=test,
             node=node,
         )
+
+    def simplify_node(
+        self,
+        *,
+        foundry_out: Path,
+        test: str,
+        node: str,
+        replace: bool = False,
+        minimize: bool = True,
+        bug_report: bool = False,
+    ) -> str:
+        return self._proxy.simplify_node(
+            foundry_out=str(foundry_out),
+            test=test,
+            node=node,
+            replace=replace,
+            minimize=minimize,
+            bug_report=bug_report,
+        )

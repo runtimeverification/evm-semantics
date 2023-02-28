@@ -422,16 +422,28 @@ def exec_foundry_simplify_node(
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
+    kaas: Optional[Tuple[str, int]] = None,
     **kwargs: Any,
 ) -> None:
-    pretty_term = foundry_simplify_node(
-        foundry_out=foundry_out,
-        test=test,
-        node=node,
-        replace=replace,
-        minimize=minimize,
-        bug_report=bug_report,
-    )
+    if kaas:
+        client = FoundryClient(*kaas)
+        pretty_term = client.simplify_node(
+            foundry_out=foundry_out,
+            test=test,
+            node=node,
+            replace=replace,
+            minimize=minimize,
+            bug_report=bug_report,
+        )
+    else:
+        pretty_term = foundry_simplify_node(
+            foundry_out=foundry_out,
+            test=test,
+            node=node,
+            replace=replace,
+            minimize=minimize,
+            bug_report=bug_report,
+        )
     print(f'Simplified:\n{pretty_term}')
 
 
@@ -902,6 +914,14 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_simplify_node.add_argument(
         '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
+    )
+    foundry_simplify_node.add_argument(
+        '--kaas',
+        metavar='HOST:PORT',
+        nargs='?',
+        const=(DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT),
+        type=host_port,
+        help='KaaS mode',
     )
 
     foundry_step_node = command_parser.add_parser(

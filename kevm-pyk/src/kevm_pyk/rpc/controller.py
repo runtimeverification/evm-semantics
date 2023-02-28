@@ -3,7 +3,7 @@ from typing import Any, Dict, Iterable, List, Tuple
 
 from tinyrpc.dispatch import public
 
-from ..foundry import foundry_list, foundry_remove_node, foundry_show
+from ..foundry import foundry_list, foundry_remove_node, foundry_show, foundry_simplify_node
 
 
 class FoundryController:
@@ -38,4 +38,24 @@ class FoundryController:
             foundry_out=Path(foundry_out),
             test=test,
             node=node,
+        )
+
+    @public
+    def simplify_node(
+        self,
+        *,
+        foundry_out: str,
+        test: str,
+        node: str,
+        replace: bool = False,
+        minimize: bool = True,
+        bug_report: bool = False,
+    ) -> str:
+        return foundry_simplify_node(
+            foundry_out=Path(foundry_out),
+            test=test,
+            node=node,
+            replace=replace,
+            minimize=minimize,
+            bug_report=bug_report,
         )
