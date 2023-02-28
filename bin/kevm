@@ -44,8 +44,6 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
 
-export KLAB_OUT="${KLAB_OUT:-~/.klab}"
-
 # Runners
 # -------
 
@@ -53,13 +51,14 @@ run_kevm_pyk() {
     local pyk_command pyk_args
     pyk_command="$1" ; shift
     case "${pyk_command}" in
-        kompile|run|prove|solc-to-k|foundry-kompile|foundry-prove)
+        kompile|run|prove|solc-to-k|foundry-kompile|foundry-prove|view-kcfg)
             pyk_args=(--definition "${backend_dir}")
             pyk_args+=(-I "${INSTALL_INCLUDE}/kframework")
             ;;
     esac
-    ! ${verbose} || pyk_args+=(--verbose)
-    ! ${debug}   || pyk_args+=(--debug)
+    ! ${verbose}    || pyk_args+=(--verbose)
+    ! ${debug}      || pyk_args+=(--debug)
+    ! ${bug_report} || pyk_args+=(--bug-report)
     execute python3 -m kevm_pyk "${pyk_command}" "$@" "${pyk_args[@]}"
 }
 
@@ -176,7 +175,7 @@ run_kast() {
 
 run_prove() {
     local def_module run_dir proof_args bug_report_name \
-          eventlog_name kprove omit_cells omit_labels klab_log
+          eventlog_name kprove omit_cells omit_labels
 
     check_k_install
 
@@ -222,17 +221,6 @@ run_search() {
     local search_pattern
     search_pattern="$1" ; shift
     run_krun --search --pattern "$search_pattern" "$@"
-}
-
-view_klab() {
-    local klab_log
-
-    klab_log="$(basename "${run_file%-spec.k}")"
-
-    # klab often runs out of stack space when running long-running KEVM programs
-    # klab debug "$klab_log"
-    KLAB_NODE_STACK_SIZE="${KLAB_NODE_STACK_SIZE:-300000}"
-    node --max-old-space-size=4096 --stack-size=$KLAB_NODE_STACK_SIZE $(dirname $(which klab))/../libexec/klab-debug "$klab_log"
 }
 
 run_interpret() {
@@ -288,7 +276,6 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                ${KEVM} prove        [--backend (haskell)]       [--profile|--debug]             <spec> <KEVM_arg>* <K arg>*
                ${KEVM} search       [--backend (haskell)]       [--profile|--debug]             <pgm>  <pattern> <K arg>*
                ${KEVM} kompile      [--backend (llvm|haskell)]  [--profile|--debug]             <main> <K arg>*
-               ${KEVM} klab-view                                [--profile|--debug]             <spec>
                ${KEVM} solc-to-k                                [--profile|--debug]             <sol-file> <contract-name> <solc-arg>*
                ${KEVM} foundry-[kompile|prove|show|view-kcfg]         # see dedicated help menu
 
@@ -300,7 +287,6 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
            ${KEVM} prove           : Run an EVM K proof
            ${KEVM} search          : Search for a K pattern in an EVM program execution
            ${KEVM} kompile         : Run kompile with arguments setup to include KEVM parameters as defaults
-           ${KEVM} klab-view       : View the statelog associated with a given program or spec
            ${KEVM} solc-to-k       : Generate helper K modules for verifying a given contract
 
            ${KEVM} help    : Display this help message.
@@ -332,8 +318,6 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                  <sol> is a Solidity source code file.
                  <sol contract> is the name of a Solidity contract provided in the <sol>.
                  <solc arg> are arguments to pass to solc.
-
-           klab-view: Make sure that the 'klab/bin' directory is on your PATH to use this option.
     "
     exit 0
 fi
@@ -365,6 +349,7 @@ kevm_port='8545'
 kevm_host='127.0.0.1'
 [[ ! "${run_command}" == prove     ]] || backend=haskell
 [[ ! "${run_command}" == solc-to-k ]] || backend=haskell
+[[ ! "${run_command}" == view-kcfg ]] || backend=haskell
 [[ ! "${run_command}" == foundry-* ]] || backend=foundry
 [[ ! "${run_command}" == interpret ]] || unparse=false
 args=()
@@ -410,7 +395,7 @@ if ${pyk}; then
 fi
 
 # get the run file
-if [[ "${run_command}" != foundry-* ]]; then
+if [[ "${run_command}" != foundry-* ]] && [[ "${run_command}" != 'view-kcfg' ]]; then
     run_file="$1" ; shift
     if [[ "${run_file}" == '-' ]]; then
         tmp_input="$(mktemp)"
@@ -432,14 +417,14 @@ cCHAINID_kast="#token(\"${chainid}\",\"Int\")"
 ! ${debug} || set -x
 
 case "$run_command-$backend" in
-    kompile-@(llvm|haskell|node|foundry)    ) run_kompile   "$@" ;;
-    run-@(llvm|haskell)                     ) run_krun      "$@" ;;
-    kast-@(llvm|haskell)                    ) run_kast      "$@" ;;
-    interpret-@(llvm|haskell)               ) run_interpret "$@" ;;
-    prove-@(haskell|foundry)                ) run_prove     "$@" ;;
-    search-@(haskell)                       ) run_search    "$@" ;;
-    klab-view-*                             ) view_klab     "$@" ;;
-    solc-to-k-*                             ) run_solc      "$@" ;;
-    foundry-*                               ) run_foundry   "$@" ;;
+    kompile-@(llvm|haskell|node|foundry) ) run_kompile            "$@" ;;
+    run-@(llvm|haskell)                  ) run_krun               "$@" ;;
+    kast-@(llvm|haskell)                 ) run_kast               "$@" ;;
+    interpret-@(llvm|haskell)            ) run_interpret          "$@" ;;
+    prove-@(haskell|foundry)             ) run_prove              "$@" ;;
+    search-@(haskell)                    ) run_search             "$@" ;;
+    view-kcfg-*                          ) run_kevm_pyk view-kcfg "$@" ;;
+    solc-to-k-*                          ) run_solc               "$@" ;;
+    foundry-*                            ) run_foundry            "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac

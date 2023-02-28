@@ -9,8 +9,55 @@ concurrency:
 
 jobs:
 
+  version-bump:
+    name: 'Version Bump'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Check out code, setup git/poetry'
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.JENKINS_GITHUB_PAT }}
+          # fetch-depth 0 means deep clone the repo
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - run: |
+          git config user.name devops
+          git config user.email devops@runtimeverification.com
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry --version
+      - name: 'Update Version'
+        run: |
+          og_version=$(git show origin/${GITHUB_BASE_REF}:package/version)
+          ./package/version.sh bump ${og_version}
+          ./package/version.sh sub
+          git add --update && git commit --message "Set Version: $(cat package/version)" || true
+      - name: 'Sync Poetry'
+        run: |
+          cd kevm-pyk
+          poetry update
+          cd ..
+          git add kevm-pyk/poetry.lock && git commit --message 'kevm-pyk/: sync poetry files' || true
+      - name: 'Install Nix'
+        uses: cachix/install-nix-action@v15
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      - name: 'Install Cachix'
+        uses: cachix/cachix-action@v10
+        with:
+          name: k-framework
+          authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
+          skipPush: true
+      - name: 'Update nix flake inputs'
+        run: |
+          nix flake update
+          git add flake.nix flake.lock && git commit -m 'flake.{nix,lock}: update Nix derivations' || true
+      - name: 'Push updates'
+        run: git push origin HEAD:${GITHUB_HEAD_REF}
+
   test-concrete-execution:
     name: 'Build and Test KEVM concrete execution'
+    needs: version-bump
     runs-on: [self-hosted, linux, normal]
     steps:
       - name: 'Check out code'
@@ -61,7 +108,7 @@ jobs:
       - name: 'Build Definitions'
         run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make build-prove-haskell -j4'
       - name: 'Prove Haskell'
-        run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove -j6 TEST_SYMBOLIC_BACKEND=haskell'
+        run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove -j9 TEST_SYMBOLIC_BACKEND=haskell'
       - name: 'Tear down Docker'
         if: always()
         run: |
@@ -85,7 +132,7 @@ jobs:
       - name: 'Build Foundry'
         run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
       - name: 'Test Foundry'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry -j2 FOUNDRY_PAR=4 KPROVE_OPTS=--retry'
+        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry -j2 FOUNDRY_PAR=12'
       - name: 'Tear down Docker'
         if: always()
         run: |
@@ -102,6 +149,7 @@ jobs:
             os: macos-12
           - runner: MacM1
             os: self-macos-12
+    needs: version-bump
     runs-on: ${{ matrix.runner }}
     steps:
       - name: 'Check out code'
@@ -119,10 +167,8 @@ jobs:
         if: ${{ !startsWith(matrix.os, 'self') }}
         uses: cachix/install-nix-action@v15
         with:
-          install_url: https://releases.nixos.org/nix/nix-2.7.0/install
           extra_nix_config: |
-            substituters = http://cache.nixos.org https://cache.iog.io
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       - name: 'Install Cachix'
         if: ${{ !startsWith(matrix.os, 'self') }}
         uses: cachix/cachix-action@v10

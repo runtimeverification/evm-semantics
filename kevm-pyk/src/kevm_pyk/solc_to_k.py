@@ -7,19 +7,15 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
-from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSequence, KSort, KVariable, Subst, build_assoc
+from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSort, KVariable
 from pyk.kast.manip import abstract_term_safely
 from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KProductionItem, KRule, KSentence, KTerminal
-from pyk.kcfg import KCFG
-from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
+from pyk.prelude.kbool import TRUE, andBool
 from pyk.prelude.kint import intToken
-from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, intersperse
 
-from .kevm import KEVM, Foundry
-from .utils import abstract_cell_vars
+from .kevm import KEVM
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -332,184 +328,6 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
 def contract_to_main_module(contract: Contract, empty_config: KInner, imports: Iterable[str] = ()) -> KFlatModule:
     module_name = Contract.contract_to_module_name(contract.name, spec=False)
     return KFlatModule(module_name, contract.sentences, [KImport(i) for i in list(imports)])
-
-
-def method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Method) -> KCFG:
-    calldata = method.calldata_cell(contract)
-    callvalue = method.callvalue_cell
-    init_term = _init_term(empty_config, contract.name, calldata=calldata, callvalue=callvalue)
-    init_cterm = _init_cterm(init_term)
-    is_test = method.name.startswith('test')
-    failing = method.name.startswith('testFail')
-    final_cterm = _final_cterm(empty_config, contract.name, failing=failing, is_test=is_test)
-
-    cfg = KCFG()
-    init_node = cfg.create_node(init_cterm)
-    cfg.add_init(init_node.id)
-    target_node = cfg.create_node(final_cterm)
-    cfg.add_target(target_node.id)
-
-    return cfg
-
-
-def _init_cterm(init_term: KInner) -> CTerm:
-    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), Foundry.loc_FOUNDRY_FAILED())
-    init_cterm = CTerm(init_term)
-    init_cterm = KEVM.add_invariant(init_cterm)
-    init_cterm = init_cterm.add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, intToken(0)])))
-    return init_cterm
-
-
-def _init_term(
-    empty_config: KInner,
-    contract_name: str,
-    *,
-    calldata: Optional[KInner] = None,
-    callvalue: Optional[KInner] = None,
-) -> KInner:
-    program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
-    account_cell = KEVM.account_cell(
-        Foundry.address_TEST_CONTRACT(),
-        intToken(0),
-        program,
-        KVariable('ACCT_STORAGE'),
-        KVariable('ACCT_ORIGSTORAGE'),
-        intToken(0),
-    )
-    init_subst = {
-        'MODE_CELL': KApply('NORMAL'),
-        'SCHEDULE_CELL': KApply('LONDON_EVM'),
-        'STATUSCODE_CELL': KVariable('STATUSCODE'),
-        'CALLSTACK_CELL': KApply('.List'),
-        'CALLDEPTH_CELL': intToken(0),
-        'PROGRAM_CELL': program,
-        'JUMPDESTS_CELL': KEVM.compute_valid_jumpdests(program),
-        'ORIGIN_CELL': KVariable('ORIGIN_ID'),
-        'LOG_CELL': KApply('.List'),
-        'ID_CELL': Foundry.address_TEST_CONTRACT(),
-        'CALLER_CELL': KVariable('CALLER_ID'),
-        'ACCESSEDACCOUNTS_CELL': KApply('.Set'),
-        'ACCESSEDSTORAGE_CELL': KApply('.Map'),
-        'INTERIMSTATES_CELL': KApply('.List'),
-        'ACTIVEACCOUNTS_CELL': build_assoc(
-            KApply('.Set'),
-            KLabel('_Set_'),
-            map(
-                KLabel('SetItem'),
-                [
-                    Foundry.address_TEST_CONTRACT(),
-                    Foundry.address_CHEATCODE(),
-                ],
-            ),
-        ),
-        'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
-        'PREVCALLER_CELL': KApply('.Account_EVM-TYPES_Account'),
-        'PREVORIGIN_CELL': KApply('.Account_EVM-TYPES_Account'),
-        'NEWCALLER_CELL': KApply('.Account_EVM-TYPES_Account'),
-        'NEWORIGIN_CELL': KApply('.Account_EVM-TYPES_Account'),
-        'ACTIVE_CELL': FALSE,
-        'STATIC_CELL': FALSE,
-        'MEMORYUSED_CELL': intToken(0),
-        'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
-        'PC_CELL': intToken(0),
-        'GAS_CELL': KEVM.inf_gas(KVariable('VGAS')),
-        'K_CELL': KSequence([KEVM.sharp_execute(), KVariable('CONTINUATION')]),
-        'ACCOUNTS_CELL': KEVM.accounts(
-            [
-                account_cell,  # test contract address
-                Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE')),
-                KVariable('ACCOUNTS_INIT'),
-            ]
-        ),
-        'SINGLECALL_CELL': FALSE,
-        'ISREVERTEXPECTED_CELL': FALSE,
-        'ISOPCODEEXPECTED_CELL': FALSE,
-        'EXPECTEDADDRESS_CELL': KApply('.Account_EVM-TYPES_Account'),
-        'EXPECTEDVALUE_CELL': intToken(0),
-        'EXPECTEDDATA_CELL': KApply('.ByteArray_EVM-TYPES_ByteArray'),
-        'OPCODETYPE_CELL': KApply('.OpcodeType_FOUNDRY-CHEAT-CODES_OpcodeType'),
-        'RECORDEVENT_CELL': FALSE,
-        'ISEVENTEXPECTED_CELL': FALSE,
-        'ISCALLWHITELISTACTIVE_CELL': FALSE,
-        'ISSTORAGEWHITELISTACTIVE_CELL': FALSE,
-        'ADDRESSSET_CELL': KApply('.Set'),
-        'STORAGESLOTSET_CELL': KApply('.Set'),
-    }
-
-    if calldata is not None:
-        init_subst['CALLDATA_CELL'] = calldata
-
-    if callvalue is not None:
-        init_subst['CALLVALUE_CELL'] = callvalue
-
-    return Subst(init_subst)(empty_config)
-
-
-def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True) -> CTerm:
-    final_term = _final_term(empty_config, contract_name)
-    dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), Foundry.loc_FOUNDRY_FAILED())
-    foundry_success = Foundry.success(
-        KVariable('STATUSCODE_FINAL'),
-        dst_failed_post,
-        KVariable('ISREVERTEXPECTED_FINAL'),
-        KVariable('ISOPCODEEXPECTED_FINAL'),
-        KVariable('RECORDEVENT_FINAL'),
-        KVariable('ISEVENTEXPECTED_FINAL'),
-    )
-    final_cterm = CTerm(final_term)
-    if is_test:
-        if not failing:
-            return final_cterm.add_constraint(mlEqualsTrue(foundry_success))
-        else:
-            return final_cterm.add_constraint(mlEqualsTrue(notBool(foundry_success)))
-    return final_cterm
-
-
-def _final_term(empty_config: KInner, contract_name: str) -> KInner:
-    program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
-    post_account_cell = KEVM.account_cell(
-        Foundry.address_TEST_CONTRACT(),
-        KVariable('ACCT_BALANCE'),
-        program,
-        KVariable('ACCT_STORAGE_FINAL'),
-        KVariable('ACCT_ORIGSTORAGE'),
-        KVariable('ACCT_NONCE'),
-    )
-    final_subst = {
-        'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')]),
-        'STATUSCODE_CELL': KVariable('STATUSCODE_FINAL'),
-        'ID_CELL': Foundry.address_TEST_CONTRACT(),
-        'ACCOUNTS_CELL': KEVM.accounts(
-            [
-                post_account_cell,  # test contract address
-                Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE_FINAL')),
-                KVariable('ACCOUNTS_FINAL'),
-            ]
-        ),
-        'ISREVERTEXPECTED_CELL': KVariable('ISREVERTEXPECTED_FINAL'),
-        'ISOPCODEEXPECTED_CELL': KVariable('ISOPCODEEXPECTED_FINAL'),
-        'RECORDEVENT_CELL': KVariable('RECORDEVENT_FINAL'),
-        'ISEVENTEXPECTED_CELL': KVariable('ISEVENTEXPECTED_FINAL'),
-        'ISCALLWHITELISTACTIVE_CELL': KVariable('ISCALLWHITELISTACTIVE_FINAL'),
-        'ISSTORAGEWHITELISTACTIVE_CELL': KVariable('ISSTORAGEWHITELISTACTIVE_FINAL'),
-        'ADDRESSSET_CELL': KVariable('ADDRESSSET_FINAL'),
-        'STORAGESLOTSET_CELL': KVariable('STORAGESLOTSET_FINAL'),
-    }
-    return abstract_cell_vars(
-        Subst(final_subst)(empty_config),
-        [
-            KVariable('STATUSCODE_FINAL'),
-            KVariable('ACCOUNTS_FINAL'),
-            KVariable('ISREVERTEXPECTED_FINAL'),
-            KVariable('ISOPCODEEXPECTED_FINAL'),
-            KVariable('RECORDEVENT_FINAL'),
-            KVariable('ISEVENTEXPECTED_FINAL'),
-            KVariable('ISCALLWHITELISTACTIVE_FINAL'),
-            KVariable('ISSTORAGEWHITELISTACTIVE_FINAL'),
-            KVariable('ADDRESSSET_FINAL'),
-            KVariable('STORAGESLOTSET_FINAL'),
-        ],
-    )
 
 
 # Helpers

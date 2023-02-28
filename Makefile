@@ -339,22 +339,22 @@ $(KEVM_LIB)/%.py: scripts/%.py
 	@mkdir -p $(dir $@)
 	install $< $@
 
-$(KEVM_LIB)/version:
+$(KEVM_LIB)/version: package/version
 	@mkdir -p $(dir $@)
-	echo $(KEVM_RELEASE_TAG) > $@
+	install $< $@
 
 $(KEVM_LIB)/release.md: INSTALL.md
 	@mkdir -p $(dir $@)
-	echo "KEVM Release $(KEVM_RELEASE_TAG)"  > $@
-	echo                                    >> $@
-	cat INSTALL.md                          >> $@
+	echo "KEVM Release $(shell cat package/version)"  > $@
+	echo                                             >> $@
+	cat INSTALL.md                                   >> $@
 
 build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
 
 build-llvm:     $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-haskell:  $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
 build-node:     $(KEVM_LIB)/$(node_kompiled)
-build-kevm:     $(KEVM_BIN)/kevm $(kevm_includes) $(plugin_includes)
+build-kevm:     $(KEVM_BIN)/kevm $(KEVM_LIB)/version $(kevm_includes) $(plugin_includes)
 build-foundry:  $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
@@ -506,7 +506,7 @@ tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
 
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	$(KEVM) foundry-prove tests/foundry/out                              \
-	    -j$(FOUNDRY_PAR) --no-simplify-init                              \
+	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
 	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
 	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
 
@@ -533,7 +533,7 @@ tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
-	$(KEVM) prove $< $(KEVM_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS)                   \
+	$(POETRY_RUN) $(KEVM) prove $< $(KEVM_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS) \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
@@ -592,6 +592,7 @@ test-bchain: $(passing_bchain_tests:=.run)
 
 prove_specs_dir          := tests/specs
 prove_failing_tests      := $(shell cat tests/failing-symbolic.$(TEST_SYMBOLIC_BACKEND))
+prove_pyk_failing_tests  := $(shell cat tests/failing-symbolic.pyk)
 prove_slow_tests         := $(shell cat tests/slow.$(TEST_SYMBOLIC_BACKEND))
 prove_skip_tests         := $(prove_failing_tests) $(prove_slow_tests)
 prove_benchmarks_tests   := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/benchmarks/*-spec.k))
@@ -602,6 +603,8 @@ prove_bihu_tests         := $(filter-out $(prove_skip_tests), $(wildcard $(prove
 prove_examples_tests     := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k) $(wildcard $(prove_specs_dir)/examples/*-spec.md))
 prove_mcd_tests          := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
 prove_optimization_tests := $(filter-out $(prove_skip_tests), tests/specs/opcodes/evm-optimizations-spec.md)
+prove_all_tests          := $(prove_benchmarks_tests) $(prove_functional_tests) $(prove_opcodes_tests) $(prove_erc20_tests) $(prove_bihu_tests) $(prove_examples_tests) $(prove_mcd_tests) $(prove_optimization_tests)
+prove_pyk_tests          := $(filter-out $(prove_pyk_failing_tests), $(prove_all_tests))
 prove_smoke_tests        := $(shell cat tests/specs/smoke)
 
 ## best-effort list of prove kompiled definitions to produce ahead of time
@@ -642,6 +645,8 @@ test-failing-prove: $(prove_failing_tests:=.prove)
 
 test-klab-prove: KPROVE_OPTS += --debugger
 test-klab-prove: $(smoke_tests_prove:=.prove)
+
+$(prove_pyk_tests:=.prove): KPROVE_OPTS += --pyk --max-depth 1000
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.md
