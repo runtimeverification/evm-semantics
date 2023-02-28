@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
 
+from pyk.cli_utils import check_dir_path
 from tinyrpc.dispatch import public
 
 from ..foundry import (
@@ -14,16 +15,21 @@ from ..foundry import (
 
 
 class FoundryController:
+    _foundry_out: Path
+
+    def __init__(self, foundry_out: Path):
+        check_dir_path(foundry_out)
+        self._foundry_out = foundry_out
+
     @public
-    def list(self, *, foundry_out: str) -> List[Dict[str, Any]]:
-        stats = foundry_list(foundry_out=Path(foundry_out))
+    def list(self) -> List[Dict[str, Any]]:
+        stats = foundry_list(foundry_out=self._foundry_out)
         return [stat.dict for stat in stats]
 
     @public
     def show(
         self,
         *,
-        foundry_out: str,
         test: str,
         nodes: Iterable[str] = (),
         node_deltas: Iterable[Tuple[str, str]],
@@ -31,7 +37,7 @@ class FoundryController:
         minimize: bool = True,
     ) -> str:
         return foundry_show(
-            foundry_out=Path(foundry_out),
+            foundry_out=self._foundry_out,
             test=test,
             nodes=nodes,
             node_deltas=node_deltas,
@@ -40,9 +46,9 @@ class FoundryController:
         )
 
     @public
-    def remove_node(self, *, foundry_out: str, test: str, node: str) -> None:
+    def remove_node(self, *, test: str, node: str) -> None:
         foundry_remove_node(
-            foundry_out=Path(foundry_out),
+            foundry_out=self._foundry_out,
             test=test,
             node=node,
         )
@@ -51,7 +57,6 @@ class FoundryController:
     def simplify_node(
         self,
         *,
-        foundry_out: str,
         test: str,
         node: str,
         replace: bool = False,
@@ -59,7 +64,7 @@ class FoundryController:
         bug_report: bool = False,
     ) -> str:
         return foundry_simplify_node(
-            foundry_out=Path(foundry_out),
+            foundry_out=self._foundry_out,
             test=test,
             node=node,
             replace=replace,
@@ -71,7 +76,6 @@ class FoundryController:
     def step_node(
         self,
         *,
-        foundry_out: str,
         test: str,
         node: str,
         repeat: int = 1,
@@ -80,7 +84,7 @@ class FoundryController:
         bug_report: bool = False,
     ) -> None:
         foundry_step_node(
-            foundry_out=Path(foundry_out),
+            foundry_out=self._foundry_out,
             test=test,
             node=node,
             repeat=repeat,
@@ -93,7 +97,6 @@ class FoundryController:
     def section_edge(
         self,
         *,
-        foundry_out: str,
         test: str,
         edge: Tuple[str, str],
         sections: int = 2,
@@ -102,7 +105,7 @@ class FoundryController:
         bug_report: bool = False,
     ) -> None:
         foundry_section_edge(
-            foundry_out=Path(foundry_out),
+            foundry_out=self._foundry_out,
             test=test,
             edge=edge,
             sections=sections,

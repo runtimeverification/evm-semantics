@@ -326,7 +326,6 @@ def exec_foundry_show(
     if kaas:
         client = FoundryClient(*kaas)
         output = client.show(
-            foundry_out=foundry_out,
             test=test,
             nodes=nodes,
             node_deltas=node_deltas,
@@ -357,7 +356,7 @@ def exec_foundry_list(
 ) -> None:
     if kaas:
         client = FoundryClient(*kaas)
-        stats = client.list(foundry_out=foundry_out)
+        stats = client.list()
     else:
         stats = foundry_list(foundry_out=foundry_out)
     delim = '\n\n' if details else '\n'
@@ -410,7 +409,7 @@ def exec_foundry_remove_node(
 ) -> None:
     if kaas:
         client = FoundryClient(*kaas)
-        client.remove_node(foundry_out=foundry_out, test=test, node=node)
+        client.remove_node(test=test, node=node)
     else:
         foundry_remove_node(foundry_out=foundry_out, test=test, node=node)
 
@@ -428,7 +427,6 @@ def exec_foundry_simplify_node(
     if kaas:
         client = FoundryClient(*kaas)
         pretty_term = client.simplify_node(
-            foundry_out=foundry_out,
             test=test,
             node=node,
             replace=replace,
@@ -461,7 +459,6 @@ def exec_foundry_step_node(
     if kaas:
         client = FoundryClient(*kaas)
         client.step_node(
-            foundry_out=foundry_out,
             test=test,
             node=node,
             repeat=repeat,
@@ -495,7 +492,6 @@ def exec_foundry_section_edge(
     if kaas:
         client = FoundryClient(*kaas)
         client.section_edge(
-            foundry_out=foundry_out,
             test=test,
             edge=edge,
             sections=sections,

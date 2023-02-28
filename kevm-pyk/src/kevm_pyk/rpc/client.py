@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Iterable, List, Tuple
 
 from tinyrpc import RPCClient, RPCProxy
@@ -17,14 +16,13 @@ class FoundryClient:
         client = RPCClient(protocol, transport)
         self._proxy = client.get_proxy()
 
-    def list(self, *, foundry_out: Path) -> List[CfgStat]:
-        dcts = self._proxy.list(foundry_out=str(foundry_out))
+    def list(self) -> List[CfgStat]:
+        dcts = self._proxy.list()
         return [CfgStat.from_dict(dct) for dct in dcts]
 
     def show(
         self,
         *,
-        foundry_out: Path,
         test: str,
         nodes: Iterable[str] = (),
         node_deltas: Iterable[Tuple[str, str]] = (),
@@ -32,7 +30,6 @@ class FoundryClient:
         minimize: bool = True,
     ) -> str:
         return self._proxy.show(
-            foundry_out=str(foundry_out),
             test=test,
             nodes=nodes,
             node_deltas=node_deltas,
@@ -40,17 +37,12 @@ class FoundryClient:
             minimize=minimize,
         )
 
-    def remove_node(self, *, foundry_out: Path, test: str, node: str) -> None:
-        self._proxy.remove_node(
-            foundry_out=str(foundry_out),
-            test=test,
-            node=node,
-        )
+    def remove_node(self, *, test: str, node: str) -> None:
+        self._proxy.remove_node(test=test, node=node)
 
     def simplify_node(
         self,
         *,
-        foundry_out: Path,
         test: str,
         node: str,
         replace: bool = False,
@@ -58,7 +50,6 @@ class FoundryClient:
         bug_report: bool = False,
     ) -> str:
         return self._proxy.simplify_node(
-            foundry_out=str(foundry_out),
             test=test,
             node=node,
             replace=replace,
@@ -69,7 +60,6 @@ class FoundryClient:
     def step_node(
         self,
         *,
-        foundry_out: Path,
         test: str,
         node: str,
         repeat: int = 1,
@@ -78,7 +68,6 @@ class FoundryClient:
         bug_report: bool = False,
     ) -> None:
         self._proxy.step_node(
-            foundry_out=str(foundry_out),
             test=test,
             node=node,
             repeat=repeat,
@@ -90,7 +79,6 @@ class FoundryClient:
     def section_edge(
         self,
         *,
-        foundry_out: Path,
         test: str,
         edge: Tuple[str, str],
         sections: int = 2,
@@ -99,7 +87,6 @@ class FoundryClient:
         bug_report: bool = False,
     ) -> None:
         self._proxy.section_edge(
-            foundry_out=str(foundry_out),
             test=test,
             edge=edge,
             sections=sections,
