@@ -1,0 +1,128 @@
+set -euxo pipefail
+export PATH=$(pwd)/.build/usr/bin:$PATH
+export PATH=$(pwd)/../hs-backend-booster/.build/kore/bin:$PATH
+
+poetry_run() {
+    poetry -C ./kevm-pyk -- run "$@"
+}
+
+# you made changes to KEVM and want to restart
+forge_build() {
+    rm -rf ${foundry_out}
+    (   cd $(dirname ${foundry_out})
+        forge build
+    )
+}
+
+kompile_foundry() {
+    poetry_run kevm kompile --backend foundry             \
+        .build/usr/lib/kevm/include/kframework/foundry.md \
+        --main-module FOUNDRY                             \
+        --syntax-module FOUNDRY                           \
+        --pyk --verbose --profile
+}
+
+foundry_kompile() {
+    poetry_run kevm foundry-kompile ${verbose} ${foundry_out} "$@"
+}
+
+foundry_prove() {
+    poetry_run kevm foundry-prove ${verbose} ${foundry_out} --test ${test} "$@"
+}
+
+foundry_show() {
+    poetry_run kevm foundry-show ${verbose} ${foundry_out} ${test} "$@"
+}
+
+foundry_to_dot() {
+    poetry_run kevm foundry-to-dot ${verbose} ${foundry_out} ${test} "$@"
+}
+
+foundry_view() {
+    poetry_run kevm foundry-view-kcfg ${verbose} ${foundry_out} ${test} "$@"
+}
+
+foundry_list() {
+    poetry_run kevm foundry-list ${verbose} ${foundry_out}
+}
+
+foundry_remove_node() {
+    node_id="$1" ; shift
+    poetry_run kevm foundry-remove-node ${verbose} ${foundry_out} ${test} ${node_id} "$@"
+}
+
+foundry_simplify_node() {
+    node_id="$1" ; shift
+    poetry_run kevm foundry-simplify-node ${verbose} ${foundry_out} ${test} ${node_id} "$@"
+}
+
+foundry_step_node() {
+    node_id="$1" ; shift
+    poetry_run kevm foundry-step-node ${verbose} ${foundry_out} ${test} ${node_id} "$@"
+}
+
+foundry_section_edge() {
+    edge_id="$1" ; shift
+    poetry_run kevm foundry-section-edge ${verbose} ${foundry_out} ${test} ${edge_id} "$@"
+}
+
+do_kompile() {
+    poetry_run kevm kompile --pyk --backend haskell ${verification_file} --definition ${definition} \
+        --main-module VERIFICATION --syntax-module VERIFICATION
+}
+
+do_prove() {
+    poetry_run kevm prove ${spec_file} --definition ${definition} --pyk ${verbose} --save-directory ${kcfgs_dir}
+}
+
+do_view() {
+    poetry_run kevm view-kcfg ${verbose} ${kcfgs_dir} ${spec_file} --definition ${definition}
+}
+
+foundry_out=tests/foundry/out
+
+test=OptimismPortal.depositTransaction
+test=DynamicTypes.test_dynamic_byte_read
+test=StoreTest.testGasLoadWarmUp
+test=AssertTest.test_assert_true
+test=AddrTest.test_addr_true
+test=StoreTest.testGasStoreWarmUp
+test=AssumeTest.test_assume_true
+test=AccountParamsTest.testFail_GetNonce_true
+test=SymbolicStorageTest.testFail_SymbolicStorage1
+test=GasTest.testInfiniteGas
+test=AssertTest.test_source_map
+test=NoImport.test_source_map
+test=AssertTest.test_revert_branch
+test=AssertTest.test_assert_true
+
+verbose=
+verbose=--verbose
+
+# Uncomment these lines as needed
+# pkill kore-rpc || true
+# make build-foundry -j2
+# forge_build
+foundry_kompile --rekompile --regen
+# foundry_list
+# foundry_remove_node 4b6c47..d6d6d3
+foundry_prove --reinit
+foundry_prove --reinit --use-booster
+# foundry_section_edge --sections 4 d38e0e..ee4ec8,593be8..e93e52
+# foundry_show # --no-minimize --node 35880c..e4389e --node 17e757..6c2e55
+# foundry_view --verbose
+# for test in AccountParamsTest.testDealConcrete AccountParamsTest.testDealSymbolic AccountParamsTest.testEtchConcrete AccountParamsTest.testFail_GetNonce_true AccountParamsTest.testNonceSymbolic AccountParamsTest.test_GetNonce_true AccountParamsTest.test_Nonce_ExistentAddress AccountParamsTest.test_Nonce_NonExistentAddress AddrTest.test_notBuiltinAddress_concrete AddrTest.test_notBuiltinAddress_symbolic AllowChangesTest.testAllow AllowChangesTest.testFailAllowCallsToAddress AllowChangesTest.testFailAllowChangesToStorage ArithmeticTest.test_max1 ArithmeticTest.test_max2 AssumeTest.test_assume_staticCall AssumeTest.test_assume_true AssumeTest.test_multi_assume BlockParamsTest.testChainId BlockParamsTest.testCoinBase BlockParamsTest.testFee BlockParamsTest.testRoll BlockParamsTest.testWarp EmitContractTest.testExpectEmit EmitContractTest.testExpectEmitCheckEmitter EmitContractTest.testExpectEmitDoNotCheckData ExpectCallTest.testExpectRegularCall ExpectCallTest.testExpectStaticCall ExpectRevertTest.testFail_ExpectRevert_failAndSuccess ExpectRevertTest.testFail_expectRevert_empty ExpectRevertTest.testFail_expectRevert_false ExpectRevertTest.testFail_expectRevert_multipleReverts ExpectRevertTest.test_ExpectRevert_increasedDepth ExpectRevertTest.test_expectRevert_internalCall ExpectRevertTest.test_expectRevert_message ExpectRevertTest.test_expectRevert_true GasTest.testInfiniteGas LabelTest.testLabel PlainPrankTest.testFail_startPrank_internalCall PlainPrankTest.test_prank_zeroAddress_true PlainPrankTest.test_startPrankWithOrigin_true PlainPrankTest.test_startPrank_true PlainPrankTest.test_startPrank_zeroAddress_true PlainPrankTest.test_stopPrank_notExistent AssertTest.test_assert_true_branch AssertTest.test_source_map StoreTest.testGasLoadColdVM StoreTest.testGasLoadWarmUp StoreTest.testGasStoreColdVM StoreTest.testGasStoreWarmUp StoreTest.testLoadNonExistent StoreTest.testStoreLoad StoreTest.testStoreLoadNonExistent SymbolicStorageTest.testFail_SymbolicStorage SymbolicStorageTest.testFail_SymbolicStorage1 BytesTypeTest.test_bytes32 BytesTypeTest.test_bytes4 UintTypeTest.test_uint256; do
+#     foundry_to_dot
+# done
+
+definition=tests/specs/benchmarks/verification/haskell
+verification_file=tests/specs/benchmarks/verification.k
+spec_file=tests/specs/benchmarks/address00-spec.k
+kcfgs_dir=kcfgs
+
+# rm -rf ${kcfgs_dir}
+# poetry update -C ./kevm-pyk
+# make build-kevm
+# do_kompile
+# do_prove
+# do_view
