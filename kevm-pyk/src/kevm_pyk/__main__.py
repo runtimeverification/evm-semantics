@@ -489,17 +489,30 @@ def exec_foundry_section_edge(
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
+    kaas: Optional[Tuple[str, int]] = None,
     **kwargs: Any,
 ) -> None:
-    foundry_section_edge(
-        foundry_out=foundry_out,
-        test=test,
-        edge=edge,
-        sections=sections,
-        replace=replace,
-        minimize=minimize,
-        bug_report=bug_report,
-    )
+    if kaas:
+        client = FoundryClient(*kaas)
+        client.section_edge(
+            foundry_out=foundry_out,
+            test=test,
+            edge=edge,
+            sections=sections,
+            replace=replace,
+            minimize=minimize,
+            bug_report=bug_report,
+        )
+    else:
+        foundry_section_edge(
+            foundry_out=foundry_out,
+            test=test,
+            edge=edge,
+            sections=sections,
+            replace=replace,
+            minimize=minimize,
+            bug_report=bug_report,
+        )
 
 
 # Helpers
@@ -970,6 +983,14 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_section_edge.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
     foundry_section_edge.add_argument(
         '--sections', type=int, default=2, help='Number of sections to make from edge (>= 2).'
+    )
+    foundry_section_edge.add_argument(
+        '--kaas',
+        metavar='HOST:PORT',
+        nargs='?',
+        const=(DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT),
+        type=host_port,
+        help='KaaS mode',
     )
 
     return parser

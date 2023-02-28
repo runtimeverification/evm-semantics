@@ -3,7 +3,14 @@ from typing import Any, Dict, Iterable, List, Tuple
 
 from tinyrpc.dispatch import public
 
-from ..foundry import foundry_list, foundry_remove_node, foundry_show, foundry_simplify_node, foundry_step_node
+from ..foundry import (
+    foundry_list,
+    foundry_remove_node,
+    foundry_section_edge,
+    foundry_show,
+    foundry_simplify_node,
+    foundry_step_node,
+)
 
 
 class FoundryController:
@@ -78,6 +85,28 @@ class FoundryController:
             node=node,
             repeat=repeat,
             depth=depth,
+            minimize=minimize,
+            bug_report=bug_report,
+        )
+
+    @public
+    def section_edge(
+        self,
+        *,
+        foundry_out: str,
+        test: str,
+        edge: Tuple[str, str],
+        sections: int = 2,
+        replace: bool = False,
+        minimize: bool = True,
+        bug_report: bool = False,
+    ) -> None:
+        foundry_section_edge(
+            foundry_out=Path(foundry_out),
+            test=test,
+            edge=edge,
+            sections=sections,
+            replace=replace,
             minimize=minimize,
             bug_report=bug_report,
         )

@@ -86,3 +86,24 @@ class FoundryClient:
             minimize=minimize,
             bug_report=bug_report,
         )
+
+    def section_edge(
+        self,
+        *,
+        foundry_out: Path,
+        test: str,
+        edge: Tuple[str, str],
+        sections: int = 2,
+        replace: bool = False,
+        minimize: bool = True,
+        bug_report: bool = False,
+    ) -> None:
+        self._proxy.section_edge(
+            foundry_out=str(foundry_out),
+            test=test,
+            edge=edge,
+            sections=sections,
+            replace=replace,
+            minimize=minimize,
+            bug_report=bug_report,
+        )
