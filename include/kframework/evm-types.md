@@ -260,7 +260,7 @@ A cons-list is used for the EVM wordstack.
     rule #take(N, _BS:Bytes) => .Bytes                                      requires                                        notBool N >Int 0
     rule #take(N,  BS:Bytes) => #padRightToWidth(N, .Bytes)                 requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
     rule #take(N,  BS:Bytes) => BS ++ #take(N -Int lengthBytes(BS), .Bytes) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
-    rule #take(N,  BS:Bytes) => BS [ 0 .. N ]                               requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
+    rule #take(N,  BS:Bytes) => #range(BS, 0, N)                            requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
 
     syntax Bytes ::= #drop ( Int , Bytes ) [klabel(dropBytes), function, total]
  // ---------------------------------------------------------------------------
@@ -343,10 +343,6 @@ Most of EVM data is held in local memory.
     rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS') requires START >=Int 0  [concrete]
     rule  _ [ START := _:ByteArray ] => .Memory                                                                  requires START  <Int 0  [concrete]
 
-    syntax ByteArray ::= #range ( Memory , Int , Int ) [function, total]
- // --------------------------------------------------------------------
-    rule #range(LM, START, WIDTH) => LM [ START .. WIDTH ] [concrete]
-
     syntax Memory ::= ".Memory" [macro]
  // -----------------------------------
     rule .Memory => .Bytes
@@ -367,7 +363,7 @@ The local memory of execution is a byte-array (instead of a word-array).
     Differs from `#asWord` only in that an empty stack represents the empty account, not account zero.
 -   `#asByteStack` will split a single word up into a `ByteArray`.
 -   `_++_` acts as `ByteArray` append.
--   `WS [ N .. W ]` access the range of `WS` beginning with `N` of width `W`.
+-   `#range(WS, N, W)` access the range of `WS` beginning with `N` of width `W`.
 -   `#sizeByteArray` calculates the size of a `ByteArray`.
 -   `#padToWidth(N, WS)` and `#padRightToWidth` make sure that a `WordStack` is the correct size.
 
@@ -398,12 +394,12 @@ The local memory of execution is a byte-array (instead of a word-array).
  // --------------------------------------------------------------------------------------------------------
     rule WS ++ WS' => WS +Bytes WS' [concrete]
 
-    syntax ByteArray ::= ByteArray "[" Int ".." Int "]" [function, total]
- // ---------------------------------------------------------------------
-    rule                 _ [ START .. WIDTH ] => .ByteArray                      requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
-    rule [bytesRange] : WS [ START .. WIDTH ] => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH)
+    syntax ByteArray ::= #range ( ByteArray , Int , Int ) [function, total]
+ // -----------------------------------------------------------------------
+    rule                  #range(_, START, WIDTH)  => .ByteArray requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
+    rule [bytesRange] :   #range(WS, START, WIDTH) => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH)
       requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int #sizeByteArray(WS)
-    rule                 _ [ _     .. WIDTH ] => padRightBytes(.Bytes, WIDTH, 0) [owise]
+    rule                  #range(_, _, WIDTH)      => padRightBytes(.Bytes, WIDTH, 0) [owise]
 
     syntax Int ::= #sizeByteArray ( ByteArray ) [function, total, klabel(sizeByteArray), smtlib(sizeByteArray)]
  // -----------------------------------------------------------------------------------------------------------

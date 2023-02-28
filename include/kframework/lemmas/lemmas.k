@@ -95,7 +95,7 @@ module LEMMAS [symbolic]
     rule #range(M [ N := BUF:ByteArray ], L, K) =>
            #let S = L -Int N #in
            #let W = minInt(K, #sizeByteArray(BUF) -Int S) #in
-           BUF [ S .. W ] ++ #range(M, N +Int #sizeByteArray(BUF), K -Int W)
+           #range(BUF, S, W) ++ #range(M, N +Int #sizeByteArray(BUF), K -Int W)
       requires 0 <Int K andBool N <=Int L andBool L <=Int N +Int #sizeByteArray(BUF) [simplification]
 
     rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, K)
@@ -121,13 +121,13 @@ module LEMMAS [symbolic]
     rule MEM [ K1 := BUF1           ] [ K2 := BUF2           ] => MEM [ K2 := BUF2 ]                 requires K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2) andBool K2 <=Int K1 [simplification]
 
     // lookup range in memory
-    rule _MEM [ _ .. W ] => .ByteArray  requires W ==Int 0                    [simplification]
-    rule  MEM [ 0 .. W ] => MEM         requires W ==Int #sizeByteArray(MEM)  [simplification]
+    rule #range(_MEM, _, W) => .ByteArray  requires W ==Int 0                    [simplification]
+    rule  #range(MEM, 0, W) => MEM         requires W ==Int #sizeByteArray(MEM)  [simplification]
 
     // lookup range in concatenated memory buffers
-    rule (BUF1 ++  BUF2)[START .. WIDTH] =>  BUF2[START -Int #sizeByteArray(BUF1) .. WIDTH                          ]                                                              requires                        #sizeByteArray(BUF1) <=Int START                                                             [simplification]
-    rule (BUF1 ++  _   )[START .. WIDTH] =>  BUF1[START                           .. WIDTH                          ]                                                              requires START +Int WIDTH <=Int #sizeByteArray(BUF1)                       andBool 0 <=Int START andBool 0 <=Int WIDTH       [simplification]
-    rule (BUF1 ++  BUF2)[START .. WIDTH] => (BUF1[START                           .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])  requires                        #sizeByteArray(BUF1) <Int START +Int WIDTH andBool #range(0 <= START < #sizeByteArray(BUF1)) [simplification]
+    rule #range(BUF1 ++ BUF2, START, WIDTH) => #range(BUF2, START -Int #sizeByteArray(BUF1), WIDTH)                                                                 requires                        #sizeByteArray(BUF1) <=Int START                                                             [simplification]
+    rule #range(BUF1 ++    _, START, WIDTH) => #range(BUF1, START, WIDTH )                                                                                          requires START +Int WIDTH <=Int #sizeByteArray(BUF1)                       andBool 0 <=Int START andBool 0 <=Int WIDTH       [simplification]
+    rule #range(BUF1 ++ BUF2, START, WIDTH) => #range(BUF1, START, #sizeByteArray(BUF1) -Int START) ++ #range(BUF2, 0, START +Int WIDTH -Int #sizeByteArray(BUF1))  requires                        #sizeByteArray(BUF1) <Int START +Int WIDTH andBool #range(0 <= START < #sizeByteArray(BUF1)) [simplification]
 
     rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true
       requires I1 =/=Int I2
@@ -137,7 +137,6 @@ module LEMMAS [symbolic]
 
     rule #sizeByteArray(BUF1 ++ BUF2)                 => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)      [simplification]
     rule #sizeByteArray(#buf(SIZE, _))                => SIZE                                                [simplification]
-    rule #sizeByteArray(_MEM [ START .. WIDTH ])      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
     rule #sizeByteArray(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
     rule #sizeByteArray(#padRightToWidth(WIDTH, BUF)) => WIDTH  requires #sizeByteArray(BUF) <=Int WIDTH     [simplification]
 
@@ -147,13 +146,13 @@ module LEMMAS [symbolic]
 
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
 
-    rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeByteArray(WS) -Int (M /Int 8) ])  requires 0 <=Int M andBool M modInt 8 ==Int 0 [simplification]
+    rule #asWord(WS) >>Int M => #asWord( #range(WS, 0, #sizeByteArray(WS) -Int (M /Int 8) ))  requires 0 <=Int M andBool M modInt 8 ==Int 0 [simplification]
 
     rule #asWord(#padRightToWidth(32, BUF)) &Int notMaxUInt224 =>
          #asWord(#padRightToWidth(32, BUF))
       requires #sizeByteArray(BUF) <=Int 4 [simplification]
 
-    rule #padRightToWidth(_, BUF)[ 0 .. WIDTH ] => BUF requires #sizeByteArray(BUF) ==Int WIDTH [simplification]
+    rule #range(#padRightToWidth(_, BUF), 0, WIDTH) => BUF requires #sizeByteArray(BUF) ==Int WIDTH [simplification]
 
 endmodule
 
@@ -166,7 +165,7 @@ module LEMMAS-HASKELL [symbolic, kore]
   // Word Reasoning
   // ########################
 
-    rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)])
+    rule #asWord(BUF) /Int D => #asWord(#range(BUF, 0, #sizeByteArray(BUF) -Int log256Int(D)))
       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
        andBool #sizeByteArray(BUF) >=Int log256Int(D) [simplification]
 
@@ -318,7 +317,7 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule #range ( BA:ByteArray , 0 , LEN ) => BA requires #sizeByteArray(BA) ==Int LEN [simplification]
 
-    rule ( #buf ( 32 , X ) [ 0 .. 28 ] ):ByteArray => #buf(28, 0) requires #rangeUInt ( 32 , X ) [simplification]
+    rule ( #range( #buf ( 32 , X ), 0, 28) ):ByteArray => #buf(28, 0) requires #rangeUInt ( 32 , X ) [simplification]
 
     rule ( #range ( #range ( BA:ByteArray , S0 , L0 ) , S1 , L1 ) ) => #range ( BA , S0 +Int S1 , minInt ( L1 , L0 -Int S1 ) ) ++ #buf ( maxInt ( 0 , L1 -Int ( L0 -Int S1 ) ) , 0 )
       requires 0 <=Int S0 andBool 0 <=Int L0 andBool 0 <=Int S1 andBool 0 <=Int L1 [simplification]

@@ -44,8 +44,8 @@ module FUNCTIONAL-SPEC
 
     claim <k> runLemma(#buf(4, 0) ++ (#buf(32, 6) ++ BA:ByteArray)) => doneLemma(#buf(36, 6) ++ BA:ByteArray) ... </k>
 
-    claim <k> runLemma((112 : 190 : 104 : 75 : (#buf(32, A0) ++ #buf(32, A1))) [0 .. 32]) => doneLemma(112 : 190 : 104 : 75 : (#buf(32, A0) [0 .. 28])) ... </k> requires #rangeUInt(256, A0) andBool #rangeUInt(256, A1)
-    claim <k> runLemma((112 : 190 : 104 : 75 : (#buf(32, A0) ++ #buf(32, A1))) [0 .. 4])  => doneLemma(112 : 190 : 104 : 75 : .ByteArray)               ... </k> requires #rangeUInt(256, A0) andBool #rangeUInt(256, A1)
+    claim <k> runLemma(#range( (112 : 190 : 104 : 75 : (#buf(32, A0) ++ #buf(32, A1))), 0, 32) => doneLemma(112 : 190 : 104 : 75 : (#range(#buf(32, A0), 0, 28))) ... </k> requires #rangeUInt(256, A0) andBool #rangeUInt(256, A1)
+    claim <k> runLemma(#range( (112 : 190 : 104 : 75 : (#buf(32, A0) ++ #buf(32, A1))), 0, 4)  => doneLemma(112 : 190 : 104 : 75 : .ByteArray)               ... </k> requires #rangeUInt(256, A0) andBool #rangeUInt(256, A1)
 
     claim <k> runLemma(#asWord(112 : 190 : 104 : 74 : #buf(28, A0)) /Int pow224) => doneLemma(1891526730) ... </k> requires #rangeUInt(224, A0)
 
@@ -106,13 +106,13 @@ module FUNCTIONAL-SPEC
            => doneLemma(#buf(3, 0)) ... </k>
 
     claim <k> runLemma(#range( .Memory [ 0 := #bufStrict(100, 0) ] [ 10 := #bufStrict(N, 0) ], 10, 5 )) => 
-              doneLemma(#bufStrict(N, 0) [ 10 -Int 10 .. minInt(5, #sizeByteArray(#bufStrict(N, 0)) -Int (10 -Int 10)) ] ++ #range(.Memory [ 0 := #bufStrict(100, 0) ], 10 +Int #sizeByteArray(#bufStrict(N, 0)), 5 -Int minInt(5, #sizeByteArray(#bufStrict(N, 0)) -Int (10 -Int 10)))) 
+              doneLemma(#range(#bufStrict(N, 0), 10 -Int 10, minInt(5, #sizeByteArray(#bufStrict(N, 0)) -Int (10 -Int 10)) ) ++ #range(.Memory [ 0 := #bufStrict(100, 0) ], 10 +Int #sizeByteArray(#bufStrict(N, 0)), 5 -Int minInt(5, #sizeByteArray(#bufStrict(N, 0)) -Int (10 -Int 10)))) 
          </k>
       requires N >=Int 0
        andBool N <=Int 5
 
     claim <k> runLemma(#range( .Memory [ 0 := #bufStrict(100, 0) ] [ 10 := #bufStrict(N, 0) ], 13, 5 )) => 
-              doneLemma(#bufStrict(N, 0) [ 13 -Int 10 .. minInt(5, #sizeByteArray(#bufStrict(N, 0)) -Int (13 -Int 10)) ] ++ #range(.Memory [ 0 := #bufStrict(100, 0) ], 10 +Int #sizeByteArray(#bufStrict(N, 0)), 5 -Int minInt(5, #sizeByteArray(#bufStrict(N, 0)) -Int (13 -Int 10)))) 
+              doneLemma(#range(#bufStrict(N, 0), 13 -Int 10, minInt(5, #sizeByteArray(#bufStrict(N, 0)) -Int (13 -Int 10)) ) ++ #range(.Memory [ 0 := #bufStrict(100, 0) ], 10 +Int #sizeByteArray(#bufStrict(N, 0)), 5 -Int minInt(5, #sizeByteArray(#bufStrict(N, 0)) -Int (13 -Int 10)))) 
           </k>
       requires N >=Int 5
        andBool N <=Int 10

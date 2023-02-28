@@ -116,16 +116,16 @@ module LEMMAS-SPEC
     claim <k> runLemma ( #range(M [ 32 := #buf(1, _BUF) ] , 33, 1) ) => doneLemma ( #range(M, 33, 1) ) ... </k>
 
     // Range starting before buffer write
-    claim <k> runLemma ( #range(M [ 32 := BUF:ByteArray ]            , 30 , 8) ) => doneLemma ( #range(M, 30, 2) ++ (BUF [ 0 .. 6 ])                             ) ... </k> requires #sizeByteArray(BUF) >=Int 6
+    claim <k> runLemma ( #range(M [ 32 := BUF:ByteArray ]            , 30 , 8) ) => doneLemma ( #range(M, 30, 2) ++ (#range(BUF, 0, 6))                          ) ... </k> requires #sizeByteArray(BUF) >=Int 6
     claim <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : .ByteArray) ] , 30 , 8) ) => doneLemma ( #range(M, 30, 2) ++ (0 : 1 : 2 : .ByteArray) ++ #range(M, 35, 3) ) ... </k>
-    claim <k> runLemma ( #range(M [ 32 := #buf(2, BUF) ]             , 31 , 2) ) => doneLemma ( #range(M, 31, 1) ++ (#buf(2, BUF) [ 0 .. 1 ])                    ) ... </k>
+    claim <k> runLemma ( #range(M [ 32 := #buf(2, BUF) ]             , 31 , 2) ) => doneLemma ( #range(M, 31, 1) ++ (#range(#buf(2, BUF), 0, 1) )                ) ... </k>
     claim <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ]             , 31 , 2) ) => doneLemma ( #range(M, 31, 1) ++ #buf(1, BUF)                                 ) ... </k>
     claim <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ]             , 31 , 3) ) => doneLemma ( #range(M, 31, 1) ++ #buf(1, BUF) ++ #range(M, 33, 1)             ) ... </k>
 
     // Range starting at same point as buffer write
-    claim <k> runLemma ( #range(_M [ 32 := BUF:ByteArray ]            , 32 , 7) ) => doneLemma( BUF [ 0 .. 7 ]                               ) ... </k> requires #sizeByteArray(BUF) >=Int 7
+    claim <k> runLemma ( #range(_M [ 32 := BUF:ByteArray ]            , 32 , 7) ) => doneLemma( #range( BUF, 0, 7 )                          ) ... </k> requires #sizeByteArray(BUF) >=Int 7
     claim <k> runLemma ( #range( M [ 32 := (0 : 1 : 2 : .ByteArray) ] , 32 , 7) ) => doneLemma( (0 : 1 : 2 : .ByteArray) ++ #range(M, 35, 4) ) ... </k>
-    claim <k> runLemma ( #range(_M [ 32 := #buf(2, BUF) ]             , 32 , 1) ) => doneLemma( #buf(2, BUF) [ 0 .. 1 ]                      ) ... </k>
+    claim <k> runLemma ( #range(_M [ 32 := #buf(2, BUF) ]             , 32 , 1) ) => doneLemma( #range(#buf(2, BUF), 0, 1 )                  ) ... </k>
     claim <k> runLemma ( #range(_M [ 32 := #buf(1, BUF) ]             , 32 , 1) ) => doneLemma( #buf(1, BUF)                                 ) ... </k>
     claim <k> runLemma ( #range( M [ 32 := #buf(1, BUF) ]             , 32 , 2) ) => doneLemma( #buf(1, BUF) ++ #range(M, 33, 1)             ) ... </k>
 
@@ -140,7 +140,7 @@ module LEMMAS-SPEC
 
  // #buf simplification
  // -------------------
-    claim [bufExtractPadding]: <k> runLemma ( #asWord ( ( #buf ( 32 , X ) [ 0 .. 28 ] ):ByteArray ) ) => doneLemma ( 0 ) ... </k> requires #rangeUInt(32, X)
+    claim [bufExtractPadding]: <k> runLemma ( #asWord ( ( #range( #buf ( 32 , X ), 0, 28 ) ):ByteArray ) ) => doneLemma ( 0 ) ... </k> requires #rangeUInt(32, X)
 
     claim <k> runLemma ( #buf( 32 , bool2Word ( B:Bool ) ) ==K #buf( 32 , 1 )     ) => doneLemma( B ==K true ) ... </k>
     claim <k> runLemma ( #buf( 32 , I:Int )                ==K #buf( 32 , 1 )     ) => doneLemma( I ==K 1    ) ... </k>
@@ -168,13 +168,13 @@ module LEMMAS-SPEC
            => doneLemma( #buf(32, #newAddr(ACCT, 1)) ) ... </k>
 
     //Required for ERC20 + solc5 + constructor call
-    claim <k> runLemma ( 160 ==Int #asWord ( #buf( 4, 160 ) ++ ( #buf( 32 , _BUF ) [ 0 .. 28 ] ) ) >>Int 224 )
+    claim <k> runLemma ( 160 ==Int #asWord ( #buf( 4, 160 ) ++ ( #range( #buf( 32 , _BUF ), 0, 28 ) ) ) >>Int 224 )
            => doneLemma( true ) ... </k>
 
  // buffer range sinplification
  // ---------------------------
-    claim <k> runLemma  ( (#buf(DATA_LEN, DATA) ++ _BUF) [0 .. DATA_LEN] ) 
-           => doneLemma (  #buf(DATA_LEN, DATA)          [0 .. DATA_LEN] ) ... </k>
+    claim <k> runLemma  ( #range((#buf(DATA_LEN, DATA) ++ _BUF), 0, DATA_LEN) ) 
+           => doneLemma ( #range( #buf(DATA_LEN, DATA)         , 0, DATA_LEN) ) ... </k>
       requires #range(0 <= DATA < (2 ^Int (DATA_LEN *Int 8)))
        andBool 0 <=Int DATA_LEN
 

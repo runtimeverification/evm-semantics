@@ -713,7 +713,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 
     syntax Int ::= getBloomFilterBit(ByteArray, Int) [function]
  // -----------------------------------------------------------
-    rule getBloomFilterBit(X, I) => #asInteger(X [ I .. 2 ]) %Int 2048
+    rule getBloomFilterBit(X, I) => #asInteger(#range(X, I, 2)) %Int 2048
 ```
 
 EVM Programs
@@ -863,7 +863,7 @@ Some operators don't calculate anything, they just push the stack around a bit.
 
     syntax PushOp ::= PUSH ( Int )
  // ------------------------------
-    rule <k> PUSH(N) => #asWord(PGM [ PCOUNT +Int 1 .. N ]) ~> #push ... </k>
+    rule <k> PUSH(N) => #asWord(#range(PGM, PCOUNT +Int 1, N)) ~> #push ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
 ```
@@ -996,7 +996,7 @@ These operators make queries about the current execution state.
  // ---------------------------------
     rule <k> CODECOPY MEMSTART PGMSTART WIDTH => . ... </k>
          <program> PGM </program>
-         <localMem> LM => LM [ MEMSTART := PGM [ PGMSTART .. WIDTH ] ] </localMem>
+         <localMem> LM => LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH)] </localMem>
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
@@ -1089,13 +1089,13 @@ These operators query about the current `CALL*` state.
 
     syntax UnStackOp ::= "CALLDATALOAD"
  // -----------------------------------
-    rule <k> CALLDATALOAD DATASTART => #asWord(CD [ DATASTART .. 32 ]) ~> #push ... </k>
+    rule <k> CALLDATALOAD DATASTART => #asWord(#range(CD, DATASTART, 32)) ~> #push ... </k>
          <callData> CD </callData>
 
     syntax TernStackOp ::= "CALLDATACOPY"
  // -------------------------------------
     rule <k> CALLDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </k>
-         <localMem> LM => LM [ MEMSTART := CD [ DATASTART .. DATAWIDTH ] ] </localMem>
+         <localMem> LM => LM [ MEMSTART := #range(CD, DATASTART, DATAWIDTH) ] </localMem>
          <callData> CD </callData>
 ```
 
@@ -1112,7 +1112,7 @@ These operators query about the current return data buffer.
     syntax TernStackOp ::= "RETURNDATACOPY"
  // ----------------------------------------
     rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </k>
-         <localMem> LM => LM [ MEMSTART := RD [ DATASTART .. DATAWIDTH ] ] </localMem>
+         <localMem> LM => LM [ MEMSTART := #range(RD, DATASTART, DATAWIDTH) ] </localMem>
          <output> RD </output>
       requires DATASTART +Int DATAWIDTH <=Int #sizeByteArray(RD)
 
@@ -1207,7 +1207,7 @@ Should we pad zeros (for the copied "program")?
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </k>
-         <localMem> LM => LM [ MEMSTART := PGM [ PGMSTART .. WIDTH ] ] </localMem>
+         <localMem> LM => LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH) ] </localMem>
          <account>
            <acctID> ACCT </acctID>
            <code> PGM </code>
@@ -1436,7 +1436,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule [refund]: <k> #refund G:Int => . ... </k> <gas> GAVAIL => GAVAIL +Int G </gas>
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
-         <localMem> LM => LM [ START := WS [ 0 .. minInt(WIDTH, #sizeByteArray(WS)) ] ] </localMem>
+         <localMem> LM => LM [ START := #range(WS, 0, minInt(WIDTH, #sizeByteArray(WS))) ] </localMem>
 ```
 
 Ethereum Network OpCodes
@@ -1713,7 +1713,7 @@ Precompiled Contracts
  // --------------------------------
     rule <k> ECREC => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
-         <output> _ => #ecrec(DATA [ 0 .. 32 ], DATA [ 32 .. 32 ], DATA [ 64 .. 32 ], DATA [ 96 .. 32 ]) </output>
+         <output> _ => #ecrec(#range(DATA, 0, 32), #range(DATA, 32, 32), #range(DATA, 64, 32), #range(DATA, 96, 32)) </output>
 
     syntax ByteArray ::= #ecrec ( ByteArray , ByteArray , ByteArray , ByteArray ) [function]
                        | #ecrec ( Account )                                       [function]
@@ -1745,22 +1745,22 @@ Precompiled Contracts
  // ---------------------------------
     rule <k> MODEXP => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
-         <output> _ => #modexp1(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #asWord(DATA [ 64 .. 32 ]), DATA [ 96 .. maxInt(0, #sizeByteArray(DATA) -Int 96) ]) </output>
+         <output> _ => #modexp1(#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32)), #asWord(#range(DATA, 64, 32)), #range(DATA, 96, maxInt(0, #sizeByteArray(DATA) -Int 96))) </output>
 
     syntax ByteArray ::= #modexp1 ( Int , Int , Int , ByteArray ) [function]
                        | #modexp2 ( Int , Int , Int , ByteArray ) [function]
                        | #modexp3 ( Int , Int , Int , ByteArray ) [function]
                        | #modexp4 ( Int , Int , Int )             [function]
  // ------------------------------------------------------------------------
-    rule #modexp1(BASELEN, EXPLEN,   MODLEN, DATA) => #modexp2(#asInteger(DATA [ 0 .. BASELEN ]), EXPLEN, MODLEN, DATA [ BASELEN .. maxInt(0, #sizeByteArray(DATA) -Int BASELEN) ]) requires MODLEN =/=Int 0
+    rule #modexp1(BASELEN, EXPLEN,   MODLEN, DATA) => #modexp2(#asInteger(#range(DATA, 0, BASELEN)), EXPLEN, MODLEN, #range(DATA, BASELEN, maxInt(0, #sizeByteArray(DATA) -Int BASELEN))) requires MODLEN =/=Int 0
     rule #modexp1(_,       _,        0,      _)    => .ByteArray
-    rule #modexp2(BASE,    EXPLEN,   MODLEN, DATA) => #modexp3(BASE, #asInteger(DATA [ 0 .. EXPLEN ]), MODLEN, DATA [ EXPLEN .. maxInt(0, #sizeByteArray(DATA) -Int EXPLEN) ])
-    rule #modexp3(BASE,    EXPONENT, MODLEN, DATA) => #padToWidth(MODLEN, #modexp4(BASE, EXPONENT, #asInteger(DATA [ 0 .. MODLEN ])))
+    rule #modexp2(BASE,    EXPLEN,   MODLEN, DATA) => #modexp3(BASE, #asInteger(#range(DATA, 0, EXPLEN)), MODLEN, #range(DATA, EXPLEN, maxInt(0, #sizeByteArray(DATA) -Int EXPLEN)))
+    rule #modexp3(BASE,    EXPONENT, MODLEN, DATA) => #padToWidth(MODLEN, #modexp4(BASE, EXPONENT, #asInteger(#range(DATA, 0, MODLEN))))
     rule #modexp4(BASE,    EXPONENT, MODULUS)      => #asByteStack(powmod(BASE, EXPONENT, MODULUS))
 
     syntax PrecompiledOp ::= "ECADD"
  // --------------------------------
-    rule <k> ECADD => #ecadd((#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ])), (#asWord(DATA [ 64 .. 32 ]), #asWord(DATA [ 96 .. 32 ]))) ... </k>
+    rule <k> ECADD => #ecadd((#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32))), (#asWord(#range(DATA, 64, 32)), #asWord(#range(DATA, 96, 32)))) ... </k>
          <callData> DATA </callData>
 
     syntax InternalOp ::= #ecadd(G1Point, G1Point)
@@ -1772,7 +1772,7 @@ Precompiled Contracts
 
     syntax PrecompiledOp ::= "ECMUL"
  // --------------------------------
-    rule <k> ECMUL => #ecmul((#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ])), #asWord(DATA [ 64 .. 32 ])) ... </k>
+    rule <k> ECMUL => #ecmul((#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32))), #asWord(#range(DATA, 64, 32))) ... </k>
          <callData> DATA </callData>
 
     syntax InternalOp ::= #ecmul(G1Point, Int)
@@ -1797,7 +1797,7 @@ Precompiled Contracts
 
     syntax InternalOp ::= #ecpairing(List, List, Int, ByteArray, Int)
  // -----------------------------------------------------------------
-    rule <k> (.K => #checkPoint) ~> #ecpairing((.List => ListItem((#asWord(DATA [ I .. 32 ]), #asWord(DATA [ I +Int 32 .. 32 ])))) _, (.List => ListItem((#asWord(DATA [ I +Int 96 .. 32 ]) x #asWord(DATA [ I +Int 64 .. 32 ]) , #asWord(DATA [ I +Int 160 .. 32 ]) x #asWord(DATA [ I +Int 128 .. 32 ])))) _, I => I +Int 192, DATA, LEN) ... </k>
+    rule <k> (.K => #checkPoint) ~> #ecpairing((.List => ListItem((#asWord(#range(DATA, I, 32)), #asWord(#range(DATA, I +Int 32, 32))))) _, (.List => ListItem((#asWord(#range(DATA, I +Int 96, 32)) x #asWord(#range(DATA, I +Int 64, 32)) , #asWord(#range(DATA, I +Int 160, 32)) x #asWord(#range(DATA, I +Int 128, 32))))) _, I => I +Int 192, DATA, LEN) ... </k>
       requires I =/=Int LEN
     rule <k> #ecpairing(A, B, LEN, _, LEN) => #end EVMC_SUCCESS ... </k>
          <output> _ => #padToWidth(32, #asByteStack(bool2Word(BN128AtePairing(A, B)))) </output>
@@ -2152,13 +2152,13 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(_, RIP160) => 600 +Int 120 *Int (#sizeByteArray(DATA) up/Int 32) ... </k> <callData> DATA </callData>
     rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (#sizeByteArray(DATA) up/Int 32) ... </k> <callData> DATA </callData>
 
-    rule <k> #gasExec(SCHED, MODEXP) => Cmodexp(SCHED, DATA, #asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #asWord(DATA [ 64 .. 32 ])) ... </k>
+    rule <k> #gasExec(SCHED, MODEXP) => Cmodexp(SCHED, DATA, #asWord(#range(DATA, 0, 32) ), #asWord(#range(DATA, 32, 32)), #asWord(#range(DATA, 64, 32))) ... </k>
          <callData> DATA </callData>
 
     rule <k> #gasExec(SCHED, ECADD)     => Gecadd < SCHED>  ... </k>
     rule <k> #gasExec(SCHED, ECMUL)     => Gecmul < SCHED > ... </k>
     rule <k> #gasExec(SCHED, ECPAIRING) => Gecpairconst < SCHED > +Int (#sizeByteArray(DATA) /Int 192) *Int Gecpaircoeff < SCHED > ... </k> <callData> DATA </callData>
-    rule <k> #gasExec(SCHED, BLAKE2F)   => Gfround < SCHED > *Int #asWord( DATA[0 .. 4] ) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(SCHED, BLAKE2F)   => Gfround < SCHED > *Int #asWord(#range(DATA, 0, 4) ) ... </k> <callData> DATA </callData>
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
@@ -2336,7 +2336,7 @@ There are several helpers for calculating gas (most of them also specified in th
     syntax Int ::= #adjustedExpLength(Int, Int, ByteArray) [function]
                  | #adjustedExpLength(Int)                 [function, klabel(#adjustedExpLengthAux)]
  // ------------------------------------------------------------------------------------------------
-    rule #adjustedExpLength(BASELEN, EXPLEN, DATA) => #if EXPLEN <=Int 32 #then 0 #else 8 *Int (EXPLEN -Int 32) #fi +Int #adjustedExpLength(#asInteger(DATA [ 96 +Int BASELEN .. minInt(EXPLEN, 32) ]))
+    rule #adjustedExpLength(BASELEN, EXPLEN, DATA) => #if EXPLEN <=Int 32 #then 0 #else 8 *Int (EXPLEN -Int 32) #fi +Int #adjustedExpLength(#asInteger(#range(DATA, 96 +Int BASELEN, minInt(EXPLEN, 32))))
 
     rule #adjustedExpLength(0) => 0
     rule #adjustedExpLength(1) => 0
