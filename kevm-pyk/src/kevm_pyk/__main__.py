@@ -577,6 +577,7 @@ def _create_argument_parser() -> ArgumentParser:
         '--use-booster',
         dest='use_booster',
         default=False,
+        action='store_true',
         help='Use hs-booster-proxy',
     )
 
