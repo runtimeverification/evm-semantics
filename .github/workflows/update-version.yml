@@ -14,7 +14,7 @@ concurrency:
 jobs:
 
   update-versions:
-    name: 'Update K and kevm-pyk versions'
+    name: 'Update dependency versions'
     runs-on: ubuntu-20.04
     steps:
       - name: 'Check out code'
@@ -44,24 +44,34 @@ jobs:
           poetry --version
           pyk_version="$(cat deps/pyk_release)"
           sed -i 's!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="[v0-9\.]*" }!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="'${pyk_version}'" }!' kevm-pyk/pyproject.toml
-          sed -i 's!    pyk.url = "github:runtimeverification/pyk/[v0-9\.]*"!    pyk.url = "github:runtimeverification/pyk/'"${pyk_version}"'"!' flake.nix
           cd kevm-pyk
           poetry update
           cd -
           git add kevm-pyk/ && git commit -m 'kevm-pyk/: sync poetry files' || true
-      - name: 'Install Nix'
+      - name: 'Update plugin release tag'
+        run: |
+          cd deps/plugin
+          rev=$(git rev-parse HEAD)
+          cd -
+          echo ${rev} > deps/blockchain-k-plugin_release
+          git add deps/blockchain-k-plugin_release && git commit -m 'deps/blockchain-k-plugin_release: update release file' || true
+      - name: 'Install Nix/Cachix'
         uses: cachix/install-nix-action@v15
         with:
           extra_nix_config: |
-            substituters = http://cache.nixos.org https://cache.iog.io
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
-      - name: 'Install Cachix'
-        uses: cachix/cachix-action@v10
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      - uses: cachix/cachix-action@v10
         with:
           name: k-framework
           authToken: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
       - name: 'Update nix flake inputs'
         run: |
+          k_version=$(cat deps/k_release)
+          bkp_version=$(cat deps/blockchain-k-plugin_release)
+          pyk_version=$(cat deps/pyk_release)
+          sed -i 's!    k-framework.url = "github:runtimeverification/k/[v0-9\.]*"!    k-framework.url = "github:runtimeverification/k/'"${k_version}"'"!' flake.nix
+          sed -i 's!    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/[0-9a-f]*"!    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/'"${bkp_version}"'"!' flake.nix
+          sed -i 's!    pyk.url = "github:runtimeverification/pyk/[v0-9\.]*"!    pyk.url = "github:runtimeverification/pyk/'"${pyk_version}"'"!' flake.nix
           nix run .#update-from-submodules
           nix flake update
           git add flake.nix flake.lock && git commit -m 'flake.{nix,lock}: update Nix derivations' || true
