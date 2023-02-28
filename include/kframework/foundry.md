@@ -856,7 +856,7 @@ function infiniteGas() external;
 Set the remaining gas to an infinite value.
 This is useful for running tests without them running out of gas.
 
-```{.k .bytes}
+```k-disabled
     rule [foundry.call.infiniteGas]:
          <k> #call_foundry SELECTOR _ARGS => . ... </k>
          <gas> _ => #gas(?_VGAS) </gas>
