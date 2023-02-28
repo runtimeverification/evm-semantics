@@ -22,6 +22,7 @@ from .foundry import (
     foundry_show,
     foundry_simplify_node,
     foundry_step_node,
+    foundry_to_dot,
 )
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
@@ -333,6 +334,19 @@ def exec_foundry_show(
         node_deltas=node_deltas,
         to_module=to_module,
         minimize=minimize,
+    )
+
+
+def exec_foundry_to_dot(
+    profile: bool,
+    foundry_out: Path,
+    test: str,
+    **kwargs: Any,
+) -> None:
+    foundry_to_dot(
+        profile=profile,
+        foundry_out=foundry_out,
+        test=test,
     )
 
 
@@ -812,6 +826,14 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_show_args.add_argument(
         '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
     )
+
+    foundry_to_dot = command_parser.add_parser(
+        'foundry-to-dot',
+        help='Dump the given CFG for the test as DOT for visualization.',
+        parents=[shared_args],
+    )
+    foundry_to_dot.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_to_dot.add_argument('test', type=str, help='Display the CFG for this test.')
 
     foundry_list_args = command_parser.add_parser(
         'foundry-list',
