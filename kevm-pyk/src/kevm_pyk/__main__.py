@@ -391,13 +391,14 @@ def exec_run(
 
 def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs: Any) -> None:
     definition_dir = foundry_out / 'kompiled'
+    haskell_dir = definition_dir / 'haskell'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
     srcmap_dir = foundry_out / 'srcmaps'
     use_directory.mkdir(parents=True, exist_ok=True)
     contract_name = test.split('.')[0]
     foundry = Foundry(
-        definition_dir,
+        haskell_dir,
         profile=profile,
         use_directory=use_directory,
         srcmap_dir=srcmap_dir,

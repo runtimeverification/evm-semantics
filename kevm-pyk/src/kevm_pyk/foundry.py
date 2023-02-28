@@ -152,7 +152,7 @@ def foundry_kompile(
     contract_id_map_path.write_text(json.dumps(contract_id_map))
     _LOGGER.info(f'Wrote contract id map: {contract_id_map_path}')
 
-    foundry = Foundry(definition_dir, profile=profile)
+    foundry = Foundry(foundry_haskell_dir, profile=profile)
     empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
 
     if regen or not foundry_main_file.exists():
@@ -166,7 +166,7 @@ def foundry_kompile(
         with open(foundry_main_file, 'w') as fmf:
             _LOGGER.info(f'Writing file: {foundry_main_file}')
             _foundry = Foundry(
-                definition_dir=definition_dir,
+                definition_dir=foundry_haskell_dir,
                 extra_unparsing_modules=bin_runtime_definition.all_modules,
             )
             fmf.write(_foundry.pretty_print(bin_runtime_definition) + '\n')
@@ -330,13 +330,14 @@ def foundry_show(
     minimize: bool = True,
 ) -> None:
     definition_dir = foundry_out / 'kompiled'
+    haskell_dir = definition_dir / 'haskell'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
     srcmap_dir = foundry_out / 'srcmaps'
     contract_name = test.split('.')[0]
     foundry = Foundry(
-        definition_dir, profile=profile, use_directory=use_directory, srcmap_dir=srcmap_dir, contract_name=contract_name
+        haskell_dir, profile=profile, use_directory=use_directory, srcmap_dir=srcmap_dir, contract_name=contract_name
     )
 
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
@@ -395,10 +396,11 @@ def foundry_to_dot(
     test: str,
 ) -> None:
     definition_dir = foundry_out / 'kompiled'
+    haskell_dir = definition_dir / 'haskell'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
+    foundry = Foundry(haskell_dir, profile=profile, use_directory=use_directory)
     cfg_dump_dot(foundry, test, kcfgs_dir)
 
 
@@ -453,11 +455,12 @@ def foundry_simplify_node(
     bug_report: bool = False,
 ) -> None:
     definition_dir = foundry_out / 'kompiled'
+    haskell_dir = definition_dir / 'haskell'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
     use_directory.mkdir(parents=True, exist_ok=True)
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
+    foundry = Foundry(haskell_dir, profile=profile, use_directory=use_directory, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
@@ -487,11 +490,12 @@ def foundry_step_node(
     if depth < 1:
         raise ValueError(f'Expected positive value for --depth, got: {depth}')
     definition_dir = foundry_out / 'kompiled'
+    haskell_dir = definition_dir / 'haskell'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
     use_directory.mkdir(parents=True, exist_ok=True)
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
+    foundry = Foundry(haskell_dir, profile=profile, use_directory=use_directory, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
@@ -513,11 +517,12 @@ def foundry_section_edge(
     bug_report: bool = False,
 ) -> None:
     definition_dir = foundry_out / 'kompiled'
+    haskell_dir = definition_dir / 'haskell'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
     use_directory.mkdir(parents=True, exist_ok=True)
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
+    foundry = Foundry(haskell_dir, profile=profile, use_directory=use_directory, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
