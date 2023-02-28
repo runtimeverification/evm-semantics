@@ -39,3 +39,10 @@ class FoundryClient:
             to_module=to_module,
             minimize=minimize,
         )
+
+    def remove_node(self, *, foundry_out: Path, test: str, node: str) -> None:
+        self._proxy.remove_node(
+            foundry_out=str(foundry_out),
+            test=test,
+            node=node,
+        )

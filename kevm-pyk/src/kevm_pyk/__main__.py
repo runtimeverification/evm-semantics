@@ -350,7 +350,10 @@ def exec_foundry_to_dot(foundry_out: Path, test: str, **kwargs: Any) -> None:
 
 
 def exec_foundry_list(
-    foundry_out: Path, details: bool = True, kaas: Optional[Tuple[str, int]] = None, **kwargs: Any
+    foundry_out: Path,
+    details: bool = True,
+    kaas: Optional[Tuple[str, int]] = None,
+    **kwargs: Any,
 ) -> None:
     if kaas:
         client = FoundryClient(*kaas)
@@ -398,8 +401,18 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, **kwargs: Any) -> None:
     viewer.run()
 
 
-def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, **kwargs: Any) -> None:
-    foundry_remove_node(foundry_out=foundry_out, test=test, node=node)
+def exec_foundry_remove_node(
+    foundry_out: Path,
+    test: str,
+    node: str,
+    kaas: Optional[Tuple[str, int]] = None,
+    **kwargs: Any,
+) -> None:
+    if kaas:
+        client = FoundryClient(*kaas)
+        client.remove_node(foundry_out=foundry_out, test=test, node=node)
+    else:
+        foundry_remove_node(foundry_out=foundry_out, test=test, node=node)
 
 
 def exec_foundry_simplify_node(
@@ -864,6 +877,14 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_remove_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
     foundry_remove_node.add_argument('node', type=str, help='Node to remove CFG subgraph from.')
+    foundry_remove_node.add_argument(
+        '--kaas',
+        metavar='HOST:PORT',
+        nargs='?',
+        const=(DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT),
+        type=host_port,
+        help='KaaS mode',
+    )
 
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',
