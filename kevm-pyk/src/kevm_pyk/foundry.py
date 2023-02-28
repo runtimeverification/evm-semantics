@@ -126,6 +126,8 @@ def foundry_kompile(
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
     foundry_definition_dir = foundry_out / 'kompiled'
+    foundry_haskell_dir = foundry_definition_dir / 'haskell'
+    foundry_llvm_dir = foundry_definition_dir / 'llvm'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
     srcmap_dir = foundry_out / 'srcmaps'
@@ -172,7 +174,7 @@ def foundry_kompile(
     if regen or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
         KEVM.kompile(
-            foundry_definition_dir,
+            foundry_haskell_dir,
             KompileBackend.HASKELL,
             foundry_main_file,
             emit_json=True,
@@ -183,7 +185,20 @@ def foundry_kompile(
             profile=profile,
             debug=debug,
             ccopts=ccopts,
-            llvm_kompile=llvm_kompile,
+        )
+        KEVM.kompile(
+            foundry_llvm_dir,
+            KompileBackend.LLVM,
+            foundry_main_file,
+            emit_json=True,
+            includes=includes,
+            main_module_name=main_module,
+            syntax_module_name=syntax_module,
+            md_selector=md_selector,
+            profile=profile,
+            debug=debug,
+            ccopts=ccopts,
+            llvm_mode='c',
         )
 
 
@@ -202,20 +217,22 @@ def foundry_prove(
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
-    use_booster_with_lib: Optional[str] = None,
 ) -> None:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
         raise ValueError(f'Must have a non-negative number of iterations, found: --max-iterations {max_iterations}')
     definition_dir = foundry_out / 'kompiled'
+    haskell_dir = definition_dir / 'haskell'
+    llvm_dir = definition_dir / 'llvm'
+    llvm_lib = llvm_dir / 'interpreter'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
     if not kcfgs_dir.exists():
         kcfgs_dir.mkdir()
     br = BugReport(foundry_out / 'bug_report') if bug_report else None
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
+    foundry = Foundry(haskell_dir, profile=profile, use_directory=use_directory, bug_report=br)
 
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
@@ -290,7 +307,7 @@ def foundry_prove(
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
         bug_report=br,
-        use_booster_with_lib=use_booster_with_lib,
+        use_booster_with_lib=str(llvm_lib),
     )
     failed = 0
     for pid, r in results.items():
