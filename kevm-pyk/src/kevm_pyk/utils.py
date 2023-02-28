@@ -51,6 +51,7 @@ def parallel_kcfg_explore(
     is_terminal: Optional[Callable[[CTerm], bool]] = None,
     extract_branches: Optional[Callable[[CTerm], Iterable[KInner]]] = None,
     bug_report: Optional[BugReport] = None,
+    use_booster_with_lib: Optional[str] = None,
 ) -> Dict[str, bool]:
     def _call_rpc(packed_args: Tuple[str, KCFG, int]) -> bool:
         _cfgid, _cfg, _index = packed_args
@@ -75,7 +76,24 @@ def parallel_kcfg_explore(
             )
         base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
 
-        with KCFGExplore(kprove, port=(base_port + _index), bug_report=bug_report) as kcfg_explore:
+        rpc_cmd = (
+            [
+                'hs-booster-proxy',
+                '--llvm-backend-library',
+                use_booster_with_lib,
+                '-l',
+                'warn',
+            ]
+            if use_booster_with_lib is not None
+            else ['kore-rpc']
+        )
+
+        with KCFGExplore(
+            kprove,
+            port=(base_port + _index),
+            bug_report=bug_report,
+            kore_rpc_command=rpc_cmd,
+        ) as kcfg_explore:
             try:
                 _cfg = kcfg_explore.all_path_reachability_prove(
                     _cfgid,

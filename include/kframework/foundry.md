@@ -533,7 +533,9 @@ function symbolicStorage(address) external;
 `foundry.call.symbolicStorage` will match when the `symbolicStorage` cheat code function is called.
 This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes its storage completely symbolic.
 
-```k
+**This is currently disabled**
+
+```k-disabled
     rule [foundry.call.symbolicStorage]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setSymbolicStorage #asWord(ARGS) ... </k>
       requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
@@ -570,7 +572,7 @@ If the call depth of the current call is lower than the call depth of the `expec
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
-           <expectedDepth> ED </expectedDepth> 
+           <expectedDepth> ED </expectedDepth>
            ...
          </expectedRevert>
       requires CD <=Int ED
@@ -587,7 +589,7 @@ If the call is successful, a revert is triggered and the `FAILED` location of th
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
-           <expectedDepth> ED </expectedDepth> 
+           <expectedDepth> ED </expectedDepth>
            ...
          </expectedRevert>
       requires CD <=Int ED
@@ -1016,9 +1018,9 @@ function sign(uint256 privateKey, bytes32 digest) external returns (uint8 v, byt
 ```
 
 `foundry.call.sign` will match when the `sign` cheat code function is called.
-This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`. 
-To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM). 
-This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings. 
+This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`.
+To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM).
+This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings.
 The `ECDSASign` function returns the signed data in [r,s,v] form, which we convert to a bytearray using `#parseByteStack`.
 
 ```k
@@ -1136,7 +1138,9 @@ Utils
 
 `#setSymbolicStorage ACCTID` takes a given account and makes its storage fully symbolic.
 
-```k
+**This is currently disabled**
+
+```k-disabled
      syntax KItem ::= "#setSymbolicStorage" Int [klabel(foundry_setSymbolicStorage)]
  // --------------------------------------------------------------------------------
     rule <k> #setSymbolicStorage ACCTID => . ... </k>

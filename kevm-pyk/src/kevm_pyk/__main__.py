@@ -200,6 +200,7 @@ def exec_prove(
     break_on_calls: bool = True,
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
+    use_booster_with_lib: Optional[str] = None,
     **kwargs: Any,
 ) -> None:
     br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
@@ -235,6 +236,7 @@ def exec_prove(
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
         bug_report=br,
+        use_booster_with_lib=use_booster_with_lib,
     )
     failed = 0
     for pid, r in results.items():
@@ -292,6 +294,7 @@ def exec_foundry_prove(
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
+    use_booster_with_lib: Optional[str] = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -313,6 +316,7 @@ def exec_foundry_prove(
         implication_every_block=implication_every_block,
         rpc_base_port=rpc_base_port,
         bug_report=bug_report,
+        use_booster_with_lib=use_booster_with_lib,
     )
 
 
@@ -571,6 +575,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=None,
         type=int,
         help='Store every Nth state in the CFG for inspection.',
+    )
+    explore_args.add_argument(
+        '--use-booster-with-lib',
+        dest='use_booster_with_lib',
+        default=None,
+        type=str,
+        help='Use hs-booster-proxy with given path as the llvm simplification library',
     )
 
     k_args = ArgumentParser(add_help=False)
