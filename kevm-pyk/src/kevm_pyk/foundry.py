@@ -186,7 +186,7 @@ def foundry_kompile(
 
 def foundry_prove(
     foundry_out: Path,
-    max_depth: int = 100,
+    max_depth: int = 1000,
     max_iterations: Optional[int] = None,
     reinit: bool = False,
     tests: Iterable[str] = (),

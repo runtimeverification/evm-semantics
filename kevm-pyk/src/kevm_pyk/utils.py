@@ -41,7 +41,7 @@ def parallel_kcfg_explore(
     kprove: KProve,
     proof_problems: Dict[str, KCFG],
     save_directory: Optional[Path] = None,
-    max_depth: int = 100,
+    max_depth: int = 1000,
     max_iterations: Optional[int] = None,
     workers: int = 1,
     break_every_step: bool = False,

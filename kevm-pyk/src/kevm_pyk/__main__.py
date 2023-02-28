@@ -182,7 +182,7 @@ def exec_prove(
     md_selector: Optional[str] = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
-    max_depth: int = 100,
+    max_depth: int = 1000,
     max_iterations: Optional[int] = None,
     workers: int = 1,
     simplify_init: bool = True,
@@ -268,7 +268,7 @@ def exec_view_kcfg(
 
 def exec_foundry_prove(
     foundry_out: Path,
-    max_depth: int = 100,
+    max_depth: int = 1000,
     max_iterations: Optional[int] = None,
     reinit: bool = False,
     tests: Iterable[str] = (),
