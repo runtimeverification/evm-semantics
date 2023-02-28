@@ -925,9 +925,9 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
 
     syntax BinStackOp ::= "SHL" | "SHR" | "SAR"
  // -------------------------------------------
-    rule <k> SHL W0 W1 => W1 <<Word  W0 ~> #push ... </k>
-    rule <k> SHR W0 W1 => W1 >>Word  W0 ~> #push ... </k>
-    rule <k> SAR W0 W1 => W1 >>sWord W0 ~> #push ... </k>
+    rule <k> SHL W0 W1 => W1 <<Word  W0 ~> #push ... </k> requires W0 >=Int 0 [preserves-definedness]
+    rule <k> SHR W0 W1 => W1 >>Word  W0 ~> #push ... </k> requires W0 >=Int 0 [preserves-definedness]
+    rule <k> SAR W0 W1 => W1 >>sWord W0 ~> #push ... </k> requires W0 >=Int 0 [preserves-definedness]
 
     syntax BinStackOp ::= "AND" | "EVMOR" | "XOR"
  // ---------------------------------------------
