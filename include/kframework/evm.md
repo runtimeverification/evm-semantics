@@ -7,14 +7,49 @@ The EVM is a stack machine over some simple opcodes.
 Most of the opcodes are "local" to the execution state of the machine, but some of them must interact with the world state.
 This file only defines the local execution operations, the file `driver.md` will define the interactions with the world state.
 
+#### Function `#delta`
+
+Given storages `S1` and `S2`, function `#delta` returns a Map `S3` such that, for any given key-value pair `k |-> v` in  `S1`, the following conditions hold,
+1. if `k |-> v` is both in `S1` and in `S2` then `k |-> v` is _not_ in `S3`,
+2. if `k |-> v1` is in `S1` and `k |-> v2` is in `S2`, where `v1` and `v2` are different, then `k |-> v2` is in `S3`,
+3. if `k` is a key of `S1` and it's not a key in `S2` then `k |-> deleted` is in `S3`, where `deleted` is a special `KItem` constant denoting that `k` has been deleted from the original storage `S1`.
+
+Additionally, 
+4. for any given binding `k |-> v` in `S2` such that `k` is not in keys of `S1` then the pair `k |-> v` is in `S3`.
+
+Expression `E1 = S2 -Map S1` results in a Storage such that conditions 1, 2 and 4 hold. Expression `E2 = #mkDeletedKeys(removeAll(S1, keys(S2)))` results in a Storage where condition 3 holds. Hence, the juxtaposition `S3 = E1 E2` has propertes 1-4.
+
+Proposition. The intersection `k1 \cap k2 = \emptyset`, where `k1` = keys of `S2 -Map S1` and `k2` = keys of `#mkDeletedKeys(removeAll(S1, keys(S2)))`.
+
+Corollary. The juxtaposition `S3` is well-formed, i.e. there are no repeated keys in `S3`.
+
 ```k
 requires "data.md"
 requires "network.md"
 
+module DELTA
+       imports MAP
+       syntax Map ::= #delta(Map, Map)     [function]
+                    | #mkDeletedKeys(Map)  [function]
+
+       syntax KItem ::= "deleted"
+
+       rule #delta(S1:Map, S2:Map) =>
+            updateMap((S2 -Map S1), #mkDeletedKeys(removeAll(S1, keys(S2))))
+       
+       rule #delta(.Map, S) => S
+       rule #delta(S, .Map) => #mkDeletedKeys(S)
+       rule #mkDeletedKeys(.Map) => .Map
+       rule #mkDeletedKeys((K |-> _) M:Map) => updateMap((K |-> deleted), #mkDeletedKeys(M))
+endmodule
+```
+
+```k
 module EVM
     imports STRING
     imports EVM-DATA
     imports NETWORK
+    imports DELTA
 ```
 
 Configuration
@@ -122,8 +157,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <chainID> $CHAINID:Int </chainID>
 
             // Accounts Record
-            // ---------------
-
+            // ----------------
+  
             <activeAccounts> .Set </activeAccounts>
             <accounts>
               <account multiplicity="*" type="Map">
@@ -135,6 +170,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <nonce>       0                      </nonce>
               </account>
             </accounts>
+
+            <delta> .Map </delta>
 
             // Transactions Record
             // -------------------
@@ -527,16 +564,24 @@ After executing a transaction, it's necessary to have the effect of the substate
 -   `#finalizeTx` makes the substate log actually have an effect on the state.
 -   `#deleteAccounts` deletes the accounts specified by the self destruct list.
 
+
+
 ```k
     syntax InternalOp ::= #finalizeStorage ( List )
  // -----------------------------------------------
     rule <k> #finalizeStorage((ListItem(ACCT) => .List) _) ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> STORAGE </storage>
-           <origStorage> _ => STORAGE </origStorage>
-           ...
-         </account>
+         <accounts>
+            <account>
+               <acctID> ACCT </acctID>
+               <storage> STORAGE </storage>
+               <origStorage> ORIG_STORAGE => STORAGE </origStorage>
+               ...
+            </account>
+            ...
+         </accounts>
+         <delta>
+         ((.Map) => ACCT |-> #delta(ORIG_STORAGE, STORAGE)) ...
+         </delta>
 
     rule <k> #finalizeStorage(.List) => . ... </k>
 
@@ -1237,9 +1282,22 @@ These rules reach into the network state and load/store from account storage:
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
+           <storage> STORAGE => STORAGE [INDEX <- NEW] </storage> 
+           ...
+         </account> [priority(20)]
+
+```
+
+> AlgoEVM
+
+```k
+    rule <k> SSTORE INDEX NEW => . ... </k>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
            <storage> STORAGE => #write(STORAGE, INDEX, NEW) </storage> 
            ...
-         </account> 
+         </account> [priority(40)]
 ```
 
 ### Call Operations
