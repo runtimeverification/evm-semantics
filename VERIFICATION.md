@@ -11,6 +11,7 @@ Example 1: Sum to N
 
 Have a look at the [sum-to-n-spec.k] file.
 It has two modules:
+
   - `VERIFICATION` - containing the EVM program and a few `simplification` rules.
   - `SUM-TO-N-SPEC` - containing the claims which will be executed.
 
@@ -21,6 +22,7 @@ kevm kompile sum-to-n-spec.k --pyk --backend haskell --syntax-module VERIFICATIO
 ```
 
 In this example, the arguments used are:
+
   - `—-pyk`: a flag that enables the pyk library.
   - `—-backend haskell`: used to kompile the definition with the Haskell backend, enabling the symbolic execution ([more about it here]).
   - `--syntax-module VERIFICATION`: explicitly state the syntax module.
@@ -33,7 +35,7 @@ Next, run the prover with:
 kevm prove sum-to-n-spec.k --backend haskell --definition sum-to-n-spec/haskell
 ```
 
-The expected output is `#top` which represents that all the claims have been proven.
+The expected output is `#Top` which represents that all the claims have been proven.
 
 Example 2: Faulty ERC20
 -----------------------
@@ -67,6 +69,7 @@ Next, run the prover with:
 ```sh
 kevm prove erc20-spec.md --backend haskell  --definition erc20-spec/haskell --pyk --claim ERC20-SPEC.decimals
 ```
+
 Here, `--claim` tells the prover to run only the `decimals` spec from the `ERC20-SPEC` module.
 
 More to know
@@ -82,6 +85,7 @@ You can also debug proofs interactively:
 
 ```sh
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --definition tests/specs/erc20/verification/haskell --debugger
+```
 
 In addition to this, you can use `kevm view-kcfg` to get a visualization.
 

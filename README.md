@@ -71,6 +71,7 @@ First install the following tools:
 
 KEVM requires Z3 version 4.8.15, which you may need to install from a source build if your package manager supplies a different version.
 To do so, follow the instructions [here](https://github.com/Z3Prover/z3#building-z3-using-make-and-gccclang) after checking out the correct tag in the Z3 repository:
+
 ```sh
 git clone https://github.com/Z3Prover/z3.git
 cd z3
@@ -254,6 +255,7 @@ kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTes
 ```
 
 ### Keeping in mind while developing
+
 Always have your build up-to-date.
 
 - If using the kup package manager, run `kup install kevm --version .` to install the local version.
@@ -272,7 +274,7 @@ To set up nix flakes you will need to be on `nix` 2.4 or higher and follow the i
 For example, if you are on a standard Linux distribution, such as Ubuntu, first [install nix](https://nixos.org/download.html#download-nix)
 and then enable flakes by editing either `~/.config/nix/nix.conf` or `/etc/nix/nix.conf` and adding:
 
-```sh
+```
 experimental-features = nix-command flakes
 ```
 
@@ -283,21 +285,21 @@ By default, Nix will build the project and its transitive dependencies from sour
 We recommend setting up [the binary cache](https://app.cachix.org/cache/kore) to speed up the build process significantly.
 You will also need to add the following sections to `/etc/nix/nix.conf` or, if you are a trusted user, `~/.config/nix/nix.conf` (if you don't know what a "trusted user" is, you probably want to do the former):
 
-```sh
+```
 trusted-public-keys = ... hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
 substituters = ... https://cache.iog.io
 ```
 
 i.e. if the file was originally
 
-```sh
+```
 substituters = https://cache.nixos.org
 trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
 ```
 
 it will now read
 
-```sh
+```
 substituters = https://cache.nixos.org https://cache.iog.io
 trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
 ```
