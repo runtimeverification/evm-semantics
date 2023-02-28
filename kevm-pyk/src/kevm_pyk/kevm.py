@@ -96,6 +96,7 @@ class KEVM(KProve, KRun):
         debug: bool = False,
         ccopts: Iterable[str] = (),
         llvm_kompile: bool = True,
+        llvm_mode: Optional[str] = None,
         optimization: int = 0,
     ) -> 'KEVM':
         try:
@@ -114,6 +115,7 @@ class KEVM(KProve, KRun):
                 ccopts=ccopts,
                 no_llvm_kompile=not llvm_kompile,
                 opt_level=optimization or None,
+                llvm_mode=llvm_mode,
                 profile=profile,
             )
         except RuntimeError as err:

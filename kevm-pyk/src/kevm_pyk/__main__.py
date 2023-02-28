@@ -176,7 +176,6 @@ def exec_foundry_kompile(
         requires=requires,
         imports=imports,
         ccopts=ccopts,
-        llvm_kompile=llvm_kompile,
         debug=debug,
     )
 

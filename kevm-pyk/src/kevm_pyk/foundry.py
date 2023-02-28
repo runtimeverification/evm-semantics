@@ -121,7 +121,6 @@ def foundry_kompile(
     requires: Iterable[str] = (),
     imports: Iterable[str] = (),
     ccopts: Iterable[str] = (),
-    llvm_kompile: bool = True,
     debug: bool = False,
 ) -> None:
     main_module = 'FOUNDRY-MAIN'
