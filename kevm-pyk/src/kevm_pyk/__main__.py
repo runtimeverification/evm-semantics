@@ -349,8 +349,14 @@ def exec_foundry_to_dot(foundry_out: Path, test: str, **kwargs: Any) -> None:
     foundry_to_dot(foundry_out=foundry_out, test=test)
 
 
-def exec_foundry_list(foundry_out: Path, details: bool = True, **kwargs: Any) -> None:
-    stats = foundry_list(foundry_out=foundry_out)
+def exec_foundry_list(
+    foundry_out: Path, details: bool = True, kaas: Optional[Tuple[str, int]] = None, **kwargs: Any
+) -> None:
+    if kaas:
+        client = FoundryClient(*kaas)
+        stats = client.list(foundry_out=foundry_out)
+    else:
+        stats = foundry_list(foundry_out=foundry_out)
     delim = '\n\n' if details else '\n'
     output = delim.join(stat.pretty(details=details) for stat in stats)
     print(output)
@@ -833,6 +839,14 @@ def _create_argument_parser() -> ArgumentParser:
         '--details', dest='details', default=True, action='store_true', help='Information about progress on each CFG.'
     )
     foundry_list_args.add_argument('--no-details', dest='details', action='store_false', help='Just list the CFGs.')
+    foundry_list_args.add_argument(
+        '--kaas',
+        metavar='HOST:PORT',
+        nargs='?',
+        const=(DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT),
+        type=host_port,
+        help='KaaS mode',
+    )
 
     foundry_view_kcfg_args = command_parser.add_parser(
         'foundry-view-kcfg',

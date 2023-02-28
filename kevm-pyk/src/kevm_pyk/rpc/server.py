@@ -53,7 +53,7 @@ def main() -> None:
         FoundryServer(args.host, args.port).serve_forever()
     except KeyboardInterrupt:
         ...
-    LOGGER.info('Stopped KEVm Foundry Server')
+    LOGGER.info('Stopped KEVM Foundry Server')
 
 
 def _argument_parser() -> ArgumentParser:

@@ -1,12 +1,17 @@
 from pathlib import Path
-from typing import Iterable, Tuple
+from typing import Any, Dict, Iterable, List, Tuple
 
 from tinyrpc.dispatch import public
 
-from ..foundry import foundry_show
+from ..foundry import foundry_list, foundry_show
 
 
 class FoundryController:
+    @public
+    def list(self, *, foundry_out: str) -> List[Dict[str, Any]]:
+        stats = foundry_list(foundry_out=Path(foundry_out))
+        return [stat.dict for stat in stats]
+
     @public
     def show(
         self,

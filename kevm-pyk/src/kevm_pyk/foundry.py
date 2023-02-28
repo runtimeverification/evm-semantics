@@ -1,7 +1,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple
+from typing import Any, Dict, Final, Iterable, List, Mapping, NamedTuple, Optional, Tuple
 
 from pyk.cli_utils import BugReport, check_file_path
 from pyk.cterm import CTerm, build_claim, build_rule
@@ -422,6 +422,23 @@ class CfgStat(NamedTuple):
             frontier_nodes=frontier_nodes,
             stuck_nodes=stuck_nodes,
         )
+
+    @staticmethod
+    def from_dict(dct: Mapping[str, Any]) -> 'CfgStat':
+        return CfgStat(
+            path=Path(dct['path']),
+            cfg_id=dct['cfg_id'],
+            proven=dct['proven'],
+            total_nodes=dct['total_nodes'],
+            frontier_nodes=dct['frontier_nodes'],
+            stuck_nodes=dct['stuck_nodes'],
+        )
+
+    @property
+    def dict(self) -> Dict[str, Any]:
+        dct = self._asdict()
+        dct['path'] = str(dct['path'])
+        return dct
 
     def pretty(self, *, details: bool = True) -> str:
         lines = []

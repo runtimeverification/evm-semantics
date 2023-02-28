@@ -1,9 +1,11 @@
 from pathlib import Path
-from typing import Iterable, Tuple
+from typing import Iterable, List, Tuple
 
 from tinyrpc import RPCClient, RPCProxy
 from tinyrpc.protocols.jsonrpc import JSONRPCProtocol
 from tinyrpc.transports.http import HttpPostClientTransport
+
+from ..foundry import CfgStat
 
 
 class FoundryClient:
@@ -14,6 +16,10 @@ class FoundryClient:
         transport = HttpPostClientTransport(f'http://{host}:{port}')
         client = RPCClient(protocol, transport)
         self._proxy = client.get_proxy()
+
+    def list(self, *, foundry_out: Path) -> List[CfgStat]:
+        dcts = self._proxy.list(foundry_out=str(foundry_out))
+        return [CfgStat.from_dict(dct) for dct in dcts]
 
     def show(
         self,
