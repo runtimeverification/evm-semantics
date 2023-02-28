@@ -1,4 +1,5 @@
 import logging
+import sys
 from argparse import ArgumentParser
 from typing import Any, Final, Literal
 
@@ -44,6 +45,7 @@ class FoundryServer:
 
 
 def main() -> None:
+    sys.setrecursionlimit(15000000)
     args = _argument_parser().parse_args()
 
     logging.basicConfig(level=args.level, format=LOG_FORMAT)

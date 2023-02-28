@@ -65,3 +65,24 @@ class FoundryClient:
             minimize=minimize,
             bug_report=bug_report,
         )
+
+    def step_node(
+        self,
+        *,
+        foundry_out: Path,
+        test: str,
+        node: str,
+        repeat: int = 1,
+        depth: int = 1,
+        minimize: bool = True,
+        bug_report: bool = False,
+    ) -> None:
+        self._proxy.step_node(
+            foundry_out=str(foundry_out),
+            test=test,
+            node=node,
+            repeat=repeat,
+            depth=depth,
+            minimize=minimize,
+            bug_report=bug_report,
+        )

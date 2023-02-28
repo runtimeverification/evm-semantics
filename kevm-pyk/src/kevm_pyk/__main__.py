@@ -455,17 +455,30 @@ def exec_foundry_step_node(
     depth: int = 1,
     minimize: bool = True,
     bug_report: bool = False,
+    kaas: Optional[Tuple[str, int]] = None,
     **kwargs: Any,
 ) -> None:
-    foundry_step_node(
-        foundry_out=foundry_out,
-        test=test,
-        node=node,
-        repeat=repeat,
-        depth=depth,
-        minimize=minimize,
-        bug_report=bug_report,
-    )
+    if kaas:
+        client = FoundryClient(*kaas)
+        client.step_node(
+            foundry_out=foundry_out,
+            test=test,
+            node=node,
+            repeat=repeat,
+            depth=depth,
+            minimize=minimize,
+            bug_report=bug_report,
+        )
+    else:
+        foundry_step_node(
+            foundry_out=foundry_out,
+            test=test,
+            node=node,
+            repeat=repeat,
+            depth=depth,
+            minimize=minimize,
+            bug_report=bug_report,
+        )
 
 
 def exec_foundry_section_edge(
@@ -937,6 +950,14 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_step_node.add_argument(
         '--depth', type=int, default=1, help='How many steps to take from initial node on edge.'
+    )
+    foundry_step_node.add_argument(
+        '--kaas',
+        metavar='HOST:PORT',
+        nargs='?',
+        const=(DEFAULT_SERVER_HOST, DEFAULT_SERVER_PORT),
+        type=host_port,
+        help='KaaS mode',
     )
 
     foundry_section_edge = command_parser.add_parser(
