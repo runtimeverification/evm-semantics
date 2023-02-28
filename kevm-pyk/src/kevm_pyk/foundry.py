@@ -217,6 +217,7 @@ def foundry_prove(
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
+    use_booster: bool = False,
 ) -> None:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -307,7 +308,7 @@ def foundry_prove(
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
         bug_report=br,
-        use_booster_with_lib=str(llvm_lib),
+        use_booster_with_lib=(str(llvm_lib) if use_booster else None),
     )
     failed = 0
     for pid, r in results.items():

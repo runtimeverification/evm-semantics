@@ -291,6 +291,7 @@ def exec_foundry_prove(
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
+    use_booster: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -312,6 +313,7 @@ def exec_foundry_prove(
         implication_every_block=implication_every_block,
         rpc_base_port=rpc_base_port,
         bug_report=bug_report,
+        use_booster=use_booster,
     )
 
 
@@ -570,6 +572,12 @@ def _create_argument_parser() -> ArgumentParser:
         default=None,
         type=int,
         help='Store every Nth state in the CFG for inspection.',
+    )
+    explore_args.add_argument(
+        '--use-booster',
+        dest='use_booster',
+        default=False,
+        help='Use hs-booster-proxy',
     )
 
     k_args = ArgumentParser(add_help=False)

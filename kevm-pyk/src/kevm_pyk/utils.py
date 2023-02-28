@@ -78,17 +78,17 @@ def parallel_kcfg_explore(
             )
         base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
 
-        rpc_cmd = (
-            [
+        if use_booster_with_lib is not None:
+            rpc_cmd = [
                 'hs-booster-proxy',
                 '--llvm-backend-library',
                 use_booster_with_lib,
                 '-l',
                 'warn',
             ]
-            if use_booster_with_lib is not None
-            else ['kore-rpc']
-        )
+            _LOGGER.warning(f'Using booster {_cfgid}: {rpc_cmd}')
+        else:
+            rpc_cmd = ['kore-rpc']
 
         with KCFGExplore(
             kprove,
