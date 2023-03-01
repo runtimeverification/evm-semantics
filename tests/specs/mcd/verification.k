@@ -51,10 +51,10 @@ module LEMMAS-MCD-SYNTAX
   // Buffer Reasoning
   // ########################
 
-    syntax ByteArray ::= #asByteStackInWidth    ( Int, Int )                 [function]
-                       | #asByteStackInWidthaux ( Int, Int, Int, ByteArray ) [function]
- // -----------------------------------------------------------------------------------
-    rule #asByteStackInWidth(X, N) => #asByteStackInWidthaux(X, N -Int 1, N, .ByteArray)
+    syntax Bytes ::= #asByteStackInWidth    ( Int, Int )             [function]
+                   | #asByteStackInWidthaux ( Int, Int, Int, Bytes ) [function]
+ // ---------------------------------------------------------------------------
+    rule #asByteStackInWidth(X, N) => #asByteStackInWidthaux(X, N -Int 1, N, .Bytes)
 
     rule #asByteStackInWidthaux(X, I, N, WS) => #asByteStackInWidthaux(X, I -Int 1, N, nthbyteof(X, I, N) : WS) when I >Int 0
     rule #asByteStackInWidthaux(X, 0, N, WS) => nthbyteof(X, 0, N) : WS
@@ -128,26 +128,6 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
          [simplification]
 
   // ########################
-  // Buffer Reasoning
-  // ########################
-
-    rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray } => { BY #Equals BZ }
-         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
-
-    rule { BA1:ByteArray ++ (BA2:ByteArray ++ BA3:ByteArray) #Equals BA4:ByteArray ++ BA3 } => { (BA1 ++ BA2) #Equals BA4 } [simplification]
-
-    rule { BA1:ByteArray ++ BA2:ByteArray #Equals BA3:ByteArray ++ BA4:ByteArray } =>
-         { true #Equals BA1 ==K BA3 andBool BA2 ==K BA4 }
-         requires (#sizeByteArray(BA1) ==Int #sizeByteArray(BA3))
-           orBool (#sizeByteArray(BA2) ==Int #sizeByteArray(BA4))
-         [simplification]
-
-    rule { BA1:ByteArray #Equals BA2:ByteArray ++ BA3:ByteArray } =>
-         { true #Equals BA1 ==K BA2 andBool .ByteArray ==K BA3 }
-         requires (#sizeByteArray(BA1) ==Int #sizeByteArray(BA2))
-         [simplification]
-
-  // ########################
   // Map
   // ########################
 
@@ -164,11 +144,6 @@ module LEMMAS-MCD-COMMON
   // ########################
   // Buffer Reasoning
   // ########################
-
-
-    // ### cat-exhaustiveness
-
-    rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 ) [simplification]
 
   // ########################
   // Keccak
@@ -299,14 +274,6 @@ module LEMMAS-MCD-COMMON
     // Tic ==K 0 andBool 0 ==K maxUInt48 &Int (#lookup(STORAGE, ADDR) /Int pow160) andBool Tic ==K maxUInt48 &Int (#lookup(STORAGE, ADDR) /Int pow160)
     // So we need this rule to do the structural simplification because the Java backend will not use this string of equalities to do the simplification directly.
     rule #WordPackAddrUInt48UInt48(ADDR, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) => #WordPackAddrUInt48UInt48(ADDR, 0, UINT48_2) requires maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) ==Int 0 [simplification]
-
-  // ########################
-  // Map
-  // ########################
-
-    rule M:Memory [ K <- V ]             [ K' <- V' ] => M [ K' <- V' ] [ K <- V ]    requires K' <Int K                           [simplification]
-    rule M:Memory [ K := BUF:ByteArray ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ]  requires K' <Int K
-                                                                                        orBool K +Int #sizeByteArray(BUF) <=Int K' [simplification]
 
     rule M [ K <- V ] => M requires #lookup(M, K) ==Int V [simplification]
 

@@ -40,7 +40,7 @@ module LEMMAS [symbolic]
   // ########################
 
     rule 0 <=Int #sizeWordStack ( _ , N ) => true requires 0 <=Int N [simplification, smt-lemma]
-    rule 0 <=Int #sizeByteArray ( _ )     => true                    [simplification, smt-lemma]
+    rule 0 <=Int lengthBytes ( _ )     => true                    [simplification, smt-lemma]
 
     // bool2Word range & simplification
     rule 0 <=Int bool2Word(_B)             => true   [simplification]
@@ -79,13 +79,10 @@ module LEMMAS [symbolic]
   // Buffer Reasoning
   // ########################
 
-    rule WS         ++ .ByteArray => WS  [simplification]
-    rule .ByteArray ++ WS         => WS  [simplification]
-
     // #range
 
     rule #range(_, _, K) =>
-         .ByteArray
+         .Bytes
       requires K <=Int 0 [simplification]
 
   // ########################
@@ -102,13 +99,6 @@ module LEMMAS [symbolic]
       requires I1 =/=Int I2
       [simplification]
 
-    // sizeByteArray
-
-    rule #sizeByteArray(BUF1 ++ BUF2)                 => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)      [simplification]
-    rule #sizeByteArray(#buf(SIZE, _))                => SIZE                                                [simplification]
-    rule #sizeByteArray(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
-    rule #sizeByteArray(#padRightToWidth(WIDTH, BUF)) => WIDTH  requires #sizeByteArray(BUF) <=Int WIDTH     [simplification]
-
     // TODO: custom ==K unification doesn't work in Haskell yet
     // ++ unification
     rule #buf(N, A) ++ BUF1 ==K #buf(N, B) ++ BUF2 => #buf(N, A) ==K #buf(N, B) andBool BUF1 ==K BUF2     [simplification]
@@ -117,7 +107,7 @@ module LEMMAS [symbolic]
 
     rule #asWord(#padRightToWidth(32, BUF)) &Int notMaxUInt224 =>
          #asWord(#padRightToWidth(32, BUF))
-      requires #sizeByteArray(BUF) <=Int 4 [simplification]
+      requires lengthBytes(BUF) <=Int 4 [simplification]
 
 endmodule
 
@@ -249,10 +239,7 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma, simplification]
 
-    rule BA:ByteArray   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                       [simplification, concrete(BA)]
-    rule #buf(32, DATA) ==K BA:ByteArray   =>          DATA  ==Int #asInteger(BA) requires #sizeByteArray(BA) <=Int 32 [simplification, concrete(BA)]
-
-    rule #range(M, N1 +Int N2, K) => #range(#range(M, N2, #sizeByteArray(M) -Int N2), N1, K)
+    rule #range(M, N1 +Int N2, K) => #range(#range(M, N2, lengthBytes(M) -Int N2), N1, K)
       requires 0 <=Int N1 andBool 0 <=Int N2
       [simplification, concrete(N2), concrete(M)]
 
@@ -271,13 +258,8 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule B ==Bool false => notBool B [simplification]
 
     rule #range(A ++ _B, START, LENGTH) => #range(A, START, LENGTH)
-      requires START +Int LENGTH <=Int #sizeByteArray(A) [simplification]
+      requires START +Int LENGTH <=Int lengthBytes(A) [simplification]
 
-    rule #range(A ++ B, START, LENGTH) => #range(B, START -Int #sizeByteArray(A), LENGTH)
-      requires #sizeByteArray(A) <=Int START [simplification]
-
-    rule #range ( BA:ByteArray , 0 , LEN ) => BA requires #sizeByteArray(BA) ==Int LEN [simplification]
-
-    rule ( #range ( #range ( BA:ByteArray , S0 , L0 ) , S1 , L1 ) ) => #range ( BA , S0 +Int S1 , minInt ( L1 , L0 -Int S1 ) ) ++ #buf ( maxInt ( 0 , L1 -Int ( L0 -Int S1 ) ) , 0 )
-      requires 0 <=Int S0 andBool 0 <=Int L0 andBool 0 <=Int S1 andBool 0 <=Int L1 [simplification]
+    rule #range(A ++ B, START, LENGTH) => #range(B, START -Int lengthBytes(A), LENGTH)
+      requires lengthBytes(A) <=Int START [simplification]
 endmodule

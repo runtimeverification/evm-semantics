@@ -10,10 +10,10 @@ module VERIFICATION-COMMON
   // ########################
 
     //Symbolic predicate representing whether output of #ecrec is empty. No implementation.
-    syntax Bool ::= #ecrecEmpty( ByteArray , ByteArray , ByteArray , ByteArray ) [function, no-evaluators, smtlib(ecrecEmpty)]
- // --------------------------------------------------------------------------------------------------------------------------
-    rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
-    rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 0  requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    syntax Bool ::= #ecrecEmpty( Bytes , Bytes , Bytes , Bytes ) [function, no-evaluators, smtlib(ecrecEmpty)]
+ // ----------------------------------------------------------------------------------------------------------
+    rule lengthBytes(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule lengthBytes(#ecrec(HASH, SIGV, SIGR, SIGS)) => 0  requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
 
     rule         #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))                  => 0    requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
     rule 0  <Int #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))                  => true requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
@@ -43,7 +43,7 @@ module VERIFICATION
   // ABI Encoding
   // ########################
 
-    syntax ByteArray ::= #abiCallData2 ( String , TypedArgs ) [function]
+    syntax Bytes ::= #abiCallData2 ( String , TypedArgs ) [function]
 
     rule #abiCallData2(FSIG, ARGS)
       => #parseByteStack(substrString(Keccak256(FSIG), 0, 8))
@@ -63,9 +63,6 @@ module VERIFICATION
   // ########################
   // Buffer Reasoning
   // ########################
-
-    // ++-identity-right
-    rule WS ++ .ByteArray => WS [simplification]
 
     // ++-associativity
     rule ( WS1 ++ WS2 ) ++ WS3 => WS1 ++ ( WS2 ++ WS3 ) [simplification]
@@ -145,11 +142,6 @@ module VERIFICATION-HASKELL [symbolic, kore]
     rule BA1 ++ (BA2 ++ BA3) => (BA1 ++ BA2) ++ BA3 [concrete(BA1, BA2), simplification]
 
     rule maxUInt160 &Int Y => Y requires 0 <=Int Y andBool Y <=Int maxUInt160 [simplification]
-
-    rule ( #sizeByteArray(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 0  ) =>           #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )  [simplification]
-    rule ( #sizeByteArray(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 32 ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )) [simplification]
-
-    rule ( #sizeByteArray(#ecrec( _, _, _, _ )) <=Int K ) => true requires 32 <=Int K [simplification]
 
     rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
 
