@@ -24,7 +24,7 @@ module OVERFLOW00-OVERFLOW-SPEC
           <callData> #abiCallData("execute", #uint256(A0)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
           <wordStack> .WordStack => ?_ </wordStack>
-          <localMem> .Memory => ?_ </localMem>
+          <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>

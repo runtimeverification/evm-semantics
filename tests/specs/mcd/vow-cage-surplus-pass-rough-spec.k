@@ -24,7 +24,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <callData> #abiCallData("cage", .TypedArgs) ++ CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -393,7 +393,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <callData> #abiCallData("dai", #address(ABI_usr)) ++ CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( VGas +Int -1236 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -494,7 +494,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <callData> #abiCallData("sin", #address(ABI_usr)) ++ CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( VGas +Int -1235 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -595,7 +595,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <callData> #abiCallData("heal", #uint256(ABI_rad)) ++ CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Sin -Int ABI_rad ) , Sin , Junk_0 ) ) -Int Csstore( ISTANBUL , ( Dai -Int ABI_rad ) , Dai , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Vice -Int ABI_rad ) , Vice , Junk_2 ) ) -Int Csstore( ISTANBUL , ( Debt -Int ABI_rad ) , Debt , Junk_3 ) ) +Int -8616 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -718,7 +718,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <callData> #abiCallData("cage", #uint256(ABI_rad)) ++ CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( ( ( ( VGas -Int Csstore( ISTANBUL , 0 , Live , Junk_2 ) ) -Int Csstore( ISTANBUL , ( Dai_a -Int ABI_rad ) , Dai_a , Junk_5 ) ) -Int Csstore( ISTANBUL , ( Dai_u +Int ABI_rad ) , Dai_u , Junk_6 ) ) +Int -15964 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -863,7 +863,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <callData> #abiCallData("cage", .TypedArgs) ++ CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , 0 , Live , Junk_1 ) ) -Int Csstore( ISTANBUL , CALLER_ID , Vow , Junk_2 ) ) +Int -6351 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>

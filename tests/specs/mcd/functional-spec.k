@@ -97,26 +97,32 @@ module FUNCTIONAL-SPEC
 
     // Memory operations
 
-    claim <k> runLemma(#range(M:Memory [ 0 := #buf(4, X) ] [ 0 <- 10 ] [ 1 <- 11 ] [ 2 <- 12 ] [ 3 <- 13 ], 0, 4)) => doneLemma(10 : 11 : 12 : 13 : .ByteArray) ... </k>
+    claim <k> runLemma(#range(#writeRange(M:Bytes, 0, #buf(4, X)) [ 0 <- 10 ] [ 1 <- 11 ] [ 2 <- 12 ] [ 3 <- 13 ], 0, 4)) => doneLemma(10 : 11 : 12 : 13 : .ByteArray) ... </k>
 
-    claim <k> runLemma( M:Memory [ 132 := #buf(32, B11) ] [ 128 := (#buf(32, B21) ++ #buf(32, B22)) ] ) => doneLemma( M [ 128 := (#buf(32, B21) ++ #buf(32, B22)) ] ) ... </k>
+    claim <k> runLemma( #writeRange( #writeRange(M:Bytes, 132, #buf(32, B11) ) ,128 ,(#buf(32, B21) ++ #buf(32, B22)) ) ) => doneLemma( #writeRange(M, 128, (#buf(32, B21) ++ #buf(32, B22)) ) ) ... </k>
       requires #rangeUInt(256, B11) andBool #rangeUInt(256, B21) andBool #rangeUInt(256, B22)
 
-    claim <k> runLemma( M:Memory [ 128 := (#buf(32, B31) ++ #buf(32, B32)) ] [ 128 := #buf(32, B41) ] ) => doneLemma( M [ 128 := #buf(32, B41) ] [ 160 := #buf(32, B32) ] ) ... </k>
+    claim <k> runLemma( #writeRange( #writeRange(M:Bytes, 128, (#buf(32, B31) ++ #buf(32, B32))), 128, #buf(32, B41) ) ) => doneLemma( #writeRange( #writeRange(M, 128, #buf(32, B41)), 160, #buf(32, B32) ) ) ... </k>
       requires #rangeUInt(256, B31) andBool #rangeUInt(256, B32) andBool #rangeUInt(256, B41)
 
-    claim <k> runLemma(M:Memory [ 128 := (217 : 99 : 141 : 54 : .ByteArray) ]
-                                [ 132 := #buf(32, B11) ]
-                                [ 128 := (#buf(32, B21) ++ #buf(32, B22) ++ #buf(32, B23) ++ #buf(32, B24) ++ #buf(32, B25)) ]
-                                [ 128 := (217 : 99 : 141 : 54 : .ByteArray) ]
-                                [ 132 := #buf(32, B11) ]
-                                [ 128 := (#buf(32, B31) ++ #buf(32, B32)) ]
-                                [ 128 := #buf(32, B41) ]
-                      )
-           => doneLemma(M [ 128 := #buf(32, B41) ]
-                          [ 160 := #buf(32, B32) ]
-                          [ 192 := (#buf(32, B23) ++ #buf(32, B24) ++ #buf(32, B25)) ]
-                       )
+    claim <k> runLemma( #writeRange(
+                          #writeRange(
+                            #writeRange(
+                              #writeRange(
+                                #writeRange(
+                                  #writeRange(
+                                    #writeRange( M:Bytes, 128, (217 : 99 : 141 : 54 : .ByteArray)),
+                                    132, #buf(32, B11)),
+                                  128, (#buf(32, B21) ++ #buf(32, B22) ++ #buf(32, B23) ++ #buf(32, B24) ++ #buf(32, B25))),
+                                128, (217 : 99 : 141 : 54 : .ByteArray)),
+                              132, #buf(32, B11)),
+                            128, (#buf(32, B31) ++ #buf(32, B32))),
+                          128, #buf(32, B41)))
+           => doneLemma(#writeRange(
+                          #writeRange(
+                            #writeRange(M, 128, #buf(32, B41)),
+                            160, #buf(32, B32)),
+                          192, (#buf(32, B23) ++ #buf(32, B24) ++ #buf(32, B25))))
           ...
           </k>
      requires #rangeUInt(256, B11)

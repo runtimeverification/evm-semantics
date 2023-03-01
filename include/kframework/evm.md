@@ -62,7 +62,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
               // \mu_*
               <wordStack>   .WordStack </wordStack>           // \mu_s
-              <localMem>    .Memory    </localMem>            // \mu_m
+              <localMem>    .Bytes     </localMem>            // \mu_m
               <pc>          0          </pc>                  // \mu_pc
               <gas>         0          </gas>                 // \mu_g
               <memoryUsed>  0          </memoryUsed>          // \mu_i
@@ -881,10 +881,10 @@ These operations are getters/setters of the local execution memory.
     syntax BinStackOp ::= "MSTORE" | "MSTORE8"
  // ------------------------------------------
     rule <k> MSTORE INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
+         <localMem> LM => #writeRange(LM, INDEX, #padToWidth(32, #asByteStack(VALUE))) </localMem>
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX := (VALUE modInt 256) ] </localMem>
+         <localMem> LM => #write(LM, INDEX, (VALUE modInt 256)) </localMem>
 ```
 
 ### Expressions
@@ -996,7 +996,7 @@ These operators make queries about the current execution state.
  // ---------------------------------
     rule <k> CODECOPY MEMSTART PGMSTART WIDTH => . ... </k>
          <program> PGM </program>
-         <localMem> LM => LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH)] </localMem>
+         <localMem> LM =>  #writeRange(LM, MEMSTART, #range(PGM, PGMSTART, WIDTH)) </localMem>
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
@@ -1095,7 +1095,7 @@ These operators query about the current `CALL*` state.
     syntax TernStackOp ::= "CALLDATACOPY"
  // -------------------------------------
     rule <k> CALLDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </k>
-         <localMem> LM => LM [ MEMSTART := #range(CD, DATASTART, DATAWIDTH) ] </localMem>
+         <localMem> LM => #writeRange(LM, MEMSTART, #range(CD, DATASTART, DATAWIDTH)) </localMem>
          <callData> CD </callData>
 ```
 
@@ -1112,7 +1112,7 @@ These operators query about the current return data buffer.
     syntax TernStackOp ::= "RETURNDATACOPY"
  // ----------------------------------------
     rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </k>
-         <localMem> LM => LM [ MEMSTART := #range(RD, DATASTART, DATAWIDTH) ] </localMem>
+         <localMem> LM => #writeRange(LM, MEMSTART, #range(RD, DATASTART, DATAWIDTH)) </localMem>
          <output> RD </output>
       requires DATASTART +Int DATAWIDTH <=Int #sizeByteArray(RD)
 
@@ -1207,7 +1207,7 @@ Should we pad zeros (for the copied "program")?
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </k>
-         <localMem> LM => LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH) ] </localMem>
+         <localMem> LM => #writeRange(LM, MEMSTART, #range(PGM, PGMSTART, WIDTH)) </localMem>
          <account>
            <acctID> ACCT </acctID>
            <code> PGM </code>
@@ -1342,7 +1342,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <memoryUsed>   _ => 0          </memoryUsed>
          <output>       _ => .ByteArray </output>
          <wordStack>    _ => .WordStack </wordStack>
-         <localMem>     _ => .Memory    </localMem>
+         <localMem>     _ => .Bytes     </localMem>
 
     syntax KItem ::= "#loadProgram" ByteArray
  // -----------------------------------------
@@ -1436,7 +1436,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule [refund]: <k> #refund G:Int => . ... </k> <gas> GAVAIL => GAVAIL +Int G </gas>
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
-         <localMem> LM => LM [ START := #range(WS, 0, minInt(WIDTH, #sizeByteArray(WS))) ] </localMem>
+         <localMem> LM => #writeRange(LM, START, #range(WS, 0, minInt(WIDTH, #sizeByteArray(WS)))) </localMem>
 ```
 
 Ethereum Network OpCodes

@@ -15,7 +15,7 @@ endmodule
 module FUNCTIONAL-SPEC
     imports FUNCTIONAL-SPEC-SYNTAX
 
-    claim <k> runLemma(#range(_MEM [ 96 := #padToWidth(32, #asByteStack(BS)) ], 96, 32))
+    claim <k> runLemma(#range( #writeRange(_MEM, 96, #padToWidth(32, #asByteStack(BS)) ), 96, 32))
            => doneLemma(#buf(32, BS)) ... </k>
       requires #rangeUInt(256, BS)
 

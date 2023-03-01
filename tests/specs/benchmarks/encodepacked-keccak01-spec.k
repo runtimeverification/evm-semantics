@@ -24,7 +24,7 @@ module ENCODEPACKED-KECCAK01-SPEC
           <callData> #abiCallData("execute", #bytes32(A0)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
           <wordStack> .WordStack => ?_ </wordStack>
-          <localMem> .Memory => ?_ </localMem>
+          <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>

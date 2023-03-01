@@ -328,28 +328,18 @@ A cons-list is used for the EVM wordstack.
     rule WordStack2List(W : WS) => ListItem(W) WordStack2List(WS)
 ```
 
-Local Memory
-------------
 
-Most of EVM data is held in local memory.
-
--   `WM [ N := WS ]` assigns a contiguous chunk of `WM` to `WS` starting at position `W`.
--   `#range(WM, START, WIDTH)` reads off `WIDTH` elements from `WM` beginning at position `START` (padding with zeros as needed).
+-   `#writeRange(WS, START, WS')` assigns a contiguous chunk of `WS'` to `WS` starting at position `START`.
+-   `#write(WM, IDX, VAL)` assigns a value `VAL` at position `IDX` in `WM`.
 
 ```k
-    syntax Memory = Bytes
-    syntax Memory ::= Memory "[" Int ":=" ByteArray "]" [function, total, klabel(mapWriteBytes)]
- // --------------------------------------------------------------------------------------------
-    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS') requires START >=Int 0  [concrete]
-    rule  _ [ START := _:ByteArray ] => .Memory                                                                  requires START  <Int 0  [concrete]
+    syntax Bytes ::= "#write" "(" Bytes "," Int "," Int ")" [function]
+                   | "#writeRange" "(" Bytes "," Int "," ByteArray ")" [function, total, klabel(mapWriteRange)]
+ // -----------------------------------------------------------------------------------------------------------
+    rule #write(WM, IDX, VAL) => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ]
 
-    syntax Memory ::= ".Memory" [macro]
- // -----------------------------------
-    rule .Memory => .Bytes
-
-    syntax Memory ::= Memory "[" Int ":=" Int "]" [function]
- // --------------------------------------------------------
-    rule WM [ IDX := VAL ] => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ]
+    rule #writeRange(WS, START, WS') => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS') requires START >=Int 0 [concrete]
+    rule #writeRange(_ , START, _)   => .Bytes                                                                           requires START  <Int 0 [concrete]
 ```
 
 Byte Arrays

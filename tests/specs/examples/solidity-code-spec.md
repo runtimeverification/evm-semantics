@@ -100,7 +100,7 @@ module SOLIDITY-CODE-SPEC
           <program>   #binRuntime()                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
 
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
@@ -129,7 +129,7 @@ module SOLIDITY-CODE-SPEC
           <program>   #binRuntime()                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
 
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
@@ -163,7 +163,7 @@ module SOLIDITY-CODE-SPEC
           <program>   #binRuntime()                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
 
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
@@ -197,7 +197,7 @@ module SOLIDITY-CODE-SPEC
           <program>   #binRuntime()                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
 
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
@@ -230,7 +230,7 @@ module SOLIDITY-CODE-SPEC
           <program>   #binRuntime()                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
 
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>

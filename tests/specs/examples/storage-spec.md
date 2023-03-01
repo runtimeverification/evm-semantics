@@ -79,7 +79,7 @@ module STORAGE-SPEC
           <jumpDests> #computeValidJumpDests(#binRuntime(Storage)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
@@ -113,7 +113,7 @@ module STORAGE-SPEC
           <static>    false                                        </static>
 
           <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>

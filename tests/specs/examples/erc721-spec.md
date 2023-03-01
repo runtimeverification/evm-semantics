@@ -85,7 +85,7 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <jumpDests> #computeValidJumpDests(#binRuntime(ERC721)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
@@ -119,7 +119,7 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <jumpDests> #computeValidJumpDests(#binRuntime(ERC721)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>

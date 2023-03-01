@@ -18,7 +18,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
 //          <gas> #gas(VGas) => ?_ </gas>
 //          <pc> 0 => ?_ </pc>
 //          <wordStack> .WordStack => ?_ </wordStack>
-//          <localMem> .Memory => ?_ </localMem>
+//          <localMem> .Bytes => ?_ </localMem>
 //          <memoryUsed> 0 => ?_ </memoryUsed>
 //          (_ => ?_)
 //        </callState>
@@ -124,7 +124,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
           <gas> #gas(VGas) => #gas(VGas +Int -2043) </gas>                      // from counterexample
           <pc> 0 => ?_ </pc>
           <wordStack> .WordStack => ?_ </wordStack>
-          <localMem> .Memory => ?_ </localMem>
+          <localMem> .Bytes => ?_ </localMem>
           <memoryUsed> 0 => ?_ </memoryUsed>
           (_ => ?_)
         </callState>

@@ -24,7 +24,7 @@ module DAI-SYMBOL-PASS-SPEC
             <callData> #abiCallData("symbol", .TypedArgs) ++ CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( VGas +Int -672 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
