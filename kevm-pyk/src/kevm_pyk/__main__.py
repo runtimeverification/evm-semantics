@@ -322,17 +322,8 @@ def exec_foundry_show(
     )
 
 
-def exec_foundry_to_dot(
-    profile: bool,
-    foundry_out: Path,
-    test: str,
-    **kwargs: Any,
-) -> None:
-    foundry_to_dot(
-        profile=profile,
-        foundry_out=foundry_out,
-        test=test,
-    )
+def exec_foundry_to_dot(foundry_out: Path, test: str, **kwargs: Any) -> None:
+    foundry_to_dot(foundry_out=foundry_out, test=test)
 
 
 def exec_foundry_list(

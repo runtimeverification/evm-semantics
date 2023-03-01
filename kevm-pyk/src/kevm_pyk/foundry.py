@@ -375,16 +375,12 @@ def foundry_show(
         print(foundry.pretty_print(new_module) + '\n')
 
 
-def foundry_to_dot(
-    profile: bool,
-    foundry_out: Path,
-    test: str,
-) -> None:
+def foundry_to_dot(foundry_out: Path, test: str) -> None:
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
+    foundry = Foundry(definition_dir, use_directory=use_directory)
     cfg_dump_dot(foundry, test, kcfgs_dir)
 
 
