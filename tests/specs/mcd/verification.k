@@ -151,10 +151,6 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
   // Map
   // ########################
 
-    rule #range(M:Memory [ K <- V ]                        , START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)  requires K +Int 1                    ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START [concrete(K    , V     ), simplification]
-    rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS')        ], START, WIDTH)  requires K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START
-                                                                                                                                  andBool K +Int 1                    ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
-
     rule { (M:Map [K <- V1]) #Equals (M [K <- V2]) } => { V1 #Equals V2 }
          [simplification]
 
@@ -315,11 +311,6 @@ module LEMMAS-MCD-COMMON
     rule M [ K <- V ] => M requires #lookup(M, K) ==Int V [simplification]
 
     rule M:Map [ K1 <- _ ] [ K2 <- V2 ] [ K1 <- V1' ] => M [ K1 <- V1' ] [ K2 <- V2 ] requires K1 =/=Int K2 [simplification]
-
-    rule M:Memory [ K1 := (BUF11 ++ BUF12) ] [ K2 := BUF2 ] => M [ K1 +Int #sizeByteArray(BUF11) := BUF12 ] [ K2 := BUF2 ]
-      requires K2 <=Int K1
-      andBool K1 +Int #sizeByteArray(BUF11) <=Int K2 +Int #sizeByteArray(BUF2)
-      [simplification]
 
   // ########################
   // Arithmetic

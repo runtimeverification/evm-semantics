@@ -88,17 +88,6 @@ module LEMMAS [symbolic]
          .ByteArray
       requires K <=Int 0 [simplification]
 
-    rule #range(M [ N := BUF:ByteArray ], L, K) =>
-         #let W = minInt(K, N -Int L) #in #range(M, L, W) ++ #range(M [ N := BUF ], N, K -Int W)
-      requires 0 <Int K andBool L <Int N [simplification]
-
-    rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, K)
-      requires 0 <Int K andBool N +Int #sizeByteArray(BUF) <=Int L [simplification]
-
-    rule #range( M [ N1 := BUF1:ByteArray ] [ N2 := BUF2:ByteArray ], L, K ) =>
-         #range( M                          [ N2 := BUF2           ], L, K )
-      requires 0 <Int K andBool N1 +Int #sizeByteArray(BUF1) <=Int L [simplification]
-
   // ########################
   // Map Reasoning
   // ########################
@@ -108,11 +97,6 @@ module LEMMAS [symbolic]
 
     rule 0 <=Int #lookup( _M:Map , _ )             => true [simplification, smt-lemma]
     rule         #lookup( _M:Map , _ ) <Int pow256 => true [simplification, smt-lemma]
-
-    // re-order assignments
-    rule MEM [ K1 := BUF1:ByteArray ] [ K2 := BUF2:ByteArray ] => MEM [ K2 := BUF2 ] [ K1 := BUF1 ]  requires         #sizeByteArray(BUF2) <=Int K1 -Int K2                   andBool K2  <Int K1 [simplification]
-    // overwritten assignment
-    rule MEM [ K1 := BUF1           ] [ K2 := BUF2           ] => MEM [ K2 := BUF2 ]                 requires K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2) andBool K2 <=Int K1 [simplification]
 
     rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true
       requires I1 =/=Int I2
