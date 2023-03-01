@@ -97,7 +97,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
        andBool (#rangeUInt(256, Wait)
        andBool (#rangeUInt(256, Sin_t)
        andBool (#rangeUInt(256, Sin)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (#rangeUInt(256, Junk_2)))))))))

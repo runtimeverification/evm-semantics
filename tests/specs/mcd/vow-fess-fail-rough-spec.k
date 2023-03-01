@@ -97,7 +97,7 @@ module VOW-FESS-FAIL-ROUGH-SPEC
        andBool (#rangeUInt(256, May)
        andBool (#rangeUInt(256, Sin_era)
        andBool (#rangeUInt(256, Sin)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (#rangeUInt(256, Junk_2)))))))))

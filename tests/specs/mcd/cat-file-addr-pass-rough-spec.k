@@ -11,7 +11,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -97,7 +97,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
        andBool (#rangeAddress(ABI_data)
        andBool (#rangeUInt(256, May)
        andBool (#rangeAddress(Vow)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#notPrecompileAddress(Vow)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)

@@ -101,7 +101,7 @@ module FLIPPER-BIDS-PASS-ROUGH-SPEC
        andBool (#rangeAddress(Usr)
        andBool (#rangeAddress(Gal)
        andBool (#rangeUInt(256, Tab)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#notPrecompileAddress(Guy)
        andBool (#notPrecompileAddress(Usr)
        andBool (#notPrecompileAddress(Gal)

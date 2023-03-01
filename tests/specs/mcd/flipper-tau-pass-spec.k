@@ -94,7 +94,7 @@ module FLIPPER-TAU-PASS-SPEC
 
        andBool (#rangeUInt(48, Ttl)
        andBool (#rangeUInt(48, Tau)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool ((VCallValue ==Int 0))))))
 

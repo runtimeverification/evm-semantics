@@ -11,7 +11,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -100,7 +100,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
        andBool (#rangeAddress(Guy)
        andBool (#rangeUInt(48, Tic)
        andBool (#rangeUInt(48, End)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Guy))
        andBool ((#rangeUInt(48, TIME))
        andBool (#rangeUInt(256, Junk_0)

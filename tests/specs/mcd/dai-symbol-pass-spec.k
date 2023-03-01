@@ -92,7 +92,7 @@ module DAI-SYMBOL-PASS-SPEC
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
 
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool ((VCallValue ==Int 0)))
 
 

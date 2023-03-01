@@ -100,7 +100,7 @@ module DSTOKEN-BURN-SELF-FAIL-ROUGH-SPEC
        andBool (#rangeUInt(256, Allowance)
        andBool (#rangeBool(Stoppedd)
        andBool (#rangeAddress(Owner)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Owner))
        andBool ((CALLER_ID ==Int Owner)
        andBool ((CALLER_ID =/=Int ACCT_ID)

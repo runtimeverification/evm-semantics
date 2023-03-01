@@ -7,8 +7,8 @@ module FUNCTIONAL-SPEC-SYNTAX
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
 
-    syntax Step ::= Bool | Int | ByteArray | Memory
- // -----------------------------------------------
+    syntax Step ::= Bool | Int | Bytes | Memory
+ // -------------------------------------------
 
 endmodule
 
@@ -97,7 +97,7 @@ module FUNCTIONAL-SPEC
 
     // Memory operations
 
-    claim <k> runLemma(#range(#writeRange(M:Bytes, 0, #buf(4, X)) [ 0 <- 10 ] [ 1 <- 11 ] [ 2 <- 12 ] [ 3 <- 13 ], 0, 4)) => doneLemma(10 : 11 : 12 : 13 : .ByteArray) ... </k>
+    claim <k> runLemma(#range(#writeRange(M:Bytes, 0, #buf(4, X)) [ 0 <- 10 ] [ 1 <- 11 ] [ 2 <- 12 ] [ 3 <- 13 ], 0, 4)) => doneLemma(10 : 11 : 12 : 13 : .Bytes) ... </k>
 
     claim <k> runLemma( #writeRange( #writeRange(M:Bytes, 132, #buf(32, B11) ) ,128 ,(#buf(32, B21) ++ #buf(32, B22)) ) ) => doneLemma( #writeRange(M, 128, (#buf(32, B21) ++ #buf(32, B22)) ) ) ... </k>
       requires #rangeUInt(256, B11) andBool #rangeUInt(256, B21) andBool #rangeUInt(256, B22)
@@ -111,10 +111,10 @@ module FUNCTIONAL-SPEC
                               #writeRange(
                                 #writeRange(
                                   #writeRange(
-                                    #writeRange( M:Bytes, 128, (217 : 99 : 141 : 54 : .ByteArray)),
+                                    #writeRange( M:Bytes, 128, (217 : 99 : 141 : 54 : .Bytes)),
                                     132, #buf(32, B11)),
                                   128, (#buf(32, B21) ++ #buf(32, B22) ++ #buf(32, B23) ++ #buf(32, B24) ++ #buf(32, B25))),
-                                128, (217 : 99 : 141 : 54 : .ByteArray)),
+                                128, (217 : 99 : 141 : 54 : .Bytes)),
                               132, #buf(32, B11)),
                             128, (#buf(32, B31) ++ #buf(32, B32))),
                           128, #buf(32, B41)))

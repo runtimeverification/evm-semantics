@@ -97,7 +97,7 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
        andBool (#rangeUInt(256, Allowed)
        andBool (#rangeBool(Stopped)
        andBool (#rangeAddress(Owner)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#notPrecompileAddress(Owner)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1))))))))))

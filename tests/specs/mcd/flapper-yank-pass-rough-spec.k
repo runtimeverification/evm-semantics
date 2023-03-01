@@ -11,7 +11,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -113,7 +113,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
        andBool (#rangeBool(Stopped)
        andBool (#rangeAddress(Owner)
        andBool (#rangeUInt(256, DSToken_balance)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(DSToken))
        andBool ((#notPrecompileAddress(Guy))
        andBool ((#notPrecompileAddress(Owner))
@@ -176,7 +176,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -268,7 +268,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Allowance)
        andBool (#rangeAddress(Owner)
        andBool (#rangeBool(Stopped)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Owner))
        andBool ((ABI_src =/=Int ABI_dst)
        andBool ((ABI_src =/=Int CALLER_ID)

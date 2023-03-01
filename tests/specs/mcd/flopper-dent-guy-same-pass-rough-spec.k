@@ -11,7 +11,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -105,7 +105,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
        andBool (#rangeAddress(Guy)
        andBool (#rangeUInt(48, Tic)
        andBool (#rangeUInt(48, End)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Vat))
        andBool ((#notPrecompileAddress(Guy))
        andBool ((CALLER_ID =/=Int ACCT_ID)

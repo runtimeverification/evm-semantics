@@ -159,7 +159,7 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
 2. The `<expectedRevert>` subconfiguration stores values used for the `expectRevert` cheat code.
     - `<isRevertExpected>` flags if the next call is expected to revert or not.
     - `<expectedDepth>` records the depth at which the call is expected to revert.
-    - `<expectedReason>` keeps the expected revert message as a ByteArray.
+    - `<expectedReason>` keeps the expected revert message as a `Bytes`.
 3. The `<expectOpcode>` subconfiguration stores values used for `expect*OPCODE*` cheat codes.
     - `<isOpcodeExpected>` flags if a call opcode is expected.
     - `<expectedAddress>` keeps the expected caller.
@@ -197,14 +197,14 @@ module FOUNDRY-CHEAT-CODES
         </prank>
         <expectedRevert>
           <isRevertExpected> false </isRevertExpected>
-          <expectedReason> .ByteArray </expectedReason>
+          <expectedReason> .Bytes </expectedReason>
           <expectedDepth> 0 </expectedDepth>
         </expectedRevert>
         <expectedOpcode>
           <isOpcodeExpected> false </isOpcodeExpected>
           <expectedAddress> .Account </expectedAddress>
           <expectedValue> 0 </expectedValue>
-          <expectedData> .ByteArray </expectedData>
+          <expectedData> .Bytes </expectedData>
           <opcodeType> .OpcodeType </opcodeType>
         </expectedOpcode>
         <expectEmit>
@@ -246,7 +246,7 @@ First we have some helpers in K which can:
 
 The `foundry.call` rule is used to inject specific behaviour for each cheat code.
 The rule has a higher priority than any other `#call` rule and will match every call made to the [Foundry cheatcode address](https://book.getfoundry.sh/cheatcodes/#cheatcodes-reference).
-The function selector, represented as `#asWord(#range(ARGS, 0, 4))` and the call data `#range(ARGS, 4, #sizeByteArray(ARGS) -Int 4)` are passed to the `#call_foundry` production, which will further rewrite using rules defined for implemented cheat codes.
+The function selector, represented as `#asWord(#range(ARGS, 0, 4))` and the call data `#range(ARGS, 4, lengthBytes(ARGS) -Int 4)` are passed to the `#call_foundry` production, which will further rewrite using rules defined for implemented cheat codes.
 Finally, the rule for `#return_foundry` is used to end the execution of the `CALL` OpCode.
 
 ```k
@@ -254,11 +254,11 @@ Finally, the rule for `#return_foundry` is used to end the execution of the `CAL
          <k> (#checkCall _ _
           ~> #call _ CHEAT_ADDR _ _ _ ARGS _
           ~> #return RETSTART RETWIDTH )
-          => #call_foundry #asWord(#range(ARGS, 0, 4)) #range(ARGS, 4, #sizeByteArray(ARGS) -Int 4)
+          => #call_foundry #asWord(#range(ARGS, 0, 4)) #range(ARGS, 4, lengthBytes(ARGS) -Int 4)
           ~> #return_foundry RETSTART RETWIDTH
          ...
          </k>
-         <output> _ => .ByteArray </output>
+         <output> _ => .Bytes </output>
     requires CHEAT_ADDR ==Int #address(FoundryCheat)
     [priority(40)]
 ```
@@ -267,10 +267,10 @@ We define two productions named `#return_foundry` and `#call_foundry`, which wil
 The rule `foundry.return` will rewrite the `#return_foundry` production into other productions that will place the output of the execution into the local memory, refund the gas value of the call and push the value `1` on the call stack.
 
 ```k
-    syntax KItem ::= "#return_foundry" Int Int       [klabel(foundry_return)]
-                   | "#call_foundry" Int ByteArray     [klabel(foundry_call)]
-                   | "#error_foundry" Int ByteArray   [klabel(foundry_error)]
- // -------------------------------------------------------------------------
+    syntax KItem ::= "#return_foundry" Int Int  [klabel(foundry_return)]
+                   | "#call_foundry" Int Bytes  [klabel(foundry_call)]
+                   | "#error_foundry" Int Bytes [klabel(foundry_error)]
+ // -------------------------------------------------------------------
     rule [foundry.return]:
          <k> #return_foundry RETSTART RETWIDTH
           => #setLocalMem RETSTART RETWIDTH OUT
@@ -999,8 +999,8 @@ function sign(uint256 privateKey, bytes32 digest) external returns (uint8 v, byt
 `foundry.call.sign` will match when the `sign` cheat code function is called.
 This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`. 
 To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM). 
-This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings. 
-The `ECDSASign` function returns the signed data in [r,s,v] form, which we convert to a bytearray using `#parseByteStack`.
+This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the `Bytes` with the `privateKey` and `digest` into strings. 
+The `ECDSASign` function returns the signed data in [r,s,v] form, which we convert to a `Bytes` using `#parseByteStack`.
 
 ```k
     rule [foundry.call.sign]:
@@ -1051,12 +1051,12 @@ Utils
 - `#setCode ACCTID CODE` sets the code of a given account.
 
 ```k
-    syntax KItem ::= "#setCode" Int ByteArray [klabel(foundry_setCode)]
- // -------------------------------------------------------------------
+    syntax KItem ::= "#setCode" Int Bytes [klabel(foundry_setCode)]
+ // ---------------------------------------------------------------
     rule <k> #setCode ACCTID CODE => . ... </k>
          <account>
            <acctID> ACCTID </acctID>
-           <code> _ => #if #asWord(CODE) ==Int 0 #then .ByteArray:AccountCode #else {CODE}:>AccountCode #fi </code>
+           <code> _ => #if #asWord(CODE) ==Int 0 #then .Bytes:AccountCode #else {CODE}:>AccountCode #fi </code>
            ...
          </account>
 ```
@@ -1132,8 +1132,8 @@ Utils
 - `#setExpectRevert` sets the `<expectedRevert>` subconfiguration with the current call depth and the expected message from `expectRevert`.
 
 ```k
-    syntax KItem ::= "#setExpectRevert" ByteArray [klabel(foundry_setExpectRevert)]
- // -------------------------------------------------------------------------------
+    syntax KItem ::= "#setExpectRevert" Bytes [klabel(foundry_setExpectRevert)]
+ // ---------------------------------------------------------------------------
     rule <k> #setExpectRevert EXPECTED => . ... </k>
          <callDepth> CD </callDepth>
          <expectedRevert>
@@ -1152,23 +1152,23 @@ Utils
          <expectedRevert>
            <isRevertExpected> _ => false </isRevertExpected>
            <expectedDepth> _ => 0 </expectedDepth>
-           <expectedReason> _ => .ByteArray </expectedReason>
+           <expectedReason> _ => .Bytes </expectedReason>
          </expectedRevert>
 ```
 
-- `#encodeOutput` - will encode the output ByteArray to match the encoding of the ByteArray in `<expectedReason>` cell.
+- `#encodeOutput` - will encode the output `Bytes` to match the encoding of the `Bytes` in `<expectedReason>` cell.
     - If the `revert` instruction  and the `expectRevert` cheat code are used with with a custom error, then `expectRevert` will store the message with the encoding `abi.encode(abi.encodeWithSelector(CustomError.selector, 1, 2))`, while the output cell will contain only the `abi.encodeWithSelector(CustomError.selector, 1, 2)`.
     - If the `revert` instruction  and the `expectRevert` cheat code are used with with a string, then `expectRevert` will store the only the encoded string, while the `<output>` cell will store the encoded built-in error `Error(string)`.
-    Since the encoding `abi.encode(abi.encodeWithSelector(CustomError.selector, 1, 2))` cannot be easily decoded when symbolic variables are used, the `<output>` ByteArray is encoded again when the default `Error(string)` is not used.
+    Since the encoding `abi.encode(abi.encodeWithSelector(CustomError.selector, 1, 2))` cannot be easily decoded when symbolic variables are used, the `<output>` Bytes is encoded again when the default `Error(string)` is not used.
 
 ```k
-    syntax ByteArray ::= "#encodeOutput" "(" ByteArray ")" [function, total, klabel(foundry_encodeOutput)]
- // ------------------------------------------------------------------------------------------------------
+    syntax Bytes ::= "#encodeOutput" "(" Bytes ")" [function, total, klabel(foundry_encodeOutput)]
+ // ----------------------------------------------------------------------------------------------
     rule #encodeOutput(BA) => #abiCallData("expectRevert", #bytes(BA)) requires notBool #range(BA, 0, 4) ==K Int2Bytes(4, selector("Error(string)"), BE)
     rule #encodeOutput(BA) => BA [owise]
 ```
 
-- `#checkRevertReason` will compare the contents of the `<output>` cell with the ByteArray from `<expectReason>`.
+- `#checkRevertReason` will compare the contents of the `<output>` cell with the `Bytes` from `<expectReason>`.
 
 ```k
     syntax KItem ::= "#checkRevertReason" [klabel(foundry_checkRevertReason)]
@@ -1192,21 +1192,21 @@ Utils
 ```
 
 - `#matchReason(REASON,OUT)` will check if the returned message matches the expected reason of the revert.
-Will also return true if REASON is `.ByteArray`.
+Will also return true if REASON is `.Bytes`.
 
 ```k
-    syntax Bool ::= "#matchReason" "(" ByteArray "," ByteArray ")" [function, klabel(foundry_matchReason)]
- // ------------------------------------------------------------------------------------------------------
-    rule #matchReason(REASON, _) => true requires REASON ==K .ByteArray
-    rule #matchReason(REASON, OUT) => REASON ==K #range(OUT, 4, #sizeByteArray(OUT) -Int 4) requires REASON =/=K .ByteArray
+    syntax Bool ::= "#matchReason" "(" Bytes "," Bytes ")" [function, klabel(foundry_matchReason)]
+ // ----------------------------------------------------------------------------------------------
+    rule #matchReason(REASON, _) => true requires REASON ==K .Bytes
+    rule #matchReason(REASON, OUT) => REASON ==K #range(OUT, 4, lengthBytes(OUT) -Int 4) requires REASON =/=K .Bytes
 ```
 
-- `#setExpectOpcode` initializes the `<expectedOpcode>` subconfiguration with an expected `Address`, and `ByteArray` to match the calldata.
+- `#setExpectOpcode` initializes the `<expectedOpcode>` subconfiguration with an expected `Address`, and `Bytes` to match the calldata.
 `CallType` is used to specify what `CALL*` opcode is expected.
 
 ```k
-    syntax KItem ::= "#setExpectOpcode" Account ByteArray Int OpcodeType [klabel(foundry_setExpectOpcode)]
- // ------------------------------------------------------------------------------------------------------
+    syntax KItem ::= "#setExpectOpcode" Account Bytes Int OpcodeType [klabel(foundry_setExpectOpcode)]
+ // --------------------------------------------------------------------------------------------------
     rule <k> #setExpectOpcode ACCT DATA VALUE OPTYPE => . ... </k>
          <expectedOpcode>
            <isOpcodeExpected> _ => true </isOpcodeExpected>
@@ -1226,7 +1226,7 @@ Will also return true if REASON is `.ByteArray`.
          <expectedOpcode>
            <isOpcodeExpected> _ => false </isOpcodeExpected>
            <expectedAddress> _ => .Account </expectedAddress>
-           <expectedData> _ => .ByteArray </expectedData>
+           <expectedData> _ => .Bytes </expectedData>
            <opcodeType> _ => .OpcodeType </opcodeType>
            <expectedValue> _ => 0 </expectedValue>
          </expectedOpcode>
@@ -1292,8 +1292,8 @@ If the production is matched when no prank is active, it will be ignored.
         </prank>
 ```
 ```k
-    syntax ByteArray ::= #sign ( ByteArray , ByteArray ) [function,klabel(foundry_sign)]
- // ------------------------------------------------------------------------------------
+    syntax Bytes ::= #sign ( Bytes , Bytes ) [function,klabel(foundry_sign)]
+ // ------------------------------------------------------------------------
     rule #sign(BA1, BA2) => #parseByteStack(ECDSASign(#unparseByteStack(BA1), #unparseByteStack(BA2))) [concrete]
 ```
 

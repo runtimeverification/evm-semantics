@@ -30,7 +30,7 @@ module VERIFICATION
     imports EVM-OPTIMIZATIONS
     imports ERC20-VERIFICATION
 
-    syntax Step ::= ByteArray | Int
+    syntax Step ::= Bytes | Int
     syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
@@ -85,10 +85,10 @@ module ERC20-SPEC
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   ERC20.decimals()                 </callData>
-          <k>          #execute   => #halt ...          </k>
-          <output>     .ByteArray => #buf(32, DECIMALS) </output>
-          <statusCode> _          => EVMC_SUCCESS       </statusCode>
+          <callData>   ERC20.decimals()               </callData>
+          <k>          #execute => #halt ...          </k>
+          <output>     .Bytes   => #buf(32, DECIMALS) </output>
+          <statusCode> _        => EVMC_SUCCESS       </statusCode>
 
           <account>
             <acctID> ACCTID </acctID>
@@ -125,10 +125,10 @@ module ERC20-SPEC
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   ERC20.totalSupply()                 </callData>
-          <k>          #execute   => #halt ...             </k>
-          <output>     .ByteArray => #buf(32, TOTALSUPPLY) </output>
-          <statusCode> _          => EVMC_SUCCESS          </statusCode>
+          <callData>   ERC20.totalSupply()               </callData>
+          <k>          #execute => #halt ...             </k>
+          <output>     .Bytes   => #buf(32, TOTALSUPPLY) </output>
+          <statusCode> _        => EVMC_SUCCESS          </statusCode>
 
           <account>
             <acctID> ACCTID </acctID>
@@ -170,9 +170,9 @@ module ERC20-SPEC
           <substate> _             => ?_ </substate>
 
           <callData>   ERC20.approve(SPENDER, AMOUNT) </callData>
-          <k>          #execute   => #halt ...        </k>
-          <output>     .ByteArray => #buf(32, 1)      </output>
-          <statusCode> _          => EVMC_SUCCESS     </statusCode>
+          <k>          #execute => #halt ...        </k>
+          <output>     .Bytes   => #buf(32, 1)      </output>
+          <statusCode> _        => EVMC_SUCCESS     </statusCode>
 
           <account>
             <acctID> ACCTID </acctID>

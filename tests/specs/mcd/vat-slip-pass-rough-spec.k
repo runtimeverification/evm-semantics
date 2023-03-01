@@ -11,7 +11,7 @@ module VAT-SLIP-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -97,7 +97,7 @@ module VAT-SLIP-PASS-ROUGH-SPEC
        andBool (#rangeSInt(256, ABI_wad)
        andBool (#rangeUInt(256, May)
        andBool (#rangeUInt(256, Gem)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (((May ==Int 1))

@@ -105,7 +105,7 @@ module FLOPPER-KICK-PASS-ROUGH-SPEC
        andBool (#rangeUInt(48, Old_tic)
        andBool (#rangeUInt(48, Old_end)
        andBool (#rangeUInt(256, Ward)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Old_guy))
        andBool ((#rangeUInt(48, TIME))
        andBool (#rangeUInt(256, Junk_0)

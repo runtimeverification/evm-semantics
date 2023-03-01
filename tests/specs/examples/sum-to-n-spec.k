@@ -15,7 +15,7 @@ module VERIFICATION
 
     rule 0 <=Int #sizeWordStack ( _ , _ ) => true [simplification, smt-lemma]
 
-    syntax ByteArray ::= "sumToN" [macro]
+    syntax Bytes ::= "sumToN" [macro]
  // -------------------------------------
     rule sumToN
       => #asmOpCodes(PUSH(1, 0) ; SWAP(1)                   // s = 0 ; n = N

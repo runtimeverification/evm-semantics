@@ -649,7 +649,7 @@ def _init_term(
         'ISOPCODEEXPECTED_CELL': FALSE,
         'EXPECTEDADDRESS_CELL': KApply('.Account_EVM-TYPES_Account'),
         'EXPECTEDVALUE_CELL': intToken(0),
-        'EXPECTEDDATA_CELL': KApply('.ByteArray_EVM-TYPES_ByteArray'),
+        'EXPECTEDDATA_CELL': KApply('.Bytes_EVM-TYPES_Bytes'),
         'OPCODETYPE_CELL': KApply('.OpcodeType_FOUNDRY-CHEAT-CODES_OpcodeType'),
         'RECORDEVENT_CELL': FALSE,
         'ISEVENTEXPECTED_CELL': FALSE,

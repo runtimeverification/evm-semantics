@@ -95,7 +95,7 @@ module DSVALUE-READ-PASS-SPEC
        andBool (#rangeAddress(Owner)
        andBool (#rangeBytes(32, Value)
        andBool (#rangeBool(Ok)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#notPrecompileAddress(Owner)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)

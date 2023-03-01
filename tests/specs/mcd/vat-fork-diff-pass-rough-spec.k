@@ -11,7 +11,7 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -106,7 +106,7 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Art_u)
        andBool (#rangeUInt(256, Ink_v)
        andBool (#rangeUInt(256, Art_v)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((ABI_src =/=Int ABI_dst)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)

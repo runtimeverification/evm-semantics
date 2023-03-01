@@ -11,7 +11,7 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -113,7 +113,7 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Can_v)
        andBool (#rangeUInt(256, Can_w)
        andBool (#rangeUInt(256, Live)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((ABI_u =/=Int ABI_v)
        andBool ((ABI_v =/=Int ABI_w)
        andBool ((ABI_u =/=Int ABI_w)

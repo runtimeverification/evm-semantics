@@ -96,7 +96,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
        andBool (#rangeAddress(ABI_usr)
        andBool (#rangeUInt(256, May)
        andBool (#rangeUInt(256, Live)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((CALLER_ID =/=Int ABI_usr)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)

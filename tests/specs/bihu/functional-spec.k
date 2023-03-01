@@ -7,7 +7,7 @@ module FUNCTIONAL-SPEC-SYNTAX
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
 
-    syntax Step ::= ByteArray | Int | Bool
+    syntax Step ::= Bytes | Int | Bool
  // --------------------------------------
 
 endmodule

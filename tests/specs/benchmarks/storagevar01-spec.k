@@ -93,7 +93,7 @@ module STORAGEVAR01-SPEC
             // precompiled account for ECCREC
             <acctID> 1 </acctID>
             <balance> 0 </balance>
-            <code> .ByteArray </code>
+            <code> .Bytes </code>
             <storage> .Map </storage>
             <origStorage> .Map </origStorage>
             <nonce> 0 </nonce>

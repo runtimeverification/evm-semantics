@@ -11,7 +11,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -136,7 +136,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Vat_balance)
        andBool (#rangeUInt(256, Flapper_balance)
        andBool (#rangeUInt(256, Flopper_balance)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Vat))
        andBool ((#notPrecompileAddress(Flapper))
        andBool ((#notPrecompileAddress(Flopper))
@@ -464,7 +464,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
 
        andBool (#rangeAddress(ABI_usr)
        andBool (#rangeUInt(256, Rad)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool ((VCallValue ==Int 0))))))
 
@@ -565,7 +565,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
 
        andBool (#rangeAddress(ABI_usr)
        andBool (#rangeUInt(256, Rad)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool ((VCallValue ==Int 0))))))
 
@@ -582,7 +582,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -669,7 +669,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Sin)
        andBool (#rangeUInt(256, Debt)
        andBool (#rangeUInt(256, Vice)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (#rangeUInt(256, Junk_2)
@@ -705,7 +705,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -803,7 +803,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Dai_a)
        andBool (#rangeUInt(256, Dai_u)
        andBool (#rangeUInt(256, Vat_balance)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Vat))
        andBool ((CALLER_ID =/=Int ACCT_ID)
        andBool (ACCT_ID =/=Int Vat
@@ -850,7 +850,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -935,7 +935,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Ward)
        andBool (#rangeUInt(256, Live)
        andBool (#rangeAddress(Vow)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#notPrecompileAddress(Vow)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)

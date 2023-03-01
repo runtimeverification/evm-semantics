@@ -11,7 +11,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -112,7 +112,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Dai_u)
        andBool (#rangeUInt(256, Dai_p)
        andBool (#rangeUInt(256, Vat_balance)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Vat))
        andBool ((ACCT_ID =/=Int Vat)
        andBool ((ACCT_ID =/=Int CALLER_ID)
@@ -376,7 +376,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -464,7 +464,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Dai_dst)
        andBool (#rangeUInt(256, Dai_src)
        andBool (#rangeUInt(256, May)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((ABI_src =/=Int ABI_dst)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)

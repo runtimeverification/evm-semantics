@@ -334,70 +334,57 @@ A cons-list is used for the EVM wordstack.
 
 ```k
     syntax Bytes ::= "#write" "(" Bytes "," Int "," Int ")" [function]
-                   | "#writeRange" "(" Bytes "," Int "," ByteArray ")" [function, total, klabel(mapWriteRange)]
- // -----------------------------------------------------------------------------------------------------------
+                   | "#writeRange" "(" Bytes "," Int "," Bytes ")" [function, total, klabel(mapWriteRange)]
+ // -------------------------------------------------------------------------------------------------------
     rule #write(WM, IDX, VAL) => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ]
 
-    rule #writeRange(WS, START, WS') => replaceAtBytes(padRightBytes(WS, START +Int #sizeByteArray(WS'), 0), START, WS') requires START >=Int 0 [concrete]
-    rule #writeRange(_ , START, _)   => .Bytes                                                                           requires START  <Int 0 [concrete]
+    rule #writeRange(WS, START, WS') => replaceAtBytes(padRightBytes(WS, START +Int lengthBytes(WS'), 0), START, WS') requires START >=Int 0 [concrete]
+    rule #writeRange(_ , START, _)   => .Bytes                                                                        requires START  <Int 0 [concrete]
 ```
 
-Byte Arrays
------------
-
-The local memory of execution is a byte-array (instead of a word-array).
+Bytes helper functions
+----------------------
 
 -   `#asWord` will interperet a stack of bytes as a single word (with MSB first).
 -   `#asInteger` will interperet a stack of bytes as a single arbitrary-precision integer (with MSB first).
 -   `#asAccount` will interpret a stack of bytes as a single account id (with MSB first).
     Differs from `#asWord` only in that an empty stack represents the empty account, not account zero.
--   `#asByteStack` will split a single word up into a `ByteArray`.
--   `_++_` acts as `ByteArray` append.
+-   `#asByteStack` will split a single word up into a `Bytes`.
+-   `_++_` acts as `Bytes` append.
 -   `#range(WS, N, W)` access the range of `WS` beginning with `N` of width `W`.
--   `#sizeByteArray` calculates the size of a `ByteArray`.
--   `#padToWidth(N, WS)` and `#padRightToWidth` make sure that a `WordStack` is the correct size.
+-   `#padToWidth(N, WS)` and `#padRightToWidth` make sure that a `Bytes` is the correct size.
 
 ```k
-    syntax ByteArray = Bytes
-    syntax ByteArray ::= ".ByteArray" [macro]
- // -----------------------------------------
-    rule .ByteArray => .Bytes
-
-    syntax Int ::= #asWord ( ByteArray ) [function, total, smtlib(asWord)]
- // ----------------------------------------------------------------------
+    syntax Int ::= #asWord ( Bytes ) [function, total, smtlib(asWord)]
+ // ------------------------------------------------------------------
     rule #asWord(WS) => chop(Bytes2Int(WS, BE, Unsigned)) [concrete]
 
-    syntax Int ::= #asInteger ( ByteArray ) [function, total]
- // ---------------------------------------------------------
+    syntax Int ::= #asInteger ( Bytes ) [function, total]
+ // -----------------------------------------------------
     rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned) [concrete]
 
-    syntax Account ::= #asAccount ( ByteArray ) [function]
- // ------------------------------------------------------
+    syntax Account ::= #asAccount ( Bytes ) [function]
+ // --------------------------------------------------
     rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
     rule #asAccount(BS) => #asWord(BS) [owise]
 
-    syntax ByteArray ::= #asByteStack ( Int ) [function, total]
- // -----------------------------------------------------------
+    syntax Bytes ::= #asByteStack ( Int ) [function, total]
+ // -------------------------------------------------------
     rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete]
 
-    syntax ByteArray ::= ByteArray "++" ByteArray [function, total, right, klabel(_++_WS), smtlib(_plusWS_)]
- // --------------------------------------------------------------------------------------------------------
+    syntax Bytes ::= Bytes "++" Bytes [function, total, right, klabel(_++_WS), smtlib(_plusWS_)]
+ // --------------------------------------------------------------------------------------------
     rule WS ++ WS' => WS +Bytes WS' [concrete]
 
-    syntax ByteArray ::= #range ( ByteArray , Int , Int ) [function, total]
- // -----------------------------------------------------------------------
-    rule                  #range(_, START, WIDTH)  => .ByteArray requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
-    rule [bytesRange] :   #range(WS, START, WIDTH) => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH)
-      requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int #sizeByteArray(WS)
-    rule                  #range(_, _, WIDTH)      => padRightBytes(.Bytes, WIDTH, 0) [owise]
+    syntax Bytes ::= #range ( Bytes , Int , Int ) [function, total]
+ // ---------------------------------------------------------------
+    rule                #range(_, START, WIDTH)  => .Bytes                                                                       requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
+    rule [bytesRange] : #range(WS, START, WIDTH) => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int lengthBytes(WS)
+    rule                #range(_, _, WIDTH)      => padRightBytes(.Bytes, WIDTH, 0) [owise]
 
-    syntax Int ::= #sizeByteArray ( ByteArray ) [function, total, klabel(sizeByteArray), smtlib(sizeByteArray)]
- // -----------------------------------------------------------------------------------------------------------
-    rule #sizeByteArray ( WS ) => lengthBytes(WS) [concrete]
-
-    syntax ByteArray ::= #padToWidth      ( Int , ByteArray ) [function, total]
-                       | #padRightToWidth ( Int , ByteArray ) [function, total]
- // ---------------------------------------------------------------------------
+    syntax Bytes ::= #padToWidth      ( Int , Bytes ) [function, total]
+                   | #padRightToWidth ( Int , Bytes ) [function, total]
+ // -------------------------------------------------------------------
     rule                            #padToWidth(N, BS)      =>               BS        requires notBool (N >=Int 0)
     rule [padToWidthNonEmpty]:      #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0
     rule                            #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
@@ -455,8 +442,8 @@ During execution of a transaction some things are recorded in the substate log (
 This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
 
 ```k
-    syntax SubstateLogEntry ::= "{" Int "|" List "|" ByteArray "}" [klabel(logEntry)]
- // ---------------------------------------------------------------------------------
+    syntax SubstateLogEntry ::= "{" Int "|" List "|" Bytes "}" [klabel(logEntry)]
+ // -----------------------------------------------------------------------------
 ```
 
 Transactions
@@ -486,13 +473,11 @@ Productions related to transactions
     syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx
  // --------------------------------------------------------
 
-    syntax LegacyTx     ::= LegacyTxData         ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray )
-                          | LegacyProtectedTxData( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray, chainId: Int )
-    syntax AccessListTx ::= AccessListTxData     ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: ByteArray, chainId: Int, accessLists: JSONs )
-    syntax DynamicFeeTx ::= DynamicFeeTxData     ( nonce : Int , priorityGasFee : Int       , maxGasFee : Int ,    gasLimit :   Int , to : Account
-                                                 , value : Int , data :           ByteArray , chainId   : Int , accessLists : JSONs
-                                                 )
- // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    syntax LegacyTx     ::= LegacyTxData         ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes )
+                          | LegacyProtectedTxData( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int )
+    syntax AccessListTx ::= AccessListTxData     ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs )
+    syntax DynamicFeeTx ::= DynamicFeeTxData     ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)
+ // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 endmodule
 ```

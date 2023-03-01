@@ -11,7 +11,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -124,7 +124,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
        andBool (#rangeBool(Stopped)
        andBool (#rangeUInt(256, Vat_balance)
        andBool (#rangeUInt(256, DSToken_balance)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Vat))
        andBool ((#notPrecompileAddress(DSToken))
        andBool ((#notPrecompileAddress(Owner))
@@ -182,7 +182,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -275,7 +275,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
        andBool (#rangeSInt(256, ABI_wad)
        andBool (#rangeUInt(256, May)
        andBool (#rangeUInt(256, Gem)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (((May ==Int 1))
@@ -386,7 +386,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Gem_u)
        andBool (#rangeAddress(Owner)
        andBool (#rangeBool(Stopped)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Owner))
        andBool ((ABI_usr =/=Int CALLER_ID)
        andBool (#rangeUInt(256, Junk_0)
