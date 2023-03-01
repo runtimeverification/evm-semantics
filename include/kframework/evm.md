@@ -130,8 +130,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <acctID>      0                      </acctID>
                 <balance>     0                      </balance>
                 <code>        .ByteArray:AccountCode </code>
-                <storage>     .Map                   </storage>
-                <origStorage> .Map                   </origStorage>
+                <storage>     (.Map):Storage         </storage>
+                <origStorage> (.Map):Storage         </origStorage>
                 <nonce>       0                      </nonce>
               </account>
             </accounts>
@@ -247,6 +247,20 @@ The `interimStates` cell stores a list of previous world states.
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
     rule <k> #dropWorldState => . ... </k> <interimStates> (ListItem(_) => .List) ... </interimStates>
+
+
+    syntax InternalOp ::= "#commitStorage"
+    rule <k> #commitStorage => #commitStorage(Set2List(ACCTS)) ... </k> 
+    <activeAccounts> ACCTS </activeAccounts>
+
+    syntax InternalOp ::= "#commitStorage" "(" List ")"
+    rule <k> #commitStorage(.List) => . ... </k>
+    rule <k> #commitStorage(ListItem(ACCT) REST:List) => #commitStorage(REST) ... </k>
+    <account>
+      <acctID> ACCT </acctID>
+      <storage> STORAGE => #resolveWrites(STORAGE) </storage>
+      ...
+    </account>
 ```
 
 Control Flow
@@ -1240,7 +1254,8 @@ These rules reach into the network state and load/store from account storage:
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
-           <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
+//           <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
+           <storage> STORAGE => #write(STORAGE, INDEX, NEW) </storage>
            ...
          </account>
 ```
@@ -1423,7 +1438,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule [return.success]:
          <statusCode> EVMC_SUCCESS </statusCode>
          <k> #halt ~> #return RETSTART RETWIDTH
-          => #popCallStack ~> #dropWorldState
+          => #popCallStack ~> #dropWorldState ~> #commitStorage
           ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
          </k>
@@ -1576,7 +1591,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
       requires notBool ( #sizeByteArray(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED) )
 
     rule <k> #finishCodeDeposit ACCT OUT
-          => #popCallStack ~> #dropWorldState
+          => #popCallStack ~> #dropWorldState ~> #commitStorage
           ~> #refund GAVAIL ~> ACCT ~> #push
          ...
          </k>
@@ -1589,7 +1604,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> #halt ~> #finishCodeDeposit ACCT _
-          => #popCallStack ~> #dropWorldState
+          => #popCallStack ~> #dropWorldState ~> #commitStorage
           ~> #refund GAVAIL ~> ACCT ~> #push
          ...
          </k>

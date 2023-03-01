@@ -165,7 +165,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </message>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
-         <k> #halt ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
+         <k> #halt ~> #finishTx => #popCallStack ~> #dropWorldState ~> #commitStorage ~> #refund GAVAIL ... </k>
          <gas> GAVAIL </gas>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
@@ -403,7 +403,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
            ...
          </account>
 
-    rule <k> check "account" : { ACCT : { "storage" : (STORAGE:Map) } } => . ... </k>
+    rule <k> check "account" : { ACCT : { "storage" : (STORAGE) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <storage> ACCTSTORAGE </storage>

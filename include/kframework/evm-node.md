@@ -302,7 +302,7 @@ This minimizes the amount of information which must be stored in the configurati
          <gas> GAVAIL </gas>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
-         <k> #halt ~> #endVM => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ~> 1 </k>
+         <k> #halt ~> #endVM => #popCallStack ~> #dropWorldState ~> #commitStorage ~> #refund GAVAIL ~> 1 </k>
          <gas> GAVAIL </gas>
 
     rule <k> #endCreate => W ... </k> <wordStack> W : _WS </wordStack>

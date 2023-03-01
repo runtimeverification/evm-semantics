@@ -448,18 +448,34 @@ Storage/Memory Lookup
 `#lookup*` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
-    syntax Int ::= #lookup        ( Map , Int ) [function, total, smtlib(lookup)]
-                 | #lookupMemory  ( Map , Int ) [function, total, smtlib(lookupMemory)]
- // -----------------------------------------------------------------------------------
-    rule [#lookup.some]:         #lookup(       (KEY |-> VAL:Int) _M, KEY ) => VAL modInt pow256
-    rule [#lookup.none]:         #lookup(                          M, KEY ) => 0                 requires notBool KEY in_keys(M)
-    //Impossible case, for completeness
-    rule [#lookup.notInt]:       #lookup(       (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
+    syntax Storage ::= Map | #write(Storage, Int , Int)
 
-    rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) _M, KEY ) => VAL modInt 256
-    rule [#lookupMemory.none]:   #lookupMemory(                    M, KEY ) => 0                 requires notBool KEY in_keys(M)
+    syntax Int ::= #lookup        ( Storage , Int ) [function, total, smtlib(lookup)]
+                 | #lookupMemory  ( Map     , Int ) [function, total, smtlib(lookupMemory)]
+ // -----------------------------------------------------------------------------------
+    rule [#lookup.some]:          #lookup(       (KEY |-> VAL:Int) _M,  KEY   ) => VAL modInt pow256
+    rule [#lookup.none]:          #lookup(                          M,  KEY   ) => 0                 requires notBool KEY in_keys(M)
     //Impossible case, for completeness
-    rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
+    rule [#lookup.notInt]:        #lookup(       (KEY |-> VAL    ) _M,  KEY   ) => 0                 requires notBool isInt(VAL)
+
+    rule [#lookup.writeFound]:    #lookup(       #write( _M, KEY ,  VAL), KEY ) => VAL
+    rule [#lookup.writeNotFound]: #lookup(       #write(  M, KEY', _VAL), KEY ) => #lookup(M, KEY)   requires KEY =/=K KEY'
+
+
+    rule [#lookupMemory.some]:    #lookupMemory( (KEY |-> VAL:Int) _M,   KEY  ) => VAL modInt 256
+    rule [#lookupMemory.none]:    #lookupMemory(                    M,   KEY  ) => 0                 requires notBool KEY in_keys(M)
+    //Impossible case, for completeness
+    rule [#lookupMemory.notInt]:  #lookupMemory( (KEY |-> VAL    ) _M,   KEY  ) => 0                 requires notBool isInt(VAL)
+```
+
+Transactional storage resolution
+--------------------------------
+
+```k
+    syntax Map ::= #resolveWrites(Storage) [function, total]
+
+    rule #resolveWrites(M:Map) => M
+    rule #resolveWrites(#write(M, KEY, VAL)) => #resolveWrites( M ) [ KEY <- VAL ] 
 ```
 
 Substate Log
