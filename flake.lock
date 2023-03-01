@@ -66,17 +66,17 @@
         "xbyak": "xbyak"
       },
       "locked": {
-        "lastModified": 1675071259,
-        "narHash": "sha256-HPvxI0gEeP0MtD/DUx4+jrx7ezVcD+6QzQHYrhxMapc=",
+        "lastModified": 1677657680,
+        "narHash": "sha256-Bn082LKBOKkLBoaqvIL9Vwj9YB/aouGPW+7mkxIqR0A=",
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "a7e73097038750e8aa85c90f44a5c2cf82a2e427",
+        "rev": "da31c9f4965ffe0a8efc73985011ae6fc9393b93",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "a7e73097038750e8aa85c90f44a5c2cf82a2e427",
+        "rev": "da31c9f4965ffe0a8efc73985011ae6fc9393b93",
         "type": "github"
       }
     },
@@ -645,16 +645,16 @@
         "rv-utils": "rv-utils"
       },
       "locked": {
-        "lastModified": 1676543226,
-        "narHash": "sha256-DVYKrfAwrdyF0uiyG1dl7iVd7v1UWGGzcb1lNM8Erv8=",
+        "lastModified": 1677104749,
+        "narHash": "sha256-Sjh+gOz8cbpXwa+01fiSiRf4lvfpJZKQh62R8rqQIqU=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "b45441ceea3226464efcf0b0b73513ccb8cb679b",
+        "rev": "e869d30d15375d6fa7857fc174aab9bc61f73f5a",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v5.5.97",
+        "ref": "v5.5.106",
         "repo": "k",
         "type": "github"
       }
@@ -691,11 +691,11 @@
         "utils": "utils_3"
       },
       "locked": {
-        "lastModified": 1676503502,
-        "narHash": "sha256-UduhYYS95KNhzQ9yuhbA2v5a7iS8PJ1wA+kABn4sSvg=",
+        "lastModified": 1676905388,
+        "narHash": "sha256-mwC4PGqoe7FrUlcdDYaBYq2zESMhqN7Is9lPC8kI3Is=",
         "owner": "runtimeverification",
         "repo": "llvm-backend",
-        "rev": "727afa795d138d5c9c990ab7b32103d5589356ae",
+        "rev": "98774715e592a02d70029985cfdab9b4f5214d61",
         "type": "github"
       },
       "original": {
