@@ -31,7 +31,6 @@ class Foundry(KEVM):
         definition_dir: Path,
         main_file: Optional[Path] = None,
         use_directory: Optional[Path] = None,
-        profile: bool = False,
         extra_unparsing_modules: Iterable[KFlatModule] = (),
         bug_report: Optional[BugReport] = None,
     ) -> None:
@@ -41,7 +40,6 @@ class Foundry(KEVM):
             definition_dir,
             main_file=main_file,
             use_directory=use_directory,
-            profile=profile,
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
         )
@@ -106,7 +104,6 @@ class Foundry(KEVM):
 
 def foundry_kompile(
     definition_dir: Path,
-    profile: bool,
     foundry_out: Path,
     includes: Iterable[str],
     md_selector: Optional[str],
@@ -141,7 +138,7 @@ def foundry_kompile(
             smf.write(json.dumps(c.srcmap))
             _LOGGER.info(f'Wrote source map: {srcmap_file}')
 
-    foundry = Foundry(definition_dir, profile=profile)
+    foundry = Foundry(definition_dir)
     empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
 
     if regen or not foundry_main_file.exists():
@@ -156,7 +153,7 @@ def foundry_kompile(
             _LOGGER.info(f'Writing file: {foundry_main_file}')
             _foundry = Foundry(
                 definition_dir=definition_dir,
-                extra_unparsing_modules=bin_runtime_definition.modules,
+                extra_unparsing_modules=bin_runtime_definition.all_modules,
             )
             fmf.write(_foundry.pretty_print(bin_runtime_definition) + '\n')
 
@@ -171,7 +168,6 @@ def foundry_kompile(
             main_module_name=main_module,
             syntax_module_name=syntax_module,
             md_selector=md_selector,
-            profile=profile,
             debug=debug,
             ccopts=ccopts,
             llvm_kompile=llvm_kompile,
@@ -179,7 +175,6 @@ def foundry_kompile(
 
 
 def foundry_prove(
-    profile: bool,
     foundry_out: Path,
     max_depth: int = 100,
     max_iterations: Optional[int] = None,
@@ -205,7 +200,7 @@ def foundry_prove(
     if not kcfgs_dir.exists():
         kcfgs_dir.mkdir()
     br = BugReport(foundry_out / 'bug_report') if bug_report else None
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
+    foundry = Foundry(definition_dir, use_directory=use_directory, bug_report=br)
 
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
@@ -292,7 +287,6 @@ def foundry_prove(
 
 
 def foundry_show(
-    profile: bool,
     foundry_out: Path,
     test: str,
     nodes: Iterable[str] = (),
@@ -307,7 +301,7 @@ def foundry_show(
     contract = test.split('.')[0]
     srcmap_dir = foundry_out / 'srcmaps'
     srcmap_file = srcmap_dir / f'{contract}.json'
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
+    foundry = Foundry(definition_dir, use_directory=use_directory)
     srcmap: Optional[Dict[int, str]] = None
     if srcmap_file.exists():
         with open(srcmap_file, 'r') as sm:
@@ -395,7 +389,6 @@ def foundry_to_dot(
 
 
 def foundry_list(
-    profile: bool,
     foundry_out: Path,
     details: bool = True,
 ) -> None:
@@ -423,7 +416,7 @@ def foundry_list(
             print()
 
 
-def foundry_remove_node(foundry_out: Path, test: str, node: str, profile: bool) -> None:
+def foundry_remove_node(foundry_out: Path, test: str, node: str) -> None:
     kcfgs_dir = foundry_out / 'kcfgs'
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
@@ -439,7 +432,6 @@ def foundry_simplify_node(
     foundry_out: Path,
     test: str,
     node: str,
-    profile: bool,
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
@@ -449,7 +441,7 @@ def foundry_simplify_node(
     kcfgs_dir = foundry_out / 'kcfgs'
     use_directory.mkdir(parents=True, exist_ok=True)
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
+    foundry = Foundry(definition_dir, use_directory=use_directory, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
@@ -468,7 +460,6 @@ def foundry_step_node(
     foundry_out: Path,
     test: str,
     node: str,
-    profile: bool,
     repeat: int = 1,
     depth: int = 1,
     minimize: bool = True,
@@ -483,7 +474,7 @@ def foundry_step_node(
     kcfgs_dir = foundry_out / 'kcfgs'
     use_directory.mkdir(parents=True, exist_ok=True)
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
+    foundry = Foundry(definition_dir, use_directory=use_directory, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
@@ -498,7 +489,6 @@ def foundry_section_edge(
     foundry_out: Path,
     test: str,
     edge: Tuple[str, str],
-    profile: bool,
     sections: int = 2,
     replace: bool = False,
     minimize: bool = True,
@@ -509,7 +499,7 @@ def foundry_section_edge(
     kcfgs_dir = foundry_out / 'kcfgs'
     use_directory.mkdir(parents=True, exist_ok=True)
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory, bug_report=br)
+    foundry = Foundry(definition_dir, use_directory=use_directory, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
