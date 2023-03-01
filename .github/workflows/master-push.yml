@@ -29,13 +29,14 @@ jobs:
         run: brew install bash
       - name: 'Install Nix'
         if: ${{ !startsWith(matrix.os, 'self') }}
-        uses: cachix/install-nix-action@v15
+        uses: cachix/install-nix-action@v19
         with:
+          install_url: https://releases.nixos.org/nix/nix-2.13.3/install
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       - name: 'Install Cachix'
         if: ${{ !startsWith(matrix.os, 'self') }}
-        uses: cachix/cachix-action@v10
+        uses: cachix/cachix-action@v12
         with:
           name: k-framework
           signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
