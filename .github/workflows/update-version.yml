@@ -59,7 +59,7 @@ jobs:
       - uses: cachix/cachix-action@v12
         with:
           name: k-framework
-          authToken: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
+          authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
       - name: 'Update nix flake inputs'
         run: |
           k_version=$(cat deps/k_release)
