@@ -169,10 +169,6 @@ module LEMMAS-MCD-COMMON
   // Buffer Reasoning
   // ########################
 
-    rule #range((W0 : WS), 0    , WIDTH) => W0 : #range((WS, 0, WIDTH -Int 1 ))  requires 0 <Int WIDTH [simplification]
-    rule #range((_  : WS), START, WIDTH) => #range(WS, START -Int 1, WIDTH )     requires 0 <Int START [simplification]
-
-    rule #range(#range(WS, START, WIDTH), 0, WIDTH')  => #range(WS, START, WIDTH')  requires WIDTH' <=Int WIDTH [simplification]
 
     // ### cat-exhaustiveness
 
@@ -317,12 +313,6 @@ module LEMMAS-MCD-COMMON
                                                                                         orBool K +Int #sizeByteArray(BUF) <=Int K' [simplification]
 
     rule M [ K <- V ] => M requires #lookup(M, K) ==Int V [simplification]
-
-    rule M:Memory [ K := BUF:ByteArray ] [ K' := BUF':ByteArray ] => M [ K := (#range(BUF, 0, K' -Int K )) ] [ K' := BUF' ]
-      requires K <Int K'
-       andBool K' <Int K +Int #sizeByteArray(BUF)
-       andBool K +Int #sizeByteArray(BUF) <Int K' +Int #sizeByteArray(BUF')
-      [simplification]
 
     rule M:Map [ K1 <- _ ] [ K2 <- V2 ] [ K1 <- V1' ] => M [ K1 <- V1' ] [ K2 <- V2 ] requires K1 =/=Int K2 [simplification]
 
