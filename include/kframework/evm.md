@@ -250,9 +250,9 @@ The `interimStates` cell stores a list of previous world states.
 
 
     syntax InternalOp ::= "#commitStorage"
-    rule <k> #commitStorage => #commitStorage(Set2List(ACCTS)) ... </k> 
-    <activeAccounts> ACCTS </activeAccounts>
-//    <accessedStorage> TS </accessedStorage>
+    rule <k> #commitStorage => #commitStorage(Set2List(keys(TS))) ... </k> 
+//    <activeAccounts> ACCTS </activeAccounts>
+    <accessedStorage> TS </accessedStorage>
 
     syntax InternalOp ::= "#commitStorage" "(" List ")"
     rule <k> #commitStorage(.List) => . ... </k>
@@ -1860,7 +1860,8 @@ Overall Gas
     rule <k> #gas [ OP , AOP ]
           => #if #usesMemory(OP) #then #memory [ AOP ] #else .K #fi
           ~> #gas [ AOP ]
-          ~> #if Ghasaccesslist << SCHED >> andBool #usesAccessList(OP) #then #access [ AOP ] #else .K #fi
+//          ~> #if Ghasaccesslist << SCHED >> andBool #usesAccessList(OP) #then #access [ AOP ] #else .K #fi
+          ~> #if #usesAccessList(OP) #then #access [ AOP ] #else .K #fi
          ...
         </k>
         <schedule> SCHED </schedule>
