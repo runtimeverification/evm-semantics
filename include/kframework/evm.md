@@ -252,6 +252,7 @@ The `interimStates` cell stores a list of previous world states.
     syntax InternalOp ::= "#commitStorage"
     rule <k> #commitStorage => #commitStorage(Set2List(ACCTS)) ... </k> 
     <activeAccounts> ACCTS </activeAccounts>
+//    <accessedStorage> TS </accessedStorage>
 
     syntax InternalOp ::= "#commitStorage" "(" List ")"
     rule <k> #commitStorage(.List) => . ... </k>
