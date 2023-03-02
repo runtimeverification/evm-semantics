@@ -11,7 +11,7 @@ module DSVALUE-PEEK-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> _ => #buf(32, Value) ++ #buf(32, Ok) </output>
+          <output> _ => #buf(32, Value) +Bytes #buf(32, Ok) </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -21,7 +21,7 @@ module DSVALUE-PEEK-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(DSValue_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("peek", .TypedArgs) ++ CD => ?_ </callData>
+            <callData> #abiCallData("peek", .TypedArgs) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>

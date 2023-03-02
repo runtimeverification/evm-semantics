@@ -21,7 +21,7 @@ module FLIPPER-TAU-PASS-SPEC
             <jumpDests> #computeValidJumpDests(Flipper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("tau", .TypedArgs) ++ CD => ?_ </callData>
+            <callData> #abiCallData("tau", .TypedArgs) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>

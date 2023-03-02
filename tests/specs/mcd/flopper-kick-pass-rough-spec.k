@@ -21,7 +21,7 @@ module FLOPPER-KICK-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Flopper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("kick", #address(ABI_gal), #uint256(ABI_lot), #uint256(ABI_bid)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("kick", #address(ABI_gal), #uint256(ABI_lot), #uint256(ABI_bid)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>

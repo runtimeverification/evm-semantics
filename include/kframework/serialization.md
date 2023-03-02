@@ -202,7 +202,7 @@ We need to interperet a `Bytes` as a `String` again so that we can call `Keccak2
  // ------------------------------------------------------------
     rule #unparseData( DATA, LENGTH ) => #unparseDataBytes(#padToWidth(LENGTH,#asByteStack(DATA)))
 
-    rule #unparseDataBytes( DATA ) => replaceFirst(Base2String(#asInteger(#asByteStack(1) ++ DATA), 16), "1", "0x")
+    rule #unparseDataBytes( DATA ) => replaceFirst(Base2String(#asInteger(#asByteStack(1) +Bytes DATA), 16), "1", "0x")
 ```
 
 - `#addrBytes` Takes an Account and represents it as a 20-byte wide Bytes (or an empty Bytes for a null address)
@@ -522,8 +522,8 @@ Merkle Patricia Tree
     rule MerkleCheck( MerkleBranch( M => #cleanBranchMap(M), _  )                                                        ) requires .MerkleTree in values(M)
 
     rule MerkleCheck( MerkleExtension( _, .MerkleTree                                      ) => .MerkleTree               )
-    rule MerkleCheck( MerkleExtension( P1, MerkleLeaf( P2, V )                             ) => MerkleLeaf( P1 ++ P2, V ) )
-    rule MerkleCheck( MerkleExtension( P1 => P1 ++ P2, MerkleExtension( P2, TREE ) => TREE )                              )
+    rule MerkleCheck( MerkleExtension( P1, MerkleLeaf( P2, V )                             ) => MerkleLeaf( P1 +Bytes P2, V ) )
+    rule MerkleCheck( MerkleExtension( P1 => P1 +Bytes P2, MerkleExtension( P2, TREE ) => TREE )                              )
 ```
 
 - `MerkleUpdateMap` Takes a mapping of `Bytes |-> String` and generates a trie
@@ -546,25 +546,25 @@ Merkle Tree Aux Functions
     syntax Bytes ::= #nibbleize ( Bytes ) [function]
                    | #byteify   ( Bytes ) [function]
  // ------------------------------------------------
-    rule #nibbleize ( B ) => (      #range( #asByteStack ( B [ 0 ] /Int 16 ), 0, 1 )
-                               ++ ( #range( #asByteStack ( B [ 0 ] %Int 16 ), 0, 1 ) )
-                             ) ++ #nibbleize ( #range(B, 1, lengthBytes(B) -Int 1) )
+    rule #nibbleize ( B ) => (          #range( #asByteStack ( B [ 0 ] /Int 16 ), 0, 1 )
+                               +Bytes ( #range( #asByteStack ( B [ 0 ] %Int 16 ), 0, 1 ) )
+                             ) +Bytes #nibbleize ( #range(B, 1, lengthBytes(B) -Int 1) )
       requires lengthBytes(B) >Int 0
 
     rule #nibbleize ( B ) => .Bytes requires notBool lengthBytes(B) >Int 0
 
     rule #byteify ( B ) =>    #range( #asByteStack ( B[0] *Int 16 +Int B[1] ), 0, 1 )
-                           ++ #byteify ( #range( B, 2, lengthBytes(B) -Int 2 ) )
+                       +Bytes #byteify ( #range( B, 2, lengthBytes(B) -Int 2 ) )
       requires lengthBytes(B) >Int 0
 
     rule #byteify ( B ) => .Bytes requires notBool lengthBytes(B) >Int 0
 
     syntax Bytes ::= #HPEncode ( Bytes, Int ) [function]
  // ----------------------------------------------------
-    rule #HPEncode ( X, T ) => #asByteStack ( ( HPEncodeAux(T) +Int 1 ) *Int 16 +Int X[0] ) ++ #byteify( #range(X, 1, lengthBytes(X) -Int 1) )
+    rule #HPEncode ( X, T ) => #asByteStack ( ( HPEncodeAux(T) +Int 1 ) *Int 16 +Int X[0] ) +Bytes #byteify( #range(X, 1, lengthBytes(X) -Int 1) )
       requires lengthBytes(X) %Int 2 =/=Int 0
 
-    rule #HPEncode ( X, T ) => #range(#asByteStack ( HPEncodeAux(T) *Int 16 ), 0, 1) ++ #byteify( X )
+    rule #HPEncode ( X, T ) => #range(#asByteStack ( HPEncodeAux(T) *Int 16 ), 0, 1) +Bytes #byteify( X )
       requires notBool lengthBytes(X) %Int 2 =/=Int 0
 
     syntax Int ::= HPEncodeAux ( Int ) [function]
@@ -602,7 +602,7 @@ Merkle Tree Aux Functions
       [owise]
 
     rule #merkleExtensionBuilderAux( PATH, P1, V1, P2, V2 )
-      => #merkleExtensionBuilder( PATH ++ (#range(P1, 0, 1))
+      => #merkleExtensionBuilder( PATH +Bytes (#range(P1, 0, 1))
                                 , #range(P1, 1, lengthBytes(P1) -Int 1), V1
                                 , #range(P2, 1, lengthBytes(P2) -Int 1), V2
                                 )
@@ -624,7 +624,7 @@ Merkle Tree Aux Functions
 
     syntax MerkleTree ::= #merkleExtensionSplitter ( Bytes, Bytes, MerkleTree, Bytes, String ) [function]
  // -----------------------------------------------------------------------------------------------------
-    rule #merkleExtensionSplitter( PATH => PATH ++ (#range(P1, 0, 1))
+    rule #merkleExtensionSplitter( PATH => PATH +Bytes (#range(P1, 0, 1))
                                  , P1   => #range(P1, 1, lengthBytes(P1) -Int 1), _
                                  , P2   => #range(P2, 1, lengthBytes(P2) -Int 1), _
                                  )

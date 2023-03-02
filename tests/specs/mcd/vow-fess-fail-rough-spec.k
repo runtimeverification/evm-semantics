@@ -21,7 +21,7 @@ module VOW-FESS-FAIL-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Vow_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("fess", #uint256(ABI_tab)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("fess", #uint256(ABI_tab)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>

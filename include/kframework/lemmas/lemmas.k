@@ -99,10 +99,6 @@ module LEMMAS [symbolic]
       requires I1 =/=Int I2
       [simplification]
 
-    // TODO: custom ==K unification doesn't work in Haskell yet
-    // ++ unification
-    rule #buf(N, A) ++ BUF1 ==K #buf(N, B) ++ BUF2 => #buf(N, A) ==K #buf(N, B) andBool BUF1 ==K BUF2     [simplification]
-
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
 
     rule #asWord(#padRightToWidth(32, BUF)) &Int notMaxUInt224 =>
@@ -257,9 +253,4 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule B ==Bool false => notBool B [simplification]
 
-    rule #range(A ++ _B, START, LENGTH) => #range(A, START, LENGTH)
-      requires START +Int LENGTH <=Int lengthBytes(A) [simplification]
-
-    rule #range(A ++ B, START, LENGTH) => #range(B, START -Int lengthBytes(A), LENGTH)
-      requires lengthBytes(A) <=Int START [simplification]
 endmodule

@@ -21,7 +21,7 @@ module FLIPPER-TTL-PASS-SPEC
             <jumpDests> #computeValidJumpDests(Flipper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("ttl", .TypedArgs) ++ CD => ?_ </callData>
+            <callData> #abiCallData("ttl", .TypedArgs) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>

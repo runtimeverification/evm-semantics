@@ -21,7 +21,7 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(DSToken_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("approve", #address(ABI_usr), #uint256(ABI_wad)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("approve", #address(ABI_usr), #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>

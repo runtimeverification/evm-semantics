@@ -21,7 +21,7 @@ module FLOPPER-CAGE-PASS-SPEC
             <jumpDests> #computeValidJumpDests(Flopper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("cage", .TypedArgs) ++ CD => ?_ </callData>
+            <callData> #abiCallData("cage", .TypedArgs) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>

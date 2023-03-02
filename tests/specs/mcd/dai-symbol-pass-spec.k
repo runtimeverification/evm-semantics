@@ -21,7 +21,7 @@ module DAI-SYMBOL-PASS-SPEC
             <jumpDests> #computeValidJumpDests(Dai_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("symbol", .TypedArgs) ++ CD => ?_ </callData>
+            <callData> #abiCallData("symbol", .TypedArgs) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>

@@ -21,7 +21,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Vow_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("flog", #uint256(ABI_t)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("flog", #uint256(ABI_t)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>

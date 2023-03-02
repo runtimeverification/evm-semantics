@@ -21,7 +21,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Flopper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("tick", #uint256(ABI_id)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("tick", #uint256(ABI_id)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>

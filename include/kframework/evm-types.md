@@ -233,7 +233,7 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax Bytes ::= Int ":" Bytes [function]
  // -----------------------------------------
-    rule I : BS => Int2Bytes(1, I, BE) ++ BS requires I <Int 256
+    rule I : BS => Int2Bytes(1, I, BE) +Bytes BS requires I <Int 256
 ```
 
 -   `#take(N , WS)` keeps the first `N` elements of a `WordStack` (passing with zeros as needed).
@@ -257,10 +257,10 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax Bytes ::= #take ( Int , Bytes ) [klabel(takeBytes), function, total]
  // ---------------------------------------------------------------------------
-    rule #take(N, _BS:Bytes) => .Bytes                                      requires                                        notBool N >Int 0
-    rule #take(N,  BS:Bytes) => #padRightToWidth(N, .Bytes)                 requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
-    rule #take(N,  BS:Bytes) => BS ++ #take(N -Int lengthBytes(BS), .Bytes) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
-    rule #take(N,  BS:Bytes) => #range(BS, 0, N)                            requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
+    rule #take(N, _BS:Bytes) => .Bytes                                          requires                                        notBool N >Int 0
+    rule #take(N,  BS:Bytes) => #padRightToWidth(N, .Bytes)                     requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
+    rule #take(N,  BS:Bytes) => BS +Bytes #take(N -Int lengthBytes(BS), .Bytes) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
+    rule #take(N,  BS:Bytes) => #range(BS, 0, N)                                requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
 
     syntax Bytes ::= #drop ( Int , Bytes ) [klabel(dropBytes), function, total]
  // ---------------------------------------------------------------------------
@@ -350,7 +350,6 @@ Bytes helper functions
 -   `#asAccount` will interpret a stack of bytes as a single account id (with MSB first).
     Differs from `#asWord` only in that an empty stack represents the empty account, not account zero.
 -   `#asByteStack` will split a single word up into a `Bytes`.
--   `_++_` acts as `Bytes` append.
 -   `#range(WS, N, W)` access the range of `WS` beginning with `N` of width `W`.
 -   `#padToWidth(N, WS)` and `#padRightToWidth` make sure that a `Bytes` is the correct size.
 
@@ -371,10 +370,6 @@ Bytes helper functions
     syntax Bytes ::= #asByteStack ( Int ) [function, total]
  // -------------------------------------------------------
     rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete]
-
-    syntax Bytes ::= Bytes "++" Bytes [function, total, right, klabel(_++_WS), smtlib(_plusWS_)]
- // --------------------------------------------------------------------------------------------
-    rule WS ++ WS' => WS +Bytes WS' [concrete]
 
     syntax Bytes ::= #range ( Bytes , Int , Int ) [function, total]
  // ---------------------------------------------------------------

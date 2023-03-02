@@ -79,7 +79,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax Bytes ::= #abiCallData ( String , TypedArgs ) [function]
  // ---------------------------------------------------------------
-    rule #abiCallData( FNAME , ARGS ) => #signatureCallData(FNAME, ARGS) ++ #encodeArgs(ARGS)
+    rule #abiCallData( FNAME , ARGS ) => #signatureCallData(FNAME, ARGS) +Bytes #encodeArgs(ARGS)
 
     syntax Bytes ::= #signatureCallData ( String, TypedArgs ) [function]
  // --------------------------------------------------------------------
@@ -150,14 +150,14 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
  // ------------------------------------------------------------------------------
     rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .Bytes, .Bytes)
 
-    rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS ++ TAILS
+    rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS +Bytes TAILS
 
     rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
-        => #encodeArgsAux(ARGS, OFFSET, HEADS ++ #enc(ARG), TAILS)
+        => #encodeArgsAux(ARGS, OFFSET, HEADS +Bytes #enc(ARG), TAILS)
       requires #isStaticType(ARG)
 
     rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
-        => #encodeArgsAux(ARGS, OFFSET +Int #sizeOfDynamicType(ARG), HEADS ++ #enc(#uint256(OFFSET)), TAILS ++ #enc(ARG))
+        => #encodeArgsAux(ARGS, OFFSET +Int #sizeOfDynamicType(ARG), HEADS +Bytes #enc(#uint256(OFFSET)), TAILS +Bytes #enc(ARG))
       requires notBool(#isStaticType(ARG))
 
     syntax Int ::= #lenOfHeads ( TypedArgs ) [function, total]
@@ -332,12 +332,12 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     // dynamic Type
     rule #enc(        #bytes(BS)) => #encBytes(lengthBytes(BS), BS)
-    rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) ++ #encodeArgs(DATA)
+    rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) +Bytes #encodeArgs(DATA)
     rule #enc(      #string(STR)) => #enc(#bytes(#parseByteStackRaw(STR)))
 
     syntax Bytes ::= #encBytes ( Int , Bytes ) [function]
  // -----------------------------------------------------
-    rule #encBytes(N, BS) => #enc(#uint256(N)) ++ BS ++ #bufStrict(#ceil32(N) -Int N, 0)
+    rule #encBytes(N, BS) => #enc(#uint256(N)) +Bytes BS +Bytes #bufStrict(#ceil32(N) -Int N, 0)
 ```
 
 ```k

@@ -1785,7 +1785,7 @@ Precompiled Contracts
 
     syntax Bytes ::= #point ( G1Point ) [function]
  // ----------------------------------------------
-    rule #point((X, Y)) => #padToWidth(32, #asByteStack(X)) ++ #padToWidth(32, #asByteStack(Y))
+    rule #point((X, Y)) => #padToWidth(32, #asByteStack(X)) +Bytes #padToWidth(32, #asByteStack(Y))
 
     syntax PrecompiledOp ::= "ECPAIRING"
  // ------------------------------------

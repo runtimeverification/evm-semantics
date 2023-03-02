@@ -45,9 +45,7 @@ module VERIFICATION
 
     syntax Bytes ::= #abiCallData2 ( String , TypedArgs ) [function]
 
-    rule #abiCallData2(FSIG, ARGS)
-      => #parseByteStack(substrString(Keccak256(FSIG), 0, 8))
-      ++ #encodeArgs(ARGS)
+    rule #abiCallData2(FSIG, ARGS) => #parseByteStack(substrString(Keccak256(FSIG), 0, 8)) +Bytes #encodeArgs(ARGS)
 
     rule chop(I) => 0 requires I ==Int pow256 [simplification]
 
@@ -63,9 +61,6 @@ module VERIFICATION
   // ########################
   // Buffer Reasoning
   // ########################
-
-    // ++-associativity
-    rule ( WS1 ++ WS2 ) ++ WS3 => WS1 ++ ( WS2 ++ WS3 ) [simplification]
 
     rule #sizeWordStack(WS, N) <Int SIZE => #sizeWordStack(WS, 0) +Int N <Int SIZE  requires N =/=Int 0 [simplification]
 
@@ -138,8 +133,6 @@ module VERIFICATION-HASKELL [symbolic, kore]
   // ########################
   // Buffer Reasoning
   // ########################
-
-    rule BA1 ++ (BA2 ++ BA3) => (BA1 ++ BA2) ++ BA3 [concrete(BA1, BA2), simplification]
 
     rule maxUInt160 &Int Y => Y requires 0 <=Int Y andBool Y <=Int maxUInt160 [simplification]
 

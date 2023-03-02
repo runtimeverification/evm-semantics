@@ -119,7 +119,6 @@ class KEVM(KProve, KRun):
             '_|->_',
             '#And',
             '_andBool_',
-            '_++__EVM-TYPES_Bytes_Bytes_Bytes',
             '_[_.._]_EVM-TYPES_Bytes_Bytes_Int_Int',
             '_[_]_EVM-TYPES_Int_WordStack_Int',
             '_:__EVM-TYPES_WordStack_Int_WordStack',
@@ -375,10 +374,6 @@ class KEVM(KProve, KRun):
     @staticmethod
     def empty_typedargs() -> KApply:
         return KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
-
-    @staticmethod
-    def bytes_append(b1: KInner, b2: KInner) -> KApply:
-        return KApply('_++__EVM-TYPES_Bytes_Bytes_Bytes', [b1, b2])
 
     @staticmethod
     def account_cell(

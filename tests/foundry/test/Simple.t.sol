@@ -47,4 +47,11 @@ contract AssertTest is Test {
             assert(false);
         }
     }
+
+    function test_assume_limit(uint x, address y, address z) public{
+        vm.assume (x==4);
+        vm.assume (y == address(65));
+        vm.assume (z == address(1));
+        assert(x == 4);
+    }
 }

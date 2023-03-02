@@ -21,7 +21,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Cat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("file", #bytes32(ABI_what), #address(ABI_data)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("file", #bytes32(ABI_what), #address(ABI_data)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>
