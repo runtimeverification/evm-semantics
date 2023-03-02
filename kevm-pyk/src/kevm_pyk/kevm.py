@@ -40,7 +40,6 @@ class KEVM(KProve, KRun):
         definition_dir: Path,
         main_file: Optional[Path] = None,
         use_directory: Optional[Path] = None,
-        profile: bool = False,
         kprove_command: str = 'kprove',
         krun_command: str = 'krun',
         extra_unparsing_modules: Iterable[KFlatModule] = (),
@@ -57,7 +56,6 @@ class KEVM(KProve, KRun):
             definition_dir,
             use_directory=use_directory,
             main_file=main_file,
-            profile=profile,
             command=kprove_command,
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
@@ -66,7 +64,6 @@ class KEVM(KProve, KRun):
             self,
             definition_dir,
             use_directory=use_directory,
-            profile=profile,
             command=krun_command,
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
@@ -92,7 +89,6 @@ class KEVM(KProve, KRun):
         main_module_name: Optional[str] = None,
         syntax_module_name: Optional[str] = None,
         md_selector: Optional[str] = None,
-        profile: bool = False,
         debug: bool = False,
         ccopts: Iterable[str] = (),
         llvm_kompile: bool = True,
@@ -114,7 +110,6 @@ class KEVM(KProve, KRun):
                 ccopts=ccopts,
                 no_llvm_kompile=not llvm_kompile,
                 opt_level=optimization or None,
-                profile=profile,
             )
         except RuntimeError as err:
             sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')
