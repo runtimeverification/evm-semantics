@@ -1,10 +1,9 @@
 import json
 import logging
-import sys
 from pathlib import Path
-from typing import Dict, Final, Iterable, List, Optional, Tuple
+from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple
 
-from pyk.cli_utils import BugReport
+from pyk.cli_utils import BugReport, check_file_path
 from pyk.cterm import CTerm, build_claim, build_rule
 from pyk.kast.inner import KApply, KInner, KLabel, KRewrite, KSequence, KSort, KToken, KVariable, Subst, build_assoc
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
@@ -188,7 +187,7 @@ def foundry_prove(
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
-) -> None:
+) -> Dict[str, bool]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
@@ -261,7 +260,7 @@ def foundry_prove(
             kcfgs[test] = kcfg
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
-    results = parallel_kcfg_explore(
+    return parallel_kcfg_explore(
         foundry,
         kcfgs,
         save_directory=kcfgs_dir,
@@ -276,14 +275,6 @@ def foundry_prove(
         extract_branches=KEVM.extract_branches,
         bug_report=br,
     )
-    failed = 0
-    for pid, r in results.items():
-        if r:
-            print(f'PROOF PASSED: {pid}')
-        else:
-            failed += 1
-            print(f'PROOF FAILED: {pid}')
-    sys.exit(failed)
 
 
 def foundry_show(
@@ -293,7 +284,7 @@ def foundry_show(
     node_deltas: Iterable[Tuple[str, str]] = (),
     to_module: bool = False,
     minimize: bool = True,
-) -> None:
+) -> str:
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
@@ -328,13 +319,20 @@ def foundry_show(
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    list(map(print, kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)))
+
+    res_lines: List[str] = []
+    res_lines += kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)
 
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
         if minimize:
             kast = minimize_term(kast)
-        print(f'\n\nNode {node_id}:\n\n{foundry.pretty_print(kast)}\n')
+        res_lines.append('')
+        res_lines.append('')
+        res_lines.append(f'Node {node_id}:')
+        res_lines.append('')
+        res_lines.append(foundry.pretty_print(kast))
+        res_lines.append('')
 
     for node_id_1, node_id_2 in node_deltas:
         config_1 = kcfg.node(node_id_1).cterm.config
@@ -342,7 +340,12 @@ def foundry_show(
         config_delta = push_down_rewrites(KRewrite(config_1, config_2))
         if minimize:
             config_delta = minimize_term(config_delta)
-        print(f'\n\nState Delta {node_id_1} => {node_id_2}:\n\n{foundry.pretty_print(config_delta)}\n')
+        res_lines.append('')
+        res_lines.append('')
+        res_lines.append(f'State Delta {node_id_1} => {node_id_2}:')
+        res_lines.append('')
+        res_lines.append(foundry.pretty_print(config_delta))
+        res_lines.append('')
 
     if to_module:
 
@@ -372,7 +375,10 @@ def foundry_show(
         rules = [to_rule(e) for e in kcfg.edges() if e.depth > 0]
         claims = [to_rule(KCFG.Edge(nd, kcfg.get_unique_target(), mlTop(), -1), claim=True) for nd in kcfg.frontier]
         new_module = KFlatModule('SUMMARY', rules + claims)
-        print(foundry.pretty_print(new_module) + '\n')
+        res_lines.append(foundry.pretty_print(new_module))
+        res_lines.append('')
+
+    return '\n'.join(res_lines)
 
 
 def foundry_to_dot(foundry_out: Path, test: str) -> None:
@@ -384,32 +390,54 @@ def foundry_to_dot(foundry_out: Path, test: str) -> None:
     cfg_dump_dot(foundry, test, kcfgs_dir)
 
 
-def foundry_list(
-    foundry_out: Path,
-    details: bool = True,
-) -> None:
-    kcfgs_dir = foundry_out / 'kcfgs'
-    pattern = '*.json'
-    paths = kcfgs_dir.glob(pattern)
-    for kcfg_file in paths:
-        kcfg_json = json.loads(Path(kcfg_file).read_text())
-        cfg_id = kcfg_json['cfgid']
-        kcfg = KCFG.from_dict(kcfg_json)
-        total_nodes = len(kcfg.nodes)
-        frontier_nodes = len(kcfg.frontier)
-        stuck_nodes = len(kcfg.stuck)
+class CfgStat(NamedTuple):
+    path: Path
+    cfg_id: int
+    proven: str
+    total_nodes: int
+    frontier_nodes: int
+    stuck_nodes: int
+
+    @staticmethod
+    def from_file(path: Path) -> 'CfgStat':
+        check_file_path(path)
+        cfg_json = json.loads(path.read_text())
+        cfg_id = cfg_json['cfgid']
+        cfg = KCFG.from_dict(cfg_json)
+        total_nodes = len(cfg.nodes)
+        frontier_nodes = len(cfg.frontier)
+        stuck_nodes = len(cfg.stuck)
+
         proven = 'failed'
         if stuck_nodes == 0:
             proven = 'pending'
             if frontier_nodes == 0:
                 proven = 'passed'
-        print(f'{cfg_id}: {proven}')
+
+        return CfgStat(
+            path=path,
+            cfg_id=cfg_id,
+            proven=proven,
+            total_nodes=total_nodes,
+            frontier_nodes=frontier_nodes,
+            stuck_nodes=stuck_nodes,
+        )
+
+    def pretty(self, *, details: bool = True) -> str:
+        lines = []
+        lines.append(f'{self.cfg_id}: {self.proven}')
         if details:
-            print(f'    path: {kcfg_file}')
-            print(f'    nodes: {total_nodes}')
-            print(f'    frontier: {frontier_nodes}')
-            print(f'    stuck: {stuck_nodes}')
-            print()
+            lines.append(f'    path: {self.path}')
+            lines.append(f'    nodes: {self.total_nodes}')
+            lines.append(f'    frontier: {self.frontier_nodes}')
+            lines.append(f'    stuck: {self.stuck_nodes}')
+        return '\n'.join(lines)
+
+
+def foundry_list(foundry_out: Path) -> List[CfgStat]:
+    kcfgs_dir = foundry_out / 'kcfgs'
+    paths = kcfgs_dir.glob('*.json')
+    return [CfgStat.from_file(path) for path in paths]
 
 
 def foundry_remove_node(foundry_out: Path, test: str, node: str) -> None:
@@ -431,7 +459,7 @@ def foundry_simplify_node(
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
-) -> None:
+) -> str:
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
@@ -445,11 +473,11 @@ def foundry_simplify_node(
     port = find_free_port()
     with KCFGExplore(foundry, port=port, bug_report=br) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
-    new_term_minimized = new_term if not minimize else minimize_term(new_term)
-    print(f'Simplified:\n{foundry.pretty_print(new_term_minimized)}')
     if replace:
         kcfg.replace_node(node, CTerm(new_term))
         KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+    res_term = minimize_term(new_term) if minimize else new_term
+    return foundry.pretty_print(res_term)
 
 
 def foundry_step_node(
