@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
-from pyk.cli_utils import BugReport, dir_path, file_path
+from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
 from pyk.ktool.kompile import KompileBackend
@@ -22,6 +22,7 @@ from .foundry import (
     foundry_show,
     foundry_simplify_node,
     foundry_step_node,
+    foundry_to_dot,
 )
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
@@ -58,8 +59,8 @@ def main() -> None:
 # Command implementation
 
 
-def exec_compile(contract_file: Path, profile: bool, **kwargs: Any) -> None:
-    res = solc_compile(contract_file, profile=profile)
+def exec_compile(contract_file: Path, **kwargs: Any) -> None:
+    res = solc_compile(contract_file)
     print(json.dumps(res))
 
 
@@ -70,7 +71,6 @@ def exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, *
 def exec_kompile(
     definition_dir: Path,
     backend: KompileBackend,
-    profile: bool,
     main_file: Path,
     emit_json: bool,
     includes: List[str],
@@ -102,7 +102,6 @@ def exec_kompile(
         main_module_name=main_module,
         syntax_module_name=syntax_module,
         md_selector=md_selector,
-        profile=profile,
         debug=debug,
         ccopts=ccopts,
         llvm_kompile=llvm_kompile,
@@ -112,7 +111,6 @@ def exec_kompile(
 
 def exec_solc_to_k(
     definition_dir: Path,
-    profile: bool,
     contract_file: Path,
     contract_name: str,
     main_module: Optional[str],
@@ -120,9 +118,9 @@ def exec_solc_to_k(
     imports: List[str],
     **kwargs: Any,
 ) -> None:
-    kevm = KEVM(definition_dir, profile=profile)
+    kevm = KEVM(definition_dir)
     empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
-    solc_json = solc_compile(contract_file, profile=profile)
+    solc_json = solc_compile(contract_file)
     contract_json = solc_json['contracts'][contract_file.name][contract_name]
     contract = Contract(contract_name, contract_json, foundry=False)
     contract_module = contract_to_main_module(contract, empty_config, imports=['EDSL'] + imports)
@@ -133,17 +131,12 @@ def exec_solc_to_k(
     bin_runtime_definition = KDefinition(
         _main_module.name, modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
     )
-    _kprint = KEVM(
-        definition_dir,
-        profile=profile,
-        extra_unparsing_modules=modules,
-    )
+    _kprint = KEVM(definition_dir, extra_unparsing_modules=modules)
     print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
 
 def exec_foundry_kompile(
     definition_dir: Path,
-    profile: bool,
     foundry_out: Path,
     md_selector: Optional[str] = None,
     includes: Iterable[str] = (),
@@ -166,7 +159,6 @@ def exec_foundry_kompile(
     _ignore_arg(kwargs, 'o3', '-O3')
     foundry_kompile(
         definition_dir=definition_dir,
-        profile=profile,
         foundry_out=foundry_out,
         includes=includes,
         md_selector=md_selector,
@@ -182,7 +174,6 @@ def exec_foundry_kompile(
 
 def exec_prove(
     definition_dir: Path,
-    profile: bool,
     spec_file: Path,
     includes: List[str],
     bug_report: bool = False,
@@ -203,7 +194,7 @@ def exec_prove(
     **kwargs: Any,
 ) -> None:
     br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
-    kevm = KEVM(definition_dir, use_directory=save_directory, profile=profile, bug_report=br)
+    kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=br)
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
     claims = kevm.get_claims(
@@ -251,14 +242,13 @@ def exec_view_kcfg(
     definition_dir: Path,
     spec_file: Path,
     save_directory: Path,
-    profile: bool,
     includes: List[str],
     claim_label: Optional[str] = None,
     spec_module: Optional[str] = None,
     md_selector: Optional[str] = None,
     **kwargs: Any,
 ) -> None:
-    kevm = KEVM(definition_dir, profile=profile)
+    kevm = KEVM(definition_dir)
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
     claim = single(
@@ -279,7 +269,6 @@ def exec_view_kcfg(
 
 
 def exec_foundry_prove(
-    profile: bool,
     foundry_out: Path,
     max_depth: int = 100,
     max_iterations: Optional[int] = None,
@@ -300,8 +289,7 @@ def exec_foundry_prove(
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
-    foundry_prove(
-        profile=profile,
+    results = foundry_prove(
         foundry_out=foundry_out,
         max_depth=max_depth,
         max_iterations=max_iterations,
@@ -317,10 +305,17 @@ def exec_foundry_prove(
         bug_report=bug_report,
         use_booster_with_lib=use_booster_with_lib,
     )
+    failed = 0
+    for pid, r in results.items():
+        if r:
+            print(f'PROOF PASSED: {pid}')
+        else:
+            failed += 1
+            print(f'PROOF FAILED: {pid}')
+    sys.exit(failed)
 
 
 def exec_foundry_show(
-    profile: bool,
     foundry_out: Path,
     test: str,
     nodes: Iterable[str] = (),
@@ -329,8 +324,7 @@ def exec_foundry_show(
     minimize: bool = True,
     **kwargs: Any,
 ) -> None:
-    foundry_show(
-        profile=profile,
+    output = foundry_show(
         foundry_out=foundry_out,
         test=test,
         nodes=nodes,
@@ -338,24 +332,22 @@ def exec_foundry_show(
         to_module=to_module,
         minimize=minimize,
     )
+    print(output)
 
 
-def exec_foundry_list(
-    profile: bool,
-    foundry_out: Path,
-    details: bool = True,
-    **kwargs: Any,
-) -> None:
-    foundry_list(
-        profile=profile,
-        foundry_out=foundry_out,
-        details=details,
-    )
+def exec_foundry_to_dot(foundry_out: Path, test: str, **kwargs: Any) -> None:
+    foundry_to_dot(foundry_out=foundry_out, test=test)
+
+
+def exec_foundry_list(foundry_out: Path, details: bool = True, **kwargs: Any) -> None:
+    stats = foundry_list(foundry_out=foundry_out)
+    delim = '\n\n' if details else '\n'
+    output = delim.join(stat.pretty(details=details) for stat in stats)
+    print(output)
 
 
 def exec_run(
     definition_dir: Path,
-    profile: bool,
     input_file: Path,
     term: bool,
     parser: Optional[str],
@@ -368,7 +360,6 @@ def exec_run(
         definition_dir=Path(definition_dir),
         input_file=Path(input_file),
         depth=depth,
-        profile=profile,
         term=term,
         no_expand_macros=not expand_macros,
         parser=parser,
@@ -378,12 +369,12 @@ def exec_run(
     sys.exit(krun_result.returncode)
 
 
-def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs: Any) -> None:
+def exec_foundry_view_kcfg(foundry_out: Path, test: str, **kwargs: Any) -> None:
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
     use_directory.mkdir(parents=True, exist_ok=True)
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
+    foundry = Foundry(definition_dir, use_directory=use_directory)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
@@ -391,36 +382,34 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, profile: bool, **kwargs
     viewer.run()
 
 
-def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, profile: bool, **kwargs: Any) -> None:
-    foundry_remove_node(foundry_out=foundry_out, test=test, node=node, profile=profile)
+def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, **kwargs: Any) -> None:
+    foundry_remove_node(foundry_out=foundry_out, test=test, node=node)
 
 
 def exec_foundry_simplify_node(
     foundry_out: Path,
     test: str,
     node: str,
-    profile: bool,
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
-    foundry_simplify_node(
+    pretty_term = foundry_simplify_node(
         foundry_out=foundry_out,
         test=test,
         node=node,
-        profile=profile,
         replace=replace,
         minimize=minimize,
         bug_report=bug_report,
     )
+    print(f'Simplified:\n{pretty_term}')
 
 
 def exec_foundry_step_node(
     foundry_out: Path,
     test: str,
     node: str,
-    profile: bool,
     repeat: int = 1,
     depth: int = 1,
     minimize: bool = True,
@@ -431,7 +420,6 @@ def exec_foundry_step_node(
         foundry_out=foundry_out,
         test=test,
         node=node,
-        profile=profile,
         repeat=repeat,
         depth=depth,
         minimize=minimize,
@@ -443,7 +431,6 @@ def exec_foundry_section_edge(
     foundry_out: Path,
     test: str,
     edge: Tuple[str, str],
-    profile: bool,
     sections: int = 2,
     replace: bool = False,
     minimize: bool = True,
@@ -454,7 +441,6 @@ def exec_foundry_section_edge(
         foundry_out=foundry_out,
         test=test,
         edge=edge,
-        profile=profile,
         sections=sections,
         replace=replace,
         minimize=minimize,
@@ -475,7 +461,6 @@ def _create_argument_parser() -> ArgumentParser:
     shared_args = ArgumentParser(add_help=False)
     shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
     shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
-    shared_args.add_argument('--profile', default=False, action='store_true', help='Coarse process-level profiling.')
     shared_args.add_argument('--workers', '-j', default=1, type=int, help='Number of processes to run in parallel.')
 
     rpc_args = ArgumentParser(add_help=False)
@@ -661,7 +646,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
     prove_args.add_argument(
-        '--save-directory', dest='save_directory', type=dir_path, help='Directory to store CFGs in.'
+        '--save-directory', dest='save_directory', type=ensure_dir_path, help='Directory to store CFGs in.'
     )
     prove_args.add_argument(
         '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
@@ -815,6 +800,14 @@ def _create_argument_parser() -> ArgumentParser:
         '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
     )
 
+    foundry_to_dot = command_parser.add_parser(
+        'foundry-to-dot',
+        help='Dump the given CFG for the test as DOT for visualization.',
+        parents=[shared_args],
+    )
+    foundry_to_dot.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_to_dot.add_argument('test', type=str, help='Display the CFG for this test.')
+
     foundry_list_args = command_parser.add_parser(
         'foundry-list',
         help='List information about CFGs on disk',
@@ -895,7 +888,7 @@ def _loglevel(args: Namespace) -> int:
     if args.debug:
         return logging.DEBUG
 
-    if args.verbose or args.profile:
+    if args.verbose:
         return logging.INFO
 
     return logging.WARNING
