@@ -26,19 +26,19 @@ Basic commands are (and each can be passed `--help`):
 
 - `kevm foundry-prove`: Run a given proof using the KCFG-based prover (not supporting loops yet, need to fall back to typical K for that).
   The best options are:
-   - `—-reinit` - want to start over from scratch,
-   - `—-no-simplify-init` - do not want to invoke simplification on all the original nodes, can be faster,
-   - `—-max-depth` - increase the space between saved nodes; bigger is faster,
-   - `—-max-iterations` - maximum number of nodes to store in KCFG before giving on attempting proof for that run,
-   - `—-break-every-step` - save a state every opcode, slow, good for debugging,
-   - `—-break-on-calls` - save a state every time a call is made, good to turn on.
+   - `--reinit` - want to start over from scratch,
+   - `--no-simplify-init` - do not want to invoke simplification on all the original nodes, can be faster,
+   - `--max-depth` - increase the space between saved nodes; bigger is faster,
+   - `--max-iterations` - maximum number of nodes to store in KCFG before giving on attempting proof for that run,
+   - `--break-every-step` - save a state every opcode, slow, good for debugging,
+   - `--break-on-calls` - save a state every time a call is made, good to turn on.
    - `--verbose` - output what the prover is doing to make sure it's making progress.
 
 - `kevm foundry-show`: Display the given KCFG so far as text. 
   Options are:
-   - `—-no-minimize` - do not omit all the gory details, 
-   - `—-node` - can be a repeated option, display more information about a given node hash,
-   - `—-node-delta` - displays the delta between two given nodes in the KCFG.
+   - `--no-minimize` - do not omit all the gory details, 
+   - `--node` - can be a repeated option, display more information about a given node hash,
+   - `--node-delta` - displays the delta between two given nodes in the KCFG.
 
 - `kevm foundry-view-kcfg`: Launch the more interactive exploration of the KCFG (can be done while exploration is running, must Ctrl-C + relaunch to view updates to KCFG).
 
