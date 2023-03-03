@@ -65,7 +65,7 @@ jobs:
           kevm_version=v$(cat package/version)
           curl -X POST                                                              \
             -H "Accept: application/vnd.github+json"                                \
-            -H "Authorization: Bearer ${GITHUB_TOKEN}"                              \
+            -H "Authorization: Bearer ${secrets.JENKINS_GITHUB_PAT}"                              \
             https://api.github.com/repos/runtimeverification/evm-semantics/releases \
             -d '{"tag_name":"'${kevm_version}'","target_commitish":"'${GITHUB_HEAD_REF}'","draft":false,"prerelease":false,"generate_release_notes":false}'
 
