@@ -44,8 +44,8 @@ module FUNCTIONAL-SPEC
 
     claim <k> runLemma(#buf(4, 0) +Bytes (#buf(32, 6) +Bytes BA:Bytes)) => doneLemma(#buf(36, 6) +Bytes BA:Bytes) ... </k>
 
-    claim <k> runLemma(#range( (112 : 190 : 104 : 75 : (#buf(32, A0) +Bytes #buf(32, A1))), 0, 32) => doneLemma(112 : 190 : 104 : 75 : (#range(#buf(32, A0), 0, 28))) ... </k> requires #rangeUInt(256, A0) andBool #rangeUInt(256, A1)
-    claim <k> runLemma(#range( (112 : 190 : 104 : 75 : (#buf(32, A0) +Bytes #buf(32, A1))), 0, 4)  => doneLemma(112 : 190 : 104 : 75 : .Bytes)               ... </k> requires #rangeUInt(256, A0) andBool #rangeUInt(256, A1)
+    claim <k> runLemma(#range( (112 : 190 : 104 : 75 : (#buf(32, A0) +Bytes #buf(32, A1))), 0, 32)) => doneLemma(112 : 190 : 104 : 75 : (#range(#buf(32, A0), 0, 28))) ... </k> requires #rangeUInt(256, A0) andBool #rangeUInt(256, A1)
+    claim <k> runLemma(#range( (112 : 190 : 104 : 75 : (#buf(32, A0) +Bytes #buf(32, A1))), 0, 4))  => doneLemma(112 : 190 : 104 : 75 : .Bytes)               ... </k> requires #rangeUInt(256, A0) andBool #rangeUInt(256, A1)
 
     claim <k> runLemma(#asWord(112 : 190 : 104 : 74 : #buf(28, A0)) /Int pow224) => doneLemma(1891526730) ... </k> requires #rangeUInt(224, A0)
 
