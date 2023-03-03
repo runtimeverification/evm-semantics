@@ -40,7 +40,6 @@ module LEMMAS [symbolic]
   // ########################
 
     rule 0 <=Int #sizeWordStack ( _ , N ) => true requires 0 <=Int N [simplification, smt-lemma]
-    rule 0 <=Int lengthBytes ( _ )     => true                    [simplification, smt-lemma]
 
     // bool2Word range & simplification
     rule 0 <=Int bool2Word(_B)             => true   [simplification]
@@ -79,11 +78,27 @@ module LEMMAS [symbolic]
   // Buffer Reasoning
   // ########################
 
+    rule WS         +Bytes .Bytes => WS  [simplification]
+    rule .Bytes +Bytes WS         => WS  [simplification]
+
     // #range
 
     rule #range(_, _, K) =>
          .Bytes
       requires K <=Int 0 [simplification]
+
+    rule #range(#writeRange(M, N, BUF:Bytes ), L, K) =>
+         #let W = minInt(K, N -Int L) #in #range(M, L, W) +Bytes #range(#writeRange(M, N, BUF), N, K -Int W)
+      requires 0 <Int K andBool L <Int N [simplification]
+
+    rule #range(#writeRange(M, N, BUF:Bytes ), L, K) =>
+           #let S = L -Int N #in
+           #let W = minInt(K, lengthBytes(BUF) -Int S) #in
+           #range(BUF, S, W) +Bytes #range(M, N +Int lengthBytes(BUF), K -Int W)
+      requires 0 <Int K andBool N <=Int L andBool L <=Int N +Int lengthBytes(BUF) [simplification]
+
+    rule #range(#writeRange(M, N, BUF:Bytes ), L, K) => #range(M, L, K)
+      requires 0 <Int K andBool N +Int lengthBytes(BUF) <=Int L [simplification]
 
   // ########################
   // Map Reasoning
@@ -95,11 +110,25 @@ module LEMMAS [symbolic]
     rule 0 <=Int #lookup( _M:Map , _ )             => true [simplification, smt-lemma]
     rule         #lookup( _M:Map , _ ) <Int pow256 => true [simplification, smt-lemma]
 
+    // overwritten assignment
+    rule #writeRange( #writeRange ( MEM , K1 , BUF1 ) , K2 , BUF2 ) => #writeRange ( MEM , K2 , BUF2 ) requires K1 +Int lengthBytes(BUF1) <=Int K2 +Int lengthBytes(BUF2) andBool K2 <=Int K1 [simplification]
+
+    // lookup range in memory
+    rule #range( MEM, 0, W ) => MEM  requires W ==Int lengthBytes(MEM) [simplification]
+
     rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true
       requires I1 =/=Int I2
       [simplification]
 
+    // lengthBytes
+
+     rule lengthBytes(BUF1 +Bytes BUF2)             => lengthBytes(BUF1) +Int lengthBytes(BUF2)        [simplification]
+     rule lengthBytes(#buf(SIZE, _))                => SIZE                                                [simplification]
+     rule lengthBytes(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
+
+    rule #asWord(WS) >>Int M => #asWord(#range(WS, 0, lengthBytes(WS) -Int (M /Int 8) ))  requires 0 <=Int M andBool M modInt 8 ==Int 0 [simplification]
 
     rule #asWord(#padRightToWidth(32, BUF)) &Int notMaxUInt224 =>
          #asWord(#padRightToWidth(32, BUF))
@@ -235,6 +264,9 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma, simplification]
 
+    rule BA:Bytes       ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                    [simplification, concrete(BA)]
+    rule #buf(32, DATA) ==K BA:Bytes       => DATA           ==Int #asInteger(BA) requires lengthBytes(BA) <=Int 32 [simplification, concrete(BA)]
+
     rule #range(M, N1 +Int N2, K) => #range(#range(M, N2, lengthBytes(M) -Int N2), N1, K)
       requires 0 <=Int N1 andBool 0 <=Int N2
       [simplification, concrete(N2), concrete(M)]
@@ -252,5 +284,16 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
 
     rule B ==Bool false => notBool B [simplification]
+
+    rule #range(A +Bytes _B, START, LENGTH) => #range(A, START, LENGTH)
+      requires START +Int LENGTH <=Int lengthBytes(A) [simplification]
+
+    rule #range(A +Bytes B, START, LENGTH) => #range(B, START -Int lengthBytes(A), LENGTH)
+      requires lengthBytes(A) <=Int START [simplification]
+
+    rule #range(#buf(32, X), 0, 28) => #buf(28, 0) requires #rangeUInt ( 32 , X ) [simplification]
+
+    rule (#range(#range(BA:Bytes, S0, L0), S1, L1)) => #range(BA, S0 +Int S1, minInt(L1, L0 -Int S1)) +Bytes #buf(maxInt(0, L1 -Int ( L0 -Int S1 )), 0)
+      requires 0 <=Int S0 andBool 0 <=Int L0 andBool 0 <=Int S1 andBool 0 <=Int L1 [simplification]
 
 endmodule
