@@ -396,7 +396,7 @@ def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
     if type_label == 'int256':
         return KEVM.range_sint(256, term)
     if type_label == 'bytes':
-        return KEVM.range_uint(128, KEVM.size_Bytes(term))
+        return KEVM.range_uint(128, KEVM.size_bytes(term))
     if type_label == 'string':
         return TRUE
 
