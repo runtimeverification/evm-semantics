@@ -40,7 +40,7 @@ module ECRECOVERLOOP00-SIG0-INVALID-SPEC
           <log> _ </log>
           <refund> _ </refund>
           <accessedAccounts> _ => ?_ </accessedAccounts>
-          <accessedStorage> _ => ?_ </accessedStorage>
+          <accessedStorage> .Map => ?_ </accessedStorage>
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin
