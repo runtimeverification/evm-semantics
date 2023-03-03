@@ -257,11 +257,17 @@ The `interimStates` cell stores a list of previous world states.
     syntax InternalOp ::= "#commitStorage" "(" List ")"
     rule <k> #commitStorage(.List) => . ... </k>
     rule <k> #commitStorage(ListItem(ACCT) REST:List) => #commitStorage(REST) ... </k>
+    <activeAccounts> ACCTS </activeAccounts>
     <account>
       <acctID> ACCT </acctID>
       <storage> STORAGE => #resolveWrites(STORAGE) </storage>
       ...
     </account>
+    requires ACCT in ACCTS
+
+    rule <k> #commitStorage(ListItem(ACCT) REST:List) => #commitStorage(REST) ... </k>
+    <activeAccounts> ACCTS </activeAccounts>
+    requires notBool(ACCT in ACCTS)
 ```
 
 Control Flow
@@ -1864,7 +1870,7 @@ Overall Gas
           ~> #if #usesAccessList(OP) #then #access [ AOP ] #else .K #fi
          ...
         </k>
-        <schedule> SCHED </schedule>
+//        <schedule> SCHED </schedule>
 
     rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
