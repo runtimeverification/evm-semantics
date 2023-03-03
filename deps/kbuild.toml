@@ -1,0 +1,9 @@
+[project]
+name = "plugin"
+version = "0.1.0"
+source = "plugin/plugin/"
+
+[project.resources]
+src = "plugin/plugin-c/"
+lib = "plugin/build/lib/"
+include = "plugin/build/include/"
