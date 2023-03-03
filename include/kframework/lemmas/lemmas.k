@@ -83,9 +83,7 @@ module LEMMAS [symbolic]
 
     // #range
 
-    rule #range(_, _, K) =>
-         .Bytes
-      requires K <=Int 0 [simplification]
+    rule #range(_, _, K) => .Bytes requires K <=Int 0 [simplification]
 
     rule #range(#writeRange(M, N, BUF:Bytes ), L, K) =>
          #let W = minInt(K, N -Int L) #in #range(M, L, W) +Bytes #range(#writeRange(M, N, BUF), N, K -Int W)
@@ -122,9 +120,10 @@ module LEMMAS [symbolic]
 
     // lengthBytes
 
-     rule lengthBytes(BUF1 +Bytes BUF2)             => lengthBytes(BUF1) +Int lengthBytes(BUF2)        [simplification]
+     rule lengthBytes(BUF1 +Bytes BUF2)             => lengthBytes(BUF1) +Int lengthBytes(BUF2)            [simplification]
      rule lengthBytes(#buf(SIZE, _))                => SIZE                                                [simplification]
      rule lengthBytes(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+     rule lengthBytes(#padRightToWidth(WIDTH, BUF)) => WIDTH  requires lengthBytes(BUF) <=Int WIDTH        [simplification]
 
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
 
@@ -134,6 +133,7 @@ module LEMMAS [symbolic]
          #asWord(#padRightToWidth(32, BUF))
       requires lengthBytes(BUF) <=Int 4 [simplification]
 
+    rule #range(#padRightToWidth(_, BUF), 0, WIDTH) => BUF requires lengthBytes(BUF) ==Int WIDTH [simplification]
 endmodule
 
 module LEMMAS-HASKELL [symbolic, kore]
