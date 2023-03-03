@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - '_update-deps_runtimeverification_k'
-      - '_update-deps_runtimeverification_blockchain-k-plugin'
+      - '_update-deps/runtimeverification/blockchain-k-plugin'
       - '_update-deps/runtimeverification/pyk'
   workflow_dispatch:
 # Stop in progress workflows on the same branch and same workflow to use latest committed code
@@ -15,7 +15,7 @@ jobs:
 
   update-versions:
     name: 'Update dependency versions'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -25,11 +25,6 @@ jobs:
       - run: |
           git config user.name devops
           git config user.email devops@runtimeverification.com
-      - name: 'Install Python3.10'
-        run: |
-          sudo apt-get install --yes software-properties-common
-          sudo apt-add-repository ppa:deadsnakes/ppa
-          sudo apt-get install --yes python3.10
       - name: 'Update K Release tag'
         run: |
           cd deps/k
@@ -40,7 +35,7 @@ jobs:
           git add deps/k_release && git commit -m 'deps/k_release: update release file' || true
       - name: 'Update pyk Release tag'
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
+          curl -sSL https://install.python-poetry.org | python3 - --version 1.3.2
           poetry --version
           pyk_version="$(cat deps/pyk_release)"
           sed -i 's!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="[v0-9\.]*" }!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="'${pyk_version}'" }!' kevm-pyk/pyproject.toml
@@ -56,14 +51,15 @@ jobs:
           echo ${rev} > deps/blockchain-k-plugin_release
           git add deps/blockchain-k-plugin_release && git commit -m 'deps/blockchain-k-plugin_release: update release file' || true
       - name: 'Install Nix/Cachix'
-        uses: cachix/install-nix-action@v15
+        uses: cachix/install-nix-action@v19
         with:
+          install_url: https://releases.nixos.org/nix/nix-2.13.3/install
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - uses: cachix/cachix-action@v10
+      - uses: cachix/cachix-action@v12
         with:
           name: k-framework
-          authToken: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
+          authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
       - name: 'Update nix flake inputs'
         run: |
           k_version=$(cat deps/k_release)
