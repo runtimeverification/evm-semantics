@@ -189,6 +189,7 @@ module FOUNDRY-CHEAT-CODES
     imports EVM
     imports EVM-ABI
     imports FOUNDRY-ACCOUNTS
+    imports INFINITE-GAS
 
     configuration
       <cheatcodes>
@@ -849,6 +850,24 @@ function stopPrank() external;
       requires SELECTOR ==Int selector ( "stopPrank()" )
 ```
 
+Gas Manipulation
+----------------
+
+```
+function infiniteGas() external;
+```
+
+Set the remaining gas to an infinite value.
+This is useful for running tests without them running out of gas.
+
+```{.k .bytes}
+    rule [foundry.call.infiniteGas]:
+         <k> #call_foundry SELECTOR _ARGS => . ... </k>
+         <gas> _ => #gas(?_VGAS) </gas>
+         <callGas> _ => #gas(?_VCALLGAS) </callGas>
+      requires SELECTOR ==Int selector ( "infiniteGas()" )
+```
+
 Expecting Events
 ----------------
 ```
@@ -1408,6 +1427,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "prank(address,address)" )                   => 1206193358 )
     rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )
     rule ( selector ( "allowChangesToStorage(address,uint256)" )   => 4207417100 )
+    rule ( selector ( "infiniteGas()" )                            => 3986649939 )
 ```
 
 - selectors for unimplemented cheat code functions.
