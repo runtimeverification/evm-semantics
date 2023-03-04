@@ -24,7 +24,16 @@ module LEMMAS [symbolic]
 
     rule X *Int Y <Int pow256 => true requires Y <=Int maxUInt256 /Int X [simplification]
 
-    rule maxUInt8   &Int X <Int 256    => true requires 0 <=Int X [simplification, smt-lemma]
+
+    rule maxUInt8   &Int X <Int N    => true 
+      //requires 0 <=Int X 
+      // andBool 256 <=Int N
+       requires 256 <=Int N
+      [simplification, smt-lemma]
+
+   rule 0 <=Int maxUInt8 &Int X => true
+     [simplification]
+
     rule maxUInt48  &Int X <Int pow48  => true requires 0 <=Int X [simplification, smt-lemma]
     rule maxUInt160 &Int X <Int pow160 => true requires 0 <=Int X [simplification, smt-lemma]
 

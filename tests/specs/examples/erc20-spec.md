@@ -30,7 +30,7 @@ module VERIFICATION
     imports EVM-OPTIMIZATIONS
     imports ERC20-VERIFICATION
 
-    syntax Step ::= ByteArray | Int
+    syntax Step ::= ByteArray | Int | Bool
     syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
@@ -59,6 +59,25 @@ module ERC20-SPEC
 ```k
     claim <k> runLemma(#bufStrict(32, #loc(ERC20._allowances[OWNER]))) => doneLemma(#buf(32, keccak(#buf(32, OWNER) ++ #buf(32, 1)))) ... </k>
       requires #rangeAddress(OWNER)
+
+    claim <k>
+      runLemma((maxUInt8 &Int VAL) <Int pow256)
+      =>
+      doneLemma(true)
+    </k>
+
+    claim <k>
+      runLemma(0 <=Int (maxUInt8 &Int VAL))
+      =>
+      doneLemma(true)
+    </k>
+
+    claim <k>
+            runLemma(#padToWidth(32, #asByteStack(maxUInt8 &Int VAL)))
+            =>
+            doneLemma(#buf(32, maxUInt8 &Int VAL))
+
+          </k>
 ```
 
 ### Calling decimals() works
@@ -77,13 +96,14 @@ module ERC20-SPEC
           <program>   #binRuntime(ERC20)                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime(ERC20)) </jumpDests>
 
-          <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <id>              ACCTID      => ?_ </id>
+          <localMem>        .Memory     => ?_ </localMem>
+          <memoryUsed>      0           => ?_ </memoryUsed>
+          <wordStack>       .WordStack  => ?_ </wordStack>
+          <pc>              0           => ?_ </pc>
+          <gas>             #gas(_VGAS) => ?_ </gas>
+          <callValue>       0           => ?_ </callValue>
+          <accessedStorage> .Map        => ?_ </accessedStorage>
 
           <callData>   ERC20.decimals()                 </callData>
           <k>          #execute   => #halt ...          </k>
