@@ -69,7 +69,7 @@ class Contract:
                 args.append(KEVM.abi_type(input_type, KVariable(input_name)))
                 rp = _range_predicate(KVariable(input_name), input_type)
                 if rp is None:
-                    _LOGGER.warning(
+                    _LOGGER.info(
                         f'Unsupported ABI type for method {contract_name}.{prod_klabel.name}, will not generate calldata sugar: {input_type}'
                     )
                     return None
@@ -127,7 +127,7 @@ class Contract:
             _method_identifiers = contract_json['methodIdentifiers']
         else:
             _method_identifiers = []
-            _LOGGER.warning(f"Could not find member 'methodIdentifiers' while processing contract: {self.name}")
+            _LOGGER.info(f"Could not find member 'methodIdentifiers' while processing contract: {self.name}")
         for msig in _method_identifiers:
             mname = msig.split('(')[0]
             mid = int(_method_identifiers[msig], 16)
@@ -135,14 +135,14 @@ class Contract:
             _methods.append(_m)
         self.methods = tuple(_methods)
         if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
-            _LOGGER.warning(f"Could not find member 'storageLayout' while processing contract: {self.name}")
+            _LOGGER.info(f"Could not find member 'storageLayout' while processing contract: {self.name}")
             self.fields = FrozenDict({})
         else:
             _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
             _fields = {}
             for _l, _s in _fields_list:
                 if _l in _fields:
-                    _LOGGER.warning(f'Found duplicate field access key on contract {self.name}: {_l}')
+                    _LOGGER.info(f'Found duplicate field access key on contract {self.name}: {_l}')
                     continue
                 _fields[_l] = _s
             self.fields = FrozenDict(_fields)
@@ -343,7 +343,7 @@ def _evm_base_sort(type_label: str) -> KSort:
     if type_label == 'string':
         return KSort('String')
 
-    _LOGGER.warning(f'Using generic sort K for type: {type_label}')
+    _LOGGER.info(f'Using generic sort K for type: {type_label}')
     return KSort('K')
 
 
@@ -400,7 +400,7 @@ def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
     if type_label == 'string':
         return TRUE
 
-    _LOGGER.warning(f'Unknown range predicate for type: {type_label}')
+    _LOGGER.info(f'Unknown range predicate for type: {type_label}')
     return None
 
 
