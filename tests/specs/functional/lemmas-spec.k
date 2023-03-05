@@ -178,4 +178,15 @@ module LEMMAS-SPEC
       requires #range(0 <= DATA < (2 ^Int (DATA_LEN *Int 8)))
        andBool 0 <=Int DATA_LEN
 
+ // up/Int *Int simplification
+ // --------------------------------
+
+    claim <k> runLemma ( ( ( #sizeByteArray ( DATA ) up/Int 32 ) *Int 32 ) <Int #sizeByteArray ( DATA ) )
+           => doneLemma ( false ) ... </k>
+
+    claim <k> runLemma ( ( #sizeByteArray ( DATA ) up/Int 32 ) *Int 32 <Int ( pow256 -Int 164 ) )
+           => doneLemma ( true ) ... </k>
+      requires #sizeByteArray(DATA) <Int pow128
+
+
 endmodule
