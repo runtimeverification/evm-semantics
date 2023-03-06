@@ -172,4 +172,27 @@ module BITWISE-ARITHMETIC-SIMPLIFICATION
     rule _ &Int 0 => 0 [simplification]
     rule A &Int A => A [simplification]
 
+    // &Int on non-negative integers remains non-negative
+    rule 0 <=Int (X &Int Y) => true
+      requires 0 <=Int X
+       andBool 0 <=Int Y
+      [simplification, smt-lemma]
+
+    // FIXME: Z3 fails when this becomes an smt-lemma
+    // Result of &Int cannot be greater than left operand
+    rule (X &Int Y) <=Int X => true
+      requires 0 <=Int X
+       andBool 0 <=Int Y
+      [simplification]
+
+    // FIXME: Z3 fails when this becomes an smt-lemma
+    // Result of &Int cannot be greater than right operand
+    rule (X &Int Y) <=Int Y => true
+      requires 0 <=Int X
+       andBool 0 <=Int Y
+      [simplification]
+
+    // Moving concrete operands of &Int to the left-hand side
+    rule A &Int B => B &Int A [symbolic(A), concrete(B), simplification]
+
 endmodule

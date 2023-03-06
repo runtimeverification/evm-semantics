@@ -66,6 +66,28 @@ module LEMMAS-SPEC
                                      => doneLemma(368263281805664599098893944405654396525700029268) ... </k>
                                   requires #rangeUInt(256, X)
 
+    claim [bitwise-AND-inequality-1]:
+	  <k> runLemma ( ( ( ( (pow256 -Int 32) &Int ( #sizeByteArray ( _DATA ) +Int 31 ) ) +Int 63 ) &Int (pow256 -Int 32) ) <Int 0)
+       => doneLemma(false) ... </k>
+
+    claim [bitwise-AND-inequality-2]:
+	  <k> runLemma ( 18446744073709551487 <Int ( ( ( notMaxUInt5 &Int ( #sizeByteArray ( _DATA ) +Int 31 ) ) +Int 63 ) &Int notMaxUInt5 ) )
+       => doneLemma(false) ... </k>
+
+    claim [bitwise-AND-comm]:
+    <k> runLemma(
+          #asWord ( #buf( 32, chop ( Y:Int <<Int 192 ) &Int notMaxUInt192 ) )
+            ==K
+          #asWord ( #buf( 32, notMaxUInt192 &Int chop ( Y:Int <<Int 192 ) ) )
+        ) => doneLemma(true) ... </k>
+
+    claim [bitwise-AND-comm-full]:
+    <k> runLemma(
+          #asWord ( ( BUF1 ++ ( #buf ( 32 , #asWord ( ( #buf ( 32 , chop ( Y:Int <<Int 192 ) &Int notMaxUInt192 ) [ 0 .. 8 ] ++ b"\x00" ) ++ BUF2 ) ) [ 0 .. 9 ] ) ) ++ BUF3 )
+            ==K
+          #asWord ( ( BUF1 ++ ( #buf ( 32 , #asWord ( ( #buf ( 32 , notMaxUInt192 &Int chop ( Y:Int <<Int 192 ) ) [ 0 .. 8 ] ++ b"\x00" ) ++ BUF2 ) ) [ 0 .. 9 ] ) ) ++ BUF3 )
+        ) => doneLemma(true) ... </k>
+
  // Buffer write simplifications
  // ----------------------------
 
