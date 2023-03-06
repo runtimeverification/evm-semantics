@@ -216,6 +216,7 @@ module LEMMAS-HASKELL [symbolic, kore]
     rule (X &Int Y) <Int Z      => true requires 0 <=Int X andBool 0 <=Int Y andBool (X <Int Z orBool Y <Int Z)          [simplification]
     rule (X |Int Y) <Int pow256 => true requires 0 <=Int X andBool 0 <=Int Y andBool X <Int pow256 andBool Y <Int pow256 [simplification]
 
+    rule notMaxUInt160 &Int X => 0 requires #rangeUInt(160, X) [simplification]
     rule maxUInt160 &Int (X |Int (notMaxUInt160 &Int Y:Int)) => X requires #rangeUInt(160, X) andBool 0 <=Int Y [simplification]
 
   // ########################
