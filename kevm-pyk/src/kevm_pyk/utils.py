@@ -45,6 +45,7 @@ def parallel_kcfg_explore(
     max_iterations: Optional[int] = None,
     workers: int = 1,
     break_every_step: bool = False,
+    break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = False,
     rpc_base_port: Optional[int] = None,
@@ -57,6 +58,8 @@ def parallel_kcfg_explore(
         terminal_rules = ['EVM.halt']
         if break_every_step:
             terminal_rules.append('EVM.step')
+        if break_on_jumpi:
+            terminal_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
         if break_on_calls:
             terminal_rules.extend(
                 [
@@ -71,8 +74,6 @@ def parallel_kcfg_explore(
                     'EVM.return.exception',
                     'EVM.return.revert',
                     'EVM.return.success',
-                    'EVM.jumpi.true',
-                    'EVM.jumpi.false',
                 ]
             )
         base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
