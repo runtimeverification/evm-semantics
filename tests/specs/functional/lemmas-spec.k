@@ -66,6 +66,10 @@ module LEMMAS-SPEC
                                      => doneLemma(368263281805664599098893944405654396525700029268) ... </k>
                                   requires #rangeUInt(256, X)
 
+    claim [address-insertion-1]: <k> runLemma(368263281805664599098893944405654396525700029268 |Int (notMaxUInt160 &Int #lookup(ACCT_STORAGE:Map, 8)))
+                                  => doneLemma(368263281805664599098893944405654396525700029268) ... </k>
+                               requires #lookup(ACCT_STORAGE, 8) <Int pow160
+
  // Buffer write simplifications
  // ----------------------------
 
