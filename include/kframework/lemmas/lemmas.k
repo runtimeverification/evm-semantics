@@ -5,6 +5,7 @@ requires "bytes-simplification.k"
 
 module LEMMAS [symbolic]
     imports INT-SIMPLIFICATION
+    imports BITWISE-ARITHMETIC-SIMPLIFICATION
     imports BYTES-SIMPLIFICATION
     imports LEMMAS-HASKELL
 
