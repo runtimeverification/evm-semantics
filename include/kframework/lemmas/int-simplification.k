@@ -47,6 +47,7 @@ endmodule
 module INT-SIMPLIFICATION-COMMON
     imports INT
     imports BOOL
+    imports EVM-TYPES
 
   // ###########################################################################
   // add, sub
@@ -155,6 +156,7 @@ endmodule
 
 module BITWISE-ARITHMETIC-SIMPLIFICATION
     imports INT
+    imports BOOL
 
   // ###########################################################################
   // inc-or

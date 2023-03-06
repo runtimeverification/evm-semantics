@@ -1,12 +1,11 @@
 module BYTES-SIMPLIFICATION
     imports BYTES-SIMPLIFICATION-JAVA
-    imports BYTEST-SIMPLIFICATION-HASKELL
+    imports BYTES-SIMPLIFICATION-HASKELL
 endmodule
 
 module BYTES-SIMPLIFICATION-JAVA [symbolic, kast]
     imports BYTES-SIMPLIFICATION-COMMON
     imports EVM
-    imports BUF
     imports K-REFLECTION
 
   // ########################
@@ -75,6 +74,7 @@ module BYTES-SIMPLIFICATION-HASKELL [symbolic, kore]
 endmodule
 
 module BYTES-SIMPLIFICATION-COMMON [symbolic]
+    imports BUF
 
   // ########################
   // Buffer Reasoning
