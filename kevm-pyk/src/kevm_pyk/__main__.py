@@ -108,34 +108,35 @@ def exec_kompile(
     elif kompile_mode != 'standalone':
         raise ValueError(f'Unknown --kompile-mode provided: {kompile_mode}')
 
-    ccopts = list(ccopts)
-    if libff_dir is not None:
-        ccopts += [f'-L{libff_dir}/lib', f'-I${libff_dir}/include']
-    if plugin_include is not None:
-        ccopts += [
-            f'{plugin_include}/c/plugin_util.cpp',
-            f'{plugin_include}/c/crypto.cpp',
-            f'{plugin_include}/c/blake2.cpp',
-        ]
-    ccopts += ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
-    if target == 'darwin':
-        if brew_root is not None:
+    if backend == KompileBackend.LLVM:
+        ccopts = list(ccopts)
+        if libff_dir is not None:
+            ccopts += [f'-L{libff_dir}/lib', f'-I${libff_dir}/include']
+        if plugin_include is not None:
             ccopts += [
-                f'-I{brew_root}/include',
-                f'-L/{brew_root}/lib',
+                f'{plugin_include}/c/plugin_util.cpp',
+                f'{plugin_include}/c/crypto.cpp',
+                f'{plugin_include}/c/blake2.cpp',
             ]
-        if openssl_root is not None:
-            ccopts += [
-                f'-I{openssl_root}/include',
-                f'-L{openssl_root}/lib',
-            ]
-        if libcryptopp_dir is not None:
-            ccopts += [
-                f'-I{libcryptopp_dir}/include',
-                f'-L/{libcryptopp_dir}/lib',
-            ]
-    elif target != 'linux':
-        raise ValueError(f'Unknown --target provided: {target}')
+        ccopts += ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
+        if target == 'darwin':
+            if brew_root is not None:
+                ccopts += [
+                    f'-I{brew_root}/include',
+                    f'-L/{brew_root}/lib',
+                ]
+            if openssl_root is not None:
+                ccopts += [
+                    f'-I{openssl_root}/include',
+                    f'-L{openssl_root}/lib',
+                ]
+            if libcryptopp_dir is not None:
+                ccopts += [
+                    f'-I{libcryptopp_dir}/include',
+                    f'-L/{libcryptopp_dir}/lib',
+                ]
+        elif target != 'linux':
+            raise ValueError(f'Unknown --target provided: {target}')
 
     KEVM.kompile(
         definition_dir,
