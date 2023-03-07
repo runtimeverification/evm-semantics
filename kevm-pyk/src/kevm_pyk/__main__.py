@@ -592,7 +592,6 @@ def _create_argument_parser() -> ArgumentParser:
     k_args.add_argument(
         '--md-selector',
         type=str,
-        default='k & ! node',
         help='Code selector expression to use when reading markdown.',
     )
 
