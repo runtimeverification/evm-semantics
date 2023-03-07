@@ -59,7 +59,7 @@ run_kevm_pyk() {
     ! ${verbose}    || pyk_args+=(--verbose)
     ! ${debug}      || pyk_args+=(--debug)
     ! ${bug_report} || pyk_args+=(--bug-report)
-    execute python3 -m kevm_pyk "${pyk_command}" "$@" "${pyk_args[@]}"
+    execute kevm-pyk "${pyk_command}" "$@" "${pyk_args[@]}"
 }
 
 # User Commands
