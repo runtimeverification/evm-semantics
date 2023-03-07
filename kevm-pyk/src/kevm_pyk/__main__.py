@@ -111,7 +111,7 @@ def exec_kompile(
     if backend == KompileBackend.LLVM:
         ccopts = list(ccopts)
         if libff_dir is not None:
-            ccopts += [f'-L{libff_dir}/lib', f'-I${libff_dir}/include']
+            ccopts += [f'-L{libff_dir}/lib', f'-I{libff_dir}/include']
         if plugin_include is not None:
             ccopts += [
                 f'{plugin_include}/c/plugin_util.cpp',
