@@ -12,7 +12,7 @@ module EVM-OPTIMIZATIONS-LEMMAS [kore, symbolic]
     rule #sizeWordStack(WS           , N) => #sizeWordStack(WS, 0) +Int N requires N =/=Int 0                [simplification]
     rule #sizeWordStack(WS [ I := _ ], N) => #sizeWordStack(WS, N)        requires I <Int #sizeWordStack(WS) [simplification]
 
-    rule #stackUnderflow(WS, N) => false requires N <=Int #sizeWordStack(WS) [simplification]
+    // rule #stackUnderflow(WS, N) => false requires N <=Int #sizeWordStack(WS) [simplification]
 
 endmodule
 
