@@ -67,19 +67,9 @@ run_kevm_pyk() {
 run_kompile() {
     local kompile_opts openssl_root
 
-    kompile_opts=( "${run_file}" --emit-json )
-    ${pyk} || kompile_opts+=( --output-definition "${backend_dir}" )
-    ${pyk} || kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" )
-    ${pyk} || kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN" )
-    ${pyk} || ! ${debug} || kompile_opts+=( --debug )
+    ${pyk} || fatal 'Must supply --pyk with kevm kompile.'
 
-    if [[ ! -z ${concrete_rules_file} ]]; then
-        if [[ -f ${concrete_rules_file} ]]; then
-            ${pyk} || kompile_opts+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
-        else
-            fatal "Concrete rules file doesn't exist: ${concrete_rules_file}"
-        fi
-    fi
+    kompile_opts=( "${run_file}" )
 
     case "${backend}" in
         haskell|foundry) backend=haskell ;;
@@ -96,15 +86,9 @@ run_kompile() {
     esac
 
     kompile_opts+=(--backend ${backend})
-    if ${pyk} && ${debug}; then
-        kompile_opts+=( --debug )
-    fi
+    ! ${debug} || kompile_opts+=( --debug )
 
-    if ${pyk}; then
-        run_kevm_pyk kompile "${kompile_opts[@]}" "$@"
-    else
-        execute kompile "${kompile_opts[@]}" "$@"
-    fi
+    run_kevm_pyk kompile "${kompile_opts[@]}" "$@"
 }
 
 run_krun() {
