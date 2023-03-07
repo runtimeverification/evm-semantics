@@ -657,6 +657,8 @@ tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.
 parse_tests:=$(wildcard tests/interactive/*.json) \
              $(wildcard tests/interactive/*.evm)
 
+test-parse: KAST_OPTS += --pyk --verbose
+test-parse: KEVM = $(POETRY_RUN) kevm
 test-parse: $(parse_tests:=.parse)
 	echo $(parse_tests)
 

@@ -31,6 +31,7 @@ pytest-xdist = "*"
 
 [tool.poetry.scripts]
 kevm-pyk = "kevm_pyk.__main__:main"
+json-to-kast = "kevm_pyk.json_to_kast:main"
 
 [tool.isort]
 profile = "black"
