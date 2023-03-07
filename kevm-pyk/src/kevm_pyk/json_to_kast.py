@@ -2,11 +2,6 @@ import json
 import sys
 from typing import Any
 
-filename = sys.argv[1]
-
-with open(filename) as data_file:
-    data = json.load(data_file)
-
 
 def print_kast(data: Any) -> None:
     if isinstance(data, list):
@@ -44,5 +39,14 @@ def print_kast(data: Any) -> None:
         raise AssertionError
 
 
-print_kast(data)
-print()
+def main() -> None:
+    filename = sys.argv[1]
+
+    with open(filename) as data_file:
+        data = json.load(data_file)
+    print_kast(data)
+    print()
+
+
+if __name__ == '__main__':
+    main()
