@@ -96,8 +96,7 @@ sudo apt-get install --yes                                                      
             libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-12       \
             llvm-12-tools make maven netcat-openbsd openjdk-11-jdk pkg-config          \
             protobuf-compiler python3 python3-dev python3-pip rapidjson-dev time       \
-            zlib1g-dev
-pip3 install poetry
+            zlib1g-dev libfmt-dev
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
@@ -190,13 +189,11 @@ make plugin-deps
 
 ### Building
 
-You need to set up a virtual environment using Poetry:
+You need to set up a virtual environment using Poetry with the prerequisites `python 3.8.*`, `pip >= 20.0.2`, `poetry >= 1.3.2`:
 
 ```sh
 make poetry
 ```
-
-Note the following prerequsites: `python 3.8.*`, `pip >= 20.0.2`, `poetry >= 1.3.2`.
 
 Finally, you can build the semantics.
 
@@ -204,7 +201,7 @@ Finally, you can build the semantics.
 make build
 ```
 
-You can build specific targets using `build-llvm`, `build-Haskell`, or `build-foundry`. 
+You can build specific targets using `build-llvm`, `build-Haskell`, or `build-foundry`.
 For more information, refer to the [Makefile].
 
 Running Tests
