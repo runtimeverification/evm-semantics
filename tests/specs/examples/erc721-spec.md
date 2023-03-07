@@ -84,13 +84,14 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <program>   #binRuntime(ERC721)                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime(ERC721)) </jumpDests>
 
-          <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <id>              ACCTID      => ?_ </id>
+          <localMem>        .Memory     => ?_ </localMem>
+          <memoryUsed>      0           => ?_ </memoryUsed>
+          <wordStack>       .WordStack  => ?_ </wordStack>
+          <pc>              0           => ?_ </pc>
+          <gas>             #gas(_VGAS) => ?_ </gas>
+          <callValue>       0           => ?_ </callValue>
+          <accessedStorage> .Map        => ?_ </accessedStorage>
 
           <callData>   ERC721.name()              </callData>
           <k>          #execute   => #halt ...    </k>
@@ -118,13 +119,14 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <program>   #binRuntime(ERC721)                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime(ERC721)) </jumpDests>
 
-          <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <id>              ACCTID      => ?_ </id>
+          <localMem>        .Memory     => ?_ </localMem>
+          <memoryUsed>      0           => ?_ </memoryUsed>
+          <wordStack>       .WordStack  => ?_ </wordStack>
+          <pc>              0           => ?_ </pc>
+          <gas>             #gas(_VGAS) => ?_ </gas>
+          <callValue>       0           => ?_ </callValue>
+          <accessedStorage> .Map        => ?_ </accessedStorage>
 
           <callData>   ERC721.name()             </callData>
           <k>          #execute   => #halt ...   </k>

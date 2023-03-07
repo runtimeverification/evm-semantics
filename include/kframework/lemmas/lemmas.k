@@ -24,15 +24,14 @@ module LEMMAS [symbolic]
 
     rule X *Int Y <Int pow256 => true requires Y <=Int maxUInt256 /Int X [simplification]
 
+//     rule maxUInt8   &Int X <Int 256   => true requires 0 <=Int X [simplification, smt-lemma]
 
     rule maxUInt8   &Int X <Int N    => true 
-      //requires 0 <=Int X 
-      // andBool 256 <=Int N
-       requires 256 <=Int N
+      requires 0 <=Int X 
+      andBool 256 <=Int N
       [simplification, smt-lemma]
 
-   rule 0 <=Int maxUInt8 &Int X => true
-     [simplification]
+    rule 0 <=Int maxUInt8 &Int _ => true [simplification]
 
     rule maxUInt48  &Int X <Int pow48  => true requires 0 <=Int X [simplification, smt-lemma]
     rule maxUInt160 &Int X <Int pow160 => true requires 0 <=Int X [simplification, smt-lemma]
@@ -121,8 +120,8 @@ module LEMMAS [symbolic]
     rule #lookup ( _M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 )  requires K1 ==Int  K2 [simplification]
     rule #lookup (  M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 )  requires K1 =/=Int K2 [simplification]
 
-    rule 0 <=Int #lookup( _M:Map , _ )             => true [simplification, smt-lemma]
-    rule         #lookup( _M:Map , _ ) <Int pow256 => true [simplification, smt-lemma]
+    rule 0 <=Int #lookup( _S:Storage , _ )             => true [simplification, smt-lemma]
+    rule         #lookup( _S:Storage , _ ) <Int pow256 => true [simplification, smt-lemma]
 
     // re-order assignments
     rule MEM [ K1 := BUF1:ByteArray ] [ K2 := BUF2:ByteArray ] => MEM [ K2 := BUF2 ] [ K1 := BUF1 ]  requires         #sizeByteArray(BUF2) <=Int K1 -Int K2                   andBool K2  <Int K1 [simplification]
@@ -154,7 +153,8 @@ module LEMMAS [symbolic]
     // ++ unification
     rule #buf(N, A) ++ BUF1 ==K #buf(N, B) ++ BUF2 => #buf(N, A) ==K #buf(N, B) andBool BUF1 ==K BUF2     [simplification]
 
-    rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
+    rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification, symbolic(V)]
+    rule #padToWidth(32, #asByteStack(V)) [0 .. 32] => #buf(32, V)                    [simplification, symbolic(V)]
 
     rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeByteArray(WS) -Int (M /Int 8) ])  requires 0 <=Int M andBool M modInt 8 ==Int 0 [simplification]
 
@@ -163,6 +163,21 @@ module LEMMAS [symbolic]
       requires #sizeByteArray(BUF) <=Int 4 [simplification]
 
     rule #padRightToWidth(_, BUF)[ 0 .. WIDTH ] => BUF requires #sizeByteArray(BUF) ==Int WIDTH [simplification]
+
+    rule M <Int #sizeByteArray(#padToWidth(N, _)) => true requires N >Int M [simplification]
+    rule #sizeByteArray(#padToWidth(N, _)) >Int M => true requires N >Int M [simplification]
+    rule M <=Int #sizeByteArray(#padToWidth(N, _)) => true requires N >=Int M [simplification]
+    rule #sizeByteArray(#padToWidth(N, _)) >=Int M => true requires N >=Int M [simplification]
+
+    rule M >=Int #sizeByteArray(#padToWidth(N, _)) => false requires N >Int M [simplification]
+    rule #sizeByteArray(#padToWidth(N, _)) <=Int M => false requires N >Int M [simplification]
+    rule M >Int #sizeByteArray(#padToWidth(N, _)) => false requires N >=Int M [simplification]
+    rule #sizeByteArray(#padToWidth(N, _)) <Int M => false requires N >=Int M [simplification]
+
+    rule minInt(N, M) => N requires N <=Int M [simplification]
+    rule minInt(N, M) => N requires N <Int M [simplification]
+    rule minInt(N, M) => M requires M <=Int N [simplification]
+    rule minInt(N, M) => M requires M <Int N [simplification]
 
 endmodule
 

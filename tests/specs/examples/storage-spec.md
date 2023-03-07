@@ -78,13 +78,14 @@ module STORAGE-SPEC
           <program>   #binRuntime(Storage)                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime(Storage)) </jumpDests>
 
-          <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <id>              ACCTID      => ?_ </id>
+          <localMem>        .Memory     => ?_ </localMem>
+          <memoryUsed>      0           => ?_ </memoryUsed>
+          <wordStack>       .WordStack  => ?_ </wordStack>
+          <pc>              0           => ?_ </pc>
+          <gas>             #gas(_VGAS) => ?_ </gas>
+          <callValue>       0           => ?_ </callValue>
+          <accessedStorage> .Map        => ?_ </accessedStorage>
 
           <callData>   Storage.myBool()                 </callData>
           <k>          #execute   => #halt ...          </k>
@@ -112,13 +113,14 @@ module STORAGE-SPEC
           <jumpDests> #computeValidJumpDests(#binRuntime(Storage)) </jumpDests>
           <static>    false                                        </static>
 
-          <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <id>              ACCTID      => ?_ </id>
+          <localMem>        .Memory     => ?_ </localMem>
+          <memoryUsed>      0           => ?_ </memoryUsed>
+          <wordStack>       .WordStack  => ?_ </wordStack>
+          <pc>              0           => ?_ </pc>
+          <gas>             #gas(_VGAS) => ?_ </gas>
+          <callValue>       0           => ?_ </callValue>
+          <accessedStorage> .Map        => ?_ </accessedStorage>
 
           <callData>   Storage.setMyBool(NEW_VAL)       </callData>
           <k>          #execute   => #halt ...          </k>
@@ -127,7 +129,7 @@ module STORAGE-SPEC
 
           <account>
             <acctID> ACCTID </acctID>
-            <storage> ACCT_STORAGE => ACCT_STORAGE [ MYBOOL_KEY <- NEW_STORAGE_CONTENT ] </storage>
+            <storage> ACCT_STORAGE => #write( ACCT_STORAGE, MYBOOL_KEY, NEW_STORAGE_CONTENT ) </storage>
             ...
           </account>
 
