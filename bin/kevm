@@ -319,6 +319,7 @@ kevm_host='127.0.0.1'
 [[ ! "${run_command}" == view-kcfg ]] || backend=haskell
 [[ ! "${run_command}" == foundry-* ]] || backend=foundry
 [[ ! "${run_command}" == interpret ]] || unparse=false
+[[ ! "${run_command}" == kompile   ]] || pyk=true
 args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -338,6 +339,7 @@ while [[ $# -gt 0 ]]; do
         --concrete-rules-file) concrete_rules_file="$2"        ; shift 2 ;;
         --verif-module)        verif_module="$2"               ; shift 2 ;;
         --pyk)                 pyk=true                        ; shift   ;;
+        --no-pyk)              pyk=false                       ; shift   ;;
         --max-counterexamples) max_counterexamples="$2"        ; shift 2 ;;
         --branching-allowed)   branching_allowed="$2"          ; shift 2 ;;
         --haskell-backend-arg) haskell_backend_command+=("$2") ; shift 2 ;;
