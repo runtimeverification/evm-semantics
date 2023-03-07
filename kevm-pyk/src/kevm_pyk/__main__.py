@@ -79,11 +79,17 @@ def exec_kompile(
     syntax_module: Optional[str],
     ccopts: Iterable[str] = (),
     llvm_kompile: bool = True,
+    target: Optional[str] = None,
     o0: bool = False,
     o1: bool = False,
     o2: bool = False,
     o3: bool = False,
     debug: bool = False,
+    plugin_include: Optional[Path] = None,
+    libff_dir: Optional[Path] = None,
+    brew_root: Optional[Path] = None,
+    libcryptopp_dir: Optional[Path] = None,
+    openssl_root: Optional[Path] = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector {kwargs["md_selector"]}')
@@ -101,6 +107,35 @@ def exec_kompile(
         md_selector = 'k & ! standalone'
     elif kompile_mode != 'standalone':
         raise ValueError(f'Unknown --kompile-mode provided: {kompile_mode}')
+
+    ccopts = list(ccopts)
+    if libff_dir is not None:
+        ccopts += [f'-L{libff_dir}/lib', f'-I${libff_dir}/include']
+    if plugin_include is not None:
+        ccopts += [
+            f'{plugin_include}/c/plugin_util.cpp',
+            f'{plugin_include}/c/crypto.cpp',
+            f'{plugin_include}/c/blake2.cpp',
+        ]
+    ccopts += ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
+    if target == 'darwin':
+        if brew_root is not None:
+            ccopts += [
+                f'-I{brew_root}/include',
+                f'-L/{brew_root}/lib',
+            ]
+        if openssl_root is not None:
+            ccopts += [
+                f'-I{openssl_root}/include',
+                f'-L{openssl_root}/lib',
+            ]
+        if libcryptopp_dir is not None:
+            ccopts += [
+                f'-I{libcryptopp_dir}/include',
+                f'-L/{libcryptopp_dir}/lib',
+            ]
+    elif target != 'linux':
+        raise ValueError(f'Unknown --target provided: {target}')
 
     KEVM.kompile(
         definition_dir,
@@ -640,6 +675,16 @@ def _create_argument_parser() -> ArgumentParser:
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
     kompile_args.add_argument(
         '--kompile-mode', type=str, default='standalone', help='KEVM kompile mode, [standalone|node].'
+    )
+    kompile_args.add_argument('--plugin-include', type=dir_path, help='Path to plugin include directory.')
+    kompile_args.add_argument('--libff-dir', type=dir_path, help='Path to libff include directory.')
+    kompile_args.add_argument('--target', type=str, default='linux', help='Compilation target, [linux|darwin].')
+    kompile_args.add_argument('--libcryptopp-dir', type=dir_path, help='Path to libcryptopp include directory.')
+    kompile_args.add_argument(
+        '--brew-root', type=dir_path, help='Path to homebrew root directory (only for --target-darwin).'
+    )
+    kompile_args.add_argument(
+        '--openssl-root', type=dir_path, help='Path to openssl root directory (only for --target-darwin).'
     )
 
     prove_args = command_parser.add_parser(

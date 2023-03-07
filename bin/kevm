@@ -65,7 +65,7 @@ run_kevm_pyk() {
 # User Commands
 
 run_kompile() {
-    local ccopts ccopt kompile_opts openssl_root
+    local kompile_opts openssl_root
 
     kompile_opts=( "${run_file}" --emit-json )
     ${pyk} || kompile_opts+=( --output-definition "${backend_dir}" )
@@ -85,27 +85,12 @@ run_kompile() {
         haskell|foundry) backend=haskell ;;
         node)            kompile_opts+=( --kompile-mode 'node' --no-llvm-kompile ) ;;&
         llvm|node) backend=llvm
-                   ccopts+=( -L${libff_dir}/lib -I${libff_dir}/include  )
-                   ccopts+=( ${plugin_include}/c/plugin_util.cpp        )
-                   ccopts+=( ${plugin_include}/c/crypto.cpp             )
-                   ccopts+=( ${plugin_include}/c/blake2.cpp             )
-                   ccopts+=( -g -std=c++14                              )
-                   ccopts+=( -lff -lcryptopp -lsecp256k1 -lssl -lcrypto )
-                   if [[ "$(uname -s)" == 'Linux' ]]; then
-                       ccopts+=( -lprocps )
-                   elif [[ "$(uname -s)" == 'Darwin' ]]; then
+                   kompile_opts+=( --plugin-include "${plugin_include}" --libff-dir "${libff_dir}" )
+                   if [[ "$(uname -s)" == 'Darwin' ]]; then
                        openssl_root="$(brew --prefix openssl)"
                        brew_root="$(brew --prefix)"
-                       ccopts+=( -I${brew_root}/include -L/${brew_root}/lib -I${openssl_root}/include -L${openssl_root}/lib )
-                       ccopts+=( -I${libcryptopp_dir}/include -L/${libcryptopp_dir}/lib                                     )
+                       kompile_opts+=( --target darwin --brew-root "${brew_root}" --libcryptopp-dir "${libcryptopp_dir}" --openssl-root "${openssl_root}" )
                    fi
-                   for ccopt in "${ccopts[@]}"; do
-                       if ${pyk}; then
-                           kompile_opts+=(-ccopt="${ccopt}")
-                       else
-                           kompile_opts+=(-ccopt "${ccopt}")
-                       fi
-                   done
                    ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
