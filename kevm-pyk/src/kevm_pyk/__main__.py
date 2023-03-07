@@ -135,7 +135,9 @@ def exec_kompile(
                     f'-I{libcryptopp_dir}/include',
                     f'-L/{libcryptopp_dir}/lib',
                 ]
-        elif target != 'linux':
+        elif target == 'linux':
+            ccopts += ['-lprocps']
+        else:
             raise ValueError(f'Unknown --target provided: {target}')
 
     KEVM.kompile(
