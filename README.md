@@ -90,12 +90,12 @@ If you wish to install from the source, install it to an appropriate prefix (e.g
 On Ubuntu >= 22.04 (for example):
 
 ```sh
-sudo apt-get install --yes                                                             \
-            autoconf bison clang-12 cmake curl flex gcc jq libboost-test-dev           \
-            libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev       \
-            libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-12       \
-            llvm-12-tools make maven netcat-openbsd openjdk-11-jdk pkg-config          \
-            protobuf-compiler python3 python3-dev python3-pip rapidjson-dev time       \
+sudo apt-get install --yes                                                                  \
+            autoconf bison clang-12 cmake curl flex gcc jq libboost-test-dev                \
+            libcrypto++-dev libffi-dev libfmt-dev libgflags-dev libjemalloc-dev libmpfr-dev \
+            libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-12            \
+            llvm-12-tools make maven netcat-openbsd openjdk-11-jdk pkg-config               \
+            protobuf-compiler python3 python3-dev python3-pip rapidjson-dev time            \
             zlib1g-dev
 pip3 install poetry
 ```
