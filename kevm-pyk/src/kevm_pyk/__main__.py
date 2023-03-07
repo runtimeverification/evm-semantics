@@ -73,10 +73,10 @@ def exec_kompile(
     backend: KompileBackend,
     main_file: Path,
     emit_json: bool,
+    kompile_mode: str,
     includes: List[str],
     main_module: Optional[str],
     syntax_module: Optional[str],
-    md_selector: Optional[str],
     ccopts: Iterable[str] = (),
     llvm_kompile: bool = True,
     o0: bool = False,
@@ -86,6 +86,8 @@ def exec_kompile(
     debug: bool = False,
     **kwargs: Any,
 ) -> None:
+    _ignore_arg(kwargs, 'md_selector', f'--md-selector {kwargs["md_selector"]}')
+
     optimization = 0
     if o1:
         optimization = 1
@@ -93,6 +95,13 @@ def exec_kompile(
         optimization = 2
     if o3:
         optimization = 3
+
+    md_selector = 'k & ! node'
+    if kompile_mode == 'node':
+        md_selector = 'k & ! standalone'
+    elif kompile_mode != 'standalone':
+        raise ValueError(f'Unknown --kompile-mode provided: {kompile_mode}')
+
     KEVM.kompile(
         definition_dir,
         backend,
@@ -629,6 +638,9 @@ def _create_argument_parser() -> ArgumentParser:
         'kompile', help='Kompile KEVM specification.', parents=[shared_args, k_args, k_kompile_args]
     )
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
+    kompile_args.add_argument(
+        '--kompile-mode', type=str, default='standalone', help='KEVM kompile mode, [standalone|node].'
+    )
 
     prove_args = command_parser.add_parser(
         'prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args, rpc_args, explore_args]

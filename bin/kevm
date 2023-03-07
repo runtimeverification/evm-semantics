@@ -82,10 +82,8 @@ run_kompile() {
     fi
 
     case "${backend}" in
-        haskell|foundry)   backend=haskell
-                           kompile_opts+=( --md-selector 'k & ! node')                          ;;
-        llvm)              kompile_opts+=( --md-selector 'k & ! node' )                         ;;&
-        node)              kompile_opts+=( --md-selector 'k & ! standalone' --no-llvm-kompile ) ;;&
+        haskell|foundry) backend=haskell ;;
+        node)            kompile_opts+=( --kompile-mode 'node' --no-llvm-kompile ) ;;&
         llvm|node) backend=llvm
                    ccopts+=( -L${libff_dir}/lib -I${libff_dir}/include  )
                    ccopts+=( ${plugin_include}/c/plugin_util.cpp        )
