@@ -187,26 +187,27 @@ kevm-pyk: poetry-env
 
 KOMPILE := $(POETRY_RUN) $(KEVM) kompile --pyk
 
-kevm_files := abi.md                      \
-              asm.md                      \
-              buf.md                      \
-              data.md                     \
-              driver.md                   \
-              edsl.md                     \
-              evm.md                      \
-              evm-types.md                \
-              evm-node.md                 \
-              foundry.md                  \
-              hashed-locations.md         \
-              infinite-gas.md             \
-              json-rpc.md                 \
-              network.md                  \
-              optimizations.md            \
-              serialization.md            \
-              state-utils.md              \
-              word.md                     \
-              lemmas/lemmas.k             \
-              lemmas/int-simplification.k \
+kevm_files := abi.md                          \
+              asm.md                          \
+              buf.md                          \
+              data.md                         \
+              driver.md                       \
+              edsl.md                         \
+              evm.md                          \
+              evm-types.md                    \
+              evm-node.md                     \
+              foundry.md                      \
+              hashed-locations.md             \
+              infinite-gas.md                 \
+              json-rpc.md                     \
+              network.md                      \
+              optimizations.md                \
+              serialization.md                \
+              state-utils.md                  \
+              word.md                         \
+              lemmas/lemmas.k                 \
+              lemmas/int-simplification.k     \
+              lemmas/bitwise-simplification.k \
               lemmas/bytes-simplification.k
 
 kevm_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_files))
