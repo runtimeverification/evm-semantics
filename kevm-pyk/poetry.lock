@@ -180,6 +180,22 @@ files = [
 testing = ["pre-commit"]
 
 [[package]]
+name = "filelock"
+version = "3.9.0"
+description = "A platform independent file lock."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "filelock-3.9.0-py3-none-any.whl", hash = "sha256:f58d535af89bb9ad5cd4df046f741f8553a418c01a7856bf0d173bbc9f6bd16d"},
+    {file = "filelock-3.9.0.tar.gz", hash = "sha256:7b319f24340b51f55a2bf7a12ac0755a9b03e718311dac567a0f4f7fabd2f5de"},
+]
+
+[package.extras]
+docs = ["furo (>=2022.12.7)", "sphinx (>=5.3)", "sphinx-autodoc-typehints (>=1.19.5)"]
+testing = ["covdefaults (>=2.2.2)", "coverage (>=7.0.1)", "pytest (>=7.2)", "pytest-cov (>=4)", "pytest-timeout (>=2.1)"]
+
+[[package]]
 name = "flake8"
 version = "6.0.0"
 description = "the modular source code checker: pep8 pyflakes and co"
@@ -630,7 +646,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.167"
+version = "0.1.168"
 description = ""
 category = "main"
 optional = false
@@ -640,6 +656,7 @@ develop = false
 
 [package.dependencies]
 cmd2 = "^2.4.2"
+filelock = "^3.9.0"
 graphviz = "^0.20.1"
 pybind11 = "^2.10.3"
 textual = "^0.10.1"
@@ -648,8 +665,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.167"
-resolved_reference = "d5333e124163ea505d04bac05a5ff727709a8bfd"
+reference = "v0.1.168"
+resolved_reference = "2a39f4c7fe01971ea0c3a58f8c6735bce893b047"
 
 [[package]]
 name = "pyperclip"
@@ -831,4 +848,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "e5682601e81a738c0ddedaf3f944b10f390f29fcb7ed76f81900b16af12d2e46"
+content-hash = "2becb959a3701d4abffeee8e6a5e55f4bd470e43e4de9a73332502a51dfc6bf9"
