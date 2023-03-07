@@ -1,9 +1,4 @@
-module BYTES-SIMPLIFICATION
-    imports BYTES-SIMPLIFICATION-HASKELL
-endmodule
-
-module BYTES-SIMPLIFICATION-HASKELL [symbolic, kore]
-    imports BYTES-SIMPLIFICATION-COMMON
+module BYTES-SIMPLIFICATION [symbolic]
     imports INT-SYMBOLIC
     imports EVM
     imports BUF
@@ -33,15 +28,6 @@ module BYTES-SIMPLIFICATION-HASKELL [symbolic, kore]
 
     rule ( #range ( #range ( BA:ByteArray , S0 , L0 ) , S1 , L1 ) ) => #range ( BA , S0 +Int S1 , minInt ( L1 , L0 -Int S1 ) ) ++ #buf ( maxInt ( 0 , L1 -Int ( L0 -Int S1 ) ) , 0 )
       requires 0 <=Int S0 andBool 0 <=Int L0 andBool 0 <=Int S1 andBool 0 <=Int L1 [simplification]
-
-endmodule
-
-module BYTES-SIMPLIFICATION-COMMON [symbolic]
-    imports BUF
-
-  // ########################
-  // Buffer Reasoning
-  // ########################
 
     rule WS         ++ .ByteArray => WS  [simplification]
     rule .ByteArray ++ WS         => WS  [simplification]
