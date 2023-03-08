@@ -2207,7 +2207,7 @@ There are several helpers for calculating gas (most of them also specified in th
                  | Cextcodehash   ( Schedule )                           [function, total, smtlib(gas_Cextcodehash)  ]
                  | Cbalance       ( Schedule )                           [function, total, smtlib(gas_Cbalance)      ]
                  | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [function, total, smtlib(gas_Cmodexp)       ]
- // ----------------------------------------------------------------------------------------------------------------------
+ // ------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi

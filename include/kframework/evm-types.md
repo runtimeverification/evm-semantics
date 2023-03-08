@@ -254,22 +254,6 @@ A cons-list is used for the EVM wordstack.
     rule #drop(1, (_ : WS):WordStack) => WS
 ```
 
-```k
-    syntax Bytes ::= #take ( Int , Bytes ) [klabel(takeBytes), function, total]
- // ---------------------------------------------------------------------------
-    rule #take(N, _BS:Bytes) => .Bytes                                          requires                                        notBool N >Int 0
-    rule #take(N,  BS:Bytes) => #padRightToWidth(N, .Bytes)                     requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
-    rule #take(N,  BS:Bytes) => BS +Bytes #take(N -Int lengthBytes(BS), .Bytes) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
-    rule #take(N,  BS:Bytes) => #range(BS, 0, N)                                requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
-
-    syntax Bytes ::= #drop ( Int , Bytes ) [klabel(dropBytes), function, total]
- // ---------------------------------------------------------------------------
-    rule #drop(N, BS:Bytes) => BS                                  requires                                        notBool N >Int 0
-    rule #drop(N, BS:Bytes) => .Bytes                              requires notBool lengthBytes(BS) >Int 0 andBool         N >Int 0
-    rule #drop(N, BS:Bytes) => .Bytes                              requires         lengthBytes(BS) >Int 0 andBool         N >Int lengthBytes(BS)
-    rule #drop(N, BS:Bytes) => substrBytes(BS, N, lengthBytes(BS)) requires         lengthBytes(BS) >Int 0 andBool notBool N >Int lengthBytes(BS)
-```
-
 ### Element Access
 
 -   `WS [ N ]` accesses element `N` of `WS`.

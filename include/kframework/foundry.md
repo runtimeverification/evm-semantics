@@ -1081,7 +1081,7 @@ Utils
     rule <k> #setCode ACCTID CODE => . ... </k>
          <account>
            <acctID> ACCTID </acctID>
-           <code> _ => #if #asWord(CODE) ==Int 0 #then .Bytes:AccountCode #else {CODE}:>AccountCode #fi </code>
+           <code> _ => #if #asWord(CODE) ==Int 0 #then .Bytes #else CODE #fi </code>
            ...
          </account>
 ```
