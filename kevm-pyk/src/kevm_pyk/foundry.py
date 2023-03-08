@@ -113,6 +113,7 @@ def foundry_kompile(
     ccopts: Iterable[str] = (),
     llvm_kompile: bool = True,
     debug: bool = False,
+    llvm_library: bool = False,
 ) -> None:
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
@@ -172,7 +173,7 @@ def foundry_kompile(
             ccopts=ccopts,
             llvm_kompile=llvm_kompile,
         )
-        if llvm_kompile:
+        if llvm_library:
             _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
             KEVM.kompile(
                 foundry_llvm_dir,

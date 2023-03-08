@@ -147,6 +147,7 @@ def exec_foundry_kompile(
     ccopts: Iterable[str] = (),
     llvm_kompile: bool = True,
     debug: bool = False,
+    llvm_library: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
@@ -169,6 +170,7 @@ def exec_foundry_kompile(
         ccopts=ccopts,
         llvm_kompile=llvm_kompile,
         debug=debug,
+        llvm_library=llvm_library,
     )
 
 
@@ -596,6 +598,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=True,
         action='store_false',
         help='Do not run llvm-kompile process.',
+    )
+    k_kompile_args.add_argument(
+        '--with-llvm-library',
+        dest='llvm_library',
+        default=True,
+        action='store_true',
+        help='Make kompile generate a dynamic llvm library.',
     )
     k_kompile_args.add_argument('-O0', dest='o0', default=False, action='store_true', help='Optimization level 0.')
     k_kompile_args.add_argument('-O1', dest='o1', default=False, action='store_true', help='Optimization level 1.')
