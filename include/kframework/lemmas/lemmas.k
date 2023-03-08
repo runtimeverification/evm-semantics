@@ -98,6 +98,9 @@ module LEMMAS [symbolic]
     rule #range(#writeRange(M, N, BUF:Bytes ), L, K) => #range(M, L, K)
       requires 0 <Int K andBool N +Int lengthBytes(BUF) <=Int L [simplification]
 
+    rule #range(#writeRange(#writeRange(M, N1, BUF1:Bytes), N2, BUF2:Bytes), L, K ) => #range(#writeRange(M, N2, BUF2), L, K )
+       requires 0 <Int K andBool N1 +Int lengthBytes(BUF1) <=Int L [simplification]
+
   // ########################
   // Map Reasoning
   // ########################
@@ -108,22 +111,35 @@ module LEMMAS [symbolic]
     rule 0 <=Int #lookup( _M:Map , _ )             => true [simplification, smt-lemma]
     rule         #lookup( _M:Map , _ ) <Int pow256 => true [simplification, smt-lemma]
 
+    // re-order assignments
+     rule #writeRange(#writeRange(MEM, K1, BUF1:Bytes), K2, BUF2:Bytes ) => #writeRange(#writeRange(MEM, K2, BUF2), K1, BUF1)
+       requires lengthBytes(BUF2) <=Int K1 -Int K2 andBool K2  <Int K1 [simplification]
+
     // overwritten assignment
-    rule #writeRange( #writeRange ( MEM , K1 , BUF1 ) , K2 , BUF2 ) => #writeRange ( MEM , K2 , BUF2 ) requires K1 +Int lengthBytes(BUF1) <=Int K2 +Int lengthBytes(BUF2) andBool K2 <=Int K1 [simplification]
+    rule #writeRange( #writeRange ( MEM , K1 , BUF1 ) , K2 , BUF2 ) => #writeRange ( MEM , K2 , BUF2 )
+      requires K1 +Int lengthBytes(BUF1) <=Int K2 +Int lengthBytes(BUF2) andBool K2 <=Int K1 [simplification]
 
     // lookup range in memory
     rule #range( MEM, 0, W ) => MEM  requires W ==Int lengthBytes(MEM) [simplification]
+
+    // lookup range in concatenated memory buffers
+     rule #range((BUF1 +Bytes  BUF2), START, WIDTH) =>  #range(BUF2, START -Int lengthBytes(BUF1), WIDTH                        )                                                                    requires                        lengthBytes(BUF1) <=Int START                                                          [simplification]
+     rule #range((BUF1 +Bytes  _   ), START, WIDTH) =>  #range(BUF1, START                       , WIDTH                        )                                                                    requires START +Int WIDTH <=Int lengthBytes(BUF1)                       andBool 0 <=Int START andBool 0 <=Int WIDTH    [simplification]
+     rule #range((BUF1 +Bytes  BUF2), START, WIDTH) => (#range(BUF1, START                       , lengthBytes(BUF1) -Int START)) +Bytes (#range(BUF2, 0, START +Int WIDTH -Int lengthBytes(BUF1)))  requires                        lengthBytes(BUF1) <Int START +Int WIDTH andBool #range(0 <= START < lengthBytes(BUF1)) [simplification]
 
     rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true
       requires I1 =/=Int I2
       [simplification]
 
     // lengthBytes
-
      rule lengthBytes(BUF1 +Bytes BUF2)             => lengthBytes(BUF1) +Int lengthBytes(BUF2)            [simplification]
      rule lengthBytes(#buf(SIZE, _))                => SIZE                                                [simplification]
      rule lengthBytes(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
      rule lengthBytes(#padRightToWidth(WIDTH, BUF)) => WIDTH  requires lengthBytes(BUF) <=Int WIDTH        [simplification]
+
+    // TODO: custom ==K unification doesn't work in Haskell yet
+     // ++ unification
+     rule #buf(N, A) +Bytes BUF1 ==K #buf(N, B) +Bytes BUF2 => #buf(N, A) ==K #buf(N, B) andBool BUF1 ==K BUF2     [simplification]
 
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
 
@@ -144,6 +160,10 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
   // Word Reasoning
   // ########################
+
+    rule #asWord(BUF) /Int D => #asWord(#range(BUF, 0, lengthBytes(BUF) -Int log256Int(D)))
+       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
+        andBool lengthBytes(BUF) >=Int log256Int(D) [simplification]
 
     rule #asWord(#buf(N, BUF)) => BUF
       requires #range(0 < N <= 32)

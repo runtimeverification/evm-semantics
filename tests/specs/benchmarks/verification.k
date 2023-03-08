@@ -134,7 +134,14 @@ module VERIFICATION-HASKELL [symbolic, kore]
   // Buffer Reasoning
   // ########################
 
+    rule BA1 +Bytes (BA2 +Bytes BA3) => (BA1 +Bytes BA2) +Bytes BA3 [concrete(BA1, BA2), simplification]
+
     rule maxUInt160 &Int Y => Y requires 0 <=Int Y andBool Y <=Int maxUInt160 [simplification]
+
+    rule ( lengthBytes(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 0  ) =>           #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )  [simplification]
+    rule ( lengthBytes(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 32 ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )) [simplification]
+
+    rule ( lengthBytes(#ecrec( _, _, _, _ )) <=Int K ) => true requires 32 <=Int K [simplification]
 
     rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
 

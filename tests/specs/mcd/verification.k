@@ -127,6 +127,26 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
          requires #rangeSInt(256, X) andBool #rangeSInt(256, Y)
          [simplification]
 
+   // ########################
+   // Buffer Reasoning
+   // ########################
+
+    rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray } => { BY #Equals BZ }
+         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
+
+    rule { BA1:ByteArray ++ (BA2:ByteArray ++ BA3:ByteArray) #Equals BA4:ByteArray ++ BA3 } => { (BA1 ++ BA2) #Equals BA4 } [simplification]
+
+    rule { BA1:ByteArray ++ BA2:ByteArray #Equals BA3:ByteArray ++ BA4:ByteArray } =>
+         { true #Equals BA1 ==K BA3 andBool BA2 ==K BA4 }
+         requires (#sizeByteArray(BA1) ==Int #sizeByteArray(BA3))
+           orBool (#sizeByteArray(BA2) ==Int #sizeByteArray(BA4))
+         [simplification]
+
+    rule { BA1:ByteArray #Equals BA2:ByteArray ++ BA3:ByteArray } =>
+         { true #Equals BA1 ==K BA2 andBool .ByteArray ==K BA3 }
+         requires (#sizeByteArray(BA1) ==Int #sizeByteArray(BA2))
+         [simplification]
+
   // ########################
   // Map
   // ########################
