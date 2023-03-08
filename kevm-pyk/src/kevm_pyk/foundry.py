@@ -622,7 +622,7 @@ def _init_term(
         Foundry.address_TEST_CONTRACT(),
         intToken(0),
         program,
-        KVariable('ACCT_STORAGE'),
+        KApply('.Map'),
         KVariable('ACCT_ORIGSTORAGE'),
         intToken(0),
     )
