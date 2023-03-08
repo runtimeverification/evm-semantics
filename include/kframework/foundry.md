@@ -21,7 +21,7 @@ Basic commands are (and each can be passed `--help`):
   The best options are:
    - `--regen` - needed if Solidity sources change,
    - `--rekompile` - needed if K lemmas change, or K definition changes,
-   - `--require` - for adding an extra K file with lemmas, 
+   - `--require` - for adding an extra K file with lemmas,
    - `--module-import` - importing an extra K module in one of the added K files with lemmas.
 
 - `kevm foundry-prove`: Run a given proof using the KCFG-based prover (not supporting loops yet, need to fall back to typical K for that).
@@ -34,9 +34,9 @@ Basic commands are (and each can be passed `--help`):
    - `--break-on-calls` - save a state every time a call is made, good to turn on.
    - `--verbose` - output what the prover is doing to make sure it's making progress.
 
-- `kevm foundry-show`: Display the given KCFG so far as text. 
+- `kevm foundry-show`: Display the given KCFG so far as text.
   Options are:
-   - `--no-minimize` - do not omit all the gory details, 
+   - `--no-minimize` - do not omit all the gory details,
    - `--node` - can be a repeated option, display more information about a given node hash,
    - `--node-delta` - displays the delta between two given nodes in the KCFG.
 
@@ -539,7 +539,7 @@ function symbolicStorage(address) external;
 `foundry.call.symbolicStorage` will match when the `symbolicStorage` cheat code function is called.
 This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes its storage completely symbolic.
 
-```k
+```k-disabled
     rule [foundry.call.symbolicStorage]:
          <k> #call_foundry SELECTOR ARGS => #loadAccount #asWord(ARGS) ~> #setSymbolicStorage #asWord(ARGS) ... </k>
       requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
@@ -576,7 +576,7 @@ If the call depth of the current call is lower than the call depth of the `expec
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
-           <expectedDepth> ED </expectedDepth> 
+           <expectedDepth> ED </expectedDepth>
            ...
          </expectedRevert>
       requires CD <=Int ED
@@ -593,7 +593,7 @@ If the call is successful, a revert is triggered and the `FAILED` location of th
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
-           <expectedDepth> ED </expectedDepth> 
+           <expectedDepth> ED </expectedDepth>
            ...
          </expectedRevert>
       requires CD <=Int ED
@@ -860,7 +860,7 @@ function infiniteGas() external;
 Set the remaining gas to an infinite value.
 This is useful for running tests without them running out of gas.
 
-```{.k .bytes}
+```{.k-disabled .bytes }
     rule [foundry.call.infiniteGas]:
          <k> #call_foundry SELECTOR _ARGS => . ... </k>
          <gas> _ => #gas(?_VGAS) </gas>
@@ -1022,9 +1022,9 @@ function sign(uint256 privateKey, bytes32 digest) external returns (uint8 v, byt
 ```
 
 `foundry.call.sign` will match when the `sign` cheat code function is called.
-This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`. 
-To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM). 
-This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings. 
+This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`.
+To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM).
+This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the bytearrays with the `privateKey` and `digest` into strings.
 The `ECDSASign` function returns the signed data in [r,s,v] form, which we convert to a bytearray using `#parseByteStack`.
 
 ```k
@@ -1142,7 +1142,7 @@ Utils
 
 `#setSymbolicStorage ACCTID` takes a given account and makes its storage fully symbolic.
 
-```k
+```k-disabled
      syntax KItem ::= "#setSymbolicStorage" Int [klabel(foundry_setSymbolicStorage)]
  // --------------------------------------------------------------------------------
     rule <k> #setSymbolicStorage ACCTID => . ... </k>
