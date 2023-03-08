@@ -26,7 +26,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> #gas(VGas) => ?_ </gas>
+            <gas> #gas(_VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
@@ -37,7 +37,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
-            <accessedStorage> _ => ?_ </accessedStorage>
+            <accessedStorage> .Map => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -70,7 +70,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Cat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Cat.vow <- ABI_data ] </storage>
+              <storage> ACCT_ID_STORAGE => #write( ACCT_ID_STORAGE, #Cat.vow, ABI_data ) </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Cat </nonce>
             </account>

@@ -26,7 +26,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> #gas(VGas) => ?_ </gas>
+            <gas> #gas(_VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
@@ -37,7 +37,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
-            <accessedStorage> _ => ?_ </accessedStorage>
+            <accessedStorage> .Map => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -70,7 +70,12 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ] [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ] </storage>
+//               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ] [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ] </storage>
+              <storage> ACCT_ID_STORAGE => 
+                #write( #write( ACCT_ID_STORAGE, 
+                  #Vat.dai[ABI_src], Dai_src -Int ABI_rad ), 
+                  #Vat.dai[ABI_dst], Dai_dst +Int ABI_rad )
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
             </account>
@@ -153,7 +158,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
-            <accessedStorage> _ => ?_ </accessedStorage>
+            <accessedStorage> .Map => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -251,7 +256,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
-            <accessedStorage> _ => ?_ </accessedStorage>
+            <accessedStorage> .Map => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>

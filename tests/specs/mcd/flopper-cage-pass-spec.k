@@ -37,7 +37,7 @@ module FLOPPER-CAGE-PASS-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
-            <accessedStorage> _ => ?_ </accessedStorage>
+            <accessedStorage> .Map => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -70,7 +70,7 @@ module FLOPPER-CAGE-PASS-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Flopper_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flopper.live <- 0 ] [ #Flopper.vow <- CALLER_ID ] </storage>
+              <storage> ACCT_ID_STORAGE => #write( #write( ACCT_ID_STORAGE, #Flopper.live, 0 ), #Flopper.vow, CALLER_ID ) </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Flopper => ?_ </nonce>
             </account>

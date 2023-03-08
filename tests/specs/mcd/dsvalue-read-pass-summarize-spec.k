@@ -115,7 +115,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
       <evm>
         <output> _ => #buf(32, #lookup(ACCT_STORAGE, 2)) </output>              // from counterexample
         <statusCode> _ => EVMC_SUCCESS </statusCode>
-        <callState>
+        (<callState>
           <id> ACCT_ID </id>
           <program> DSValue_bin_runtime </program>
           <jumpDests> #computeValidJumpDests(DSValue_bin_runtime) </jumpDests>
@@ -127,7 +127,11 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
           <localMem> .Memory => ?_ </localMem>
           <memoryUsed> 0 => ?_ </memoryUsed>
           (_ => ?_)
-        </callState>
+        </callState>)
+        <substate>
+          <accessedStorage> .Map => ?_ </accessedStorage>
+          (_ => ?_)
+        </substate>
         (_ => ?_)
       </evm>
       <account>
