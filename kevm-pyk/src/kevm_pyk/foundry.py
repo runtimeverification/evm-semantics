@@ -203,6 +203,7 @@ def foundry_prove(
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
+    rpc_command: Optional[str] = None,
 ) -> Dict[str, bool]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -276,6 +277,12 @@ def foundry_prove(
             kcfgs[test] = kcfg
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
+    if rpc_command is not None:
+        rpc_cmd = rpc_command.split(' ')
+        _LOGGER.info(f'Using RPC server !{rpc_cmd}')
+    else:
+        rpc_cmd = ['kore-rpc']
+
     return parallel_kcfg_explore(
         foundry,
         kcfgs,
@@ -290,6 +297,7 @@ def foundry_prove(
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
         bug_report=br,
+        rpc_cmd=rpc_cmd,
     )
 
 

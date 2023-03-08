@@ -280,6 +280,7 @@ def exec_foundry_prove(
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
+    rpc_command: Optional[str] = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -300,6 +301,7 @@ def exec_foundry_prove(
         implication_every_block=implication_every_block,
         rpc_base_port=rpc_base_port,
         bug_report=bug_report,
+        rpc_command=rpc_command,
     )
     failed = 0
     for pid, r in results.items():
@@ -533,6 +535,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=None,
         type=int,
         help='Store every Nth state in the CFG for inspection.',
+    )
+
+    explore_args.add_argument(
+        '--with-custom-rpc',
+        dest='rpc_command',
+        type=str,
+        help='Custom command to start RPC server',
     )
 
     k_args = ArgumentParser(add_help=False)
