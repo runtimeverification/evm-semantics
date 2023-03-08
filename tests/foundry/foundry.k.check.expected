@@ -2318,7 +2318,7 @@ module GASTEST-BIN-RUNTIME
     rule  ( #loc ( GasTest . stdstore ) => 1 )
       
     
-    syntax ByteArray ::= GasTestContract "." GasTestMethod [function(), symbol(), klabel(method_GasTest)]
+    syntax Bytes ::= GasTestContract "." GasTestMethod [function(), symbol(), klabel(method_GasTest)]
     
     syntax GasTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_GasTest_IS_SCRIPT)]
     
