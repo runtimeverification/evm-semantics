@@ -22,6 +22,10 @@ module VERIFICATION
 
     syntax Bytes ::= "#generatedCode" [function]
  // --------------------------------------------
+    // This rule is used to avoid complicated memory allocation gas cost.
+    // when doing actual proof, the rule is no longer needed 
+    // as #generatedCode will be a concrete byte array.
+    rule lengthBytes(#generatedCode) => 0 [simplification]
 
   // ########################
   // Arithmetic
