@@ -623,7 +623,7 @@ def _init_term(
         intToken(0),
         program,
         KApply('.Map'),
-        KVariable('ACCT_ORIGSTORAGE'),
+        KApply('.Map'),
         intToken(0),
     )
     init_subst = {
@@ -719,11 +719,11 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     post_account_cell = KEVM.account_cell(
         Foundry.address_TEST_CONTRACT(),
-        KVariable('ACCT_BALANCE'),
+        KVariable('ACCT_BALANCE_FINAL'),
         program,
         KVariable('ACCT_STORAGE_FINAL'),
-        KVariable('ACCT_ORIGSTORAGE'),
-        KVariable('ACCT_NONCE'),
+        KVariable('ACCT_ORIGSTORAGE_FINAL'),
+        KVariable('ACCT_NONCE_FINAL'),
     )
     final_subst = {
         'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')]),
