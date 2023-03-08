@@ -79,7 +79,8 @@ run_kompile() {
                    if [[ "$(uname -s)" == 'Darwin' ]]; then
                        openssl_root="$(brew --prefix openssl)"
                        brew_root="$(brew --prefix)"
-                       kompile_opts+=( --target darwin --brew-root "${brew_root}" --libcryptopp-dir "${libcryptopp_dir}" --openssl-root "${openssl_root}" )
+                       kompile_opts+=( --target darwin --libcryptopp-dir "${libcryptopp_dir}" )
+                       kompile_opts+=( --brew-root "${brew_root}" --openssl-root "${openssl_root}" )
                    fi
                    ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
