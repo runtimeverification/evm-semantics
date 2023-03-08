@@ -1,14 +1,12 @@
 diff --git a/bin/kevm b/bin/kevm
-index a38c7d5ca..424f5fd3e 100755
+index bafe061be..ef9fd8414 100755
 --- a/bin/kevm
 +++ b/bin/kevm
-@@ -97,9 +97,6 @@ run_kompile() {
-                    if [[ "$(uname -s)" == 'Linux' ]]; then
-                        ccopts+=( -lprocps )
-                    elif [[ "$(uname -s)" == 'Darwin' ]]; then
--                       openssl_root="$(brew --prefix openssl)"
--                       brew_root="$(brew --prefix)"
--                       ccopts+=( -I${brew_root}/include -L/${brew_root}/lib -I${openssl_root}/include -L${openssl_root}/lib )
-                        ccopts+=( -I${libcryptopp_dir}/include -L/${libcryptopp_dir}/lib                                     )
+@@ -80,7 +80,6 @@ run_kompile() {
+                        openssl_root="$(brew --prefix openssl)"
+                        brew_root="$(brew --prefix)"
+                        kompile_opts+=( --target darwin --libcryptopp-dir "${libcryptopp_dir}" )
+-                       kompile_opts+=( --brew-root "${brew_root}" --openssl-root "${openssl_root}" )
                     fi
-                    for ccopt in "${ccopts[@]}"; do
+                    ;;
+         *)       fatal "Unknown backend for kompile: ${backend}" ;;
