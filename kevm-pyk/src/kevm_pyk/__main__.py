@@ -602,7 +602,7 @@ def _create_argument_parser() -> ArgumentParser:
     k_kompile_args.add_argument(
         '--with-llvm-library',
         dest='llvm_library',
-        default=True,
+        default=False,
         action='store_true',
         help='Make kompile generate a dynamic llvm library.',
     )
