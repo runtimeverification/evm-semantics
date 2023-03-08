@@ -22,6 +22,7 @@ from .foundry import (
     foundry_show,
     foundry_simplify_node,
     foundry_step_node,
+    foundry_to_dot,
 )
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM
@@ -285,7 +286,7 @@ def exec_foundry_prove(
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
-    foundry_prove(
+    results = foundry_prove(
         foundry_out=foundry_out,
         max_depth=max_depth,
         max_iterations=max_iterations,
@@ -300,6 +301,14 @@ def exec_foundry_prove(
         rpc_base_port=rpc_base_port,
         bug_report=bug_report,
     )
+    failed = 0
+    for pid, r in results.items():
+        if r:
+            print(f'PROOF PASSED: {pid}')
+        else:
+            failed += 1
+            print(f'PROOF FAILED: {pid}')
+    sys.exit(failed)
 
 
 def exec_foundry_show(
@@ -311,7 +320,7 @@ def exec_foundry_show(
     minimize: bool = True,
     **kwargs: Any,
 ) -> None:
-    foundry_show(
+    output = foundry_show(
         foundry_out=foundry_out,
         test=test,
         nodes=nodes,
@@ -319,17 +328,18 @@ def exec_foundry_show(
         to_module=to_module,
         minimize=minimize,
     )
+    print(output)
 
 
-def exec_foundry_list(
-    foundry_out: Path,
-    details: bool = True,
-    **kwargs: Any,
-) -> None:
-    foundry_list(
-        foundry_out=foundry_out,
-        details=details,
-    )
+def exec_foundry_to_dot(foundry_out: Path, test: str, **kwargs: Any) -> None:
+    foundry_to_dot(foundry_out=foundry_out, test=test)
+
+
+def exec_foundry_list(foundry_out: Path, details: bool = True, **kwargs: Any) -> None:
+    stats = foundry_list(foundry_out=foundry_out)
+    delim = '\n\n' if details else '\n'
+    output = delim.join(stat.pretty(details=details) for stat in stats)
+    print(output)
 
 
 def exec_run(
@@ -381,7 +391,7 @@ def exec_foundry_simplify_node(
     bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
-    foundry_simplify_node(
+    pretty_term = foundry_simplify_node(
         foundry_out=foundry_out,
         test=test,
         node=node,
@@ -389,6 +399,7 @@ def exec_foundry_simplify_node(
         minimize=minimize,
         bug_report=bug_report,
     )
+    print(f'Simplified:\n{pretty_term}')
 
 
 def exec_foundry_step_node(
@@ -777,6 +788,14 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_show_args.add_argument(
         '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
     )
+
+    foundry_to_dot = command_parser.add_parser(
+        'foundry-to-dot',
+        help='Dump the given CFG for the test as DOT for visualization.',
+        parents=[shared_args],
+    )
+    foundry_to_dot.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_to_dot.add_argument('test', type=str, help='Display the CFG for this test.')
 
     foundry_list_args = command_parser.add_parser(
         'foundry-list',

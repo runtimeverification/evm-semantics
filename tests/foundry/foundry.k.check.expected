@@ -2287,6 +2287,89 @@ module FORKTEST-BIN-RUNTIME
 
 endmodule
 
+module GASTEST-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= GasTestContract
+    
+    syntax GasTestContract ::= "GasTest" [symbol(), klabel(contract_GasTest)]
+    
+      
+    
+    syntax Field ::= GasTestField
+    
+    syntax GasTestField ::= "IS_TEST" [symbol(), klabel(field_GasTest_IS_TEST)]
+    
+    syntax GasTestField ::= "_failed" [symbol(), klabel(field_GasTest__failed)]
+    
+    syntax GasTestField ::= "IS_SCRIPT" [symbol(), klabel(field_GasTest_IS_SCRIPT)]
+    
+    syntax GasTestField ::= "stdstore" [symbol(), klabel(field_GasTest_stdstore)]
+    
+    rule  ( #loc ( GasTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( GasTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( GasTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( GasTest . stdstore ) => 1 )
+      
+    
+    syntax ByteArray ::= GasTestContract "." GasTestMethod [function(), symbol(), klabel(method_GasTest)]
+    
+    syntax GasTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_GasTest_IS_SCRIPT)]
+    
+    syntax GasTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_GasTest_IS_TEST)]
+    
+    syntax GasTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_GasTest_failed)]
+    
+    syntax GasTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_GasTest_kevm)]
+    
+    syntax GasTestMethod ::= "testInfiniteGas" "(" ")" [symbol(), klabel(method_GasTest_testInfiniteGas)]
+    
+    syntax GasTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_GasTest_vm)]
+    
+    rule  ( GasTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( GasTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( GasTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( GasTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
+      
+    
+    rule  ( GasTest . testInfiniteGas ( ) => #abiCallData ( "testInfiniteGas" , .TypedArgs ) )
+      
+    
+    rule  ( GasTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "kevm" ) => 3601001590 )
+      
+    
+    rule  ( selector ( "testInfiniteGas" ) => 1677640502 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
 module GETCODETEST-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -2425,6 +2508,8 @@ module KEVMCHEATSBASE-BIN-RUNTIME
     
     syntax KEVMCheatsBaseMethod ::= "expectStaticCall" "(" Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectStaticCall)]
     
+    syntax KEVMCheatsBaseMethod ::= "infiniteGas" "(" ")" [symbol(), klabel(method_KEVMCheatsBase_infiniteGas)]
+    
     syntax KEVMCheatsBaseMethod ::= "symbolicStorage" "(" Int ")" [symbol(), klabel(method_KEVMCheatsBase_symbolicStorage)]
     
     rule  ( KEVMCheatsBase . allowCallsToAddress ( V0_ ) => #abiCallData ( "allowCallsToAddress" , #address ( V0_ ) , .TypedArgs ) )
@@ -2480,6 +2565,9 @@ module KEVMCHEATSBASE-BIN-RUNTIME
                ))
       
     
+    rule  ( KEVMCheatsBase . infiniteGas ( ) => #abiCallData ( "infiniteGas" , .TypedArgs ) )
+      
+    
     rule  ( KEVMCheatsBase . symbolicStorage ( V0_ ) => #abiCallData ( "symbolicStorage" , #address ( V0_ ) , .TypedArgs ) )
        ensures #rangeAddress ( V0_ )
       
@@ -2509,6 +2597,9 @@ module KEVMCHEATSBASE-BIN-RUNTIME
       
     
     rule  ( selector ( "expectStaticCall" ) => 2232945516 )
+      
+    
+    rule  ( selector ( "infiniteGas" ) => 3986649939 )
       
     
     rule  ( selector ( "symbolicStorage" ) => 769677742 )
@@ -6689,6 +6780,7 @@ module FOUNDRY-MAIN
     imports public FFITEST-BIN-RUNTIME
     imports public FILESTEST-BIN-RUNTIME
     imports public FORKTEST-BIN-RUNTIME
+    imports public GASTEST-BIN-RUNTIME
     imports public GETCODETEST-BIN-RUNTIME
     imports public KEVMCHEATS-BIN-RUNTIME
     imports public KEVMCHEATSBASE-BIN-RUNTIME
