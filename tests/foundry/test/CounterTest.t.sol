@@ -2,6 +2,7 @@
 pragma solidity >=0.8.13;
 
 import "forge-std/Test.sol";
+import "../src/KEVMCheats.sol";
 
 contract Counter {
     uint256 public number;
@@ -15,7 +16,7 @@ contract Counter {
     }
 }
 
-contract CounterTest is Test {
+contract CounterTest is Test, KEVMCheats {
     Counter public counter;
     
     // function setUp() public {
@@ -24,6 +25,7 @@ contract CounterTest is Test {
     // }
 
     function testIncrement() public {
+        kevm.infiniteGas();
         counter = new Counter();
         counter.setNumber(0);
         counter.increment();
@@ -32,6 +34,7 @@ contract CounterTest is Test {
 
     function testSetNumber(uint256 x) public {
         //setUp();
+        kevm.infiniteGas();
         counter = new Counter();
         counter.setNumber(0);
         counter.setNumber(x);

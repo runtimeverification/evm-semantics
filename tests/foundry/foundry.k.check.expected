@@ -1323,6 +1323,8 @@ module COUNTERTEST-BIN-RUNTIME
     
     syntax CounterTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_CounterTest_failed)]
     
+    syntax CounterTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_CounterTest_kevm)]
+    
     syntax CounterTestMethod ::= "testIncrement" "(" ")" [symbol(), klabel(method_CounterTest_testIncrement)]
     
     syntax CounterTestMethod ::= "testSetNumber" "(" Int ")" [symbol(), klabel(method_CounterTest_testSetNumber)]
@@ -1339,6 +1341,9 @@ module COUNTERTEST-BIN-RUNTIME
       
     
     rule  ( CounterTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( CounterTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
       
     
     rule  ( CounterTest . testIncrement ( ) => #abiCallData ( "testIncrement" , .TypedArgs ) )
@@ -1361,6 +1366,9 @@ module COUNTERTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "kevm" ) => 3601001590 )
       
     
     rule  ( selector ( "testIncrement" ) => 3105072586 )
