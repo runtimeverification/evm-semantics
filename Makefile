@@ -206,7 +206,8 @@ kevm_files := abi.md                      \
               state-utils.md              \
               word.md                     \
               lemmas/lemmas.k             \
-              lemmas/int-simplification.k
+              lemmas/int-simplification.k \
+              lemmas/bytes-simplification.k
 
 kevm_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_files))
 
