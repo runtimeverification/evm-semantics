@@ -9,7 +9,7 @@ from pyk.kast.inner import KApply, KInner, KLabel, KRewrite, KSequence, KSort, K
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRuleLike
 from pyk.kcfg import KCFG, KCFGExplore
-from pyk.ktool.kompile import KompileBackend
+from pyk.ktool.kompile import KompileBackend, LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
@@ -117,6 +117,7 @@ def foundry_kompile(
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
     foundry_definition_dir = foundry_out / 'kompiled'
+    foundry_llvm_dir = foundry_out / 'kompiled-llvm'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
     srcmap_dir = foundry_out / 'srcmaps'
@@ -171,6 +172,21 @@ def foundry_kompile(
             ccopts=ccopts,
             llvm_kompile=llvm_kompile,
         )
+        if llvm_kompile:
+            _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
+            KEVM.kompile(
+                foundry_llvm_dir,
+                KompileBackend.LLVM,
+                foundry_main_file,
+                emit_json=True,
+                includes=includes,
+                main_module_name=main_module,
+                syntax_module_name=syntax_module,
+                md_selector=md_selector,
+                debug=debug,
+                ccopts=ccopts,
+                llvm_kompile_type=LLVMKompileType.C,
+            )
 
 
 def foundry_prove(
