@@ -1,10 +1,13 @@
 diff --git a/bin/kevm b/bin/kevm
-index bafe061be..ef9fd8414 100755
+index bafe061be..328108265 100755
 --- a/bin/kevm
 +++ b/bin/kevm
-@@ -80,7 +80,6 @@ run_kompile() {
-                        openssl_root="$(brew --prefix openssl)"
-                        brew_root="$(brew --prefix)"
+@@ -77,10 +77,7 @@ run_kompile() {
+         llvm|node) backend=llvm
+                    kompile_opts+=( --plugin-include "${plugin_include}" --libff-dir "${libff_dir}" )
+                    if [[ "$(uname -s)" == 'Darwin' ]]; then
+-                       openssl_root="$(brew --prefix openssl)"
+-                       brew_root="$(brew --prefix)"
                         kompile_opts+=( --target darwin --libcryptopp-dir "${libcryptopp_dir}" )
 -                       kompile_opts+=( --brew-root "${brew_root}" --openssl-root "${openssl_root}" )
                     fi
