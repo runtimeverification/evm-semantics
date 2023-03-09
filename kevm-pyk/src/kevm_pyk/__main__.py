@@ -123,7 +123,7 @@ def exec_kompile(
             if brew_root is not None:
                 ccopts += [
                     f'-I{brew_root}/include',
-                    f'-L/{brew_root}/lib',
+                    f'-L{brew_root}/lib',
                 ]
             if openssl_root is not None:
                 ccopts += [
@@ -133,7 +133,7 @@ def exec_kompile(
             if libcryptopp_dir is not None:
                 ccopts += [
                     f'-I{libcryptopp_dir}/include',
-                    f'-L/{libcryptopp_dir}/lib',
+                    f'-L{libcryptopp_dir}/lib',
                 ]
         elif target == 'linux':
             ccopts += ['-lprocps']
