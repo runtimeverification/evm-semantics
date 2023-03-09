@@ -11,7 +11,7 @@ module DSVALUE-PEEK-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> _ => #buf(32, Value) ++ #buf(32, Ok) </output>
+          <output> _ => #buf(32, Value) +Bytes #buf(32, Ok) </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -21,10 +21,10 @@ module DSVALUE-PEEK-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(DSValue_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("peek", .TypedArgs) ++ CD => ?_ </callData>
+            <callData> #abiCallData("peek", .TypedArgs) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -95,7 +95,7 @@ module DSVALUE-PEEK-PASS-ROUGH-SPEC
        andBool (#rangeAddress(Owner)
        andBool (#rangeBytes(32, Value)
        andBool (#rangeBool(Ok)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#notPrecompileAddress(Owner)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)

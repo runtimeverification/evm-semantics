@@ -21,10 +21,10 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(DSToken_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("approve", #address(ABI_usr), #uint256(ABI_wad)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("approve", #address(ABI_usr), #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -97,7 +97,7 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
        andBool (#rangeUInt(256, Allowed)
        andBool (#rangeBool(Stopped)
        andBool (#rangeAddress(Owner)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#notPrecompileAddress(Owner)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1))))))))))
