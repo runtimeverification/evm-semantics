@@ -603,10 +603,8 @@ def _method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Me
 
 
 def _init_cterm(init_term: KInner) -> CTerm:
-    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), Foundry.loc_FOUNDRY_FAILED())
     init_cterm = CTerm(init_term)
     init_cterm = KEVM.add_invariant(init_cterm)
-    init_cterm = init_cterm.add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, intToken(0)])))
     return init_cterm
 
 
@@ -667,7 +665,7 @@ def _init_term(
         'ACCOUNTS_CELL': KEVM.accounts(
             [
                 account_cell,  # test contract address
-                Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE')),
+                Foundry.account_CHEATCODE_ADDRESS(KApply('.Map')),
                 KVariable('ACCOUNTS_INIT'),
             ]
         ),
