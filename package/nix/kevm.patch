@@ -1,8 +1,9 @@
 diff --git a/bin/kevm b/bin/kevm
-index bafe061be..328108265 100755
+index bafe061be..3f983eeac 100755
 --- a/bin/kevm
 +++ b/bin/kevm
-@@ -77,10 +77,7 @@ run_kompile() {
+@@ -76,12 +76,6 @@ run_kompile() {
+         node)            kompile_opts+=( --kompile-mode 'node' --no-llvm-kompile ) ;;&
          llvm|node) backend=llvm
                     kompile_opts+=( --plugin-include "${plugin_include}" --libff-dir "${libff_dir}" )
 -                   if [[ "$(uname -s)" == 'Darwin' ]]; then
@@ -13,3 +14,4 @@ index bafe061be..328108265 100755
 -                   fi
                     ;;
          *)       fatal "Unknown backend for kompile: ${backend}" ;;
+     esac
