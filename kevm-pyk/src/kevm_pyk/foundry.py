@@ -5,7 +5,7 @@ from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple
 
 from pyk.cli_utils import BugReport, check_file_path
 from pyk.cterm import CTerm, build_claim, build_rule
-from pyk.kast.inner import KApply, KInner, KLabel, KRewrite, KSequence, KSort, KToken, KVariable, Subst, build_assoc
+from pyk.kast.inner import KApply, KInner, KRewrite, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRuleLike
 from pyk.kcfg import KCFG, KCFGExplore
