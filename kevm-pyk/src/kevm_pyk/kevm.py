@@ -172,6 +172,7 @@ class KEVM(KProve, KRun):
             'EVM-TYPES.#asByteStack',
             'EVM-TYPES.#asByteStackAux.recursive',
             'EVM-TYPES.#asWord.recursive',
+            'EVM-TYPES.Bytes.range',
             'EVM-TYPES.bytesRange',
             'EVM-TYPES.mapWriteBytes.recursive',
             'EVM-TYPES.#padRightToWidth',
