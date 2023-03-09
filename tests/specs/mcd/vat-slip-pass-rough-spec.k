@@ -11,7 +11,7 @@ module VAT-SLIP-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -21,10 +21,10 @@ module VAT-SLIP-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("slip", #bytes32(ABI_ilk), #address(ABI_usr), #int256(ABI_wad)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("slip", #bytes32(ABI_ilk), #address(ABI_usr), #int256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -97,7 +97,7 @@ module VAT-SLIP-PASS-ROUGH-SPEC
        andBool (#rangeSInt(256, ABI_wad)
        andBool (#rangeUInt(256, May)
        andBool (#rangeUInt(256, Gem)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (((May ==Int 1))

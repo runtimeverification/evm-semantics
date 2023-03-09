@@ -11,7 +11,7 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -21,10 +21,10 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("frob", #bytes32(ABI_i), #address(ABI_u), #address(ABI_v), #address(ABI_w), #int256(ABI_dink), #int256(ABI_dart)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("frob", #bytes32(ABI_i), #address(ABI_u), #address(ABI_v), #address(ABI_w), #int256(ABI_dink), #int256(ABI_dart)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -113,7 +113,7 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Can_v)
        andBool (#rangeUInt(256, Can_w)
        andBool (#rangeUInt(256, Live)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((ABI_u =/=Int ABI_v)
        andBool ((ABI_v =/=Int ABI_w)
        andBool ((ABI_u =/=Int ABI_w)

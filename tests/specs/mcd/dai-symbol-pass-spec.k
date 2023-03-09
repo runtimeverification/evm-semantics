@@ -21,10 +21,10 @@ module DAI-SYMBOL-PASS-SPEC
             <jumpDests> #computeValidJumpDests(Dai_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("symbol", .TypedArgs) ++ CD => ?_ </callData>
+            <callData> #abiCallData("symbol", .TypedArgs) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( VGas +Int -672 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -92,7 +92,7 @@ module DAI-SYMBOL-PASS-SPEC
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
 
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool ((VCallValue ==Int 0)))
 
 

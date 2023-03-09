@@ -21,10 +21,10 @@ module DSTOKEN-BURN-SELF-FAIL-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(DSToken_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("burn", #address(ABI_src), #uint256(ABI_wad)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("burn", #address(ABI_src), #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -100,7 +100,7 @@ module DSTOKEN-BURN-SELF-FAIL-ROUGH-SPEC
        andBool (#rangeUInt(256, Allowance)
        andBool (#rangeBool(Stoppedd)
        andBool (#rangeAddress(Owner)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Owner))
        andBool ((CALLER_ID ==Int Owner)
        andBool ((CALLER_ID =/=Int ACCT_ID)
