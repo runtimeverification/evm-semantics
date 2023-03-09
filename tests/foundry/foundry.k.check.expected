@@ -1232,6 +1232,156 @@ module CONTRACTBTEST-BIN-RUNTIME
 
 endmodule
 
+module COUNTER-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= CounterContract
+    
+    syntax CounterContract ::= "Counter" [symbol(), klabel(contract_Counter)]
+    
+      
+    
+    syntax Field ::= CounterField
+    
+    syntax CounterField ::= "number" [symbol(), klabel(field_Counter_number)]
+    
+    rule  ( #loc ( Counter . number ) => 0 )
+      
+    
+    syntax Bytes ::= CounterContract "." CounterMethod [function(), symbol(), klabel(method_Counter)]
+    
+    syntax CounterMethod ::= "increment" "(" ")" [symbol(), klabel(method_Counter_increment)]
+    
+    syntax CounterMethod ::= "number" "(" ")" [symbol(), klabel(method_Counter_number)]
+    
+    syntax CounterMethod ::= "setNumber" "(" Int ")" [symbol(), klabel(method_Counter_setNumber)]
+    
+    rule  ( Counter . increment ( ) => #abiCallData ( "increment" , .TypedArgs ) )
+      
+    
+    rule  ( Counter . number ( ) => #abiCallData ( "number" , .TypedArgs ) )
+      
+    
+    rule  ( Counter . setNumber ( V0_newNumber ) => #abiCallData ( "setNumber" , #uint256 ( V0_newNumber ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_newNumber )
+      
+    
+    rule  ( selector ( "increment" ) => 3500007562 )
+      
+    
+    rule  ( selector ( "number" ) => 2206332298 )
+      
+    
+    rule  ( selector ( "setNumber" ) => 1068876235 )
+      
+
+endmodule
+
+module COUNTERTEST-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= CounterTestContract
+    
+    syntax CounterTestContract ::= "CounterTest" [symbol(), klabel(contract_CounterTest)]
+    
+      
+    
+    syntax Field ::= CounterTestField
+    
+    syntax CounterTestField ::= "IS_TEST" [symbol(), klabel(field_CounterTest_IS_TEST)]
+    
+    syntax CounterTestField ::= "_failed" [symbol(), klabel(field_CounterTest__failed)]
+    
+    syntax CounterTestField ::= "IS_SCRIPT" [symbol(), klabel(field_CounterTest_IS_SCRIPT)]
+    
+    syntax CounterTestField ::= "stdstore" [symbol(), klabel(field_CounterTest_stdstore)]
+    
+    syntax CounterTestField ::= "counter" [symbol(), klabel(field_CounterTest_counter)]
+    
+    rule  ( #loc ( CounterTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( CounterTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( CounterTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( CounterTest . stdstore ) => 1 )
+      
+    
+    rule  ( #loc ( CounterTest . counter ) => 8 )
+      
+    
+    syntax Bytes ::= CounterTestContract "." CounterTestMethod [function(), symbol(), klabel(method_CounterTest)]
+    
+    syntax CounterTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_CounterTest_IS_SCRIPT)]
+    
+    syntax CounterTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_CounterTest_IS_TEST)]
+    
+    syntax CounterTestMethod ::= "counter" "(" ")" [symbol(), klabel(method_CounterTest_counter)]
+    
+    syntax CounterTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_CounterTest_failed)]
+    
+    syntax CounterTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_CounterTest_kevm)]
+    
+    syntax CounterTestMethod ::= "testIncrement" "(" ")" [symbol(), klabel(method_CounterTest_testIncrement)]
+    
+    syntax CounterTestMethod ::= "testSetNumber" "(" Int ")" [symbol(), klabel(method_CounterTest_testSetNumber)]
+    
+    syntax CounterTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_CounterTest_vm)]
+    
+    rule  ( CounterTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( CounterTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( CounterTest . counter ( ) => #abiCallData ( "counter" , .TypedArgs ) )
+      
+    
+    rule  ( CounterTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( CounterTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
+      
+    
+    rule  ( CounterTest . testIncrement ( ) => #abiCallData ( "testIncrement" , .TypedArgs ) )
+      
+    
+    rule  ( CounterTest . testSetNumber ( V0_x ) => #abiCallData ( "testSetNumber" , #uint256 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_x )
+      
+    
+    rule  ( CounterTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "counter" ) => 1639719450 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "kevm" ) => 3601001590 )
+      
+    
+    rule  ( selector ( "testIncrement" ) => 3105072586 )
+      
+    
+    rule  ( selector ( "testSetNumber" ) => 1895400894 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
 module DYNAMICTYPES-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -4474,6 +4624,8 @@ module SYMBOLICSTORAGETEST-BIN-RUNTIME
     
     syntax SymbolicStorageTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_kevm)]
     
+    syntax SymbolicStorageTestMethod ::= "testEmptyInitialStorage" "(" Int ")" [symbol(), klabel(method_SymbolicStorageTest_testEmptyInitialStorage)]
+    
     syntax SymbolicStorageTestMethod ::= "testFail_SymbolicStorage" "(" Int ")" [symbol(), klabel(method_SymbolicStorageTest_testFail_SymbolicStorage)]
     
     syntax SymbolicStorageTestMethod ::= "testFail_SymbolicStorage1" "(" Int ")" [symbol(), klabel(method_SymbolicStorageTest_testFail_SymbolicStorage1)]
@@ -4490,6 +4642,10 @@ module SYMBOLICSTORAGETEST-BIN-RUNTIME
       
     
     rule  ( SymbolicStorageTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicStorageTest . testEmptyInitialStorage ( V0_slot ) => #abiCallData ( "testEmptyInitialStorage" , #uint256 ( V0_slot ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_slot )
       
     
     rule  ( SymbolicStorageTest . testFail_SymbolicStorage ( V0_slot ) => #abiCallData ( "testFail_SymbolicStorage" , #uint256 ( V0_slot ) , .TypedArgs ) )
@@ -4513,6 +4669,9 @@ module SYMBOLICSTORAGETEST-BIN-RUNTIME
       
     
     rule  ( selector ( "kevm" ) => 3601001590 )
+      
+    
+    rule  ( selector ( "testEmptyInitialStorage" ) => 2517793094 )
       
     
     rule  ( selector ( "testFail_SymbolicStorage" ) => 821477045 )
@@ -6768,6 +6927,8 @@ module FOUNDRY-MAIN
     imports public CONTRACT-BIN-RUNTIME
     imports public CONTRACTTEST-BIN-RUNTIME
     imports public CONTRACTBTEST-BIN-RUNTIME
+    imports public COUNTER-BIN-RUNTIME
+    imports public COUNTERTEST-BIN-RUNTIME
     imports public DYNAMICTYPES-BIN-RUNTIME
     imports public EXPECTEMIT-BIN-RUNTIME
     imports public EMITCONTRACTTEST-BIN-RUNTIME
