@@ -51,10 +51,10 @@ module LEMMAS-MCD-SYNTAX
   // Buffer Reasoning
   // ########################
 
-    syntax ByteArray ::= #asByteStackInWidth    ( Int, Int )                 [function]
-                       | #asByteStackInWidthaux ( Int, Int, Int, ByteArray ) [function]
- // -----------------------------------------------------------------------------------
-    rule #asByteStackInWidth(X, N) => #asByteStackInWidthaux(X, N -Int 1, N, .ByteArray)
+    syntax Bytes ::= #asByteStackInWidth    ( Int, Int )             [function]
+                   | #asByteStackInWidthaux ( Int, Int, Int, Bytes ) [function]
+ // ---------------------------------------------------------------------------
+    rule #asByteStackInWidth(X, N) => #asByteStackInWidthaux(X, N -Int 1, N, .Bytes)
 
     rule #asByteStackInWidthaux(X, I, N, WS) => #asByteStackInWidthaux(X, I -Int 1, N, nthbyteof(X, I, N) : WS) when I >Int 0
     rule #asByteStackInWidthaux(X, 0, N, WS) => nthbyteof(X, 0, N) : WS
@@ -127,34 +127,33 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
          requires #rangeSInt(256, X) andBool #rangeSInt(256, Y)
          [simplification]
 
-  // ########################
-  // Buffer Reasoning
-  // ########################
+   // ########################
+   // Buffer Reasoning
+   // ########################
 
-    rule { #buf(32, BY:Int):ByteArray #Equals #buf(32, BZ:Int):ByteArray } => { BY #Equals BZ }
+    rule { #buf(32, BY:Int):Bytes #Equals #buf(32, BZ:Int):Bytes } => { BY #Equals BZ }
          requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
 
-    rule { BA1:ByteArray ++ (BA2:ByteArray ++ BA3:ByteArray) #Equals BA4:ByteArray ++ BA3 } => { (BA1 ++ BA2) #Equals BA4 } [simplification]
+    rule { BA1:Bytes +Bytes (BA2:Bytes +Bytes BA3:Bytes) #Equals BA4:Bytes +Bytes BA3 } => { (BA1 +Bytes BA2) #Equals BA4 } [simplification]
 
-    rule { BA1:ByteArray ++ BA2:ByteArray #Equals BA3:ByteArray ++ BA4:ByteArray } =>
+    rule { BA1:Bytes +Bytes BA2:Bytes #Equals BA3:Bytes +Bytes BA4:Bytes } =>
          { true #Equals BA1 ==K BA3 andBool BA2 ==K BA4 }
-         requires (#sizeByteArray(BA1) ==Int #sizeByteArray(BA3))
-           orBool (#sizeByteArray(BA2) ==Int #sizeByteArray(BA4))
+         requires (lengthBytes(BA1) ==Int lengthBytes(BA3))
+           orBool (lengthBytes(BA2) ==Int lengthBytes(BA4))
          [simplification]
 
-    rule { BA1:ByteArray #Equals BA2:ByteArray ++ BA3:ByteArray } =>
-         { true #Equals BA1 ==K BA2 andBool .ByteArray ==K BA3 }
-         requires (#sizeByteArray(BA1) ==Int #sizeByteArray(BA2))
+    rule { BA1:Bytes #Equals BA2:Bytes +Bytes BA3:Bytes } =>
+         { true #Equals BA1 ==K BA2 andBool .Bytes ==K BA3 }
+         requires (lengthBytes(BA1) ==Int lengthBytes(BA2))
          [simplification]
 
   // ########################
   // Map
   // ########################
 
-    rule #range(M:Memory [ K <- V ]                        , START, WIDTH) => #range(M [ K := (V : .ByteArray) ], START, WIDTH)  requires K +Int 1                    ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START [concrete(K    , V     ), simplification]
-    rule #range(M:Memory [ K <- V ] [ K' := VS':ByteArray ], START, WIDTH) => #range(M [ K := (V : VS')        ], START, WIDTH)  requires K' +Int #sizeByteArray(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START
-                                                                                                                                  andBool K +Int 1                    ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
-
+    rule #range(M:Bytes [ K <- V ]                            , START, WIDTH) => #range(#writeRange(M, K, (V : .Bytes) ), START, WIDTH)  requires K +Int 1                 ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START [concrete(K    , V     ), simplification]
+    rule #range(#writeRange(M:Bytes [ K <- V ], K', VS':Bytes), START, WIDTH) => #range(#writeRange(M, K, (V : VS')    ), START, WIDTH)  requires K' +Int lengthBytes(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START
+                                                                                                                                          andBool K +Int 1                 ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
     rule { (M:Map [K <- V1]) #Equals (M [K <- V2]) } => { V1 #Equals V2 }
          [simplification]
 
@@ -169,14 +168,14 @@ module LEMMAS-MCD-COMMON
   // Buffer Reasoning
   // ########################
 
-    rule (W0 : WS) [ 0     .. WIDTH ] => W0 : (WS [ 0 .. WIDTH -Int 1 ])  requires 0 <Int WIDTH [simplification]
-    rule (_  : WS) [ START .. WIDTH ] => WS [ START -Int 1 .. WIDTH ]     requires 0 <Int START [simplification]
+    rule #range( (W0 : WS) , 0     , WIDTH ) => W0 : ( #range(WS, 0, WIDTH -Int 1 ))  requires 0 <Int WIDTH [simplification]
+    rule #range( (_  : WS) , START , WIDTH ) => #range( WS, START -Int 1, WIDTH )     requires 0 <Int START [simplification]
 
-    rule WS [ START .. WIDTH ] [ 0 .. WIDTH' ]  => WS [ START .. WIDTH' ]  requires WIDTH' <=Int WIDTH [simplification]
+    rule #range(#range(WS, START, WIDTH), 0, WIDTH' )  => #range(WS, START, WIDTH')  requires WIDTH' <=Int WIDTH [simplification]
 
     // ### cat-exhaustiveness
 
-    rule ( BA1:ByteArray ++ BA2:ByteArray ) ++ BA3:ByteArray => BA1 ++ ( BA2 ++ BA3 ) [simplification]
+    rule ( BA1:Bytes +Bytes BA2:Bytes ) +Bytes BA3:Bytes => BA1 +Bytes ( BA2 +Bytes BA3 ) [simplification]
 
   // ########################
   // Keccak
@@ -309,27 +308,26 @@ module LEMMAS-MCD-COMMON
     rule #WordPackAddrUInt48UInt48(ADDR, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) => #WordPackAddrUInt48UInt48(ADDR, 0, UINT48_2) requires maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) ==Int 0 [simplification]
 
   // ########################
-  // Map
-  // ########################
+   // Map
+   // ########################
 
-    rule M:Memory [ K <- V ]             [ K' <- V' ] => M [ K' <- V' ] [ K <- V ]    requires K' <Int K                           [simplification]
-    rule M:Memory [ K := BUF:ByteArray ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ]  requires K' <Int K
-                                                                                        orBool K +Int #sizeByteArray(BUF) <=Int K' [simplification]
-
+    rule M:Bytes [ K <- V ]            [ K' <- V' ] => M [ K' <- V' ] [ K <- V ]             requires K' <Int K                        [simplification]
+    rule #writeRange(M, K, BUF:Bytes ) [ K' <- V' ] => #writeRange(M [ K' <- V' ], K, BUF )  requires K' <Int K
+                                                                                               orBool K +Int lengthBytes(BUF) <=Int K' [simplification]
     rule M [ K <- V ] => M requires #lookup(M, K) ==Int V [simplification]
 
-    rule M:Memory [ K := BUF:ByteArray ] [ K' := BUF':ByteArray ] => M [ K := (BUF [ 0 .. K' -Int K ]) ] [ K' := BUF' ]
-      requires K <Int K'
-       andBool K' <Int K +Int #sizeByteArray(BUF)
-       andBool K +Int #sizeByteArray(BUF) <Int K' +Int #sizeByteArray(BUF')
-      [simplification]
+    rule #writeRange(#writeRange(M, K, BUF:Bytes), K', BUF':Bytes) => #writeRange( #writeRange(M , K , (#range(BUF , 0 , K' -Int K )) ), K' , BUF' )
+       requires K <Int K'
+        andBool K' <Int K +Int lengthBytes(BUF)
+        andBool K +Int lengthBytes(BUF) <Int K' +Int lengthBytes(BUF')
+       [simplification]
 
     rule M:Map [ K1 <- _ ] [ K2 <- V2 ] [ K1 <- V1' ] => M [ K1 <- V1' ] [ K2 <- V2 ] requires K1 =/=Int K2 [simplification]
 
-    rule M:Memory [ K1 := (BUF11 ++ BUF12) ] [ K2 := BUF2 ] => M [ K1 +Int #sizeByteArray(BUF11) := BUF12 ] [ K2 := BUF2 ]
-      requires K2 <=Int K1
-      andBool K1 +Int #sizeByteArray(BUF11) <=Int K2 +Int #sizeByteArray(BUF2)
-      [simplification]
+    rule #writeRange( #writeRange(M, K1, (BUF11 +Bytes BUF12) ), K2, BUF2 ) => #writeRange(#writeRange(M, K1 +Int lengthBytes(BUF11), BUF12), K2, BUF2 )
+       requires K2 <=Int K1
+        andBool K1 +Int lengthBytes(BUF11) <=Int K2 +Int lengthBytes(BUF2)
+       [simplification]
 
   // ########################
   // Arithmetic

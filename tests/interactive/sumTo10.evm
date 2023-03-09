@@ -2,7 +2,7 @@ mkAcct 7
 
 load "account" : { 7 : { "balance" : 1000000000
                        , "nonce"   : 1
-                       , "code"    : .ByteArray
+                       , "code"    : .Bytes
                        , "storage" : .Map
                        }
                  }

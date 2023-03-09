@@ -21,10 +21,10 @@ module DSVALUE-READ-PASS-SPEC
             <jumpDests> #computeValidJumpDests(DSValue_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("read", .TypedArgs) ++ CD => ?_ </callData>
+            <callData> #abiCallData("read", .TypedArgs) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( VGas +Int -2043 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -95,7 +95,7 @@ module DSVALUE-READ-PASS-SPEC
        andBool (#rangeAddress(Owner)
        andBool (#rangeBytes(32, Value)
        andBool (#rangeBool(Ok)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#notPrecompileAddress(Owner)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)

@@ -30,7 +30,7 @@ module VERIFICATION
     imports EVM-OPTIMIZATIONS
     imports STORAGE-VERIFICATION
 
-    syntax Step ::= ByteArray | Int
+    syntax Step ::= Bytes | Int
     syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
@@ -79,17 +79,17 @@ module STORAGE-SPEC
           <jumpDests> #computeValidJumpDests(#binRuntime(Storage)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   Storage.myBool()                 </callData>
-          <k>          #execute   => #halt ...          </k>
-          <output>     .ByteArray => #buf(32, MYBOOL)   </output>
-          <statusCode> _          => EVMC_SUCCESS       </statusCode>
+          <callData>   Storage.myBool()               </callData>
+          <k>          #execute => #halt ...          </k>
+          <output>     .Bytes   => #buf(32, MYBOOL)   </output>
+          <statusCode> _        => EVMC_SUCCESS       </statusCode>
 
           <account>
             <acctID> ACCTID </acctID>
@@ -113,7 +113,7 @@ module STORAGE-SPEC
           <static>    false                                        </static>
 
           <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
@@ -122,7 +122,7 @@ module STORAGE-SPEC
 
           <callData>   Storage.setMyBool(NEW_VAL)       </callData>
           <k>          #execute   => #halt ...          </k>
-          <output>     .ByteArray                       </output>
+          <output>     .Bytes                           </output>
           <statusCode> _          => EVMC_SUCCESS       </statusCode>
 
           <account>

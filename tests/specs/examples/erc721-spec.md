@@ -30,7 +30,7 @@ module VERIFICATION
     imports EVM-OPTIMIZATIONS
     imports ERC721-VERIFICATION
 
-    syntax Step ::= ByteArray | Int | Bool
+    syntax Step ::= Bytes | Int | Bool
     syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
@@ -85,17 +85,17 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <jumpDests> #computeValidJumpDests(#binRuntime(ERC721)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   ERC721.name()              </callData>
-          <k>          #execute   => #halt ...    </k>
-          <output>     .ByteArray => ?_           </output>
-          <statusCode> _          => EVMC_SUCCESS </statusCode>
+          <callData>   ERC721.name()            </callData>
+          <k>          #execute => #halt ...    </k>
+          <output>     .Bytes   => ?_           </output>
+          <statusCode> _        => EVMC_SUCCESS </statusCode>
 
           <account>
             <acctID>  ACCTID       </acctID>
@@ -119,17 +119,17 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <jumpDests> #computeValidJumpDests(#binRuntime(ERC721)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   ERC721.name()             </callData>
-          <k>          #execute   => #halt ...   </k>
-          <output>     .ByteArray => ?_          </output>
-          <statusCode> _          => EVMC_REVERT </statusCode>
+          <callData>   ERC721.name()           </callData>
+          <k>          #execute => #halt ...   </k>
+          <output>     .Bytes   => ?_          </output>
+          <statusCode> _        => EVMC_REVERT </statusCode>
 
           <account>
             <acctID>  ACCTID       </acctID>
