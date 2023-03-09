@@ -1,17 +1,14 @@
 diff --git a/bin/kevm b/bin/kevm
-index bafe061be..3f983eeac 100755
+index 3387330aa..2871710a5 100755
 --- a/bin/kevm
 +++ b/bin/kevm
-@@ -76,12 +76,6 @@ run_kompile() {
-         node)            kompile_opts+=( --kompile-mode 'node' --no-llvm-kompile ) ;;&
-         llvm|node) backend=llvm
+@@ -78,9 +78,6 @@ run_kompile() {
                     kompile_opts+=( --plugin-include "${plugin_include}" --libff-dir "${libff_dir}" )
--                   if [[ "$(uname -s)" == 'Darwin' ]]; then
+                    if [[ "$(uname -s)" == 'Darwin' ]]; then
+                        kompile_opts+=( --target darwin )
 -                       openssl_root="$(brew --prefix openssl)"
 -                       brew_root="$(brew --prefix)"
--                       kompile_opts+=( --target darwin --libcryptopp-dir "${libcryptopp_dir}" )
--                       kompile_opts+=( --brew-root "${brew_root}" --openssl-root "${openssl_root}" )
--                   fi
+-                       kompile_opts+=( --brew-root "${brew_root}" --openssl-root "${openssl_root}" --libcryptopp-dir "${libcryptopp_dir}" )
+                    fi
                     ;;
          *)       fatal "Unknown backend for kompile: ${backend}" ;;
-     esac
