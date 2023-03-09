@@ -125,7 +125,6 @@ This minimizes the amount of information which must be stored in the configurati
 
 ```{.k .node}
     rule <k> #loadAccount ACCT => . ... </k>
-         <activeAccounts> ACCTS (.Set => SetItem(ACCT)) </activeAccounts>
          <accounts>
            ( .Bag
           => <account>
@@ -139,11 +138,10 @@ This minimizes the amount of information which must be stored in the configurati
            )
            ...
          </accounts>
-      requires notBool ACCT in ACCTS andBool #accountExists(ACCT)
+      requires notBool #isActiveAccount(ACCT) andBool #accountExists(ACCT)
 
     rule <k> #loadAccount ACCT => . ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires ACCT in ACCTS orBool notBool #accountExists(ACCT)
+      requires #isActiveAccount(ACCT) orBool notBool #accountExists(ACCT)
 ```
 
 -   `#getStorageData` loads the value for a single storage key of a specified account by its address and storage offset.
@@ -221,7 +219,7 @@ This minimizes the amount of information which must be stored in the configurati
                                         , gas: Int       , beneficiary: Int , difficulty: Int , number: Int   , gaslimit: Int , timestamp: Int , unused: String ) [symbol]
  // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
     rule <k> (.K => #loadAccount ACCTFROM) ~> runVM(... from: ACCTFROM) ... </k>
-         <activeAccounts> .Set </activeAccounts>
+         <accounts> .Bag </accounts>
 
     rule <k> runVM(true, _, ACCTFROM, _, ARGS, VALUE, GPRICE, GAVAIL, CB, DIFF, NUMB, GLIMIT, TS, _)
           => #loadAccount #newAddr(ACCTFROM, NONCE -Int 1)
@@ -245,9 +243,7 @@ This minimizes the amount of information which must be stored in the configurati
            ...
          </account>
          <touchedAccounts> _ => SetItem(CB) </touchedAccounts>
-         <activeAccounts> ACCTS </activeAccounts>
          <accessedAccounts> ACCESSED => ACCESSED |Set SetItem(ACCTFROM) |Set SetItem(#newAddr(ACCTFROM, NONCE -Int 1)) </accessedAccounts>
-      requires ACCTFROM in ACCTS
 
     rule <k> runVM(false, ACCTTO, ACCTFROM, _, ARGS, VALUE, GPRICE, GAVAIL, CB, DIFF, NUMB, GLIMIT, TS, _)
           => #loadAccount ACCTTO
@@ -266,9 +262,8 @@ This minimizes the amount of information which must be stored in the configurati
          <gasLimit> _ => GLIMIT </gasLimit>
          <timestamp> _ => TS </timestamp>
          <touchedAccounts> _ => SetItem(CB) </touchedAccounts>
-         <activeAccounts> ACCTS </activeAccounts>
          <accessedAccounts> ACCESSED => ACCESSED |Set SetItem(ACCTFROM) |Set SetItem(ACCTTO) </accessedAccounts>
-      requires ACCTFROM in ACCTS
+      requires #isActiveAccount(ACCTFROM)
 ```
 
 -   `makeAccessList` will initialize the `<accessedAccounts>` and `<accessedStorage>` cells for an access list transaction type and leave runVM at the top of the `<k>` cell.

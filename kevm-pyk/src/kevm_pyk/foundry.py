@@ -641,17 +641,6 @@ def _init_term(
         'ACCESSEDACCOUNTS_CELL': KApply('.Set'),
         'ACCESSEDSTORAGE_CELL': KApply('.Map'),
         'INTERIMSTATES_CELL': KApply('.List'),
-        'ACTIVEACCOUNTS_CELL': build_assoc(
-            KApply('.Set'),
-            KLabel('_Set_'),
-            map(
-                KLabel('SetItem'),
-                [
-                    Foundry.address_TEST_CONTRACT(),
-                    Foundry.address_CHEATCODE(),
-                ],
-            ),
-        ),
         'LOCALMEM_CELL': KApply('.Bytes_BYTES-HOOKED_Bytes'),
         'PREVCALLER_CELL': KApply('.Account_EVM-TYPES_Account'),
         'PREVORIGIN_CELL': KApply('.Account_EVM-TYPES_Account'),
