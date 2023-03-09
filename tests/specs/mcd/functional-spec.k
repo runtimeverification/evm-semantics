@@ -7,8 +7,8 @@ module FUNCTIONAL-SPEC-SYNTAX
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
 
-    syntax Step ::= Bool | Int | ByteArray | Memory
- // -----------------------------------------------
+    syntax Step ::= Bool | Int | Bytes
+ // ----------------------------------
 
 endmodule
 
@@ -80,14 +80,14 @@ module FUNCTIONAL-SPEC
     claim <k> runLemma(maxUInt48 &Int ((CALLER_ID |Int (maskWordPackAddrUInt48UInt48_1 &Int #lookup(M, KX))) /Int pow208)) => doneLemma(maxUInt48 &Int (#lookup(M, KX) /Int pow208)) ... </k>
       requires #rangeAddress(CALLER_ID)
 
-    claim <k> runLemma(TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) ++ X ) +Int 1 <- #lookup ( ACCT_ID_STORAGE , 5 ) *Int #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) ++ X ) +Int 1 ) /Int 1000000000000000000 ] , 6 ) /Int pow48 ) <Int pow48)
+    claim <k> runLemma(TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) +Bytes X ) +Int 1 <- #lookup ( ACCT_ID_STORAGE , 5 ) *Int #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) +Bytes X ) +Int 1 ) /Int 1000000000000000000 ] , 6 ) /Int pow48 ) <Int pow48)
            => doneLemma(true) ... </k>
         requires #lookup(ACCT_ID_STORAGE, 6) ==Int #WordPackUInt48UInt48(_, Tau)
         andBool #rangeUInt(48, TIME +Int Tau)
 
-    claim <k> runLemma( ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 1 <- ABI_lot:Int ] [ keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 2 ) /Int pow208 ) ]
+    claim <k> runLemma( ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 1 <- ABI_lot:Int ] [ keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 2 ) /Int pow208 ) ]
                           ==K
-                        ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 2 ) /Int pow208 ) ] [ keccak ( #buf ( 32 , ABI_id ) ++ X) +Int 1 <- ABI_lot:Int ])
+                        ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 2 ) /Int pow208 ) ] [ keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 1 <- ABI_lot:Int ])
            => doneLemma(true)
               ... </k>
 
@@ -97,26 +97,32 @@ module FUNCTIONAL-SPEC
 
     // Memory operations
 
-    claim <k> runLemma(#range(M:Memory [ 0 := #buf(4, X) ] [ 0 <- 10 ] [ 1 <- 11 ] [ 2 <- 12 ] [ 3 <- 13 ], 0, 4)) => doneLemma(10 : 11 : 12 : 13 : .ByteArray) ... </k>
+    claim <k> runLemma(#range(#writeRange(M:Bytes, 0, #buf(4, X)) [ 0 <- 10 ] [ 1 <- 11 ] [ 2 <- 12 ] [ 3 <- 13 ], 0, 4)) => doneLemma(10 : 11 : 12 : 13 : .Bytes) ... </k>
 
-    claim <k> runLemma( M:Memory [ 132 := #buf(32, B11) ] [ 128 := (#buf(32, B21) ++ #buf(32, B22)) ] ) => doneLemma( M [ 128 := (#buf(32, B21) ++ #buf(32, B22)) ] ) ... </k>
+    claim <k> runLemma( #writeRange( #writeRange(M:Bytes, 132, #buf(32, B11) ) ,128 ,(#buf(32, B21) +Bytes #buf(32, B22)) ) ) => doneLemma( #writeRange(M, 128, (#buf(32, B21) +Bytes #buf(32, B22)) ) ) ... </k>
       requires #rangeUInt(256, B11) andBool #rangeUInt(256, B21) andBool #rangeUInt(256, B22)
 
-    claim <k> runLemma( M:Memory [ 128 := (#buf(32, B31) ++ #buf(32, B32)) ] [ 128 := #buf(32, B41) ] ) => doneLemma( M [ 128 := #buf(32, B41) ] [ 160 := #buf(32, B32) ] ) ... </k>
+    claim <k> runLemma( #writeRange( #writeRange(M:Bytes, 128, (#buf(32, B31) +Bytes #buf(32, B32))), 128, #buf(32, B41) ) ) => doneLemma( #writeRange( #writeRange(M, 128, #buf(32, B41)), 160, #buf(32, B32) ) ) ... </k>
       requires #rangeUInt(256, B31) andBool #rangeUInt(256, B32) andBool #rangeUInt(256, B41)
 
-    claim <k> runLemma(M:Memory [ 128 := (217 : 99 : 141 : 54 : .ByteArray) ]
-                                [ 132 := #buf(32, B11) ]
-                                [ 128 := (#buf(32, B21) ++ #buf(32, B22) ++ #buf(32, B23) ++ #buf(32, B24) ++ #buf(32, B25)) ]
-                                [ 128 := (217 : 99 : 141 : 54 : .ByteArray) ]
-                                [ 132 := #buf(32, B11) ]
-                                [ 128 := (#buf(32, B31) ++ #buf(32, B32)) ]
-                                [ 128 := #buf(32, B41) ]
-                      )
-           => doneLemma(M [ 128 := #buf(32, B41) ]
-                          [ 160 := #buf(32, B32) ]
-                          [ 192 := (#buf(32, B23) ++ #buf(32, B24) ++ #buf(32, B25)) ]
-                       )
+    claim <k> runLemma( #writeRange(
+                          #writeRange(
+                            #writeRange(
+                              #writeRange(
+                                #writeRange(
+                                  #writeRange(
+                                    #writeRange( M:Bytes, 128, (217 : 99 : 141 : 54 : .Bytes)),
+                                    132, #buf(32, B11)),
+                                  128, (#buf(32, B21) +Bytes #buf(32, B22) +Bytes #buf(32, B23) +Bytes #buf(32, B24) +Bytes #buf(32, B25))),
+                                128, (217 : 99 : 141 : 54 : .Bytes)),
+                              132, #buf(32, B11)),
+                            128, (#buf(32, B31) +Bytes #buf(32, B32))),
+                          128, #buf(32, B41)))
+           => doneLemma(#writeRange(
+                          #writeRange(
+                            #writeRange(M, 128, #buf(32, B41)),
+                            160, #buf(32, B32)),
+                          192, (#buf(32, B23) +Bytes #buf(32, B24) +Bytes #buf(32, B25))))
           ...
           </k>
      requires #rangeUInt(256, B11)

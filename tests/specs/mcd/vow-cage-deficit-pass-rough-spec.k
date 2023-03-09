@@ -11,7 +11,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -21,10 +21,10 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Vow_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("cage", .TypedArgs) ++ CD => ?_ </callData>
+            <callData> #abiCallData("cage", .TypedArgs) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -140,7 +140,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Vat_balance)
        andBool (#rangeUInt(256, Flapper_balance)
        andBool (#rangeUInt(256, Flopper_balance)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Vat))
        andBool ((#notPrecompileAddress(Flapper))
        andBool ((#notPrecompileAddress(Flopper))
@@ -389,10 +389,10 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("dai", #address(ABI_usr)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("dai", #address(ABI_usr)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( VGas +Int -1236 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -463,7 +463,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
 
        andBool (#rangeAddress(ABI_usr)
        andBool (#rangeUInt(256, Rad)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool ((VCallValue ==Int 0))))))
 
@@ -490,10 +490,10 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("sin", #address(ABI_usr)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("sin", #address(ABI_usr)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( VGas +Int -1235 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -564,7 +564,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
 
        andBool (#rangeAddress(ABI_usr)
        andBool (#rangeUInt(256, Rad)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool ((VCallValue ==Int 0))))))
 
@@ -581,7 +581,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -591,10 +591,10 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("heal", #uint256(ABI_rad)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("heal", #uint256(ABI_rad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Sin -Int ABI_rad ) , Sin , Junk_0 ) ) -Int Csstore( ISTANBUL , ( Dai -Int ABI_rad ) , Dai , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Vice -Int ABI_rad ) , Vice , Junk_2 ) ) -Int Csstore( ISTANBUL , ( Debt -Int ABI_rad ) , Debt , Junk_3 ) ) +Int -8616 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -668,7 +668,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Sin)
        andBool (#rangeUInt(256, Debt)
        andBool (#rangeUInt(256, Vice)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (#rangeUInt(256, Junk_2)
@@ -704,7 +704,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -714,10 +714,10 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Flapper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("cage", #uint256(ABI_rad)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("cage", #uint256(ABI_rad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( ( ( ( VGas -Int Csstore( ISTANBUL , 0 , Live , Junk_2 ) ) -Int Csstore( ISTANBUL , ( Dai_a -Int ABI_rad ) , Dai_a , Junk_5 ) ) -Int Csstore( ISTANBUL , ( Dai_u +Int ABI_rad ) , Dai_u , Junk_6 ) ) +Int -15964 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -802,7 +802,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Dai_a)
        andBool (#rangeUInt(256, Dai_u)
        andBool (#rangeUInt(256, Vat_balance)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Vat))
        andBool ((CALLER_ID =/=Int ACCT_ID)
        andBool (ACCT_ID =/=Int Vat
@@ -849,7 +849,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -859,10 +859,10 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Flopper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("cage", .TypedArgs) ++ CD => ?_ </callData>
+            <callData> #abiCallData("cage", .TypedArgs) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , 0 , Live , Junk_1 ) ) -Int Csstore( ISTANBUL , CALLER_ID , Vow , Junk_2 ) ) +Int -6351 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -934,7 +934,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Ward)
        andBool (#rangeUInt(256, Live)
        andBool (#rangeAddress(Vow)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#notPrecompileAddress(Vow)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)

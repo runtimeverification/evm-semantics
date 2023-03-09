@@ -24,7 +24,7 @@ module CAT-EXHAUSTIVENESS-SPEC
              <callData> VCallData </callData>
              <callValue> VCallValue </callValue>
              <wordStack> .WordStack => ?_ </wordStack>
-             <localMem> .Memory => ?_ </localMem>
+             <localMem> .Bytes => ?_ </localMem>
              <pc> 0 => ?_ </pc>
              <gas> #gas(VGas) => ?_ </gas>
              <memoryUsed> 0 => ?_ </memoryUsed>
@@ -80,18 +80,18 @@ module CAT-EXHAUSTIVENESS-SPEC
       andBool VCallDepth <=Int 1024
       andBool #rangeUInt(256, VCallValue)
       andBool #rangeUInt(256, VChainId)
-      andBool 1171202608 =/=Int #asWord(VCallData [ 0 .. 4 ])
-      andBool 1763987465 =/=Int #asWord(VCallData [ 0 .. 4 ])
-      andBool 2622662641 =/=Int #asWord(VCallData [ 0 .. 4 ])
-      andBool 436938878  =/=Int #asWord(VCallData [ 0 .. 4 ])
-      andBool 3572022915 =/=Int #asWord(VCallData [ 0 .. 4 ])
-      andBool 3958158237 =/=Int #asWord(VCallData [ 0 .. 4 ])
-      andBool 3647180086 =/=Int #asWord(VCallData [ 0 .. 4 ])
-      andBool 2507842956 =/=Int #asWord(VCallData [ 0 .. 4 ])
-      andBool 1710941022 =/=Int #asWord(VCallData [ 0 .. 4 ])
-      andBool 911646327  =/=Int #asWord(VCallData [ 0 .. 4 ])
-      andBool 1651291077 =/=Int #asWord(VCallData [ 0 .. 4 ])
-      andBool 3207937467 =/=Int #asWord(VCallData [ 0 .. 4 ])
+      andBool 1171202608 =/=Int #asWord(#range(VCallData, 0, 4) )
+      andBool 1763987465 =/=Int #asWord(#range(VCallData, 0, 4) )
+      andBool 2622662641 =/=Int #asWord(#range(VCallData, 0, 4) )
+      andBool 436938878  =/=Int #asWord(#range(VCallData, 0, 4) )
+      andBool 3572022915 =/=Int #asWord(#range(VCallData, 0, 4) )
+      andBool 3958158237 =/=Int #asWord(#range(VCallData, 0, 4) )
+      andBool 3647180086 =/=Int #asWord(#range(VCallData, 0, 4) )
+      andBool 2507842956 =/=Int #asWord(#range(VCallData, 0, 4) )
+      andBool 1710941022 =/=Int #asWord(#range(VCallData, 0, 4) )
+      andBool 911646327  =/=Int #asWord(#range(VCallData, 0, 4) )
+      andBool 1651291077 =/=Int #asWord(#range(VCallData, 0, 4) )
+      andBool 3207937467 =/=Int #asWord(#range(VCallData, 0, 4) )
       andBool VGas >=Int 40000000
 
 endmodule
