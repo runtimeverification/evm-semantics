@@ -37,7 +37,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
-            <accessedStorage> _ => ?_ </accessedStorage>
+            <accessedStorage> .Map => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -154,7 +154,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
-            <accessedStorage> _ => ?_ </accessedStorage>
+            <accessedStorage> _ /*=> ?_*/ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -217,7 +217,8 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
        andBool #rangeNonce(Nonce_Vow)
 
 
-    [trusted, matching(infGas)]
+//     [trusted, matching(infGas)]
+    [matching(infGas)]
 
 
     // Vow_subuu
@@ -254,7 +255,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
-            <accessedStorage> _ => ?_ </accessedStorage>
+            <accessedStorage> _ /*=> ?_ */ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -317,7 +318,8 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+//    [trusted, matching(infGas)]
+    [matching(infGas)]
 
 
 endmodule
