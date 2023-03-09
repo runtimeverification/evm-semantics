@@ -1248,7 +1248,7 @@ module COUNTER-BIN-RUNTIME
     rule  ( #loc ( Counter . number ) => 0 )
       
     
-    syntax ByteArray ::= CounterContract "." CounterMethod [function(), symbol(), klabel(method_Counter)]
+    syntax Bytes ::= CounterContract "." CounterMethod [function(), symbol(), klabel(method_Counter)]
     
     syntax CounterMethod ::= "increment" "(" ")" [symbol(), klabel(method_Counter_increment)]
     
@@ -1313,7 +1313,7 @@ module COUNTERTEST-BIN-RUNTIME
     rule  ( #loc ( CounterTest . counter ) => 8 )
       
     
-    syntax ByteArray ::= CounterTestContract "." CounterTestMethod [function(), symbol(), klabel(method_CounterTest)]
+    syntax Bytes ::= CounterTestContract "." CounterTestMethod [function(), symbol(), klabel(method_CounterTest)]
     
     syntax CounterTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_CounterTest_IS_SCRIPT)]
     
