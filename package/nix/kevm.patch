@@ -5,11 +5,11 @@ index bafe061be..328108265 100755
 @@ -77,10 +77,7 @@ run_kompile() {
          llvm|node) backend=llvm
                     kompile_opts+=( --plugin-include "${plugin_include}" --libff-dir "${libff_dir}" )
-                    if [[ "$(uname -s)" == 'Darwin' ]]; then
+-                   if [[ "$(uname -s)" == 'Darwin' ]]; then
 -                       openssl_root="$(brew --prefix openssl)"
 -                       brew_root="$(brew --prefix)"
-                        kompile_opts+=( --target darwin --libcryptopp-dir "${libcryptopp_dir}" )
+-                       kompile_opts+=( --target darwin --libcryptopp-dir "${libcryptopp_dir}" )
 -                       kompile_opts+=( --brew-root "${brew_root}" --openssl-root "${openssl_root}" )
-                    fi
+-                   fi
                     ;;
          *)       fatal "Unknown backend for kompile: ${backend}" ;;
