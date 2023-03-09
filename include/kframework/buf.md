@@ -22,8 +22,8 @@ is just carried on from LHS without changes. Definition rule LHS should only use
 Claims should always use `#bufStrict` in LHS and `#buf` in RHS.
 
 ```k
-    syntax ByteArray ::= #bufStrict ( Int , Int ) [function]
-    syntax ByteArray ::= #buf ( Int , Int ) [function, total, smtlib(buf)]
+    syntax Bytes ::= #bufStrict ( Int , Int ) [function]
+    syntax Bytes ::= #buf ( Int , Int ) [function, total, smtlib(buf)]
 
     syntax Int ::= #ceil32 ( Int ) [macro]
  // --------------------------------------

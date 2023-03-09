@@ -21,10 +21,10 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("deny", #address(ABI_usr)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("deny", #address(ABI_usr)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -96,7 +96,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
        andBool (#rangeAddress(ABI_usr)
        andBool (#rangeUInt(256, May)
        andBool (#rangeUInt(256, Live)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((CALLER_ID =/=Int ABI_usr)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
