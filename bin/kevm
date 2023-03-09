@@ -77,10 +77,10 @@ run_kompile() {
         llvm|node) backend=llvm
                    kompile_opts+=( --plugin-include "${plugin_include}" --libff-dir "${libff_dir}" )
                    if [[ "$(uname -s)" == 'Darwin' ]]; then
+                       kompile_opts+=( --target darwin )
                        openssl_root="$(brew --prefix openssl)"
                        brew_root="$(brew --prefix)"
-                       kompile_opts+=( --target darwin --libcryptopp-dir "${libcryptopp_dir}" )
-                       kompile_opts+=( --brew-root "${brew_root}" --openssl-root "${openssl_root}" )
+                       kompile_opts+=( --brew-root "${brew_root}" --openssl-root "${openssl_root}" --libcryptopp-dir "${libcryptopp_dir}" )
                    fi
                    ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
