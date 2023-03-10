@@ -45,7 +45,7 @@ module ALLOWANCE-SPEC
           <log> _ </log>
           <refund> _ </refund> // TODO: more detail
           <accessedAccounts> _ => ?_ </accessedAccounts>
-          <accessedStorage> _ => ?_ </accessedStorage>
+          <accessedStorage> .Map => ?_ </accessedStorage>
         </substate>
 
         <gasPrice> _ </gasPrice>

@@ -45,7 +45,7 @@ module TRANSFERFROM-FAILURE-1-D-SPEC
           <log> _ => ?_ </log>
           <refund> _ => ?_ </refund> // TODO: more detail
           <accessedAccounts> _ => ?_ </accessedAccounts>
-          <accessedStorage> _ => ?_ </accessedStorage>
+          <accessedStorage> .Map => ?_ </accessedStorage>
         </substate>
 
         <gasPrice> _ </gasPrice>

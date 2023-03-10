@@ -45,7 +45,7 @@ module TRANSFER-FAILURE-2-SPEC
           <log> _ </log>
           <refund> _ => ?_ </refund> // TODO: more detail
           <accessedAccounts> _ => ?_ </accessedAccounts>
-          <accessedStorage> _ => ?_ </accessedStorage>
+          <accessedStorage> .Map => ?_ </accessedStorage>
         </substate>
 
         <gasPrice> _ </gasPrice>
