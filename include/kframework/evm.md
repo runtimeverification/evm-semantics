@@ -44,25 +44,25 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // Mutable during a single transaction
             // -----------------------------------
 
-            <output>          .ByteArray  </output>           // H_RETURN
+            <output>          .Bytes      </output>           // H_RETURN
             <statusCode>      .StatusCode </statusCode>
             <callStack>       .List       </callStack>
             <interimStates>   .List       </interimStates>
             <touchedAccounts> .Set        </touchedAccounts>
 
             <callState>
-              <program> .ByteArray </program>
-              <jumpDests> .Set </jumpDests>
+              <program>   .Bytes </program>
+              <jumpDests> .Set   </jumpDests>
 
               // I_*
-              <id>        .Account   </id>                    // I_a
-              <caller>    .Account   </caller>                // I_s
-              <callData>  .ByteArray </callData>              // I_d
-              <callValue> 0          </callValue>             // I_v
+              <id>        .Account </id>                    // I_a
+              <caller>    .Account </caller>                // I_s
+              <callData>  .Bytes   </callData>              // I_d
+              <callValue> 0        </callValue>             // I_v
 
               // \mu_*
               <wordStack>   .WordStack </wordStack>           // \mu_s
-              <localMem>    .Memory    </localMem>            // \mu_m
+              <localMem>    .Bytes     </localMem>            // \mu_m
               <pc>          0          </pc>                  // \mu_pc
               <gas>         0          </gas>                 // \mu_g
               <memoryUsed>  0          </memoryUsed>          // \mu_i
@@ -90,22 +90,22 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // I_H* (block information)
             <blockhashes> .List </blockhashes>
             <block>
-              <previousHash>     0          </previousHash>     // I_Hp
-              <ommersHash>       0          </ommersHash>       // I_Ho
-              <coinbase>         0          </coinbase>         // I_Hc
-              <stateRoot>        0          </stateRoot>        // I_Hr
-              <transactionsRoot> 0          </transactionsRoot> // I_Ht
-              <receiptsRoot>     0          </receiptsRoot>     // I_He
-              <logsBloom>        .ByteArray </logsBloom>        // I_Hb
-              <difficulty>       0          </difficulty>       // I_Hd
-              <number>           0          </number>           // I_Hi
-              <gasLimit>         0          </gasLimit>         // I_Hl
-              <gasUsed>          0          </gasUsed>          // I_Hg
-              <timestamp>        0          </timestamp>        // I_Hs
-              <extraData>        .ByteArray </extraData>        // I_Hx
-              <mixHash>          0          </mixHash>          // I_Hm
-              <blockNonce>       0          </blockNonce>       // I_Hn
-              <baseFee>          0          </baseFee>
+              <previousHash>     0      </previousHash>     // I_Hp
+              <ommersHash>       0      </ommersHash>       // I_Ho
+              <coinbase>         0      </coinbase>         // I_Hc
+              <stateRoot>        0      </stateRoot>        // I_Hr
+              <transactionsRoot> 0      </transactionsRoot> // I_Ht
+              <receiptsRoot>     0      </receiptsRoot>     // I_He
+              <logsBloom>        .Bytes </logsBloom>        // I_Hb
+              <difficulty>       0      </difficulty>       // I_Hd
+              <number>           0      </number>           // I_Hi
+              <gasLimit>         0      </gasLimit>         // I_Hl
+              <gasUsed>          0      </gasUsed>          // I_Hg
+              <timestamp>        0      </timestamp>        // I_Hs
+              <extraData>        .Bytes </extraData>        // I_Hx
+              <mixHash>          0      </mixHash>          // I_Hm
+              <blockNonce>       0      </blockNonce>       // I_Hn
+              <baseFee>          0      </baseFee>
 
               <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
             </block>
@@ -127,12 +127,12 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <activeAccounts> .Set </activeAccounts>
             <accounts>
               <account multiplicity="*" type="Map">
-                <acctID>      0                      </acctID>
-                <balance>     0                      </balance>
-                <code>        .ByteArray:AccountCode </code>
-                <storage>     .Map                   </storage>
-                <origStorage> .Map                   </origStorage>
-                <nonce>       0                      </nonce>
+                <acctID>      0                  </acctID>
+                <balance>     0                  </balance>
+                <code>        .Bytes:AccountCode </code>
+                <storage>     .Map               </storage>
+                <origStorage> .Map               </origStorage>
+                <nonce>       0                  </nonce>
               </account>
             </accounts>
 
@@ -151,9 +151,9 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <to>            .Account   </to>            // T_t
                 <value>         0          </value>         // T_v
                 <sigV>          0          </sigV>          // T_w
-                <sigR>          .ByteArray </sigR>          // T_r
-                <sigS>          .ByteArray </sigS>          // T_s
-                <data>          .ByteArray </data>          // T_i/T_e
+                <sigR>          .Bytes     </sigR>          // T_r
+                <sigS>          .Bytes     </sigS>          // T_s
+                <data>          .Bytes     </data>          // T_i/T_e
                 <txAccess>      [ .JSONs ] </txAccess>      // T_a
                 <txChainID>     0          </txChainID>     // T_c
                 <txPriorityFee> 0          </txPriorityFee>
@@ -168,8 +168,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
       </kevm>
 
     syntax EthereumSimulation
-    syntax AccountCode ::= ByteArray
- // --------------------------------
+    syntax AccountCode ::= Bytes
+ // ----------------------------
 ```
 
 Modal Semantics
@@ -274,15 +274,15 @@ OpCode Execution
 
 ### Execution Macros
 
--   `#lookupOpCode` reads an OpCode from the program ByteArray, if the program-counter is within the bounds of the program, meaning that it points to an actual opcode.
+-   `#lookupOpCode` reads an `OpCode` from the program `Bytes` if the program-counter is within the bounds of the program, meaning that it points to an actual opcode.
     It will return `.NoOpCode` otherwise.
 
 ```k
     syntax MaybeOpCode ::= ".NoOpCode" | OpCode
 
-    syntax MaybeOpCode ::= "#lookupOpCode" "(" ByteArray "," Int "," Schedule ")" [function, total]
+    syntax MaybeOpCode ::= "#lookupOpCode" "(" Bytes "," Int "," Schedule ")" [function, total]
  // -----------------------------------------------------------------------------------------------
-    rule #lookupOpCode(BA, I, SCHED) => #dasmOpCode(BA[I], SCHED) requires 0 <=Int I andBool I <Int #sizeByteArray(BA)
+    rule #lookupOpCode(BA, I, SCHED) => #dasmOpCode(BA[I], SCHED) requires 0 <=Int I andBool I <Int lengthBytes(BA)
     rule #lookupOpCode(_, _, _)  => .NoOpCode [owise]
 ```
 
@@ -316,7 +316,7 @@ The `#next [_]` operator initiates execution by:
     syntax InternalOp ::= "#next" "[" MaybeOpCode "]"
  // -------------------------------------------------
     rule <k> #next [ .NoOpCode ] => #end EVMC_SUCCESS ... </k>
-         <output> _ => .ByteArray </output>
+         <output> _ => .Bytes </output>
 
     rule <k> #next [ OP:OpCode ]
           => #if isAddr1Op(OP) orBool isAddr2Op(OP) #then #addr [ OP ] #else . #fi
@@ -643,7 +643,7 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #startBlock => . ... </k>
          <gasUsed> _ => 0 </gasUsed>
          <log> _ => .List </log>
-         <logsBloom> _ => #padToWidth(256, .ByteArray) </logsBloom>
+         <logsBloom> _ => #padToWidth(256, .Bytes) </logsBloom>
 
     syntax EthereumCommand ::= "#finalizeBlock" | #rewardOmmers ( JSONs )
  // ---------------------------------------------------------------------
@@ -680,36 +680,36 @@ After executing a transaction, it's necessary to have the effect of the substate
           ...
          </account>
 
-    syntax ByteArray ::= #bloomFilter(List)      [function]
-                       | #bloomFilter(List, Int) [function, klabel(#bloomFilterAux)]
- // --------------------------------------------------------------------------------
+    syntax Bytes ::= #bloomFilter(List)      [function]
+                   | #bloomFilter(List, Int) [function, klabel(#bloomFilterAux)]
+ // ----------------------------------------------------------------------------
     rule #bloomFilter(L) => #bloomFilter(L, 0)
 
     rule #bloomFilter(.List, B) => #padToWidth(256, #asByteStack(B))
-    rule #bloomFilter(ListItem({ ACCT | TOPICS | _ }) L, B) => #bloomFilter(ListItem(#padToWidth(20, #asByteStack(ACCT))) listAsByteArrays(TOPICS) L, B)
+    rule #bloomFilter(ListItem({ ACCT | TOPICS | _ }) L, B) => #bloomFilter(ListItem(#padToWidth(20, #asByteStack(ACCT))) listAsBytes(TOPICS) L, B)
 
-    syntax List ::= listAsByteArrays(List) [function]
- // -------------------------------------------------
-    rule listAsByteArrays(.List) => .List
-    rule listAsByteArrays(ListItem(TOPIC) L) => ListItem(#padToWidth(32, #asByteStack(TOPIC))) listAsByteArrays(L)
+    syntax List ::= listAsBytes(List) [function]
+ // --------------------------------------------
+    rule listAsBytes(.List) => .List
+    rule listAsBytes(ListItem(TOPIC) L) => ListItem(#padToWidth(32, #asByteStack(TOPIC))) listAsBytes(L)
 
-    rule #bloomFilter(ListItem(WS:ByteArray) L, B) => #bloomFilter(L, B |Int M3:2048(WS))
+    rule #bloomFilter(ListItem(WS:Bytes) L, B) => #bloomFilter(L, B |Int M3:2048(WS))
 ```
 
 - `M3:2048` computes the 2048-bit hash of a log entry in which exactly 3 bits are set. This is used to compute the Bloom filter of a log entry.
 
 ```k
-    syntax Int ::= "M3:2048" "(" ByteArray ")" [function]
- // -----------------------------------------------------
+    syntax Int ::= "M3:2048" "(" Bytes ")" [function]
+ // -------------------------------------------------
     rule M3:2048(WS) => setBloomFilterBits(#parseByteStack(Keccak256(#unparseByteStack(WS))))
 
-    syntax Int ::= setBloomFilterBits(ByteArray) [function]
- // -------------------------------------------------------
+    syntax Int ::= setBloomFilterBits(Bytes) [function]
+ // ---------------------------------------------------
     rule setBloomFilterBits(HASH) => (1 <<Int getBloomFilterBit(HASH, 0)) |Int (1 <<Int getBloomFilterBit(HASH, 2)) |Int (1 <<Int getBloomFilterBit(HASH, 4))
 
-    syntax Int ::= getBloomFilterBit(ByteArray, Int) [function]
- // -----------------------------------------------------------
-    rule getBloomFilterBit(X, I) => #asInteger(X [ I .. 2 ]) %Int 2048
+    syntax Int ::= getBloomFilterBit(Bytes, Int) [function]
+ // -------------------------------------------------------
+    rule getBloomFilterBit(X, I) => #asInteger(#range(X, I, 2)) %Int 2048
 ```
 
 EVM Programs
@@ -757,18 +757,18 @@ These are just used by the other operators for shuffling local execution state a
            <nonce>  NONCE </nonce>
            ...
          </account>
-      requires CODE =/=K .ByteArray orBool NONCE =/=Int 0
+      requires CODE =/=K .Bytes orBool NONCE =/=Int 0
 
     rule <k> #newExistingAccount ACCT => . ... </k>
          <account>
            <acctID>      ACCT      </acctID>
-           <code>        WS        </code>
+           <code>        CODE      </code>
            <nonce>       0         </nonce>
            <storage>     _ => .Map </storage>
            <origStorage> _ => .Map </origStorage>
            ...
          </account>
-      requires #sizeByteArray(WS) ==Int 0
+      requires lengthBytes(CODE) ==Int 0
 
     rule <k> #newFreshAccount ACCT => . ... </k>
          <activeAccounts> ... (.Set => SetItem(ACCT)) ... </activeAccounts>
@@ -859,7 +859,7 @@ Some operators don't calculate anything, they just push the stack around a bit.
 
     syntax PushOp ::= PUSH ( Int )
  // ------------------------------
-    rule <k> PUSH(N) => #asWord(PGM [ PCOUNT +Int 1 .. N ]) ~> #push ... </k>
+    rule <k> PUSH(N) => #asWord(#range(PGM, PCOUNT +Int 1, N)) ~> #push ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
 ```
@@ -877,10 +877,10 @@ These operations are getters/setters of the local execution memory.
     syntax BinStackOp ::= "MSTORE" | "MSTORE8"
  // ------------------------------------------
     rule <k> MSTORE INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
+         <localMem> LM => #writeRange(LM, INDEX, #padToWidth(32, #asByteStack(VALUE))) </localMem>
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
-         <localMem> LM => LM [ INDEX := (VALUE modInt 256) ] </localMem>
+         <localMem> LM => #write(LM, INDEX, (VALUE modInt 256)) </localMem>
 ```
 
 ### Expressions
@@ -986,13 +986,13 @@ These operators make queries about the current execution state.
     syntax NullStackOp ::= "MSIZE" | "CODESIZE"
  // -------------------------------------------
     rule <k> MSIZE    => 32 *Word MU         ~> #push ... </k> <memoryUsed> MU </memoryUsed>
-    rule <k> CODESIZE => #sizeByteArray(PGM) ~> #push ... </k> <program> PGM </program>
+    rule <k> CODESIZE => lengthBytes(PGM) ~> #push ... </k> <program> PGM </program>
 
     syntax TernStackOp ::= "CODECOPY"
  // ---------------------------------
     rule <k> CODECOPY MEMSTART PGMSTART WIDTH => . ... </k>
          <program> PGM </program>
-         <localMem> LM => LM [ MEMSTART := PGM [ PGMSTART .. WIDTH ] ] </localMem>
+         <localMem> LM =>  #writeRange(LM, MEMSTART, #range(PGM, PGMSTART, WIDTH)) </localMem>
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
@@ -1058,7 +1058,7 @@ The `JUMP*` family of operations affect the current program counter.
     syntax NullStackOp ::= "STOP"
  // -----------------------------
     rule <k> STOP => #end EVMC_SUCCESS ... </k>
-         <output> _ => .ByteArray </output>
+         <output> _ => .Bytes </output>
 
     syntax BinStackOp ::= "RETURN"
  // ------------------------------
@@ -1080,18 +1080,18 @@ These operators query about the current `CALL*` state.
 ```k
     syntax NullStackOp ::= "CALLDATASIZE"
  // -------------------------------------
-    rule <k> CALLDATASIZE => #sizeByteArray(CD) ~> #push ... </k>
+    rule <k> CALLDATASIZE => lengthBytes(CD) ~> #push ... </k>
          <callData> CD </callData>
 
     syntax UnStackOp ::= "CALLDATALOAD"
  // -----------------------------------
-    rule <k> CALLDATALOAD DATASTART => #asWord(CD [ DATASTART .. 32 ]) ~> #push ... </k>
+    rule <k> CALLDATALOAD DATASTART => #asWord(#range(CD, DATASTART, 32)) ~> #push ... </k>
          <callData> CD </callData>
 
     syntax TernStackOp ::= "CALLDATACOPY"
  // -------------------------------------
     rule <k> CALLDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </k>
-         <localMem> LM => LM [ MEMSTART := CD [ DATASTART .. DATAWIDTH ] ] </localMem>
+         <localMem> LM => #writeRange(LM, MEMSTART, #range(CD, DATASTART, DATAWIDTH)) </localMem>
          <callData> CD </callData>
 ```
 
@@ -1102,19 +1102,19 @@ These operators query about the current return data buffer.
 ```k
     syntax NullStackOp ::= "RETURNDATASIZE"
  // ---------------------------------------
-    rule <k> RETURNDATASIZE => #sizeByteArray(RD) ~> #push ... </k>
+    rule <k> RETURNDATASIZE => lengthBytes(RD) ~> #push ... </k>
          <output> RD </output>
 
     syntax TernStackOp ::= "RETURNDATACOPY"
  // ----------------------------------------
     rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </k>
-         <localMem> LM => LM [ MEMSTART := RD [ DATASTART .. DATAWIDTH ] ] </localMem>
+         <localMem> LM => #writeRange(LM, MEMSTART, #range(RD, DATASTART, DATAWIDTH)) </localMem>
          <output> RD </output>
-      requires DATASTART +Int DATAWIDTH <=Int #sizeByteArray(RD)
+      requires DATASTART +Int DATAWIDTH <=Int lengthBytes(RD)
 
     rule <k> RETURNDATACOPY _MEMSTART DATASTART DATAWIDTH => #end EVMC_INVALID_MEMORY_ACCESS ... </k>
          <output> RD </output>
-      requires DATASTART +Int DATAWIDTH >Int #sizeByteArray(RD)
+      requires DATASTART +Int DATAWIDTH >Int lengthBytes(RD)
 ```
 
 ### Log Operations
@@ -1158,7 +1158,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
-    rule <k> EXTCODESIZE ACCT => #sizeByteArray(CODE) ~> #push ... </k>
+    rule <k> EXTCODESIZE ACCT => lengthBytes(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
@@ -1174,7 +1174,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
     rule <k> EXTCODEHASH ACCT => keccak(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <code> CODE:ByteArray </code>
+           <code> CODE:Bytes </code>
            <nonce> NONCE </nonce>
            <balance> BAL </balance>
            ...
@@ -1203,7 +1203,7 @@ Should we pad zeros (for the copied "program")?
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </k>
-         <localMem> LM => LM [ MEMSTART := PGM [ PGMSTART .. WIDTH ] ] </localMem>
+         <localMem> LM => #writeRange(LM, MEMSTART, #range(PGM, PGMSTART, WIDTH)) </localMem>
          <account>
            <acctID> ACCT </acctID>
            <code> PGM </code>
@@ -1248,22 +1248,22 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 -   The `callLog` is used to store the `CALL*`/`CREATE` operations so that we can compare them against the test-set.
 
 -   `#call_____` takes the calling account, the account to execute as, the account whose code should execute, the gas limit, the amount to transfer, the arguments, and the static flag.
--   `#callWithCode______` takes the calling account, the accout to execute as, the code to execute (as a bytearray), the gas limit, the amount to transfer, the arguments, and the static flag.
+-   `#callWithCode______` takes the calling account, the accout to execute as, the code to execute (as a `Bytes`), the gas limit, the amount to transfer, the arguments, and the static flag.
 -   `#return__` is a placeholder for the calling program, specifying where to place the returned data in memory.
 
 ```k
     syntax InternalOp ::= "#checkCall" Int Int
-                        | "#call"         Int Int Int Int Int ByteArray Bool
-                        | "#callWithCode" Int Int Int ByteArray Int Int ByteArray Bool
-                        | "#mkCall"       Int Int Int ByteArray     Int ByteArray Bool
- // ----------------------------------------------------------------------------------
+                        | "#call"         Int Int Int Int Int Bytes Bool
+                        | "#callWithCode" Int Int Int Bytes Int Int Bytes Bool
+                        | "#mkCall"       Int Int Int Bytes     Int Bytes Bool
+ // --------------------------------------------------------------------------
     rule <k> #checkCall ACCT VALUE
           => #refund GCALL ~> #pushCallStack ~> #pushWorldState
           ~> #end #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else #if CD >=Int 1024 #then EVMC_CALL_DEPTH_EXCEEDED #else EVMC_NONCE_EXCEEDED #fi #fi
          ...
          </k>
          <callDepth> CD </callDepth>
-         <output> _ => .ByteArray </output>
+         <output> _ => .Bytes </output>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
@@ -1294,7 +1294,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO ACCTCODE .ByteArray VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO ACCTCODE .Bytes VALUE APPVALUE ARGS STATIC
          ...
          </k>
          <activeAccounts> ACCTS </activeAccounts>
@@ -1336,12 +1336,12 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #initVM      => . ...      </k>
          <pc>           _ => 0          </pc>
          <memoryUsed>   _ => 0          </memoryUsed>
-         <output>       _ => .ByteArray </output>
+         <output>       _ => .Bytes     </output>
          <wordStack>    _ => .WordStack </wordStack>
-         <localMem>     _ => .Memory    </localMem>
+         <localMem>     _ => .Bytes     </localMem>
 
-    syntax KItem ::= "#loadProgram" ByteArray
- // -----------------------------------------
+    syntax KItem ::= "#loadProgram" Bytes
+ // -------------------------------------
     rule <k> #loadProgram BYTES => . ... </k>
          <program> _ => BYTES </program>
          <jumpDests> _ => #computeValidJumpDests(BYTES) </jumpDests>
@@ -1376,15 +1376,15 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #accessAccounts ADDRSET:Set => . ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
 
-    syntax Set ::= #computeValidJumpDests(ByteArray)            [function, memo]
-                 | #computeValidJumpDests(ByteArray, Int, List) [function, klabel(#computeValidJumpDestsAux)]
- // ---------------------------------------------------------------------------------------------------------
+    syntax Set ::= #computeValidJumpDests(Bytes)            [function, memo]
+                 | #computeValidJumpDests(Bytes, Int, List) [function, klabel(#computeValidJumpDestsAux)]
+ // -----------------------------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
 
-    syntax Set ::= #computeValidJumpDestsWithinBound(ByteArray, Int, List) [function]
- // ---------------------------------------------------------------------------------
-    rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int #sizeByteArray(PGM)
-    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int #sizeByteArray(PGM)
+    syntax Set ::= #computeValidJumpDestsWithinBound(Bytes, Int, List) [function]
+ // -----------------------------------------------------------------------------
+    rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int lengthBytes(PGM)
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int lengthBytes(PGM)
 
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT ListItem(I)) requires PGM [ I ] ==Int 91
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
@@ -1404,7 +1404,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #popCallStack ~> #popWorldState ~> 0 ~> #push
          ...
          </k>
-         <output> _ => .ByteArray </output>
+         <output> _ => .Bytes </output>
 
     rule [return.revert]:
          <statusCode> EVMC_REVERT </statusCode>
@@ -1427,12 +1427,12 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <gas> GAVAIL </gas>
 
     syntax InternalOp ::= "#refund" Exp [strict]
-                        | "#setLocalMem" Int Int ByteArray
- // ------------------------------------------------------
+                        | "#setLocalMem" Int Int Bytes
+ // --------------------------------------------------
     rule [refund]: <k> #refund G:Int => . ... </k> <gas> GAVAIL => GAVAIL +Int G </gas>
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
-         <localMem> LM => LM [ START := WS [ 0 .. minInt(WIDTH, #sizeByteArray(WS)) ] ] </localMem>
+         <localMem> LM => #writeRange(LM, START, #range(WS, 0, minInt(WIDTH, lengthBytes(WS)))) </localMem>
 ```
 
 Ethereum Network OpCodes
@@ -1501,8 +1501,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 -   `#isValidCode_` checks if the code returned by the execution of the initialization code begins with a reserved byte. [EIP-3541]
 
 ```k
-    syntax InternalOp ::= "#create"   Int Int Int ByteArray
-                        | "#mkCreate" Int Int Int ByteArray
+    syntax InternalOp ::= "#create"   Int Int Int Bytes
+                        | "#mkCreate" Int Int Int Bytes
                         | "#incrementNonce" Int
  // -------------------------------------------
     rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
@@ -1524,7 +1524,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <callGas> GCALL => 0 </callGas>
          <caller> _ => ACCTFROM </caller>
          <callDepth> CD => CD +Int 1 </callDepth>
-         <callData> _ => .ByteArray </callData>
+         <callData> _ => .Bytes </callData>
          <callValue> _ => VALUE </callValue>
          <account>
            <acctID> ACCTTO </acctID>
@@ -1539,17 +1539,18 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
 
-    syntax Bool ::= #isValidCode ( ByteArray , Schedule ) [function]
- // ----------------------------------------------------------------
-    rule #isValidCode( OUT ,  SCHED) => Ghasrejectedfirstbyte << SCHED >> impliesBool OUT[0] =/=Int 239 requires #sizeByteArray(OUT) >Int 0
+    syntax Bool ::= #isValidCode ( Bytes , Schedule ) [function]
+ // ------------------------------------------------------------
+    rule #isValidCode( OUT ,  SCHED) => Ghasrejectedfirstbyte << SCHED >> impliesBool OUT[0] =/=Int 239 requires lengthBytes(OUT) >Int 0
     rule #isValidCode(_OUT , _SCHED) => true                                                            [owise]
 
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
-                   | "#finishCodeDeposit" Int ByteArray
- // ---------------------------------------------------
+                   | "#finishCodeDeposit" Int Bytes
+ // -----------------------------------------------
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k> <output> _ => .ByteArray </output>
+         <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k> <output> _ => .Bytes </output>
+
     rule <statusCode> EVMC_REVERT </statusCode>
          <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
          <gas> GAVAIL </gas>
@@ -1558,18 +1559,18 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <k> #halt ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
 
     rule <k> #mkCodeDeposit ACCT
-          => Gcodedeposit < SCHED > *Int #sizeByteArray(OUT) ~> #deductGas
+          => Gcodedeposit < SCHED > *Int lengthBytes(OUT) ~> #deductGas
           ~> #finishCodeDeposit ACCT OUT
          ...
          </k>
          <schedule> SCHED </schedule>
-         <output> OUT => .ByteArray </output>
-      requires #sizeByteArray(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED)
+         <output> OUT => .Bytes </output>
+      requires lengthBytes(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED)
 
     rule <k> #mkCodeDeposit _ACCT => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
-         <output> OUT => .ByteArray </output>
-      requires notBool ( #sizeByteArray(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED) )
+         <output> OUT => .Bytes </output>
+      requires notBool ( lengthBytes(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED) )
 
     rule <k> #finishCodeDeposit ACCT OUT
           => #popCallStack ~> #dropWorldState
@@ -1651,7 +1652,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            <balance> BALFROM </balance>
            ...
          </account>
-         <output> _ => .ByteArray </output>
+         <output> _ => .Bytes </output>
       requires ACCT =/=Int ACCTTO
 
     rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
@@ -1662,7 +1663,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            <balance> _ => 0 </balance>
            ...
          </account>
-         <output> _ => .ByteArray </output>
+         <output> _ => .Bytes </output>
 ```
 
 Precompiled Contracts
@@ -1709,14 +1710,14 @@ Precompiled Contracts
  // --------------------------------
     rule <k> ECREC => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
-         <output> _ => #ecrec(DATA [ 0 .. 32 ], DATA [ 32 .. 32 ], DATA [ 64 .. 32 ], DATA [ 96 .. 32 ]) </output>
+         <output> _ => #ecrec(#range(DATA, 0, 32), #range(DATA, 32, 32), #range(DATA, 64, 32), #range(DATA, 96, 32)) </output>
 
-    syntax ByteArray ::= #ecrec ( ByteArray , ByteArray , ByteArray , ByteArray ) [function]
-                       | #ecrec ( Account )                                       [function]
- // ----------------------------------------------------------------------------------------
+    syntax Bytes ::= #ecrec ( Bytes , Bytes , Bytes , Bytes ) [function]
+                   | #ecrec ( Account )                       [function]
+ // --------------------------------------------------------------------
     rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(#unparseByteStack(HASH), #asWord(SIGV), #unparseByteStack(SIGR), #unparseByteStack(SIGS)))
 
-    rule #ecrec(.Account) => .ByteArray
+    rule #ecrec(.Account) => .Bytes
     rule #ecrec(N:Int)    => #padToWidth(32, #asByteStack(N))
 
     syntax PrecompiledOp ::= "SHA256"
@@ -1741,22 +1742,22 @@ Precompiled Contracts
  // ---------------------------------
     rule <k> MODEXP => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
-         <output> _ => #modexp1(#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #asWord(DATA [ 64 .. 32 ]), DATA [ 96 .. maxInt(0, #sizeByteArray(DATA) -Int 96) ]) </output>
+         <output> _ => #modexp1(#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32)), #asWord(#range(DATA, 64, 32)), #range(DATA, 96, maxInt(0, lengthBytes(DATA) -Int 96))) </output>
 
-    syntax ByteArray ::= #modexp1 ( Int , Int , Int , ByteArray ) [function]
-                       | #modexp2 ( Int , Int , Int , ByteArray ) [function]
-                       | #modexp3 ( Int , Int , Int , ByteArray ) [function]
-                       | #modexp4 ( Int , Int , Int )             [function]
- // ------------------------------------------------------------------------
-    rule #modexp1(BASELEN, EXPLEN,   MODLEN, DATA) => #modexp2(#asInteger(DATA [ 0 .. BASELEN ]), EXPLEN, MODLEN, DATA [ BASELEN .. maxInt(0, #sizeByteArray(DATA) -Int BASELEN) ]) requires MODLEN =/=Int 0
-    rule #modexp1(_,       _,        0,      _)    => .ByteArray
-    rule #modexp2(BASE,    EXPLEN,   MODLEN, DATA) => #modexp3(BASE, #asInteger(DATA [ 0 .. EXPLEN ]), MODLEN, DATA [ EXPLEN .. maxInt(0, #sizeByteArray(DATA) -Int EXPLEN) ])
-    rule #modexp3(BASE,    EXPONENT, MODLEN, DATA) => #padToWidth(MODLEN, #modexp4(BASE, EXPONENT, #asInteger(DATA [ 0 .. MODLEN ])))
+    syntax Bytes ::= #modexp1 ( Int , Int , Int , Bytes ) [function]
+                   | #modexp2 ( Int , Int , Int , Bytes ) [function]
+                   | #modexp3 ( Int , Int , Int , Bytes ) [function]
+                   | #modexp4 ( Int , Int , Int )         [function]
+ // ----------------------------------------------------------------
+    rule #modexp1(BASELEN, EXPLEN,   MODLEN, DATA) => #modexp2(#asInteger(#range(DATA, 0, BASELEN)), EXPLEN, MODLEN, #range(DATA, BASELEN, maxInt(0, lengthBytes(DATA) -Int BASELEN))) requires MODLEN =/=Int 0
+    rule #modexp1(_,       _,        0,      _)    => .Bytes
+    rule #modexp2(BASE,    EXPLEN,   MODLEN, DATA) => #modexp3(BASE, #asInteger(#range(DATA, 0, EXPLEN)), MODLEN, #range(DATA, EXPLEN, maxInt(0, lengthBytes(DATA) -Int EXPLEN)))
+    rule #modexp3(BASE,    EXPONENT, MODLEN, DATA) => #padToWidth(MODLEN, #modexp4(BASE, EXPONENT, #asInteger(#range(DATA, 0, MODLEN))))
     rule #modexp4(BASE,    EXPONENT, MODULUS)      => #asByteStack(powmod(BASE, EXPONENT, MODULUS))
 
     syntax PrecompiledOp ::= "ECADD"
  // --------------------------------
-    rule <k> ECADD => #ecadd((#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ])), (#asWord(DATA [ 64 .. 32 ]), #asWord(DATA [ 96 .. 32 ]))) ... </k>
+    rule <k> ECADD => #ecadd((#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32))), (#asWord(#range(DATA, 64, 32)), #asWord(#range(DATA, 96, 32)))) ... </k>
          <callData> DATA </callData>
 
     syntax InternalOp ::= #ecadd(G1Point, G1Point)
@@ -1768,7 +1769,7 @@ Precompiled Contracts
 
     syntax PrecompiledOp ::= "ECMUL"
  // --------------------------------
-    rule <k> ECMUL => #ecmul((#asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ])), #asWord(DATA [ 64 .. 32 ])) ... </k>
+    rule <k> ECMUL => #ecmul((#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32))), #asWord(#range(DATA, 64, 32))) ... </k>
          <callData> DATA </callData>
 
     syntax InternalOp ::= #ecmul(G1Point, Int)
@@ -1778,22 +1779,22 @@ Precompiled Contracts
     rule <k> #ecmul(P,  S) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128Mul(P, S)) </output>
       requires isValidPoint(P)
 
-    syntax ByteArray ::= #point ( G1Point ) [function]
- // --------------------------------------------------
-    rule #point((X, Y)) => #padToWidth(32, #asByteStack(X)) ++ #padToWidth(32, #asByteStack(Y))
+    syntax Bytes ::= #point ( G1Point ) [function]
+ // ----------------------------------------------
+    rule #point((X, Y)) => #padToWidth(32, #asByteStack(X)) +Bytes #padToWidth(32, #asByteStack(Y))
 
     syntax PrecompiledOp ::= "ECPAIRING"
  // ------------------------------------
-    rule <k> ECPAIRING => #ecpairing(.List, .List, 0, DATA, #sizeByteArray(DATA)) ... </k>
+    rule <k> ECPAIRING => #ecpairing(.List, .List, 0, DATA, lengthBytes(DATA)) ... </k>
          <callData> DATA </callData>
-      requires #sizeByteArray(DATA) modInt 192 ==Int 0
+      requires lengthBytes(DATA) modInt 192 ==Int 0
     rule <k> ECPAIRING => #end EVMC_PRECOMPILE_FAILURE ... </k>
          <callData> DATA </callData>
-      requires #sizeByteArray(DATA) modInt 192 =/=Int 0
+      requires lengthBytes(DATA) modInt 192 =/=Int 0
 
-    syntax InternalOp ::= #ecpairing(List, List, Int, ByteArray, Int)
- // -----------------------------------------------------------------
-    rule <k> (.K => #checkPoint) ~> #ecpairing((.List => ListItem((#asWord(DATA [ I .. 32 ]), #asWord(DATA [ I +Int 32 .. 32 ])))) _, (.List => ListItem((#asWord(DATA [ I +Int 96 .. 32 ]) x #asWord(DATA [ I +Int 64 .. 32 ]) , #asWord(DATA [ I +Int 160 .. 32 ]) x #asWord(DATA [ I +Int 128 .. 32 ])))) _, I => I +Int 192, DATA, LEN) ... </k>
+    syntax InternalOp ::= #ecpairing(List, List, Int, Bytes, Int)
+ // -------------------------------------------------------------
+    rule <k> (.K => #checkPoint) ~> #ecpairing((.List => ListItem((#asWord(#range(DATA, I, 32)), #asWord(#range(DATA, I +Int 32, 32))))) _, (.List => ListItem((#asWord(#range(DATA, I +Int 96, 32)) x #asWord(#range(DATA, I +Int 64, 32)) , #asWord(#range(DATA, I +Int 160, 32)) x #asWord(#range(DATA, I +Int 128, 32))))) _, I => I +Int 192, DATA, LEN) ... </k>
       requires I =/=Int LEN
     rule <k> #ecpairing(A, B, LEN, _, LEN) => #end EVMC_SUCCESS ... </k>
          <output> _ => #padToWidth(32, #asByteStack(bool2Word(BN128AtePairing(A, B)))) </output>
@@ -1810,17 +1811,17 @@ Precompiled Contracts
     rule <k> BLAKE2F => #end EVMC_SUCCESS ... </k>
          <output> _ => #parseByteStack( Blake2Compress( #unparseByteStack( DATA ) ) ) </output>
          <callData> DATA </callData>
-      requires #sizeByteArray( DATA ) ==Int 213
+      requires lengthBytes( DATA ) ==Int 213
        andBool DATA[212] <=Int 1
 
     rule <k> BLAKE2F => #end EVMC_PRECOMPILE_FAILURE ... </k>
          <callData> DATA </callData>
-      requires #sizeByteArray( DATA ) ==Int 213
+      requires lengthBytes( DATA ) ==Int 213
        andBool DATA[212] >Int 1
 
     rule <k> BLAKE2F => #end EVMC_PRECOMPILE_FAILURE ... </k>
          <callData> DATA </callData>
-      requires #sizeByteArray( DATA ) =/=Int 213
+      requires lengthBytes( DATA ) =/=Int 213
 ```
 
 
@@ -2144,17 +2145,17 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     // Precompiled
     rule <k> #gasExec(_, ECREC)  => 3000 ... </k>
-    rule <k> #gasExec(_, SHA256) =>  60 +Int  12 *Int (#sizeByteArray(DATA) up/Int 32) ... </k> <callData> DATA </callData>
-    rule <k> #gasExec(_, RIP160) => 600 +Int 120 *Int (#sizeByteArray(DATA) up/Int 32) ... </k> <callData> DATA </callData>
-    rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (#sizeByteArray(DATA) up/Int 32) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, SHA256) =>  60 +Int  12 *Int (lengthBytes(DATA) up/Int 32) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, RIP160) => 600 +Int 120 *Int (lengthBytes(DATA) up/Int 32) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (lengthBytes(DATA) up/Int 32) ... </k> <callData> DATA </callData>
 
-    rule <k> #gasExec(SCHED, MODEXP) => Cmodexp(SCHED, DATA, #asWord(DATA [ 0 .. 32 ]), #asWord(DATA [ 32 .. 32 ]), #asWord(DATA [ 64 .. 32 ])) ... </k>
+    rule <k> #gasExec(SCHED, MODEXP) => Cmodexp(SCHED, DATA, #asWord(#range(DATA, 0, 32) ), #asWord(#range(DATA, 32, 32)), #asWord(#range(DATA, 64, 32))) ... </k>
          <callData> DATA </callData>
 
     rule <k> #gasExec(SCHED, ECADD)     => Gecadd < SCHED>  ... </k>
     rule <k> #gasExec(SCHED, ECMUL)     => Gecmul < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, ECPAIRING) => Gecpairconst < SCHED > +Int (#sizeByteArray(DATA) /Int 192) *Int Gecpaircoeff < SCHED > ... </k> <callData> DATA </callData>
-    rule <k> #gasExec(SCHED, BLAKE2F)   => Gfround < SCHED > *Int #asWord( DATA[0 .. 4] ) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(SCHED, ECPAIRING) => Gecpairconst < SCHED > +Int (lengthBytes(DATA) /Int 192) *Int Gecpaircoeff < SCHED > ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(SCHED, BLAKE2F)   => Gfround < SCHED > *Int #asWord(#range(DATA, 0, 4) ) ... </k> <callData> DATA </callData>
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
@@ -2187,22 +2188,22 @@ There are several helpers for calculating gas (most of them also specified in th
     rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
           => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
 
-    syntax Int ::= Cgascap        ( Schedule , Int , Int , Int )             [function, total, smtlib(gas_Cgascap)       ]
-                 | Csstore        ( Schedule , Int , Int , Int )             [function, total, smtlib(gas_Csstore)       ]
-                 | Rsstore        ( Schedule , Int , Int , Int )             [function, total, smtlib(gas_Rsstore)       ]
-                 | Cextra         ( Schedule , Bool , Int , Bool )           [function, total, smtlib(gas_Cextra)        ]
-                 | Cnew           ( Schedule , Bool , Int )                  [function, total, smtlib(gas_Cnew)          ]
-                 | Cxfer          ( Schedule , Int )                         [function, total, smtlib(gas_Cxfer)         ]
-                 | Cmem           ( Schedule , Int )                         [function, total, smtlib(gas_Cmem), memo    ]
-                 | Caddraccess    ( Schedule , Bool )                        [function, total, smtlib(gas_Caddraccess)   ]
-                 | Cstorageaccess ( Schedule , Bool )                        [function, total, smtlib(gas_Cstorageaccess)]
-                 | Csload         ( Schedule , Bool )                        [function, total, smtlib(gas_Csload)        ]
-                 | Cextcodesize   ( Schedule )                               [function, total, smtlib(gas_Cextcodesize)  ]
-                 | Cextcodecopy   ( Schedule , Int )                         [function, total, smtlib(gas_Cextcodecopy)  ]
-                 | Cextcodehash   ( Schedule )                               [function, total, smtlib(gas_Cextcodehash)  ]
-                 | Cbalance       ( Schedule )                               [function, total, smtlib(gas_Cbalance)      ]
-                 | Cmodexp        ( Schedule , ByteArray , Int , Int , Int ) [function, total, smtlib(gas_Cmodexp)       ]
- // ----------------------------------------------------------------------------------------------------------------------
+    syntax Int ::= Cgascap        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Cgascap)       ]
+                 | Csstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Csstore)       ]
+                 | Rsstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Rsstore)       ]
+                 | Cextra         ( Schedule , Bool , Int , Bool )       [function, total, smtlib(gas_Cextra)        ]
+                 | Cnew           ( Schedule , Bool , Int )              [function, total, smtlib(gas_Cnew)          ]
+                 | Cxfer          ( Schedule , Int )                     [function, total, smtlib(gas_Cxfer)         ]
+                 | Cmem           ( Schedule , Int )                     [function, total, smtlib(gas_Cmem), memo    ]
+                 | Caddraccess    ( Schedule , Bool )                    [function, total, smtlib(gas_Caddraccess)   ]
+                 | Cstorageaccess ( Schedule , Bool )                    [function, total, smtlib(gas_Cstorageaccess)]
+                 | Csload         ( Schedule , Bool )                    [function, total, smtlib(gas_Csload)        ]
+                 | Cextcodesize   ( Schedule )                           [function, total, smtlib(gas_Cextcodesize)  ]
+                 | Cextcodecopy   ( Schedule , Int )                     [function, total, smtlib(gas_Cextcodecopy)  ]
+                 | Cextcodehash   ( Schedule )                           [function, total, smtlib(gas_Cextcodehash)  ]
+                 | Cbalance       ( Schedule )                           [function, total, smtlib(gas_Cbalance)      ]
+                 | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [function, total, smtlib(gas_Cmodexp)       ]
+ // ------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
@@ -2297,18 +2298,18 @@ There are several helpers for calculating gas (most of them also specified in th
 
     syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, klabel(accountEmpty), symbol]
  // --------------------------------------------------------------------------------------------------
-    rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .ByteArray andBool NONCE ==Int 0 andBool BAL ==Int 0
+    rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .Bytes andBool NONCE ==Int 0 andBool BAL ==Int 0
 
     syntax Int ::= #allBut64th ( Int ) [function, total, smtlib(gas_allBut64th)]
  // ----------------------------------------------------------------------------
     rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
     rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
 
-    syntax Int ::= G0 ( Schedule , ByteArray , Bool )           [function]
-                 | G0 ( Schedule , ByteArray , Int , Int, Int ) [function, klabel(G0data)]
-                 | G0 ( Schedule , Bool )                       [function, klabel(G0base)]
- // --------------------------------------------------------------------------------------
-    rule G0(SCHED, WS, B) => G0(SCHED, WS, 0, #sizeByteArray(WS), 0) +Int G0(SCHED, B)
+    syntax Int ::= G0 ( Schedule , Bytes , Bool )           [function]
+                 | G0 ( Schedule , Bytes , Int , Int, Int ) [function, klabel(G0data)]
+                 | G0 ( Schedule , Bool )                   [function, klabel(G0base)]
+ // ----------------------------------------------------------------------------------
+    rule G0(SCHED, WS, B) => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int G0(SCHED, B)
 
     rule G0(SCHED, true)  => Gtxcreate    < SCHED >
     rule G0(SCHED, false) => Gtransaction < SCHED >
@@ -2329,10 +2330,10 @@ There are several helpers for calculating gas (most of them also specified in th
 
     rule #newMultComplexity(X) => (X up/Int 8) ^Int 2
 
-    syntax Int ::= #adjustedExpLength(Int, Int, ByteArray) [function]
-                 | #adjustedExpLength(Int)                 [function, klabel(#adjustedExpLengthAux)]
- // ------------------------------------------------------------------------------------------------
-    rule #adjustedExpLength(BASELEN, EXPLEN, DATA) => #if EXPLEN <=Int 32 #then 0 #else 8 *Int (EXPLEN -Int 32) #fi +Int #adjustedExpLength(#asInteger(DATA [ 96 +Int BASELEN .. minInt(EXPLEN, 32) ]))
+    syntax Int ::= #adjustedExpLength(Int, Int, Bytes) [function]
+                 | #adjustedExpLength(Int)             [function, klabel(#adjustedExpLengthAux)]
+ // --------------------------------------------------------------------------------------------
+    rule #adjustedExpLength(BASELEN, EXPLEN, DATA) => #if EXPLEN <=Int 32 #then 0 #else 8 *Int (EXPLEN -Int 32) #fi +Int #adjustedExpLength(#asInteger(#range(DATA, 96 +Int BASELEN, minInt(EXPLEN, 32))))
 
     rule #adjustedExpLength(0) => 0
     rule #adjustedExpLength(1) => 0

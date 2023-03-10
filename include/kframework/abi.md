@@ -69,7 +69,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #bytes4  ( Int )                        [klabel(abi_type_bytes4),  symbol]
                       | #bytes32 ( Int )                        [klabel(abi_type_bytes32), symbol]
                       | #bool    ( Int )                        [klabel(abi_type_bool),    symbol]
-                      | #bytes   ( ByteArray )                  [klabel(abi_type_bytes),   symbol]
+                      | #bytes   ( Bytes )                      [klabel(abi_type_bytes),   symbol]
                       | #string  ( String )                     [klabel(abi_type_string),  symbol]
                       | #array   ( TypedArg , Int , TypedArgs ) [klabel(abi_type_array),   symbol]
  // ----------------------------------------------------------------------------------------------
@@ -77,12 +77,12 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
  // ------------------------------------------------------------
 
-    syntax ByteArray ::= #abiCallData ( String , TypedArgs ) [function]
- // -------------------------------------------------------------------
-    rule #abiCallData( FNAME , ARGS ) => #signatureCallData(FNAME, ARGS) ++ #encodeArgs(ARGS)
+    syntax Bytes ::= #abiCallData ( String , TypedArgs ) [function]
+ // ---------------------------------------------------------------
+    rule #abiCallData( FNAME , ARGS ) => #signatureCallData(FNAME, ARGS) +Bytes #encodeArgs(ARGS)
 
-    syntax ByteArray ::= #signatureCallData ( String, TypedArgs ) [function]
- // ------------------------------------------------------------------------
+    syntax Bytes ::= #signatureCallData ( String, TypedArgs ) [function]
+ // --------------------------------------------------------------------
     rule #signatureCallData( FNAME , ARGS ) => #parseByteStack(substrString(Keccak256(#generateSignature(FNAME, ARGS)), 0, 8))
 
     syntax String ::= #generateSignature     ( String, TypedArgs ) [function, total]
@@ -145,19 +145,19 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #typeName( #array(T, _, _)) => #typeName(T) +String "[]"
 
-    syntax ByteArray ::= #encodeArgs    ( TypedArgs )                               [function]
-    syntax ByteArray ::= #encodeArgsAux ( TypedArgs , Int , ByteArray , ByteArray ) [function]
- // ------------------------------------------------------------------------------------------
-    rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .ByteArray, .ByteArray)
+    syntax Bytes ::= #encodeArgs    ( TypedArgs )                       [function]
+    syntax Bytes ::= #encodeArgsAux ( TypedArgs , Int , Bytes , Bytes ) [function]
+ // ------------------------------------------------------------------------------
+    rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .Bytes, .Bytes)
 
-    rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS ++ TAILS
+    rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS +Bytes TAILS
 
     rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
-        => #encodeArgsAux(ARGS, OFFSET, HEADS ++ #enc(ARG), TAILS)
+        => #encodeArgsAux(ARGS, OFFSET, HEADS +Bytes #enc(ARG), TAILS)
       requires #isStaticType(ARG)
 
     rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
-        => #encodeArgsAux(ARGS, OFFSET +Int #sizeOfDynamicType(ARG), HEADS ++ #enc(#uint256(OFFSET)), TAILS ++ #enc(ARG))
+        => #encodeArgsAux(ARGS, OFFSET +Int #sizeOfDynamicType(ARG), HEADS +Bytes #enc(#uint256(OFFSET)), TAILS +Bytes #enc(ARG))
       requires notBool(#isStaticType(ARG))
 
     syntax Int ::= #lenOfHeads ( TypedArgs ) [function, total]
@@ -269,7 +269,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
  // ---------------------------------------------------------
-    rule #sizeOfDynamicType(#bytes(BS)) => 32 +Int #ceil32(#sizeByteArray(BS))
+    rule #sizeOfDynamicType(#bytes(BS)) => 32 +Int #ceil32(lengthBytes(BS))
 
     rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N)
       requires #isStaticType(T)
@@ -284,8 +284,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #sizeOfDynamicTypeAux(.TypedArgs) => 0
 
-    syntax ByteArray ::= #enc ( TypedArg ) [function]
- // -------------------------------------------------
+    syntax Bytes ::= #enc ( TypedArg ) [function]
+ // ---------------------------------------------
     // static Type
     rule #enc(#address( DATA )) => #bufStrict(32, #getValue(#address( DATA )))
 
@@ -331,13 +331,13 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc(   #bool( DATA )) => #bufStrict(32, #getValue(   #bool( DATA )))
 
     // dynamic Type
-    rule #enc(        #bytes(BS)) => #encBytes(#sizeByteArray(BS), BS)
-    rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) ++ #encodeArgs(DATA)
+    rule #enc(        #bytes(BS)) => #encBytes(lengthBytes(BS), BS)
+    rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) +Bytes #encodeArgs(DATA)
     rule #enc(      #string(STR)) => #enc(#bytes(#parseByteStackRaw(STR)))
 
-    syntax ByteArray ::= #encBytes ( Int , ByteArray ) [function]
- // -------------------------------------------------------------
-    rule #encBytes(N, BS) => #enc(#uint256(N)) ++ BS ++ #bufStrict(#ceil32(N) -Int N, 0)
+    syntax Bytes ::= #encBytes ( Int , Bytes ) [function]
+ // -----------------------------------------------------
+    rule #encBytes(N, BS) => #enc(#uint256(N)) +Bytes BS +Bytes #bufStrict(#ceil32(N) -Int N, 0)
 ```
 
 ```k
