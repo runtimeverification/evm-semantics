@@ -148,8 +148,11 @@ jobs:
       matrix:
         include:
           - runner: normal
-          - runner: MacIntel
+            os: self.ubuntu-22.04
+          - runner: macos-12
+            os: macos-12
           - runner: MacM1
+            os: self-macos-12
     needs: version-bump
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
@@ -159,5 +162,18 @@ jobs:
         with:
           # Check out pull request HEAD instead of merge commit.
           ref: ${{ github.event.pull_request.head.sha }}
+      - name: 'Install Nix'
+        if: ${{ !startsWith(matrix.os, 'self') }}
+        uses: cachix/install-nix-action@v19
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.13.3/install
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      - name: 'Install Cachix'
+        if: ${{ !startsWith(matrix.os, 'self') }}
+        uses: cachix/cachix-action@v12
+        with:
+          name: k-framework
+          authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
       - name: 'Test KEVM'
         run: GC_DONT_GC=1 nix build --print-build-logs .#kevm-test
