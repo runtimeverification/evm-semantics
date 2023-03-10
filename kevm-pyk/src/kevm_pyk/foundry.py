@@ -26,7 +26,6 @@ from .utils import (
     KDefinition__expand_macros,
     abstract_cell_vars,
     byte_offset_to_lines,
-    cfg_dump_dot,
     find_free_port,
     parallel_kcfg_explore,
 )
@@ -408,8 +407,13 @@ def foundry_show(
 
 def foundry_to_dot(foundry_out: Path, test: str) -> None:
     kcfgs_dir = foundry_out / 'kcfgs'
+    dump_dir = kcfgs_dir / 'dump'
     foundry = Foundry(foundry_out)
-    cfg_dump_dot(foundry.kevm, test, kcfgs_dir)
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    kcfg_show = KCFGShow(foundry.kevm)
+    kcfg_show.dump(test, kcfg, dump_dir, dot=True)
 
 
 class CfgStat(NamedTuple):
