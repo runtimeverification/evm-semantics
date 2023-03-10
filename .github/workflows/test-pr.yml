@@ -148,7 +148,7 @@ jobs:
       matrix:
         include:
           - runner: normal
-            os: self.ubuntu-22.04
+            os: self-ubuntu-22.04
           - runner: macos-12
             os: macos-12
           - runner: MacM1
