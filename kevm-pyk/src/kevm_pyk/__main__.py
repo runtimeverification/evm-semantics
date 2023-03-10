@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, 
 from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
-from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
+from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
 from pyk.kcfg.tui import KCFGElem
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
@@ -297,6 +297,50 @@ def exec_prove(
             failed += 1
             print(f'PROOF FAILED: {pid}')
     sys.exit(failed)
+
+
+def exec_show_kcfg(
+    definition_dir: Path,
+    spec_file: Path,
+    save_directory: Path,
+    includes: List[str],
+    claim_label: Optional[str] = None,
+    spec_module: Optional[str] = None,
+    md_selector: Optional[str] = None,
+    nodes: Iterable[str] = (),
+    node_deltas: Iterable[Tuple[str, str]] = (),
+    to_module: bool = False,
+    minimize: bool = True,
+    **kwargs: Any,
+) -> None:
+    kevm = KEVM(definition_dir)
+
+    _LOGGER.info(f'Extracting claims from file: {spec_file}')
+    claim = single(
+        kevm.get_claims(
+            spec_file,
+            spec_module_name=spec_module,
+            include_dirs=[Path(i) for i in includes],
+            md_selector=md_selector,
+            claim_labels=([claim_label] if claim_label is not None else None),
+        )
+    )
+
+    kcfg = KCFGExplore.read_cfg(claim.label, save_directory)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {claim} from {save_directory}')
+
+    kcfg_show = KCFGShow(kevm)
+    res_lines = kcfg_show.show(
+        claim.label,
+        kcfg,
+        nodes=nodes,
+        node_deltas=node_deltas,
+        to_module=to_module,
+        minimize=minimize,
+        node_printer=kevm.short_info,
+    )
+    print('\n'.join(res_lines))
 
 
 def exec_view_kcfg(
@@ -793,6 +837,17 @@ def _create_argument_parser() -> ArgumentParser:
     )
     view_kcfg_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
     view_kcfg_args.add_argument('--claim', type=str, dest='claim_label', help='Claim identifier to load CFG for.')
+
+    show_kcfg_args = command_parser.add_parser(
+        'show-kcfg',
+        help='Display tree show of CFG',
+        parents=[shared_args, k_args, kcfg_show_args],
+    )
+    show_kcfg_args.add_argument(
+        'save_directory', type=dir_path, help='Path to where CFGs are stored (--save-directory option to prove).'
+    )
+    show_kcfg_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
+    show_kcfg_args.add_argument('--claim', type=str, dest='claim_label', help='Claim identifier to load CFG for.')
 
     run_args = command_parser.add_parser(
         'run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args, k_args]
