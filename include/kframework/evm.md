@@ -506,9 +506,6 @@ We make sure the given arguments (to be interpreted as addresses) are with 160 b
 ```k
     syntax Bool ::= #isActiveAccount( Int ) [function]
  // --------------------------------------------------
-   //  rule [[ #isActiveAccount( ACCT ) => {<acctID> ACCT </acctID>}:>AcctIdCell in_keys(ACCTS) ]]
-   //       <accounts> ACCTS </accounts>
-
     rule [[ #isActiveAccount( ACCT ) => true ]]
            <account>
                <acctID> ACCT </acctID>
