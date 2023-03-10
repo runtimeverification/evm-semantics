@@ -46,7 +46,7 @@ jobs:
         with:
           packages: jq
           script: |
-            kevm=$(nix build .#kevm --json | jq -r '.[].outputs | to_entries[].value')
+            kevm=$(nix build --extra-experimental-features nix-command .#kevm --json | jq -r '.[].outputs | to_entries[].value')
             drv=$(nix-store --query --deriver ${kevm})
             nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework
 
