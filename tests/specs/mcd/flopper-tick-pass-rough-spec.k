@@ -11,7 +11,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -21,10 +21,10 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Flopper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("tick", #uint256(ABI_id)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("tick", #uint256(ABI_id)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -100,7 +100,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
        andBool (#rangeAddress(Guy)
        andBool (#rangeUInt(48, Tic)
        andBool (#rangeUInt(48, End)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Guy))
        andBool ((#rangeUInt(48, TIME))
        andBool (#rangeUInt(256, Junk_0)

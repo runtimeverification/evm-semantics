@@ -36,13 +36,13 @@ Operator `#revOps` can be used to reverse a program.
 ```
 
 ```k
-    syntax ByteArray ::= #asmOpCodes ( OpCodes ) [function]
- // -------------------------------------------------------
+    syntax Bytes ::= #asmOpCodes ( OpCodes ) [function]
+ // ---------------------------------------------------
 ```
 
 ```k
-    syntax ByteArray ::= #asmOpCodes ( OpCodes, StringBuffer ) [function, klabel(#asmOpCodesAux)]
- // ---------------------------------------------------------------------------------------------
+    syntax Bytes ::= #asmOpCodes ( OpCodes, StringBuffer ) [function, klabel(#asmOpCodesAux)]
+ // -----------------------------------------------------------------------------------------
     rule #asmOpCodes( OPS ) => #asmOpCodes(OPS, .StringBuffer)
 
     rule #asmOpCodes( PUSH(N, W) ; OCS, SB ) => #asmOpCodes(OCS, (SB +String chrChar(#asmOpCode(PUSH(N)))) +String Bytes2String(Int2Bytes(N, W, BE)))

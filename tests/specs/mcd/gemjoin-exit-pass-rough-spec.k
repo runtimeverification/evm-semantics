@@ -11,7 +11,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -21,10 +21,10 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(GemJoin_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("exit", #address(ABI_usr), #uint256(ABI_wad)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("exit", #address(ABI_usr), #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -124,7 +124,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
        andBool (#rangeBool(Stopped)
        andBool (#rangeUInt(256, Vat_balance)
        andBool (#rangeUInt(256, DSToken_balance)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Vat))
        andBool ((#notPrecompileAddress(DSToken))
        andBool ((#notPrecompileAddress(Owner))
@@ -182,7 +182,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -192,10 +192,10 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("slip", #bytes32(ABI_ilk), #address(ABI_usr), #int256(ABI_wad)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("slip", #bytes32(ABI_ilk), #address(ABI_usr), #int256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #if ( ABI_wad <Int 0 andBool ( minSInt256 <=Int ABI_wad andBool ( ABI_wad <=Int maxSInt256 andBool 0 <=Int ( Gem +Int ABI_wad ) ) ) )
               #then   #gas ( ( ( VGas -Int Csstore( ISTANBUL , ( Gem +Int ABI_wad ) , Gem , Junk_1 ) ) +Int -6884 ) )
@@ -275,7 +275,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
        andBool (#rangeSInt(256, ABI_wad)
        andBool (#rangeUInt(256, May)
        andBool (#rangeUInt(256, Gem)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (((May ==Int 1))
@@ -308,10 +308,10 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(DSToken_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("transfer", #address(ABI_usr), #uint256(ABI_wad)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("transfer", #address(ABI_usr), #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Gem_c -Int ABI_wad ) , Gem_c , Junk_0 ) ) -Int Csstore( ISTANBUL , ( Gem_u +Int ABI_wad ) , Gem_u , Junk_1 ) ) +Int -6391 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -386,7 +386,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Gem_u)
        andBool (#rangeAddress(Owner)
        andBool (#rangeBool(Stopped)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Owner))
        andBool ((ABI_usr =/=Int CALLER_ID)
        andBool (#rangeUInt(256, Junk_0)

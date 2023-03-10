@@ -25,4 +25,9 @@ contract SymbolicStorageTest is Test, KEVMCheats {
         require(value != 0);
         assertEq(uint256(value), 0);
     }
+
+    function testEmptyInitialStorage(uint256 slot) public {
+        bytes32 storage_value = vm.load(address(vm), bytes32(slot));
+        assertEq(uint256(storage_value), 0);
+    }
 }
