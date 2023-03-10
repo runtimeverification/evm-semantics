@@ -14,12 +14,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: ubuntu-latest
-            os: ubuntu-latest
+          - runner: normal
           - runner: macos-12
-            os: macos-12
           - runner: MacM1
-            os: self-macos-12
     runs-on: ${{ matrix.runner }}
     steps:
       - name: 'Check out code'
@@ -28,14 +25,14 @@ jobs:
         if: ${{ contains(matrix.os, 'macos') }}
         run: brew install bash
       - name: 'Install Nix'
-        if: ${{ !startsWith(matrix.os, 'self') }}
+        if: ${{ matrix.runner == 'macos-12' }}
         uses: cachix/install-nix-action@v19
         with:
           install_url: https://releases.nixos.org/nix/nix-2.13.3/install
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       - name: 'Install Cachix'
-        if: ${{ !startsWith(matrix.os, 'self') }}
+        if: ${{ matrix.runner == 'macos-12' }}
         uses: cachix/cachix-action@v12
         with:
           name: k-framework
@@ -49,7 +46,7 @@ jobs:
         with:
           packages: jq
           script: |
-            kevm=$(nix build .#kevm --json | jq -r '.[].outputs | to_entries[].value')
+            kevm=$(nix build --extra-experimental-features 'nix-command flakes' .#kevm --json | jq -r '.[].outputs | to_entries[].value')
             drv=$(nix-store --query --deriver ${kevm})
             nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework
 
