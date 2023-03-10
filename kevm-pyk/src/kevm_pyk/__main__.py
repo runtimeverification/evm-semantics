@@ -713,6 +713,31 @@ def _create_argument_parser() -> ArgumentParser:
         help='Extra modules to import into generated main module.',
     )
 
+    kcfg_show_args = ArgumentParser(add_help=False)
+    kcfg_show_args.add_argument(
+        '--node',
+        type=str,
+        dest='nodes',
+        default=[],
+        action='append',
+        help='List of nodes to display as well.',
+    )
+    kcfg_show_args.add_argument(
+        '--node-delta',
+        type=arg_pair_of(str, str),
+        dest='node_deltas',
+        default=[],
+        action='append',
+        help='List of nodes to display delta for.',
+    )
+    kcfg_show_args.add_argument(
+        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.'
+    )
+    kcfg_show_args.add_argument('--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.')
+    kcfg_show_args.add_argument(
+        '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
+    )
+
     parser = ArgumentParser(prog='python3 -m kevm_pyk')
 
     command_parser = parser.add_subparsers(dest='command', required=True)
@@ -869,35 +894,10 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_show_args = command_parser.add_parser(
         'foundry-show',
         help='Display a given Foundry CFG.',
-        parents=[shared_args, k_args],
+        parents=[shared_args, k_args, show_kcfg_args],
     )
     foundry_show_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
-    foundry_show_args.add_argument(
-        '--node',
-        type=str,
-        dest='nodes',
-        default=[],
-        action='append',
-        help='List of nodes to display as well.',
-    )
-    foundry_show_args.add_argument(
-        '--node-delta',
-        type=arg_pair_of(str, str),
-        dest='node_deltas',
-        default=[],
-        action='append',
-        help='List of nodes to display delta for.',
-    )
-    foundry_show_args.add_argument(
-        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.'
-    )
-    foundry_show_args.add_argument(
-        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
-    )
-    foundry_show_args.add_argument(
-        '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
-    )
 
     foundry_to_dot = command_parser.add_parser(
         'foundry-to-dot',
