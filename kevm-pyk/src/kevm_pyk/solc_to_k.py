@@ -235,7 +235,7 @@ class Contract:
     @property
     def method_sentences(self) -> List[KSentence]:
         method_application_production: KSentence = KProduction(
-            KSort('ByteArray'),
+            KSort('Bytes'),
             [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)],
             klabel=self.klabel_method,
             att=KAtt({'function': '', 'symbol': ''}),
@@ -338,7 +338,7 @@ def _evm_base_sort(type_label: str) -> KSort:
         return KSort('Int')
 
     if type_label == 'bytes':
-        return KSort('ByteArray')
+        return KSort('Bytes')
 
     if type_label == 'string':
         return KSort('String')
@@ -396,7 +396,7 @@ def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
     if type_label == 'int256':
         return KEVM.range_sint(256, term)
     if type_label == 'bytes':
-        return KEVM.range_uint(128, KEVM.size_bytearray(term))
+        return KEVM.range_uint(128, KEVM.size_bytes(term))
     if type_label == 'string':
         return TRUE
 
