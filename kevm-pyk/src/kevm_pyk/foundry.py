@@ -158,11 +158,12 @@ def foundry_kompile(
             )
             fmf.write(_foundry.pretty_print(bin_runtime_definition) + '\n')
 
-    if regen or rekompile or not kompiled_timestamp.exists():
-        _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
+    def kevm_kompile(
+        out_dir: Path, backend: KompileBackend, llvm_kompile_type: Optional[LLVMKompileType] = None
+    ) -> None:
         KEVM.kompile(
-            foundry_definition_dir,
-            KompileBackend.HASKELL,
+            out_dir,
+            backend,
             foundry_main_file,
             emit_json=True,
             includes=includes,
@@ -172,22 +173,15 @@ def foundry_kompile(
             debug=debug,
             ccopts=ccopts,
             llvm_kompile=llvm_kompile,
+            llvm_kompile_type=llvm_kompile_type,
         )
+
+    if regen or rekompile or not kompiled_timestamp.exists():
+        _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
+        kevm_kompile(foundry_definition_dir, KompileBackend.HASKELL)
         if llvm_library:
             _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
-            KEVM.kompile(
-                foundry_llvm_dir,
-                KompileBackend.LLVM,
-                foundry_main_file,
-                emit_json=True,
-                includes=includes,
-                main_module_name=main_module,
-                syntax_module_name=syntax_module,
-                md_selector=md_selector,
-                debug=debug,
-                ccopts=ccopts,
-                llvm_kompile_type=LLVMKompileType.C,
-            )
+            kevm_kompile(foundry_llvm_dir, KompileBackend.LLVM, llvm_kompile_type=LLVMKompileType.C)
 
 
 def foundry_prove(
