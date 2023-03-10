@@ -21,10 +21,10 @@ module VOW-FESS-FAIL-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Vow_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("fess", #uint256(ABI_tab)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("fess", #uint256(ABI_tab)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -97,7 +97,7 @@ module VOW-FESS-FAIL-ROUGH-SPEC
        andBool (#rangeUInt(256, May)
        andBool (#rangeUInt(256, Sin_era)
        andBool (#rangeUInt(256, Sin)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (#rangeUInt(256, Junk_2)))))))))

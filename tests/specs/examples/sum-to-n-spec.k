@@ -15,7 +15,7 @@ module VERIFICATION
 
     rule 0 <=Int #sizeWordStack ( _ , _ ) => true [simplification, smt-lemma]
 
-    syntax ByteArray ::= "sumToN" [macro]
+    syntax Bytes ::= "sumToN" [macro]
  // -------------------------------------
     rule sumToN
       => #asmOpCodes(PUSH(1, 0) ; SWAP(1)                   // s = 0 ; n = N
@@ -37,7 +37,7 @@ module SUM-TO-N-SPEC
           <schedule> ISTANBUL </schedule>
           <callStack> .List </callStack>
           <memoryUsed> 0   </memoryUsed>
-          <localMem> .Memory </localMem>
+          <localMem> .Bytes </localMem>
           <callGas> _ </callGas>
           <program> sumToN </program>
           <jumpDests> #computeValidJumpDests(sumToN) </jumpDests>
@@ -54,7 +54,7 @@ module SUM-TO-N-SPEC
           <schedule> ISTANBUL </schedule>
           <callStack> .List </callStack>
           <memoryUsed> 0   </memoryUsed>
-          <localMem> .Memory </localMem>
+          <localMem> .Bytes </localMem>
           <callGas> _ </callGas>
           <program> sumToN </program>
           <jumpDests> #computeValidJumpDests(sumToN) </jumpDests>

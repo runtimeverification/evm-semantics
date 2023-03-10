@@ -22,7 +22,7 @@ module CREATE-SPEC
             <schedule> PETERSBURG </schedule>
             <ethereum>
               <evm>
-                <output> _ => .ByteArray </output>
+                <output> _ => .Bytes </output>
                 <statusCode> _ => EVMC_SUCCESS </statusCode>
                 <callStack> _ </callStack>
                 <interimStates> _ </interimStates>
@@ -123,7 +123,7 @@ module CREATE-SPEC
                   <callValue> _ </callValue>
 
                   <wordStack> .WordStack => ?_ </wordStack>
-                  <localMem> .Memory => ?_ </localMem>
+                  <localMem> .Bytes => ?_ </localMem>
                   <pc> 0 => ?_ </pc>
                   // simplified gas cost
                   <gas> G => 0 </gas>

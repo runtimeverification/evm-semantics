@@ -127,8 +127,6 @@ class KEVM(KProve, KRun):
         symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)
         symbol_table['.AccountCellMap']                               = lambda: '.Bag'
         symbol_table['AccountCellMapItem']                            = lambda k, v: v
-        symbol_table['_[_:=_]_EVM-TYPES_Memory_Memory_Int_ByteArray'] = paren(lambda m, k, v: m + ' [ '  + k + ' := (' + v + '):ByteArray ]')
-        symbol_table['_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int'] = lambda m, s, w: '(' + m + ' [ ' + s + ' .. ' + w + ' ]):ByteArray'
         symbol_table['_<Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') <Word ('  + a2 + ')')
         symbol_table['_>Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') >Word ('  + a2 + ')')
         symbol_table['_<=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')
@@ -139,9 +137,6 @@ class KEVM(KProve, KRun):
             '_|->_',
             '#And',
             '_andBool_',
-            '_++__EVM-TYPES_ByteArray_ByteArray_ByteArray',
-            '_[_.._]_EVM-TYPES_ByteArray_ByteArray_Int_Int',
-            '_[_]_EVM-TYPES_Int_WordStack_Int',
             '_:__EVM-TYPES_WordStack_Int_WordStack',
             '#Implies',
             '_impliesBool_',
@@ -202,7 +197,7 @@ class KEVM(KProve, KRun):
             'EVM-TYPES.#asByteStack',
             'EVM-TYPES.#asByteStackAux.recursive',
             'EVM-TYPES.#asWord.recursive',
-            'EVM-TYPES.ByteArray.range',
+            'EVM-TYPES.Bytes.range',
             'EVM-TYPES.bytesRange',
             'EVM-TYPES.mapWriteBytes.recursive',
             'EVM-TYPES.#padRightToWidth',
@@ -314,7 +309,7 @@ class KEVM(KProve, KRun):
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ID_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'CALLER_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ORIGIN_CELL'))))
-        constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytearray(get_cell(config, 'CALLDATA_CELL')), KEVM.pow128())))
+        constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytes(get_cell(config, 'CALLDATA_CELL')), KEVM.pow128())))
 
         return CTerm(mlAnd([config] + constraints))
 
@@ -406,8 +401,8 @@ class KEVM(KProve, KRun):
         return KApply('bool2Word(_)_EVM-TYPES_Int_Bool', [cond])
 
     @staticmethod
-    def size_bytearray(ba: KInner) -> KApply:
-        return KApply('#sizeByteArray(_)_EVM-TYPES_Int_ByteArray', [ba])
+    def size_bytes(ba: KInner) -> KApply:
+        return KApply('lengthBytes(_)_BYTES-HOOKED_Int_Bytes', [ba])
 
     @staticmethod
     def inf_gas(g: KInner) -> KApply:
@@ -415,7 +410,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def compute_valid_jumpdests(p: KInner) -> KApply:
-        return KApply('#computeValidJumpDests(_)_EVM_Set_ByteArray', [p])
+        return KApply('#computeValidJumpDests(_)_EVM_Set_Bytes', [p])
 
     @staticmethod
     def bin_runtime(c: KInner) -> KApply:
@@ -440,9 +435,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def abi_calldata(name: str, args: List[KInner]) -> KApply:
-        return KApply(
-            '#abiCallData(_,_)_EVM-ABI_ByteArray_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)]
-        )
+        return KApply('#abiCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
 
     @staticmethod
     def abi_selector(name: str) -> KApply:
@@ -466,7 +459,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def bytes_append(b1: KInner, b2: KInner) -> KApply:
-        return KApply('_++__EVM-TYPES_ByteArray_ByteArray_ByteArray', [b1, b2])
+        return KApply('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', [b1, b2])
 
     @staticmethod
     def account_cell(
@@ -490,11 +483,11 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def parse_bytestack(s: KInner) -> KApply:
-        return KApply('#parseByteStack(_)_SERIALIZATION_ByteArray_String', [s])
+        return KApply('#parseByteStack(_)_SERIALIZATION_Bytes_String', [s])
 
     @staticmethod
-    def bytearray_empty() -> KApply:
-        return KApply('.ByteArray_EVM-TYPES_ByteArray')
+    def bytes_empty() -> KApply:
+        return KApply('.Bytes_BYTES-HOOKED_Bytes')
 
     @staticmethod
     def intlist(ints: List[KInner]) -> KApply:
