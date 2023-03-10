@@ -26,7 +26,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Memory => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> #gas(VGas) => ?_ </gas>
+            <gas> #gas(_VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
@@ -154,7 +154,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
-            <accessedStorage> _ /*=> ?_*/ </accessedStorage>
+            <accessedStorage> _  </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -217,8 +217,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
        andBool #rangeNonce(Nonce_Vow)
 
 
-//     [trusted, matching(infGas)]
-    [matching(infGas)]
+    [trusted, matching(infGas)]
 
 
     // Vow_subuu
@@ -255,7 +254,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
-            <accessedStorage> _ /*=> ?_ */ </accessedStorage>
+            <accessedStorage> _ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -318,8 +317,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
 
 
-//    [trusted, matching(infGas)]
-    [matching(infGas)]
+   [trusted, matching(infGas)]
 
 
 endmodule

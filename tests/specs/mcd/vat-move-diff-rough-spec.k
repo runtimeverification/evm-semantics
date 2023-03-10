@@ -158,7 +158,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
-            <accessedStorage> .Map => ?_ </accessedStorage>
+            <accessedStorage> _ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -219,7 +219,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
-    [trusted, matching(infGas)]
+   [trusted, matching(infGas)]
 
 
     // Vat_subuu
@@ -256,7 +256,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
-            <accessedStorage> .Map => ?_ </accessedStorage>
+            <accessedStorage> _ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>

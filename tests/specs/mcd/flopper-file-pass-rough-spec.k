@@ -70,7 +70,13 @@ module FLOPPER-FILE-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Flopper_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flopper.beg <- (#if ABI_what ==Int #string2Word("beg") #then ABI_data #else Beg #fi) ] [ #Flopper.pad <- (#if ABI_what ==Int #string2Word("pad") #then ABI_data #else Pad #fi) ] [ #Flopper.ttl_tau <- (#if ABI_what ==Int #string2Word("ttl") #then #WordPackUInt48UInt48(maxUInt48 &Int ABI_data, Tau) #else (#if ABI_what ==Int #string2Word("tau") #then #WordPackUInt48UInt48(Ttl, maxUInt48 &Int ABI_data) #else #WordPackUInt48UInt48(Ttl, Tau) #fi) #fi) ] </storage>
+//               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flopper.beg <- (#if ABI_what ==Int #string2Word("beg") #then ABI_data #else Beg #fi) ] [ #Flopper.pad <- (#if ABI_what ==Int #string2Word("pad") #then ABI_data #else Pad #fi) ] [ #Flopper.ttl_tau <- (#if ABI_what ==Int #string2Word("ttl") #then #WordPackUInt48UInt48(maxUInt48 &Int ABI_data, Tau) #else (#if ABI_what ==Int #string2Word("tau") #then #WordPackUInt48UInt48(Ttl, maxUInt48 &Int ABI_data) #else #WordPackUInt48UInt48(Ttl, Tau) #fi) #fi) ] </storage>
+              <storage> ACCT_ID_STORAGE => 
+                #write ( #write ( #write ( ACCT_ID_STORAGE,
+                  #Flopper.beg, (#if ABI_what ==Int #string2Word("beg") #then ABI_data #else Beg #fi)),
+                  #Flopper.pad, (#if ABI_what ==Int #string2Word("pad") #then ABI_data #else Pad #fi)),
+                  #Flopper.ttl_tau, (#if ABI_what ==Int #string2Word("ttl") #then #WordPackUInt48UInt48(maxUInt48 &Int ABI_data, Tau) #else (#if ABI_what ==Int #string2Word("tau") #then #WordPackUInt48UInt48(Ttl, maxUInt48 &Int ABI_data) #else #WordPackUInt48UInt48(Ttl, Tau) #fi) #fi))
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Flopper => ?_ </nonce>
             </account>
