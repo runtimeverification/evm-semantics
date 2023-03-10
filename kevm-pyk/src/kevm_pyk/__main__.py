@@ -301,8 +301,8 @@ def exec_prove(
 
 def exec_show_kcfg(
     definition_dir: Path,
-    spec_file: Path,
     save_directory: Path,
+    spec_file: Path,
     includes: List[str],
     claim_label: Optional[str] = None,
     spec_module: Optional[str] = None,
@@ -575,6 +575,10 @@ def _create_argument_parser() -> ArgumentParser:
     shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
     shared_args.add_argument('--workers', '-j', default=1, type=int, help='Number of processes to run in parallel.')
 
+    display_args = ArgumentParser(add_help=False)
+    display_args.add_argument('--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.')
+    display_args.add_argument('--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.')
+
     rpc_args = ArgumentParser(add_help=False)
     rpc_args.add_argument(
         '--rpc-base-port',
@@ -684,12 +688,6 @@ def _create_argument_parser() -> ArgumentParser:
     kprove_args.add_argument(
         '--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.'
     )
-    kprove_args.add_argument(
-        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize prover output.'
-    )
-    kprove_args.add_argument(
-        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize prover output.'
-    )
 
     k_kompile_args = ArgumentParser(add_help=False)
     k_kompile_args.add_argument('--backend', type=KompileBackend, help='[llvm|haskell]')
@@ -775,10 +773,6 @@ def _create_argument_parser() -> ArgumentParser:
         help='List of nodes to display delta for.',
     )
     kcfg_show_args.add_argument(
-        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.'
-    )
-    kcfg_show_args.add_argument('--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.')
-    kcfg_show_args.add_argument(
         '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
     )
 
@@ -810,7 +804,9 @@ def _create_argument_parser() -> ArgumentParser:
     )
 
     prove_args = command_parser.add_parser(
-        'prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args, rpc_args, explore_args]
+        'prove',
+        help='Run KEVM proof.',
+        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args, display_args],
     )
     prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
     prove_args.add_argument(
@@ -841,7 +837,7 @@ def _create_argument_parser() -> ArgumentParser:
     show_kcfg_args = command_parser.add_parser(
         'show-kcfg',
         help='Display tree show of CFG',
-        parents=[shared_args, k_args, kcfg_show_args],
+        parents=[shared_args, k_args, kcfg_show_args, display_args],
     )
     show_kcfg_args.add_argument(
         'save_directory', type=dir_path, help='Path to where CFGs are stored (--save-directory option to prove).'
@@ -919,7 +915,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_prove_args = command_parser.add_parser(
         'foundry-prove',
         help='Run Foundry Proof.',
-        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args],
+        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args, display_args],
     )
     foundry_prove_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_prove_args.add_argument(
@@ -949,7 +945,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_show_args = command_parser.add_parser(
         'foundry-show',
         help='Display a given Foundry CFG.',
-        parents=[shared_args, k_args, show_kcfg_args],
+        parents=[shared_args, k_args, kcfg_show_args, display_args],
     )
     foundry_show_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
@@ -993,19 +989,13 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',
         help='Simplify a given node, and potentially replace it.',
-        parents=[shared_args, rpc_args],
+        parents=[shared_args, rpc_args, display_args],
     )
     foundry_simplify_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_simplify_node.add_argument('test', type=str, help='Simplify node in this CFG.')
     foundry_simplify_node.add_argument('node', type=str, help='Node to simplify in CFG.')
     foundry_simplify_node.add_argument(
         '--replace', default=False, help='Replace the original node with the simplified variant in the graph.'
-    )
-    foundry_simplify_node.add_argument(
-        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.'
-    )
-    foundry_simplify_node.add_argument(
-        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
     )
 
     foundry_step_node = command_parser.add_parser(
