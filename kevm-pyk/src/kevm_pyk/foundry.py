@@ -603,10 +603,8 @@ def _method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Me
 
 
 def _init_cterm(init_term: KInner) -> CTerm:
-    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), Foundry.loc_FOUNDRY_FAILED())
     init_cterm = CTerm(init_term)
     init_cterm = KEVM.add_invariant(init_cterm)
-    init_cterm = init_cterm.add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, intToken(0)])))
     return init_cterm
 
 
@@ -622,8 +620,8 @@ def _init_term(
         Foundry.address_TEST_CONTRACT(),
         intToken(0),
         program,
-        KVariable('ACCT_STORAGE'),
-        KVariable('ACCT_ORIGSTORAGE'),
+        KApply('.Map'),
+        KApply('.Map'),
         intToken(0),
     )
     init_subst = {
@@ -656,7 +654,7 @@ def _init_term(
         'ACCOUNTS_CELL': KEVM.accounts(
             [
                 account_cell,  # test contract address
-                Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE')),
+                Foundry.account_CHEATCODE_ADDRESS(KApply('.Map')),
                 KVariable('ACCOUNTS_INIT'),
             ]
         ),
@@ -708,11 +706,11 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     post_account_cell = KEVM.account_cell(
         Foundry.address_TEST_CONTRACT(),
-        KVariable('ACCT_BALANCE'),
+        KVariable('ACCT_BALANCE_FINAL'),
         program,
         KVariable('ACCT_STORAGE_FINAL'),
-        KVariable('ACCT_ORIGSTORAGE'),
-        KVariable('ACCT_NONCE'),
+        KVariable('ACCT_ORIGSTORAGE_FINAL'),
+        KVariable('ACCT_NONCE_FINAL'),
     )
     final_subst = {
         'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')]),
