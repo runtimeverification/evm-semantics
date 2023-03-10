@@ -120,6 +120,9 @@ module LEMMAS [symbolic]
     rule #lookup ( _M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 )  requires K1 ==Int  K2 [simplification]
     rule #lookup (  M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 )  requires K1 =/=Int K2 [simplification]
 
+    rule #lookup ( #write( _S:Storage, K1, V1 ) , K2 ) => #lookup ( K1 |-> V1 , K1 )  requires K1 ==Int  K2 [simplification]
+    rule #lookup ( #write(  S:Storage, K1,  _ ) , K2 ) => #lookup ( S         , K2 )  requires K1 =/=Int K2 [simplification]
+
     rule 0 <=Int #lookup( _S:Storage , _ )             => true [simplification, smt-lemma]
     rule         #lookup( _S:Storage , _ ) <Int pow256 => true [simplification, smt-lemma]
 
