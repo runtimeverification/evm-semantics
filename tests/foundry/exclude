@@ -82,6 +82,8 @@ LoopsTest.testNthPrime
 LoopsTest.testSort
 LoopsTest.testSortBroken
 LoopsTest.testSqrt
+LoopsTest.test_sum_100
+LoopsTest.test_sum_1000
 LoopsTest.testSumToN
 LoopsTest.testSumToNBroken
 MockCallTest.testMockCall

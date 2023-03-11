@@ -47,25 +47,4 @@ contract AssertTest is Test {
             assert(false);
         }
     }
-
-    function sum_N(uint n) pure internal returns (uint) {
-        uint s = 0;
-        while (0 < n) {
-            s = s + n;
-            n = n - 1;
-        }
-        return s;
-    }
-
-    function test_sum_10() public returns (uint) {
-        return sum_N(10);
-    }
-
-    function test_sum_100() public returns (uint) {
-        return sum_N(100);
-    }
-
-    function test_sum_1000() public returns (uint) {
-        return sum_N(1000);
-    }
 }
