@@ -10,7 +10,7 @@ from pyk.kast.inner import KApply, KInner, KLabel, KRewrite, KSequence, KSort, K
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRuleLike
 from pyk.kcfg import KCFG, KCFGExplore
-from pyk.ktool.kompile import KompileBackend
+from pyk.ktool.kompile import KompileBackend, LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
@@ -114,10 +114,12 @@ def foundry_kompile(
     ccopts: Iterable[str] = (),
     llvm_kompile: bool = True,
     debug: bool = False,
+    llvm_library: bool = False,
 ) -> None:
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
     foundry_definition_dir = foundry_out / 'kompiled'
+    foundry_llvm_dir = foundry_out / 'kompiled-llvm'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
     srcmap_dir = foundry_out / 'srcmaps'
@@ -167,11 +169,12 @@ def foundry_kompile(
             )
             fmf.write(_foundry.pretty_print(bin_runtime_definition) + '\n')
 
-    if regen or rekompile or not kompiled_timestamp.exists():
-        _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
+    def kevm_kompile(
+        out_dir: Path, backend: KompileBackend, llvm_kompile_type: Optional[LLVMKompileType] = None
+    ) -> None:
         KEVM.kompile(
-            foundry_definition_dir,
-            KompileBackend.HASKELL,
+            out_dir,
+            backend,
             foundry_main_file,
             emit_json=True,
             includes=includes,
@@ -181,7 +184,15 @@ def foundry_kompile(
             debug=debug,
             ccopts=ccopts,
             llvm_kompile=llvm_kompile,
+            llvm_kompile_type=llvm_kompile_type,
         )
+
+    if regen or rekompile or not kompiled_timestamp.exists():
+        _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
+        kevm_kompile(foundry_definition_dir, KompileBackend.HASKELL)
+        if llvm_library:
+            _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
+            kevm_kompile(foundry_llvm_dir, KompileBackend.LLVM, llvm_kompile_type=LLVMKompileType.C)
 
 
 def foundry_prove(
@@ -199,6 +210,7 @@ def foundry_prove(
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
+    rpc_command: Optional[str] = None,
 ) -> Dict[str, bool]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -270,6 +282,12 @@ def foundry_prove(
             kcfgs[test] = kcfg
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
+    if rpc_command is not None:
+        rpc_cmd = rpc_command.split(' ')
+        _LOGGER.info(f'Using RPC server !{rpc_cmd}')
+    else:
+        rpc_cmd = ['kore-rpc']
+
     return parallel_kcfg_explore(
         foundry,
         kcfgs,
@@ -285,6 +303,7 @@ def foundry_prove(
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
         bug_report=br,
+        rpc_cmd=rpc_cmd,
     )
 
 
