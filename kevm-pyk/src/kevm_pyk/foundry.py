@@ -1,5 +1,6 @@
 import json
 import logging
+import shutil
 from pathlib import Path
 from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple
 
@@ -120,8 +121,6 @@ def foundry_kompile(
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
     srcmap_dir = foundry_out / 'srcmaps'
-    requires = ['foundry.md'] + list(requires)
-    imports = ['FOUNDRY'] + list(imports)
 
     if not foundry_definition_dir.exists():
         foundry_definition_dir.mkdir()
@@ -140,7 +139,19 @@ def foundry_kompile(
     foundry = Foundry(definition_dir)
     empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
 
+    for r in requires:
+        req = Path(r)
+        if not req.exists():
+            raise ValueError(f'No such file: {req}')
+        req_path = foundry_definition_dir / req
+        if regen or not req_path.exists():
+            _LOGGER.info(f'Copying requires path: {req} -> {req_path}')
+            shutil.copy(req, req_path)
+            regen = True
+
     if regen or not foundry_main_file.exists():
+        requires = ['foundry.md'] + list(requires)
+        imports = ['FOUNDRY'] + list(imports)
         bin_runtime_definition = _foundry_to_bin_runtime(
             empty_config=empty_config,
             contracts=contracts,
