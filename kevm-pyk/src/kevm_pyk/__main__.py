@@ -122,6 +122,11 @@ def exec_solc_to_k(
     empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
     solc_json = solc_compile(contract_file)
     contract_json = solc_json['contracts'][contract_file.name][contract_name]
+    if 'sources' in solc_json and contract_file.name in solc_json['sources']:
+        contract_source = solc_json['sources'][contract_file.name]
+        for key in ['id', 'ast']:
+            if key not in contract_json and key in contract_source:
+                contract_json[key] = contract_source[key]
     contract = Contract(contract_name, contract_json, foundry=False)
     contract_module = contract_to_main_module(contract, empty_config, imports=['EDSL'] + imports)
     _main_module = KFlatModule(
