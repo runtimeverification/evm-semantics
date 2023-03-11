@@ -6,7 +6,7 @@ from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple
 from pyk.cli_utils import BugReport, check_file_path
 from pyk.cterm import CTerm, build_claim, build_rule
 from pyk.kast.inner import KApply, KInner, KLabel, KRewrite, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
+from pyk.kast.manip import minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRuleLike
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.ktool.kompile import KompileBackend
@@ -32,6 +32,9 @@ class Foundry(KEVM):
         use_directory: Optional[Path] = None,
         extra_unparsing_modules: Iterable[KFlatModule] = (),
         bug_report: Optional[BugReport] = None,
+        srcmap_dir: Optional[Path] = None,
+        contract_name: Optional[str] = None,
+        contract_srcs_dir: Optional[Path] = None,
     ) -> None:
         # copied from KEVM class and adapted to inherit KPrint instead
         KEVM.__init__(
@@ -41,6 +44,9 @@ class Foundry(KEVM):
             use_directory=use_directory,
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
+            srcmap_dir=srcmap_dir,
+            contract_name=contract_name,
+            contract_srcs_dir=contract_srcs_dir,
         )
 
     class Sorts:
@@ -131,11 +137,15 @@ def foundry_kompile(
     json_paths = _contract_json_paths(foundry_out)
     contracts = [_contract_from_json(json_path) for json_path in json_paths]
 
+    contract_id_map: Dict[int, str] = {}
     for c in contracts:
         srcmap_file = srcmap_dir / f'{c.name}.json'
-        with open(srcmap_file, 'w') as smf:
-            smf.write(json.dumps(c.srcmap))
-            _LOGGER.info(f'Wrote source map: {srcmap_file}')
+        srcmap_file.write_text(json.dumps(c.srcmap))
+        _LOGGER.info(f'Wrote source map: {srcmap_file}')
+        contract_id_map[c.contract_id] = str(c.contract_path)
+    contract_id_map_path = srcmap_dir / 'contract_id_map.json'
+    contract_id_map_path.write_text(json.dumps(contract_id_map))
+    _LOGGER.info(f'Wrote contract id map: {contract_id_map_path}')
 
     foundry = Foundry(definition_dir)
     empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
@@ -289,39 +299,16 @@ def foundry_show(
     use_directory = foundry_out / 'specs'
     use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
-    contract = test.split('.')[0]
     srcmap_dir = foundry_out / 'srcmaps'
-    srcmap_file = srcmap_dir / f'{contract}.json'
-    foundry = Foundry(definition_dir, use_directory=use_directory)
-    srcmap: Optional[Dict[int, str]] = None
-    if srcmap_file.exists():
-        with open(srcmap_file, 'r') as sm:
-            srcmap = {int(k): v for k, v in json.loads(sm.read()).items()}
-
-    def _node_pretty(_ct: CTerm) -> List[str]:
-        k_cell = foundry.pretty_print(get_cell(_ct.config, 'K_CELL')).replace('\n', ' ')
-        if len(k_cell) > 80:
-            k_cell = k_cell[0:80] + ' ...'
-        k_str = f'k: {k_cell}'
-        calldepth_str = f'callDepth: {foundry.pretty_print(get_cell(_ct.config, "CALLDEPTH_CELL"))}'
-        statuscode_str = f'statusCode: {foundry.pretty_print(get_cell(_ct.config, "STATUSCODE_CELL"))}'
-        _pc = get_cell(_ct.config, 'PC_CELL')
-        pc_str = f'pc: {foundry.pretty_print(_pc)}'
-        ret_strs = [k_str, calldepth_str, statuscode_str, pc_str]
-        if type(_pc) is KToken and srcmap is not None:
-            pc = int(_pc.token)
-            if pc in srcmap:
-                ret_strs.append(f'srcmap: {srcmap[pc]}')
-            else:
-                _LOGGER.warning(f'pc not found in srcmap: {pc}')
-        return ret_strs
+    contract_name = test.split('.')[0]
+    foundry = Foundry(definition_dir, use_directory=use_directory, srcmap_dir=srcmap_dir, contract_name=contract_name)
 
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
 
     res_lines: List[str] = []
-    res_lines += kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)
+    res_lines += kcfg.pretty(foundry, minimize=minimize, node_printer=foundry.short_info)
 
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast

@@ -2,7 +2,7 @@ import logging
 import socket
 from contextlib import closing
 from pathlib import Path
-from typing import Callable, Collection, Dict, Final, Iterable, Optional, Tuple, TypeVar
+from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport
@@ -118,6 +118,26 @@ def arg_pair_of(
         return fst_type(elems[0]), snd_type(elems[1])
 
     return parse
+
+
+def byte_offset_to_lines(lines: Iterable[str], byte_start: int, byte_width: int) -> Tuple[List[str], int, int]:
+    text_lines = []
+    line_start = 0
+    for l in lines:
+        if len(l) < byte_start:
+            byte_start -= len(l) + 1
+            line_start += 1
+        else:
+            break
+    line_end = line_start
+    for l in list(lines)[line_start:]:
+        if byte_start + byte_width < 0:
+            break
+        else:
+            text_lines.append(l)
+            byte_width -= len(l) + 1
+            line_end += 1
+    return (text_lines, line_start, line_end)
 
 
 def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # noqa: N802

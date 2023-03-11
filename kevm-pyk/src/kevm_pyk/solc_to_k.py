@@ -105,7 +105,9 @@ class Contract:
     methods: Tuple[Method, ...]
     test_methods: Tuple[Method, ...]
     fields: FrozenDict
-    srcmap: Optional[Dict[int, str]]
+    srcmap: Optional[Dict[int, Tuple[int, int, int, str, int]]]
+    contract_id: int
+    contract_path: Path
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
         def _get_method_abi(_mname: str) -> Dict:
@@ -148,6 +150,8 @@ class Contract:
             self.fields = FrozenDict(_fields)
 
         self.srcmap = None
+        self.contract_id = contract_json['id']
+        self.contract_path = contract_json['ast']['absolutePath']
         if len(self.bytecode) > 0:
             instr_to_pc = {}
             pc = 0
@@ -162,13 +166,29 @@ class Contract:
                 pc += 1
                 instr += 1
 
-            instr_srcmap = (
+            instrs_srcmap = (
                 contract_json['evm']['deployedBytecode']['sourceMap']
                 if not foundry
                 else contract_json['deployedBytecode']['sourceMap']
             ).split(';')
 
-            self.srcmap = {instr_to_pc[instr]: src for instr, src in enumerate(instr_srcmap)}
+            s, l, f, j, m = (0, 0, 0, '', 0)
+            _srcmap = {}
+            for i, instr_srcmap in enumerate(instrs_srcmap):
+                fields = instr_srcmap.split(':')
+                if len(fields) > 0 and fields[0] != '':
+                    s = int(fields[0])
+                if len(fields) > 1 and fields[1] != '':
+                    l = int(fields[1])
+                if len(fields) > 2 and fields[2] != '':
+                    f = int(fields[2])
+                if len(fields) > 3 and fields[3] != '':
+                    j = fields[3]
+                if len(fields) > 4 and fields[4] != '':
+                    m = int(fields[4])
+                _srcmap[i] = (s, l, f, j, m)
+
+            self.srcmap = _srcmap
 
     @staticmethod
     def contract_to_module_name(c: str, spec: bool = True) -> str:
@@ -298,6 +318,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
                         'evm.deployedBytecode.object',
                         'evm.deployedBytecode.sourceMap',
                     ],
+                    '': ['ast'],
                 },
             },
         },

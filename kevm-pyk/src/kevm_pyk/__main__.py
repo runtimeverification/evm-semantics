@@ -122,6 +122,11 @@ def exec_solc_to_k(
     empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
     solc_json = solc_compile(contract_file)
     contract_json = solc_json['contracts'][contract_file.name][contract_name]
+    if 'sources' in solc_json and contract_file.name in solc_json['sources']:
+        contract_source = solc_json['sources'][contract_file.name]
+        for key in ['id', 'ast']:
+            if key not in contract_json and key in contract_source:
+                contract_json[key] = contract_source[key]
     contract = Contract(contract_name, contract_json, foundry=False)
     contract_module = contract_to_main_module(contract, empty_config, imports=['EDSL'] + imports)
     _main_module = KFlatModule(
@@ -262,7 +267,7 @@ def exec_view_kcfg(
     kcfg = KCFGExplore.read_cfg(claim.label, save_directory)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {claim} from {save_directory}')
-    viewer = KCFGViewer(kcfg, kevm, node_printer=kevm.short_info)
+    viewer = KCFGViewer(kcfg, kevm, node_printer=kevm.short_info, custom_view=kevm.custom_view)
     viewer.run()
 
 
@@ -369,12 +374,20 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, **kwargs: Any) -> None:
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
+    srcmap_dir = foundry_out / 'srcmaps'
     use_directory.mkdir(parents=True, exist_ok=True)
-    foundry = Foundry(definition_dir, use_directory=use_directory)
+    contract_name = test.split('.')[0]
+    foundry = Foundry(
+        definition_dir,
+        use_directory=use_directory,
+        srcmap_dir=srcmap_dir,
+        contract_name=contract_name,
+        contract_srcs_dir=foundry_out.parent,
+    )
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    viewer = KCFGViewer(kcfg, foundry, node_printer=foundry.short_info)
+    viewer = KCFGViewer(kcfg, foundry, node_printer=foundry.short_info, custom_view=foundry.custom_view)
     viewer.run()
 
 
