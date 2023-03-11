@@ -1,5 +1,6 @@
 import logging
 import socket
+import traceback
 from contextlib import closing
 from pathlib import Path
 from typing import Callable, Collection, Dict, Final, Iterable, Optional, Tuple, TypeVar
@@ -89,7 +90,7 @@ def parallel_kcfg_explore(
                     implication_every_block=implication_every_block,
                 )
             except Exception as e:
-                _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}')
+                _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}\n{traceback.format_exc()}')
                 return False
 
         failure_nodes = _cfg.frontier + _cfg.stuck
