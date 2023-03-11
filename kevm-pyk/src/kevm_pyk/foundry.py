@@ -256,15 +256,13 @@ def foundry_prove(
             method = [m for m in contract.methods if m.name == method_name][0]
             empty_config = foundry.definition.empty_config(GENERATED_TOP_CELL)
             kcfg = _method_to_cfg(empty_config, contract, method)
-            init_term = kcfg.get_unique_init().cterm.kast
-            target_term = kcfg.get_unique_target().cterm.kast
             _LOGGER.info(f'Expanding macros in initial state for test: {test}')
-            init_term = KDefinition__expand_macros(foundry.definition, init_term)
-            init_cterm = KEVM.add_invariant(CTerm(init_term))
-            _LOGGER.info(f'Expanding macros in target state for test: {test}')
-            target_term = KDefinition__expand_macros(foundry.definition, target_term)
-            target_cterm = KEVM.add_invariant(CTerm(target_term))
+            init_term = kcfg.get_unique_init().cterm.kast
+            init_cterm = CTerm(KDefinition__expand_macros(foundry.definition, init_term))
             kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
+            _LOGGER.info(f'Expanding macros in target state for test: {test}')
+            target_term = kcfg.get_unique_target().cterm.kast
+            target_cterm = CTerm(KDefinition__expand_macros(foundry.definition, target_term))
             kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
             if simplify_init:
                 with KCFGExplore(foundry, port=find_free_port(), bug_report=br) as kcfg_explore:
