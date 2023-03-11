@@ -318,6 +318,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
                         'evm.deployedBytecode.object',
                         'evm.deployedBytecode.sourceMap',
                     ],
+                    '': ['ast'],
                 },
             },
         },
