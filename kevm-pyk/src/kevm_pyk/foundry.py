@@ -43,6 +43,7 @@ class Foundry:
         definition_dir = self._out / 'kompiled'
         use_directory = self._out / 'tmp'
         main_file = definition_dir / 'foundry.k'
+        ensure_dir_path(use_directory)
         return KEVM(
             definition_dir=definition_dir,
             main_file=main_file,
