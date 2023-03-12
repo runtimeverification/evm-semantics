@@ -28,18 +28,18 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 class Foundry:
     _out: Path
+    _bug_report: Optional[BugReport]
 
     def __init__(
         self,
         out: Path,
+        bug_report: Optional[BugReport] = None,
     ) -> None:
         self._out = out
+        self._bug_report = bug_report
 
-    def kevm(
-        self,
-        extra_unparsing_modules: Iterable[KFlatModule] = (),
-        bug_report: Optional[BugReport] = None,
-    ) -> KEVM:
+    @cached_property
+    def kevm(self) -> KEVM:
         definition_dir = self._out / 'kompiled'
         use_directory = self._out / 'tmp'
         main_file = definition_dir / 'foundry.k'
@@ -48,8 +48,7 @@ class Foundry:
             definition_dir=definition_dir,
             main_file=main_file,
             use_directory=use_directory,
-            extra_unparsing_modules=extra_unparsing_modules,
-            bug_report=bug_report,
+            bug_report=self._bug_report,
         )
 
     @cached_property
@@ -229,8 +228,7 @@ def foundry_prove(
     if not kcfgs_dir.exists():
         kcfgs_dir.mkdir()
     br = BugReport(foundry_out / 'bug_report') if bug_report else None
-    foundry = Foundry(foundry_out)
-    kevm = foundry.kevm(bug_report=br)
+    foundry = Foundry(foundry_out, bug_report=br)
 
     all_tests = [
         f'{contract.name}.{method.name}'
@@ -271,20 +269,20 @@ def foundry_prove(
             contract_name, method_name = test.split('.')
             contract = foundry.contracts[contract_name]
             method = [m for m in contract.methods if m.name == method_name][0]
-            empty_config = kevm.definition.empty_config(GENERATED_TOP_CELL)
+            empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
             kcfg = _method_to_cfg(empty_config, contract, method)
             init_term = kcfg.get_unique_init().cterm.kast
             target_term = kcfg.get_unique_target().cterm.kast
             _LOGGER.info(f'Expanding macros in initial state for test: {test}')
-            init_term = KDefinition__expand_macros(kevm.definition, init_term)
+            init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
             init_cterm = KEVM.add_invariant(CTerm(init_term))
             _LOGGER.info(f'Expanding macros in target state for test: {test}')
-            target_term = KDefinition__expand_macros(kevm.definition, target_term)
+            target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
             target_cterm = KEVM.add_invariant(CTerm(target_term))
             kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
             kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
             if simplify_init:
-                with KCFGExplore(kevm, port=find_free_port(), bug_report=br) as kcfg_explore:
+                with KCFGExplore(foundry.kevm, port=find_free_port(), bug_report=br) as kcfg_explore:
                     kcfg = kcfg_explore.simplify(test, kcfg)
             kcfgs[test] = kcfg
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
@@ -296,7 +294,7 @@ def foundry_prove(
         rpc_cmd = ['kore-rpc']
 
     return parallel_kcfg_explore(
-        kevm,
+        foundry.kevm,
         kcfgs,
         save_directory=kcfgs_dir,
         max_depth=max_depth,
@@ -323,14 +321,13 @@ def foundry_show(
 ) -> str:
     kcfgs_dir = foundry_out / 'kcfgs'
     foundry = Foundry(foundry_out)
-    kevm = foundry.kevm()
 
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
 
     res_lines: List[str] = []
-    res_lines += kcfg.pretty(kevm, minimize=minimize, node_printer=kevm.short_info)
+    res_lines += kcfg.pretty(foundry.kevm, minimize=minimize, node_printer=foundry.kevm.short_info)
 
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
@@ -340,7 +337,7 @@ def foundry_show(
         res_lines.append('')
         res_lines.append(f'Node {node_id}:')
         res_lines.append('')
-        res_lines.append(kevm.pretty_print(kast))
+        res_lines.append(foundry.kevm.pretty_print(kast))
         res_lines.append('')
 
     for node_id_1, node_id_2 in node_deltas:
@@ -353,7 +350,7 @@ def foundry_show(
         res_lines.append('')
         res_lines.append(f'State Delta {node_id_1} => {node_id_2}:')
         res_lines.append('')
-        res_lines.append(kevm.pretty_print(config_delta))
+        res_lines.append(foundry.kevm.pretty_print(config_delta))
         res_lines.append('')
 
     if to_module:
@@ -384,7 +381,7 @@ def foundry_show(
         rules = [to_rule(e) for e in kcfg.edges() if e.depth > 0]
         claims = [to_rule(KCFG.Edge(nd, kcfg.get_unique_target(), mlTop(), -1), claim=True) for nd in kcfg.frontier]
         new_module = KFlatModule('SUMMARY', rules + claims)
-        res_lines.append(kevm.pretty_print(new_module))
+        res_lines.append(foundry.kevm.pretty_print(new_module))
         res_lines.append('')
 
     return '\n'.join(res_lines)
@@ -393,7 +390,7 @@ def foundry_show(
 def foundry_to_dot(foundry_out: Path, test: str) -> None:
     kcfgs_dir = foundry_out / 'kcfgs'
     foundry = Foundry(foundry_out)
-    cfg_dump_dot(foundry.kevm(), test, kcfgs_dir)
+    cfg_dump_dot(foundry.kevm, test, kcfgs_dir)
 
 
 class CfgStat(NamedTuple):
@@ -468,20 +465,19 @@ def foundry_simplify_node(
 ) -> str:
     kcfgs_dir = foundry_out / 'kcfgs'
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(foundry_out)
-    kevm = foundry.kevm(bug_report=br)
+    foundry = Foundry(foundry_out, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
     cterm = kcfg.node(node).cterm
     port = find_free_port()
-    with KCFGExplore(kevm, port=port, bug_report=br) as kcfg_explore:
+    with KCFGExplore(foundry.kevm, port=port, bug_report=br) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
     if replace:
         kcfg.replace_node(node, CTerm(new_term))
         KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
     res_term = minimize_term(new_term) if minimize else new_term
-    return kevm.pretty_print(res_term)
+    return foundry.kevm.pretty_print(res_term)
 
 
 def foundry_step_node(
@@ -499,13 +495,12 @@ def foundry_step_node(
         raise ValueError(f'Expected positive value for --depth, got: {depth}')
     kcfgs_dir = foundry_out / 'kcfgs'
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(foundry_out)
-    kevm = foundry.kevm(bug_report=br)
+    foundry = Foundry(foundry_out, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
     port = find_free_port()
-    with KCFGExplore(kevm, port=port, bug_report=br) as kcfg_explore:
+    with KCFGExplore(foundry.kevm, port=port, bug_report=br) as kcfg_explore:
         for _i in range(repeat):
             kcfg, node = kcfg_explore.step(test, kcfg, node, depth=depth)
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
@@ -522,14 +517,13 @@ def foundry_section_edge(
 ) -> None:
     kcfgs_dir = foundry_out / 'kcfgs'
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(foundry_out)
-    kevm = foundry.kevm(bug_report=br)
+    foundry = Foundry(foundry_out, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
     port = find_free_port()
     source_id, target_id = edge
-    with KCFGExplore(kevm, port=port, bug_report=br) as kcfg_explore:
+    with KCFGExplore(foundry.kevm, port=port, bug_report=br) as kcfg_explore:
         kcfg, _ = kcfg_explore.section_edge(test, kcfg, source_id=source_id, target_id=target_id, sections=sections)
     KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
