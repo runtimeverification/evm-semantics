@@ -15,7 +15,7 @@ from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KRul
 from pyk.prelude.kbool import TRUE, andBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
-from pyk.utils import FrozenDict
+from pyk.utils import FrozenDict, hash_str
 
 from .kevm import KEVM
 
@@ -165,6 +165,10 @@ class Contract:
                     continue
                 _fields[_l] = _s
             self.fields = FrozenDict(_fields)
+
+    @cached_property
+    def digest(self) -> str:
+        return hash_str(f'{self.name} - {json.dumps(self.contract_json)}')
 
     @cached_property
     def srcmap(self) -> dict[int, tuple[int, int, int, str, int]]:
