@@ -22,7 +22,7 @@ from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof import AGProof
-from pyk.utils import shorten_hashes, single, unique
+from pyk.utils import hash_str, shorten_hashes, single, unique
 
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_main_module
@@ -91,6 +91,12 @@ class Foundry:
             contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
             _contracts[contract_name] = Contract(contract_name, contract_json, foundry=True)
         return _contracts
+
+    @cached_property
+    def digest(self) -> str:
+        sorted_names = sorted(self.contracts.keys())
+        contract_digests = [self.contracts[c].digest for c in sorted_names]
+        return hash_str('\n'.join(contract_digests))
 
     @cached_property
     def contract_ids(self) -> dict[int, str]:
