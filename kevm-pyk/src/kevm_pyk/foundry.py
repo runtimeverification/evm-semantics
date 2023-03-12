@@ -1,13 +1,14 @@
 import json
 import logging
 import shutil
+from functools import cached_property
 from pathlib import Path
 from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple
 
 from pyk.cli_utils import BugReport, check_file_path
 from pyk.cterm import CTerm, build_claim, build_rule
 from pyk.kast.inner import KApply, KInner, KLabel, KRewrite, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
+from pyk.kast.manip import minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRuleLike
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.ktool.kompile import KompileBackend, LLVMKompileType
@@ -26,23 +27,44 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 class Foundry(KEVM):
+    _out: Path
+
     def __init__(
         self,
-        definition_dir: Path,
-        main_file: Optional[Path] = None,
-        use_directory: Optional[Path] = None,
+        out: Path,
         extra_unparsing_modules: Iterable[KFlatModule] = (),
         bug_report: Optional[BugReport] = None,
     ) -> None:
+        self._out = out
+        definition_dir = self._out / 'kompiled'
+        use_directory = self._out / 'tmp'
+        main_file = definition_dir / 'foundry.k'
         # copied from KEVM class and adapted to inherit KPrint instead
         KEVM.__init__(
             self,
-            definition_dir,
+            definition_dir=definition_dir,
             main_file=main_file,
             use_directory=use_directory,
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
         )
+
+    @cached_property
+    def contracts(self) -> Dict[str, Contract]:
+        pattern = '*.sol/*.json'
+        paths = self._out.glob(pattern)
+        json_paths = [str(path) for path in paths]
+        json_paths = [json_path for json_path in json_paths if not json_path.endswith('.metadata.json')]
+        json_paths = sorted(json_paths)  # Must sort to get consistent output order on different platforms
+        _LOGGER.info(f'Processing contract files: {json_paths}')
+        _contracts = {}
+        for json_path in json_paths:
+            _LOGGER.debug(f'Processing contract file: {json_path}')
+            contract_name = json_path.split('/')[-1]
+            contract_json = json.loads(Path(json_path).read_text())
+            contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
+            _contracts[contract_name] = Contract(contract_name, contract_json, foundry=True)
+        return _contracts
 
     class Sorts:
         FOUNDRY_CELL: Final = KSort('FoundryCell')
@@ -122,23 +144,8 @@ def foundry_kompile(
     foundry_llvm_dir = foundry_out / 'kompiled-llvm'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
-    srcmap_dir = foundry_out / 'srcmaps'
 
-    if not foundry_definition_dir.exists():
-        foundry_definition_dir.mkdir()
-    if not srcmap_dir.exists():
-        srcmap_dir.mkdir()
-
-    json_paths = _contract_json_paths(foundry_out)
-    contracts = [_contract_from_json(json_path) for json_path in json_paths]
-
-    for c in contracts:
-        srcmap_file = srcmap_dir / f'{c.name}.json'
-        with open(srcmap_file, 'w') as smf:
-            smf.write(json.dumps(c.srcmap))
-            _LOGGER.info(f'Wrote source map: {srcmap_file}')
-
-    foundry = Foundry(definition_dir)
+    foundry = Foundry(foundry_out)
     empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
 
     for r in requires:
@@ -156,7 +163,7 @@ def foundry_kompile(
         imports = ['FOUNDRY'] + list(imports)
         bin_runtime_definition = _foundry_to_bin_runtime(
             empty_config=empty_config,
-            contracts=contracts,
+            contracts=foundry.contracts.values(),
             main_module=main_module,
             requires=requires,
             imports=imports,
@@ -164,7 +171,7 @@ def foundry_kompile(
         with open(foundry_main_file, 'w') as fmf:
             _LOGGER.info(f'Writing file: {foundry_main_file}')
             _foundry = Foundry(
-                definition_dir=definition_dir,
+                foundry_out,
                 extra_unparsing_modules=bin_runtime_definition.all_modules,
             )
             fmf.write(_foundry.pretty_print(bin_runtime_definition) + '\n')
@@ -215,27 +222,22 @@ def foundry_prove(
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
         raise ValueError(f'Must have a non-negative number of iterations, found: --max-iterations {max_iterations}')
-    definition_dir = foundry_out / 'kompiled'
-    use_directory = foundry_out / 'specs'
-    use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
     if not kcfgs_dir.exists():
         kcfgs_dir.mkdir()
     br = BugReport(foundry_out / 'bug_report') if bug_report else None
-    foundry = Foundry(definition_dir, use_directory=use_directory, bug_report=br)
+    foundry = Foundry(foundry_out, bug_report=br)
 
-    json_paths = _contract_json_paths(foundry_out)
-    contracts = [_contract_from_json(json_path) for json_path in json_paths]
     all_tests = [
         f'{contract.name}.{method.name}'
-        for contract in contracts
+        for contract in foundry.contracts.values()
         if contract.name.endswith('Test')
         for method in contract.methods
         if method.name.startswith('test')
     ]
     all_non_tests = [
         f'{contract.name}.{method.name}'
-        for contract in contracts
+        for contract in foundry.contracts.values()
         for method in contract.methods
         if f'{contract.name}.{method.name}' not in all_tests
     ]
@@ -263,7 +265,7 @@ def foundry_prove(
         else:
             _LOGGER.info(f'Initializing KCFG for test: {test}')
             contract_name, method_name = test.split('.')
-            contract = [c for c in contracts if c.name == contract_name][0]
+            contract = foundry.contracts[contract_name]
             method = [m for m in contract.methods if m.name == method_name][0]
             empty_config = foundry.definition.empty_config(GENERATED_TOP_CELL)
             kcfg = _method_to_cfg(empty_config, contract, method)
@@ -315,43 +317,15 @@ def foundry_show(
     to_module: bool = False,
     minimize: bool = True,
 ) -> str:
-    definition_dir = foundry_out / 'kompiled'
-    use_directory = foundry_out / 'specs'
-    use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
-    contract = test.split('.')[0]
-    srcmap_dir = foundry_out / 'srcmaps'
-    srcmap_file = srcmap_dir / f'{contract}.json'
-    foundry = Foundry(definition_dir, use_directory=use_directory)
-    srcmap: Optional[Dict[int, str]] = None
-    if srcmap_file.exists():
-        with open(srcmap_file, 'r') as sm:
-            srcmap = {int(k): v for k, v in json.loads(sm.read()).items()}
-
-    def _node_pretty(_ct: CTerm) -> List[str]:
-        k_cell = foundry.pretty_print(get_cell(_ct.config, 'K_CELL')).replace('\n', ' ')
-        if len(k_cell) > 80:
-            k_cell = k_cell[0:80] + ' ...'
-        k_str = f'k: {k_cell}'
-        calldepth_str = f'callDepth: {foundry.pretty_print(get_cell(_ct.config, "CALLDEPTH_CELL"))}'
-        statuscode_str = f'statusCode: {foundry.pretty_print(get_cell(_ct.config, "STATUSCODE_CELL"))}'
-        _pc = get_cell(_ct.config, 'PC_CELL')
-        pc_str = f'pc: {foundry.pretty_print(_pc)}'
-        ret_strs = [k_str, calldepth_str, statuscode_str, pc_str]
-        if type(_pc) is KToken and srcmap is not None:
-            pc = int(_pc.token)
-            if pc in srcmap:
-                ret_strs.append(f'srcmap: {srcmap[pc]}')
-            else:
-                _LOGGER.warning(f'pc not found in srcmap: {pc}')
-        return ret_strs
+    foundry = Foundry(foundry_out)
 
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
 
     res_lines: List[str] = []
-    res_lines += kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)
+    res_lines += kcfg.pretty(foundry, minimize=minimize, node_printer=foundry.short_info)
 
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
@@ -412,11 +386,8 @@ def foundry_show(
 
 
 def foundry_to_dot(foundry_out: Path, test: str) -> None:
-    definition_dir = foundry_out / 'kompiled'
-    use_directory = foundry_out / 'specs'
-    use_directory.mkdir(parents=True, exist_ok=True)
     kcfgs_dir = foundry_out / 'kcfgs'
-    foundry = Foundry(definition_dir, use_directory=use_directory)
+    foundry = Foundry(foundry_out)
     cfg_dump_dot(foundry, test, kcfgs_dir)
 
 
@@ -490,12 +461,9 @@ def foundry_simplify_node(
     minimize: bool = True,
     bug_report: bool = False,
 ) -> str:
-    definition_dir = foundry_out / 'kompiled'
-    use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
-    use_directory.mkdir(parents=True, exist_ok=True)
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(definition_dir, use_directory=use_directory, bug_report=br)
+    foundry = Foundry(foundry_out, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
@@ -523,12 +491,9 @@ def foundry_step_node(
         raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
     if depth < 1:
         raise ValueError(f'Expected positive value for --depth, got: {depth}')
-    definition_dir = foundry_out / 'kompiled'
-    use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
-    use_directory.mkdir(parents=True, exist_ok=True)
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(definition_dir, use_directory=use_directory, bug_report=br)
+    foundry = Foundry(foundry_out, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
@@ -548,12 +513,9 @@ def foundry_section_edge(
     minimize: bool = True,
     bug_report: bool = False,
 ) -> None:
-    definition_dir = foundry_out / 'kompiled'
-    use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
-    use_directory.mkdir(parents=True, exist_ok=True)
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(definition_dir, use_directory=use_directory, bug_report=br)
+    foundry = Foundry(foundry_out, bug_report=br)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
@@ -567,24 +529,6 @@ def foundry_section_edge(
 def _write_cfg(cfg: KCFG, path: Path) -> None:
     path.write_text(cfg.to_json())
     _LOGGER.info(f'Updated CFG file: {path}')
-
-
-def _contract_json_paths(foundry_out: Path) -> List[str]:
-    pattern = '*.sol/*.json'
-    paths = foundry_out.glob(pattern)
-    json_paths = [str(path) for path in paths]
-    json_paths = [json_path for json_path in json_paths if not json_path.endswith('.metadata.json')]
-    json_paths = sorted(json_paths)  # Must sort to get consistent output order on different platforms
-    return json_paths
-
-
-def _contract_from_json(json_path: str) -> Contract:
-    _LOGGER.info(f'Processing contract file: {json_path}')
-    with open(json_path, 'r') as json_file:
-        contract_json = json.loads(json_file.read())
-    contract_name = json_path.split('/')[-1]
-    contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
-    return Contract(contract_name, contract_json, foundry=True)
 
 
 def _foundry_to_bin_runtime(
