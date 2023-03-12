@@ -42,8 +42,6 @@ class Foundry:
     ) -> KEVM:
         definition_dir = self._out / 'kompiled'
         use_directory = self._out / 'tmp'
-        ensure_dir_path(definition_dir)
-        ensure_dir_path(use_directory)
         main_file = definition_dir / 'foundry.k'
         return KEVM(
             definition_dir=definition_dir,
@@ -148,6 +146,8 @@ def foundry_kompile(
     foundry_llvm_dir = foundry_out / 'kompiled-llvm'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
+    ensure_dir_path(foundry_definition_dir)
+    ensure_dir_path(foundry_llvm_dir)
 
     foundry = Foundry(foundry_out)
 
@@ -175,7 +175,7 @@ def foundry_kompile(
         )
         with open(foundry_main_file, 'w') as fmf:
             _LOGGER.info(f'Writing file: {foundry_main_file}')
-            kevm = foundry.kevm(extra_unparsing_modules=bin_runtime_definition.all_modules)
+            kevm = KEVM(definition_dir, extra_unparsing_modules=bin_runtime_definition.all_modules)
             fmf.write(kevm.pretty_print(bin_runtime_definition) + '\n')
 
     def kevm_kompile(
