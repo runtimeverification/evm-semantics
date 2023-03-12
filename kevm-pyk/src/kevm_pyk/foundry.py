@@ -98,6 +98,15 @@ class Foundry:
         contract_digests = [self.contracts[c].digest for c in sorted_names]
         return hash_str('\n'.join(contract_digests))
 
+    def up_to_date(self) -> bool:
+        digest_file = self.out / 'digest'
+        return digest_file.exists() and digest_file.read_text() == self.digest
+
+    def update_digest(self) -> None:
+        digest_file = self.out / 'digest'
+        digest_file.write_text(self.digest)
+        _LOGGER.info(f'Updated Foundry digest file: {digest_file}')
+
     @cached_property
     def contract_ids(self) -> dict[int, str]:
         _contract_ids = {}
@@ -226,6 +235,11 @@ def foundry_kompile(
     ensure_dir_path(foundry_llvm_dir)
 
     requires_paths: dict[str, str] = {}
+
+    if not foundry.up_to_date():
+        _LOGGER.info('Detected updates to contracts, regenerating K definition.')
+        regen = True
+
     for r in requires:
         req = Path(r)
         if not req.exists():
@@ -291,6 +305,8 @@ def foundry_kompile(
                 llvm_kompile_type=LLVMKompileType.C,
                 md_selector=('k & ! symbolic' if md_selector is None else f'{md_selector} & ! symbolic'),
             )
+
+    foundry.update_digest()
 
 
 def foundry_prove(
