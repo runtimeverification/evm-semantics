@@ -5,7 +5,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple
 
-from pyk.cli_utils import BugReport, check_file_path
+from pyk.cli_utils import BugReport, check_file_path, ensure_dir_path
 from pyk.cterm import CTerm, build_claim, build_rule
 from pyk.kast.inner import KApply, KInner, KLabel, KRewrite, KSequence, KSort, KToken, KVariable, Subst, build_assoc
 from pyk.kast.manip import minimize_term, push_down_rewrites
@@ -38,6 +38,8 @@ class Foundry(KEVM):
         self._out = out
         definition_dir = self._out / 'kompiled'
         use_directory = self._out / 'tmp'
+        ensure_dir_path(definition_dir)
+        ensure_dir_path(use_directory)
         main_file = definition_dir / 'foundry.k'
         # copied from KEVM class and adapted to inherit KPrint instead
         KEVM.__init__(
