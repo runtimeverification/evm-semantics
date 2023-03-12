@@ -189,7 +189,7 @@ module LEMMAS-MCD-COMMON
   // Word Reasoning
   // ########################
 
-    rule maskWordPackAddrUInt48UInt48_1 &Int ADDR => 0  requires #rangeAddress(ADDR) [simplification]
+    rule notMaxUInt160 &Int ADDR => 0  requires #rangeAddress(ADDR) [simplification]
 
     rule #sizeWordStack(WS, N) => #sizeWordStack(WS, 0) +Int N  requires N =/=Int 0 [simplification]
 
