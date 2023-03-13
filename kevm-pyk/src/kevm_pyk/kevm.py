@@ -1,5 +1,6 @@
 import logging
 import sys
+from enum import Enum
 from pathlib import Path
 from typing import Final, Iterable, List, Optional
 
@@ -20,6 +21,11 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 # KEVM class
+
+
+class KEVMKompileMode(Enum):
+    NODE = 'node'
+    STANDALONE = 'standalone'
 
 
 class KEVM(KProve, KRun):
