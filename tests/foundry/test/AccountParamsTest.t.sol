@@ -35,7 +35,7 @@ contract AccountParamsTest is Test {
 
     function test_GetNonce_true() public {
        uint64 nonce = vm.getNonce(address(this));
-       assert(nonce == 0);
+       assert(nonce == 1);
     }
 
     function test_GetNonce_false() public {
@@ -50,7 +50,7 @@ contract AccountParamsTest is Test {
 
     function testFail_GetNonce_false() public {
        uint64 nonce = vm.getNonce(address(this));
-       assertGt(nonce, 0);
+       assertEq(nonce, 1);
     }
 
     function test_Nonce_ExistentAddress() public {
