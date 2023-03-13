@@ -105,7 +105,7 @@ class Foundry:
             KVariable('TEST_CODE'),
             KApply('.Map'),
             KApply('.Map'),
-            intToken(0),
+            intToken(1),
         )
 
     @staticmethod
@@ -598,7 +598,7 @@ def _init_term(
         program,
         KApply('.Map'),
         KApply('.Map'),
-        intToken(0),
+        intToken(1),
     )
     init_subst = {
         'MODE_CELL': KApply('NORMAL'),
