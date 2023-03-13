@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
 from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
+from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
 from pyk.kcfg.tui import KCFGElem
@@ -383,10 +384,13 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, **kwargs: Any) -> None:
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
 
+    def _short_info(cterm: CTerm) -> Iterable[str]:
+        return foundry.short_info_for_contract(contract_name, cterm)
+
     def _custom_view(elem: KCFGElem) -> Iterable[str]:
         return foundry.custom_view(contract_name, elem)
 
-    viewer = KCFGViewer(kcfg, foundry.kevm, node_printer=foundry.kevm.short_info, custom_view=_custom_view)
+    viewer = KCFGViewer(kcfg, foundry.kevm, node_printer=_short_info, custom_view=_custom_view)
     viewer.run()
 
 
