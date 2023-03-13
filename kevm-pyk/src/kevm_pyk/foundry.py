@@ -91,12 +91,14 @@ class Foundry:
             _LOGGER.info(f'pc not found in srcmap for contract {contract_name}: {pc}')
             return None
         s, l, f, j, m = contract.srcmap[pc]
-        if f != contract.contract_id:
-            _LOGGER.info(f'pc belongs to another contract than {contract_name}: {pc}')
-        contract_path = Path(contract.contract_path)
-        contract_text = contract_path.read_text()
-        _, start, end = byte_offset_to_lines(contract_text, s, l)
-        return (contract_path, start, end)
+        if f not in self.contract_ids:
+            _LOGGER.info(f'Contract id not found in sourcemap data: {f}')
+            return None
+        src_contract = self.contracts[self.contract_ids[f]]
+        src_contract_path = Path(src_contract.contract_path)
+        src_contract_text = src_contract_path.read_text()
+        _, start, end = byte_offset_to_lines(src_contract_text, s, l)
+        return (src_contract_path, start, end)
 
     def solidity_src(self, contract_name: str, pc: int) -> Iterable[str]:
         srcmap_data = self.srcmap_data(contract_name, pc)
