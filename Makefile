@@ -647,7 +647,7 @@ test-failing-prove: $(prove_failing_tests:=.prove)
 test-klab-prove: KPROVE_OPTS += --debugger
 test-klab-prove: $(smoke_tests_prove:=.prove)
 
-$(prove_pyk_tests:=.prove): KPROVE_OPTS += --pyk --max-depth 1000
+$(prove_pyk_tests:=.prove): KPROVE_OPTS += --pyk --max-depth 1000 --verbose
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.md
