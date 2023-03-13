@@ -25,7 +25,7 @@ from .foundry import (
     foundry_to_dot,
 )
 from .gst_to_kore import gst_to_kore
-from .kevm import KEVM
+from .kevm import KEVM, KEVMKompileMode
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
 from .utils import arg_pair_of, find_free_port, parallel_kcfg_explore
 
@@ -73,7 +73,7 @@ def exec_kompile(
     backend: KompileBackend,
     main_file: Path,
     emit_json: bool,
-    kompile_mode: str,
+    kompile_mode: KEVMKompileMode,
     includes: List[str],
     main_module: Optional[str],
     syntax_module: Optional[str],
@@ -103,10 +103,8 @@ def exec_kompile(
         optimization = 3
 
     md_selector = 'k & ! node'
-    if kompile_mode == 'node':
+    if kompile_mode == KEVMKompileMode.NODE:
         md_selector = 'k & ! standalone'
-    elif kompile_mode != 'standalone':
-        raise ValueError(f'Unknown --kompile-mode provided: {kompile_mode}')
 
     if backend == KompileBackend.LLVM:
         ccopts = list(ccopts)
@@ -691,7 +689,10 @@ def _create_argument_parser() -> ArgumentParser:
     )
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
     kompile_args.add_argument(
-        '--kompile-mode', type=str, default='standalone', help='KEVM kompile mode, [standalone|node].'
+        '--kompile-mode',
+        type=KEVMKompileMode,
+        default=KEVMKompileMode.STANDALONE,
+        help='KEVM kompile mode, [standalone|node].',
     )
     kompile_args.add_argument('--plugin-include', type=dir_path, help='Path to plugin include directory.')
     kompile_args.add_argument('--libff-dir', type=dir_path, help='Path to libff include directory.')
