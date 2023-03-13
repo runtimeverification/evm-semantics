@@ -417,15 +417,12 @@ def exec_run(
 
 
 def exec_foundry_view_kcfg(foundry_out: Path, test: str, **kwargs: Any) -> None:
-    definition_dir = foundry_out / 'kompiled'
-    use_directory = foundry_out / 'specs'
     kcfgs_dir = foundry_out / 'kcfgs'
-    use_directory.mkdir(parents=True, exist_ok=True)
-    foundry = Foundry(definition_dir, use_directory=use_directory)
+    foundry = Foundry(foundry_out)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    viewer = KCFGViewer(kcfg, foundry, node_printer=foundry.short_info)
+    viewer = KCFGViewer(kcfg, foundry.kevm, node_printer=foundry.kevm.short_info)
     viewer.run()
 
 
