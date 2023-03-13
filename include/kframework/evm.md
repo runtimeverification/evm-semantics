@@ -553,14 +553,13 @@ After executing a transaction, it's necessary to have the effect of the substate
 
     rule <k> #finalizeStorage(.List) => . ... </k>
 
-    rule <k> #finalizeStorage((ListItem(_) => .List) _) ... </k> [owise]
-
     syntax InternalOp ::= #finalizeTx ( Bool )
                         | #deleteAccounts ( List )
  // ----------------------------------------------
     rule <k> #finalizeTx(true) => #finalizeStorage(Set2List(ACCTS)) ... </k>
          <selfDestruct> .Set </selfDestruct>
-         <accessedAccounts> ACCTS => .Set </accessedAccounts>
+         <touchedAccounts> ACCTS </touchedAccounts>
+         <accessedAccounts> _ => .Set </accessedAccounts>
          <accessedStorage> _ => .Map </accessedStorage>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
