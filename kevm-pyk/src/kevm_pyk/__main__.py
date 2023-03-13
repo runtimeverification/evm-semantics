@@ -2,6 +2,7 @@ import json
 import logging
 import sys
 from argparse import ArgumentParser, Namespace
+from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
@@ -33,6 +34,11 @@ T = TypeVar('T')
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
+
+
+class KompileTarget(Enum):
+    LINUX = 'linux'
+    DARWIN = 'darwin'
 
 
 def _ignore_arg(args: Dict[str, Any], arg: str, cli_option: str) -> None:
@@ -79,7 +85,7 @@ def exec_kompile(
     syntax_module: Optional[str],
     ccopts: Iterable[str] = (),
     llvm_kompile: bool = True,
-    target: Optional[str] = None,
+    target: Optional[KompileTarget] = None,
     o0: bool = False,
     o1: bool = False,
     o2: bool = False,
@@ -117,7 +123,7 @@ def exec_kompile(
                 f'{plugin_include}/c/blake2.cpp',
             ]
         ccopts += ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
-        if target == 'darwin':
+        if target == KompileTarget.DARWIN:
             if brew_root is not None:
                 ccopts += [
                     f'-I{brew_root}/include',
@@ -133,10 +139,8 @@ def exec_kompile(
                     f'-I{libcryptopp_dir}/include',
                     f'-L{libcryptopp_dir}/lib',
                 ]
-        elif target == 'linux':
+        elif target == KompileTarget.LINUX:
             ccopts += ['-lprocps']
-        else:
-            raise ValueError(f'Unknown --target provided: {target}')
 
     KEVM.kompile(
         definition_dir,
@@ -696,7 +700,9 @@ def _create_argument_parser() -> ArgumentParser:
     )
     kompile_args.add_argument('--plugin-include', type=dir_path, help='Path to plugin include directory.')
     kompile_args.add_argument('--libff-dir', type=dir_path, help='Path to libff include directory.')
-    kompile_args.add_argument('--target', type=str, default='linux', help='Compilation target, [linux|darwin].')
+    kompile_args.add_argument(
+        '--target', type=KompileTarget, default=KompileTarget.LINUX, help='Compilation target, [linux|darwin].'
+    )
     kompile_args.add_argument('--libcryptopp-dir', type=dir_path, help='Path to libcryptopp include directory.')
     kompile_args.add_argument(
         '--brew-root', type=dir_path, help='Path to homebrew root directory (only for --target-darwin).'
