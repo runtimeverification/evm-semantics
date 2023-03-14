@@ -106,22 +106,6 @@ module INT-SIMPLIFICATION-COMMON
     rule (A *Int B) /Int C <=Int D => true requires 0 <=Int A andBool 0 <=Int B andBool 0 <Int C andBool A <=Int D andBool B <=Int C [simplification]
 
   // ###########################################################################
-  // inc-or
-  // ###########################################################################
-
-    rule 0 |Int A => A [simplification]
-    rule A |Int 0 => A [simplification]
-    rule A |Int A => A [simplification]
-
-  // ###########################################################################
-  // bit-and
-  // ###########################################################################
-
-    rule 0 &Int _ => 0 [simplification]
-    rule _ &Int 0 => 0 [simplification]
-    rule A &Int A => A [simplification]
-
-  // ###########################################################################
   // mod
   // ###########################################################################
 
