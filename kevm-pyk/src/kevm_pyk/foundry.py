@@ -379,6 +379,7 @@ def foundry_show(
     to_module: bool = False,
     minimize: bool = True,
 ) -> str:
+    contract_name = test.split('.')[0]
     kcfgs_dir = foundry_out / 'kcfgs'
     foundry = Foundry(foundry_out)
 
@@ -386,8 +387,11 @@ def foundry_show(
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
 
+    def _short_info(cterm: CTerm) -> Iterable[str]:
+        return foundry.short_info_for_contract(contract_name, cterm)
+
     res_lines: List[str] = []
-    res_lines += kcfg.pretty(foundry.kevm, minimize=minimize, node_printer=foundry.kevm.short_info)
+    res_lines += kcfg.pretty(foundry.kevm, minimize=minimize, node_printer=_short_info)
 
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
