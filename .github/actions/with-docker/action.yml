@@ -15,7 +15,7 @@ runs:
       set -euxo pipefail
 
       Z3_VERSION=4.8.15
-      K_COMMIT=$(cat deps/k_release)
+      K_COMMIT=$(cut -c 2- deps/k_release)
 
       docker build . --file .github/workflows/Dockerfile.z3 \
         --tag z3:${Z3_VERSION}
