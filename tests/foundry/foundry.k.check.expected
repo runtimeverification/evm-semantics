@@ -1579,6 +1579,8 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     
     syntax ExpectRevertTestMethod ::= "test_expectRevert_message" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_message)]
     
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_returnValue" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_returnValue)]
+    
     syntax ExpectRevertTestMethod ::= "test_expectRevert_true" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_true)]
     
     syntax ExpectRevertTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ExpectRevertTest_vm)]
@@ -1621,6 +1623,9 @@ module EXPECTREVERTTEST-BIN-RUNTIME
       
     
     rule  ( ExpectRevertTest . test_expectRevert_message ( ) => #abiCallData ( "test_expectRevert_message" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . test_expectRevert_returnValue ( ) => #abiCallData ( "test_expectRevert_returnValue" , .TypedArgs ) )
       
     
     rule  ( ExpectRevertTest . test_expectRevert_true ( ) => #abiCallData ( "test_expectRevert_true" , .TypedArgs ) )
@@ -1668,6 +1673,9 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     rule  ( selector ( "test_expectRevert_message" ) => 3706733127 )
       
     
+    rule  ( selector ( "test_expectRevert_returnValue" ) => 4193569282 )
+      
+    
     rule  ( selector ( "test_expectRevert_true" ) => 2931127071 )
       
     
@@ -1709,6 +1717,28 @@ module REVERTER-BIN-RUNTIME
       
     
     rule  ( selector ( "revertWithoutReason" ) => 1097275021 )
+      
+
+endmodule
+
+module REVERTERWITHRETURN-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= ReverterWithReturnContract
+    
+    syntax ReverterWithReturnContract ::= "ReverterWithReturn" [symbol(), klabel(contract_ReverterWithReturn)]
+    
+      
+    
+    syntax ByteArray ::= ReverterWithReturnContract "." ReverterWithReturnMethod [function(), symbol(), klabel(method_ReverterWithReturn)]
+    
+    syntax ReverterWithReturnMethod ::= "revertUnless" "(" Int ")" [symbol(), klabel(method_ReverterWithReturn_revertUnless)]
+    
+    rule  ( ReverterWithReturn . revertUnless ( V0_returnInstead ) => #abiCallData ( "revertUnless" , #bool ( V0_returnInstead ) , .TypedArgs ) )
+       ensures #rangeBool ( V0_returnInstead )
+      
+    
+    rule  ( selector ( "revertUnless" ) => 260261997 )
       
 
 endmodule
@@ -6431,6 +6461,7 @@ module FOUNDRY-MAIN
     imports public DEPTHREVERTER-BIN-RUNTIME
     imports public EXPECTREVERTTEST-BIN-RUNTIME
     imports public REVERTER-BIN-RUNTIME
+    imports public REVERTERWITHRETURN-BIN-RUNTIME
     imports public FFITEST-BIN-RUNTIME
     imports public FILESTEST-BIN-RUNTIME
     imports public FORKTEST-BIN-RUNTIME
