@@ -11,18 +11,6 @@ from pyk.kore.syntax import DV, App, Pattern, Sort, SortApp, String
 _LOGGER: Final = logging.getLogger(__name__)
 
 
-def schedule_to_kore(schedule: str) -> App:
-    return App(f"Lbl{schedule}'Unds'EVM")
-
-
-def chainid_to_kore(chainid: int) -> DV:
-    return int_dv(chainid)
-
-
-def mode_to_kore(mode: str) -> App:
-    return App(f'Lbl{mode}')
-
-
 def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, chainid: int) -> None:
     with open(gst_file) as data_file:
         data = json.load(data_file, object_pairs_hook=OrderedDict)
@@ -95,3 +83,15 @@ def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, ch
     out_stream.write(kore.text)
     out_stream.flush()
     _LOGGER.info('Finished writing kore.')
+
+
+def schedule_to_kore(schedule: str) -> App:
+    return App(f"Lbl{schedule}'Unds'EVM")
+
+
+def chainid_to_kore(chainid: int) -> DV:
+    return int_dv(chainid)
+
+
+def mode_to_kore(mode: str) -> App:
+    return App(f'Lbl{mode}')
