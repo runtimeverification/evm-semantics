@@ -1,8 +1,6 @@
-import json
 import logging
 from functools import reduce
-from pathlib import Path
-from typing import Any, Final, Optional, TextIO
+from typing import Any, Final, Optional
 
 from pyk.kore.prelude import INT, STRING, int_dv, string_dv
 from pyk.kore.syntax import DV, App, Pattern, Sort, SortApp, String
@@ -10,24 +8,18 @@ from pyk.kore.syntax import DV, App, Pattern, Sort, SortApp, String
 _LOGGER: Final = logging.getLogger(__name__)
 
 
-def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, chainid: int) -> None:
-    with open(gst_file) as data_file:
-        data = json.load(data_file)
-
+def gst_to_kore(gst_data: Any, schedule: str, mode: str, chainid: int) -> App:
     entries = (
-        _config_map_entry('PGM', _json_to_kore(data), SortApp('SortJSON')),
+        _config_map_entry('PGM', _json_to_kore(gst_data), SortApp('SortJSON')),
         _config_map_entry('SCHEDULE', _schedule_to_kore(schedule), SortApp('SortSchedule')),
         _config_map_entry('MODE', _mode_to_kore(mode), SortApp('SortMode')),
         _config_map_entry('CHAINID', _chainid_to_kore(chainid), SortApp('SortInt')),
     )
-    kore = App(
+    return App(
         'LblinitGeneratedTopCell',
         (),
         (reduce(lambda x, y: App("Lbl'Unds'Map'Unds'", (), (x, y)), entries, App("Lbl'Stop'Map")),),
     )
-    out_stream.write(kore.text)
-    out_stream.flush()
-    _LOGGER.info('Finished writing kore.')
 
 
 def _config_map_entry(var: str, value: Pattern, sort: Sort) -> App:
