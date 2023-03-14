@@ -90,7 +90,7 @@ class Foundry:
         if pc not in contract.srcmap:
             _LOGGER.info(f'pc not found in srcmap for contract {contract_name}: {pc}')
             return None
-        s, l, f, j, m = contract.srcmap[pc]
+        s, l, f, _, _ = contract.srcmap[pc]
         if f not in self.contract_ids:
             _LOGGER.info(f'Contract id not found in sourcemap data: {f}')
             return None
@@ -98,7 +98,7 @@ class Foundry:
         # TODO: Hardcoding that out directory is just one deep in project
         src_contract_path = self._out.parent / src_contract.contract_path
         src_contract_text = src_contract_path.read_text()
-        _, start, end = byte_offset_to_lines(src_contract_text, s, l)
+        _, start, end = byte_offset_to_lines(src_contract_text.split('\n'), s, l)
         return (src_contract_path, start, end)
 
     def solidity_src(self, contract_name: str, pc: int) -> Iterable[str]:
@@ -118,8 +118,10 @@ class Foundry:
         ret_strs = self.kevm.short_info(cterm)
         _pc = get_cell(cterm.config, 'PC_CELL')
         if type(_pc) is KToken and _pc.sort == INT:
-            path, start, end = self.srcmap_data(contract_name, int(_pc.token))
-            ret_strs.append(f'src: {str(path)}:{start}:{end}')
+            srcmap_data = self.srcmap_data(contract_name, int(_pc.token))
+            if srcmap_data is not None:
+                path, start, end = srcmap_data
+                ret_strs.append(f'src: {str(path)}:{start}:{end}')
         return ret_strs
 
     def custom_view(self, contract_name: str, element: KCFGElem) -> Iterable[str]:
