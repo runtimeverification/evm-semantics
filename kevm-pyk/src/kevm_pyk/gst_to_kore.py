@@ -16,7 +16,7 @@ def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, ch
         data = json.load(data_file, object_pairs_hook=OrderedDict)
 
     entries = (
-        _config_map_entry('PGM', _kast(data), SortApp('SortJSON')),
+        _config_map_entry('PGM', _json_to_kore(data), SortApp('SortJSON')),
         _config_map_entry('SCHEDULE', _schedule_to_kore(schedule), SortApp('SortSchedule')),
         _config_map_entry('MODE', _mode_to_kore(mode), SortApp('SortMode')),
         _config_map_entry('CHAINID', _chainid_to_kore(chainid), SortApp('SortInt')),
@@ -50,7 +50,7 @@ def _k_config_var(_data: str) -> DV:
     return DV(SortApp('SortKConfigVar'), String(f'${_data}'))
 
 
-def _kast(_data: Any, sort: Optional[Sort] = None) -> Pattern:
+def _json_to_kore(_data: Any, *, sort: Optional[Sort] = None) -> Pattern:
     if sort is None:
         sort = SortApp('SortJSON')
 
@@ -61,7 +61,7 @@ def _kast(_data: Any, sort: Optional[Sort] = None) -> Pattern:
             (
                 reduce(
                     lambda x, y: App('LblJSONs', (), (y, x)),
-                    reversed([_kast(elem) for elem in _data]),
+                    reversed([_json_to_kore(elem) for elem in _data]),
                     App("Lbl'Stop'List'LBraQuot'JSONs'QuotRBraUnds'JSONs"),
                 ),
             ),
@@ -74,7 +74,12 @@ def _kast(_data: Any, sort: Optional[Sort] = None) -> Pattern:
             (
                 reduce(
                     lambda x, y: App('LblJSONs', (), (App('LblJSONEntry', (), (y[0], y[1])), x)),
-                    reversed([(_kast(key, SortApp('SortJSONKey')), _kast(value)) for key, value in _data.items()]),
+                    reversed(
+                        [
+                            (_json_to_kore(key, sort=SortApp('SortJSONKey')), _json_to_kore(value))
+                            for key, value in _data.items()
+                        ]
+                    ),
                     App("Lbl'Stop'List'LBraQuot'JSONs'QuotRBraUnds'JSONs"),
                 ),
             ),
