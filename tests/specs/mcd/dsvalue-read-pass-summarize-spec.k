@@ -14,11 +14,11 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
 //          <id> ACCT_ID </id>
 //          <program> DSValue_bin_runtime </program>
 //          <jumpDests> #computeValidJumpDests(DSValue_bin_runtime) </jumpDests>
-//          <callData> #abiCallData("read", .TypedArgs) ++ CD => ?_ </callData>
+//          <callData> #abiCallData("read", .TypedArgs) +Bytes CD => ?_ </callData>
 //          <gas> #gas(VGas) => ?_ </gas>
 //          <pc> 0 => ?_ </pc>
 //          <wordStack> .WordStack => ?_ </wordStack>
-//          <localMem> .Memory => ?_ </localMem>
+//          <localMem> .Bytes => ?_ </localMem>
 //          <memoryUsed> 0 => ?_ </memoryUsed>
 //          (_ => ?_)
 //        </callState>
@@ -58,7 +58,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
 //             ACCT_ID
 //           </id>
 //           <callData>
-//             b"W\xde&\xa4" ++ CD
+//             b"W\xde&\xa4" +Bytes CD
 //           </callData>
 //           <callValue>
 //             0
@@ -119,12 +119,12 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
           <id> ACCT_ID </id>
           <program> DSValue_bin_runtime </program>
           <jumpDests> #computeValidJumpDests(DSValue_bin_runtime) </jumpDests>
-          <callData> #abiCallData("read", .TypedArgs) ++ _CD => ?_ </callData>
+          <callData> #abiCallData("read", .TypedArgs) +Bytes _CD => ?_ </callData>
           <callValue> 0 </callValue>                                            // from counterexample
           <gas> #gas(VGas) => #gas(VGas +Int -2043) </gas>                      // from counterexample
           <pc> 0 => ?_ </pc>
           <wordStack> .WordStack => ?_ </wordStack>
-          <localMem> .Memory => ?_ </localMem>
+          <localMem> .Bytes => ?_ </localMem>
           <memoryUsed> 0 => ?_ </memoryUsed>
           (_ => ?_)
         </callState>

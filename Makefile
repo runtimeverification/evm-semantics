@@ -187,26 +187,28 @@ kevm-pyk: poetry-env
 
 KOMPILE := $(POETRY_RUN) $(KEVM) kompile --pyk
 
-kevm_files := abi.md                      \
-              asm.md                      \
-              buf.md                      \
-              data.md                     \
-              driver.md                   \
-              edsl.md                     \
-              evm.md                      \
-              evm-types.md                \
-              evm-node.md                 \
-              foundry.md                  \
-              hashed-locations.md         \
-              infinite-gas.md             \
-              json-rpc.md                 \
-              network.md                  \
-              optimizations.md            \
-              serialization.md            \
-              state-utils.md              \
-              word.md                     \
-              lemmas/lemmas.k             \
-              lemmas/int-simplification.k
+kevm_files := abi.md                          \
+              asm.md                          \
+              buf.md                          \
+              data.md                         \
+              driver.md                       \
+              edsl.md                         \
+              evm.md                          \
+              evm-types.md                    \
+              evm-node.md                     \
+              foundry.md                      \
+              hashed-locations.md             \
+              infinite-gas.md                 \
+              json-rpc.md                     \
+              network.md                      \
+              optimizations.md                \
+              serialization.md                \
+              state-utils.md                  \
+              word.md                         \
+              lemmas/lemmas.k                 \
+              lemmas/int-simplification.k     \
+              lemmas/bitwise-simplification.k \
+              lemmas/bytes-simplification.k
 
 kevm_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_files))
 
@@ -339,22 +341,22 @@ $(KEVM_LIB)/%.py: scripts/%.py
 	@mkdir -p $(dir $@)
 	install $< $@
 
-$(KEVM_LIB)/version:
+$(KEVM_LIB)/version: package/version
 	@mkdir -p $(dir $@)
-	echo $(KEVM_RELEASE_TAG) > $@
+	install $< $@
 
 $(KEVM_LIB)/release.md: INSTALL.md
 	@mkdir -p $(dir $@)
-	echo "KEVM Release $(KEVM_RELEASE_TAG)"  > $@
-	echo                                    >> $@
-	cat INSTALL.md                          >> $@
+	echo "KEVM Release $(shell cat package/version)"  > $@
+	echo                                             >> $@
+	cat INSTALL.md                                   >> $@
 
 build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
 
 build-llvm:     $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-haskell:  $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
 build-node:     $(KEVM_LIB)/$(node_kompiled)
-build-kevm:     $(KEVM_BIN)/kevm $(kevm_includes) $(plugin_includes)
+build-kevm:     $(KEVM_BIN)/kevm $(KEVM_LIB)/version $(kevm_includes) $(plugin_includes)
 build-foundry:  $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
@@ -485,7 +487,7 @@ tests/foundry/%: KEVM = $(POETRY_RUN) kevm
 foundry_dir  := tests/foundry
 foundry_out := $(foundry_dir)/out
 
-test-foundry: KEVM_OPTS += --pyk --verbose --profile
+test-foundry: KEVM_OPTS += --pyk --verbose
 test-foundry: KEVM = $(POETRY_RUN) kevm
 test-foundry: tests/foundry/foundry.k.check tests/foundry/out/kompiled/foundry.k.prove
 
@@ -513,7 +515,7 @@ tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
 	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose
 
-tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose --profile
+tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose
 tests/specs/examples/%-bin-runtime.k: KEVM = $(POETRY_RUN) kevm
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
@@ -646,7 +648,7 @@ test-failing-prove: $(prove_failing_tests:=.prove)
 test-klab-prove: KPROVE_OPTS += --debugger
 test-klab-prove: $(smoke_tests_prove:=.prove)
 
-$(prove_pyk_tests:=.prove): KPROVE_OPTS += --pyk --max-depth 1000
+$(prove_pyk_tests:=.prove): KPROVE_OPTS += --pyk --max-depth 1000 --verbose
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.md
@@ -675,7 +677,7 @@ kevm_pyk_tests :=                                                               
                   tests/specs/examples/erc20-bin-runtime.k                                                     \
                   tests/specs/examples/erc721-bin-runtime.k
 
-test-kevm-pyk: KEVM_OPTS += --pyk --verbose --profile
+test-kevm-pyk: KEVM_OPTS += --pyk --verbose
 test-kevm-pyk: KEVM = $(POETRY_RUN) kevm
 test-kevm-pyk: KOMPILE = $(POETRY_RUN) kevm kompile
 test-kevm-pyk: $(kevm_pyk_tests) poetry

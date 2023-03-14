@@ -36,7 +36,7 @@ Core specification language
     rule <k> #halt ~> #takeHalt _ => . ... </k>
 
     //Shortcut for #mkCall and required setup
-    syntax EthereumCommand ::= "#mkCallShortcut" Id Int Int ByteArray Id
+    syntax EthereumCommand ::= "#mkCallShortcut" Id Int Int Bytes Id
     rule <k> #mkCallShortcut V_CONF_BACKUP CALLER_ID ACCT_ID ARGS V_SAVEOUT_ID
           => #restoreEthereum V_CONF_BACKUP
           ~> #mkCall CALLER_ID ACCT_ID ACCT_ID PARSEDCODE 0 ARGS false
@@ -92,7 +92,7 @@ Specification expression language
 ---------------------------------
 
 ```k
-    syntax KResult ::= ByteArray | StatusCode | List | Map
+    syntax KResult ::= Bytes | StatusCode | List | Map
 
     syntax Exp ::= Exp "==S"  Exp  [seqstrict]
                  | Exp "=/=S" Exp  [seqstrict]
@@ -117,7 +117,7 @@ Specification expression language
                  | "#getRefund"
                  | #getStorage ( Int )
                  | #var( Id )
-                 | #sizeByteArrayExp ( Exp ) [strict]
+                 | #sizeBytesExp ( Exp ) [strict]
 
     rule <k> #getStatusCode => SC ... </k>
          <statusCode> SC </statusCode>
@@ -138,7 +138,7 @@ Specification expression language
     rule <k> #var(X) => VARS[X] ... </k>
          <commandVars> VARS </commandVars>
 
-    rule <k> #sizeByteArrayExp(WS:ByteArray) => #sizeByteArray(WS) ... </k>
+    rule <k> #sizeBytesExp(WS:Bytes) => lengthBytes(WS) ... </k>
 
 endmodule
 ```

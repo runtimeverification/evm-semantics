@@ -39,8 +39,8 @@ For verification purposes, it's much easier to specify a program in terms of its
 To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a "pretti-fication" to the nicer input form.
 
 ```k
-    syntax JSON ::= ByteArray | OpCodes | Map | SubstateLogEntry | Account | TxType
- // -------------------------------------------------------------------------------
+    syntax JSON ::= Bytes | OpCodes | Map | SubstateLogEntry | Account | TxType
+ // ---------------------------------------------------------------------------
 ```
 
 ### Driving Execution
@@ -411,7 +411,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
          </account>
       requires #removeZeros(ACCTSTORAGE) ==K STORAGE
 
-    rule <k> check "account" : { ACCT : { "code" : (CODE:ByteArray) } } => . ... </k>
+    rule <k> check "account" : { ACCT : { "code" : (CODE:Bytes) } } => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
@@ -455,7 +455,7 @@ Here we check the other post-conditions associated with an EVM test.
 
     rule <k> check "blockHeader" : { _KEY : (VALUE:String => #parseByteStack(VALUE)) } ... </k>
 
-    rule <k> check "blockHeader" : {  KEY : (VALUE:ByteArray => #asWord(VALUE)) } ... </k>
+    rule <k> check "blockHeader" : {  KEY : (VALUE:Bytes => #asWord(VALUE)) } ... </k>
       requires KEY in ( SetItem("coinbase") SetItem("difficulty") SetItem("gasLimit") SetItem("gasUsed")
                         SetItem("mixHash") SetItem("nonce") SetItem("number") SetItem("parentHash")
                         SetItem("receiptTrie") SetItem("stateRoot") SetItem("timestamp")
@@ -479,7 +479,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "blockHeader" : { "uncleHash"        : VALUE } => . ... </k> <ommersHash>       VALUE </ommersHash>
     rule <k> check "blockHeader" : { "baseFeePerGas"    : VALUE } => . ... </k> <baseFee>          VALUE </baseFee>
 
-    rule <k> check "blockHeader" : { "hash": HASH:ByteArray } => . ...</k>
+    rule <k> check "blockHeader" : { "hash": HASH:Bytes } => . ...</k>
          <previousHash>     HP </previousHash>
          <ommersHash>       HO </ommersHash>
          <coinbase>         HC </coinbase>
@@ -518,12 +518,12 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : [ TRANSACTION , REST ] => check "transactions" : TRANSACTION   ~> check "transactions" : [ REST ] ... </k>
     rule <k> check "transactions" : { KEY : VALUE , REST } => check "transactions" : (KEY : VALUE) ~> check "transactions" : { REST } ... </k>
 
-    rule <k> check "transactions" : ("sender" : (VALUE:ByteArray => #asAccount(VALUE)))      ... </k>
-    rule <k> check "transactions" : (_KEY     : (VALUE:String    => #parseByteStack(VALUE))) ... </k>
-    rule <k> check "transactions" : ("to"     : (VALUE:ByteArray => #asAccount(VALUE)))      ... </k>
-    rule <k> check "transactions" : ( KEY     : (VALUE:ByteArray => #padToWidth(32, VALUE))) ... </k> requires KEY in (SetItem("r") SetItem("s")) andBool #sizeByteArray(VALUE) <Int 32
-    rule <k> check "transactions" : ( KEY : (VALUE:ByteArray => #asWord(VALUE)))         ... </k> requires KEY in (SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce") SetItem("v") SetItem("value") SetItem("chainId") SetItem("type") SetItem("maxFeePerGas") SetItem("maxPriorityFeePerGas"))
-    rule <k> check "transactions" : ("type" : (VALUE:Int => #asmTxPrefix(VALUE)))        ... </k>
+    rule <k> check "transactions" : ("sender" : (VALUE:Bytes  => #asAccount(VALUE)))      ... </k>
+    rule <k> check "transactions" : (_KEY     : (VALUE:String => #parseByteStack(VALUE))) ... </k>
+    rule <k> check "transactions" : ("to"     : (VALUE:Bytes  => #asAccount(VALUE)))      ... </k>
+    rule <k> check "transactions" : ( KEY     : (VALUE:Bytes  => #padToWidth(32, VALUE))) ... </k> requires KEY in (SetItem("r") SetItem("s")) andBool lengthBytes(VALUE) <Int 32
+    rule <k> check "transactions" : ( KEY     : (VALUE:Bytes  => #asWord(VALUE)))         ... </k> requires KEY in (SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce") SetItem("v") SetItem("value") SetItem("chainId") SetItem("type") SetItem("maxFeePerGas") SetItem("maxPriorityFeePerGas"))
+    rule <k> check "transactions" : ("type"   : (VALUE:Int    => #asmTxPrefix(VALUE)))    ... </k>
 
     rule <k> check "transactions" : "accessList" : [ ACCESSLIST , REST ] => check "transactions" : "accessList" : ACCESSLIST  ~> check "transactions" : "accessList" : [ REST ] ... </k>
     rule <k> check "transactions" : "accessList" : { "address" : V1 , "storageKeys": V2 , .JSONs } => check "transactions" : "accessList" : "address" : #parseHexWord(V1) : "storageKeys" : V2  ... </k>

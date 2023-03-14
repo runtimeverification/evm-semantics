@@ -131,7 +131,7 @@ This minimizes the amount of information which must be stored in the configurati
           => <account>
                <acctID> ACCT </acctID>
                <balance> #getBalance(ACCT) </balance>
-               <code> #if #isCodeEmpty(ACCT) #then .ByteArray #else #unloaded(#getCodeHash(ACCT)) #fi </code>
+               <code> #if #isCodeEmpty(ACCT) #then .Bytes #else #unloaded(#getCodeHash(ACCT)) #fi </code>
                <storage> .Map </storage>
                <origStorage> .Map </origStorage>
                <nonce> #getNonce(ACCT) </nonce>
@@ -189,7 +189,7 @@ This minimizes the amount of information which must be stored in the configurati
     rule <k> #lookupCode ACCT => . ... </k>
          <account>
            <acctID> ACCT </acctID>
-           <code> _:ByteArray </code>
+           <code> _:Bytes </code>
            ...
          </account>
 
@@ -208,7 +208,7 @@ This minimizes the amount of information which must be stored in the configurati
 ```
 
 ```{.k .node}
-    rule keccak({#unloaded(HASH)}:>ByteArray) => HASH
+    rule keccak({#unloaded(HASH)}:>Bytes) => HASH
 ```
 
 ### Transaction Execution
@@ -295,7 +295,7 @@ This minimizes the amount of information which must be stored in the configurati
  // ----------------------------------------
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> #halt ~> #endVM => #popCallStack ~> #popWorldState ~> 0 </k>
-         <output> _ => .ByteArray </output>
+         <output> _ => .Bytes </output>
 
     rule <statusCode> EVMC_REVERT </statusCode>
          <k> #halt ~> #endVM => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 </k>

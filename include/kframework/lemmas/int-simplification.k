@@ -1,31 +1,5 @@
 module INT-SIMPLIFICATION
-    imports INT-SIMPLIFICATION-JAVA
     imports INT-SIMPLIFICATION-HASKELL
-endmodule
-
-module INT-SIMPLIFICATION-JAVA [symbolic, kast]
-    imports INT-SIMPLIFICATION-COMMON
-    imports K-REFLECTION
-
-  // ###########################################################################
-  // add, sub
-  // ###########################################################################
-
-    rule ((A +Int I1) +Int  B) +Int I2  => (A +Int B) +Int (I1 +Int I2) requires notBool #isConcrete(A) andBool notBool #isConcrete(B) andBool #isConcrete(I1) andBool #isConcrete(I2) [simplification]
-    rule  (A +Int I1) +Int (B  +Int I2) => (A +Int B) +Int (I1 +Int I2) requires notBool #isConcrete(A) andBool notBool #isConcrete(B) andBool #isConcrete(I1) andBool #isConcrete(I2) [simplification]
-
-  // ###########################################################################
-  // inequality
-  // ###########################################################################
-
-    // For #bufStrict simplification in benchmarks
-    rule 0  <Int 2 ^Int I => true       requires 0 <=Int I [simplification]
-    rule 0 <=Int I *Int 8 => 0 <=Int I                     [simplification]
-
-    rule I1 +Int C2  <Int C3         => I1          <Int C3 -Int C2 requires #isConcrete(C2) andBool #isConcrete(C3) [simplification]
-    rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
-    rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         requires #isConcrete(C1) andBool #isConcrete(C3) [simplification]
-
 endmodule
 
 module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
@@ -130,22 +104,6 @@ module INT-SIMPLIFICATION-COMMON
     rule (A /Int 32) *Int 32 => A  requires A modInt 32 ==Int 0 [simplification]
 
     rule (A *Int B) /Int C <=Int D => true requires 0 <=Int A andBool 0 <=Int B andBool 0 <Int C andBool A <=Int D andBool B <=Int C [simplification]
-
-  // ###########################################################################
-  // inc-or
-  // ###########################################################################
-
-    rule 0 |Int A => A [simplification]
-    rule A |Int 0 => A [simplification]
-    rule A |Int A => A [simplification]
-
-  // ###########################################################################
-  // bit-and
-  // ###########################################################################
-
-    rule 0 &Int _ => 0 [simplification]
-    rule _ &Int 0 => 0 [simplification]
-    rule A &Int A => A [simplification]
 
   // ###########################################################################
   // mod
