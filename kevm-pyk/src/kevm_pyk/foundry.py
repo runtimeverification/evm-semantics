@@ -95,7 +95,8 @@ class Foundry:
             _LOGGER.info(f'Contract id not found in sourcemap data: {f}')
             return None
         src_contract = self.contracts[self.contract_ids[f]]
-        src_contract_path = Path(src_contract.contract_path)
+        # TODO: Hardcoding that out directory is just one deep in project
+        src_contract_path = self._out.parent / src_contract.contract_path
         src_contract_text = src_contract_path.read_text()
         _, start, end = byte_offset_to_lines(src_contract_text, s, l)
         return (src_contract_path, start, end)
