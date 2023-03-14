@@ -504,20 +504,21 @@ tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 
 tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
 
-foundry_diff_tests := $(addsuffix .check, $(basename $(wildcard tests/foundry/results/*.expected)))
-
-test-foundry-kcfg-diff: $(foundry_diff_tests)
-
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	$(KEVM) foundry-prove tests/foundry/out                              \
 	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
 	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
 	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
 
-tests/foundry/results/%.check: tests/foundry/results/%.out tests/foundry/results/%.expected
-	$(CHECK) tests/foundry/results/$*.out tests/foundry/results/$*.expected
+foundry_golden := tests/foundry/golden
+foundry_diff_tests := $(addsuffix .check, $(basename $(wildcard $(foundry_golden)/*.expected)))
 
-tests/foundry/results/%.out: poetry
+test-foundry-kcfg-diff: $(foundry_diff_tests)
+
+$(foundry_golden)/%.check: $(foundry_golden)/%.out $(foundry_golden)/%.expected
+	$(CHECK) $(foundry_golden)/$*.out $(foundry_golden)/$*.expected
+
+$(foundry_golden)/%.out: poetry
 	$(KEVM) foundry-prove tests/foundry/out                              \
 	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
 	    $(KEVM_OPTS) $(KPROVE_OPTS) --test $* ;                          \
