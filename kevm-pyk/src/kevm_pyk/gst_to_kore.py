@@ -1,6 +1,5 @@
 import json
 import logging
-from collections import OrderedDict
 from functools import reduce
 from pathlib import Path
 from typing import Any, Final, Optional, TextIO
@@ -13,7 +12,7 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, chainid: int) -> None:
     with open(gst_file) as data_file:
-        data = json.load(data_file, object_pairs_hook=OrderedDict)
+        data = json.load(data_file)
 
     entries = (
         _config_map_entry('PGM', _json_to_kore(data), SortApp('SortJSON')),
@@ -67,7 +66,7 @@ def _json_to_kore(_data: Any, *, sort: Optional[Sort] = None) -> Pattern:
             ),
         )
 
-    if isinstance(_data, OrderedDict):
+    if isinstance(_data, dict):
         return App(
             'LblJSONObject',
             (),
