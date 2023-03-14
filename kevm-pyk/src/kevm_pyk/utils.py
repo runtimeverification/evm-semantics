@@ -126,19 +126,19 @@ def arg_pair_of(
 def byte_offset_to_lines(lines: Iterable[str], byte_start: int, byte_width: int) -> Tuple[List[str], int, int]:
     text_lines = []
     line_start = 0
-    for l in lines:
-        if len(l) < byte_start:
-            byte_start -= len(l) + 1
+    for line in lines:
+        if len(line) < byte_start:
+            byte_start -= len(line) + 1
             line_start += 1
         else:
             break
     line_end = line_start
-    for l in list(lines)[line_start:]:
+    for line in list(lines)[line_start:]:
         if byte_start + byte_width < 0:
             break
         else:
-            text_lines.append(l)
-            byte_width -= len(l) + 1
+            text_lines.append(line)
+            byte_width -= len(line) + 1
             line_end += 1
     return (text_lines, line_start, line_end)
 
