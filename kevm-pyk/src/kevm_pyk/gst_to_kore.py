@@ -15,65 +15,11 @@ def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, ch
     with open(gst_file) as data_file:
         data = json.load(data_file, object_pairs_hook=OrderedDict)
 
-    def _k_config_var(_data: str) -> DV:
-        return DV(SortApp('SortKConfigVar'), String(f'${_data}'))
-
-    def _sort_injection(sort1: Sort, sort2: Sort, pattern: Pattern) -> App:
-        return App('inj', (sort1, sort2), (pattern,))
-
-    def _kast(_data: Any, sort: Optional[Sort] = None) -> Pattern:
-        if sort is None:
-            sort = SortApp('SortJSON')
-
-        if isinstance(_data, list):
-            return App(
-                'LblJSONList',
-                (),
-                (
-                    reduce(
-                        lambda x, y: App('LblJSONs', (), (y, x)),
-                        reversed([_kast(elem) for elem in _data]),
-                        App("Lbl'Stop'List'LBraQuot'JSONs'QuotRBraUnds'JSONs"),
-                    ),
-                ),
-            )
-
-        if isinstance(_data, OrderedDict):
-            return App(
-                'LblJSONObject',
-                (),
-                (
-                    reduce(
-                        lambda x, y: App('LblJSONs', (), (App('LblJSONEntry', (), (y[0], y[1])), x)),
-                        reversed([(_kast(key, SortApp('SortJSONKey')), _kast(value)) for key, value in _data.items()]),
-                        App("Lbl'Stop'List'LBraQuot'JSONs'QuotRBraUnds'JSONs"),
-                    ),
-                ),
-            )
-
-        if isinstance(_data, str):
-            return _sort_injection(STRING, sort, string_dv(_data))
-
-        if isinstance(_data, int):
-            return _sort_injection(INT, sort, int_dv(_data))
-
-        raise AssertionError()
-
-    def _config_map_entry(var: str, value: Pattern, sort: Sort) -> App:
-        return App(
-            "Lbl'UndsPipe'-'-GT-Unds'",
-            (),
-            (
-                _sort_injection(SortApp('SortKConfigVar'), SortApp('SortKItem'), _k_config_var(var)),
-                _sort_injection(sort, SortApp('SortKItem'), value),
-            ),
-        )
-
     entries = (
         _config_map_entry('PGM', _kast(data), SortApp('SortJSON')),
-        _config_map_entry('SCHEDULE', schedule_to_kore(schedule), SortApp('SortSchedule')),
-        _config_map_entry('MODE', mode_to_kore(mode), SortApp('SortMode')),
-        _config_map_entry('CHAINID', chainid_to_kore(chainid), SortApp('SortInt')),
+        _config_map_entry('SCHEDULE', _schedule_to_kore(schedule), SortApp('SortSchedule')),
+        _config_map_entry('MODE', _mode_to_kore(mode), SortApp('SortMode')),
+        _config_map_entry('CHAINID', _chainid_to_kore(chainid), SortApp('SortInt')),
     )
     kore = App(
         'LblinitGeneratedTopCell',
@@ -85,13 +31,71 @@ def gst_to_kore(gst_file: Path, out_stream: TextIO, schedule: str, mode: str, ch
     _LOGGER.info('Finished writing kore.')
 
 
-def schedule_to_kore(schedule: str) -> App:
+def _config_map_entry(var: str, value: Pattern, sort: Sort) -> App:
+    return App(
+        "Lbl'UndsPipe'-'-GT-Unds'",
+        (),
+        (
+            _sort_injection(SortApp('SortKConfigVar'), SortApp('SortKItem'), _k_config_var(var)),
+            _sort_injection(sort, SortApp('SortKItem'), value),
+        ),
+    )
+
+
+def _sort_injection(sort1: Sort, sort2: Sort, pattern: Pattern) -> App:
+    return App('inj', (sort1, sort2), (pattern,))
+
+
+def _k_config_var(_data: str) -> DV:
+    return DV(SortApp('SortKConfigVar'), String(f'${_data}'))
+
+
+def _kast(_data: Any, sort: Optional[Sort] = None) -> Pattern:
+    if sort is None:
+        sort = SortApp('SortJSON')
+
+    if isinstance(_data, list):
+        return App(
+            'LblJSONList',
+            (),
+            (
+                reduce(
+                    lambda x, y: App('LblJSONs', (), (y, x)),
+                    reversed([_kast(elem) for elem in _data]),
+                    App("Lbl'Stop'List'LBraQuot'JSONs'QuotRBraUnds'JSONs"),
+                ),
+            ),
+        )
+
+    if isinstance(_data, OrderedDict):
+        return App(
+            'LblJSONObject',
+            (),
+            (
+                reduce(
+                    lambda x, y: App('LblJSONs', (), (App('LblJSONEntry', (), (y[0], y[1])), x)),
+                    reversed([(_kast(key, SortApp('SortJSONKey')), _kast(value)) for key, value in _data.items()]),
+                    App("Lbl'Stop'List'LBraQuot'JSONs'QuotRBraUnds'JSONs"),
+                ),
+            ),
+        )
+
+    if isinstance(_data, str):
+        return _sort_injection(STRING, sort, string_dv(_data))
+
+    if isinstance(_data, int):
+        return _sort_injection(INT, sort, int_dv(_data))
+
+    raise AssertionError()
+
+
+def _schedule_to_kore(schedule: str) -> App:
     return App(f"Lbl{schedule}'Unds'EVM")
 
 
-def chainid_to_kore(chainid: int) -> DV:
+def _chainid_to_kore(chainid: int) -> DV:
     return int_dv(chainid)
 
 
-def mode_to_kore(mode: str) -> App:
+def _mode_to_kore(mode: str) -> App:
     return App(f'Lbl{mode}')
