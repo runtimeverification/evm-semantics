@@ -117,8 +117,8 @@ class Foundry:
         ret_strs = self.kevm.short_info(cterm)
         _pc = get_cell(cterm.config, 'PC_CELL')
         if type(_pc) is KToken and _pc.sort == INT:
-            srcmap = self.srcmap_data(contract_name, int(_pc.token))
-            ret_strs.append(f'src: {srcmap}')
+            path, start, end = self.srcmap_data(contract_name, int(_pc.token))
+            ret_strs.append(f'src: {str(path)}:{start}:{end}')
         return ret_strs
 
     def custom_view(self, contract_name: str, element: KCFGElem) -> Iterable[str]:
