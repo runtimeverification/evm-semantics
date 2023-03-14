@@ -504,11 +504,24 @@ tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 
 tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
 
+foundry_diff_tests := $(addsuffix .check, $(basename $(wildcard tests/foundry/results/*.expected)))
+
+test-foundry-kcfg-diff: $(foundry_diff_tests)
+
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	$(KEVM) foundry-prove tests/foundry/out                              \
 	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
 	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
 	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
+
+tests/foundry/results/%.check: tests/foundry/results/%.out tests/foundry/results/%.expected
+	$(CHECK) tests/foundry/results/$*.out tests/foundry/results/$*.expected
+
+tests/foundry/results/%.out: poetry
+	$(KEVM) foundry-prove tests/foundry/out                              \
+	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
+	    $(KEVM_OPTS) $(KPROVE_OPTS) --test $* ;                          \
+	$(KEVM) foundry-show $(foundry_out) $* > $@
 
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
 	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose

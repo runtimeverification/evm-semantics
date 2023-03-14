@@ -1,0 +1,29 @@
+
+┌  49d4fd..4de7a6 (init, expanded)
+│   k: #execute ~> CONTINUATION:K
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│   pc: 0
+│   srcmap: 95:883:45:-:0
+│
+│  (417 steps)
+├  dbc81a..a20d1b (expanded)
+│  k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
+│  callDepth: 0
+│  statusCode: EVMC_REVERT
+│  pc: 929
+│  srcmap: 1483:13
+│
+│  (2 steps)
+└  7d4449..b8a998 (expanded, stuck, leaf)
+│  k: #halt ~> CONTINUATION:K
+│  callDepth: 0
+│  statusCode: EVMC_REVERT
+│  pc: 929
+│  srcmap: 1483:13
+
+┌  143e72..99603b (target, leaf)
+│   k: #halt ~> CONTINUATION:K
+│   callDepth: CALLDEPTH_CELL_5d410f2a:Int
+│   statusCode: STATUSCODE_FINAL:StatusCode
+│   pc: PC_CELL_5d410f2a:Int
