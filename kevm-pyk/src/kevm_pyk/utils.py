@@ -95,7 +95,7 @@ def parallel_kcfg_explore(
                     implication_every_block=implication_every_block,
                 )
             except Exception as e:
-                _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}')
+                _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}', exc_info=True)
                 return False
 
         failure_nodes = _cfg.frontier + _cfg.stuck
