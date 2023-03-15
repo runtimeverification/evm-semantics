@@ -101,11 +101,13 @@ class Contract:
             return klabel(args)
 
     name: str
+    contract_json: Dict
+    contract_id: int
+    contract_path: str
     bytecode: str
+    raw_sourcemap: str
     methods: Tuple[Method, ...]
-    test_methods: Tuple[Method, ...]
     fields: FrozenDict
-    srcmap: Optional[Dict[int, str]]
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
         def _get_method_abi(_mname: str) -> Dict:
@@ -115,16 +117,28 @@ class Contract:
             raise ValueError(f'Method not found in abi: {_mname}')
 
         self.name = contract_name
+        self.contract_json = contract_json
+
+        self.contract_id = self.contract_json['id']
+        self.contract_path = self.contract_json['ast']['absolutePath']
+
         self.bytecode = (
-            contract_json['evm']['deployedBytecode']['object']
+            self.contract_json['evm']['deployedBytecode']['object']
             if not foundry
-            else contract_json['deployedBytecode']['object']
+            else self.contract_json['deployedBytecode']['object']
         ).replace('0x', '')
+
+        self.raw_sourcemap = (
+            self.contract_json['evm']['deployedBytecode']['sourceMap']
+            if not foundry
+            else self.contract_json['deployedBytecode']['sourceMap']
+        )
+
         _methods = []
-        if not foundry and 'evm' in contract_json and 'methodIdentifiers' in contract_json['evm']:
-            _method_identifiers = contract_json['evm']['methodIdentifiers']
-        elif foundry and 'methodIdentifiers' in contract_json:
-            _method_identifiers = contract_json['methodIdentifiers']
+        if not foundry and 'evm' in self.contract_json and 'methodIdentifiers' in self.contract_json['evm']:
+            _method_identifiers = self.contract_json['evm']['methodIdentifiers']
+        elif foundry and 'methodIdentifiers' in self.contract_json:
+            _method_identifiers = self.contract_json['methodIdentifiers']
         else:
             _method_identifiers = []
             _LOGGER.info(f"Could not find member 'methodIdentifiers' while processing contract: {self.name}")
@@ -134,11 +148,10 @@ class Contract:
             _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
             _methods.append(_m)
         self.methods = tuple(_methods)
-        if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
-            _LOGGER.info(f"Could not find member 'storageLayout' while processing contract: {self.name}")
-            self.fields = FrozenDict({})
-        else:
-            _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
+
+        self.fields = FrozenDict({})
+        if 'storageLayout' in self.contract_json and 'storage' in self.contract_json['storageLayout']:
+            _fields_list = [(_f['label'], int(_f['slot'])) for _f in self.contract_json['storageLayout']['storage']]
             _fields = {}
             for _l, _s in _fields_list:
                 if _l in _fields:
@@ -146,8 +159,13 @@ class Contract:
                     continue
                 _fields[_l] = _s
             self.fields = FrozenDict(_fields)
+        else:
+            _LOGGER.info(f"Could not find member 'storageLayout' while processing contract: {self.name}")
 
-        self.srcmap = None
+    @cached_property
+    def srcmap(self) -> Dict[int, Tuple[int, int, int, str, int]]:
+        _srcmap = {}
+
         if len(self.bytecode) > 0:
             instr_to_pc = {}
             pc = 0
@@ -162,13 +180,24 @@ class Contract:
                 pc += 1
                 instr += 1
 
-            instr_srcmap = (
-                contract_json['evm']['deployedBytecode']['sourceMap']
-                if not foundry
-                else contract_json['deployedBytecode']['sourceMap']
-            ).split(';')
+            instrs_srcmap = self.raw_sourcemap.split(';')
 
-            self.srcmap = {instr_to_pc[instr]: src for instr, src in enumerate(instr_srcmap)}
+            s, l, f, j, m = (0, 0, 0, '', 0)
+            for i, instr_srcmap in enumerate(instrs_srcmap):
+                fields = instr_srcmap.split(':')
+                if len(fields) > 0 and fields[0] != '':
+                    s = int(fields[0])
+                if len(fields) > 1 and fields[1] != '':
+                    l = int(fields[1])
+                if len(fields) > 2 and fields[2] != '':
+                    f = int(fields[2])
+                if len(fields) > 3 and fields[3] != '':
+                    j = fields[3]
+                if len(fields) > 4 and fields[4] != '':
+                    m = int(fields[4])
+                _srcmap[i] = (s, l, f, j, m)
+
+        return _srcmap
 
     @staticmethod
     def contract_to_module_name(c: str, spec: bool = True) -> str:
@@ -298,6 +327,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
                         'evm.deployedBytecode.object',
                         'evm.deployedBytecode.sourceMap',
                     ],
+                    '': ['ast'],
                 },
             },
         },
