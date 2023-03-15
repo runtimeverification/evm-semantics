@@ -159,8 +159,6 @@ class Contract:
                     continue
                 _fields[_l] = _s
             self.fields = FrozenDict(_fields)
-        else:
-            _LOGGER.info(f"Could not find member 'storageLayout' while processing contract: {self.name}")
 
     @cached_property
     def srcmap(self) -> Dict[int, Tuple[int, int, int, str, int]]:
