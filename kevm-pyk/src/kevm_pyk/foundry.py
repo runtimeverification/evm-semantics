@@ -284,6 +284,8 @@ def foundry_show(
     node_deltas: Iterable[Tuple[str, str]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    frontier: bool = False,
+    omit_node_hash: bool = False,
 ) -> str:
     definition_dir = foundry_out / 'kompiled'
     use_directory = foundry_out / 'specs'
@@ -321,7 +323,20 @@ def foundry_show(
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
 
     res_lines: List[str] = []
-    res_lines += kcfg.pretty(foundry, minimize=minimize, node_printer=_node_pretty)
+
+    for lbl, segment in kcfg.pretty_segments(foundry, minimize=minimize, node_printer=_node_pretty, omit_node_hash=omit_node_hash):
+        segtype = lbl.split("_")[0]
+#          res_lines += [segtype]
+        res_lines += segment
+        if segtype == "node":
+            node_id = lbl.split("_")[1]
+#              res_lines += [node_id]
+            if kcfg.is_frontier(node_id):
+                ...
+#                  res_lines += segment
+#                  res_lines += "frontier"
+        else:
+            res_lines += segment
 
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast

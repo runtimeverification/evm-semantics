@@ -318,6 +318,8 @@ def exec_foundry_show(
     node_deltas: Iterable[Tuple[str, str]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    frontier: bool = False,
+    omit_node_hash: bool = False,
     **kwargs: Any,
 ) -> None:
     output = foundry_show(
@@ -327,6 +329,8 @@ def exec_foundry_show(
         node_deltas=node_deltas,
         to_module=to_module,
         minimize=minimize,
+        frontier=frontier,
+        omit_node_hash=omit_node_hash,
     )
     print(output)
 
@@ -787,6 +791,12 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_show_args.add_argument(
         '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
+    )
+    foundry_show_args.add_argument(
+        '--frontier', dest='frontier', default=False, action='store_true', help='Only show frontier nodes'
+    )
+    foundry_show_args.add_argument(
+        '--omit-node-hash', dest='omit_node_hash', default=False, action='store_true', help='Omit shortened node hashes from output'
     )
 
     foundry_to_dot = command_parser.add_parser(

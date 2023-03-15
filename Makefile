@@ -515,6 +515,15 @@ foundry_diff_tests := $(addsuffix .check, $(basename $(wildcard $(foundry_golden
 
 test-foundry-kcfg-diff: $(foundry_diff_tests)
 
+# foundry_show_opts := --omit-node-hash --frontier
+foundry_show_opts := --frontier
+
+$(foundry_golden)/%.expected.generate:
+	$(KEVM) foundry-prove tests/foundry/out                              \
+	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
+	    $(KEVM_OPTS) $(KPROVE_OPTS) --test $* ;                          \
+	$(KEVM) foundry-show $(foundry_show_opts) $(foundry_out) $* > $(foundry_golden)/$*.expected
+
 $(foundry_golden)/%.check: $(foundry_golden)/%.out $(foundry_golden)/%.expected
 	$(CHECK) $(foundry_golden)/$*.out $(foundry_golden)/$*.expected
 
@@ -522,7 +531,7 @@ $(foundry_golden)/%.out: poetry
 	$(KEVM) foundry-prove tests/foundry/out                              \
 	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
 	    $(KEVM_OPTS) $(KPROVE_OPTS) --test $* ;                          \
-	$(KEVM) foundry-show $(foundry_out) $* > $@
+	$(KEVM) foundry-show $(foundry_show_opts) $(foundry_out) $* > $@
 
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
 	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose
