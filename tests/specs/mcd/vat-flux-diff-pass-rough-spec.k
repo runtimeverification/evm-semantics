@@ -11,7 +11,7 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -21,10 +21,10 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("flux", #bytes32(ABI_ilk), #address(ABI_src), #address(ABI_dst), #uint256(ABI_wad)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("flux", #bytes32(ABI_ilk), #address(ABI_src), #address(ABI_dst), #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -99,7 +99,7 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, May)
        andBool (#rangeUInt(256, Gem_src)
        andBool (#rangeUInt(256, Gem_dst)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((ABI_src =/=Int ABI_dst)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)

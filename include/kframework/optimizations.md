@@ -34,7 +34,7 @@ rule <kevm>
                PGM
              </program>
              <wordStack>
-               ( WS => #asWord( PGM [ ( PCOUNT +Int 1 ) .. N ] ) : WS )
+               ( WS => #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS )
              </wordStack>
              <pc>
                ( PCOUNT => ( ( PCOUNT +Int N ) +Int 1 ) )
@@ -51,7 +51,7 @@ rule <kevm>
        ...
      </kevm>
   requires ( Gverylow < SCHED > <=Int GAVAIL )
-   andBool ( #sizeWordStack( #asWord( PGM [ ( PCOUNT +Int 1 ) .. N ] ) : WS ) <=Int 1024 )
+   andBool ( #sizeWordStack( #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS ) <=Int 1024 )
     [priority(40)]
 
 

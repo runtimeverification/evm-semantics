@@ -21,10 +21,10 @@ module FLIPPER-TTL-PASS-SPEC
             <jumpDests> #computeValidJumpDests(Flipper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("ttl", .TypedArgs) ++ CD => ?_ </callData>
+            <callData> #abiCallData("ttl", .TypedArgs) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( VGas +Int -1120 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -94,7 +94,7 @@ module FLIPPER-TTL-PASS-SPEC
 
        andBool (#rangeUInt(48, Ttl)
        andBool (#rangeUInt(48, Tau)
-       andBool (#sizeByteArray(CD) <=Int 1250000000
+       andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#rangeUInt(256, Junk_0)
        andBool ((VCallValue ==Int 0))))))
 

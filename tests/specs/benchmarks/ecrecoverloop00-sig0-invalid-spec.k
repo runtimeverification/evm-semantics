@@ -11,7 +11,7 @@ module ECRECOVERLOOP00-SIG0-INVALID-SPEC
     <schedule> ISTANBUL </schedule>
     <ethereum>
       <evm>
-        <output> _ => .ByteArray </output>
+        <output> _ => .Bytes </output>
         <statusCode> _ => EVMC_REVERT </statusCode>
         <callStack> _ </callStack>
         <interimStates> _ </interimStates>
@@ -27,7 +27,7 @@ module ECRECOVERLOOP00-SIG0-INVALID-SPEC
 #bytes32(SIGS0), #bytes32(SIGS1)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
           <wordStack> .WordStack => ?_ </wordStack>
-          <localMem> .Memory => ?_ </localMem>
+          <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
@@ -100,7 +100,7 @@ _
             // precompiled account for ECCREC
             <acctID> 1 </acctID>
             <balance> 0 </balance>
-            <code> .ByteArray </code>
+            <code> .Bytes </code>
             <storage> .Map </storage>
             <origStorage> .Map </origStorage>
             <nonce> 0 </nonce>

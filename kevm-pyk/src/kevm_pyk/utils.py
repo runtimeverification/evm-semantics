@@ -2,7 +2,7 @@ import logging
 import socket
 from contextlib import closing
 from pathlib import Path
-from typing import Callable, Collection, Dict, Final, Iterable, Optional, Tuple, TypeVar
+from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport
@@ -51,6 +51,7 @@ def parallel_kcfg_explore(
     is_terminal: Optional[Callable[[CTerm], bool]] = None,
     extract_branches: Optional[Callable[[CTerm], Iterable[KInner]]] = None,
     bug_report: Optional[BugReport] = None,
+    rpc_cmd: Iterable[str] = ('kore-rpc',),
 ) -> Dict[str, bool]:
     def _call_rpc(packed_args: Tuple[str, KCFG, int]) -> bool:
         _cfgid, _cfg, _index = packed_args
@@ -75,7 +76,9 @@ def parallel_kcfg_explore(
             )
         base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
 
-        with KCFGExplore(kprove, port=(base_port + _index), bug_report=bug_report) as kcfg_explore:
+        with KCFGExplore(
+            kprove, port=(base_port + _index), bug_report=bug_report, kore_rpc_command=rpc_cmd
+        ) as kcfg_explore:
             try:
                 _cfg = kcfg_explore.all_path_reachability_prove(
                     _cfgid,
@@ -89,7 +92,7 @@ def parallel_kcfg_explore(
                     implication_every_block=implication_every_block,
                 )
             except Exception as e:
-                _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}')
+                _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}', exc_info=True)
                 return False
 
         failure_nodes = _cfg.frontier + _cfg.stuck
@@ -118,6 +121,26 @@ def arg_pair_of(
         return fst_type(elems[0]), snd_type(elems[1])
 
     return parse
+
+
+def byte_offset_to_lines(lines: Iterable[str], byte_start: int, byte_width: int) -> Tuple[List[str], int, int]:
+    text_lines = []
+    line_start = 0
+    for line in lines:
+        if len(line) < byte_start:
+            byte_start -= len(line) + 1
+            line_start += 1
+        else:
+            break
+    line_end = line_start
+    for line in list(lines)[line_start:]:
+        if byte_start + byte_width < 0:
+            break
+        else:
+            text_lines.append(line)
+            byte_width -= len(line) + 1
+            line_end += 1
+    return (text_lines, line_start, line_end)
 
 
 def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # noqa: N802

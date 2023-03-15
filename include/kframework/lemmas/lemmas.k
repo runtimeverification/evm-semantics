@@ -1,9 +1,14 @@
 requires "evm.md"
 requires "buf.md"
 requires "int-simplification.k"
+requires "bitwise-simplification.k"
+requires "bytes-simplification.k"
+
 
 module LEMMAS [symbolic]
     imports INT-SIMPLIFICATION
+    imports BITWISE-SIMPLIFICATION
+    imports BYTES-SIMPLIFICATION
     imports LEMMAS-HASKELL
 
   // ########################
@@ -19,14 +24,7 @@ module LEMMAS [symbolic]
     rule 0 <=Int chop(_V)             => true        [simplification, smt-lemma]
     rule         chop(_V) <Int pow256 => true        [simplification]
 
-    rule chop ( ( maxUInt48 &Int X:Int ) *Int Y:Int ) => ( maxUInt48 &Int X:Int ) *Int Y
-      requires 0 <=Int X andBool 0 <=Int Y andBool Y <=Int pow208 [simplification]
-
     rule X *Int Y <Int pow256 => true requires Y <=Int maxUInt256 /Int X [simplification]
-
-    rule maxUInt8   &Int X <Int 256    => true requires 0 <=Int X [simplification, smt-lemma]
-    rule maxUInt48  &Int X <Int pow48  => true requires 0 <=Int X [simplification, smt-lemma]
-    rule maxUInt160 &Int X <Int pow160 => true requires 0 <=Int X [simplification, smt-lemma]
 
   // ########################
   // Set Reasoning
@@ -40,7 +38,6 @@ module LEMMAS [symbolic]
   // ########################
 
     rule 0 <=Int #sizeWordStack ( _ , N ) => true requires 0 <=Int N [simplification, smt-lemma]
-    rule 0 <=Int #sizeByteArray ( _ )     => true                    [simplification, smt-lemma]
 
     // bool2Word range & simplification
     rule 0 <=Int bool2Word(_B)             => true   [simplification]
@@ -76,36 +73,6 @@ module LEMMAS [symbolic]
     rule         keccak( _ ) <Int pow256 => true [simplification]
 
   // ########################
-  // Buffer Reasoning
-  // ########################
-
-    rule WS         ++ .ByteArray => WS  [simplification]
-    rule .ByteArray ++ WS         => WS  [simplification]
-
-    // #range
-
-    rule #range(_, _, K) =>
-         .ByteArray
-      requires K <=Int 0 [simplification]
-
-    rule #range(M [ N := BUF:ByteArray ], L, K) =>
-         #let W = minInt(K, N -Int L) #in #range(M, L, W) ++ #range(M [ N := BUF ], N, K -Int W)
-      requires 0 <Int K andBool L <Int N [simplification]
-
-    rule #range(M [ N := BUF:ByteArray ], L, K) =>
-           #let S = L -Int N #in
-           #let W = minInt(K, #sizeByteArray(BUF) -Int S) #in
-           BUF [ S .. W ] ++ #range(M, N +Int #sizeByteArray(BUF), K -Int W)
-      requires 0 <Int K andBool N <=Int L andBool L <=Int N +Int #sizeByteArray(BUF) [simplification]
-
-    rule #range(M [ N := BUF:ByteArray ], L, K) => #range(M, L, K)
-      requires 0 <Int K andBool N +Int #sizeByteArray(BUF) <=Int L [simplification]
-
-    rule #range( M [ N1 := BUF1:ByteArray ] [ N2 := BUF2:ByteArray ], L, K ) =>
-         #range( M                          [ N2 := BUF2           ], L, K )
-      requires 0 <Int K andBool N1 +Int #sizeByteArray(BUF1) <=Int L [simplification]
-
-  // ########################
   // Map Reasoning
   // ########################
 
@@ -115,45 +82,9 @@ module LEMMAS [symbolic]
     rule 0 <=Int #lookup( _M:Map , _ )             => true [simplification, smt-lemma]
     rule         #lookup( _M:Map , _ ) <Int pow256 => true [simplification, smt-lemma]
 
-    // re-order assignments
-    rule MEM [ K1 := BUF1:ByteArray ] [ K2 := BUF2:ByteArray ] => MEM [ K2 := BUF2 ] [ K1 := BUF1 ]  requires         #sizeByteArray(BUF2) <=Int K1 -Int K2                   andBool K2  <Int K1 [simplification]
-    // overwritten assignment
-    rule MEM [ K1 := BUF1           ] [ K2 := BUF2           ] => MEM [ K2 := BUF2 ]                 requires K1 +Int #sizeByteArray(BUF1) <=Int K2 +Int #sizeByteArray(BUF2) andBool K2 <=Int K1 [simplification]
-
-    // lookup range in memory
-    rule _MEM [ _ .. W ] => .ByteArray  requires W ==Int 0                    [simplification]
-    rule  MEM [ 0 .. W ] => MEM         requires W ==Int #sizeByteArray(MEM)  [simplification]
-
-    // lookup range in concatenated memory buffers
-    rule (BUF1 ++  BUF2)[START .. WIDTH] =>  BUF2[START -Int #sizeByteArray(BUF1) .. WIDTH                          ]                                                              requires                        #sizeByteArray(BUF1) <=Int START                                                             [simplification]
-    rule (BUF1 ++  _   )[START .. WIDTH] =>  BUF1[START                           .. WIDTH                          ]                                                              requires START +Int WIDTH <=Int #sizeByteArray(BUF1)                       andBool 0 <=Int START andBool 0 <=Int WIDTH       [simplification]
-    rule (BUF1 ++  BUF2)[START .. WIDTH] => (BUF1[START                           .. #sizeByteArray(BUF1) -Int START]) ++ (BUF2[0 .. START +Int WIDTH -Int #sizeByteArray(BUF1)])  requires                        #sizeByteArray(BUF1) <Int START +Int WIDTH andBool #range(0 <= START < #sizeByteArray(BUF1)) [simplification]
-
     rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true
       requires I1 =/=Int I2
       [simplification]
-
-    // sizeByteArray
-
-    rule #sizeByteArray(BUF1 ++ BUF2)                 => #sizeByteArray(BUF1) +Int #sizeByteArray(BUF2)      [simplification]
-    rule #sizeByteArray(#buf(SIZE, _))                => SIZE                                                [simplification]
-    rule #sizeByteArray(_MEM [ START .. WIDTH ])      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
-    rule #sizeByteArray(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
-    rule #sizeByteArray(#padRightToWidth(WIDTH, BUF)) => WIDTH  requires #sizeByteArray(BUF) <=Int WIDTH     [simplification]
-
-    // TODO: custom ==K unification doesn't work in Haskell yet
-    // ++ unification
-    rule #buf(N, A) ++ BUF1 ==K #buf(N, B) ++ BUF2 => #buf(N, A) ==K #buf(N, B) andBool BUF1 ==K BUF2     [simplification]
-
-    rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
-
-    rule #asWord(WS) >>Int M => #asWord(WS [ 0 .. #sizeByteArray(WS) -Int (M /Int 8) ])  requires 0 <=Int M andBool M modInt 8 ==Int 0 [simplification]
-
-    rule #asWord(#padRightToWidth(32, BUF)) &Int notMaxUInt224 =>
-         #asWord(#padRightToWidth(32, BUF))
-      requires #sizeByteArray(BUF) <=Int 4 [simplification]
-
-    rule #padRightToWidth(_, BUF)[ 0 .. WIDTH ] => BUF requires #sizeByteArray(BUF) ==Int WIDTH [simplification]
 
 endmodule
 
@@ -166,9 +97,9 @@ module LEMMAS-HASKELL [symbolic, kore]
   // Word Reasoning
   // ########################
 
-    rule #asWord(BUF) /Int D => #asWord(BUF[0 .. #sizeByteArray(BUF) -Int log256Int(D)])
-      requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
-       andBool #sizeByteArray(BUF) >=Int log256Int(D) [simplification]
+    rule #asWord(BUF) /Int D => #asWord(#range(BUF, 0, lengthBytes(BUF) -Int log256Int(D)))
+       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
+        andBool lengthBytes(BUF) >=Int log256Int(D) [simplification]
 
     rule #asWord(#buf(N, BUF)) => BUF
       requires #range(0 < N <= 32)
@@ -185,71 +116,6 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
   // Arithmetic
   // ########################
-
-    rule N &Int maxUInt256 => N  requires #rangeUInt(256, N) [simplification]
-    rule maxUInt256 &Int N => N  requires #rangeUInt(256, N) [simplification]
-    rule N &Int maxUInt248 => N  requires #rangeUInt(248, N) [simplification]
-    rule maxUInt248 &Int N => N  requires #rangeUInt(248, N) [simplification]
-    rule N &Int maxUInt240 => N  requires #rangeUInt(240, N) [simplification]
-    rule maxUInt240 &Int N => N  requires #rangeUInt(240, N) [simplification]
-    rule N &Int maxUInt232 => N  requires #rangeUInt(232, N) [simplification]
-    rule maxUInt232 &Int N => N  requires #rangeUInt(232, N) [simplification]
-    rule N &Int maxUInt224 => N  requires #rangeUInt(224, N) [simplification]
-    rule maxUInt224 &Int N => N  requires #rangeUInt(224, N) [simplification]
-    rule N &Int maxUInt216 => N  requires #rangeUInt(216, N) [simplification]
-    rule maxUInt216 &Int N => N  requires #rangeUInt(216, N) [simplification]
-    rule N &Int maxUInt208 => N  requires #rangeUInt(208, N) [simplification]
-    rule maxUInt208 &Int N => N  requires #rangeUInt(208, N) [simplification]
-    rule N &Int maxUInt200 => N  requires #rangeUInt(200, N) [simplification]
-    rule maxUInt200 &Int N => N  requires #rangeUInt(200, N) [simplification]
-    rule N &Int maxUInt192 => N  requires #rangeUInt(192, N) [simplification]
-    rule maxUInt192 &Int N => N  requires #rangeUInt(192, N) [simplification]
-    rule N &Int maxUInt184 => N  requires #rangeUInt(184, N) [simplification]
-    rule maxUInt184 &Int N => N  requires #rangeUInt(184, N) [simplification]
-    rule N &Int maxUInt176 => N  requires #rangeUInt(176, N) [simplification]
-    rule maxUInt176 &Int N => N  requires #rangeUInt(176, N) [simplification]
-    rule N &Int maxUInt168 => N  requires #rangeUInt(168, N) [simplification]
-    rule maxUInt168 &Int N => N  requires #rangeUInt(168, N) [simplification]
-    rule N &Int maxUInt160 => N  requires #rangeUInt(160, N) [simplification]
-    rule maxUInt160 &Int N => N  requires #rangeUInt(160, N) [simplification]
-    rule N &Int maxUInt152 => N  requires #rangeUInt(152, N) [simplification]
-    rule maxUInt152 &Int N => N  requires #rangeUInt(152, N) [simplification]
-    rule N &Int maxUInt144 => N  requires #rangeUInt(144, N) [simplification]
-    rule maxUInt144 &Int N => N  requires #rangeUInt(144, N) [simplification]
-    rule N &Int maxUInt136 => N  requires #rangeUInt(136, N) [simplification]
-    rule maxUInt136 &Int N => N  requires #rangeUInt(136, N) [simplification]
-    rule N &Int maxUInt128 => N  requires #rangeUInt(128, N) [simplification]
-    rule maxUInt128 &Int N => N  requires #rangeUInt(128, N) [simplification]
-    rule N &Int maxUInt120 => N  requires #rangeUInt(120, N) [simplification]
-    rule maxUInt120 &Int N => N  requires #rangeUInt(120, N) [simplification]
-    rule N &Int maxUInt112 => N  requires #rangeUInt(112, N) [simplification]
-    rule maxUInt112 &Int N => N  requires #rangeUInt(112, N) [simplification]
-    rule N &Int maxUInt104 => N  requires #rangeUInt(104, N) [simplification]
-    rule maxUInt104 &Int N => N  requires #rangeUInt(104, N) [simplification]
-    rule N &Int maxUInt96  => N  requires #rangeUInt(96,  N) [simplification]
-    rule maxUInt96 &Int N  => N  requires #rangeUInt(96,  N) [simplification]
-    rule N &Int maxUInt88  => N  requires #rangeUInt(88,  N) [simplification]
-    rule maxUInt88 &Int N  => N  requires #rangeUInt(88,  N) [simplification]
-    rule N &Int maxUInt80  => N  requires #rangeUInt(80,  N) [simplification]
-    rule maxUInt80 &Int N  => N  requires #rangeUInt(80,  N) [simplification]
-    rule N &Int maxUInt72  => N  requires #rangeUInt(72,  N) [simplification]
-    rule maxUInt72 &Int N  => N  requires #rangeUInt(72,  N) [simplification]
-    rule N &Int maxUInt64  => N  requires #rangeUInt(64,  N) [simplification]
-    rule maxUInt64 &Int N  => N  requires #rangeUInt(64,  N) [simplification]
-    rule N &Int maxUInt56  => N  requires #rangeUInt(56,  N) [simplification]
-    rule maxUInt56 &Int N  => N  requires #rangeUInt(56,  N) [simplification]
-    rule N &Int maxUInt48  => N  requires #rangeUInt(48,  N) [simplification]
-    rule maxUInt48 &Int N  => N  requires #rangeUInt(48,  N) [simplification]
-    rule N &Int maxUInt40  => N  requires #rangeUInt(40,  N) [simplification]
-    rule maxUInt40 &Int N  => N  requires #rangeUInt(40,  N) [simplification]
-    rule N &Int maxUInt32  => N  requires #rangeUInt(32,  N) [simplification]
-    rule maxUInt32 &Int N  => N  requires #rangeUInt(32,  N) [simplification]
-    rule N &Int maxUInt24  => N  requires #rangeUInt(24,  N) [simplification]
-    rule maxUInt24 &Int N  => N  requires #rangeUInt(24,  N) [simplification]
-    rule N &Int maxUInt16  => N  requires #rangeUInt(16,  N) [simplification]
-    rule maxUInt16 &Int N  => N  requires #rangeUInt(16,  N) [simplification]
-    rule N &Int maxUInt8   => N  requires #rangeUInt(8,   N) [simplification]
-    rule maxUInt8 &Int N   => N  requires #rangeUInt(8,   N) [simplification]
 
     rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
 
@@ -275,27 +141,6 @@ module LEMMAS-HASKELL [symbolic, kore]
     // (pop)
     rule X <=Int chop ( X +Int Y ) => false  requires pow256 <=Int ( X +Int Y ) andBool #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
 
-    rule 0 <=Int (X |Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
-    rule 0 <=Int (X &Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
-
-    rule (X &Int Y) <Int Z      => true requires 0 <=Int X andBool 0 <=Int Y andBool (X <Int Z orBool Y <Int Z)          [simplification]
-    rule (X |Int Y) <Int pow256 => true requires 0 <=Int X andBool 0 <=Int Y andBool X <Int pow256 andBool Y <Int pow256 [simplification]
-
-    rule maxUInt160 &Int (X |Int (notMaxUInt160 &Int Y:Int)) => X requires #rangeUInt(160, X) andBool 0 <=Int Y [simplification]
-
-  // ########################
-  // Buffer Reasoning
-  // ########################
-
-    rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma, simplification]
-
-    rule BA:ByteArray   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                       [simplification, concrete(BA)]
-    rule #buf(32, DATA) ==K BA:ByteArray   =>          DATA  ==Int #asInteger(BA) requires #sizeByteArray(BA) <=Int 32 [simplification, concrete(BA)]
-
-    rule #range(M, N1 +Int N2, K) => #range(#range(M, N2, #sizeByteArray(M) -Int N2), N1, K)
-      requires 0 <=Int N1 andBool 0 <=Int N2
-      [simplification, concrete(N2), concrete(M)]
-
   // ########################
   // Map Reasoning
   // ########################
@@ -310,16 +155,4 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule B ==Bool false => notBool B [simplification]
 
-    rule #range(A ++ _B, START, LENGTH) => #range(A, START, LENGTH)
-      requires START +Int LENGTH <=Int #sizeByteArray(A) [simplification]
-
-    rule #range(A ++ B, START, LENGTH) => #range(B, START -Int #sizeByteArray(A), LENGTH)
-      requires #sizeByteArray(A) <=Int START [simplification]
-
-    rule #range ( BA:ByteArray , 0 , LEN ) => BA requires #sizeByteArray(BA) ==Int LEN [simplification]
-
-    rule ( #buf ( 32 , X ) [ 0 .. 28 ] ):ByteArray => #buf(28, 0) requires #rangeUInt ( 32 , X ) [simplification]
-
-    rule ( #range ( #range ( BA:ByteArray , S0 , L0 ) , S1 , L1 ) ) => #range ( BA , S0 +Int S1 , minInt ( L1 , L0 -Int S1 ) ) ++ #buf ( maxInt ( 0 , L1 -Int ( L0 -Int S1 ) ) , 0 )
-      requires 0 <=Int S0 andBool 0 <=Int L0 andBool 0 <=Int S1 andBool 0 <=Int L1 [simplification]
 endmodule
