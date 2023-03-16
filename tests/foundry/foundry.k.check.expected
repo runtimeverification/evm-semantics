@@ -3244,6 +3244,35 @@ module MYTOKEN-BIN-RUNTIME
 
 endmodule
 
+module NOIMPORT-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= NoImportContract
+    
+    syntax NoImportContract ::= "NoImport" [symbol(), klabel(contract_NoImport)]
+    
+      
+    
+    syntax Bytes ::= NoImportContract "." NoImportMethod [function(), symbol(), klabel(method_NoImport)]
+    
+    syntax NoImportMethod ::= "setUp" "(" ")" [symbol(), klabel(method_NoImport_setUp)]
+    
+    syntax NoImportMethod ::= "test_source_map" "(" ")" [symbol(), klabel(method_NoImport_test_source_map)]
+    
+    rule  ( NoImport . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
+      
+    
+    rule  ( NoImport . test_source_map ( ) => #abiCallData ( "test_source_map" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "setUp" ) => 177362148 )
+      
+    
+    rule  ( selector ( "test_source_map" ) => 3563497491 )
+      
+
+endmodule
+
 module OWNERUPONLY-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -6950,6 +6979,7 @@ module FOUNDRY-MAIN
     imports public MOCKCALLTEST-BIN-RUNTIME
     imports public MYIERC20-BIN-RUNTIME
     imports public MYTOKEN-BIN-RUNTIME
+    imports public NOIMPORT-BIN-RUNTIME
     imports public OWNERUPONLY-BIN-RUNTIME
     imports public OWNERUPONLYTEST-BIN-RUNTIME
     imports public ADDITIONALTOKEN-BIN-RUNTIME
