@@ -2927,6 +2927,12 @@ module LOOPSTEST-BIN-RUNTIME
     
     syntax LoopsTestMethod ::= "testSumToNBroken" "(" Int ")" [symbol(), klabel(method_LoopsTest_testSumToNBroken)]
     
+    syntax LoopsTestMethod ::= "test_sum_10" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_10)]
+    
+    syntax LoopsTestMethod ::= "test_sum_100" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_100)]
+    
+    syntax LoopsTestMethod ::= "test_sum_1000" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_1000)]
+    
     syntax LoopsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_LoopsTest_vm)]
     
     rule  ( LoopsTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
@@ -2979,6 +2985,15 @@ module LOOPSTEST-BIN-RUNTIME
        ensures #rangeUInt ( 256 , V0_n )
       
     
+    rule  ( LoopsTest . test_sum_10 ( ) => #abiCallData ( "test_sum_10" , .TypedArgs ) )
+      
+    
+    rule  ( LoopsTest . test_sum_100 ( ) => #abiCallData ( "test_sum_100" , .TypedArgs ) )
+      
+    
+    rule  ( LoopsTest . test_sum_1000 ( ) => #abiCallData ( "test_sum_1000" , .TypedArgs ) )
+      
+    
     rule  ( LoopsTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
     
@@ -3028,6 +3043,15 @@ module LOOPSTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "testSumToNBroken" ) => 1318374999 )
+      
+    
+    rule  ( selector ( "test_sum_10" ) => 1087009050 )
+      
+    
+    rule  ( selector ( "test_sum_100" ) => 1519953344 )
+      
+    
+    rule  ( selector ( "test_sum_1000" ) => 222767225 )
       
     
     rule  ( selector ( "vm" ) => 980845667 )

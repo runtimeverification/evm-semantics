@@ -243,11 +243,12 @@ def exec_prove(
     md_selector: Optional[str] = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
-    max_depth: int = 100,
+    max_depth: int = 1000,
     max_iterations: Optional[int] = None,
     workers: int = 1,
     simplify_init: bool = True,
     break_every_step: bool = False,
+    break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
@@ -280,6 +281,7 @@ def exec_prove(
         max_iterations=max_iterations,
         workers=workers,
         break_every_step=break_every_step,
+        break_on_jumpi=break_on_jumpi,
         break_on_calls=break_on_calls,
         implication_every_block=implication_every_block,
         rpc_base_port=rpc_base_port,
@@ -329,7 +331,7 @@ def exec_view_kcfg(
 
 def exec_foundry_prove(
     foundry_out: Path,
-    max_depth: int = 100,
+    max_depth: int = 1000,
     max_iterations: Optional[int] = None,
     reinit: bool = False,
     tests: Iterable[str] = (),
@@ -337,6 +339,7 @@ def exec_foundry_prove(
     workers: int = 1,
     simplify_init: bool = True,
     break_every_step: bool = False,
+    break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
@@ -358,6 +361,7 @@ def exec_foundry_prove(
         workers=workers,
         simplify_init=simplify_init,
         break_every_step=break_every_step,
+        break_on_jumpi=break_on_jumpi,
         break_on_calls=break_on_calls,
         implication_every_block=implication_every_block,
         rpc_base_port=rpc_base_port,
@@ -548,6 +552,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Store a node for every EVM opcode step (expensive).',
+    )
+    explore_args.add_argument(
+        '--break-on-jumpi',
+        dest='break_on_jumpi',
+        default=False,
+        action='store_true',
+        help='Store a node for every EVM jump opcode.',
     )
     explore_args.add_argument(
         '--break-on-calls',

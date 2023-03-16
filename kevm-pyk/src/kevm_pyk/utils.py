@@ -41,10 +41,11 @@ def parallel_kcfg_explore(
     kprove: KProve,
     proof_problems: Dict[str, KCFG],
     save_directory: Optional[Path] = None,
-    max_depth: int = 100,
+    max_depth: int = 1000,
     max_iterations: Optional[int] = None,
     workers: int = 1,
     break_every_step: bool = False,
+    break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = False,
     rpc_base_port: Optional[int] = None,
@@ -58,6 +59,8 @@ def parallel_kcfg_explore(
         terminal_rules = ['EVM.halt']
         if break_every_step:
             terminal_rules.append('EVM.step')
+        if break_on_jumpi:
+            terminal_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
         if break_on_calls:
             terminal_rules.extend(
                 [
