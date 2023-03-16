@@ -8,20 +8,28 @@ from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple
 from pyk.cli_utils import BugReport, check_file_path, ensure_dir_path
 from pyk.cterm import CTerm, build_claim, build_rule
 from pyk.kast.inner import KApply, KInner, KLabel, KRewrite, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import minimize_term, push_down_rewrites
+from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRuleLike
 from pyk.kcfg import KCFG, KCFGExplore
+from pyk.kcfg.tui import KCFGElem
 from pyk.ktool.kompile import KompileBackend, LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
-from pyk.prelude.kint import intToken
+from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue, mlTop
 from pyk.utils import shorten_hashes
 
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_main_module
-from .utils import KDefinition__expand_macros, abstract_cell_vars, cfg_dump_dot, find_free_port, parallel_kcfg_explore
+from .utils import (
+    KDefinition__expand_macros,
+    abstract_cell_vars,
+    byte_offset_to_lines,
+    cfg_dump_dot,
+    find_free_port,
+    parallel_kcfg_explore,
+)
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -67,6 +75,61 @@ class Foundry:
             contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
             _contracts[contract_name] = Contract(contract_name, contract_json, foundry=True)
         return _contracts
+
+    @cached_property
+    def contract_ids(self) -> Dict[int, str]:
+        _contract_ids = {}
+        for c in self.contracts.values():
+            _contract_ids[c.contract_id] = c.name
+        return _contract_ids
+
+    def srcmap_data(self, contract_name: str, pc: int) -> Optional[Tuple[Path, int, int]]:
+        if contract_name not in self.contracts:
+            _LOGGER.info(f'Contract not found in Foundry project: {contract_name}')
+        contract = self.contracts[contract_name]
+        if pc not in contract.srcmap:
+            _LOGGER.info(f'pc not found in srcmap for contract {contract_name}: {pc}')
+            return None
+        s, l, f, _, _ = contract.srcmap[pc]
+        if f not in self.contract_ids:
+            _LOGGER.info(f'Contract id not found in sourcemap data: {f}')
+            return None
+        src_contract = self.contracts[self.contract_ids[f]]
+        # TODO: Hardcoding that out directory is just one deep in project
+        src_contract_path = self._out.parent / src_contract.contract_path
+        src_contract_text = src_contract_path.read_text()
+        _, start, end = byte_offset_to_lines(src_contract_text.split('\n'), s, l)
+        return (src_contract_path, start, end)
+
+    def solidity_src(self, contract_name: str, pc: int) -> Iterable[str]:
+        srcmap_data = self.srcmap_data(contract_name, pc)
+        if srcmap_data is None:
+            return [f'No sourcemap data for contract at pc {contract_name}: {pc}']
+        contract_path, start, end = srcmap_data
+        if not (contract_path.exists() and contract_path.is_file()):
+            return [f'No file at path for contract {contract_name}: {contract_path}']
+        lines = contract_path.read_text().split('\n')
+        prefix_lines = [f'   {l}' for l in lines[:start]]
+        actual_lines = [f' | {l}' for l in lines[start:end]]
+        suffix_lines = [f'   {l}' for l in lines[end:]]
+        return prefix_lines + actual_lines + suffix_lines
+
+    def short_info_for_contract(self, contract_name: str, cterm: CTerm) -> List[str]:
+        ret_strs = self.kevm.short_info(cterm)
+        _pc = get_cell(cterm.config, 'PC_CELL')
+        if type(_pc) is KToken and _pc.sort == INT:
+            srcmap_data = self.srcmap_data(contract_name, int(_pc.token))
+            if srcmap_data is not None:
+                path, start, end = srcmap_data
+                ret_strs.append(f'src: {str(path)}:{start}:{end}')
+        return ret_strs
+
+    def custom_view(self, contract_name: str, element: KCFGElem) -> Iterable[str]:
+        if type(element) is KCFG.Node:
+            pc_cell = get_cell(element.cterm.config, 'PC_CELL')
+            if type(pc_cell) is KToken and pc_cell.sort == INT:
+                return self.solidity_src(contract_name, int(pc_cell.token))
+        return ['NO DATA']
 
     class Sorts:
         FOUNDRY_CELL: Final = KSort('FoundryCell')
@@ -319,6 +382,7 @@ def foundry_show(
     to_module: bool = False,
     minimize: bool = True,
 ) -> str:
+    contract_name = test.split('.')[0]
     kcfgs_dir = foundry_out / 'kcfgs'
     foundry = Foundry(foundry_out)
 
@@ -326,8 +390,11 @@ def foundry_show(
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
 
+    def _short_info(cterm: CTerm) -> Iterable[str]:
+        return foundry.short_info_for_contract(contract_name, cterm)
+
     res_lines: List[str] = []
-    res_lines += kcfg.pretty(foundry.kevm, minimize=minimize, node_printer=foundry.kevm.short_info)
+    res_lines += kcfg.pretty(foundry.kevm, minimize=minimize, node_printer=_short_info)
 
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
