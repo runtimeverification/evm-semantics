@@ -1,26 +1,28 @@
 
-┌  OMITTED HASH (init, expanded)
+┌  [OMITTED HASH] (init, expanded)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
 │   statusCode: STATUSCODE
 │   src: tests/foundry/test/Simple.t.sol:5:50
 │
-│  (417 steps)
-├  OMITTED HASH (expanded)
-│  k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│  pc: 929
+│  (217 steps)
+├  [OMITTED HASH] (expanded)
+│  k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+│  pc: 186
 │  callDepth: 0
-│  statusCode: EVMC_REVERT
+│  statusCode: EVMC_SUCCESS
+│  src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 │  (2 steps)
-└  OMITTED HASH (expanded, stuck, leaf)
+└  [OMITTED HASH] (expanded, stuck, leaf)
 │  k: #halt ~> CONTINUATION:K
-│  pc: 929
+│  pc: 186
 │  callDepth: 0
-│  statusCode: EVMC_REVERT
+│  statusCode: EVMC_SUCCESS
+│  src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 
-┌  OMITTED HASH (target, leaf)
+┌  [OMITTED HASH] (target, leaf)
 │   k: #halt ~> CONTINUATION
 │   pc: PC_CELL_5d410f2a
 │   callDepth: CALLDEPTH_CELL_5d410f2a
@@ -45,10 +47,10 @@ Node
       <ethereum>
         <evm>
           <output>
-            b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
+            b""
           </output>
           <statusCode>
-            EVMC_REVERT
+            EVMC_SUCCESS
           </statusCode>
           <callStack>
             .List
@@ -64,16 +66,16 @@ Node
               CALLER_ID:Int
             </caller>
             <callData>
-              b"]\xde\xcb\xfd"
+              b"\x18g]B"
             </callData>
             <callValue>
               0
             </callValue>
             <wordStack>
-              ( 353 : ( 185 : ( 1574882301 : .WordStack ) ) )
+              ( 409427266 : .WordStack )
             </wordStack>
             <localMem>
-              b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
+              b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
             </localMem>
             <memoryUsed>
               3
@@ -246,7 +248,7 @@ module SUMMARY
              <k>
                ( #execute
                ~> CONTINUATION => #halt
-               ~> #pc [ REVERT ]
+               ~> #pc [ STOP ]
                ~> #execute
                ~> CONTINUATION:K )
              </k>
@@ -259,10 +261,10 @@ module SUMMARY
              <ethereum>
                <evm>
                  <output>
-                   ( _OUTPUT_CELL => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" )
+                   ( _OUTPUT_CELL => b"" )
                  </output>
                  <statusCode>
-                   ( _STATUSCODE => EVMC_REVERT )
+                   ( _STATUSCODE => EVMC_SUCCESS )
                  </statusCode>
                  <callStack>
                    .List
@@ -275,16 +277,16 @@ module SUMMARY
                      1032069922050249630382865877677304880282300743300
                    </id>
                    <callData>
-                     ( AssertTest . test_assert_false ( ) => b"]\xde\xcb\xfd" )
+                     ( AssertTest . testFail_assert_true ( ) => b"\x18g]B" )
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 353 : ( 185 : ( 1574882301 : .WordStack ) ) ) )
+                     ( .WordStack => ( 409427266 : .WordStack ) )
                    </wordStack>
                    <localMem>
-                     ( .Bytes => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
+                     ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
                    </localMem>
                    <memoryUsed>
                      ( 0 => 3 )
@@ -477,7 +479,7 @@ module SUMMARY
            <kevm>
              <k>
                #halt
-               ~> ( #pc [ REVERT ]
+               ~> ( #pc [ STOP ]
                ~> #execute => .K )
                ~> _CONTINUATION
              </k>
@@ -490,10 +492,10 @@ module SUMMARY
              <ethereum>
                <evm>
                  <output>
-                   b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
+                   b""
                  </output>
                  <statusCode>
-                   EVMC_REVERT
+                   EVMC_SUCCESS
                  </statusCode>
                  <callStack>
                    .List
@@ -506,16 +508,16 @@ module SUMMARY
                      1032069922050249630382865877677304880282300743300
                    </id>
                    <callData>
-                     b"]\xde\xcb\xfd"
+                     b"\x18g]B"
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( 353 : ( 185 : ( 1574882301 : .WordStack ) ) )
+                     ( 409427266 : .WordStack )
                    </wordStack>
                    <localMem>
-                     b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
+                     b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
                    <memoryUsed>
                      3

@@ -8,13 +8,13 @@ from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple
 from pyk.cli_utils import BugReport, check_file_path, ensure_dir_path
 from pyk.cterm import CTerm, build_claim, build_rule
 from pyk.kast.inner import KApply, KInner, KLabel, KRewrite, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
+from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites, set_cell
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRuleLike
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kcfg.tui import KCFGElem
 from pyk.ktool.kompile import KompileBackend, LLVMKompileType
 from pyk.prelude.bytes import bytesToken
-from pyk.prelude.k import GENERATED_TOP_CELL
+from pyk.prelude.k import GENERATED_TOP_CELL, DOTS
 from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue, mlTop
@@ -300,6 +300,9 @@ def foundry_prove(
         for method in contract.methods
         if method.name.startswith('test')
     ]
+    for contract in foundry.contracts.values():
+        for test in contract.methods:
+            print(test.name)
     all_non_tests = [
         f'{contract.name}.{method.name}'
         for contract in foundry.contracts.values()
@@ -381,8 +384,9 @@ def foundry_show(
     node_deltas: Iterable[Tuple[str, str]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    omit_unstable_output: bool = False,
     frontier: bool = False,
-    omit_node_hash: bool = False,
+    stuck: bool = False,
 ) -> str:
     contract_name = test.split('.')[0]
     kcfgs_dir = foundry_out / 'kcfgs'
@@ -395,29 +399,53 @@ def foundry_show(
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
 
+    def omit_unstable_output(cterm: CTerm) -> CTerm:
+
+        def flatten_accounts(cterm: CTerm) -> [CTerm]:
+            
+            if type(cterm) is KApply and cterm.label.name == '_AccountCellMap_':
+                return flatten_accounts(cterm.args[0]) + flatten_accounts(cterm.args[1])
+            elif type(cterm) is KApply and cterm.label.name == 'AccountCellMapItem':
+                return [KApply(label=KLabel(name='<account>', params=cterm.label.params), args=cterm.args)]
+            else:
+                return [cterm]
+
+        cterm = set_cell(cterm, 'PROGRAM_CELL', DOTS)
+        cterm = set_cell(cterm, 'JUMPDESTS_CELL', DOTS)
+        cterm = set_cell(cterm, 'PC_CELL', DOTS)
+        cterm = set_cell(cterm, 'GAS_CELL', DOTS)
+        cterm = set_cell(cterm, 'CODE_CELL', DOTS)
+        accts_cell = get_cell(cterm, 'ACCOUNTS_CELL')
+
+        old_accts = flatten_accounts(accts_cell)
+        new_accts = []
+        for account in old_accts:
+            new_accts += [set_cell(account, 'CODE_CELL', DOTS)] if type(account) is KApply else [account]
+        old_accts = flatten_accounts(accts_cell)
+        cterm = set_cell(cterm, 'ACCOUNTS_CELL', build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), new_accts))
+
+        return cterm
+
     res_lines: List[str] = []
 
-    for lbl, segment in kcfg.pretty_segments(foundry.kevm, minimize=minimize, node_printer=_short_info, omit_node_hash=omit_node_hash):
-        segtype = lbl.split("_")[0]
-#          res_lines += [segtype]
-        res_lines += segment
-        if segtype == "node":
-            node_id = lbl.split("_")[1]
-#              res_lines += [node_id]
-            if kcfg.is_frontier(node_id):
-                ...
-#                  res_lines += segment
-#                  res_lines += "frontier"
-        else:
-            res_lines += segment
+    res_lines += kcfg.pretty(foundry.kevm, minimize=minimize, node_printer=_short_info, omit_node_hash=omit_unstable_output)
+    if frontier:
+        nodes += [node.id for node in kcfg.frontier]
+    if stuck:
+        nodes += [node.id for node in kcfg.stuck]
 
     for node_id in nodes:
         kast = kcfg.node(node_id).cterm.kast
+        if omit_unstable_output:
+            kast = omit_unstable_output(kast)
         if minimize:
             kast = minimize_term(kast)
         res_lines.append('')
         res_lines.append('')
-        res_lines.append(f'Node {node_id}:')
+        if omit_unstable_output:
+            res_lines.append(f'Node')
+        else:
+            res_lines.append(f'Node {node_id}:')
         res_lines.append('')
         res_lines.append(foundry.kevm.pretty_print(kast))
         res_lines.append('')
@@ -440,6 +468,8 @@ def foundry_show(
         def to_rule(edge: KCFG.Edge, *, claim: bool = False) -> KRuleLike:
             sentence_id = f'BASIC-BLOCK-{edge.source.id}-TO-{edge.target.id}'
             init_cterm = CTerm(edge.source.cterm.config)
+            if omit_unstable_output:
+                init_cterm = CTerm(omit_unstable_output(edge.source.cterm.config))
             for c in edge.source.cterm.constraints:
                 assert type(c) is KApply
                 if c.label.name == '#Ceil':
@@ -447,6 +477,8 @@ def foundry_show(
                 else:
                     init_cterm.add_constraint(c)
             target_cterm = CTerm(edge.target.cterm.config)
+            if omit_unstable_output:
+                target_cterm = CTerm(omit_unstable_output(edge.target.cterm.config))
             for c in edge.source.cterm.constraints:
                 assert type(c) is KApply
                 if c.label.name == '#Ceil':

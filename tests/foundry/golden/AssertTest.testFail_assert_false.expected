@@ -1,26 +1,26 @@
 
-┌  OMITTED HASH (init, expanded)
+┌  [OMITTED HASH] (init, expanded)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
 │   statusCode: STATUSCODE
 │   src: tests/foundry/test/Simple.t.sol:5:50
 │
-│  (417 steps)
-├  OMITTED HASH (expanded)
+│  (281 steps)
+├  [OMITTED HASH] (expanded)
 │  k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │  pc: 929
 │  callDepth: 0
 │  statusCode: EVMC_REVERT
 │
 │  (2 steps)
-└  OMITTED HASH (expanded, stuck, leaf)
+└  [OMITTED HASH] (expanded, stuck, leaf)
 │  k: #halt ~> CONTINUATION:K
 │  pc: 929
 │  callDepth: 0
 │  statusCode: EVMC_REVERT
 
-┌  OMITTED HASH (target, leaf)
+┌  [OMITTED HASH] (target, leaf)
 │   k: #halt ~> CONTINUATION
 │   pc: PC_CELL_5d410f2a
 │   callDepth: CALLDEPTH_CELL_5d410f2a
@@ -64,13 +64,13 @@ Node
               CALLER_ID:Int
             </caller>
             <callData>
-              b"]\xde\xcb\xfd"
+              b"z\xa9\xcc\xae"
             </callData>
             <callValue>
               0
             </callValue>
             <wordStack>
-              ( 353 : ( 185 : ( 1574882301 : .WordStack ) ) )
+              ( 353 : ( 185 : ( 2057948334 : .WordStack ) ) )
             </wordStack>
             <localMem>
               b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -275,13 +275,13 @@ module SUMMARY
                      1032069922050249630382865877677304880282300743300
                    </id>
                    <callData>
-                     ( AssertTest . test_assert_false ( ) => b"]\xde\xcb\xfd" )
+                     ( AssertTest . testFail_assert_false ( ) => b"z\xa9\xcc\xae" )
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 353 : ( 185 : ( 1574882301 : .WordStack ) ) ) )
+                     ( .WordStack => ( 353 : ( 185 : ( 2057948334 : .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -506,13 +506,13 @@ module SUMMARY
                      1032069922050249630382865877677304880282300743300
                    </id>
                    <callData>
-                     b"]\xde\xcb\xfd"
+                     b"z\xa9\xcc\xae"
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( 353 : ( 185 : ( 1574882301 : .WordStack ) ) )
+                     ( 353 : ( 185 : ( 2057948334 : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"

@@ -1,26 +1,34 @@
 
-┌  OMITTED HASH (init, expanded)
+┌  [OMITTED HASH] (init, expanded)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
 │   statusCode: STATUSCODE
 │   src: tests/foundry/test/Simple.t.sol:5:50
 │
-│  (417 steps)
-├  OMITTED HASH (expanded)
+│  (465 steps)
+├  [OMITTED HASH] (expanded)
+│  k: #checkCall 1032069922050249630382865877677304880282300743300 0 ~> #call 10320699 ...
+│  pc: 434
+│  callDepth: 0
+│  statusCode: STATUSCODE:StatusCode
+│  src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:52:58
+│
+│  (174 steps)
+├  [OMITTED HASH] (expanded)
 │  k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │  pc: 929
 │  callDepth: 0
 │  statusCode: EVMC_REVERT
 │
-│  (2 steps)
-└  OMITTED HASH (expanded, stuck, leaf)
+│  (5 steps)
+└  [OMITTED HASH] (expanded, stuck, leaf)
 │  k: #halt ~> CONTINUATION:K
 │  pc: 929
 │  callDepth: 0
-│  statusCode: EVMC_REVERT
+│  statusCode: EVMC_SUCCESS
 
-┌  OMITTED HASH (target, leaf)
+┌  [OMITTED HASH] (target, leaf)
 │   k: #halt ~> CONTINUATION
 │   pc: PC_CELL_5d410f2a
 │   callDepth: CALLDEPTH_CELL_5d410f2a
@@ -48,7 +56,7 @@ Node
             b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
           </output>
           <statusCode>
-            EVMC_REVERT
+            EVMC_SUCCESS
           </statusCode>
           <callStack>
             .List
@@ -64,20 +72,23 @@ Node
               CALLER_ID:Int
             </caller>
             <callData>
-              b"]\xde\xcb\xfd"
+              b"*M\xe1\xa1"
             </callData>
             <callValue>
               0
             </callValue>
             <wordStack>
-              ( 353 : ( 185 : ( 1574882301 : .WordStack ) ) )
+              ( 353 : ( 185 : ( 709747105 : .WordStack ) ) )
             </wordStack>
             <localMem>
-              b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
+              b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
             </localMem>
             <memoryUsed>
-              3
+              5
             </memoryUsed>
+            <callGas>
+              9079256848778916976
+            </callGas>
             <static>
               false
             </static>
@@ -91,7 +102,7 @@ Node
               .List
             </log>
             <accessedAccounts>
-              .Set
+              SetItem ( 645326474426547203313410069153905908525362434349 )
             </accessedAccounts>
             <accessedStorage>
               .Map
@@ -177,7 +188,12 @@ Node
         <isRevertExpected>
           false
         </isRevertExpected>
-        ...
+        <expectedReason>
+          b""
+        </expectedReason>
+        <expectedDepth>
+          0
+        </expectedDepth>
       </expectedRevert>
       <expectedOpcode>
         <isOpcodeExpected>
@@ -245,8 +261,10 @@ module SUMMARY
            <kevm>
              <k>
                ( #execute
-               ~> CONTINUATION => #halt
-               ~> #pc [ REVERT ]
+               ~> CONTINUATION => #checkCall 1032069922050249630382865877677304880282300743300 0
+               ~> #call 1032069922050249630382865877677304880282300743300 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"\xf4\x84H\x14" false
+               ~> #return 128 0
+               ~> #pc [ CALL ]
                ~> #execute
                ~> CONTINUATION:K )
              </k>
@@ -258,12 +276,6 @@ module SUMMARY
              </schedule>
              <ethereum>
                <evm>
-                 <output>
-                   ( _OUTPUT_CELL => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" )
-                 </output>
-                 <statusCode>
-                   ( _STATUSCODE => EVMC_REVERT )
-                 </statusCode>
                  <callStack>
                    .List
                  </callStack>
@@ -275,20 +287,23 @@ module SUMMARY
                      1032069922050249630382865877677304880282300743300
                    </id>
                    <callData>
-                     ( AssertTest . test_assert_false ( ) => b"]\xde\xcb\xfd" )
+                     ( AssertTest . testFail_expect_revert ( ) => b"*M\xe1\xa1" )
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 353 : ( 185 : ( 1574882301 : .WordStack ) ) ) )
+                     ( .WordStack => ( 132 : ( 4102309908 : ( 645326474426547203313410069153905908525362434349 : ( 185 : ( 709747105 : .WordStack ) ) ) ) ) )
                    </wordStack>
                    <localMem>
-                     ( .Bytes => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
+                     ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
                    </localMem>
                    <memoryUsed>
-                     ( 0 => 3 )
+                     ( 0 => 5 )
                    </memoryUsed>
+                   <callGas>
+                     ( _CALLGAS_CELL => 9079256848778916976 )
+                   </callGas>
                    <static>
                      false
                    </static>
@@ -302,7 +317,7 @@ module SUMMARY
                      .List
                    </log>
                    <accessedAccounts>
-                     .Set
+                     ( .Set => SetItem ( 645326474426547203313410069153905908525362434349 ) )
                    </accessedAccounts>
                    <accessedStorage>
                      .Map
@@ -476,9 +491,12 @@ module SUMMARY
     
            <kevm>
              <k>
-               #halt
-               ~> ( #pc [ REVERT ]
-               ~> #execute => .K )
+               ( #checkCall 1032069922050249630382865877677304880282300743300 0
+               ~> #call 1032069922050249630382865877677304880282300743300 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"\xf4\x84H\x14" false
+               ~> #return 128 0
+               ~> #pc [ CALL ] => #halt
+               ~> #pc [ REVERT ] )
+               ~> #execute
                ~> _CONTINUATION
              </k>
              <mode>
@@ -490,10 +508,10 @@ module SUMMARY
              <ethereum>
                <evm>
                  <output>
-                   b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
+                   ( _OUTPUT_CELL => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" )
                  </output>
                  <statusCode>
-                   EVMC_REVERT
+                   ( _STATUSCODE => EVMC_REVERT )
                  </statusCode>
                  <callStack>
                    .List
@@ -506,20 +524,23 @@ module SUMMARY
                      1032069922050249630382865877677304880282300743300
                    </id>
                    <callData>
-                     b"]\xde\xcb\xfd"
+                     b"*M\xe1\xa1"
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( 353 : ( 185 : ( 1574882301 : .WordStack ) ) )
+                     ( ( 132 => 353 ) : ( ( 4102309908 => 185 ) : ( ( 645326474426547203313410069153905908525362434349 => 709747105 ) : ( ( 185 : ( 709747105 : .WordStack ) ) => .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
-                     b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
+                     ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
                    </localMem>
                    <memoryUsed>
-                     3
+                     5
                    </memoryUsed>
+                   <callGas>
+                     9079256848778916976
+                   </callGas>
                    <static>
                      false
                    </static>
@@ -533,7 +554,7 @@ module SUMMARY
                      .List
                    </log>
                    <accessedAccounts>
-                     .Set
+                     SetItem ( 645326474426547203313410069153905908525362434349 )
                    </accessedAccounts>
                    <accessedStorage>
                      .Map
@@ -614,9 +635,209 @@ module SUMMARY
              </prank>
              <expectedRevert>
                <isRevertExpected>
-                 false
+                 ( false => true )
                </isRevertExpected>
+               <expectedReason>
+                 ( _EXPECTEDREASON_CELL => b"" )
+               </expectedReason>
+               <expectedDepth>
+                 ( _EXPECTEDDEPTH_CELL => 1 )
+               </expectedDepth>
+             </expectedRevert>
+             <expectedOpcode>
+               <isOpcodeExpected>
+                 false
+               </isOpcodeExpected>
+               <expectedAddress>
+                 .Account
+               </expectedAddress>
+               <expectedValue>
+                 0
+               </expectedValue>
+               <expectedData>
+                 b""
+               </expectedData>
+               <opcodeType>
+                 .OpcodeType
+               </opcodeType>
+             </expectedOpcode>
+             <expectEmit>
+               <recordEvent>
+                 false
+               </recordEvent>
+               <isEventExpected>
+                 false
+               </isEventExpected>
                ...
+             </expectEmit>
+             <whitelist>
+               <isCallWhitelistActive>
+                 false
+               </isCallWhitelistActive>
+               <isStorageWhitelistActive>
+                 false
+               </isStorageWhitelistActive>
+               <addressSet>
+                 .Set
+               </addressSet>
+               <storageSlotSet>
+                 .Set
+               </storageSlotSet>
+             </whitelist>
+           </cheatcodes>
+         </foundry>
+    
+           <kevm>
+             <k>
+               #halt
+               ~> ( #pc [ REVERT ]
+               ~> #execute => .K )
+               ~> _CONTINUATION
+             </k>
+             <mode>
+               NORMAL
+             </mode>
+             <schedule>
+               LONDON
+             </schedule>
+             <ethereum>
+               <evm>
+                 <output>
+                   b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
+                 </output>
+                 <statusCode>
+                   ( EVMC_REVERT => EVMC_SUCCESS )
+                 </statusCode>
+                 <callStack>
+                   .List
+                 </callStack>
+                 <interimStates>
+                   .List
+                 </interimStates>
+                 <callState>
+                   <id>
+                     1032069922050249630382865877677304880282300743300
+                   </id>
+                   <callData>
+                     b"*M\xe1\xa1"
+                   </callData>
+                   <callValue>
+                     0
+                   </callValue>
+                   <wordStack>
+                     ( 353 : ( 185 : ( 709747105 : .WordStack ) ) )
+                   </wordStack>
+                   <localMem>
+                     b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+                   </localMem>
+                   <memoryUsed>
+                     5
+                   </memoryUsed>
+                   <callGas>
+                     9079256848778916976
+                   </callGas>
+                   <static>
+                     false
+                   </static>
+                   <callDepth>
+                     0
+                   </callDepth>
+                   ...
+                 </callState>
+                 <substate>
+                   <log>
+                     .List
+                   </log>
+                   <accessedAccounts>
+                     SetItem ( 645326474426547203313410069153905908525362434349 )
+                   </accessedAccounts>
+                   <accessedStorage>
+                     .Map
+                   </accessedStorage>
+                   ...
+                 </substate>
+                 ...
+               </evm>
+               <network>
+                 <activeAccounts>
+                   ( SetItem ( 1032069922050249630382865877677304880282300743300 ) SetItem ( 645326474426547203313410069153905908525362434349 ) )
+                 </activeAccounts>
+                 <accounts>
+                   ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                     ...
+                   </account>
+                   ( <account>
+                     <acctID>
+                       1032069922050249630382865877677304880282300743300
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
+                     </nonce>
+                     ...
+                   </account>
+                   _ACCOUNTS_INIT ) )
+                 </accounts>
+                 ...
+               </network>
+             </ethereum>
+             ...
+           </kevm>
+           <cheatcodes>
+             <prank>
+               <prevCaller>
+                 .Account
+               </prevCaller>
+               <prevOrigin>
+                 .Account
+               </prevOrigin>
+               <newCaller>
+                 .Account
+               </newCaller>
+               <newOrigin>
+                 .Account
+               </newOrigin>
+               <active>
+                 false
+               </active>
+               <singleCall>
+                 false
+               </singleCall>
+               ...
+             </prank>
+             <expectedRevert>
+               <isRevertExpected>
+                 ( true => false )
+               </isRevertExpected>
+               <expectedReason>
+                 b""
+               </expectedReason>
+               <expectedDepth>
+                 ( 1 => 0 )
+               </expectedDepth>
              </expectedRevert>
              <expectedOpcode>
                <isOpcodeExpected>

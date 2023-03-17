@@ -513,27 +513,26 @@ tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
 
 foundry_golden := tests/foundry/golden
-foundry_diff_tests := $(addsuffix .check, $(basename $(wildcard $(foundry_golden)/*.expected)))
+foundry_diff_tests := $(shell cat tests/foundry/checkoutput)
 
-test-foundry-kcfg-diff: $(foundry_diff_tests)
+test-foundry-kcfg-diff: $(patsubst %, $(foundry_golden)/%.check, $(foundry_diff_tests))
 
-# foundry_show_opts := --omit-node-hash --frontier
-foundry_show_opts := --frontier
-
-$(foundry_golden)/%.expected.generate:
+foundry-fail: tests/foundry/out/kompiled/timestamp
 	$(KEVM) foundry-prove tests/foundry/out                              \
 	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
-	    $(KEVM_OPTS) $(KPROVE_OPTS) --test $* ;                          \
-	$(KEVM) foundry-show $(foundry_show_opts) $(foundry_out) $* > $(foundry_golden)/$*.expected
+	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
+	    $(addprefix --test , $(foundry_diff_tests)) || true
 
-$(foundry_golden)/%.check: $(foundry_golden)/%.out $(foundry_golden)/%.expected
+foundry_show_opts := --to-module --omit-unstable-output --frontier --stuck
+
+$(foundry_golden)/%.check: $(foundry_golden)/%.out
 	$(CHECK) $(foundry_golden)/$*.out $(foundry_golden)/$*.expected
 
-$(foundry_golden)/%.out: poetry
-	$(KEVM) foundry-prove tests/foundry/out                              \
-	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
-	    $(KEVM_OPTS) $(KPROVE_OPTS) --test $* ;                          \
-	$(KEVM) foundry-show $(foundry_show_opts) $(foundry_out) $* > $@
+$(foundry_golden)/%.out: foundry-fail
+	$(KEVM) foundry-show $(foundry_show_opts) $(foundry_out) $* \
+	| grep --invert-match 'rule \[BASIC-BLOCK-'                 \
+	| grep --invert-match '\[priority(.*), label(BASIC-BLOCK-'  \
+	> $@
 
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
 	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose
