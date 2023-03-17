@@ -14,7 +14,7 @@ runs:
     run: |
       set -euxo pipefail
 
-      Z3_VERSION=4.8.15
+      Z3_VERSION=4.12.1
       K_COMMIT=$(cut -c 2- deps/k_release)
 
       docker build . --file .github/workflows/Dockerfile.z3 \
