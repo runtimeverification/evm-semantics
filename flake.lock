@@ -332,11 +332,11 @@
     },
     "flake-utils": {
       "locked": {
-        "lastModified": 1676283394,
-        "narHash": "sha256-XX2f9c3iySLCw54rJ/CZs+ZK6IQy7GXNY4nSOyu2QG4=",
+        "lastModified": 1678901627,
+        "narHash": "sha256-U02riOqrKKzwjsxc/400XnElV+UtPUQWpANPlyazjH0=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "3db36a8b464d0c4532ba1c7dda728f4576d6d073",
+        "rev": "93a2b84fc4b70d9e089d029deacc3583435c2ed6",
         "type": "github"
       },
       "original": {
@@ -502,11 +502,11 @@
         "z3-src": "z3-src"
       },
       "locked": {
-        "lastModified": 1676407552,
-        "narHash": "sha256-oktSNO6s0jgDyle5+5qgoYFBjC1gKbLUU5F199KhLu8=",
+        "lastModified": 1678773028,
+        "narHash": "sha256-sK53CTImXo+JeDqRr75YCGUarDMIMKzM+1W1igta8ww=",
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "477c5d1328394f6dab84acfc1c3945ecd37c9083",
+        "rev": "c5d61bd8a1ebeca522b1f6612f3c35b1c4c65a59",
         "type": "github"
       },
       "original": {
@@ -645,16 +645,16 @@
         "rv-utils": "rv-utils"
       },
       "locked": {
-        "lastModified": 1677104749,
-        "narHash": "sha256-Sjh+gOz8cbpXwa+01fiSiRf4lvfpJZKQh62R8rqQIqU=",
+        "lastModified": 1678974280,
+        "narHash": "sha256-UJ1PoWj99xUGbpxxvWLn2LUNWnJl2wu/Oqsoa/V+BxA=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "e869d30d15375d6fa7857fc174aab9bc61f73f5a",
+        "rev": "b860b4d488f61576d43f7919bc6786adc7036408",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v5.5.106",
+        "ref": "v5.5.147",
         "repo": "k",
         "type": "github"
       }
@@ -691,11 +691,11 @@
         "utils": "utils_3"
       },
       "locked": {
-        "lastModified": 1676905388,
-        "narHash": "sha256-mwC4PGqoe7FrUlcdDYaBYq2zESMhqN7Is9lPC8kI3Is=",
+        "lastModified": 1678904887,
+        "narHash": "sha256-Uc++/yN/BJ3cwTNoQY72SwXCwYliiaC16s7WiNavoog=",
         "owner": "runtimeverification",
         "repo": "llvm-backend",
-        "rev": "98774715e592a02d70029985cfdab9b4f5214d61",
+        "rev": "5bcdedd51a7874afcb19af5340b4af85d0c37830",
         "type": "github"
       },
       "original": {
