@@ -65,7 +65,7 @@ jobs:
           k_version=$(cat deps/k_release)
           bkp_version=$(cat deps/blockchain-k-plugin_release)
           pyk_version=$(cat deps/pyk_release)
-          sed -i 's!    k-framework.url = "github:runtimeverification/k/[v0-9\.]*"!    k-framework.url = "github:runtimeverification/k/'"${k_version}"'"!' flake.nix
+          sed -i 's!    k-framework.url = "github:runtimeverification/k/[v0-9\.]*"!    k-framework.url = "github:runtimeverification/k/v'"${k_version}"'"!' flake.nix
           sed -i 's!    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/[0-9a-f]*"!    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/'"${bkp_version}"'"!' flake.nix
           sed -i 's!    pyk.url = "github:runtimeverification/pyk/[v0-9\.]*"!    pyk.url = "github:runtimeverification/pyk/'"${pyk_version}"'"!' flake.nix
           nix run .#update-from-submodules
