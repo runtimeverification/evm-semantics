@@ -2,7 +2,7 @@ name: 'Update Version'
 on:
   push:
     branches:
-      - '_update-deps_runtimeverification_k'
+      - '_update-deps/runtimeverification/k'
       - '_update-deps/runtimeverification/blockchain-k-plugin'
       - '_update-deps/runtimeverification/pyk'
   workflow_dispatch:
