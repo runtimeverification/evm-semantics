@@ -26,6 +26,13 @@ jobs:
       - run: |
           git config user.name devops
           git config user.email devops@runtimeverification.com
+          if ! git merge-base --is-ancestor origin/master HEAD; then
+            if ! git merge origin/master --no-edit; then
+              git checkout --theirs -- package/version kevm-pyk/pyproject.toml kevm-pyk/pyproject.toml flake.nix flake.lock deps/k_release
+              git add -- package/version kevm-pyk/pyproject.toml kevm-pyk/pyproject.toml flake.nix flake.lock deps/k_release
+              git -c core.editor=/bin/true merge --continue
+            fi
+          fi
       - name: 'Update K Release tag'
         run: |
           cd deps/k
