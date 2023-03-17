@@ -26,14 +26,14 @@ jobs:
       - run: |
           git config user.name devops
           git config user.email devops@runtimeverification.com
-      - name: 'Update K Release tag'
+      - name: 'Update K submodule'
         run: |
+          K_VERSION="$(cat deps/k_release)"
           cd deps/k
           git fetch --tags
+          git checkout "v${K_VERSION}"
           cd -
-          K_VERSION="$(cd deps/k && git tag --points-at HEAD)"
-          echo "${K_VERSION}" > deps/k_release
-          git add deps/k_release && git commit -m 'deps/k_release: update release file' || true
+          git add deps/k && git commit -m 'deps/k: sync submodule' || true
       - name: 'Update pyk Release tag'
         run: |
           curl -sSL https://install.python-poetry.org | python3 - --version 1.3.2
