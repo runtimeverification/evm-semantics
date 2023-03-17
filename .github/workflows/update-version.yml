@@ -5,6 +5,7 @@ on:
       - '_update-deps_runtimeverification_k'
       - '_update-deps/runtimeverification/blockchain-k-plugin'
       - '_update-deps/runtimeverification/pyk'
+      - 'fix-k-release-version'
   workflow_dispatch:
 # Stop in progress workflows on the same branch and same workflow to use latest committed code
 concurrency:
