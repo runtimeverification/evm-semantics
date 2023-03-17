@@ -332,7 +332,14 @@ def foundry_prove(
             _LOGGER.info(f'Expanding macros in initial state for test: {test}')
             init_term = kcfg.get_unique_init().cterm.kast
             init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
-            kcfg.replace_node(kcfg.get_unique_init().id, CTerm(init_term))
+            init_cterm = CTerm(init_term)
+
+            _LOGGER.info(f'Computing definedness constraint for initial state for test: {test}')
+            with KCFGExplore(foundry.kevm, port=find_free_port(), bug_report=br) as kcfg_explore:
+                init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
+
+            kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
+
             _LOGGER.info(f'Expanding macros in target state for test: {test}')
             target_term = kcfg.get_unique_target().cterm.kast
             target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
