@@ -29,14 +29,18 @@ def find_free_port(host: str = 'localhost') -> int:
 
 def get_cfg_for_spec(  # noqa: N802
     kprove: KProve,
-    save_directory: Path,
     spec_file: Path,
+    save_directory: Optional[Path],
     spec_module_name: Optional[str] = None,
     include_dirs: Iterable[Path] = (),
     md_selector: Optional[str] = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
 ) -> Tuple[str, KCFG]:
+    if save_directory is None:
+        save_directory = Path('.')
+        _LOGGER.info(f'Using default save_directory: {save_directory}')
+
     _LOGGER.info(f'Extracting claim from file: {spec_file}')
     claim = single(
         kprove.get_claims(

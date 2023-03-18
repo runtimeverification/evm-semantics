@@ -300,9 +300,9 @@ def exec_prove(
 
 def exec_show_kcfg(
     definition_dir: Path,
-    save_directory: Path,
     spec_file: Path,
-    includes: List[str],
+    save_directory: Optional[Path] = None,
+    includes: Iterable[str] = (),
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
     spec_module: Optional[str] = None,
@@ -316,8 +316,8 @@ def exec_show_kcfg(
     kevm = KEVM(definition_dir)
     cfgid, kcfg = get_cfg_for_spec(
         kevm,
-        save_directory,
         spec_file,
+        save_directory=save_directory,
         spec_module_name=spec_module,
         include_dirs=[Path(i) for i in includes],
         md_selector=md_selector,
@@ -340,9 +340,9 @@ def exec_show_kcfg(
 
 def exec_view_kcfg(
     definition_dir: Path,
-    save_directory: Path,
     spec_file: Path,
-    includes: List[str],
+    includes: Iterable[str] = (),
+    save_directory: Optional[Path] = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
     spec_module: Optional[str] = None,
@@ -352,8 +352,8 @@ def exec_view_kcfg(
     kevm = KEVM(definition_dir)
     _, kcfg = get_cfg_for_spec(
         kevm,
-        save_directory,
         spec_file,
+        save_directory=save_directory,
         spec_module_name=spec_module,
         include_dirs=[Path(i) for i in includes],
         md_selector=md_selector,
@@ -749,7 +749,7 @@ def _create_argument_parser() -> ArgumentParser:
 
     spec_args = ArgumentParser(add_help=False)
     spec_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    spec_args.add_argument('--save_directory', type=dir_path, help='Path to where CFGs are stored.')
+    spec_args.add_argument('--save-directory', type=dir_path, help='Path to where CFGs are stored.')
     spec_args.add_argument(
         '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
     )
