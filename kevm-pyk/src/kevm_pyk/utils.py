@@ -133,7 +133,7 @@ def parallel_kcfg_explore(
         _proof_problems = [(_id, _cfg, _i) for _i, (_id, _cfg) in enumerate(proof_problems.items())]
         results = process_pool.map(_call_rpc, _proof_problems)
 
-    return {pid: result for pid, result in zip(proof_problems, results, strict=True)}
+    return dict(zip(proof_problems, results, strict=True))
 
 
 def arg_pair_of(
