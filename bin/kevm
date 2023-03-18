@@ -51,7 +51,7 @@ run_kevm_pyk() {
     local pyk_command pyk_args
     pyk_command="$1" ; shift
     case "${pyk_command}" in
-        kompile|run|prove|solc-to-k|foundry-kompile|foundry-prove|view-kcfg)
+        kompile|run|prove|solc-to-k|foundry-kompile|foundry-prove|view-kcfg|show-kcfg)
             pyk_args=(--definition "${backend_dir}")
             pyk_args+=(-I "${INSTALL_INCLUDE}/kframework")
             ;;
@@ -318,6 +318,7 @@ kevm_host='127.0.0.1'
 [[ ! "${run_command}" == prove     ]] || backend=haskell
 [[ ! "${run_command}" == solc-to-k ]] || backend=haskell
 [[ ! "${run_command}" == view-kcfg ]] || backend=haskell
+[[ ! "${run_command}" == show-kcfg ]] || backend=haskell
 [[ ! "${run_command}" == foundry-* ]] || backend=foundry
 [[ ! "${run_command}" == interpret ]] || unparse=false
 [[ ! "${run_command}" == kompile   ]] || pyk=true
@@ -365,7 +366,7 @@ if ${pyk}; then
 fi
 
 # get the run file
-if [[ "${run_command}" != foundry-* ]] && [[ "${run_command}" != 'view-kcfg' ]]; then
+if [[ "${run_command}" != foundry-* ]] && [[ "${run_command}" != *-kcfg ]]; then
     run_file="$1" ; shift
     if [[ "${run_file}" == '-' ]]; then
         tmp_input="$(mktemp)"
@@ -394,6 +395,7 @@ case "$run_command-$backend" in
     prove-@(haskell|foundry)             ) run_prove              "$@" ;;
     search-@(haskell)                    ) run_search             "$@" ;;
     view-kcfg-*                          ) run_kevm_pyk view-kcfg "$@" ;;
+    show-kcfg-*                          ) run_kevm_pyk show-kcfg "$@" ;;
     solc-to-k-*                          ) run_solc               "$@" ;;
     foundry-*                            ) run_foundry            "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
