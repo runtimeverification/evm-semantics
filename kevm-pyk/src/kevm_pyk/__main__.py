@@ -812,7 +812,7 @@ def _create_argument_parser() -> ArgumentParser:
     _ = command_parser.add_parser(
         'prove',
         help='Run KEVM proof.',
-        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args, spec_args, display_args],
+        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args, spec_args],
     )
 
     _ = command_parser.add_parser(
@@ -897,7 +897,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_prove_args = command_parser.add_parser(
         'foundry-prove',
         help='Run Foundry Proof.',
-        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args, display_args],
+        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args],
     )
     foundry_prove_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_prove_args.add_argument(
