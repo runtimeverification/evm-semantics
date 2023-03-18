@@ -345,8 +345,8 @@ def exec_show_kcfg(
 
 def exec_view_kcfg(
     definition_dir: Path,
-    spec_file: Path,
     save_directory: Path,
+    spec_file: Path,
     includes: List[str],
     claim_label: Optional[str] = None,
     spec_module: Optional[str] = None,
