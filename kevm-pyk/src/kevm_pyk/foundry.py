@@ -509,7 +509,6 @@ def foundry_step_node(
     node: str,
     repeat: int = 1,
     depth: int = 1,
-    minimize: bool = True,
     bug_report: bool = False,
 ) -> None:
     if repeat < 1:
@@ -535,7 +534,6 @@ def foundry_section_edge(
     edge: Tuple[str, str],
     sections: int = 2,
     replace: bool = False,
-    minimize: bool = True,
     bug_report: bool = False,
 ) -> None:
     kcfgs_dir = foundry_out / 'kcfgs'

@@ -516,7 +516,6 @@ def exec_foundry_step_node(
     node: str,
     repeat: int = 1,
     depth: int = 1,
-    minimize: bool = True,
     bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
@@ -526,7 +525,6 @@ def exec_foundry_step_node(
         node=node,
         repeat=repeat,
         depth=depth,
-        minimize=minimize,
         bug_report=bug_report,
     )
 
@@ -537,7 +535,6 @@ def exec_foundry_section_edge(
     edge: Tuple[str, str],
     sections: int = 2,
     replace: bool = False,
-    minimize: bool = True,
     bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
@@ -547,7 +544,6 @@ def exec_foundry_section_edge(
         edge=edge,
         sections=sections,
         replace=replace,
-        minimize=minimize,
         bug_report=bug_report,
     )
 
