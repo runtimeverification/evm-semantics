@@ -6,7 +6,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
-from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
+from pyk.cli_utils import BugReport, dir_path, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
@@ -303,7 +303,8 @@ def exec_show_kcfg(
     save_directory: Path,
     spec_file: Path,
     includes: List[str],
-    claim_label: Optional[str] = None,
+    claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] = (),
     spec_module: Optional[str] = None,
     md_selector: Optional[str] = None,
     nodes: Iterable[str] = (),
@@ -320,7 +321,8 @@ def exec_show_kcfg(
         spec_module_name=spec_module,
         include_dirs=[Path(i) for i in includes],
         md_selector=md_selector,
-        claim_label=claim_label,
+        claim_labels=claim_labels,
+        exclude_claim_labels=exclude_claim_labels,
     )
 
     kcfg_show = KCFGShow(kevm)
@@ -341,7 +343,8 @@ def exec_view_kcfg(
     save_directory: Path,
     spec_file: Path,
     includes: List[str],
-    claim_label: Optional[str] = None,
+    claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] = (),
     spec_module: Optional[str] = None,
     md_selector: Optional[str] = None,
     **kwargs: Any,
@@ -354,7 +357,8 @@ def exec_view_kcfg(
         spec_module_name=spec_module,
         include_dirs=[Path(i) for i in includes],
         md_selector=md_selector,
-        claim_label=claim_label,
+        claim_labels=claim_labels,
+        exclude_claim_labels=exclude_claim_labels,
     )
 
     viewer = KCFGViewer(kcfg, kevm, node_printer=kevm.short_info)
@@ -743,6 +747,20 @@ def _create_argument_parser() -> ArgumentParser:
         help='Extra modules to import into generated main module.',
     )
 
+    spec_args = ArgumentParser(add_help=False)
+    spec_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
+    spec_args.add_argument('--save_directory', type=dir_path, help='Path to where CFGs are stored.')
+    spec_args.add_argument(
+        '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
+    )
+    spec_args.add_argument(
+        '--exclude-claim',
+        type=str,
+        dest='exclude_claim_labels',
+        action='append',
+        help='Skip listed claims, MODULE_NAME.claim-id',
+    )
+
     kcfg_show_args = ArgumentParser(add_help=False)
     kcfg_show_args.add_argument(
         '--node',
@@ -791,47 +809,23 @@ def _create_argument_parser() -> ArgumentParser:
         '--openssl-root', type=dir_path, help='Path to openssl root directory (only for --target-darwin).'
     )
 
-    prove_args = command_parser.add_parser(
+    _ = command_parser.add_parser(
         'prove',
         help='Run KEVM proof.',
-        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args, display_args],
-    )
-    prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    prove_args.add_argument(
-        '--save-directory', dest='save_directory', type=ensure_dir_path, help='Directory to store CFGs in.'
-    )
-    prove_args.add_argument(
-        '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
-    )
-    prove_args.add_argument(
-        '--exclude-claim',
-        type=str,
-        dest='exclude_claim_labels',
-        action='append',
-        help='Skip listed claims, MODULE_NAME.claim-id',
+        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args, spec_args, display_args],
     )
 
-    view_kcfg_args = command_parser.add_parser(
+    _ = command_parser.add_parser(
         'view-kcfg',
         help='Display tree view of CFG',
-        parents=[shared_args, k_args],
+        parents=[shared_args, k_args, spec_args],
     )
-    view_kcfg_args.add_argument(
-        'save_directory', type=dir_path, help='Path to where CFGs are stored (--save-directory option to prove).'
-    )
-    view_kcfg_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    view_kcfg_args.add_argument('--claim', type=str, dest='claim_label', help='Claim identifier to load CFG for.')
 
-    show_kcfg_args = command_parser.add_parser(
+    _ = command_parser.add_parser(
         'show-kcfg',
         help='Display tree show of CFG',
-        parents=[shared_args, k_args, kcfg_show_args, display_args],
+        parents=[shared_args, k_args, kcfg_show_args, spec_args, display_args],
     )
-    show_kcfg_args.add_argument(
-        'save_directory', type=dir_path, help='Path to where CFGs are stored (--save-directory option to prove).'
-    )
-    show_kcfg_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    show_kcfg_args.add_argument('--claim', type=str, dest='claim_label', help='Claim identifier to load CFG for.')
 
     run_args = command_parser.add_parser(
         'run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args, k_args]

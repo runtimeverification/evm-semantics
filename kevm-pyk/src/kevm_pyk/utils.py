@@ -34,16 +34,18 @@ def get_cfg_for_spec(  # noqa: N802
     spec_module_name: Optional[str] = None,
     include_dirs: Iterable[Path] = (),
     md_selector: Optional[str] = None,
-    claim_label: Optional[str] = None,
+    claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] = (),
 ) -> Tuple[str, KCFG]:
-    _LOGGER.info(f'Extracting claims from file: {spec_file}')
+    _LOGGER.info(f'Extracting claim from file: {spec_file}')
     claim = single(
         kprove.get_claims(
             spec_file,
             spec_module_name=spec_module_name,
             include_dirs=include_dirs,
             md_selector=md_selector,
-            claim_labels=([claim_label] if claim_label is not None else None),
+            claim_labels=claim_labels,
+            exclude_claim_labels=exclude_claim_labels,
         )
     )
 
