@@ -13,7 +13,6 @@ from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
 from pyk.kcfg.tui import KCFGElem
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
-from pyk.utils import single
 
 from .foundry import (
     Foundry,
@@ -30,7 +29,7 @@ from .foundry import (
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, KEVMKompileMode
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, find_free_port, parallel_kcfg_explore
+from .utils import arg_pair_of, find_free_port, get_cfg_for_spec, parallel_kcfg_explore
 
 T = TypeVar('T')
 
@@ -314,25 +313,19 @@ def exec_show_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
-
-    _LOGGER.info(f'Extracting claims from file: {spec_file}')
-    claim = single(
-        kevm.get_claims(
-            spec_file,
-            spec_module_name=spec_module,
-            include_dirs=[Path(i) for i in includes],
-            md_selector=md_selector,
-            claim_labels=([claim_label] if claim_label is not None else None),
-        )
+    cfgid, kcfg = get_cfg_for_spec(
+        kevm,
+        save_directory,
+        spec_file,
+        spec_module_name=spec_module,
+        include_dirs=[Path(i) for i in includes],
+        md_selector=md_selector,
+        claim_label=claim_label,
     )
-
-    kcfg = KCFGExplore.read_cfg(claim.label, save_directory)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {claim} from {save_directory}')
 
     kcfg_show = KCFGShow(kevm)
     res_lines = kcfg_show.show(
-        claim.label,
+        cfgid,
         kcfg,
         nodes=nodes,
         node_deltas=node_deltas,
@@ -354,21 +347,16 @@ def exec_view_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
-
-    _LOGGER.info(f'Extracting claims from file: {spec_file}')
-    claim = single(
-        kevm.get_claims(
-            spec_file,
-            spec_module_name=spec_module,
-            include_dirs=[Path(i) for i in includes],
-            md_selector=md_selector,
-            claim_labels=([claim_label] if claim_label is not None else None),
-        )
+    _, kcfg = get_cfg_for_spec(
+        kevm,
+        save_directory,
+        spec_file,
+        spec_module_name=spec_module,
+        include_dirs=[Path(i) for i in includes],
+        md_selector=md_selector,
+        claim_label=claim_label,
     )
 
-    kcfg = KCFGExplore.read_cfg(claim.label, save_directory)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {claim} from {save_directory}')
     viewer = KCFGViewer(kcfg, kevm, node_printer=kevm.short_info)
     viewer.run()
 

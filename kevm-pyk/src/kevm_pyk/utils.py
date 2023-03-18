@@ -12,6 +12,7 @@ from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_c
 from pyk.kast.outer import KDefinition
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.ktool.kprove import KProve
+from pyk.utils import single
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -24,6 +25,33 @@ def find_free_port(host: str = 'localhost') -> int:
         s.bind((host, 0))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return s.getsockname()[1]
+
+
+def get_cfg_for_spec(  # noqa: N802
+    kprove: KProve,
+    save_directory: Path,
+    spec_file: Path,
+    spec_module_name: Optional[str] = None,
+    include_dirs: Iterable[Path] = (),
+    md_selector: Optional[str] = None,
+    claim_label: Optional[str] = None,
+) -> Tuple[str, KCFG]:
+    _LOGGER.info(f'Extracting claims from file: {spec_file}')
+    claim = single(
+        kprove.get_claims(
+            spec_file,
+            spec_module_name=spec_module_name,
+            include_dirs=include_dirs,
+            md_selector=md_selector,
+            claim_labels=([claim_label] if claim_label is not None else None),
+        )
+    )
+
+    kcfg = KCFGExplore.read_cfg(claim.label, save_directory)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {claim} from {save_directory}')
+
+    return claim.label, kcfg
 
 
 def parallel_kcfg_explore(
