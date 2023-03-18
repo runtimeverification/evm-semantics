@@ -111,7 +111,7 @@ jobs:
       - name: 'Build Definitions'
         run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make build-prove-haskell -j4'
       - name: 'Prove Haskell'
-        run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove -j9 TEST_SYMBOLIC_BACKEND=haskell'
+        run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'KORE_RPC_OPTS="--smt-timeout 500" make test-prove -j9 TEST_SYMBOLIC_BACKEND=haskell'
       - name: 'Tear down Docker'
         if: always()
         run: |
@@ -136,7 +136,7 @@ jobs:
       - name: 'Build Foundry'
         run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
       - name: 'Test Foundry'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry -j2 FOUNDRY_PAR=12'
+        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'KORE_RPC_OPTS="--smt-timeout 500" make test-foundry -j2 FOUNDRY_PAR=12'
       - name: 'Tear down Docker'
         if: always()
         run: |
