@@ -128,11 +128,11 @@ class Contract:
         self.bytecode = deployed_bytecode['object'].replace('0x', '')
         self.raw_sourcemap = deployed_bytecode['sourceMap'] if 'sourceMap' in deployed_bytecode else None
 
-        _method_identifiers = evm['methodIdentifiers'] if 'methodIdentifiers' in evm else []
+        method_ids = evm['methodIdentifiers'] if 'methodIdentifiers' in evm else {}
         _methods = []
-        for msig in _method_identifiers:
+        for msig in method_ids:
             mname = msig.split('(')[0]
-            mid = int(_method_identifiers[msig], 16)
+            mid = int(method_ids[msig], 16)
             _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
             _methods.append(_m)
         self.methods = tuple(_methods)
