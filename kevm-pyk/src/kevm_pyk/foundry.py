@@ -305,9 +305,6 @@ def foundry_prove(
         for method in contract.methods
         if method.name.startswith('test')
     ]
-    for contract in foundry.contracts.values():
-        for test in contract.methods:
-            print(test.name)
     all_non_tests = [
         f'{contract.name}.{method.name}'
         for contract in foundry.contracts.values()
@@ -419,6 +416,7 @@ def foundry_show(
         cterm = set_cell(cterm, 'PC_CELL', DOTS)
         cterm = set_cell(cterm, 'GAS_CELL', DOTS)
         cterm = set_cell(cterm, 'CODE_CELL', DOTS)
+
         accts_cell = get_cell(cterm, 'ACCOUNTS_CELL')
 
         old_accts = flatten_accounts(accts_cell)
