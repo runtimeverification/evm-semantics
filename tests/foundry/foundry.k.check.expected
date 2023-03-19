@@ -2120,7 +2120,7 @@ module REVERTERWITHRETURN-BIN-RUNTIME
     
       
     
-    syntax ByteArray ::= ReverterWithReturnContract "." ReverterWithReturnMethod [function(), symbol(), klabel(method_ReverterWithReturn)]
+    syntax Bytes ::= ReverterWithReturnContract "." ReverterWithReturnMethod [function(), symbol(), klabel(method_ReverterWithReturn)]
     
     syntax ReverterWithReturnMethod ::= "revertUnless" "(" Int ")" [symbol(), klabel(method_ReverterWithReturn_revertUnless)]
     
