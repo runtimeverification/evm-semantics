@@ -1,5 +1,5 @@
 
-┌  [OMITTED HASH] (init, expanded)
+┌  OMITTED HASH (init, expanded)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -7,28 +7,28 @@
 │   src: tests/foundry/test/Simple.t.sol:5:50
 │
 │  (465 steps)
-├  [OMITTED HASH] (expanded)
+├  OMITTED HASH (expanded)
 │  k: #checkCall 1032069922050249630382865877677304880282300743300 0 ~> #call 10320699 ...
 │  pc: 434
 │  callDepth: 0
 │  statusCode: STATUSCODE:StatusCode
-│  src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:52:58
+│  src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:58:59
 │
 │  (174 steps)
-├  [OMITTED HASH] (expanded)
+├  OMITTED HASH (expanded)
 │  k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │  pc: 929
 │  callDepth: 0
 │  statusCode: EVMC_REVERT
 │
 │  (5 steps)
-└  [OMITTED HASH] (expanded, stuck, leaf)
+└  OMITTED HASH (expanded, stuck, leaf)
 │  k: #halt ~> CONTINUATION:K
 │  pc: 929
 │  callDepth: 0
 │  statusCode: EVMC_SUCCESS
 
-┌  [OMITTED HASH] (target, leaf)
+┌  OMITTED HASH (target, leaf)
 │   k: #halt ~> CONTINUATION
 │   pc: PC_CELL_5d410f2a
 │   callDepth: CALLDEPTH_CELL_5d410f2a
@@ -239,13 +239,8 @@ Node
   </foundry>
   ...
 </generatedTop>
-#And ( { true #Equals #rangeAddress ( CALLER_ID:Int ) }
-#And ( { true #Equals #rangeAddress ( ORIGIN_ID:Int ) }
 #And ( { true #Equals 0 <=Int CALLER_ID:Int }
 #And ( { true #Equals 0 <=Int ORIGIN_ID:Int }
-#And ( { true #Equals 4 <Int pow128 }
-#And ( { true #Equals #rangeAddress ( 1032069922050249630382865877677304880282300743300 ) }
-#And ( { true #Equals #rangeUInt ( 256 , 9223372036854775807 ) }
 #And ( { true #Equals CALLER_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
 #And ( { true #Equals ORIGIN_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
 #And ( { false #Equals <acctID>
@@ -253,7 +248,7 @@ Node
 </acctID> in_keys ( ACCOUNTS_INIT:AccountCellMap ) }
 #And { false #Equals <acctID>
   1032069922050249630382865877677304880282300743300
-</acctID> in_keys ( ACCOUNTS_INIT:AccountCellMap ) } ) ) ) ) ) ) ) ) ) ) )
+</acctID> in_keys ( ACCOUNTS_INIT:AccountCellMap ) } ) ) ) ) ) )
 
 module SUMMARY
     

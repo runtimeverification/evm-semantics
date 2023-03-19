@@ -11,13 +11,18 @@ from pyk.kast.inner import KApply, KInner, KLabel, KRewrite, KSequence, KSort, K
 from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites, set_cell
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRuleLike
 from pyk.kcfg import KCFG, KCFGExplore
+from pyk.cterm import CTerm
+from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
+from pyk.kast.manip import get_cell, minimize_term
+from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
+from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.kcfg.tui import KCFGElem
 from pyk.ktool.kompile import KompileBackend, LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL, DOTS
 from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
-from pyk.prelude.ml import mlEqualsTrue, mlTop
+from pyk.prelude.ml import mlEqualsTrue
 from pyk.utils import shorten_hashes
 
 from .kevm import KEVM
@@ -26,7 +31,6 @@ from .utils import (
     KDefinition__expand_macros,
     abstract_cell_vars,
     byte_offset_to_lines,
-    cfg_dump_dot,
     find_free_port,
     parallel_kcfg_explore,
 )
@@ -269,7 +273,7 @@ def foundry_kompile(
 
 def foundry_prove(
     foundry_out: Path,
-    max_depth: int = 100,
+    max_depth: int = 1000,
     max_iterations: Optional[int] = None,
     reinit: bool = False,
     tests: Iterable[str] = (),
@@ -277,6 +281,7 @@ def foundry_prove(
     workers: int = 1,
     simplify_init: bool = True,
     break_every_step: bool = False,
+    break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
@@ -337,16 +342,14 @@ def foundry_prove(
             method = [m for m in contract.methods if m.name == method_name][0]
             empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
             kcfg = _method_to_cfg(empty_config, contract, method)
-            init_term = kcfg.get_unique_init().cterm.kast
-            target_term = kcfg.get_unique_target().cterm.kast
             _LOGGER.info(f'Expanding macros in initial state for test: {test}')
+            init_term = kcfg.get_unique_init().cterm.kast
             init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
-            init_cterm = KEVM.add_invariant(CTerm(init_term))
+            kcfg.replace_node(kcfg.get_unique_init().id, CTerm(init_term))
             _LOGGER.info(f'Expanding macros in target state for test: {test}')
+            target_term = kcfg.get_unique_target().cterm.kast
             target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
-            target_cterm = KEVM.add_invariant(CTerm(target_term))
-            kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
-            kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
+            kcfg.replace_node(kcfg.get_unique_target().id, CTerm(target_term))
             if simplify_init:
                 with KCFGExplore(foundry.kevm, port=find_free_port(), bug_report=br) as kcfg_explore:
                     kcfg = kcfg_explore.simplify(test, kcfg)
@@ -367,6 +370,7 @@ def foundry_prove(
         max_iterations=max_iterations,
         workers=workers,
         break_every_step=break_every_step,
+        break_on_jumpi=break_on_jumpi,
         break_on_calls=break_on_calls,
         implication_every_block=implication_every_block,
         rpc_base_port=rpc_base_port,
@@ -503,8 +507,13 @@ def foundry_show(
 
 def foundry_to_dot(foundry_out: Path, test: str) -> None:
     kcfgs_dir = foundry_out / 'kcfgs'
+    dump_dir = kcfgs_dir / 'dump'
     foundry = Foundry(foundry_out)
-    cfg_dump_dot(foundry.kevm, test, kcfgs_dir)
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    kcfg_show = KCFGShow(foundry.kevm)
+    kcfg_show.dump(test, kcfg, dump_dir, dot=True)
 
 
 class CfgStat(NamedTuple):
@@ -600,7 +609,6 @@ def foundry_step_node(
     node: str,
     repeat: int = 1,
     depth: int = 1,
-    minimize: bool = True,
     bug_report: bool = False,
 ) -> None:
     if repeat < 1:
@@ -626,7 +634,6 @@ def foundry_section_edge(
     edge: Tuple[str, str],
     sections: int = 2,
     replace: bool = False,
-    minimize: bool = True,
     bug_report: bool = False,
 ) -> None:
     kcfgs_dir = foundry_out / 'kcfgs'
