@@ -250,11 +250,14 @@ def exec_prove(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
+    rpc_command: Optional[str] = None,
     rpc_base_port: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
     br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=br)
+
+    kore_rpc_command = KEVM.kore_rpc_command() if rpc_command is None else rpc_command.split('\n')
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
     claims = kevm.get_claims(
@@ -269,7 +272,7 @@ def exec_prove(
     _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
     proof_problems = {c.label: KCFG.from_claim(kevm.definition, c) for c in claims}
     if simplify_init:
-        with KCFGExplore(kevm, port=find_free_port(), bug_report=br) as kcfg_explore:
+        with KCFGExplore(kevm, port=find_free_port(), bug_report=br, kore_rpc_command=kore_rpc_command) as kcfg_explore:
             proof_problems = {claim: kcfg_explore.simplify(claim, cfg) for claim, cfg in proof_problems.items()}
 
     results = parallel_kcfg_explore(
@@ -287,6 +290,7 @@ def exec_prove(
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
         bug_report=br,
+        rpc_cmd=kore_rpc_command,
     )
     failed = 0
     for pid, r in results.items():
@@ -649,7 +653,6 @@ def _create_argument_parser() -> ArgumentParser:
         type=int,
         help='Store every Nth state in the CFG for inspection.',
     )
-
     explore_args.add_argument(
         '--with-custom-rpc',
         dest='rpc_command',
