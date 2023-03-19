@@ -1034,6 +1034,17 @@ module BROADCASTTEST-BIN-RUNTIME
 
 endmodule
 
+module CONSTANTS-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= ConstantsContract
+    
+    syntax ConstantsContract ::= "Constants" [symbol(), klabel(contract_Constants)]
+    
+      
+
+endmodule
+
 module CONTRACT-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -7007,6 +7018,7 @@ module FOUNDRY-MAIN
     imports public ASSUMETEST-BIN-RUNTIME
     imports public BLOCKPARAMSTEST-BIN-RUNTIME
     imports public BROADCASTTEST-BIN-RUNTIME
+    imports public CONSTANTS-BIN-RUNTIME
     imports public CONTRACT-BIN-RUNTIME
     imports public CONTRACTTEST-BIN-RUNTIME
     imports public CONTRACTBTEST-BIN-RUNTIME
