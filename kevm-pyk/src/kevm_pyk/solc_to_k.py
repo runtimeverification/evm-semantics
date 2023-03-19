@@ -105,7 +105,7 @@ class Contract:
     contract_id: int
     contract_path: str
     bytecode: str
-    raw_sourcemap: str
+    raw_sourcemap: Optional[str]
     methods: Tuple[Method, ...]
     fields: FrozenDict
 
@@ -122,29 +122,17 @@ class Contract:
         self.contract_id = self.contract_json['id']
         self.contract_path = self.contract_json['ast']['absolutePath']
 
-        self.bytecode = (
-            self.contract_json['evm']['deployedBytecode']['object']
-            if not foundry
-            else self.contract_json['deployedBytecode']['object']
-        ).replace('0x', '')
+        evm = self.contract_json['evm'] if not foundry else self.contract_json
 
-        self.raw_sourcemap = (
-            self.contract_json['evm']['deployedBytecode']['sourceMap']
-            if not foundry
-            else self.contract_json['deployedBytecode']['sourceMap']
-        )
+        deployed_bytecode = evm['deployedBytecode']
+        self.bytecode = deployed_bytecode['object'].replace('0x', '')
+        self.raw_sourcemap = deployed_bytecode['sourceMap'] if 'sourceMap' in deployed_bytecode else None
 
+        method_ids = evm['methodIdentifiers'] if 'methodIdentifiers' in evm else {}
         _methods = []
-        if not foundry and 'evm' in self.contract_json and 'methodIdentifiers' in self.contract_json['evm']:
-            _method_identifiers = self.contract_json['evm']['methodIdentifiers']
-        elif foundry and 'methodIdentifiers' in self.contract_json:
-            _method_identifiers = self.contract_json['methodIdentifiers']
-        else:
-            _method_identifiers = []
-            _LOGGER.info(f"Could not find member 'methodIdentifiers' while processing contract: {self.name}")
-        for msig in _method_identifiers:
+        for msig in method_ids:
             mname = msig.split('(')[0]
-            mid = int(_method_identifiers[msig], 16)
+            mid = int(method_ids[msig], 16)
             _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
             _methods.append(_m)
         self.methods = tuple(_methods)
@@ -164,7 +152,7 @@ class Contract:
     def srcmap(self) -> Dict[int, Tuple[int, int, int, str, int]]:
         _srcmap = {}
 
-        if len(self.bytecode) > 0:
+        if len(self.bytecode) > 0 and self.raw_sourcemap is not None:
             instr_to_pc = {}
             pc = 0
             instr = 0

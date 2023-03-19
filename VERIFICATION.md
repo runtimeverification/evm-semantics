@@ -87,11 +87,11 @@ You can also debug proofs interactively:
 kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --definition tests/specs/erc20/verification/haskell --debugger
 ```
 
-In addition to this, you can use `kevm view-kcfg` to get a visualization.
+In addition to this, you can use `kevm show-kcfg ...` or `kevm view-kcfg ...` to get a visualization.
 
-`kevm view-kcfg [save_directory] [spec_file] [--claim claim_label] ...` command takes the same basic arguments as `kevm prove --pyk ...` does, including:
-  - `save_directory` must be passed as where the KCFGs have been saved (by a previous call to `kevm prove --pyk --save-directory save_directory ...`
+`kevm view-kcfg [spec_file] [--save-directory save_directory] [--claim claim_label] ...` command takes the same basic arguments as `kevm prove --pyk ...` does, including:
   - `spec_file` is the file to look in for specifications. This file is read like with `kevm prove —pyk …`; the `KProve.get_claims` invokes the frontend.
+  - `--save_directory` must be passed as where the KCFGs have been saved (by a previous call to `kevm prove --pyk --save-directory save_directory ...`
   - `--claim claim_label` option is added, but unlike the `kevm prove --pyk ...`, you can only repeat it once. This option lets you select an individual claim out of the `spec_file`; if not supplied, it’s assumed that only one spec is present.
   - `--spec-module spec_module` is also an inherited option.
 

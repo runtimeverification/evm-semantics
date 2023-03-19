@@ -6,18 +6,18 @@ from pathlib import Path
 from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple
 
 from pyk.cli_utils import BugReport, check_file_path, ensure_dir_path
-from pyk.cterm import CTerm, build_claim, build_rule
-from pyk.kast.inner import KApply, KInner, KLabel, KRewrite, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites
-from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRuleLike
-from pyk.kcfg import KCFG, KCFGExplore
+from pyk.cterm import CTerm
+from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
+from pyk.kast.manip import get_cell, minimize_term
+from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
+from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.kcfg.tui import KCFGElem
 from pyk.ktool.kompile import KompileBackend, LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
-from pyk.prelude.ml import mlEqualsTrue, mlTop
+from pyk.prelude.ml import mlEqualsTrue
 from pyk.utils import shorten_hashes
 
 from .kevm import KEVM
@@ -26,7 +26,6 @@ from .utils import (
     KDefinition__expand_macros,
     abstract_cell_vars,
     byte_offset_to_lines,
-    cfg_dump_dot,
     find_free_port,
     parallel_kcfg_explore,
 )
@@ -393,71 +392,28 @@ def foundry_show(
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
 
-    res_lines: List[str] = []
-    res_lines += kcfg.pretty(foundry.kevm, minimize=minimize, node_printer=_short_info)
-
-    for node_id in nodes:
-        kast = kcfg.node(node_id).cterm.kast
-        if minimize:
-            kast = minimize_term(kast)
-        res_lines.append('')
-        res_lines.append('')
-        res_lines.append(f'Node {node_id}:')
-        res_lines.append('')
-        res_lines.append(foundry.kevm.pretty_print(kast))
-        res_lines.append('')
-
-    for node_id_1, node_id_2 in node_deltas:
-        config_1 = kcfg.node(node_id_1).cterm.config
-        config_2 = kcfg.node(node_id_2).cterm.config
-        config_delta = push_down_rewrites(KRewrite(config_1, config_2))
-        if minimize:
-            config_delta = minimize_term(config_delta)
-        res_lines.append('')
-        res_lines.append('')
-        res_lines.append(f'State Delta {node_id_1} => {node_id_2}:')
-        res_lines.append('')
-        res_lines.append(foundry.kevm.pretty_print(config_delta))
-        res_lines.append('')
-
-    if to_module:
-
-        def to_rule(edge: KCFG.Edge, *, claim: bool = False) -> KRuleLike:
-            sentence_id = f'BASIC-BLOCK-{edge.source.id}-TO-{edge.target.id}'
-            init_cterm = CTerm(edge.source.cterm.config)
-            for c in edge.source.cterm.constraints:
-                assert type(c) is KApply
-                if c.label.name == '#Ceil':
-                    _LOGGER.warning(f'Ignoring Ceil condition: {c}')
-                else:
-                    init_cterm.add_constraint(c)
-            target_cterm = CTerm(edge.target.cterm.config)
-            for c in edge.source.cterm.constraints:
-                assert type(c) is KApply
-                if c.label.name == '#Ceil':
-                    _LOGGER.warning(f'Ignoring Ceil condition: {c}')
-                else:
-                    target_cterm.add_constraint(c)
-            rule: KRuleLike
-            if claim:
-                rule, _ = build_claim(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm)
-            else:
-                rule, _ = build_rule(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm, priority=35)
-            return rule
-
-        rules = [to_rule(e) for e in kcfg.edges() if e.depth > 0]
-        claims = [to_rule(KCFG.Edge(nd, kcfg.get_unique_target(), mlTop(), -1), claim=True) for nd in kcfg.frontier]
-        new_module = KFlatModule('SUMMARY', rules + claims)
-        res_lines.append(foundry.kevm.pretty_print(new_module))
-        res_lines.append('')
-
+    kcfg_show = KCFGShow(foundry.kevm)
+    res_lines = kcfg_show.show(
+        test,
+        kcfg,
+        nodes=nodes,
+        node_deltas=node_deltas,
+        to_module=to_module,
+        minimize=minimize,
+        node_printer=_short_info,
+    )
     return '\n'.join(res_lines)
 
 
 def foundry_to_dot(foundry_out: Path, test: str) -> None:
     kcfgs_dir = foundry_out / 'kcfgs'
+    dump_dir = kcfgs_dir / 'dump'
     foundry = Foundry(foundry_out)
-    cfg_dump_dot(foundry.kevm, test, kcfgs_dir)
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    kcfg_show = KCFGShow(foundry.kevm)
+    kcfg_show.dump(test, kcfg, dump_dir, dot=True)
 
 
 class CfgStat(NamedTuple):
@@ -553,7 +509,6 @@ def foundry_step_node(
     node: str,
     repeat: int = 1,
     depth: int = 1,
-    minimize: bool = True,
     bug_report: bool = False,
 ) -> None:
     if repeat < 1:
@@ -579,7 +534,6 @@ def foundry_section_edge(
     edge: Tuple[str, str],
     sections: int = 2,
     replace: bool = False,
-    minimize: bool = True,
     bug_report: bool = False,
 ) -> None:
     kcfgs_dir = foundry_out / 'kcfgs'
