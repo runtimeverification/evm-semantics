@@ -32,7 +32,7 @@ jobs:
           git fetch --tags
           git checkout "v${K_VERSION}"
           cd -
-          git add deps/k && git commit -m "deps/k: sync submodule v${K_VERSION}" || true
+          git add deps/k && git commit -m "deps/k: sync K submodule version v${K_VERSION}" || true
       - name: 'Update pyk Release tag'
         run: |
           curl -sSL https://install.python-poetry.org | python3 - --version 1.3.2
@@ -42,14 +42,14 @@ jobs:
           cd kevm-pyk
           poetry update
           cd -
-          git add kevm-pyk/ && git commit -m "kevm-pyk/: sync poetry files ${pyk_version}" || true
+          git add kevm-pyk/ && git commit -m "kevm-pyk/: sync poetry files pyk version ${pyk_version}" || true
       - name: 'Update plugin release tag'
         run: |
           cd deps/plugin
           rev=$(git rev-parse HEAD)
           cd -
           echo ${rev} > deps/blockchain-k-plugin_release
-          git add deps/blockchain-k-plugin_release && git commit -m "deps/blockchain-k-plugin_release: update release file ${rev}" || true
+          git add deps/blockchain-k-plugin_release && git commit -m "deps/blockchain-k-plugin_release: sync release file version ${rev}" || true
       - name: 'Install Nix/Cachix'
         uses: cachix/install-nix-action@v19
         with:
