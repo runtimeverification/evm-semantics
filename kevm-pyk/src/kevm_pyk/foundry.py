@@ -6,11 +6,6 @@ from pathlib import Path
 from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple
 
 from pyk.cli_utils import BugReport, check_file_path, ensure_dir_path
-from pyk.cterm import CTerm, build_claim, build_rule
-from pyk.kast.inner import KApply, KInner, KLabel, KRewrite, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import get_cell, minimize_term, push_down_rewrites, set_cell
-from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRuleLike
-from pyk.kcfg import KCFG, KCFGExplore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
 from pyk.kast.manip import get_cell, minimize_term
@@ -19,7 +14,7 @@ from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.kcfg.tui import KCFGElem
 from pyk.ktool.kompile import KompileBackend, LLVMKompileType
 from pyk.prelude.bytes import bytesToken
-from pyk.prelude.k import GENERATED_TOP_CELL, DOTS
+from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
@@ -401,9 +396,9 @@ def foundry_show(
         return foundry.short_info_for_contract(contract_name, cterm)
 
     if frontier:
-        nodes += [node.id for node in kcfg.frontier]
+        nodes = list(nodes) + [node.id for node in kcfg.frontier]
     if stuck:
-        nodes += [node.id for node in kcfg.stuck]
+        nodes = list(nodes) + [node.id for node in kcfg.stuck]
 
     kcfg_show = KCFGShow(foundry.kevm)
     res_lines = kcfg_show.show(
@@ -421,7 +416,7 @@ def foundry_show(
             '<pc>',
             '<gas>',
             '<code>',
-        ]
+        ],
     )
 
     return '\n'.join(res_lines)

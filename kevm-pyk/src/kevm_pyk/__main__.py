@@ -934,7 +934,11 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_show_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
     foundry_show_args.add_argument(
-        '--omit-unstable-output', dest='omit_unstable_output', default=False, action='store_true', help='Strip output that is likely to change without the contract logic changing'
+        '--omit-unstable-output',
+        dest='omit_unstable_output',
+        default=False,
+        action='store_true',
+        help='Strip output that is likely to change without the contract logic changing',
     )
     foundry_show_args.add_argument(
         '--frontier', dest='frontier', default=False, action='store_true', help='Also display frontier nodes'
