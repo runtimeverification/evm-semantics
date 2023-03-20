@@ -400,6 +400,14 @@ def foundry_show(
     if stuck:
         nodes = list(nodes) + [node.id for node in kcfg.stuck]
 
+    unstable_cells = [
+        '<program>',
+        '<jumpDests>',
+        '<pc>',
+        '<gas>',
+        '<code>',
+    ]
+
     kcfg_show = KCFGShow(foundry.kevm)
     res_lines = kcfg_show.show(
         test,
@@ -410,13 +418,7 @@ def foundry_show(
         minimize=minimize,
         node_printer=_short_info,
         omit_node_hash=omit_unstable_output,
-        omit_cells=[
-            '<program>',
-            '<jumpDests>',
-            '<pc>',
-            '<gas>',
-            '<code>',
-        ],
+        omit_cells=(unstable_cells if omit_unstable_output else []),
     )
 
     return '\n'.join(res_lines)
