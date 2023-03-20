@@ -10,10 +10,10 @@ module VERIFICATION-COMMON
   // ########################
 
     //Symbolic predicate representing whether output of #ecrec is empty. No implementation.
-    syntax Bool ::= #ecrecEmpty( ByteArray , ByteArray , ByteArray , ByteArray ) [function, no-evaluators, smtlib(ecrecEmpty)]
- // --------------------------------------------------------------------------------------------------------------------------
-    rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
-    rule #sizeByteArray(#ecrec(HASH, SIGV, SIGR, SIGS)) => 0  requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    syntax Bool ::= #ecrecEmpty( Bytes , Bytes , Bytes , Bytes ) [function, no-evaluators, smtlib(ecrecEmpty)]
+ // ----------------------------------------------------------------------------------------------------------
+    rule lengthBytes(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule lengthBytes(#ecrec(HASH, SIGV, SIGR, SIGS)) => 0  requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
 
     rule         #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))                  => 0    requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
     rule 0  <Int #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))                  => true requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
@@ -24,7 +24,6 @@ endmodule
 
 module VERIFICATION
     imports VERIFICATION-COMMON
-    imports VERIFICATION-JAVA
     imports VERIFICATION-HASKELL
 
   // ########################
@@ -44,11 +43,9 @@ module VERIFICATION
   // ABI Encoding
   // ########################
 
-    syntax ByteArray ::= #abiCallData2 ( String , TypedArgs ) [function]
+    syntax Bytes ::= #abiCallData2 ( String , TypedArgs ) [function]
 
-    rule #abiCallData2(FSIG, ARGS)
-      => #parseByteStack(substrString(Keccak256(FSIG), 0, 8))
-      ++ #encodeArgs(ARGS)
+    rule #abiCallData2(FSIG, ARGS) => #parseByteStack(substrString(Keccak256(FSIG), 0, 8)) +Bytes #encodeArgs(ARGS)
 
     rule chop(I) => 0 requires I ==Int pow256 [simplification]
 
@@ -64,12 +61,6 @@ module VERIFICATION
   // ########################
   // Buffer Reasoning
   // ########################
-
-    // ++-identity-right
-    rule WS ++ .ByteArray => WS [simplification]
-
-    // ++-associativity
-    rule ( WS1 ++ WS2 ) ++ WS3 => WS1 ++ ( WS2 ++ WS3 ) [simplification]
 
     rule #sizeWordStack(WS, N) <Int SIZE => #sizeWordStack(WS, 0) +Int N <Int SIZE  requires N =/=Int 0 [simplification]
 
@@ -104,14 +95,14 @@ module VERIFICATION
   // Simplification
   // ########################
 
-    rule #range(_M [ N := #buf(WIDTH, DATA) ], N, WIDTH) => #buf(WIDTH, DATA) [simplification]
+    rule #range( #writeRange(_M, N, #buf(WIDTH, DATA) ), N, WIDTH) => #buf(WIDTH, DATA) [simplification]
 
     rule #asWord(WS) &Int maxUInt256 => #asWord(WS) [simplification]
 
     rule maxUInt256 &Int X => X requires #rangeUInt(256, X) [simplification]
 
     // 2^256 - 2^160 = 0xff..ff00..00 (96 1's followed by 160 0's)
-    rule 115792089237316195423570985007226406215939081747436879206741300988257197096960 &Int ADDR => 0
+    rule notMaxUInt160 &Int ADDR => 0
       requires #rangeAddress(ADDR)
       [simplification]
 
@@ -143,33 +134,15 @@ module VERIFICATION-HASKELL [symbolic, kore]
   // Buffer Reasoning
   // ########################
 
-    rule BA1 ++ (BA2 ++ BA3) => (BA1 ++ BA2) ++ BA3 [concrete(BA1, BA2), simplification]
+    rule BA1 +Bytes (BA2 +Bytes BA3) => (BA1 +Bytes BA2) +Bytes BA3 [concrete(BA1, BA2), simplification]
 
     rule maxUInt160 &Int Y => Y requires 0 <=Int Y andBool Y <=Int maxUInt160 [simplification]
 
-    rule ( #sizeByteArray(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 0  ) =>           #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )  [simplification]
-    rule ( #sizeByteArray(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 32 ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )) [simplification]
+    rule ( lengthBytes(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 0  ) =>           #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )  [simplification]
+    rule ( lengthBytes(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 32 ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )) [simplification]
 
-    rule ( #sizeByteArray(#ecrec( _, _, _, _ )) <=Int K ) => true requires 32 <=Int K [simplification]
+    rule ( lengthBytes(#ecrec( _, _, _, _ )) <=Int K ) => true requires 32 <=Int K [simplification]
 
     rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
-
-endmodule
-
-module VERIFICATION-JAVA [symbolic, kast]
-    imports VERIFICATION-COMMON
-    imports K-REFLECTION
-    imports INFINITE-GAS-JAVA-EXTRA
-
-  // ########################
-  // Arithmetic
-  // ########################
-
-    rule chop(X +Int Y) => X +Int Y
-      requires #range(0 <= X <= pow16)
-       andBool #range(0 <= Y <  pow16)
-      [simplification]
-
-    rule X +Int Y <Int Z => X <Int Z -Int Y requires #isConcrete(Y) [simplification]
 
 endmodule

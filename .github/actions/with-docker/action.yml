@@ -15,15 +15,16 @@ runs:
       set -euxo pipefail
 
       Z3_VERSION=4.8.15
-      K_COMMIT="$(cat deps/k_release | cut --characters=2-)"
+      K_COMMIT=$(cat deps/k_release)
 
-      docker build . --file .github/workflows/Dockerfile.z3 \
-        --tag z3:${Z3_VERSION}
+      docker build .                           \
+        --file .github/workflows/Dockerfile.z3 \
+        --tag z3:${Z3_VERSION}                 \
 
-      docker build . --file .github/workflows/Dockerfile           \
-        --tag runtimeverification/${TAG_NAME}                      \
-        --build-arg K_COMMIT=${K_COMMIT}                           \
-        --build-arg Z3_VERSION=${Z3_VERSION}                       \
+      docker build . --file .github/workflows/Dockerfile \
+        --tag runtimeverification/${TAG_NAME}            \
+        --build-arg K_COMMIT=${K_COMMIT}                 \
+        --build-arg Z3_VERSION=${Z3_VERSION}             \
 
       docker run                        \
         --name ${TAG_NAME}              \
@@ -33,7 +34,7 @@ runs:
         --detach                        \
         --user root                     \
         --workdir /home/user            \
-        runtimeverification/${TAG_NAME}
+        runtimeverification/${TAG_NAME} \
 
       docker cp . ${TAG_NAME}:/home/user
       docker exec ${TAG_NAME} chown -R user:user /home/user

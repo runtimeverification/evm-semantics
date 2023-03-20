@@ -11,7 +11,7 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> .ByteArray </output>
+          <output> .Bytes </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -21,10 +21,10 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("fork", #bytes32(ABI_ilk), #address(ABI_src), #address(ABI_dst), #int256(ABI_dink), #int256(ABI_dart)) ++ CD => ?_ </callData>
+            <callData> #abiCallData("fork", #bytes32(ABI_ilk), #address(ABI_src), #address(ABI_dst), #int256(ABI_dink), #int256(ABI_dart)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
-            <localMem> .Memory => ?_ </localMem>
+            <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -106,7 +106,7 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Art_u)
        andBool (#rangeUInt(256, Ink_v)
        andBool (#rangeUInt(256, Art_v)
-       andBool ((#sizeByteArray(CD) <=Int 1250000000)
+       andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((ABI_src =/=Int ABI_dst)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)

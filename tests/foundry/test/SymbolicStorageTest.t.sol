@@ -2,33 +2,32 @@
 pragma solidity =0.8.13;
 
 import "forge-std/Test.sol";
-import "../src/Vm2.sol";
+import "../src/KEVMCheats.sol";
 
 contract SymbolicStore {
     uint256 private testNumber = 1337; // slot 0
-
-    constructor(){
-    }
+    constructor() {}
 }
 
-contract SymbolicStorageTest is Test { 
-    address constant private VM_ADDRESS =
-        address(bytes20(uint160(uint256(keccak256('hevm cheat code')))));
-    Vm2 public constant vm2 = Vm2(VM_ADDRESS);
-
+contract SymbolicStorageTest is Test, KEVMCheats { 
     function testFail_SymbolicStorage(uint256 slot) public {
          address addr = 0xEA674fdDe714fd979de3EdF0F56AA9716B898ec8;
-         vm2.symbolicStorage(addr);
-         bytes32 value = vm2.load(addr, bytes32(slot));
+         kevm.symbolicStorage(addr);
+         bytes32 value = vm.load(addr, bytes32(slot));
          require(value != 0);
          assertEq(uint256(value), 0);
     }
 
     function testFail_SymbolicStorage1(uint256 slot) public {
         SymbolicStore myStore = new SymbolicStore();
-        vm2.symbolicStorage(address(myStore));
-        bytes32 value = vm2.load(address(myStore), bytes32(uint256(slot)));
+        kevm.symbolicStorage(address(myStore));
+        bytes32 value = vm.load(address(myStore), bytes32(uint256(slot)));
         require(value != 0);
         assertEq(uint256(value), 0);
+    }
+
+    function testEmptyInitialStorage(uint256 slot) public {
+        bytes32 storage_value = vm.load(address(vm), bytes32(slot));
+        assertEq(uint256(storage_value), 0);
     }
 }

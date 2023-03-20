@@ -9,8 +9,8 @@ module STATE-UTILS
     imports EVM
     imports EVM-ASSEMBLY
 
-    syntax JSON ::= ByteArray | OpCodes | Map | SubstateLogEntry | Account
- // ----------------------------------------------------------------------
+    syntax JSON ::= Bytes | OpCodes | Map | SubstateLogEntry | Account
+ // ------------------------------------------------------------------
 
 ```
 
@@ -27,18 +27,18 @@ module STATE-UTILS
     syntax EthereumCommand ::= "clearTX"
  // ------------------------------------
     rule <k> clearTX => . ... </k>
-         <output>           _ => .ByteArray </output>
+         <output>           _ => .Bytes     </output>
          <memoryUsed>       _ => 0          </memoryUsed>
          <callDepth>        _ => 0          </callDepth>
          <callStack>        _ => .List      </callStack>
-         <program>          _ => .ByteArray </program>
+         <program>          _ => .Bytes     </program>
          <jumpDests>        _ => .Set       </jumpDests>
          <id>               _ => .Account   </id>
          <caller>           _ => .Account   </caller>
-         <callData>         _ => .ByteArray </callData>
+         <callData>         _ => .Bytes     </callData>
          <callValue>        _ => 0          </callValue>
          <wordStack>        _ => .WordStack </wordStack>
-         <localMem>         _ => .Memory    </localMem>
+         <localMem>         _ => .Bytes     </localMem>
          <pc>               _ => 0          </pc>
          <gas>              _ => 0          </gas>
          <callGas>          _ => 0          </callGas>
@@ -59,13 +59,13 @@ module STATE-UTILS
          <stateRoot>         _ => 0          </stateRoot>
          <transactionsRoot>  _ => 0          </transactionsRoot>
          <receiptsRoot>      _ => 0          </receiptsRoot>
-         <logsBloom>         _ => .ByteArray </logsBloom>
+         <logsBloom>         _ => .Bytes     </logsBloom>
          <difficulty>        _ => 0          </difficulty>
          <number>            _ => 0          </number>
          <gasLimit>          _ => 0          </gasLimit>
          <gasUsed>           _ => 0          </gasUsed>
          <timestamp>         _ => 0          </timestamp>
-         <extraData>         _ => .ByteArray </extraData>
+         <extraData>         _ => .Bytes     </extraData>
          <mixHash>           _ => 0          </mixHash>
          <blockNonce>        _ => 0          </blockNonce>
          <ommerBlockHeaders> _ => [ .JSONs ] </ommerBlockHeaders>
@@ -117,7 +117,7 @@ Here we perform pre-proccesing on account data which allows "pretty" specificati
     rule <k> loadAccount ACCT { "balance" : (BAL:Int), REST => REST } ... </k>
          <account> <acctID> ACCT </acctID> <balance> _ => BAL </balance> ... </account>
 
-    rule <k> loadAccount ACCT { "code" : (CODE:ByteArray), REST => REST } ... </k>
+    rule <k> loadAccount ACCT { "code" : (CODE:Bytes), REST => REST } ... </k>
          <account> <acctID> ACCT </acctID> <code> _ => CODE </code> ... </account>
 
     rule <k> loadAccount ACCT { "nonce" : (NONCE:Int), REST => REST } ... </k>
@@ -147,12 +147,12 @@ Here we load the environmental information.
  // -------------------------------------
     rule <k> loadCallState { "data" : ( DATA:String => #parseByteStack( DATA ) ), _REST } ... </k>
 
-    rule <k> loadCallState { "code" : CODE:ByteArray, REST } => #loadProgram CODE ~> loadCallState { REST } ... </k>
+    rule <k> loadCallState { "code" : CODE:Bytes, REST } => #loadProgram CODE ~> loadCallState { REST } ... </k>
 
-    rule <k> loadCallState { "gas" : GLIMIT:Int, REST => REST }      ... </k> <gas>       _ => GLIMIT </gas>
+    rule <k> loadCallState { "gas"      : GLIMIT:Int, REST => REST } ... </k> <gas>       _ => GLIMIT </gas>
     rule <k> loadCallState { "gasPrice" : GPRICE:Int, REST => REST } ... </k> <gasPrice>  _ => GPRICE </gasPrice>
-    rule <k> loadCallState { "value" : VALUE:Int, REST => REST }     ... </k> <callValue> _ => VALUE  </callValue>
-    rule <k> loadCallState { "data" : DATA:ByteArray, REST => REST } ... </k> <callData>  _ => DATA   </callData>
+    rule <k> loadCallState { "value"    : VALUE:Int , REST => REST } ... </k> <callValue> _ => VALUE  </callValue>
+    rule <k> loadCallState { "data"     : DATA:Bytes, REST => REST } ... </k> <callData>  _ => DATA   </callData>
 
     rule <k> loadCallState { .JSONs } => . ... </k>
 ```
@@ -314,16 +314,16 @@ The `"rlp"` key loads the block information.
     rule <k> loadTransaction TXID { "to" : TT:Account, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <to> _ => TT </to> ... </message>
 
-    rule <k> loadTransaction TXID { "data" : TI:ByteArray, REST => REST } ... </k>
+    rule <k> loadTransaction TXID { "data" : TI:Bytes, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <data> _ => TI </data> ... </message>
 
     rule <k> loadTransaction TXID { "v" : TW:Int, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <sigV> _ => TW </sigV> ... </message>
 
-    rule <k> loadTransaction TXID { "r" : TR:ByteArray, REST => REST } ... </k>
+    rule <k> loadTransaction TXID { "r" : TR:Bytes, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <sigR> _ => TR </sigR> ... </message>
 
-    rule <k> loadTransaction TXID { "s" : TS:ByteArray, REST => REST } ... </k>
+    rule <k> loadTransaction TXID { "s" : TS:Bytes, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <sigS> _ => TS </sigS> ... </message>
 
     rule <k> loadTransaction TXID { "type" : T:Int, REST => REST } ... </k>

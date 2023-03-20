@@ -24,14 +24,15 @@ contract DepthReverter {
         reverter = new Reverter();
     }
 
-    function revertAtNextDepth() public {
+    function revertAtNextDepth() public view {
         reverter.revertWithoutReason();
     }
 }
 
 contract ExpectRevertTest is Test {
+    error NotAuthorised(address caller, string message);
 
-    function doRevert() internal {
+    function doRevert() internal pure {
         require(false, "");
     }
 
@@ -93,5 +94,17 @@ contract ExpectRevertTest is Test {
          reverter.noRevert();
          vm.expectRevert();
          reverter.revertWithoutReason();
+    }
+
+    function test_expectRevert_encodedSymbolic(address controller) public {
+        vm.startPrank(controller);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                NotAuthorised.selector,
+                controller,
+                "TRANSFEROWNERSHIP"
+            )
+        );
+        revert NotAuthorised(controller, "TRANSFEROWNERSHIP");
     }
 }

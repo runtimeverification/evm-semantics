@@ -2,32 +2,34 @@ import json
 import logging
 import sys
 from argparse import ArgumentParser, Namespace
+from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
-from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli_utils import dir_path, file_path
+from pyk.cli_utils import BugReport, dir_path, file_path
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KAtt, KInner, KRewrite, KToken
-from pyk.kast.manip import flatten_label, minimize_term, push_down_rewrites
-from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule
-from pyk.kcfg import KCFG
-from pyk.ktool.kit import KIT
+from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
+from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
+from pyk.kcfg.tui import KCFGElem
+from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
-from pyk.prelude.k import GENERATED_TOP_CELL
-from pyk.prelude.ml import is_top, mlTop
 
-from .gst_to_kore import gst_to_kore
-from .kevm import KEVM, Foundry
-from .solc_to_k import Contract, contract_to_main_module, method_to_cfg, solc_compile
-from .utils import (
-    KCFG__replace_node,
-    KDefinition__expand_macros,
-    KPrint_make_unparsing,
-    KProve_prove_claim,
-    add_include_arg,
-    sanitize_config,
+from .foundry import (
+    Foundry,
+    foundry_kompile,
+    foundry_list,
+    foundry_prove,
+    foundry_remove_node,
+    foundry_section_edge,
+    foundry_show,
+    foundry_simplify_node,
+    foundry_step_node,
+    foundry_to_dot,
 )
+from .gst_to_kore import gst_to_kore
+from .kevm import KEVM, KEVMKompileMode
+from .solc_to_k import Contract, contract_to_main_module, solc_compile
+from .utils import arg_pair_of, find_free_port, get_cfg_for_spec, parallel_kcfg_explore
 
 T = TypeVar('T')
 
@@ -35,9 +37,9 @@ _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
-def write_cfg(_cfg: KCFG, _cfgpath: Path) -> None:
-    _cfgpath.write_text(_cfg.to_json())
-    _LOGGER.info(f'Updated CFG file: {_cfgpath}')
+class KompileTarget(Enum):
+    LINUX = 'linux'
+    DARWIN = 'darwin'
 
 
 def _ignore_arg(args: Dict[str, Any], arg: str, cli_option: str) -> None:
@@ -64,416 +66,387 @@ def main() -> None:
 # Command implementation
 
 
-def exec_compile(contract_file: Path, profile: bool, **kwargs: Any) -> None:
-    res = solc_compile(contract_file, profile=profile)
+def exec_compile(contract_file: Path, **kwargs: Any) -> None:
+    res = solc_compile(contract_file)
     print(json.dumps(res))
 
 
 def exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, **kwargs: Any) -> None:
-    gst_to_kore(input_file, sys.stdout, schedule, mode, chainid)
+    gst_data = json.loads(input_file.read_text())
+    kore = gst_to_kore(gst_data, schedule, mode, chainid)
+    print(kore.text)
+    _LOGGER.info('Finished writing kore')
 
 
 def exec_kompile(
     definition_dir: Path,
-    profile: bool,
+    backend: KompileBackend,
     main_file: Path,
     emit_json: bool,
+    kompile_mode: KEVMKompileMode,
     includes: List[str],
     main_module: Optional[str],
     syntax_module: Optional[str],
-    md_selector: Optional[str],
+    ccopts: Iterable[str] = (),
+    llvm_kompile: bool = True,
+    target: Optional[KompileTarget] = None,
+    o0: bool = False,
+    o1: bool = False,
+    o2: bool = False,
+    o3: bool = False,
+    debug: bool = False,
+    plugin_include: Optional[Path] = None,
+    libff_dir: Optional[Path] = None,
+    brew_root: Optional[Path] = None,
+    libcryptopp_dir: Optional[Path] = None,
+    openssl_root: Optional[Path] = None,
     **kwargs: Any,
 ) -> None:
+    _ignore_arg(kwargs, 'md_selector', f'--md-selector {kwargs["md_selector"]}')
+
+    optimization = 0
+    if o1:
+        optimization = 1
+    if o2:
+        optimization = 2
+    if o3:
+        optimization = 3
+
+    md_selector = 'k & ! node'
+    if kompile_mode == KEVMKompileMode.NODE:
+        md_selector = 'k & ! standalone'
+
+    if backend == KompileBackend.LLVM:
+        ccopts = list(ccopts)
+        if libff_dir is not None:
+            ccopts += [f'-L{libff_dir}/lib', f'-I{libff_dir}/include']
+        if plugin_include is not None:
+            ccopts += [
+                f'{plugin_include}/c/plugin_util.cpp',
+                f'{plugin_include}/c/crypto.cpp',
+                f'{plugin_include}/c/blake2.cpp',
+            ]
+        ccopts += ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
+        if target == KompileTarget.DARWIN:
+            if brew_root is not None:
+                ccopts += [
+                    f'-I{brew_root}/include',
+                    f'-L{brew_root}/lib',
+                ]
+            if openssl_root is not None:
+                ccopts += [
+                    f'-I{openssl_root}/include',
+                    f'-L{openssl_root}/lib',
+                ]
+            if libcryptopp_dir is not None:
+                ccopts += [
+                    f'-I{libcryptopp_dir}/include',
+                    f'-L{libcryptopp_dir}/lib',
+                ]
+        elif target == KompileTarget.LINUX:
+            ccopts += ['-lprocps']
+
     KEVM.kompile(
         definition_dir,
+        backend,
         main_file,
         emit_json=emit_json,
         includes=includes,
         main_module_name=main_module,
         syntax_module_name=syntax_module,
         md_selector=md_selector,
-        profile=profile,
+        debug=debug,
+        ccopts=ccopts,
+        llvm_kompile=llvm_kompile,
+        optimization=optimization,
     )
 
 
 def exec_solc_to_k(
     definition_dir: Path,
-    profile: bool,
     contract_file: Path,
     contract_name: str,
     main_module: Optional[str],
-    spec_module: Optional[str],
     requires: List[str],
     imports: List[str],
     **kwargs: Any,
 ) -> None:
-    kevm = KEVM(definition_dir, profile=profile)
+    kevm = KEVM(definition_dir)
     empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
-    solc_json = solc_compile(contract_file, profile=profile)
+    solc_json = solc_compile(contract_file)
     contract_json = solc_json['contracts'][contract_file.name][contract_name]
+    if 'sources' in solc_json and contract_file.name in solc_json['sources']:
+        contract_source = solc_json['sources'][contract_file.name]
+        for key in ['id', 'ast']:
+            if key not in contract_json and key in contract_source:
+                contract_json[key] = contract_source[key]
     contract = Contract(contract_name, contract_json, foundry=False)
     contract_module = contract_to_main_module(contract, empty_config, imports=['EDSL'] + imports)
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [contract_module.name] + imports]
     )
-    _spec_module = KFlatModule(spec_module if spec_module else 'SPEC')
-    modules = (contract_module, _main_module, _spec_module)
+    modules = (contract_module, _main_module)
     bin_runtime_definition = KDefinition(
         _main_module.name, modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
     )
-    _kprint = KPrint_make_unparsing(kevm, extra_modules=modules)
-    KEVM._patch_symbol_table(_kprint.symbol_table)
+    _kprint = KEVM(definition_dir, extra_unparsing_modules=modules)
     print(_kprint.pretty_print(bin_runtime_definition) + '\n')
 
 
 def exec_foundry_kompile(
     definition_dir: Path,
-    profile: bool,
     foundry_out: Path,
-    includes: List[str],
-    md_selector: Optional[str],
+    md_selector: Optional[str] = None,
+    includes: Iterable[str] = (),
     regen: bool = False,
     rekompile: bool = False,
     requires: Iterable[str] = (),
     imports: Iterable[str] = (),
+    ccopts: Iterable[str] = (),
+    llvm_kompile: bool = True,
+    debug: bool = False,
+    llvm_library: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
-    main_module = 'FOUNDRY-MAIN'
-    syntax_module = 'FOUNDRY-MAIN'
-    foundry_definition_dir = foundry_out / 'kompiled'
-    foundry_main_file = foundry_definition_dir / 'foundry.k'
-    kompiled_timestamp = foundry_definition_dir / 'timestamp'
-    requires = ['foundry.md'] + list(requires)
-    imports = ['FOUNDRY'] + list(imports)
-
-    if not foundry_definition_dir.exists():
-        foundry_definition_dir.mkdir()
-
-    json_paths = _contract_json_paths(foundry_out)
-    contracts = [_contract_from_json(json_path) for json_path in json_paths]
-
-    foundry = Foundry(definition_dir, profile=profile)
-    empty_config = foundry.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
-
-    bin_runtime_definition = _foundry_to_bin_runtime(
-        empty_config=empty_config,
-        contracts=contracts,
-        main_module=main_module,
+    _ignore_arg(kwargs, 'backend', f'--backend {kwargs["backend"]}')
+    _ignore_arg(kwargs, 'o0', '-O0')
+    _ignore_arg(kwargs, 'o1', '-O1')
+    _ignore_arg(kwargs, 'o2', '-O2')
+    _ignore_arg(kwargs, 'o3', '-O3')
+    foundry_kompile(
+        definition_dir=definition_dir,
+        foundry_out=foundry_out,
+        includes=includes,
+        md_selector=md_selector,
+        regen=regen,
+        rekompile=rekompile,
         requires=requires,
         imports=imports,
+        ccopts=ccopts,
+        llvm_kompile=llvm_kompile,
+        debug=debug,
+        llvm_library=llvm_library,
     )
-
-    if regen or not foundry_main_file.exists():
-        with open(foundry_main_file, 'w') as fmf:
-            _LOGGER.info(f'Writing file: {foundry_main_file}')
-            _foundry = Foundry(definition_dir=definition_dir)
-            _kprint = KPrint_make_unparsing(_foundry, extra_modules=bin_runtime_definition.modules)
-            Foundry._patch_symbol_table(_kprint.symbol_table)
-            fmf.write(_kprint.pretty_print(bin_runtime_definition) + '\n')
-
-    if regen or rekompile or not kompiled_timestamp.exists():
-        _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
-        KEVM.kompile(
-            foundry_definition_dir,
-            foundry_main_file,
-            emit_json=True,
-            includes=includes,
-            main_module_name=main_module,
-            syntax_module_name=syntax_module,
-            md_selector=md_selector,
-            profile=profile,
-        )
-
-
-def _contract_json_paths(foundry_out: Path) -> List[str]:
-    pattern = '*.sol/*.json'
-    paths = foundry_out.glob(pattern)
-    json_paths = [str(path) for path in paths]
-    json_paths = [json_path for json_path in json_paths if not json_path.endswith('.metadata.json')]
-    json_paths = sorted(json_paths)  # Must sort to get consistent output order on different platforms
-    return json_paths
-
-
-def _contract_from_json(json_path: str) -> Contract:
-    _LOGGER.info(f'Processing contract file: {json_path}')
-    with open(json_path, 'r') as json_file:
-        contract_json = json.loads(json_file.read())
-    contract_name = json_path.split('/')[-1]
-    contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
-    return Contract(contract_name, contract_json, foundry=True)
-
-
-def _foundry_to_bin_runtime(
-    empty_config: KInner,
-    contracts: Iterable[Contract],
-    main_module: Optional[str],
-    requires: Iterable[str],
-    imports: Iterable[str],
-) -> KDefinition:
-    modules = []
-    for contract in contracts:
-        module = contract_to_main_module(contract, empty_config, imports=imports)
-        _LOGGER.info(f'Produced contract module: {module.name}')
-        modules.append(module)
-    _main_module = KFlatModule(
-        main_module if main_module else 'MAIN',
-        imports=(KImport(mname) for mname in [_m.name for _m in modules] + list(imports)),
-    )
-    modules.append(_main_module)
-
-    bin_runtime_definition = KDefinition(
-        _main_module.name,
-        modules,
-        requires=(KRequire(req) for req in list(requires)),
-    )
-
-    return bin_runtime_definition
 
 
 def exec_prove(
     definition_dir: Path,
-    profile: bool,
     spec_file: Path,
     includes: List[str],
-    debug_equations: List[str],
-    bug_report: bool,
-    spec_module: Optional[str],
-    depth: Optional[int],
-    claims: Iterable[str] = (),
-    exclude_claims: Iterable[str] = (),
+    bug_report: bool = False,
+    save_directory: Optional[Path] = None,
+    spec_module: Optional[str] = None,
+    md_selector: Optional[str] = None,
+    claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] = (),
+    max_depth: int = 1000,
+    max_iterations: Optional[int] = None,
+    workers: int = 1,
+    simplify_init: bool = True,
+    break_every_step: bool = False,
+    break_on_jumpi: bool = False,
+    break_on_calls: bool = True,
+    implication_every_block: bool = True,
+    rpc_base_port: Optional[int] = None,
+    **kwargs: Any,
+) -> None:
+    br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
+    kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=br)
+
+    _LOGGER.info(f'Extracting claims from file: {spec_file}')
+    claims = kevm.get_claims(
+        spec_file,
+        spec_module_name=spec_module,
+        include_dirs=[Path(i) for i in includes],
+        md_selector=md_selector,
+        claim_labels=claim_labels,
+        exclude_claim_labels=exclude_claim_labels,
+    )
+
+    _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
+    proof_problems = {c.label: KCFG.from_claim(kevm.definition, c) for c in claims}
+    if simplify_init:
+        with KCFGExplore(kevm, port=find_free_port(), bug_report=br) as kcfg_explore:
+            proof_problems = {claim: kcfg_explore.simplify(claim, cfg) for claim, cfg in proof_problems.items()}
+
+    results = parallel_kcfg_explore(
+        kevm,
+        proof_problems,
+        save_directory=save_directory,
+        max_depth=max_depth,
+        max_iterations=max_iterations,
+        workers=workers,
+        break_every_step=break_every_step,
+        break_on_jumpi=break_on_jumpi,
+        break_on_calls=break_on_calls,
+        implication_every_block=implication_every_block,
+        rpc_base_port=rpc_base_port,
+        is_terminal=KEVM.is_terminal,
+        extract_branches=KEVM.extract_branches,
+        bug_report=br,
+    )
+    failed = 0
+    for pid, r in results.items():
+        if r:
+            print(f'PROOF PASSED: {pid}')
+        else:
+            failed += 1
+            print(f'PROOF FAILED: {pid}')
+    sys.exit(failed)
+
+
+def exec_show_kcfg(
+    definition_dir: Path,
+    spec_file: Path,
+    save_directory: Optional[Path] = None,
+    includes: Iterable[str] = (),
+    claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] = (),
+    spec_module: Optional[str] = None,
+    md_selector: Optional[str] = None,
+    nodes: Iterable[str] = (),
+    node_deltas: Iterable[Tuple[str, str]] = (),
+    to_module: bool = False,
     minimize: bool = True,
     **kwargs: Any,
 ) -> None:
-    _ignore_arg(kwargs, 'lemmas', '--lemma')
-    kevm = KEVM(definition_dir, profile=profile)
-    prove_args = add_include_arg(includes)
-    haskell_args = []
-    for de in debug_equations:
-        haskell_args += ['--debug-equation', de]
-    if bug_report:
-        haskell_args += ['--bug-report', str(spec_file.with_suffix(''))]
-    if depth is not None:
-        prove_args += ['--depth', str(depth)]
-    if claims:
-        prove_args += ['--claims', ','.join(claims)]
-    if exclude_claims:
-        prove_args += ['--exclude', ','.join(exclude_claims)]
-    final_state = kevm.prove(spec_file, spec_module_name=spec_module, args=prove_args, haskell_args=haskell_args)
-    if minimize:
-        final_state = minimize_term(final_state)
-    print(kevm.pretty_print(final_state) + '\n')
-    if not (type(final_state) is KApply and final_state.label.name == '#Top'):
-        _LOGGER.error('Proof failed!')
-        sys.exit(1)
+    kevm = KEVM(definition_dir)
+    cfgid, kcfg = get_cfg_for_spec(
+        kevm,
+        spec_file,
+        save_directory=save_directory,
+        spec_module_name=spec_module,
+        include_dirs=[Path(i) for i in includes],
+        md_selector=md_selector,
+        claim_labels=claim_labels,
+        exclude_claim_labels=exclude_claim_labels,
+    )
+
+    kcfg_show = KCFGShow(kevm)
+    res_lines = kcfg_show.show(
+        cfgid,
+        kcfg,
+        nodes=nodes,
+        node_deltas=node_deltas,
+        to_module=to_module,
+        minimize=minimize,
+        node_printer=kevm.short_info,
+    )
+    print('\n'.join(res_lines))
+
+
+def exec_view_kcfg(
+    definition_dir: Path,
+    spec_file: Path,
+    save_directory: Optional[Path] = None,
+    includes: Iterable[str] = (),
+    claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] = (),
+    spec_module: Optional[str] = None,
+    md_selector: Optional[str] = None,
+    **kwargs: Any,
+) -> None:
+    kevm = KEVM(definition_dir)
+    _, kcfg = get_cfg_for_spec(
+        kevm,
+        spec_file,
+        save_directory=save_directory,
+        spec_module_name=spec_module,
+        include_dirs=[Path(i) for i in includes],
+        md_selector=md_selector,
+        claim_labels=claim_labels,
+        exclude_claim_labels=exclude_claim_labels,
+    )
+
+    viewer = KCFGViewer(kcfg, kevm, node_printer=kevm.short_info)
+    viewer.run()
 
 
 def exec_foundry_prove(
-    profile: bool,
     foundry_out: Path,
-    includes: List[str],
-    debug_equations: List[str],
-    bug_report: bool,
-    depth: Optional[int],
+    max_depth: int = 1000,
+    max_iterations: Optional[int] = None,
     reinit: bool = False,
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
     workers: int = 1,
-    minimize: bool = True,
-    lemmas: Iterable[str] = (),
     simplify_init: bool = True,
-    retry: bool = False,
+    break_every_step: bool = False,
+    break_on_jumpi: bool = False,
+    break_on_calls: bool = True,
+    implication_every_block: bool = True,
+    rpc_base_port: Optional[int] = None,
+    bug_report: bool = False,
+    rpc_command: Optional[str] = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
-    if workers <= 0:
-        raise ValueError(f'Must have at least one worker, found: --workers {workers}')
-    definition_dir = foundry_out / 'kompiled'
-    use_directory = foundry_out / 'specs'
-    use_directory.mkdir(parents=True, exist_ok=True)
-    kcfgs_dir = foundry_out / 'kcfgs'
-    if not kcfgs_dir.exists():
-        kcfgs_dir.mkdir()
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
-
-    json_paths = _contract_json_paths(foundry_out)
-    contracts = [_contract_from_json(json_path) for json_path in json_paths]
-    all_tests = [
-        f'{contract.name}.{method.name}'
-        for contract in contracts
-        if contract.name.endswith('Test')
-        for method in contract.methods
-        if method.name.startswith('test')
-    ]
-    all_non_tests = [
-        f'{contract.name}.{method.name}'
-        for contract in contracts
-        for method in contract.methods
-        if f'{contract.name}.{method.name}' not in all_tests
-    ]
-    unfound_tests: List[str] = []
-    tests = list(tests)
-    if not tests:
-        tests = all_tests
-    for _t in tests:
-        if _t not in (all_tests + all_non_tests):
-            unfound_tests.append(_t)
-    for _t in exclude_tests:
-        if _t not in all_tests:
-            unfound_tests.append(_t)
-        if _t in tests:
-            tests.remove(_t)
-    _LOGGER.info(f'Running tests: {tests}')
-    if unfound_tests:
-        raise ValueError(f'Test identifiers not found: {unfound_tests}')
-
-    kcfgs: Dict[str, Tuple[KCFG, Path]] = {}
-    for test in tests:
-        kcfg_file = kcfgs_dir / f'{test}.json'
-        if reinit or not kcfg_file.exists():
-            _LOGGER.info(f'Initializing KCFG for test: {test}')
-            contract_name, method_name = test.split('.')
-            contract = [c for c in contracts if c.name == contract_name][0]
-            method = [m for m in contract.methods if m.name == method_name][0]
-            empty_config = foundry.definition.empty_config(GENERATED_TOP_CELL)
-            cfg = method_to_cfg(empty_config, contract, method)
-            init_term = cfg.get_unique_init().cterm.kast
-            target_term = cfg.get_unique_target().cterm.kast
-            _LOGGER.info(f'Expanding macros in initial state for test: {test}')
-            init_term = KDefinition__expand_macros(foundry.definition, init_term)
-            _LOGGER.info(f'Expanding macros in target state for test: {test}')
-            target_term = KDefinition__expand_macros(foundry.definition, target_term)
-            if simplify_init:
-                _LOGGER.info(f'Simplifying initial state for test: {test}')
-                init_term = foundry.simplify(CTerm(init_term))
-                _LOGGER.info(f'Simplifying target state for test: {test}')
-                target_term = foundry.simplify(CTerm(target_term))
-            cfg = KCFG__replace_node(cfg, cfg.get_unique_init().id, CTerm(init_term))
-            cfg = KCFG__replace_node(cfg, cfg.get_unique_target().id, CTerm(target_term))
-            kcfgs[test] = (cfg, kcfg_file)
-            with open(kcfg_file, 'w') as kf:
-                kf.write(json.dumps(cfg.to_dict()))
-                kf.close()
-            _LOGGER.info(f'Wrote file: {kcfg_file}')
-        else:
-            with open(kcfg_file, 'r') as kf:
-                kcfgs[test] = (KCFG.from_dict(json.loads(kf.read())), kcfg_file)
-
-    lemma_rules = [KRule(KToken(lr, 'K'), att=KAtt({'simplification': ''})) for lr in lemmas]
-
-    def prove_it(_id_and_cfg: Tuple[str, Tuple[KCFG, Path]]) -> bool:
-        _cfg_id, (_cfg, _cfg_path) = _id_and_cfg
-        if len(_cfg.frontier) == 0:
-            return True
-        _init_node = _cfg.frontier[0]
-        _target_node = _cfg.get_unique_target()
-        _claim = KCFG.Edge(_init_node, _target_node, mlTop(), -1).to_claim()
-        _claim_id = _cfg_id.replace('.', '-').replace('_', '-')
-        _, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
-        if not is_top(result) and retry:
-            _LOGGER.warning(f'Retrying proof once: {_cfg_id}')
-            _, result = KProve_prove_claim(foundry, _claim, _claim_id, _LOGGER, depth=depth, lemmas=lemma_rules)
-        _cfg.add_expanded(_init_node.id)
-        if is_top(result):
-            _cfg.create_edge(_cfg.get_unique_init().id, _cfg.get_unique_target().id, mlTop(), -1)
-            _LOGGER.info(f'Proof passed: {_cfg_id}')
-        else:
-            _cfg.add_expanded(_init_node.id)
-            for result_state in flatten_label('#Or', result):
-                result_state = sanitize_config(foundry.definition, result_state)
-                new_node = _cfg.get_or_create_node(CTerm(result_state))
-                _cfg.create_edge(_cfg.get_unique_init().id, new_node.id, mlTop(), -1)
-                if minimize:
-                    result_state = minimize_term(result_state)
-                _LOGGER.error(f'Proof failed: {_cfg_id}\n{foundry.pretty_print(result_state)}')
-        write_cfg(_cfg, _cfg_path)
-        failure_nodes = _cfg.frontier + _cfg.stuck
-        return len(failure_nodes) == 0
-
-    with ProcessPool(ncpus=workers) as process_pool:
-        foundry.close_kore_rpc()
-        results = process_pool.map(prove_it, kcfgs.items())
-        process_pool.close()
-
+    results = foundry_prove(
+        foundry_out=foundry_out,
+        max_depth=max_depth,
+        max_iterations=max_iterations,
+        reinit=reinit,
+        tests=tests,
+        exclude_tests=exclude_tests,
+        workers=workers,
+        simplify_init=simplify_init,
+        break_every_step=break_every_step,
+        break_on_jumpi=break_on_jumpi,
+        break_on_calls=break_on_calls,
+        implication_every_block=implication_every_block,
+        rpc_base_port=rpc_base_port,
+        bug_report=bug_report,
+        rpc_command=rpc_command,
+    )
     failed = 0
-    for (cid, _), succeeded in zip(kcfgs.items(), results, strict=True):
-        if succeeded:
-            print(f'PASSED: {cid}')
+    for pid, r in results.items():
+        if r:
+            print(f'PROOF PASSED: {pid}')
         else:
-            print(f'FAILED: {cid}')
             failed += 1
+            print(f'PROOF FAILED: {pid}')
     sys.exit(failed)
 
 
 def exec_foundry_show(
-    profile: bool,
     foundry_out: Path,
     test: str,
     nodes: Iterable[str] = (),
     node_deltas: Iterable[Tuple[str, str]] = (),
+    to_module: bool = False,
     minimize: bool = True,
     **kwargs: Any,
 ) -> None:
-    definition_dir = foundry_out / 'kompiled'
-    use_directory = foundry_out / 'specs'
-    use_directory.mkdir(parents=True, exist_ok=True)
-    kcfgs_dir = foundry_out / 'kcfgs'
-    foundry = Foundry(definition_dir, profile=profile, use_directory=use_directory)
-    kcfg_file = kcfgs_dir / f'{test}.json'
-    with open(kcfg_file, 'r') as kf:
-        kcfg = KCFG.from_dict(json.loads(kf.read()))
-        list(map(print, kcfg.pretty(foundry)))
-    for node_id in nodes:
-        kast = kcfg.node(node_id).cterm.kast
-        if minimize:
-            kast = minimize_term(kast)
-        print(f'\n\nNode {node_id}:\n\n{foundry.pretty_print(kast)}\n')
-    for node_id_1, node_id_2 in node_deltas:
-        config_1 = kcfg.node(node_id_1).cterm.config
-        config_2 = kcfg.node(node_id_2).cterm.config
-        config_delta = push_down_rewrites(KRewrite(config_1, config_2))
-        if minimize:
-            config_delta = minimize_term(config_delta)
-        print(f'\n\nState Delta {node_id_1} => {node_id_2}:\n\n{foundry.pretty_print(config_delta)}\n')
+    output = foundry_show(
+        foundry_out=foundry_out,
+        test=test,
+        nodes=nodes,
+        node_deltas=node_deltas,
+        to_module=to_module,
+        minimize=minimize,
+    )
+    print(output)
 
 
-def exec_foundry_list(
-    profile: bool,
-    foundry_out: Path,
-    details: bool = True,
-    **kwargs: Any,
-) -> None:
-    kcfgs_dir = foundry_out / 'kcfgs'
-    pattern = '*.json'
-    paths = kcfgs_dir.glob(pattern)
-    for kcfg_file in paths:
-        with open(kcfg_file, 'r') as kf:
-            kcfg = KCFG.from_dict(json.loads(kf.read()))
-        kcfg_name = kcfg_file.name[0:-5]
-        total_nodes = len(kcfg.nodes)
-        frontier_nodes = len(kcfg.frontier)
-        stuck_nodes = len(kcfg.stuck)
-        proven = 'failed'
-        if stuck_nodes == 0:
-            proven = 'pending'
-            if frontier_nodes == 0:
-                proven = 'passed'
-        print(f'{kcfg_name}: {proven}')
-        if details:
-            print(f'    nodes: {total_nodes}')
-            print(f'    frontier: {frontier_nodes}')
-            print(f'    stuck: {stuck_nodes}')
-            print()
+def exec_foundry_to_dot(foundry_out: Path, test: str, **kwargs: Any) -> None:
+    foundry_to_dot(foundry_out=foundry_out, test=test)
+
+
+def exec_foundry_list(foundry_out: Path, details: bool = True, **kwargs: Any) -> None:
+    stats = foundry_list(foundry_out=foundry_out)
+    delim = '\n\n' if details else '\n'
+    output = delim.join(stat.pretty(details=details) for stat in stats)
+    print(output)
 
 
 def exec_run(
     definition_dir: Path,
-    profile: bool,
     input_file: Path,
     term: bool,
     parser: Optional[str],
@@ -486,7 +459,6 @@ def exec_run(
         definition_dir=Path(definition_dir),
         input_file=Path(input_file),
         depth=depth,
-        profile=profile,
         term=term,
         no_expand_macros=not expand_macros,
         parser=parser,
@@ -494,6 +466,86 @@ def exec_run(
     )
     print(krun_result.stdout)
     sys.exit(krun_result.returncode)
+
+
+def exec_foundry_view_kcfg(foundry_out: Path, test: str, **kwargs: Any) -> None:
+    kcfgs_dir = foundry_out / 'kcfgs'
+    contract_name = test.split('.')[0]
+    foundry = Foundry(foundry_out)
+    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+
+    def _short_info(cterm: CTerm) -> Iterable[str]:
+        return foundry.short_info_for_contract(contract_name, cterm)
+
+    def _custom_view(elem: KCFGElem) -> Iterable[str]:
+        return foundry.custom_view(contract_name, elem)
+
+    viewer = KCFGViewer(kcfg, foundry.kevm, node_printer=_short_info, custom_view=_custom_view)
+    viewer.run()
+
+
+def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, **kwargs: Any) -> None:
+    foundry_remove_node(foundry_out=foundry_out, test=test, node=node)
+
+
+def exec_foundry_simplify_node(
+    foundry_out: Path,
+    test: str,
+    node: str,
+    replace: bool = False,
+    minimize: bool = True,
+    bug_report: bool = False,
+    **kwargs: Any,
+) -> None:
+    pretty_term = foundry_simplify_node(
+        foundry_out=foundry_out,
+        test=test,
+        node=node,
+        replace=replace,
+        minimize=minimize,
+        bug_report=bug_report,
+    )
+    print(f'Simplified:\n{pretty_term}')
+
+
+def exec_foundry_step_node(
+    foundry_out: Path,
+    test: str,
+    node: str,
+    repeat: int = 1,
+    depth: int = 1,
+    bug_report: bool = False,
+    **kwargs: Any,
+) -> None:
+    foundry_step_node(
+        foundry_out=foundry_out,
+        test=test,
+        node=node,
+        repeat=repeat,
+        depth=depth,
+        bug_report=bug_report,
+    )
+
+
+def exec_foundry_section_edge(
+    foundry_out: Path,
+    test: str,
+    edge: Tuple[str, str],
+    sections: int = 2,
+    replace: bool = False,
+    bug_report: bool = False,
+    **kwargs: Any,
+) -> None:
+    foundry_section_edge(
+        foundry_out=foundry_out,
+        test=test,
+        edge=edge,
+        sections=sections,
+        replace=replace,
+        bug_report=bug_report,
+    )
 
 
 # Helpers
@@ -509,8 +561,101 @@ def _create_argument_parser() -> ArgumentParser:
     shared_args = ArgumentParser(add_help=False)
     shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
     shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
-    shared_args.add_argument('--profile', default=False, action='store_true', help='Coarse process-level profiling.')
     shared_args.add_argument('--workers', '-j', default=1, type=int, help='Number of processes to run in parallel.')
+
+    display_args = ArgumentParser(add_help=False)
+    display_args.add_argument('--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.')
+    display_args.add_argument('--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.')
+
+    rpc_args = ArgumentParser(add_help=False)
+    rpc_args.add_argument(
+        '--rpc-base-port',
+        dest='rpc_base_port',
+        type=int,
+        help='Base port to use for RPC server invocations.',
+    )
+    rpc_args.add_argument(
+        '--bug-report',
+        default=False,
+        action='store_true',
+        help='Generate a haskell-backend bug report for the execution.',
+    )
+
+    explore_args = ArgumentParser(add_help=False)
+    explore_args.add_argument(
+        '--break-every-step',
+        dest='break_every_step',
+        default=False,
+        action='store_true',
+        help='Store a node for every EVM opcode step (expensive).',
+    )
+    explore_args.add_argument(
+        '--break-on-jumpi',
+        dest='break_on_jumpi',
+        default=False,
+        action='store_true',
+        help='Store a node for every EVM jump opcode.',
+    )
+    explore_args.add_argument(
+        '--break-on-calls',
+        dest='break_on_calls',
+        default=True,
+        action='store_true',
+        help='Store a node for every EVM call made.',
+    )
+    explore_args.add_argument(
+        '--no-break-on-calls',
+        dest='break_on_calls',
+        action='store_false',
+        help='Do not store a node for every EVM call made.',
+    )
+    explore_args.add_argument(
+        '--implication-every-block',
+        dest='implication_every_block',
+        default=True,
+        action='store_true',
+        help='Check subsumption into target state every basic block, not just at terminal nodes.',
+    )
+    explore_args.add_argument(
+        '--no-implication-every-block',
+        dest='implication_every_block',
+        action='store_false',
+        help='Do not check subsumption into target state every basic block, not just at terminal nodes.',
+    )
+    explore_args.add_argument(
+        '--simplify-init',
+        dest='simplify_init',
+        default=True,
+        action='store_true',
+        help='Simplify the initial and target states at startup.',
+    )
+    explore_args.add_argument(
+        '--no-simplify-init',
+        dest='simplify_init',
+        action='store_false',
+        help='Do not simplify the initial and target states at startup.',
+    )
+    explore_args.add_argument(
+        '--max-depth',
+        dest='max_depth',
+        default=1000,
+        type=int,
+        help='Store every Nth state in the CFG for inspection.',
+    )
+    explore_args.add_argument(
+        '--max-iterations',
+        dest='max_iterations',
+        default=None,
+        type=int,
+        help='Store every Nth state in the CFG for inspection.',
+    )
+
+    explore_args.add_argument(
+        '--with-custom-rpc',
+        dest='rpc_command',
+        type=str,
+        help='Custom command to start RPC server',
+    )
 
     k_args = ArgumentParser(add_help=False)
     k_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
@@ -521,38 +666,19 @@ def _create_argument_parser() -> ArgumentParser:
     k_args.add_argument('--syntax-module', default=None, type=str, help='Name of the syntax module.')
     k_args.add_argument('--spec-module', default=None, type=str, help='Name of the spec module.')
     k_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
+    k_args.add_argument(
+        '--md-selector',
+        type=str,
+        help='Code selector expression to use when reading markdown.',
+    )
 
     kprove_args = ArgumentParser(add_help=False)
     kprove_args.add_argument(
         '--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.'
     )
-    kprove_args.add_argument(
-        '--bug-report',
-        default=False,
-        action='store_true',
-        help='Generate a haskell-backend bug report for the execution.',
-    )
-    kprove_args.add_argument(
-        '--lemma',
-        dest='lemmas',
-        default=[],
-        action='append',
-        help='Additional lemmas to include as simplification rules during execution.',
-    )
-    kprove_args.add_argument(
-        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize prover output.'
-    )
-    kprove_args.add_argument(
-        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize prover output.'
-    )
 
     k_kompile_args = ArgumentParser(add_help=False)
-    k_kompile_args.add_argument(
-        '--md-selector',
-        type=str,
-        default='k & ! nobytes & ! node',
-        help='Code selector expression to use when reading markdown.',
-    )
+    k_kompile_args.add_argument('--backend', type=KompileBackend, help='[llvm|haskell]')
     k_kompile_args.add_argument(
         '--emit-json',
         dest='emit_json',
@@ -563,6 +689,31 @@ def _create_argument_parser() -> ArgumentParser:
     k_kompile_args.add_argument(
         '--no-emit-json', dest='emit_json', action='store_false', help='Do not JSON definition after compilation.'
     )
+    k_kompile_args.add_argument(
+        '-ccopt',
+        dest='ccopts',
+        default=[],
+        action='append',
+        help='Additional arguments to pass to llvm-kompile.',
+    )
+    k_kompile_args.add_argument(
+        '--no-llvm-kompile',
+        dest='llvm_kompile',
+        default=True,
+        action='store_false',
+        help='Do not run llvm-kompile process.',
+    )
+    k_kompile_args.add_argument(
+        '--with-llvm-library',
+        dest='llvm_library',
+        default=False,
+        action='store_true',
+        help='Make kompile generate a dynamic llvm library.',
+    )
+    k_kompile_args.add_argument('-O0', dest='o0', default=False, action='store_true', help='Optimization level 0.')
+    k_kompile_args.add_argument('-O1', dest='o1', default=False, action='store_true', help='Optimization level 1.')
+    k_kompile_args.add_argument('-O2', dest='o2', default=False, action='store_true', help='Optimization level 2.')
+    k_kompile_args.add_argument('-O3', dest='o3', default=False, action='store_true', help='Optimization level 3.')
 
     evm_chain_args = ArgumentParser(add_help=False)
     evm_chain_args.add_argument(
@@ -592,6 +743,41 @@ def _create_argument_parser() -> ArgumentParser:
         help='Extra modules to import into generated main module.',
     )
 
+    spec_args = ArgumentParser(add_help=False)
+    spec_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
+    spec_args.add_argument('--save-directory', type=dir_path, help='Path to where CFGs are stored.')
+    spec_args.add_argument(
+        '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
+    )
+    spec_args.add_argument(
+        '--exclude-claim',
+        type=str,
+        dest='exclude_claim_labels',
+        action='append',
+        help='Skip listed claims, MODULE_NAME.claim-id',
+    )
+
+    kcfg_show_args = ArgumentParser(add_help=False)
+    kcfg_show_args.add_argument(
+        '--node',
+        type=str,
+        dest='nodes',
+        default=[],
+        action='append',
+        help='List of nodes to display as well.',
+    )
+    kcfg_show_args.add_argument(
+        '--node-delta',
+        type=arg_pair_of(str, str),
+        dest='node_deltas',
+        default=[],
+        action='append',
+        help='List of nodes to display delta for.',
+    )
+    kcfg_show_args.add_argument(
+        '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
+    )
+
     parser = ArgumentParser(prog='python3 -m kevm_pyk')
 
     command_parser = parser.add_subparsers(dest='command', required=True)
@@ -600,18 +786,41 @@ def _create_argument_parser() -> ArgumentParser:
         'kompile', help='Kompile KEVM specification.', parents=[shared_args, k_args, k_kompile_args]
     )
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-
-    prove_args = command_parser.add_parser('prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args])
-    prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    prove_args.add_argument(
-        '--claim', type=str, dest='claims', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
+    kompile_args.add_argument(
+        '--kompile-mode',
+        type=KEVMKompileMode,
+        default=KEVMKompileMode.STANDALONE,
+        help='KEVM kompile mode, [standalone|node].',
     )
-    prove_args.add_argument(
-        '--exclude-claim',
-        type=str,
-        dest='exclude_claims',
-        action='append',
-        help='Skip listed claims, MODULE_NAME.claim-id',
+    kompile_args.add_argument('--plugin-include', type=dir_path, help='Path to plugin include directory.')
+    kompile_args.add_argument('--libff-dir', type=dir_path, help='Path to libff include directory.')
+    kompile_args.add_argument(
+        '--target', type=KompileTarget, default=KompileTarget.LINUX, help='Compilation target, [linux|darwin].'
+    )
+    kompile_args.add_argument('--libcryptopp-dir', type=dir_path, help='Path to libcryptopp include directory.')
+    kompile_args.add_argument(
+        '--brew-root', type=dir_path, help='Path to homebrew root directory (only for --target-darwin).'
+    )
+    kompile_args.add_argument(
+        '--openssl-root', type=dir_path, help='Path to openssl root directory (only for --target-darwin).'
+    )
+
+    _ = command_parser.add_parser(
+        'prove',
+        help='Run KEVM proof.',
+        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args, spec_args],
+    )
+
+    _ = command_parser.add_parser(
+        'view-kcfg',
+        help='Display tree view of CFG',
+        parents=[shared_args, k_args, spec_args],
+    )
+
+    _ = command_parser.add_parser(
+        'show-kcfg',
+        help='Display tree show of CFG',
+        parents=[shared_args, k_args, kcfg_show_args, spec_args, display_args],
     )
 
     run_args = command_parser.add_parser(
@@ -684,7 +893,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_prove_args = command_parser.add_parser(
         'foundry-prove',
         help='Run Foundry Proof.',
-        parents=[shared_args, k_args, kprove_args],
+        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args],
     )
     foundry_prove_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_prove_args.add_argument(
@@ -708,82 +917,104 @@ def _create_argument_parser() -> ArgumentParser:
         dest='reinit',
         default=False,
         action='store_true',
-        help='Reinitialize KCFGs even if they already exist.',
-    )
-    foundry_prove_args.add_argument(
-        '--simplify-init',
-        dest='simplify_init',
-        default=True,
-        action='store_true',
-        help='Simplify the initial and target states at startup.',
-    )
-    foundry_prove_args.add_argument(
-        '--no-simplify-init',
-        dest='simplify_init',
-        action='store_false',
-        help='Do not simplify the initial and target states at startup.',
-    )
-    foundry_prove_args.add_argument(
-        '--retry',
-        dest='retry',
-        default=False,
-        action='store_true',
-        help='Retry failing proofs once.',
+        help='Reinitialize CFGs even if they already exist.',
     )
 
     foundry_show_args = command_parser.add_parser(
         'foundry-show',
         help='Display a given Foundry CFG.',
-        parents=[shared_args, k_args],
+        parents=[shared_args, k_args, kcfg_show_args, display_args],
     )
     foundry_show_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
-    foundry_show_args.add_argument(
-        '--node',
-        type=str,
-        dest='nodes',
-        default=[],
-        action='append',
-        help='List of nodes to display as well.',
+
+    foundry_to_dot = command_parser.add_parser(
+        'foundry-to-dot',
+        help='Dump the given CFG for the test as DOT for visualization.',
+        parents=[shared_args],
     )
-    foundry_show_args.add_argument(
-        '--node-delta',
-        type=KIT.arg_pair_of(str, str),
-        dest='node_deltas',
-        default=[],
-        action='append',
-        help='List of nodes to display delta for.',
-    )
-    foundry_show_args.add_argument(
-        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.'
-    )
-    foundry_show_args.add_argument(
-        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
-    )
+    foundry_to_dot.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_to_dot.add_argument('test', type=str, help='Display the CFG for this test.')
 
     foundry_list_args = command_parser.add_parser(
         'foundry-list',
-        help='List information about KCFGs on disk',
+        help='List information about CFGs on disk',
         parents=[shared_args, k_args],
     )
     foundry_list_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_list_args.add_argument(
-        '--details', dest='details', default=True, action='store_true', help='Information about progress on each KCFG.'
+        '--details', dest='details', default=True, action='store_true', help='Information about progress on each CFG.'
     )
-    foundry_list_args.add_argument('--no-details', dest='details', action='store_false', help='Just list the KCFGs.')
+    foundry_list_args.add_argument('--no-details', dest='details', action='store_false', help='Just list the CFGs.')
+
+    foundry_view_kcfg_args = command_parser.add_parser(
+        'foundry-view-kcfg',
+        help='Display tree view of CFG',
+        parents=[shared_args],
+    )
+    foundry_view_kcfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_view_kcfg_args.add_argument('test', type=str, help='View the CFG for this test.')
+
+    foundry_remove_node = command_parser.add_parser(
+        'foundry-remove-node',
+        help='Remove a node and its successors.',
+        parents=[shared_args],
+    )
+    foundry_remove_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
+    foundry_remove_node.add_argument('node', type=str, help='Node to remove CFG subgraph from.')
+
+    foundry_simplify_node = command_parser.add_parser(
+        'foundry-simplify-node',
+        help='Simplify a given node, and potentially replace it.',
+        parents=[shared_args, rpc_args, display_args],
+    )
+    foundry_simplify_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_simplify_node.add_argument('test', type=str, help='Simplify node in this CFG.')
+    foundry_simplify_node.add_argument('node', type=str, help='Node to simplify in CFG.')
+    foundry_simplify_node.add_argument(
+        '--replace', default=False, help='Replace the original node with the simplified variant in the graph.'
+    )
+
+    foundry_step_node = command_parser.add_parser(
+        'foundry-step-node',
+        help='Step from a given node, adding it to the CFG.',
+        parents=[shared_args, rpc_args],
+    )
+    foundry_step_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
+    foundry_step_node.add_argument('node', type=str, help='Node to step from in CFG.')
+    foundry_step_node.add_argument(
+        '--repeat', type=int, default=1, help='How many node expansions to do from the given start node (>= 1).'
+    )
+    foundry_step_node.add_argument(
+        '--depth', type=int, default=1, help='How many steps to take from initial node on edge.'
+    )
+
+    foundry_section_edge = command_parser.add_parser(
+        'foundry-section-edge',
+        help='Given an edge in the graph, cut it into sections to get intermediate nodes.',
+        parents=[shared_args, rpc_args],
+    )
+    foundry_section_edge.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_section_edge.add_argument('test', type=str, help='Section edge in this CFG.')
+    foundry_section_edge.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
+    foundry_section_edge.add_argument(
+        '--sections', type=int, default=2, help='Number of sections to make from edge (>= 2).'
+    )
 
     return parser
 
 
 def _loglevel(args: Namespace) -> int:
-    if args.verbose or args.profile:
-        return logging.INFO
-
     if args.debug:
         return logging.DEBUG
+
+    if args.verbose:
+        return logging.INFO
 
     return logging.WARNING
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
