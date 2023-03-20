@@ -355,6 +355,8 @@ The `#next [_]` operator initiates execution by:
                   | #stackOverflow  ( WordStack , OpCode ) [macro]
  // ------------------------------------------------------------------------
     rule #stackUnderflow(WS, OP:OpCode) => #sizeWordStack(WS) <Int #stackNeeded(OP)
+    rule #sizeWordStack(_, 0) <Int N => false requires notBool (N >Int 0) [simplification]
+    rule #sizeWordStack(_, 0) +Int N <Int N => false [simplification]
 
     rule #stackOverflow (WS, OP) => #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
 
