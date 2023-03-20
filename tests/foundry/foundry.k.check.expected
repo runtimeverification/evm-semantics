@@ -1034,6 +1034,17 @@ module BROADCASTTEST-BIN-RUNTIME
 
 endmodule
 
+module CONSTANTS-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= ConstantsContract
+    
+    syntax ConstantsContract ::= "Constants" [symbol(), klabel(contract_Constants)]
+    
+      
+
+endmodule
+
 module CONTRACT-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -2897,6 +2908,12 @@ module LOOPSTEST-BIN-RUNTIME
     
     syntax LoopsTestMethod ::= "testSumToNBroken" "(" Int ")" [symbol(), klabel(method_LoopsTest_testSumToNBroken)]
     
+    syntax LoopsTestMethod ::= "test_sum_10" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_10)]
+    
+    syntax LoopsTestMethod ::= "test_sum_100" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_100)]
+    
+    syntax LoopsTestMethod ::= "test_sum_1000" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_1000)]
+    
     syntax LoopsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_LoopsTest_vm)]
     
     rule  ( LoopsTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
@@ -2949,6 +2966,15 @@ module LOOPSTEST-BIN-RUNTIME
        ensures #rangeUInt ( 256 , V0_n )
       
     
+    rule  ( LoopsTest . test_sum_10 ( ) => #abiCallData ( "test_sum_10" , .TypedArgs ) )
+      
+    
+    rule  ( LoopsTest . test_sum_100 ( ) => #abiCallData ( "test_sum_100" , .TypedArgs ) )
+      
+    
+    rule  ( LoopsTest . test_sum_1000 ( ) => #abiCallData ( "test_sum_1000" , .TypedArgs ) )
+      
+    
     rule  ( LoopsTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
     
@@ -2998,6 +3024,15 @@ module LOOPSTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "testSumToNBroken" ) => 1318374999 )
+      
+    
+    rule  ( selector ( "test_sum_10" ) => 1087009050 )
+      
+    
+    rule  ( selector ( "test_sum_100" ) => 1519953344 )
+      
+    
+    rule  ( selector ( "test_sum_1000" ) => 222767225 )
       
     
     rule  ( selector ( "vm" ) => 980845667 )
@@ -3240,6 +3275,35 @@ module MYTOKEN-BIN-RUNTIME
       
     
     rule  ( selector ( "token" ) => 4228666474 )
+      
+
+endmodule
+
+module NOIMPORT-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= NoImportContract
+    
+    syntax NoImportContract ::= "NoImport" [symbol(), klabel(contract_NoImport)]
+    
+      
+    
+    syntax Bytes ::= NoImportContract "." NoImportMethod [function(), symbol(), klabel(method_NoImport)]
+    
+    syntax NoImportMethod ::= "setUp" "(" ")" [symbol(), klabel(method_NoImport_setUp)]
+    
+    syntax NoImportMethod ::= "test_source_map" "(" ")" [symbol(), klabel(method_NoImport_test_source_map)]
+    
+    rule  ( NoImport . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
+      
+    
+    rule  ( NoImport . test_source_map ( ) => #abiCallData ( "test_source_map" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "setUp" ) => 177362148 )
+      
+    
+    rule  ( selector ( "test_source_map" ) => 3563497491 )
       
 
 endmodule
@@ -6924,6 +6988,7 @@ module FOUNDRY-MAIN
     imports public ASSUMETEST-BIN-RUNTIME
     imports public BLOCKPARAMSTEST-BIN-RUNTIME
     imports public BROADCASTTEST-BIN-RUNTIME
+    imports public CONSTANTS-BIN-RUNTIME
     imports public CONTRACT-BIN-RUNTIME
     imports public CONTRACTTEST-BIN-RUNTIME
     imports public CONTRACTBTEST-BIN-RUNTIME
@@ -6950,6 +7015,7 @@ module FOUNDRY-MAIN
     imports public MOCKCALLTEST-BIN-RUNTIME
     imports public MYIERC20-BIN-RUNTIME
     imports public MYTOKEN-BIN-RUNTIME
+    imports public NOIMPORT-BIN-RUNTIME
     imports public OWNERUPONLY-BIN-RUNTIME
     imports public OWNERUPONLYTEST-BIN-RUNTIME
     imports public ADDITIONALTOKEN-BIN-RUNTIME

@@ -1,5 +1,6 @@
 import logging
 import sys
+from enum import Enum
 from pathlib import Path
 from typing import Final, Iterable, List, Optional
 
@@ -8,7 +9,7 @@ from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KVariable, build_assoc
 from pyk.kast.manip import flatten_label, get_cell, split_config_from
 from pyk.kast.outer import KFlatModule
-from pyk.ktool.kompile import KompileBackend, kompile
+from pyk.ktool.kompile import KompileBackend, LLVMKompileType, kompile
 from pyk.ktool.kprint import SymbolTable, paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
@@ -20,6 +21,11 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 # KEVM class
+
+
+class KEVMKompileMode(Enum):
+    NODE = 'node'
+    STANDALONE = 'standalone'
 
 
 class KEVM(KProve, KRun):
@@ -68,6 +74,7 @@ class KEVM(KProve, KRun):
         ccopts: Iterable[str] = (),
         llvm_kompile: bool = True,
         optimization: int = 0,
+        llvm_kompile_type: Optional[LLVMKompileType] = None,
     ) -> 'KEVM':
         try:
             kompile(
@@ -85,6 +92,7 @@ class KEVM(KProve, KRun):
                 ccopts=ccopts,
                 no_llvm_kompile=not llvm_kompile,
                 opt_level=optimization or None,
+                llvm_kompile_type=llvm_kompile_type,
             )
         except RuntimeError as err:
             sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')

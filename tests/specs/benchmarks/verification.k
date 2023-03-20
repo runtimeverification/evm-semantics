@@ -102,7 +102,7 @@ module VERIFICATION
     rule maxUInt256 &Int X => X requires #rangeUInt(256, X) [simplification]
 
     // 2^256 - 2^160 = 0xff..ff00..00 (96 1's followed by 160 0's)
-    rule 115792089237316195423570985007226406215939081747436879206741300988257197096960 &Int ADDR => 0
+    rule notMaxUInt160 &Int ADDR => 0
       requires #rangeAddress(ADDR)
       [simplification]
 

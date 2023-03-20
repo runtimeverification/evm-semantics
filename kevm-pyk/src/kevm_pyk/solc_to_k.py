@@ -69,7 +69,7 @@ class Contract:
                 args.append(KEVM.abi_type(input_type, KVariable(input_name)))
                 rp = _range_predicate(KVariable(input_name), input_type)
                 if rp is None:
-                    _LOGGER.warning(
+                    _LOGGER.info(
                         f'Unsupported ABI type for method {contract_name}.{prod_klabel.name}, will not generate calldata sugar: {input_type}'
                     )
                     return None
@@ -101,11 +101,13 @@ class Contract:
             return klabel(args)
 
     name: str
+    contract_json: Dict
+    contract_id: int
+    contract_path: str
     bytecode: str
+    raw_sourcemap: Optional[str]
     methods: Tuple[Method, ...]
-    test_methods: Tuple[Method, ...]
     fields: FrozenDict
-    srcmap: Optional[Dict[int, str]]
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
         def _get_method_abi(_mname: str) -> Dict:
@@ -115,40 +117,42 @@ class Contract:
             raise ValueError(f'Method not found in abi: {_mname}')
 
         self.name = contract_name
-        self.bytecode = (
-            contract_json['evm']['deployedBytecode']['object']
-            if not foundry
-            else contract_json['deployedBytecode']['object']
-        ).replace('0x', '')
+        self.contract_json = contract_json
+
+        self.contract_id = self.contract_json['id']
+        self.contract_path = self.contract_json['ast']['absolutePath']
+
+        evm = self.contract_json['evm'] if not foundry else self.contract_json
+
+        deployed_bytecode = evm['deployedBytecode']
+        self.bytecode = deployed_bytecode['object'].replace('0x', '')
+        self.raw_sourcemap = deployed_bytecode['sourceMap'] if 'sourceMap' in deployed_bytecode else None
+
+        method_ids = evm['methodIdentifiers'] if 'methodIdentifiers' in evm else {}
         _methods = []
-        if not foundry and 'evm' in contract_json and 'methodIdentifiers' in contract_json['evm']:
-            _method_identifiers = contract_json['evm']['methodIdentifiers']
-        elif foundry and 'methodIdentifiers' in contract_json:
-            _method_identifiers = contract_json['methodIdentifiers']
-        else:
-            _method_identifiers = []
-            _LOGGER.warning(f"Could not find member 'methodIdentifiers' while processing contract: {self.name}")
-        for msig in _method_identifiers:
+        for msig in method_ids:
             mname = msig.split('(')[0]
-            mid = int(_method_identifiers[msig], 16)
+            mid = int(method_ids[msig], 16)
             _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
             _methods.append(_m)
         self.methods = tuple(_methods)
-        if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
-            _LOGGER.warning(f"Could not find member 'storageLayout' while processing contract: {self.name}")
-            self.fields = FrozenDict({})
-        else:
-            _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
+
+        self.fields = FrozenDict({})
+        if 'storageLayout' in self.contract_json and 'storage' in self.contract_json['storageLayout']:
+            _fields_list = [(_f['label'], int(_f['slot'])) for _f in self.contract_json['storageLayout']['storage']]
             _fields = {}
             for _l, _s in _fields_list:
                 if _l in _fields:
-                    _LOGGER.warning(f'Found duplicate field access key on contract {self.name}: {_l}')
+                    _LOGGER.info(f'Found duplicate field access key on contract {self.name}: {_l}')
                     continue
                 _fields[_l] = _s
             self.fields = FrozenDict(_fields)
 
-        self.srcmap = None
-        if len(self.bytecode) > 0:
+    @cached_property
+    def srcmap(self) -> Dict[int, Tuple[int, int, int, str, int]]:
+        _srcmap = {}
+
+        if len(self.bytecode) > 0 and self.raw_sourcemap is not None:
             instr_to_pc = {}
             pc = 0
             instr = 0
@@ -162,13 +166,24 @@ class Contract:
                 pc += 1
                 instr += 1
 
-            instr_srcmap = (
-                contract_json['evm']['deployedBytecode']['sourceMap']
-                if not foundry
-                else contract_json['deployedBytecode']['sourceMap']
-            ).split(';')
+            instrs_srcmap = self.raw_sourcemap.split(';')
 
-            self.srcmap = {instr_to_pc[instr]: src for instr, src in enumerate(instr_srcmap)}
+            s, l, f, j, m = (0, 0, 0, '', 0)
+            for i, instr_srcmap in enumerate(instrs_srcmap):
+                fields = instr_srcmap.split(':')
+                if len(fields) > 0 and fields[0] != '':
+                    s = int(fields[0])
+                if len(fields) > 1 and fields[1] != '':
+                    l = int(fields[1])
+                if len(fields) > 2 and fields[2] != '':
+                    f = int(fields[2])
+                if len(fields) > 3 and fields[3] != '':
+                    j = fields[3]
+                if len(fields) > 4 and fields[4] != '':
+                    m = int(fields[4])
+                _srcmap[i] = (s, l, f, j, m)
+
+        return _srcmap
 
     @staticmethod
     def contract_to_module_name(c: str, spec: bool = True) -> str:
@@ -298,6 +313,7 @@ def solc_compile(contract_file: Path) -> Dict[str, Any]:
                         'evm.deployedBytecode.object',
                         'evm.deployedBytecode.sourceMap',
                     ],
+                    '': ['ast'],
                 },
             },
         },
@@ -343,7 +359,7 @@ def _evm_base_sort(type_label: str) -> KSort:
     if type_label == 'string':
         return KSort('String')
 
-    _LOGGER.warning(f'Using generic sort K for type: {type_label}')
+    _LOGGER.info(f'Using generic sort K for type: {type_label}')
     return KSort('K')
 
 
@@ -400,7 +416,7 @@ def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
     if type_label == 'string':
         return TRUE
 
-    _LOGGER.warning(f'Unknown range predicate for type: {type_label}')
+    _LOGGER.info(f'Unknown range predicate for type: {type_label}')
     return None
 
 

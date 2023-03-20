@@ -51,7 +51,7 @@ run_kevm_pyk() {
     local pyk_command pyk_args
     pyk_command="$1" ; shift
     case "${pyk_command}" in
-        kompile|run|prove|solc-to-k|foundry-kompile|foundry-prove|view-kcfg)
+        kompile|run|prove|solc-to-k|foundry-kompile|foundry-prove|view-kcfg|show-kcfg)
             pyk_args=(--definition "${backend_dir}")
             pyk_args+=(-I "${INSTALL_INCLUDE}/kframework")
             ;;
@@ -65,63 +65,31 @@ run_kevm_pyk() {
 # User Commands
 
 run_kompile() {
-    local ccopts ccopt kompile_opts openssl_root
+    local kompile_opts openssl_root
 
-    kompile_opts=( "${run_file}" --emit-json )
-    ${pyk} || kompile_opts+=( --output-definition "${backend_dir}" )
-    ${pyk} || kompile_opts+=( -I "${INSTALL_INCLUDE}/kframework" )
-    ${pyk} || kompile_opts+=( --hook-namespaces "JSON KRYPTO BLOCKCHAIN" )
-    ${pyk} || ! ${debug} || kompile_opts+=( --debug )
+    ${pyk} || fatal 'Must supply --pyk with kevm kompile.'
 
-    if [[ ! -z ${concrete_rules_file} ]]; then
-        if [[ -f ${concrete_rules_file} ]]; then
-            ${pyk} || kompile_opts+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
-        else
-            fatal "Concrete rules file doesn't exist: ${concrete_rules_file}"
-        fi
-    fi
+    kompile_opts=( "${run_file}" )
 
     case "${backend}" in
-        haskell|foundry)   backend=haskell
-                           kompile_opts+=( --md-selector 'k & ! node')                          ;;
-        llvm)              kompile_opts+=( --md-selector 'k & ! node' )                         ;;&
-        node)              kompile_opts+=( --md-selector 'k & ! standalone' --no-llvm-kompile ) ;;&
+        haskell|foundry) backend=haskell ;;
+        node)            kompile_opts+=( --kompile-mode 'node' --no-llvm-kompile ) ;;&
         llvm|node) backend=llvm
-                   ccopts+=( -L${libff_dir}/lib -I${libff_dir}/include  )
-                   ccopts+=( ${plugin_include}/c/plugin_util.cpp        )
-                   ccopts+=( ${plugin_include}/c/crypto.cpp             )
-                   ccopts+=( ${plugin_include}/c/blake2.cpp             )
-                   ccopts+=( -g -std=c++14                              )
-                   ccopts+=( -lff -lcryptopp -lsecp256k1 -lssl -lcrypto )
-                   if [[ "$(uname -s)" == 'Linux' ]]; then
-                       ccopts+=( -lprocps )
-                   elif [[ "$(uname -s)" == 'Darwin' ]]; then
+                   kompile_opts+=( --plugin-include "${plugin_include}" --libff-dir "${libff_dir}" )
+                   if [[ "$(uname -s)" == 'Darwin' ]]; then
+                       kompile_opts+=( --target darwin )
                        openssl_root="$(brew --prefix openssl)"
                        brew_root="$(brew --prefix)"
-                       ccopts+=( -I${brew_root}/include -L/${brew_root}/lib -I${openssl_root}/include -L${openssl_root}/lib )
-                       ccopts+=( -I${libcryptopp_dir}/include -L/${libcryptopp_dir}/lib                                     )
+                       kompile_opts+=( --brew-root "${brew_root}" --openssl-root "${openssl_root}" --libcryptopp-dir "${libcryptopp_dir}" )
                    fi
-                   for ccopt in "${ccopts[@]}"; do
-                       if ${pyk}; then
-                           kompile_opts+=(-ccopt="${ccopt}")
-                       else
-                           kompile_opts+=(-ccopt "${ccopt}")
-                       fi
-                   done
                    ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
 
     kompile_opts+=(--backend ${backend})
-    if ${pyk} && ${debug}; then
-        kompile_opts+=( --debug )
-    fi
+    ! ${debug} || kompile_opts+=( --debug )
 
-    if ${pyk}; then
-        run_kevm_pyk kompile "${kompile_opts[@]}" "$@"
-    else
-        execute kompile "${kompile_opts[@]}" "$@"
-    fi
+    run_kevm_pyk kompile "${kompile_opts[@]}" "$@"
 }
 
 run_krun() {
@@ -350,8 +318,10 @@ kevm_host='127.0.0.1'
 [[ ! "${run_command}" == prove     ]] || backend=haskell
 [[ ! "${run_command}" == solc-to-k ]] || backend=haskell
 [[ ! "${run_command}" == view-kcfg ]] || backend=haskell
+[[ ! "${run_command}" == show-kcfg ]] || backend=haskell
 [[ ! "${run_command}" == foundry-* ]] || backend=foundry
 [[ ! "${run_command}" == interpret ]] || unparse=false
+[[ ! "${run_command}" == kompile   ]] || pyk=true
 args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -371,6 +341,7 @@ while [[ $# -gt 0 ]]; do
         --concrete-rules-file) concrete_rules_file="$2"        ; shift 2 ;;
         --verif-module)        verif_module="$2"               ; shift 2 ;;
         --pyk)                 pyk=true                        ; shift   ;;
+        --no-pyk)              pyk=false                       ; shift   ;;
         --max-counterexamples) max_counterexamples="$2"        ; shift 2 ;;
         --branching-allowed)   branching_allowed="$2"          ; shift 2 ;;
         --haskell-backend-arg) haskell_backend_command+=("$2") ; shift 2 ;;
@@ -395,7 +366,7 @@ if ${pyk}; then
 fi
 
 # get the run file
-if [[ "${run_command}" != foundry-* ]] && [[ "${run_command}" != 'view-kcfg' ]]; then
+if [[ "${run_command}" != foundry-* ]] && [[ "${run_command}" != *-kcfg ]]; then
     run_file="$1" ; shift
     if [[ "${run_file}" == '-' ]]; then
         tmp_input="$(mktemp)"
@@ -424,6 +395,7 @@ case "$run_command-$backend" in
     prove-@(haskell|foundry)             ) run_prove              "$@" ;;
     search-@(haskell)                    ) run_search             "$@" ;;
     view-kcfg-*                          ) run_kevm_pyk view-kcfg "$@" ;;
+    show-kcfg-*                          ) run_kevm_pyk show-kcfg "$@" ;;
     solc-to-k-*                          ) run_solc               "$@" ;;
     foundry-*                            ) run_foundry            "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
