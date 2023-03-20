@@ -3,7 +3,7 @@ import logging
 import shutil
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple
+from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple, Union
 
 from pyk.cli_utils import BugReport, check_file_path, ensure_dir_path
 from pyk.cterm import CTerm
@@ -274,7 +274,7 @@ def foundry_prove(
     break_on_calls: bool = True,
     implication_every_block: bool = True,
     bug_report: bool = False,
-    rpc_command: Optional[str] = None,
+    kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
     smt_timeout: Optional[int] = None,
     smt_retry_limit: Optional[int] = None,
 ) -> Dict[str, bool]:
@@ -341,18 +341,13 @@ def foundry_prove(
                 with KCFGExplore(
                     foundry.kevm,
                     bug_report=br,
+                    kore_rpc_command=kore_rpc_command,
                     smt_timeout=smt_timeout,
                     smt_retry_limit=smt_retry_limit,
                 ) as kcfg_explore:
                     kcfg = kcfg_explore.simplify(test, kcfg)
             kcfgs[test] = kcfg
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
-
-    if rpc_command is not None:
-        rpc_cmd = rpc_command.split(' ')
-        _LOGGER.info(f'Using RPC server !{rpc_cmd}')
-    else:
-        rpc_cmd = ['kore-rpc']
 
     return parallel_kcfg_explore(
         foundry.kevm,
@@ -368,7 +363,7 @@ def foundry_prove(
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
         bug_report=br,
-        rpc_cmd=rpc_cmd,
+        kore_rpc_command=kore_rpc_command,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
     )

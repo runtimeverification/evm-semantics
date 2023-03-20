@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
+from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport
@@ -65,7 +65,7 @@ def parallel_kcfg_explore(
     is_terminal: Optional[Callable[[CTerm], bool]] = None,
     extract_branches: Optional[Callable[[CTerm], Iterable[KInner]]] = None,
     bug_report: Optional[BugReport] = None,
-    rpc_cmd: Iterable[str] = ('kore-rpc',),
+    kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
     smt_timeout: Optional[int] = None,
     smt_retry_limit: Optional[int] = None,
 ) -> Dict[str, bool]:
@@ -96,7 +96,7 @@ def parallel_kcfg_explore(
         with KCFGExplore(
             kprove,
             bug_report=bug_report,
-            kore_rpc_command=rpc_cmd,
+            kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:

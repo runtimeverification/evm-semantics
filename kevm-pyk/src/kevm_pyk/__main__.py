@@ -4,7 +4,7 @@ import sys
 from argparse import ArgumentParser, Namespace
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
+from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union
 
 from pyk.cli_utils import BugReport, dir_path, file_path
 from pyk.cterm import CTerm
@@ -381,7 +381,7 @@ def exec_foundry_prove(
     break_on_calls: bool = True,
     implication_every_block: bool = True,
     bug_report: bool = False,
-    rpc_command: Optional[str] = None,
+    kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
     smt_timeout: Optional[int] = None,
     smt_retry_limit: Optional[int] = None,
     **kwargs: Any,
@@ -404,7 +404,7 @@ def exec_foundry_prove(
         break_on_calls=break_on_calls,
         implication_every_block=implication_every_block,
         bug_report=bug_report,
-        rpc_command=rpc_command,
+        kore_rpc_command=kore_rpc_command,
     )
     failed = 0
     for pid, r in results.items():
@@ -666,7 +666,7 @@ def _create_argument_parser() -> ArgumentParser:
 
     explore_args.add_argument(
         '--with-custom-rpc',
-        dest='rpc_command',
+        dest='kore_rpc_command',
         type=str,
         help='Custom command to start RPC server',
     )
