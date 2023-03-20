@@ -329,30 +329,34 @@ def foundry_prove(
             method = [m for m in contract.methods if m.name == method_name][0]
             empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
             kcfg = _method_to_cfg(empty_config, contract, method)
+
             _LOGGER.info(f'Expanding macros in initial state for test: {test}')
             init_term = kcfg.get_unique_init().cterm.kast
             init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
             init_cterm = CTerm(init_term)
 
-            _LOGGER.info(f'Computing definedness constraint for initial state for test: {test}')
-            with KCFGExplore(foundry.kevm, port=find_free_port(), bug_report=br) as kcfg_explore:
-                init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
-
-            kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
-
             _LOGGER.info(f'Expanding macros in target state for test: {test}')
             target_term = kcfg.get_unique_target().cterm.kast
             target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
-            kcfg.replace_node(kcfg.get_unique_target().id, CTerm(target_term))
-            if simplify_init:
-                with KCFGExplore(
-                    foundry.kevm,
-                    bug_report=br,
-                    kore_rpc_command=kore_rpc_command,
-                    smt_timeout=smt_timeout,
-                    smt_retry_limit=smt_retry_limit,
-                ) as kcfg_explore:
+            target_cterm = CTerm(target_term)
+            kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
+
+            _LOGGER.info(f'Starting KCFGExplore for test: {test}')
+            with KCFGExplore(
+                foundry.kevm,
+                bug_report=br,
+                kore_rpc_command=kore_rpc_command,
+                smt_timeout=smt_timeout,
+                smt_retry_limit=smt_retry_limit,
+            ) as kcfg_explore:
+                _LOGGER.info(f'Computing definedness constraint for test: {test}')
+                init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
+                kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
+
+                if simplify_init:
+                    _LOGGER.info(f'Simplifying KCFG for test: {test}')
                     kcfg = kcfg_explore.simplify(test, kcfg)
+
             kcfgs[test] = kcfg
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
