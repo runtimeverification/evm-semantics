@@ -8,21 +8,11 @@ from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
-from pyk.kast.manip import (
-    abstract_term_safely,
-    bottom_up,
-    flatten_label,
-    is_anon_var,
-    minimize_term,
-    push_down_rewrites,
-    split_config_and_constraints,
-    split_config_from,
-)
+from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
 from pyk.kast.outer import KDefinition
 from pyk.kcfg import KCFG, KCFGExplore
-from pyk.ktool.kprint import KPrint
 from pyk.ktool.kprove import KProve
-from pyk.prelude.ml import mlAnd
+from pyk.utils import single
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -35,6 +25,39 @@ def find_free_port(host: str = 'localhost') -> int:
         s.bind((host, 0))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return s.getsockname()[1]
+
+
+def get_cfg_for_spec(  # noqa: N802
+    kprove: KProve,
+    spec_file: Path,
+    save_directory: Optional[Path],
+    spec_module_name: Optional[str] = None,
+    include_dirs: Iterable[Path] = (),
+    md_selector: Optional[str] = None,
+    claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] = (),
+) -> Tuple[str, KCFG]:
+    if save_directory is None:
+        save_directory = Path('.')
+        _LOGGER.info(f'Using default save_directory: {save_directory}')
+
+    _LOGGER.info(f'Extracting claim from file: {spec_file}')
+    claim = single(
+        kprove.get_claims(
+            spec_file,
+            spec_module_name=spec_module_name,
+            include_dirs=include_dirs,
+            md_selector=md_selector,
+            claim_labels=claim_labels,
+            exclude_claim_labels=exclude_claim_labels,
+        )
+    )
+
+    kcfg = KCFGExplore.read_cfg(claim.label, save_directory)
+    if kcfg is None:
+        raise ValueError(f'Could not load CFG {claim} from {save_directory}')
+
+    return claim.label, kcfg
 
 
 def parallel_kcfg_explore(
@@ -110,7 +133,7 @@ def parallel_kcfg_explore(
         _proof_problems = [(_id, _cfg, _i) for _i, (_id, _cfg) in enumerate(proof_problems.items())]
         results = process_pool.map(_call_rpc, _proof_problems)
 
-    return {pid: result for pid, result in zip(proof_problems, results, strict=True)}
+    return dict(zip(proof_problems, results, strict=True))
 
 
 def arg_pair_of(
@@ -174,67 +197,3 @@ def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> 
         if type(subst[s]) is KVariable and not is_anon_var(subst[s]) and subst[s] not in keep_vars:
             subst[s] = abstract_term_safely(KVariable('_'), base_name=s)
     return Subst(subst)(config)
-
-
-def cfg_dump_dot(kprint: KPrint, cfg_id: str, kcfgs_dir: Path) -> None:
-    dot_dir = kcfgs_dir / 'dot'
-    if not dot_dir.exists():
-        dot_dir.mkdir()
-    elif not dot_dir.is_dir():
-        raise ValueError(f'Not a directory: {dot_dir}')
-
-    kcfg = KCFGExplore.read_cfg(cfg_id, kcfgs_dir)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {cfg_id} from {kcfgs_dir}')
-
-    dot_file = dot_dir / f'{cfg_id}.dot'
-    dot_file.write_text(kcfg.to_dot(kprint))
-    _LOGGER.info(f'Wrote DOT file {cfg_id}: {dot_file}')
-
-    for node in kcfg.nodes:
-        node_file = dot_dir / f'node_config_{node.id}.txt'
-        node_minimized_file = dot_dir / f'node_config_minimized_{node.id}.txt'
-        node_constraint_file = dot_dir / f'node_constraint_{node.id}.txt'
-
-        config = node.cterm.config
-        if not node_file.exists():
-            node_file.write_text(kprint.pretty_print(config))
-            _LOGGER.info(f'Wrote node file {cfg_id}: {node_file}')
-        config = minimize_term(config)
-        if not node_minimized_file.exists():
-            node_minimized_file.write_text(kprint.pretty_print(config))
-            _LOGGER.info(f'Wrote node file {cfg_id}: {node_minimized_file}')
-        if not node_constraint_file.exists():
-            constraint = mlAnd(node.cterm.constraints)
-            node_constraint_file.write_text(kprint.pretty_print(constraint))
-            _LOGGER.info(f'Wrote node file {cfg_id}: {node_constraint_file}')
-
-    for edge in kcfg.edges():
-        edge_file = dot_dir / f'edge_config_{edge.source.id}_{edge.target.id}.txt'
-        edge_minimized_file = dot_dir / f'edge_config_minimized_{edge.source.id}_{edge.target.id}.txt'
-        edge_constraint_file = dot_dir / f'edge_constraint_{edge.source.id}_{edge.target.id}.txt'
-
-        config = push_down_rewrites(KRewrite(edge.source.cterm.config, edge.target.cterm.config))
-        if not edge_file.exists():
-            edge_file.write_text(kprint.pretty_print(config))
-            _LOGGER.info(f'Wrote edge file {cfg_id}: {edge_file}')
-        config = minimize_term(config)
-        if not edge_minimized_file.exists():
-            edge_minimized_file.write_text(kprint.pretty_print(config))
-            _LOGGER.info(f'Wrote edge file {cfg_id}: {edge_minimized_file}')
-        if not edge_constraint_file.exists():
-            edge_constraint_file.write_text(kprint.pretty_print(edge.condition))
-            _LOGGER.info(f'Wrote edge file {cfg_id}: {edge_constraint_file}')
-
-    for cover in kcfg.covers():
-        cover_file = dot_dir / f'cover_config_{cover.source.id}_{cover.target.id}.txt'
-        cover_constraint_file = dot_dir / f'cover_constraint_{cover.source.id}_{cover.target.id}.txt'
-
-        subst_equalities = flatten_label('#And', cover.subst.ml_pred)
-
-        if not cover_file.exists():
-            cover_file.write_text('\n'.join(kprint.pretty_print(se) for se in subst_equalities))
-            _LOGGER.info(f'Wrote cover file {cfg_id}: {cover_file}')
-        if not cover_constraint_file.exists():
-            cover_constraint_file.write_text(kprint.pretty_print(cover.constraint))
-            _LOGGER.info(f'Wrote cover file {cfg_id}: {cover_constraint_file}')
