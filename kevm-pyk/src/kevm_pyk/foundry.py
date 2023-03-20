@@ -400,105 +400,29 @@ def foundry_show(
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
 
-    def omit_unstable_output(cterm: CTerm) -> CTerm:
-
-        def flatten_accounts(cterm: CTerm) -> [CTerm]:
-            
-            if type(cterm) is KApply and cterm.label.name == '_AccountCellMap_':
-                return flatten_accounts(cterm.args[0]) + flatten_accounts(cterm.args[1])
-            elif type(cterm) is KApply and cterm.label.name == 'AccountCellMapItem':
-                return [KApply(label=KLabel(name='<account>', params=cterm.label.params), args=cterm.args)]
-            else:
-                return [cterm]
-
-        cterm = set_cell(cterm, 'PROGRAM_CELL', DOTS)
-        cterm = set_cell(cterm, 'JUMPDESTS_CELL', DOTS)
-        cterm = set_cell(cterm, 'PC_CELL', DOTS)
-        cterm = set_cell(cterm, 'GAS_CELL', DOTS)
-        cterm = set_cell(cterm, 'CODE_CELL', DOTS)
-
-        accts_cell = get_cell(cterm, 'ACCOUNTS_CELL')
-
-        old_accts = flatten_accounts(accts_cell)
-        new_accts = []
-        for account in old_accts:
-            new_accts += [set_cell(account, 'CODE_CELL', DOTS)] if type(account) is KApply else [account]
-        old_accts = flatten_accounts(accts_cell)
-        cterm = set_cell(cterm, 'ACCOUNTS_CELL', build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), new_accts))
-
-        return cterm
-
-    res_lines: List[str] = []
-
-    res_lines += kcfg.pretty(foundry.kevm, minimize=minimize, node_printer=_short_info, omit_node_hash=omit_unstable_output)
     if frontier:
         nodes += [node.id for node in kcfg.frontier]
     if stuck:
         nodes += [node.id for node in kcfg.stuck]
 
-    for node_id in nodes:
-        kast = kcfg.node(node_id).cterm.kast
-        if omit_unstable_output:
-            kast = omit_unstable_output(kast)
-        if minimize:
-            kast = minimize_term(kast)
-        res_lines.append('')
-        res_lines.append('')
-        if omit_unstable_output:
-            res_lines.append(f'Node')
-        else:
-            res_lines.append(f'Node {node_id}:')
-        res_lines.append('')
-        res_lines.append(foundry.kevm.pretty_print(kast))
-        res_lines.append('')
-
-    for node_id_1, node_id_2 in node_deltas:
-        config_1 = kcfg.node(node_id_1).cterm.config
-        config_2 = kcfg.node(node_id_2).cterm.config
-        config_delta = push_down_rewrites(KRewrite(config_1, config_2))
-        if minimize:
-            config_delta = minimize_term(config_delta)
-        res_lines.append('')
-        res_lines.append('')
-        res_lines.append(f'State Delta {node_id_1} => {node_id_2}:')
-        res_lines.append('')
-        res_lines.append(foundry.kevm.pretty_print(config_delta))
-        res_lines.append('')
-
-    if to_module:
-
-        def to_rule(edge: KCFG.Edge, *, claim: bool = False) -> KRuleLike:
-            sentence_id = f'BASIC-BLOCK-{edge.source.id}-TO-{edge.target.id}'
-            init_cterm = CTerm(edge.source.cterm.config)
-            if omit_unstable_output:
-                init_cterm = CTerm(omit_unstable_output(edge.source.cterm.config))
-            for c in edge.source.cterm.constraints:
-                assert type(c) is KApply
-                if c.label.name == '#Ceil':
-                    _LOGGER.warning(f'Ignoring Ceil condition: {c}')
-                else:
-                    init_cterm.add_constraint(c)
-            target_cterm = CTerm(edge.target.cterm.config)
-            if omit_unstable_output:
-                target_cterm = CTerm(omit_unstable_output(edge.target.cterm.config))
-            for c in edge.source.cterm.constraints:
-                assert type(c) is KApply
-                if c.label.name == '#Ceil':
-                    _LOGGER.warning(f'Ignoring Ceil condition: {c}')
-                else:
-                    target_cterm.add_constraint(c)
-            rule: KRuleLike
-            if claim:
-                rule, _ = build_claim(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm)
-            else:
-                rule, _ = build_rule(sentence_id, init_cterm.add_constraint(edge.condition), target_cterm, priority=35)
-            return rule
-
-        rules = [to_rule(e) for e in kcfg.edges() if e.depth > 0]
-        claims = [to_rule(KCFG.Edge(nd, kcfg.get_unique_target(), mlTop(), -1), claim=True) for nd in kcfg.frontier]
-        new_module = KFlatModule('SUMMARY', rules + claims)
-        res_lines.append(foundry.kevm.pretty_print(new_module))
-        res_lines.append('')
+    kcfg_show = KCFGShow(foundry.kevm)
+    res_lines = kcfg_show.show(
+        test,
+        kcfg,
+        nodes=nodes,
+        node_deltas=node_deltas,
+        to_module=to_module,
+        minimize=minimize,
+        node_printer=_short_info,
+        omit_node_hash=omit_unstable_output,
+        omit_cells=[
+            '<program>',
+            '<jumpDests>',
+            '<pc>',
+            '<gas>',
+            '<code>',
+        ]
+    )
 
     return '\n'.join(res_lines)
 
