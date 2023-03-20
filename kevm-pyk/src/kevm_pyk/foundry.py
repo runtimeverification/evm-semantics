@@ -22,13 +22,7 @@ from pyk.utils import shorten_hashes
 
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_main_module
-from .utils import (
-    KDefinition__expand_macros,
-    abstract_cell_vars,
-    byte_offset_to_lines,
-    find_free_port,
-    parallel_kcfg_explore,
-)
+from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, parallel_kcfg_explore
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -279,7 +273,6 @@ def foundry_prove(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
-    rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
     rpc_command: Optional[str] = None,
     smt_timeout: Optional[int] = None,
@@ -347,7 +340,6 @@ def foundry_prove(
             if simplify_init:
                 with KCFGExplore(
                     foundry.kevm,
-                    port=find_free_port(),
                     bug_report=br,
                     smt_timeout=smt_timeout,
                     smt_retry_limit=smt_retry_limit,
@@ -373,7 +365,6 @@ def foundry_prove(
         break_on_jumpi=break_on_jumpi,
         break_on_calls=break_on_calls,
         implication_every_block=implication_every_block,
-        rpc_base_port=rpc_base_port,
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
         bug_report=br,
@@ -505,9 +496,8 @@ def foundry_simplify_node(
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
     cterm = kcfg.node(node).cterm
-    port = find_free_port()
     with KCFGExplore(
-        foundry.kevm, port=port, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
     if replace:
@@ -537,9 +527,8 @@ def foundry_step_node(
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    port = find_free_port()
     with KCFGExplore(
-        foundry.kevm, port=port, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
         for _i in range(repeat):
             kcfg, node = kcfg_explore.step(test, kcfg, node, depth=depth)
@@ -562,10 +551,9 @@ def foundry_section_edge(
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    port = find_free_port()
     source_id, target_id = edge
     with KCFGExplore(
-        foundry.kevm, port=port, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
         kcfg, _ = kcfg_explore.section_edge(test, kcfg, source_id=source_id, target_id=target_id, sections=sections)
     KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)

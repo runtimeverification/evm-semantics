@@ -1,6 +1,4 @@
 import logging
-import socket
-from contextlib import closing
 from pathlib import Path
 from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
 
@@ -18,13 +16,6 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 T1 = TypeVar('T1')
 T2 = TypeVar('T2')
-
-
-def find_free_port(host: str = 'localhost') -> int:
-    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-        s.bind((host, 0))
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        return s.getsockname()[1]
 
 
 def get_cfg_for_spec(  # noqa: N802
@@ -71,7 +62,6 @@ def parallel_kcfg_explore(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = False,
-    rpc_base_port: Optional[int] = None,
     is_terminal: Optional[Callable[[CTerm], bool]] = None,
     extract_branches: Optional[Callable[[CTerm], Iterable[KInner]]] = None,
     bug_report: Optional[BugReport] = None,
@@ -102,11 +92,9 @@ def parallel_kcfg_explore(
                     'EVM.return.success',
                 ]
             )
-        base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
 
         with KCFGExplore(
             kprove,
-            port=(base_port + _index),
             bug_report=bug_report,
             kore_rpc_command=rpc_cmd,
             smt_timeout=smt_timeout,

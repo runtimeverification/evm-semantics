@@ -29,7 +29,7 @@ from .foundry import (
 from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, KEVMKompileMode
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, find_free_port, get_cfg_for_spec, parallel_kcfg_explore
+from .utils import arg_pair_of, get_cfg_for_spec, parallel_kcfg_explore
 
 T = TypeVar('T')
 
@@ -250,7 +250,6 @@ def exec_prove(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
-    rpc_base_port: Optional[int] = None,
     smt_timeout: Optional[int] = None,
     smt_retry_limit: Optional[int] = None,
     **kwargs: Any,
@@ -271,9 +270,7 @@ def exec_prove(
     _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
     proof_problems = {c.label: KCFG.from_claim(kevm.definition, c) for c in claims}
     if simplify_init:
-        with KCFGExplore(
-            kevm, port=find_free_port(), bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
-        ) as kcfg_explore:
+        with KCFGExplore(kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit) as kcfg_explore:
             proof_problems = {claim: kcfg_explore.simplify(claim, cfg) for claim, cfg in proof_problems.items()}
 
     results = parallel_kcfg_explore(
@@ -287,7 +284,6 @@ def exec_prove(
         break_on_jumpi=break_on_jumpi,
         break_on_calls=break_on_calls,
         implication_every_block=implication_every_block,
-        rpc_base_port=rpc_base_port,
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
         bug_report=br,
@@ -384,7 +380,6 @@ def exec_foundry_prove(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
-    rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
     rpc_command: Optional[str] = None,
     smt_timeout: Optional[int] = None,
@@ -408,7 +403,6 @@ def exec_foundry_prove(
         break_on_jumpi=break_on_jumpi,
         break_on_calls=break_on_calls,
         implication_every_block=implication_every_block,
-        rpc_base_port=rpc_base_port,
         bug_report=bug_report,
         rpc_command=rpc_command,
     )
@@ -588,12 +582,6 @@ def _create_argument_parser() -> ArgumentParser:
     display_args.add_argument('--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.')
 
     rpc_args = ArgumentParser(add_help=False)
-    rpc_args.add_argument(
-        '--rpc-base-port',
-        dest='rpc_base_port',
-        type=int,
-        help='Base port to use for RPC server invocations.',
-    )
     rpc_args.add_argument(
         '--bug-report',
         default=False,
