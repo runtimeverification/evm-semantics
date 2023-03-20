@@ -965,12 +965,13 @@ These operators make queries about the current execution state.
     rule <k> GASLIMIT => GLIMIT ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
     rule <k> BASEFEE  => BFEE   ~> #push ... </k> <baseFee> BFEE </baseFee>
 
-    syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY"
- // -------------------------------------------------------------------------
+    syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "PREVRANDAO"
+ // ----------------------------------------------------------------------------------------
     rule <k> COINBASE   => CB   ~> #push ... </k> <coinbase> CB </coinbase>
     rule <k> TIMESTAMP  => TS   ~> #push ... </k> <timestamp> TS </timestamp>
     rule <k> NUMBER     => NUMB ~> #push ... </k> <number> NUMB </number>
     rule <k> DIFFICULTY => DIFF ~> #push ... </k> <difficulty> DIFF </difficulty>
+    rule <k> PREVRANDAO => RDAO ~> #push ... </k> <mixHash> RDAO </mixHash>
 
     syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE" | "CHAINID" | "SELFBALANCE"
  // ------------------------------------------------------------------------------------------------
@@ -2089,6 +2090,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, TIMESTAMP)      => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, NUMBER)         => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, DIFFICULTY)     => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, PREVRANDAO)     => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, GASLIMIT)       => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, BASEFEE)        => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, POP _)          => Gbase < SCHED > ... </k>
@@ -2363,8 +2365,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
-                          | "Ghasrejectedfirstbyte"
- // -----------------------------------------------
+                          | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"
+ // --------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -2473,6 +2475,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasaccesslist          << DEFAULT >> => false
     rule Ghasbasefee             << DEFAULT >> => false
     rule Ghasrejectedfirstbyte   << DEFAULT >> => false
+    rule Ghasprevrandao          << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -2671,8 +2674,11 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "MERGE" [klabel(MERGE_EVM), symbol, smtlib(schedule_MERGE)]
  // -------------------------------------------------------------------------------
-    rule SCHEDCONST    < MERGE > => SCHEDCONST < LONDON >
-    rule SCHEDFLAG     << MERGE >> => SCHEDFLAG << LONDON >>
+    rule SCHEDCONST < MERGE > => SCHEDCONST < LONDON >
+
+    rule Ghasprevrandao << MERGE >> => true
+    rule SCHEDFLAG      << MERGE >> => SCHEDFLAG << LONDON >>
+      requires notBool SCHEDFLAG ==K Ghasprevrandao
 ```
 
 EVM Program Representations
@@ -2746,7 +2752,8 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  65,     _ ) => COINBASE
     rule #dasmOpCode(  66,     _ ) => TIMESTAMP
     rule #dasmOpCode(  67,     _ ) => NUMBER
-    rule #dasmOpCode(  68,     _ ) => DIFFICULTY
+    rule #dasmOpCode(  68, SCHED ) => PREVRANDAO  requires         Ghasprevrandao << SCHED >>
+    rule #dasmOpCode(  68, SCHED ) => DIFFICULTY  requires notBool Ghasprevrandao << SCHED >>
     rule #dasmOpCode(  69,     _ ) => GASLIMIT
     rule #dasmOpCode(  70, SCHED ) => CHAINID     requires Ghaschainid     << SCHED >>
     rule #dasmOpCode(  71, SCHED ) => SELFBALANCE requires Ghasselfbalance << SCHED >>
