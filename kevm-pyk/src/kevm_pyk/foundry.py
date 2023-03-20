@@ -322,8 +322,6 @@ def foundry_prove(
     if unfound_tests:
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
-    kore_rpc_command = KEVM.kore_rpc_command() if rpc_command is None else rpc_command.split('\n')
-
     kcfgs: Dict[str, KCFG] = {}
     for test in tests:
         kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
@@ -345,9 +343,7 @@ def foundry_prove(
             target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
             kcfg.replace_node(kcfg.get_unique_target().id, CTerm(target_term))
             if simplify_init:
-                with KCFGExplore(
-                    foundry.kevm, port=find_free_port(), bug_report=br, kore_rpc_command=kore_rpc_command
-                ) as kcfg_explore:
+                with KCFGExplore(foundry.kevm, port=find_free_port(), bug_report=br) as kcfg_explore:
                     kcfg = kcfg_explore.simplify(test, kcfg)
             kcfgs[test] = kcfg
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
@@ -373,7 +369,7 @@ def foundry_prove(
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
         bug_report=br,
-        rpc_cmd=kore_rpc_command,
+        rpc_cmd=rpc_cmd,
     )
 
 
