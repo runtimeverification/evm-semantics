@@ -76,6 +76,8 @@ def parallel_kcfg_explore(
     extract_branches: Optional[Callable[[CTerm], Iterable[KInner]]] = None,
     bug_report: Optional[BugReport] = None,
     rpc_cmd: Iterable[str] = ('kore-rpc',),
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
 ) -> Dict[str, bool]:
     def _call_rpc(packed_args: Tuple[str, KCFG, int]) -> bool:
         _cfgid, _cfg, _index = packed_args
@@ -103,7 +105,12 @@ def parallel_kcfg_explore(
         base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
 
         with KCFGExplore(
-            kprove, port=(base_port + _index), bug_report=bug_report, kore_rpc_command=rpc_cmd
+            kprove,
+            port=(base_port + _index),
+            bug_report=bug_report,
+            kore_rpc_command=rpc_cmd,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:
             try:
                 _cfg = kcfg_explore.all_path_reachability_prove(

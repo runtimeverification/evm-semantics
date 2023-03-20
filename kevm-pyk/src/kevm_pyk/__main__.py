@@ -251,6 +251,8 @@ def exec_prove(
     break_on_calls: bool = True,
     implication_every_block: bool = True,
     rpc_base_port: Optional[int] = None,
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
     br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
@@ -269,7 +271,9 @@ def exec_prove(
     _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
     proof_problems = {c.label: KCFG.from_claim(kevm.definition, c) for c in claims}
     if simplify_init:
-        with KCFGExplore(kevm, port=find_free_port(), bug_report=br) as kcfg_explore:
+        with KCFGExplore(
+            kevm, port=find_free_port(), bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        ) as kcfg_explore:
             proof_problems = {claim: kcfg_explore.simplify(claim, cfg) for claim, cfg in proof_problems.items()}
 
     results = parallel_kcfg_explore(
@@ -287,6 +291,8 @@ def exec_prove(
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
         bug_report=br,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
     )
     failed = 0
     for pid, r in results.items():
@@ -381,6 +387,8 @@ def exec_foundry_prove(
     rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
     rpc_command: Optional[str] = None,
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -497,6 +505,8 @@ def exec_foundry_simplify_node(
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
     pretty_term = foundry_simplify_node(
@@ -506,6 +516,8 @@ def exec_foundry_simplify_node(
         replace=replace,
         minimize=minimize,
         bug_report=bug_report,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
     )
     print(f'Simplified:\n{pretty_term}')
 
@@ -517,6 +529,8 @@ def exec_foundry_step_node(
     repeat: int = 1,
     depth: int = 1,
     bug_report: bool = False,
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
     foundry_step_node(
@@ -526,6 +540,8 @@ def exec_foundry_step_node(
         repeat=repeat,
         depth=depth,
         bug_report=bug_report,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
     )
 
 
@@ -536,6 +552,8 @@ def exec_foundry_section_edge(
     sections: int = 2,
     replace: bool = False,
     bug_report: bool = False,
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
     foundry_section_edge(
@@ -545,6 +563,8 @@ def exec_foundry_section_edge(
         sections=sections,
         replace=replace,
         bug_report=bug_report,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
     )
 
 
@@ -579,6 +599,12 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Generate a haskell-backend bug report for the execution.',
+    )
+
+    smt_args = ArgumentParser(add_help=False)
+    smt_args.add_argument('--smt-timeout', type=int, default=125, help='Timeout in ms to use for SMT queries.')
+    smt_args.add_argument(
+        '--smt-retry-limit', type=int, default=4, help='Number of times to retry SMT queries with scaling timeouts.'
     )
 
     explore_args = ArgumentParser(add_help=False)
@@ -808,7 +834,7 @@ def _create_argument_parser() -> ArgumentParser:
     _ = command_parser.add_parser(
         'prove',
         help='Run KEVM proof.',
-        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args, spec_args],
+        parents=[shared_args, k_args, kprove_args, rpc_args, smt_args, explore_args, spec_args],
     )
 
     _ = command_parser.add_parser(
@@ -893,7 +919,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_prove_args = command_parser.add_parser(
         'foundry-prove',
         help='Run Foundry Proof.',
-        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args],
+        parents=[shared_args, k_args, kprove_args, smt_args, rpc_args, explore_args],
     )
     foundry_prove_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_prove_args.add_argument(
@@ -967,7 +993,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',
         help='Simplify a given node, and potentially replace it.',
-        parents=[shared_args, rpc_args, display_args],
+        parents=[shared_args, smt_args, rpc_args, display_args],
     )
     foundry_simplify_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_simplify_node.add_argument('test', type=str, help='Simplify node in this CFG.')
@@ -979,7 +1005,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_step_node = command_parser.add_parser(
         'foundry-step-node',
         help='Step from a given node, adding it to the CFG.',
-        parents=[shared_args, rpc_args],
+        parents=[shared_args, rpc_args, smt_args],
     )
     foundry_step_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
@@ -994,7 +1020,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_section_edge = command_parser.add_parser(
         'foundry-section-edge',
         help='Given an edge in the graph, cut it into sections to get intermediate nodes.',
-        parents=[shared_args, rpc_args],
+        parents=[shared_args, rpc_args, smt_args],
     )
     foundry_section_edge.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_section_edge.add_argument('test', type=str, help='Section edge in this CFG.')

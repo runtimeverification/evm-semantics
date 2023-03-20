@@ -282,6 +282,8 @@ def foundry_prove(
     rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
     rpc_command: Optional[str] = None,
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
 ) -> Dict[str, bool]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -343,7 +345,13 @@ def foundry_prove(
             target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
             kcfg.replace_node(kcfg.get_unique_target().id, CTerm(target_term))
             if simplify_init:
-                with KCFGExplore(foundry.kevm, port=find_free_port(), bug_report=br) as kcfg_explore:
+                with KCFGExplore(
+                    foundry.kevm,
+                    port=find_free_port(),
+                    bug_report=br,
+                    smt_timeout=smt_timeout,
+                    smt_retry_limit=smt_retry_limit,
+                ) as kcfg_explore:
                     kcfg = kcfg_explore.simplify(test, kcfg)
             kcfgs[test] = kcfg
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
@@ -370,6 +378,8 @@ def foundry_prove(
         extract_branches=KEVM.extract_branches,
         bug_report=br,
         rpc_cmd=rpc_cmd,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
     )
 
 
@@ -485,6 +495,8 @@ def foundry_simplify_node(
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
 ) -> str:
     kcfgs_dir = foundry_out / 'kcfgs'
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
@@ -494,7 +506,9 @@ def foundry_simplify_node(
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
     cterm = kcfg.node(node).cterm
     port = find_free_port()
-    with KCFGExplore(foundry.kevm, port=port, bug_report=br) as kcfg_explore:
+    with KCFGExplore(
+        foundry.kevm, port=port, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+    ) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
     if replace:
         kcfg.replace_node(node, CTerm(new_term))
@@ -510,6 +524,8 @@ def foundry_step_node(
     repeat: int = 1,
     depth: int = 1,
     bug_report: bool = False,
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
 ) -> None:
     if repeat < 1:
         raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
@@ -522,7 +538,9 @@ def foundry_step_node(
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
     port = find_free_port()
-    with KCFGExplore(foundry.kevm, port=port, bug_report=br) as kcfg_explore:
+    with KCFGExplore(
+        foundry.kevm, port=port, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+    ) as kcfg_explore:
         for _i in range(repeat):
             kcfg, node = kcfg_explore.step(test, kcfg, node, depth=depth)
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
@@ -535,6 +553,8 @@ def foundry_section_edge(
     sections: int = 2,
     replace: bool = False,
     bug_report: bool = False,
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
 ) -> None:
     kcfgs_dir = foundry_out / 'kcfgs'
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
@@ -544,7 +564,9 @@ def foundry_section_edge(
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
     port = find_free_port()
     source_id, target_id = edge
-    with KCFGExplore(foundry.kevm, port=port, bug_report=br) as kcfg_explore:
+    with KCFGExplore(
+        foundry.kevm, port=port, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+    ) as kcfg_explore:
         kcfg, _ = kcfg_explore.section_edge(test, kcfg, source_id=source_id, target_id=target_id, sections=sections)
     KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
