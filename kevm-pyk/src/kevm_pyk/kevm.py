@@ -61,10 +61,6 @@ class KEVM(KProve, KRun):
         )
 
     @staticmethod
-    def kore_rpc_command() -> Iterable[str]:
-        return ('kore-rpc', '--smt-timeout', '500', '--smt-retry-limit', '4')
-
-    @staticmethod
     def kompile(
         definition_dir: Path,
         backend: KompileBackend,
