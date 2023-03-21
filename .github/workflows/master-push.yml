@@ -58,11 +58,13 @@ jobs:
       - name: 'Check out code'
         uses: actions/checkout@v3
       - name: 'Make Release'
+        env:
+         GITHUB_TOKEN: ${secrets.JENKINS_GITHUB_PAT}
         run: |
           kevm_version=v$(cat package/version)
           curl -X POST                                                              \
             -H "Accept: application/vnd.github+json"                                \
-            -H "Authorization: Bearer ${secrets.JENKINS_GITHUB_PAT}"                              \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}"                              \
             https://api.github.com/repos/runtimeverification/evm-semantics/releases \
             -d '{"tag_name":"'${kevm_version}'","target_commitish":"'${GITHUB_HEAD_REF}'","draft":false,"prerelease":false,"generate_release_notes":false}'
 
