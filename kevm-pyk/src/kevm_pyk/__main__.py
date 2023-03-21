@@ -405,6 +405,8 @@ def exec_foundry_prove(
         implication_every_block=implication_every_block,
         bug_report=bug_report,
         kore_rpc_command=kore_rpc_command,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
     )
     failed = 0
     for pid, r in results.items():
@@ -590,9 +592,15 @@ def _create_argument_parser() -> ArgumentParser:
     )
 
     smt_args = ArgumentParser(add_help=False)
-    smt_args.add_argument('--smt-timeout', type=int, default=125, help='Timeout in ms to use for SMT queries.')
     smt_args.add_argument(
-        '--smt-retry-limit', type=int, default=4, help='Number of times to retry SMT queries with scaling timeouts.'
+        '--smt-timeout', dest='smt_timeout', type=int, default=125, help='Timeout in ms to use for SMT queries.'
+    )
+    smt_args.add_argument(
+        '--smt-retry-limit',
+        dest='smt_retry_limit',
+        type=int,
+        default=4,
+        help='Number of times to retry SMT queries with scaling timeouts.',
     )
 
     explore_args = ArgumentParser(add_help=False)
@@ -668,6 +676,7 @@ def _create_argument_parser() -> ArgumentParser:
         '--with-custom-rpc',
         dest='kore_rpc_command',
         type=str,
+        default='kore-rpc',
         help='Custom command to start RPC server',
     )
 
