@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 'master'
+      - 'release-tag'
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
