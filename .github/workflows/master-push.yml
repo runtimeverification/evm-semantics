@@ -56,6 +56,7 @@ jobs:
   make-release:
     name: 'Cut Release'
     runs-on: ubuntu-latest
+    needs: nix-cache
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
