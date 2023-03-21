@@ -673,7 +673,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
 
     explore_args.add_argument(
-        '--with-custom-rpc',
+        '--kore-rpc-command',
         dest='kore_rpc_command',
         type=str,
         default='kore-rpc',
