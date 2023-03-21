@@ -66,7 +66,7 @@ jobs:
             -H "Accept: application/vnd.github+json"                                \
             -H "Authorization: Bearer ${GITHUB_TOKEN}"                              \
             https://api.github.com/repos/runtimeverification/evm-semantics/releases \
-            -d '{"tag_name":"'${kevm_version}'","target_commitish":"'${GITHUB_HEAD_REF}'","draft":false,"prerelease":false,"generate_release_notes":false}'
+            -d '{"tag_name":"'${kevm_version}'","target_commitish":"'${GITHUB_HEAD_SHA}'","draft":false,"prerelease":false,"generate_release_notes":false}'
 
   gh-pages:
     name: 'Publish GH Pages'
