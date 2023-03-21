@@ -40,7 +40,7 @@ jobs:
           signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
           skipPush: true
       - name: 'Build and cache KEVM'
-        uses: workflow/nix-shell-action@v3.2.1
+        uses: workflow/nix-shell-action@v3.0.3
         env:
           GC_DONT_GC: 1
           CACHIX_AUTH_TOKEN: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
