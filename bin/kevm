@@ -133,7 +133,7 @@ run_kast() {
                          execute kore-json.py "${run_file}" "${cSCHEDULE_kore}" "${cMODE_kore}" "${cCHAINID_kore}"
                      else
                          check_k_install
-                         run_kevm_pyk gst-to-kore "${run_file}" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@"
+                         gst-to-kore "${run_file}" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@"
                      fi
                      ;;
         *)           check_k_install ; kast --definition "${backend_dir}" "${run_file}" --output "${output_mode}" "$@"

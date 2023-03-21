@@ -26,7 +26,6 @@ from .foundry import (
     foundry_step_node,
     foundry_to_dot,
 )
-from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, KEVMKompileMode
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
 from .utils import arg_pair_of, get_cfg_for_spec, parallel_kcfg_explore
@@ -69,13 +68,6 @@ def main() -> None:
 def exec_compile(contract_file: Path, **kwargs: Any) -> None:
     res = solc_compile(contract_file)
     print(json.dumps(res))
-
-
-def exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, **kwargs: Any) -> None:
-    gst_data = json.loads(input_file.read_text())
-    kore = gst_to_kore(gst_data, schedule, mode, chainid)
-    print(kore.text)
-    _LOGGER.info('Finished writing kore')
 
 
 def exec_kompile(
@@ -876,13 +868,6 @@ def _create_argument_parser() -> ArgumentParser:
 
     solc_args = command_parser.add_parser('compile', help='Generate combined JSON with solc compilation results.')
     solc_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
-
-    gst_to_kore_args = command_parser.add_parser(
-        'gst-to-kore',
-        help='Convert a GeneralStateTest to Kore for compsumption by KEVM.',
-        parents=[shared_args, evm_chain_args],
-    )
-    gst_to_kore_args.add_argument('input_file', type=file_path, help='Path to GST.')
 
     solc_to_k_args = command_parser.add_parser(
         'solc-to-k',
