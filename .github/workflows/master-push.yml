@@ -22,6 +22,7 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
+        ref: ${{ github.event.push.head.sha }}
       - name: 'Upgrade bash'
         if: ${{ contains(matrix.os, 'macos') }}
         run: brew install bash
@@ -57,6 +58,7 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
+        ref: ${{ github.event.push.head.sha }}
       - name: 'Make Release'
         env:
          GITHUB_TOKEN: ${{ secrets.JENKINS_GITHUB_PAT }}
@@ -75,6 +77,7 @@ jobs:
     steps:
       - name: 'Check out gh-pages'
         uses: actions/checkout@v3
+        ref: ${{ github.event.push.head.sha }}
         with:
           fetch-depth: 0
           submodules: true
