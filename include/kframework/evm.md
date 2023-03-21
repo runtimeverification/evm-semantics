@@ -353,7 +353,7 @@ The `#next [_]` operator initiates execution by:
 ```k
     syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [macro]
                   | #stackOverflow  ( WordStack , OpCode ) [macro]
- // ------------------------------------------------------------------------
+ // --------------------------------------------------------------
     rule #stackUnderflow(WS, OP:OpCode) => #sizeWordStack(WS) <Int #stackNeeded(OP)
     rule #stackOverflow (WS, OP) => #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
 
@@ -920,9 +920,9 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
 
     syntax BinStackOp ::= "SHL" | "SHR" | "SAR"
  // -------------------------------------------
-    rule <k> SHL W0 W1 => W1 <<Word  W0 ~> #push ... </k> requires W0 >=Int 0
-    rule <k> SHR W0 W1 => W1 >>Word  W0 ~> #push ... </k> requires W0 >=Int 0
-    rule <k> SAR W0 W1 => W1 >>sWord W0 ~> #push ... </k> requires W0 >=Int 0
+    rule <k> SHL W0 W1 => W1 <<Word  W0 ~> #push ... </k>
+    rule <k> SHR W0 W1 => W1 >>Word  W0 ~> #push ... </k>
+    rule <k> SAR W0 W1 => W1 >>sWord W0 ~> #push ... </k>
 
     syntax BinStackOp ::= "AND" | "EVMOR" | "XOR"
  // ---------------------------------------------

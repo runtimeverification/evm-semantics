@@ -167,7 +167,7 @@ Bitwise logical operators are lifted from the integer versions.
                  | Int "<<Word"  Int [function, total]
                  | Int ">>Word"  Int [function, total]
                  | Int ">>sWord" Int [function, total]
- // -------------------------------------------
+ // --------------------------------------------------
     rule ~Word W       => W xorInt maxUInt256
     rule W0 |Word   W1 => W0 |Int W1
     rule W0 &Word   W1 => W0 &Int W1
