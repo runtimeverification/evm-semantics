@@ -74,7 +74,8 @@ def exec_compile(contract_file: Path, **kwargs: Any) -> None:
 def exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, **kwargs: Any) -> None:
     gst_data = json.loads(input_file.read_text())
     kore = gst_to_kore(gst_data, schedule, mode, chainid)
-    print(kore.text)
+    kore.write(sys.stdout)
+    sys.stdout.write('\n')
     _LOGGER.info('Finished writing kore')
 
 
