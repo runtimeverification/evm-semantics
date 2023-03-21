@@ -319,7 +319,7 @@ The `#next [_]` operator initiates execution by:
          <output> _ => .Bytes </output>
 
     rule <k> #next [ OP:OpCode ]
-          => #if isAddr1Op(OP) orBool isAddr2Op(OP) #then #addr [ OP ] #else . #fi
+          => #addr [ OP ]
           ~> #exec [ OP ]
           ~> #pc   [ OP ]
          ...
@@ -1840,9 +1840,9 @@ Overall Gas
     syntax InternalOp ::= "#gas" "[" OpCode "," OpCode "]"
  // ------------------------------------------------------
     rule <k> #gas [ OP , AOP ]
-          => #if #usesMemory(OP) #then #memory [ AOP ] #else .K #fi
+          => #memory [ OP , AOP ]
           ~> #gas [ AOP ]
-          ~> #if Ghasaccesslist << SCHED >> andBool #usesAccessList(OP) #then #access [ AOP ] #else .K #fi
+          ~> #access [ OP , AOP ]
          ...
         </k>
         <schedule> SCHED </schedule>
@@ -1850,11 +1850,15 @@ Overall Gas
     rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
 
-    rule <k> #memory [ OP ] => #memory(OP, MU) ~> #deductMemory ... </k>
+    rule <k> #memory [ OP , AOP ] => #memory(AOP, MU) ~> #deductMemory ... </k>
          <memoryUsed> MU </memoryUsed>
+         requires #usesMemory(OP)
+   
+   rule <k> #memory [ OP , AOP ] => . ... </k>
+         requires notBool #usesMemory(OP)
 
     syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas" | "#deductMemoryGas"
-                        | "#memory" "[" OpCode "]" | "#deductMemory"
+                        | "#memory" "[" OpCode "," OpCode "]" | "#deductMemory"
  // ----------------------------------------------------------------
     rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductMemoryGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
@@ -1947,11 +1951,15 @@ Access List Gas
     rule #usesAccessList(SSTORE) => true
     rule #usesAccessList(_)      => false [owise]
 
-    syntax InternalOp ::= "#access" "[" OpCode "]"
+    syntax InternalOp ::= "#access" "[" OpCode "," OpCode "]"
  // --------------------------------------------
-    rule <k> #access [ OP ] => #gasAccess(SCHED, OP) ~> #deductGas ... </k>
+    rule <k> #access [ OP , AOP ] => #gasAccess(SCHED, AOP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
+         requires Ghasaccesslist << SCHED >> andBool #usesAccessList(OP)
 
+    rule <k> #access [ OP , AOP ] => . ... </k>
+         <schedule> SCHED </schedule>
+         requires notBool ( Ghasaccesslist << SCHED >> andBool #usesAccessList(OP) )
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode )
  // -----------------------------------------------------
