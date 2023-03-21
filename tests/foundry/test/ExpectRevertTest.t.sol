@@ -29,6 +29,16 @@ contract DepthReverter {
     }
 }
 
+contract ReverterWithReturn {
+    function revertUnless(bool returnInstead) public returns (bytes memory) {
+        if (returnInstead) {
+            return abi.encodePacked(bytes4(0xdeadbeef));
+        } else {
+            revert("Error");
+        }
+    }
+}
+
 contract ExpectRevertTest is Test {
     error NotAuthorised(address caller, string message);
 
@@ -106,5 +116,12 @@ contract ExpectRevertTest is Test {
             )
         );
         revert NotAuthorised(controller, "TRANSFEROWNERSHIP");
+    }
+
+    function test_expectRevert_returnValue() public {
+        ReverterWithReturn reverter = new ReverterWithReturn();
+        vm.expectRevert("Error");
+        bytes memory returnValue = reverter.revertUnless(false);
+        assertEq0(returnValue, "");
     }
 }
