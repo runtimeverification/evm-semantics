@@ -1839,26 +1839,29 @@ Overall Gas
 ```k
     syntax InternalOp ::= "#gas" "[" OpCode "," OpCode "]"
  // ------------------------------------------------------
+   //  rule <k> #gas [ OP , AOP ]
+   //        => #memory [ AOP ]
+   //        ~> #gas [ AOP ]
+   //        ~> #access [ OP , AOP ]
+   //       ...
+   //      </k>
+   //      requires #usesMemory(OP)
+
     rule <k> #gas [ OP , AOP ]
-          => #memory [ OP , AOP ]
-          ~> #gas [ AOP ]
+          => #gas [ AOP ]
           ~> #access [ OP , AOP ]
          ...
         </k>
-        <schedule> SCHED </schedule>
+        requires notBool ( #usesMemory(OP) )
 
     rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
 
-    rule <k> #memory [ OP , AOP ] => #memory(AOP, MU) ~> #deductMemory ... </k>
+    rule <k> #memory [ OP ] => #memory(OP, MU) ~> #deductMemory ... </k>
          <memoryUsed> MU </memoryUsed>
-         requires #usesMemory(OP)
-   
-   rule <k> #memory [ OP , AOP ] => . ... </k>
-         requires notBool #usesMemory(OP)
 
     syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas" | "#deductMemoryGas"
-                        | "#memory" "[" OpCode "," OpCode "]" | "#deductMemory"
+                        | "#memory" "[" OpCode "]" | "#deductMemory"
  // ----------------------------------------------------------------
     rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductMemoryGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
@@ -1892,6 +1895,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
 ```k
     syntax Int ::= #memory ( OpCode , Int ) [function, total]
+                 | #foo ( OpCode ) [function, total, no-evaluators]
  // ---------------------------------------------------------
     rule #memory ( MLOAD INDEX     , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
     rule #memory ( MSTORE INDEX _  , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
@@ -1913,7 +1917,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
     rule #memory ( _COP:CallOp     _ _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
     rule #memory ( _CSOP:CallSixOp _ _   ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
 
-    rule #memory ( _ , MU ) => MU [owise]
+    rule #memory ( OP , MU ) => #foo ( OP ) [owise]
 
     syntax Bool ::= #usesMemory ( OpCode ) [function, total]
  // --------------------------------------------------------
@@ -1957,7 +1961,7 @@ Access List Gas
          <schedule> SCHED </schedule>
          requires Ghasaccesslist << SCHED >> andBool #usesAccessList(OP)
 
-    rule <k> #access [ OP , AOP ] => . ... </k>
+    rule <k> #access [ OP , _AOP_ ] => . ... </k>
          <schedule> SCHED </schedule>
          requires notBool ( Ghasaccesslist << SCHED >> andBool #usesAccessList(OP) )
 
