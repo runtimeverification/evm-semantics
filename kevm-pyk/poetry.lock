@@ -181,19 +181,19 @@ testing = ["pre-commit"]
 
 [[package]]
 name = "filelock"
-version = "3.10.0"
+version = "3.10.1"
 description = "A platform independent file lock."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "filelock-3.10.0-py3-none-any.whl", hash = "sha256:e90b34656470756edf8b19656785c5fea73afa1953f3e1b0d645cef11cab3182"},
-    {file = "filelock-3.10.0.tar.gz", hash = "sha256:3199fd0d3faea8b911be52b663dfccceb84c95949dd13179aa21436d1a79c4ce"},
+    {file = "filelock-3.10.1-py3-none-any.whl", hash = "sha256:0bee209da99ac6da8ba71ee2fe2f29e7e0dfa84dd1020743a3fe8afda0e52b53"},
+    {file = "filelock-3.10.1.tar.gz", hash = "sha256:09c5116de0578e26b9b29d7543606df58f296dd040341a14b08c625449ee4c9a"},
 ]
 
 [package.extras]
 docs = ["furo (>=2022.12.7)", "sphinx (>=6.1.3)", "sphinx-autodoc-typehints (>=1.22,!=1.23.4)"]
-testing = ["covdefaults (>=2.3)", "coverage (>=7.2.1)", "pytest (>=7.2.2)", "pytest-cov (>=4)", "pytest-timeout (>=2.1)"]
+testing = ["covdefaults (>=2.3)", "coverage (>=7.2.2)", "pytest (>=7.2.2)", "pytest-cov (>=4)", "pytest-timeout (>=2.1)"]
 
 [[package]]
 name = "flake8"
