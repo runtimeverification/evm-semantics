@@ -172,11 +172,11 @@ Bitwise logical operators are lifted from the integer versions.
     rule W0 |Word   W1 => W0 |Int W1
     rule W0 &Word   W1 => W0 &Int W1
     rule W0 xorWord W1 => W0 xorInt W1
-    rule W0 <<Word  W1 => chop( W0 <<Int W1 ) requires 0 <=Int W1 andBool W1 <Int 256
+    rule W0 <<Word  W1 => chop( W0 <<Int W1 ) requires 0 <=Int W0 andBool 0 <=Int W1 andBool W1 <Int 256
     rule  _ <<Word  _  => 0 [owise]
-    rule W0 >>Word  W1 => W0 >>Int W1 requires 0 <=Int W1
+    rule W0 >>Word  W1 => W0 >>Int W1 requires 0 <=Int W0 andBool 0 <=Int W1
     rule  _ >>Word   _ => 0 [owise]
-    rule W0 >>sWord W1 => chop( (abs(W0) *Int sgn(W0)) >>Int W1 ) requires 0 <=Int W1
+    rule W0 >>sWord W1 => chop( (abs(W0) *Int sgn(W0)) >>Int W1 ) requires 0 <=Int W0 andBool 0 <=Int W1
     rule  _ >>sWord  _ => 0 [owise]
 ```
 
