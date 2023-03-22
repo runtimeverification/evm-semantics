@@ -319,6 +319,7 @@ def foundry_prove(
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
     setup_states: Dict[str, CTerm] = {}
+    # results = parallel_kcfg_explore(setup_states)
 
     kcfgs: Dict[str, KCFG] = {}
     for test in tests:
@@ -329,12 +330,24 @@ def foundry_prove(
             _LOGGER.info(f'Initializing KCFG for test: {test}')
             contract_name, method_name = test.split('.')
             contract = foundry.contracts[contract_name]
-            if contract_name not in setup_states.keys() and contract.setup_function:
-                _LOGGER.info(f'Setup not yet completed for contract {contract_name}.')
-                setup_states[contract_name] = run_setup(
-                    contract,
-                    foundry,
-                )
+
+#              if contract_name not in setup_states.keys() and contract.setup_function:
+#                  _LOGGER.info(f'Setup not yet completed for contract {contract_name}.')
+#                  setup_states[contract_name] = run_setup(
+#                      contract,
+#                      foundry,
+#                      bug_report=br,
+#                      kore_rpc_command=kore_rpc_command,
+#                      smt_timeout=smt_timeout,
+#                      smt_retry_limit=smt_retry_limit,
+#                      save_directory=kcfgs_dir,
+#                      is_terminal=KEVM.is_terminal,
+#                      extract_branches=KEVM.extract_branches,
+#                      max_depth=max_depth,
+#                      max_iterations=max_iterations,
+#                      implication_every_block=implication_every_block,
+#                  )
+
             method = [m for m in contract.methods if m.name == method_name][0]
             empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
             kcfg = _method_to_cfg(empty_config, contract, method)
@@ -381,6 +394,7 @@ def foundry_prove(
         kore_rpc_command=kore_rpc_command,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
+        init_state_from: Optional[str] = None,
     )
 
 
@@ -397,6 +411,9 @@ def run_setup(
     max_depth: int = 1000,
     max_iterations: Optional[int] = None,
     implication_every_block: bool = False,
+    break_every_step: bool = False,
+    break_on_jumpi: bool = False,
+    break_on_calls: bool = True,
 ) -> CTerm:
     setup_function = [m for m in contract.methods if m.name == contract.setup_function][0]
     empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
@@ -407,7 +424,34 @@ def run_setup(
     init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
     kcfg.replace_node(kcfg.get_unique_init().id, CTerm(init_term))
 
+    _LOGGER.info(f'Expanding macros in setup target state for contract: {contract.name}')
+    target_term = kcfg.get_unique_target().cterm.kast
+    target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
+    kcfg.replace_node(kcfg.get_unique_target().id, CTerm(target_term))
+
     cfgid = f'{contract.name}.{contract.setup_function}'
+
+    terminal_rules = ['EVM.halt']
+    if break_every_step:
+        terminal_rules.append('EVM.step')
+    if break_on_jumpi:
+        terminal_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
+    if break_on_calls:
+        terminal_rules.extend(
+            [
+                'EVM.call',
+                'EVM.callcode',
+                'EVM.delegatecall',
+                'EVM.staticcall',
+                'EVM.create',
+                'EVM.create2',
+                'FOUNDRY.foundry.call',
+                'EVM.end',
+                'EVM.return.exception',
+                'EVM.return.revert',
+                'EVM.return.success',
+            ]
+        )
 
     with KCFGExplore(
         foundry.kevm,
@@ -425,13 +469,18 @@ def run_setup(
                 extract_branches=extract_branches,
                 max_iterations=max_iterations,
                 execute_depth=max_depth,
-                terminal_rules=[],
+                terminal_rules=terminal_rules,
                 implication_every_block=implication_every_block,
             )
         except Exception as e:
             raise RuntimeError(f'Prover crashed during setup: {cfgid}\n{e}') from e
 
     leaves = kcfg.leaves
+
+    for leaf in leaves:
+        leaf_pretty = foundry.kevm.pretty_print(leaf.cterm.config)
+        _LOGGER.info(f'leaf: {leaf_pretty}')
+
 
     if len(leaves) != 1:
         raise RuntimeError(f'Could not find a unique post-setup state for contract: {contract.name}')
