@@ -106,6 +106,7 @@ class Contract:
     contract_path: str
     bytecode: str
     raw_sourcemap: Optional[str]
+    setup_function: Optional[str]
     methods: Tuple[Method, ...]
     fields: FrozenDict
 
@@ -116,11 +117,15 @@ class Contract:
                     return _method
             raise ValueError(f'Method not found in abi: {_mname}')
 
+        def is_setup(function_name: str) -> bool:
+            return function_name.lower() == 'setup'
+
         self.name = contract_name
         self.contract_json = contract_json
 
         self.contract_id = self.contract_json['id']
         self.contract_path = self.contract_json['ast']['absolutePath']
+        self.setup_function = None
 
         evm = self.contract_json['evm'] if not foundry else self.contract_json
 
@@ -135,6 +140,13 @@ class Contract:
             mid = int(method_ids[msig], 16)
             _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
             _methods.append(_m)
+            if is_setup(mname):
+                if self.setup_function:
+                    raise ValueError(
+                        f'Duplicate setup functions found on contract {self.name}: {mname} and {self.setup_function}'
+                    )
+                else:
+                    self.setup_function = mname
         self.methods = tuple(_methods)
 
         self.fields = FrozenDict({})

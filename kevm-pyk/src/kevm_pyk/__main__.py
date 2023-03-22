@@ -376,6 +376,7 @@ def exec_foundry_prove(
     kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
     smt_timeout: Optional[int] = None,
     smt_retry_limit: Optional[int] = None,
+    setup_dir: Optional[Path] = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -399,6 +400,7 @@ def exec_foundry_prove(
         kore_rpc_command=kore_rpc_command,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
+        setup_dir=setup_dir,
     )
     failed = 0
     for pid, r in results.items():
@@ -904,6 +906,12 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[shared_args, k_args, kprove_args, smt_args, rpc_args, explore_args],
     )
     foundry_prove_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
+    foundry_prove_args.add_argument(
+        '--setup-dir',
+        type=dir_path,
+        dest='setup_dir',
+        help='Path where post-setup state files should be stored.',
+    )
     foundry_prove_args.add_argument(
         '--test',
         type=str,

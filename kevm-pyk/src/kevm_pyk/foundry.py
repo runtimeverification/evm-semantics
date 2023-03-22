@@ -3,7 +3,7 @@ import logging
 import shutil
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple, Union
+from typing import Callable, Dict, Final, Iterable, List, NamedTuple, Optional, Tuple, Union
 
 from pyk.cli_utils import BugReport, check_file_path, ensure_dir_path
 from pyk.cterm import CTerm
@@ -277,6 +277,7 @@ def foundry_prove(
     kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
     smt_timeout: Optional[int] = None,
     smt_retry_limit: Optional[int] = None,
+    setup_dir: Optional[Path] = None,
 ) -> Dict[str, bool]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -317,6 +318,8 @@ def foundry_prove(
     if unfound_tests:
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
+    setup_states: Dict[str, CTerm] = {}
+
     kcfgs: Dict[str, KCFG] = {}
     for test in tests:
         kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
@@ -326,6 +329,12 @@ def foundry_prove(
             _LOGGER.info(f'Initializing KCFG for test: {test}')
             contract_name, method_name = test.split('.')
             contract = foundry.contracts[contract_name]
+            if contract_name not in setup_states.keys() and contract.setup_function:
+                _LOGGER.info(f'Setup not yet completed for contract {contract_name}.')
+                setup_states[contract_name] = run_setup(
+                    contract,
+                    foundry,
+                )
             method = [m for m in contract.methods if m.name == method_name][0]
             empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
             kcfg = _method_to_cfg(empty_config, contract, method)
@@ -349,6 +358,12 @@ def foundry_prove(
             kcfgs[test] = kcfg
             KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
+    if setup_dir:
+        for cid, term in setup_states.items():
+            setup_file_path = setup_dir / (cid + '.setup.json')
+            with open(setup_file_path, 'w') as setup_file:
+                setup_file.write(json.dumps(term.kast.to_dict()))
+
     return parallel_kcfg_explore(
         foundry.kevm,
         kcfgs,
@@ -367,6 +382,61 @@ def foundry_prove(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
     )
+
+
+def run_setup(
+    contract: Contract,
+    foundry: Foundry,
+    bug_report: Optional[BugReport] = None,
+    kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
+    save_directory: Optional[Path] = None,
+    is_terminal: Optional[Callable[[CTerm], bool]] = None,
+    extract_branches: Optional[Callable[[CTerm], Iterable[KInner]]] = None,
+    max_depth: int = 1000,
+    max_iterations: Optional[int] = None,
+    implication_every_block: bool = False,
+) -> CTerm:
+    setup_function = [m for m in contract.methods if m.name == contract.setup_function][0]
+    empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
+    kcfg = _method_to_cfg(empty_config, contract, setup_function)
+
+    _LOGGER.info(f'Expanding macros in setup initial state for contract: {contract.name}')
+    init_term = kcfg.get_unique_init().cterm.kast
+    init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
+    kcfg.replace_node(kcfg.get_unique_init().id, CTerm(init_term))
+
+    cfgid = f'{contract.name}.{contract.setup_function}'
+
+    with KCFGExplore(
+        foundry.kevm,
+        bug_report=bug_report,
+        kore_rpc_command=kore_rpc_command,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
+    ) as kcfg_explore:
+        try:
+            kcfg = kcfg_explore.all_path_reachability_prove(
+                cfgid,
+                kcfg,
+                cfg_dir=save_directory,
+                is_terminal=is_terminal,
+                extract_branches=extract_branches,
+                max_iterations=max_iterations,
+                execute_depth=max_depth,
+                terminal_rules=[],
+                implication_every_block=implication_every_block,
+            )
+        except Exception as e:
+            raise RuntimeError(f'Prover crashed during setup: {cfgid}\n{e}') from e
+
+    leaves = kcfg.leaves
+
+    if len(leaves) != 1:
+        raise RuntimeError(f'Could not find a unique post-setup state for contract: {contract.name}')
+
+    return leaves[0].cterm
 
 
 def foundry_show(
