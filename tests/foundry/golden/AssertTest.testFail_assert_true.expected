@@ -15,7 +15,7 @@
 ┃  │ statusCode: STATUSCODE:StatusCode
 ┃  │ src: tests/foundry/test/Simple.t.sol:5:50
 ┃  ┊
-┃  ┊  constraint: false
+┃  ┊  constraint: true
 ┃  ┊  subst: .Subst
 ┃  └╌ OMITTED HASH (target, leaf)
 ┃     │ k: #halt ~> CONTINUATION
@@ -49,7 +49,7 @@
    │  src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 
 
-Node
+Node OMITTED HASH:
 
 ( <generatedTop>
   <foundry>
@@ -127,7 +127,7 @@ Node
         </evm>
         <network>
           <activeAccounts>
-            ( SetItem ( 1032069922050249630382865877677304880282300743300 ) SetItem ( 645326474426547203313410069153905908525362434349 ) )
+            ( SetItem ( 645326474426547203313410069153905908525362434349 ) SetItem ( 1032069922050249630382865877677304880282300743300 ) )
           </activeAccounts>
           <accounts>
             ( <account>
@@ -256,7 +256,7 @@ Node
   1032069922050249630382865877677304880282300743300
 </acctID> in_keys ( ACCOUNTS_INIT:AccountCellMap ) } ) ) ) ) ) )
 
-module SUMMARY
+module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-TRUE
     
     
            <kevm>
@@ -329,31 +329,26 @@ module SUMMARY
                </evm>
                <network>
                  <activeAccounts>
-                   ( SetItem ( 1032069922050249630382865877677304880282300743300 ) SetItem ( 645326474426547203313410069153905908525362434349 ) )
+                   ( SetItem ( ( 1032069922050249630382865877677304880282300743300 => 645326474426547203313410069153905908525362434349 ) ) SetItem ( ( 645326474426547203313410069153905908525362434349 => 1032069922050249630382865877677304880282300743300 ) ) )
                  </activeAccounts>
                  <accounts>
                    ( ( <account>
                      <acctID>
                        1032069922050249630382865877677304880282300743300
                      </acctID>
-                     <account>
-                       <acctID>
-                         1032069922050249630382865877677304880282300743300
-                       </acctID>
-                       <balance>
-                         0
-                       </balance>
-                       <storage>
-                         .Map
-                       </storage>
-                       <origStorage>
-                         .Map
-                       </origStorage>
-                       <nonce>
-                         1
-                       </nonce>
-                       ...
-                     </account>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
+                     </nonce>
+                     ...
                    </account> => <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
@@ -376,24 +371,19 @@ module SUMMARY
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
-                     <account>
-                       <acctID>
-                         645326474426547203313410069153905908525362434349
-                       </acctID>
-                       <balance>
-                         0
-                       </balance>
-                       <storage>
-                         .Map
-                       </storage>
-                       <origStorage>
-                         .Map
-                       </origStorage>
-                       <nonce>
-                         0
-                       </nonce>
-                       ...
-                     </account>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                     ...
                    </account> => <account>
                      <acctID>
                        1032069922050249630382865877677304880282300743300
@@ -569,31 +559,26 @@ module SUMMARY
                </evm>
                <network>
                  <activeAccounts>
-                   ( SetItem ( 1032069922050249630382865877677304880282300743300 ) SetItem ( 645326474426547203313410069153905908525362434349 ) )
+                   ( SetItem ( ( 1032069922050249630382865877677304880282300743300 => 645326474426547203313410069153905908525362434349 ) ) SetItem ( ( 645326474426547203313410069153905908525362434349 => 1032069922050249630382865877677304880282300743300 ) ) )
                  </activeAccounts>
                  <accounts>
                    ( ( <account>
                      <acctID>
                        1032069922050249630382865877677304880282300743300
                      </acctID>
-                     <account>
-                       <acctID>
-                         1032069922050249630382865877677304880282300743300
-                       </acctID>
-                       <balance>
-                         0
-                       </balance>
-                       <storage>
-                         .Map
-                       </storage>
-                       <origStorage>
-                         .Map
-                       </origStorage>
-                       <nonce>
-                         1
-                       </nonce>
-                       ...
-                     </account>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
+                     </nonce>
+                     ...
                    </account> => <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
@@ -616,24 +601,19 @@ module SUMMARY
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
-                     <account>
-                       <acctID>
-                         645326474426547203313410069153905908525362434349
-                       </acctID>
-                       <balance>
-                         0
-                       </balance>
-                       <storage>
-                         .Map
-                       </storage>
-                       <origStorage>
-                         .Map
-                       </origStorage>
-                       <nonce>
-                         0
-                       </nonce>
-                       ...
-                     </account>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                     ...
                    </account> => <account>
                      <acctID>
                        1032069922050249630382865877677304880282300743300
@@ -810,7 +790,7 @@ module SUMMARY
                </evm>
                <network>
                  <activeAccounts>
-                   ( SetItem ( 1032069922050249630382865877677304880282300743300 ) SetItem ( 645326474426547203313410069153905908525362434349 ) )
+                   ( SetItem ( 645326474426547203313410069153905908525362434349 ) SetItem ( 1032069922050249630382865877677304880282300743300 ) )
                  </activeAccounts>
                  <accounts>
                    ( <account>
@@ -997,7 +977,7 @@ module SUMMARY
                </evm>
                <network>
                  <activeAccounts>
-                   ( SetItem ( 1032069922050249630382865877677304880282300743300 ) SetItem ( 645326474426547203313410069153905908525362434349 ) )
+                   ( SetItem ( 645326474426547203313410069153905908525362434349 ) SetItem ( 1032069922050249630382865877677304880282300743300 ) )
                  </activeAccounts>
                  <accounts>
                    ( <account>
