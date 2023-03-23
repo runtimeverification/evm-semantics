@@ -26,7 +26,6 @@ from .foundry import (
     foundry_step_node,
     foundry_to_dot,
 )
-from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, KEVMKompileMode
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
 from .utils import arg_pair_of, get_cfg_for_spec, parallel_kcfg_explore
@@ -69,13 +68,6 @@ def main() -> None:
 def exec_compile(contract_file: Path, **kwargs: Any) -> None:
     res = solc_compile(contract_file)
     print(json.dumps(res))
-
-
-def exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, **kwargs: Any) -> None:
-    gst_data = json.loads(input_file.read_text())
-    kore = gst_to_kore(gst_data, schedule, mode, chainid)
-    print(kore.text)
-    _LOGGER.info('Finished writing kore')
 
 
 def exec_kompile(
@@ -250,6 +242,7 @@ def exec_prove(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
+    kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
     smt_timeout: Optional[int] = None,
     smt_retry_limit: Optional[int] = None,
     **kwargs: Any,
@@ -267,10 +260,19 @@ def exec_prove(
         exclude_claim_labels=exclude_claim_labels,
     )
 
+    if isinstance(kore_rpc_command, str):
+        kore_rpc_command = kore_rpc_command.split()
+
     _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
     proof_problems = {c.label: KCFG.from_claim(kevm.definition, c) for c in claims}
     if simplify_init:
-        with KCFGExplore(kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit) as kcfg_explore:
+        with KCFGExplore(
+            kevm,
+            bug_report=br,
+            kore_rpc_command=kore_rpc_command,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
+        ) as kcfg_explore:
             proof_problems = {claim: kcfg_explore.simplify(claim, cfg) for claim, cfg in proof_problems.items()}
 
     results = parallel_kcfg_explore(
@@ -287,6 +289,7 @@ def exec_prove(
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
         bug_report=br,
+        kore_rpc_command=kore_rpc_command,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
     )
@@ -390,6 +393,10 @@ def exec_foundry_prove(
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
+
+    if isinstance(kore_rpc_command, str):
+        kore_rpc_command = kore_rpc_command.split()
+
     results = foundry_prove(
         foundry_out=foundry_out,
         max_depth=max_depth,
@@ -671,7 +678,6 @@ def _create_argument_parser() -> ArgumentParser:
         type=int,
         help='Store every Nth state in the CFG for inspection.',
     )
-
     explore_args.add_argument(
         '--kore-rpc-command',
         dest='kore_rpc_command',
@@ -876,13 +882,6 @@ def _create_argument_parser() -> ArgumentParser:
 
     solc_args = command_parser.add_parser('compile', help='Generate combined JSON with solc compilation results.')
     solc_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
-
-    gst_to_kore_args = command_parser.add_parser(
-        'gst-to-kore',
-        help='Convert a GeneralStateTest to Kore for compsumption by KEVM.',
-        parents=[shared_args, evm_chain_args],
-    )
-    gst_to_kore_args.add_argument('input_file', type=file_path, help='Path to GST.')
 
     solc_to_k_args = command_parser.add_parser(
         'solc-to-k',

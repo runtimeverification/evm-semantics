@@ -12,9 +12,9 @@ kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTes
     || git --no-pager diff --no-index --ignore-all-space -R tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json.llvm-out tests/templates/output-success-llvm.json
 rm -rf tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json.llvm-out
 
-kevm kast tests/interactive/log3_MaxTopic_d0g0v0.json kast  --backend llvm > tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
+kevm kast tests/interactive/log3_MaxTopic_d0g0v0.json --backend llvm > tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
 git --no-pager diff --no-index --ignore-all-space -R tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out tests/interactive/log3_MaxTopic_d0g0v0.json.parse-expected
-rm -rf tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
+rm tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
 
 # This test currently segfaults on M1 Macs
 if ! ${APPLE_SILICON:-false}; then

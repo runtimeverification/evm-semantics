@@ -351,15 +351,10 @@ The `#next [_]` operator initiates execution by:
 -   `#stackDelta` is the delta the stack will have after the opcode executes.
 
 ```k
-    syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [function]
-                  | #stackUnderflow ( WordStack , Int    ) [function, total]
-                  | #stackOverflow  ( WordStack , OpCode ) [function]
- // ------------------------------------------------------------------------
-    rule #stackUnderflow(WS        , OP:OpCode) => #stackUnderflow(WS, #stackNeeded(OP))
-    rule #stackUnderflow(_         , N:Int    ) => false                         requires notBool (N >Int 0)
-    rule #stackUnderflow(_ : WS    , N:Int    ) => #stackUnderflow(WS, N -Int 1) requires          N >Int 0
-    rule #stackUnderflow(.WordStack, N:Int    ) => true                          requires          N >Int 0
-
+    syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [macro]
+                  | #stackOverflow  ( WordStack , OpCode ) [macro]
+ // --------------------------------------------------------------
+    rule #stackUnderflow(WS, OP:OpCode) => #sizeWordStack(WS) <Int #stackNeeded(OP)
     rule #stackOverflow (WS, OP) => #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
