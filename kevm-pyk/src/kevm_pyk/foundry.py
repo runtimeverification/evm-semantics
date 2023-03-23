@@ -608,15 +608,17 @@ def _foundry_to_bin_runtime(
 
 
 def _method_to_cfg(
-    empty_config: KInner, 
-    contract: Contract, 
+    empty_config: KInner,
+    contract: Contract,
     method: Contract.Method,
     kcfgs_dir: Path,
     init_state: Optional[str],
 ) -> KCFG:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
-    init_term = _init_term(empty_config, contract.name, kcfgs_dir, calldata=calldata, callvalue=callvalue, init_state=init_state)
+    init_term = _init_term(
+        empty_config, contract.name, kcfgs_dir, calldata=calldata, callvalue=callvalue, init_state=init_state
+    )
     init_cterm = _init_cterm(init_term)
     is_test = method.name.startswith('test')
     failing = method.name.startswith('testFail')
@@ -636,6 +638,7 @@ def _init_cterm(init_term: KInner) -> CTerm:
     init_cterm = KEVM.add_invariant(init_cterm)
     return init_cterm
 
+
 def get_final_accounts_cell(cfgid: str, kcfgs_dir: Path) -> KInner:
     kcfg = KCFGExplore.read_cfg(cfgid, kcfgs_dir)
     if not kcfg:
@@ -644,12 +647,12 @@ def get_final_accounts_cell(cfgid: str, kcfgs_dir: Path) -> KInner:
     targets = kcfg.target
     if len(targets) != 1:
         raise RuntimeError(f'Failed to find a unique target node for: {cfgid}')
-    
+
     target = targets[0].id
 
     covers = kcfg.covers(target_id=target)
 
-    if len(covers) != 1: 
+    if len(covers) != 1:
         raise RuntimeError(f'Failed to find a unique final state for: {cfgid}')
 
     cover = covers[0].source
@@ -657,6 +660,7 @@ def get_final_accounts_cell(cfgid: str, kcfgs_dir: Path) -> KInner:
     accounts_cell = get_cell(cover.cterm.config, 'ACCOUNTS_CELL')
 
     return accounts_cell
+
 
 def _init_term(
     empty_config: KInner,
