@@ -400,7 +400,7 @@ def foundry_prove(
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
     run_cfg_group(list(setup_methods.values()))
 
-    _LOGGER.info(f'Running tests in parallel: {tests}')
+    _LOGGER.info(f'Running test functions in parallel: {tests}')
     return run_cfg_group(tests)
 
 
