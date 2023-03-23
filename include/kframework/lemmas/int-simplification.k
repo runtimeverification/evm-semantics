@@ -122,6 +122,7 @@ module INT-SIMPLIFICATION-COMMON
   // ###########################################################################
 
     rule A +Int B <Int A => false requires 0 <=Int B [simplification]
+    rule A +Int B <Int B => false requires 0 <=Int A [simplification]
 
     rule A <Int A -Int B => false requires 0 <=Int B [simplification]
 

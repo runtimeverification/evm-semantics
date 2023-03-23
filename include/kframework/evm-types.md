@@ -29,8 +29,8 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 ```k
     syntax Int ::= bool2Word ( Bool ) [function, total, smtlib(bool2Word)]
  // ----------------------------------------------------------------------
-    rule bool2Word( B:Bool ) => 1 requires B
-    rule bool2Word( B:Bool ) => 0 requires notBool B
+    rule bool2Word( true  ) => 1 
+    rule bool2Word( false ) => 0
 
     syntax Bool ::= word2Bool ( Int ) [function, total]
  // ---------------------------------------------------
@@ -164,18 +164,20 @@ Bitwise logical operators are lifted from the integer versions.
                  | Int "|Word"   Int [function, total]
                  | Int "&Word"   Int [function, total]
                  | Int "xorWord" Int [function, total]
-                 | Int "<<Word"  Int [function]
-                 | Int ">>Word"  Int [function]
-                 | Int ">>sWord" Int [function]
- // -------------------------------------------
+                 | Int "<<Word"  Int [function, total]
+                 | Int ">>Word"  Int [function, total]
+                 | Int ">>sWord" Int [function, total]
+ // --------------------------------------------------
     rule ~Word W       => W xorInt maxUInt256
     rule W0 |Word   W1 => W0 |Int W1
     rule W0 &Word   W1 => W0 &Int W1
     rule W0 xorWord W1 => W0 xorInt W1
-    rule W0 <<Word  W1 => chop( W0 <<Int W1 ) requires W1 <Int 256
-    rule  _ <<Word  W1 => 0 requires W1 >=Int 256
-    rule W0 >>Word  W1 => W0 >>Int W1
-    rule W0 >>sWord W1 => chop( (abs(W0) *Int sgn(W0)) >>Int W1 )
+    rule W0 <<Word  W1 => chop( W0 <<Int W1 ) requires 0 <=Int W0 andBool 0 <=Int W1 andBool W1 <Int 256
+    rule  _ <<Word  _  => 0 [owise]
+    rule W0 >>Word  W1 => W0 >>Int W1 requires 0 <=Int W0 andBool 0 <=Int W1
+    rule  _ >>Word   _ => 0 [owise]
+    rule W0 >>sWord W1 => chop( (abs(W0) *Int sgn(W0)) >>Int W1 ) requires 0 <=Int W0 andBool 0 <=Int W1
+    rule  _ >>sWord  _ => 0 [owise]
 ```
 
 -   `bit` gets bit `N` (0 being MSB).
