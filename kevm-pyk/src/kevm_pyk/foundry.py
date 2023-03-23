@@ -317,77 +317,91 @@ def foundry_prove(
     if unfound_tests:
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
-    setup_methods: Dict[str, str] = {
-        contract.name: f'{contract.name}.{method.name}'
-        for contract in foundry.contracts.values()
-        for method in contract.methods
-        if method.name.lower() == 'setup'
-    }
+    setup_methods: Dict[str, str] = {}
 
-    kcfgs: Dict[str, KCFG] = {}
-    for test in tests:
-        kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
-        if kcfg is not None and not reinit:
-            kcfgs[test] = kcfg
-        else:
-            _LOGGER.info(f'Initializing KCFG for test: {test}')
-            contract_name, method_name = test.split('.')
-            contract = foundry.contracts[contract_name]
-            method = [m for m in contract.methods if m.name == method_name][0]
-            empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
+    contracts = {test.split('.')[0] for test in tests}
+    for contract_name in contracts:
+        contract = foundry.contracts[contract_name]
+        for method in contract.methods:
+            if method.name.lower() == 'setup':
+                if contract.name in setup_methods:
+                    raise ValueError(f'Multiple setup methods is not supported: {contract_name}')
+                setup_methods[contract.name] = f'{contract.name}.{method.name}'
 
-            setup_method = setup_methods[contract_name] if method.name.startswith('test') else None
+    def run_cfg_group(tests: List[str]) -> Dict[str, bool]:
+        kcfgs: Dict[str, KCFG] = {}
+        for test in tests:
+            kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
+            if kcfg is not None and not reinit:
+                kcfgs[test] = kcfg
+            else:
+                _LOGGER.info(f'Initializing KCFG for test: {test}')
+                contract_name, method_name = test.split('.')
+                contract = foundry.contracts[contract_name]
+                method = [m for m in contract.methods if m.name == method_name][0]
+                empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
 
-            kcfg = _method_to_cfg(empty_config, contract, method, kcfgs_dir, init_state=setup_method)
+                use_setup = method.name.startswith('test') and contract_name in setup_methods
+                setup_method = None
+                if use_setup:
+                    setup_method = setup_methods[contract_name]
+                    _LOGGER.info(f'Using setup method {setup_method} for test: {test}')
 
-            _LOGGER.info(f'Expanding macros in initial state for test: {test}')
-            init_term = kcfg.get_unique_init().cterm.kast
-            init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
-            init_cterm = CTerm(init_term)
+                kcfg = _method_to_cfg(empty_config, contract, method, kcfgs_dir, init_state=setup_method)
 
-            _LOGGER.info(f'Expanding macros in target state for test: {test}')
-            target_term = kcfg.get_unique_target().cterm.kast
-            target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
-            target_cterm = CTerm(target_term)
-            kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
+                _LOGGER.info(f'Expanding macros in initial state for test: {test}')
+                init_term = kcfg.get_unique_init().cterm.kast
+                init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
+                init_cterm = CTerm(init_term)
 
-            _LOGGER.info(f'Starting KCFGExplore for test: {test}')
-            with KCFGExplore(
-                foundry.kevm,
-                bug_report=br,
-                kore_rpc_command=kore_rpc_command,
-                smt_timeout=smt_timeout,
-                smt_retry_limit=smt_retry_limit,
-            ) as kcfg_explore:
-                _LOGGER.info(f'Computing definedness constraint for test: {test}')
-                init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
-                kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
+                _LOGGER.info(f'Expanding macros in target state for test: {test}')
+                target_term = kcfg.get_unique_target().cterm.kast
+                target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
+                target_cterm = CTerm(target_term)
+                kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
 
-                if simplify_init:
-                    _LOGGER.info(f'Simplifying KCFG for test: {test}')
-                    kcfg = kcfg_explore.simplify(test, kcfg)
+                _LOGGER.info(f'Starting KCFGExplore for test: {test}')
+                with KCFGExplore(
+                    foundry.kevm,
+                    bug_report=br,
+                    kore_rpc_command=kore_rpc_command,
+                    smt_timeout=smt_timeout,
+                    smt_retry_limit=smt_retry_limit,
+                ) as kcfg_explore:
+                    _LOGGER.info(f'Computing definedness constraint for test: {test}')
+                    init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
+                    kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
 
-            kcfgs[test] = kcfg
-            KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+                    if simplify_init:
+                        _LOGGER.info(f'Simplifying KCFG for test: {test}')
+                        kcfg = kcfg_explore.simplify(test, kcfg)
+                kcfgs[test] = kcfg
+                KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
 
-    return parallel_kcfg_explore(
-        foundry.kevm,
-        kcfgs,
-        save_directory=kcfgs_dir,
-        max_depth=max_depth,
-        max_iterations=max_iterations,
-        workers=workers,
-        break_every_step=break_every_step,
-        break_on_jumpi=break_on_jumpi,
-        break_on_calls=break_on_calls,
-        implication_every_block=implication_every_block,
-        is_terminal=KEVM.is_terminal,
-        extract_branches=KEVM.extract_branches,
-        bug_report=br,
-        kore_rpc_command=kore_rpc_command,
-        smt_timeout=smt_timeout,
-        smt_retry_limit=smt_retry_limit,
-    )
+        return parallel_kcfg_explore(
+            foundry.kevm,
+            kcfgs,
+            save_directory=kcfgs_dir,
+            max_depth=max_depth,
+            max_iterations=max_iterations,
+            workers=workers,
+            break_every_step=break_every_step,
+            break_on_jumpi=break_on_jumpi,
+            break_on_calls=break_on_calls,
+            implication_every_block=implication_every_block,
+            is_terminal=KEVM.is_terminal,
+            extract_branches=KEVM.extract_branches,
+            bug_report=br,
+            kore_rpc_command=kore_rpc_command,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
+        )
+
+    _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
+    run_cfg_group(list(setup_methods.values()))
+
+    _LOGGER.info(f'Running tests in parallel: {tests}')
+    return run_cfg_group(tests)
 
 
 def foundry_show(

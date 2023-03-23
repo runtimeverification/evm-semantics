@@ -4095,6 +4095,112 @@ module SCRIPT-BIN-RUNTIME
 
 endmodule
 
+module SETUP2TEST-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= Setup2TestContract
+    
+    syntax Setup2TestContract ::= "Setup2Test" [symbol(), klabel(contract_Setup2Test)]
+    
+      
+    
+    syntax Field ::= Setup2TestField
+    
+    syntax Setup2TestField ::= "IS_TEST" [symbol(), klabel(field_Setup2Test_IS_TEST)]
+    
+    syntax Setup2TestField ::= "_failed" [symbol(), klabel(field_Setup2Test__failed)]
+    
+    syntax Setup2TestField ::= "IS_SCRIPT" [symbol(), klabel(field_Setup2Test_IS_SCRIPT)]
+    
+    syntax Setup2TestField ::= "stdstore" [symbol(), klabel(field_Setup2Test_stdstore)]
+    
+    syntax Setup2TestField ::= "a" [symbol(), klabel(field_Setup2Test_a)]
+    
+    syntax Setup2TestField ::= "b" [symbol(), klabel(field_Setup2Test_b)]
+    
+    syntax Setup2TestField ::= "c" [symbol(), klabel(field_Setup2Test_c)]
+    
+    rule  ( #loc ( Setup2Test . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( Setup2Test . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( Setup2Test . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( Setup2Test . stdstore ) => 1 )
+      
+    
+    rule  ( #loc ( Setup2Test . a ) => 8 )
+      
+    
+    rule  ( #loc ( Setup2Test . b ) => 9 )
+      
+    
+    rule  ( #loc ( Setup2Test . c ) => 10 )
+      
+    
+    syntax Bytes ::= Setup2TestContract "." Setup2TestMethod [function(), symbol(), klabel(method_Setup2Test)]
+    
+    syntax Setup2TestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_Setup2Test_IS_SCRIPT)]
+    
+    syntax Setup2TestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_Setup2Test_IS_TEST)]
+    
+    syntax Setup2TestMethod ::= "failed" "(" ")" [symbol(), klabel(method_Setup2Test_failed)]
+    
+    syntax Setup2TestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_Setup2Test_setUp)]
+    
+    syntax Setup2TestMethod ::= "testFail_setup" "(" ")" [symbol(), klabel(method_Setup2Test_testFail_setup)]
+    
+    syntax Setup2TestMethod ::= "test_setup" "(" ")" [symbol(), klabel(method_Setup2Test_test_setup)]
+    
+    syntax Setup2TestMethod ::= "vm" "(" ")" [symbol(), klabel(method_Setup2Test_vm)]
+    
+    rule  ( Setup2Test . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( Setup2Test . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( Setup2Test . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( Setup2Test . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
+      
+    
+    rule  ( Setup2Test . testFail_setup ( ) => #abiCallData ( "testFail_setup" , .TypedArgs ) )
+      
+    
+    rule  ( Setup2Test . test_setup ( ) => #abiCallData ( "test_setup" , .TypedArgs ) )
+      
+    
+    rule  ( Setup2Test . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testFail_setup" ) => 3501410022 )
+      
+    
+    rule  ( selector ( "test_setup" ) => 2001288179 )
+      
+    
+    rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
 module SETUPTEST-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -7057,6 +7163,7 @@ module FOUNDRY-MAIN
     imports public SAFE-BIN-RUNTIME
     imports public SAFETEST-BIN-RUNTIME
     imports public SCRIPT-BIN-RUNTIME
+    imports public SETUP2TEST-BIN-RUNTIME
     imports public SETUPTEST-BIN-RUNTIME
     imports public SIGNTEST-BIN-RUNTIME
     imports public ASSERTTEST-BIN-RUNTIME
