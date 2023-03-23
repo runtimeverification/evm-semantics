@@ -317,6 +317,13 @@ def foundry_prove(
     if unfound_tests:
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
+    setup_methods: Dict[str, str] = {
+        contract.name: f'{contract.name}.{method.name}'
+        for contract in foundry.contracts.values()
+        for method in contract.methods
+        if method.name.lower() == 'setup'
+    }
+
     kcfgs: Dict[str, KCFG] = {}
     for test in tests:
         kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
@@ -328,7 +335,10 @@ def foundry_prove(
             contract = foundry.contracts[contract_name]
             method = [m for m in contract.methods if m.name == method_name][0]
             empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
-            kcfg = _method_to_cfg(empty_config, contract, method)
+
+            setup_method = setup_methods[contract_name] if method.name.startswith('test') else None
+
+            kcfg = _method_to_cfg(empty_config, contract, method, kcfgs_dir, init_state=setup_method)
 
             _LOGGER.info(f'Expanding macros in initial state for test: {test}')
             init_term = kcfg.get_unique_init().cterm.kast
@@ -597,10 +607,16 @@ def _foundry_to_bin_runtime(
     return bin_runtime_definition
 
 
-def _method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Method) -> KCFG:
+def _method_to_cfg(
+    empty_config: KInner, 
+    contract: Contract, 
+    method: Contract.Method,
+    kcfgs_dir: Path,
+    init_state: Optional[str],
+) -> KCFG:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
-    init_term = _init_term(empty_config, contract.name, calldata=calldata, callvalue=callvalue)
+    init_term = _init_term(empty_config, contract.name, kcfgs_dir, calldata=calldata, callvalue=callvalue, init_state=init_state)
     init_cterm = _init_cterm(init_term)
     is_test = method.name.startswith('test')
     failing = method.name.startswith('testFail')
@@ -620,13 +636,36 @@ def _init_cterm(init_term: KInner) -> CTerm:
     init_cterm = KEVM.add_invariant(init_cterm)
     return init_cterm
 
+def get_final_accounts_cell(cfgid: str, kcfgs_dir: Path) -> KInner:
+    kcfg = KCFGExplore.read_cfg(cfgid, kcfgs_dir)
+    if not kcfg:
+        raise RuntimeError(f'failed to read cfg: {cfgid}')
+
+    targets = kcfg.target
+    if len(targets) != 1:
+        raise RuntimeError(f'Failed to find a unique target node for: {cfgid}')
+    
+    target = targets[0].id
+
+    covers = kcfg.covers(target_id=target)
+
+    if len(covers) != 1: 
+        raise RuntimeError(f'Failed to find a unique final state for: {cfgid}')
+
+    cover = covers[0].source
+
+    accounts_cell = get_cell(cover.cterm.config, 'ACCOUNTS_CELL')
+
+    return accounts_cell
 
 def _init_term(
     empty_config: KInner,
     contract_name: str,
+    kcfgs_dir: Path,
     *,
     calldata: Optional[KInner] = None,
     callvalue: Optional[KInner] = None,
+    init_state: Optional[str],
 ) -> KInner:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(
@@ -696,6 +735,9 @@ def _init_term(
         'ADDRESSSET_CELL': KApply('.Set'),
         'STORAGESLOTSET_CELL': KApply('.Set'),
     }
+
+    if init_state:
+        init_subst['ACCOUNTS_CELL'] = get_final_accounts_cell(init_state, kcfgs_dir)
 
     if calldata is not None:
         init_subst['CALLDATA_CELL'] = calldata
