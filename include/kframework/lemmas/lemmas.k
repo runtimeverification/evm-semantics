@@ -33,6 +33,19 @@ module LEMMAS [symbolic]
     rule X in (SetItem(Y) _   ) => true      requires X  ==Int Y [simplification]
     rule X in (SetItem(Y) REST) => X in REST requires X =/=Int Y [simplification]
 
+    rule [set-member-singleton]:
+      X in SetItem ( Y ) S:Set => ( X ==Int Y ) orBool ( X in S )
+      [simplification]
+
+    rule [set-member-union-split]:
+      X in S1:Set |Set S2:Set => (X in S1) orBool (X in S2)
+      [simplification]
+
+    rule [set-union-subsume-singleton]:
+      S:Set |Set SetItem(X) => S
+      requires X in S
+      [simplification]
+
   // ########################
   // Word Reasoning
   // ########################
@@ -154,5 +167,12 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
 
     rule B ==Bool false => notBool B [simplification]
+
+    rule [bool-eq-true]:  B:Bool ==Bool true  => B         [simplification]
+    rule [bool-eq-false]: B:Bool ==Bool false => notBool B [simplification]
+
+    rule [true-notBool]:
+      { true #Equals (notBool B) } => { false #Equals B }
+      [simplification]
 
 endmodule

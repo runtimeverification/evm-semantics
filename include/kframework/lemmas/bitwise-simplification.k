@@ -101,4 +101,26 @@ module BITWISE-SIMPLIFICATION [symbolic]
     rule notMaxUInt160 &Int X => 0 requires #rangeUInt(160, X) [simplification]
     rule maxUInt160 &Int (X |Int (notMaxUInt160 &Int Y:Int)) => X requires #rangeUInt(160, X) andBool 0 <=Int Y [simplification]
 
+  //
+  // &Int
+  //
+
+    // X &Int #asWord ( Y ) is not affected by the part of Y higher than X
+    rule [bitwise-and-asword-tail]:
+      X &Int #asWord ( Y ) =>
+      X &Int #asWord ( concatTail(Y) )
+      requires 0 <=Int X
+       andBool concatTail(Y) =/=K Y
+       andBool X <Int 2 ^Int (8 *Int lengthBytes(concatTail(Y)))
+      [simplification]
+
+    // X &Int ( #asWord ( Y ) >> Z ) is not affected by the shifted part of Y higher than X
+    rule [bitwise-and-asword-tail-shift]:
+      X &Int ( #asWord ( Y ) >>Int Z ) =>
+      X &Int ( #asWord ( concatTail(Y) ) >>Int Z )
+      requires 0 <=Int X
+       andBool concatTail(Y) =/=K Y
+       andBool X <Int 2 ^Int (8 *Int lengthBytes(concatTail(Y)) -Int Z)
+      [simplification]
+
 endmodule

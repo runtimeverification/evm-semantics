@@ -144,4 +144,36 @@ module INT-SIMPLIFICATION-COMMON
 
     rule A <=Int maxInt(B, C) => true requires A <=Int B orBool A <=Int C [simplification]
 
+  //
+  // Arithmetic
+  //
+
+    // Distributivity of minInt against +Int
+    rule [minInt-factor-left]:  minInt ( A:Int +Int B:Int, A:Int +Int C:Int ) => A +Int minInt ( B, C ) [simplification]
+    rule [minInt-factor-right]: minInt ( A:Int +Int B:Int, C:Int +Int B:Int ) => minInt ( A, C ) +Int B [simplification]
+
+    // Definition of maxInt
+    rule [maxint-left]:  maxInt(I1:Int, I2:Int) => I2 requires I1 <=Int I2 [simplification]
+    rule [maxint-right]: maxInt(I1:Int, I2:Int) => I1 requires I1 >=Int I2 [simplification]
+
+    // Maximum is not greater than if both operands are not greater than
+    rule [maxint-leq-split]: maxInt(A:Int, B:Int) <=Int X:Int => A <=Int X andBool B <=Int X [simplification]
+
+  //
+  // up/Int
+  //
+
+    // Upper bound on the up/Int *Int operation
+    rule [upInt-lt-true]:
+      ((X up/Int Y) *Int Y) <Int Z => true
+      requires X <=Int (Z -Int Y)
+        andBool 0 <Int Y
+      [simplification]
+
+    // X up/Int Y always rounds up
+    rule [upInt-lt-false]:
+      ((X up/Int Y) *Int Y) <Int X => false
+      requires 0 <Int Y
+      [simplification]
+
 endmodule
