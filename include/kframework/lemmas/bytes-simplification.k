@@ -250,4 +250,26 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires 0 <=Int N
       [simplification]
 
+  //
+  // &Int
+  //
+
+    // X &Int #asWord ( Y ) is not affected by the part of Y higher than X
+    rule [bitwise-and-asword-tail]:
+      X &Int #asWord ( Y ) =>
+      X &Int #asWord ( concatTail(Y) )
+      requires 0 <=Int X
+       andBool concatTail(Y) =/=K Y
+       andBool X <Int 2 ^Int (8 *Int lengthBytes(concatTail(Y)))
+      [simplification]
+
+    // X &Int ( #asWord ( Y ) >> Z ) is not affected by the shifted part of Y higher than X
+    rule [bitwise-and-asword-tail-shift]:
+      X &Int ( #asWord ( Y ) >>Int Z ) =>
+      X &Int ( #asWord ( concatTail(Y) ) >>Int Z )
+      requires 0 <=Int X
+       andBool concatTail(Y) =/=K Y
+       andBool X <Int 2 ^Int (8 *Int lengthBytes(concatTail(Y)) -Int Z)
+      [simplification]
+
 endmodule

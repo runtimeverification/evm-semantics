@@ -1,3 +1,5 @@
+requires "evm-types.md"
+
 module INT-SIMPLIFICATION
     imports INT-SIMPLIFICATION-HASKELL
 endmodule
@@ -46,6 +48,7 @@ endmodule
 module INT-SIMPLIFICATION-COMMON
     imports INT
     imports BOOL
+    imports EVM-TYPES
 
   // ###########################################################################
   // add, sub
