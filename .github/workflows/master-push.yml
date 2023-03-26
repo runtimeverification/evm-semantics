@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.push.head.sha }}
       - name: 'Upgrade bash'
         if: ${{ contains(matrix.os, 'macos') }}
         run: brew install bash
@@ -57,14 +59,15 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.push.head.sha }}
       - name: 'Make Release'
+        env:
+         GITHUB_TOKEN: ${{ secrets.JENKINS_GITHUB_PAT }}
         run: |
+          set -x
           kevm_version=v$(cat package/version)
-          curl -X POST                                                              \
-            -H "Accept: application/vnd.github+json"                                \
-            -H "Authorization: Bearer ${secrets.JENKINS_GITHUB_PAT}"                              \
-            https://api.github.com/repos/runtimeverification/evm-semantics/releases \
-            -d '{"tag_name":"'${kevm_version}'","target_commitish":"'${GITHUB_HEAD_REF}'","draft":false,"prerelease":false,"generate_release_notes":false}'
+          gh release create "${kevm_version}" --target "${GITHUB_SHA}"
 
   gh-pages:
     name: 'Publish GH Pages'
@@ -76,6 +79,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
+          ref: ${{ github.event.push.head.sha }}
       - run: |
          git config --global user.email 'devops@runtimeverification.com'
          git config --global user.name  'RV DevOps'

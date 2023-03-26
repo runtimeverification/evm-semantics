@@ -124,17 +124,21 @@ run_krun() {
 run_kast() {
     local output_mode
 
-    output_mode="${1:-kore}" ; shift
+    if [ $# -eq 0 ]; then
+        output_mode=kore
+    else
+        output_mode="$1"; shift
+    fi
 
     case "${run_file}-${output_mode}" in
-        *.json-kast) execute kast-json.py "${run_file}" "${cSCHEDULE_kast}" "${cMODE_kast}" "${cCHAINID_kast}"
-                     ;;
         *.json-kore) if ! ${pyk}; then
                          execute kore-json.py "${run_file}" "${cSCHEDULE_kore}" "${cMODE_kore}" "${cCHAINID_kore}"
                      else
                          check_k_install
-                         run_kevm_pyk gst-to-kore "${run_file}" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@"
+                         gst-to-kore "${run_file}" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@"
                      fi
+                     ;;
+        *.json-kast) fatal "kast output is not supported for .json input"
                      ;;
         *)           check_k_install ; kast --definition "${backend_dir}" "${run_file}" --output "${output_mode}" "$@"
                      ;;
@@ -380,10 +384,6 @@ fi
 cMODE_kore="Lbl${mode}{}()"
 cSCHEDULE_kore="Lbl${schedule}'Unds'EVM{}()"
 cCHAINID_kore="\dv{SortInt{}}(\"${chainid}\")"
-
-cMODE_kast="\`${mode}\`(.KList)"
-cSCHEDULE_kast="\`${schedule}_EVM\`(.KList)"
-cCHAINID_kast="#token(\"${chainid}\",\"Int\")"
 
 ! ${debug} || set -x
 
