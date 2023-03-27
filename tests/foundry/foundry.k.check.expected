@@ -504,8 +504,6 @@ module ARITHMETICTEST-BIN-RUNTIME
     
     syntax ArithmeticTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ArithmeticTest_failed)]
     
-    syntax ArithmeticTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_ArithmeticTest_setUp)]
-    
     syntax ArithmeticTestMethod ::= "test_decreasing_div" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_decreasing_div)]
     
     syntax ArithmeticTestMethod ::= "test_max1" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max1)]
@@ -541,9 +539,6 @@ module ARITHMETICTEST-BIN-RUNTIME
       
     
     rule  ( ArithmeticTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( ArithmeticTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
     
     rule  ( ArithmeticTest . test_decreasing_div ( V0_a , V1_b ) => #abiCallData ( "test_decreasing_div" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
@@ -634,9 +629,6 @@ module ARITHMETICTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "failed" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "setUp" ) => 177362148 )
       
     
     rule  ( selector ( "test_decreasing_div" ) => 1011519306 )
@@ -1095,8 +1087,6 @@ module CONTRACTTEST-BIN-RUNTIME
     
     syntax ContractTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ContractTest_failed)]
     
-    syntax ContractTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_ContractTest_setUp)]
-    
     syntax ContractTestMethod ::= "testExample" "(" ")" [symbol(), klabel(method_ContractTest_testExample)]
     
     syntax ContractTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ContractTest_vm)]
@@ -1108,9 +1098,6 @@ module CONTRACTTEST-BIN-RUNTIME
       
     
     rule  ( ContractTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( ContractTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
     
     rule  ( ContractTest . testExample ( ) => #abiCallData ( "testExample" , .TypedArgs ) )
@@ -1126,9 +1113,6 @@ module CONTRACTTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "failed" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "setUp" ) => 177362148 )
       
     
     rule  ( selector ( "testExample" ) => 1062881834 )
@@ -1622,8 +1606,6 @@ module ENVTEST-BIN-RUNTIME
     
     syntax EnvTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_EnvTest_failed)]
     
-    syntax EnvTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_EnvTest_setUp)]
-    
     syntax EnvTestMethod ::= "testEnvAddress" "(" ")" [symbol(), klabel(method_EnvTest_testEnvAddress)]
     
     syntax EnvTestMethod ::= "testEnvAddresseArray" "(" ")" [symbol(), klabel(method_EnvTest_testEnvAddresseArray)]
@@ -1661,9 +1643,6 @@ module ENVTEST-BIN-RUNTIME
       
     
     rule  ( EnvTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( EnvTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
     
     rule  ( EnvTest . testEnvAddress ( ) => #abiCallData ( "testEnvAddress" , .TypedArgs ) )
@@ -1718,9 +1697,6 @@ module ENVTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "failed" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "setUp" ) => 177362148 )
       
     
     rule  ( selector ( "testEnvAddress" ) => 2862857531 )
@@ -2912,8 +2888,6 @@ module LOOPSTEST-BIN-RUNTIME
     
     syntax LoopsTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_LoopsTest_failed)]
     
-    syntax LoopsTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_LoopsTest_setUp)]
-    
     syntax LoopsTestMethod ::= "testIsNotPrime" "(" Int ")" [symbol(), klabel(method_LoopsTest_testIsNotPrime)]
     
     syntax LoopsTestMethod ::= "testIsPrime" "(" Int "," Int ")" [symbol(), klabel(method_LoopsTest_testIsPrime)]
@@ -2953,9 +2927,6 @@ module LOOPSTEST-BIN-RUNTIME
       
     
     rule  ( LoopsTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( LoopsTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
     
     rule  ( LoopsTest . testIsNotPrime ( V0_n ) => #abiCallData ( "testIsNotPrime" , #uint256 ( V0_n ) , .TypedArgs ) )
@@ -3015,9 +2986,6 @@ module LOOPSTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "failed" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "setUp" ) => 177362148 )
       
     
     rule  ( selector ( "testIsNotPrime" ) => 809987623 )
@@ -3109,8 +3077,6 @@ module MOCKCALLTEST-BIN-RUNTIME
     
     syntax MockCallTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_MockCallTest_failed)]
     
-    syntax MockCallTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_MockCallTest_setUp)]
-    
     syntax MockCallTestMethod ::= "testMockCall" "(" ")" [symbol(), klabel(method_MockCallTest_testMockCall)]
     
     syntax MockCallTestMethod ::= "testMockCallValue" "(" ")" [symbol(), klabel(method_MockCallTest_testMockCallValue)]
@@ -3126,9 +3092,6 @@ module MOCKCALLTEST-BIN-RUNTIME
       
     
     rule  ( MockCallTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( MockCallTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
     
     rule  ( MockCallTest . testMockCall ( ) => #abiCallData ( "testMockCall" , .TypedArgs ) )
@@ -3150,9 +3113,6 @@ module MOCKCALLTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "failed" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "setUp" ) => 177362148 )
       
     
     rule  ( selector ( "testMockCall" ) => 3143830108 )
@@ -3320,17 +3280,9 @@ module NOIMPORT-BIN-RUNTIME
     
     syntax Bytes ::= NoImportContract "." NoImportMethod [function(), symbol(), klabel(method_NoImport)]
     
-    syntax NoImportMethod ::= "setUp" "(" ")" [symbol(), klabel(method_NoImport_setUp)]
-    
     syntax NoImportMethod ::= "test_source_map" "(" ")" [symbol(), klabel(method_NoImport_test_source_map)]
     
-    rule  ( NoImport . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
-      
-    
     rule  ( NoImport . test_source_map ( ) => #abiCallData ( "test_source_map" , .TypedArgs ) )
-      
-    
-    rule  ( selector ( "setUp" ) => 177362148 )
       
     
     rule  ( selector ( "test_source_map" ) => 3563497491 )
@@ -4337,8 +4289,6 @@ module SIGNTEST-BIN-RUNTIME
     
     syntax SignTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SignTest_failed)]
     
-    syntax SignTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_SignTest_setUp)]
-    
     syntax SignTestMethod ::= "testSign" "(" ")" [symbol(), klabel(method_SignTest_testSign)]
     
     syntax SignTestMethod ::= "testSign_symbolic" "(" Int ")" [symbol(), klabel(method_SignTest_testSign_symbolic)]
@@ -4352,9 +4302,6 @@ module SIGNTEST-BIN-RUNTIME
       
     
     rule  ( SignTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( SignTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
     
     rule  ( SignTest . testSign ( ) => #abiCallData ( "testSign" , .TypedArgs ) )
@@ -4374,9 +4321,6 @@ module SIGNTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "failed" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "setUp" ) => 177362148 )
       
     
     rule  ( selector ( "testSign" ) => 3985576159 )
@@ -4434,8 +4378,6 @@ module ASSERTTEST-BIN-RUNTIME
     
     syntax AssertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AssertTest_failed)]
     
-    syntax AssertTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_AssertTest_setUp)]
-    
     syntax AssertTestMethod ::= "testFail_assert_false" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_false)]
     
     syntax AssertTestMethod ::= "testFail_assert_true" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_true)]
@@ -4459,9 +4401,6 @@ module ASSERTTEST-BIN-RUNTIME
       
     
     rule  ( AssertTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( AssertTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
     
     rule  ( AssertTest . testFail_assert_false ( ) => #abiCallData ( "testFail_assert_false" , .TypedArgs ) )
@@ -4499,9 +4438,6 @@ module ASSERTTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "failed" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "setUp" ) => 177362148 )
       
     
     rule  ( selector ( "testFail_assert_false" ) => 2057948334 )
@@ -5353,8 +5289,6 @@ module BYTESTYPETEST-BIN-RUNTIME
     
     syntax Bytes ::= BytesTypeTestContract "." BytesTypeTestMethod [function(), symbol(), klabel(method_BytesTypeTest)]
     
-    syntax BytesTypeTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_BytesTypeTest_setUp)]
-    
     syntax BytesTypeTestMethod ::= "testFail_bytes32" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_testFail_bytes32)]
     
     syntax BytesTypeTestMethod ::= "testFail_bytes4" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_testFail_bytes4)]
@@ -5366,9 +5300,6 @@ module BYTESTYPETEST-BIN-RUNTIME
     syntax BytesTypeTestMethod ::= "test_bytes4" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes4)]
     
     syntax BytesTypeTestMethod ::= "test_bytes4_fail" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes4_fail)]
-    
-    rule  ( BytesTypeTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
-      
     
     rule  ( BytesTypeTest . testFail_bytes32 ( V0_x ) => #abiCallData ( "testFail_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_x )
@@ -5392,9 +5323,6 @@ module BYTESTYPETEST-BIN-RUNTIME
     
     rule  ( BytesTypeTest . test_bytes4_fail ( V0_x ) => #abiCallData ( "test_bytes4_fail" , #bytes4 ( V0_x ) , .TypedArgs ) )
        ensures #rangeBytes ( 4 , V0_x )
-      
-    
-    rule  ( selector ( "setUp" ) => 177362148 )
       
     
     rule  ( selector ( "testFail_bytes32" ) => 4289330289 )
@@ -5427,8 +5355,6 @@ module UINTTYPETEST-BIN-RUNTIME
       
     
     syntax Bytes ::= UintTypeTestContract "." UintTypeTestMethod [function(), symbol(), klabel(method_UintTypeTest)]
-    
-    syntax UintTypeTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_UintTypeTest_setUp)]
     
     syntax UintTypeTestMethod ::= "testFail_uint104" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint104)]
     
@@ -5621,9 +5547,6 @@ module UINTTYPETEST-BIN-RUNTIME
     syntax UintTypeTestMethod ::= "test_uint96" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint96)]
     
     syntax UintTypeTestMethod ::= "test_uint96_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint96_fail)]
-    
-    rule  ( UintTypeTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
-      
     
     rule  ( UintTypeTest . testFail_uint104 ( V0_x ) => #abiCallData ( "testFail_uint104" , #uint104 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 104 , V0_x )
@@ -6007,9 +5930,6 @@ module UINTTYPETEST-BIN-RUNTIME
     
     rule  ( UintTypeTest . test_uint96_fail ( V0_x ) => #abiCallData ( "test_uint96_fail" , #uint96 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 96 , V0_x )
-      
-    
-    rule  ( selector ( "setUp" ) => 177362148 )
       
     
     rule  ( selector ( "testFail_uint104" ) => 1709154444 )
