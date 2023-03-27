@@ -28,7 +28,7 @@ from .foundry import (
 )
 from .kevm import KEVM, KEVMKompileMode
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, get_cfg_for_spec, get_foundry_out_from_root, parallel_kcfg_explore
+from .utils import arg_pair_of, get_cfg_for_spec, parallel_kcfg_explore
 
 T = TypeVar('T')
 
@@ -480,9 +480,10 @@ def exec_run(
 
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
-    kcfgs_dir = get_foundry_out_from_root(foundry_root) / 'kcfgs'
-    contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
+    kcfgs_dir = foundry.out / 'kcfgs'
+    contract_name = test.split('.')[0]
+
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')

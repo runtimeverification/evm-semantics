@@ -1,9 +1,7 @@
 import logging
-import os
 from pathlib import Path
-from typing import Any, Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union, cast
+from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union
 
-import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport
 from pyk.cterm import CTerm
@@ -18,21 +16,6 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 T1 = TypeVar('T1')
 T2 = TypeVar('T2')
-
-
-def get_foundry_toml_profile(foundry_root: Path) -> Dict[str, Any]:
-    """Read the FOUNDRY_PROFILE profile from foundry.toml."""
-    with open(foundry_root / 'foundry.toml', 'rb') as f:
-        whole_toml = tomlkit.load(f)
-    all_profiles = cast(tomlkit.items.Table, whole_toml['profile'])
-    profile = os.getenv('FOUNDRY_PROFILE', default='default')
-    return all_profiles[profile].unwrap()
-
-
-def get_foundry_out_from_root(foundry_root: Path) -> Path:
-    """Get the Foundry out directory."""
-    foundry_toml = get_foundry_toml_profile(foundry_root)
-    return foundry_root / Path(foundry_toml['out'])
 
 
 def get_cfg_for_spec(  # noqa: N802
