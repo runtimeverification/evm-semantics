@@ -1952,7 +1952,8 @@ Access List Gas
       requires Ghasaccesslist << SCHED >> andBool #usesAccessList(OP)
 
     rule <k> #access [ OP , _ ] => . ... </k>
-         <schedule> SCHED </schedule> [owise]
+         <schedule> SCHED </schedule>
+      [owise]
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode )
  // -----------------------------------------------------
