@@ -110,6 +110,51 @@ module ACCOUNTPARAMSTEST-BIN-RUNTIME
     
     rule  ( AccountParamsTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testDealConcrete()" ) => 530093250 )
+      
+    
+    rule  ( selector ( "testDealSymbolic(uint256)" ) => 2584982624 )
+      
+    
+    rule  ( selector ( "testEtchConcrete()" ) => 807503996 )
+      
+    
+    rule  ( selector ( "testEtchSymbolic(bytes)" ) => 2109411263 )
+      
+    
+    rule  ( selector ( "testFail_GetNonce_false()" ) => 2393877859 )
+      
+    
+    rule  ( selector ( "testFail_GetNonce_true()" ) => 1067907152 )
+      
+    
+    rule  ( selector ( "testNonceSymbolic(uint64)" ) => 1310260491 )
+      
+    
+    rule  ( selector ( "test_GetNonce_false()" ) => 3545243759 )
+      
+    
+    rule  ( selector ( "test_GetNonce_true()" ) => 3968101798 )
+      
+    
+    rule  ( selector ( "test_Nonce_ExistentAddress()" ) => 1598387740 )
+      
+    
+    rule  ( selector ( "test_Nonce_NonExistentAddress()" ) => 2985064833 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -207,6 +252,42 @@ module ADDRTEST-BIN-RUNTIME
     
     rule  ( AddrTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "kevm()" ) => 3601001590 )
+      
+    
+    rule  ( selector ( "testFail_addr_false()" ) => 3302866643 )
+      
+    
+    rule  ( selector ( "testFail_addr_true()" ) => 2486005453 )
+      
+    
+    rule  ( selector ( "test_addr_false()" ) => 4124294109 )
+      
+    
+    rule  ( selector ( "test_addr_symbolic(uint256)" ) => 3071220939 )
+      
+    
+    rule  ( selector ( "test_addr_true()" ) => 809049819 )
+      
+    
+    rule  ( selector ( "test_notBuiltinAddress_concrete()" ) => 2409208231 )
+      
+    
+    rule  ( selector ( "test_notBuiltinAddress_symbolic(address)" ) => 2160641203 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -292,6 +373,36 @@ module ALLOWCHANGESTEST-BIN-RUNTIME
     
     rule  ( AllowChangesTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "kevm()" ) => 3601001590 )
+      
+    
+    rule  ( selector ( "test()" ) => 4171824493 )
+      
+    
+    rule  ( selector ( "testAllow()" ) => 3693132891 )
+      
+    
+    rule  ( selector ( "testAllow_fail()" ) => 4129570225 )
+      
+    
+    rule  ( selector ( "testFailAllowCallsToAddress()" ) => 1262828121 )
+      
+    
+    rule  ( selector ( "testFailAllowChangesToStorage()" ) => 1529992487 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -338,6 +449,18 @@ module VALUESTORE-BIN-RUNTIME
       
     
     rule  ( ValueStore . value2 ( ) => #abiCallData ( "value2" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "changeValue1(uint256)" ) => 1634438405 )
+      
+    
+    rule  ( selector ( "changeValue2(uint256)" ) => 367426214 )
+      
+    
+    rule  ( selector ( "value1()" ) => 808665403 )
+      
+    
+    rule  ( selector ( "value2()" ) => 1563665023 )
       
 
 endmodule
@@ -503,6 +626,60 @@ module ARITHMETICTEST-BIN-RUNTIME
     
     rule  ( ArithmeticTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "test_decreasing_div(uint256,uint256)" ) => 1011519306 )
+      
+    
+    rule  ( selector ( "test_max1(uint256,uint256)" ) => 1625765100 )
+      
+    
+    rule  ( selector ( "test_max1_broken(uint256,uint256)" ) => 2809107068 )
+      
+    
+    rule  ( selector ( "test_max2(uint256,uint256)" ) => 434746443 )
+      
+    
+    rule  ( selector ( "test_wdiv_rounding(uint256,uint256)" ) => 345004095 )
+      
+    
+    rule  ( selector ( "test_wmul_increasing(uint256,uint256)" ) => 2784670501 )
+      
+    
+    rule  ( selector ( "test_wmul_increasing_gt_one(uint256,uint256)" ) => 899022695 )
+      
+    
+    rule  ( selector ( "test_wmul_increasing_overflow(uint256,uint256)" ) => 1123042280 )
+      
+    
+    rule  ( selector ( "test_wmul_increasing_positive(uint256,uint256)" ) => 490103800 )
+      
+    
+    rule  ( selector ( "test_wmul_rounding(uint256,uint256)" ) => 4261140569 )
+      
+    
+    rule  ( selector ( "test_wmul_wdiv_inverse(uint256,uint256)" ) => 3719613508 )
+      
+    
+    rule  ( selector ( "test_wmul_wdiv_inverse_underflow(uint256,uint256)" ) => 2736038219 )
+      
+    
+    rule  ( selector ( "test_wmul_weakly_increasing_positive(uint256,uint256)" ) => 1421647895 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -604,6 +781,36 @@ module ASSUMETEST-BIN-RUNTIME
     
     rule  ( AssumeTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testFail_assume_false(uint256,uint256)" ) => 1596879099 )
+      
+    
+    rule  ( selector ( "testFail_assume_true(uint256,uint256)" ) => 246830810 )
+      
+    
+    rule  ( selector ( "test_assume_false(uint256,uint256)" ) => 3827036084 )
+      
+    
+    rule  ( selector ( "test_assume_staticCall(bool)" ) => 1479621703 )
+      
+    
+    rule  ( selector ( "test_assume_true(uint256,uint256)" ) => 1861181564 )
+      
+    
+    rule  ( selector ( "test_multi_assume(address,address)" ) => 2625007844 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -687,6 +894,33 @@ module BLOCKPARAMSTEST-BIN-RUNTIME
       
     
     rule  ( BlockParamsTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testChainId(uint256)" ) => 486990902 )
+      
+    
+    rule  ( selector ( "testCoinBase()" ) => 2231467180 )
+      
+    
+    rule  ( selector ( "testFee(uint256)" ) => 687351365 )
+      
+    
+    rule  ( selector ( "testRoll(uint256)" ) => 3832502715 )
+      
+    
+    rule  ( selector ( "testWarp(uint256)" ) => 1957961066 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
       
 
 endmodule
@@ -772,6 +1006,30 @@ module BROADCASTTEST-BIN-RUNTIME
       
     
     rule  ( BroadcastTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "deployNoArgs()" ) => 1902058844 )
+      
+    
+    rule  ( selector ( "deployOther()" ) => 4254441026 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testDeploy()" ) => 894117685 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
       
 
 endmodule
@@ -860,6 +1118,24 @@ module CONTRACTTEST-BIN-RUNTIME
     
     rule  ( ContractTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testExample()" ) => 1062881834 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -940,6 +1216,30 @@ module CONTRACTBTEST-BIN-RUNTIME
     
     rule  ( ContractBTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testCannotSubtract43()" ) => 932201548 )
+      
+    
+    rule  ( selector ( "testFailSubtract43()" ) => 1021814620 )
+      
+    
+    rule  ( selector ( "testNumberIs42()" ) => 795542700 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -975,6 +1275,15 @@ module COUNTER-BIN-RUNTIME
     
     rule  ( Counter . setNumber ( V0_newNumber ) => #abiCallData ( "setNumber" , #uint256 ( V0_newNumber ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_newNumber )
+      
+    
+    rule  ( selector ( "increment()" ) => 3500007562 )
+      
+    
+    rule  ( selector ( "number()" ) => 2206332298 )
+      
+    
+    rule  ( selector ( "setNumber(uint256)" ) => 1068876235 )
       
 
 endmodule
@@ -1057,6 +1366,30 @@ module COUNTERTEST-BIN-RUNTIME
     
     rule  ( CounterTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "counter()" ) => 1639719450 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "kevm()" ) => 3601001590 )
+      
+    
+    rule  ( selector ( "testIncrement()" ) => 3105072586 )
+      
+    
+    rule  ( selector ( "testSetNumber(uint256)" ) => 1895400894 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -1120,6 +1453,21 @@ module DYNAMICTYPES-BIN-RUNTIME
     
     rule  ( DynamicTypes . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "test_dynamic_byte_read(bytes,uint256)" ) => 4003228173 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -1137,6 +1485,9 @@ module EXPECTEMIT-BIN-RUNTIME
     syntax ExpectEmitMethod ::= "t" "(" ")" [symbol(), klabel(method_ExpectEmit_t)]
     
     rule  ( ExpectEmit . t ( ) => #abiCallData ( "t" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "t()" ) => 2463158611 )
       
 
 endmodule
@@ -1207,6 +1558,27 @@ module EMITCONTRACTTEST-BIN-RUNTIME
       
     
     rule  ( EmitContractTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testExpectEmit()" ) => 2385562937 )
+      
+    
+    rule  ( selector ( "testExpectEmitCheckEmitter()" ) => 3822672185 )
+      
+    
+    rule  ( selector ( "testExpectEmitDoNotCheckData()" ) => 4244930061 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
       
 
 endmodule
@@ -1338,6 +1710,63 @@ module ENVTEST-BIN-RUNTIME
     
     rule  ( EnvTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testEnvAddress()" ) => 2862857531 )
+      
+    
+    rule  ( selector ( "testEnvAddresseArray()" ) => 3294476741 )
+      
+    
+    rule  ( selector ( "testEnvBool()" ) => 894343624 )
+      
+    
+    rule  ( selector ( "testEnvBoolArray()" ) => 2095834153 )
+      
+    
+    rule  ( selector ( "testEnvBytes()" ) => 1439135834 )
+      
+    
+    rule  ( selector ( "testEnvBytes32()" ) => 1818390676 )
+      
+    
+    rule  ( selector ( "testEnvBytes32Array()" ) => 1427447379 )
+      
+    
+    rule  ( selector ( "testEnvBytesArray()" ) => 2593538909 )
+      
+    
+    rule  ( selector ( "testEnvInt()" ) => 446472630 )
+      
+    
+    rule  ( selector ( "testEnvIntArray()" ) => 994678527 )
+      
+    
+    rule  ( selector ( "testEnvString()" ) => 1097637738 )
+      
+    
+    rule  ( selector ( "testEnvStringArray()" ) => 3587215751 )
+      
+    
+    rule  ( selector ( "testEnvUInt()" ) => 2066287170 )
+      
+    
+    rule  ( selector ( "testEnvUIntArray()" ) => 551796351 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -1355,6 +1784,9 @@ module DUMMY-BIN-RUNTIME
     syntax DummyMethod ::= "numberA" "(" ")" [symbol(), klabel(method_Dummy_numberA)]
     
     rule  ( Dummy . numberA ( ) => #abiCallData ( "numberA" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "numberA()" ) => 2571869527 )
       
 
 endmodule
@@ -1426,6 +1858,27 @@ module EXPECTCALLTEST-BIN-RUNTIME
     
     rule  ( ExpectCallTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "kevm()" ) => 3601001590 )
+      
+    
+    rule  ( selector ( "testExpectRegularCall()" ) => 676731872 )
+      
+    
+    rule  ( selector ( "testExpectStaticCall()" ) => 3219733999 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -1450,6 +1903,9 @@ module DEPTHREVERTER-BIN-RUNTIME
     syntax DepthReverterMethod ::= "revertAtNextDepth" "(" ")" [symbol(), klabel(method_DepthReverter_revertAtNextDepth)]
     
     rule  ( DepthReverter . revertAtNextDepth ( ) => #abiCallData ( "revertAtNextDepth" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "revertAtNextDepth()" ) => 332278727 )
       
 
 endmodule
@@ -1567,6 +2023,54 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     
     rule  ( ExpectRevertTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testFail_ExpectRevert_failAndSuccess()" ) => 2386222785 )
+      
+    
+    rule  ( selector ( "testFail_expectRevert_bytes4()" ) => 3540765930 )
+      
+    
+    rule  ( selector ( "testFail_expectRevert_empty()" ) => 3691097669 )
+      
+    
+    rule  ( selector ( "testFail_expectRevert_false()" ) => 2152588325 )
+      
+    
+    rule  ( selector ( "testFail_expectRevert_multipleReverts()" ) => 2539873268 )
+      
+    
+    rule  ( selector ( "test_ExpectRevert_increasedDepth()" ) => 910856553 )
+      
+    
+    rule  ( selector ( "test_expectRevert_bytes4()" ) => 1300765909 )
+      
+    
+    rule  ( selector ( "test_expectRevert_encodedSymbolic(address)" ) => 27292786 )
+      
+    
+    rule  ( selector ( "test_expectRevert_internalCall()" ) => 1766536967 )
+      
+    
+    rule  ( selector ( "test_expectRevert_message()" ) => 3706733127 )
+      
+    
+    rule  ( selector ( "test_expectRevert_returnValue()" ) => 4193569282 )
+      
+    
+    rule  ( selector ( "test_expectRevert_true()" ) => 2931127071 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -1595,6 +2099,15 @@ module REVERTER-BIN-RUNTIME
     
     rule  ( Reverter . revertWithoutReason ( ) => #abiCallData ( "revertWithoutReason" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "noRevert()" ) => 3072618433 )
+      
+    
+    rule  ( selector ( "revertWithReason(string)" ) => 4154655617 )
+      
+    
+    rule  ( selector ( "revertWithoutReason()" ) => 1097275021 )
+      
 
 endmodule
 
@@ -1613,6 +2126,9 @@ module REVERTERWITHRETURN-BIN-RUNTIME
     
     rule  ( ReverterWithReturn . revertUnless ( V0_returnInstead ) => #abiCallData ( "revertUnless" , #bool ( V0_returnInstead ) , .TypedArgs ) )
        ensures #rangeBool ( V0_returnInstead )
+      
+    
+    rule  ( selector ( "revertUnless(bool)" ) => 260261997 )
       
 
 endmodule
@@ -1694,6 +2210,33 @@ module FFITEST-BIN-RUNTIME
     
     rule  ( FfiTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testFFIFOO()" ) => 2415994822 )
+      
+    
+    rule  ( selector ( "testFFIScript()" ) => 2734086837 )
+      
+    
+    rule  ( selector ( "testFFIScript2()" ) => 4125794598 )
+      
+    
+    rule  ( selector ( "testffi()" ) => 4068116 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -1763,6 +2306,27 @@ module FILESTEST-BIN-RUNTIME
       
     
     rule  ( FilesTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testFailRemoveFile()" ) => 2780725830 )
+      
+    
+    rule  ( selector ( "testReadWriteFile()" ) => 3880869465 )
+      
+    
+    rule  ( selector ( "testReadWriteLine()" ) => 3039298541 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
       
 
 endmodule
@@ -1869,6 +2433,48 @@ module FORKTEST-BIN-RUNTIME
     
     rule  ( ForkTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testActiveFork()" ) => 2981024546 )
+      
+    
+    rule  ( selector ( "testAllRPCUrl()" ) => 707490019 )
+      
+    
+    rule  ( selector ( "testCreateFork()" ) => 9848133 )
+      
+    
+    rule  ( selector ( "testCreateForkBlock()" ) => 2820856803 )
+      
+    
+    rule  ( selector ( "testCreateSelectFork()" ) => 2307095206 )
+      
+    
+    rule  ( selector ( "testCreateSelectForkBlock()" ) => 269695700 )
+      
+    
+    rule  ( selector ( "testRPCUrl()" ) => 3938449696 )
+      
+    
+    rule  ( selector ( "testRPCUrlRevert()" ) => 470834373 )
+      
+    
+    rule  ( selector ( "testRollFork()" ) => 3222356361 )
+      
+    
+    rule  ( selector ( "testRollForkId()" ) => 3215996813 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -1933,6 +2539,24 @@ module GASTEST-BIN-RUNTIME
       
     
     rule  ( GasTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "kevm()" ) => 3601001590 )
+      
+    
+    rule  ( selector ( "testInfiniteGas()" ) => 1677640502 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
       
 
 endmodule
@@ -2004,6 +2628,24 @@ module GETCODETEST-BIN-RUNTIME
     
     rule  ( GetCodeTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testGetCode()" ) => 3906163359 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -2021,6 +2663,9 @@ module KEVMCHEATS-BIN-RUNTIME
     syntax KEVMCheatsMethod ::= "kevm" "(" ")" [symbol(), klabel(method_KEVMCheats_kevm)]
     
     rule  ( KEVMCheats . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "kevm()" ) => 3601001590 )
       
 
 endmodule
@@ -2117,6 +2762,39 @@ module KEVMCHEATSBASE-BIN-RUNTIME
     rule  ( KEVMCheatsBase . symbolicStorage ( V0_ ) => #abiCallData ( "symbolicStorage" , #address ( V0_ ) , .TypedArgs ) )
        ensures #rangeAddress ( V0_ )
       
+    
+    rule  ( selector ( "allowCallsToAddress(address)" ) => 1850795572 )
+      
+    
+    rule  ( selector ( "allowChangesToStorage(address,uint256)" ) => 4207417100 )
+      
+    
+    rule  ( selector ( "expectCreate(address,uint256,bytes)" ) => 658968394 )
+      
+    
+    rule  ( selector ( "expectCreate2(address,uint256,bytes)" ) => 3854582462 )
+      
+    
+    rule  ( selector ( "expectDelegateCall(address,bytes)" ) => 1030406631 )
+      
+    
+    rule  ( selector ( "expectNoCall()" ) => 3861374088 )
+      
+    
+    rule  ( selector ( "expectRegularCall(address,uint256,bytes)" ) => 3178868520 )
+      
+    
+    rule  ( selector ( "expectRegularCall(address,uint256,bytes)" ) => 1973496647 )
+      
+    
+    rule  ( selector ( "expectStaticCall(address,bytes)" ) => 2232945516 )
+      
+    
+    rule  ( selector ( "infiniteGas()" ) => 3986649939 )
+      
+    
+    rule  ( selector ( "symbolicStorage(address)" ) => 769677742 )
+      
 
 endmodule
 
@@ -2176,6 +2854,21 @@ module LABELTEST-BIN-RUNTIME
       
     
     rule  ( LabelTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testLabel()" ) => 799101117 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
       
 
 endmodule
@@ -2314,6 +3007,66 @@ module LOOPSTEST-BIN-RUNTIME
     
     rule  ( LoopsTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testIsNotPrime(uint256)" ) => 809987623 )
+      
+    
+    rule  ( selector ( "testIsPrime(uint256,uint256)" ) => 111940912 )
+      
+    
+    rule  ( selector ( "testIsPrimeBroken(uint256,uint256)" ) => 1834826207 )
+      
+    
+    rule  ( selector ( "testIsPrimeOpt(uint256)" ) => 404719852 )
+      
+    
+    rule  ( selector ( "testMax(uint256[])" ) => 1575104263 )
+      
+    
+    rule  ( selector ( "testMaxBroken(uint256[])" ) => 1372438930 )
+      
+    
+    rule  ( selector ( "testNthPrime(uint256,uint256)" ) => 2702762242 )
+      
+    
+    rule  ( selector ( "testSort(uint256[])" ) => 2414037741 )
+      
+    
+    rule  ( selector ( "testSortBroken(uint256[])" ) => 3541275661 )
+      
+    
+    rule  ( selector ( "testSqrt(uint256)" ) => 233106198 )
+      
+    
+    rule  ( selector ( "testSumToN(uint256)" ) => 2289979355 )
+      
+    
+    rule  ( selector ( "testSumToNBroken(uint256)" ) => 1318374999 )
+      
+    
+    rule  ( selector ( "test_sum_10()" ) => 1087009050 )
+      
+    
+    rule  ( selector ( "test_sum_100()" ) => 1519953344 )
+      
+    
+    rule  ( selector ( "test_sum_1000()" ) => 222767225 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -2389,6 +3142,30 @@ module MOCKCALLTEST-BIN-RUNTIME
     
     rule  ( MockCallTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testMockCall()" ) => 3143830108 )
+      
+    
+    rule  ( selector ( "testMockCallValue()" ) => 1208641942 )
+      
+    
+    rule  ( selector ( "testMockCalls()" ) => 957910350 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -2448,6 +3225,27 @@ module MYIERC20-BIN-RUNTIME
        andBool ( #rangeUInt ( 256 , V2_amount )
                )))
       
+    
+    rule  ( selector ( "approve(address,uint256)" ) => 157198259 )
+      
+    
+    rule  ( selector ( "balanceOf(address)" ) => 1889567281 )
+      
+    
+    rule  ( selector ( "decimals()" ) => 826074471 )
+      
+    
+    rule  ( selector ( "symbol()" ) => 2514000705 )
+      
+    
+    rule  ( selector ( "totalSupply()" ) => 404098525 )
+      
+    
+    rule  ( selector ( "transfer(address,uint256)" ) => 2835717307 )
+      
+    
+    rule  ( selector ( "transferFrom(address,address,uint256)" ) => 599290589 )
+      
 
 endmodule
 
@@ -2496,6 +3294,18 @@ module MYTOKEN-BIN-RUNTIME
     
     rule  ( MyToken . token ( ) => #abiCallData ( "token" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "balanceOf(address)" ) => 1889567281 )
+      
+    
+    rule  ( selector ( "balances(address)" ) => 669136355 )
+      
+    
+    rule  ( selector ( "pay(address)" ) => 202497757 )
+      
+    
+    rule  ( selector ( "token()" ) => 4228666474 )
+      
 
 endmodule
 
@@ -2518,6 +3328,12 @@ module NOIMPORT-BIN-RUNTIME
       
     
     rule  ( NoImport . test_source_map ( ) => #abiCallData ( "test_source_map" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "test_source_map()" ) => 3563497491 )
       
 
 endmodule
@@ -2553,6 +3369,15 @@ module OWNERUPONLY-BIN-RUNTIME
       
     
     rule  ( OwnerUpOnly . owner ( ) => #abiCallData ( "owner" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "count()" ) => 107354813 )
+      
+    
+    rule  ( selector ( "increment()" ) => 3500007562 )
+      
+    
+    rule  ( selector ( "owner()" ) => 2376452955 )
       
 
 endmodule
@@ -2634,6 +3459,30 @@ module OWNERUPONLYTEST-BIN-RUNTIME
     
     rule  ( OwnerUpOnlyTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testFailIncrementAsNotOwner()" ) => 4249919617 )
+      
+    
+    rule  ( selector ( "testIncrementAsNotOwner()" ) => 1302326069 )
+      
+    
+    rule  ( selector ( "testIncrementAsOwner()" ) => 1980498343 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -2668,6 +3517,15 @@ module ADDITIONALTOKEN-BIN-RUNTIME
       
     
     rule  ( AdditionalToken . owner ( ) => #abiCallData ( "owner" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "count()" ) => 107354813 )
+      
+    
+    rule  ( selector ( "incrementCount()" ) => 3842448270 )
+      
+    
+    rule  ( selector ( "owner()" ) => 2376452955 )
       
 
 endmodule
@@ -2764,6 +3622,42 @@ module PLAINPRANKTEST-BIN-RUNTIME
     
     rule  ( PlainPrankTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "internalCounter()" ) => 2687914858 )
+      
+    
+    rule  ( selector ( "testFail_startPrank_existingAlready()" ) => 2262269573 )
+      
+    
+    rule  ( selector ( "testFail_startPrank_internalCall()" ) => 3075676477 )
+      
+    
+    rule  ( selector ( "test_prank_zeroAddress_true()" ) => 3793950116 )
+      
+    
+    rule  ( selector ( "test_startPrankWithOrigin_true()" ) => 1559633499 )
+      
+    
+    rule  ( selector ( "test_startPrank_true()" ) => 243527947 )
+      
+    
+    rule  ( selector ( "test_startPrank_zeroAddress_true()" ) => 858618957 )
+      
+    
+    rule  ( selector ( "test_stopPrank_notExistent()" ) => 279002555 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -2805,6 +3699,18 @@ module PRANK-BIN-RUNTIME
     
     rule  ( Prank . subtract ( V0_value ) => #abiCallData ( "subtract" , #uint256 ( V0_value ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_value )
+      
+    
+    rule  ( selector ( "add(uint256)" ) => 268690130 )
+      
+    
+    rule  ( selector ( "count()" ) => 107354813 )
+      
+    
+    rule  ( selector ( "owner()" ) => 2376452955 )
+      
+    
+    rule  ( selector ( "subtract(uint256)" ) => 499146519 )
       
 
 endmodule
@@ -2911,6 +3817,39 @@ module PRANKTEST-BIN-RUNTIME
     
     rule  ( PrankTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testAddAsOwner(uint256)" ) => 1600382513 )
+      
+    
+    rule  ( selector ( "testAddStartPrank(uint256)" ) => 1333759955 )
+      
+    
+    rule  ( selector ( "testFailAddPrank(uint256)" ) => 948023622 )
+      
+    
+    rule  ( selector ( "testSubtractAsTxOrigin(uint256,uint256)" ) => 3798952319 )
+      
+    
+    rule  ( selector ( "testSubtractFail(uint256)" ) => 1433390937 )
+      
+    
+    rule  ( selector ( "testSubtractStartPrank(uint256,uint256)" ) => 262874110 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -2981,6 +3920,24 @@ module RECORDLOGSTEST-BIN-RUNTIME
     
     rule  ( RecordLogsTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testRecordLogs()" ) => 3623393624 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -2998,6 +3955,9 @@ module SAFE-BIN-RUNTIME
     syntax SafeMethod ::= "withdraw" "(" ")" [symbol(), klabel(method_Safe_withdraw)]
     
     rule  ( Safe . withdraw ( ) => #abiCallData ( "withdraw" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "withdraw()" ) => 1020253707 )
       
 
 endmodule
@@ -3075,6 +4035,27 @@ module SAFETEST-BIN-RUNTIME
     
     rule  ( SafeTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testWithdraw()" ) => 3574182252 )
+      
+    
+    rule  ( selector ( "testWithdrawFuzz(uint96)" ) => 3503970826 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -3104,6 +4085,12 @@ module SCRIPT-BIN-RUNTIME
       
     
     rule  ( Script . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
       
 
 endmodule
@@ -3181,6 +4168,27 @@ module SETUPTEST-BIN-RUNTIME
     
     rule  ( SetUpTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testSetUpCalled()" ) => 3967804529 )
+      
+    
+    rule  ( selector ( "testSetUpCalledSymbolic(uint256)" ) => 3332480466 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -3251,6 +4259,27 @@ module SIGNTEST-BIN-RUNTIME
       
     
     rule  ( SignTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testSign()" ) => 3985576159 )
+      
+    
+    rule  ( selector ( "testSign_symbolic(uint256)" ) => 2942025997 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
       
 
 endmodule
@@ -3366,6 +4395,48 @@ module ASSERTTEST-BIN-RUNTIME
     
     rule  ( AssertTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "getOne()" ) => 2875117904 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testFail_assert_false()" ) => 2057948334 )
+      
+    
+    rule  ( selector ( "testFail_assert_true()" ) => 409427266 )
+      
+    
+    rule  ( selector ( "testFail_expect_revert()" ) => 709747105 )
+      
+    
+    rule  ( selector ( "test_assert_false()" ) => 1574882301 )
+      
+    
+    rule  ( selector ( "test_assert_true()" ) => 906863826 )
+      
+    
+    rule  ( selector ( "test_assert_true_branch(uint256)" ) => 3267411143 )
+      
+    
+    rule  ( selector ( "test_method_call()" ) => 1803637680 )
+      
+    
+    rule  ( selector ( "test_revert_branch(uint256,uint256)" ) => 2349784459 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -3435,6 +4506,24 @@ module SNAPSHOTTEST-BIN-RUNTIME
       
     
     rule  ( SnapshotTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testSnapshot()" ) => 3204135818 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
       
 
 endmodule
@@ -3559,6 +4648,48 @@ module STORETEST-BIN-RUNTIME
     
     rule  ( StoreTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testAccesses()" ) => 159648693 )
+      
+    
+    rule  ( selector ( "testGasLoadColdVM()" ) => 3801282741 )
+      
+    
+    rule  ( selector ( "testGasLoadWarmUp()" ) => 604011046 )
+      
+    
+    rule  ( selector ( "testGasLoadWarmVM()" ) => 2607902342 )
+      
+    
+    rule  ( selector ( "testGasStoreColdVM()" ) => 2309593716 )
+      
+    
+    rule  ( selector ( "testGasStoreWarmUp()" ) => 1546465326 )
+      
+    
+    rule  ( selector ( "testGasStoreWarmVM()" ) => 100073271 )
+      
+    
+    rule  ( selector ( "testLoadNonExistent()" ) => 2275977243 )
+      
+    
+    rule  ( selector ( "testStoreLoad()" ) => 1208516723 )
+      
+    
+    rule  ( selector ( "testStoreLoadNonExistent()" ) => 3912017339 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -3637,6 +4768,30 @@ module SYMBOLICSTORAGETEST-BIN-RUNTIME
     
     rule  ( SymbolicStorageTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "kevm()" ) => 3601001590 )
+      
+    
+    rule  ( selector ( "testEmptyInitialStorage(uint256)" ) => 2517793094 )
+      
+    
+    rule  ( selector ( "testFail_SymbolicStorage(uint256)" ) => 821477045 )
+      
+    
+    rule  ( selector ( "testFail_SymbolicStorage1(uint256)" ) => 2899744320 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -3710,6 +4865,18 @@ module TEST-BIN-RUNTIME
     
     rule  ( Test . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -3773,6 +4940,36 @@ module STDERROR-BIN-RUNTIME
     
     rule  ( stdError . zeroVarError ( ) => #abiCallData ( "zeroVarError" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "arithmeticError()" ) => 2308253967 )
+      
+    
+    rule  ( selector ( "assertionError()" ) => 271788407 )
+      
+    
+    rule  ( selector ( "divisionError()" ) => 4202187332 )
+      
+    
+    rule  ( selector ( "encodeStorageError()" ) => 3512788190 )
+      
+    
+    rule  ( selector ( "enumConversionError()" ) => 501503328 )
+      
+    
+    rule  ( selector ( "indexOOBError()" ) => 99517970 )
+      
+    
+    rule  ( selector ( "lowLevelError()" ) => 2889716422 )
+      
+    
+    rule  ( selector ( "memOverflowError()" ) => 2557239144 )
+      
+    
+    rule  ( selector ( "popError()" ) => 2989344077 )
+      
+    
+    rule  ( selector ( "zeroVarError()" ) => 3061221850 )
+      
 
 endmodule
 
@@ -3804,6 +5001,9 @@ module STDSTORAGE-BIN-RUNTIME
        ensures ( #rangeUInt ( 128 , lengthBytes ( V0_b ) )
        andBool ( #rangeUInt ( 256 , V1_offset )
                ))
+      
+    
+    rule  ( selector ( "bytesToBytes32(bytes,uint256)" ) => 1398294841 )
       
 
 endmodule
@@ -3855,6 +5055,18 @@ module TESTNUMBER-BIN-RUNTIME
       
     
     rule  ( TestNumber . testNumber ( ) => #abiCallData ( "testNumber" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "t(uint256)" ) => 2950864753 )
+      
+    
+    rule  ( selector ( "testNumber()" ) => 219771635 )
       
 
 endmodule
@@ -3941,6 +5153,36 @@ module TOSTRINGTEST-BIN-RUNTIME
     
     rule  ( ToStringTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testAddressToString()" ) => 808104093 )
+      
+    
+    rule  ( selector ( "testBoolToString()" ) => 1097632899 )
+      
+    
+    rule  ( selector ( "testBytes32ToString()" ) => 204853932 )
+      
+    
+    rule  ( selector ( "testBytesToString()" ) => 1397983993 )
+      
+    
+    rule  ( selector ( "testIntToString()" ) => 4039840763 )
+      
+    
+    rule  ( selector ( "testUint256ToString()" ) => 98980210 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
 
 endmodule
 
@@ -4004,6 +5246,9 @@ module TOKEN-BIN-RUNTIME
        andBool ( #rangeUInt ( 256 , V1_amount )
                ))
       
+    
+    rule  ( selector ( "transfer(address,uint256)" ) => 2835717307 )
+      
 
 endmodule
 
@@ -4057,6 +5302,27 @@ module BYTESTYPETEST-BIN-RUNTIME
     
     rule  ( BytesTypeTest . test_bytes4_fail ( V0_x ) => #abiCallData ( "test_bytes4_fail" , #bytes4 ( V0_x ) , .TypedArgs ) )
        ensures #rangeBytes ( 4 , V0_x )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testFail_bytes32(bytes32)" ) => 4289330289 )
+      
+    
+    rule  ( selector ( "testFail_bytes4(bytes4)" ) => 3602852570 )
+      
+    
+    rule  ( selector ( "test_bytes32(bytes32)" ) => 3436986189 )
+      
+    
+    rule  ( selector ( "test_bytes32_fail(bytes32)" ) => 392713219 )
+      
+    
+    rule  ( selector ( "test_bytes4(bytes4)" ) => 2814412853 )
+      
+    
+    rule  ( selector ( "test_bytes4_fail(bytes4)" ) => 2510894010 )
       
 
 endmodule
@@ -4652,6 +5918,297 @@ module UINTTYPETEST-BIN-RUNTIME
     rule  ( UintTypeTest . test_uint96_fail ( V0_x ) => #abiCallData ( "test_uint96_fail" , #uint96 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 96 , V0_x )
       
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testFail_uint104(uint104)" ) => 1709154444 )
+      
+    
+    rule  ( selector ( "testFail_uint112(uint112)" ) => 3541489285 )
+      
+    
+    rule  ( selector ( "testFail_uint120(uint120)" ) => 3839169067 )
+      
+    
+    rule  ( selector ( "testFail_uint128(uint128)" ) => 791678561 )
+      
+    
+    rule  ( selector ( "testFail_uint136(uint136)" ) => 3952257705 )
+      
+    
+    rule  ( selector ( "testFail_uint144(uint144)" ) => 2439595565 )
+      
+    
+    rule  ( selector ( "testFail_uint152(uint152)" ) => 1866291148 )
+      
+    
+    rule  ( selector ( "testFail_uint16(uint16)" ) => 4076431644 )
+      
+    
+    rule  ( selector ( "testFail_uint160(uint160)" ) => 3214193107 )
+      
+    
+    rule  ( selector ( "testFail_uint168(uint168)" ) => 2636444862 )
+      
+    
+    rule  ( selector ( "testFail_uint176(uint176)" ) => 1828125968 )
+      
+    
+    rule  ( selector ( "testFail_uint184(uint184)" ) => 4099305155 )
+      
+    
+    rule  ( selector ( "testFail_uint192(uint192)" ) => 2858210891 )
+      
+    
+    rule  ( selector ( "testFail_uint200(uint200)" ) => 1080270217 )
+      
+    
+    rule  ( selector ( "testFail_uint208(uint208)" ) => 1831022189 )
+      
+    
+    rule  ( selector ( "testFail_uint216(uint216)" ) => 2125101602 )
+      
+    
+    rule  ( selector ( "testFail_uint224(uint224)" ) => 420776541 )
+      
+    
+    rule  ( selector ( "testFail_uint232(uint232)" ) => 3163478438 )
+      
+    
+    rule  ( selector ( "testFail_uint24(uint24)" ) => 639153936 )
+      
+    
+    rule  ( selector ( "testFail_uint240(uint240)" ) => 3089966003 )
+      
+    
+    rule  ( selector ( "testFail_uint248(uint248)" ) => 3070004620 )
+      
+    
+    rule  ( selector ( "testFail_uint256(uint256)" ) => 3436494846 )
+      
+    
+    rule  ( selector ( "testFail_uint32(uint32)" ) => 3218360567 )
+      
+    
+    rule  ( selector ( "testFail_uint40(uint40)" ) => 347856329 )
+      
+    
+    rule  ( selector ( "testFail_uint48(uint48)" ) => 4178735009 )
+      
+    
+    rule  ( selector ( "testFail_uint56(uint56)" ) => 979020984 )
+      
+    
+    rule  ( selector ( "testFail_uint64(uint64)" ) => 819975489 )
+      
+    
+    rule  ( selector ( "testFail_uint72(uint72)" ) => 2059244458 )
+      
+    
+    rule  ( selector ( "testFail_uint8(uint8)" ) => 3679593874 )
+      
+    
+    rule  ( selector ( "testFail_uint80(uint80)" ) => 4180733980 )
+      
+    
+    rule  ( selector ( "testFail_uint88(uint88)" ) => 42555031 )
+      
+    
+    rule  ( selector ( "testFail_uint96(uint96)" ) => 2962957343 )
+      
+    
+    rule  ( selector ( "test_uint104(uint104)" ) => 2030507202 )
+      
+    
+    rule  ( selector ( "test_uint104_fail(uint104)" ) => 3289769429 )
+      
+    
+    rule  ( selector ( "test_uint112(uint112)" ) => 1247465894 )
+      
+    
+    rule  ( selector ( "test_uint112_fail(uint112)" ) => 198559186 )
+      
+    
+    rule  ( selector ( "test_uint120(uint120)" ) => 4013273041 )
+      
+    
+    rule  ( selector ( "test_uint120_fail(uint120)" ) => 4156608892 )
+      
+    
+    rule  ( selector ( "test_uint128(uint128)" ) => 784802761 )
+      
+    
+    rule  ( selector ( "test_uint128_fail(uint128)" ) => 3283002391 )
+      
+    
+    rule  ( selector ( "test_uint136(uint136)" ) => 3590751506 )
+      
+    
+    rule  ( selector ( "test_uint136_fail(uint136)" ) => 1740049059 )
+      
+    
+    rule  ( selector ( "test_uint144(uint144)" ) => 1224379367 )
+      
+    
+    rule  ( selector ( "test_uint144_fail(uint144)" ) => 3911233113 )
+      
+    
+    rule  ( selector ( "test_uint152(uint152)" ) => 3210764837 )
+      
+    
+    rule  ( selector ( "test_uint152_fail(uint152)" ) => 2472528383 )
+      
+    
+    rule  ( selector ( "test_uint16(uint16)" ) => 1262288561 )
+      
+    
+    rule  ( selector ( "test_uint160(uint160)" ) => 2446641645 )
+      
+    
+    rule  ( selector ( "test_uint160_fail(uint160)" ) => 1289572651 )
+      
+    
+    rule  ( selector ( "test_uint168(uint168)" ) => 2789196255 )
+      
+    
+    rule  ( selector ( "test_uint168_fail(uint168)" ) => 413418206 )
+      
+    
+    rule  ( selector ( "test_uint16_fail(uint16)" ) => 2736127289 )
+      
+    
+    rule  ( selector ( "test_uint176(uint176)" ) => 3119759714 )
+      
+    
+    rule  ( selector ( "test_uint176_fail(uint176)" ) => 2926152828 )
+      
+    
+    rule  ( selector ( "test_uint184(uint184)" ) => 2419331356 )
+      
+    
+    rule  ( selector ( "test_uint184_fail(uint184)" ) => 809918532 )
+      
+    
+    rule  ( selector ( "test_uint192(uint192)" ) => 126849335 )
+      
+    
+    rule  ( selector ( "test_uint192_fail(uint192)" ) => 965859284 )
+      
+    
+    rule  ( selector ( "test_uint200(uint200)" ) => 342308100 )
+      
+    
+    rule  ( selector ( "test_uint200_fail(uint200)" ) => 3554205475 )
+      
+    
+    rule  ( selector ( "test_uint208(uint208)" ) => 664969356 )
+      
+    
+    rule  ( selector ( "test_uint208_fail(uint208)" ) => 515244431 )
+      
+    
+    rule  ( selector ( "test_uint216(uint216)" ) => 2735221135 )
+      
+    
+    rule  ( selector ( "test_uint216_fail(uint216)" ) => 1244132421 )
+      
+    
+    rule  ( selector ( "test_uint224(uint224)" ) => 2791725032 )
+      
+    
+    rule  ( selector ( "test_uint224_fail(uint224)" ) => 3535210075 )
+      
+    
+    rule  ( selector ( "test_uint232(uint232)" ) => 2781872781 )
+      
+    
+    rule  ( selector ( "test_uint232_fail(uint232)" ) => 3352181217 )
+      
+    
+    rule  ( selector ( "test_uint24(uint24)" ) => 2865563805 )
+      
+    
+    rule  ( selector ( "test_uint240(uint240)" ) => 3274361055 )
+      
+    
+    rule  ( selector ( "test_uint240_fail(uint240)" ) => 4046179916 )
+      
+    
+    rule  ( selector ( "test_uint248(uint248)" ) => 578604507 )
+      
+    
+    rule  ( selector ( "test_uint248_fail(uint248)" ) => 3580188072 )
+      
+    
+    rule  ( selector ( "test_uint24_fail(uint24)" ) => 2328572638 )
+      
+    
+    rule  ( selector ( "test_uint256(uint256)" ) => 851358597 )
+      
+    
+    rule  ( selector ( "test_uint256_fail(uint256)" ) => 1895666222 )
+      
+    
+    rule  ( selector ( "test_uint32(uint32)" ) => 982223766 )
+      
+    
+    rule  ( selector ( "test_uint32_fail(uint32)" ) => 768917897 )
+      
+    
+    rule  ( selector ( "test_uint40(uint40)" ) => 1298765870 )
+      
+    
+    rule  ( selector ( "test_uint40_fail(uint40)" ) => 1685882915 )
+      
+    
+    rule  ( selector ( "test_uint48(uint48)" ) => 454435065 )
+      
+    
+    rule  ( selector ( "test_uint48_fail(uint48)" ) => 491533732 )
+      
+    
+    rule  ( selector ( "test_uint56(uint56)" ) => 58659965 )
+      
+    
+    rule  ( selector ( "test_uint56_fail(uint56)" ) => 3185974238 )
+      
+    
+    rule  ( selector ( "test_uint64(uint64)" ) => 2511119799 )
+      
+    
+    rule  ( selector ( "test_uint64_fail(uint64)" ) => 2000886247 )
+      
+    
+    rule  ( selector ( "test_uint72(uint72)" ) => 3694811120 )
+      
+    
+    rule  ( selector ( "test_uint72_fail(uint72)" ) => 875540037 )
+      
+    
+    rule  ( selector ( "test_uint8(uint8)" ) => 1704021016 )
+      
+    
+    rule  ( selector ( "test_uint80(uint80)" ) => 3841083967 )
+      
+    
+    rule  ( selector ( "test_uint80_fail(uint80)" ) => 3626141300 )
+      
+    
+    rule  ( selector ( "test_uint88(uint88)" ) => 100068129 )
+      
+    
+    rule  ( selector ( "test_uint88_fail(uint88)" ) => 318744457 )
+      
+    
+    rule  ( selector ( "test_uint8_fail(uint8)" ) => 2865005996 )
+      
+    
+    rule  ( selector ( "test_uint96(uint96)" ) => 1315861753 )
+      
+    
+    rule  ( selector ( "test_uint96_fail(uint96)" ) => 1635628195 )
+      
 
 endmodule
 
@@ -5156,6 +6713,252 @@ module VM-BIN-RUNTIME
     
     rule  ( Vm . writeLine ( V0_ , V1_ ) => #abiCallData ( "writeLine" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
       
+    
+    rule  ( selector ( "accesses(address)" ) => 1706857601 )
+      
+    
+    rule  ( selector ( "activeFork()" ) => 789593890 )
+      
+    
+    rule  ( selector ( "addr(uint256)" ) => 4288775753 )
+      
+    
+    rule  ( selector ( "assume(bool)" ) => 1281615202 )
+      
+    
+    rule  ( selector ( "broadcast()" ) => 2949218368 )
+      
+    
+    rule  ( selector ( "broadcast()" ) => 3868601563 )
+      
+    
+    rule  ( selector ( "chainId(uint256)" ) => 1078582738 )
+      
+    
+    rule  ( selector ( "clearMockedCalls()" ) => 1071599125 )
+      
+    
+    rule  ( selector ( "closeFile(string)" ) => 1220748319 )
+      
+    
+    rule  ( selector ( "coinbase(address)" ) => 4282924116 )
+      
+    
+    rule  ( selector ( "createFork(string)" ) => 834286744 )
+      
+    
+    rule  ( selector ( "createFork(string)" ) => 1805892139 )
+      
+    
+    rule  ( selector ( "createSelectFork(string,uint256)" ) => 2556952628 )
+      
+    
+    rule  ( selector ( "createSelectFork(string,uint256)" ) => 1911440973 )
+      
+    
+    rule  ( selector ( "deal(address,uint256)" ) => 3364511341 )
+      
+    
+    rule  ( selector ( "deriveKey(string,uint32)" ) => 1808477211 )
+      
+    
+    rule  ( selector ( "deriveKey(string,uint32)" ) => 1646872971 )
+      
+    
+    rule  ( selector ( "envAddress(string)" ) => 890066623 )
+      
+    
+    rule  ( selector ( "envAddress(string)" ) => 2905717242 )
+      
+    
+    rule  ( selector ( "envBool(string)" ) => 2127686781 )
+      
+    
+    rule  ( selector ( "envBool(string)" ) => 2863521455 )
+      
+    
+    rule  ( selector ( "envBytes(string)" ) => 1299951366 )
+      
+    
+    rule  ( selector ( "envBytes(string)" ) => 3720504603 )
+      
+    
+    rule  ( selector ( "envBytes32(string,string)" ) => 2543095874 )
+      
+    
+    rule  ( selector ( "envBytes32(string,string)" ) => 1525821889 )
+      
+    
+    rule  ( selector ( "envInt(string,string)" ) => 2301234273 )
+      
+    
+    rule  ( selector ( "envInt(string,string)" ) => 1108873552 )
+      
+    
+    rule  ( selector ( "envString(string,string)" ) => 4168600345 )
+      
+    
+    rule  ( selector ( "envString(string,string)" ) => 347089865 )
+      
+    
+    rule  ( selector ( "envUint(string)" ) => 3247934751 )
+      
+    
+    rule  ( selector ( "envUint(string)" ) => 4091461785 )
+      
+    
+    rule  ( selector ( "etch(address,bytes)" ) => 3033974658 )
+      
+    
+    rule  ( selector ( "expectCall(address,bytes)" ) => 3177903156 )
+      
+    
+    rule  ( selector ( "expectCall(address,bytes)" ) => 4077681571 )
+      
+    
+    rule  ( selector ( "expectEmit(bool,bool,bool,bool)" ) => 1226622914 )
+      
+    
+    rule  ( selector ( "expectEmit(bool,bool,bool,bool)" ) => 2176505587 )
+      
+    
+    rule  ( selector ( "expectRevert(bytes4)" ) => 4102309908 )
+      
+    
+    rule  ( selector ( "expectRevert(bytes4)" ) => 4069379763 )
+      
+    
+    rule  ( selector ( "expectRevert(bytes4)" ) => 3273568480 )
+      
+    
+    rule  ( selector ( "fee(uint256)" ) => 968063664 )
+      
+    
+    rule  ( selector ( "ffi(string[])" ) => 2299921511 )
+      
+    
+    rule  ( selector ( "getCode(string)" ) => 2367473957 )
+      
+    
+    rule  ( selector ( "getNonce(address)" ) => 755185067 )
+      
+    
+    rule  ( selector ( "getRecordedLogs()" ) => 420828068 )
+      
+    
+    rule  ( selector ( "label(address,string)" ) => 3327641368 )
+      
+    
+    rule  ( selector ( "load(address,bytes32)" ) => 1719639408 )
+      
+    
+    rule  ( selector ( "mockCall(address,uint256,bytes,bytes)" ) => 3110212580 )
+      
+    
+    rule  ( selector ( "mockCall(address,uint256,bytes,bytes)" ) => 2168494993 )
+      
+    
+    rule  ( selector ( "prank(address,address)" ) => 3395723175 )
+      
+    
+    rule  ( selector ( "prank(address,address)" ) => 1206193358 )
+      
+    
+    rule  ( selector ( "readFile(string)" ) => 1626979089 )
+      
+    
+    rule  ( selector ( "readLine(string)" ) => 1895126824 )
+      
+    
+    rule  ( selector ( "record()" ) => 644673801 )
+      
+    
+    rule  ( selector ( "recordLogs()" ) => 1101999954 )
+      
+    
+    rule  ( selector ( "removeFile(string)" ) => 4054835277 )
+      
+    
+    rule  ( selector ( "revertTo(uint256)" ) => 1155002532 )
+      
+    
+    rule  ( selector ( "roll(uint256)" ) => 528174896 )
+      
+    
+    rule  ( selector ( "rollFork(uint256,uint256)" ) => 3652973473 )
+      
+    
+    rule  ( selector ( "rollFork(uint256,uint256)" ) => 3612115876 )
+      
+    
+    rule  ( selector ( "rpcUrl(string)" ) => 2539285737 )
+      
+    
+    rule  ( selector ( "rpcUrls()" ) => 2824504344 )
+      
+    
+    rule  ( selector ( "selectFork(uint256)" ) => 2663344167 )
+      
+    
+    rule  ( selector ( "setEnv(string,string)" ) => 1029252078 )
+      
+    
+    rule  ( selector ( "setNonce(address,uint64)" ) => 4175530839 )
+      
+    
+    rule  ( selector ( "sign(uint256,bytes32)" ) => 3812747940 )
+      
+    
+    rule  ( selector ( "snapshot()" ) => 2534502746 )
+      
+    
+    rule  ( selector ( "startBroadcast()" ) => 2142579071 )
+      
+    
+    rule  ( selector ( "startBroadcast()" ) => 2146183821 )
+      
+    
+    rule  ( selector ( "startPrank(address)" ) => 105151830 )
+      
+    
+    rule  ( selector ( "startPrank(address)" ) => 1169514616 )
+      
+    
+    rule  ( selector ( "stopBroadcast()" ) => 1995103542 )
+      
+    
+    rule  ( selector ( "stopPrank()" ) => 2428830011 )
+      
+    
+    rule  ( selector ( "store(address,bytes32,bytes32)" ) => 1892290747 )
+      
+    
+    rule  ( selector ( "toString(address)" ) => 1456103998 )
+      
+    
+    rule  ( selector ( "toString(address)" ) => 1910302682 )
+      
+    
+    rule  ( selector ( "toString(address)" ) => 1907020045 )
+      
+    
+    rule  ( selector ( "toString(address)" ) => 2971277800 )
+      
+    
+    rule  ( selector ( "toString(address)" ) => 2736964622 )
+      
+    
+    rule  ( selector ( "toString(address)" ) => 1761649582 )
+      
+    
+    rule  ( selector ( "warp(uint256)" ) => 3856056066 )
+      
+    
+    rule  ( selector ( "writeFile(string,string)" ) => 2306738839 )
+      
+    
+    rule  ( selector ( "writeLine(string,string)" ) => 1637714303 )
+      
 
 endmodule
 
@@ -5212,6 +7015,12 @@ module DSTEST-BIN-RUNTIME
       
     
     rule  ( DSTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
       
 
 endmodule

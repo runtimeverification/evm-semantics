@@ -264,7 +264,7 @@ class Contract:
         res.extend(method.production for method in self.methods)
         method_rules = (method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods)
         res.extend(rule for rule in method_rules if rule)
-#        res.extend(method.selector_alias_rule for method in self.methods)
+        res.extend(method.selector_alias_rule for method in self.methods)
         return res if len(res) > 1 else []
 
     @property
