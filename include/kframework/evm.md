@@ -1846,7 +1846,7 @@ Overall Gas
 
     rule <k> #memory [ OP , AOP ] => #memory(AOP, MU) ~> #deductMemory ... </k>
          <memoryUsed> MU </memoryUsed>
-         requires #usesMemory(OP)
+      requires #usesMemory(OP)
    
    rule <k> #memory [ OP , _ ] => . ... </k> [owise]
 
