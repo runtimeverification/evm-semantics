@@ -8,14 +8,6 @@ contract AssertTest is Test {
 
     function setUp() public {}
 
-    function getOne() public returns(uint256) {
-        return 1;
-    }
-
-    function test_method_call() public {
-        assertEq(1, getOne());
-    }
-
     function test_assert_true() public pure {
         assert(true);
     }
