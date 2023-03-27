@@ -2,7 +2,6 @@
 pragma solidity =0.8.13;
 
 contract NoImport {
-    function setUp() public {}
     function test_source_map() public pure returns (uint) {
         uint x = 0;
         uint y = 1;
