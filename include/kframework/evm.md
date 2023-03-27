@@ -1848,12 +1848,11 @@ Overall Gas
          <memoryUsed> MU </memoryUsed>
          requires #usesMemory(OP)
    
-   rule <k> #memory [ OP , _ ] => . ... </k>
-         requires notBool #usesMemory(OP)
+   rule <k> #memory [ OP , _ ] => . ... </k> [owise]
 
     syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas" | "#deductMemoryGas"
                         | "#memory" "[" OpCode "," OpCode "]" | "#deductMemory"
- // ----------------------------------------------------------------
+ // ---------------------------------------------------------------------------
     rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductMemoryGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
@@ -1911,7 +1910,6 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
     syntax Bool ::= #usesMemory ( OpCode ) [function, total]
  // --------------------------------------------------------
-
     rule #usesMemory(_:LogOp)        => true
     rule #usesMemory(_:CallOp)       => true
     rule #usesMemory(_:CallSixOp)    => true
@@ -1948,14 +1946,13 @@ Access List Gas
     rule #usesAccessList(_)      => false [owise]
 
     syntax InternalOp ::= "#access" "[" OpCode "," OpCode "]"
- // --------------------------------------------
+ // ---------------------------------------------------------
     rule <k> #access [ OP , AOP ] => #gasAccess(SCHED, AOP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
-         requires Ghasaccesslist << SCHED >> andBool #usesAccessList(OP)
+      requires Ghasaccesslist << SCHED >> andBool #usesAccessList(OP)
 
     rule <k> #access [ OP , _ ] => . ... </k>
-         <schedule> SCHED </schedule>
-         requires notBool ( Ghasaccesslist << SCHED >> andBool #usesAccessList(OP) )
+         <schedule> SCHED </schedule> [owise]
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode )
  // -----------------------------------------------------
