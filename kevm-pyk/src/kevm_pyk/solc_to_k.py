@@ -43,8 +43,13 @@ class Contract:
             self.payable = abi['stateMutability'] == 'payable'
 
         @property
+        def signature(self) -> str:
+            arg_list = ','.join(self.arg_types)
+            return f'{self.name}({arg_list})'
+
+        @property
         def selector_alias_rule(self) -> KRule:
-            return KRule(KRewrite(KEVM.abi_selector(self.name), intToken(self.id)))
+           return KRule(KRewrite(KEVM.abi_selector(self.signature), intToken(self.id)))
 
         @property
         def production(self) -> KProduction:
@@ -259,7 +264,7 @@ class Contract:
         res.extend(method.production for method in self.methods)
         method_rules = (method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods)
         res.extend(rule for rule in method_rules if rule)
-        res.extend(method.selector_alias_rule for method in self.methods)
+#        res.extend(method.selector_alias_rule for method in self.methods)
         return res if len(res) > 1 else []
 
     @property
