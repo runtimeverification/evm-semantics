@@ -6,91 +6,65 @@
 │   statusCode: STATUSCODE
 │   src: tests/foundry/test/Simple.t.sol:5:50
 │
+│  (414 steps)
+├  OMITTED HASH (expanded)
+│  k: JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+│  pc: 479
+│  callDepth: 0
+│  statusCode: STATUSCODE:StatusCode
+│  src: tests/foundry/test/Simple.t.sol:22:23
 │
-│  (1 step)
-┣━ OMITTED HASH (leaf)
-┃  │ k: #execute ~> CONTINUATION:K
-┃  │ pc: 0
+┣━ OMITTED HASH (expanded)    VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int
+┃  │ k: JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+┃  │ pc: 479
 ┃  │ callDepth: 0
 ┃  │ statusCode: STATUSCODE:StatusCode
-┃  │ src: tests/foundry/test/Simple.t.sol:5:50
-┃  ┊
-┃  ┊  constraint: true
-┃  ┊  subst: .Subst
-┃  └╌ OMITTED HASH (target, leaf)
-┃     │ k: #halt ~> CONTINUATION
-┃     │ pc: PC_CELL_5d410f2a
-┃     │ callDepth: CALLDEPTH_CELL_5d410f2a
-┃     │ statusCode: STATUSCODE_FINAL
+┃  │ src: tests/foundry/test/Simple.t.sol:22:23
+┃  │
+┃  │  (99 steps)
+┃  ├  OMITTED HASH (expanded)
+┃  │  k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
+┃  │  pc: 929
+┃  │  callDepth: 0
+┃  │  statusCode: EVMC_REVERT
+┃  │
+┃  │  (2 steps)
+┃  └  OMITTED HASH (expanded, stuck, leaf)
+┃  │  k: #halt ~> CONTINUATION:K
+┃  │  pc: 929
+┃  │  callDepth: 0
+┃  │  statusCode: EVMC_REVERT
 ┃
-│
-│  (1 step)
-┗━ OMITTED HASH (expanded)
-   │ k: #next [ PUSH ( 1 ) ] ~> #execute ~> CONTINUATION:K
-   │ pc: 0
+┗━ OMITTED HASH (expanded)    ( notBool VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int )
+   │ k: JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+   │ pc: 479
    │ callDepth: 0
    │ statusCode: STATUSCODE:StatusCode
-   │ src: tests/foundry/test/Simple.t.sol:5:50
+   │ src: tests/foundry/test/Simple.t.sol:22:23
    │
-   │  (413 steps)
+   │  (48 steps)
    ├  OMITTED HASH (expanded)
-   │  k: JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-   │  pc: 479
+   │  k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+   │  pc: 186
    │  callDepth: 0
-   │  statusCode: STATUSCODE:StatusCode
-   │  src: tests/foundry/test/Simple.t.sol:22:23
+   │  statusCode: EVMC_SUCCESS
+   │  src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
    │
-   ┣━ OMITTED HASH (expanded)    VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int
-   ┃  │ k: JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-   ┃  │ pc: 479
-   ┃  │ callDepth: 0
-   ┃  │ statusCode: STATUSCODE:StatusCode
-   ┃  │ src: tests/foundry/test/Simple.t.sol:22:23
-   ┃  │
-   ┃  │  (99 steps)
-   ┃  ├  OMITTED HASH (expanded)
-   ┃  │  k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-   ┃  │  pc: 929
-   ┃  │  callDepth: 0
-   ┃  │  statusCode: EVMC_REVERT
-   ┃  │
-   ┃  │  (2 steps)
-   ┃  └  OMITTED HASH (expanded, stuck, leaf)
-   ┃  │  k: #halt ~> CONTINUATION:K
-   ┃  │  pc: 929
-   ┃  │  callDepth: 0
-   ┃  │  statusCode: EVMC_REVERT
-   ┃
-   ┗━ OMITTED HASH (expanded)    ( notBool VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int )
-      │ k: JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-      │ pc: 479
-      │ callDepth: 0
-      │ statusCode: STATUSCODE:StatusCode
-      │ src: tests/foundry/test/Simple.t.sol:22:23
-      │
-      │  (48 steps)
-      ├  OMITTED HASH (expanded)
-      │  k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-      │  pc: 186
-      │  callDepth: 0
-      │  statusCode: EVMC_SUCCESS
-      │  src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
-      │
-      │  (2 steps)
-      ├  OMITTED HASH (leaf)
-      │  k: #halt ~> CONTINUATION:K
-      │  pc: 186
-      │  callDepth: 0
-      │  statusCode: EVMC_SUCCESS
-      │  src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
-      ┊
-      ┊  constraint: OMITTED CONSTRAINT
-      ┊  subst: OMITTED SUBST
-      └╌ OMITTED HASH (target, leaf)
-         │ k: #halt ~> CONTINUATION
-         │ pc: PC_CELL_5d410f2a
-         │ callDepth: CALLDEPTH_CELL_5d410f2a
-         │ statusCode: STATUSCODE_FINAL
+   │  (2 steps)
+   ├  OMITTED HASH (leaf)
+   │  k: #halt ~> CONTINUATION:K
+   │  pc: 186
+   │  callDepth: 0
+   │  statusCode: EVMC_SUCCESS
+   │  src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
+   ┊
+   ┊  constraint: OMITTED CONSTRAINT
+   ┊  subst: OMITTED SUBST
+   └╌ OMITTED HASH (target, leaf)
+      │ k: #halt ~> CONTINUATION
+      │ pc: PC_CELL_5d410f2a
+      │ callDepth: CALLDEPTH_CELL_5d410f2a
+      │ statusCode: STATUSCODE_FINAL
 
 
 Node OMITTED HASH:
@@ -176,24 +150,6 @@ Node OMITTED HASH:
           <accounts>
             ( <account>
               <acctID>
-                645326474426547203313410069153905908525362434349
-              </acctID>
-              <balance>
-                0
-              </balance>
-              <storage>
-                .Map
-              </storage>
-              <origStorage>
-                .Map
-              </origStorage>
-              <nonce>
-                0
-              </nonce>
-              ...
-            </account>
-            ( <account>
-              <acctID>
                 1032069922050249630382865877677304880282300743300
               </acctID>
               <balance>
@@ -207,6 +163,24 @@ Node OMITTED HASH:
               </origStorage>
               <nonce>
                 1
+              </nonce>
+              ...
+            </account>
+            ( <account>
+              <acctID>
+                645326474426547203313410069153905908525362434349
+              </acctID>
+              <balance>
+                0
+              </balance>
+              <storage>
+                .Map
+              </storage>
+              <origStorage>
+                .Map
+              </origStorage>
+              <nonce>
+                0
               </nonce>
               ...
             </account>
@@ -311,7 +285,8 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
            <kevm>
              <k>
                ( #execute
-               ~> CONTINUATION => #next [ PUSH ( 1 ) ]
+               ~> CONTINUATION => JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int )
+               ~> #pc [ JUMPI ]
                ~> #execute
                ~> CONTINUATION:K )
              </k>
@@ -333,477 +308,8 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    <id>
                      1032069922050249630382865877677304880282300743300
                    </id>
-                   <caller>
-                     CALLER_ID
-                   </caller>
                    <callData>
                      ( AssertTest . test_revert_branch ( VV0_x_114b9705 , VV1_y_114b9705 ) => b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int ) )
-                   </callData>
-                   <callValue>
-                     0
-                   </callValue>
-                   <wordStack>
-                     .WordStack
-                   </wordStack>
-                   <localMem>
-                     ( .Bytes => b"" )
-                   </localMem>
-                   <memoryUsed>
-                     0
-                   </memoryUsed>
-                   <static>
-                     false
-                   </static>
-                   <callDepth>
-                     0
-                   </callDepth>
-                   ...
-                 </callState>
-                 <substate>
-                   <log>
-                     .List
-                   </log>
-                   <accessedAccounts>
-                     .Set
-                   </accessedAccounts>
-                   <accessedStorage>
-                     .Map
-                   </accessedStorage>
-                   ...
-                 </substate>
-                 <origin>
-                   ORIGIN_ID
-                 </origin>
-                 ...
-               </evm>
-               <network>
-                 <activeAccounts>
-                   ( SetItem ( ( 1032069922050249630382865877677304880282300743300 => 645326474426547203313410069153905908525362434349 ) ) SetItem ( ( 645326474426547203313410069153905908525362434349 => 1032069922050249630382865877677304880282300743300 ) ) )
-                 </activeAccounts>
-                 <accounts>
-                   ( ( <account>
-                     <acctID>
-                       1032069922050249630382865877677304880282300743300
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account> )
-                   ( ( <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       1032069922050249630382865877677304880282300743300
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> )
-                   ACCOUNTS_INIT ) )
-                 </accounts>
-                 ...
-               </network>
-             </ethereum>
-             ...
-           </kevm>
-           <cheatcodes>
-             <prank>
-               <prevCaller>
-                 .Account
-               </prevCaller>
-               <prevOrigin>
-                 .Account
-               </prevOrigin>
-               <newCaller>
-                 .Account
-               </newCaller>
-               <newOrigin>
-                 .Account
-               </newOrigin>
-               <active>
-                 false
-               </active>
-               <singleCall>
-                 false
-               </singleCall>
-               ...
-             </prank>
-             <expectedRevert>
-               <isRevertExpected>
-                 false
-               </isRevertExpected>
-               ...
-             </expectedRevert>
-             <expectedOpcode>
-               <isOpcodeExpected>
-                 false
-               </isOpcodeExpected>
-               <expectedAddress>
-                 .Account
-               </expectedAddress>
-               <expectedValue>
-                 0
-               </expectedValue>
-               <expectedData>
-                 ( .Bytes => b"" )
-               </expectedData>
-               <opcodeType>
-                 .OpcodeType
-               </opcodeType>
-             </expectedOpcode>
-             <expectEmit>
-               <recordEvent>
-                 false
-               </recordEvent>
-               <isEventExpected>
-                 false
-               </isEventExpected>
-               ...
-             </expectEmit>
-             <whitelist>
-               <isCallWhitelistActive>
-                 false
-               </isCallWhitelistActive>
-               <isStorageWhitelistActive>
-                 false
-               </isStorageWhitelistActive>
-               <addressSet>
-                 .Set
-               </addressSet>
-               <storageSlotSet>
-                 .Set
-               </storageSlotSet>
-             </whitelist>
-           </cheatcodes>
-         </foundry>
-      requires ( 0 <=Int CALLER_ID:Int
-       andBool ( 0 <=Int ORIGIN_ID:Int
-       andBool ( 0 <=Int VV0_x_114b9705:Int
-       andBool ( 0 <=Int VV1_y_114b9705:Int
-       andBool ( CALLER_ID:Int <Int 1461501637330902918203684832716283019655932542976
-       andBool ( ORIGIN_ID:Int <Int 1461501637330902918203684832716283019655932542976
-       andBool ( VV0_x_114b9705:Int <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936
-       andBool ( VV1_y_114b9705:Int <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936
-       andBool ( ( notBool <acctID>
-          645326474426547203313410069153905908525362434349
-        </acctID> in_keys ( ACCOUNTS_INIT:AccountCellMap ) )
-       andBool ( ( notBool <acctID>
-          1032069922050249630382865877677304880282300743300
-        </acctID> in_keys ( ACCOUNTS_INIT:AccountCellMap ) )
-               ))))))))))
-    
-           <kevm>
-             <k>
-               #execute
-               ~> _CONTINUATION
-             </k>
-             <mode>
-               NORMAL
-             </mode>
-             <schedule>
-               LONDON
-             </schedule>
-             <ethereum>
-               <evm>
-                 <callStack>
-                   .List
-                 </callStack>
-                 <interimStates>
-                   .List
-                 </interimStates>
-                 <callState>
-                   <id>
-                     1032069922050249630382865877677304880282300743300
-                   </id>
-                   <caller>
-                     CALLER_ID
-                   </caller>
-                   <callData>
-                     ( AssertTest . test_revert_branch ( VV0_x_114b9705 , VV1_y_114b9705 ) => b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int ) )
-                   </callData>
-                   <callValue>
-                     0
-                   </callValue>
-                   <wordStack>
-                     .WordStack
-                   </wordStack>
-                   <localMem>
-                     ( .Bytes => b"" )
-                   </localMem>
-                   <memoryUsed>
-                     0
-                   </memoryUsed>
-                   <static>
-                     false
-                   </static>
-                   <callDepth>
-                     0
-                   </callDepth>
-                   ...
-                 </callState>
-                 <substate>
-                   <log>
-                     .List
-                   </log>
-                   <accessedAccounts>
-                     .Set
-                   </accessedAccounts>
-                   <accessedStorage>
-                     .Map
-                   </accessedStorage>
-                   ...
-                 </substate>
-                 <origin>
-                   ORIGIN_ID
-                 </origin>
-                 ...
-               </evm>
-               <network>
-                 <activeAccounts>
-                   ( SetItem ( ( 1032069922050249630382865877677304880282300743300 => 645326474426547203313410069153905908525362434349 ) ) SetItem ( ( 645326474426547203313410069153905908525362434349 => 1032069922050249630382865877677304880282300743300 ) ) )
-                 </activeAccounts>
-                 <accounts>
-                   ( ( <account>
-                     <acctID>
-                       1032069922050249630382865877677304880282300743300
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account> )
-                   ( ( <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       1032069922050249630382865877677304880282300743300
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> )
-                   ACCOUNTS_INIT ) )
-                 </accounts>
-                 ...
-               </network>
-             </ethereum>
-             ...
-           </kevm>
-           <cheatcodes>
-             <prank>
-               <prevCaller>
-                 .Account
-               </prevCaller>
-               <prevOrigin>
-                 .Account
-               </prevOrigin>
-               <newCaller>
-                 .Account
-               </newCaller>
-               <newOrigin>
-                 .Account
-               </newOrigin>
-               <active>
-                 false
-               </active>
-               <singleCall>
-                 false
-               </singleCall>
-               ...
-             </prank>
-             <expectedRevert>
-               <isRevertExpected>
-                 false
-               </isRevertExpected>
-               ...
-             </expectedRevert>
-             <expectedOpcode>
-               <isOpcodeExpected>
-                 false
-               </isOpcodeExpected>
-               <expectedAddress>
-                 .Account
-               </expectedAddress>
-               <expectedValue>
-                 0
-               </expectedValue>
-               <expectedData>
-                 ( .Bytes => b"" )
-               </expectedData>
-               <opcodeType>
-                 .OpcodeType
-               </opcodeType>
-             </expectedOpcode>
-             <expectEmit>
-               <recordEvent>
-                 false
-               </recordEvent>
-               <isEventExpected>
-                 false
-               </isEventExpected>
-               ...
-             </expectEmit>
-             <whitelist>
-               <isCallWhitelistActive>
-                 false
-               </isCallWhitelistActive>
-               <isStorageWhitelistActive>
-                 false
-               </isStorageWhitelistActive>
-               <addressSet>
-                 .Set
-               </addressSet>
-               <storageSlotSet>
-                 .Set
-               </storageSlotSet>
-             </whitelist>
-           </cheatcodes>
-         </foundry>
-      requires ( 0 <=Int CALLER_ID:Int
-       andBool ( 0 <=Int ORIGIN_ID:Int
-       andBool ( 0 <=Int VV0_x_114b9705:Int
-       andBool ( 0 <=Int VV1_y_114b9705:Int
-       andBool ( CALLER_ID:Int <Int 1461501637330902918203684832716283019655932542976
-       andBool ( ORIGIN_ID:Int <Int 1461501637330902918203684832716283019655932542976
-       andBool ( VV0_x_114b9705:Int <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936
-       andBool ( VV1_y_114b9705:Int <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936
-       andBool ( ( notBool ( ( notBool <acctID>
-          645326474426547203313410069153905908525362434349
-        </acctID> in_keys ( ACCOUNTS_INIT:AccountCellMap ) ) andBool ( notBool <acctID>
-          1032069922050249630382865877677304880282300743300
-        </acctID> in_keys ( ACCOUNTS_INIT:AccountCellMap ) ) ) )
-               )))))))))
-    
-           <kevm>
-             <k>
-               ( #next [ PUSH ( 1 ) ] => JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int )
-               ~> #pc [ JUMPI ] )
-               ~> #execute
-               ~> _CONTINUATION
-             </k>
-             <mode>
-               NORMAL
-             </mode>
-             <schedule>
-               LONDON
-             </schedule>
-             <ethereum>
-               <evm>
-                 <callStack>
-                   .List
-                 </callStack>
-                 <interimStates>
-                   .List
-                 </interimStates>
-                 <callState>
-                   <id>
-                     1032069922050249630382865877677304880282300743300
-                   </id>
-                   <callData>
-                     b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int )
                    </callData>
                    <callValue>
                      0
@@ -812,7 +318,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      ( .WordStack => ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 185 : ( 2349784459 : .WordStack ) ) ) ) )
                    </wordStack>
                    <localMem>
-                     ( b"" => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
+                     ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
                    </localMem>
                    <memoryUsed>
                      ( 0 => 3 )
@@ -841,28 +347,10 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                </evm>
                <network>
                  <activeAccounts>
-                   ( SetItem ( 645326474426547203313410069153905908525362434349 ) SetItem ( 1032069922050249630382865877677304880282300743300 ) )
+                   ( SetItem ( ( 1032069922050249630382865877677304880282300743300 => 645326474426547203313410069153905908525362434349 ) ) SetItem ( ( 645326474426547203313410069153905908525362434349 => 1032069922050249630382865877677304880282300743300 ) ) )
                  </activeAccounts>
                  <accounts>
-                   ( <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   ( <account>
+                   ( ( <account>
                      <acctID>
                        1032069922050249630382865877677304880282300743300
                      </acctID>
@@ -879,7 +367,59 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                        1
                      </nonce>
                      ...
-                   </account>
+                   </account> => <account>
+                     <acctID>
+                       1032069922050249630382865877677304880282300743300
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
+                     </nonce>
+                     ...
+                   </account> )
+                   ( ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                     ...
+                   </account> => <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                     ...
+                   </account> )
                    _ACCOUNTS_INIT ) )
                  </accounts>
                  ...
@@ -926,7 +466,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  0
                </expectedValue>
                <expectedData>
-                 b""
+                 ( .Bytes => b"" )
                </expectedData>
                <opcodeType>
                  .OpcodeType
@@ -1034,24 +574,6 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   ( <account>
-                     <acctID>
                        1032069922050249630382865877677304880282300743300
                      </acctID>
                      <balance>
@@ -1065,6 +587,24 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account>
@@ -1222,24 +762,6 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   ( <account>
-                     <acctID>
                        1032069922050249630382865877677304880282300743300
                      </acctID>
                      <balance>
@@ -1253,6 +775,24 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account>
@@ -1409,24 +949,6 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   ( <account>
-                     <acctID>
                        1032069922050249630382865877677304880282300743300
                      </acctID>
                      <balance>
@@ -1440,6 +962,24 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account>
@@ -1596,24 +1136,6 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   ( <account>
-                     <acctID>
                        1032069922050249630382865877677304880282300743300
                      </acctID>
                      <balance>
@@ -1627,6 +1149,24 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account>
