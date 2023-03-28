@@ -506,31 +506,31 @@ module ARITHMETICTEST-BIN-RUNTIME
     
     syntax ArithmeticTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_ArithmeticTest_setUp_)]
     
-    syntax ArithmeticTestMethod ::= "test_decreasing_div" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_decreasing_div_Int Int)]
+    syntax ArithmeticTestMethod ::= "test_decreasing_div" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_decreasing_div_Int_Int)]
     
-    syntax ArithmeticTestMethod ::= "test_max1" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max1_Int Int)]
+    syntax ArithmeticTestMethod ::= "test_max1" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max1_Int_Int)]
     
-    syntax ArithmeticTestMethod ::= "test_max1_broken" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max1_broken_Int Int)]
+    syntax ArithmeticTestMethod ::= "test_max1_broken" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max1_broken_Int_Int)]
     
-    syntax ArithmeticTestMethod ::= "test_max2" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max2_Int Int)]
+    syntax ArithmeticTestMethod ::= "test_max2" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max2_Int_Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wdiv_rounding" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wdiv_rounding_Int Int)]
+    syntax ArithmeticTestMethod ::= "test_wdiv_rounding" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wdiv_rounding_Int_Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_increasing" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_Int Int)]
+    syntax ArithmeticTestMethod ::= "test_wmul_increasing" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_Int_Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_increasing_gt_one" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_gt_one_Int Int)]
+    syntax ArithmeticTestMethod ::= "test_wmul_increasing_gt_one" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_gt_one_Int_Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_increasing_overflow" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_overflow_Int Int)]
+    syntax ArithmeticTestMethod ::= "test_wmul_increasing_overflow" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_overflow_Int_Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_increasing_positive" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_positive_Int Int)]
+    syntax ArithmeticTestMethod ::= "test_wmul_increasing_positive" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_positive_Int_Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_rounding" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_rounding_Int Int)]
+    syntax ArithmeticTestMethod ::= "test_wmul_rounding" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_rounding_Int_Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_wdiv_inverse" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_wdiv_inverse_Int Int)]
+    syntax ArithmeticTestMethod ::= "test_wmul_wdiv_inverse" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_wdiv_inverse_Int_Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_wdiv_inverse_underflow" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_wdiv_inverse_underflow_Int Int)]
+    syntax ArithmeticTestMethod ::= "test_wmul_wdiv_inverse_underflow" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_wdiv_inverse_underflow_Int_Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_weakly_increasing_positive" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_weakly_increasing_positive_Int Int)]
+    syntax ArithmeticTestMethod ::= "test_wmul_weakly_increasing_positive" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_weakly_increasing_positive_Int_Int)]
     
     syntax ArithmeticTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ArithmeticTest_vm_)]
     
@@ -722,17 +722,17 @@ module ASSUMETEST-BIN-RUNTIME
     
     syntax AssumeTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AssumeTest_failed_)]
     
-    syntax AssumeTestMethod ::= "testFail_assume_false" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_testFail_assume_false_Int Int)]
+    syntax AssumeTestMethod ::= "testFail_assume_false" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_testFail_assume_false_Int_Int)]
     
-    syntax AssumeTestMethod ::= "testFail_assume_true" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_testFail_assume_true_Int Int)]
+    syntax AssumeTestMethod ::= "testFail_assume_true" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_testFail_assume_true_Int_Int)]
     
-    syntax AssumeTestMethod ::= "test_assume_false" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_assume_false_Int Int)]
+    syntax AssumeTestMethod ::= "test_assume_false" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_assume_false_Int_Int)]
     
     syntax AssumeTestMethod ::= "test_assume_staticCall" "(" Int ")" [symbol(), klabel(method_AssumeTest_test_assume_staticCall_Int)]
     
-    syntax AssumeTestMethod ::= "test_assume_true" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_assume_true_Int Int)]
+    syntax AssumeTestMethod ::= "test_assume_true" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_assume_true_Int_Int)]
     
-    syntax AssumeTestMethod ::= "test_multi_assume" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_multi_assume_Int Int)]
+    syntax AssumeTestMethod ::= "test_multi_assume" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_multi_assume_Int_Int)]
     
     syntax AssumeTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AssumeTest_vm_)]
     
@@ -1432,7 +1432,7 @@ module DYNAMICTYPES-BIN-RUNTIME
     
     syntax DynamicTypesMethod ::= "failed" "(" ")" [symbol(), klabel(method_DynamicTypes_failed_)]
     
-    syntax DynamicTypesMethod ::= "test_dynamic_byte_read" "(" Bytes "," Int ")" [symbol(), klabel(method_DynamicTypes_test_dynamic_byte_read_Bytes Int)]
+    syntax DynamicTypesMethod ::= "test_dynamic_byte_read" "(" Bytes "," Int ")" [symbol(), klabel(method_DynamicTypes_test_dynamic_byte_read_Bytes_Int)]
     
     syntax DynamicTypesMethod ::= "vm" "(" ")" [symbol(), klabel(method_DynamicTypes_vm_)]
     
@@ -2683,21 +2683,21 @@ module KEVMCHEATSBASE-BIN-RUNTIME
     
     syntax KEVMCheatsBaseMethod ::= "allowCallsToAddress" "(" Int ")" [symbol(), klabel(method_KEVMCheatsBase_allowCallsToAddress_Int)]
     
-    syntax KEVMCheatsBaseMethod ::= "allowChangesToStorage" "(" Int "," Int ")" [symbol(), klabel(method_KEVMCheatsBase_allowChangesToStorage_Int Int)]
+    syntax KEVMCheatsBaseMethod ::= "allowChangesToStorage" "(" Int "," Int ")" [symbol(), klabel(method_KEVMCheatsBase_allowChangesToStorage_Int_Int)]
     
-    syntax KEVMCheatsBaseMethod ::= "expectCreate" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectCreate_Int Int Bytes)]
+    syntax KEVMCheatsBaseMethod ::= "expectCreate" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectCreate_Int_Int_Bytes)]
     
-    syntax KEVMCheatsBaseMethod ::= "expectCreate2" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectCreate2_Int Int Bytes)]
+    syntax KEVMCheatsBaseMethod ::= "expectCreate2" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectCreate2_Int_Int_Bytes)]
     
-    syntax KEVMCheatsBaseMethod ::= "expectDelegateCall" "(" Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectDelegateCall_Int Bytes)]
+    syntax KEVMCheatsBaseMethod ::= "expectDelegateCall" "(" Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectDelegateCall_Int_Bytes)]
     
     syntax KEVMCheatsBaseMethod ::= "expectNoCall" "(" ")" [symbol(), klabel(method_KEVMCheatsBase_expectNoCall_)]
     
-    syntax KEVMCheatsBaseMethod ::= "expectRegularCall" "(" Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectRegularCall_Int Bytes)]
+    syntax KEVMCheatsBaseMethod ::= "expectRegularCall" "(" Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectRegularCall_Int_Bytes)]
     
-    syntax KEVMCheatsBaseMethod ::= "expectRegularCall" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectRegularCall_Int Int Bytes)]
+    syntax KEVMCheatsBaseMethod ::= "expectRegularCall" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectRegularCall_Int_Int_Bytes)]
     
-    syntax KEVMCheatsBaseMethod ::= "expectStaticCall" "(" Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectStaticCall_Int Bytes)]
+    syntax KEVMCheatsBaseMethod ::= "expectStaticCall" "(" Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectStaticCall_Int_Bytes)]
     
     syntax KEVMCheatsBaseMethod ::= "infiniteGas" "(" ")" [symbol(), klabel(method_KEVMCheatsBase_infiniteGas_)]
     
@@ -2915,9 +2915,9 @@ module LOOPSTEST-BIN-RUNTIME
     
     syntax LoopsTestMethod ::= "testIsNotPrime" "(" Int ")" [symbol(), klabel(method_LoopsTest_testIsNotPrime_Int)]
     
-    syntax LoopsTestMethod ::= "testIsPrime" "(" Int "," Int ")" [symbol(), klabel(method_LoopsTest_testIsPrime_Int Int)]
+    syntax LoopsTestMethod ::= "testIsPrime" "(" Int "," Int ")" [symbol(), klabel(method_LoopsTest_testIsPrime_Int_Int)]
     
-    syntax LoopsTestMethod ::= "testIsPrimeBroken" "(" Int "," Int ")" [symbol(), klabel(method_LoopsTest_testIsPrimeBroken_Int Int)]
+    syntax LoopsTestMethod ::= "testIsPrimeBroken" "(" Int "," Int ")" [symbol(), klabel(method_LoopsTest_testIsPrimeBroken_Int_Int)]
     
     syntax LoopsTestMethod ::= "testIsPrimeOpt" "(" Int ")" [symbol(), klabel(method_LoopsTest_testIsPrimeOpt_Int)]
     
@@ -2925,7 +2925,7 @@ module LOOPSTEST-BIN-RUNTIME
     
     syntax LoopsTestMethod ::= "testMaxBroken" "(" K ")" [symbol(), klabel(method_LoopsTest_testMaxBroken_K)]
     
-    syntax LoopsTestMethod ::= "testNthPrime" "(" Int "," Int ")" [symbol(), klabel(method_LoopsTest_testNthPrime_Int Int)]
+    syntax LoopsTestMethod ::= "testNthPrime" "(" Int "," Int ")" [symbol(), klabel(method_LoopsTest_testNthPrime_Int_Int)]
     
     syntax LoopsTestMethod ::= "testSort" "(" K ")" [symbol(), klabel(method_LoopsTest_testSort_K)]
     
@@ -3272,7 +3272,7 @@ module MYIERC20-BIN-RUNTIME
     
     syntax Bytes ::= MyIERC20Contract "." MyIERC20Method [function(), symbol(), klabel(method_MyIERC20)]
     
-    syntax MyIERC20Method ::= "approve" "(" Int "," Int ")" [symbol(), klabel(method_MyIERC20_approve_Int Int)]
+    syntax MyIERC20Method ::= "approve" "(" Int "," Int ")" [symbol(), klabel(method_MyIERC20_approve_Int_Int)]
     
     syntax MyIERC20Method ::= "balanceOf" "(" Int ")" [symbol(), klabel(method_MyIERC20_balanceOf_Int)]
     
@@ -3282,9 +3282,9 @@ module MYIERC20-BIN-RUNTIME
     
     syntax MyIERC20Method ::= "totalSupply" "(" ")" [symbol(), klabel(method_MyIERC20_totalSupply_)]
     
-    syntax MyIERC20Method ::= "transfer" "(" Int "," Int ")" [symbol(), klabel(method_MyIERC20_transfer_Int Int)]
+    syntax MyIERC20Method ::= "transfer" "(" Int "," Int ")" [symbol(), klabel(method_MyIERC20_transfer_Int_Int)]
     
-    syntax MyIERC20Method ::= "transferFrom" "(" Int "," Int "," Int ")" [symbol(), klabel(method_MyIERC20_transferFrom_Int Int Int)]
+    syntax MyIERC20Method ::= "transferFrom" "(" Int "," Int "," Int ")" [symbol(), klabel(method_MyIERC20_transferFrom_Int_Int_Int)]
     
     rule  ( MyIERC20 . approve ( V0_spender , V1_value ) => #abiCallData ( "approve" , #address ( V0_spender ) , #uint256 ( V1_value ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_spender )
@@ -3859,11 +3859,11 @@ module PRANKTEST-BIN-RUNTIME
     
     syntax PrankTestMethod ::= "testFailAddPrank" "(" Int ")" [symbol(), klabel(method_PrankTest_testFailAddPrank_Int)]
     
-    syntax PrankTestMethod ::= "testSubtractAsTxOrigin" "(" Int "," Int ")" [symbol(), klabel(method_PrankTest_testSubtractAsTxOrigin_Int Int)]
+    syntax PrankTestMethod ::= "testSubtractAsTxOrigin" "(" Int "," Int ")" [symbol(), klabel(method_PrankTest_testSubtractAsTxOrigin_Int_Int)]
     
     syntax PrankTestMethod ::= "testSubtractFail" "(" Int ")" [symbol(), klabel(method_PrankTest_testSubtractFail_Int)]
     
-    syntax PrankTestMethod ::= "testSubtractStartPrank" "(" Int "," Int ")" [symbol(), klabel(method_PrankTest_testSubtractStartPrank_Int Int)]
+    syntax PrankTestMethod ::= "testSubtractStartPrank" "(" Int "," Int ")" [symbol(), klabel(method_PrankTest_testSubtractStartPrank_Int_Int)]
     
     syntax PrankTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_PrankTest_vm_)]
     
@@ -4434,7 +4434,7 @@ module ASSERTTEST-BIN-RUNTIME
     
     syntax AssertTestMethod ::= "test_assert_true_branch" "(" Int ")" [symbol(), klabel(method_AssertTest_test_assert_true_branch_Int)]
     
-    syntax AssertTestMethod ::= "test_revert_branch" "(" Int "," Int ")" [symbol(), klabel(method_AssertTest_test_revert_branch_Int Int)]
+    syntax AssertTestMethod ::= "test_revert_branch" "(" Int "," Int ")" [symbol(), klabel(method_AssertTest_test_revert_branch_Int_Int)]
     
     syntax AssertTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AssertTest_vm_)]
     
@@ -5071,7 +5071,7 @@ module STDSTORAGE-BIN-RUNTIME
     
     syntax Bytes ::= StdStorageContract "." StdStorageMethod [function(), symbol(), klabel(method_stdStorage)]
     
-    syntax StdStorageMethod ::= "bytesToBytes32" "(" Bytes "," Int ")" [symbol(), klabel(method_stdStorage_bytesToBytes32_Bytes Int)]
+    syntax StdStorageMethod ::= "bytesToBytes32" "(" Bytes "," Int ")" [symbol(), klabel(method_stdStorage_bytesToBytes32_Bytes_Int)]
     
     rule  ( stdStorage . bytesToBytes32 ( V0_b , V1_offset ) => #abiCallData ( "bytesToBytes32" , #bytes ( V0_b ) , #uint256 ( V1_offset ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 128 , lengthBytes ( V0_b ) )
@@ -5315,7 +5315,7 @@ module TOKEN-BIN-RUNTIME
     
     syntax Bytes ::= TokenContract "." TokenMethod [function(), symbol(), klabel(method_Token)]
     
-    syntax TokenMethod ::= "transfer" "(" Int "," Int ")" [symbol(), klabel(method_Token_transfer_Int Int)]
+    syntax TokenMethod ::= "transfer" "(" Int "," Int ")" [symbol(), klabel(method_Token_transfer_Int_Int)]
     
     rule  ( Token . transfer ( V0_dst , V1_amount ) => #abiCallData ( "transfer" , #address ( V0_dst ) , #uint256 ( V1_amount ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_dst )
@@ -6321,55 +6321,55 @@ module VM-BIN-RUNTIME
     
     syntax VmMethod ::= "createFork" "(" String ")" [symbol(), klabel(method_Vm_createFork_String)]
     
-    syntax VmMethod ::= "createFork" "(" String "," Int ")" [symbol(), klabel(method_Vm_createFork_String Int)]
+    syntax VmMethod ::= "createFork" "(" String "," Int ")" [symbol(), klabel(method_Vm_createFork_String_Int)]
     
     syntax VmMethod ::= "createSelectFork" "(" String ")" [symbol(), klabel(method_Vm_createSelectFork_String)]
     
-    syntax VmMethod ::= "createSelectFork" "(" String "," Int ")" [symbol(), klabel(method_Vm_createSelectFork_String Int)]
+    syntax VmMethod ::= "createSelectFork" "(" String "," Int ")" [symbol(), klabel(method_Vm_createSelectFork_String_Int)]
     
-    syntax VmMethod ::= "deal" "(" Int "," Int ")" [symbol(), klabel(method_Vm_deal_Int Int)]
+    syntax VmMethod ::= "deal" "(" Int "," Int ")" [symbol(), klabel(method_Vm_deal_Int_Int)]
     
-    syntax VmMethod ::= "deriveKey" "(" String "," String "," Int ")" [symbol(), klabel(method_Vm_deriveKey_String String Int)]
+    syntax VmMethod ::= "deriveKey" "(" String "," String "," Int ")" [symbol(), klabel(method_Vm_deriveKey_String_String_Int)]
     
-    syntax VmMethod ::= "deriveKey" "(" String "," Int ")" [symbol(), klabel(method_Vm_deriveKey_String Int)]
+    syntax VmMethod ::= "deriveKey" "(" String "," Int ")" [symbol(), klabel(method_Vm_deriveKey_String_Int)]
     
     syntax VmMethod ::= "envAddress" "(" String ")" [symbol(), klabel(method_Vm_envAddress_String)]
     
-    syntax VmMethod ::= "envAddress" "(" String "," String ")" [symbol(), klabel(method_Vm_envAddress_String String)]
+    syntax VmMethod ::= "envAddress" "(" String "," String ")" [symbol(), klabel(method_Vm_envAddress_String_String)]
     
     syntax VmMethod ::= "envBool" "(" String ")" [symbol(), klabel(method_Vm_envBool_String)]
     
-    syntax VmMethod ::= "envBool" "(" String "," String ")" [symbol(), klabel(method_Vm_envBool_String String)]
+    syntax VmMethod ::= "envBool" "(" String "," String ")" [symbol(), klabel(method_Vm_envBool_String_String)]
     
     syntax VmMethod ::= "envBytes" "(" String ")" [symbol(), klabel(method_Vm_envBytes_String)]
     
-    syntax VmMethod ::= "envBytes" "(" String "," String ")" [symbol(), klabel(method_Vm_envBytes_String String)]
+    syntax VmMethod ::= "envBytes" "(" String "," String ")" [symbol(), klabel(method_Vm_envBytes_String_String)]
     
     syntax VmMethod ::= "envBytes32" "(" String ")" [symbol(), klabel(method_Vm_envBytes32_String)]
     
-    syntax VmMethod ::= "envBytes32" "(" String "," String ")" [symbol(), klabel(method_Vm_envBytes32_String String)]
+    syntax VmMethod ::= "envBytes32" "(" String "," String ")" [symbol(), klabel(method_Vm_envBytes32_String_String)]
     
     syntax VmMethod ::= "envInt" "(" String ")" [symbol(), klabel(method_Vm_envInt_String)]
     
-    syntax VmMethod ::= "envInt" "(" String "," String ")" [symbol(), klabel(method_Vm_envInt_String String)]
+    syntax VmMethod ::= "envInt" "(" String "," String ")" [symbol(), klabel(method_Vm_envInt_String_String)]
     
     syntax VmMethod ::= "envString" "(" String ")" [symbol(), klabel(method_Vm_envString_String)]
     
-    syntax VmMethod ::= "envString" "(" String "," String ")" [symbol(), klabel(method_Vm_envString_String String)]
+    syntax VmMethod ::= "envString" "(" String "," String ")" [symbol(), klabel(method_Vm_envString_String_String)]
     
     syntax VmMethod ::= "envUint" "(" String ")" [symbol(), klabel(method_Vm_envUint_String)]
     
-    syntax VmMethod ::= "envUint" "(" String "," String ")" [symbol(), klabel(method_Vm_envUint_String String)]
+    syntax VmMethod ::= "envUint" "(" String "," String ")" [symbol(), klabel(method_Vm_envUint_String_String)]
     
-    syntax VmMethod ::= "etch" "(" Int "," Bytes ")" [symbol(), klabel(method_Vm_etch_Int Bytes)]
+    syntax VmMethod ::= "etch" "(" Int "," Bytes ")" [symbol(), klabel(method_Vm_etch_Int_Bytes)]
     
-    syntax VmMethod ::= "expectCall" "(" Int "," Bytes ")" [symbol(), klabel(method_Vm_expectCall_Int Bytes)]
+    syntax VmMethod ::= "expectCall" "(" Int "," Bytes ")" [symbol(), klabel(method_Vm_expectCall_Int_Bytes)]
     
-    syntax VmMethod ::= "expectCall" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_Vm_expectCall_Int Int Bytes)]
+    syntax VmMethod ::= "expectCall" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_Vm_expectCall_Int_Int_Bytes)]
     
-    syntax VmMethod ::= "expectEmit" "(" Int "," Int "," Int "," Int ")" [symbol(), klabel(method_Vm_expectEmit_Int Int Int Int)]
+    syntax VmMethod ::= "expectEmit" "(" Int "," Int "," Int "," Int ")" [symbol(), klabel(method_Vm_expectEmit_Int_Int_Int_Int)]
     
-    syntax VmMethod ::= "expectEmit" "(" Int "," Int "," Int "," Int "," Int ")" [symbol(), klabel(method_Vm_expectEmit_Int Int Int Int Int)]
+    syntax VmMethod ::= "expectEmit" "(" Int "," Int "," Int "," Int "," Int ")" [symbol(), klabel(method_Vm_expectEmit_Int_Int_Int_Int_Int)]
     
     syntax VmMethod ::= "expectRevert" "(" ")" [symbol(), klabel(method_Vm_expectRevert_)]
     
@@ -6387,17 +6387,17 @@ module VM-BIN-RUNTIME
     
     syntax VmMethod ::= "getRecordedLogs" "(" ")" [symbol(), klabel(method_Vm_getRecordedLogs_)]
     
-    syntax VmMethod ::= "label" "(" Int "," String ")" [symbol(), klabel(method_Vm_label_Int String)]
+    syntax VmMethod ::= "label" "(" Int "," String ")" [symbol(), klabel(method_Vm_label_Int_String)]
     
-    syntax VmMethod ::= "load" "(" Int "," Int ")" [symbol(), klabel(method_Vm_load_Int Int)]
+    syntax VmMethod ::= "load" "(" Int "," Int ")" [symbol(), klabel(method_Vm_load_Int_Int)]
     
-    syntax VmMethod ::= "mockCall" "(" Int "," Bytes "," Bytes ")" [symbol(), klabel(method_Vm_mockCall_Int Bytes Bytes)]
+    syntax VmMethod ::= "mockCall" "(" Int "," Bytes "," Bytes ")" [symbol(), klabel(method_Vm_mockCall_Int_Bytes_Bytes)]
     
-    syntax VmMethod ::= "mockCall" "(" Int "," Int "," Bytes "," Bytes ")" [symbol(), klabel(method_Vm_mockCall_Int Int Bytes Bytes)]
+    syntax VmMethod ::= "mockCall" "(" Int "," Int "," Bytes "," Bytes ")" [symbol(), klabel(method_Vm_mockCall_Int_Int_Bytes_Bytes)]
     
     syntax VmMethod ::= "prank" "(" Int ")" [symbol(), klabel(method_Vm_prank_Int)]
     
-    syntax VmMethod ::= "prank" "(" Int "," Int ")" [symbol(), klabel(method_Vm_prank_Int Int)]
+    syntax VmMethod ::= "prank" "(" Int "," Int ")" [symbol(), klabel(method_Vm_prank_Int_Int)]
     
     syntax VmMethod ::= "readFile" "(" String ")" [symbol(), klabel(method_Vm_readFile_String)]
     
@@ -6415,7 +6415,7 @@ module VM-BIN-RUNTIME
     
     syntax VmMethod ::= "rollFork" "(" Int ")" [symbol(), klabel(method_Vm_rollFork_Int)]
     
-    syntax VmMethod ::= "rollFork" "(" Int "," Int ")" [symbol(), klabel(method_Vm_rollFork_Int Int)]
+    syntax VmMethod ::= "rollFork" "(" Int "," Int ")" [symbol(), klabel(method_Vm_rollFork_Int_Int)]
     
     syntax VmMethod ::= "rpcUrl" "(" String ")" [symbol(), klabel(method_Vm_rpcUrl_String)]
     
@@ -6423,11 +6423,11 @@ module VM-BIN-RUNTIME
     
     syntax VmMethod ::= "selectFork" "(" Int ")" [symbol(), klabel(method_Vm_selectFork_Int)]
     
-    syntax VmMethod ::= "setEnv" "(" String "," String ")" [symbol(), klabel(method_Vm_setEnv_String String)]
+    syntax VmMethod ::= "setEnv" "(" String "," String ")" [symbol(), klabel(method_Vm_setEnv_String_String)]
     
-    syntax VmMethod ::= "setNonce" "(" Int "," Int ")" [symbol(), klabel(method_Vm_setNonce_Int Int)]
+    syntax VmMethod ::= "setNonce" "(" Int "," Int ")" [symbol(), klabel(method_Vm_setNonce_Int_Int)]
     
-    syntax VmMethod ::= "sign" "(" Int "," Int ")" [symbol(), klabel(method_Vm_sign_Int Int)]
+    syntax VmMethod ::= "sign" "(" Int "," Int ")" [symbol(), klabel(method_Vm_sign_Int_Int)]
     
     syntax VmMethod ::= "snapshot" "(" ")" [symbol(), klabel(method_Vm_snapshot_)]
     
@@ -6437,13 +6437,13 @@ module VM-BIN-RUNTIME
     
     syntax VmMethod ::= "startPrank" "(" Int ")" [symbol(), klabel(method_Vm_startPrank_Int)]
     
-    syntax VmMethod ::= "startPrank" "(" Int "," Int ")" [symbol(), klabel(method_Vm_startPrank_Int Int)]
+    syntax VmMethod ::= "startPrank" "(" Int "," Int ")" [symbol(), klabel(method_Vm_startPrank_Int_Int)]
     
     syntax VmMethod ::= "stopBroadcast" "(" ")" [symbol(), klabel(method_Vm_stopBroadcast_)]
     
     syntax VmMethod ::= "stopPrank" "(" ")" [symbol(), klabel(method_Vm_stopPrank_)]
     
-    syntax VmMethod ::= "store" "(" Int "," Int "," Int ")" [symbol(), klabel(method_Vm_store_Int Int Int)]
+    syntax VmMethod ::= "store" "(" Int "," Int "," Int ")" [symbol(), klabel(method_Vm_store_Int_Int_Int)]
     
     syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString_Int)]
     
@@ -6459,9 +6459,9 @@ module VM-BIN-RUNTIME
     
     syntax VmMethod ::= "warp" "(" Int ")" [symbol(), klabel(method_Vm_warp_Int)]
     
-    syntax VmMethod ::= "writeFile" "(" String "," String ")" [symbol(), klabel(method_Vm_writeFile_String String)]
+    syntax VmMethod ::= "writeFile" "(" String "," String ")" [symbol(), klabel(method_Vm_writeFile_String_String)]
     
-    syntax VmMethod ::= "writeLine" "(" String "," String ")" [symbol(), klabel(method_Vm_writeLine_String String)]
+    syntax VmMethod ::= "writeLine" "(" String "," String ")" [symbol(), klabel(method_Vm_writeLine_String_String)]
     
     rule  ( Vm . accesses ( V0_ ) => #abiCallData ( "accesses" , #address ( V0_ ) , .TypedArgs ) )
        ensures #rangeAddress ( V0_ )

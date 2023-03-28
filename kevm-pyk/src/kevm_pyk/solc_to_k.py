@@ -57,7 +57,7 @@ class Contract:
             items_before: List[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
             items_args: List[KProductionItem] = list(intersperse(input_nonterminals, KTerminal(',')))
             items_after: List[KProductionItem] = [KTerminal(')')]
-            args_list = ' '.join([_evm_base_sort(input_type).name for input_type in self.arg_types])
+            args_list = '_'.join([_evm_base_sort(input_type).name for input_type in self.arg_types])
             return KProduction(
                 self.sort,
                 items_before + items_args + items_after,
