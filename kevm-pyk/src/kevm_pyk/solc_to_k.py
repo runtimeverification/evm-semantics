@@ -57,10 +57,11 @@ class Contract:
             items_before: List[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
             items_args: List[KProductionItem] = list(intersperse(input_nonterminals, KTerminal(',')))
             items_after: List[KProductionItem] = [KTerminal(')')]
+            args_list = ' '.join([_evm_base_sort(input_type).name for input_type in self.arg_types])
             return KProduction(
                 self.sort,
                 items_before + items_args + items_after,
-                klabel=KLabel(f'method_{self.contract_name}_{self.name}'),
+                klabel=KLabel(f'method_{self.contract_name}_{self.name}_{args_list}'),
                 att=KAtt({'symbol': ''}),
             )
 
@@ -115,10 +116,13 @@ class Contract:
     fields: FrozenDict
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
-        def _get_method_abi(_mname: str) -> Dict:
+        def _get_method_abi(_mname: str, _margs: List[str]) -> Dict:
             for _method in contract_json['abi']:
                 if _method['type'] == 'function' and _method['name'] == _mname:
-                    return _method
+                    if len(_margs) == len(_method['inputs']):
+                        inputs_match = [(_method['inputs'][i]['type'] == _margs[i]) for i in range(len(_margs))]
+                        if all(inputs_match):
+                            return _method
             raise ValueError(f'Method not found in abi: {_mname}')
 
         self.name = contract_name
@@ -137,8 +141,10 @@ class Contract:
         _methods = []
         for msig in method_ids:
             mname = msig.split('(')[0]
+            margs_cs = msig.split('(')[1][:-1]
+            margs = [] if margs_cs == '' else margs_cs.split(',')
             mid = int(method_ids[msig], 16)
-            _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
+            _m = Contract.Method(mname, mid, _get_method_abi(mname, margs), contract_name, self.sort_method)
             _methods.append(_m)
         self.methods = tuple(_methods)
 

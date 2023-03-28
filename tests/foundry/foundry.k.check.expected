@@ -33,35 +33,35 @@ module ACCOUNTPARAMSTEST-BIN-RUNTIME
     
     syntax Bytes ::= AccountParamsTestContract "." AccountParamsTestMethod [function(), symbol(), klabel(method_AccountParamsTest)]
     
-    syntax AccountParamsTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_AccountParamsTest_IS_SCRIPT)]
+    syntax AccountParamsTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_AccountParamsTest_IS_SCRIPT_)]
     
-    syntax AccountParamsTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_AccountParamsTest_IS_TEST)]
+    syntax AccountParamsTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_AccountParamsTest_IS_TEST_)]
     
-    syntax AccountParamsTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AccountParamsTest_failed)]
+    syntax AccountParamsTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AccountParamsTest_failed_)]
     
-    syntax AccountParamsTestMethod ::= "testDealConcrete" "(" ")" [symbol(), klabel(method_AccountParamsTest_testDealConcrete)]
+    syntax AccountParamsTestMethod ::= "testDealConcrete" "(" ")" [symbol(), klabel(method_AccountParamsTest_testDealConcrete_)]
     
-    syntax AccountParamsTestMethod ::= "testDealSymbolic" "(" Int ")" [symbol(), klabel(method_AccountParamsTest_testDealSymbolic)]
+    syntax AccountParamsTestMethod ::= "testDealSymbolic" "(" Int ")" [symbol(), klabel(method_AccountParamsTest_testDealSymbolic_Int)]
     
-    syntax AccountParamsTestMethod ::= "testEtchConcrete" "(" ")" [symbol(), klabel(method_AccountParamsTest_testEtchConcrete)]
+    syntax AccountParamsTestMethod ::= "testEtchConcrete" "(" ")" [symbol(), klabel(method_AccountParamsTest_testEtchConcrete_)]
     
-    syntax AccountParamsTestMethod ::= "testEtchSymbolic" "(" Bytes ")" [symbol(), klabel(method_AccountParamsTest_testEtchSymbolic)]
+    syntax AccountParamsTestMethod ::= "testEtchSymbolic" "(" Bytes ")" [symbol(), klabel(method_AccountParamsTest_testEtchSymbolic_Bytes)]
     
-    syntax AccountParamsTestMethod ::= "testFail_GetNonce_false" "(" ")" [symbol(), klabel(method_AccountParamsTest_testFail_GetNonce_false)]
+    syntax AccountParamsTestMethod ::= "testFail_GetNonce_false" "(" ")" [symbol(), klabel(method_AccountParamsTest_testFail_GetNonce_false_)]
     
-    syntax AccountParamsTestMethod ::= "testFail_GetNonce_true" "(" ")" [symbol(), klabel(method_AccountParamsTest_testFail_GetNonce_true)]
+    syntax AccountParamsTestMethod ::= "testFail_GetNonce_true" "(" ")" [symbol(), klabel(method_AccountParamsTest_testFail_GetNonce_true_)]
     
-    syntax AccountParamsTestMethod ::= "testNonceSymbolic" "(" Int ")" [symbol(), klabel(method_AccountParamsTest_testNonceSymbolic)]
+    syntax AccountParamsTestMethod ::= "testNonceSymbolic" "(" Int ")" [symbol(), klabel(method_AccountParamsTest_testNonceSymbolic_Int)]
     
-    syntax AccountParamsTestMethod ::= "test_GetNonce_false" "(" ")" [symbol(), klabel(method_AccountParamsTest_test_GetNonce_false)]
+    syntax AccountParamsTestMethod ::= "test_GetNonce_false" "(" ")" [symbol(), klabel(method_AccountParamsTest_test_GetNonce_false_)]
     
-    syntax AccountParamsTestMethod ::= "test_GetNonce_true" "(" ")" [symbol(), klabel(method_AccountParamsTest_test_GetNonce_true)]
+    syntax AccountParamsTestMethod ::= "test_GetNonce_true" "(" ")" [symbol(), klabel(method_AccountParamsTest_test_GetNonce_true_)]
     
-    syntax AccountParamsTestMethod ::= "test_Nonce_ExistentAddress" "(" ")" [symbol(), klabel(method_AccountParamsTest_test_Nonce_ExistentAddress)]
+    syntax AccountParamsTestMethod ::= "test_Nonce_ExistentAddress" "(" ")" [symbol(), klabel(method_AccountParamsTest_test_Nonce_ExistentAddress_)]
     
-    syntax AccountParamsTestMethod ::= "test_Nonce_NonExistentAddress" "(" ")" [symbol(), klabel(method_AccountParamsTest_test_Nonce_NonExistentAddress)]
+    syntax AccountParamsTestMethod ::= "test_Nonce_NonExistentAddress" "(" ")" [symbol(), klabel(method_AccountParamsTest_test_Nonce_NonExistentAddress_)]
     
-    syntax AccountParamsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AccountParamsTest_vm)]
+    syntax AccountParamsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AccountParamsTest_vm_)]
     
     rule  ( AccountParamsTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -191,29 +191,29 @@ module ADDRTEST-BIN-RUNTIME
     
     syntax Bytes ::= AddrTestContract "." AddrTestMethod [function(), symbol(), klabel(method_AddrTest)]
     
-    syntax AddrTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_AddrTest_IS_SCRIPT)]
+    syntax AddrTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_AddrTest_IS_SCRIPT_)]
     
-    syntax AddrTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_AddrTest_IS_TEST)]
+    syntax AddrTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_AddrTest_IS_TEST_)]
     
-    syntax AddrTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AddrTest_failed)]
+    syntax AddrTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AddrTest_failed_)]
     
-    syntax AddrTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_AddrTest_kevm)]
+    syntax AddrTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_AddrTest_kevm_)]
     
-    syntax AddrTestMethod ::= "testFail_addr_false" "(" ")" [symbol(), klabel(method_AddrTest_testFail_addr_false)]
+    syntax AddrTestMethod ::= "testFail_addr_false" "(" ")" [symbol(), klabel(method_AddrTest_testFail_addr_false_)]
     
-    syntax AddrTestMethod ::= "testFail_addr_true" "(" ")" [symbol(), klabel(method_AddrTest_testFail_addr_true)]
+    syntax AddrTestMethod ::= "testFail_addr_true" "(" ")" [symbol(), klabel(method_AddrTest_testFail_addr_true_)]
     
-    syntax AddrTestMethod ::= "test_addr_false" "(" ")" [symbol(), klabel(method_AddrTest_test_addr_false)]
+    syntax AddrTestMethod ::= "test_addr_false" "(" ")" [symbol(), klabel(method_AddrTest_test_addr_false_)]
     
-    syntax AddrTestMethod ::= "test_addr_symbolic" "(" Int ")" [symbol(), klabel(method_AddrTest_test_addr_symbolic)]
+    syntax AddrTestMethod ::= "test_addr_symbolic" "(" Int ")" [symbol(), klabel(method_AddrTest_test_addr_symbolic_Int)]
     
-    syntax AddrTestMethod ::= "test_addr_true" "(" ")" [symbol(), klabel(method_AddrTest_test_addr_true)]
+    syntax AddrTestMethod ::= "test_addr_true" "(" ")" [symbol(), klabel(method_AddrTest_test_addr_true_)]
     
-    syntax AddrTestMethod ::= "test_notBuiltinAddress_concrete" "(" ")" [symbol(), klabel(method_AddrTest_test_notBuiltinAddress_concrete)]
+    syntax AddrTestMethod ::= "test_notBuiltinAddress_concrete" "(" ")" [symbol(), klabel(method_AddrTest_test_notBuiltinAddress_concrete_)]
     
-    syntax AddrTestMethod ::= "test_notBuiltinAddress_symbolic" "(" Int ")" [symbol(), klabel(method_AddrTest_test_notBuiltinAddress_symbolic)]
+    syntax AddrTestMethod ::= "test_notBuiltinAddress_symbolic" "(" Int ")" [symbol(), klabel(method_AddrTest_test_notBuiltinAddress_symbolic_Int)]
     
-    syntax AddrTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AddrTest_vm)]
+    syntax AddrTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AddrTest_vm_)]
     
     rule  ( AddrTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -324,25 +324,25 @@ module ALLOWCHANGESTEST-BIN-RUNTIME
     
     syntax Bytes ::= AllowChangesTestContract "." AllowChangesTestMethod [function(), symbol(), klabel(method_AllowChangesTest)]
     
-    syntax AllowChangesTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_AllowChangesTest_IS_SCRIPT)]
+    syntax AllowChangesTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_AllowChangesTest_IS_SCRIPT_)]
     
-    syntax AllowChangesTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_AllowChangesTest_IS_TEST)]
+    syntax AllowChangesTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_AllowChangesTest_IS_TEST_)]
     
-    syntax AllowChangesTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AllowChangesTest_failed)]
+    syntax AllowChangesTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AllowChangesTest_failed_)]
     
-    syntax AllowChangesTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_AllowChangesTest_kevm)]
+    syntax AllowChangesTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_AllowChangesTest_kevm_)]
     
-    syntax AllowChangesTestMethod ::= "test" "(" ")" [symbol(), klabel(method_AllowChangesTest_test)]
+    syntax AllowChangesTestMethod ::= "test" "(" ")" [symbol(), klabel(method_AllowChangesTest_test_)]
     
-    syntax AllowChangesTestMethod ::= "testAllow" "(" ")" [symbol(), klabel(method_AllowChangesTest_testAllow)]
+    syntax AllowChangesTestMethod ::= "testAllow" "(" ")" [symbol(), klabel(method_AllowChangesTest_testAllow_)]
     
-    syntax AllowChangesTestMethod ::= "testAllow_fail" "(" ")" [symbol(), klabel(method_AllowChangesTest_testAllow_fail)]
+    syntax AllowChangesTestMethod ::= "testAllow_fail" "(" ")" [symbol(), klabel(method_AllowChangesTest_testAllow_fail_)]
     
-    syntax AllowChangesTestMethod ::= "testFailAllowCallsToAddress" "(" ")" [symbol(), klabel(method_AllowChangesTest_testFailAllowCallsToAddress)]
+    syntax AllowChangesTestMethod ::= "testFailAllowCallsToAddress" "(" ")" [symbol(), klabel(method_AllowChangesTest_testFailAllowCallsToAddress_)]
     
-    syntax AllowChangesTestMethod ::= "testFailAllowChangesToStorage" "(" ")" [symbol(), klabel(method_AllowChangesTest_testFailAllowChangesToStorage)]
+    syntax AllowChangesTestMethod ::= "testFailAllowChangesToStorage" "(" ")" [symbol(), klabel(method_AllowChangesTest_testFailAllowChangesToStorage_)]
     
-    syntax AllowChangesTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AllowChangesTest_vm)]
+    syntax AllowChangesTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AllowChangesTest_vm_)]
     
     rule  ( AllowChangesTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -429,13 +429,13 @@ module VALUESTORE-BIN-RUNTIME
     
     syntax Bytes ::= ValueStoreContract "." ValueStoreMethod [function(), symbol(), klabel(method_ValueStore)]
     
-    syntax ValueStoreMethod ::= "changeValue1" "(" Int ")" [symbol(), klabel(method_ValueStore_changeValue1)]
+    syntax ValueStoreMethod ::= "changeValue1" "(" Int ")" [symbol(), klabel(method_ValueStore_changeValue1_Int)]
     
-    syntax ValueStoreMethod ::= "changeValue2" "(" Int ")" [symbol(), klabel(method_ValueStore_changeValue2)]
+    syntax ValueStoreMethod ::= "changeValue2" "(" Int ")" [symbol(), klabel(method_ValueStore_changeValue2_Int)]
     
-    syntax ValueStoreMethod ::= "value1" "(" ")" [symbol(), klabel(method_ValueStore_value1)]
+    syntax ValueStoreMethod ::= "value1" "(" ")" [symbol(), klabel(method_ValueStore_value1_)]
     
-    syntax ValueStoreMethod ::= "value2" "(" ")" [symbol(), klabel(method_ValueStore_value2)]
+    syntax ValueStoreMethod ::= "value2" "(" ")" [symbol(), klabel(method_ValueStore_value2_)]
     
     rule  ( ValueStore . changeValue1 ( V0_newValue ) => #abiCallData ( "changeValue1" , #uint256 ( V0_newValue ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_newValue )
@@ -498,41 +498,41 @@ module ARITHMETICTEST-BIN-RUNTIME
     
     syntax Bytes ::= ArithmeticTestContract "." ArithmeticTestMethod [function(), symbol(), klabel(method_ArithmeticTest)]
     
-    syntax ArithmeticTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ArithmeticTest_IS_SCRIPT)]
+    syntax ArithmeticTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ArithmeticTest_IS_SCRIPT_)]
     
-    syntax ArithmeticTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ArithmeticTest_IS_TEST)]
+    syntax ArithmeticTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ArithmeticTest_IS_TEST_)]
     
-    syntax ArithmeticTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ArithmeticTest_failed)]
+    syntax ArithmeticTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ArithmeticTest_failed_)]
     
-    syntax ArithmeticTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_ArithmeticTest_setUp)]
+    syntax ArithmeticTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_ArithmeticTest_setUp_)]
     
-    syntax ArithmeticTestMethod ::= "test_decreasing_div" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_decreasing_div)]
+    syntax ArithmeticTestMethod ::= "test_decreasing_div" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_decreasing_div_Int Int)]
     
-    syntax ArithmeticTestMethod ::= "test_max1" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max1)]
+    syntax ArithmeticTestMethod ::= "test_max1" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max1_Int Int)]
     
-    syntax ArithmeticTestMethod ::= "test_max1_broken" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max1_broken)]
+    syntax ArithmeticTestMethod ::= "test_max1_broken" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max1_broken_Int Int)]
     
-    syntax ArithmeticTestMethod ::= "test_max2" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max2)]
+    syntax ArithmeticTestMethod ::= "test_max2" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_max2_Int Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wdiv_rounding" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wdiv_rounding)]
+    syntax ArithmeticTestMethod ::= "test_wdiv_rounding" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wdiv_rounding_Int Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_increasing" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing)]
+    syntax ArithmeticTestMethod ::= "test_wmul_increasing" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_Int Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_increasing_gt_one" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_gt_one)]
+    syntax ArithmeticTestMethod ::= "test_wmul_increasing_gt_one" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_gt_one_Int Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_increasing_overflow" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_overflow)]
+    syntax ArithmeticTestMethod ::= "test_wmul_increasing_overflow" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_overflow_Int Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_increasing_positive" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_positive)]
+    syntax ArithmeticTestMethod ::= "test_wmul_increasing_positive" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_increasing_positive_Int Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_rounding" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_rounding)]
+    syntax ArithmeticTestMethod ::= "test_wmul_rounding" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_rounding_Int Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_wdiv_inverse" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_wdiv_inverse)]
+    syntax ArithmeticTestMethod ::= "test_wmul_wdiv_inverse" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_wdiv_inverse_Int Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_wdiv_inverse_underflow" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_wdiv_inverse_underflow)]
+    syntax ArithmeticTestMethod ::= "test_wmul_wdiv_inverse_underflow" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_wdiv_inverse_underflow_Int Int)]
     
-    syntax ArithmeticTestMethod ::= "test_wmul_weakly_increasing_positive" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_weakly_increasing_positive)]
+    syntax ArithmeticTestMethod ::= "test_wmul_weakly_increasing_positive" "(" Int "," Int ")" [symbol(), klabel(method_ArithmeticTest_test_wmul_weakly_increasing_positive_Int Int)]
     
-    syntax ArithmeticTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ArithmeticTest_vm)]
+    syntax ArithmeticTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ArithmeticTest_vm_)]
     
     rule  ( ArithmeticTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -716,25 +716,25 @@ module ASSUMETEST-BIN-RUNTIME
     
     syntax Bytes ::= AssumeTestContract "." AssumeTestMethod [function(), symbol(), klabel(method_AssumeTest)]
     
-    syntax AssumeTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_AssumeTest_IS_SCRIPT)]
+    syntax AssumeTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_AssumeTest_IS_SCRIPT_)]
     
-    syntax AssumeTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_AssumeTest_IS_TEST)]
+    syntax AssumeTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_AssumeTest_IS_TEST_)]
     
-    syntax AssumeTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AssumeTest_failed)]
+    syntax AssumeTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AssumeTest_failed_)]
     
-    syntax AssumeTestMethod ::= "testFail_assume_false" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_testFail_assume_false)]
+    syntax AssumeTestMethod ::= "testFail_assume_false" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_testFail_assume_false_Int Int)]
     
-    syntax AssumeTestMethod ::= "testFail_assume_true" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_testFail_assume_true)]
+    syntax AssumeTestMethod ::= "testFail_assume_true" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_testFail_assume_true_Int Int)]
     
-    syntax AssumeTestMethod ::= "test_assume_false" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_assume_false)]
+    syntax AssumeTestMethod ::= "test_assume_false" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_assume_false_Int Int)]
     
-    syntax AssumeTestMethod ::= "test_assume_staticCall" "(" Int ")" [symbol(), klabel(method_AssumeTest_test_assume_staticCall)]
+    syntax AssumeTestMethod ::= "test_assume_staticCall" "(" Int ")" [symbol(), klabel(method_AssumeTest_test_assume_staticCall_Int)]
     
-    syntax AssumeTestMethod ::= "test_assume_true" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_assume_true)]
+    syntax AssumeTestMethod ::= "test_assume_true" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_assume_true_Int Int)]
     
-    syntax AssumeTestMethod ::= "test_multi_assume" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_multi_assume)]
+    syntax AssumeTestMethod ::= "test_multi_assume" "(" Int "," Int ")" [symbol(), klabel(method_AssumeTest_test_multi_assume_Int Int)]
     
-    syntax AssumeTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AssumeTest_vm)]
+    syntax AssumeTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AssumeTest_vm_)]
     
     rule  ( AssumeTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -847,23 +847,23 @@ module BLOCKPARAMSTEST-BIN-RUNTIME
     
     syntax Bytes ::= BlockParamsTestContract "." BlockParamsTestMethod [function(), symbol(), klabel(method_BlockParamsTest)]
     
-    syntax BlockParamsTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_BlockParamsTest_IS_SCRIPT)]
+    syntax BlockParamsTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_BlockParamsTest_IS_SCRIPT_)]
     
-    syntax BlockParamsTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_BlockParamsTest_IS_TEST)]
+    syntax BlockParamsTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_BlockParamsTest_IS_TEST_)]
     
-    syntax BlockParamsTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_BlockParamsTest_failed)]
+    syntax BlockParamsTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_BlockParamsTest_failed_)]
     
-    syntax BlockParamsTestMethod ::= "testChainId" "(" Int ")" [symbol(), klabel(method_BlockParamsTest_testChainId)]
+    syntax BlockParamsTestMethod ::= "testChainId" "(" Int ")" [symbol(), klabel(method_BlockParamsTest_testChainId_Int)]
     
-    syntax BlockParamsTestMethod ::= "testCoinBase" "(" ")" [symbol(), klabel(method_BlockParamsTest_testCoinBase)]
+    syntax BlockParamsTestMethod ::= "testCoinBase" "(" ")" [symbol(), klabel(method_BlockParamsTest_testCoinBase_)]
     
-    syntax BlockParamsTestMethod ::= "testFee" "(" Int ")" [symbol(), klabel(method_BlockParamsTest_testFee)]
+    syntax BlockParamsTestMethod ::= "testFee" "(" Int ")" [symbol(), klabel(method_BlockParamsTest_testFee_Int)]
     
-    syntax BlockParamsTestMethod ::= "testRoll" "(" Int ")" [symbol(), klabel(method_BlockParamsTest_testRoll)]
+    syntax BlockParamsTestMethod ::= "testRoll" "(" Int ")" [symbol(), klabel(method_BlockParamsTest_testRoll_Int)]
     
-    syntax BlockParamsTestMethod ::= "testWarp" "(" Int ")" [symbol(), klabel(method_BlockParamsTest_testWarp)]
+    syntax BlockParamsTestMethod ::= "testWarp" "(" Int ")" [symbol(), klabel(method_BlockParamsTest_testWarp_Int)]
     
-    syntax BlockParamsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_BlockParamsTest_vm)]
+    syntax BlockParamsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_BlockParamsTest_vm_)]
     
     rule  ( BlockParamsTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -968,21 +968,21 @@ module BROADCASTTEST-BIN-RUNTIME
     
     syntax Bytes ::= BroadcastTestContract "." BroadcastTestMethod [function(), symbol(), klabel(method_BroadcastTest)]
     
-    syntax BroadcastTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_BroadcastTest_IS_SCRIPT)]
+    syntax BroadcastTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_BroadcastTest_IS_SCRIPT_)]
     
-    syntax BroadcastTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_BroadcastTest_IS_TEST)]
+    syntax BroadcastTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_BroadcastTest_IS_TEST_)]
     
-    syntax BroadcastTestMethod ::= "deployNoArgs" "(" ")" [symbol(), klabel(method_BroadcastTest_deployNoArgs)]
+    syntax BroadcastTestMethod ::= "deployNoArgs" "(" ")" [symbol(), klabel(method_BroadcastTest_deployNoArgs_)]
     
-    syntax BroadcastTestMethod ::= "deployOther" "(" ")" [symbol(), klabel(method_BroadcastTest_deployOther)]
+    syntax BroadcastTestMethod ::= "deployOther" "(" ")" [symbol(), klabel(method_BroadcastTest_deployOther_)]
     
-    syntax BroadcastTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_BroadcastTest_failed)]
+    syntax BroadcastTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_BroadcastTest_failed_)]
     
-    syntax BroadcastTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_BroadcastTest_setUp)]
+    syntax BroadcastTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_BroadcastTest_setUp_)]
     
-    syntax BroadcastTestMethod ::= "testDeploy" "(" ")" [symbol(), klabel(method_BroadcastTest_testDeploy)]
+    syntax BroadcastTestMethod ::= "testDeploy" "(" ")" [symbol(), klabel(method_BroadcastTest_testDeploy_)]
     
-    syntax BroadcastTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_BroadcastTest_vm)]
+    syntax BroadcastTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_BroadcastTest_vm_)]
     
     rule  ( BroadcastTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -1089,17 +1089,17 @@ module CONTRACTTEST-BIN-RUNTIME
     
     syntax Bytes ::= ContractTestContract "." ContractTestMethod [function(), symbol(), klabel(method_ContractTest)]
     
-    syntax ContractTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ContractTest_IS_SCRIPT)]
+    syntax ContractTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ContractTest_IS_SCRIPT_)]
     
-    syntax ContractTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ContractTest_IS_TEST)]
+    syntax ContractTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ContractTest_IS_TEST_)]
     
-    syntax ContractTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ContractTest_failed)]
+    syntax ContractTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ContractTest_failed_)]
     
-    syntax ContractTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_ContractTest_setUp)]
+    syntax ContractTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_ContractTest_setUp_)]
     
-    syntax ContractTestMethod ::= "testExample" "(" ")" [symbol(), klabel(method_ContractTest_testExample)]
+    syntax ContractTestMethod ::= "testExample" "(" ")" [symbol(), klabel(method_ContractTest_testExample_)]
     
-    syntax ContractTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ContractTest_vm)]
+    syntax ContractTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ContractTest_vm_)]
     
     rule  ( ContractTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -1177,21 +1177,21 @@ module CONTRACTBTEST-BIN-RUNTIME
     
     syntax Bytes ::= ContractBTestContract "." ContractBTestMethod [function(), symbol(), klabel(method_ContractBTest)]
     
-    syntax ContractBTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ContractBTest_IS_SCRIPT)]
+    syntax ContractBTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ContractBTest_IS_SCRIPT_)]
     
-    syntax ContractBTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ContractBTest_IS_TEST)]
+    syntax ContractBTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ContractBTest_IS_TEST_)]
     
-    syntax ContractBTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ContractBTest_failed)]
+    syntax ContractBTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ContractBTest_failed_)]
     
-    syntax ContractBTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_ContractBTest_setUp)]
+    syntax ContractBTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_ContractBTest_setUp_)]
     
-    syntax ContractBTestMethod ::= "testCannotSubtract43" "(" ")" [symbol(), klabel(method_ContractBTest_testCannotSubtract43)]
+    syntax ContractBTestMethod ::= "testCannotSubtract43" "(" ")" [symbol(), klabel(method_ContractBTest_testCannotSubtract43_)]
     
-    syntax ContractBTestMethod ::= "testFailSubtract43" "(" ")" [symbol(), klabel(method_ContractBTest_testFailSubtract43)]
+    syntax ContractBTestMethod ::= "testFailSubtract43" "(" ")" [symbol(), klabel(method_ContractBTest_testFailSubtract43_)]
     
-    syntax ContractBTestMethod ::= "testNumberIs42" "(" ")" [symbol(), klabel(method_ContractBTest_testNumberIs42)]
+    syntax ContractBTestMethod ::= "testNumberIs42" "(" ")" [symbol(), klabel(method_ContractBTest_testNumberIs42_)]
     
-    syntax ContractBTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ContractBTest_vm)]
+    syntax ContractBTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ContractBTest_vm_)]
     
     rule  ( ContractBTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -1261,11 +1261,11 @@ module COUNTER-BIN-RUNTIME
     
     syntax Bytes ::= CounterContract "." CounterMethod [function(), symbol(), klabel(method_Counter)]
     
-    syntax CounterMethod ::= "increment" "(" ")" [symbol(), klabel(method_Counter_increment)]
+    syntax CounterMethod ::= "increment" "(" ")" [symbol(), klabel(method_Counter_increment_)]
     
-    syntax CounterMethod ::= "number" "(" ")" [symbol(), klabel(method_Counter_number)]
+    syntax CounterMethod ::= "number" "(" ")" [symbol(), klabel(method_Counter_number_)]
     
-    syntax CounterMethod ::= "setNumber" "(" Int ")" [symbol(), klabel(method_Counter_setNumber)]
+    syntax CounterMethod ::= "setNumber" "(" Int ")" [symbol(), klabel(method_Counter_setNumber_Int)]
     
     rule  ( Counter . increment ( ) => #abiCallData ( "increment" , .TypedArgs ) )
       
@@ -1326,21 +1326,21 @@ module COUNTERTEST-BIN-RUNTIME
     
     syntax Bytes ::= CounterTestContract "." CounterTestMethod [function(), symbol(), klabel(method_CounterTest)]
     
-    syntax CounterTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_CounterTest_IS_SCRIPT)]
+    syntax CounterTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_CounterTest_IS_SCRIPT_)]
     
-    syntax CounterTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_CounterTest_IS_TEST)]
+    syntax CounterTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_CounterTest_IS_TEST_)]
     
-    syntax CounterTestMethod ::= "counter" "(" ")" [symbol(), klabel(method_CounterTest_counter)]
+    syntax CounterTestMethod ::= "counter" "(" ")" [symbol(), klabel(method_CounterTest_counter_)]
     
-    syntax CounterTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_CounterTest_failed)]
+    syntax CounterTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_CounterTest_failed_)]
     
-    syntax CounterTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_CounterTest_kevm)]
+    syntax CounterTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_CounterTest_kevm_)]
     
-    syntax CounterTestMethod ::= "testIncrement" "(" ")" [symbol(), klabel(method_CounterTest_testIncrement)]
+    syntax CounterTestMethod ::= "testIncrement" "(" ")" [symbol(), klabel(method_CounterTest_testIncrement_)]
     
-    syntax CounterTestMethod ::= "testSetNumber" "(" Int ")" [symbol(), klabel(method_CounterTest_testSetNumber)]
+    syntax CounterTestMethod ::= "testSetNumber" "(" Int ")" [symbol(), klabel(method_CounterTest_testSetNumber_Int)]
     
-    syntax CounterTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_CounterTest_vm)]
+    syntax CounterTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_CounterTest_vm_)]
     
     rule  ( CounterTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -1426,15 +1426,15 @@ module DYNAMICTYPES-BIN-RUNTIME
     
     syntax Bytes ::= DynamicTypesContract "." DynamicTypesMethod [function(), symbol(), klabel(method_DynamicTypes)]
     
-    syntax DynamicTypesMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_DynamicTypes_IS_SCRIPT)]
+    syntax DynamicTypesMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_DynamicTypes_IS_SCRIPT_)]
     
-    syntax DynamicTypesMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_DynamicTypes_IS_TEST)]
+    syntax DynamicTypesMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_DynamicTypes_IS_TEST_)]
     
-    syntax DynamicTypesMethod ::= "failed" "(" ")" [symbol(), klabel(method_DynamicTypes_failed)]
+    syntax DynamicTypesMethod ::= "failed" "(" ")" [symbol(), klabel(method_DynamicTypes_failed_)]
     
-    syntax DynamicTypesMethod ::= "test_dynamic_byte_read" "(" Bytes "," Int ")" [symbol(), klabel(method_DynamicTypes_test_dynamic_byte_read)]
+    syntax DynamicTypesMethod ::= "test_dynamic_byte_read" "(" Bytes "," Int ")" [symbol(), klabel(method_DynamicTypes_test_dynamic_byte_read_Bytes Int)]
     
-    syntax DynamicTypesMethod ::= "vm" "(" ")" [symbol(), klabel(method_DynamicTypes_vm)]
+    syntax DynamicTypesMethod ::= "vm" "(" ")" [symbol(), klabel(method_DynamicTypes_vm_)]
     
     rule  ( DynamicTypes . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -1482,7 +1482,7 @@ module EXPECTEMIT-BIN-RUNTIME
     
     syntax Bytes ::= ExpectEmitContract "." ExpectEmitMethod [function(), symbol(), klabel(method_ExpectEmit)]
     
-    syntax ExpectEmitMethod ::= "t" "(" ")" [symbol(), klabel(method_ExpectEmit_t)]
+    syntax ExpectEmitMethod ::= "t" "(" ")" [symbol(), klabel(method_ExpectEmit_t_)]
     
     rule  ( ExpectEmit . t ( ) => #abiCallData ( "t" , .TypedArgs ) )
       
@@ -1525,19 +1525,19 @@ module EMITCONTRACTTEST-BIN-RUNTIME
     
     syntax Bytes ::= EmitContractTestContract "." EmitContractTestMethod [function(), symbol(), klabel(method_EmitContractTest)]
     
-    syntax EmitContractTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_EmitContractTest_IS_SCRIPT)]
+    syntax EmitContractTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_EmitContractTest_IS_SCRIPT_)]
     
-    syntax EmitContractTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_EmitContractTest_IS_TEST)]
+    syntax EmitContractTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_EmitContractTest_IS_TEST_)]
     
-    syntax EmitContractTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_EmitContractTest_failed)]
+    syntax EmitContractTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_EmitContractTest_failed_)]
     
-    syntax EmitContractTestMethod ::= "testExpectEmit" "(" ")" [symbol(), klabel(method_EmitContractTest_testExpectEmit)]
+    syntax EmitContractTestMethod ::= "testExpectEmit" "(" ")" [symbol(), klabel(method_EmitContractTest_testExpectEmit_)]
     
-    syntax EmitContractTestMethod ::= "testExpectEmitCheckEmitter" "(" ")" [symbol(), klabel(method_EmitContractTest_testExpectEmitCheckEmitter)]
+    syntax EmitContractTestMethod ::= "testExpectEmitCheckEmitter" "(" ")" [symbol(), klabel(method_EmitContractTest_testExpectEmitCheckEmitter_)]
     
-    syntax EmitContractTestMethod ::= "testExpectEmitDoNotCheckData" "(" ")" [symbol(), klabel(method_EmitContractTest_testExpectEmitDoNotCheckData)]
+    syntax EmitContractTestMethod ::= "testExpectEmitDoNotCheckData" "(" ")" [symbol(), klabel(method_EmitContractTest_testExpectEmitDoNotCheckData_)]
     
-    syntax EmitContractTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_EmitContractTest_vm)]
+    syntax EmitContractTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_EmitContractTest_vm_)]
     
     rule  ( EmitContractTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -1616,43 +1616,43 @@ module ENVTEST-BIN-RUNTIME
     
     syntax Bytes ::= EnvTestContract "." EnvTestMethod [function(), symbol(), klabel(method_EnvTest)]
     
-    syntax EnvTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_EnvTest_IS_SCRIPT)]
+    syntax EnvTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_EnvTest_IS_SCRIPT_)]
     
-    syntax EnvTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_EnvTest_IS_TEST)]
+    syntax EnvTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_EnvTest_IS_TEST_)]
     
-    syntax EnvTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_EnvTest_failed)]
+    syntax EnvTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_EnvTest_failed_)]
     
-    syntax EnvTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_EnvTest_setUp)]
+    syntax EnvTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_EnvTest_setUp_)]
     
-    syntax EnvTestMethod ::= "testEnvAddress" "(" ")" [symbol(), klabel(method_EnvTest_testEnvAddress)]
+    syntax EnvTestMethod ::= "testEnvAddress" "(" ")" [symbol(), klabel(method_EnvTest_testEnvAddress_)]
     
-    syntax EnvTestMethod ::= "testEnvAddresseArray" "(" ")" [symbol(), klabel(method_EnvTest_testEnvAddresseArray)]
+    syntax EnvTestMethod ::= "testEnvAddresseArray" "(" ")" [symbol(), klabel(method_EnvTest_testEnvAddresseArray_)]
     
-    syntax EnvTestMethod ::= "testEnvBool" "(" ")" [symbol(), klabel(method_EnvTest_testEnvBool)]
+    syntax EnvTestMethod ::= "testEnvBool" "(" ")" [symbol(), klabel(method_EnvTest_testEnvBool_)]
     
-    syntax EnvTestMethod ::= "testEnvBoolArray" "(" ")" [symbol(), klabel(method_EnvTest_testEnvBoolArray)]
+    syntax EnvTestMethod ::= "testEnvBoolArray" "(" ")" [symbol(), klabel(method_EnvTest_testEnvBoolArray_)]
     
-    syntax EnvTestMethod ::= "testEnvBytes" "(" ")" [symbol(), klabel(method_EnvTest_testEnvBytes)]
+    syntax EnvTestMethod ::= "testEnvBytes" "(" ")" [symbol(), klabel(method_EnvTest_testEnvBytes_)]
     
-    syntax EnvTestMethod ::= "testEnvBytes32" "(" ")" [symbol(), klabel(method_EnvTest_testEnvBytes32)]
+    syntax EnvTestMethod ::= "testEnvBytes32" "(" ")" [symbol(), klabel(method_EnvTest_testEnvBytes32_)]
     
-    syntax EnvTestMethod ::= "testEnvBytes32Array" "(" ")" [symbol(), klabel(method_EnvTest_testEnvBytes32Array)]
+    syntax EnvTestMethod ::= "testEnvBytes32Array" "(" ")" [symbol(), klabel(method_EnvTest_testEnvBytes32Array_)]
     
-    syntax EnvTestMethod ::= "testEnvBytesArray" "(" ")" [symbol(), klabel(method_EnvTest_testEnvBytesArray)]
+    syntax EnvTestMethod ::= "testEnvBytesArray" "(" ")" [symbol(), klabel(method_EnvTest_testEnvBytesArray_)]
     
-    syntax EnvTestMethod ::= "testEnvInt" "(" ")" [symbol(), klabel(method_EnvTest_testEnvInt)]
+    syntax EnvTestMethod ::= "testEnvInt" "(" ")" [symbol(), klabel(method_EnvTest_testEnvInt_)]
     
-    syntax EnvTestMethod ::= "testEnvIntArray" "(" ")" [symbol(), klabel(method_EnvTest_testEnvIntArray)]
+    syntax EnvTestMethod ::= "testEnvIntArray" "(" ")" [symbol(), klabel(method_EnvTest_testEnvIntArray_)]
     
-    syntax EnvTestMethod ::= "testEnvString" "(" ")" [symbol(), klabel(method_EnvTest_testEnvString)]
+    syntax EnvTestMethod ::= "testEnvString" "(" ")" [symbol(), klabel(method_EnvTest_testEnvString_)]
     
-    syntax EnvTestMethod ::= "testEnvStringArray" "(" ")" [symbol(), klabel(method_EnvTest_testEnvStringArray)]
+    syntax EnvTestMethod ::= "testEnvStringArray" "(" ")" [symbol(), klabel(method_EnvTest_testEnvStringArray_)]
     
-    syntax EnvTestMethod ::= "testEnvUInt" "(" ")" [symbol(), klabel(method_EnvTest_testEnvUInt)]
+    syntax EnvTestMethod ::= "testEnvUInt" "(" ")" [symbol(), klabel(method_EnvTest_testEnvUInt_)]
     
-    syntax EnvTestMethod ::= "testEnvUIntArray" "(" ")" [symbol(), klabel(method_EnvTest_testEnvUIntArray)]
+    syntax EnvTestMethod ::= "testEnvUIntArray" "(" ")" [symbol(), klabel(method_EnvTest_testEnvUIntArray_)]
     
-    syntax EnvTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_EnvTest_vm)]
+    syntax EnvTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_EnvTest_vm_)]
     
     rule  ( EnvTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -1781,7 +1781,7 @@ module DUMMY-BIN-RUNTIME
     
     syntax Bytes ::= DummyContract "." DummyMethod [function(), symbol(), klabel(method_Dummy)]
     
-    syntax DummyMethod ::= "numberA" "(" ")" [symbol(), klabel(method_Dummy_numberA)]
+    syntax DummyMethod ::= "numberA" "(" ")" [symbol(), klabel(method_Dummy_numberA_)]
     
     rule  ( Dummy . numberA ( ) => #abiCallData ( "numberA" , .TypedArgs ) )
       
@@ -1824,19 +1824,19 @@ module EXPECTCALLTEST-BIN-RUNTIME
     
     syntax Bytes ::= ExpectCallTestContract "." ExpectCallTestMethod [function(), symbol(), klabel(method_ExpectCallTest)]
     
-    syntax ExpectCallTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ExpectCallTest_IS_SCRIPT)]
+    syntax ExpectCallTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ExpectCallTest_IS_SCRIPT_)]
     
-    syntax ExpectCallTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ExpectCallTest_IS_TEST)]
+    syntax ExpectCallTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ExpectCallTest_IS_TEST_)]
     
-    syntax ExpectCallTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ExpectCallTest_failed)]
+    syntax ExpectCallTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ExpectCallTest_failed_)]
     
-    syntax ExpectCallTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_ExpectCallTest_kevm)]
+    syntax ExpectCallTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_ExpectCallTest_kevm_)]
     
-    syntax ExpectCallTestMethod ::= "testExpectRegularCall" "(" ")" [symbol(), klabel(method_ExpectCallTest_testExpectRegularCall)]
+    syntax ExpectCallTestMethod ::= "testExpectRegularCall" "(" ")" [symbol(), klabel(method_ExpectCallTest_testExpectRegularCall_)]
     
-    syntax ExpectCallTestMethod ::= "testExpectStaticCall" "(" ")" [symbol(), klabel(method_ExpectCallTest_testExpectStaticCall)]
+    syntax ExpectCallTestMethod ::= "testExpectStaticCall" "(" ")" [symbol(), klabel(method_ExpectCallTest_testExpectStaticCall_)]
     
-    syntax ExpectCallTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ExpectCallTest_vm)]
+    syntax ExpectCallTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ExpectCallTest_vm_)]
     
     rule  ( ExpectCallTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -1900,7 +1900,7 @@ module DEPTHREVERTER-BIN-RUNTIME
     
     syntax Bytes ::= DepthReverterContract "." DepthReverterMethod [function(), symbol(), klabel(method_DepthReverter)]
     
-    syntax DepthReverterMethod ::= "revertAtNextDepth" "(" ")" [symbol(), klabel(method_DepthReverter_revertAtNextDepth)]
+    syntax DepthReverterMethod ::= "revertAtNextDepth" "(" ")" [symbol(), klabel(method_DepthReverter_revertAtNextDepth_)]
     
     rule  ( DepthReverter . revertAtNextDepth ( ) => #abiCallData ( "revertAtNextDepth" , .TypedArgs ) )
       
@@ -1943,37 +1943,37 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     
     syntax Bytes ::= ExpectRevertTestContract "." ExpectRevertTestMethod [function(), symbol(), klabel(method_ExpectRevertTest)]
     
-    syntax ExpectRevertTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ExpectRevertTest_IS_SCRIPT)]
+    syntax ExpectRevertTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ExpectRevertTest_IS_SCRIPT_)]
     
-    syntax ExpectRevertTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ExpectRevertTest_IS_TEST)]
+    syntax ExpectRevertTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ExpectRevertTest_IS_TEST_)]
     
-    syntax ExpectRevertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ExpectRevertTest_failed)]
+    syntax ExpectRevertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ExpectRevertTest_failed_)]
     
-    syntax ExpectRevertTestMethod ::= "testFail_ExpectRevert_failAndSuccess" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_ExpectRevert_failAndSuccess)]
+    syntax ExpectRevertTestMethod ::= "testFail_ExpectRevert_failAndSuccess" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_ExpectRevert_failAndSuccess_)]
     
-    syntax ExpectRevertTestMethod ::= "testFail_expectRevert_bytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_bytes4)]
+    syntax ExpectRevertTestMethod ::= "testFail_expectRevert_bytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_bytes4_)]
     
-    syntax ExpectRevertTestMethod ::= "testFail_expectRevert_empty" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_empty)]
+    syntax ExpectRevertTestMethod ::= "testFail_expectRevert_empty" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_empty_)]
     
-    syntax ExpectRevertTestMethod ::= "testFail_expectRevert_false" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_false)]
+    syntax ExpectRevertTestMethod ::= "testFail_expectRevert_false" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_false_)]
     
-    syntax ExpectRevertTestMethod ::= "testFail_expectRevert_multipleReverts" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_multipleReverts)]
+    syntax ExpectRevertTestMethod ::= "testFail_expectRevert_multipleReverts" "(" ")" [symbol(), klabel(method_ExpectRevertTest_testFail_expectRevert_multipleReverts_)]
     
-    syntax ExpectRevertTestMethod ::= "test_ExpectRevert_increasedDepth" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_ExpectRevert_increasedDepth)]
+    syntax ExpectRevertTestMethod ::= "test_ExpectRevert_increasedDepth" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_ExpectRevert_increasedDepth_)]
     
-    syntax ExpectRevertTestMethod ::= "test_expectRevert_bytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_bytes4)]
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_bytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_bytes4_)]
     
-    syntax ExpectRevertTestMethod ::= "test_expectRevert_encodedSymbolic" "(" Int ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_encodedSymbolic)]
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_encodedSymbolic" "(" Int ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_encodedSymbolic_Int)]
     
-    syntax ExpectRevertTestMethod ::= "test_expectRevert_internalCall" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_internalCall)]
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_internalCall" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_internalCall_)]
     
-    syntax ExpectRevertTestMethod ::= "test_expectRevert_message" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_message)]
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_message" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_message_)]
     
-    syntax ExpectRevertTestMethod ::= "test_expectRevert_returnValue" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_returnValue)]
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_returnValue" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_returnValue_)]
     
-    syntax ExpectRevertTestMethod ::= "test_expectRevert_true" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_true)]
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_true" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_true_)]
     
-    syntax ExpectRevertTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ExpectRevertTest_vm)]
+    syntax ExpectRevertTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ExpectRevertTest_vm_)]
     
     rule  ( ExpectRevertTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -2085,11 +2085,11 @@ module REVERTER-BIN-RUNTIME
     
     syntax Bytes ::= ReverterContract "." ReverterMethod [function(), symbol(), klabel(method_Reverter)]
     
-    syntax ReverterMethod ::= "noRevert" "(" ")" [symbol(), klabel(method_Reverter_noRevert)]
+    syntax ReverterMethod ::= "noRevert" "(" ")" [symbol(), klabel(method_Reverter_noRevert_)]
     
-    syntax ReverterMethod ::= "revertWithReason" "(" String ")" [symbol(), klabel(method_Reverter_revertWithReason)]
+    syntax ReverterMethod ::= "revertWithReason" "(" String ")" [symbol(), klabel(method_Reverter_revertWithReason_String)]
     
-    syntax ReverterMethod ::= "revertWithoutReason" "(" ")" [symbol(), klabel(method_Reverter_revertWithoutReason)]
+    syntax ReverterMethod ::= "revertWithoutReason" "(" ")" [symbol(), klabel(method_Reverter_revertWithoutReason_)]
     
     rule  ( Reverter . noRevert ( ) => #abiCallData ( "noRevert" , .TypedArgs ) )
       
@@ -2122,7 +2122,7 @@ module REVERTERWITHRETURN-BIN-RUNTIME
     
     syntax Bytes ::= ReverterWithReturnContract "." ReverterWithReturnMethod [function(), symbol(), klabel(method_ReverterWithReturn)]
     
-    syntax ReverterWithReturnMethod ::= "revertUnless" "(" Int ")" [symbol(), klabel(method_ReverterWithReturn_revertUnless)]
+    syntax ReverterWithReturnMethod ::= "revertUnless" "(" Int ")" [symbol(), klabel(method_ReverterWithReturn_revertUnless_Int)]
     
     rule  ( ReverterWithReturn . revertUnless ( V0_returnInstead ) => #abiCallData ( "revertUnless" , #bool ( V0_returnInstead ) , .TypedArgs ) )
        ensures #rangeBool ( V0_returnInstead )
@@ -2166,23 +2166,23 @@ module FFITEST-BIN-RUNTIME
     
     syntax Bytes ::= FfiTestContract "." FfiTestMethod [function(), symbol(), klabel(method_FfiTest)]
     
-    syntax FfiTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_FfiTest_IS_SCRIPT)]
+    syntax FfiTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_FfiTest_IS_SCRIPT_)]
     
-    syntax FfiTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_FfiTest_IS_TEST)]
+    syntax FfiTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_FfiTest_IS_TEST_)]
     
-    syntax FfiTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_FfiTest_failed)]
+    syntax FfiTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_FfiTest_failed_)]
     
-    syntax FfiTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_FfiTest_setUp)]
+    syntax FfiTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_FfiTest_setUp_)]
     
-    syntax FfiTestMethod ::= "testFFIFOO" "(" ")" [symbol(), klabel(method_FfiTest_testFFIFOO)]
+    syntax FfiTestMethod ::= "testFFIFOO" "(" ")" [symbol(), klabel(method_FfiTest_testFFIFOO_)]
     
-    syntax FfiTestMethod ::= "testFFIScript" "(" ")" [symbol(), klabel(method_FfiTest_testFFIScript)]
+    syntax FfiTestMethod ::= "testFFIScript" "(" ")" [symbol(), klabel(method_FfiTest_testFFIScript_)]
     
-    syntax FfiTestMethod ::= "testFFIScript2" "(" ")" [symbol(), klabel(method_FfiTest_testFFIScript2)]
+    syntax FfiTestMethod ::= "testFFIScript2" "(" ")" [symbol(), klabel(method_FfiTest_testFFIScript2_)]
     
-    syntax FfiTestMethod ::= "testffi" "(" ")" [symbol(), klabel(method_FfiTest_testffi)]
+    syntax FfiTestMethod ::= "testffi" "(" ")" [symbol(), klabel(method_FfiTest_testffi_)]
     
-    syntax FfiTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_FfiTest_vm)]
+    syntax FfiTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_FfiTest_vm_)]
     
     rule  ( FfiTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -2273,19 +2273,19 @@ module FILESTEST-BIN-RUNTIME
     
     syntax Bytes ::= FilesTestContract "." FilesTestMethod [function(), symbol(), klabel(method_FilesTest)]
     
-    syntax FilesTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_FilesTest_IS_SCRIPT)]
+    syntax FilesTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_FilesTest_IS_SCRIPT_)]
     
-    syntax FilesTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_FilesTest_IS_TEST)]
+    syntax FilesTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_FilesTest_IS_TEST_)]
     
-    syntax FilesTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_FilesTest_failed)]
+    syntax FilesTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_FilesTest_failed_)]
     
-    syntax FilesTestMethod ::= "testFailRemoveFile" "(" ")" [symbol(), klabel(method_FilesTest_testFailRemoveFile)]
+    syntax FilesTestMethod ::= "testFailRemoveFile" "(" ")" [symbol(), klabel(method_FilesTest_testFailRemoveFile_)]
     
-    syntax FilesTestMethod ::= "testReadWriteFile" "(" ")" [symbol(), klabel(method_FilesTest_testReadWriteFile)]
+    syntax FilesTestMethod ::= "testReadWriteFile" "(" ")" [symbol(), klabel(method_FilesTest_testReadWriteFile_)]
     
-    syntax FilesTestMethod ::= "testReadWriteLine" "(" ")" [symbol(), klabel(method_FilesTest_testReadWriteLine)]
+    syntax FilesTestMethod ::= "testReadWriteLine" "(" ")" [symbol(), klabel(method_FilesTest_testReadWriteLine_)]
     
-    syntax FilesTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_FilesTest_vm)]
+    syntax FilesTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_FilesTest_vm_)]
     
     rule  ( FilesTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -2364,33 +2364,33 @@ module FORKTEST-BIN-RUNTIME
     
     syntax Bytes ::= ForkTestContract "." ForkTestMethod [function(), symbol(), klabel(method_ForkTest)]
     
-    syntax ForkTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ForkTest_IS_SCRIPT)]
+    syntax ForkTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ForkTest_IS_SCRIPT_)]
     
-    syntax ForkTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ForkTest_IS_TEST)]
+    syntax ForkTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ForkTest_IS_TEST_)]
     
-    syntax ForkTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ForkTest_failed)]
+    syntax ForkTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ForkTest_failed_)]
     
-    syntax ForkTestMethod ::= "testActiveFork" "(" ")" [symbol(), klabel(method_ForkTest_testActiveFork)]
+    syntax ForkTestMethod ::= "testActiveFork" "(" ")" [symbol(), klabel(method_ForkTest_testActiveFork_)]
     
-    syntax ForkTestMethod ::= "testAllRPCUrl" "(" ")" [symbol(), klabel(method_ForkTest_testAllRPCUrl)]
+    syntax ForkTestMethod ::= "testAllRPCUrl" "(" ")" [symbol(), klabel(method_ForkTest_testAllRPCUrl_)]
     
-    syntax ForkTestMethod ::= "testCreateFork" "(" ")" [symbol(), klabel(method_ForkTest_testCreateFork)]
+    syntax ForkTestMethod ::= "testCreateFork" "(" ")" [symbol(), klabel(method_ForkTest_testCreateFork_)]
     
-    syntax ForkTestMethod ::= "testCreateForkBlock" "(" ")" [symbol(), klabel(method_ForkTest_testCreateForkBlock)]
+    syntax ForkTestMethod ::= "testCreateForkBlock" "(" ")" [symbol(), klabel(method_ForkTest_testCreateForkBlock_)]
     
-    syntax ForkTestMethod ::= "testCreateSelectFork" "(" ")" [symbol(), klabel(method_ForkTest_testCreateSelectFork)]
+    syntax ForkTestMethod ::= "testCreateSelectFork" "(" ")" [symbol(), klabel(method_ForkTest_testCreateSelectFork_)]
     
-    syntax ForkTestMethod ::= "testCreateSelectForkBlock" "(" ")" [symbol(), klabel(method_ForkTest_testCreateSelectForkBlock)]
+    syntax ForkTestMethod ::= "testCreateSelectForkBlock" "(" ")" [symbol(), klabel(method_ForkTest_testCreateSelectForkBlock_)]
     
-    syntax ForkTestMethod ::= "testRPCUrl" "(" ")" [symbol(), klabel(method_ForkTest_testRPCUrl)]
+    syntax ForkTestMethod ::= "testRPCUrl" "(" ")" [symbol(), klabel(method_ForkTest_testRPCUrl_)]
     
-    syntax ForkTestMethod ::= "testRPCUrlRevert" "(" ")" [symbol(), klabel(method_ForkTest_testRPCUrlRevert)]
+    syntax ForkTestMethod ::= "testRPCUrlRevert" "(" ")" [symbol(), klabel(method_ForkTest_testRPCUrlRevert_)]
     
-    syntax ForkTestMethod ::= "testRollFork" "(" ")" [symbol(), klabel(method_ForkTest_testRollFork)]
+    syntax ForkTestMethod ::= "testRollFork" "(" ")" [symbol(), klabel(method_ForkTest_testRollFork_)]
     
-    syntax ForkTestMethod ::= "testRollForkId" "(" ")" [symbol(), klabel(method_ForkTest_testRollForkId)]
+    syntax ForkTestMethod ::= "testRollForkId" "(" ")" [symbol(), klabel(method_ForkTest_testRollForkId_)]
     
-    syntax ForkTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ForkTest_vm)]
+    syntax ForkTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ForkTest_vm_)]
     
     rule  ( ForkTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -2511,17 +2511,17 @@ module GASTEST-BIN-RUNTIME
     
     syntax Bytes ::= GasTestContract "." GasTestMethod [function(), symbol(), klabel(method_GasTest)]
     
-    syntax GasTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_GasTest_IS_SCRIPT)]
+    syntax GasTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_GasTest_IS_SCRIPT_)]
     
-    syntax GasTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_GasTest_IS_TEST)]
+    syntax GasTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_GasTest_IS_TEST_)]
     
-    syntax GasTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_GasTest_failed)]
+    syntax GasTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_GasTest_failed_)]
     
-    syntax GasTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_GasTest_kevm)]
+    syntax GasTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_GasTest_kevm_)]
     
-    syntax GasTestMethod ::= "testInfiniteGas" "(" ")" [symbol(), klabel(method_GasTest_testInfiniteGas)]
+    syntax GasTestMethod ::= "testInfiniteGas" "(" ")" [symbol(), klabel(method_GasTest_testInfiniteGas_)]
     
-    syntax GasTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_GasTest_vm)]
+    syntax GasTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_GasTest_vm_)]
     
     rule  ( GasTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -2599,17 +2599,17 @@ module GETCODETEST-BIN-RUNTIME
     
     syntax Bytes ::= GetCodeTestContract "." GetCodeTestMethod [function(), symbol(), klabel(method_GetCodeTest)]
     
-    syntax GetCodeTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_GetCodeTest_IS_SCRIPT)]
+    syntax GetCodeTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_GetCodeTest_IS_SCRIPT_)]
     
-    syntax GetCodeTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_GetCodeTest_IS_TEST)]
+    syntax GetCodeTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_GetCodeTest_IS_TEST_)]
     
-    syntax GetCodeTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_GetCodeTest_failed)]
+    syntax GetCodeTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_GetCodeTest_failed_)]
     
-    syntax GetCodeTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_GetCodeTest_setUp)]
+    syntax GetCodeTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_GetCodeTest_setUp_)]
     
-    syntax GetCodeTestMethod ::= "testGetCode" "(" ")" [symbol(), klabel(method_GetCodeTest_testGetCode)]
+    syntax GetCodeTestMethod ::= "testGetCode" "(" ")" [symbol(), klabel(method_GetCodeTest_testGetCode_)]
     
-    syntax GetCodeTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_GetCodeTest_vm)]
+    syntax GetCodeTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_GetCodeTest_vm_)]
     
     rule  ( GetCodeTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -2660,7 +2660,7 @@ module KEVMCHEATS-BIN-RUNTIME
     
     syntax Bytes ::= KEVMCheatsContract "." KEVMCheatsMethod [function(), symbol(), klabel(method_KEVMCheats)]
     
-    syntax KEVMCheatsMethod ::= "kevm" "(" ")" [symbol(), klabel(method_KEVMCheats_kevm)]
+    syntax KEVMCheatsMethod ::= "kevm" "(" ")" [symbol(), klabel(method_KEVMCheats_kevm_)]
     
     rule  ( KEVMCheats . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
       
@@ -2681,27 +2681,27 @@ module KEVMCHEATSBASE-BIN-RUNTIME
     
     syntax Bytes ::= KEVMCheatsBaseContract "." KEVMCheatsBaseMethod [function(), symbol(), klabel(method_KEVMCheatsBase)]
     
-    syntax KEVMCheatsBaseMethod ::= "allowCallsToAddress" "(" Int ")" [symbol(), klabel(method_KEVMCheatsBase_allowCallsToAddress)]
+    syntax KEVMCheatsBaseMethod ::= "allowCallsToAddress" "(" Int ")" [symbol(), klabel(method_KEVMCheatsBase_allowCallsToAddress_Int)]
     
-    syntax KEVMCheatsBaseMethod ::= "allowChangesToStorage" "(" Int "," Int ")" [symbol(), klabel(method_KEVMCheatsBase_allowChangesToStorage)]
+    syntax KEVMCheatsBaseMethod ::= "allowChangesToStorage" "(" Int "," Int ")" [symbol(), klabel(method_KEVMCheatsBase_allowChangesToStorage_Int Int)]
     
-    syntax KEVMCheatsBaseMethod ::= "expectCreate" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectCreate)]
+    syntax KEVMCheatsBaseMethod ::= "expectCreate" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectCreate_Int Int Bytes)]
     
-    syntax KEVMCheatsBaseMethod ::= "expectCreate2" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectCreate2)]
+    syntax KEVMCheatsBaseMethod ::= "expectCreate2" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectCreate2_Int Int Bytes)]
     
-    syntax KEVMCheatsBaseMethod ::= "expectDelegateCall" "(" Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectDelegateCall)]
+    syntax KEVMCheatsBaseMethod ::= "expectDelegateCall" "(" Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectDelegateCall_Int Bytes)]
     
-    syntax KEVMCheatsBaseMethod ::= "expectNoCall" "(" ")" [symbol(), klabel(method_KEVMCheatsBase_expectNoCall)]
+    syntax KEVMCheatsBaseMethod ::= "expectNoCall" "(" ")" [symbol(), klabel(method_KEVMCheatsBase_expectNoCall_)]
     
-    syntax KEVMCheatsBaseMethod ::= "expectRegularCall" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectRegularCall)]
+    syntax KEVMCheatsBaseMethod ::= "expectRegularCall" "(" Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectRegularCall_Int Bytes)]
     
-    syntax KEVMCheatsBaseMethod ::= "expectRegularCall" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectRegularCall)]
+    syntax KEVMCheatsBaseMethod ::= "expectRegularCall" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectRegularCall_Int Int Bytes)]
     
-    syntax KEVMCheatsBaseMethod ::= "expectStaticCall" "(" Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectStaticCall)]
+    syntax KEVMCheatsBaseMethod ::= "expectStaticCall" "(" Int "," Bytes ")" [symbol(), klabel(method_KEVMCheatsBase_expectStaticCall_Int Bytes)]
     
-    syntax KEVMCheatsBaseMethod ::= "infiniteGas" "(" ")" [symbol(), klabel(method_KEVMCheatsBase_infiniteGas)]
+    syntax KEVMCheatsBaseMethod ::= "infiniteGas" "(" ")" [symbol(), klabel(method_KEVMCheatsBase_infiniteGas_)]
     
-    syntax KEVMCheatsBaseMethod ::= "symbolicStorage" "(" Int ")" [symbol(), klabel(method_KEVMCheatsBase_symbolicStorage)]
+    syntax KEVMCheatsBaseMethod ::= "symbolicStorage" "(" Int ")" [symbol(), klabel(method_KEVMCheatsBase_symbolicStorage_Int)]
     
     rule  ( KEVMCheatsBase . allowCallsToAddress ( V0_ ) => #abiCallData ( "allowCallsToAddress" , #address ( V0_ ) , .TypedArgs ) )
        ensures #rangeAddress ( V0_ )
@@ -2736,11 +2736,10 @@ module KEVMCHEATSBASE-BIN-RUNTIME
     rule  ( KEVMCheatsBase . expectNoCall ( ) => #abiCallData ( "expectNoCall" , .TypedArgs ) )
       
     
-    rule  ( KEVMCheatsBase . expectRegularCall ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectRegularCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
+    rule  ( KEVMCheatsBase . expectRegularCall ( V0_ , V1_ ) => #abiCallData ( "expectRegularCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
-       andBool ( #rangeUInt ( 128 , lengthBytes ( V2_ ) )
-               )))
+       andBool ( #rangeUInt ( 128 , lengthBytes ( V1_ ) )
+               ))
       
     
     rule  ( KEVMCheatsBase . expectRegularCall ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectRegularCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
@@ -2781,7 +2780,7 @@ module KEVMCHEATSBASE-BIN-RUNTIME
     rule  ( selector ( "expectNoCall()" ) => 3861374088 )
       
     
-    rule  ( selector ( "expectRegularCall(address,uint256,bytes)" ) => 3178868520 )
+    rule  ( selector ( "expectRegularCall(address,bytes)" ) => 3178868520 )
       
     
     rule  ( selector ( "expectRegularCall(address,uint256,bytes)" ) => 1973496647 )
@@ -2831,15 +2830,15 @@ module LABELTEST-BIN-RUNTIME
     
     syntax Bytes ::= LabelTestContract "." LabelTestMethod [function(), symbol(), klabel(method_LabelTest)]
     
-    syntax LabelTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_LabelTest_IS_SCRIPT)]
+    syntax LabelTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_LabelTest_IS_SCRIPT_)]
     
-    syntax LabelTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_LabelTest_IS_TEST)]
+    syntax LabelTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_LabelTest_IS_TEST_)]
     
-    syntax LabelTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_LabelTest_failed)]
+    syntax LabelTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_LabelTest_failed_)]
     
-    syntax LabelTestMethod ::= "testLabel" "(" ")" [symbol(), klabel(method_LabelTest_testLabel)]
+    syntax LabelTestMethod ::= "testLabel" "(" ")" [symbol(), klabel(method_LabelTest_testLabel_)]
     
-    syntax LabelTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_LabelTest_vm)]
+    syntax LabelTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_LabelTest_vm_)]
     
     rule  ( LabelTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -2906,45 +2905,45 @@ module LOOPSTEST-BIN-RUNTIME
     
     syntax Bytes ::= LoopsTestContract "." LoopsTestMethod [function(), symbol(), klabel(method_LoopsTest)]
     
-    syntax LoopsTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_LoopsTest_IS_SCRIPT)]
+    syntax LoopsTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_LoopsTest_IS_SCRIPT_)]
     
-    syntax LoopsTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_LoopsTest_IS_TEST)]
+    syntax LoopsTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_LoopsTest_IS_TEST_)]
     
-    syntax LoopsTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_LoopsTest_failed)]
+    syntax LoopsTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_LoopsTest_failed_)]
     
-    syntax LoopsTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_LoopsTest_setUp)]
+    syntax LoopsTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_LoopsTest_setUp_)]
     
-    syntax LoopsTestMethod ::= "testIsNotPrime" "(" Int ")" [symbol(), klabel(method_LoopsTest_testIsNotPrime)]
+    syntax LoopsTestMethod ::= "testIsNotPrime" "(" Int ")" [symbol(), klabel(method_LoopsTest_testIsNotPrime_Int)]
     
-    syntax LoopsTestMethod ::= "testIsPrime" "(" Int "," Int ")" [symbol(), klabel(method_LoopsTest_testIsPrime)]
+    syntax LoopsTestMethod ::= "testIsPrime" "(" Int "," Int ")" [symbol(), klabel(method_LoopsTest_testIsPrime_Int Int)]
     
-    syntax LoopsTestMethod ::= "testIsPrimeBroken" "(" Int "," Int ")" [symbol(), klabel(method_LoopsTest_testIsPrimeBroken)]
+    syntax LoopsTestMethod ::= "testIsPrimeBroken" "(" Int "," Int ")" [symbol(), klabel(method_LoopsTest_testIsPrimeBroken_Int Int)]
     
-    syntax LoopsTestMethod ::= "testIsPrimeOpt" "(" Int ")" [symbol(), klabel(method_LoopsTest_testIsPrimeOpt)]
+    syntax LoopsTestMethod ::= "testIsPrimeOpt" "(" Int ")" [symbol(), klabel(method_LoopsTest_testIsPrimeOpt_Int)]
     
-    syntax LoopsTestMethod ::= "testMax" "(" K ")" [symbol(), klabel(method_LoopsTest_testMax)]
+    syntax LoopsTestMethod ::= "testMax" "(" K ")" [symbol(), klabel(method_LoopsTest_testMax_K)]
     
-    syntax LoopsTestMethod ::= "testMaxBroken" "(" K ")" [symbol(), klabel(method_LoopsTest_testMaxBroken)]
+    syntax LoopsTestMethod ::= "testMaxBroken" "(" K ")" [symbol(), klabel(method_LoopsTest_testMaxBroken_K)]
     
-    syntax LoopsTestMethod ::= "testNthPrime" "(" Int "," Int ")" [symbol(), klabel(method_LoopsTest_testNthPrime)]
+    syntax LoopsTestMethod ::= "testNthPrime" "(" Int "," Int ")" [symbol(), klabel(method_LoopsTest_testNthPrime_Int Int)]
     
-    syntax LoopsTestMethod ::= "testSort" "(" K ")" [symbol(), klabel(method_LoopsTest_testSort)]
+    syntax LoopsTestMethod ::= "testSort" "(" K ")" [symbol(), klabel(method_LoopsTest_testSort_K)]
     
-    syntax LoopsTestMethod ::= "testSortBroken" "(" K ")" [symbol(), klabel(method_LoopsTest_testSortBroken)]
+    syntax LoopsTestMethod ::= "testSortBroken" "(" K ")" [symbol(), klabel(method_LoopsTest_testSortBroken_K)]
     
-    syntax LoopsTestMethod ::= "testSqrt" "(" Int ")" [symbol(), klabel(method_LoopsTest_testSqrt)]
+    syntax LoopsTestMethod ::= "testSqrt" "(" Int ")" [symbol(), klabel(method_LoopsTest_testSqrt_Int)]
     
-    syntax LoopsTestMethod ::= "testSumToN" "(" Int ")" [symbol(), klabel(method_LoopsTest_testSumToN)]
+    syntax LoopsTestMethod ::= "testSumToN" "(" Int ")" [symbol(), klabel(method_LoopsTest_testSumToN_Int)]
     
-    syntax LoopsTestMethod ::= "testSumToNBroken" "(" Int ")" [symbol(), klabel(method_LoopsTest_testSumToNBroken)]
+    syntax LoopsTestMethod ::= "testSumToNBroken" "(" Int ")" [symbol(), klabel(method_LoopsTest_testSumToNBroken_Int)]
     
-    syntax LoopsTestMethod ::= "test_sum_10" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_10)]
+    syntax LoopsTestMethod ::= "test_sum_10" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_10_)]
     
-    syntax LoopsTestMethod ::= "test_sum_100" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_100)]
+    syntax LoopsTestMethod ::= "test_sum_100" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_100_)]
     
-    syntax LoopsTestMethod ::= "test_sum_1000" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_1000)]
+    syntax LoopsTestMethod ::= "test_sum_1000" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_1000_)]
     
-    syntax LoopsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_LoopsTest_vm)]
+    syntax LoopsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_LoopsTest_vm_)]
     
     rule  ( LoopsTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -3103,19 +3102,19 @@ module METHODDISAMBIGUATETEST-BIN-RUNTIME
     
     syntax Bytes ::= MethodDisambiguateTestContract "." MethodDisambiguateTestMethod [function(), symbol(), klabel(method_MethodDisambiguateTest)]
     
-    syntax MethodDisambiguateTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_IS_SCRIPT)]
+    syntax MethodDisambiguateTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_IS_SCRIPT_)]
     
-    syntax MethodDisambiguateTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_IS_TEST)]
+    syntax MethodDisambiguateTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_IS_TEST_)]
     
-    syntax MethodDisambiguateTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_failed)]
+    syntax MethodDisambiguateTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_failed_)]
     
-    syntax MethodDisambiguateTestMethod ::= "getNumber" "(" Int ")" [symbol(), klabel(method_MethodDisambiguateTest_getNumber)]
+    syntax MethodDisambiguateTestMethod ::= "getNumber" "(" Int ")" [symbol(), klabel(method_MethodDisambiguateTest_getNumber_Int)]
     
-    syntax MethodDisambiguateTestMethod ::= "getNumber" "(" Int ")" [symbol(), klabel(method_MethodDisambiguateTest_getNumber)]
+    syntax MethodDisambiguateTestMethod ::= "getNumber" "(" Int ")" [symbol(), klabel(method_MethodDisambiguateTest_getNumber_Int)]
     
-    syntax MethodDisambiguateTestMethod ::= "test_method_call" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_test_method_call)]
+    syntax MethodDisambiguateTestMethod ::= "test_method_call" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_test_method_call_)]
     
-    syntax MethodDisambiguateTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_vm)]
+    syntax MethodDisambiguateTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_vm_)]
     
     rule  ( MethodDisambiguateTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -3126,8 +3125,8 @@ module METHODDISAMBIGUATETEST-BIN-RUNTIME
     rule  ( MethodDisambiguateTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
-    rule  ( MethodDisambiguateTest . getNumber ( V0_x ) => #abiCallData ( "getNumber" , #uint32 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeUInt ( 32 , V0_x )
+    rule  ( MethodDisambiguateTest . getNumber ( V0_x ) => #abiCallData ( "getNumber" , #uint256 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_x )
       
     
     rule  ( MethodDisambiguateTest . getNumber ( V0_x ) => #abiCallData ( "getNumber" , #uint32 ( V0_x ) , .TypedArgs ) )
@@ -3149,7 +3148,7 @@ module METHODDISAMBIGUATETEST-BIN-RUNTIME
     rule  ( selector ( "failed()" ) => 3124842406 )
       
     
-    rule  ( selector ( "getNumber(uint32)" ) => 4233508440 )
+    rule  ( selector ( "getNumber(uint256)" ) => 4233508440 )
       
     
     rule  ( selector ( "getNumber(uint32)" ) => 144150998 )
@@ -3196,21 +3195,21 @@ module MOCKCALLTEST-BIN-RUNTIME
     
     syntax Bytes ::= MockCallTestContract "." MockCallTestMethod [function(), symbol(), klabel(method_MockCallTest)]
     
-    syntax MockCallTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_MockCallTest_IS_SCRIPT)]
+    syntax MockCallTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_MockCallTest_IS_SCRIPT_)]
     
-    syntax MockCallTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_MockCallTest_IS_TEST)]
+    syntax MockCallTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_MockCallTest_IS_TEST_)]
     
-    syntax MockCallTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_MockCallTest_failed)]
+    syntax MockCallTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_MockCallTest_failed_)]
     
-    syntax MockCallTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_MockCallTest_setUp)]
+    syntax MockCallTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_MockCallTest_setUp_)]
     
-    syntax MockCallTestMethod ::= "testMockCall" "(" ")" [symbol(), klabel(method_MockCallTest_testMockCall)]
+    syntax MockCallTestMethod ::= "testMockCall" "(" ")" [symbol(), klabel(method_MockCallTest_testMockCall_)]
     
-    syntax MockCallTestMethod ::= "testMockCallValue" "(" ")" [symbol(), klabel(method_MockCallTest_testMockCallValue)]
+    syntax MockCallTestMethod ::= "testMockCallValue" "(" ")" [symbol(), klabel(method_MockCallTest_testMockCallValue_)]
     
-    syntax MockCallTestMethod ::= "testMockCalls" "(" ")" [symbol(), klabel(method_MockCallTest_testMockCalls)]
+    syntax MockCallTestMethod ::= "testMockCalls" "(" ")" [symbol(), klabel(method_MockCallTest_testMockCalls_)]
     
-    syntax MockCallTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_MockCallTest_vm)]
+    syntax MockCallTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_MockCallTest_vm_)]
     
     rule  ( MockCallTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -3273,19 +3272,19 @@ module MYIERC20-BIN-RUNTIME
     
     syntax Bytes ::= MyIERC20Contract "." MyIERC20Method [function(), symbol(), klabel(method_MyIERC20)]
     
-    syntax MyIERC20Method ::= "approve" "(" Int "," Int ")" [symbol(), klabel(method_MyIERC20_approve)]
+    syntax MyIERC20Method ::= "approve" "(" Int "," Int ")" [symbol(), klabel(method_MyIERC20_approve_Int Int)]
     
-    syntax MyIERC20Method ::= "balanceOf" "(" Int ")" [symbol(), klabel(method_MyIERC20_balanceOf)]
+    syntax MyIERC20Method ::= "balanceOf" "(" Int ")" [symbol(), klabel(method_MyIERC20_balanceOf_Int)]
     
-    syntax MyIERC20Method ::= "decimals" "(" ")" [symbol(), klabel(method_MyIERC20_decimals)]
+    syntax MyIERC20Method ::= "decimals" "(" ")" [symbol(), klabel(method_MyIERC20_decimals_)]
     
-    syntax MyIERC20Method ::= "symbol" "(" ")" [symbol(), klabel(method_MyIERC20_symbol)]
+    syntax MyIERC20Method ::= "symbol" "(" ")" [symbol(), klabel(method_MyIERC20_symbol_)]
     
-    syntax MyIERC20Method ::= "totalSupply" "(" ")" [symbol(), klabel(method_MyIERC20_totalSupply)]
+    syntax MyIERC20Method ::= "totalSupply" "(" ")" [symbol(), klabel(method_MyIERC20_totalSupply_)]
     
-    syntax MyIERC20Method ::= "transfer" "(" Int "," Int ")" [symbol(), klabel(method_MyIERC20_transfer)]
+    syntax MyIERC20Method ::= "transfer" "(" Int "," Int ")" [symbol(), klabel(method_MyIERC20_transfer_Int Int)]
     
-    syntax MyIERC20Method ::= "transferFrom" "(" Int "," Int "," Int ")" [symbol(), klabel(method_MyIERC20_transferFrom)]
+    syntax MyIERC20Method ::= "transferFrom" "(" Int "," Int "," Int ")" [symbol(), klabel(method_MyIERC20_transferFrom_Int Int Int)]
     
     rule  ( MyIERC20 . approve ( V0_spender , V1_value ) => #abiCallData ( "approve" , #address ( V0_spender ) , #uint256 ( V1_value ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_spender )
@@ -3365,13 +3364,13 @@ module MYTOKEN-BIN-RUNTIME
     
     syntax Bytes ::= MyTokenContract "." MyTokenMethod [function(), symbol(), klabel(method_MyToken)]
     
-    syntax MyTokenMethod ::= "balanceOf" "(" Int ")" [symbol(), klabel(method_MyToken_balanceOf)]
+    syntax MyTokenMethod ::= "balanceOf" "(" Int ")" [symbol(), klabel(method_MyToken_balanceOf_Int)]
     
-    syntax MyTokenMethod ::= "balances" "(" Int ")" [symbol(), klabel(method_MyToken_balances)]
+    syntax MyTokenMethod ::= "balances" "(" Int ")" [symbol(), klabel(method_MyToken_balances_Int)]
     
-    syntax MyTokenMethod ::= "pay" "(" Int ")" [symbol(), klabel(method_MyToken_pay)]
+    syntax MyTokenMethod ::= "pay" "(" Int ")" [symbol(), klabel(method_MyToken_pay_Int)]
     
-    syntax MyTokenMethod ::= "token" "(" ")" [symbol(), klabel(method_MyToken_token)]
+    syntax MyTokenMethod ::= "token" "(" ")" [symbol(), klabel(method_MyToken_token_)]
     
     rule  ( MyToken . balanceOf ( V0_user ) => #abiCallData ( "balanceOf" , #address ( V0_user ) , .TypedArgs ) )
        ensures #rangeAddress ( V0_user )
@@ -3413,9 +3412,9 @@ module NOIMPORT-BIN-RUNTIME
     
     syntax Bytes ::= NoImportContract "." NoImportMethod [function(), symbol(), klabel(method_NoImport)]
     
-    syntax NoImportMethod ::= "setUp" "(" ")" [symbol(), klabel(method_NoImport_setUp)]
+    syntax NoImportMethod ::= "setUp" "(" ")" [symbol(), klabel(method_NoImport_setUp_)]
     
-    syntax NoImportMethod ::= "test_source_map" "(" ")" [symbol(), klabel(method_NoImport_test_source_map)]
+    syntax NoImportMethod ::= "test_source_map" "(" ")" [symbol(), klabel(method_NoImport_test_source_map_)]
     
     rule  ( NoImport . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
@@ -3449,11 +3448,11 @@ module OWNERUPONLY-BIN-RUNTIME
     
     syntax Bytes ::= OwnerUpOnlyContract "." OwnerUpOnlyMethod [function(), symbol(), klabel(method_OwnerUpOnly)]
     
-    syntax OwnerUpOnlyMethod ::= "count" "(" ")" [symbol(), klabel(method_OwnerUpOnly_count)]
+    syntax OwnerUpOnlyMethod ::= "count" "(" ")" [symbol(), klabel(method_OwnerUpOnly_count_)]
     
-    syntax OwnerUpOnlyMethod ::= "increment" "(" ")" [symbol(), klabel(method_OwnerUpOnly_increment)]
+    syntax OwnerUpOnlyMethod ::= "increment" "(" ")" [symbol(), klabel(method_OwnerUpOnly_increment_)]
     
-    syntax OwnerUpOnlyMethod ::= "owner" "(" ")" [symbol(), klabel(method_OwnerUpOnly_owner)]
+    syntax OwnerUpOnlyMethod ::= "owner" "(" ")" [symbol(), klabel(method_OwnerUpOnly_owner_)]
     
     rule  ( OwnerUpOnly . count ( ) => #abiCallData ( "count" , .TypedArgs ) )
       
@@ -3513,21 +3512,21 @@ module OWNERUPONLYTEST-BIN-RUNTIME
     
     syntax Bytes ::= OwnerUpOnlyTestContract "." OwnerUpOnlyTestMethod [function(), symbol(), klabel(method_OwnerUpOnlyTest)]
     
-    syntax OwnerUpOnlyTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_IS_SCRIPT)]
+    syntax OwnerUpOnlyTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_IS_SCRIPT_)]
     
-    syntax OwnerUpOnlyTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_IS_TEST)]
+    syntax OwnerUpOnlyTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_IS_TEST_)]
     
-    syntax OwnerUpOnlyTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_failed)]
+    syntax OwnerUpOnlyTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_failed_)]
     
-    syntax OwnerUpOnlyTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_setUp)]
+    syntax OwnerUpOnlyTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_setUp_)]
     
-    syntax OwnerUpOnlyTestMethod ::= "testFailIncrementAsNotOwner" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_testFailIncrementAsNotOwner)]
+    syntax OwnerUpOnlyTestMethod ::= "testFailIncrementAsNotOwner" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_testFailIncrementAsNotOwner_)]
     
-    syntax OwnerUpOnlyTestMethod ::= "testIncrementAsNotOwner" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_testIncrementAsNotOwner)]
+    syntax OwnerUpOnlyTestMethod ::= "testIncrementAsNotOwner" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_testIncrementAsNotOwner_)]
     
-    syntax OwnerUpOnlyTestMethod ::= "testIncrementAsOwner" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_testIncrementAsOwner)]
+    syntax OwnerUpOnlyTestMethod ::= "testIncrementAsOwner" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_testIncrementAsOwner_)]
     
-    syntax OwnerUpOnlyTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_vm)]
+    syntax OwnerUpOnlyTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_vm_)]
     
     rule  ( OwnerUpOnlyTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -3597,11 +3596,11 @@ module ADDITIONALTOKEN-BIN-RUNTIME
     
     syntax Bytes ::= AdditionalTokenContract "." AdditionalTokenMethod [function(), symbol(), klabel(method_AdditionalToken)]
     
-    syntax AdditionalTokenMethod ::= "count" "(" ")" [symbol(), klabel(method_AdditionalToken_count)]
+    syntax AdditionalTokenMethod ::= "count" "(" ")" [symbol(), klabel(method_AdditionalToken_count_)]
     
-    syntax AdditionalTokenMethod ::= "incrementCount" "(" ")" [symbol(), klabel(method_AdditionalToken_incrementCount)]
+    syntax AdditionalTokenMethod ::= "incrementCount" "(" ")" [symbol(), klabel(method_AdditionalToken_incrementCount_)]
     
-    syntax AdditionalTokenMethod ::= "owner" "(" ")" [symbol(), klabel(method_AdditionalToken_owner)]
+    syntax AdditionalTokenMethod ::= "owner" "(" ")" [symbol(), klabel(method_AdditionalToken_owner_)]
     
     rule  ( AdditionalToken . count ( ) => #abiCallData ( "count" , .TypedArgs ) )
       
@@ -3656,29 +3655,29 @@ module PLAINPRANKTEST-BIN-RUNTIME
     
     syntax Bytes ::= PlainPrankTestContract "." PlainPrankTestMethod [function(), symbol(), klabel(method_PlainPrankTest)]
     
-    syntax PlainPrankTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_PlainPrankTest_IS_SCRIPT)]
+    syntax PlainPrankTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_PlainPrankTest_IS_SCRIPT_)]
     
-    syntax PlainPrankTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_PlainPrankTest_IS_TEST)]
+    syntax PlainPrankTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_PlainPrankTest_IS_TEST_)]
     
-    syntax PlainPrankTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_PlainPrankTest_failed)]
+    syntax PlainPrankTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_PlainPrankTest_failed_)]
     
-    syntax PlainPrankTestMethod ::= "internalCounter" "(" ")" [symbol(), klabel(method_PlainPrankTest_internalCounter)]
+    syntax PlainPrankTestMethod ::= "internalCounter" "(" ")" [symbol(), klabel(method_PlainPrankTest_internalCounter_)]
     
-    syntax PlainPrankTestMethod ::= "testFail_startPrank_existingAlready" "(" ")" [symbol(), klabel(method_PlainPrankTest_testFail_startPrank_existingAlready)]
+    syntax PlainPrankTestMethod ::= "testFail_startPrank_existingAlready" "(" ")" [symbol(), klabel(method_PlainPrankTest_testFail_startPrank_existingAlready_)]
     
-    syntax PlainPrankTestMethod ::= "testFail_startPrank_internalCall" "(" ")" [symbol(), klabel(method_PlainPrankTest_testFail_startPrank_internalCall)]
+    syntax PlainPrankTestMethod ::= "testFail_startPrank_internalCall" "(" ")" [symbol(), klabel(method_PlainPrankTest_testFail_startPrank_internalCall_)]
     
-    syntax PlainPrankTestMethod ::= "test_prank_zeroAddress_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_prank_zeroAddress_true)]
+    syntax PlainPrankTestMethod ::= "test_prank_zeroAddress_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_prank_zeroAddress_true_)]
     
-    syntax PlainPrankTestMethod ::= "test_startPrankWithOrigin_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_startPrankWithOrigin_true)]
+    syntax PlainPrankTestMethod ::= "test_startPrankWithOrigin_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_startPrankWithOrigin_true_)]
     
-    syntax PlainPrankTestMethod ::= "test_startPrank_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_startPrank_true)]
+    syntax PlainPrankTestMethod ::= "test_startPrank_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_startPrank_true_)]
     
-    syntax PlainPrankTestMethod ::= "test_startPrank_zeroAddress_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_startPrank_zeroAddress_true)]
+    syntax PlainPrankTestMethod ::= "test_startPrank_zeroAddress_true" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_startPrank_zeroAddress_true_)]
     
-    syntax PlainPrankTestMethod ::= "test_stopPrank_notExistent" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_stopPrank_notExistent)]
+    syntax PlainPrankTestMethod ::= "test_stopPrank_notExistent" "(" ")" [symbol(), klabel(method_PlainPrankTest_test_stopPrank_notExistent_)]
     
-    syntax PlainPrankTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_PlainPrankTest_vm)]
+    syntax PlainPrankTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_PlainPrankTest_vm_)]
     
     rule  ( PlainPrankTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -3772,13 +3771,13 @@ module PRANK-BIN-RUNTIME
     
     syntax Bytes ::= PrankContract "." PrankMethod [function(), symbol(), klabel(method_Prank)]
     
-    syntax PrankMethod ::= "add" "(" Int ")" [symbol(), klabel(method_Prank_add)]
+    syntax PrankMethod ::= "add" "(" Int ")" [symbol(), klabel(method_Prank_add_Int)]
     
-    syntax PrankMethod ::= "count" "(" ")" [symbol(), klabel(method_Prank_count)]
+    syntax PrankMethod ::= "count" "(" ")" [symbol(), klabel(method_Prank_count_)]
     
-    syntax PrankMethod ::= "owner" "(" ")" [symbol(), klabel(method_Prank_owner)]
+    syntax PrankMethod ::= "owner" "(" ")" [symbol(), klabel(method_Prank_owner_)]
     
-    syntax PrankMethod ::= "subtract" "(" Int ")" [symbol(), klabel(method_Prank_subtract)]
+    syntax PrankMethod ::= "subtract" "(" Int ")" [symbol(), klabel(method_Prank_subtract_Int)]
     
     rule  ( Prank . add ( V0_value ) => #abiCallData ( "add" , #uint256 ( V0_value ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_value )
@@ -3846,27 +3845,27 @@ module PRANKTEST-BIN-RUNTIME
     
     syntax Bytes ::= PrankTestContract "." PrankTestMethod [function(), symbol(), klabel(method_PrankTest)]
     
-    syntax PrankTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_PrankTest_IS_SCRIPT)]
+    syntax PrankTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_PrankTest_IS_SCRIPT_)]
     
-    syntax PrankTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_PrankTest_IS_TEST)]
+    syntax PrankTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_PrankTest_IS_TEST_)]
     
-    syntax PrankTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_PrankTest_failed)]
+    syntax PrankTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_PrankTest_failed_)]
     
-    syntax PrankTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_PrankTest_setUp)]
+    syntax PrankTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_PrankTest_setUp_)]
     
-    syntax PrankTestMethod ::= "testAddAsOwner" "(" Int ")" [symbol(), klabel(method_PrankTest_testAddAsOwner)]
+    syntax PrankTestMethod ::= "testAddAsOwner" "(" Int ")" [symbol(), klabel(method_PrankTest_testAddAsOwner_Int)]
     
-    syntax PrankTestMethod ::= "testAddStartPrank" "(" Int ")" [symbol(), klabel(method_PrankTest_testAddStartPrank)]
+    syntax PrankTestMethod ::= "testAddStartPrank" "(" Int ")" [symbol(), klabel(method_PrankTest_testAddStartPrank_Int)]
     
-    syntax PrankTestMethod ::= "testFailAddPrank" "(" Int ")" [symbol(), klabel(method_PrankTest_testFailAddPrank)]
+    syntax PrankTestMethod ::= "testFailAddPrank" "(" Int ")" [symbol(), klabel(method_PrankTest_testFailAddPrank_Int)]
     
-    syntax PrankTestMethod ::= "testSubtractAsTxOrigin" "(" Int "," Int ")" [symbol(), klabel(method_PrankTest_testSubtractAsTxOrigin)]
+    syntax PrankTestMethod ::= "testSubtractAsTxOrigin" "(" Int "," Int ")" [symbol(), klabel(method_PrankTest_testSubtractAsTxOrigin_Int Int)]
     
-    syntax PrankTestMethod ::= "testSubtractFail" "(" Int ")" [symbol(), klabel(method_PrankTest_testSubtractFail)]
+    syntax PrankTestMethod ::= "testSubtractFail" "(" Int ")" [symbol(), klabel(method_PrankTest_testSubtractFail_Int)]
     
-    syntax PrankTestMethod ::= "testSubtractStartPrank" "(" Int "," Int ")" [symbol(), klabel(method_PrankTest_testSubtractStartPrank)]
+    syntax PrankTestMethod ::= "testSubtractStartPrank" "(" Int "," Int ")" [symbol(), klabel(method_PrankTest_testSubtractStartPrank_Int Int)]
     
-    syntax PrankTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_PrankTest_vm)]
+    syntax PrankTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_PrankTest_vm_)]
     
     rule  ( PrankTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -3984,17 +3983,17 @@ module RECORDLOGSTEST-BIN-RUNTIME
     
     syntax Bytes ::= RecordLogsTestContract "." RecordLogsTestMethod [function(), symbol(), klabel(method_RecordLogsTest)]
     
-    syntax RecordLogsTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_RecordLogsTest_IS_SCRIPT)]
+    syntax RecordLogsTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_RecordLogsTest_IS_SCRIPT_)]
     
-    syntax RecordLogsTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_RecordLogsTest_IS_TEST)]
+    syntax RecordLogsTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_RecordLogsTest_IS_TEST_)]
     
-    syntax RecordLogsTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_RecordLogsTest_failed)]
+    syntax RecordLogsTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_RecordLogsTest_failed_)]
     
-    syntax RecordLogsTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_RecordLogsTest_setUp)]
+    syntax RecordLogsTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_RecordLogsTest_setUp_)]
     
-    syntax RecordLogsTestMethod ::= "testRecordLogs" "(" ")" [symbol(), klabel(method_RecordLogsTest_testRecordLogs)]
+    syntax RecordLogsTestMethod ::= "testRecordLogs" "(" ")" [symbol(), klabel(method_RecordLogsTest_testRecordLogs_)]
     
-    syntax RecordLogsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_RecordLogsTest_vm)]
+    syntax RecordLogsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_RecordLogsTest_vm_)]
     
     rule  ( RecordLogsTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -4045,7 +4044,7 @@ module SAFE-BIN-RUNTIME
     
     syntax Bytes ::= SafeContract "." SafeMethod [function(), symbol(), klabel(method_Safe)]
     
-    syntax SafeMethod ::= "withdraw" "(" ")" [symbol(), klabel(method_Safe_withdraw)]
+    syntax SafeMethod ::= "withdraw" "(" ")" [symbol(), klabel(method_Safe_withdraw_)]
     
     rule  ( Safe . withdraw ( ) => #abiCallData ( "withdraw" , .TypedArgs ) )
       
@@ -4093,19 +4092,19 @@ module SAFETEST-BIN-RUNTIME
     
     syntax Bytes ::= SafeTestContract "." SafeTestMethod [function(), symbol(), klabel(method_SafeTest)]
     
-    syntax SafeTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_SafeTest_IS_SCRIPT)]
+    syntax SafeTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_SafeTest_IS_SCRIPT_)]
     
-    syntax SafeTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_SafeTest_IS_TEST)]
+    syntax SafeTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_SafeTest_IS_TEST_)]
     
-    syntax SafeTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SafeTest_failed)]
+    syntax SafeTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SafeTest_failed_)]
     
-    syntax SafeTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_SafeTest_setUp)]
+    syntax SafeTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_SafeTest_setUp_)]
     
-    syntax SafeTestMethod ::= "testWithdraw" "(" ")" [symbol(), klabel(method_SafeTest_testWithdraw)]
+    syntax SafeTestMethod ::= "testWithdraw" "(" ")" [symbol(), klabel(method_SafeTest_testWithdraw_)]
     
-    syntax SafeTestMethod ::= "testWithdrawFuzz" "(" Int ")" [symbol(), klabel(method_SafeTest_testWithdrawFuzz)]
+    syntax SafeTestMethod ::= "testWithdrawFuzz" "(" Int ")" [symbol(), klabel(method_SafeTest_testWithdrawFuzz_Int)]
     
-    syntax SafeTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_SafeTest_vm)]
+    syntax SafeTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_SafeTest_vm_)]
     
     rule  ( SafeTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -4170,9 +4169,9 @@ module SCRIPT-BIN-RUNTIME
     
     syntax Bytes ::= ScriptContract "." ScriptMethod [function(), symbol(), klabel(method_Script)]
     
-    syntax ScriptMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_Script_IS_SCRIPT)]
+    syntax ScriptMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_Script_IS_SCRIPT_)]
     
-    syntax ScriptMethod ::= "vm" "(" ")" [symbol(), klabel(method_Script_vm)]
+    syntax ScriptMethod ::= "vm" "(" ")" [symbol(), klabel(method_Script_vm_)]
     
     rule  ( Script . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -4226,19 +4225,19 @@ module SETUPTEST-BIN-RUNTIME
     
     syntax Bytes ::= SetUpTestContract "." SetUpTestMethod [function(), symbol(), klabel(method_SetUpTest)]
     
-    syntax SetUpTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_SetUpTest_IS_SCRIPT)]
+    syntax SetUpTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_SetUpTest_IS_SCRIPT_)]
     
-    syntax SetUpTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_SetUpTest_IS_TEST)]
+    syntax SetUpTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_SetUpTest_IS_TEST_)]
     
-    syntax SetUpTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SetUpTest_failed)]
+    syntax SetUpTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SetUpTest_failed_)]
     
-    syntax SetUpTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_SetUpTest_setUp)]
+    syntax SetUpTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_SetUpTest_setUp_)]
     
-    syntax SetUpTestMethod ::= "testSetUpCalled" "(" ")" [symbol(), klabel(method_SetUpTest_testSetUpCalled)]
+    syntax SetUpTestMethod ::= "testSetUpCalled" "(" ")" [symbol(), klabel(method_SetUpTest_testSetUpCalled_)]
     
-    syntax SetUpTestMethod ::= "testSetUpCalledSymbolic" "(" Int ")" [symbol(), klabel(method_SetUpTest_testSetUpCalledSymbolic)]
+    syntax SetUpTestMethod ::= "testSetUpCalledSymbolic" "(" Int ")" [symbol(), klabel(method_SetUpTest_testSetUpCalledSymbolic_Int)]
     
-    syntax SetUpTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_SetUpTest_vm)]
+    syntax SetUpTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_SetUpTest_vm_)]
     
     rule  ( SetUpTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -4318,19 +4317,19 @@ module SIGNTEST-BIN-RUNTIME
     
     syntax Bytes ::= SignTestContract "." SignTestMethod [function(), symbol(), klabel(method_SignTest)]
     
-    syntax SignTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_SignTest_IS_SCRIPT)]
+    syntax SignTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_SignTest_IS_SCRIPT_)]
     
-    syntax SignTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_SignTest_IS_TEST)]
+    syntax SignTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_SignTest_IS_TEST_)]
     
-    syntax SignTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SignTest_failed)]
+    syntax SignTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SignTest_failed_)]
     
-    syntax SignTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_SignTest_setUp)]
+    syntax SignTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_SignTest_setUp_)]
     
-    syntax SignTestMethod ::= "testSign" "(" ")" [symbol(), klabel(method_SignTest_testSign)]
+    syntax SignTestMethod ::= "testSign" "(" ")" [symbol(), klabel(method_SignTest_testSign_)]
     
-    syntax SignTestMethod ::= "testSign_symbolic" "(" Int ")" [symbol(), klabel(method_SignTest_testSign_symbolic)]
+    syntax SignTestMethod ::= "testSign_symbolic" "(" Int ")" [symbol(), klabel(method_SignTest_testSign_symbolic_Int)]
     
-    syntax SignTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_SignTest_vm)]
+    syntax SignTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_SignTest_vm_)]
     
     rule  ( SignTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -4415,29 +4414,29 @@ module ASSERTTEST-BIN-RUNTIME
     
     syntax Bytes ::= AssertTestContract "." AssertTestMethod [function(), symbol(), klabel(method_AssertTest)]
     
-    syntax AssertTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_AssertTest_IS_SCRIPT)]
+    syntax AssertTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_AssertTest_IS_SCRIPT_)]
     
-    syntax AssertTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_AssertTest_IS_TEST)]
+    syntax AssertTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_AssertTest_IS_TEST_)]
     
-    syntax AssertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AssertTest_failed)]
+    syntax AssertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AssertTest_failed_)]
     
-    syntax AssertTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_AssertTest_setUp)]
+    syntax AssertTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_AssertTest_setUp_)]
     
-    syntax AssertTestMethod ::= "testFail_assert_false" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_false)]
+    syntax AssertTestMethod ::= "testFail_assert_false" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_false_)]
     
-    syntax AssertTestMethod ::= "testFail_assert_true" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_true)]
+    syntax AssertTestMethod ::= "testFail_assert_true" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_true_)]
     
-    syntax AssertTestMethod ::= "testFail_expect_revert" "(" ")" [symbol(), klabel(method_AssertTest_testFail_expect_revert)]
+    syntax AssertTestMethod ::= "testFail_expect_revert" "(" ")" [symbol(), klabel(method_AssertTest_testFail_expect_revert_)]
     
-    syntax AssertTestMethod ::= "test_assert_false" "(" ")" [symbol(), klabel(method_AssertTest_test_assert_false)]
+    syntax AssertTestMethod ::= "test_assert_false" "(" ")" [symbol(), klabel(method_AssertTest_test_assert_false_)]
     
-    syntax AssertTestMethod ::= "test_assert_true" "(" ")" [symbol(), klabel(method_AssertTest_test_assert_true)]
+    syntax AssertTestMethod ::= "test_assert_true" "(" ")" [symbol(), klabel(method_AssertTest_test_assert_true_)]
     
-    syntax AssertTestMethod ::= "test_assert_true_branch" "(" Int ")" [symbol(), klabel(method_AssertTest_test_assert_true_branch)]
+    syntax AssertTestMethod ::= "test_assert_true_branch" "(" Int ")" [symbol(), klabel(method_AssertTest_test_assert_true_branch_Int)]
     
-    syntax AssertTestMethod ::= "test_revert_branch" "(" Int "," Int ")" [symbol(), klabel(method_AssertTest_test_revert_branch)]
+    syntax AssertTestMethod ::= "test_revert_branch" "(" Int "," Int ")" [symbol(), klabel(method_AssertTest_test_revert_branch_Int Int)]
     
-    syntax AssertTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AssertTest_vm)]
+    syntax AssertTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AssertTest_vm_)]
     
     rule  ( AssertTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -4555,17 +4554,17 @@ module SNAPSHOTTEST-BIN-RUNTIME
     
     syntax Bytes ::= SnapshotTestContract "." SnapshotTestMethod [function(), symbol(), klabel(method_SnapshotTest)]
     
-    syntax SnapshotTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_SnapshotTest_IS_SCRIPT)]
+    syntax SnapshotTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_SnapshotTest_IS_SCRIPT_)]
     
-    syntax SnapshotTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_SnapshotTest_IS_TEST)]
+    syntax SnapshotTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_SnapshotTest_IS_TEST_)]
     
-    syntax SnapshotTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SnapshotTest_failed)]
+    syntax SnapshotTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SnapshotTest_failed_)]
     
-    syntax SnapshotTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_SnapshotTest_setUp)]
+    syntax SnapshotTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_SnapshotTest_setUp_)]
     
-    syntax SnapshotTestMethod ::= "testSnapshot" "(" ")" [symbol(), klabel(method_SnapshotTest_testSnapshot)]
+    syntax SnapshotTestMethod ::= "testSnapshot" "(" ")" [symbol(), klabel(method_SnapshotTest_testSnapshot_)]
     
-    syntax SnapshotTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_SnapshotTest_vm)]
+    syntax SnapshotTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_SnapshotTest_vm_)]
     
     rule  ( SnapshotTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -4656,33 +4655,33 @@ module STORETEST-BIN-RUNTIME
     
     syntax Bytes ::= StoreTestContract "." StoreTestMethod [function(), symbol(), klabel(method_StoreTest)]
     
-    syntax StoreTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_StoreTest_IS_SCRIPT)]
+    syntax StoreTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_StoreTest_IS_SCRIPT_)]
     
-    syntax StoreTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_StoreTest_IS_TEST)]
+    syntax StoreTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_StoreTest_IS_TEST_)]
     
-    syntax StoreTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_StoreTest_failed)]
+    syntax StoreTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_StoreTest_failed_)]
     
-    syntax StoreTestMethod ::= "testAccesses" "(" ")" [symbol(), klabel(method_StoreTest_testAccesses)]
+    syntax StoreTestMethod ::= "testAccesses" "(" ")" [symbol(), klabel(method_StoreTest_testAccesses_)]
     
-    syntax StoreTestMethod ::= "testGasLoadColdVM" "(" ")" [symbol(), klabel(method_StoreTest_testGasLoadColdVM)]
+    syntax StoreTestMethod ::= "testGasLoadColdVM" "(" ")" [symbol(), klabel(method_StoreTest_testGasLoadColdVM_)]
     
-    syntax StoreTestMethod ::= "testGasLoadWarmUp" "(" ")" [symbol(), klabel(method_StoreTest_testGasLoadWarmUp)]
+    syntax StoreTestMethod ::= "testGasLoadWarmUp" "(" ")" [symbol(), klabel(method_StoreTest_testGasLoadWarmUp_)]
     
-    syntax StoreTestMethod ::= "testGasLoadWarmVM" "(" ")" [symbol(), klabel(method_StoreTest_testGasLoadWarmVM)]
+    syntax StoreTestMethod ::= "testGasLoadWarmVM" "(" ")" [symbol(), klabel(method_StoreTest_testGasLoadWarmVM_)]
     
-    syntax StoreTestMethod ::= "testGasStoreColdVM" "(" ")" [symbol(), klabel(method_StoreTest_testGasStoreColdVM)]
+    syntax StoreTestMethod ::= "testGasStoreColdVM" "(" ")" [symbol(), klabel(method_StoreTest_testGasStoreColdVM_)]
     
-    syntax StoreTestMethod ::= "testGasStoreWarmUp" "(" ")" [symbol(), klabel(method_StoreTest_testGasStoreWarmUp)]
+    syntax StoreTestMethod ::= "testGasStoreWarmUp" "(" ")" [symbol(), klabel(method_StoreTest_testGasStoreWarmUp_)]
     
-    syntax StoreTestMethod ::= "testGasStoreWarmVM" "(" ")" [symbol(), klabel(method_StoreTest_testGasStoreWarmVM)]
+    syntax StoreTestMethod ::= "testGasStoreWarmVM" "(" ")" [symbol(), klabel(method_StoreTest_testGasStoreWarmVM_)]
     
-    syntax StoreTestMethod ::= "testLoadNonExistent" "(" ")" [symbol(), klabel(method_StoreTest_testLoadNonExistent)]
+    syntax StoreTestMethod ::= "testLoadNonExistent" "(" ")" [symbol(), klabel(method_StoreTest_testLoadNonExistent_)]
     
-    syntax StoreTestMethod ::= "testStoreLoad" "(" ")" [symbol(), klabel(method_StoreTest_testStoreLoad)]
+    syntax StoreTestMethod ::= "testStoreLoad" "(" ")" [symbol(), klabel(method_StoreTest_testStoreLoad_)]
     
-    syntax StoreTestMethod ::= "testStoreLoadNonExistent" "(" ")" [symbol(), klabel(method_StoreTest_testStoreLoadNonExistent)]
+    syntax StoreTestMethod ::= "testStoreLoadNonExistent" "(" ")" [symbol(), klabel(method_StoreTest_testStoreLoadNonExistent_)]
     
-    syntax StoreTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_StoreTest_vm)]
+    syntax StoreTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_StoreTest_vm_)]
     
     rule  ( StoreTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -4803,21 +4802,21 @@ module SYMBOLICSTORAGETEST-BIN-RUNTIME
     
     syntax Bytes ::= SymbolicStorageTestContract "." SymbolicStorageTestMethod [function(), symbol(), klabel(method_SymbolicStorageTest)]
     
-    syntax SymbolicStorageTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_IS_SCRIPT)]
+    syntax SymbolicStorageTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_IS_SCRIPT_)]
     
-    syntax SymbolicStorageTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_IS_TEST)]
+    syntax SymbolicStorageTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_IS_TEST_)]
     
-    syntax SymbolicStorageTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_failed)]
+    syntax SymbolicStorageTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_failed_)]
     
-    syntax SymbolicStorageTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_kevm)]
+    syntax SymbolicStorageTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_kevm_)]
     
-    syntax SymbolicStorageTestMethod ::= "testEmptyInitialStorage" "(" Int ")" [symbol(), klabel(method_SymbolicStorageTest_testEmptyInitialStorage)]
+    syntax SymbolicStorageTestMethod ::= "testEmptyInitialStorage" "(" Int ")" [symbol(), klabel(method_SymbolicStorageTest_testEmptyInitialStorage_Int)]
     
-    syntax SymbolicStorageTestMethod ::= "testFail_SymbolicStorage" "(" Int ")" [symbol(), klabel(method_SymbolicStorageTest_testFail_SymbolicStorage)]
+    syntax SymbolicStorageTestMethod ::= "testFail_SymbolicStorage" "(" Int ")" [symbol(), klabel(method_SymbolicStorageTest_testFail_SymbolicStorage_Int)]
     
-    syntax SymbolicStorageTestMethod ::= "testFail_SymbolicStorage1" "(" Int ")" [symbol(), klabel(method_SymbolicStorageTest_testFail_SymbolicStorage1)]
+    syntax SymbolicStorageTestMethod ::= "testFail_SymbolicStorage1" "(" Int ")" [symbol(), klabel(method_SymbolicStorageTest_testFail_SymbolicStorage1_Int)]
     
-    syntax SymbolicStorageTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_vm)]
+    syntax SymbolicStorageTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_vm_)]
     
     rule  ( SymbolicStorageTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -4923,13 +4922,13 @@ module TEST-BIN-RUNTIME
     
     syntax Bytes ::= TestContract "." TestMethod [function(), symbol(), klabel(method_Test)]
     
-    syntax TestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_Test_IS_SCRIPT)]
+    syntax TestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_Test_IS_SCRIPT_)]
     
-    syntax TestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_Test_IS_TEST)]
+    syntax TestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_Test_IS_TEST_)]
     
-    syntax TestMethod ::= "failed" "(" ")" [symbol(), klabel(method_Test_failed)]
+    syntax TestMethod ::= "failed" "(" ")" [symbol(), klabel(method_Test_failed_)]
     
-    syntax TestMethod ::= "vm" "(" ")" [symbol(), klabel(method_Test_vm)]
+    syntax TestMethod ::= "vm" "(" ")" [symbol(), klabel(method_Test_vm_)]
     
     rule  ( Test . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -4968,25 +4967,25 @@ module STDERROR-BIN-RUNTIME
     
     syntax Bytes ::= StdErrorContract "." StdErrorMethod [function(), symbol(), klabel(method_stdError)]
     
-    syntax StdErrorMethod ::= "arithmeticError" "(" ")" [symbol(), klabel(method_stdError_arithmeticError)]
+    syntax StdErrorMethod ::= "arithmeticError" "(" ")" [symbol(), klabel(method_stdError_arithmeticError_)]
     
-    syntax StdErrorMethod ::= "assertionError" "(" ")" [symbol(), klabel(method_stdError_assertionError)]
+    syntax StdErrorMethod ::= "assertionError" "(" ")" [symbol(), klabel(method_stdError_assertionError_)]
     
-    syntax StdErrorMethod ::= "divisionError" "(" ")" [symbol(), klabel(method_stdError_divisionError)]
+    syntax StdErrorMethod ::= "divisionError" "(" ")" [symbol(), klabel(method_stdError_divisionError_)]
     
-    syntax StdErrorMethod ::= "encodeStorageError" "(" ")" [symbol(), klabel(method_stdError_encodeStorageError)]
+    syntax StdErrorMethod ::= "encodeStorageError" "(" ")" [symbol(), klabel(method_stdError_encodeStorageError_)]
     
-    syntax StdErrorMethod ::= "enumConversionError" "(" ")" [symbol(), klabel(method_stdError_enumConversionError)]
+    syntax StdErrorMethod ::= "enumConversionError" "(" ")" [symbol(), klabel(method_stdError_enumConversionError_)]
     
-    syntax StdErrorMethod ::= "indexOOBError" "(" ")" [symbol(), klabel(method_stdError_indexOOBError)]
+    syntax StdErrorMethod ::= "indexOOBError" "(" ")" [symbol(), klabel(method_stdError_indexOOBError_)]
     
-    syntax StdErrorMethod ::= "lowLevelError" "(" ")" [symbol(), klabel(method_stdError_lowLevelError)]
+    syntax StdErrorMethod ::= "lowLevelError" "(" ")" [symbol(), klabel(method_stdError_lowLevelError_)]
     
-    syntax StdErrorMethod ::= "memOverflowError" "(" ")" [symbol(), klabel(method_stdError_memOverflowError)]
+    syntax StdErrorMethod ::= "memOverflowError" "(" ")" [symbol(), klabel(method_stdError_memOverflowError_)]
     
-    syntax StdErrorMethod ::= "popError" "(" ")" [symbol(), klabel(method_stdError_popError)]
+    syntax StdErrorMethod ::= "popError" "(" ")" [symbol(), klabel(method_stdError_popError_)]
     
-    syntax StdErrorMethod ::= "zeroVarError" "(" ")" [symbol(), klabel(method_stdError_zeroVarError)]
+    syntax StdErrorMethod ::= "zeroVarError" "(" ")" [symbol(), klabel(method_stdError_zeroVarError_)]
     
     rule  ( stdError . arithmeticError ( ) => #abiCallData ( "arithmeticError" , .TypedArgs ) )
       
@@ -5072,7 +5071,7 @@ module STDSTORAGE-BIN-RUNTIME
     
     syntax Bytes ::= StdStorageContract "." StdStorageMethod [function(), symbol(), klabel(method_stdStorage)]
     
-    syntax StdStorageMethod ::= "bytesToBytes32" "(" Bytes "," Int ")" [symbol(), klabel(method_stdStorage_bytesToBytes32)]
+    syntax StdStorageMethod ::= "bytesToBytes32" "(" Bytes "," Int ")" [symbol(), klabel(method_stdStorage_bytesToBytes32_Bytes Int)]
     
     rule  ( stdStorage . bytesToBytes32 ( V0_b , V1_offset ) => #abiCallData ( "bytesToBytes32" , #bytes ( V0_b ) , #uint256 ( V1_offset ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 128 , lengthBytes ( V0_b ) )
@@ -5113,13 +5112,13 @@ module TESTNUMBER-BIN-RUNTIME
     
     syntax Bytes ::= TestNumberContract "." TestNumberMethod [function(), symbol(), klabel(method_TestNumber)]
     
-    syntax TestNumberMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_TestNumber_IS_TEST)]
+    syntax TestNumberMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_TestNumber_IS_TEST_)]
     
-    syntax TestNumberMethod ::= "failed" "(" ")" [symbol(), klabel(method_TestNumber_failed)]
+    syntax TestNumberMethod ::= "failed" "(" ")" [symbol(), klabel(method_TestNumber_failed_)]
     
-    syntax TestNumberMethod ::= "t" "(" Int ")" [symbol(), klabel(method_TestNumber_t)]
+    syntax TestNumberMethod ::= "t" "(" Int ")" [symbol(), klabel(method_TestNumber_t_Int)]
     
-    syntax TestNumberMethod ::= "testNumber" "(" ")" [symbol(), klabel(method_TestNumber_testNumber)]
+    syntax TestNumberMethod ::= "testNumber" "(" ")" [symbol(), klabel(method_TestNumber_testNumber_)]
     
     rule  ( TestNumber . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
@@ -5181,25 +5180,25 @@ module TOSTRINGTEST-BIN-RUNTIME
     
     syntax Bytes ::= ToStringTestContract "." ToStringTestMethod [function(), symbol(), klabel(method_ToStringTest)]
     
-    syntax ToStringTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ToStringTest_IS_SCRIPT)]
+    syntax ToStringTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ToStringTest_IS_SCRIPT_)]
     
-    syntax ToStringTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ToStringTest_IS_TEST)]
+    syntax ToStringTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ToStringTest_IS_TEST_)]
     
-    syntax ToStringTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ToStringTest_failed)]
+    syntax ToStringTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ToStringTest_failed_)]
     
-    syntax ToStringTestMethod ::= "testAddressToString" "(" ")" [symbol(), klabel(method_ToStringTest_testAddressToString)]
+    syntax ToStringTestMethod ::= "testAddressToString" "(" ")" [symbol(), klabel(method_ToStringTest_testAddressToString_)]
     
-    syntax ToStringTestMethod ::= "testBoolToString" "(" ")" [symbol(), klabel(method_ToStringTest_testBoolToString)]
+    syntax ToStringTestMethod ::= "testBoolToString" "(" ")" [symbol(), klabel(method_ToStringTest_testBoolToString_)]
     
-    syntax ToStringTestMethod ::= "testBytes32ToString" "(" ")" [symbol(), klabel(method_ToStringTest_testBytes32ToString)]
+    syntax ToStringTestMethod ::= "testBytes32ToString" "(" ")" [symbol(), klabel(method_ToStringTest_testBytes32ToString_)]
     
-    syntax ToStringTestMethod ::= "testBytesToString" "(" ")" [symbol(), klabel(method_ToStringTest_testBytesToString)]
+    syntax ToStringTestMethod ::= "testBytesToString" "(" ")" [symbol(), klabel(method_ToStringTest_testBytesToString_)]
     
-    syntax ToStringTestMethod ::= "testIntToString" "(" ")" [symbol(), klabel(method_ToStringTest_testIntToString)]
+    syntax ToStringTestMethod ::= "testIntToString" "(" ")" [symbol(), klabel(method_ToStringTest_testIntToString_)]
     
-    syntax ToStringTestMethod ::= "testUint256ToString" "(" ")" [symbol(), klabel(method_ToStringTest_testUint256ToString)]
+    syntax ToStringTestMethod ::= "testUint256ToString" "(" ")" [symbol(), klabel(method_ToStringTest_testUint256ToString_)]
     
-    syntax ToStringTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ToStringTest_vm)]
+    syntax ToStringTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ToStringTest_vm_)]
     
     rule  ( ToStringTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -5316,7 +5315,7 @@ module TOKEN-BIN-RUNTIME
     
     syntax Bytes ::= TokenContract "." TokenMethod [function(), symbol(), klabel(method_Token)]
     
-    syntax TokenMethod ::= "transfer" "(" Int "," Int ")" [symbol(), klabel(method_Token_transfer)]
+    syntax TokenMethod ::= "transfer" "(" Int "," Int ")" [symbol(), klabel(method_Token_transfer_Int Int)]
     
     rule  ( Token . transfer ( V0_dst , V1_amount ) => #abiCallData ( "transfer" , #address ( V0_dst ) , #uint256 ( V1_amount ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_dst )
@@ -5340,19 +5339,19 @@ module BYTESTYPETEST-BIN-RUNTIME
     
     syntax Bytes ::= BytesTypeTestContract "." BytesTypeTestMethod [function(), symbol(), klabel(method_BytesTypeTest)]
     
-    syntax BytesTypeTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_BytesTypeTest_setUp)]
+    syntax BytesTypeTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_BytesTypeTest_setUp_)]
     
-    syntax BytesTypeTestMethod ::= "testFail_bytes32" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_testFail_bytes32)]
+    syntax BytesTypeTestMethod ::= "testFail_bytes32" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_testFail_bytes32_Int)]
     
-    syntax BytesTypeTestMethod ::= "testFail_bytes4" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_testFail_bytes4)]
+    syntax BytesTypeTestMethod ::= "testFail_bytes4" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_testFail_bytes4_Int)]
     
-    syntax BytesTypeTestMethod ::= "test_bytes32" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes32)]
+    syntax BytesTypeTestMethod ::= "test_bytes32" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes32_Int)]
     
-    syntax BytesTypeTestMethod ::= "test_bytes32_fail" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes32_fail)]
+    syntax BytesTypeTestMethod ::= "test_bytes32_fail" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes32_fail_Int)]
     
-    syntax BytesTypeTestMethod ::= "test_bytes4" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes4)]
+    syntax BytesTypeTestMethod ::= "test_bytes4" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes4_Int)]
     
-    syntax BytesTypeTestMethod ::= "test_bytes4_fail" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes4_fail)]
+    syntax BytesTypeTestMethod ::= "test_bytes4_fail" "(" Int ")" [symbol(), klabel(method_BytesTypeTest_test_bytes4_fail_Int)]
     
     rule  ( BytesTypeTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
@@ -5415,199 +5414,199 @@ module UINTTYPETEST-BIN-RUNTIME
     
     syntax Bytes ::= UintTypeTestContract "." UintTypeTestMethod [function(), symbol(), klabel(method_UintTypeTest)]
     
-    syntax UintTypeTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_UintTypeTest_setUp)]
+    syntax UintTypeTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_UintTypeTest_setUp_)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint104" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint104)]
+    syntax UintTypeTestMethod ::= "testFail_uint104" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint104_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint112" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint112)]
+    syntax UintTypeTestMethod ::= "testFail_uint112" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint112_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint120" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint120)]
+    syntax UintTypeTestMethod ::= "testFail_uint120" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint120_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint128" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint128)]
+    syntax UintTypeTestMethod ::= "testFail_uint128" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint128_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint136" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint136)]
+    syntax UintTypeTestMethod ::= "testFail_uint136" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint136_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint144" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint144)]
+    syntax UintTypeTestMethod ::= "testFail_uint144" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint144_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint152" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint152)]
+    syntax UintTypeTestMethod ::= "testFail_uint152" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint152_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint16" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint16)]
+    syntax UintTypeTestMethod ::= "testFail_uint16" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint16_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint160" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint160)]
+    syntax UintTypeTestMethod ::= "testFail_uint160" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint160_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint168" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint168)]
+    syntax UintTypeTestMethod ::= "testFail_uint168" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint168_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint176" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint176)]
+    syntax UintTypeTestMethod ::= "testFail_uint176" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint176_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint184" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint184)]
+    syntax UintTypeTestMethod ::= "testFail_uint184" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint184_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint192" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint192)]
+    syntax UintTypeTestMethod ::= "testFail_uint192" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint192_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint200" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint200)]
+    syntax UintTypeTestMethod ::= "testFail_uint200" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint200_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint208" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint208)]
+    syntax UintTypeTestMethod ::= "testFail_uint208" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint208_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint216" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint216)]
+    syntax UintTypeTestMethod ::= "testFail_uint216" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint216_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint224" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint224)]
+    syntax UintTypeTestMethod ::= "testFail_uint224" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint224_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint232" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint232)]
+    syntax UintTypeTestMethod ::= "testFail_uint232" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint232_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint24" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint24)]
+    syntax UintTypeTestMethod ::= "testFail_uint24" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint24_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint240" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint240)]
+    syntax UintTypeTestMethod ::= "testFail_uint240" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint240_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint248" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint248)]
+    syntax UintTypeTestMethod ::= "testFail_uint248" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint248_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint256" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint256)]
+    syntax UintTypeTestMethod ::= "testFail_uint256" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint256_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint32" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint32)]
+    syntax UintTypeTestMethod ::= "testFail_uint32" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint32_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint40" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint40)]
+    syntax UintTypeTestMethod ::= "testFail_uint40" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint40_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint48" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint48)]
+    syntax UintTypeTestMethod ::= "testFail_uint48" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint48_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint56" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint56)]
+    syntax UintTypeTestMethod ::= "testFail_uint56" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint56_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint64" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint64)]
+    syntax UintTypeTestMethod ::= "testFail_uint64" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint64_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint72" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint72)]
+    syntax UintTypeTestMethod ::= "testFail_uint72" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint72_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint8" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint8)]
+    syntax UintTypeTestMethod ::= "testFail_uint8" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint8_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint80" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint80)]
+    syntax UintTypeTestMethod ::= "testFail_uint80" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint80_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint88" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint88)]
+    syntax UintTypeTestMethod ::= "testFail_uint88" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint88_Int)]
     
-    syntax UintTypeTestMethod ::= "testFail_uint96" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint96)]
+    syntax UintTypeTestMethod ::= "testFail_uint96" "(" Int ")" [symbol(), klabel(method_UintTypeTest_testFail_uint96_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint104" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint104)]
+    syntax UintTypeTestMethod ::= "test_uint104" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint104_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint104_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint104_fail)]
+    syntax UintTypeTestMethod ::= "test_uint104_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint104_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint112" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint112)]
+    syntax UintTypeTestMethod ::= "test_uint112" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint112_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint112_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint112_fail)]
+    syntax UintTypeTestMethod ::= "test_uint112_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint112_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint120" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint120)]
+    syntax UintTypeTestMethod ::= "test_uint120" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint120_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint120_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint120_fail)]
+    syntax UintTypeTestMethod ::= "test_uint120_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint120_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint128" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint128)]
+    syntax UintTypeTestMethod ::= "test_uint128" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint128_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint128_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint128_fail)]
+    syntax UintTypeTestMethod ::= "test_uint128_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint128_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint136" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint136)]
+    syntax UintTypeTestMethod ::= "test_uint136" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint136_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint136_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint136_fail)]
+    syntax UintTypeTestMethod ::= "test_uint136_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint136_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint144" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint144)]
+    syntax UintTypeTestMethod ::= "test_uint144" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint144_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint144_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint144_fail)]
+    syntax UintTypeTestMethod ::= "test_uint144_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint144_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint152" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint152)]
+    syntax UintTypeTestMethod ::= "test_uint152" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint152_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint152_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint152_fail)]
+    syntax UintTypeTestMethod ::= "test_uint152_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint152_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint16" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint16)]
+    syntax UintTypeTestMethod ::= "test_uint16" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint16_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint160" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint160)]
+    syntax UintTypeTestMethod ::= "test_uint160" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint160_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint160_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint160_fail)]
+    syntax UintTypeTestMethod ::= "test_uint160_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint160_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint168" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint168)]
+    syntax UintTypeTestMethod ::= "test_uint168" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint168_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint168_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint168_fail)]
+    syntax UintTypeTestMethod ::= "test_uint168_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint168_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint16_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint16_fail)]
+    syntax UintTypeTestMethod ::= "test_uint16_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint16_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint176" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint176)]
+    syntax UintTypeTestMethod ::= "test_uint176" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint176_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint176_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint176_fail)]
+    syntax UintTypeTestMethod ::= "test_uint176_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint176_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint184" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint184)]
+    syntax UintTypeTestMethod ::= "test_uint184" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint184_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint184_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint184_fail)]
+    syntax UintTypeTestMethod ::= "test_uint184_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint184_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint192" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint192)]
+    syntax UintTypeTestMethod ::= "test_uint192" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint192_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint192_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint192_fail)]
+    syntax UintTypeTestMethod ::= "test_uint192_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint192_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint200" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint200)]
+    syntax UintTypeTestMethod ::= "test_uint200" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint200_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint200_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint200_fail)]
+    syntax UintTypeTestMethod ::= "test_uint200_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint200_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint208" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint208)]
+    syntax UintTypeTestMethod ::= "test_uint208" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint208_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint208_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint208_fail)]
+    syntax UintTypeTestMethod ::= "test_uint208_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint208_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint216" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint216)]
+    syntax UintTypeTestMethod ::= "test_uint216" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint216_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint216_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint216_fail)]
+    syntax UintTypeTestMethod ::= "test_uint216_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint216_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint224" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint224)]
+    syntax UintTypeTestMethod ::= "test_uint224" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint224_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint224_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint224_fail)]
+    syntax UintTypeTestMethod ::= "test_uint224_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint224_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint232" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint232)]
+    syntax UintTypeTestMethod ::= "test_uint232" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint232_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint232_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint232_fail)]
+    syntax UintTypeTestMethod ::= "test_uint232_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint232_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint24" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint24)]
+    syntax UintTypeTestMethod ::= "test_uint24" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint24_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint240" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint240)]
+    syntax UintTypeTestMethod ::= "test_uint240" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint240_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint240_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint240_fail)]
+    syntax UintTypeTestMethod ::= "test_uint240_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint240_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint248" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint248)]
+    syntax UintTypeTestMethod ::= "test_uint248" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint248_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint248_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint248_fail)]
+    syntax UintTypeTestMethod ::= "test_uint248_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint248_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint24_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint24_fail)]
+    syntax UintTypeTestMethod ::= "test_uint24_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint24_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint256" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint256)]
+    syntax UintTypeTestMethod ::= "test_uint256" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint256_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint256_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint256_fail)]
+    syntax UintTypeTestMethod ::= "test_uint256_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint256_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint32" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint32)]
+    syntax UintTypeTestMethod ::= "test_uint32" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint32_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint32_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint32_fail)]
+    syntax UintTypeTestMethod ::= "test_uint32_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint32_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint40" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint40)]
+    syntax UintTypeTestMethod ::= "test_uint40" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint40_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint40_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint40_fail)]
+    syntax UintTypeTestMethod ::= "test_uint40_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint40_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint48" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint48)]
+    syntax UintTypeTestMethod ::= "test_uint48" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint48_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint48_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint48_fail)]
+    syntax UintTypeTestMethod ::= "test_uint48_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint48_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint56" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint56)]
+    syntax UintTypeTestMethod ::= "test_uint56" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint56_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint56_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint56_fail)]
+    syntax UintTypeTestMethod ::= "test_uint56_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint56_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint64" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint64)]
+    syntax UintTypeTestMethod ::= "test_uint64" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint64_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint64_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint64_fail)]
+    syntax UintTypeTestMethod ::= "test_uint64_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint64_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint72" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint72)]
+    syntax UintTypeTestMethod ::= "test_uint72" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint72_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint72_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint72_fail)]
+    syntax UintTypeTestMethod ::= "test_uint72_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint72_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint8" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint8)]
+    syntax UintTypeTestMethod ::= "test_uint8" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint8_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint80" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint80)]
+    syntax UintTypeTestMethod ::= "test_uint80" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint80_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint80_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint80_fail)]
+    syntax UintTypeTestMethod ::= "test_uint80_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint80_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint88" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint88)]
+    syntax UintTypeTestMethod ::= "test_uint88" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint88_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint88_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint88_fail)]
+    syntax UintTypeTestMethod ::= "test_uint88_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint88_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint8_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint8_fail)]
+    syntax UintTypeTestMethod ::= "test_uint8_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint8_fail_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint96" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint96)]
+    syntax UintTypeTestMethod ::= "test_uint96" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint96_Int)]
     
-    syntax UintTypeTestMethod ::= "test_uint96_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint96_fail)]
+    syntax UintTypeTestMethod ::= "test_uint96_fail" "(" Int ")" [symbol(), klabel(method_UintTypeTest_test_uint96_fail_Int)]
     
     rule  ( UintTypeTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
@@ -6300,169 +6299,169 @@ module VM-BIN-RUNTIME
     
     syntax Bytes ::= VmContract "." VmMethod [function(), symbol(), klabel(method_Vm)]
     
-    syntax VmMethod ::= "accesses" "(" Int ")" [symbol(), klabel(method_Vm_accesses)]
+    syntax VmMethod ::= "accesses" "(" Int ")" [symbol(), klabel(method_Vm_accesses_Int)]
     
-    syntax VmMethod ::= "activeFork" "(" ")" [symbol(), klabel(method_Vm_activeFork)]
+    syntax VmMethod ::= "activeFork" "(" ")" [symbol(), klabel(method_Vm_activeFork_)]
     
-    syntax VmMethod ::= "addr" "(" Int ")" [symbol(), klabel(method_Vm_addr)]
+    syntax VmMethod ::= "addr" "(" Int ")" [symbol(), klabel(method_Vm_addr_Int)]
     
-    syntax VmMethod ::= "assume" "(" Int ")" [symbol(), klabel(method_Vm_assume)]
+    syntax VmMethod ::= "assume" "(" Int ")" [symbol(), klabel(method_Vm_assume_Int)]
     
-    syntax VmMethod ::= "broadcast" "(" ")" [symbol(), klabel(method_Vm_broadcast)]
+    syntax VmMethod ::= "broadcast" "(" ")" [symbol(), klabel(method_Vm_broadcast_)]
     
-    syntax VmMethod ::= "broadcast" "(" ")" [symbol(), klabel(method_Vm_broadcast)]
+    syntax VmMethod ::= "broadcast" "(" Int ")" [symbol(), klabel(method_Vm_broadcast_Int)]
     
-    syntax VmMethod ::= "chainId" "(" Int ")" [symbol(), klabel(method_Vm_chainId)]
+    syntax VmMethod ::= "chainId" "(" Int ")" [symbol(), klabel(method_Vm_chainId_Int)]
     
-    syntax VmMethod ::= "clearMockedCalls" "(" ")" [symbol(), klabel(method_Vm_clearMockedCalls)]
+    syntax VmMethod ::= "clearMockedCalls" "(" ")" [symbol(), klabel(method_Vm_clearMockedCalls_)]
     
-    syntax VmMethod ::= "closeFile" "(" String ")" [symbol(), klabel(method_Vm_closeFile)]
+    syntax VmMethod ::= "closeFile" "(" String ")" [symbol(), klabel(method_Vm_closeFile_String)]
     
-    syntax VmMethod ::= "coinbase" "(" Int ")" [symbol(), klabel(method_Vm_coinbase)]
+    syntax VmMethod ::= "coinbase" "(" Int ")" [symbol(), klabel(method_Vm_coinbase_Int)]
     
-    syntax VmMethod ::= "createFork" "(" String ")" [symbol(), klabel(method_Vm_createFork)]
+    syntax VmMethod ::= "createFork" "(" String ")" [symbol(), klabel(method_Vm_createFork_String)]
     
-    syntax VmMethod ::= "createFork" "(" String ")" [symbol(), klabel(method_Vm_createFork)]
+    syntax VmMethod ::= "createFork" "(" String "," Int ")" [symbol(), klabel(method_Vm_createFork_String Int)]
     
-    syntax VmMethod ::= "createSelectFork" "(" String "," Int ")" [symbol(), klabel(method_Vm_createSelectFork)]
+    syntax VmMethod ::= "createSelectFork" "(" String ")" [symbol(), klabel(method_Vm_createSelectFork_String)]
     
-    syntax VmMethod ::= "createSelectFork" "(" String "," Int ")" [symbol(), klabel(method_Vm_createSelectFork)]
+    syntax VmMethod ::= "createSelectFork" "(" String "," Int ")" [symbol(), klabel(method_Vm_createSelectFork_String Int)]
     
-    syntax VmMethod ::= "deal" "(" Int "," Int ")" [symbol(), klabel(method_Vm_deal)]
+    syntax VmMethod ::= "deal" "(" Int "," Int ")" [symbol(), klabel(method_Vm_deal_Int Int)]
     
-    syntax VmMethod ::= "deriveKey" "(" String "," Int ")" [symbol(), klabel(method_Vm_deriveKey)]
+    syntax VmMethod ::= "deriveKey" "(" String "," String "," Int ")" [symbol(), klabel(method_Vm_deriveKey_String String Int)]
     
-    syntax VmMethod ::= "deriveKey" "(" String "," Int ")" [symbol(), klabel(method_Vm_deriveKey)]
+    syntax VmMethod ::= "deriveKey" "(" String "," Int ")" [symbol(), klabel(method_Vm_deriveKey_String Int)]
     
-    syntax VmMethod ::= "envAddress" "(" String ")" [symbol(), klabel(method_Vm_envAddress)]
+    syntax VmMethod ::= "envAddress" "(" String ")" [symbol(), klabel(method_Vm_envAddress_String)]
     
-    syntax VmMethod ::= "envAddress" "(" String ")" [symbol(), klabel(method_Vm_envAddress)]
+    syntax VmMethod ::= "envAddress" "(" String "," String ")" [symbol(), klabel(method_Vm_envAddress_String String)]
     
-    syntax VmMethod ::= "envBool" "(" String ")" [symbol(), klabel(method_Vm_envBool)]
+    syntax VmMethod ::= "envBool" "(" String ")" [symbol(), klabel(method_Vm_envBool_String)]
     
-    syntax VmMethod ::= "envBool" "(" String ")" [symbol(), klabel(method_Vm_envBool)]
+    syntax VmMethod ::= "envBool" "(" String "," String ")" [symbol(), klabel(method_Vm_envBool_String String)]
     
-    syntax VmMethod ::= "envBytes" "(" String ")" [symbol(), klabel(method_Vm_envBytes)]
+    syntax VmMethod ::= "envBytes" "(" String ")" [symbol(), klabel(method_Vm_envBytes_String)]
     
-    syntax VmMethod ::= "envBytes" "(" String ")" [symbol(), klabel(method_Vm_envBytes)]
+    syntax VmMethod ::= "envBytes" "(" String "," String ")" [symbol(), klabel(method_Vm_envBytes_String String)]
     
-    syntax VmMethod ::= "envBytes32" "(" String "," String ")" [symbol(), klabel(method_Vm_envBytes32)]
+    syntax VmMethod ::= "envBytes32" "(" String ")" [symbol(), klabel(method_Vm_envBytes32_String)]
     
-    syntax VmMethod ::= "envBytes32" "(" String "," String ")" [symbol(), klabel(method_Vm_envBytes32)]
+    syntax VmMethod ::= "envBytes32" "(" String "," String ")" [symbol(), klabel(method_Vm_envBytes32_String String)]
     
-    syntax VmMethod ::= "envInt" "(" String "," String ")" [symbol(), klabel(method_Vm_envInt)]
+    syntax VmMethod ::= "envInt" "(" String ")" [symbol(), klabel(method_Vm_envInt_String)]
     
-    syntax VmMethod ::= "envInt" "(" String "," String ")" [symbol(), klabel(method_Vm_envInt)]
+    syntax VmMethod ::= "envInt" "(" String "," String ")" [symbol(), klabel(method_Vm_envInt_String String)]
     
-    syntax VmMethod ::= "envString" "(" String "," String ")" [symbol(), klabel(method_Vm_envString)]
+    syntax VmMethod ::= "envString" "(" String ")" [symbol(), klabel(method_Vm_envString_String)]
     
-    syntax VmMethod ::= "envString" "(" String "," String ")" [symbol(), klabel(method_Vm_envString)]
+    syntax VmMethod ::= "envString" "(" String "," String ")" [symbol(), klabel(method_Vm_envString_String String)]
     
-    syntax VmMethod ::= "envUint" "(" String ")" [symbol(), klabel(method_Vm_envUint)]
+    syntax VmMethod ::= "envUint" "(" String ")" [symbol(), klabel(method_Vm_envUint_String)]
     
-    syntax VmMethod ::= "envUint" "(" String ")" [symbol(), klabel(method_Vm_envUint)]
+    syntax VmMethod ::= "envUint" "(" String "," String ")" [symbol(), klabel(method_Vm_envUint_String String)]
     
-    syntax VmMethod ::= "etch" "(" Int "," Bytes ")" [symbol(), klabel(method_Vm_etch)]
+    syntax VmMethod ::= "etch" "(" Int "," Bytes ")" [symbol(), klabel(method_Vm_etch_Int Bytes)]
     
-    syntax VmMethod ::= "expectCall" "(" Int "," Bytes ")" [symbol(), klabel(method_Vm_expectCall)]
+    syntax VmMethod ::= "expectCall" "(" Int "," Bytes ")" [symbol(), klabel(method_Vm_expectCall_Int Bytes)]
     
-    syntax VmMethod ::= "expectCall" "(" Int "," Bytes ")" [symbol(), klabel(method_Vm_expectCall)]
+    syntax VmMethod ::= "expectCall" "(" Int "," Int "," Bytes ")" [symbol(), klabel(method_Vm_expectCall_Int Int Bytes)]
     
-    syntax VmMethod ::= "expectEmit" "(" Int "," Int "," Int "," Int ")" [symbol(), klabel(method_Vm_expectEmit)]
+    syntax VmMethod ::= "expectEmit" "(" Int "," Int "," Int "," Int ")" [symbol(), klabel(method_Vm_expectEmit_Int Int Int Int)]
     
-    syntax VmMethod ::= "expectEmit" "(" Int "," Int "," Int "," Int ")" [symbol(), klabel(method_Vm_expectEmit)]
+    syntax VmMethod ::= "expectEmit" "(" Int "," Int "," Int "," Int "," Int ")" [symbol(), klabel(method_Vm_expectEmit_Int Int Int Int Int)]
     
-    syntax VmMethod ::= "expectRevert" "(" Int ")" [symbol(), klabel(method_Vm_expectRevert)]
+    syntax VmMethod ::= "expectRevert" "(" ")" [symbol(), klabel(method_Vm_expectRevert_)]
     
-    syntax VmMethod ::= "expectRevert" "(" Int ")" [symbol(), klabel(method_Vm_expectRevert)]
+    syntax VmMethod ::= "expectRevert" "(" Bytes ")" [symbol(), klabel(method_Vm_expectRevert_Bytes)]
     
-    syntax VmMethod ::= "expectRevert" "(" Int ")" [symbol(), klabel(method_Vm_expectRevert)]
+    syntax VmMethod ::= "expectRevert" "(" Int ")" [symbol(), klabel(method_Vm_expectRevert_Int)]
     
-    syntax VmMethod ::= "fee" "(" Int ")" [symbol(), klabel(method_Vm_fee)]
+    syntax VmMethod ::= "fee" "(" Int ")" [symbol(), klabel(method_Vm_fee_Int)]
     
-    syntax VmMethod ::= "ffi" "(" K ")" [symbol(), klabel(method_Vm_ffi)]
+    syntax VmMethod ::= "ffi" "(" K ")" [symbol(), klabel(method_Vm_ffi_K)]
     
-    syntax VmMethod ::= "getCode" "(" String ")" [symbol(), klabel(method_Vm_getCode)]
+    syntax VmMethod ::= "getCode" "(" String ")" [symbol(), klabel(method_Vm_getCode_String)]
     
-    syntax VmMethod ::= "getNonce" "(" Int ")" [symbol(), klabel(method_Vm_getNonce)]
+    syntax VmMethod ::= "getNonce" "(" Int ")" [symbol(), klabel(method_Vm_getNonce_Int)]
     
-    syntax VmMethod ::= "getRecordedLogs" "(" ")" [symbol(), klabel(method_Vm_getRecordedLogs)]
+    syntax VmMethod ::= "getRecordedLogs" "(" ")" [symbol(), klabel(method_Vm_getRecordedLogs_)]
     
-    syntax VmMethod ::= "label" "(" Int "," String ")" [symbol(), klabel(method_Vm_label)]
+    syntax VmMethod ::= "label" "(" Int "," String ")" [symbol(), klabel(method_Vm_label_Int String)]
     
-    syntax VmMethod ::= "load" "(" Int "," Int ")" [symbol(), klabel(method_Vm_load)]
+    syntax VmMethod ::= "load" "(" Int "," Int ")" [symbol(), klabel(method_Vm_load_Int Int)]
     
-    syntax VmMethod ::= "mockCall" "(" Int "," Int "," Bytes "," Bytes ")" [symbol(), klabel(method_Vm_mockCall)]
+    syntax VmMethod ::= "mockCall" "(" Int "," Bytes "," Bytes ")" [symbol(), klabel(method_Vm_mockCall_Int Bytes Bytes)]
     
-    syntax VmMethod ::= "mockCall" "(" Int "," Int "," Bytes "," Bytes ")" [symbol(), klabel(method_Vm_mockCall)]
+    syntax VmMethod ::= "mockCall" "(" Int "," Int "," Bytes "," Bytes ")" [symbol(), klabel(method_Vm_mockCall_Int Int Bytes Bytes)]
     
-    syntax VmMethod ::= "prank" "(" Int "," Int ")" [symbol(), klabel(method_Vm_prank)]
+    syntax VmMethod ::= "prank" "(" Int ")" [symbol(), klabel(method_Vm_prank_Int)]
     
-    syntax VmMethod ::= "prank" "(" Int "," Int ")" [symbol(), klabel(method_Vm_prank)]
+    syntax VmMethod ::= "prank" "(" Int "," Int ")" [symbol(), klabel(method_Vm_prank_Int Int)]
     
-    syntax VmMethod ::= "readFile" "(" String ")" [symbol(), klabel(method_Vm_readFile)]
+    syntax VmMethod ::= "readFile" "(" String ")" [symbol(), klabel(method_Vm_readFile_String)]
     
-    syntax VmMethod ::= "readLine" "(" String ")" [symbol(), klabel(method_Vm_readLine)]
+    syntax VmMethod ::= "readLine" "(" String ")" [symbol(), klabel(method_Vm_readLine_String)]
     
-    syntax VmMethod ::= "record" "(" ")" [symbol(), klabel(method_Vm_record)]
+    syntax VmMethod ::= "record" "(" ")" [symbol(), klabel(method_Vm_record_)]
     
-    syntax VmMethod ::= "recordLogs" "(" ")" [symbol(), klabel(method_Vm_recordLogs)]
+    syntax VmMethod ::= "recordLogs" "(" ")" [symbol(), klabel(method_Vm_recordLogs_)]
     
-    syntax VmMethod ::= "removeFile" "(" String ")" [symbol(), klabel(method_Vm_removeFile)]
+    syntax VmMethod ::= "removeFile" "(" String ")" [symbol(), klabel(method_Vm_removeFile_String)]
     
-    syntax VmMethod ::= "revertTo" "(" Int ")" [symbol(), klabel(method_Vm_revertTo)]
+    syntax VmMethod ::= "revertTo" "(" Int ")" [symbol(), klabel(method_Vm_revertTo_Int)]
     
-    syntax VmMethod ::= "roll" "(" Int ")" [symbol(), klabel(method_Vm_roll)]
+    syntax VmMethod ::= "roll" "(" Int ")" [symbol(), klabel(method_Vm_roll_Int)]
     
-    syntax VmMethod ::= "rollFork" "(" Int "," Int ")" [symbol(), klabel(method_Vm_rollFork)]
+    syntax VmMethod ::= "rollFork" "(" Int ")" [symbol(), klabel(method_Vm_rollFork_Int)]
     
-    syntax VmMethod ::= "rollFork" "(" Int "," Int ")" [symbol(), klabel(method_Vm_rollFork)]
+    syntax VmMethod ::= "rollFork" "(" Int "," Int ")" [symbol(), klabel(method_Vm_rollFork_Int Int)]
     
-    syntax VmMethod ::= "rpcUrl" "(" String ")" [symbol(), klabel(method_Vm_rpcUrl)]
+    syntax VmMethod ::= "rpcUrl" "(" String ")" [symbol(), klabel(method_Vm_rpcUrl_String)]
     
-    syntax VmMethod ::= "rpcUrls" "(" ")" [symbol(), klabel(method_Vm_rpcUrls)]
+    syntax VmMethod ::= "rpcUrls" "(" ")" [symbol(), klabel(method_Vm_rpcUrls_)]
     
-    syntax VmMethod ::= "selectFork" "(" Int ")" [symbol(), klabel(method_Vm_selectFork)]
+    syntax VmMethod ::= "selectFork" "(" Int ")" [symbol(), klabel(method_Vm_selectFork_Int)]
     
-    syntax VmMethod ::= "setEnv" "(" String "," String ")" [symbol(), klabel(method_Vm_setEnv)]
+    syntax VmMethod ::= "setEnv" "(" String "," String ")" [symbol(), klabel(method_Vm_setEnv_String String)]
     
-    syntax VmMethod ::= "setNonce" "(" Int "," Int ")" [symbol(), klabel(method_Vm_setNonce)]
+    syntax VmMethod ::= "setNonce" "(" Int "," Int ")" [symbol(), klabel(method_Vm_setNonce_Int Int)]
     
-    syntax VmMethod ::= "sign" "(" Int "," Int ")" [symbol(), klabel(method_Vm_sign)]
+    syntax VmMethod ::= "sign" "(" Int "," Int ")" [symbol(), klabel(method_Vm_sign_Int Int)]
     
-    syntax VmMethod ::= "snapshot" "(" ")" [symbol(), klabel(method_Vm_snapshot)]
+    syntax VmMethod ::= "snapshot" "(" ")" [symbol(), klabel(method_Vm_snapshot_)]
     
-    syntax VmMethod ::= "startBroadcast" "(" ")" [symbol(), klabel(method_Vm_startBroadcast)]
+    syntax VmMethod ::= "startBroadcast" "(" ")" [symbol(), klabel(method_Vm_startBroadcast_)]
     
-    syntax VmMethod ::= "startBroadcast" "(" ")" [symbol(), klabel(method_Vm_startBroadcast)]
+    syntax VmMethod ::= "startBroadcast" "(" Int ")" [symbol(), klabel(method_Vm_startBroadcast_Int)]
     
-    syntax VmMethod ::= "startPrank" "(" Int ")" [symbol(), klabel(method_Vm_startPrank)]
+    syntax VmMethod ::= "startPrank" "(" Int ")" [symbol(), klabel(method_Vm_startPrank_Int)]
     
-    syntax VmMethod ::= "startPrank" "(" Int ")" [symbol(), klabel(method_Vm_startPrank)]
+    syntax VmMethod ::= "startPrank" "(" Int "," Int ")" [symbol(), klabel(method_Vm_startPrank_Int Int)]
     
-    syntax VmMethod ::= "stopBroadcast" "(" ")" [symbol(), klabel(method_Vm_stopBroadcast)]
+    syntax VmMethod ::= "stopBroadcast" "(" ")" [symbol(), klabel(method_Vm_stopBroadcast_)]
     
-    syntax VmMethod ::= "stopPrank" "(" ")" [symbol(), klabel(method_Vm_stopPrank)]
+    syntax VmMethod ::= "stopPrank" "(" ")" [symbol(), klabel(method_Vm_stopPrank_)]
     
-    syntax VmMethod ::= "store" "(" Int "," Int "," Int ")" [symbol(), klabel(method_Vm_store)]
+    syntax VmMethod ::= "store" "(" Int "," Int "," Int ")" [symbol(), klabel(method_Vm_store_Int Int Int)]
     
-    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString)]
+    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString_Int)]
     
-    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString)]
+    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString_Int)]
     
-    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString)]
+    syntax VmMethod ::= "toString" "(" Bytes ")" [symbol(), klabel(method_Vm_toString_Bytes)]
     
-    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString)]
+    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString_Int)]
     
-    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString)]
+    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString_Int)]
     
-    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString)]
+    syntax VmMethod ::= "toString" "(" Int ")" [symbol(), klabel(method_Vm_toString_Int)]
     
-    syntax VmMethod ::= "warp" "(" Int ")" [symbol(), klabel(method_Vm_warp)]
+    syntax VmMethod ::= "warp" "(" Int ")" [symbol(), klabel(method_Vm_warp_Int)]
     
-    syntax VmMethod ::= "writeFile" "(" String "," String ")" [symbol(), klabel(method_Vm_writeFile)]
+    syntax VmMethod ::= "writeFile" "(" String "," String ")" [symbol(), klabel(method_Vm_writeFile_String String)]
     
-    syntax VmMethod ::= "writeLine" "(" String "," String ")" [symbol(), klabel(method_Vm_writeLine)]
+    syntax VmMethod ::= "writeLine" "(" String "," String ")" [symbol(), klabel(method_Vm_writeLine_String String)]
     
     rule  ( Vm . accesses ( V0_ ) => #abiCallData ( "accesses" , #address ( V0_ ) , .TypedArgs ) )
        ensures #rangeAddress ( V0_ )
@@ -6482,7 +6481,8 @@ module VM-BIN-RUNTIME
     rule  ( Vm . broadcast ( ) => #abiCallData ( "broadcast" , .TypedArgs ) )
       
     
-    rule  ( Vm . broadcast ( ) => #abiCallData ( "broadcast" , .TypedArgs ) )
+    rule  ( Vm . broadcast ( V0_ ) => #abiCallData ( "broadcast" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
       
     
     rule  ( Vm . chainId ( V0_ ) => #abiCallData ( "chainId" , #uint256 ( V0_ ) , .TypedArgs ) )
@@ -6502,11 +6502,11 @@ module VM-BIN-RUNTIME
     rule  ( Vm . createFork ( V0_ ) => #abiCallData ( "createFork" , #string ( V0_ ) , .TypedArgs ) )
       
     
-    rule  ( Vm . createFork ( V0_ ) => #abiCallData ( "createFork" , #string ( V0_ ) , .TypedArgs ) )
+    rule  ( Vm . createFork ( V0_ , V1_ ) => #abiCallData ( "createFork" , #string ( V0_ ) , #uint256 ( V1_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V1_ )
       
     
-    rule  ( Vm . createSelectFork ( V0_ , V1_ ) => #abiCallData ( "createSelectFork" , #string ( V0_ ) , #uint256 ( V1_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V1_ )
+    rule  ( Vm . createSelectFork ( V0_ ) => #abiCallData ( "createSelectFork" , #string ( V0_ ) , .TypedArgs ) )
       
     
     rule  ( Vm . createSelectFork ( V0_ , V1_ ) => #abiCallData ( "createSelectFork" , #string ( V0_ ) , #uint256 ( V1_ ) , .TypedArgs ) )
@@ -6519,8 +6519,8 @@ module VM-BIN-RUNTIME
                ))
       
     
-    rule  ( Vm . deriveKey ( V0_ , V1_ ) => #abiCallData ( "deriveKey" , #string ( V0_ ) , #uint32 ( V1_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 32 , V1_ )
+    rule  ( Vm . deriveKey ( V0_ , V1_ , V2_ ) => #abiCallData ( "deriveKey" , #string ( V0_ ) , #string ( V1_ ) , #uint32 ( V2_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 32 , V2_ )
       
     
     rule  ( Vm . deriveKey ( V0_ , V1_ ) => #abiCallData ( "deriveKey" , #string ( V0_ ) , #uint32 ( V1_ ) , .TypedArgs ) )
@@ -6530,34 +6530,34 @@ module VM-BIN-RUNTIME
     rule  ( Vm . envAddress ( V0_ ) => #abiCallData ( "envAddress" , #string ( V0_ ) , .TypedArgs ) )
       
     
-    rule  ( Vm . envAddress ( V0_ ) => #abiCallData ( "envAddress" , #string ( V0_ ) , .TypedArgs ) )
+    rule  ( Vm . envAddress ( V0_ , V1_ ) => #abiCallData ( "envAddress" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
       
     
     rule  ( Vm . envBool ( V0_ ) => #abiCallData ( "envBool" , #string ( V0_ ) , .TypedArgs ) )
       
     
-    rule  ( Vm . envBool ( V0_ ) => #abiCallData ( "envBool" , #string ( V0_ ) , .TypedArgs ) )
+    rule  ( Vm . envBool ( V0_ , V1_ ) => #abiCallData ( "envBool" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
       
     
     rule  ( Vm . envBytes ( V0_ ) => #abiCallData ( "envBytes" , #string ( V0_ ) , .TypedArgs ) )
       
     
-    rule  ( Vm . envBytes ( V0_ ) => #abiCallData ( "envBytes" , #string ( V0_ ) , .TypedArgs ) )
+    rule  ( Vm . envBytes ( V0_ , V1_ ) => #abiCallData ( "envBytes" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envBytes32 ( V0_ ) => #abiCallData ( "envBytes32" , #string ( V0_ ) , .TypedArgs ) )
       
     
     rule  ( Vm . envBytes32 ( V0_ , V1_ ) => #abiCallData ( "envBytes32" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
       
     
-    rule  ( Vm . envBytes32 ( V0_ , V1_ ) => #abiCallData ( "envBytes32" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
+    rule  ( Vm . envInt ( V0_ ) => #abiCallData ( "envInt" , #string ( V0_ ) , .TypedArgs ) )
       
     
     rule  ( Vm . envInt ( V0_ , V1_ ) => #abiCallData ( "envInt" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
       
     
-    rule  ( Vm . envInt ( V0_ , V1_ ) => #abiCallData ( "envInt" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
-      
-    
-    rule  ( Vm . envString ( V0_ , V1_ ) => #abiCallData ( "envString" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
+    rule  ( Vm . envString ( V0_ ) => #abiCallData ( "envString" , #string ( V0_ ) , .TypedArgs ) )
       
     
     rule  ( Vm . envString ( V0_ , V1_ ) => #abiCallData ( "envString" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
@@ -6566,7 +6566,7 @@ module VM-BIN-RUNTIME
     rule  ( Vm . envUint ( V0_ ) => #abiCallData ( "envUint" , #string ( V0_ ) , .TypedArgs ) )
       
     
-    rule  ( Vm . envUint ( V0_ ) => #abiCallData ( "envUint" , #string ( V0_ ) , .TypedArgs ) )
+    rule  ( Vm . envUint ( V0_ , V1_ ) => #abiCallData ( "envUint" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
       
     
     rule  ( Vm . etch ( V0_ , V1_ ) => #abiCallData ( "etch" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
@@ -6581,10 +6581,11 @@ module VM-BIN-RUNTIME
                ))
       
     
-    rule  ( Vm . expectCall ( V0_ , V1_ ) => #abiCallData ( "expectCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
+    rule  ( Vm . expectCall ( V0_ , V1_ , V2_ ) => #abiCallData ( "expectCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 128 , lengthBytes ( V1_ ) )
-               ))
+       andBool ( #rangeUInt ( 256 , V1_ )
+       andBool ( #rangeUInt ( 128 , lengthBytes ( V2_ ) )
+               )))
       
     
     rule  ( Vm . expectEmit ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "expectEmit" , #bool ( V0_ ) , #bool ( V1_ ) , #bool ( V2_ ) , #bool ( V3_ ) , .TypedArgs ) )
@@ -6595,20 +6596,20 @@ module VM-BIN-RUNTIME
                ))))
       
     
-    rule  ( Vm . expectEmit ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "expectEmit" , #bool ( V0_ ) , #bool ( V1_ ) , #bool ( V2_ ) , #bool ( V3_ ) , .TypedArgs ) )
+    rule  ( Vm . expectEmit ( V0_ , V1_ , V2_ , V3_ , V4_ ) => #abiCallData ( "expectEmit" , #bool ( V0_ ) , #bool ( V1_ ) , #bool ( V2_ ) , #bool ( V3_ ) , #address ( V4_ ) , .TypedArgs ) )
        ensures ( #rangeBool ( V0_ )
        andBool ( #rangeBool ( V1_ )
        andBool ( #rangeBool ( V2_ )
        andBool ( #rangeBool ( V3_ )
-               ))))
+       andBool ( #rangeAddress ( V4_ )
+               )))))
       
     
-    rule  ( Vm . expectRevert ( V0_ ) => #abiCallData ( "expectRevert" , #bytes4 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeBytes ( 4 , V0_ )
+    rule  ( Vm . expectRevert ( ) => #abiCallData ( "expectRevert" , .TypedArgs ) )
       
     
-    rule  ( Vm . expectRevert ( V0_ ) => #abiCallData ( "expectRevert" , #bytes4 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeBytes ( 4 , V0_ )
+    rule  ( Vm . expectRevert ( V0_ ) => #abiCallData ( "expectRevert" , #bytes ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 128 , lengthBytes ( V0_ ) )
       
     
     rule  ( Vm . expectRevert ( V0_ ) => #abiCallData ( "expectRevert" , #bytes4 ( V0_ ) , .TypedArgs ) )
@@ -6639,12 +6640,11 @@ module VM-BIN-RUNTIME
                ))
       
     
-    rule  ( Vm . mockCall ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , #bytes ( V3_ ) , .TypedArgs ) )
+    rule  ( Vm . mockCall ( V0_ , V1_ , V2_ ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #bytes ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
+       andBool ( #rangeUInt ( 128 , lengthBytes ( V1_ ) )
        andBool ( #rangeUInt ( 128 , lengthBytes ( V2_ ) )
-       andBool ( #rangeUInt ( 128 , lengthBytes ( V3_ ) )
-               ))))
+               )))
       
     
     rule  ( Vm . mockCall ( V0_ , V1_ , V2_ , V3_ ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , #bytes ( V3_ ) , .TypedArgs ) )
@@ -6655,10 +6655,8 @@ module VM-BIN-RUNTIME
                ))))
       
     
-    rule  ( Vm . prank ( V0_ , V1_ ) => #abiCallData ( "prank" , #address ( V0_ ) , #address ( V1_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeAddress ( V1_ )
-               ))
+    rule  ( Vm . prank ( V0_ ) => #abiCallData ( "prank" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
       
     
     rule  ( Vm . prank ( V0_ , V1_ ) => #abiCallData ( "prank" , #address ( V0_ ) , #address ( V1_ ) , .TypedArgs ) )
@@ -6690,10 +6688,8 @@ module VM-BIN-RUNTIME
        ensures #rangeUInt ( 256 , V0_ )
       
     
-    rule  ( Vm . rollFork ( V0_forkId , V1_blockNumber ) => #abiCallData ( "rollFork" , #uint256 ( V0_forkId ) , #uint256 ( V1_blockNumber ) , .TypedArgs ) )
-       ensures ( #rangeUInt ( 256 , V0_forkId )
-       andBool ( #rangeUInt ( 256 , V1_blockNumber )
-               ))
+    rule  ( Vm . rollFork ( V0_ ) => #abiCallData ( "rollFork" , #uint256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
       
     
     rule  ( Vm . rollFork ( V0_forkId , V1_blockNumber ) => #abiCallData ( "rollFork" , #uint256 ( V0_forkId ) , #uint256 ( V1_blockNumber ) , .TypedArgs ) )
@@ -6733,15 +6729,18 @@ module VM-BIN-RUNTIME
     rule  ( Vm . startBroadcast ( ) => #abiCallData ( "startBroadcast" , .TypedArgs ) )
       
     
-    rule  ( Vm . startBroadcast ( ) => #abiCallData ( "startBroadcast" , .TypedArgs ) )
-      
-    
-    rule  ( Vm . startPrank ( V0_ ) => #abiCallData ( "startPrank" , #address ( V0_ ) , .TypedArgs ) )
+    rule  ( Vm . startBroadcast ( V0_ ) => #abiCallData ( "startBroadcast" , #address ( V0_ ) , .TypedArgs ) )
        ensures #rangeAddress ( V0_ )
       
     
     rule  ( Vm . startPrank ( V0_ ) => #abiCallData ( "startPrank" , #address ( V0_ ) , .TypedArgs ) )
        ensures #rangeAddress ( V0_ )
+      
+    
+    rule  ( Vm . startPrank ( V0_ , V1_ ) => #abiCallData ( "startPrank" , #address ( V0_ ) , #address ( V1_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeAddress ( V1_ )
+               ))
       
     
     rule  ( Vm . stopBroadcast ( ) => #abiCallData ( "stopBroadcast" , .TypedArgs ) )
@@ -6761,24 +6760,24 @@ module VM-BIN-RUNTIME
        ensures #rangeAddress ( V0_ )
       
     
-    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #bool ( V0_ ) , .TypedArgs ) )
+       ensures #rangeBool ( V0_ )
       
     
-    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #bytes ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 128 , lengthBytes ( V0_ ) )
       
     
-    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #bytes32 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
       
     
-    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #int256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeSInt ( 256 , V0_ )
       
     
-    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+    rule  ( Vm . toString ( V0_ ) => #abiCallData ( "toString" , #uint256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
       
     
     rule  ( Vm . warp ( V0_ ) => #abiCallData ( "warp" , #uint256 ( V0_ ) , .TypedArgs ) )
@@ -6806,7 +6805,7 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "broadcast()" ) => 2949218368 )
       
     
-    rule  ( selector ( "broadcast()" ) => 3868601563 )
+    rule  ( selector ( "broadcast(address)" ) => 3868601563 )
       
     
     rule  ( selector ( "chainId(uint256)" ) => 1078582738 )
@@ -6824,10 +6823,10 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "createFork(string)" ) => 834286744 )
       
     
-    rule  ( selector ( "createFork(string)" ) => 1805892139 )
+    rule  ( selector ( "createFork(string,uint256)" ) => 1805892139 )
       
     
-    rule  ( selector ( "createSelectFork(string,uint256)" ) => 2556952628 )
+    rule  ( selector ( "createSelectFork(string)" ) => 2556952628 )
       
     
     rule  ( selector ( "createSelectFork(string,uint256)" ) => 1911440973 )
@@ -6836,7 +6835,7 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "deal(address,uint256)" ) => 3364511341 )
       
     
-    rule  ( selector ( "deriveKey(string,uint32)" ) => 1808477211 )
+    rule  ( selector ( "deriveKey(string,string,uint32)" ) => 1808477211 )
       
     
     rule  ( selector ( "deriveKey(string,uint32)" ) => 1646872971 )
@@ -6845,34 +6844,34 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "envAddress(string)" ) => 890066623 )
       
     
-    rule  ( selector ( "envAddress(string)" ) => 2905717242 )
+    rule  ( selector ( "envAddress(string,string)" ) => 2905717242 )
       
     
     rule  ( selector ( "envBool(string)" ) => 2127686781 )
       
     
-    rule  ( selector ( "envBool(string)" ) => 2863521455 )
+    rule  ( selector ( "envBool(string,string)" ) => 2863521455 )
       
     
     rule  ( selector ( "envBytes(string)" ) => 1299951366 )
       
     
-    rule  ( selector ( "envBytes(string)" ) => 3720504603 )
+    rule  ( selector ( "envBytes(string,string)" ) => 3720504603 )
       
     
-    rule  ( selector ( "envBytes32(string,string)" ) => 2543095874 )
+    rule  ( selector ( "envBytes32(string)" ) => 2543095874 )
       
     
     rule  ( selector ( "envBytes32(string,string)" ) => 1525821889 )
       
     
-    rule  ( selector ( "envInt(string,string)" ) => 2301234273 )
+    rule  ( selector ( "envInt(string)" ) => 2301234273 )
       
     
     rule  ( selector ( "envInt(string,string)" ) => 1108873552 )
       
     
-    rule  ( selector ( "envString(string,string)" ) => 4168600345 )
+    rule  ( selector ( "envString(string)" ) => 4168600345 )
       
     
     rule  ( selector ( "envString(string,string)" ) => 347089865 )
@@ -6881,7 +6880,7 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "envUint(string)" ) => 3247934751 )
       
     
-    rule  ( selector ( "envUint(string)" ) => 4091461785 )
+    rule  ( selector ( "envUint(string,string)" ) => 4091461785 )
       
     
     rule  ( selector ( "etch(address,bytes)" ) => 3033974658 )
@@ -6890,19 +6889,19 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "expectCall(address,bytes)" ) => 3177903156 )
       
     
-    rule  ( selector ( "expectCall(address,bytes)" ) => 4077681571 )
+    rule  ( selector ( "expectCall(address,uint256,bytes)" ) => 4077681571 )
       
     
     rule  ( selector ( "expectEmit(bool,bool,bool,bool)" ) => 1226622914 )
       
     
-    rule  ( selector ( "expectEmit(bool,bool,bool,bool)" ) => 2176505587 )
+    rule  ( selector ( "expectEmit(bool,bool,bool,bool,address)" ) => 2176505587 )
       
     
-    rule  ( selector ( "expectRevert(bytes4)" ) => 4102309908 )
+    rule  ( selector ( "expectRevert()" ) => 4102309908 )
       
     
-    rule  ( selector ( "expectRevert(bytes4)" ) => 4069379763 )
+    rule  ( selector ( "expectRevert(bytes)" ) => 4069379763 )
       
     
     rule  ( selector ( "expectRevert(bytes4)" ) => 3273568480 )
@@ -6929,13 +6928,13 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "load(address,bytes32)" ) => 1719639408 )
       
     
-    rule  ( selector ( "mockCall(address,uint256,bytes,bytes)" ) => 3110212580 )
+    rule  ( selector ( "mockCall(address,bytes,bytes)" ) => 3110212580 )
       
     
     rule  ( selector ( "mockCall(address,uint256,bytes,bytes)" ) => 2168494993 )
       
     
-    rule  ( selector ( "prank(address,address)" ) => 3395723175 )
+    rule  ( selector ( "prank(address)" ) => 3395723175 )
       
     
     rule  ( selector ( "prank(address,address)" ) => 1206193358 )
@@ -6962,7 +6961,7 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "roll(uint256)" ) => 528174896 )
       
     
-    rule  ( selector ( "rollFork(uint256,uint256)" ) => 3652973473 )
+    rule  ( selector ( "rollFork(uint256)" ) => 3652973473 )
       
     
     rule  ( selector ( "rollFork(uint256,uint256)" ) => 3612115876 )
@@ -6992,13 +6991,13 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "startBroadcast()" ) => 2142579071 )
       
     
-    rule  ( selector ( "startBroadcast()" ) => 2146183821 )
+    rule  ( selector ( "startBroadcast(address)" ) => 2146183821 )
       
     
     rule  ( selector ( "startPrank(address)" ) => 105151830 )
       
     
-    rule  ( selector ( "startPrank(address)" ) => 1169514616 )
+    rule  ( selector ( "startPrank(address,address)" ) => 1169514616 )
       
     
     rule  ( selector ( "stopBroadcast()" ) => 1995103542 )
@@ -7013,19 +7012,19 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "toString(address)" ) => 1456103998 )
       
     
-    rule  ( selector ( "toString(address)" ) => 1910302682 )
+    rule  ( selector ( "toString(bool)" ) => 1910302682 )
       
     
-    rule  ( selector ( "toString(address)" ) => 1907020045 )
+    rule  ( selector ( "toString(bytes)" ) => 1907020045 )
       
     
-    rule  ( selector ( "toString(address)" ) => 2971277800 )
+    rule  ( selector ( "toString(bytes32)" ) => 2971277800 )
       
     
-    rule  ( selector ( "toString(address)" ) => 2736964622 )
+    rule  ( selector ( "toString(int256)" ) => 2736964622 )
       
     
-    rule  ( selector ( "toString(address)" ) => 1761649582 )
+    rule  ( selector ( "toString(uint256)" ) => 1761649582 )
       
     
     rule  ( selector ( "warp(uint256)" ) => 3856056066 )
@@ -7084,9 +7083,9 @@ module DSTEST-BIN-RUNTIME
     
     syntax Bytes ::= DSTestContract "." DSTestMethod [function(), symbol(), klabel(method_DSTest)]
     
-    syntax DSTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_DSTest_IS_TEST)]
+    syntax DSTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_DSTest_IS_TEST_)]
     
-    syntax DSTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_DSTest_failed)]
+    syntax DSTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_DSTest_failed_)]
     
     rule  ( DSTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
