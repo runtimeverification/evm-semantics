@@ -3070,6 +3070,99 @@ module LOOPSTEST-BIN-RUNTIME
 
 endmodule
 
+module METHODDISAMBIGUATETEST-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= MethodDisambiguateTestContract
+    
+    syntax MethodDisambiguateTestContract ::= "MethodDisambiguateTest" [symbol(), klabel(contract_MethodDisambiguateTest)]
+    
+      
+    
+    syntax Field ::= MethodDisambiguateTestField
+    
+    syntax MethodDisambiguateTestField ::= "IS_TEST" [symbol(), klabel(field_MethodDisambiguateTest_IS_TEST)]
+    
+    syntax MethodDisambiguateTestField ::= "_failed" [symbol(), klabel(field_MethodDisambiguateTest__failed)]
+    
+    syntax MethodDisambiguateTestField ::= "IS_SCRIPT" [symbol(), klabel(field_MethodDisambiguateTest_IS_SCRIPT)]
+    
+    syntax MethodDisambiguateTestField ::= "stdstore" [symbol(), klabel(field_MethodDisambiguateTest_stdstore)]
+    
+    rule  ( #loc ( MethodDisambiguateTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( MethodDisambiguateTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( MethodDisambiguateTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( MethodDisambiguateTest . stdstore ) => 1 )
+      
+    
+    syntax Bytes ::= MethodDisambiguateTestContract "." MethodDisambiguateTestMethod [function(), symbol(), klabel(method_MethodDisambiguateTest)]
+    
+    syntax MethodDisambiguateTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_IS_SCRIPT)]
+    
+    syntax MethodDisambiguateTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_IS_TEST)]
+    
+    syntax MethodDisambiguateTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_failed)]
+    
+    syntax MethodDisambiguateTestMethod ::= "getNumber" "(" Int ")" [symbol(), klabel(method_MethodDisambiguateTest_getNumber)]
+    
+    syntax MethodDisambiguateTestMethod ::= "getNumber" "(" Int ")" [symbol(), klabel(method_MethodDisambiguateTest_getNumber)]
+    
+    syntax MethodDisambiguateTestMethod ::= "test_method_call" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_test_method_call)]
+    
+    syntax MethodDisambiguateTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_vm)]
+    
+    rule  ( MethodDisambiguateTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( MethodDisambiguateTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( MethodDisambiguateTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( MethodDisambiguateTest . getNumber ( V0_x ) => #abiCallData ( "getNumber" , #uint32 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeUInt ( 32 , V0_x )
+      
+    
+    rule  ( MethodDisambiguateTest . getNumber ( V0_x ) => #abiCallData ( "getNumber" , #uint32 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeUInt ( 32 , V0_x )
+      
+    
+    rule  ( MethodDisambiguateTest . test_method_call ( ) => #abiCallData ( "test_method_call" , .TypedArgs ) )
+      
+    
+    rule  ( MethodDisambiguateTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "getNumber(uint32)" ) => 4233508440 )
+      
+    
+    rule  ( selector ( "getNumber(uint32)" ) => 144150998 )
+      
+    
+    rule  ( selector ( "test_method_call()" ) => 1803637680 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
+
+endmodule
+
 module MOCKCALLTEST-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -4328,8 +4421,6 @@ module ASSERTTEST-BIN-RUNTIME
     
     syntax AssertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AssertTest_failed)]
     
-    syntax AssertTestMethod ::= "getOne" "(" ")" [symbol(), klabel(method_AssertTest_getOne)]
-    
     syntax AssertTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_AssertTest_setUp)]
     
     syntax AssertTestMethod ::= "testFail_assert_false" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_false)]
@@ -4344,8 +4435,6 @@ module ASSERTTEST-BIN-RUNTIME
     
     syntax AssertTestMethod ::= "test_assert_true_branch" "(" Int ")" [symbol(), klabel(method_AssertTest_test_assert_true_branch)]
     
-    syntax AssertTestMethod ::= "test_method_call" "(" ")" [symbol(), klabel(method_AssertTest_test_method_call)]
-    
     syntax AssertTestMethod ::= "test_revert_branch" "(" Int "," Int ")" [symbol(), klabel(method_AssertTest_test_revert_branch)]
     
     syntax AssertTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AssertTest_vm)]
@@ -4357,9 +4446,6 @@ module ASSERTTEST-BIN-RUNTIME
       
     
     rule  ( AssertTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( AssertTest . getOne ( ) => #abiCallData ( "getOne" , .TypedArgs ) )
       
     
     rule  ( AssertTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
@@ -4384,9 +4470,6 @@ module ASSERTTEST-BIN-RUNTIME
        ensures #rangeUInt ( 256 , V0_x )
       
     
-    rule  ( AssertTest . test_method_call ( ) => #abiCallData ( "test_method_call" , .TypedArgs ) )
-      
-    
     rule  ( AssertTest . test_revert_branch ( V0_x , V1_y ) => #abiCallData ( "test_revert_branch" , #uint256 ( V0_x ) , #uint256 ( V1_y ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_x )
        andBool ( #rangeUInt ( 256 , V1_y )
@@ -4403,9 +4486,6 @@ module ASSERTTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "failed()" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "getOne()" ) => 2875117904 )
       
     
     rule  ( selector ( "setUp()" ) => 177362148 )
@@ -4427,9 +4507,6 @@ module ASSERTTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_assert_true_branch(uint256)" ) => 3267411143 )
-      
-    
-    rule  ( selector ( "test_method_call()" ) => 1803637680 )
       
     
     rule  ( selector ( "test_revert_branch(uint256,uint256)" ) => 2349784459 )
@@ -7059,6 +7136,7 @@ module FOUNDRY-MAIN
     imports public KEVMCHEATSBASE-BIN-RUNTIME
     imports public LABELTEST-BIN-RUNTIME
     imports public LOOPSTEST-BIN-RUNTIME
+    imports public METHODDISAMBIGUATETEST-BIN-RUNTIME
     imports public MOCKCALLTEST-BIN-RUNTIME
     imports public MYIERC20-BIN-RUNTIME
     imports public MYTOKEN-BIN-RUNTIME
