@@ -1,10 +1,12 @@
 import json
 import logging
+import os
 import shutil
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, Final, Iterable, List, NamedTuple, Optional, Tuple, Union
+from typing import Any, Dict, Final, Iterable, List, NamedTuple, Optional, Tuple, Union
 
+import tomlkit
 from pyk.cli_utils import BugReport, check_file_path, ensure_dir_path
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
@@ -28,21 +30,33 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 class Foundry:
-    _out: Path
+    _root: Path
+    _toml: Dict[str, Any]
     _bug_report: Optional[BugReport]
 
     def __init__(
         self,
-        out: Path,
+        foundry_root: Path,
         bug_report: Optional[BugReport] = None,
     ) -> None:
-        self._out = out
+        self._root = foundry_root
+        with (foundry_root / 'foundry.toml').open('rb') as f:
+            self._toml = tomlkit.load(f)
         self._bug_report = bug_report
+
+    @property
+    def profile(self) -> Dict[str, Any]:
+        profile_name = os.getenv('FOUNDRY_PROFILE', default='default')
+        return self._toml['profile'][profile_name]
+
+    @property
+    def out(self) -> Path:
+        return self._root / self.profile.get('out', '')
 
     @cached_property
     def kevm(self) -> KEVM:
-        definition_dir = self._out / 'kompiled'
-        use_directory = self._out / 'tmp'
+        definition_dir = self.out / 'kompiled'
+        use_directory = self.out / 'tmp'
         main_file = definition_dir / 'foundry.k'
         ensure_dir_path(use_directory)
         return KEVM(
@@ -55,7 +69,7 @@ class Foundry:
     @cached_property
     def contracts(self) -> Dict[str, Contract]:
         pattern = '*.sol/*.json'
-        paths = self._out.glob(pattern)
+        paths = self.out.glob(pattern)
         json_paths = [str(path) for path in paths]
         json_paths = [json_path for json_path in json_paths if not json_path.endswith('.metadata.json')]
         json_paths = sorted(json_paths)  # Must sort to get consistent output order on different platforms
@@ -88,8 +102,7 @@ class Foundry:
             _LOGGER.info(f'Contract id not found in sourcemap data: {f}')
             return None
         src_contract = self.contracts[self.contract_ids[f]]
-        # TODO: Hardcoding that out directory is just one deep in project
-        src_contract_path = self._out.parent / src_contract.contract_path
+        src_contract_path = self._root / src_contract.contract_path
         src_contract_text = src_contract_path.read_text()
         _, start, end = byte_offset_to_lines(src_contract_text.split('\n'), s, l)
         return (src_contract_path, start, end)
@@ -184,7 +197,7 @@ class Foundry:
 
 def foundry_kompile(
     definition_dir: Path,
-    foundry_out: Path,
+    foundry_root: Path,
     includes: Iterable[str],
     md_selector: Optional[str],
     regen: bool = False,
@@ -198,14 +211,13 @@ def foundry_kompile(
 ) -> None:
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
-    foundry_definition_dir = foundry_out / 'kompiled'
-    foundry_llvm_dir = foundry_out / 'kompiled-llvm'
+    foundry = Foundry(foundry_root)
+    foundry_definition_dir = foundry.out / 'kompiled'
+    foundry_llvm_dir = foundry.out / 'kompiled-llvm'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
     ensure_dir_path(foundry_definition_dir)
     ensure_dir_path(foundry_llvm_dir)
-
-    foundry = Foundry(foundry_out)
 
     for r in requires:
         req = Path(r)
@@ -261,7 +273,7 @@ def foundry_kompile(
 
 
 def foundry_prove(
-    foundry_out: Path,
+    foundry_root: Path,
     max_depth: int = 1000,
     max_iterations: Optional[int] = None,
     reinit: bool = False,
@@ -282,11 +294,13 @@ def foundry_prove(
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
         raise ValueError(f'Must have a non-negative number of iterations, found: --max-iterations {max_iterations}')
-    kcfgs_dir = foundry_out / 'kcfgs'
+
+    br = BugReport(foundry_root / 'bug_report') if bug_report else None
+    foundry = Foundry(foundry_root, bug_report=br)
+
+    kcfgs_dir = foundry.out / 'kcfgs'
     if not kcfgs_dir.exists():
         kcfgs_dir.mkdir()
-    br = BugReport(foundry_out / 'bug_report') if bug_report else None
-    foundry = Foundry(foundry_out, bug_report=br)
 
     all_tests = [
         f'{contract.name}.{method.name}'
@@ -381,7 +395,7 @@ def foundry_prove(
 
 
 def foundry_show(
-    foundry_out: Path,
+    foundry_root: Path,
     test: str,
     nodes: Iterable[str] = (),
     node_deltas: Iterable[Tuple[str, str]] = (),
@@ -389,8 +403,8 @@ def foundry_show(
     minimize: bool = True,
 ) -> str:
     contract_name = test.split('.')[0]
-    kcfgs_dir = foundry_out / 'kcfgs'
-    foundry = Foundry(foundry_out)
+    foundry = Foundry(foundry_root)
+    kcfgs_dir = foundry.out / 'kcfgs'
 
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
@@ -412,10 +426,10 @@ def foundry_show(
     return '\n'.join(res_lines)
 
 
-def foundry_to_dot(foundry_out: Path, test: str) -> None:
-    kcfgs_dir = foundry_out / 'kcfgs'
+def foundry_to_dot(foundry_root: Path, test: str) -> None:
+    foundry = Foundry(foundry_root)
+    kcfgs_dir = foundry.out / 'kcfgs'
     dump_dir = kcfgs_dir / 'dump'
-    foundry = Foundry(foundry_out)
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
@@ -467,14 +481,16 @@ class CfgStat(NamedTuple):
         return '\n'.join(lines)
 
 
-def foundry_list(foundry_out: Path) -> List[CfgStat]:
-    kcfgs_dir = foundry_out / 'kcfgs'
+def foundry_list(foundry_root: Path) -> List[CfgStat]:
+    foundry = Foundry(foundry_root)
+    kcfgs_dir = foundry.out / 'kcfgs'
     paths = kcfgs_dir.glob('*.json')
     return [CfgStat.from_file(path) for path in paths]
 
 
-def foundry_remove_node(foundry_out: Path, test: str, node: str) -> None:
-    kcfgs_dir = foundry_out / 'kcfgs'
+def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
+    foundry = Foundry(foundry_root)
+    kcfgs_dir = foundry.out / 'kcfgs'
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
@@ -486,7 +502,7 @@ def foundry_remove_node(foundry_out: Path, test: str, node: str) -> None:
 
 
 def foundry_simplify_node(
-    foundry_out: Path,
+    foundry_root: Path,
     test: str,
     node: str,
     replace: bool = False,
@@ -495,9 +511,9 @@ def foundry_simplify_node(
     smt_timeout: Optional[int] = None,
     smt_retry_limit: Optional[int] = None,
 ) -> str:
-    kcfgs_dir = foundry_out / 'kcfgs'
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(foundry_out, bug_report=br)
+    foundry = Foundry(foundry_root, bug_report=br)
+    kcfgs_dir = foundry.out / 'kcfgs'
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
@@ -514,7 +530,7 @@ def foundry_simplify_node(
 
 
 def foundry_step_node(
-    foundry_out: Path,
+    foundry_root: Path,
     test: str,
     node: str,
     repeat: int = 1,
@@ -527,9 +543,11 @@ def foundry_step_node(
         raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
     if depth < 1:
         raise ValueError(f'Expected positive value for --depth, got: {depth}')
-    kcfgs_dir = foundry_out / 'kcfgs'
+
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(foundry_out, bug_report=br)
+    foundry = Foundry(foundry_root, bug_report=br)
+
+    kcfgs_dir = foundry.out / 'kcfgs'
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
@@ -542,7 +560,7 @@ def foundry_step_node(
 
 
 def foundry_section_edge(
-    foundry_out: Path,
+    foundry_root: Path,
     test: str,
     edge: Tuple[str, str],
     sections: int = 2,
@@ -551,9 +569,9 @@ def foundry_section_edge(
     smt_timeout: Optional[int] = None,
     smt_retry_limit: Optional[int] = None,
 ) -> None:
-    kcfgs_dir = foundry_out / 'kcfgs'
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(foundry_out, bug_report=br)
+    foundry = Foundry(foundry_root, bug_report=br)
+    kcfgs_dir = foundry.out / 'kcfgs'
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
