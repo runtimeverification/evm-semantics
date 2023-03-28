@@ -33,7 +33,6 @@ endmodule
 
 module BUF
     imports BUF-SYNTAX
-    imports BUF-KORE
 
     syntax Int ::= #powByteLen ( Int ) [function, no-evaluators]
  // ------------------------------------------------------------
@@ -48,13 +47,6 @@ module BUF
 
     rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA %Int (2 ^Int (SIZE *Int 8))))
       [concrete]
-
-endmodule
-
-module BUF-KORE [kore, symbolic]
-    imports BUF-SYNTAX
-
-    rule #bufStrict(_, _) => #Bottom              [owise]
 
 endmodule
 ```
