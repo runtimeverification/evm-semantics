@@ -171,7 +171,7 @@ plugin-deps: $(plugin_includes) $(plugin_c_includes)
 PYTHON_BIN   := python3.10
 KEVM_PYK_DIR := ./kevm-pyk
 POETRY       := poetry -C $(KEVM_PYK_DIR)
-POETRY_RUN   := $(POETRY) -- run
+POETRY_RUN   := $(POETRY) run --
 
 poetry-env:
 	$(POETRY) env use $(PYTHON_BIN)
@@ -465,14 +465,14 @@ tests/%.parse: tests/% $(KEVM_LIB)/kore-json.py
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json $(KEVM_BIN)/kevm
-	$(POETRY_RUN) $(KEVM) kast $< $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
+	$(KEVM) kast $< $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
 	$(CHECK) tests/interactive/$*.gst-to-kore.out tests/interactive/$*.gst-to-kore.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/interactive/$*.gst-to-kore.out
 
 # solc-to-k
 # ---------
 
-FOUNDRY_PAR  := 4
+FOUNDRY_PAR := 4
 
 foundry-clean:
 	rm -rf tests/foundry/cache
