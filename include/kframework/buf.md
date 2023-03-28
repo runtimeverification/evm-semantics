@@ -46,8 +46,8 @@ module BUF
       requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
 
     rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA %Int (2 ^Int (SIZE *Int 8))))
-      requires SIZE >Int 0 [concrete]
-    rule #buf(SIZE, _) => .Bytes [owise]
+      requires SIZE >Int 0
+    rule #buf(_SIZE, _) => .Bytes [owise] // SIZE <= 0
 
 endmodule
 ```
