@@ -36,10 +36,13 @@ contract AddrTest is Test, KEVMCheats {
     }
 
     function test_notBuiltinAddress_symbolic(address addr) public {
-       vm.assume(addr != address(1032069922050249630382865877677304880282300743300));
-       vm.assume(addr != address(645326474426547203313410069153905908525362434349));
+        vm.assume(addr != address(728815563385977040452943777879061427756277306518));
+        vm.assume(addr != address(645326474426547203313410069153905908525362434349));
         assertTrue(notBuiltinAddress(addr));
     }
+
+    function test_builtInAddresses() public {
+        assertEq(address(this), address(728815563385977040452943777879061427756277306518));
+        assertEq(address(vm), address(645326474426547203313410069153905908525362434349));
+    }
 }
-
-
