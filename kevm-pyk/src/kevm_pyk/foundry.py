@@ -40,7 +40,7 @@ class Foundry:
         bug_report: Optional[BugReport] = None,
     ) -> None:
         self._root = foundry_root
-        with open(foundry_root / 'foundry.toml', 'rb') as f:
+        with (foundry_root / 'foundry.toml').open('rb') as f:
             self._toml = tomlkit.load(f)
         self._bug_report = bug_report
 
@@ -51,7 +51,7 @@ class Foundry:
 
     @property
     def out(self) -> Path:
-        return self._root / Path(self.profile.get('out', '.'))
+        return self._root / self.profile.get('out', '')
 
     @cached_property
     def kevm(self) -> KEVM:
