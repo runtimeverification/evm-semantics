@@ -49,7 +49,7 @@ class Contract:
 
         @property
         def selector_alias_rule(self) -> KRule:
-           return KRule(KRewrite(KEVM.abi_selector(self.signature), intToken(self.id)))
+            return KRule(KRewrite(KEVM.abi_selector(self.signature), intToken(self.id)))
 
         @property
         def production(self) -> KProduction:
