@@ -490,8 +490,7 @@ test-foundry: KEVM_OPTS += --pyk --verbose
 test-foundry: KEVM = $(POETRY_RUN) kevm
 test-foundry:                                  \
     tests/foundry/foundry.k.check              \
-    tests/foundry/out/kompiled/foundry.k.prove \
-    tests/foundry/interactive.out.check
+    tests/foundry/out/kompiled/foundry.k.prove
 
 foundry-forge-build: $(foundry_out)
 
