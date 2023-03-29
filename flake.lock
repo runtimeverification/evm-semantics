@@ -407,11 +407,11 @@
     },
     "flake-utils_6": {
       "locked": {
-        "lastModified": 1667395993,
-        "narHash": "sha256-nuEHfE/LcWyuSWnS8t12N1wc105Qtau+/OdUAjtQ0rA=",
+        "lastModified": 1678901627,
+        "narHash": "sha256-U02riOqrKKzwjsxc/400XnElV+UtPUQWpANPlyazjH0=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "5aed5285a952e0b949eb3ba02c12fa4fcfef535f",
+        "rev": "93a2b84fc4b70d9e089d029deacc3583435c2ed6",
         "type": "github"
       },
       "original": {
@@ -1153,21 +1153,6 @@
         "type": "indirect"
       }
     },
-    "nixpkgs_8": {
-      "locked": {
-        "lastModified": 1669049643,
-        "narHash": "sha256-HmtW9Or4Msrz+jmh3Dg5TZ5l2ma7+mKBmfQHA6o215M=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "2e268225fa44aeeda2f56e86e21aef7c27a26508",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "old-ghc-nix": {
       "flake": false,
       "locked": {
@@ -1188,14 +1173,17 @@
     "poetry2nix": {
       "inputs": {
         "flake-utils": "flake-utils_6",
-        "nixpkgs": "nixpkgs_8"
+        "nixpkgs": [
+          "pyk",
+          "nixpkgs"
+        ]
       },
       "locked": {
-        "lastModified": 1668738526,
-        "narHash": "sha256-OtyHtZalpeTjZ5B44C8wV3WqTUmeBBxoGc7KPIkwxAU=",
+        "lastModified": 1680067032,
+        "narHash": "sha256-RF07f1iZkJOdSbv+1myXdvgCxUsUjHdHBF7CEX3rnag=",
         "owner": "nix-community",
         "repo": "poetry2nix",
-        "rev": "0c5bae34bee822876a2dbb1c62d89cd1b29b648d",
+        "rev": "39c356df8277758138829c7b3694e58fe8d4afa2",
         "type": "github"
       },
       "original": {
@@ -1235,16 +1223,16 @@
         "poetry2nix": "poetry2nix"
       },
       "locked": {
-        "lastModified": 1680086557,
-        "narHash": "sha256-s1/zx42I3dVSgxQueIVYLL/3SjbldKjGJ30C1pGwxTQ=",
+        "lastModified": 1680092081,
+        "narHash": "sha256-ukinGnfJvuQpvIPkWVB4MEH87VzOJl9tYHVDOOtkOUI=",
         "owner": "runtimeverification",
         "repo": "pyk",
-        "rev": "e3647d5c32f03f587aefd4eca9291eaa65febf0a",
+        "rev": "c7ea8fabb7132b2703811c8a5465e4d89e9bb7cb",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.206",
+        "ref": "v0.1.207",
         "repo": "pyk",
         "type": "github"
       }
