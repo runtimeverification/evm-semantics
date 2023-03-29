@@ -319,7 +319,7 @@ The `#next [_]` operator initiates execution by:
          <output> _ => .Bytes </output>
 
     rule <k> #next [ OP:OpCode ]
-          => #if isAddr1Op(OP) orBool isAddr2Op(OP) #then #addr [ OP ] #else . #fi
+          => #addr [ OP ]
           ~> #exec [ OP ]
           ~> #pc   [ OP ]
          ...
@@ -960,12 +960,13 @@ These operators make queries about the current execution state.
     rule <k> GASLIMIT => GLIMIT ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
     rule <k> BASEFEE  => BFEE   ~> #push ... </k> <baseFee> BFEE </baseFee>
 
-    syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY"
- // -------------------------------------------------------------------------
+    syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "PREVRANDAO"
+ // ----------------------------------------------------------------------------------------
     rule <k> COINBASE   => CB   ~> #push ... </k> <coinbase> CB </coinbase>
     rule <k> TIMESTAMP  => TS   ~> #push ... </k> <timestamp> TS </timestamp>
     rule <k> NUMBER     => NUMB ~> #push ... </k> <number> NUMB </number>
     rule <k> DIFFICULTY => DIFF ~> #push ... </k> <difficulty> DIFF </difficulty>
+    rule <k> PREVRANDAO => RDAO ~> #push ... </k> <mixHash> RDAO </mixHash>
 
     syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE" | "CHAINID" | "SELFBALANCE"
  // ------------------------------------------------------------------------------------------------
@@ -1694,6 +1695,7 @@ Precompiled Contracts
     rule #precompiledAccounts(ISTANBUL)          => #precompiledAccounts(PETERSBURG) SetItem(9)
     rule #precompiledAccounts(BERLIN)            => #precompiledAccounts(ISTANBUL)
     rule #precompiledAccounts(LONDON)            => #precompiledAccounts(BERLIN)
+    rule #precompiledAccounts(MERGE)             => #precompiledAccounts(LONDON)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -1835,22 +1837,24 @@ Overall Gas
     syntax InternalOp ::= "#gas" "[" OpCode "," OpCode "]"
  // ------------------------------------------------------
     rule <k> #gas [ OP , AOP ]
-          => #if #usesMemory(OP) #then #memory [ AOP ] #else .K #fi
+          => #memory [ OP , AOP ]
           ~> #gas [ AOP ]
-          ~> #if Ghasaccesslist << SCHED >> andBool #usesAccessList(OP) #then #access [ AOP ] #else .K #fi
+          ~> #access [ OP , AOP ]
          ...
         </k>
-        <schedule> SCHED </schedule>
 
     rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
 
-    rule <k> #memory [ OP ] => #memory(OP, MU) ~> #deductMemory ... </k>
+    rule <k> #memory [ OP , AOP ] => #memory(AOP, MU) ~> #deductMemory ... </k>
          <memoryUsed> MU </memoryUsed>
+      requires #usesMemory(OP)
+   
+   rule <k> #memory [ OP , _ ] => . ... </k> [owise]
 
     syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas" | "#deductMemoryGas"
-                        | "#memory" "[" OpCode "]" | "#deductMemory"
- // ----------------------------------------------------------------
+                        | "#memory" "[" OpCode "," OpCode "]" | "#deductMemory"
+ // ---------------------------------------------------------------------------
     rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductMemoryGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
@@ -1908,21 +1912,22 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
     syntax Bool ::= #usesMemory ( OpCode ) [function, total]
  // --------------------------------------------------------
-    rule #usesMemory(OP) => isLogOp(OP)
-                     orBool isCallOp(OP)
-                     orBool isCallSixOp(OP)
-                     orBool OP ==K MLOAD
-                     orBool OP ==K MSTORE
-                     orBool OP ==K MSTORE8
-                     orBool OP ==K SHA3
-                     orBool OP ==K CODECOPY
-                     orBool OP ==K EXTCODECOPY
-                     orBool OP ==K CALLDATACOPY
-                     orBool OP ==K RETURNDATACOPY
-                     orBool OP ==K CREATE
-                     orBool OP ==K CREATE2
-                     orBool OP ==K RETURN
-                     orBool OP ==K REVERT
+    rule #usesMemory(_:LogOp)        => true
+    rule #usesMemory(_:CallOp)       => true
+    rule #usesMemory(_:CallSixOp)    => true
+    rule #usesMemory(MLOAD)          => true
+    rule #usesMemory(MSTORE)         => true
+    rule #usesMemory(MSTORE8)        => true
+    rule #usesMemory(SHA3)           => true
+    rule #usesMemory(CODECOPY)       => true
+    rule #usesMemory(EXTCODECOPY)    => true
+    rule #usesMemory(CALLDATACOPY)   => true
+    rule #usesMemory(RETURNDATACOPY) => true
+    rule #usesMemory(CREATE)         => true
+    rule #usesMemory(CREATE2)        => true
+    rule #usesMemory(RETURN)         => true
+    rule #usesMemory(REVERT)         => true
+    rule #usesMemory(_)              => false [owise]
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function, total]
  // -----------------------------------------------------------------------
@@ -1942,11 +1947,15 @@ Access List Gas
     rule #usesAccessList(SSTORE) => true
     rule #usesAccessList(_)      => false [owise]
 
-    syntax InternalOp ::= "#access" "[" OpCode "]"
- // --------------------------------------------
-    rule <k> #access [ OP ] => #gasAccess(SCHED, OP) ~> #deductGas ... </k>
+    syntax InternalOp ::= "#access" "[" OpCode "," OpCode "]"
+ // ---------------------------------------------------------
+    rule <k> #access [ OP , AOP ] => #gasAccess(SCHED, AOP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
+      requires Ghasaccesslist << SCHED >> andBool #usesAccessList(OP)
 
+    rule <k> #access [ OP , _ ] => . ... </k>
+         <schedule> SCHED </schedule>
+      [owise]
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode )
  // -----------------------------------------------------
@@ -2083,6 +2092,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, TIMESTAMP)      => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, NUMBER)         => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, DIFFICULTY)     => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, PREVRANDAO)     => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, GASLIMIT)       => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, BASEFEE)        => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, POP _)          => Gbase < SCHED > ... </k>
@@ -2357,8 +2367,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
-                          | "Ghasrejectedfirstbyte"
- // -----------------------------------------------
+                          | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"
+ // --------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -2467,6 +2477,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasaccesslist          << DEFAULT >> => false
     rule Ghasbasefee             << DEFAULT >> => false
     rule Ghasrejectedfirstbyte   << DEFAULT >> => false
+    rule Ghasprevrandao          << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -2660,6 +2671,20 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                        )
 ```
 
+### Merge Schedule
+
+```k
+    syntax Schedule ::= "MERGE" [klabel(MERGE_EVM), symbol, smtlib(schedule_MERGE)]
+ // -------------------------------------------------------------------------------
+    rule Rb         < MERGE > => 0
+    rule SCHEDCONST < MERGE > => SCHEDCONST < LONDON >
+      requires notBool SCHEDCONST ==K Rb
+
+    rule Ghasprevrandao << MERGE >> => true
+    rule SCHEDFLAG      << MERGE >> => SCHEDFLAG << LONDON >>
+      requires notBool SCHEDFLAG ==K Ghasprevrandao
+```
+
 EVM Program Representations
 ===========================
 
@@ -2731,7 +2756,8 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  65,     _ ) => COINBASE
     rule #dasmOpCode(  66,     _ ) => TIMESTAMP
     rule #dasmOpCode(  67,     _ ) => NUMBER
-    rule #dasmOpCode(  68,     _ ) => DIFFICULTY
+    rule #dasmOpCode(  68, SCHED ) => PREVRANDAO  requires         Ghasprevrandao << SCHED >>
+    rule #dasmOpCode(  68, SCHED ) => DIFFICULTY  requires notBool Ghasprevrandao << SCHED >>
     rule #dasmOpCode(  69,     _ ) => GASLIMIT
     rule #dasmOpCode(  70, SCHED ) => CHAINID     requires Ghaschainid     << SCHED >>
     rule #dasmOpCode(  71, SCHED ) => SELFBALANCE requires Ghasselfbalance << SCHED >>
