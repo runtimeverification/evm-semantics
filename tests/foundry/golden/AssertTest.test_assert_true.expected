@@ -1,34 +1,35 @@
 
-┌  OMITTED HASH (init, expanded)
-│   k: #execute ~> CONTINUATION
-│   pc: 0
-│   callDepth: 0
-│   statusCode: STATUSCODE
-│   src: tests/foundry/test/Simple.t.sol:5:50
+┌─ OMITTED HASH (init, expanded)
+│    k: #execute ~> CONTINUATION
+│    pc: 0
+│    callDepth: 0
+│    statusCode: STATUSCODE
+│    src: tests/foundry/test/Simple.t.sol:5:50
 │
-│  (267 steps)
-├  OMITTED HASH (expanded)
-│  k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│  pc: 186
-│  callDepth: 0
-│  statusCode: EVMC_SUCCESS
-│  src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
+│  (332 steps)
+├─ OMITTED HASH (expanded)
+│    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+│    pc: 186
+│    callDepth: 0
+│    statusCode: EVMC_SUCCESS
+│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 │  (2 steps)
-├  OMITTED HASH (leaf)
-│  k: #halt ~> CONTINUATION:K
-│  pc: 186
-│  callDepth: 0
-│  statusCode: EVMC_SUCCESS
-│  src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
-┊
+├─ OMITTED HASH (leaf)
+│    k: #halt ~> CONTINUATION:K
+│    pc: 186
+│    callDepth: 0
+│    statusCode: EVMC_SUCCESS
+│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
+│
 ┊  constraint: OMITTED CONSTRAINT
 ┊  subst: OMITTED SUBST
-└╌ OMITTED HASH (target, leaf)
-   │ k: #halt ~> CONTINUATION
-   │ pc: PC_CELL_5d410f2a
-   │ callDepth: CALLDEPTH_CELL_5d410f2a
-   │ statusCode: STATUSCODE_FINAL
+└─ OMITTED HASH (target, leaf)
+     k: #halt ~> CONTINUATION
+     pc: PC_CELL_5d410f2a
+     callDepth: CALLDEPTH_CELL_5d410f2a
+     statusCode: STATUSCODE_FINAL
+
 module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
     
     

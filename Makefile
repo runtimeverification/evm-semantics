@@ -517,10 +517,11 @@ foundry_diff_tests := $(shell cat tests/foundry/checkoutput)
 test-foundry-kcfg-diff: $(patsubst %, $(foundry_golden)/%.check, $(foundry_diff_tests))
 
 foundry-fail: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove tests/foundry/out                              \
-	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
-	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
-	    $(addprefix --test , $(foundry_diff_tests)) || true
+	$(KEVM) foundry-prove                                \
+	--foundry-project-root $(foundry_dir)                \
+	-j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000 \
+	$(KEVM_OPTS) $(KPROVE_OPTS)                          \
+	$(addprefix --test , $(foundry_diff_tests)) || true
 
 foundry_show_opts := --to-module --omit-unstable-output --frontier --stuck
 
@@ -528,7 +529,8 @@ $(foundry_golden)/%.check: $(foundry_golden)/%.out
 	$(CHECK) $(foundry_golden)/$*.out $(foundry_golden)/$*.expected
 
 $(foundry_golden)/%.out: foundry-fail
-	$(KEVM) foundry-show $(foundry_show_opts) $(foundry_out) $* \
+	$(KEVM) foundry-show $(foundry_show_opts)                   \
+	--foundry-project-root $(foundry_dir) $*                    \
 	| grep --invert-match 'rule \[BASIC-BLOCK-'                 \
 	| grep --invert-match '\[priority(.*), label(BASIC-BLOCK-'  \
 	> $@

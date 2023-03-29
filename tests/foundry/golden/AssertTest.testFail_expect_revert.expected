@@ -1,38 +1,50 @@
 
-┌  OMITTED HASH (init, expanded)
-│   k: #execute ~> CONTINUATION
-│   pc: 0
-│   callDepth: 0
-│   statusCode: STATUSCODE
-│   src: tests/foundry/test/Simple.t.sol:5:50
+┌─ OMITTED HASH (init, expanded)
+│    k: #execute ~> CONTINUATION
+│    pc: 0
+│    callDepth: 0
+│    statusCode: STATUSCODE
+│    src: tests/foundry/test/Simple.t.sol:5:50
 │
-│  (465 steps)
-├  OMITTED HASH (expanded)
-│  k: #checkCall 1032069922050249630382865877677304880282300743300 0 ~> #call 10320699 ...
-│  pc: 434
-│  callDepth: 0
-│  statusCode: STATUSCODE:StatusCode
-│  src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:58:59
+│  (555 steps)
+├─ OMITTED HASH (expanded)
+│    k: #checkCall 1032069922050249630382865877677304880282300743300 0 ~> #call 10320699 ...
+│    pc: 434
+│    callDepth: 0
+│    statusCode: STATUSCODE:StatusCode
+│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:58:59
 │
-│  (174 steps)
-├  OMITTED HASH (expanded)
-│  k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│  pc: 929
-│  callDepth: 0
-│  statusCode: EVMC_REVERT
+│  (213 steps)
+├─ OMITTED HASH (expanded)
+│    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
+│    pc: 929
+│    callDepth: 0
+│    statusCode: EVMC_REVERT
 │
 │  (5 steps)
-└  OMITTED HASH (expanded, stuck, leaf)
-│  k: #halt ~> CONTINUATION:K
-│  pc: 929
-│  callDepth: 0
-│  statusCode: EVMC_SUCCESS
+└─ OMITTED HASH (expanded, stuck, leaf)
+     k: #halt ~> CONTINUATION:K
+     pc: 929
+     callDepth: 0
+     statusCode: EVMC_SUCCESS
+   (stuck)
 
-┌  OMITTED HASH (target, leaf)
-│   k: #halt ~> CONTINUATION
-│   pc: PC_CELL_5d410f2a
-│   callDepth: CALLDEPTH_CELL_5d410f2a
-│   statusCode: STATUSCODE_FINAL
+
+└─ OMITTED HASH (target, leaf)
+     k: #halt ~> CONTINUATION
+     pc: PC_CELL_5d410f2a
+     callDepth: CALLDEPTH_CELL_5d410f2a
+     statusCode: STATUSCODE_FINAL
+   (looped back)
+
+
+Target Nodes:
+
+OMITTED HASH (target, leaf)
+ k: #halt ~> CONTINUATION
+ pc: PC_CELL_5d410f2a
+ callDepth: CALLDEPTH_CELL_5d410f2a
+ statusCode: STATUSCODE_FINAL
 
 
 Node OMITTED HASH:
