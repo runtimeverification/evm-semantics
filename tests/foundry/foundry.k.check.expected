@@ -209,6 +209,8 @@ module ADDRTEST-BIN-RUNTIME
     
     syntax AddrTestMethod ::= "test_addr_true" "(" ")" [symbol(), klabel(method_AddrTest_test_addr_true)]
     
+    syntax AddrTestMethod ::= "test_builtInAddresses" "(" ")" [symbol(), klabel(method_AddrTest_test_builtInAddresses)]
+    
     syntax AddrTestMethod ::= "test_notBuiltinAddress_concrete" "(" ")" [symbol(), klabel(method_AddrTest_test_notBuiltinAddress_concrete)]
     
     syntax AddrTestMethod ::= "test_notBuiltinAddress_symbolic" "(" Int ")" [symbol(), klabel(method_AddrTest_test_notBuiltinAddress_symbolic)]
@@ -241,6 +243,9 @@ module ADDRTEST-BIN-RUNTIME
       
     
     rule  ( AddrTest . test_addr_true ( ) => #abiCallData ( "test_addr_true" , .TypedArgs ) )
+      
+    
+    rule  ( AddrTest . test_builtInAddresses ( ) => #abiCallData ( "test_builtInAddresses" , .TypedArgs ) )
       
     
     rule  ( AddrTest . test_notBuiltinAddress_concrete ( ) => #abiCallData ( "test_notBuiltinAddress_concrete" , .TypedArgs ) )
@@ -278,6 +283,9 @@ module ADDRTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_addr_true" ) => 809049819 )
+      
+    
+    rule  ( selector ( "test_builtInAddresses" ) => 3220291840 )
       
     
     rule  ( selector ( "test_notBuiltinAddress_concrete" ) => 2409208231 )
