@@ -32,7 +32,22 @@ class Contract:
         contract_name: str
         payable: bool
 
-        def __init__(self, name: str, id: int, abi: Dict, contract_name: str, sort: KSort) -> None:
+        def __init__(self, name: str, msig: str, id: int, contract_json: Dict, contract_name: str, sort: KSort) -> None:
+            def _get_method_abi(_mname: str, _margs: List[str]) -> Dict:
+                for _method in contract_json['abi']:
+                    if _method['type'] == 'function' and _method['name'] == _mname:
+                        _marg_types = [_marg['type'] for _marg in _method['inputs']]
+                        if len(_margs) == len(_marg_types) and all(
+                            a1 == a2 for a1, a2 in zip(_margs, _marg_types, strict=True)
+                        ):
+                            return _method
+                raise ValueError(f'Method not found in abi: {_mname}')
+
+            margs_cs = msig.split('(')[1][:-1]
+            margs = [] if margs_cs == '' else margs_cs.split(',')
+
+            abi = _get_method_abi(name, margs)
+
             self.name = name
             self.id = id
             self.arg_names = tuple([f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])])
@@ -48,6 +63,11 @@ class Contract:
             return f'{self.name}({arg_list})'
 
         @property
+        def klabel(self) -> KLabel:
+            args_list = '_'.join([_evm_base_sort(input_type).name for input_type in self.arg_types])
+            return KLabel(f'method_{self.contract_name}_{self.name}_{args_list}')
+
+        @property
         def selector_alias_rule(self) -> KRule:
             return KRule(KRewrite(KEVM.abi_selector(self.signature), intToken(self.id)))
 
@@ -57,17 +77,16 @@ class Contract:
             items_before: List[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
             items_args: List[KProductionItem] = list(intersperse(input_nonterminals, KTerminal(',')))
             items_after: List[KProductionItem] = [KTerminal(')')]
-            args_list = '_'.join([_evm_base_sort(input_type).name for input_type in self.arg_types])
             return KProduction(
                 self.sort,
                 items_before + items_args + items_after,
-                klabel=KLabel(f'method_{self.contract_name}_{self.name}_{args_list}'),
+                klabel=self.klabel,
                 att=KAtt({'symbol': ''}),
             )
 
         def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> Optional[KRule]:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
-            prod_klabel = self.production.klabel
+            prod_klabel = self.klabel
             assert prod_klabel is not None
             args: List[KInner] = []
             conjuncts: List[KInner] = []
@@ -98,7 +117,7 @@ class Contract:
 
         @cached_property
         def application(self) -> KInner:
-            klabel = self.production.klabel
+            klabel = self.klabel
             assert klabel is not None
             args = [
                 abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}')
@@ -116,15 +135,6 @@ class Contract:
     fields: FrozenDict
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
-        def _get_method_abi(_mname: str, _margs: List[str]) -> Dict:
-            for _method in contract_json['abi']:
-                if _method['type'] == 'function' and _method['name'] == _mname:
-                    if len(_margs) == len(_method['inputs']):
-                        inputs_match = [(_method['inputs'][i]['type'] == _margs[i]) for i in range(len(_margs))]
-                        if all(inputs_match):
-                            return _method
-            raise ValueError(f'Method not found in abi: {_mname}')
-
         self.name = contract_name
         self.contract_json = contract_json
 
@@ -141,10 +151,8 @@ class Contract:
         _methods = []
         for msig in method_ids:
             mname = msig.split('(')[0]
-            margs_cs = msig.split('(')[1][:-1]
-            margs = [] if margs_cs == '' else margs_cs.split(',')
             mid = int(method_ids[msig], 16)
-            _m = Contract.Method(mname, mid, _get_method_abi(mname, margs), contract_name, self.sort_method)
+            _m = Contract.Method(mname, msig, mid, contract_json, contract_name, self.sort_method)
             _methods.append(_m)
         self.methods = tuple(_methods)
 
