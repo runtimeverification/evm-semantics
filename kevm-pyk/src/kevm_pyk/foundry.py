@@ -164,7 +164,7 @@ class Foundry:
 
     @staticmethod
     def address_TEST_CONTRACT() -> KToken:  # noqa: N802
-        return intToken(0xB4C79DAB8F259C7AEE6E5B2AA729821864227E84)
+        return intToken(0x7FA9385BE102AC3EAC297483DD6233D62B3E1496)
 
     @staticmethod
     def account_TEST_CONTRACT_ADDRESS() -> KApply:  # noqa: N802
