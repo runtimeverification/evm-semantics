@@ -18,7 +18,7 @@ from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
-from pyk.utils import shorten_hashes
+from pyk.utils import shorten_hashes, single, unique
 
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_main_module
@@ -319,14 +319,12 @@ def foundry_prove(
 
     setup_methods: Dict[str, str] = {}
 
-    contracts = {test.split('.')[0] for test in tests}
+    contracts = unique({test.split('.')[0] for test in tests})
     for contract_name in contracts:
         contract = foundry.contracts[contract_name]
-        for method in contract.methods:
-            if method.name.lower() == 'setup':
-                if contract.name in setup_methods:
-                    raise ValueError(f'Multiple setup methods is not supported: {contract_name}')
-                setup_methods[contract.name] = f'{contract.name}.{method.name}'
+        method = contract.method_by_name('setUp')
+        if method is not None:
+            setup_methods[contract.name] = f'{contract.name}.{method.name}'
 
     def run_cfg_group(tests: List[str]) -> Dict[str, bool]:
         kcfgs: Dict[str, KCFG] = {}
@@ -657,22 +655,9 @@ def get_final_accounts_cell(cfgid: str, kcfgs_dir: Path) -> KInner:
     kcfg = KCFGExplore.read_cfg(cfgid, kcfgs_dir)
     if not kcfg:
         raise RuntimeError(f'failed to read cfg: {cfgid}')
-
-    targets = kcfg.target
-    if len(targets) != 1:
-        raise RuntimeError(f'Failed to find a unique target node for: {cfgid}')
-
-    target = targets[0].id
-
-    covers = kcfg.covers(target_id=target)
-
-    if len(covers) != 1:
-        raise RuntimeError(f'Failed to find a unique final state for: {cfgid}')
-
-    cover = covers[0].source
-
-    accounts_cell = get_cell(cover.cterm.config, 'ACCOUNTS_CELL')
-
+    target = kcfg.get_unique_target()
+    cover = single(kcfg.covers(target_id=target.id))
+    accounts_cell = get_cell(cover.target.cterm.config, 'ACCOUNTS_CELL')
     return accounts_cell
 
 
