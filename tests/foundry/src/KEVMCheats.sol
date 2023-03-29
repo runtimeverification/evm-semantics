@@ -33,6 +33,6 @@ abstract contract KEVMCheats {
     // Checks if an address matches one of the built-in addresses.
     function notBuiltinAddress(address addr) internal pure returns (bool) {
         return (addr != address(645326474426547203313410069153905908525362434349) &&
-                addr != address(1032069922050249630382865877677304880282300743300));
+                addr != address(728815563385977040452943777879061427756277306518));
     }
 }
