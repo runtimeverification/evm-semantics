@@ -24,12 +24,33 @@ contract DepthReverter {
         reverter = new Reverter();
     }
 
-    function revertAtNextDepth() public {
+    function revertAtNextDepth() public view {
         reverter.revertWithoutReason();
     }
-
 }
+
+contract ReverterWithReturn {
+    function revertUnless(bool returnInstead) public returns (bytes memory) {
+        if (returnInstead) {
+            return abi.encodePacked(bytes4(0xdeadbeef));
+        } else {
+            revert("Error");
+        }
+    }
+}
+
 contract ExpectRevertTest is Test {
+    error NotAuthorised(address caller, string message);
+
+    function doRevert() internal pure {
+        require(false, "");
+    }
+
+    function test_expectRevert_internalCall() public {
+        vm.expectRevert();
+        doRevert();
+    }
+
     function test_expectRevert_true() public {
         Reverter reverter = new Reverter();
         vm.expectRevert();
@@ -75,5 +96,32 @@ contract ExpectRevertTest is Test {
         DepthReverter reverter = new DepthReverter();
         vm.expectRevert();
         reverter.revertAtNextDepth();
+    }
+
+    function testFail_ExpectRevert_failAndSuccess() public {
+         Reverter reverter = new Reverter();
+         vm.expectRevert();
+         reverter.noRevert();
+         vm.expectRevert();
+         reverter.revertWithoutReason();
+    }
+
+    function test_expectRevert_encodedSymbolic(address controller) public {
+        vm.startPrank(controller);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                NotAuthorised.selector,
+                controller,
+                "TRANSFEROWNERSHIP"
+            )
+        );
+        revert NotAuthorised(controller, "TRANSFEROWNERSHIP");
+    }
+
+    function test_expectRevert_returnValue() public {
+        ReverterWithReturn reverter = new ReverterWithReturn();
+        vm.expectRevert("Error");
+        bytes memory returnValue = reverter.revertUnless(false);
+        assertEq0(returnValue, "");
     }
 }

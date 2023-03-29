@@ -15,25 +15,26 @@ runs:
       set -euxo pipefail
 
       Z3_VERSION=4.8.15
-      K_COMMIT="$(cat deps/k_release | cut --characters=2-)"
+      K_COMMIT=$(cat deps/k_release)
 
-      docker build . --file .github/workflows/Dockerfile.z3 \
-        --tag z3:${Z3_VERSION}
+      docker build .                           \
+        --file .github/workflows/Dockerfile.z3 \
+        --tag z3:${Z3_VERSION}                 \
 
-      docker build . --file .github/workflows/Dockerfile           \
-        --tag runtimeverification/${TAG_NAME}                      \
-        --build-arg K_COMMIT=${K_COMMIT}                           \
-        --build-arg Z3_VERSION=${Z3_VERSION}                       \
-        --build-arg USER_ID=$(id -u) --build-arg GROUP_ID=$(id -g)
+      docker build . --file .github/workflows/Dockerfile \
+        --tag runtimeverification/${TAG_NAME}            \
+        --build-arg K_COMMIT=${K_COMMIT}                 \
+        --build-arg Z3_VERSION=${Z3_VERSION}             \
 
       docker run                        \
         --name ${TAG_NAME}              \
-        --rm -it                        \
+        --rm                            \
+        --interactive                   \
+        --tty                           \
         --detach                        \
-        --workdir /opt/workspace        \
-        --user $(id -u):$(id -g)        \
-        -v ${HOME}:${HOME}              \
-        -v "$(pwd):/opt/workspace"      \
-        -v "/etc/passwd:/etc/passwd:ro" \
-        -v "/etc/group:/etc/group:ro"   \
-        runtimeverification/${TAG_NAME}
+        --user root                     \
+        --workdir /home/user            \
+        runtimeverification/${TAG_NAME} \
+
+      docker cp . ${TAG_NAME}:/home/user
+      docker exec ${TAG_NAME} chown -R user:user /home/user

@@ -30,7 +30,7 @@ module TRANSFERFROM-SUCCESS-1-SPEC
 
           <callValue> 0 </callValue>
           <wordStack> .WordStack => ?_ </wordStack>
-          <localMem> .Memory => ?_ </localMem>
+          <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>

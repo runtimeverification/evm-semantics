@@ -12,9 +12,9 @@ kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTes
     || git --no-pager diff --no-index --ignore-all-space -R tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json.llvm-out tests/templates/output-success-llvm.json
 rm -rf tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json.llvm-out
 
-kevm kast tests/interactive/log3_MaxTopic_d0g0v0.json kast  --backend llvm > tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
+kevm kast tests/interactive/log3_MaxTopic_d0g0v0.json --backend llvm > tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
 git --no-pager diff --no-index --ignore-all-space -R tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out tests/interactive/log3_MaxTopic_d0g0v0.json.parse-expected
-rm -rf tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
+rm tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
 
 # This test currently segfaults on M1 Macs
 if ! ${APPLE_SILICON:-false}; then
@@ -37,16 +37,6 @@ kevm kompile --backend haskell tests/specs/examples/erc20-spec.md \
 if ! ${NIX:-false}; then
 kevm prove tests/specs/examples/erc20-spec.md --backend haskell --format-failures  \
     --definition tests/specs/examples/erc20-spec/haskell
-
-
-kevm kompile --backend java tests/specs/erc20/verification.k \
-    --definition tests/specs/erc20/verification/java         \
-    --main-module VERIFICATION                               \
-    --syntax-module VERIFICATION                             \
-    --concrete-rules-file tests/specs/concrete-rules.txt     \
-    --debug
-kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --backend java --format-failures --debugger \
-    --definition tests/specs/erc20/verification/java
 fi
 
 cd tests/foundry

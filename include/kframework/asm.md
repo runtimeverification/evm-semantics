@@ -36,23 +36,13 @@ Operator `#revOps` can be used to reverse a program.
 ```
 
 ```k
-    syntax ByteArray ::= #asmOpCodes ( OpCodes ) [function]
- // -------------------------------------------------------
+    syntax Bytes ::= #asmOpCodes ( OpCodes ) [function]
+ // ---------------------------------------------------
 ```
 
-```{.k .nobytes}
-    syntax ByteArray ::= #asmOpCodes ( OpCodes, ByteArray ) [function, klabel(#asmOpCodesAux)]
- // ------------------------------------------------------------------------------------------
-    rule #asmOpCodes( OPS ) => #asmOpCodes(#revOps(OPS), .ByteArray)
-
-    rule #asmOpCodes( PUSH(N, W) ; OCS, WS ) => #asmOpCodes(OCS, #asmOpCode(PUSH(N)) : (#padToWidth(N, #asByteStack(W)) ++ WS))
-    rule #asmOpCodes( OP ; OCS, WS ) => #asmOpCodes(OCS, #asmOpCode(OP) : WS) requires PUSH(_, _) :/=K OP
-    rule #asmOpCodes( .OpCodes, WS ) => WS
-```
-
-```{.k .bytes}
-    syntax ByteArray ::= #asmOpCodes ( OpCodes, StringBuffer ) [function, klabel(#asmOpCodesAux)]
- // ---------------------------------------------------------------------------------------------
+```k
+    syntax Bytes ::= #asmOpCodes ( OpCodes, StringBuffer ) [function, klabel(#asmOpCodesAux)]
+ // -----------------------------------------------------------------------------------------
     rule #asmOpCodes( OPS ) => #asmOpCodes(OPS, .StringBuffer)
 
     rule #asmOpCodes( PUSH(N, W) ; OCS, SB ) => #asmOpCodes(OCS, (SB +String chrChar(#asmOpCode(PUSH(N)))) +String Bytes2String(Int2Bytes(N, W, BE)))
@@ -111,6 +101,7 @@ Operator `#revOps` can be used to reverse a program.
     rule #asmOpCode( TIMESTAMP      ) =>  66
     rule #asmOpCode( NUMBER         ) =>  67
     rule #asmOpCode( DIFFICULTY     ) =>  68
+    rule #asmOpCode( PREVRANDAO     ) =>  68
     rule #asmOpCode( GASLIMIT       ) =>  69
     rule #asmOpCode( CHAINID        ) =>  70
     rule #asmOpCode( SELFBALANCE    ) =>  71

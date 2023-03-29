@@ -7,37 +7,15 @@ from subprocess import CalledProcessError
 from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
 
 from pyk.cli_utils import run_process
-from pyk.cterm import CTerm
-from pyk.kast import (
-    KApply,
-    KAtt,
-    KFlatModule,
-    KImport,
-    KInner,
-    KLabel,
-    KNonTerminal,
-    KProduction,
-    KProductionItem,
-    KRewrite,
-    KRule,
-    KSentence,
-    KSequence,
-    KSort,
-    KTerminal,
-    KToken,
-    KVariable,
-    build_assoc,
-)
-from pyk.kastManip import abstract_term_safely, substitute
-from pyk.kcfg import KCFG
-from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
+from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSort, KVariable
+from pyk.kast.manip import abstract_term_safely
+from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KProductionItem, KRule, KSentence, KTerminal
+from pyk.prelude.kbool import TRUE, andBool
 from pyk.prelude.kint import intToken
-from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, intersperse
 
-from .kevm import KEVM, Foundry
-from .utils import abstract_cell_vars
+from .kevm import KEVM
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -87,11 +65,11 @@ class Contract:
             assert prod_klabel is not None
             args: List[KInner] = []
             conjuncts: List[KInner] = []
-            for input_name, input_type in zip(self.arg_names, self.arg_types):
+            for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
                 args.append(KEVM.abi_type(input_type, KVariable(input_name)))
                 rp = _range_predicate(KVariable(input_name), input_type)
                 if rp is None:
-                    _LOGGER.warning(
+                    _LOGGER.info(
                         f'Unsupported ABI type for method {contract_name}.{prod_klabel.name}, will not generate calldata sugar: {input_type}'
                     )
                     return None
@@ -123,9 +101,12 @@ class Contract:
             return klabel(args)
 
     name: str
+    contract_json: Dict
+    contract_id: int
+    contract_path: str
     bytecode: str
+    raw_sourcemap: Optional[str]
     methods: Tuple[Method, ...]
-    test_methods: Tuple[Method, ...]
     fields: FrozenDict
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
@@ -136,37 +117,73 @@ class Contract:
             raise ValueError(f'Method not found in abi: {_mname}')
 
         self.name = contract_name
-        self.bytecode = (
-            contract_json['evm']['deployedBytecode']['object']
-            if not foundry
-            else contract_json['deployedBytecode']['object']
-        )
+        self.contract_json = contract_json
+
+        self.contract_id = self.contract_json['id']
+        self.contract_path = self.contract_json['ast']['absolutePath']
+
+        evm = self.contract_json['evm'] if not foundry else self.contract_json
+
+        deployed_bytecode = evm['deployedBytecode']
+        self.bytecode = deployed_bytecode['object'].replace('0x', '')
+        self.raw_sourcemap = deployed_bytecode['sourceMap'] if 'sourceMap' in deployed_bytecode else None
+
+        method_ids = evm['methodIdentifiers'] if 'methodIdentifiers' in evm else {}
         _methods = []
-        if not foundry and 'evm' in contract_json and 'methodIdentifiers' in contract_json['evm']:
-            _method_identifiers = contract_json['evm']['methodIdentifiers']
-        elif foundry and 'methodIdentifiers' in contract_json:
-            _method_identifiers = contract_json['methodIdentifiers']
-        else:
-            _method_identifiers = []
-            _LOGGER.warning(f'Could not find member \'methodIdentifiers\' while processing contract: {self.name}')
-        for msig in _method_identifiers:
+        for msig in method_ids:
             mname = msig.split('(')[0]
-            mid = int(_method_identifiers[msig], 16)
+            mid = int(method_ids[msig], 16)
             _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
             _methods.append(_m)
         self.methods = tuple(_methods)
-        if 'storageLayout' not in contract_json or 'storage' not in contract_json['storageLayout']:
-            _LOGGER.warning(f'Could not find member \'storageLayout\' while processing contract: {self.name}')
-            self.fields = FrozenDict({})
-        else:
-            _fields_list = [(_f['label'], int(_f['slot'])) for _f in contract_json['storageLayout']['storage']]
+
+        self.fields = FrozenDict({})
+        if 'storageLayout' in self.contract_json and 'storage' in self.contract_json['storageLayout']:
+            _fields_list = [(_f['label'], int(_f['slot'])) for _f in self.contract_json['storageLayout']['storage']]
             _fields = {}
             for _l, _s in _fields_list:
                 if _l in _fields:
-                    _LOGGER.warning(f'Found duplicate field access key on contract {self.name}: {_l}')
+                    _LOGGER.info(f'Found duplicate field access key on contract {self.name}: {_l}')
                     continue
                 _fields[_l] = _s
             self.fields = FrozenDict(_fields)
+
+    @cached_property
+    def srcmap(self) -> Dict[int, Tuple[int, int, int, str, int]]:
+        _srcmap = {}
+
+        if len(self.bytecode) > 0 and self.raw_sourcemap is not None:
+            instr_to_pc = {}
+            pc = 0
+            instr = 0
+            bs = [int(self.bytecode[i : i + 2], 16) for i in range(0, len(self.bytecode), 2)]
+            while pc < len(bs):
+                b = bs[pc]
+                instr_to_pc[instr] = pc
+                if 0x60 <= b and b < 0x7F:
+                    push_width = b - 0x5F
+                    pc = pc + push_width
+                pc += 1
+                instr += 1
+
+            instrs_srcmap = self.raw_sourcemap.split(';')
+
+            s, l, f, j, m = (0, 0, 0, '', 0)
+            for i, instr_srcmap in enumerate(instrs_srcmap):
+                fields = instr_srcmap.split(':')
+                if len(fields) > 0 and fields[0] != '':
+                    s = int(fields[0])
+                if len(fields) > 1 and fields[1] != '':
+                    l = int(fields[1])
+                if len(fields) > 2 and fields[2] != '':
+                    f = int(fields[2])
+                if len(fields) > 3 and fields[3] != '':
+                    j = fields[3]
+                if len(fields) > 4 and fields[4] != '':
+                    m = int(fields[4])
+                _srcmap[i] = (s, l, f, j, m)
+
+        return _srcmap
 
     @staticmethod
     def contract_to_module_name(c: str, spec: bool = True) -> str:
@@ -226,12 +243,14 @@ class Contract:
 
     @property
     def macro_bin_runtime(self) -> KRule:
-        return KRule(KRewrite(KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken(self.bytecode))))
+        return KRule(
+            KRewrite(KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken('0x' + self.bytecode)))
+        )
 
     @property
     def method_sentences(self) -> List[KSentence]:
         method_application_production: KSentence = KProduction(
-            KSort('ByteArray'),
+            KSort('Bytes'),
             [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)],
             klabel=self.klabel_method,
             att=KAtt({'function': '', 'symbol': ''}),
@@ -270,8 +289,7 @@ class Contract:
         return methods[0]
 
 
-def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
-
+def solc_compile(contract_file: Path) -> Dict[str, Any]:
     # TODO: add check to kevm:
     # solc version should be >=0.8.0 due to:
     # https://github.com/ethereum/solidity/issues/10276
@@ -293,14 +311,16 @@ def solc_compile(contract_file: Path, profile: bool = False) -> Dict[str, Any]:
                         'storageLayout',
                         'evm.methodIdentifiers',
                         'evm.deployedBytecode.object',
+                        'evm.deployedBytecode.sourceMap',
                     ],
+                    '': ['ast'],
                 },
             },
         },
     }
 
     try:
-        process_res = run_process(['solc', '--standard-json'], logger=_LOGGER, input=json.dumps(args), profile=profile)
+        process_res = run_process(['solc', '--standard-json'], logger=_LOGGER, input=json.dumps(args))
     except CalledProcessError as err:
         raise RuntimeError('solc error', err.stdout, err.stderr) from err
     result = json.loads(process_res.stdout)
@@ -326,152 +346,6 @@ def contract_to_main_module(contract: Contract, empty_config: KInner, imports: I
     return KFlatModule(module_name, contract.sentences, [KImport(i) for i in list(imports)])
 
 
-def method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Method) -> KCFG:
-    calldata = method.calldata_cell(contract)
-    callvalue = method.callvalue_cell
-    init_term = _init_term(empty_config, contract.name, calldata=calldata, callvalue=callvalue)
-    init_cterm = _init_cterm(init_term)
-    is_test = method.name.startswith('test')
-    failing = method.name.startswith('testFail')
-    final_cterm = _final_cterm(empty_config, contract.name, failing=failing, is_test=is_test)
-
-    cfg = KCFG()
-    init_node = cfg.create_node(init_cterm)
-    cfg.add_init(init_node.id)
-    target_node = cfg.create_node(final_cterm)
-    cfg.add_target(target_node.id)
-
-    return cfg
-
-
-def _init_cterm(init_term: KInner) -> CTerm:
-    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
-    dst_failed_prev = KEVM.lookup(KVariable('CHEATCODE_STORAGE'), key_dst)
-    return CTerm(init_term).add_constraint(mlEqualsTrue(KApply('_==Int_', [dst_failed_prev, KToken('0', 'Int')])))
-
-
-def _init_term(
-    empty_config: KInner,
-    contract_name: str,
-    *,
-    calldata: Optional[KInner] = None,
-    callvalue: Optional[KInner] = None,
-) -> KInner:
-    program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
-    account_cell = KEVM.account_cell(
-        Foundry.address_TEST_CONTRACT(),
-        intToken(0),
-        program,
-        KVariable('ACCT_STORAGE'),
-        KVariable('ACCT_ORIGSTORAGE'),
-        intToken(0),
-    )
-    init_subst = {
-        'MODE_CELL': KApply('NORMAL'),
-        'SCHEDULE_CELL': KApply('LONDON_EVM'),
-        'STATUSCODE_CELL': KVariable('STATUSCODE'),
-        'CALLSTACK_CELL': KApply('.List'),
-        'CALLDEPTH_CELL': intToken(0),
-        'PROGRAM_CELL': program,
-        'JUMPDESTS_CELL': KEVM.compute_valid_jumpdests(program),
-        'ORIGIN_CELL': KVariable('ORIGIN_ID'),
-        'ID_CELL': Foundry.address_TEST_CONTRACT(),
-        'CALLER_CELL': KVariable('CALLER_ID'),
-        'ACCESSEDACCOUNTS_CELL': KApply('.Set'),
-        'ACCESSEDSTORAGE_CELL': KApply('.Map'),
-        'INTERIMSTATES_CELL': KApply('.List'),
-        'ACTIVEACCOUNTS_CELL': build_assoc(
-            KApply('.Set'),
-            KLabel('_Set_'),
-            map(
-                KLabel('SetItem'),
-                [
-                    Foundry.address_TEST_CONTRACT(),
-                    Foundry.address_CHEATCODE(),
-                    Foundry.address_CALLER(),
-                    Foundry.address_HARDHAT_CONSOLE(),
-                ],
-            ),
-        ),
-        'LOCALMEM_CELL': KApply('.Memory_EVM-TYPES_Memory'),
-        'PREVCALLER_CELL': KToken('.Account', 'K'),
-        'PREVORIGIN_CELL': KToken('.Account', 'K'),
-        'NEWCALLER_CELL': KToken('.Account', 'K'),
-        'NEWORIGIN_CELL': KToken('.Account', 'K'),
-        'ACTIVE_CELL': FALSE,
-        'STATIC_CELL': FALSE,
-        'MEMORYUSED_CELL': intToken(0),
-        'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
-        'PC_CELL': intToken(0),
-        'GAS_CELL': intToken(9223372036854775807),
-        'K_CELL': KSequence([KEVM.execute(), KVariable('CONTINUATION')]),
-        'ACCOUNTS_CELL': KEVM.accounts(
-            [
-                account_cell,  # test contract address
-                Foundry.account_CALLER(),
-                Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE')),
-                Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
-                KVariable('ACCOUNTS_INIT'),
-            ]
-        ),
-        'SINGLECALL_CELL': FALSE,
-        'EXPECTEDREVERT_CELL': FALSE,
-    }
-
-    if calldata is not None:
-        init_subst['CALLDATA_CELL'] = calldata
-
-    if callvalue is not None:
-        init_subst['CALLVALUE_CELL'] = callvalue
-
-    return substitute(empty_config, init_subst)
-
-
-def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True) -> CTerm:
-    final_term = _final_term(empty_config, contract_name)
-    key_dst = KEVM.loc(KToken('FoundryCheat . Failed', 'ContractAccess'))
-    dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), key_dst)
-    foundry_success = Foundry.success(KVariable('STATUSCODE_FINAL'), dst_failed_post, KVariable('EXPECTEDREVERT_FINAL'))
-    final_cterm = CTerm(final_term)
-    if is_test:
-        if not failing:
-            return final_cterm.add_constraint(mlEqualsTrue(foundry_success))
-        else:
-            return final_cterm.add_constraint(mlEqualsTrue(notBool(foundry_success)))
-    return final_cterm
-
-
-def _final_term(empty_config: KInner, contract_name: str) -> KInner:
-    program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
-    post_account_cell = KEVM.account_cell(
-        Foundry.address_TEST_CONTRACT(),
-        KVariable('ACCT_BALANCE'),
-        program,
-        KVariable('ACCT_STORAGE_FINAL'),
-        KVariable('ACCT_ORIGSTORAGE'),
-        KVariable('ACCT_NONCE'),
-    )
-    final_subst = {
-        'K_CELL': KSequence([KEVM.halt(), KVariable('CONTINUATION')]),
-        'STATUSCODE_CELL': KVariable('STATUSCODE_FINAL'),
-        'ID_CELL': Foundry.address_TEST_CONTRACT(),
-        'ACCOUNTS_CELL': KEVM.accounts(
-            [
-                post_account_cell,  # test contract address
-                Foundry.account_CALLER(),
-                Foundry.account_CHEATCODE_ADDRESS(KVariable('CHEATCODE_STORAGE_FINAL')),
-                Foundry.account_HARDHAT_CONSOLE_ADDRESS(),
-                KVariable('ACCOUNTS_FINAL'),
-            ]
-        ),
-        'EXPECTEDREVERT_CELL': KVariable('EXPECTEDREVERT_FINAL'),
-    }
-    return abstract_cell_vars(
-        substitute(empty_config, final_subst),
-        [KVariable('STATUSCODE_FINAL'), KVariable('ACCOUNTS_FINAL'), KVariable('EXPECTEDREVERT_FINAL')],
-    )
-
-
 # Helpers
 
 
@@ -480,12 +354,12 @@ def _evm_base_sort(type_label: str) -> KSort:
         return KSort('Int')
 
     if type_label == 'bytes':
-        return KSort('ByteArray')
+        return KSort('Bytes')
 
     if type_label == 'string':
         return KSort('String')
 
-    _LOGGER.warning(f'Using generic sort K for type: {type_label}')
+    _LOGGER.info(f'Using generic sort K for type: {type_label}')
     return KSort('K')
 
 
@@ -537,10 +411,12 @@ def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
         return KEVM.range_uint(256, term)
     if type_label == 'int256':
         return KEVM.range_sint(256, term)
-    if type_label in {'bytes', 'string'}:
+    if type_label == 'bytes':
+        return KEVM.range_uint(128, KEVM.size_bytes(term))
+    if type_label == 'string':
         return TRUE
 
-    _LOGGER.warning(f'Unknown range predicate for type: {type_label}')
+    _LOGGER.info(f'Unknown range predicate for type: {type_label}')
     return None
 
 

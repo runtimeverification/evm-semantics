@@ -11,7 +11,7 @@ Solidity Code
 -------------
 
 File [`ERC20.sol`](ERC20.sol) contains some code snippets we want to verify the functional correctness of.
-Call `kevm solc-to-k ERC20.sol ERC20 > erc20-bin-runtime.k`, to generate the helper K files.
+Call `kevm solc-to-k ERC20.sol ERC20 --pyk --main-module ERC20-VERIFICATION > erc20-bin-runtime.k `, to generate the helper K files.
 
 Verification Module
 -------------------
@@ -30,7 +30,7 @@ module VERIFICATION
     imports EVM-OPTIMIZATIONS
     imports ERC20-VERIFICATION
 
-    syntax Step ::= ByteArray | Int
+    syntax Step ::= Bytes | Int
     syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
@@ -57,7 +57,7 @@ module ERC20-SPEC
 ### Functional Claims
 
 ```k
-    claim <k> runLemma(#bufStrict(32, #loc(ERC20._allowances[OWNER]))) => doneLemma(#buf(32, keccak(#buf(32, OWNER) ++ #buf(32, 1)))) ... </k>
+    claim <k> runLemma(#bufStrict(32, #loc(ERC20._allowances[OWNER]))) => doneLemma(#buf(32, keccak(#buf(32, OWNER) +Bytes #buf(32, 1)))) ... </k>
       requires #rangeAddress(OWNER)
 ```
 
@@ -78,17 +78,17 @@ module ERC20-SPEC
           <jumpDests> #computeValidJumpDests(#binRuntime(ERC20)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   ERC20.decimals()                 </callData>
-          <k>          #execute   => #halt ...          </k>
-          <output>     .ByteArray => #buf(32, DECIMALS) </output>
-          <statusCode> _          => EVMC_SUCCESS       </statusCode>
+          <callData>   ERC20.decimals()               </callData>
+          <k>          #execute => #halt ...          </k>
+          <output>     .Bytes   => #buf(32, DECIMALS) </output>
+          <statusCode> _        => EVMC_SUCCESS       </statusCode>
 
           <account>
             <acctID> ACCTID </acctID>
@@ -118,17 +118,17 @@ module ERC20-SPEC
           <jumpDests> #computeValidJumpDests(#binRuntime(ERC20)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   ERC20.totalSupply()                 </callData>
-          <k>          #execute   => #halt ...             </k>
-          <output>     .ByteArray => #buf(32, TOTALSUPPLY) </output>
-          <statusCode> _          => EVMC_SUCCESS          </statusCode>
+          <callData>   ERC20.totalSupply()               </callData>
+          <k>          #execute => #halt ...             </k>
+          <output>     .Bytes   => #buf(32, TOTALSUPPLY) </output>
+          <statusCode> _        => EVMC_SUCCESS          </statusCode>
 
           <account>
             <acctID> ACCTID </acctID>
@@ -161,7 +161,7 @@ module ERC20-SPEC
 
           <id>         ACCTID      => ?_ </id>
           <caller>     OWNER       => ?_ </caller>
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>
@@ -170,9 +170,9 @@ module ERC20-SPEC
           <substate> _             => ?_ </substate>
 
           <callData>   ERC20.approve(SPENDER, AMOUNT) </callData>
-          <k>          #execute   => #halt ...        </k>
-          <output>     .ByteArray => #buf(32, 1)      </output>
-          <statusCode> _          => EVMC_SUCCESS     </statusCode>
+          <k>          #execute => #halt ...        </k>
+          <output>     .Bytes   => #buf(32, 1)      </output>
+          <statusCode> _        => EVMC_SUCCESS     </statusCode>
 
           <account>
             <acctID> ACCTID </acctID>
@@ -200,7 +200,7 @@ module ERC20-SPEC
 
           <id>         ACCTID      => ?_ </id>
           <caller>     OWNER       => ?_ </caller>
-          <localMem>   .Memory     => ?_ </localMem>
+          <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
           <pc>         0           => ?_ </pc>

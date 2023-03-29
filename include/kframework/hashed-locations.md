@@ -18,13 +18,13 @@ The detailed mechanism of calculating the location varies by compilers.
 In Vyper, for example, `map[key1][key2]` is stored at the location:
 
 ```
-  hash(hash(key1 ++ slot(map)) ++ key2)
+  hash(hash(key1 +Bytes slot(map)) +Bytes key2)
 ```
 
-where `slot(map)` is the position index of `map` in the program, and `++` is byte-array concatenation, while in Solidity, it is stored at:
+where `slot(map)` is the position index of `map` in the program, and `+Bytes` is byte-array concatenation, while in Solidity, it is stored at:
 
 ```
-  hash(key2 ++ hash(key1 ++ slot(map)))
+  hash(key2 +Bytes hash(key1 +Bytes slot(map)))
 ```
 
 The eDSL provides `#hashedLocation` that allows to uniformly specify the locations in a form parameterized by the underlying compilers.
@@ -59,9 +59,9 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
     rule #hashedLocation(_LANG, BASE, .IntList      ) => BASE
     rule #hashedLocation( LANG, BASE, OFFSET OFFSETS) => #hashedLocation(LANG, #hashedLocation(LANG, BASE, OFFSET .IntList), OFFSETS) requires OFFSETS =/=K .IntList
 
-    rule #hashedLocation("Vyper",    BASE, OFFSET .IntList) => keccak(#bufStrict(32, BASE)   ++ #bufStrict(32, OFFSET)) requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET)
-    rule #hashedLocation("Solidity", BASE, OFFSET .IntList) => keccak(#bufStrict(32, OFFSET) ++ #bufStrict(32, BASE))   requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET) [simplification]
-    rule #hashedLocation("Array",    BASE, OFFSET .IntList) => keccak(#bufStrict(32, BASE)) +Word OFFSET                requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET)
+    rule #hashedLocation("Vyper",    BASE, OFFSET .IntList) => keccak(#bufStrict(32, BASE)   +Bytes #bufStrict(32, OFFSET)) requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET)
+    rule #hashedLocation("Solidity", BASE, OFFSET .IntList) => keccak(#bufStrict(32, OFFSET) +Bytes #bufStrict(32, BASE))   requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET) [simplification]
+    rule #hashedLocation("Array",    BASE, OFFSET .IntList) => keccak(#bufStrict(32, BASE))  +Word OFFSET                   requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET)
 
     syntax IntList ::= List{Int, ""} [klabel(intList), smtlib(intList)]
  // -------------------------------------------------------------------
@@ -89,7 +89,7 @@ module SOLIDITY-FIELDS
 
     syntax Int ::= #hash ( Int , Int ) [function, klabel(contract_access_hash), symbol]
  // -----------------------------------------------------------------------------------
-    rule #hash(I1, I2) => keccak(#bufStrict(32, I2) ++ #bufStrict(32, I1))
+    rule #hash(I1, I2) => keccak(#bufStrict(32, I2) +Bytes #bufStrict(32, I1))
 
 endmodule
 ```

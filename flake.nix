@@ -2,13 +2,12 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    k-framework.url = "github:runtimeverification/k";
+    k-framework.url = "github:runtimeverification/k/v5.5.154";
     nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.url = "github:runtimeverification/rv-nix-tools";
     poetry2nix.follows = "pyk/poetry2nix";
-    blockchain-k-plugin.url =
-      "github:runtimeverification/blockchain-k-plugin/8fdc74e3caf254aa3952393dbb0368d2c98c321a";
+    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/d9f5cf8f6caf16c04ac29aeaf0f77641f8203e1d";
     blockchain-k-plugin.inputs.flake-utils.follows = "k-framework/flake-utils";
     blockchain-k-plugin.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     ethereum-tests.url =
@@ -18,7 +17,7 @@
       "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
-    pyk.url = "github:runtimeverification/pyk/v0.1.34";
+    pyk.url = "github:runtimeverification/pyk/v0.1.204";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     foundry.url = "github:shazow/foundry.nix";
@@ -37,18 +36,18 @@
           clang
           llvmPackages.llvm
           cryptopp.dev
+          fmt
           gmp
-          graphviz
+          # graphviz
           mpfr
           openssl.dev
           pkg-config
           procps
           protobuf
-          python39
+          python310
           secp256k1
           solc
           time
-          virtualenv
         ] ++ lib.optional (!stdenv.isDarwin) elfutils
         ++ lib.optionals stdenv.isDarwin [ automake libtool ];
 
@@ -93,7 +92,7 @@
                 --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
             '';
 
-            buildFlags =
+            buildFlags = [ "POETRY_RUN=" ] ++
               prev.lib.optional (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
               "APPLE_SILICON=true";
             enableParallelBuilding = true;
@@ -142,10 +141,10 @@
           };
 
         kevm-pyk = prev.poetry2nix.mkPoetryApplication {
-          python = prev.python39;
+          python = prev.python310;
           projectDir = ./kevm-pyk;
           overrides = prev.poetry2nix.overrides.withDefaults
-            (finalPython: prevPython: { pyk = prev.pyk; });
+            (finalPython: prevPython: { pyk = prev.pyk-python310; });
           groups = [];
           # We remove `"dev"` from `checkGroups`, so that poetry2nix does not try to resolve dev dependencies.
           checkGroups = [];

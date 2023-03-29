@@ -24,7 +24,7 @@ module STATICARRAY00-SPEC
           <callData> #abiCallData2("execute(uint256[3])", #uint256(A0), #uint256(A1), #uint256(A2)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
           <wordStack> .WordStack => ?_ </wordStack>
-          <localMem> .Memory => ?_ </localMem>
+          <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>
           <memoryUsed> 0 => ?_ </memoryUsed>
@@ -97,7 +97,7 @@ _
             // precompiled account for ECCREC
             <acctID> 1 </acctID>
             <balance> 0 </balance>
-            <code> .ByteArray </code>
+            <code> .Bytes </code>
             <storage> .Map </storage>
             <origStorage> .Map </origStorage>
             <nonce> 0 </nonce>

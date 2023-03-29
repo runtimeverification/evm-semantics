@@ -25,8 +25,8 @@ module MERKLE-SPEC
     ////////////////////
     // Symbolic Tests //
     ////////////////////
-    claim <k> runMerkle ( MerkleUpdate( .MerkleTree, .ByteArray, V ) )
-           => doneMerkle( MerkleLeaf( .ByteArray, V ) ) </k>
+    claim <k> runMerkle ( MerkleUpdate( .MerkleTree, .Bytes, V ) )
+           => doneMerkle( MerkleLeaf( .Bytes, V ) ) </k>
       requires V =/=String ""
 
     // Update on MerkleLeaf
@@ -44,7 +44,7 @@ module MERKLE-SPEC
 
     // Update on MerkleExtension
     claim <k> runMerkle ( MerkleUpdate( MerkleExtension( #parseByteStack("0x06"), .MerkleTree ), #parseByteStack("0x06"), V ) )
-           => doneMerkle( MerkleExtension( #parseByteStack("0x06"), MerkleLeaf( .ByteArray, V ) ) ) </k>
+           => doneMerkle( MerkleExtension( #parseByteStack("0x06"), MerkleLeaf( .Bytes, V ) ) ) </k>
       requires V =/=String ""
 
     claim <k> runMerkle ( MerkleUpdate( MerkleExtension( #parseByteStack("0x07"), _ ), #parseByteStack("0x06"), V ) )
@@ -56,7 +56,7 @@ module MERKLE-SPEC
       requires V =/=String ""
 
     // Update on MerkleBranch
-    claim <k> runMerkle ( MerkleUpdate( MerkleBranch( M, _ ), .ByteArray, V ) )
+    claim <k> runMerkle ( MerkleUpdate( MerkleBranch( M, _ ), .Bytes, V ) )
            => doneMerkle( MerkleBranch( M, V ) ) </k>
       requires V =/=String ""
 
