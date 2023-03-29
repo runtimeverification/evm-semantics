@@ -140,6 +140,7 @@ def _parse_args() -> Namespace:
         'ISTANBUL',
         'BERLIN',
         'LONDON',
+        'MERGE',
     )
     modes = ('NORMAL', 'VMTESTS')
 

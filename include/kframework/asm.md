@@ -101,6 +101,7 @@ Operator `#revOps` can be used to reverse a program.
     rule #asmOpCode( TIMESTAMP      ) =>  66
     rule #asmOpCode( NUMBER         ) =>  67
     rule #asmOpCode( DIFFICULTY     ) =>  68
+    rule #asmOpCode( PREVRANDAO     ) =>  68
     rule #asmOpCode( GASLIMIT       ) =>  69
     rule #asmOpCode( CHAINID        ) =>  70
     rule #asmOpCode( SELFBALANCE    ) =>  71
