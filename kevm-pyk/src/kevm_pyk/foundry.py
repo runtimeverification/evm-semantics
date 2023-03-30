@@ -675,7 +675,7 @@ def get_final_accounts_cell(cfgid: str, kcfgs_dir: Path) -> KInner:
         raise RuntimeError(f'failed to read cfg: {cfgid}')
     target = kcfg.get_unique_target()
     cover = single(kcfg.covers(target_id=target.id))
-    accounts_cell = get_cell(cover.target.cterm.config, 'ACCOUNTS_CELL')
+    accounts_cell = get_cell(cover.source.cterm.config, 'ACCOUNTS_CELL')
     return accounts_cell
 
 
