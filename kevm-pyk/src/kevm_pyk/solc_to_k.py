@@ -13,7 +13,7 @@ from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KPro
 from pyk.prelude.kbool import TRUE, andBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
-from pyk.utils import FrozenDict, intersperse
+from pyk.utils import FrozenDict
 
 from .kevm import KEVM
 
@@ -64,7 +64,7 @@ class Contract:
 
         @property
         def klabel(self) -> KLabel:
-            args_list = '_'.join([_evm_base_sort(input_type).name for input_type in self.arg_types])
+            args_list = '_'.join(self.arg_types)
             return KLabel(f'method_{self.contract_name}_{self.name}_{args_list}')
 
         @property
@@ -73,9 +73,16 @@ class Contract:
 
         @property
         def production(self) -> KProduction:
-            input_nonterminals = (KNonTerminal(_evm_base_sort(input_type)) for input_type in self.arg_types)
             items_before: List[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
-            items_args: List[KProductionItem] = list(intersperse(input_nonterminals, KTerminal(',')))
+
+            items_args: List[KProductionItem] = []
+            count = 0
+            for input_type in self.arg_types:
+                if count > 0:
+                    items_args += [KTerminal(',')]
+                items_args += [KNonTerminal(_evm_base_sort(input_type)), KTerminal(':'), KTerminal(input_type)]
+                count += 1
+
             items_after: List[KProductionItem] = [KTerminal(')')]
             return KProduction(
                 self.sort,
