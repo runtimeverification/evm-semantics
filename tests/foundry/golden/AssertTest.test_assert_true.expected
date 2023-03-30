@@ -103,9 +103,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                  ...
                </evm>
                <network>
-                 <activeAccounts>
-                   ( SetItem ( ( 1032069922050249630382865877677304880282300743300 => 645326474426547203313410069153905908525362434349 ) ) SetItem ( ( 645326474426547203313410069153905908525362434349 => 1032069922050249630382865877677304880282300743300 ) ) )
-                 </activeAccounts>
                  <accounts>
                    ( ( <account>
                      <acctID>
@@ -324,9 +321,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                  ...
                </evm>
                <network>
-                 <activeAccounts>
-                   ( SetItem ( 645326474426547203313410069153905908525362434349 ) SetItem ( 1032069922050249630382865877677304880282300743300 ) )
-                 </activeAccounts>
                  <accounts>
                    ( <account>
                      <acctID>
