@@ -427,6 +427,7 @@ def foundry_show(
         '<pc>',
         '<gas>',
         '<code>',
+        '<activeAccounts>',
     ]
 
     kcfg_show = KCFGShow(foundry.kevm)
