@@ -213,24 +213,30 @@ def foundry_kompile(
     syntax_module = 'FOUNDRY-MAIN'
     foundry = Foundry(foundry_root)
     foundry_definition_dir = foundry.out / 'kompiled'
+    foundry_requires_dir = foundry_definition_dir / 'requires'
     foundry_llvm_dir = foundry.out / 'kompiled-llvm'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
     ensure_dir_path(foundry_definition_dir)
+    ensure_dir_path(foundry_requires_dir)
     ensure_dir_path(foundry_llvm_dir)
 
+    requires_local = []
     for r in requires:
-        req = Path(r)
+        req = Path(r).resolve()
         if not req.exists():
             raise ValueError(f'No such file: {req}')
-        req_path = foundry_definition_dir / req
+        req_name = '_'.join(req.parts[1:])
+        requires_local.append(req_name)
+        req_path = foundry_requires_dir / req_name
         if regen or not req_path.exists():
             _LOGGER.info(f'Copying requires path: {req} -> {req_path}')
             shutil.copy(req, req_path)
             regen = True
 
     if regen or not foundry_main_file.exists():
-        requires = ['foundry.md'] + list(requires)
+        requires = ['foundry.md']
+        requires += [f'requires/{name}' for name in list(requires_local)]
         imports = ['FOUNDRY'] + list(imports)
         kevm = KEVM(definition_dir)
         empty_config = kevm.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
