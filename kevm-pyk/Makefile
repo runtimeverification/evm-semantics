@@ -1,35 +1,57 @@
-.PHONY: default all clean build install \
-        poetry-install                  \
-        test test-unit test-integration \
-        format isort autoflake black    \
-        check check-isort check-autoflake check-black check-flake8 check-mypy
+POETRY     := poetry
+POETRY_RUN := $(POETRY) run
+
 
 default: check test-unit
 
-all: check test
+all: check cov
 
+.PHONY: clean
 clean:
-	rm -rf dist .mypy_cache
+	rm -rf dist .coverage cov-* .mypy_cache .pytest_cache
 	find -type d -name __pycache__ -prune -exec rm -rf {} \;
 
+.PHONY: build
 build:
-	poetry build
+	$(POETRY) build
 
+.PHONY: poetry-install
 poetry-install:
-	poetry install -vvv
-
-POETRY_RUN := poetry run
+	$(POETRY) install -vvv
 
 
 # Tests
 
-test: test-unit test-integration
+TEST_ARGS :=
+
+test: test-all
+
+test-all: poetry-install
+	$(POETRY_RUN) pytest src/tests --maxfail=1 --verbose --durations=0 --numprocesses=4 --dist=worksteal $(TEST_ARGS)
 
 test-unit: poetry-install
 	$(POETRY_RUN) pytest src/tests/unit --maxfail=1 --verbose $(TEST_ARGS)
 
 test-integration: poetry-install
-	$(POETRY_RUN) pytest src/tests/integration --numprocesses=4 --durations=0 --maxfail=1 --verbose $(TEST_ARGS)
+	$(POETRY_RUN) pytest src/tests/integration --maxfail=1 --verbose --durations=0 --numprocesses=4 --dist=worksteal $(TEST_ARGS)
+
+
+# Coverage
+
+COV_ARGS :=
+
+cov: cov-all
+
+cov-%: TEST_ARGS += --cov=kevm_pyk --no-cov-on-fail --cov-branch --cov-report=term
+
+cov-all: TEST_ARGS += --cov-report=html:cov-all-html $(COV_ARGS)
+cov-all: test-all
+
+cov-unit: TEST_ARGS += --cov-report=html:cov-unit-html $(COV_ARGS)
+cov-unit: test-unit
+
+cov-integration: TEST_ARGS += --cov-report=html:cov-integration-html $(COV_ARGS)
+cov-integration: test-integration
 
 
 # Checks and formatting
