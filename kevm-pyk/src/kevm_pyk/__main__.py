@@ -1,16 +1,16 @@
+from __future__ import annotations
+
 import json
 import logging
 import sys
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union
+from typing import TYPE_CHECKING
 
 from pyk.cli_utils import BugReport, dir_path, file_path
-from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
-from pyk.kcfg.tui import KCFGElem
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 
@@ -30,7 +30,14 @@ from .kevm import KEVM, KEVMKompileMode
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
 from .utils import arg_pair_of, get_cfg_for_spec, parallel_kcfg_explore
 
-T = TypeVar('T')
+if TYPE_CHECKING:
+    from argparse import Namespace
+    from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union
+
+    from pyk.cterm import CTerm
+    from pyk.kcfg.tui import KCFGElem
+
+    T = TypeVar('T')
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
