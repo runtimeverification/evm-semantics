@@ -1,21 +1,29 @@
+from __future__ import annotations
+
 import json
 import logging
 from dataclasses import dataclass
 from functools import cached_property
-from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
+from typing import TYPE_CHECKING
 
 from pyk.cli_utils import run_process
-from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSort, KVariable
+from pyk.kast.inner import KApply, KAtt, KLabel, KRewrite, KSort, KVariable
 from pyk.kast.manip import abstract_term_safely
-from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KProductionItem, KRule, KSentence, KTerminal
+from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KRule, KTerminal
 from pyk.prelude.kbool import TRUE, andBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict
 
 from .kevm import KEVM
+
+if TYPE_CHECKING:
+    from pathlib import Path
+    from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
+
+    from pyk.kast import KInner
+    from pyk.kast.outer import KProductionItem, KSentence
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -119,7 +127,7 @@ class Contract:
                 else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
             )
 
-        def calldata_cell(self, contract: 'Contract') -> KInner:
+        def calldata_cell(self, contract: Contract) -> KInner:
             return KApply(contract.klabel_method, [KApply(contract.klabel), self.application])
 
         @cached_property
@@ -306,7 +314,7 @@ class Contract:
     def sentences(self) -> List[KSentence]:
         return [self.subsort, self.production, self.macro_bin_runtime] + self.field_sentences + self.method_sentences
 
-    def method_by_name(self, name: str) -> Optional['Contract.Method']:
+    def method_by_name(self, name: str) -> Optional[Contract.Method]:
         methods = [method for method in self.methods if method.name == 'setUp']
         if len(methods) > 1:
             raise ValueError(f'Found multiple methods with name {name}, expected at most one')
