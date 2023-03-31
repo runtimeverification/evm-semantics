@@ -1,21 +1,29 @@
+from __future__ import annotations
+
 import logging
 from pathlib import Path
-from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union
+from typing import TYPE_CHECKING
 
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli_utils import BugReport
-from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
+from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
 from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
-from pyk.kast.outer import KDefinition
-from pyk.kcfg import KCFG, KCFGExplore
-from pyk.ktool.kprove import KProve
+from pyk.kcfg import KCFGExplore
 from pyk.utils import single
 
-_LOGGER: Final = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union
 
-T1 = TypeVar('T1')
-T2 = TypeVar('T2')
+    from pyk.cli_utils import BugReport
+    from pyk.cterm import CTerm
+    from pyk.kast import KInner
+    from pyk.kast.outer import KDefinition
+    from pyk.kcfg import KCFG
+    from pyk.ktool.kprove import KProve
+
+    T1 = TypeVar('T1')
+    T2 = TypeVar('T2')
+
+_LOGGER: Final = logging.getLogger(__name__)
 
 
 def get_cfg_for_spec(  # noqa: N802
