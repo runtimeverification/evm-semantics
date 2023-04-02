@@ -171,7 +171,7 @@ plugin-deps: $(plugin_includes) $(plugin_c_includes)
 PYTHON_BIN   := python3.10
 KEVM_PYK_DIR := ./kevm-pyk
 POETRY       := poetry -C $(KEVM_PYK_DIR)
-POETRY_RUN   := $(POETRY) -- run
+POETRY_RUN   := $(POETRY) run --
 
 poetry-env:
 	$(POETRY) env use $(PYTHON_BIN)
@@ -325,7 +325,6 @@ install_libs := $(haskell_kompiled)                                        \
                 $(foundry_kompiled)                                        \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
                 kore-json.py                                               \
-                kast-json.py                                               \
                 release.md                                                 \
                 version
 
@@ -390,7 +389,7 @@ TEST_SYMBOLIC_BACKEND := haskell
 CHECK := git --no-pager diff --no-index --ignore-all-space -R
 
 KEVM_MODE     := NORMAL
-KEVM_SCHEDULE := LONDON
+KEVM_SCHEDULE := MERGE
 KEVM_CHAINID  := 1
 
 KPROVE_MODULE  = VERIFICATION
@@ -460,20 +459,20 @@ tests/%.run-expected: tests/% tests/%.expected
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
-tests/%.parse: tests/% $(KEVM_LIB)/kast-json.py $(KEVM_LIB)/kore-json.py
-	$(KEVM) kast $< kast $(KEVM_OPTS) $(KAST_OPTS) --backend $(TEST_CONCRETE_BACKEND) > $@-out
+tests/%.parse: tests/% $(KEVM_LIB)/kore-json.py
+	$(KEVM) kast $< $(KEVM_OPTS) $(KAST_OPTS) --backend $(TEST_CONCRETE_BACKEND) > $@-out
 	$(CHECK) $@-out $@-expected
 	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json $(KEVM_BIN)/kevm
-	$(POETRY_RUN) $(KEVM) kast $< kore $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
+	$(KEVM) kast $< $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
 	$(CHECK) tests/interactive/$*.gst-to-kore.out tests/interactive/$*.gst-to-kore.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/interactive/$*.gst-to-kore.out
 
 # solc-to-k
 # ---------
 
-FOUNDRY_PAR  := 4
+FOUNDRY_PAR := 4
 
 foundry-clean:
 	rm -rf tests/foundry/cache
@@ -507,13 +506,13 @@ tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
 
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove tests/foundry/out                              \
+	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
 	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
 	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
 	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
 
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
-	$(KEVM) foundry-kompile $< $(KEVM_OPTS) --verbose
+	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose
 tests/specs/examples/%-bin-runtime.k: KEVM = $(POETRY_RUN) kevm

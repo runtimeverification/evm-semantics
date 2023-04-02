@@ -1,21 +1,29 @@
+from __future__ import annotations
+
 import json
 import logging
 from dataclasses import dataclass
 from functools import cached_property
-from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
+from typing import TYPE_CHECKING
 
 from pyk.cli_utils import run_process
-from pyk.kast.inner import KApply, KAtt, KInner, KLabel, KRewrite, KSort, KVariable
+from pyk.kast.inner import KApply, KAtt, KLabel, KRewrite, KSort, KVariable
 from pyk.kast.manip import abstract_term_safely
-from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KProductionItem, KRule, KSentence, KTerminal
+from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KRule, KTerminal
 from pyk.prelude.kbool import TRUE, andBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, intersperse
 
 from .kevm import KEVM
+
+if TYPE_CHECKING:
+    from pathlib import Path
+    from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
+
+    from pyk.kast import KInner
+    from pyk.kast.outer import KProductionItem, KSentence
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -69,7 +77,7 @@ class Contract:
                 args.append(KEVM.abi_type(input_type, KVariable(input_name)))
                 rp = _range_predicate(KVariable(input_name), input_type)
                 if rp is None:
-                    _LOGGER.warning(
+                    _LOGGER.info(
                         f'Unsupported ABI type for method {contract_name}.{prod_klabel.name}, will not generate calldata sugar: {input_type}'
                     )
                     return None
@@ -87,7 +95,7 @@ class Contract:
                 else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
             )
 
-        def calldata_cell(self, contract: 'Contract') -> KInner:
+        def calldata_cell(self, contract: Contract) -> KInner:
             return KApply(contract.klabel_method, [KApply(contract.klabel), self.application])
 
         @cached_property
@@ -105,7 +113,7 @@ class Contract:
     contract_id: int
     contract_path: str
     bytecode: str
-    raw_sourcemap: str
+    raw_sourcemap: Optional[str]
     methods: Tuple[Method, ...]
     fields: FrozenDict
 
@@ -122,29 +130,17 @@ class Contract:
         self.contract_id = self.contract_json['id']
         self.contract_path = self.contract_json['ast']['absolutePath']
 
-        self.bytecode = (
-            self.contract_json['evm']['deployedBytecode']['object']
-            if not foundry
-            else self.contract_json['deployedBytecode']['object']
-        ).replace('0x', '')
+        evm = self.contract_json['evm'] if not foundry else self.contract_json
 
-        self.raw_sourcemap = (
-            self.contract_json['evm']['deployedBytecode']['sourceMap']
-            if not foundry
-            else self.contract_json['deployedBytecode']['sourceMap']
-        )
+        deployed_bytecode = evm['deployedBytecode']
+        self.bytecode = deployed_bytecode['object'].replace('0x', '')
+        self.raw_sourcemap = deployed_bytecode['sourceMap'] if 'sourceMap' in deployed_bytecode else None
 
+        method_ids = evm['methodIdentifiers'] if 'methodIdentifiers' in evm else {}
         _methods = []
-        if not foundry and 'evm' in self.contract_json and 'methodIdentifiers' in self.contract_json['evm']:
-            _method_identifiers = self.contract_json['evm']['methodIdentifiers']
-        elif foundry and 'methodIdentifiers' in self.contract_json:
-            _method_identifiers = self.contract_json['methodIdentifiers']
-        else:
-            _method_identifiers = []
-            _LOGGER.warning(f"Could not find member 'methodIdentifiers' while processing contract: {self.name}")
-        for msig in _method_identifiers:
+        for msig in method_ids:
             mname = msig.split('(')[0]
-            mid = int(_method_identifiers[msig], 16)
+            mid = int(method_ids[msig], 16)
             _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
             _methods.append(_m)
         self.methods = tuple(_methods)
@@ -155,7 +151,7 @@ class Contract:
             _fields = {}
             for _l, _s in _fields_list:
                 if _l in _fields:
-                    _LOGGER.warning(f'Found duplicate field access key on contract {self.name}: {_l}')
+                    _LOGGER.info(f'Found duplicate field access key on contract {self.name}: {_l}')
                     continue
                 _fields[_l] = _s
             self.fields = FrozenDict(_fields)
@@ -164,7 +160,7 @@ class Contract:
     def srcmap(self) -> Dict[int, Tuple[int, int, int, str, int]]:
         _srcmap = {}
 
-        if len(self.bytecode) > 0:
+        if len(self.bytecode) > 0 and self.raw_sourcemap is not None:
             instr_to_pc = {}
             pc = 0
             instr = 0
@@ -292,7 +288,7 @@ class Contract:
     def sentences(self) -> List[KSentence]:
         return [self.subsort, self.production, self.macro_bin_runtime] + self.field_sentences + self.method_sentences
 
-    def method_by_name(self, name: str) -> Optional['Contract.Method']:
+    def method_by_name(self, name: str) -> Optional[Contract.Method]:
         methods = [method for method in self.methods if method.name == 'setUp']
         if len(methods) > 1:
             raise ValueError(f'Found multiple methods with name {name}, expected at most one')
@@ -371,7 +367,7 @@ def _evm_base_sort(type_label: str) -> KSort:
     if type_label == 'string':
         return KSort('String')
 
-    _LOGGER.warning(f'Using generic sort K for type: {type_label}')
+    _LOGGER.info(f'Using generic sort K for type: {type_label}')
     return KSort('K')
 
 
@@ -428,7 +424,7 @@ def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
     if type_label == 'string':
         return TRUE
 
-    _LOGGER.warning(f'Unknown range predicate for type: {type_label}')
+    _LOGGER.info(f'Unknown range predicate for type: {type_label}')
     return None
 
 

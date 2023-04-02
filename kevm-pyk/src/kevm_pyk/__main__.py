@@ -1,19 +1,18 @@
+from __future__ import annotations
+
 import json
 import logging
 import sys
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING
 
-from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
-from pyk.cterm import CTerm
+from pyk.cli_utils import BugReport, dir_path, file_path
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
-from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
-from pyk.kcfg.tui import KCFGElem
+from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
-from pyk.utils import single
 
 from .foundry import (
     Foundry,
@@ -27,12 +26,18 @@ from .foundry import (
     foundry_step_node,
     foundry_to_dot,
 )
-from .gst_to_kore import gst_to_kore
 from .kevm import KEVM, KEVMKompileMode
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, find_free_port, parallel_kcfg_explore
+from .utils import arg_pair_of, get_cfg_for_spec, parallel_kcfg_explore
 
-T = TypeVar('T')
+if TYPE_CHECKING:
+    from argparse import Namespace
+    from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union
+
+    from pyk.cterm import CTerm
+    from pyk.kcfg.tui import KCFGElem
+
+    T = TypeVar('T')
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -70,13 +75,6 @@ def main() -> None:
 def exec_compile(contract_file: Path, **kwargs: Any) -> None:
     res = solc_compile(contract_file)
     print(json.dumps(res))
-
-
-def exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, **kwargs: Any) -> None:
-    gst_data = json.loads(input_file.read_text())
-    kore = gst_to_kore(gst_data, schedule, mode, chainid)
-    print(kore.text)
-    _LOGGER.info('Finished writing kore')
 
 
 def exec_kompile(
@@ -196,7 +194,7 @@ def exec_solc_to_k(
 
 def exec_foundry_kompile(
     definition_dir: Path,
-    foundry_out: Path,
+    foundry_root: Path,
     md_selector: Optional[str] = None,
     includes: Iterable[str] = (),
     regen: bool = False,
@@ -219,7 +217,7 @@ def exec_foundry_kompile(
     _ignore_arg(kwargs, 'o3', '-O3')
     foundry_kompile(
         definition_dir=definition_dir,
-        foundry_out=foundry_out,
+        foundry_root=foundry_root,
         includes=includes,
         md_selector=md_selector,
         regen=regen,
@@ -243,14 +241,17 @@ def exec_prove(
     md_selector: Optional[str] = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
-    max_depth: int = 100,
+    max_depth: int = 1000,
     max_iterations: Optional[int] = None,
     workers: int = 1,
     simplify_init: bool = True,
     break_every_step: bool = False,
+    break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
-    rpc_base_port: Optional[int] = None,
+    kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
     br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
@@ -266,10 +267,19 @@ def exec_prove(
         exclude_claim_labels=exclude_claim_labels,
     )
 
+    if isinstance(kore_rpc_command, str):
+        kore_rpc_command = kore_rpc_command.split()
+
     _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
     proof_problems = {c.label: KCFG.from_claim(kevm.definition, c) for c in claims}
     if simplify_init:
-        with KCFGExplore(kevm, port=find_free_port(), bug_report=br) as kcfg_explore:
+        with KCFGExplore(
+            kevm,
+            bug_report=br,
+            kore_rpc_command=kore_rpc_command,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
+        ) as kcfg_explore:
             proof_problems = {claim: kcfg_explore.simplify(claim, cfg) for claim, cfg in proof_problems.items()}
 
     results = parallel_kcfg_explore(
@@ -280,12 +290,15 @@ def exec_prove(
         max_iterations=max_iterations,
         workers=workers,
         break_every_step=break_every_step,
+        break_on_jumpi=break_on_jumpi,
         break_on_calls=break_on_calls,
         implication_every_block=implication_every_block,
-        rpc_base_port=rpc_base_port,
         is_terminal=KEVM.is_terminal,
         extract_branches=KEVM.extract_branches,
         bug_report=br,
+        kore_rpc_command=kore_rpc_command,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
     )
     failed = 0
     for pid, r in results.items():
@@ -297,39 +310,76 @@ def exec_prove(
     sys.exit(failed)
 
 
+def exec_show_kcfg(
+    definition_dir: Path,
+    spec_file: Path,
+    save_directory: Optional[Path] = None,
+    includes: Iterable[str] = (),
+    claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] = (),
+    spec_module: Optional[str] = None,
+    md_selector: Optional[str] = None,
+    nodes: Iterable[str] = (),
+    node_deltas: Iterable[Tuple[str, str]] = (),
+    to_module: bool = False,
+    minimize: bool = True,
+    **kwargs: Any,
+) -> None:
+    kevm = KEVM(definition_dir)
+    cfgid, kcfg = get_cfg_for_spec(
+        kevm,
+        spec_file,
+        save_directory=save_directory,
+        spec_module_name=spec_module,
+        include_dirs=[Path(i) for i in includes],
+        md_selector=md_selector,
+        claim_labels=claim_labels,
+        exclude_claim_labels=exclude_claim_labels,
+    )
+
+    kcfg_show = KCFGShow(kevm)
+    res_lines = kcfg_show.show(
+        cfgid,
+        kcfg,
+        nodes=nodes,
+        node_deltas=node_deltas,
+        to_module=to_module,
+        minimize=minimize,
+        node_printer=kevm.short_info,
+    )
+    print('\n'.join(res_lines))
+
+
 def exec_view_kcfg(
     definition_dir: Path,
     spec_file: Path,
-    save_directory: Path,
-    includes: List[str],
-    claim_label: Optional[str] = None,
+    save_directory: Optional[Path] = None,
+    includes: Iterable[str] = (),
+    claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] = (),
     spec_module: Optional[str] = None,
     md_selector: Optional[str] = None,
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
-
-    _LOGGER.info(f'Extracting claims from file: {spec_file}')
-    claim = single(
-        kevm.get_claims(
-            spec_file,
-            spec_module_name=spec_module,
-            include_dirs=[Path(i) for i in includes],
-            md_selector=md_selector,
-            claim_labels=([claim_label] if claim_label is not None else None),
-        )
+    _, kcfg = get_cfg_for_spec(
+        kevm,
+        spec_file,
+        save_directory=save_directory,
+        spec_module_name=spec_module,
+        include_dirs=[Path(i) for i in includes],
+        md_selector=md_selector,
+        claim_labels=claim_labels,
+        exclude_claim_labels=exclude_claim_labels,
     )
 
-    kcfg = KCFGExplore.read_cfg(claim.label, save_directory)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {claim} from {save_directory}')
     viewer = KCFGViewer(kcfg, kevm, node_printer=kevm.short_info)
     viewer.run()
 
 
 def exec_foundry_prove(
-    foundry_out: Path,
-    max_depth: int = 100,
+    foundry_root: Path,
+    max_depth: int = 1000,
     max_iterations: Optional[int] = None,
     reinit: bool = False,
     tests: Iterable[str] = (),
@@ -337,19 +387,25 @@ def exec_foundry_prove(
     workers: int = 1,
     simplify_init: bool = True,
     break_every_step: bool = False,
+    break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
-    rpc_base_port: Optional[int] = None,
     bug_report: bool = False,
-    rpc_command: Optional[str] = None,
+    kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
+
+    if isinstance(kore_rpc_command, str):
+        kore_rpc_command = kore_rpc_command.split()
+
     results = foundry_prove(
-        foundry_out=foundry_out,
+        foundry_root=foundry_root,
         max_depth=max_depth,
         max_iterations=max_iterations,
         reinit=reinit,
@@ -358,11 +414,13 @@ def exec_foundry_prove(
         workers=workers,
         simplify_init=simplify_init,
         break_every_step=break_every_step,
+        break_on_jumpi=break_on_jumpi,
         break_on_calls=break_on_calls,
         implication_every_block=implication_every_block,
-        rpc_base_port=rpc_base_port,
         bug_report=bug_report,
-        rpc_command=rpc_command,
+        kore_rpc_command=kore_rpc_command,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
     )
     failed = 0
     for pid, r in results.items():
@@ -375,7 +433,7 @@ def exec_foundry_prove(
 
 
 def exec_foundry_show(
-    foundry_out: Path,
+    foundry_root: Path,
     test: str,
     nodes: Iterable[str] = (),
     node_deltas: Iterable[Tuple[str, str]] = (),
@@ -384,7 +442,7 @@ def exec_foundry_show(
     **kwargs: Any,
 ) -> None:
     output = foundry_show(
-        foundry_out=foundry_out,
+        foundry_root=foundry_root,
         test=test,
         nodes=nodes,
         node_deltas=node_deltas,
@@ -394,12 +452,12 @@ def exec_foundry_show(
     print(output)
 
 
-def exec_foundry_to_dot(foundry_out: Path, test: str, **kwargs: Any) -> None:
-    foundry_to_dot(foundry_out=foundry_out, test=test)
+def exec_foundry_to_dot(foundry_root: Path, test: str, **kwargs: Any) -> None:
+    foundry_to_dot(foundry_root=foundry_root, test=test)
 
 
-def exec_foundry_list(foundry_out: Path, details: bool = True, **kwargs: Any) -> None:
-    stats = foundry_list(foundry_out=foundry_out)
+def exec_foundry_list(foundry_root: Path, details: bool = True, **kwargs: Any) -> None:
+    stats = foundry_list(foundry_root=foundry_root)
     delim = '\n\n' if details else '\n'
     output = delim.join(stat.pretty(details=details) for stat in stats)
     print(output)
@@ -428,10 +486,11 @@ def exec_run(
     sys.exit(krun_result.returncode)
 
 
-def exec_foundry_view_kcfg(foundry_out: Path, test: str, **kwargs: Any) -> None:
-    kcfgs_dir = foundry_out / 'kcfgs'
+def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
+    foundry = Foundry(foundry_root)
+    kcfgs_dir = foundry.out / 'kcfgs'
     contract_name = test.split('.')[0]
-    foundry = Foundry(foundry_out)
+
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
@@ -446,69 +505,77 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, **kwargs: Any) -> None:
     viewer.run()
 
 
-def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, **kwargs: Any) -> None:
-    foundry_remove_node(foundry_out=foundry_out, test=test, node=node)
+def exec_foundry_remove_node(foundry_root: Path, test: str, node: str, **kwargs: Any) -> None:
+    foundry_remove_node(foundry_root=foundry_root, test=test, node=node)
 
 
 def exec_foundry_simplify_node(
-    foundry_out: Path,
+    foundry_root: Path,
     test: str,
     node: str,
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
     pretty_term = foundry_simplify_node(
-        foundry_out=foundry_out,
+        foundry_root=foundry_root,
         test=test,
         node=node,
         replace=replace,
         minimize=minimize,
         bug_report=bug_report,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
     )
     print(f'Simplified:\n{pretty_term}')
 
 
 def exec_foundry_step_node(
-    foundry_out: Path,
+    foundry_root: Path,
     test: str,
     node: str,
     repeat: int = 1,
     depth: int = 1,
-    minimize: bool = True,
     bug_report: bool = False,
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
     foundry_step_node(
-        foundry_out=foundry_out,
+        foundry_root=foundry_root,
         test=test,
         node=node,
         repeat=repeat,
         depth=depth,
-        minimize=minimize,
         bug_report=bug_report,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
     )
 
 
 def exec_foundry_section_edge(
-    foundry_out: Path,
+    foundry_root: Path,
     test: str,
     edge: Tuple[str, str],
     sections: int = 2,
     replace: bool = False,
-    minimize: bool = True,
     bug_report: bool = False,
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
     **kwargs: Any,
 ) -> None:
     foundry_section_edge(
-        foundry_out=foundry_out,
+        foundry_root=foundry_root,
         test=test,
         edge=edge,
         sections=sections,
         replace=replace,
-        minimize=minimize,
         bug_report=bug_report,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
     )
 
 
@@ -527,18 +594,37 @@ def _create_argument_parser() -> ArgumentParser:
     shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
     shared_args.add_argument('--workers', '-j', default=1, type=int, help='Number of processes to run in parallel.')
 
-    rpc_args = ArgumentParser(add_help=False)
-    rpc_args.add_argument(
-        '--rpc-base-port',
-        dest='rpc_base_port',
-        type=int,
-        help='Base port to use for RPC server invocations.',
+    display_args = ArgumentParser(add_help=False)
+    display_args.add_argument('--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.')
+    display_args.add_argument('--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.')
+
+    foundry_root_arg = ArgumentParser(add_help=False)
+    foundry_root_arg.add_argument(
+        '--foundry-project-root',
+        dest='foundry_root',
+        type=dir_path,
+        default=Path('.'),
+        help='Path to Foundry project root directory.',
     )
+
+    rpc_args = ArgumentParser(add_help=False)
     rpc_args.add_argument(
         '--bug-report',
         default=False,
         action='store_true',
         help='Generate a haskell-backend bug report for the execution.',
+    )
+
+    smt_args = ArgumentParser(add_help=False)
+    smt_args.add_argument(
+        '--smt-timeout', dest='smt_timeout', type=int, default=125, help='Timeout in ms to use for SMT queries.'
+    )
+    smt_args.add_argument(
+        '--smt-retry-limit',
+        dest='smt_retry_limit',
+        type=int,
+        default=4,
+        help='Number of times to retry SMT queries with scaling timeouts.',
     )
 
     explore_args = ArgumentParser(add_help=False)
@@ -548,6 +634,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Store a node for every EVM opcode step (expensive).',
+    )
+    explore_args.add_argument(
+        '--break-on-jumpi',
+        dest='break_on_jumpi',
+        default=False,
+        action='store_true',
+        help='Store a node for every EVM jump opcode.',
     )
     explore_args.add_argument(
         '--break-on-calls',
@@ -602,11 +695,11 @@ def _create_argument_parser() -> ArgumentParser:
         type=int,
         help='Store every Nth state in the CFG for inspection.',
     )
-
     explore_args.add_argument(
-        '--with-custom-rpc',
-        dest='rpc_command',
+        '--kore-rpc-command',
+        dest='kore_rpc_command',
         type=str,
+        default='kore-rpc',
         help='Custom command to start RPC server',
     )
 
@@ -628,12 +721,6 @@ def _create_argument_parser() -> ArgumentParser:
     kprove_args = ArgumentParser(add_help=False)
     kprove_args.add_argument(
         '--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.'
-    )
-    kprove_args.add_argument(
-        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize prover output.'
-    )
-    kprove_args.add_argument(
-        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize prover output.'
     )
 
     k_kompile_args = ArgumentParser(add_help=False)
@@ -702,6 +789,41 @@ def _create_argument_parser() -> ArgumentParser:
         help='Extra modules to import into generated main module.',
     )
 
+    spec_args = ArgumentParser(add_help=False)
+    spec_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
+    spec_args.add_argument('--save-directory', type=dir_path, help='Path to where CFGs are stored.')
+    spec_args.add_argument(
+        '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
+    )
+    spec_args.add_argument(
+        '--exclude-claim',
+        type=str,
+        dest='exclude_claim_labels',
+        action='append',
+        help='Skip listed claims, MODULE_NAME.claim-id',
+    )
+
+    kcfg_show_args = ArgumentParser(add_help=False)
+    kcfg_show_args.add_argument(
+        '--node',
+        type=str,
+        dest='nodes',
+        default=[],
+        action='append',
+        help='List of nodes to display as well.',
+    )
+    kcfg_show_args.add_argument(
+        '--node-delta',
+        type=arg_pair_of(str, str),
+        dest='node_deltas',
+        default=[],
+        action='append',
+        help='List of nodes to display delta for.',
+    )
+    kcfg_show_args.add_argument(
+        '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
+    )
+
     parser = ArgumentParser(prog='python3 -m kevm_pyk')
 
     command_parser = parser.add_subparsers(dest='command', required=True)
@@ -729,34 +851,23 @@ def _create_argument_parser() -> ArgumentParser:
         '--openssl-root', type=dir_path, help='Path to openssl root directory (only for --target-darwin).'
     )
 
-    prove_args = command_parser.add_parser(
-        'prove', help='Run KEVM proof.', parents=[shared_args, k_args, kprove_args, rpc_args, explore_args]
-    )
-    prove_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    prove_args.add_argument(
-        '--save-directory', dest='save_directory', type=ensure_dir_path, help='Directory to store CFGs in.'
-    )
-    prove_args.add_argument(
-        '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
-    )
-    prove_args.add_argument(
-        '--exclude-claim',
-        type=str,
-        dest='exclude_claim_labels',
-        action='append',
-        help='Skip listed claims, MODULE_NAME.claim-id',
+    _ = command_parser.add_parser(
+        'prove',
+        help='Run KEVM proof.',
+        parents=[shared_args, k_args, kprove_args, rpc_args, smt_args, explore_args, spec_args],
     )
 
-    view_kcfg_args = command_parser.add_parser(
+    _ = command_parser.add_parser(
         'view-kcfg',
         help='Display tree view of CFG',
-        parents=[shared_args, k_args],
+        parents=[shared_args, k_args, spec_args],
     )
-    view_kcfg_args.add_argument(
-        'save_directory', type=dir_path, help='Path to where CFGs are stored (--save-directory option to prove).'
+
+    _ = command_parser.add_parser(
+        'show-kcfg',
+        help='Display tree show of CFG',
+        parents=[shared_args, k_args, kcfg_show_args, spec_args, display_args],
     )
-    view_kcfg_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    view_kcfg_args.add_argument('--claim', type=str, dest='claim_label', help='Claim identifier to load CFG for.')
 
     run_args = command_parser.add_parser(
         'run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args, k_args]
@@ -789,13 +900,6 @@ def _create_argument_parser() -> ArgumentParser:
     solc_args = command_parser.add_parser('compile', help='Generate combined JSON with solc compilation results.')
     solc_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
 
-    gst_to_kore_args = command_parser.add_parser(
-        'gst-to-kore',
-        help='Convert a GeneralStateTest to Kore for compsumption by KEVM.',
-        parents=[shared_args, evm_chain_args],
-    )
-    gst_to_kore_args.add_argument('input_file', type=file_path, help='Path to GST.')
-
     solc_to_k_args = command_parser.add_parser(
         'solc-to-k',
         help='Output helper K definition for given JSON output from solc compiler.',
@@ -807,9 +911,8 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_kompile = command_parser.add_parser(
         'foundry-kompile',
         help='Kompile K definition corresponding to given output directory.',
-        parents=[shared_args, k_args, k_gen_args, k_kompile_args],
+        parents=[shared_args, k_args, k_gen_args, k_kompile_args, foundry_root_arg],
     )
-    foundry_kompile.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_kompile.add_argument(
         '--regen',
         dest='regen',
@@ -828,9 +931,8 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_prove_args = command_parser.add_parser(
         'foundry-prove',
         help='Run Foundry Proof.',
-        parents=[shared_args, k_args, kprove_args, rpc_args, explore_args],
+        parents=[shared_args, k_args, kprove_args, smt_args, rpc_args, explore_args, foundry_root_arg],
     )
-    foundry_prove_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_prove_args.add_argument(
         '--test',
         type=str,
@@ -858,50 +960,22 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_show_args = command_parser.add_parser(
         'foundry-show',
         help='Display a given Foundry CFG.',
-        parents=[shared_args, k_args],
+        parents=[shared_args, k_args, kcfg_show_args, display_args, foundry_root_arg],
     )
-    foundry_show_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
-    foundry_show_args.add_argument(
-        '--node',
-        type=str,
-        dest='nodes',
-        default=[],
-        action='append',
-        help='List of nodes to display as well.',
-    )
-    foundry_show_args.add_argument(
-        '--node-delta',
-        type=arg_pair_of(str, str),
-        dest='node_deltas',
-        default=[],
-        action='append',
-        help='List of nodes to display delta for.',
-    )
-    foundry_show_args.add_argument(
-        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.'
-    )
-    foundry_show_args.add_argument(
-        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
-    )
-    foundry_show_args.add_argument(
-        '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
-    )
 
     foundry_to_dot = command_parser.add_parser(
         'foundry-to-dot',
         help='Dump the given CFG for the test as DOT for visualization.',
-        parents=[shared_args],
+        parents=[shared_args, foundry_root_arg],
     )
-    foundry_to_dot.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_to_dot.add_argument('test', type=str, help='Display the CFG for this test.')
 
     foundry_list_args = command_parser.add_parser(
         'foundry-list',
         help='List information about CFGs on disk',
-        parents=[shared_args, k_args],
+        parents=[shared_args, k_args, foundry_root_arg],
     )
-    foundry_list_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_list_args.add_argument(
         '--details', dest='details', default=True, action='store_true', help='Information about progress on each CFG.'
     )
@@ -910,44 +984,34 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_view_kcfg_args = command_parser.add_parser(
         'foundry-view-kcfg',
         help='Display tree view of CFG',
-        parents=[shared_args],
+        parents=[shared_args, foundry_root_arg],
     )
-    foundry_view_kcfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_view_kcfg_args.add_argument('test', type=str, help='View the CFG for this test.')
 
     foundry_remove_node = command_parser.add_parser(
         'foundry-remove-node',
         help='Remove a node and its successors.',
-        parents=[shared_args],
+        parents=[shared_args, foundry_root_arg],
     )
-    foundry_remove_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
     foundry_remove_node.add_argument('node', type=str, help='Node to remove CFG subgraph from.')
 
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',
         help='Simplify a given node, and potentially replace it.',
-        parents=[shared_args, rpc_args],
+        parents=[shared_args, smt_args, rpc_args, display_args, foundry_root_arg],
     )
-    foundry_simplify_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_simplify_node.add_argument('test', type=str, help='Simplify node in this CFG.')
     foundry_simplify_node.add_argument('node', type=str, help='Node to simplify in CFG.')
     foundry_simplify_node.add_argument(
         '--replace', default=False, help='Replace the original node with the simplified variant in the graph.'
     )
-    foundry_simplify_node.add_argument(
-        '--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.'
-    )
-    foundry_simplify_node.add_argument(
-        '--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.'
-    )
 
     foundry_step_node = command_parser.add_parser(
         'foundry-step-node',
         help='Step from a given node, adding it to the CFG.',
-        parents=[shared_args, rpc_args],
+        parents=[shared_args, rpc_args, smt_args, foundry_root_arg],
     )
-    foundry_step_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
     foundry_step_node.add_argument('node', type=str, help='Node to step from in CFG.')
     foundry_step_node.add_argument(
@@ -960,9 +1024,8 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_section_edge = command_parser.add_parser(
         'foundry-section-edge',
         help='Given an edge in the graph, cut it into sections to get intermediate nodes.',
-        parents=[shared_args, rpc_args],
+        parents=[shared_args, rpc_args, smt_args, foundry_root_arg],
     )
-    foundry_section_edge.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_section_edge.add_argument('test', type=str, help='Section edge in this CFG.')
     foundry_section_edge.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
     foundry_section_edge.add_argument(

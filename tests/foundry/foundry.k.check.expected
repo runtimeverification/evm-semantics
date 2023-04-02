@@ -209,6 +209,8 @@ module ADDRTEST-BIN-RUNTIME
     
     syntax AddrTestMethod ::= "test_addr_true" "(" ")" [symbol(), klabel(method_AddrTest_test_addr_true)]
     
+    syntax AddrTestMethod ::= "test_builtInAddresses" "(" ")" [symbol(), klabel(method_AddrTest_test_builtInAddresses)]
+    
     syntax AddrTestMethod ::= "test_notBuiltinAddress_concrete" "(" ")" [symbol(), klabel(method_AddrTest_test_notBuiltinAddress_concrete)]
     
     syntax AddrTestMethod ::= "test_notBuiltinAddress_symbolic" "(" Int ")" [symbol(), klabel(method_AddrTest_test_notBuiltinAddress_symbolic)]
@@ -241,6 +243,9 @@ module ADDRTEST-BIN-RUNTIME
       
     
     rule  ( AddrTest . test_addr_true ( ) => #abiCallData ( "test_addr_true" , .TypedArgs ) )
+      
+    
+    rule  ( AddrTest . test_builtInAddresses ( ) => #abiCallData ( "test_builtInAddresses" , .TypedArgs ) )
       
     
     rule  ( AddrTest . test_notBuiltinAddress_concrete ( ) => #abiCallData ( "test_notBuiltinAddress_concrete" , .TypedArgs ) )
@@ -278,6 +283,9 @@ module ADDRTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_addr_true" ) => 809049819 )
+      
+    
+    rule  ( selector ( "test_builtInAddresses" ) => 3220291840 )
       
     
     rule  ( selector ( "test_notBuiltinAddress_concrete" ) => 2409208231 )
@@ -1030,6 +1038,17 @@ module BROADCASTTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "vm" ) => 980845667 )
+      
+
+endmodule
+
+module CONSTANTS-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= ConstantsContract
+    
+    syntax ConstantsContract ::= "Constants" [symbol(), klabel(contract_Constants)]
+    
       
 
 endmodule
@@ -1958,6 +1977,8 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     
     syntax ExpectRevertTestMethod ::= "test_expectRevert_message" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_message)]
     
+    syntax ExpectRevertTestMethod ::= "test_expectRevert_returnValue" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_returnValue)]
+    
     syntax ExpectRevertTestMethod ::= "test_expectRevert_true" "(" ")" [symbol(), klabel(method_ExpectRevertTest_test_expectRevert_true)]
     
     syntax ExpectRevertTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ExpectRevertTest_vm)]
@@ -2000,6 +2021,9 @@ module EXPECTREVERTTEST-BIN-RUNTIME
       
     
     rule  ( ExpectRevertTest . test_expectRevert_message ( ) => #abiCallData ( "test_expectRevert_message" , .TypedArgs ) )
+      
+    
+    rule  ( ExpectRevertTest . test_expectRevert_returnValue ( ) => #abiCallData ( "test_expectRevert_returnValue" , .TypedArgs ) )
       
     
     rule  ( ExpectRevertTest . test_expectRevert_true ( ) => #abiCallData ( "test_expectRevert_true" , .TypedArgs ) )
@@ -2047,6 +2071,9 @@ module EXPECTREVERTTEST-BIN-RUNTIME
     rule  ( selector ( "test_expectRevert_message" ) => 3706733127 )
       
     
+    rule  ( selector ( "test_expectRevert_returnValue" ) => 4193569282 )
+      
+    
     rule  ( selector ( "test_expectRevert_true" ) => 2931127071 )
       
     
@@ -2088,6 +2115,28 @@ module REVERTER-BIN-RUNTIME
       
     
     rule  ( selector ( "revertWithoutReason" ) => 1097275021 )
+      
+
+endmodule
+
+module REVERTERWITHRETURN-BIN-RUNTIME
+    imports public FOUNDRY
+    
+    syntax Contract ::= ReverterWithReturnContract
+    
+    syntax ReverterWithReturnContract ::= "ReverterWithReturn" [symbol(), klabel(contract_ReverterWithReturn)]
+    
+      
+    
+    syntax Bytes ::= ReverterWithReturnContract "." ReverterWithReturnMethod [function(), symbol(), klabel(method_ReverterWithReturn)]
+    
+    syntax ReverterWithReturnMethod ::= "revertUnless" "(" Int ")" [symbol(), klabel(method_ReverterWithReturn_revertUnless)]
+    
+    rule  ( ReverterWithReturn . revertUnless ( V0_returnInstead ) => #abiCallData ( "revertUnless" , #bool ( V0_returnInstead ) , .TypedArgs ) )
+       ensures #rangeBool ( V0_returnInstead )
+      
+    
+    rule  ( selector ( "revertUnless" ) => 260261997 )
       
 
 endmodule
@@ -2897,6 +2946,12 @@ module LOOPSTEST-BIN-RUNTIME
     
     syntax LoopsTestMethod ::= "testSumToNBroken" "(" Int ")" [symbol(), klabel(method_LoopsTest_testSumToNBroken)]
     
+    syntax LoopsTestMethod ::= "test_sum_10" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_10)]
+    
+    syntax LoopsTestMethod ::= "test_sum_100" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_100)]
+    
+    syntax LoopsTestMethod ::= "test_sum_1000" "(" ")" [symbol(), klabel(method_LoopsTest_test_sum_1000)]
+    
     syntax LoopsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_LoopsTest_vm)]
     
     rule  ( LoopsTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
@@ -2949,6 +3004,15 @@ module LOOPSTEST-BIN-RUNTIME
        ensures #rangeUInt ( 256 , V0_n )
       
     
+    rule  ( LoopsTest . test_sum_10 ( ) => #abiCallData ( "test_sum_10" , .TypedArgs ) )
+      
+    
+    rule  ( LoopsTest . test_sum_100 ( ) => #abiCallData ( "test_sum_100" , .TypedArgs ) )
+      
+    
+    rule  ( LoopsTest . test_sum_1000 ( ) => #abiCallData ( "test_sum_1000" , .TypedArgs ) )
+      
+    
     rule  ( LoopsTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
     
@@ -2998,6 +3062,15 @@ module LOOPSTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "testSumToNBroken" ) => 1318374999 )
+      
+    
+    rule  ( selector ( "test_sum_10" ) => 1087009050 )
+      
+    
+    rule  ( selector ( "test_sum_100" ) => 1519953344 )
+      
+    
+    rule  ( selector ( "test_sum_1000" ) => 222767225 )
       
     
     rule  ( selector ( "vm" ) => 980845667 )
@@ -6953,6 +7026,7 @@ module FOUNDRY-MAIN
     imports public ASSUMETEST-BIN-RUNTIME
     imports public BLOCKPARAMSTEST-BIN-RUNTIME
     imports public BROADCASTTEST-BIN-RUNTIME
+    imports public CONSTANTS-BIN-RUNTIME
     imports public CONTRACT-BIN-RUNTIME
     imports public CONTRACTTEST-BIN-RUNTIME
     imports public CONTRACTBTEST-BIN-RUNTIME
@@ -6967,6 +7041,7 @@ module FOUNDRY-MAIN
     imports public DEPTHREVERTER-BIN-RUNTIME
     imports public EXPECTREVERTTEST-BIN-RUNTIME
     imports public REVERTER-BIN-RUNTIME
+    imports public REVERTERWITHRETURN-BIN-RUNTIME
     imports public FFITEST-BIN-RUNTIME
     imports public FILESTEST-BIN-RUNTIME
     imports public FORKTEST-BIN-RUNTIME
