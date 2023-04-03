@@ -228,14 +228,17 @@ def foundry_kompile(
     ensure_dir_path(foundry_requires_dir)
     ensure_dir_path(foundry_llvm_dir)
 
-    requires_local = []
+    requires_paths: Dict[str, str] = {}
     for r in requires:
         req = Path(r).resolve()
         if not req.exists():
             raise ValueError(f'No such file: {req}')
-        req_name = '_'.join(req.parts[1:])
-        requires_local.append(req_name)
-        req_path = foundry_requires_dir / req_name
+        if req.name in requires_paths.keys():
+            raise ValueError(
+                f'Required K files have conflicting names: {r} and {requires_paths[req.name]}. Consider changing the name of one of these files.'
+            )
+        requires_paths[req.name] = r
+        req_path = foundry_requires_dir / req.name
         if regen or not req_path.exists():
             _LOGGER.info(f'Copying requires path: {req} -> {req_path}')
             shutil.copy(req, req_path)
@@ -243,7 +246,7 @@ def foundry_kompile(
 
     if regen or not foundry_main_file.exists():
         requires = ['foundry.md']
-        requires += [f'requires/{name}' for name in list(requires_local)]
+        requires += [f'requires/{name}' for name in list(requires_paths.keys())]
         imports = ['FOUNDRY'] + list(imports)
         kevm = KEVM(definition_dir)
         empty_config = kevm.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
