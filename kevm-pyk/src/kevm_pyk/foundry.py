@@ -230,7 +230,7 @@ def foundry_kompile(
 
     requires_paths: Dict[str, str] = {}
     for r in requires:
-        req = Path(r).resolve()
+        req = Path(r)
         if not req.exists():
             raise ValueError(f'No such file: {req}')
         if req.name in requires_paths.keys():
