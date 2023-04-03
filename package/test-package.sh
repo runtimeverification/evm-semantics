@@ -31,7 +31,6 @@ kevm kompile --backend haskell tests/specs/examples/erc20-spec.md \
     --definition tests/specs/examples/erc20-spec/haskell          \
     --main-module VERIFICATION                                    \
     --syntax-module VERIFICATION                                  \
-    --concrete-rules-file tests/specs/concrete-rules.txt          \
     --verbose
 # This test is probably too long for public Github runner and currently seems broken
 if ! ${NIX:-false}; then
