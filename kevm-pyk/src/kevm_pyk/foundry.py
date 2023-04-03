@@ -1,19 +1,20 @@
+from __future__ import annotations
+
 import json
 import logging
 import os
 import shutil
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Dict, Final, Iterable, List, NamedTuple, Optional, Tuple, Union
+from typing import TYPE_CHECKING, NamedTuple
 
 import tomlkit
 from pyk.cli_utils import BugReport, check_file_path, ensure_dir_path
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
+from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
 from pyk.kast.manip import get_cell, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
-from pyk.kcfg.tui import KCFGElem
 from pyk.ktool.kompile import KompileBackend, LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -25,6 +26,12 @@ from pyk.utils import shorten_hashes
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_main_module
 from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, parallel_kcfg_explore
+
+if TYPE_CHECKING:
+    from typing import Any, Dict, Final, Iterable, List, Optional, Tuple, Union
+
+    from pyk.kast import KInner
+    from pyk.kcfg.tui import KCFGElem
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -452,7 +459,7 @@ class CfgStat(NamedTuple):
     stuck_nodes: int
 
     @staticmethod
-    def from_file(path: Path) -> 'CfgStat':
+    def from_file(path: Path) -> CfgStat:
         check_file_path(path)
         cfg_json = json.loads(path.read_text())
         cfg_id = cfg_json['cfgid']

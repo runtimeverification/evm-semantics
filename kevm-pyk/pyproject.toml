@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "kevm-pyk"
-version = "1.0.67"
+version = "1.0.68"
 description = ""
 authors = [
     "Runtime Verification, Inc. <contact@runtimeverification.com>",
@@ -23,10 +23,12 @@ flake8 = "*"
 flake8-bugbear = "*"
 flake8-comprehensions = "*"
 flake8-quotes = "*"
+flake8-type-checking = "*"
 isort = "*"
 mypy = "*"
 pep8-naming = "*"
 pytest = "*"
+pytest-cov = "*"
 pytest-mock = "*"
 pytest-xdist = "*"
 
