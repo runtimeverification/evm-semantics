@@ -66,7 +66,7 @@ runProve() {
 
     spec="$1" ; shift
 
-    kevm prove --backend haskell ${spec} --verif-module OPTIMIZE --concrete-rules-file tests/specs/concrete-rules.txt "$@"
+    kevm prove --backend haskell ${spec} --verif-module OPTIMIZE "$@"
 }
 
 doOptimization() {
