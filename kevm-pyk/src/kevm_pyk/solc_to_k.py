@@ -122,7 +122,8 @@ class Contract:
             for _method in contract_json['abi']:
                 if _method['type'] == 'function' and _method['name'] == _mname:
                     return _method
-            raise ValueError(f'Method not found in abi: {_mname}')
+            _LOGGER.warning(f'Method not found in abi: {_mname}')
+            return None
 
         self.name = contract_name
         self.contract_json = contract_json
@@ -141,8 +142,10 @@ class Contract:
         for msig in method_ids:
             mname = msig.split('(')[0]
             mid = int(method_ids[msig], 16)
-            _m = Contract.Method(mname, mid, _get_method_abi(mname), contract_name, self.sort_method)
-            _methods.append(_m)
+            _sort = _get_method_abi(mname)
+            if _sort != None:
+                _m = Contract.Method(mname, mid, _sort, contract_name, self.sort_method)
+                _methods.append(_m)
         self.methods = tuple(_methods)
 
         self.fields = FrozenDict({})
