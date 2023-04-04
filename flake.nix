@@ -2,8 +2,10 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    k-framework.url = "github:runtimeverification/k/v5.5.154";
-    nixpkgs.follows = "k-framework/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    k-framework.url = "github:runtimeverification/k/v5.6.16";
+    k-framework.inputs.nixpkgs.follows = "nixpkgs";
+    #nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.url = "github:runtimeverification/rv-nix-tools";
     poetry2nix.follows = "pyk/poetry2nix";
@@ -17,7 +19,7 @@
       "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
-    pyk.url = "github:runtimeverification/pyk/v0.1.204";
+    pyk.url = "github:runtimeverification/pyk/v0.1.217";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
 
@@ -162,6 +164,10 @@
           inherit system;
           overlays = [
             (final: prev: { llvm-backend-release = false; })
+            (final: prev: {
+              # https://github.com/NixOS/nixpkgs/pull/219240
+              solc = prev.callPackage ./nix/solc/default.nix {};
+            })
             k-framework.overlay
             blockchain-k-plugin.overlay
             poetry2nix.overlay
