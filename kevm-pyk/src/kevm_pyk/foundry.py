@@ -418,7 +418,7 @@ def foundry_prove(
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
     results = run_cfg_group(list(setup_methods.values()))
-    failed = (setup_cfg for setup_cfg, passed in results.items() if not passed)
+    failed = [setup_cfg for setup_cfg, passed in results.items() if not passed]
     if failed:
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
 
