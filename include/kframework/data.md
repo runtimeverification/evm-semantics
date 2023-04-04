@@ -13,6 +13,7 @@ module EVM-DATA
     imports SERIALIZATION
     imports STRING-BUFFER
     imports MAP-SYMBOLIC
+    imports SET-SYMBOLIC
     imports COLLECTIONS
     imports JSON-EXT
 ```
