@@ -45,6 +45,9 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule WS         +Bytes .Bytes => WS  [simplification]
     rule .Bytes +Bytes WS         => WS  [simplification]
 
+    // Re-associating bytes concatenation into a canonical right-associative form
+    rule (BA1 +Bytes BA2) +Bytes BA3 => BA1 +Bytes (BA2 +Bytes BA3) [simplification]
+
     // #range
 
     rule #range(_, _, K) => .Bytes requires K <=Int 0 [simplification]

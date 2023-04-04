@@ -1,14 +1,22 @@
+from __future__ import annotations
+
 import json
 import logging
 import sys
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 from functools import reduce
-from pathlib import Path
-from typing import Any, Final, Optional
+from typing import TYPE_CHECKING
 
 from pyk.cli_utils import file_path
 from pyk.kore.prelude import INT, LBL_MAP, LBL_MAP_ITEM, STOP_MAP, STRING, int_dv, string_dv
-from pyk.kore.syntax import DV, App, Pattern, Sort, SortApp, String, SymbolId
+from pyk.kore.syntax import DV, App, SortApp, String, SymbolId
+
+if TYPE_CHECKING:
+    from argparse import Namespace
+    from pathlib import Path
+    from typing import Any, Final, Optional
+
+    from pyk.kore.syntax import Pattern, Sort
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -140,6 +148,7 @@ def _parse_args() -> Namespace:
         'ISTANBUL',
         'BERLIN',
         'LONDON',
+        'MERGE',
     )
     modes = ('NORMAL', 'VMTESTS')
 

@@ -337,4 +337,10 @@ module LEMMAS-SPEC
        </k>
        requires 0 <Int VV0_controller_3c5818c8 andBool VV0_controller_3c5818c8 <Int pow160
 
+ // concatenation simplification
+ // ----------------------------
+
+    claim [bytes-reassociation]: <k> runLemma  ( ((((A +Bytes B) +Bytes C) +Bytes D) +Bytes E) +Bytes F )
+	                             => doneLemma ( A +Bytes (B +Bytes (C +Bytes (D +Bytes (E +Bytes F)))) ) ... </k>
+
 endmodule

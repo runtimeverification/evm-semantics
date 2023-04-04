@@ -1,16 +1,16 @@
+from __future__ import annotations
+
 import json
 import logging
 import sys
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union
+from typing import TYPE_CHECKING
 
 from pyk.cli_utils import BugReport, dir_path, file_path
-from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
-from pyk.kcfg.tui import KCFGElem
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 
@@ -30,7 +30,14 @@ from .kevm import KEVM, KEVMKompileMode
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
 from .utils import arg_pair_of, get_cfg_for_spec, parallel_kcfg_explore
 
-T = TypeVar('T')
+if TYPE_CHECKING:
+    from argparse import Namespace
+    from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union
+
+    from pyk.cterm import CTerm
+    from pyk.kcfg.tui import KCFGElem
+
+    T = TypeVar('T')
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -187,7 +194,7 @@ def exec_solc_to_k(
 
 def exec_foundry_kompile(
     definition_dir: Path,
-    foundry_out: Path,
+    foundry_root: Path,
     md_selector: Optional[str] = None,
     includes: Iterable[str] = (),
     regen: bool = False,
@@ -210,7 +217,7 @@ def exec_foundry_kompile(
     _ignore_arg(kwargs, 'o3', '-O3')
     foundry_kompile(
         definition_dir=definition_dir,
-        foundry_out=foundry_out,
+        foundry_root=foundry_root,
         includes=includes,
         md_selector=md_selector,
         regen=regen,
@@ -371,7 +378,7 @@ def exec_view_kcfg(
 
 
 def exec_foundry_prove(
-    foundry_out: Path,
+    foundry_root: Path,
     max_depth: int = 1000,
     max_iterations: Optional[int] = None,
     reinit: bool = False,
@@ -398,7 +405,7 @@ def exec_foundry_prove(
         kore_rpc_command = kore_rpc_command.split()
 
     results = foundry_prove(
-        foundry_out=foundry_out,
+        foundry_root=foundry_root,
         max_depth=max_depth,
         max_iterations=max_iterations,
         reinit=reinit,
@@ -426,7 +433,7 @@ def exec_foundry_prove(
 
 
 def exec_foundry_show(
-    foundry_out: Path,
+    foundry_root: Path,
     test: str,
     nodes: Iterable[str] = (),
     node_deltas: Iterable[Tuple[str, str]] = (),
@@ -435,7 +442,7 @@ def exec_foundry_show(
     **kwargs: Any,
 ) -> None:
     output = foundry_show(
-        foundry_out=foundry_out,
+        foundry_root=foundry_root,
         test=test,
         nodes=nodes,
         node_deltas=node_deltas,
@@ -445,12 +452,12 @@ def exec_foundry_show(
     print(output)
 
 
-def exec_foundry_to_dot(foundry_out: Path, test: str, **kwargs: Any) -> None:
-    foundry_to_dot(foundry_out=foundry_out, test=test)
+def exec_foundry_to_dot(foundry_root: Path, test: str, **kwargs: Any) -> None:
+    foundry_to_dot(foundry_root=foundry_root, test=test)
 
 
-def exec_foundry_list(foundry_out: Path, details: bool = True, **kwargs: Any) -> None:
-    stats = foundry_list(foundry_out=foundry_out)
+def exec_foundry_list(foundry_root: Path, details: bool = True, **kwargs: Any) -> None:
+    stats = foundry_list(foundry_root=foundry_root)
     delim = '\n\n' if details else '\n'
     output = delim.join(stat.pretty(details=details) for stat in stats)
     print(output)
@@ -479,10 +486,11 @@ def exec_run(
     sys.exit(krun_result.returncode)
 
 
-def exec_foundry_view_kcfg(foundry_out: Path, test: str, **kwargs: Any) -> None:
-    kcfgs_dir = foundry_out / 'kcfgs'
+def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
+    foundry = Foundry(foundry_root)
+    kcfgs_dir = foundry.out / 'kcfgs'
     contract_name = test.split('.')[0]
-    foundry = Foundry(foundry_out)
+
     kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
     if kcfg is None:
         raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
@@ -497,12 +505,12 @@ def exec_foundry_view_kcfg(foundry_out: Path, test: str, **kwargs: Any) -> None:
     viewer.run()
 
 
-def exec_foundry_remove_node(foundry_out: Path, test: str, node: str, **kwargs: Any) -> None:
-    foundry_remove_node(foundry_out=foundry_out, test=test, node=node)
+def exec_foundry_remove_node(foundry_root: Path, test: str, node: str, **kwargs: Any) -> None:
+    foundry_remove_node(foundry_root=foundry_root, test=test, node=node)
 
 
 def exec_foundry_simplify_node(
-    foundry_out: Path,
+    foundry_root: Path,
     test: str,
     node: str,
     replace: bool = False,
@@ -513,7 +521,7 @@ def exec_foundry_simplify_node(
     **kwargs: Any,
 ) -> None:
     pretty_term = foundry_simplify_node(
-        foundry_out=foundry_out,
+        foundry_root=foundry_root,
         test=test,
         node=node,
         replace=replace,
@@ -526,7 +534,7 @@ def exec_foundry_simplify_node(
 
 
 def exec_foundry_step_node(
-    foundry_out: Path,
+    foundry_root: Path,
     test: str,
     node: str,
     repeat: int = 1,
@@ -537,7 +545,7 @@ def exec_foundry_step_node(
     **kwargs: Any,
 ) -> None:
     foundry_step_node(
-        foundry_out=foundry_out,
+        foundry_root=foundry_root,
         test=test,
         node=node,
         repeat=repeat,
@@ -549,7 +557,7 @@ def exec_foundry_step_node(
 
 
 def exec_foundry_section_edge(
-    foundry_out: Path,
+    foundry_root: Path,
     test: str,
     edge: Tuple[str, str],
     sections: int = 2,
@@ -560,7 +568,7 @@ def exec_foundry_section_edge(
     **kwargs: Any,
 ) -> None:
     foundry_section_edge(
-        foundry_out=foundry_out,
+        foundry_root=foundry_root,
         test=test,
         edge=edge,
         sections=sections,
@@ -589,6 +597,15 @@ def _create_argument_parser() -> ArgumentParser:
     display_args = ArgumentParser(add_help=False)
     display_args.add_argument('--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.')
     display_args.add_argument('--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.')
+
+    foundry_root_arg = ArgumentParser(add_help=False)
+    foundry_root_arg.add_argument(
+        '--foundry-project-root',
+        dest='foundry_root',
+        type=dir_path,
+        default=Path('.'),
+        help='Path to Foundry project root directory.',
+    )
 
     rpc_args = ArgumentParser(add_help=False)
     rpc_args.add_argument(
@@ -894,9 +911,8 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_kompile = command_parser.add_parser(
         'foundry-kompile',
         help='Kompile K definition corresponding to given output directory.',
-        parents=[shared_args, k_args, k_gen_args, k_kompile_args],
+        parents=[shared_args, k_args, k_gen_args, k_kompile_args, foundry_root_arg],
     )
-    foundry_kompile.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_kompile.add_argument(
         '--regen',
         dest='regen',
@@ -915,9 +931,8 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_prove_args = command_parser.add_parser(
         'foundry-prove',
         help='Run Foundry Proof.',
-        parents=[shared_args, k_args, kprove_args, smt_args, rpc_args, explore_args],
+        parents=[shared_args, k_args, kprove_args, smt_args, rpc_args, explore_args, foundry_root_arg],
     )
-    foundry_prove_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_prove_args.add_argument(
         '--test',
         type=str,
@@ -945,25 +960,22 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_show_args = command_parser.add_parser(
         'foundry-show',
         help='Display a given Foundry CFG.',
-        parents=[shared_args, k_args, kcfg_show_args, display_args],
+        parents=[shared_args, k_args, kcfg_show_args, display_args, foundry_root_arg],
     )
-    foundry_show_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
 
     foundry_to_dot = command_parser.add_parser(
         'foundry-to-dot',
         help='Dump the given CFG for the test as DOT for visualization.',
-        parents=[shared_args],
+        parents=[shared_args, foundry_root_arg],
     )
-    foundry_to_dot.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_to_dot.add_argument('test', type=str, help='Display the CFG for this test.')
 
     foundry_list_args = command_parser.add_parser(
         'foundry-list',
         help='List information about CFGs on disk',
-        parents=[shared_args, k_args],
+        parents=[shared_args, k_args, foundry_root_arg],
     )
-    foundry_list_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_list_args.add_argument(
         '--details', dest='details', default=True, action='store_true', help='Information about progress on each CFG.'
     )
@@ -972,26 +984,23 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_view_kcfg_args = command_parser.add_parser(
         'foundry-view-kcfg',
         help='Display tree view of CFG',
-        parents=[shared_args],
+        parents=[shared_args, foundry_root_arg],
     )
-    foundry_view_kcfg_args.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_view_kcfg_args.add_argument('test', type=str, help='View the CFG for this test.')
 
     foundry_remove_node = command_parser.add_parser(
         'foundry-remove-node',
         help='Remove a node and its successors.',
-        parents=[shared_args],
+        parents=[shared_args, foundry_root_arg],
     )
-    foundry_remove_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
     foundry_remove_node.add_argument('node', type=str, help='Node to remove CFG subgraph from.')
 
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',
         help='Simplify a given node, and potentially replace it.',
-        parents=[shared_args, smt_args, rpc_args, display_args],
+        parents=[shared_args, smt_args, rpc_args, display_args, foundry_root_arg],
     )
-    foundry_simplify_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_simplify_node.add_argument('test', type=str, help='Simplify node in this CFG.')
     foundry_simplify_node.add_argument('node', type=str, help='Node to simplify in CFG.')
     foundry_simplify_node.add_argument(
@@ -1001,9 +1010,8 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_step_node = command_parser.add_parser(
         'foundry-step-node',
         help='Step from a given node, adding it to the CFG.',
-        parents=[shared_args, rpc_args, smt_args],
+        parents=[shared_args, rpc_args, smt_args, foundry_root_arg],
     )
-    foundry_step_node.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
     foundry_step_node.add_argument('node', type=str, help='Node to step from in CFG.')
     foundry_step_node.add_argument(
@@ -1016,9 +1024,8 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_section_edge = command_parser.add_parser(
         'foundry-section-edge',
         help='Given an edge in the graph, cut it into sections to get intermediate nodes.',
-        parents=[shared_args, rpc_args, smt_args],
+        parents=[shared_args, rpc_args, smt_args, foundry_root_arg],
     )
-    foundry_section_edge.add_argument('foundry_out', type=dir_path, help='Path to Foundry output directory.')
     foundry_section_edge.add_argument('test', type=str, help='Section edge in this CFG.')
     foundry_section_edge.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
     foundry_section_edge.add_argument(
