@@ -280,6 +280,9 @@ def exec_prove(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:
+            for _claim, cfg in proof_problems.items():
+                init_node = cfg.get_unique_init()
+                cfg.replace_node(init_node.id, kcfg_explore.cterm_assume_defined(init_node.cterm))
             proof_problems = {claim: kcfg_explore.simplify(claim, cfg) for claim, cfg in proof_problems.items()}
 
     results = parallel_kcfg_explore(
