@@ -13,6 +13,7 @@ from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
+from pyk.proof import AGProof
 
 from .foundry import (
     Foundry,
@@ -28,7 +29,7 @@ from .foundry import (
 )
 from .kevm import KEVM, KEVMKompileMode
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, get_cfg_for_spec, parallel_kcfg_explore
+from .utils import arg_pair_of, get_ag_proof_for_spec, parallel_kcfg_explore
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -271,7 +272,7 @@ def exec_prove(
         kore_rpc_command = kore_rpc_command.split()
 
     _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
-    proof_problems = {c.label: KCFG.from_claim(kevm.definition, c) for c in claims}
+    proof_problems = {c.label: AGProof(c.label, KCFG.from_claim(kevm.definition, c)) for c in claims}
     if simplify_init:
         with KCFGExplore(
             kevm,
@@ -280,7 +281,10 @@ def exec_prove(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:
-            proof_problems = {claim: kcfg_explore.simplify(claim, cfg) for claim, cfg in proof_problems.items()}
+            proof_problems = {
+                claim: AGProof(claim, kcfg_explore.simplify(claim, ag_proof.kcfg))
+                for claim, ag_proof in proof_problems.items()
+            }
 
     results = parallel_kcfg_explore(
         kevm,
@@ -326,7 +330,7 @@ def exec_show_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
-    cfgid, kcfg = get_cfg_for_spec(
+    ag_proof = get_ag_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
@@ -339,8 +343,8 @@ def exec_show_kcfg(
 
     kcfg_show = KCFGShow(kevm)
     res_lines = kcfg_show.show(
-        cfgid,
-        kcfg,
+        ag_proof.id,
+        ag_proof.kcfg,
         nodes=nodes,
         node_deltas=node_deltas,
         to_module=to_module,
@@ -362,7 +366,7 @@ def exec_view_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
-    _, kcfg = get_cfg_for_spec(
+    ag_proof = get_ag_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
@@ -373,7 +377,7 @@ def exec_view_kcfg(
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    viewer = KCFGViewer(kcfg, kevm, node_printer=kevm.short_info)
+    viewer = KCFGViewer(ag_proof.kcfg, kevm, node_printer=kevm.short_info)
     viewer.run()
 
 
@@ -488,12 +492,11 @@ def exec_run(
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
-    kcfgs_dir = foundry.out / 'kcfgs'
+    ag_proofs_dir = foundry.out / 'ag_proofs'
     contract_name = test.split('.')[0]
 
-    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    assert type(ag_proof) is AGProof
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
@@ -501,7 +504,7 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     def _custom_view(elem: KCFGElem) -> Iterable[str]:
         return foundry.custom_view(contract_name, elem)
 
-    viewer = KCFGViewer(kcfg, foundry.kevm, node_printer=_short_info, custom_view=_custom_view)
+    viewer = KCFGViewer(ag_proof.kcfg, foundry.kevm, node_printer=_short_info, custom_view=_custom_view)
     viewer.run()
 
 
