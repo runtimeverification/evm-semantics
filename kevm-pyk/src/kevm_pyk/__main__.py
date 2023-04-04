@@ -42,6 +42,8 @@ if TYPE_CHECKING:
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
+sys.setrecursionlimit(10**8)
+
 
 class KompileTarget(Enum):
     LINUX = 'linux'
