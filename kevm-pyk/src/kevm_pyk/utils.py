@@ -8,6 +8,7 @@ from pathos.pools import ProcessPool  # type: ignore
 from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
 from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
 from pyk.kcfg import KCFGExplore
+from pyk.proof import AGProof, AGProver
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -108,11 +109,13 @@ def parallel_kcfg_explore(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:
+            ag_proof = AGProof(_cfg)
+            ag_prover = AGProver(ag_proof)
             try:
-                _cfg = kcfg_explore.all_path_reachability_prove(
+                _cfg = ag_prover.advance_proof(
                     _cfgid,
-                    _cfg,
-                    cfg_dir=save_directory,
+                    kcfg_explore,
+                    kproofs_dir=save_directory,
                     is_terminal=is_terminal,
                     extract_branches=extract_branches,
                     max_iterations=max_iterations,
