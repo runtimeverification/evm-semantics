@@ -84,12 +84,10 @@ class Contract:
             items_before: List[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
 
             items_args: List[KProductionItem] = []
-            count = 0
-            for input_type in self.arg_types:
-                if count > 0:
+            for i, input_type in enumerate(self.arg_types):
+                if i > 0:
                     items_args += [KTerminal(',')]
                 items_args += [KNonTerminal(_evm_base_sort(input_type)), KTerminal(':'), KTerminal(input_type)]
-                count += 1
 
             items_after: List[KProductionItem] = [KTerminal(')')]
             return KProduction(
