@@ -51,12 +51,12 @@ export PLUGIN_FULL_PATH
         build build-haskell build-foundry build-llvm build-prove build-prove-haskell build-node build-kevm                                   \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance             \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                              \
-        test-prove test-failing-prove                                                                                                        \
+        test-prove test-failing-prove test-foundry-kcfg-diff                                                                                 \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-smoke \
         test-prove-mcd test-klab-prove                                                                                                       \
         test-parse test-failure test-foundry test-foundry-forge                                                                              \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                           \
-        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean                                                                   \
+        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean foundry-fail                                                      \
         media media-pdf metropolis-theme                                                                                                     \
         install uninstall                                                                                                                    \
         poetry-env poetry shell kevm-pyk
