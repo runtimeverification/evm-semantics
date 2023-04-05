@@ -272,17 +272,22 @@ def exec_prove(
 
     _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
     proof_problems = {c.label: KCFG.from_claim(kevm.definition, c) for c in claims}
-    if simplify_init:
-        with KCFGExplore(
-            kevm,
-            bug_report=br,
-            kore_rpc_command=kore_rpc_command,
-            smt_timeout=smt_timeout,
-            smt_retry_limit=smt_retry_limit,
-        ) as kcfg_explore:
-            for _claim, cfg in proof_problems.items():
-                init_node = cfg.get_unique_init()
-                cfg.replace_node(init_node.id, kcfg_explore.cterm_assume_defined(init_node.cterm))
+    with KCFGExplore(
+        kevm,
+        bug_report=br,
+        kore_rpc_command=kore_rpc_command,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
+    ) as kcfg_explore:
+        _proof_problems = {}
+
+        for claim, cfg in proof_problems.items():
+            init_node = cfg.get_unique_init()
+            cfg.replace_node(init_node.id, kcfg_explore.cterm_assume_defined(init_node.cterm))
+            _proof_problems[claim] = cfg
+            proof_problems = _proof_problems
+
+        if simplify_init:
             proof_problems = {claim: kcfg_explore.simplify(claim, cfg) for claim, cfg in proof_problems.items()}
 
     results = parallel_kcfg_explore(
