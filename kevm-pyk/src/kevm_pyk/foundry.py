@@ -220,24 +220,34 @@ def foundry_kompile(
     syntax_module = 'FOUNDRY-MAIN'
     foundry = Foundry(foundry_root)
     foundry_definition_dir = foundry.out / 'kompiled'
+    foundry_requires_dir = foundry_definition_dir / 'requires'
     foundry_llvm_dir = foundry.out / 'kompiled-llvm'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
     ensure_dir_path(foundry_definition_dir)
+    ensure_dir_path(foundry_requires_dir)
     ensure_dir_path(foundry_llvm_dir)
 
+    requires_paths: Dict[str, str] = {}
     for r in requires:
         req = Path(r)
         if not req.exists():
             raise ValueError(f'No such file: {req}')
-        req_path = foundry_definition_dir / req
+        if req.name in requires_paths.keys():
+            raise ValueError(
+                f'Required K files have conflicting names: {r} and {requires_paths[req.name]}. Consider changing the name of one of these files.'
+            )
+        requires_paths[req.name] = r
+        req_path = foundry_requires_dir / req.name
         if regen or not req_path.exists():
             _LOGGER.info(f'Copying requires path: {req} -> {req_path}')
             shutil.copy(req, req_path)
             regen = True
 
     if regen or not foundry_main_file.exists():
-        requires = ['foundry.md'] + list(requires)
+        requires = ['foundry.md']
+        requires += [f'requires/{name}' for name in list(requires_paths.keys())]
+        imports = ['FOUNDRY'] + list(imports)
         kevm = KEVM(definition_dir)
         empty_config = kevm.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
         bin_runtime_definition = _foundry_to_bin_runtime(
