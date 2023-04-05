@@ -238,7 +238,6 @@ def foundry_kompile(
 
     if regen or not foundry_main_file.exists():
         requires = ['foundry.md'] + list(requires)
-        imports = ['FOUNDRY'] + list(imports)
         kevm = KEVM(definition_dir)
         empty_config = kevm.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
         bin_runtime_definition = _foundry_to_bin_runtime(
@@ -604,12 +603,12 @@ def _foundry_to_bin_runtime(
 ) -> KDefinition:
     modules = []
     for contract in contracts:
-        module = contract_to_main_module(contract, empty_config, imports=imports)
+        module = contract_to_main_module(contract, empty_config, imports=['FOUNDRY'])
         _LOGGER.info(f'Produced contract module: {module.name}')
         modules.append(module)
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN',
-        imports=(KImport(mname) for mname in [_m.name for _m in modules] + list(imports)),
+        imports=(KImport(mname) for mname in [_m.name for _m in modules] + ['FOUNDRY'] + list(imports)),
     )
     modules.append(_main_module)
 
