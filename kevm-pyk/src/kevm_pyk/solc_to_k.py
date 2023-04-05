@@ -49,6 +49,7 @@ class Contract:
                             a1 == a2 for a1, a2 in zip(_margs, _marg_types, strict=True)
                         ):
                             return _method
+
                 raise ValueError(f'Method not found in abi: {_mname}')
 
             margs_cs = msig.split('(')[1][:-1]
@@ -165,7 +166,11 @@ class Contract:
         for msig in method_ids:
             mname = msig.split('(')[0]
             mid = int(method_ids[msig], 16)
-            _m = Contract.Method(mname, msig, mid, contract_json, contract_name, self.sort_method)
+            try:
+                _m = Contract.Method(mname, msig, mid, contract_json, contract_name, self.sort_method)
+            except ValueError as e:
+                _LOGGER.warning(e)
+                continue
             _methods.append(_m)
         self.methods = tuple(_methods)
 
