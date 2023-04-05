@@ -61,9 +61,9 @@ module ACCOUNTPARAMSTEST-BIN-RUNTIME
     
     syntax AccountParamsTestMethod ::= "test_Nonce_NonExistentAddress" "(" ")" [symbol(), klabel(method_AccountParamsTest_test_Nonce_NonExistentAddress_)]
     
-    syntax AccountParamsTestMethod ::= "test_getNonce_unknownSymbolic" "(" Int ")" [symbol(), klabel(method_AccountParamsTest_test_getNonce_unknownSymbolic)]
+    syntax AccountParamsTestMethod ::= "test_getNonce_unknownSymbolic" "(" Int ":" "address" ")" [symbol(), klabel(method_AccountParamsTest_test_getNonce_unknownSymbolic_address)]
     
-    syntax AccountParamsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AccountParamsTest_vm)]
+    syntax AccountParamsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AccountParamsTest_vm_)]
     
     rule  ( AccountParamsTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
@@ -110,7 +110,7 @@ module ACCOUNTPARAMSTEST-BIN-RUNTIME
     rule  ( AccountParamsTest . test_Nonce_NonExistentAddress ( ) => #abiCallData ( "test_Nonce_NonExistentAddress" , .TypedArgs ) )
       
     
-    rule  ( AccountParamsTest . test_getNonce_unknownSymbolic ( V0_addr ) => #abiCallData ( "test_getNonce_unknownSymbolic" , #address ( V0_addr ) , .TypedArgs ) )
+    rule  ( AccountParamsTest . test_getNonce_unknownSymbolic ( V0_addr : address ) => #abiCallData ( "test_getNonce_unknownSymbolic" , #address ( V0_addr ) , .TypedArgs ) )
        ensures #rangeAddress ( V0_addr )
       
     
@@ -159,10 +159,10 @@ module ACCOUNTPARAMSTEST-BIN-RUNTIME
     rule  ( selector ( "test_Nonce_NonExistentAddress()" ) => 2985064833 )
       
     
-    rule  ( selector ( "test_getNonce_unknownSymbolic" ) => 3941547284 )
+    rule  ( selector ( "test_getNonce_unknownSymbolic(address)" ) => 3941547284 )
       
     
-    rule  ( selector ( "vm" ) => 980845667 )
+    rule  ( selector ( "vm()" ) => 980845667 )
       
 
 endmodule
