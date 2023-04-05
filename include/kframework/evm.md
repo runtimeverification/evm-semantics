@@ -1849,8 +1849,8 @@ Overall Gas
     rule <k> #memory [ OP , AOP ] => #memory(AOP, MU) ~> #deductMemory ... </k>
          <memoryUsed> MU </memoryUsed>
       requires #usesMemory(OP)
-   
-   rule <k> #memory [ OP , _ ] => . ... </k> [owise]
+
+   rule <k> #memory [ _ , _ ] => . ... </k> [owise]
 
     syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas" | "#deductMemoryGas"
                         | "#memory" "[" OpCode "," OpCode "]" | "#deductMemory"
@@ -1953,8 +1953,8 @@ Access List Gas
          <schedule> SCHED </schedule>
       requires Ghasaccesslist << SCHED >> andBool #usesAccessList(OP)
 
-    rule <k> #access [ OP , _ ] => . ... </k>
-         <schedule> SCHED </schedule>
+    rule <k> #access [ _ , _ ] => . ... </k>
+         <schedule> _ </schedule>
       [owise]
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode )

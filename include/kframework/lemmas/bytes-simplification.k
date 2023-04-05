@@ -3,276 +3,244 @@ module BYTES-SIMPLIFICATION [symbolic]
     imports EVM
     imports BUF
 
-  //
-  // concatHead/concatTail
-  //
-
-    syntax Bytes ::= concatHead(Bytes) [function, total] // Leftmost operand in a concat
-                   | concatTail(Bytes) [function, total] // Rest of concat
-
-    rule [concatHead-ind]:  concatHead(BA1 +Bytes _) => concatHead(BA1) [simplification(40)]
-    rule [concatHead-base]: concatHead(BA)           => BA              [simplification    ]
-
-    rule [concatTail-ind]:  concatTail(BA1 +Bytes BA2) => concatTail(BA1) +Bytes BA2 [simplification(40)]
-    rule [concatTail-base]: concatTail(_)              => .Bytes                     [simplification    ]
-
   // ########################
   // Buffer Reasoning
   // ########################
 
-    rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma, simplification]
-
-    rule BA:Bytes   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                    [simplification, concrete(BA)]
-    rule #buf(32, DATA) ==K BA:Bytes   =>          DATA  ==Int #asInteger(BA) requires lengthBytes(BA) <=Int 32 [simplification, concrete(BA)]
-
-    rule #range(M, N1 +Int N2, K) => #range(#range(M, N2, lengthBytes(M) -Int N2), N1, K)
-      requires 0 <=Int N1 andBool 0 <=Int N2
-      [simplification, concrete(N2), concrete(M)]
-
-    rule #range(A +Bytes _B, START, LENGTH) => #range(A, START, LENGTH)
-      requires START +Int LENGTH <=Int lengthBytes(A) [simplification]
-
-    rule #range(A +Bytes B, START, LENGTH) => #range(B, START -Int lengthBytes(A), LENGTH)
-      requires lengthBytes(A) <=Int START [simplification]
-
-    rule #range(BA:Bytes, 0, LEN) => BA requires lengthBytes(BA) ==Int LEN [simplification]
-
-    rule (#range(#buf(32, X), 0, 28) ):Bytes => #buf(28, 0) requires #rangeUInt ( 32 , X ) [simplification]
-
-    rule (#range(#range( BA:Bytes, S0, L0), S1, L1) ) =>#range(BA, S0 +Int S1, minInt(L1, L0 -Int S1)) +Bytes #buf(maxInt(0, L1 -Int (L0 -Int S1)), 0)
-      requires 0 <=Int S0 andBool 0 <=Int L0 andBool 0 <=Int S1 andBool 0 <=Int L1 [simplification]
-
-    rule WS         +Bytes .Bytes => WS  [simplification]
-    rule .Bytes +Bytes WS         => WS  [simplification]
-
-    // Re-associating bytes concatenation into a canonical right-associative form
-    rule (BA1 +Bytes BA2) +Bytes BA3 => BA1 +Bytes (BA2 +Bytes BA3) [simplification]
-
-    // #range
-
-    rule #range(_, _, K) => .Bytes requires K <=Int 0 [simplification]
-
-    rule #range(#writeRange(M, N, BUF:Bytes ), L, K) =>
-         #let W = minInt(K, N -Int L) #in #range(M, L, W) +Bytes #range(#writeRange(M, N, BUF), N, K -Int W)
-      requires 0 <Int K andBool L <Int N [simplification]
-
-    rule #range(#writeRange(M, N, BUF:Bytes), L, K) =>
-           #let S = L -Int N #in
-           #let W = minInt(K, lengthBytes(BUF) -Int S) #in
-           #range(BUF, S, W) +Bytes #range(M, N +Int lengthBytes(BUF), K -Int W)
-      requires 0 <Int K andBool N <=Int L andBool L <=Int N +Int lengthBytes(BUF) [simplification]
-
-    rule #range(#writeRange(M, N, BUF:Bytes ), L, K) => #range(M, L, K)
-      requires 0 <Int K andBool N +Int lengthBytes(BUF) <=Int L [simplification]
-
-    rule #range(#writeRange(#writeRange(M, N1, BUF1:Bytes), N2, BUF2:Bytes), L, K ) => #range(#writeRange(M, N2, BUF2), L, K)
-        requires 0 <Int K andBool N1 +Int lengthBytes(BUF1) <=Int L [simplification]
-
-    // re-order assignments
-    rule #writeRange(#writeRange(MEM, K1, BUF1:Bytes), K2, BUF2:Bytes) => #writeRange(#writeRange(MEM, K2, BUF2), K1, BUF1)
-      requires lengthBytes(BUF2) <=Int K1 -Int K2 andBool K2  <Int K1 [simplification]
-
-    // overwritten assignment
-    rule #writeRange(#writeRange(MEM, K1, BUF1), K2, BUF2) => #writeRange(MEM, K2, BUF2)
-      requires K1 +Int lengthBytes(BUF1) <=Int K2 +Int lengthBytes(BUF2) andBool K2 <=Int K1 [simplification]
-
-    // lookup range in memory
-    rule #range(MEM, 0, W) => MEM  requires W ==Int lengthBytes(MEM) [simplification]
-
-    // lookup range in concatenated memory buffers
-    rule #range((BUF1 +Bytes  BUF2), START, WIDTH) =>  #range(BUF2, START -Int lengthBytes(BUF1), WIDTH                        )                                                                    requires                        lengthBytes(BUF1) <=Int START                                                          [simplification]
-    rule #range((BUF1 +Bytes  _   ), START, WIDTH) =>  #range(BUF1, START                       , WIDTH                        )                                                                    requires START +Int WIDTH <=Int lengthBytes(BUF1)                       andBool 0 <=Int START andBool 0 <=Int WIDTH    [simplification]
-    rule #range((BUF1 +Bytes  BUF2), START, WIDTH) => (#range(BUF1, START                       , lengthBytes(BUF1) -Int START)) +Bytes (#range(BUF2, 0, START +Int WIDTH -Int lengthBytes(BUF1)))  requires                        lengthBytes(BUF1) <Int START +Int WIDTH andBool #range(0 <= START < lengthBytes(BUF1)) [simplification]
-
-    // lengthBytes
-
-    rule lengthBytes(BUF1 +Bytes BUF2)             => lengthBytes(BUF1) +Int lengthBytes(BUF2)            [simplification]
-    rule lengthBytes(#buf(SIZE, _))                => SIZE                                                [simplification]
-    rule lengthBytes(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
-    rule lengthBytes(#padRightToWidth(WIDTH, BUF)) => WIDTH  requires lengthBytes(BUF) <=Int WIDTH        [simplification]
-
-    // TODO: custom ==K unification doesn't work in Haskell yet
-    // +Bytes unification
-    rule #buf(N, A) +Bytes BUF1 ==K #buf(N, B) +Bytes BUF2 => #buf(N, A) ==K #buf(N, B) andBool BUF1 ==K BUF2     [simplification]
-
-    rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
-
-    rule #asWord(WS) >>Int M => #asWord(#range(WS, 0, lengthBytes(WS) -Int (M /Int 8) ))  requires 0 <=Int M andBool M modInt 8 ==Int 0 [simplification]
-
-    rule #asWord(#padRightToWidth(32, BUF)) &Int notMaxUInt224 => #asWord(#padRightToWidth(32, BUF))
-      requires lengthBytes(BUF) <=Int 4 [simplification]
-
-    rule #range(#padRightToWidth(_, BUF), 0, WIDTH) => BUF requires lengthBytes(BUF) ==Int WIDTH [simplification]
-
-  //
-  // Bytes
-  //
-
-    // Byte arrays cannot be equal if they are of different lengths
     rule [bytes-not-equal-length]:
       BA1:Bytes ==K BA2:Bytes => false
       requires lengthBytes(BA1) =/=Int lengthBytes(BA2)
       [simplification]
 
-    // Equality split into head and tail equality
-    rule [bytes-equal-concat-split]:
-      { BA1:Bytes #Equals BA2:Bytes } =>
-        { concatHead(BA1):Bytes #Equals concatHead(BA2):Bytes } #And
-        { concatTail(BA1):Bytes #Equals concatTail(BA2):Bytes }
-      requires (lengthBytes(concatHead(BA1)) =/=K lengthBytes(BA1) orBool lengthBytes(concatHead(BA2)) =/=K lengthBytes(BA2))
-       andBool lengthBytes(concatHead(BA1)) ==Int lengthBytes(concatHead(BA2))
+    rule [bytes-equal-concat-split-ml]:
+      { A:Bytes +Bytes B:Bytes #Equals C:Bytes +Bytes D:Bytes } => { A #Equals C } #And { B #Equals D }
+      requires lengthBytes(A) ==Int lengthBytes(C)
       [simplification]
 
-  //
-  // lengthBytes
-  //
+    rule [bytes-concat-empty-right]: B:Bytes +Bytes .Bytes  => B [simplification]
+    rule [bytes-concat-empty-left]:   .Bytes +Bytes B:Bytes => B [simplification]
 
-    // A byte array of non-positive length is empty
-    rule [lengthBytes-leq-zero]:
-      lengthBytes ( X ) <=Int 0 => X ==K .Bytes
+    rule [bytes-concat-right-assoc]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [simplification]
+
+    // #buf
+
+    rule [buf-ceil]:
+      #Ceil(#buf ( X , _:Int )) => 0 <=Int X
       [simplification]
-
-    // General range length
-    rule [lengthBytes-range]:
-      lengthBytes( #range( _, S, W ) ) => maxInt( 0, W )
-      requires 0 <=Int S
-      [simplification(60)]
-
-    // Size of paddings
-    rule [lengthBytes-pad-left]:
-      lengthBytes ( padLeftBytes ( B:Bytes, WIDTH, _ ) ) => maxInt( lengthBytes(B), WIDTH )
-      requires 0 <=Int WIDTH
-      [simplification]
-
-    rule [lengthBytes-pad-right]:
-      lengthBytes ( padRightBytes ( B:Bytes, WIDTH, _ ) ) => maxInt( lengthBytes(B), WIDTH )
-      requires 0 <=Int WIDTH
-      [simplification]
-
-  //
-  // #range(M, START, WIDTH)
-  //
-
-    // Equality via parameter equality
-    rule [range-params-equal]:
-      { #range (A, B, C) #Equals #range (D, E, F) } => #Top
-      requires A ==K D andBool B ==Int E andBool C ==Int F
-      [simplification]
-
-    // Range is empty if either the starting position or the width are negative
-    rule [range-non-pos-empty]:
-      #range( _, START, WIDTH ) => .Bytes
-      requires START <Int 0 orBool WIDTH <=Int 0
-      [simplification(40)]
-
-    // Range is zero if start is outside of the bytearray
-    rule [range-start-outside]:
-      #range( BA, START, WIDTH ) => #buf ( WIDTH , 0 )
-      requires lengthBytes(BA) <=Int START
-       andBool 0 <=Int WIDTH
-      [simplification(45)]
-
-    // Interaction of range and memory update
-    rule [range-writeRange]:
-      #range( #writeRange(_:Bytes, N, BUF), N:Int, X:Int ) => BUF
-      requires X ==Int lengthBytes(BUF) [simplification]
-
-    // Starting position, possibly zero, outside head of concat]
-    rule [range-outside-concatHead]:
-      #range(M, START:Int, WIDTH:Int) =>
-        #range(concatTail(M), START -Int lengthBytes(concatHead(M)), WIDTH)
-      requires lengthBytes(concatHead(M)) =/=Int lengthBytes(M)
-       andBool lengthBytes(concatHead(M)) <=Int START
-      [simplification]
-
-    // Starting position non-zero, within head of concat
-    rule [range-inside-concatHead]:
-      #range(M, START:Int, WIDTH:Int) =>
-        #range(#range(concatHead(M), START, lengthBytes(concatHead(M)) -Int START) +Bytes concatTail(M), 0, WIDTH)
-      requires lengthBytes(concatHead(M)) =/=Int lengthBytes(M)
-       andBool 0 <Int START
-       andBool START <Int lengthBytes(concatHead(M))
-      [simplification]
-
-    // Starting position zero, width greater than or equal to length of head of concat
-    rule [range-includes-concathead]:
-      #range(M, 0, WIDTH:Int) =>
-        concatHead(M) +Bytes #range(concatTail(M), 0, WIDTH -Int lengthBytes(concatHead(M)))
-      requires lengthBytes(concatHead(M)) <=Int WIDTH
-      [simplification]
-
-    // Starting position zero, width less than length of head of concat
-    rule [range-included-in-concathead]:
-      #range(M, 0, WIDTH:Int) => #range(concatHead(M), 0, WIDTH)
-      requires lengthBytes(concatHead(M)) =/=Int lengthBytes(M)
-       andBool WIDTH <Int lengthBytes(concatHead(M))
-      [simplification]
-
-  //
-  // #buf
-  //
-
-    // Invertibility of #buf and #asWord
-    rule [buf-asWord-invert]:
-      #buf ( WIDTH , #asWord ( BA:Bytes ) ) => #buf(WIDTH -Int lengthBytes(BA), 0) +Bytes BA
-      requires lengthBytes(BA) <=Int WIDTH
-      [simplification]
-
-    // Injectivity of #buf at the K and ML levels
-    rule [buf-inject-ml]:
-      { #buf ( N, X ) #Equals #buf ( N, Y ) } => { X #Equals Y }
-      requires 0 <=Int N
-        andBool 0 <=Int X andBool X <Int 2 ^Int ( 8 *Int N )
-        andBool 0 <=Int Y andBool Y <Int 2 ^Int ( 8 *Int N )
-      [concrete(N), simplification]
 
     rule [buf-inject-k]:
-      #buf ( N, X ) ==K #buf ( N, Y ) => X ==Int Y
-      requires 0 <=Int N
-        andBool 0 <=Int X andBool X <Int 2 ^Int ( 8 *Int N )
-        andBool 0 <=Int Y andBool Y <Int 2 ^Int ( 8 *Int N )
-      [concrete(N), simplification]
-
-  //
-  // #padRightToWidth
-  //
-
-    rule [padright-conc-width]:
-      #padRightToWidth (W, X) => X +Bytes #buf(W -Int lengthBytes(X), 0)
-      requires lengthBytes(X) <=Int W
+      #buf(W:Int, X:Int) ==K #buf(W:Int, Y:Int) => X ==Int Y
+      requires 0 <=Int W
+       andBool #rangeUInt (8 *Int W, X)
+       andBool #rangeUInt (8 *Int W, Y)
       [simplification]
 
-  //
-  // Memory update
-  //
-
-    // Memory update in terms of concat
-    rule [writeRange-as-concat]:
-      #writeRange(MEM, N, BUF) =>
-      #range(MEM, 0, N) +Bytes ( BUF +Bytes #range ( MEM , N +Int lengthBytes(BUF) , lengthBytes(MEM) -Int ( N +Int lengthBytes(BUF) ) ) )
-      requires 0 <=Int N
+    rule [buf-inject-ml]:
+      { #buf(W:Int, X:Int) #Equals #buf(W:Int, Y:Int) } => { X #Equals Y }
+      requires 0 <=Int W
+       andBool #rangeUInt (8 *Int W, X)
+       andBool #rangeUInt (8 *Int W, Y)
       [simplification]
 
-  //
-  // &Int
-  //
+    rule [buf-as-int-left]:  B:Bytes   ==K #buf(32, X:Int) => X ==Int #asInteger(B) requires lengthBytes(B) <=Int 32 [simplification, concrete(B)]
+    rule [buf-as-int-right]: #buf(32, X:Int) ==K B:Bytes   => X ==Int #asInteger(B) requires lengthBytes(B) <=Int 32 [simplification, concrete(B)]
 
-    // X &Int #asWord ( Y ) is not affected by the part of Y higher than X
-    rule [bitwise-and-asword-tail]:
-      X &Int #asWord ( Y ) =>
-      X &Int #asWord ( concatTail(Y) )
-      requires 0 <=Int X
-       andBool concatTail(Y) =/=K Y
-       andBool X <Int 2 ^Int (8 *Int lengthBytes(concatTail(Y)))
+    rule [buf-asWord-invert]:
+      #buf (W:Int , #asWord(B:Bytes)) => #buf(W -Int lengthBytes(B), 0) +Bytes B
+      requires lengthBytes(B) <=Int W
       [simplification]
 
-    // X &Int ( #asWord ( Y ) >> Z ) is not affected by the shifted part of Y higher than X
-    rule [bitwise-and-asword-tail-shift]:
-      X &Int ( #asWord ( Y ) >>Int Z ) =>
-      X &Int ( #asWord ( concatTail(Y) ) >>Int Z )
-      requires 0 <=Int X
-       andBool concatTail(Y) =/=K Y
-       andBool X <Int 2 ^Int (8 *Int lengthBytes(concatTail(Y)) -Int Z)
+    rule [buf-zero-concat-base]:
+      #buf(W1:Int, 0) +Bytes #buf(W2:Int, 0) => #buf(W1 +Int W2, 0)
       [simplification]
+
+    rule [buf-zero-concat-conc]:
+      #buf(W1:Int, 0) +Bytes #buf(W2:Int, 0) +Bytes B => #buf(W1 +Int W2, 0) +Bytes B
+      [simplification]
+
+    // #range
+
+    rule [range-empty]:
+      #range(_:Bytes, S:Int, W:Int) => .Bytes
+      requires S <Int 0 orBool W <=Int 0
+      [simplification(1)]
+
+    rule [range-full]:
+      #range(B:Bytes, 0, W:Int) => B
+      requires lengthBytes(B) ==Int W
+      [simplification]
+
+    rule [range-overfull]:
+      #range(B:Bytes, 0, W:Int) => B +Bytes #buf(W -Int lengthBytes(B), 0)
+      requires lengthBytes(B) <Int W
+      [simplification]
+
+    rule [range-params-equal-ml]:
+      { #range (B1:Bytes, S1:Int, W1:Int) #Equals #range (B2:Bytes, S2:Int, W2:Int) } => #Top
+      requires B1 ==K B2 andBool S1 ==Int S2 andBool W1 ==Int W2
+      [simplification]
+
+    rule [range-included-in-cHead]:
+      #range(B1:Bytes +Bytes _:Bytes, S:Int, W:Int) => #range(B1, S, W)
+      requires S +Int W <=Int lengthBytes(B1)
+      [simplification]
+
+    rule [range-outside-cHead]:
+      #range(B1:Bytes +Bytes B2:Bytes, S:Int, W:Int) => #range(B2, S -Int lengthBytes(B1), W)
+      requires lengthBytes(B1) <=Int S
+      [simplification]
+
+    rule [range-includes-cHead]:
+      #range(B1:Bytes +Bytes B2:Bytes, 0, W:Int) => B1 +Bytes #range(B2, 0, W -Int lengthBytes(B1))
+      requires lengthBytes(B1) <=Int W
+      [simplification]
+
+    rule [range-inside-cHead]:
+      #range(B1:Bytes +Bytes B2:Bytes, S:Int, W:Int) => #range(#range(B1, S, lengthBytes(B1) -Int S) +Bytes B2, 0, W)
+      requires 0 <Int S andBool S <=Int lengthBytes(B1)
+      [simplification]
+
+    rule [range-of-range]:
+      #range(#range(B:Bytes, S1:Int, W1:Int), S2:Int, W2:Int) =>
+        #range(B, S1 +Int S2, minInt(W2, W1 -Int S2)) +Bytes #buf(maxInt(0, W2 -Int (W1 -Int S2)), 0)
+      requires 0 <=Int S1 andBool 0 <=Int W1 andBool 0 <=Int S2 andBool 0 <=Int W2
+      [simplification]
+
+    rule [range-join-base]:
+      #range(B, S1, W1) +Bytes #range(B, S2, W2) => #range(B, S1, W1 +Int W2)
+      requires S2 ==Int S1 +Int W1
+       andBool 0 <=Int S1 andBool 0 <=Int W1 andBool 0 <=Int S2 andBool 0 <=Int W2
+      [simplification]
+
+    rule [range-join-conc]:
+      #range(B1, S1, W1) +Bytes #range(B1, S2, W2) +Bytes B2 => #range(B1, S1, W1 +Int W2) +Bytes B2
+      requires S2 ==Int S1 +Int W1
+       andBool 0 <=Int S1 andBool 0 <=Int W1 andBool 0 <=Int S2 andBool 0 <=Int W2
+      [simplification]
+
+    rule [range-reform-base]:
+      #range(B:Bytes, S:Int, minInt(W1:Int, W2:Int)) +Bytes #buf(maxInt(0, W3:Int), 0) => #range (B, S, W1)
+      requires W2 ==Int lengthBytes(B) -Int S
+       andBool W3 ==Int S +Int W1 -Int lengthBytes(B)
+       andBool 0 <=Int S andBool 0 <=Int W1 andBool 0 <=Int W2
+      [simplification]
+
+    rule [range-reform-conc]:
+      #range(B1:Bytes, S:Int, minInt(W1:Int, W2:Int)) +Bytes #buf(maxInt(0, W3:Int), 0) +Bytes B2:Bytes => #range (B1, S, W1) +Bytes B2
+      requires W2 ==Int lengthBytes(B1) -Int S
+       andBool W3 ==Int S +Int W1 -Int lengthBytes(B1)
+       andBool 0 <=Int S andBool 0 <=Int W1 andBool 0 <=Int W2
+      [simplification]
+
+    rule [range-buf-zero-1]:
+      #range(#buf(32, X:Int), 0, W:Int) => #buf(W, 0)
+      requires 0 <=Int W andBool W <=Int 32
+       andBool #rangeUInt (8 *Int (32 -Int W), X)
+      [simplification, concrete(W)]
+
+    rule [range-buf-zero-2]:
+      #range(#buf(_:Int, 0), _:Int, W:Int) => #buf(W, 0)
+      requires 0 <=Int W
+      [simplification]
+
+    rule [range-writeRange-before]:
+      #range(#writeRange(B1:Bytes, S1:Int, B2:Bytes), S2:Int, W2:Int) =>
+        #let W = minInt(W2, S1 -Int S2) #in
+          #range(B1, S2, W) +Bytes #range(#writeRange(B1, S1, B2), S1, W2 -Int W)
+      requires S2 <Int S1
+      [simplification]
+
+    rule [range-writeRange-in-between]:
+      #range(#writeRange(B1:Bytes, S1:Int, B2:Bytes), S2:Int, W2:Int) =>
+        #let S = S2 -Int S1 #in
+        #let W = minInt(W2, lengthBytes(B2) -Int S) #in
+          #range(B2, S, W) +Bytes #range(B1, S1 +Int lengthBytes(B2), W2 -Int W)
+      requires S1 <=Int S2 andBool S2 <=Int S1 +Int lengthBytes(B2)
+      [simplification]
+
+    rule [range-writeRange-outside]:
+      #range(#writeRange(B1:Bytes, S1:Int, _:Bytes ), S2:Int, W2:Int) => #range(B1, S2, W2)
+      requires 0 <=Int S1 andBool 0 <=Int W2 andBool S1 +Int lengthBytes(B1) <=Int S2 [simplification]
+
+    // #writeRange
+
+    rule [writeRange-is-empty]:
+      #writeRange(_:Bytes, S:Int, _:Bytes) => .Bytes
+      requires S <Int 0
+      [simplification]
+
+    rule [writeRange-as-concat-inside]:
+      #writeRange(B1, S, B2:Bytes) =>
+        #range(B1, 0, S) +Bytes B2 +Bytes #range (B1 , S +Int lengthBytes(B2), lengthBytes(B1) -Int ( S +Int lengthBytes(B2)))
+      requires 0 <=Int S andBool S +Int lengthBytes(B2) <Int lengthBytes(B1)
+      [simplification(60)]
+
+    rule [writeRange-as-concat-outside]:
+      #writeRange(B1, S, B2:Bytes) => #range(B1, 0, S) +Bytes B2
+      requires 0 <=Int S andBool lengthBytes(B1) <=Int S +Int lengthBytes(B2)
+      [simplification(60)]
+
+    rule [writeRange-reorder]:
+      #writeRange(#writeRange(B:Bytes, S1:Int, B1:Bytes), S2:Int, B2:Bytes) =>
+        #writeRange(#writeRange(B, S2, B2), S1, B1)
+      requires S2 <Int S1 andBool S2 +Int lengthBytes(B2) <=Int S1
+      [simplification]
+
+    rule [writeRange-subsume]:
+      #writeRange(#writeRange(B:Bytes, S1:Int, B1:Bytes), S2:Int, B2:Bytes) => #writeRange(B, S2, B2)
+      requires S2 <=Int S1 andBool S1 +Int lengthBytes(B1) <=Int S2 +Int lengthBytes(B2)
+      [simplification]
+
+    // lengthBytes
+
+    rule [lengthBytes-geq-zero]    : 0 <=Int lengthBytes(_:Bytes)                       => true                                           [simplification, smt-lemma]
+    rule [lengthBytes-concat]      : lengthBytes(B1:Bytes +Bytes B2:Bytes)              => lengthBytes(B1) +Int lengthBytes(B2)           [simplification]
+    rule [lengthBytes-buf]         : lengthBytes(#buf(W:Int, _:Int))                    => W requires 0 <=Int W                           [simplification]
+    rule [lengthBytes-range]       : lengthBytes(#range(_:Bytes, _:Int, W:Int))         => maxInt(0, W)                                   [simplification]
+    rule [lengthBytes-prtw-leq-len]: lengthBytes(#padRightToWidth(W:Int, B:Bytes))      => W requires lengthBytes(B) <Int W               [simplification]
+    rule [lengthBytes-prtw-len-gt] : lengthBytes(#padRightToWidth(W:Int, B:Bytes))      => lengthBytes(B) requires W <=Int lengthBytes(B) [simplification]
+    rule [lengthBytes-padleft]     : lengthBytes(padLeftBytes(B:Bytes, W:Int, _:Int) )  => maxInt(lengthBytes(B), W)                      [simplification]
+    rule [lengthBytes-padright]    : lengthBytes(padRightBytes(B:Bytes, W:Int, _:Int) ) => maxInt(lengthBytes(B), W)                      [simplification]
+
+    rule [lengthBytes-leq-zero]: lengthBytes(B:Bytes) <=Int 0 => B ==K .Bytes [simplification]
+
+    // #padRightToWidth
+
+    rule [padrighttowidth-def-leq-len]:
+      #padRightToWidth(W:Int, B:Bytes) => B
+      requires 0 <=Int W andBool W <=Int lengthBytes(B)
+      [simplification]
+
+    rule [padrighttowidth-def-len-gt]:
+      #padRightToWidth(W:Int, B:Bytes) => B +Bytes #buf(W -Int lengthBytes(B), 0)
+      requires 0 <=Int W andBool lengthBytes(B) <Int W
+      [simplification]
+
+    // #asWord
+
+    rule [asWord-params-equal-ml]:
+      { #asWord(B1:Bytes) #Equals #asWord(B2:Bytes) } => #Top
+      requires B1 ==K B2
+      [simplification]
+
+    rule [asWord-geq-zero]:
+      0 <=Int #asWord(_:Bytes) => true
+      [simplification, smt-lemma]
+
+    rule [asWord-leq-pow256]:
+      #asWord(B:Bytes) <Int pow256 => true
+      requires lengthBytes(B) <=Int 32
+      [simplification]
+
+    // PETAR: these last three are uncategorised artefacts from before upstreaming
+
+    rule #padToWidth(32, #asByteStack(X:Int)) => #buf(32, X) requires #rangeUInt(256, X) [simplification]
+
+    rule #asWord(B:Bytes) >>Int N:Int => #asWord(#range(B, 0, lengthBytes(B) -Int (N /Int 8) ))
+      requires 0 <=Int N andBool N modInt 8 ==Int 0
+      [simplification]
+
+    rule #asWord(#padRightToWidth(32, B:Bytes)) &Int notMaxUInt224 => #asWord(#padRightToWidth(32, B))
+      requires lengthBytes(B) <=Int 4 [simplification]
 
 endmodule

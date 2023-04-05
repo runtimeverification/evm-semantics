@@ -13,35 +13,35 @@ module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
 
     // associativity normalization
 
-    rule C1 +Int S2 => S2 +Int C1 [concrete(C1), symbolic(S2), simplification]
+    rule A +Int B => B +Int A [concrete(A), simplification]
 
-    rule S1 +Int (S2 +Int I3) => (S1 +Int S2) +Int I3 [symbolic(S1, S2), simplification]
-    rule S1 +Int (S2 -Int I3) => (S1 +Int S2) -Int I3 [symbolic(S1, S2), simplification]
-    rule S1 -Int (S2 +Int I3) => (S1 -Int S2) -Int I3 [symbolic(S1, S2), simplification]
-    rule S1 -Int (S2 -Int I3) => (S1 -Int S2) +Int I3 [symbolic(S1, S2), simplification]
+    rule A +Int (B +Int C) => (A +Int B) +Int C [symbolic(A, B), simplification]
+    rule A +Int (B -Int C) => (A +Int B) -Int C [symbolic(A, B), simplification]
+    rule A -Int (B +Int C) => (A -Int B) -Int C [symbolic(A, B), simplification]
+    rule A -Int (B -Int C) => (A -Int B) +Int C [symbolic(A, B), simplification]
 
-    rule S1 +Int (C2 -Int S3) => (S1 -Int S3) +Int C2 [symbolic(S1, S3), concrete(C2), simplification]
-    rule S1 -Int (C2 -Int S3) => (S1 +Int S3) -Int C2 [symbolic(S1, S3), concrete(C2), simplification]
+    rule A +Int (B -Int C) => (A -Int C) +Int B [symbolic(A, C), concrete(B), simplification]
+    rule A -Int (B -Int C) => (A +Int C) -Int B [symbolic(A, C), concrete(B), simplification]
 
-    rule (I1 +Int C2) +Int S3 => (I1 +Int S3) +Int C2 [concrete(C2), symbolic(S3), simplification]
-    rule (I1 +Int C2) -Int S3 => (I1 -Int S3) +Int C2 [concrete(C2), symbolic(S3), simplification]
-    rule (I1 -Int C2) +Int S3 => (I1 +Int S3) -Int C2 [concrete(C2), symbolic(S3), simplification]
-    rule (I1 -Int C2) -Int S3 => (I1 -Int S3) -Int C2 [concrete(C2), symbolic(S3), simplification]
+    rule (A +Int B) +Int C => (A +Int C) +Int B [concrete(B), symbolic(C), simplification]
+    rule (A +Int B) -Int C => (A -Int C) +Int B [concrete(B), symbolic(C), simplification]
+    rule (A -Int B) +Int C => (A +Int C) -Int B [concrete(B), symbolic(C), simplification]
+    rule (A -Int B) -Int C => (A -Int C) -Int B [concrete(B), symbolic(C), simplification]
 
-    rule (S1 +Int C2) +Int C3 => S1 +Int (C2 +Int C3) [concrete(C2, C3), symbolic(S1), simplification]
-    rule (S1 +Int C2) -Int C3 => S1 +Int (C2 -Int C3) [concrete(C2, C3), symbolic(S1), simplification]
-    rule (S1 -Int C2) +Int C3 => S1 +Int (C3 -Int C2) [concrete(C2, C3), symbolic(S1), simplification]
-    rule (S1 -Int C2) -Int C3 => S1 -Int (C2 +Int C3) [concrete(C2, C3), symbolic(S1), simplification]
+    rule (A +Int B) +Int C => A +Int (B +Int C) [concrete(B, C), symbolic(A), simplification]
+    rule (A +Int B) -Int C => A +Int (B -Int C) [concrete(B, C), symbolic(A), simplification]
+    rule (A -Int B) +Int C => A +Int (C -Int B) [concrete(B, C), symbolic(A), simplification]
+    rule (A -Int B) -Int C => A -Int (B +Int C) [concrete(B, C), symbolic(A), simplification]
 
   // ###########################################################################
   // inequality
   // ###########################################################################
 
-    rule I1 +Int C   <Int I2         => I1          <Int I2 -Int C  [concrete(C), simplification]
-    rule C1          <Int I2 +Int C3 => C1 -Int C3  <Int I2         [concrete(C1, C3), simplification]
-    rule C1         <=Int I2 +Int C3 => C1 -Int C3 <=Int I2         [concrete(C1, C3), simplification]
-    rule C1 -Int I2  <Int C3         => C1 -Int C3  <Int I2         [concrete(C1, C3), simplification]
-    rule C1         <=Int C2 -Int I3 => I3         <=Int C2 -Int C1 [concrete(C1, C2), simplification]
+    rule A +Int B   <Int C        => A         <Int C -Int B [concrete(B),    simplification]
+    rule A          <Int B +Int C => A -Int C  <Int B        [concrete(A, C), simplification]
+    rule A         <=Int B +Int C => A -Int C <=Int B        [concrete(A, C), simplification]
+    rule A -Int B   <Int C        => A -Int C  <Int B        [concrete(A, C), simplification]
+    rule A         <=Int B -Int C => C        <=Int B -Int A [concrete(A, B), simplification]
 
 endmodule
 
@@ -53,6 +53,8 @@ module INT-SIMPLIFICATION-COMMON
   // ###########################################################################
   // add, sub
   // ###########################################################################
+
+  // TOFIX: Can we use the comm attribute?
 
   // 2 terms
     rule A -Int A => 0 [simplification]
@@ -89,7 +91,7 @@ module INT-SIMPLIFICATION-COMMON
     rule 0 *Int _ => 0 [simplification]
     rule _ *Int 0 => 0 [simplification]
 
-    rule (C *Int A) +Int (B *Int A) => (C +Int B) *Int A [simplification]
+    rule (A *Int C) +Int (B *Int C) => (A +Int B) *Int C [simplification]
 
     rule (E *Int A) +Int B +Int C +Int D +Int (F *Int A) => ((E +Int F) *Int A) +Int B +Int C +Int D [simplification]
 
@@ -100,11 +102,11 @@ module INT-SIMPLIFICATION-COMMON
     rule A /Int 1 => A  [simplification]
 
     // safeMath mul check c / a == b where c == a * b
-    rule (A *Int B) /Int A => B  requires A =/=Int 0 [simplification]
+    rule (A *Int B) /Int A => B requires A =/=Int 0 [simplification]
 
-    rule ((A *Int B) /Int C) /Int B => A /Int C  requires B =/=Int 0 [simplification]
+    rule ((A *Int B) /Int C) /Int B => A /Int C requires B =/=Int 0 [simplification]
 
-    rule (A /Int 32) *Int 32 => A  requires A modInt 32 ==Int 0 [simplification]
+    rule (A /Int 32) *Int 32 => A requires A modInt 32 ==Int 0 [simplification]
 
     rule (A *Int B) /Int C <=Int D => true requires 0 <=Int A andBool 0 <=Int B andBool 0 <Int C andBool A <=Int D andBool B <=Int C [simplification]
 
@@ -118,7 +120,21 @@ module INT-SIMPLIFICATION-COMMON
   // max, min
   // ###########################################################################
 
-    rule minInt(A, B) => A requires A <=Int B [simplification]
+    rule [minint-left]:  minInt(A, B) => A requires A <=Int B [simplification]
+    rule [minint-right]: minInt(A, B) => B requires B <=Int A [simplification]
+
+    rule [minint-lt] : minInt(A, B) <Int C  => true requires A  <Int C  orBool B  <Int C [simplification]
+    rule [minint-gt] : A  <Int minInt(B, C) => true requires A  <Int B andBool A  <Int C [simplification]
+    rule [mining-geq]: A <=Int minInt(B, C) => true requires A <=Int B andBool A <=Int C [simplification]
+
+    rule [minInt-factor-left]:  minInt ( A:Int +Int B:Int, A:Int +Int C:Int ) => A +Int minInt ( B, C ) [simplification]
+    rule [minInt-factor-right]: minInt ( A:Int +Int B:Int, C:Int +Int B:Int ) => minInt ( A, C ) +Int B [simplification]
+
+    rule [maxint-left]:  maxInt(A:Int, B:Int) => B requires A <=Int B [simplification]
+    rule [maxint-right]: maxInt(A:Int, B:Int) => A requires A >=Int B [simplification]
+
+    rule [leq-maxint-split]: A:Int <=Int maxInt(B:Int, C:Int) => A <=Int B orBool  A <=Int C [simplification]
+    rule [maxint-leq-split]: maxInt(A:Int, B:Int) <=Int C:Int => A <=Int C andBool B <=Int C [simplification]
 
   // ###########################################################################
   // inequality
@@ -141,42 +157,24 @@ module INT-SIMPLIFICATION-COMMON
 
     rule A -Int B +Int C <=Int D => false requires D <Int A -Int B andBool 0 <=Int C [simplification]
 
-    rule minInt(A, B) <Int C  => true requires A  <Int C  orBool B  <Int C [simplification]
-    rule A  <Int minInt(B, C) => true requires A  <Int B andBool A  <Int C [simplification]
-    rule A <=Int minInt(B, C) => true requires A <=Int B andBool A <=Int C [simplification]
+    // up/Int
 
-    rule A <=Int maxInt(B, C) => true requires A <=Int B orBool A <=Int C [simplification]
-
-  //
-  // Arithmetic
-  //
-
-    // Distributivity of minInt against +Int
-    rule [minInt-factor-left]:  minInt ( A:Int +Int B:Int, A:Int +Int C:Int ) => A +Int minInt ( B, C ) [simplification]
-    rule [minInt-factor-right]: minInt ( A:Int +Int B:Int, C:Int +Int B:Int ) => minInt ( A, C ) +Int B [simplification]
-
-    // Definition of maxInt
-    rule [maxint-left]:  maxInt(I1:Int, I2:Int) => I2 requires I1 <=Int I2 [simplification]
-    rule [maxint-right]: maxInt(I1:Int, I2:Int) => I1 requires I1 >=Int I2 [simplification]
-
-    // Maximum is not greater than if both operands are not greater than
-    rule [maxint-leq-split]: maxInt(A:Int, B:Int) <=Int X:Int => A <=Int X andBool B <=Int X [simplification]
-
-  //
-  // up/Int
-  //
-
-    // Upper bound on the up/Int *Int operation
     rule [upInt-lt-true]:
       ((X up/Int Y) *Int Y) <Int Z => true
-      requires X <=Int (Z -Int Y)
-        andBool 0 <Int Y
+      requires X <=Int (Z -Int Y) andBool 0 <Int Y
       [simplification]
 
-    // X up/Int Y always rounds up
     rule [upInt-lt-false]:
       ((X up/Int Y) *Int Y) <Int X => false
       requires 0 <Int Y
       [simplification]
+
+    rule [lengthBytes-upInt-32-lower-bound]:
+      lengthBytes(X) <=Int notMaxUInt5 &Int lengthBytes(X) +Int 31 => true
+      [simplification, smt-lemma]
+
+    rule [lengthBytes-upInt-32-upper-bound]:
+      lengthBytes(X) +Int 32 >Int notMaxUInt5 &Int lengthBytes(X) +Int 31 => true
+      [simplification, smt-lemma]
 
 endmodule
