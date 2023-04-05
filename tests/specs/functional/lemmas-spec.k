@@ -182,4 +182,10 @@ module LEMMAS-SPEC
       requires #range(0 <= DATA < (2 ^Int (DATA_LEN *Int 8)))
        andBool 0 <=Int DATA_LEN
 
+ // concatenation simplification
+ // ----------------------------
+
+    claim [bytes-reassociation]: <k> runLemma  ( ((((A +Bytes B) +Bytes C) +Bytes D) +Bytes E) +Bytes F )
+	                             => doneLemma ( A +Bytes (B +Bytes (C +Bytes (D +Bytes (E +Bytes F)))) ) ... </k>
+
 endmodule
