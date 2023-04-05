@@ -1849,7 +1849,7 @@ Overall Gas
     rule <k> #memory [ OP , AOP ] => #memory(AOP, MU) ~> #deductMemory ... </k>
          <memoryUsed> MU </memoryUsed>
       requires #usesMemory(OP)
-
+   
    rule <k> #memory [ _ , _ ] => . ... </k> [owise]
 
     syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas" | "#deductMemoryGas"
