@@ -1142,11 +1142,11 @@
     },
     "nixpkgs_7": {
       "locked": {
-        "lastModified": 1680668850,
-        "narHash": "sha256-mQMg13yRsS0LXVzaeoSPwqgPO6yhkGzGewPgMSqXSv8=",
+        "lastModified": 1680637761,
+        "narHash": "sha256-VuXWnGU4g88Rs4njfZ0hxVJGHSyEmnQCsO+i58LXFNo=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "4a65e9f64e53fdca6eed31adba836717a11247d2",
+        "rev": "74c56f2e51d08f0196ed48d32e01d5d408e64451",
         "type": "github"
       },
       "original": {
@@ -1226,16 +1226,16 @@
         "poetry2nix": "poetry2nix"
       },
       "locked": {
-        "lastModified": 1680613347,
-        "narHash": "sha256-apCX1Q3D8T8rU2Kfe8yAuro6RaaBH40gBvS+SClchjM=",
+        "lastModified": 1680676953,
+        "narHash": "sha256-ZMpbeZEyU5D2sOvNNvEu0okQcfWVVYvYsj+5m44MhDk=",
         "owner": "runtimeverification",
         "repo": "pyk",
-        "rev": "3de7be5ececfab54745084bce835e8ad8c565d74",
+        "rev": "dc6554d3bc8dc87ebfd4d39bf7ee8ac6a67b0b35",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.217",
+        "ref": "v0.1.218",
         "repo": "pyk",
         "type": "github"
       }
