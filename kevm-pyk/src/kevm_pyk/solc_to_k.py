@@ -49,7 +49,6 @@ class Contract:
                             a1 == a2 for a1, a2 in zip(_margs, _marg_types, strict=True)
                         ):
                             return _method
-
                 raise ValueError(f'Method not found in abi: {_mname}')
 
             margs_cs = msig.split('(')[1][:-1]
