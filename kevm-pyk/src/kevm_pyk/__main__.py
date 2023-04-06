@@ -289,7 +289,7 @@ def exec_prove(
             if simplify_init:
                 _LOGGER.info(f'Simplifying KCFG for claim: {claim}')
                 _proof_problems[claim] = kcfg_explore.simplify(claim, cfg)
-            else: 
+            else:
                 _proof_problems[claim] = cfg
 
         proof_problems = _proof_problems
