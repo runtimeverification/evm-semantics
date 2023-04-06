@@ -282,13 +282,17 @@ def exec_prove(
         _proof_problems = {}
 
         for claim, cfg in proof_problems.items():
+            _LOGGER.info(f'Computing definedness constraint for claim: {claim}')
             init_node = cfg.get_unique_init()
             cfg.replace_node(init_node.id, kcfg_explore.cterm_assume_defined(init_node.cterm))
-            _proof_problems[claim] = cfg
-            proof_problems = _proof_problems
 
-        if simplify_init:
-            proof_problems = {claim: kcfg_explore.simplify(claim, cfg) for claim, cfg in proof_problems.items()}
+            if simplify_init:
+                _LOGGER.info(f'Simplifying KCFG for claim: {claim}')
+                _proof_problems[claim] = kcfg_explore.simplify(claim, cfg)
+            else: 
+                _proof_problems[claim] = cfg
+
+        proof_problems = _proof_problems
 
     results = parallel_kcfg_explore(
         kevm,
