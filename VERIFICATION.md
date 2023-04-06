@@ -95,6 +95,8 @@ In addition to this, you can use `kevm show-kcfg ...` or `kevm view-kcfg ...` to
   - `--claim claim_label` option is added, but unlike the `kevm prove --pyk ...`, you can only repeat it once. This option lets you select an individual claim out of the `spec_file`; if not supplied, it’s assumed that only one spec is present.
   - `--spec-module spec_module` is also an inherited option.
 
+The interactive KCFG (`view-kcfg`) puts your terminal in *application mode*. To select text in this mode, hold the modifier key provided by your terminal emulator (typically SHIFT or OPTION) while clicking and dragging. Refer to the [Textualize documentation](https://github.com/Textualize/textual/blob/main/FAQ.md#how-can-i-select-and-copy-text-in-a-textual-app) for more information.
+
 A running example:
 
 ```sh
