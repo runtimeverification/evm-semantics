@@ -363,12 +363,12 @@ def foundry_prove(
             _LOGGER.info(f'Expanding macros in initial state for test: {test}')
             init_term = kcfg.get_unique_init().cterm.kast
             init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
-            init_cterm = CTerm(init_term)
+            init_cterm = CTerm.from_kast(init_term)
 
             _LOGGER.info(f'Expanding macros in target state for test: {test}')
             target_term = kcfg.get_unique_target().cterm.kast
             target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
-            target_cterm = CTerm(target_term)
+            target_cterm = CTerm.from_kast(target_term)
             kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
 
             _LOGGER.info(f'Starting KCFGExplore for test: {test}')
@@ -539,7 +539,7 @@ def foundry_simplify_node(
     ) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
     if replace:
-        kcfg.replace_node(node, CTerm(new_term))
+        kcfg.replace_node(node, CTerm.from_kast(new_term))
         KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
     res_term = minimize_term(new_term) if minimize else new_term
     return foundry.kevm.pretty_print(res_term)
@@ -650,7 +650,7 @@ def _method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Me
 
 
 def _init_cterm(init_term: KInner) -> CTerm:
-    init_cterm = CTerm(init_term)
+    init_cterm = CTerm.from_kast(init_term)
     init_cterm = KEVM.add_invariant(init_cterm)
     return init_cterm
 
@@ -751,7 +751,7 @@ def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_
         KVariable('RECORDEVENT_FINAL'),
         KVariable('ISEVENTEXPECTED_FINAL'),
     )
-    final_cterm = CTerm(final_term)
+    final_cterm = CTerm.from_kast(final_term)
     if is_test:
         if not failing:
             return final_cterm.add_constraint(mlEqualsTrue(foundry_success))
