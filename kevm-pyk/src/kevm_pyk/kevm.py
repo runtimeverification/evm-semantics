@@ -14,7 +14,7 @@ from pyk.ktool.kprint import paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
 from pyk.prelude.kint import intToken, ltInt
-from pyk.prelude.ml import mlAnd, mlEqualsTrue
+from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
 
 if TYPE_CHECKING:
@@ -231,7 +231,7 @@ class KEVM(KProve, KRun):
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ORIGIN_CELL'))))
         constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytes(get_cell(config, 'CALLDATA_CELL')), KEVM.pow128())))
 
-        return CTerm(mlAnd([config] + constraints))
+        return CTerm(config, constraints)
 
     @staticmethod
     def extract_branches(cterm: CTerm) -> Iterable[KInner]:
