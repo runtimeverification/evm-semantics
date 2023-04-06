@@ -129,7 +129,7 @@ test4_abi = """
       "type": "tuple[5]"
     }
   ],
-  "name": "test1",
+  "name": "test4",
   "outputs": [
     {
       "internalType": "uint256",
@@ -152,4 +152,4 @@ def test_method_sig_from_abi() -> None:
     assert method_sig_from_abi(json.loads(test1_abi)) == 'test1((address,bytes)[])'
     assert method_sig_from_abi(json.loads(test2_abi)) == 'test2()'
     assert method_sig_from_abi(json.loads(test3_abi)) == 'test3(uint32,uint256)'
-    assert method_sig_from_abi(json.loads(test4_abi)) == 'test1((address,(address,bytes)[3])[5])'
+    assert method_sig_from_abi(json.loads(test4_abi)) == 'test4((address,(address,bytes)[3])[5])'
