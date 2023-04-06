@@ -41,6 +41,7 @@ Basic commands are (and each can be passed `--help`):
    - `--node-delta` - displays the delta between two given nodes in the KCFG.
 
 - `kevm foundry-view-kcfg`: Launch the more interactive exploration of the KCFG (can be done while exploration is running, must Ctrl-C + relaunch to view updates to KCFG).
+   - The interactive KCFG puts your terminal in *application mode*. To select text in this mode, hold the modifier key provided by your terminal emulator (typically SHIFT or OPTION) while clicking and dragging. Refer to the [Textualize documentation](https://github.com/Textualize/textual/blob/main/FAQ.md#how-can-i-select-and-copy-text-in-a-textual-app) for more information.
 
 - `kevm foundry-section-edge`: Given an edge in the graph, cut it into sections to get intermediate nodes.
 
