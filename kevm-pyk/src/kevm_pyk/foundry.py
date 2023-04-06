@@ -220,24 +220,33 @@ def foundry_kompile(
     syntax_module = 'FOUNDRY-MAIN'
     foundry = Foundry(foundry_root)
     foundry_definition_dir = foundry.out / 'kompiled'
+    foundry_requires_dir = foundry_definition_dir / 'requires'
     foundry_llvm_dir = foundry.out / 'kompiled-llvm'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
     ensure_dir_path(foundry_definition_dir)
+    ensure_dir_path(foundry_requires_dir)
     ensure_dir_path(foundry_llvm_dir)
 
+    requires_paths: Dict[str, str] = {}
     for r in requires:
         req = Path(r)
         if not req.exists():
             raise ValueError(f'No such file: {req}')
-        req_path = foundry_definition_dir / req
+        if req.name in requires_paths.keys():
+            raise ValueError(
+                f'Required K files have conflicting names: {r} and {requires_paths[req.name]}. Consider changing the name of one of these files.'
+            )
+        requires_paths[req.name] = r
+        req_path = foundry_requires_dir / req.name
         if regen or not req_path.exists():
             _LOGGER.info(f'Copying requires path: {req} -> {req_path}')
             shutil.copy(req, req_path)
             regen = True
 
     if regen or not foundry_main_file.exists():
-        requires = ['foundry.md'] + list(requires)
+        requires = ['foundry.md']
+        requires += [f'requires/{name}' for name in list(requires_paths.keys())]
         imports = ['FOUNDRY'] + list(imports)
         kevm = KEVM(definition_dir)
         empty_config = kevm.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
@@ -354,12 +363,12 @@ def foundry_prove(
             _LOGGER.info(f'Expanding macros in initial state for test: {test}')
             init_term = kcfg.get_unique_init().cterm.kast
             init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
-            init_cterm = CTerm(init_term)
+            init_cterm = CTerm.from_kast(init_term)
 
             _LOGGER.info(f'Expanding macros in target state for test: {test}')
             target_term = kcfg.get_unique_target().cterm.kast
             target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
-            target_cterm = CTerm(target_term)
+            target_cterm = CTerm.from_kast(target_term)
             kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
 
             _LOGGER.info(f'Starting KCFGExplore for test: {test}')
@@ -530,7 +539,7 @@ def foundry_simplify_node(
     ) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
     if replace:
-        kcfg.replace_node(node, CTerm(new_term))
+        kcfg.replace_node(node, CTerm.from_kast(new_term))
         KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
     res_term = minimize_term(new_term) if minimize else new_term
     return foundry.kevm.pretty_print(res_term)
@@ -641,7 +650,7 @@ def _method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Me
 
 
 def _init_cterm(init_term: KInner) -> CTerm:
-    init_cterm = CTerm(init_term)
+    init_cterm = CTerm.from_kast(init_term)
     init_cterm = KEVM.add_invariant(init_cterm)
     return init_cterm
 
@@ -742,7 +751,7 @@ def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_
         KVariable('RECORDEVENT_FINAL'),
         KVariable('ISEVENTEXPECTED_FINAL'),
     )
-    final_cterm = CTerm(final_term)
+    final_cterm = CTerm.from_kast(final_term)
     if is_test:
         if not failing:
             return final_cterm.add_constraint(mlEqualsTrue(foundry_success))
