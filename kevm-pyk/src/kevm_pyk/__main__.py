@@ -8,7 +8,7 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import BugReport, dir_path, file_path
+from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
 from pyk.ktool.kompile import KompileBackend
@@ -803,7 +803,7 @@ def _create_argument_parser() -> ArgumentParser:
 
     spec_args = ArgumentParser(add_help=False)
     spec_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    spec_args.add_argument('--save-directory', type=dir_path, help='Path to where CFGs are stored.')
+    spec_args.add_argument('--save-directory', type=ensure_dir_path, help='Path to where CFGs are stored.')
     spec_args.add_argument(
         '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
     )
