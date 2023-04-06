@@ -538,7 +538,7 @@ def foundry_simplify_node(
     ) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
     if replace:
-        ag_proof.kcfg.replace_node(node, CTerm(new_term))
+        ag_proof.kcfg.replace_node(node, CTerm.from_kast(new_term))
         ag_proof.write_proof()
     res_term = minimize_term(new_term) if minimize else new_term
     return foundry.kevm.pretty_print(res_term)
