@@ -1,5 +1,7 @@
 import json
 
+from pyk.kast.inner import KSort
+
 from kevm_pyk.hello import hello
 from kevm_pyk.solc_to_k import Contract
 
@@ -2878,5 +2880,11 @@ contract_json = """
 
 def test_contract_creation() -> None:
     contract = Contract('TestContract', json.loads(contract_json), foundry=True)
-    contract = contract
-    assert 1 == 2
+    assert len(contract.methods) == 16
+    for method in contract.methods:
+        if method.name == 'aggregate':
+            assert method.sort == KSort('TestContractMethod')
+            assert method.id == '252dba42'
+            assert method.arg_types == ('tuple[]',)
+            assert method.contract_name == 'TestContract'
+            assert method.payable
