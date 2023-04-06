@@ -380,12 +380,12 @@ def foundry_prove(
                 _LOGGER.info(f'Expanding macros in initial state for test: {test}')
                 init_term = kcfg.get_unique_init().cterm.kast
                 init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
-                init_cterm = CTerm(init_term)
+                init_cterm = CTerm.from_kast(init_term)
 
                 _LOGGER.info(f'Expanding macros in target state for test: {test}')
                 target_term = kcfg.get_unique_target().cterm.kast
                 target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
-                target_cterm = CTerm(target_term)
+                target_cterm = CTerm.from_kast(target_term)
                 kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
 
                 _LOGGER.info(f'Starting KCFGExplore for test: {test}')
