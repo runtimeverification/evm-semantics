@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from dataclasses import dataclass
 from functools import cached_property
 from subprocess import CalledProcessError
@@ -148,6 +149,42 @@ class Contract:
     fields: FrozenDict
 
     def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
+        def get_method_identifier(method_json: Dict) -> str:
+            def unparse_input(input_json: Dict) -> str:
+                is_array = False
+                is_sized = False
+                array_size = 0
+                base_type = input_json['type']
+                if re.match(r'.+\[.*\]', base_type):
+                    is_array = True
+                    array_size_str = base_type.split('[')[1][:-1]
+                    if array_size_str != '':
+                        is_sized = True
+                        array_size = int(array_size_str)
+                    base_type = base_type.split('[')[0]
+                if base_type == 'tuple':
+                    input_type = '('
+                    for i, component in enumerate(input_json['components']):
+                        if i != 0:
+                            input_type += ','
+                        input_type += unparse_input(component)
+                    input_type += ')'
+                    if is_array and not (is_sized):
+                        input_type += '[]'
+                    elif is_array and is_sized:
+                        input_type += f'[{array_size}]'
+                    return input_type
+                else:
+                    return input_json['type']
+
+            method_name = method_json['name']
+            method_args = ''
+            for i, _input in enumerate(method_json['inputs']):
+                if i != 0:
+                    method_args += ','
+                method_args += unparse_input(_input)
+            return f'{method_name}({method_args})'
+
         self.name = contract_name
         self.contract_json = contract_json
 
@@ -160,18 +197,24 @@ class Contract:
         self.bytecode = deployed_bytecode['object'].replace('0x', '')
         self.raw_sourcemap = deployed_bytecode['sourceMap'] if 'sourceMap' in deployed_bytecode else None
 
-        method_ids = evm['methodIdentifiers'] if 'methodIdentifiers' in evm else {}
-        _methods = []
-        for msig in method_ids:
-            mname = msig.split('(')[0]
-            mid = int(method_ids[msig], 16)
-            try:
-                _m = Contract.Method(mname, msig, mid, contract_json, contract_name, self.sort_method)
-            except ValueError as e:
-                _LOGGER.warning(e)
-                continue
-            _methods.append(_m)
-        self.methods = tuple(_methods)
+        #          method_ids = evm['methodIdentifiers'] if 'methodIdentifiers' in evm else {}
+        #          _methods: List[Method] = []
+        for method in contract_json['abi']:
+            _LOGGER.warning(method)
+            method_id = get_method_identifier(method)
+            _LOGGER.warning(method_id)
+            _LOGGER.warning(evm['methodIdentifiers'][method_id])
+
+        #          for msig in method_ids:
+        #              mname = msig.split('(')[0]
+        #              mid = int(method_ids[msig], 16)
+        #              try:
+        #                  _m = Contract.Method(mname, msig, mid, contract_json, contract_name, self.sort_method)
+        #              except ValueError as e:
+        #                  _LOGGER.warning(e)
+        #                  continue
+        #              _methods.append(_m)
+        #          self.methods = tuple(_methods)
 
         self.fields = FrozenDict({})
         if 'storageLayout' in self.contract_json and 'storage' in self.contract_json['storageLayout']:
