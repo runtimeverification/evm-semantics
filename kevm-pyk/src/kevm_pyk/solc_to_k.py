@@ -148,6 +148,8 @@ class Contract:
 
         _methods = []
         for method in contract_json['abi']:
+            if method['type'] != 'function':
+                continue
             _LOGGER.warning(method)
             msig = method_sig_from_abi(method)
             mid = evm['methodIdentifiers'][msig]
