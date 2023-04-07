@@ -5,7 +5,7 @@ module VAT-MULUI-PASS-SPEC
 
     // Vat_mului
     claim [Vat.mului.pass]:
-      <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
+      <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
@@ -23,12 +23,12 @@ module VAT-MULUI-PASS-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  =>  JMPTO : chop(ABI_x *Int ABI_y) : WS </wordStack>
+            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  => chop(ABI_x *Int ABI_y) : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13175 => 13233 </pc>
             <gas> #gas(VGas) => #if ABI_y ==Int 0
-              #then   #gas ( ( VGas +Int -96 ) )
-              #else   #gas ( ( VGas +Int -132 ) )
+              #then   #gas ( ( VGas +Int -104 ) )
+              #else   #gas ( ( VGas +Int -140 ) )
             #fi </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>

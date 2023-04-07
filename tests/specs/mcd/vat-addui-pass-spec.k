@@ -1,10 +1,10 @@
 requires "verification.k"
 
-module VAT-SUBUI-PASS-SPEC
+module VAT-ADDUI-PASS-SPEC
     imports VERIFICATION
 
-    // Vat_subui
-    claim [Vat.subui.pass]:
+    // Vat_addui
+    claim [Vat.addui.pass]:
       <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -23,12 +23,12 @@ module VAT-SUBUI-PASS-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  =>  ABI_x -Int ABI_y : WS </wordStack>
+            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  => ABI_x +Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
-            <pc> 13304 => 13366 </pc>
-            <gas> #gas(VGas) => #if ( ABI_y =/=Int 0 andBool 0 <=Int ABI_y )
+            <pc> 13112 => 13174 </pc>
+            <gas> #gas(VGas) => #if ( ABI_y <Int 0 andBool ( minSInt256 <=Int ABI_y andBool ( ABI_y <=Int maxSInt256 andBool 0 <=Int ( ABI_x +Int ABI_y ) ) ) )
               #then   #gas ( ( VGas +Int -136 ) )
-              #else   #if 0 <=Int ABI_y
+              #else   #if ABI_y <=Int 0
                 #then   #gas ( ( VGas +Int -122 ) )
                 #else   #gas ( ( VGas +Int -136 ) )
               #fi
@@ -77,8 +77,8 @@ module VAT-SUBUI-PASS-SPEC
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat </nonce>
+              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <nonce> _Nonce_Vat => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -97,14 +97,11 @@ module VAT-SUBUI-PASS-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
-       andBool #rangeNonce(Nonce_Vat)
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeSInt(256, ABI_y)
        andBool ((#sizeWordStack(WS) <=Int 1015)
        andBool (#rangeUInt(256, VMemoryUsed)
-       andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
-
-
+       andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
 
 endmodule
