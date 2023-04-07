@@ -71,7 +71,7 @@ def test_contract_creation() -> None:
     assert len(contract.methods) == 1
     method = contract.methods[0]
     assert method.sort == KSort('TestContractMethod')
-    assert method.id == '252dba42'
+    assert method.id == int('252dba42', 16)
     assert method.arg_types == ('tuple[]',)
     assert method.contract_name == 'TestContract'
     assert method.payable
