@@ -18,7 +18,6 @@ if TYPE_CHECKING:
     from pyk.cterm import CTerm
     from pyk.kast import KInner
     from pyk.kast.outer import KDefinition
-    from pyk.kcfg import KCFG
     from pyk.ktool.kprove import KProve
 
     T1 = TypeVar('T1')
@@ -27,7 +26,7 @@ if TYPE_CHECKING:
 _LOGGER: Final = logging.getLogger(__name__)
 
 
-def get_cfg_for_spec(  # noqa: N802
+def get_ag_proof_for_spec(  # noqa: N802
     kprove: KProve,
     spec_file: Path,
     save_directory: Optional[Path],
@@ -36,7 +35,7 @@ def get_cfg_for_spec(  # noqa: N802
     md_selector: Optional[str] = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
-) -> Tuple[str, KCFG]:
+) -> AGProof:
     if save_directory is None:
         save_directory = Path('.')
         _LOGGER.info(f'Using default save_directory: {save_directory}')
@@ -53,16 +52,14 @@ def get_cfg_for_spec(  # noqa: N802
         )
     )
 
-    kcfg = KCFGExplore.read_cfg(claim.label, save_directory)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {claim} from {save_directory}')
-
-    return claim.label, kcfg
+    ag_proof = AGProof.read_proof(claim.label, save_directory)
+    assert type(ag_proof) is AGProof
+    return ag_proof
 
 
 def parallel_kcfg_explore(
     kprove: KProve,
-    proof_problems: Dict[str, KCFG],
+    proof_problems: Dict[str, AGProof],
     save_directory: Optional[Path] = None,
     max_depth: int = 1000,
     max_iterations: Optional[int] = None,
@@ -78,8 +75,8 @@ def parallel_kcfg_explore(
     smt_timeout: Optional[int] = None,
     smt_retry_limit: Optional[int] = None,
 ) -> Dict[str, bool]:
-    def _call_rpc(packed_args: Tuple[str, KCFG, int]) -> bool:
-        _cfgid, _cfg, _index = packed_args
+    def _call_rpc(packed_args: Tuple[str, AGProof, int]) -> bool:
+        _cfgid, _ag_proof, _index = packed_args
         terminal_rules = ['EVM.halt']
         if break_every_step:
             terminal_rules.append('EVM.step')
@@ -109,13 +106,10 @@ def parallel_kcfg_explore(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:
-            ag_proof = AGProof(_cfg)
-            ag_prover = AGProver(ag_proof)
+            ag_prover = AGProver(_ag_proof)
             try:
                 _cfg = ag_prover.advance_proof(
-                    _cfgid,
                     kcfg_explore,
-                    kproofs_dir=save_directory,
                     is_terminal=is_terminal,
                     extract_branches=extract_branches,
                     max_iterations=max_iterations,
