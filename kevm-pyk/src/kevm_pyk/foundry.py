@@ -435,9 +435,9 @@ def foundry_show(
         return foundry.short_info_for_contract(contract_name, cterm)
 
     if frontier:
-        nodes = list(nodes) + [node.id for node in kcfg.frontier]
+        nodes = list(nodes) + [node.id for node in ag_proof.kcfg.frontier]
     if stuck:
-        nodes = list(nodes) + [node.id for node in kcfg.stuck]
+        nodes = list(nodes) + [node.id for node in ag_proof.kcfg.stuck]
 
     unstable_cells = [
         '<program>',
