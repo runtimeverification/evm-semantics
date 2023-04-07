@@ -21,6 +21,7 @@ from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
+from pyk.proof import AGProof
 from pyk.utils import shorten_hashes, single, unique
 
 from .kevm import KEVM
@@ -314,9 +315,9 @@ def foundry_prove(
     br = BugReport(foundry_root / 'bug_report') if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
 
-    kcfgs_dir = foundry.out / 'kcfgs'
-    if not kcfgs_dir.exists():
-        kcfgs_dir.mkdir()
+    ag_proofs_dir = foundry.out / 'ag_proofs'
+    if not ag_proofs_dir.exists():
+        ag_proofs_dir.mkdir()
 
     all_tests = [
         f'{contract.name}.{method.name}'
@@ -348,7 +349,6 @@ def foundry_prove(
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
     setup_methods: Dict[str, str] = {}
-
     contracts = unique({test.split('.')[0] for test in tests})
     for contract_name in contracts:
         contract = foundry.contracts[contract_name]
@@ -357,11 +357,11 @@ def foundry_prove(
             setup_methods[contract.name] = f'{contract.name}.{method.name}'
 
     def run_cfg_group(tests: List[str]) -> Dict[str, bool]:
-        kcfgs: Dict[str, KCFG] = {}
+        ag_proofs: Dict[str, AGProof] = {}
         for test in tests:
-            kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
-            if kcfg is not None and not reinit:
-                kcfgs[test] = kcfg
+            if AGProof.proof_exists(test, ag_proofs_dir) and not reinit:
+                ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+                assert type(ag_proof) is AGProof
             else:
                 _LOGGER.info(f'Initializing KCFG for test: {test}')
                 contract_name, method_name = test.split('.')
@@ -375,7 +375,7 @@ def foundry_prove(
                     setup_method = setup_methods[contract_name]
                     _LOGGER.info(f'Using setup method {setup_method} for test: {test}')
 
-                kcfg = _method_to_cfg(empty_config, contract, method, kcfgs_dir, init_state=setup_method)
+                kcfg = _method_to_cfg(empty_config, contract, method, ag_proofs_dir, init_state=setup_method)
 
                 _LOGGER.info(f'Expanding macros in initial state for test: {test}')
                 init_term = kcfg.get_unique_init().cterm.kast
@@ -403,13 +403,15 @@ def foundry_prove(
                     if simplify_init:
                         _LOGGER.info(f'Simplifying KCFG for test: {test}')
                         kcfg = kcfg_explore.simplify(test, kcfg)
-                kcfgs[test] = kcfg
-                KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+                ag_proof = AGProof(test, kcfg, proof_dir=ag_proofs_dir)
+
+            ag_proof.write_proof()
+            ag_proofs[test] = ag_proof
 
         return parallel_kcfg_explore(
             foundry.kevm,
-            kcfgs,
-            save_directory=kcfgs_dir,
+            ag_proofs,
+            save_directory=ag_proofs_dir,
             max_depth=max_depth,
             max_iterations=max_iterations,
             workers=workers,
@@ -445,11 +447,10 @@ def foundry_show(
 ) -> str:
     contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
-    kcfgs_dir = foundry.out / 'kcfgs'
+    ag_proofs_dir = foundry.out / 'ag_proofs'
 
-    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    assert type(ag_proof) is AGProof
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
@@ -457,7 +458,7 @@ def foundry_show(
     kcfg_show = KCFGShow(foundry.kevm)
     res_lines = kcfg_show.show(
         test,
-        kcfg,
+        ag_proof.kcfg,
         nodes=nodes,
         node_deltas=node_deltas,
         to_module=to_module,
@@ -469,13 +470,12 @@ def foundry_show(
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
     foundry = Foundry(foundry_root)
-    kcfgs_dir = foundry.out / 'kcfgs'
-    dump_dir = kcfgs_dir / 'dump'
-    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    ag_proofs_dir = foundry.out / 'ag_proofs'
+    dump_dir = ag_proofs_dir / 'dump'
+    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    assert type(ag_proof) is AGProof
     kcfg_show = KCFGShow(foundry.kevm)
-    kcfg_show.dump(test, kcfg, dump_dir, dot=True)
+    kcfg_show.dump(test, ag_proof.kcfg, dump_dir, dot=True)
 
 
 class CfgStat(NamedTuple):
@@ -490,7 +490,7 @@ class CfgStat(NamedTuple):
     def from_file(path: Path) -> CfgStat:
         check_file_path(path)
         cfg_json = json.loads(path.read_text())
-        cfg_id = cfg_json['cfgid']
+        cfg_id = cfg_json['proofid']
         cfg = KCFG.from_dict(cfg_json)
         total_nodes = len(cfg.nodes)
         frontier_nodes = len(cfg.frontier)
@@ -524,22 +524,21 @@ class CfgStat(NamedTuple):
 
 def foundry_list(foundry_root: Path) -> List[CfgStat]:
     foundry = Foundry(foundry_root)
-    kcfgs_dir = foundry.out / 'kcfgs'
-    paths = kcfgs_dir.glob('*.json')
+    ag_proofs_dir = foundry.out / 'ag_proofs'
+    paths = ag_proofs_dir.glob('*.json')
     return [CfgStat.from_file(path) for path in paths]
 
 
 def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
     foundry = Foundry(foundry_root)
-    kcfgs_dir = foundry.out / 'kcfgs'
-    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    for _node in kcfg.reachable_nodes(node, traverse_covers=True):
-        if not kcfg.is_target(_node.id):
+    ag_proofs_dir = foundry.out / 'ag_proofs'
+    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    assert type(ag_proof) is AGProof
+    for _node in ag_proof.kcfg.reachable_nodes(node, traverse_covers=True):
+        if not ag_proof.kcfg.is_target(_node.id):
             _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
-            kcfg.remove_node(_node.id)
-    KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+            ag_proof.kcfg.remove_node(_node.id)
+    ag_proof.write_proof()
 
 
 def foundry_simplify_node(
@@ -554,18 +553,17 @@ def foundry_simplify_node(
 ) -> str:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    kcfgs_dir = foundry.out / 'kcfgs'
-    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
-    cterm = kcfg.node(node).cterm
+    ag_proofs_dir = foundry.out / 'ag_proofs'
+    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    assert type(ag_proof) is AGProof
+    cterm = ag_proof.kcfg.node(node).cterm
     with KCFGExplore(
         foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
     if replace:
-        kcfg.replace_node(node, CTerm.from_kast(new_term))
-        KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+        ag_proof.kcfg.replace_node(node, CTerm.from_kast(new_term))
+        ag_proof.write_proof()
     res_term = minimize_term(new_term) if minimize else new_term
     return foundry.kevm.pretty_print(res_term)
 
@@ -588,16 +586,15 @@ def foundry_step_node(
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
 
-    kcfgs_dir = foundry.out / 'kcfgs'
-    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    ag_proofs_dir = foundry.out / 'ag_proofs'
+    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    assert type(ag_proof) is AGProof
     with KCFGExplore(
         foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
         for _i in range(repeat):
-            kcfg, node = kcfg_explore.step(test, kcfg, node, depth=depth)
-            KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+            kcfg, node = kcfg_explore.step(test, ag_proof.kcfg, node, depth=depth)
+            ag_proof.write_proof()
 
 
 def foundry_section_edge(
@@ -612,16 +609,17 @@ def foundry_section_edge(
 ) -> None:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    kcfgs_dir = foundry.out / 'kcfgs'
-    kcfg = KCFGExplore.read_cfg(test, kcfgs_dir)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {test} from {kcfgs_dir}')
+    ag_proofs_dir = foundry.out / 'ag_proofs'
+    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    assert type(ag_proof) is AGProof
     source_id, target_id = edge
     with KCFGExplore(
         foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(test, kcfg, source_id=source_id, target_id=target_id, sections=sections)
-    KCFGExplore.write_cfg(test, kcfgs_dir, kcfg)
+        kcfg, _ = kcfg_explore.section_edge(
+            test, ag_proof.kcfg, source_id=source_id, target_id=target_id, sections=sections
+        )
+    ag_proof.write_proof()
 
 
 def _write_cfg(cfg: KCFG, path: Path) -> None:
@@ -688,12 +686,11 @@ def _init_cterm(init_term: KInner) -> CTerm:
     return init_cterm
 
 
-def get_final_accounts_cell(cfgid: str, kcfgs_dir: Path) -> KInner:
-    kcfg = KCFGExplore.read_cfg(cfgid, kcfgs_dir)
-    if not kcfg:
-        raise RuntimeError(f'failed to read cfg: {cfgid}')
-    target = kcfg.get_unique_target()
-    cover = single(kcfg.covers(target_id=target.id))
+def get_final_accounts_cell(cfgid: str, ag_proof_dir: Path) -> KInner:
+    ag_proof = AGProof.read_proof(cfgid, ag_proof_dir)
+    assert type(ag_proof) is AGProof
+    target = ag_proof.kcfg.get_unique_target()
+    cover = single(ag_proof.kcfg.covers(target_id=target.id))
     accounts_cell = get_cell(cover.source.cterm.config, 'ACCOUNTS_CELL')
     return accounts_cell
 
