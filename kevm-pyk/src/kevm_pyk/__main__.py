@@ -275,18 +275,26 @@ def exec_prove(
     proof_problems = {
         c.label: AGProof(c.label, KCFG.from_claim(kevm.definition, c), proof_dir=save_directory) for c in claims
     }
-    if simplify_init:
-        with KCFGExplore(
-            kevm,
-            bug_report=br,
-            kore_rpc_command=kore_rpc_command,
-            smt_timeout=smt_timeout,
-            smt_retry_limit=smt_retry_limit,
-        ) as kcfg_explore:
-            proof_problems = {
-                claim: AGProof(claim, kcfg_explore.simplify(claim, ag_proof.kcfg), proof_dir=save_directory)
-                for claim, ag_proof in proof_problems.items()
-            }
+    with KCFGExplore(
+        kevm,
+        bug_report=br,
+        kore_rpc_command=kore_rpc_command,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
+    ) as kcfg_explore:
+        _proof_problems = {}
+
+        for claim, ag_proof in proof_problems.items():
+            _LOGGER.info(f'Computing definedness constraint for claim: {claim}')
+            init_node = ag_proof.kcfg.get_unique_init()
+            ag_proof.kcfg.replace_node(init_node.id, kcfg_explore.cterm_assume_defined(init_node.cterm))
+
+            if simplify_init:
+                _LOGGER.info(f'Simplifying KCFG for claim: {claim}')
+                ag_proof.kcfg = kcfg_explore.simplify(claim, ag_proof.kcfg)
+            _proof_problems[claim] = ag_proof
+
+        proof_problems = _proof_problems
 
     results = parallel_kcfg_explore(
         kevm,
