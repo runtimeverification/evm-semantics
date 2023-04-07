@@ -272,7 +272,9 @@ def exec_prove(
         kore_rpc_command = kore_rpc_command.split()
 
     _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
-    proof_problems = {c.label: AGProof(c.label, KCFG.from_claim(kevm.definition, c)) for c in claims}
+    proof_problems = {
+        c.label: AGProof(c.label, KCFG.from_claim(kevm.definition, c), proof_dir=save_directory) for c in claims
+    }
     with KCFGExplore(
         kevm,
         bug_report=br,
