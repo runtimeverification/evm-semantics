@@ -617,7 +617,7 @@ def _foundry_to_bin_runtime(
         modules.append(module)
     _main_module = KFlatModule(
         main_module if main_module else 'MAIN',
-        imports=(KImport(mname) for mname in [_m.name for _m in modules] + ['FOUNDRY'] + list(imports)),
+        imports=(KImport(mname) for mname in [_m.name for _m in modules] + list(imports)),
     )
     modules.append(_main_module)
 
