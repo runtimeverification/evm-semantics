@@ -76,8 +76,8 @@ module LEMMAS [symbolic]
   // Map Reasoning
   // ########################
 
-    rule #lookup ( _M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 )  requires K1 ==Int  K2 [simplification]
-    rule #lookup (  M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 )  requires K1 =/=Int K2 [simplification]
+    rule #lookup ( _M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 )  requires K1 ==K  K2 [simplification]
+    rule #lookup (  M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 )  requires K1 =/=K K2 [simplification]
 
     rule 0 <=Int #lookup( _M:Map , _ )             => true [simplification, smt-lemma]
     rule         #lookup( _M:Map , _ ) <Int pow256 => true [simplification, smt-lemma]

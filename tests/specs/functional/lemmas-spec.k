@@ -106,6 +106,8 @@ module LEMMAS-SPEC
     // claim <k> runLemma ( #lookup( _M:Map [ KEY <- 33 ] [ KEY' <- 728 ] [ KEY'' <- (pow256 +Int 5) ] [ KEY''' <- "hello" ] , KEY''  ) ) => doneLemma ( 5   ) ... </k> requires KEY =/=Int KEY' andBool KEY =/=Int KEY'' andBool KEY =/=Int KEY''' andBool KEY' =/=Int KEY'' andBool KEY' =/=Int KEY''' andBool KEY'' =/=Int KEY'''
     // claim <k> runLemma ( #lookup( _M:Map [ KEY <- 33 ] [ KEY' <- 728 ] [ KEY'' <- (pow256 +Int 5) ] [ KEY''' <- "hello" ] , KEY''' ) ) => doneLemma ( 0   ) ... </k> requires KEY =/=Int KEY' andBool KEY =/=Int KEY'' andBool KEY =/=Int KEY''' andBool KEY' =/=Int KEY'' andBool KEY' =/=Int KEY''' andBool KEY'' =/=Int KEY'''
 
+    claim [lookup-key-simplification-symbolic]: <k> runLemma( #lookup ( M:Map [ 1 <- ( #lookup ( M:Map , 1 ) -Int _V:Int ) ] , keccak ( #buf ( 32 , ADDR:Int ) +Bytes #buf(32, 0) ) ) ) => doneLemma( #lookup ( M:Map , keccak ( #buf ( 32 , ADDR:Int ) +Bytes b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" ) ) ) ... </k> requires notBool keccak ( #buf ( 32 , ADDR:Int ) +Bytes #buf(32, 0) )  ==Int 1
+
  // #range selection operation
  // --------------------------
 
