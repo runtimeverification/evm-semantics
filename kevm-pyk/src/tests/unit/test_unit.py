@@ -1,7 +1,9 @@
 import json
 
+from pyk.kast.inner import KSort
+
 from kevm_pyk.hello import hello
-from kevm_pyk.solc_to_k import method_sig_from_abi
+from kevm_pyk.solc_to_k import Contract, method_sig_from_abi
 
 
 def test_hello() -> None:
@@ -153,6 +155,7 @@ def test_method_sig_from_abi() -> None:
     assert method_sig_from_abi(json.loads(test2_abi)) == 'test2()'
     assert method_sig_from_abi(json.loads(test3_abi)) == 'test3(uint32,uint256)'
     assert method_sig_from_abi(json.loads(test4_abi)) == 'test4((address,(address,bytes)[3])[5])'
+
 
 contract_json = """
 {
