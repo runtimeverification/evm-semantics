@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
 from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
-from pyk.kcfg import KCFGExplore
+from pyk.kcfg import KCFG, KCFGExplore
 from pyk.proof import AGProof, AGProver
 from pyk.utils import single
 
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from pyk.cterm import CTerm
     from pyk.kast import KInner
     from pyk.kast.outer import KDefinition
-    from pyk.ktool.kprove import KProve
+    from pyk.ktool.kprove import KPrint, KProve
 
     T1 = TypeVar('T1')
     T2 = TypeVar('T2')
@@ -127,6 +127,9 @@ def parallel_kcfg_explore(
             return True
         else:
             _LOGGER.error(f'Proof failed: {_cfgid}')
+            failure_log = print_failure_info(_cfg, kprove)
+            for line in failure_log:
+                _LOGGER.error(line)
             return False
 
     with ProcessPool(ncpus=workers) as process_pool:
@@ -134,6 +137,35 @@ def parallel_kcfg_explore(
         results = process_pool.map(_call_rpc, _proof_problems)
 
     return dict(zip(proof_problems, results, strict=True))
+
+
+def print_failure_info(_cfg: KCFG, kprint: KPrint) -> list[str]:
+    res_lines: list[str] = []
+    num_frontier = len(_cfg.frontier)
+    num_stuck = len(_cfg.stuck)
+    res_lines.append(f'{num_frontier + num_stuck} Failure nodes. ({num_frontier} frontier and {num_stuck} stuck)')
+    if num_stuck > 0:
+        res_lines.append('')
+        res_lines.append('Stuck nodes:')
+        for node in _cfg.stuck:
+            res_lines.append('')
+            res_lines.append('ID: {node.id}:')
+            constraints = get_split_constraints(_cfg, node)
+            for constraint in constraints:
+                res_lines.append(kprint.pretty_print(constraint))
+    return res_lines
+
+
+def get_split_constraints(cfg: KCFG, node: KCFG.Node) -> List[KInner]:
+    constraints = []
+    for path in cfg.paths_between(cfg.get_unique_init().id, node.id):
+        for edge in path:
+            if type(edge) is KCFG.Split:
+                for _, csubst in edge.targets:
+                    for constraint in csubst.constraints:
+                        constraints.append(constraint)
+
+    return constraints
 
 
 def arg_pair_of(

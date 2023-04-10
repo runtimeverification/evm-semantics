@@ -8,6 +8,10 @@ contract AssertTest is Test {
 
     function setUp() public {}
 
+    function test_failing_branch(uint x) public {
+      assert(x >= 100);
+    }
+
     function test_assert_true() public pure {
         assert(true);
     }
