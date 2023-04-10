@@ -2,7 +2,7 @@ POETRY     := poetry
 POETRY_RUN := $(POETRY) run
 
 
-default: check test-unit test-integration
+default: check test-unit
 
 all: check cov
 
