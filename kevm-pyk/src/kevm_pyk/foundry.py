@@ -662,7 +662,7 @@ def _init_term(
     callvalue: Optional[KInner] = None,
 ) -> KInner:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
-    account_cell = Foundry.account_TEST_CONTRACT_ADDRESS()
+    account_cell = Subst({'TEST_CODE': program})(Foundry.account_TEST_CONTRACT_ADDRESS())
     init_subst = {
         'MODE_CELL': KApply('NORMAL'),
         'SCHEDULE_CELL': KApply('LONDON_EVM'),
