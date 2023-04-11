@@ -1,21 +1,30 @@
+from __future__ import annotations
+
 import logging
 import sys
 from enum import Enum
 from pathlib import Path
-from typing import Final, Iterable, List, Optional
+from typing import TYPE_CHECKING
 
-from pyk.cli_utils import BugReport
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KLabel, KSequence, KSort, KVariable, build_assoc
+from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
 from pyk.kast.manip import flatten_label, get_cell, split_config_from
-from pyk.kast.outer import KFlatModule
-from pyk.ktool.kompile import KompileBackend, LLVMKompileType, kompile
-from pyk.ktool.kprint import SymbolTable, paren
+from pyk.ktool.kompile import KompileBackend, kompile
+from pyk.ktool.kprint import paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
 from pyk.prelude.kint import intToken, ltInt
-from pyk.prelude.ml import mlAnd, mlEqualsTrue
+from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
+
+if TYPE_CHECKING:
+    from typing import Final, Iterable, List, Optional
+
+    from pyk.cli_utils import BugReport
+    from pyk.kast import KInner
+    from pyk.kast.outer import KFlatModule
+    from pyk.ktool.kompile import LLVMKompileType
+    from pyk.ktool.kprint import SymbolTable
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -75,7 +84,7 @@ class KEVM(KProve, KRun):
         llvm_kompile: bool = True,
         optimization: int = 0,
         llvm_kompile_type: Optional[LLVMKompileType] = None,
-    ) -> 'KEVM':
+    ) -> KEVM:
         try:
             kompile(
                 main_file=main_file,
@@ -177,19 +186,11 @@ class KEVM(KProve, KRun):
             'EVM.#memoryUsageUpdate.some',
             'EVM.Rsstore.new',
             'EVM.Rsstore.old',
-            'EVM-TYPES.#asByteStack',
-            'EVM-TYPES.#asByteStackAux.recursive',
-            'EVM-TYPES.#asWord.recursive',
-            'EVM-TYPES.Bytes.range',
             'EVM-TYPES.bytesRange',
-            'EVM-TYPES.mapWriteBytes.recursive',
-            'EVM-TYPES.#padRightToWidth',
             'EVM-TYPES.padRightToWidthNonEmpty',
-            'EVM-TYPES.#padToWidth',
             'EVM-TYPES.padToWidthNonEmpty',
             'EVM-TYPES.powmod.nonzero',
             'EVM-TYPES.powmod.zero',
-            'EVM-TYPES.#range',
             'EVM-TYPES.signextend.invalid',
             'EVM-TYPES.signextend.negative',
             'EVM-TYPES.signextend.positive',
@@ -230,7 +231,7 @@ class KEVM(KProve, KRun):
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ORIGIN_CELL'))))
         constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytes(get_cell(config, 'CALLDATA_CELL')), KEVM.pow128())))
 
-        return CTerm(mlAnd([config] + constraints))
+        return CTerm(config, constraints)
 
     @staticmethod
     def extract_branches(cterm: CTerm) -> Iterable[KInner]:

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "kevm-pyk"
-version = "1.0.48"
+version = "1.0.85"
 description = ""
 authors = [
     "Runtime Verification, Inc. <contact@runtimeverification.com>",
@@ -13,7 +13,8 @@ authors = [
 [tool.poetry.dependencies]
 python = "^3.10"
 pathos = "*"
-pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="v0.1.185" }
+pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="v0.1.225" }
+tomlkit = "^0.11.6"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"
@@ -22,15 +23,18 @@ flake8 = "*"
 flake8-bugbear = "*"
 flake8-comprehensions = "*"
 flake8-quotes = "*"
+flake8-type-checking = "*"
 isort = "*"
 mypy = "*"
 pep8-naming = "*"
 pytest = "*"
+pytest-cov = "*"
 pytest-mock = "*"
 pytest-xdist = "*"
 
 [tool.poetry.scripts]
 kevm-pyk = "kevm_pyk.__main__:main"
+gst-to-kore = "kevm_pyk.gst_to_kore:main"
 
 [tool.isort]
 profile = "black"

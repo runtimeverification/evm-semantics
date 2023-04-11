@@ -1,33 +1,32 @@
+from __future__ import annotations
+
 import logging
-import socket
-from contextlib import closing
 from pathlib import Path
-from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING
 
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli_utils import BugReport
-from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
+from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
 from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
-from pyk.kast.outer import KDefinition
-from pyk.kcfg import KCFG, KCFGExplore
-from pyk.ktool.kprove import KProve
+from pyk.kcfg import KCFGExplore
+from pyk.proof import AGProof, AGProver
 from pyk.utils import single
+
+if TYPE_CHECKING:
+    from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union
+
+    from pyk.cli_utils import BugReport
+    from pyk.cterm import CTerm
+    from pyk.kast import KInner
+    from pyk.kast.outer import KDefinition
+    from pyk.ktool.kprove import KProve
+
+    T1 = TypeVar('T1')
+    T2 = TypeVar('T2')
 
 _LOGGER: Final = logging.getLogger(__name__)
 
-T1 = TypeVar('T1')
-T2 = TypeVar('T2')
 
-
-def find_free_port(host: str = 'localhost') -> int:
-    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-        s.bind((host, 0))
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        return s.getsockname()[1]
-
-
-def get_cfg_for_spec(  # noqa: N802
+def get_ag_proof_for_spec(  # noqa: N802
     kprove: KProve,
     spec_file: Path,
     save_directory: Optional[Path],
@@ -36,7 +35,7 @@ def get_cfg_for_spec(  # noqa: N802
     md_selector: Optional[str] = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
-) -> Tuple[str, KCFG]:
+) -> AGProof:
     if save_directory is None:
         save_directory = Path('.')
         _LOGGER.info(f'Using default save_directory: {save_directory}')
@@ -53,16 +52,14 @@ def get_cfg_for_spec(  # noqa: N802
         )
     )
 
-    kcfg = KCFGExplore.read_cfg(claim.label, save_directory)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {claim} from {save_directory}')
-
-    return claim.label, kcfg
+    ag_proof = AGProof.read_proof(claim.label, save_directory)
+    assert type(ag_proof) is AGProof
+    return ag_proof
 
 
 def parallel_kcfg_explore(
     kprove: KProve,
-    proof_problems: Dict[str, KCFG],
+    proof_problems: Dict[str, AGProof],
     save_directory: Optional[Path] = None,
     max_depth: int = 1000,
     max_iterations: Optional[int] = None,
@@ -71,14 +68,15 @@ def parallel_kcfg_explore(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = False,
-    rpc_base_port: Optional[int] = None,
     is_terminal: Optional[Callable[[CTerm], bool]] = None,
     extract_branches: Optional[Callable[[CTerm], Iterable[KInner]]] = None,
     bug_report: Optional[BugReport] = None,
-    rpc_cmd: Iterable[str] = ('kore-rpc',),
+    kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
+    smt_timeout: Optional[int] = None,
+    smt_retry_limit: Optional[int] = None,
 ) -> Dict[str, bool]:
-    def _call_rpc(packed_args: Tuple[str, KCFG, int]) -> bool:
-        _cfgid, _cfg, _index = packed_args
+    def _call_rpc(packed_args: Tuple[str, AGProof, int]) -> bool:
+        _cfgid, _ag_proof, _index = packed_args
         terminal_rules = ['EVM.halt']
         if break_every_step:
             terminal_rules.append('EVM.step')
@@ -100,16 +98,18 @@ def parallel_kcfg_explore(
                     'EVM.return.success',
                 ]
             )
-        base_port = rpc_base_port if rpc_base_port is not None else find_free_port()
 
         with KCFGExplore(
-            kprove, port=(base_port + _index), bug_report=bug_report, kore_rpc_command=rpc_cmd
+            kprove,
+            bug_report=bug_report,
+            kore_rpc_command=kore_rpc_command,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:
+            ag_prover = AGProver(_ag_proof)
             try:
-                _cfg = kcfg_explore.all_path_reachability_prove(
-                    _cfgid,
-                    _cfg,
-                    cfg_dir=save_directory,
+                _cfg = ag_prover.advance_proof(
+                    kcfg_explore,
                     is_terminal=is_terminal,
                     extract_branches=extract_branches,
                     max_iterations=max_iterations,

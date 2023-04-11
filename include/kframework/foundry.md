@@ -41,6 +41,7 @@ Basic commands are (and each can be passed `--help`):
    - `--node-delta` - displays the delta between two given nodes in the KCFG.
 
 - `kevm foundry-view-kcfg`: Launch the more interactive exploration of the KCFG (can be done while exploration is running, must Ctrl-C + relaunch to view updates to KCFG).
+   - The interactive KCFG puts your terminal in *application mode*. To select text in this mode, hold the modifier key provided by your terminal emulator (typically SHIFT or OPTION) while clicking and dragging. Refer to the [Textualize documentation](https://github.com/Textualize/textual/blob/main/FAQ.md#how-can-i-select-and-copy-text-in-a-textual-app) for more information.
 
 - `kevm foundry-section-edge`: Given an edge in the graph, cut it into sections to get intermediate nodes.
 
@@ -117,7 +118,7 @@ module FOUNDRY-ACCOUNTS
     syntax FoundryContract ::= "FoundryTest"  [klabel(contract_FoundryTest)]
                              | "FoundryCheat" [klabel(contract_FoundryCheat)]
  // -------------------------------------------------------------------------
-    rule #address(FoundryTest)  => 1032069922050249630382865877677304880282300743300 // 0xb4c79daB8f259C7Aee6E5b2Aa729821864227e84
+    rule #address(FoundryTest)  => 728815563385977040452943777879061427756277306518  // 0x7FA9385bE102ac3EAc297483Dd6233D62b3e1496
     rule #address(FoundryCheat) => 645326474426547203313410069153905908525362434349  // 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D
 
     syntax FoundryField ::= "Failed" [klabel(slot_failed)]
@@ -576,7 +577,7 @@ If the call depth of the current call is lower than the call depth of the `expec
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
-           <expectedDepth> ED </expectedDepth> 
+           <expectedDepth> ED </expectedDepth>
            ...
          </expectedRevert>
       requires CD <=Int ED
@@ -593,7 +594,7 @@ If the call is successful, a revert is triggered and the `FAILED` location of th
          <callDepth> CD </callDepth>
          <expectedRevert>
            <isRevertExpected> true </isRevertExpected>
-           <expectedDepth> ED </expectedDepth> 
+           <expectedDepth> ED </expectedDepth>
            ...
          </expectedRevert>
       requires CD <=Int ED
@@ -1174,6 +1175,7 @@ Utils
     syntax KItem ::= "#clearExpectRevert" [klabel(foundry_clearExpectRevert)]
  // -------------------------------------------------------------------------
     rule <k> #clearExpectRevert => . ... </k>
+         <output> _ => #buf (32, 0) </output>
          <expectedRevert>
            <isRevertExpected> _ => false </isRevertExpected>
            <expectedDepth> _ => 0 </expectedDepth>
