@@ -1147,107 +1147,6 @@ module CONTRACTTEST-BIN-RUNTIME
 
 endmodule
 
-module CONTRACTASSERT-BIN-RUNTIME
-    imports public FOUNDRY
-    
-    syntax Contract ::= ContractAssertContract
-    
-    syntax ContractAssertContract ::= "ContractAssert" [symbol(), klabel(contract_ContractAssert)]
-    
-      
-    
-    syntax Bytes ::= ContractAssertContract "." ContractAssertMethod [function(), symbol(), klabel(method_ContractAssert)]
-    
-    syntax ContractAssertMethod ::= "f" "(" ")" [symbol(), klabel(method_ContractAssert_f_)]
-    
-    rule  ( ContractAssert . f ( ) => #abiCallData ( "f" , .TypedArgs ) )
-      
-    
-    rule  ( selector ( "f()" ) => 638722032 )
-      
-
-endmodule
-
-module CONTRACTASSERTTEST-BIN-RUNTIME
-    imports public FOUNDRY
-    
-    syntax Contract ::= ContractAssertTestContract
-    
-    syntax ContractAssertTestContract ::= "ContractAssertTest" [symbol(), klabel(contract_ContractAssertTest)]
-    
-      
-    
-    syntax Field ::= ContractAssertTestField
-    
-    syntax ContractAssertTestField ::= "IS_TEST" [symbol(), klabel(field_ContractAssertTest_IS_TEST)]
-    
-    syntax ContractAssertTestField ::= "_failed" [symbol(), klabel(field_ContractAssertTest__failed)]
-    
-    syntax ContractAssertTestField ::= "IS_SCRIPT" [symbol(), klabel(field_ContractAssertTest_IS_SCRIPT)]
-    
-    syntax ContractAssertTestField ::= "stdstore" [symbol(), klabel(field_ContractAssertTest_stdstore)]
-    
-    syntax ContractAssertTestField ::= "c" [symbol(), klabel(field_ContractAssertTest_c)]
-    
-    rule  ( #loc ( ContractAssertTest . IS_TEST ) => 0 )
-      
-    
-    rule  ( #loc ( ContractAssertTest . _failed ) => 0 )
-      
-    
-    rule  ( #loc ( ContractAssertTest . IS_SCRIPT ) => 0 )
-      
-    
-    rule  ( #loc ( ContractAssertTest . stdstore ) => 1 )
-      
-    
-    rule  ( #loc ( ContractAssertTest . c ) => 8 )
-      
-    
-    syntax Bytes ::= ContractAssertTestContract "." ContractAssertTestMethod [function(), symbol(), klabel(method_ContractAssertTest)]
-    
-    syntax ContractAssertTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_ContractAssertTest_IS_SCRIPT_)]
-    
-    syntax ContractAssertTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_ContractAssertTest_IS_TEST_)]
-    
-    syntax ContractAssertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ContractAssertTest_failed_)]
-    
-    syntax ContractAssertTestMethod ::= "test_call_empty_account" "(" ")" [symbol(), klabel(method_ContractAssertTest_test_call_empty_account_)]
-    
-    syntax ContractAssertTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_ContractAssertTest_vm_)]
-    
-    rule  ( ContractAssertTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
-      
-    
-    rule  ( ContractAssertTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
-      
-    
-    rule  ( ContractAssertTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( ContractAssertTest . test_call_empty_account ( ) => #abiCallData ( "test_call_empty_account" , .TypedArgs ) )
-      
-    
-    rule  ( ContractAssertTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
-      
-    
-    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
-      
-    
-    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
-      
-    
-    rule  ( selector ( "failed()" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "test_call_empty_account()" ) => 945807643 )
-      
-    
-    rule  ( selector ( "vm()" ) => 980845667 )
-      
-
-endmodule
-
 module CONTRACTBTEST-BIN-RUNTIME
     imports public FOUNDRY
     
@@ -7222,8 +7121,6 @@ module FOUNDRY-MAIN
     imports public CONSTANTS-BIN-RUNTIME
     imports public CONTRACT-BIN-RUNTIME
     imports public CONTRACTTEST-BIN-RUNTIME
-    imports public CONTRACTASSERT-BIN-RUNTIME
-    imports public CONTRACTASSERTTEST-BIN-RUNTIME
     imports public CONTRACTBTEST-BIN-RUNTIME
     imports public COUNTER-BIN-RUNTIME
     imports public COUNTERTEST-BIN-RUNTIME
