@@ -264,7 +264,10 @@ def foundry_kompile(
             fmf.write(kevm.pretty_print(bin_runtime_definition) + '\n')
 
     def kevm_kompile(
-        out_dir: Path, backend: KompileBackend, llvm_kompile_type: Optional[LLVMKompileType] = None
+        out_dir: Path,
+        backend: KompileBackend,
+        llvm_kompile_type: Optional[LLVMKompileType] = None,
+        md_selector: Optional[str] = None,
     ) -> None:
         KEVM.kompile(
             out_dir,
@@ -283,10 +286,15 @@ def foundry_kompile(
 
     if regen or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
-        kevm_kompile(foundry_definition_dir, KompileBackend.HASKELL)
+        kevm_kompile(foundry_definition_dir, KompileBackend.HASKELL, md_selector=md_selector)
         if llvm_library:
             _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
-            kevm_kompile(foundry_llvm_dir, KompileBackend.LLVM, llvm_kompile_type=LLVMKompileType.C)
+            kevm_kompile(
+                foundry_llvm_dir,
+                KompileBackend.LLVM,
+                llvm_kompile_type=LLVMKompileType.C,
+                md_selector='k & ! symbolic',
+            )
 
 
 def foundry_prove(
