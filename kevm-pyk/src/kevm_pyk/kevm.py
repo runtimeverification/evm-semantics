@@ -231,6 +231,8 @@ class KEVM(KProve, KRun):
         constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ORIGIN_CELL'))))
         constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytes(get_cell(config, 'CALLDATA_CELL')), KEVM.pow128())))
 
+        constraints.append(mlEqualsTrue(KEVM.range_blocknum(get_cell(config, 'NUMBER_CELL'))))
+
         return CTerm(config, constraints)
 
     @staticmethod
@@ -315,6 +317,10 @@ class KEVM(KProve, KRun):
     @staticmethod
     def range_bytes(width: KInner, ba: KInner) -> KApply:
         return KApply('#rangeBytes(_,_)_WORD_Bool_Int_Int', [width, ba])
+
+    @staticmethod
+    def range_blocknum(ba: KInner) -> KApply:
+        return KApply('#rangeBlockNum(_)_WORD_Bool_Int', [ba])
 
     @staticmethod
     def bool_2_word(cond: KInner) -> KApply:
