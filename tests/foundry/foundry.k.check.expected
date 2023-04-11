@@ -870,6 +870,8 @@ module BLOCKPARAMSTEST-BIN-RUNTIME
     
     syntax BlockParamsTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_BlockParamsTest_failed_)]
     
+    syntax BlockParamsTestMethod ::= "testBlockNumber" "(" ")" [symbol(), klabel(method_BlockParamsTest_testBlockNumber_)]
+    
     syntax BlockParamsTestMethod ::= "testChainId" "(" Int ":" "uint256" ")" [symbol(), klabel(method_BlockParamsTest_testChainId_uint256)]
     
     syntax BlockParamsTestMethod ::= "testCoinBase" "(" ")" [symbol(), klabel(method_BlockParamsTest_testCoinBase_)]
@@ -889,6 +891,9 @@ module BLOCKPARAMSTEST-BIN-RUNTIME
       
     
     rule  ( BlockParamsTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( BlockParamsTest . testBlockNumber ( ) => #abiCallData ( "testBlockNumber" , .TypedArgs ) )
       
     
     rule  ( BlockParamsTest . testChainId ( V0_newChainId : uint256 ) => #abiCallData ( "testChainId" , #uint256 ( V0_newChainId ) , .TypedArgs ) )
@@ -920,6 +925,9 @@ module BLOCKPARAMSTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "testBlockNumber()" ) => 3916490861 )
       
     
     rule  ( selector ( "testChainId(uint256)" ) => 486990902 )
