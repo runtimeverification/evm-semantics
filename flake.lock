@@ -332,11 +332,11 @@
     },
     "flake-utils": {
       "locked": {
-        "lastModified": 1678901627,
-        "narHash": "sha256-U02riOqrKKzwjsxc/400XnElV+UtPUQWpANPlyazjH0=",
+        "lastModified": 1680776469,
+        "narHash": "sha256-3CXUDK/3q/kieWtdsYpDOBJw3Gw4Af6x+2EiSnIkNQw=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "93a2b84fc4b70d9e089d029deacc3583435c2ed6",
+        "rev": "411e8764155aa9354dbcd6d5faaeb97e9e3dce24",
         "type": "github"
       },
       "original": {
@@ -502,11 +502,11 @@
         "z3-src": "z3-src"
       },
       "locked": {
-        "lastModified": 1679490534,
-        "narHash": "sha256-0SFtOS3jOMFuobp4Ot80/D7FJTgkYsDHaeVkISDH+1Q=",
+        "lastModified": 1680784150,
+        "narHash": "sha256-/rK339Yvl+0ReRhc6TAr2uzVfWe2c14ID9KGeRnuSrY=",
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "6fdf45369016855995d7bf5529186fb72b9bfda0",
+        "rev": "736e5d7ed5dfdc516670ff2b46b62083a2cef4cf",
         "type": "github"
       },
       "original": {
@@ -647,16 +647,16 @@
         "rv-utils": "rv-utils"
       },
       "locked": {
-        "lastModified": 1680520062,
-        "narHash": "sha256-+WFF8B3YNEb7bQAINouL1JUNh4joy/rvrhoQUn3ouaM=",
+        "lastModified": 1681179996,
+        "narHash": "sha256-0hYcZJOR2r22jhbCwDHDBrNOFF4rWJ5DXijwGk7espI=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "fd1d7642a751c13f6bf12ca910b71bd8b4d05a95",
+        "rev": "4ad779a0b8a9f6364bffb8f946beae636a27c294",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v5.6.22",
+        "ref": "v5.6.41",
         "repo": "k",
         "type": "github"
       }
@@ -693,11 +693,11 @@
         "utils": "utils_3"
       },
       "locked": {
-        "lastModified": 1680267935,
-        "narHash": "sha256-dUhhcTHywKlZWz1Lm3d2tOKcKDwvYPosLMhl2vIT8FM=",
+        "lastModified": 1680895065,
+        "narHash": "sha256-7M6ic+0b/dj/hJRkDpowxTjHs6lGaAx0sKbs86nCKlI=",
         "owner": "runtimeverification",
         "repo": "llvm-backend",
-        "rev": "73e68a899f1e11cfd18109b5b88d36d37b182793",
+        "rev": "90b2ea3431e2431baf09ae6dcdb77ff6b7ec3d13",
         "type": "github"
       },
       "original": {
