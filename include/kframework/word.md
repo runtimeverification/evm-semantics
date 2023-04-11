@@ -256,26 +256,28 @@ The maximum and minimum values of each type are defined below.
     rule notMaxUInt208 => 115792089237315784047431654707177369110974345328014318355491175612947292487680
     rule notMaxUInt224 => 115792089210356248756420345214020892766250353992003419616917011526809519390720
 
-
-    syntax Int ::= "eth" [macro]
- // ----------------------------
-    rule eth => 1000000000000000000
+    syntax Int ::= "eth"         [macro]
+                 | "maxBlockNum" [alias] /* 7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF == (2 ^ 256) - (2 ^ 255) - 1 */
+ // ----------------------------------------------------------------------------------------------------------------------------------------
+    rule eth         => 1000000000000000000
+    rule maxBlockNum => 57896044618658097711785492504343953926634992332820282019728792003956564819967
 ```
 
 Range of types
 --------------
 
 ```k
-    syntax Bool ::= #rangeBool    ( Int )             [alias]
-                  | #rangeSInt    ( Int , Int )       [alias]
-                  | #rangeUInt    ( Int , Int )       [alias]
-                  | #rangeSFixed  ( Int , Int , Int ) [alias]
-                  | #rangeUFixed  ( Int , Int , Int ) [alias]
-                  | #rangeAddress ( Int )             [alias]
-                  | #rangeBytes   ( Int , Int )       [alias]
-                  | #rangeNonce   ( Int )             [alias]
-                  | #rangeSmall   ( Int )             [alias]
- // ---------------------------------------------------------
+    syntax Bool ::= #rangeBool     ( Int )             [alias]
+                  | #rangeSInt     ( Int , Int )       [alias]
+                  | #rangeUInt     ( Int , Int )       [alias]
+                  | #rangeSFixed   ( Int , Int , Int ) [alias]
+                  | #rangeUFixed   ( Int , Int , Int ) [alias]
+                  | #rangeAddress  ( Int )             [alias]
+                  | #rangeBytes    ( Int , Int )       [alias]
+                  | #rangeNonce    ( Int )             [alias]
+                  | #rangeSmall    ( Int )             [alias]
+                  | #rangeBlockNum ( Int )             [alias]
+ // ----------------------------------------------------------
     rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1
 
     rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      )
@@ -314,12 +316,13 @@ Range of types
     rule #rangeUInt    ( 248 ,      X ) => #range ( minUInt248      <= X <  pow248          )
     rule #rangeUInt    ( 256 ,      X ) => #range ( minUInt256      <= X <  pow256          )
 
-    rule #rangeSFixed  ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 )
-    rule #rangeUFixed  ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 )
-    rule #rangeAddress (            X ) => #range ( minUInt160      <= X <  pow160          )
-    rule #rangeBytes   (   N ,      X ) => #range ( 0               <= X <  1 <<Byte N      )
-    rule #rangeNonce   (   X          ) => #range ( 0               <= X < maxUInt64        )
-    rule #rangeSmall   (   X          ) => #range ( 0               <= X < 10               )
+    rule #rangeSFixed   ( 128 , 10 , X ) => #range ( minSFixed128x10 <= X <= maxSFixed128x10 )
+    rule #rangeUFixed   ( 128 , 10 , X ) => #range ( minUFixed128x10 <= X <= maxUFixed128x10 )
+    rule #rangeAddress  (            X ) => #range ( minUInt160      <= X <  pow160          )
+    rule #rangeBytes    (   N ,      X ) => #range ( 0               <= X <  1 <<Byte N      )
+    rule #rangeNonce    (   X          ) => #range ( 0               <= X < maxUInt64        )
+    rule #rangeSmall    (   X          ) => #range ( 0               <= X < 10               )
+    rule #rangeBlockNum (   X          ) => #range ( 0               <= X <= maxBlockNum     )
 
     syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")" [macro]
                   | "#range" "(" Int "<"  Int "<=" Int ")" [macro]
