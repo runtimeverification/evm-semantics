@@ -31,4 +31,8 @@ contract BlockParamsTest is Test {
         assertEq(block.coinbase, coinBase);
     }
 
+    function testBlockNumber() public {
+        uint256 x = block.number;
+        assert(x >= 0);
+    }
 }

@@ -30,10 +30,10 @@ from pyk.utils import single
 if TYPE_CHECKING:
     from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union
 
-    from pyk.kcfg import KCFG
     from pyk.cli_utils import BugReport
     from pyk.kast import KInner
     from pyk.kast.outer import KDefinition
+    from pyk.kcfg import KCFG
     from pyk.ktool.kprove import KProve
 
     T1 = TypeVar('T1')
@@ -173,7 +173,6 @@ def print_failure_info(_cfg: KCFG, _cfgid: str, kcfg_explore: KCFGExplore) -> li
         res_lines.append('')
         res_lines.append('Stuck nodes:')
         for node in _cfg.stuck:
-
             node_cterm = CTerm.from_kast(kcfg_explore.cterm_simplify(node.cterm))
             target_cterm = CTerm.from_kast(kcfg_explore.cterm_simplify(unique_target.cterm))
 
