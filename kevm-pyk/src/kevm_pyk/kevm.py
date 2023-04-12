@@ -6,9 +6,8 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
-from pyk.kast.manip import flatten_label, get_cell, split_config_from
+from pyk.kast.manip import flatten_label
 from pyk.ktool.kompile import KompileBackend, kompile
 from pyk.ktool.kprint import paren
 from pyk.ktool.kprove import KProve
@@ -21,6 +20,7 @@ if TYPE_CHECKING:
     from typing import Final, Iterable, List, Optional
 
     from pyk.cli_utils import BugReport
+    from pyk.cterm import CTerm
     from pyk.kast import KInner
     from pyk.kast.outer import KFlatModule
     from pyk.ktool.kompile import LLVMKompileType
@@ -202,43 +202,42 @@ class KEVM(KProve, KRun):
         ]
 
     def short_info(self, cterm: CTerm) -> List[str]:
-        _, subst = split_config_from(cterm.config)
-        k_cell = self.pretty_print(subst['K_CELL']).replace('\n', ' ')
+        k_cell = self.pretty_print(cterm.cell('K_CELL')).replace('\n', ' ')
         if len(k_cell) > 80:
             k_cell = k_cell[0:80] + ' ...'
         k_str = f'k: {k_cell}'
         ret_strs = [k_str]
         for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
-            if cell in subst:
-                ret_strs.append(f'{name}: {self.pretty_print(subst[cell])}')
+            if name in cterm.cells:
+                ret_strs.append(f'{name}: {self.pretty_print(cterm.cell(cell))}')
         return ret_strs
 
     @staticmethod
     def add_invariant(cterm: CTerm) -> CTerm:
-        config, *constraints = cterm
-
-        word_stack = get_cell(config, 'WORDSTACK_CELL')
+        constraints = []
+        word_stack = cterm.cell('WORDSTACK_CELL')
         if type(word_stack) is not KVariable:
             word_stack_items = flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', word_stack)
             for i in word_stack_items[:-1]:
                 constraints.append(mlEqualsTrue(KEVM.range_uint(256, i)))
 
-        gas_cell = get_cell(config, 'GAS_CELL')
+        gas_cell = cterm.cell('GAS_CELL')
         if not (type(gas_cell) is KApply and gas_cell.label.name == 'infGas'):
             constraints.append(mlEqualsTrue(KEVM.range_uint(256, gas_cell)))
-        constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ID_CELL'))))
-        constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'CALLER_CELL'))))
-        constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ORIGIN_CELL'))))
-        constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytes(get_cell(config, 'CALLDATA_CELL')), KEVM.pow128())))
+        constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ID_CELL'))))
+        constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('CALLER_CELL'))))
+        constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ORIGIN_CELL'))))
+        constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytes(cterm.cell('CALLDATA_CELL')), KEVM.pow128())))
 
-        constraints.append(mlEqualsTrue(KEVM.range_blocknum(get_cell(config, 'NUMBER_CELL'))))
+        constraints.append(mlEqualsTrue(KEVM.range_blocknum(cterm.cell('NUMBER_CELL'))))
 
-        return CTerm(config, constraints)
+        for c in constraints:
+            cterm = cterm.add_constraint(c)
+        return cterm
 
     @staticmethod
     def extract_branches(cterm: CTerm) -> Iterable[KInner]:
-        config, *constraints = cterm
-        k_cell = get_cell(config, 'K_CELL')
+        k_cell = cterm.cell('K_CELL')
         jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
         pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
         branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
@@ -253,8 +252,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def is_terminal(cterm: CTerm) -> bool:
-        config, *_ = cterm
-        k_cell = get_cell(config, 'K_CELL')
+        k_cell = cterm.cell('K_CELL')
         # <k> #halt </k>
         if k_cell == KEVM.halt():
             return True
@@ -262,7 +260,7 @@ class KEVM(KProve, KRun):
             # <k> #halt ~> CONTINUATION </k>
             if k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
                 # <callDepth> 0 </callDepth>
-                if get_cell(config, 'CALLDEPTH_CELL') == intToken(0):
+                if cterm.cell('CALLDEPTH_CELL') == intToken(0):
                     return True
         return False
 
@@ -402,10 +400,6 @@ class KEVM(KProve, KRun):
                 KApply('<nonce>', [nonce]),
             ],
         )
-
-    @staticmethod
-    def wordstack_len(constrained_term: KInner) -> int:
-        return len(flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', get_cell(constrained_term, 'WORDSTACK_CELL')))
 
     @staticmethod
     def parse_bytestack(s: KInner) -> KApply:
