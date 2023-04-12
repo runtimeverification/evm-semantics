@@ -14,7 +14,7 @@ from pyk.kore.syntax import DV, App, SortApp, String, SymbolId
 if TYPE_CHECKING:
     from argparse import Namespace
     from pathlib import Path
-    from typing import Any, Final, Optional
+    from typing import Any, Final
 
     from pyk.kore.syntax import Pattern, Sort
 
@@ -68,7 +68,7 @@ def _k_config_var(_data: str) -> DV:
     return DV(SORT_K_CONFIG_VAR, String(f'${_data}'))
 
 
-def _json_to_kore(_data: Any, *, sort: Optional[Sort] = None) -> Pattern:
+def _json_to_kore(_data: Any, *, sort: Sort | None = None) -> Pattern:
     if sort is None:
         sort = SORT_JSON
 
