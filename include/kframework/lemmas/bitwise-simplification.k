@@ -123,7 +123,7 @@ module BITWISE-SIMPLIFICATION [symbolic]
 
     rule [bitwise-and-asWord-tail-shift]:
       X &Int ( #asWord ( _ +Bytes B ) >>Int Z ) => X &Int ( #asWord ( B ) >>Int Z )
-      requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int lengthBytes(B) -Int Z)
+      requires 0 <=Int X andBool X <Int 2 ^Int ((8 *Int lengthBytes(B)) -Int Z)
       [simplification]
 
 endmodule

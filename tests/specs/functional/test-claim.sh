@@ -3,7 +3,7 @@
 spec=lemmas-spec
 main_module=VERIFICATION
 spec_module=LEMMAS-SPEC
-claim=${spec_module}.complex-1
+claim=${spec_module}.range-34
 
 rm applied-rules.log
 rm -rf ${spec}/haskell

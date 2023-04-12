@@ -20,13 +20,16 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [bytes-concat-empty-right]: B:Bytes +Bytes .Bytes  => B [simplification]
     rule [bytes-concat-empty-left]:   .Bytes +Bytes B:Bytes => B [simplification]
 
-    rule [bytes-concat-right-assoc]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [simplification]
+    rule [bytes-concat-right-assoc-symb-l]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B1), simplification]
+    rule [bytes-concat-right-assoc-symb-r]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B2), simplification]
+    rule [bytes-concat-left-assoc-conc]   : B1:Bytes +Bytes (B2:Bytes +Bytes B3:Bytes) => (B1 +Bytes B2) +Bytes B3 [concrete(B1, B2), symbolic(B3), simplification]
 
     // #buf
 
-    rule [buf-ceil]:
-      #Ceil(#buf ( X , _:Int )) => 0 <=Int X
-      [simplification]
+    // `#buf` is declared as total in `buf.md`
+    // rule [buf-ceil]:
+    //   #Ceil(#buf ( X , _:Int )) => { true #Equals 0 <=Int X }
+    //   [simplification]
 
     rule [buf-inject-k]:
       #buf(W:Int, X:Int) ==K #buf(W:Int, Y:Int) => X ==Int Y
@@ -52,10 +55,12 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [buf-zero-concat-base]:
       #buf(W1:Int, 0) +Bytes #buf(W2:Int, 0) => #buf(W1 +Int W2, 0)
+      requires 0 <=Int W1 andBool 0 <=Int W2
       [simplification]
 
     rule [buf-zero-concat-conc]:
       #buf(W1:Int, 0) +Bytes #buf(W2:Int, 0) +Bytes B => #buf(W1 +Int W2, 0) +Bytes B
+      requires 0 <=Int W1 andBool 0 <=Int W2
       [simplification]
 
     // #range
@@ -159,7 +164,7 @@ module BYTES-SIMPLIFICATION [symbolic]
       [simplification]
 
     rule [range-writeRange-outside]:
-      #range(#writeRange(B1:Bytes, S1:Int, _:Bytes ), S2:Int, W2:Int) => #range(B1, S2, W2)
+      #range(#writeRange(B1:Bytes, S1:Int, _:Bytes), S2:Int, W2:Int) => #range(B1, S2, W2)
       requires 0 <=Int S1 andBool 0 <=Int W2 andBool S1 +Int lengthBytes(B1) <=Int S2 [simplification]
 
     // #writeRange
@@ -196,7 +201,7 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [lengthBytes-geq-zero]    : 0 <=Int lengthBytes(_:Bytes)                       => true                                           [simplification, smt-lemma]
     rule [lengthBytes-concat]      : lengthBytes(B1:Bytes +Bytes B2:Bytes)              => lengthBytes(B1) +Int lengthBytes(B2)           [simplification]
     rule [lengthBytes-buf]         : lengthBytes(#buf(W:Int, _:Int))                    => W requires 0 <=Int W                           [simplification]
-    rule [lengthBytes-range]       : lengthBytes(#range(_:Bytes, _:Int, W:Int))         => maxInt(0, W)                                   [simplification]
+    rule [lengthBytes-range]       : lengthBytes(#range(_:Bytes, S:Int, W:Int))         => maxInt(0, W) requires 0 <=Int S                [simplification]
     rule [lengthBytes-prtw-leq-len]: lengthBytes(#padRightToWidth(W:Int, B:Bytes))      => W requires lengthBytes(B) <Int W               [simplification]
     rule [lengthBytes-prtw-len-gt] : lengthBytes(#padRightToWidth(W:Int, B:Bytes))      => lengthBytes(B) requires W <=Int lengthBytes(B) [simplification]
     rule [lengthBytes-padleft]     : lengthBytes(padLeftBytes(B:Bytes, W:Int, _:Int) )  => maxInt(lengthBytes(B), W)                      [simplification]
