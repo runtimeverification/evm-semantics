@@ -175,11 +175,11 @@ class Foundry:
         return intToken(0x7FA9385BE102AC3EAC297483DD6233D62B3E1496)
 
     @staticmethod
-    def account_TEST_CONTRACT_ADDRESS() -> KApply:  # noqa: N802
+    def account_TEST_CONTRACT_ADDRESS(code: KInner) -> KApply:  # noqa: N802
         return KEVM.account_cell(
             Foundry.address_TEST_CONTRACT(),
             intToken(0),
-            KVariable('TEST_CODE'),
+            code,
             KApply('.Map'),
             KApply('.Map'),
             intToken(1),
@@ -662,7 +662,6 @@ def _init_term(
     callvalue: Optional[KInner] = None,
 ) -> KInner:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
-    account_cell = Subst({'TEST_CODE': program})(Foundry.account_TEST_CONTRACT_ADDRESS())
     init_subst = {
         'MODE_CELL': KApply('NORMAL'),
         'SCHEDULE_CELL': KApply('LONDON_EVM'),
@@ -703,7 +702,7 @@ def _init_term(
         'K_CELL': KSequence([KEVM.sharp_execute(), KVariable('CONTINUATION')]),
         'ACCOUNTS_CELL': KEVM.accounts(
             [
-                account_cell,  # test contract address
+                Foundry.account_TEST_CONTRACT_ADDRESS(program),  # test contract address
                 Foundry.account_CHEATCODE_ADDRESS(KApply('.Map')),
                 KVariable('ACCOUNTS_INIT'),
             ]
