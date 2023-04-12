@@ -12,7 +12,7 @@ import tomlkit
 from pyk.cli_utils import BugReport, check_file_path, ensure_dir_path
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import minimize_term
+from pyk.kast.manip import get_cell, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import KompileBackend, LLVMKompileType
