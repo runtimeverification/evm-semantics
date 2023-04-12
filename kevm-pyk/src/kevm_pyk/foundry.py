@@ -12,7 +12,7 @@ import tomlkit
 from pyk.cli_utils import BugReport, check_file_path, ensure_dir_path
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import get_cell, minimize_term
+from pyk.kast.manip import minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import KompileBackend, LLVMKompileType
@@ -130,7 +130,7 @@ class Foundry:
 
     def short_info_for_contract(self, contract_name: str, cterm: CTerm) -> List[str]:
         ret_strs = self.kevm.short_info(cterm)
-        _pc = get_cell(cterm.config, 'PC_CELL')
+        _pc = cterm.cell('PC_CELL')
         if type(_pc) is KToken and _pc.sort == INT:
             srcmap_data = self.srcmap_data(contract_name, int(_pc.token))
             if srcmap_data is not None:
@@ -140,7 +140,7 @@ class Foundry:
 
     def custom_view(self, contract_name: str, element: KCFGElem) -> Iterable[str]:
         if type(element) is KCFG.Node:
-            pc_cell = get_cell(element.cterm.config, 'PC_CELL')
+            pc_cell = element.cterm.cell('PC_CELL')
             if type(pc_cell) is KToken and pc_cell.sort == INT:
                 return self.solidity_src(contract_name, int(pc_cell.token))
         return ['NO DATA']
