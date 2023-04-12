@@ -293,7 +293,7 @@ def foundry_kompile(
                 foundry_llvm_dir,
                 KompileBackend.LLVM,
                 llvm_kompile_type=LLVMKompileType.C,
-                md_selector='k & ! symbolic',
+                md_selector=('k & ! symbolic' if md_selector is None else f'{md_selector} & ! symbolic'),
             )
 
 
