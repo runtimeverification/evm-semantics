@@ -488,7 +488,7 @@ foundry_out := $(foundry_dir)/out
 
 test-foundry: KEVM_OPTS += --pyk --verbose
 test-foundry: KEVM = $(POETRY_RUN) kevm
-test-foundry: tests/foundry/foundry.k.check test/foundry/foundry-helper-lemmas.k.check tests/foundry/out/kompiled/foundry.k.prove
+test-foundry: tests/foundry/foundry.k.check tests/foundry/foundry-helper-lemmas.k.check tests/foundry/out/kompiled/foundry.k.prove
 
 foundry-forge-build: $(foundry_out)
 
