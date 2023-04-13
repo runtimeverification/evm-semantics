@@ -330,14 +330,14 @@ dev = ["coverage", "hypothesis", "hypothesmith (>=0.2)", "pre-commit", "pytest",
 
 [[package]]
 name = "flake8-comprehensions"
-version = "3.11.1"
+version = "3.12.0"
 description = "A flake8 plugin to help you write better list/set/dict comprehensions."
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "flake8_comprehensions-3.11.1-py3-none-any.whl", hash = "sha256:d1e27f4099900c61fb156cbb7461e0e49702385fd388326e1a892d04b069c48e"},
-    {file = "flake8_comprehensions-3.11.1.tar.gz", hash = "sha256:31d6386c125e325d7c84290d71f5354295dbbf5a8d47259708fa349aa0969523"},
+    {file = "flake8_comprehensions-3.12.0-py3-none-any.whl", hash = "sha256:013234637ec7dfcb7cd2900578fb53c512f81db909cefe371c019232695c362d"},
+    {file = "flake8_comprehensions-3.12.0.tar.gz", hash = "sha256:419ef1a6e8de929203791a5e8ff5e3906caeba13eb3290eebdbf88a9078d502e"},
 ]
 
 [package.dependencies]
@@ -604,14 +604,14 @@ files = [
 
 [[package]]
 name = "packaging"
-version = "23.0"
+version = "23.1"
 description = "Core utilities for Python packages"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "packaging-23.0-py3-none-any.whl", hash = "sha256:714ac14496c3e68c99c29b00845f7a2b85f3bb6f1078fd9f72fd20f0570002b2"},
-    {file = "packaging-23.0.tar.gz", hash = "sha256:b6ad297f8907de0fa2fe1ccbd26fdaf387f5f47c7275fedf8cce89f99446cf97"},
+    {file = "packaging-23.1-py3-none-any.whl", hash = "sha256:994793af429502c4ea2ebf6bf664629d07c1a9fe974af92966e4b8d2df7edc61"},
+    {file = "packaging-23.1.tar.gz", hash = "sha256:a392980d2b6cffa644431898be54b0045151319d1e7ec34f0cfed48767dd334f"},
 ]
 
 [[package]]
@@ -801,7 +801,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.225"
+version = "0.1.233"
 description = ""
 category = "main"
 optional = false
@@ -822,8 +822,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.225"
-resolved_reference = "4874526e09228b065e3bfbd04af3d2254edf16a5"
+reference = "v0.1.233"
+resolved_reference = "df952b344c12eca2927466df80a9b89ecb093bad"
 
 [[package]]
 name = "pyperclip"
@@ -930,15 +930,30 @@ setproctitle = ["setproctitle"]
 testing = ["filelock"]
 
 [[package]]
+name = "pyupgrade"
+version = "3.3.1"
+description = "A tool to automatically upgrade syntax for newer versions."
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pyupgrade-3.3.1-py2.py3-none-any.whl", hash = "sha256:3b93641963df022d605c78aeae4b5956a5296ea24701eafaef9c487527b77e60"},
+    {file = "pyupgrade-3.3.1.tar.gz", hash = "sha256:f88bce38b0ba92c2a9a5063c8629e456e8d919b67d2d42c7ecab82ff196f9813"},
+]
+
+[package.dependencies]
+tokenize-rt = ">=3.2.0"
+
+[[package]]
 name = "rich"
-version = "13.3.3"
+version = "13.3.4"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 category = "main"
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "rich-13.3.3-py3-none-any.whl", hash = "sha256:540c7d6d26a1178e8e8b37e9ba44573a3cd1464ff6348b99ee7061b95d1c6333"},
-    {file = "rich-13.3.3.tar.gz", hash = "sha256:dc84400a9d842b3a9c5ff74addd8eb798d155f36c1c91303888e0a66850d2a15"},
+    {file = "rich-13.3.4-py3-none-any.whl", hash = "sha256:22b74cae0278fd5086ff44144d3813be1cedc9115bdfabbfefd86400cb88b20a"},
+    {file = "rich-13.3.4.tar.gz", hash = "sha256:b5d573e13605423ec80bdd0cd5f8541f7844a0e71a13f74cf454ccb2f490708b"},
 ]
 
 [package.dependencies]
@@ -967,6 +982,18 @@ rich = ">12.6.0"
 
 [package.extras]
 dev = ["aiohttp (>=3.8.1)", "click (>=8.1.2)", "msgpack (>=1.0.3)"]
+
+[[package]]
+name = "tokenize-rt"
+version = "5.0.0"
+description = "A wrapper around the stdlib `tokenize` which roundtrips."
+category = "dev"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "tokenize_rt-5.0.0-py2.py3-none-any.whl", hash = "sha256:c67772c662c6b3dc65edf66808577968fb10badfc2042e3027196bed4daf9e5a"},
+    {file = "tokenize_rt-5.0.0.tar.gz", hash = "sha256:3160bc0c3e8491312d0485171dea861fc160a240f5f5766b72a1165408d10740"},
+]
 
 [[package]]
 name = "tomli"
@@ -1035,4 +1062,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "dc0c5a93c4081fd7ec9738496a5c6988db011ba56de9068b3b6f65aadc6ef311"
+content-hash = "3f061b8d558bbd9d3f7ba6ee01ebc4af3e3b1380fb9931716c973472a671b476"

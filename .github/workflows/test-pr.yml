@@ -73,6 +73,8 @@ jobs:
           tag: kevm-ci-concrete-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk'
+      - name: 'Run pyupgrade'
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} make -C kevm-pyk pyupgrade
       - name: 'Build kevm'
         run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-llvm build-node -j`nproc` RELEASE=true'
       - name: 'Test kevm-pyk'
@@ -121,7 +123,7 @@ jobs:
     name: 'Build and Test KEVM Foundry proofs'
     needs: test-concrete-execution
     runs-on: [self-hosted, linux, huge]
-    timeout-minutes: 90
+    timeout-minutes: 150
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3

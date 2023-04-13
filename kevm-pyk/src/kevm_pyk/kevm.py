@@ -6,9 +6,8 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
-from pyk.kast.manip import flatten_label, get_cell, split_config_from
+from pyk.kast.manip import flatten_label
 from pyk.ktool.kompile import KompileBackend, kompile
 from pyk.ktool.kprint import paren
 from pyk.ktool.kprove import KProve
@@ -18,9 +17,11 @@ from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
 
 if TYPE_CHECKING:
-    from typing import Final, Iterable, List, Optional
+    from collections.abc import Iterable
+    from typing import Final
 
     from pyk.cli_utils import BugReport
+    from pyk.cterm import CTerm
     from pyk.kast import KInner
     from pyk.kast.outer import KFlatModule
     from pyk.ktool.kompile import LLVMKompileType
@@ -41,12 +42,12 @@ class KEVM(KProve, KRun):
     def __init__(
         self,
         definition_dir: Path,
-        main_file: Optional[Path] = None,
-        use_directory: Optional[Path] = None,
+        main_file: Path | None = None,
+        use_directory: Path | None = None,
         kprove_command: str = 'kprove',
         krun_command: str = 'krun',
         extra_unparsing_modules: Iterable[KFlatModule] = (),
-        bug_report: Optional[BugReport] = None,
+        bug_report: BugReport | None = None,
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -76,14 +77,14 @@ class KEVM(KProve, KRun):
         main_file: Path,
         emit_json: bool = True,
         includes: Iterable[str] = (),
-        main_module_name: Optional[str] = None,
-        syntax_module_name: Optional[str] = None,
-        md_selector: Optional[str] = None,
+        main_module_name: str | None = None,
+        syntax_module_name: str | None = None,
+        md_selector: str | None = None,
         debug: bool = False,
         ccopts: Iterable[str] = (),
         llvm_kompile: bool = True,
         optimization: int = 0,
-        llvm_kompile_type: Optional[LLVMKompileType] = None,
+        llvm_kompile_type: LLVMKompileType | None = None,
     ) -> KEVM:
         try:
             kompile(
@@ -156,11 +157,11 @@ class KEVM(KProve, KRun):
         KEVM_CELL: Final = KSort('KevmCell')
 
     @staticmethod
-    def hook_namespaces() -> List[str]:
+    def hook_namespaces() -> list[str]:
         return ['JSON', 'KRYPTO', 'BLOCKCHAIN']
 
     @staticmethod
-    def concrete_rules() -> List[str]:
+    def concrete_rules() -> list[str]:
         return [
             'EVM.allBut64th.pos',
             'EVM.Caddraccess',
@@ -201,42 +202,43 @@ class KEVM(KProve, KRun):
             'SERIALIZATION.#newAddrCreate2',
         ]
 
-    def short_info(self, cterm: CTerm) -> List[str]:
-        _, subst = split_config_from(cterm.config)
-        k_cell = self.pretty_print(subst['K_CELL']).replace('\n', ' ')
+    def short_info(self, cterm: CTerm) -> list[str]:
+        k_cell = self.pretty_print(cterm.cell('K_CELL')).replace('\n', ' ')
         if len(k_cell) > 80:
             k_cell = k_cell[0:80] + ' ...'
         k_str = f'k: {k_cell}'
         ret_strs = [k_str]
         for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
-            if cell in subst:
-                ret_strs.append(f'{name}: {self.pretty_print(subst[cell])}')
+            if cell in cterm.cells:
+                ret_strs.append(f'{name}: {self.pretty_print(cterm.cell(cell))}')
         return ret_strs
 
     @staticmethod
     def add_invariant(cterm: CTerm) -> CTerm:
-        config, *constraints = cterm
-
-        word_stack = get_cell(config, 'WORDSTACK_CELL')
+        constraints = []
+        word_stack = cterm.cell('WORDSTACK_CELL')
         if type(word_stack) is not KVariable:
             word_stack_items = flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', word_stack)
             for i in word_stack_items[:-1]:
                 constraints.append(mlEqualsTrue(KEVM.range_uint(256, i)))
 
-        gas_cell = get_cell(config, 'GAS_CELL')
+        gas_cell = cterm.cell('GAS_CELL')
         if not (type(gas_cell) is KApply and gas_cell.label.name == 'infGas'):
             constraints.append(mlEqualsTrue(KEVM.range_uint(256, gas_cell)))
-        constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ID_CELL'))))
-        constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'CALLER_CELL'))))
-        constraints.append(mlEqualsTrue(KEVM.range_address(get_cell(config, 'ORIGIN_CELL'))))
-        constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytes(get_cell(config, 'CALLDATA_CELL')), KEVM.pow128())))
+        constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ID_CELL'))))
+        constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('CALLER_CELL'))))
+        constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ORIGIN_CELL'))))
+        constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytes(cterm.cell('CALLDATA_CELL')), KEVM.pow128())))
 
-        return CTerm(config, constraints)
+        constraints.append(mlEqualsTrue(KEVM.range_blocknum(cterm.cell('NUMBER_CELL'))))
+
+        for c in constraints:
+            cterm = cterm.add_constraint(c)
+        return cterm
 
     @staticmethod
     def extract_branches(cterm: CTerm) -> Iterable[KInner]:
-        config, *constraints = cterm
-        k_cell = get_cell(config, 'K_CELL')
+        k_cell = cterm.cell('K_CELL')
         jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
         pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
         branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
@@ -251,8 +253,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def is_terminal(cterm: CTerm) -> bool:
-        config, *_ = cterm
-        k_cell = get_cell(config, 'K_CELL')
+        k_cell = cterm.cell('K_CELL')
         # <k> #halt </k>
         if k_cell == KEVM.halt():
             return True
@@ -260,7 +261,7 @@ class KEVM(KProve, KRun):
             # <k> #halt ~> CONTINUATION </k>
             if k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
                 # <callDepth> 0 </callDepth>
-                if get_cell(config, 'CALLDEPTH_CELL') == intToken(0):
+                if cterm.cell('CALLDEPTH_CELL') == intToken(0):
                     return True
         return False
 
@@ -317,6 +318,10 @@ class KEVM(KProve, KRun):
         return KApply('#rangeBytes(_,_)_WORD_Bool_Int_Int', [width, ba])
 
     @staticmethod
+    def range_blocknum(ba: KInner) -> KApply:
+        return KApply('#rangeBlockNum(_)_WORD_Bool_Int', [ba])
+
+    @staticmethod
     def bool_2_word(cond: KInner) -> KApply:
         return KApply('bool2Word(_)_EVM-TYPES_Int_Bool', [cond])
 
@@ -354,7 +359,7 @@ class KEVM(KProve, KRun):
         return KApply('#lookup(_,_)_EVM-TYPES_Int_Map_Int', [map, key])
 
     @staticmethod
-    def abi_calldata(name: str, args: List[KInner]) -> KApply:
+    def abi_calldata(name: str, args: list[KInner]) -> KApply:
         return KApply('#abiCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
 
     @staticmethod
@@ -398,10 +403,6 @@ class KEVM(KProve, KRun):
         )
 
     @staticmethod
-    def wordstack_len(constrained_term: KInner) -> int:
-        return len(flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', get_cell(constrained_term, 'WORDSTACK_CELL')))
-
-    @staticmethod
     def parse_bytestack(s: KInner) -> KApply:
         return KApply('#parseByteStack(_)_SERIALIZATION_Bytes_String', [s])
 
@@ -410,22 +411,22 @@ class KEVM(KProve, KRun):
         return KApply('.Bytes_BYTES-HOOKED_Bytes')
 
     @staticmethod
-    def intlist(ints: List[KInner]) -> KApply:
+    def intlist(ints: list[KInner]) -> KApply:
         res = KApply('.List{"___HASHED-LOCATIONS_IntList_Int_IntList"}_IntList')
         for i in reversed(ints):
             res = KApply('___HASHED-LOCATIONS_IntList_Int_IntList', [i, res])
         return res
 
     @staticmethod
-    def typed_args(args: List[KInner]) -> KApply:
+    def typed_args(args: list[KInner]) -> KApply:
         res = KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
         for i in reversed(args):
             res = KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [i, res])
         return res
 
     @staticmethod
-    def accounts(accts: List[KInner]) -> KInner:
-        wrapped_accounts: List[KInner] = []
+    def accounts(accts: list[KInner]) -> KInner:
+        wrapped_accounts: list[KInner] = []
         for acct in accts:
             if type(acct) is KApply and acct.label.name == '<account>':
                 acct_id = acct.args[0]
