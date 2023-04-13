@@ -29,7 +29,8 @@ from .solc_to_k import Contract, contract_to_main_module
 from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, parallel_kcfg_explore
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, Final, Iterable, List, Optional, Tuple, Union
+    from collections.abc import Iterable
+    from typing import Any, Final
 
     from pyk.kast import KInner
     from pyk.kcfg.tui import KCFGElem
@@ -39,13 +40,13 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 class Foundry:
     _root: Path
-    _toml: Dict[str, Any]
-    _bug_report: Optional[BugReport]
+    _toml: dict[str, Any]
+    _bug_report: BugReport | None
 
     def __init__(
         self,
         foundry_root: Path,
-        bug_report: Optional[BugReport] = None,
+        bug_report: BugReport | None = None,
     ) -> None:
         self._root = foundry_root
         with (foundry_root / 'foundry.toml').open('rb') as f:
@@ -53,7 +54,7 @@ class Foundry:
         self._bug_report = bug_report
 
     @property
-    def profile(self) -> Dict[str, Any]:
+    def profile(self) -> dict[str, Any]:
         profile_name = os.getenv('FOUNDRY_PROFILE', default='default')
         return self._toml['profile'][profile_name]
 
@@ -75,7 +76,7 @@ class Foundry:
         )
 
     @cached_property
-    def contracts(self) -> Dict[str, Contract]:
+    def contracts(self) -> dict[str, Contract]:
         pattern = '*.sol/*.json'
         paths = self.out.glob(pattern)
         json_paths = [str(path) for path in paths]
@@ -92,13 +93,13 @@ class Foundry:
         return _contracts
 
     @cached_property
-    def contract_ids(self) -> Dict[int, str]:
+    def contract_ids(self) -> dict[int, str]:
         _contract_ids = {}
         for c in self.contracts.values():
             _contract_ids[c.contract_id] = c.name
         return _contract_ids
 
-    def srcmap_data(self, contract_name: str, pc: int) -> Optional[Tuple[Path, int, int]]:
+    def srcmap_data(self, contract_name: str, pc: int) -> tuple[Path, int, int] | None:
         if contract_name not in self.contracts:
             _LOGGER.info(f'Contract not found in Foundry project: {contract_name}')
         contract = self.contracts[contract_name]
@@ -128,7 +129,7 @@ class Foundry:
         suffix_lines = [f'   {l}' for l in lines[end:]]
         return prefix_lines + actual_lines + suffix_lines
 
-    def short_info_for_contract(self, contract_name: str, cterm: CTerm) -> List[str]:
+    def short_info_for_contract(self, contract_name: str, cterm: CTerm) -> list[str]:
         ret_strs = self.kevm.short_info(cterm)
         _pc = cterm.cell('PC_CELL')
         if type(_pc) is KToken and _pc.sort == INT:
@@ -207,7 +208,7 @@ def foundry_kompile(
     definition_dir: Path,
     foundry_root: Path,
     includes: Iterable[str],
-    md_selector: Optional[str],
+    md_selector: str | None,
     regen: bool = False,
     rekompile: bool = False,
     requires: Iterable[str] = (),
@@ -229,7 +230,7 @@ def foundry_kompile(
     ensure_dir_path(foundry_requires_dir)
     ensure_dir_path(foundry_llvm_dir)
 
-    requires_paths: Dict[str, str] = {}
+    requires_paths: dict[str, str] = {}
     for r in requires:
         req = Path(r)
         if not req.exists():
@@ -263,9 +264,7 @@ def foundry_kompile(
             kevm = KEVM(definition_dir, extra_unparsing_modules=bin_runtime_definition.all_modules)
             fmf.write(kevm.pretty_print(bin_runtime_definition) + '\n')
 
-    def kevm_kompile(
-        out_dir: Path, backend: KompileBackend, llvm_kompile_type: Optional[LLVMKompileType] = None
-    ) -> None:
+    def kevm_kompile(out_dir: Path, backend: KompileBackend, llvm_kompile_type: LLVMKompileType | None = None) -> None:
         KEVM.kompile(
             out_dir,
             backend,
@@ -292,7 +291,7 @@ def foundry_kompile(
 def foundry_prove(
     foundry_root: Path,
     max_depth: int = 1000,
-    max_iterations: Optional[int] = None,
+    max_iterations: int | None = None,
     reinit: bool = False,
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
@@ -303,10 +302,10 @@ def foundry_prove(
     break_on_calls: bool = True,
     implication_every_block: bool = True,
     bug_report: bool = False,
-    kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
-    smt_timeout: Optional[int] = None,
-    smt_retry_limit: Optional[int] = None,
-) -> Dict[str, bool]:
+    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
+) -> dict[str, bool]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
@@ -332,7 +331,7 @@ def foundry_prove(
         for method in contract.methods
         if f'{contract.name}.{method.name}' not in all_tests
     ]
-    unfound_tests: List[str] = []
+    unfound_tests: list[str] = []
     tests = list(tests)
     if not tests:
         tests = all_tests
@@ -348,7 +347,7 @@ def foundry_prove(
     if unfound_tests:
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
-    setup_methods: Dict[str, str] = {}
+    setup_methods: dict[str, str] = {}
     contracts = unique({test.split('.')[0] for test in tests})
     for contract_name in contracts:
         contract = foundry.contracts[contract_name]
@@ -356,8 +355,8 @@ def foundry_prove(
         if method is not None:
             setup_methods[contract.name] = f'{contract.name}.{method.name}'
 
-    def run_cfg_group(tests: List[str]) -> Dict[str, bool]:
-        ag_proofs: Dict[str, AGProof] = {}
+    def run_cfg_group(tests: list[str]) -> dict[str, bool]:
+        ag_proofs: dict[str, AGProof] = {}
         for test in tests:
             if AGProof.proof_exists(test, ag_proofs_dir) and not reinit:
                 ag_proof = AGProof.read_proof(test, ag_proofs_dir)
@@ -441,7 +440,7 @@ def foundry_show(
     foundry_root: Path,
     test: str,
     nodes: Iterable[str] = (),
-    node_deltas: Iterable[Tuple[str, str]] = (),
+    node_deltas: Iterable[tuple[str, str]] = (),
     to_module: bool = False,
     minimize: bool = True,
 ) -> str:
@@ -522,7 +521,7 @@ class CfgStat(NamedTuple):
         return '\n'.join(lines)
 
 
-def foundry_list(foundry_root: Path) -> List[CfgStat]:
+def foundry_list(foundry_root: Path) -> list[CfgStat]:
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     paths = ag_proofs_dir.glob('*.json')
@@ -548,8 +547,8 @@ def foundry_simplify_node(
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
-    smt_timeout: Optional[int] = None,
-    smt_retry_limit: Optional[int] = None,
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
 ) -> str:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
@@ -575,8 +574,8 @@ def foundry_step_node(
     repeat: int = 1,
     depth: int = 1,
     bug_report: bool = False,
-    smt_timeout: Optional[int] = None,
-    smt_retry_limit: Optional[int] = None,
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
 ) -> None:
     if repeat < 1:
         raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
@@ -600,12 +599,12 @@ def foundry_step_node(
 def foundry_section_edge(
     foundry_root: Path,
     test: str,
-    edge: Tuple[str, str],
+    edge: tuple[str, str],
     sections: int = 2,
     replace: bool = False,
     bug_report: bool = False,
-    smt_timeout: Optional[int] = None,
-    smt_retry_limit: Optional[int] = None,
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
 ) -> None:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
@@ -630,7 +629,7 @@ def _write_cfg(cfg: KCFG, path: Path) -> None:
 def _foundry_to_bin_runtime(
     empty_config: KInner,
     contracts: Iterable[Contract],
-    main_module: Optional[str],
+    main_module: str | None,
     requires: Iterable[str],
     imports: Iterable[str],
 ) -> KDefinition:
@@ -659,7 +658,7 @@ def _method_to_cfg(
     contract: Contract,
     method: Contract.Method,
     kcfgs_dir: Path,
-    init_state: Optional[str],
+    init_state: str | None = None,
 ) -> KCFG:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
@@ -700,9 +699,9 @@ def _init_term(
     contract_name: str,
     kcfgs_dir: Path,
     *,
-    calldata: Optional[KInner] = None,
-    callvalue: Optional[KInner] = None,
-    init_state: Optional[str],
+    calldata: KInner | None = None,
+    callvalue: KInner | None = None,
+    init_state: str | None = None,
 ) -> KInner:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(
