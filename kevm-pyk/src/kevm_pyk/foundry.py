@@ -216,11 +216,12 @@ def foundry_kompile(
     llvm_kompile: bool = True,
     debug: bool = False,
     llvm_library: bool = False,
+    kompiled_dir: str = 'kompiled'
 ) -> None:
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
     foundry = Foundry(foundry_root)
-    foundry_definition_dir = foundry.out / 'kompiled'
+    foundry_definition_dir = foundry.out / kompiled_dir
     foundry_requires_dir = foundry_definition_dir / 'requires'
     foundry_llvm_dir = foundry.out / 'kompiled-llvm'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
