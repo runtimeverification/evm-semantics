@@ -11,10 +11,22 @@ This file only defines the local execution operations, the file `driver.md` will
 requires "data.md"
 requires "network.md"
 
+module GAS-SYNTAX
+   imports INT-SYNTAX
+
+   syntax Gas ::= Int
+endmodule
+
+module GAS
+   imports GAS-SYNTAX
+   imports INT
+endmodule
+
 module EVM
-    imports STRING
-    imports EVM-DATA
-    imports NETWORK
+   imports STRING
+   imports EVM-DATA
+   imports NETWORK
+   imports GAS
 ```
 
 Configuration
@@ -64,7 +76,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <wordStack>   .WordStack </wordStack>           // \mu_s
               <localMem>    .Bytes     </localMem>            // \mu_m
               <pc>          0          </pc>                  // \mu_pc
-              <gas>         0          </gas>                 // \mu_g
+              <gas>         0:Gas      </gas>                 // \mau_g
               <memoryUsed>  0          </memoryUsed>          // \mu_i
               <callGas>     0          </callGas>
 
@@ -1859,8 +1871,8 @@ Overall Gas
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
     rule <k> _G:Int ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k>  G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
-    rule <k>  G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+    rule <k>  G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Int                  </gas> requires GAVAIL <Int G
+    rule <k>  G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL:Int => GAVAIL -Int G </gas> requires GAVAIL >=Int G
 
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [function, total]
