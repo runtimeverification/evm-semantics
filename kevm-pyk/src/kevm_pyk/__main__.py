@@ -33,7 +33,8 @@ from .utils import arg_pair_of, get_ag_proof_for_spec, parallel_kcfg_explore
 
 if TYPE_CHECKING:
     from argparse import Namespace
-    from typing import Any, Callable, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union
+    from collections.abc import Callable, Iterable
+    from typing import Any, Final, TypeVar
 
     from pyk.cterm import CTerm
     from pyk.kcfg.tui import KCFGElem
@@ -49,7 +50,7 @@ class KompileTarget(Enum):
     DARWIN = 'darwin'
 
 
-def _ignore_arg(args: Dict[str, Any], arg: str, cli_option: str) -> None:
+def _ignore_arg(args: dict[str, Any], arg: str, cli_option: str) -> None:
     if arg in args:
         if args[arg] is not None:
             _LOGGER.warning(f'Ignoring command-line option: {cli_option}')
@@ -84,22 +85,22 @@ def exec_kompile(
     main_file: Path,
     emit_json: bool,
     kompile_mode: KEVMKompileMode,
-    includes: List[str],
-    main_module: Optional[str],
-    syntax_module: Optional[str],
+    includes: list[str],
+    main_module: str | None,
+    syntax_module: str | None,
     ccopts: Iterable[str] = (),
     llvm_kompile: bool = True,
-    target: Optional[KompileTarget] = None,
+    target: KompileTarget | None = None,
     o0: bool = False,
     o1: bool = False,
     o2: bool = False,
     o3: bool = False,
     debug: bool = False,
-    plugin_include: Optional[Path] = None,
-    libff_dir: Optional[Path] = None,
-    brew_root: Optional[Path] = None,
-    libcryptopp_dir: Optional[Path] = None,
-    openssl_root: Optional[Path] = None,
+    plugin_include: Path | None = None,
+    libff_dir: Path | None = None,
+    brew_root: Path | None = None,
+    libcryptopp_dir: Path | None = None,
+    openssl_root: Path | None = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector {kwargs["md_selector"]}')
@@ -166,9 +167,9 @@ def exec_solc_to_k(
     definition_dir: Path,
     contract_file: Path,
     contract_name: str,
-    main_module: Optional[str],
-    requires: List[str],
-    imports: List[str],
+    main_module: str | None,
+    requires: list[str],
+    imports: list[str],
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
@@ -196,7 +197,7 @@ def exec_solc_to_k(
 def exec_foundry_kompile(
     definition_dir: Path,
     foundry_root: Path,
-    md_selector: Optional[str] = None,
+    md_selector: str | None = None,
     includes: Iterable[str] = (),
     regen: bool = False,
     rekompile: bool = False,
@@ -235,24 +236,24 @@ def exec_foundry_kompile(
 def exec_prove(
     definition_dir: Path,
     spec_file: Path,
-    includes: List[str],
+    includes: list[str],
     bug_report: bool = False,
-    save_directory: Optional[Path] = None,
-    spec_module: Optional[str] = None,
-    md_selector: Optional[str] = None,
+    save_directory: Path | None = None,
+    spec_module: str | None = None,
+    md_selector: str | None = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
     max_depth: int = 1000,
-    max_iterations: Optional[int] = None,
+    max_iterations: int | None = None,
     workers: int = 1,
     simplify_init: bool = True,
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
-    kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
-    smt_timeout: Optional[int] = None,
-    smt_retry_limit: Optional[int] = None,
+    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
     **kwargs: Any,
 ) -> None:
     br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
@@ -328,14 +329,14 @@ def exec_prove(
 def exec_show_kcfg(
     definition_dir: Path,
     spec_file: Path,
-    save_directory: Optional[Path] = None,
+    save_directory: Path | None = None,
     includes: Iterable[str] = (),
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
-    spec_module: Optional[str] = None,
-    md_selector: Optional[str] = None,
+    spec_module: str | None = None,
+    md_selector: str | None = None,
     nodes: Iterable[str] = (),
-    node_deltas: Iterable[Tuple[str, str]] = (),
+    node_deltas: Iterable[tuple[str, str]] = (),
     to_module: bool = False,
     minimize: bool = True,
     **kwargs: Any,
@@ -368,12 +369,12 @@ def exec_show_kcfg(
 def exec_view_kcfg(
     definition_dir: Path,
     spec_file: Path,
-    save_directory: Optional[Path] = None,
+    save_directory: Path | None = None,
     includes: Iterable[str] = (),
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
-    spec_module: Optional[str] = None,
-    md_selector: Optional[str] = None,
+    spec_module: str | None = None,
+    md_selector: str | None = None,
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
@@ -395,7 +396,7 @@ def exec_view_kcfg(
 def exec_foundry_prove(
     foundry_root: Path,
     max_depth: int = 1000,
-    max_iterations: Optional[int] = None,
+    max_iterations: int | None = None,
     reinit: bool = False,
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
@@ -406,9 +407,9 @@ def exec_foundry_prove(
     break_on_calls: bool = True,
     implication_every_block: bool = True,
     bug_report: bool = False,
-    kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
-    smt_timeout: Optional[int] = None,
-    smt_retry_limit: Optional[int] = None,
+    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -451,7 +452,7 @@ def exec_foundry_show(
     foundry_root: Path,
     test: str,
     nodes: Iterable[str] = (),
-    node_deltas: Iterable[Tuple[str, str]] = (),
+    node_deltas: Iterable[tuple[str, str]] = (),
     to_module: bool = False,
     minimize: bool = True,
     omit_unstable_output: bool = False,
@@ -488,9 +489,9 @@ def exec_run(
     definition_dir: Path,
     input_file: Path,
     term: bool,
-    parser: Optional[str],
+    parser: str | None,
     expand_macros: str,
-    depth: Optional[int],
+    depth: int | None,
     output: str,
     **kwargs: Any,
 ) -> None:
@@ -536,8 +537,8 @@ def exec_foundry_simplify_node(
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
-    smt_timeout: Optional[int] = None,
-    smt_retry_limit: Optional[int] = None,
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
     **kwargs: Any,
 ) -> None:
     pretty_term = foundry_simplify_node(
@@ -560,8 +561,8 @@ def exec_foundry_step_node(
     repeat: int = 1,
     depth: int = 1,
     bug_report: bool = False,
-    smt_timeout: Optional[int] = None,
-    smt_retry_limit: Optional[int] = None,
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
     **kwargs: Any,
 ) -> None:
     foundry_step_node(
@@ -579,12 +580,12 @@ def exec_foundry_step_node(
 def exec_foundry_section_edge(
     foundry_root: Path,
     test: str,
-    edge: Tuple[str, str],
+    edge: tuple[str, str],
     sections: int = 2,
     replace: bool = False,
     bug_report: bool = False,
-    smt_timeout: Optional[int] = None,
-    smt_retry_limit: Optional[int] = None,
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
     **kwargs: Any,
 ) -> None:
     foundry_section_edge(
@@ -603,8 +604,8 @@ def exec_foundry_section_edge(
 
 
 def _create_argument_parser() -> ArgumentParser:
-    def list_of(elem_type: Callable[[str], T], delim: str = ';') -> Callable[[str], List[T]]:
-        def parse(s: str) -> List[T]:
+    def list_of(elem_type: Callable[[str], T], delim: str = ';') -> Callable[[str], list[T]]:
+        def parse(s: str) -> list[T]:
             return [elem_type(elem) for elem in s.split(delim)]
 
         return parse
