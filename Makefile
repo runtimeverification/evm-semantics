@@ -54,7 +54,7 @@ export PLUGIN_FULL_PATH
         test-prove test-failing-prove                                                                                                        \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-smoke \
         test-prove-mcd test-klab-prove                                                                                                       \
-        test-parse test-failure test-foundry test-foundry-forge                                                           \
+        test-parse test-failure test-foundry test-foundry-forge                                                                              \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                           \
         test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean                                                                   \
         media media-pdf metropolis-theme                                                                                                     \
@@ -488,7 +488,7 @@ foundry_out := $(foundry_dir)/out
 
 test-foundry: KEVM_OPTS += --pyk --verbose
 test-foundry: KEVM = $(POETRY_RUN) kevm
-test-foundry: tests/foundry/foundry.k.check tests/foundry/out/kompiled/foundry.k.prove
+test-foundry: tests/foundry/foundry.k.check test/foundry/foundry-helper-lemmas.k.check tests/foundry/out/kompiled/foundry.k.prove
 
 foundry-forge-build: $(foundry_out)
 
@@ -502,13 +502,11 @@ $(foundry_out):
 tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
 	$(CHECK) $@.stripped $@.expected
-
 tests/foundry/foundry-helper-lemmas.k.check: tests/foundry/out/kompiled-test/foundry.k
 	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
 	$(CHECK) $@.stripped $@.expected
 
 tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
-
 tests/foundry/out/kompiled-test/foundry.k: tests/foundry/out/kompiled-test/timestamp
 
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
@@ -519,11 +517,6 @@ tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
 	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose 
-
-# test-helper-lemmas: tests/foundry/out/kompiled-test/timestamp
-test-helper-lemmas: tests/foundry/foundry-helper-lemmas.k.check
-
-# tests/foundry/out/kompiled-test/timestamp: KEVM = $(POETRY_RUN) kevm
 tests/foundry/out/kompiled-test/timestamp: $(foundry_dir)/lemmas.k $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
 	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose --require $(foundry_dir)/lemmas.k --module-import TEST-HELPER-LEMMAS --kompiled-dir kompiled-test
 

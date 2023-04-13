@@ -217,7 +217,7 @@ def foundry_kompile(
     llvm_kompile: bool = True,
     debug: bool = False,
     llvm_library: bool = False,
-    kompiled_dir: str = 'kompiled'
+    kompiled_dir: str = 'kompiled',
 ) -> None:
     main_module = 'FOUNDRY-MAIN'
     syntax_module = 'FOUNDRY-MAIN'
