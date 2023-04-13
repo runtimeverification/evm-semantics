@@ -112,7 +112,7 @@ Node OMITTED HASH:
           </interimStates>
           <callState>
             <id>
-              1032069922050249630382865877677304880282300743300
+              728815563385977040452943777879061427756277306518
             </id>
             <caller>
               CALLER_ID:Int
@@ -155,13 +155,19 @@ Node OMITTED HASH:
           <origin>
             ORIGIN_ID:Int
           </origin>
+          <block>
+            <number>
+              NUMBER_CELL:Int
+            </number>
+            ...
+          </block>
           ...
         </evm>
         <network>
           <accounts>
             ( <account>
               <acctID>
-                1032069922050249630382865877677304880282300743300
+                728815563385977040452943777879061427756277306518
               </acctID>
               <balance>
                 0
@@ -276,19 +282,23 @@ Node OMITTED HASH:
 </generatedTop>
 #And ( { true #Equals 0 <=Int CALLER_ID:Int }
 #And ( { true #Equals 0 <=Int ORIGIN_ID:Int }
+#And ( { true #Equals 0 <=Int NUMBER_CELL:Int }
 #And ( { true #Equals 0 <=Int VV0_x_114b9705:Int }
 #And ( { true #Equals 0 <=Int VV1_y_114b9705:Int }
 #And ( { true #Equals VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int }
 #And ( { true #Equals CALLER_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
 #And ( { true #Equals ORIGIN_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
+#And ( { true #Equals NUMBER_CELL:Int <=Int 57896044618658097711785492504343953926634992332820282019728792003956564819967 }
 #And ( { true #Equals VV0_x_114b9705:Int <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936 }
 #And ( { true #Equals VV1_y_114b9705:Int <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936 }
 #And ( { false #Equals <acctID>
   645326474426547203313410069153905908525362434349
 </acctID> in_keys ( ACCOUNTS_INIT:AccountCellMap ) }
 #And { false #Equals <acctID>
-  1032069922050249630382865877677304880282300743300
-</acctID> in_keys ( ACCOUNTS_INIT:AccountCellMap ) } ) ) ) ) ) ) ) ) ) ) )
+  728815563385977040452943777879061427756277306518
+</acctID> in_keys ( ACCOUNTS_INIT:AccountCellMap ) } ) ) ) ) ) ) ) ) ) ) ) ) )
+
+
 
 module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
     
@@ -317,10 +327,10 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  </interimStates>
                  <callState>
                    <id>
-                     1032069922050249630382865877677304880282300743300
+                     728815563385977040452943777879061427756277306518
                    </id>
                    <callData>
-                     ( AssertTest . test_revert_branch ( VV0_x_114b9705 , VV1_y_114b9705 ) => b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int ) )
+                     ( AssertTest . test_revert_branch ( VV0_x_114b9705 : uint256 , VV1_y_114b9705 : uint256 ) => b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int ) )
                    </callData>
                    <callValue>
                      0
@@ -360,7 +370,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  <accounts>
                    ( ( <account>
                      <acctID>
-                       1032069922050249630382865877677304880282300743300
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -377,7 +387,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      ...
                    </account> => <account>
                      <acctID>
-                       1032069922050249630382865877677304880282300743300
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -536,7 +546,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  </interimStates>
                  <callState>
                    <id>
-                     1032069922050249630382865877677304880282300743300
+                     728815563385977040452943777879061427756277306518
                    </id>
                    <callData>
                      b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int )
@@ -579,7 +589,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       1032069922050249630382865877677304880282300743300
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -721,7 +731,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  </interimStates>
                  <callState>
                    <id>
-                     1032069922050249630382865877677304880282300743300
+                     728815563385977040452943777879061427756277306518
                    </id>
                    <callData>
                      b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int )
@@ -764,7 +774,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       1032069922050249630382865877677304880282300743300
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -905,7 +915,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  </interimStates>
                  <callState>
                    <id>
-                     1032069922050249630382865877677304880282300743300
+                     728815563385977040452943777879061427756277306518
                    </id>
                    <callData>
                      b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int )
@@ -948,7 +958,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       1032069922050249630382865877677304880282300743300
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -1089,7 +1099,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  </interimStates>
                  <callState>
                    <id>
-                     1032069922050249630382865877677304880282300743300
+                     728815563385977040452943777879061427756277306518
                    </id>
                    <callData>
                      b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , _VV0_x_114b9705 ) +Bytes #buf ( 32 , _VV1_y_114b9705 )
@@ -1132,7 +1142,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       1032069922050249630382865877677304880282300743300
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
