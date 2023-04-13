@@ -331,12 +331,15 @@
       }
     },
     "flake-utils": {
+      "inputs": {
+        "systems": "systems"
+      },
       "locked": {
-        "lastModified": 1680776469,
-        "narHash": "sha256-3CXUDK/3q/kieWtdsYpDOBJw3Gw4Af6x+2EiSnIkNQw=",
+        "lastModified": 1681202837,
+        "narHash": "sha256-H+Rh19JDwRtpVPAWp64F+rlEtxUWBAQW28eAi3SRSzg=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "411e8764155aa9354dbcd6d5faaeb97e9e3dce24",
+        "rev": "cfacdce06f30d2b68473a46042957675eebb3401",
         "type": "github"
       },
       "original": {
@@ -502,11 +505,11 @@
         "z3-src": "z3-src"
       },
       "locked": {
-        "lastModified": 1680784150,
-        "narHash": "sha256-/rK339Yvl+0ReRhc6TAr2uzVfWe2c14ID9KGeRnuSrY=",
+        "lastModified": 1681139114,
+        "narHash": "sha256-kWc0ja0Z8TfeBbdfsxKcznTN3YfHAPBzvIuS3VMva5w=",
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "736e5d7ed5dfdc516670ff2b46b62083a2cef4cf",
+        "rev": "23ef6fda5fdac642be15c2bfc926b79fed020333",
         "type": "github"
       },
       "original": {
@@ -647,16 +650,16 @@
         "rv-utils": "rv-utils"
       },
       "locked": {
-        "lastModified": 1681179996,
-        "narHash": "sha256-0hYcZJOR2r22jhbCwDHDBrNOFF4rWJ5DXijwGk7espI=",
+        "lastModified": 1681306953,
+        "narHash": "sha256-taqYAfZcUjvbZXKrZ8XzKMj7WMFQfY3tuis8EiORCyA=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "4ad779a0b8a9f6364bffb8f946beae636a27c294",
+        "rev": "85948942afc0ea10a9d39b902efdfa4a1cc143e5",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v5.6.41",
+        "ref": "v5.6.45",
         "repo": "k",
         "type": "github"
       }
@@ -1382,6 +1385,21 @@
       "original": {
         "owner": "divnix",
         "repo": "std",
+        "type": "github"
+      }
+    },
+    "systems": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
         "type": "github"
       }
     },
