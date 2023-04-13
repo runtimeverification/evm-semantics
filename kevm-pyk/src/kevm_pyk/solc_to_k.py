@@ -20,8 +20,9 @@ from pyk.utils import FrozenDict
 from .kevm import KEVM
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from pathlib import Path
-    from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
+    from typing import Any, Final
 
     from pyk.kast import KInner
     from pyk.kast.outer import KProductionItem, KSentence
@@ -36,12 +37,12 @@ class Contract:
         name: str
         id: int
         sort: KSort
-        arg_names: Tuple[str, ...]
-        arg_types: Tuple[str, ...]
+        arg_names: tuple[str, ...]
+        arg_types: tuple[str, ...]
         contract_name: str
         payable: bool
 
-        def __init__(self, msig: str, id: int, abi: Dict, contract_name: str, sort: KSort) -> None:
+        def __init__(self, msig: str, id: int, abi: dict, contract_name: str, sort: KSort) -> None:
             self.name = abi['name']
             self.id = id
             self.arg_names = tuple([f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])])
@@ -67,15 +68,15 @@ class Contract:
 
         @property
         def production(self) -> KProduction:
-            items_before: List[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
+            items_before: list[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
 
-            items_args: List[KProductionItem] = []
+            items_args: list[KProductionItem] = []
             for i, input_type in enumerate(self.arg_types):
                 if i > 0:
                     items_args += [KTerminal(',')]
                 items_args += [KNonTerminal(_evm_base_sort(input_type)), KTerminal(':'), KTerminal(input_type)]
 
-            items_after: List[KProductionItem] = [KTerminal(')')]
+            items_after: list[KProductionItem] = [KTerminal(')')]
             return KProduction(
                 self.sort,
                 items_before + items_args + items_after,
@@ -83,12 +84,12 @@ class Contract:
                 att=KAtt({'symbol': ''}),
             )
 
-        def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> Optional[KRule]:
+        def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule | None:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
             prod_klabel = self.klabel
             assert prod_klabel is not None
-            args: List[KInner] = []
-            conjuncts: List[KInner] = []
+            args: list[KInner] = []
+            conjuncts: list[KInner] = []
             for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
                 args.append(KEVM.abi_type(input_type, KVariable(input_name)))
                 rp = _range_predicate(KVariable(input_name), input_type)
@@ -125,15 +126,15 @@ class Contract:
             return klabel(args)
 
     name: str
-    contract_json: Dict
+    contract_json: dict
     contract_id: int
     contract_path: str
     bytecode: str
-    raw_sourcemap: Optional[str]
-    methods: Tuple[Method, ...]
+    raw_sourcemap: str | None
+    methods: tuple[Method, ...]
     fields: FrozenDict
 
-    def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
+    def __init__(self, contract_name: str, contract_json: dict, foundry: bool = False) -> None:
         self.name = contract_name
         self.contract_json = contract_json
 
@@ -169,7 +170,7 @@ class Contract:
             self.fields = FrozenDict(_fields)
 
     @cached_property
-    def srcmap(self) -> Dict[int, Tuple[int, int, int, str, int]]:
+    def srcmap(self) -> dict[int, tuple[int, int, int, str, int]]:
         _srcmap = {}
 
         if len(self.bytecode) > 0 and self.raw_sourcemap is not None:
@@ -268,14 +269,14 @@ class Contract:
         )
 
     @property
-    def method_sentences(self) -> List[KSentence]:
+    def method_sentences(self) -> list[KSentence]:
         method_application_production: KSentence = KProduction(
             KSort('Bytes'),
             [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)],
             klabel=self.klabel_method,
             att=KAtt({'function': '', 'symbol': ''}),
         )
-        res: List[KSentence] = [method_application_production]
+        res: list[KSentence] = [method_application_production]
         res.extend(method.production for method in self.methods)
         method_rules = (method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods)
         res.extend(rule for rule in method_rules if rule)
@@ -283,9 +284,9 @@ class Contract:
         return res if len(res) > 1 else []
 
     @property
-    def field_sentences(self) -> List[KSentence]:
-        prods: List[KSentence] = [self.subsort_field]
-        rules: List[KSentence] = []
+    def field_sentences(self) -> list[KSentence]:
+        prods: list[KSentence] = [self.subsort_field]
+        rules: list[KSentence] = []
         for field, slot in self.fields.items():
             klabel = KLabel(self.klabel_field.name + f'_{field}')
             prods.append(KProduction(self.sort_field, [KTerminal(field)], klabel=klabel, att=KAtt({'symbol': ''})))
@@ -297,10 +298,10 @@ class Contract:
         return prods + rules
 
     @property
-    def sentences(self) -> List[KSentence]:
+    def sentences(self) -> list[KSentence]:
         return [self.subsort, self.production, self.macro_bin_runtime] + self.field_sentences + self.method_sentences
 
-    def method_by_name(self, name: str) -> Optional[Contract.Method]:
+    def method_by_name(self, name: str) -> Contract.Method | None:
         methods = [method for method in self.methods if method.name == 'setUp']
         if len(methods) > 1:
             raise ValueError(f'Found multiple methods with name {name}, expected at most one')
@@ -309,7 +310,7 @@ class Contract:
         return methods[0]
 
 
-def solc_compile(contract_file: Path) -> Dict[str, Any]:
+def solc_compile(contract_file: Path) -> dict[str, Any]:
     # TODO: add check to kevm:
     # solc version should be >=0.8.0 due to:
     # https://github.com/ethereum/solidity/issues/10276
@@ -417,7 +418,7 @@ def _evm_base_sort_int(type_label: str) -> bool:
     return success
 
 
-def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
+def _range_predicate(term: KInner, type_label: str) -> KInner | None:
     (success, result) = _range_predicate_uint(term, type_label)
     if success:
         return result
@@ -440,7 +441,7 @@ def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
     return None
 
 
-def _range_predicate_uint(term: KInner, type_label: str) -> Tuple[bool, Optional[KInner]]:
+def _range_predicate_uint(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
     if type_label.startswith('uint') and not type_label.endswith(']'):
         width = int(type_label[4:])
         if not (0 < width and width <= 256 and width % 8 == 0):
@@ -450,8 +451,8 @@ def _range_predicate_uint(term: KInner, type_label: str) -> Tuple[bool, Optional
         return (False, None)
 
 
-def method_sig_from_abi(method_json: Dict) -> str:
-    def unparse_input(input_json: Dict) -> str:
+def method_sig_from_abi(method_json: dict) -> str:
+    def unparse_input(input_json: dict) -> str:
         is_array = False
         is_sized = False
         array_size = 0
