@@ -208,7 +208,7 @@ class KEVM(KProve, KRun):
         k_str = f'k: {k_cell}'
         ret_strs = [k_str]
         for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
-            if name in cterm.cells:
+            if cell in cterm.cells:
                 ret_strs.append(f'{name}: {self.pretty_print(cterm.cell(cell))}')
         return ret_strs
 
@@ -228,6 +228,8 @@ class KEVM(KProve, KRun):
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('CALLER_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ORIGIN_CELL'))))
         constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytes(cterm.cell('CALLDATA_CELL')), KEVM.pow128())))
+
+        constraints.append(mlEqualsTrue(KEVM.range_blocknum(cterm.cell('NUMBER_CELL'))))
 
         for c in constraints:
             cterm = cterm.add_constraint(c)
@@ -313,6 +315,10 @@ class KEVM(KProve, KRun):
     @staticmethod
     def range_bytes(width: KInner, ba: KInner) -> KApply:
         return KApply('#rangeBytes(_,_)_WORD_Bool_Int_Int', [width, ba])
+
+    @staticmethod
+    def range_blocknum(ba: KInner) -> KApply:
+        return KApply('#rangeBlockNum(_)_WORD_Bool_Int', [ba])
 
     @staticmethod
     def bool_2_word(cond: KInner) -> KApply:
