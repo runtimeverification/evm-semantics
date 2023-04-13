@@ -208,7 +208,7 @@ class KEVM(KProve, KRun):
         k_str = f'k: {k_cell}'
         ret_strs = [k_str]
         for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
-            if name in cterm.cells:
+            if cell in cterm.cells:
                 ret_strs.append(f'{name}: {self.pretty_print(cterm.cell(cell))}')
         return ret_strs
 
