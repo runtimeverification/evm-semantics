@@ -278,6 +278,7 @@ def exec_prove(
     }
     with KCFGExplore(
         kevm,
+        id='initializing',
         bug_report=br,
         kore_rpc_command=kore_rpc_command,
         smt_timeout=smt_timeout,
@@ -292,7 +293,7 @@ def exec_prove(
 
             if simplify_init:
                 _LOGGER.info(f'Simplifying KCFG for claim: {claim}')
-                ag_proof.kcfg = kcfg_explore.simplify(claim, ag_proof.kcfg)
+                ag_proof.kcfg = kcfg_explore.simplify(ag_proof.kcfg)
 
             _proof_problems[claim] = ag_proof
 
