@@ -54,7 +54,6 @@ def get_ag_proof_for_spec(  # noqa: N802
     )
 
     ag_proof = AGProof.read_proof(claim.label, save_directory)
-    assert type(ag_proof) is AGProof
     return ag_proof
 
 
