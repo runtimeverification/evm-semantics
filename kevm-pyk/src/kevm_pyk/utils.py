@@ -102,17 +102,16 @@ def parallel_kcfg_explore(
 
         with KCFGExplore(
             kprove,
+            id=_ag_proof.id,
             bug_report=bug_report,
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:
-            ag_prover = AGProver(_ag_proof)
+            ag_prover = AGProver(_ag_proof, is_terminal=is_terminal, extract_branches=extract_branches)
             try:
                 _cfg = ag_prover.advance_proof(
                     kcfg_explore,
-                    is_terminal=is_terminal,
-                    extract_branches=extract_branches,
                     max_iterations=max_iterations,
                     execute_depth=max_depth,
                     terminal_rules=terminal_rules,

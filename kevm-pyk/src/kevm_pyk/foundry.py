@@ -374,6 +374,7 @@ def foundry_prove(
             _LOGGER.info(f'Starting KCFGExplore for test: {test}')
             with KCFGExplore(
                 foundry.kevm,
+                id=test,
                 bug_report=br,
                 kore_rpc_command=kore_rpc_command,
                 smt_timeout=smt_timeout,
@@ -385,7 +386,7 @@ def foundry_prove(
 
                 if simplify_init:
                     _LOGGER.info(f'Simplifying KCFG for test: {test}')
-                    kcfg = kcfg_explore.simplify(test, kcfg)
+                    kcfg = kcfg_explore.simplify(kcfg)
 
             ag_proof = AGProof(test, kcfg, proof_dir=ag_proofs_dir)
 
@@ -533,7 +534,7 @@ def foundry_simplify_node(
     assert type(ag_proof) is AGProof
     cterm = ag_proof.kcfg.node(node).cterm
     with KCFGExplore(
-        foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
     if replace:
@@ -565,10 +566,10 @@ def foundry_step_node(
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
     assert type(ag_proof) is AGProof
     with KCFGExplore(
-        foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
         for _i in range(repeat):
-            kcfg, node = kcfg_explore.step(test, ag_proof.kcfg, node, depth=depth)
+            kcfg, node = kcfg_explore.step(ag_proof.kcfg, node, depth=depth)
             ag_proof.write_proof()
 
 
@@ -589,11 +590,9 @@ def foundry_section_edge(
     assert type(ag_proof) is AGProof
     source_id, target_id = edge
     with KCFGExplore(
-        foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(
-            test, ag_proof.kcfg, source_id=source_id, target_id=target_id, sections=sections
-        )
+        kcfg, _ = kcfg_explore.section_edge(ag_proof.kcfg, source_id=source_id, target_id=target_id, sections=sections)
     ag_proof.write_proof()
 
 
