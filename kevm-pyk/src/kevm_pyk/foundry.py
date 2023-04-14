@@ -351,7 +351,6 @@ def foundry_prove(
     for test in tests:
         if AGProof.proof_exists(test, ag_proofs_dir) and not reinit:
             ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-            assert type(ag_proof) is AGProof
         else:
             _LOGGER.info(f'Initializing KCFG for test: {test}')
             contract_name, method_name = test.split('.')
@@ -426,7 +425,6 @@ def foundry_show(
     ag_proofs_dir = foundry.out / 'ag_proofs'
 
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
@@ -449,7 +447,6 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     ag_proofs_dir = foundry.out / 'ag_proofs'
     dump_dir = ag_proofs_dir / 'dump'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     kcfg_show = KCFGShow(foundry.kevm)
     kcfg_show.dump(test, ag_proof.kcfg, dump_dir, dot=True)
 
@@ -509,7 +506,6 @@ def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     for _node in ag_proof.kcfg.reachable_nodes(node, traverse_covers=True):
         if not ag_proof.kcfg.is_target(_node.id):
             _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
@@ -531,7 +527,6 @@ def foundry_simplify_node(
     foundry = Foundry(foundry_root, bug_report=br)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     cterm = ag_proof.kcfg.node(node).cterm
     with KCFGExplore(
         foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
@@ -564,7 +559,6 @@ def foundry_step_node(
 
     ag_proofs_dir = foundry.out / 'ag_proofs'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     with KCFGExplore(
         foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
@@ -587,7 +581,6 @@ def foundry_section_edge(
     foundry = Foundry(foundry_root, bug_report=br)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     source_id, target_id = edge
     with KCFGExplore(
         foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit

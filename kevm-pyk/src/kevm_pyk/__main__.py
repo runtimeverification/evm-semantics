@@ -509,7 +509,6 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     contract_name = test.split('.')[0]
 
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
