@@ -2,7 +2,7 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable/6b70761ea8c896aff8994eb367d9526686501860";
     k-framework.url = "github:runtimeverification/k/v5.6.45";
     k-framework.inputs.nixpkgs.follows = "nixpkgs";
     #nixpkgs.follows = "k-framework/nixpkgs";
