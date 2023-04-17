@@ -4,12 +4,11 @@ import json
 import logging
 import sys
 from argparse import ArgumentParser
-from functools import reduce
 from itertools import chain
 from typing import TYPE_CHECKING
 
 from pyk.cli_utils import file_path
-from pyk.kore.prelude import INT, LBL_MAP, LBL_MAP_ITEM, STOP_MAP, STRING, int_dv, string_dv
+from pyk.kore.prelude import INT, STRING, int_dv, kore_map, string_dv
 from pyk.kore.syntax import DV, App, RightAssoc, SortApp, String, SymbolId
 
 if TYPE_CHECKING:
@@ -44,21 +43,13 @@ def gst_to_kore(gst_data: Any, schedule: str, mode: str, chainid: int) -> App:
         _config_map_entry('MODE', _mode_to_kore(mode), SortApp('SortMode')),
         _config_map_entry('CHAINID', _chainid_to_kore(chainid), INT),
     )
-    return App(
-        'LblinitGeneratedTopCell',
-        (),
-        (reduce(lambda x, y: App(LBL_MAP, (), (x, y)), entries, STOP_MAP),),
-    )
+    return App('LblinitGeneratedTopCell', (), (kore_map(*entries),))
 
 
-def _config_map_entry(var: str, value: Pattern, sort: Sort) -> App:
-    return App(
-        LBL_MAP_ITEM,
-        (),
-        (
-            _sort_injection(SORT_K_CONFIG_VAR, SORT_K_ITEM, _k_config_var(var)),
-            _sort_injection(sort, SORT_K_ITEM, value),
-        ),
+def _config_map_entry(var: str, value: Pattern, sort: Sort) -> tuple[Pattern, Pattern]:
+    return (
+        _sort_injection(SORT_K_CONFIG_VAR, SORT_K_ITEM, _k_config_var(var)),
+        _sort_injection(sort, SORT_K_ITEM, value),
     )
 
 
