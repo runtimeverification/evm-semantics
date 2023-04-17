@@ -5,14 +5,16 @@ import logging
 import sys
 from argparse import ArgumentParser
 from functools import reduce
+from itertools import chain
 from typing import TYPE_CHECKING
 
 from pyk.cli_utils import file_path
 from pyk.kore.prelude import INT, LBL_MAP, LBL_MAP_ITEM, STOP_MAP, STRING, int_dv, string_dv
-from pyk.kore.syntax import DV, App, SortApp, String, SymbolId
+from pyk.kore.syntax import DV, App, RightAssoc, SortApp, String, SymbolId
 
 if TYPE_CHECKING:
     from argparse import Namespace
+    from collections.abc import Iterable
     from pathlib import Path
     from typing import Any, Final
 
@@ -73,29 +75,16 @@ def _json_to_kore(_data: Any, *, sort: Sort | None = None) -> Pattern:
         sort = SORT_JSON
 
     if isinstance(_data, list):
-        return App(
-            LBL_JSON_LIST,
-            (),
-            (
-                reduce(
-                    lambda x, y: App(LBL_JSONS, (), (y, x)),
-                    reversed([_json_to_kore(elem) for elem in _data]),
-                    STOP_JSONS,
-                ),
-            ),
-        )
+        return App(LBL_JSON_LIST, (), (_jsons(_json_to_kore(elem) for elem in _data),))
 
     if isinstance(_data, dict):
         return App(
             LBL_JSON_OBJECT,
             (),
             (
-                reduce(
-                    lambda x, y: App(LBL_JSONS, (), (App(LBL_JSON_ENTRY, (), (y[0], y[1])), x)),
-                    reversed(
-                        [(_json_to_kore(key, sort=SORT_JSON_KEY), _json_to_kore(value)) for key, value in _data.items()]
-                    ),
-                    STOP_JSONS,
+                _jsons(
+                    App(LBL_JSON_ENTRY, (), (_json_to_kore(key, sort=SORT_JSON_KEY), _json_to_kore(value)))
+                    for key, value in _data.items()
                 ),
             ),
         )
@@ -107,6 +96,10 @@ def _json_to_kore(_data: Any, *, sort: Sort | None = None) -> Pattern:
         return _sort_injection(INT, sort, int_dv(_data))
 
     raise AssertionError()
+
+
+def _jsons(patterns: Iterable[Pattern]) -> RightAssoc:
+    return RightAssoc(App(LBL_JSONS, (), chain(patterns, [STOP_JSONS])))
 
 
 def _schedule_to_kore(schedule: str) -> App:
