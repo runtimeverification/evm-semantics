@@ -293,7 +293,7 @@ def exec_prove(
 
             if simplify_init:
                 _LOGGER.info(f'Simplifying KCFG for claim: {claim}')
-                ag_proof.kcfg = kcfg_explore.simplify(ag_proof.kcfg)
+                kcfg_explore.simplify(ag_proof.kcfg)
 
             _proof_problems[claim] = ag_proof
 

@@ -385,7 +385,7 @@ def foundry_prove(
 
                 if simplify_init:
                     _LOGGER.info(f'Simplifying KCFG for test: {test}')
-                    kcfg = kcfg_explore.simplify(kcfg)
+                    kcfg_explore.simplify(kcfg)
 
             ag_proof = AGProof(test, kcfg, proof_dir=ag_proofs_dir)
 
@@ -563,7 +563,7 @@ def foundry_step_node(
         foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
         for _i in range(repeat):
-            kcfg, node = kcfg_explore.step(ag_proof.kcfg, node, depth=depth)
+            node = kcfg_explore.step(ag_proof.kcfg, node, depth=depth)
             ag_proof.write_proof()
 
 
