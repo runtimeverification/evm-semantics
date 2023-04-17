@@ -179,7 +179,7 @@
       in {
         packages.default = kevm;
         devShell = pkgs.mkShell {
-          buildInputs = buildInputs pkgs k-framework.packages.${system}.k;
+          buildInputs = buildInputs pkgs k-framework.packages.${system}.k ++ [ pkgs.poetry ];
         };
 
         apps = {
