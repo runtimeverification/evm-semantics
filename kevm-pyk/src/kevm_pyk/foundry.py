@@ -176,17 +176,6 @@ class Foundry:
         return intToken(0x7FA9385BE102AC3EAC297483DD6233D62B3E1496)
 
     @staticmethod
-    def account_TEST_CONTRACT_ADDRESS() -> KApply:  # noqa: N802
-        return KEVM.account_cell(
-            Foundry.address_TEST_CONTRACT(),
-            intToken(0),
-            KVariable('TEST_CODE'),
-            KApply('.Map'),
-            KApply('.Map'),
-            intToken(1),
-        )
-
-    @staticmethod
     def address_CHEATCODE() -> KToken:  # noqa: N802
         return intToken(0x7109709ECFA91A80626FF3989D68F67F5B1DD12D)
 
