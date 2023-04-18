@@ -5,7 +5,6 @@ tests/specs/bihu/forwardToHotWallet-failure-3-spec.k
 tests/specs/bihu/forwardToHotWallet-failure-4-spec.k
 tests/specs/bihu/forwardToHotWallet-success-1-spec.k
 tests/specs/bihu/forwardToHotWallet-success-2-spec.k
-tests/specs/bihu/functional-spec.k
 tests/specs/erc20/ds/allowance-spec.k
 tests/specs/erc20/ds/approve-failure-spec.k
 tests/specs/erc20/ds/approve-success-spec.k
@@ -31,18 +30,13 @@ tests/specs/erc20/hkg/transferFrom-success-2-spec.k
 tests/specs/erc20/hkg/transfer-success-1-spec.k
 tests/specs/erc20/hkg/transfer-success-2-spec.k
 tests/specs/examples/sum-to-n-spec.k
-tests/specs/functional/infinite-gas-spec.k
 tests/specs/functional/lemmas-no-smt-spec.k
 tests/specs/functional/lemmas-spec.k
 tests/specs/functional/merkle-spec.k
 tests/specs/functional/storageRoot-spec.k
-tests/specs/mcd/dsvalue-read-pass-summarize-spec.k
 tests/specs/mcd/end-subuu-pass-spec.k
 tests/specs/mcd/functional-spec.k
 tests/specs/mcd/vat-move-diff-rough-spec.k
-tests/specs/mcd/vat-mului-pass-spec.k
-tests/specs/mcd/vat-subui-pass-rough-spec.k
-tests/specs/mcd/vat-subui-pass-spec.k
 tests/specs/mcd/vow-fess-fail-rough-spec.k
 tests/specs/mcd/vow-flog-fail-rough-spec.k
 tests/specs/opcodes/evm-optimizations-spec.md
