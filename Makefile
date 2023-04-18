@@ -686,8 +686,8 @@ kevm_pyk_tests :=                                                               
                   tests/specs/examples/erc721-bin-runtime.k
 
 test-kevm-pyk: KEVM_OPTS += --pyk --verbose
-test-kevm-pyk: KEVM = $(POETRY_RUN) kevm
-test-kevm-pyk: KOMPILE = $(POETRY_RUN) kevm kompile
+test-kevm-pyk: KEVM = $(POETRY_RUN) $(KEVM)
+test-kevm-pyk: KOMPILE = $(POETRY_RUN) $(KEVM) kompile
 test-kevm-pyk: $(kevm_pyk_tests) poetry
 
 # Interactive Tests
