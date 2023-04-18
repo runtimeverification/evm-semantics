@@ -11,15 +11,30 @@ This file only defines the local execution operations, the file `driver.md` will
 requires "data.md"
 requires "network.md"
 
-module GAS-SYNTAX
-   imports INT-SYNTAX
+module GAS
+   imports INT
 
    syntax Gas ::= Int
-endmodule
 
-module GAS
-   imports GAS-SYNTAX
-   imports INT
+   syntax Gas ::= Gas "+Gas" Gas [function, total]
+                | Gas "-Gas" Gas [function, total]
+                | Gas "*Gas" Gas [function, total]
+                | Gas "/Gas" Gas [function]
+               
+   syntax Bool ::= Gas  "<Gas" Gas [function, total]
+                 | Gas "<=Gas" Gas [function, total]
+                 | Gas  ">Gas" Gas [function, total]
+                 | Gas ">=Gas" Gas [function, total]
+
+   rule I1:Int +Gas I2:Int => I1 +Int I2
+   rule I1:Int +Gas I2:Int => I1 +Int I2
+   rule I1:Int +Gas I2:Int => I1 +Int I2
+   rule I1:Int +Gas I2:Int => I1 +Int I2
+
+   rule I1:Int  <Gas I2:Int => I1  <Int I2
+   rule I1:Int <=Gas I2:Int => I1 <=Int I2
+   rule I1:Int  >Gas I2:Int => I1  >Int I2
+   rule I1:Int >=Gas I2:Int => I1 >=Int I2
 endmodule
 
 module EVM
@@ -1871,8 +1886,8 @@ Overall Gas
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
     rule <k> _G:Int ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k>  G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Int                  </gas> requires GAVAIL <Int G
-    rule <k>  G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL:Int => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+    rule <k>  G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Gas                  </gas> requires GAVAIL <Gas G
+    rule <k>  G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> requires GAVAIL >=Gas G
 
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [function, total]
@@ -2007,12 +2022,12 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          </account>
          <refund> R => R +Int Rsstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) </refund>
       requires notBool Ghassstorestipend << SCHED >>
-        orBool notBool GAVAIL <=Int Gcallstipend < SCHED >
+        orBool notBool GAVAIL <=Gas Gcallstipend < SCHED >
 
     rule <k> #gasExec(SCHED, SSTORE _ _ ) => #end EVMC_OUT_OF_GAS ... </k>
          <gas> GAVAIL </gas>
       requires Ghassstorestipend << SCHED >>
-       andBool GAVAIL <=Int Gcallstipend < SCHED >
+       andBool GAVAIL <=Gas Gcallstipend < SCHED >
 
     rule <k> #gasExec(SCHED, EXP _ 0)  => Gexp < SCHED > ... </k>
     rule <k> #gasExec(SCHED, EXP _ W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=Int 0
