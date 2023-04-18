@@ -2718,9 +2718,9 @@ module KEVMCHEATSBASE-BIN-RUNTIME
     
     syntax KEVMCheatsBaseMethod ::= "expectNoCall" "(" ")" [symbol(), klabel(method_KEVMCheatsBase_expectNoCall_)]
     
-    syntax KEVMCheatsBaseMethod ::= "expectRegularCall" "(" Int ":" "address" "," Bytes ":" "bytes" ")" [symbol(), klabel(method_KEVMCheatsBase_expectRegularCall_address_bytes)]
-    
     syntax KEVMCheatsBaseMethod ::= "expectRegularCall" "(" Int ":" "address" "," Int ":" "uint256" "," Bytes ":" "bytes" ")" [symbol(), klabel(method_KEVMCheatsBase_expectRegularCall_address_uint256_bytes)]
+    
+    syntax KEVMCheatsBaseMethod ::= "expectRegularCall" "(" Int ":" "address" "," Bytes ":" "bytes" ")" [symbol(), klabel(method_KEVMCheatsBase_expectRegularCall_address_bytes)]
     
     syntax KEVMCheatsBaseMethod ::= "expectStaticCall" "(" Int ":" "address" "," Bytes ":" "bytes" ")" [symbol(), klabel(method_KEVMCheatsBase_expectStaticCall_address_bytes)]
     
@@ -2761,17 +2761,17 @@ module KEVMCHEATSBASE-BIN-RUNTIME
     rule  ( KEVMCheatsBase . expectNoCall ( ) => #abiCallData ( "expectNoCall" , .TypedArgs ) )
       
     
-    rule  ( KEVMCheatsBase . expectRegularCall ( V0_ : address , V1_ : bytes ) => #abiCallData ( "expectRegularCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 128 , lengthBytes ( V1_ ) )
-               ))
-      
-    
     rule  ( KEVMCheatsBase . expectRegularCall ( V0_ : address , V1_ : uint256 , V2_ : bytes ) => #abiCallData ( "expectRegularCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
        andBool ( #rangeUInt ( 256 , V1_ )
        andBool ( #rangeUInt ( 128 , lengthBytes ( V2_ ) )
                )))
+      
+    
+    rule  ( KEVMCheatsBase . expectRegularCall ( V0_ : address , V1_ : bytes ) => #abiCallData ( "expectRegularCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , lengthBytes ( V1_ ) )
+               ))
       
     
     rule  ( KEVMCheatsBase . expectStaticCall ( V0_ : address , V1_ : bytes ) => #abiCallData ( "expectStaticCall" , #address ( V0_ ) , #bytes ( V1_ ) , .TypedArgs ) )
@@ -2805,10 +2805,10 @@ module KEVMCHEATSBASE-BIN-RUNTIME
     rule  ( selector ( "expectNoCall()" ) => 3861374088 )
       
     
-    rule  ( selector ( "expectRegularCall(address,bytes)" ) => 3178868520 )
+    rule  ( selector ( "expectRegularCall(address,uint256,bytes)" ) => 1973496647 )
       
     
-    rule  ( selector ( "expectRegularCall(address,uint256,bytes)" ) => 1973496647 )
+    rule  ( selector ( "expectRegularCall(address,bytes)" ) => 3178868520 )
       
     
     rule  ( selector ( "expectStaticCall(address,bytes)" ) => 2232945516 )
@@ -3133,9 +3133,9 @@ module METHODDISAMBIGUATETEST-BIN-RUNTIME
     
     syntax MethodDisambiguateTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_failed_)]
     
-    syntax MethodDisambiguateTestMethod ::= "getNumber" "(" Int ":" "uint256" ")" [symbol(), klabel(method_MethodDisambiguateTest_getNumber_uint256)]
-    
     syntax MethodDisambiguateTestMethod ::= "getNumber" "(" Int ":" "uint32" ")" [symbol(), klabel(method_MethodDisambiguateTest_getNumber_uint32)]
+    
+    syntax MethodDisambiguateTestMethod ::= "getNumber" "(" Int ":" "uint256" ")" [symbol(), klabel(method_MethodDisambiguateTest_getNumber_uint256)]
     
     syntax MethodDisambiguateTestMethod ::= "test_method_call" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_test_method_call_)]
     
@@ -3150,12 +3150,12 @@ module METHODDISAMBIGUATETEST-BIN-RUNTIME
     rule  ( MethodDisambiguateTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
-    rule  ( MethodDisambiguateTest . getNumber ( V0_x : uint256 ) => #abiCallData ( "getNumber" , #uint256 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_x )
-      
-    
     rule  ( MethodDisambiguateTest . getNumber ( V0_x : uint32 ) => #abiCallData ( "getNumber" , #uint32 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 32 , V0_x )
+      
+    
+    rule  ( MethodDisambiguateTest . getNumber ( V0_x : uint256 ) => #abiCallData ( "getNumber" , #uint256 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_x )
       
     
     rule  ( MethodDisambiguateTest . test_method_call ( ) => #abiCallData ( "test_method_call" , .TypedArgs ) )
@@ -3173,10 +3173,10 @@ module METHODDISAMBIGUATETEST-BIN-RUNTIME
     rule  ( selector ( "failed()" ) => 3124842406 )
       
     
-    rule  ( selector ( "getNumber(uint256)" ) => 4233508440 )
+    rule  ( selector ( "getNumber(uint32)" ) => 144150998 )
       
     
-    rule  ( selector ( "getNumber(uint32)" ) => 144150998 )
+    rule  ( selector ( "getNumber(uint256)" ) => 4233508440 )
       
     
     rule  ( selector ( "test_method_call()" ) => 1803637680 )
@@ -4459,8 +4459,6 @@ module ASSERTTEST-BIN-RUNTIME
     
     syntax AssertTestMethod ::= "test_assert_true_branch" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_test_assert_true_branch_uint256)]
     
-    syntax AssertTestMethod ::= "test_failing_branch" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_test_failing_branch_uint256)]
-    
     syntax AssertTestMethod ::= "test_revert_branch" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_test_revert_branch_uint256_uint256)]
     
     syntax AssertTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AssertTest_vm_)]
@@ -4493,10 +4491,6 @@ module ASSERTTEST-BIN-RUNTIME
       
     
     rule  ( AssertTest . test_assert_true_branch ( V0_x : uint256 ) => #abiCallData ( "test_assert_true_branch" , #uint256 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_x )
-      
-    
-    rule  ( AssertTest . test_failing_branch ( V0_x : uint256 ) => #abiCallData ( "test_failing_branch" , #uint256 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_x )
       
     
@@ -4537,9 +4531,6 @@ module ASSERTTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_assert_true_branch(uint256)" ) => 3267411143 )
-      
-    
-    rule  ( selector ( "test_failing_branch(uint256)" ) => 1176678741 )
       
     
     rule  ( selector ( "test_revert_branch(uint256,uint256)" ) => 2349784459 )
@@ -6357,15 +6348,15 @@ module VM-BIN-RUNTIME
     
     syntax VmMethod ::= "createFork" "(" String ":" "string" "," Int ":" "uint256" ")" [symbol(), klabel(method_Vm_createFork_string_uint256)]
     
-    syntax VmMethod ::= "createSelectFork" "(" String ":" "string" ")" [symbol(), klabel(method_Vm_createSelectFork_string)]
-    
     syntax VmMethod ::= "createSelectFork" "(" String ":" "string" "," Int ":" "uint256" ")" [symbol(), klabel(method_Vm_createSelectFork_string_uint256)]
+    
+    syntax VmMethod ::= "createSelectFork" "(" String ":" "string" ")" [symbol(), klabel(method_Vm_createSelectFork_string)]
     
     syntax VmMethod ::= "deal" "(" Int ":" "address" "," Int ":" "uint256" ")" [symbol(), klabel(method_Vm_deal_address_uint256)]
     
-    syntax VmMethod ::= "deriveKey" "(" String ":" "string" "," String ":" "string" "," Int ":" "uint32" ")" [symbol(), klabel(method_Vm_deriveKey_string_string_uint32)]
-    
     syntax VmMethod ::= "deriveKey" "(" String ":" "string" "," Int ":" "uint32" ")" [symbol(), klabel(method_Vm_deriveKey_string_uint32)]
+    
+    syntax VmMethod ::= "deriveKey" "(" String ":" "string" "," String ":" "string" "," Int ":" "uint32" ")" [symbol(), klabel(method_Vm_deriveKey_string_string_uint32)]
     
     syntax VmMethod ::= "envAddress" "(" String ":" "string" ")" [symbol(), klabel(method_Vm_envAddress_string)]
     
@@ -6379,17 +6370,17 @@ module VM-BIN-RUNTIME
     
     syntax VmMethod ::= "envBytes" "(" String ":" "string" "," String ":" "string" ")" [symbol(), klabel(method_Vm_envBytes_string_string)]
     
-    syntax VmMethod ::= "envBytes32" "(" String ":" "string" ")" [symbol(), klabel(method_Vm_envBytes32_string)]
-    
     syntax VmMethod ::= "envBytes32" "(" String ":" "string" "," String ":" "string" ")" [symbol(), klabel(method_Vm_envBytes32_string_string)]
     
-    syntax VmMethod ::= "envInt" "(" String ":" "string" ")" [symbol(), klabel(method_Vm_envInt_string)]
+    syntax VmMethod ::= "envBytes32" "(" String ":" "string" ")" [symbol(), klabel(method_Vm_envBytes32_string)]
     
     syntax VmMethod ::= "envInt" "(" String ":" "string" "," String ":" "string" ")" [symbol(), klabel(method_Vm_envInt_string_string)]
     
-    syntax VmMethod ::= "envString" "(" String ":" "string" ")" [symbol(), klabel(method_Vm_envString_string)]
+    syntax VmMethod ::= "envInt" "(" String ":" "string" ")" [symbol(), klabel(method_Vm_envInt_string)]
     
     syntax VmMethod ::= "envString" "(" String ":" "string" "," String ":" "string" ")" [symbol(), klabel(method_Vm_envString_string_string)]
+    
+    syntax VmMethod ::= "envString" "(" String ":" "string" ")" [symbol(), klabel(method_Vm_envString_string)]
     
     syntax VmMethod ::= "envUint" "(" String ":" "string" ")" [symbol(), klabel(method_Vm_envUint_string)]
     
@@ -6405,11 +6396,11 @@ module VM-BIN-RUNTIME
     
     syntax VmMethod ::= "expectEmit" "(" Int ":" "bool" "," Int ":" "bool" "," Int ":" "bool" "," Int ":" "bool" "," Int ":" "address" ")" [symbol(), klabel(method_Vm_expectEmit_bool_bool_bool_bool_address)]
     
-    syntax VmMethod ::= "expectRevert" "(" ")" [symbol(), klabel(method_Vm_expectRevert_)]
+    syntax VmMethod ::= "expectRevert" "(" Int ":" "bytes4" ")" [symbol(), klabel(method_Vm_expectRevert_bytes4)]
     
     syntax VmMethod ::= "expectRevert" "(" Bytes ":" "bytes" ")" [symbol(), klabel(method_Vm_expectRevert_bytes)]
     
-    syntax VmMethod ::= "expectRevert" "(" Int ":" "bytes4" ")" [symbol(), klabel(method_Vm_expectRevert_bytes4)]
+    syntax VmMethod ::= "expectRevert" "(" ")" [symbol(), klabel(method_Vm_expectRevert_)]
     
     syntax VmMethod ::= "fee" "(" Int ":" "uint256" ")" [symbol(), klabel(method_Vm_fee_uint256)]
     
@@ -6425,13 +6416,13 @@ module VM-BIN-RUNTIME
     
     syntax VmMethod ::= "load" "(" Int ":" "address" "," Int ":" "bytes32" ")" [symbol(), klabel(method_Vm_load_address_bytes32)]
     
-    syntax VmMethod ::= "mockCall" "(" Int ":" "address" "," Bytes ":" "bytes" "," Bytes ":" "bytes" ")" [symbol(), klabel(method_Vm_mockCall_address_bytes_bytes)]
-    
     syntax VmMethod ::= "mockCall" "(" Int ":" "address" "," Int ":" "uint256" "," Bytes ":" "bytes" "," Bytes ":" "bytes" ")" [symbol(), klabel(method_Vm_mockCall_address_uint256_bytes_bytes)]
     
-    syntax VmMethod ::= "prank" "(" Int ":" "address" ")" [symbol(), klabel(method_Vm_prank_address)]
+    syntax VmMethod ::= "mockCall" "(" Int ":" "address" "," Bytes ":" "bytes" "," Bytes ":" "bytes" ")" [symbol(), klabel(method_Vm_mockCall_address_bytes_bytes)]
     
     syntax VmMethod ::= "prank" "(" Int ":" "address" "," Int ":" "address" ")" [symbol(), klabel(method_Vm_prank_address_address)]
+    
+    syntax VmMethod ::= "prank" "(" Int ":" "address" ")" [symbol(), klabel(method_Vm_prank_address)]
     
     syntax VmMethod ::= "readFile" "(" String ":" "string" ")" [symbol(), klabel(method_Vm_readFile_string)]
     
@@ -6447,9 +6438,9 @@ module VM-BIN-RUNTIME
     
     syntax VmMethod ::= "roll" "(" Int ":" "uint256" ")" [symbol(), klabel(method_Vm_roll_uint256)]
     
-    syntax VmMethod ::= "rollFork" "(" Int ":" "uint256" ")" [symbol(), klabel(method_Vm_rollFork_uint256)]
-    
     syntax VmMethod ::= "rollFork" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_Vm_rollFork_uint256_uint256)]
+    
+    syntax VmMethod ::= "rollFork" "(" Int ":" "uint256" ")" [symbol(), klabel(method_Vm_rollFork_uint256)]
     
     syntax VmMethod ::= "rpcUrl" "(" String ":" "string" ")" [symbol(), klabel(method_Vm_rpcUrl_string)]
     
@@ -6481,15 +6472,15 @@ module VM-BIN-RUNTIME
     
     syntax VmMethod ::= "toString" "(" Int ":" "address" ")" [symbol(), klabel(method_Vm_toString_address)]
     
-    syntax VmMethod ::= "toString" "(" Int ":" "bool" ")" [symbol(), klabel(method_Vm_toString_bool)]
+    syntax VmMethod ::= "toString" "(" Int ":" "uint256" ")" [symbol(), klabel(method_Vm_toString_uint256)]
     
     syntax VmMethod ::= "toString" "(" Bytes ":" "bytes" ")" [symbol(), klabel(method_Vm_toString_bytes)]
     
-    syntax VmMethod ::= "toString" "(" Int ":" "bytes32" ")" [symbol(), klabel(method_Vm_toString_bytes32)]
+    syntax VmMethod ::= "toString" "(" Int ":" "bool" ")" [symbol(), klabel(method_Vm_toString_bool)]
     
     syntax VmMethod ::= "toString" "(" Int ":" "int256" ")" [symbol(), klabel(method_Vm_toString_int256)]
     
-    syntax VmMethod ::= "toString" "(" Int ":" "uint256" ")" [symbol(), klabel(method_Vm_toString_uint256)]
+    syntax VmMethod ::= "toString" "(" Int ":" "bytes32" ")" [symbol(), klabel(method_Vm_toString_bytes32)]
     
     syntax VmMethod ::= "warp" "(" Int ":" "uint256" ")" [symbol(), klabel(method_Vm_warp_uint256)]
     
@@ -6540,11 +6531,11 @@ module VM-BIN-RUNTIME
        ensures #rangeUInt ( 256 , V1_ )
       
     
-    rule  ( Vm . createSelectFork ( V0_ : string ) => #abiCallData ( "createSelectFork" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
     rule  ( Vm . createSelectFork ( V0_ : string , V1_ : uint256 ) => #abiCallData ( "createSelectFork" , #string ( V0_ ) , #uint256 ( V1_ ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V1_ )
+      
+    
+    rule  ( Vm . createSelectFork ( V0_ : string ) => #abiCallData ( "createSelectFork" , #string ( V0_ ) , .TypedArgs ) )
       
     
     rule  ( Vm . deal ( V0_ : address , V1_ : uint256 ) => #abiCallData ( "deal" , #address ( V0_ ) , #uint256 ( V1_ ) , .TypedArgs ) )
@@ -6553,12 +6544,12 @@ module VM-BIN-RUNTIME
                ))
       
     
-    rule  ( Vm . deriveKey ( V0_ : string , V1_ : string , V2_ : uint32 ) => #abiCallData ( "deriveKey" , #string ( V0_ ) , #string ( V1_ ) , #uint32 ( V2_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 32 , V2_ )
-      
-    
     rule  ( Vm . deriveKey ( V0_ : string , V1_ : uint32 ) => #abiCallData ( "deriveKey" , #string ( V0_ ) , #uint32 ( V1_ ) , .TypedArgs ) )
        ensures #rangeUInt ( 32 , V1_ )
+      
+    
+    rule  ( Vm . deriveKey ( V0_ : string , V1_ : string , V2_ : uint32 ) => #abiCallData ( "deriveKey" , #string ( V0_ ) , #string ( V1_ ) , #uint32 ( V2_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 32 , V2_ )
       
     
     rule  ( Vm . envAddress ( V0_ : string ) => #abiCallData ( "envAddress" , #string ( V0_ ) , .TypedArgs ) )
@@ -6579,22 +6570,22 @@ module VM-BIN-RUNTIME
     rule  ( Vm . envBytes ( V0_ : string , V1_ : string ) => #abiCallData ( "envBytes" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
       
     
-    rule  ( Vm . envBytes32 ( V0_ : string ) => #abiCallData ( "envBytes32" , #string ( V0_ ) , .TypedArgs ) )
-      
-    
     rule  ( Vm . envBytes32 ( V0_ : string , V1_ : string ) => #abiCallData ( "envBytes32" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
       
     
-    rule  ( Vm . envInt ( V0_ : string ) => #abiCallData ( "envInt" , #string ( V0_ ) , .TypedArgs ) )
+    rule  ( Vm . envBytes32 ( V0_ : string ) => #abiCallData ( "envBytes32" , #string ( V0_ ) , .TypedArgs ) )
       
     
     rule  ( Vm . envInt ( V0_ : string , V1_ : string ) => #abiCallData ( "envInt" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
       
     
-    rule  ( Vm . envString ( V0_ : string ) => #abiCallData ( "envString" , #string ( V0_ ) , .TypedArgs ) )
+    rule  ( Vm . envInt ( V0_ : string ) => #abiCallData ( "envInt" , #string ( V0_ ) , .TypedArgs ) )
       
     
     rule  ( Vm . envString ( V0_ : string , V1_ : string ) => #abiCallData ( "envString" , #string ( V0_ ) , #string ( V1_ ) , .TypedArgs ) )
+      
+    
+    rule  ( Vm . envString ( V0_ : string ) => #abiCallData ( "envString" , #string ( V0_ ) , .TypedArgs ) )
       
     
     rule  ( Vm . envUint ( V0_ : string ) => #abiCallData ( "envUint" , #string ( V0_ ) , .TypedArgs ) )
@@ -6639,15 +6630,15 @@ module VM-BIN-RUNTIME
                )))))
       
     
-    rule  ( Vm . expectRevert ( ) => #abiCallData ( "expectRevert" , .TypedArgs ) )
+    rule  ( Vm . expectRevert ( V0_ : bytes4 ) => #abiCallData ( "expectRevert" , #bytes4 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeBytes ( 4 , V0_ )
       
     
     rule  ( Vm . expectRevert ( V0_ : bytes ) => #abiCallData ( "expectRevert" , #bytes ( V0_ ) , .TypedArgs ) )
        ensures #rangeUInt ( 128 , lengthBytes ( V0_ ) )
       
     
-    rule  ( Vm . expectRevert ( V0_ : bytes4 ) => #abiCallData ( "expectRevert" , #bytes4 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeBytes ( 4 , V0_ )
+    rule  ( Vm . expectRevert ( ) => #abiCallData ( "expectRevert" , .TypedArgs ) )
       
     
     rule  ( Vm . fee ( V0_ : uint256 ) => #abiCallData ( "fee" , #uint256 ( V0_ ) , .TypedArgs ) )
@@ -6674,13 +6665,6 @@ module VM-BIN-RUNTIME
                ))
       
     
-    rule  ( Vm . mockCall ( V0_ : address , V1_ : bytes , V2_ : bytes ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #bytes ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
-       ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 128 , lengthBytes ( V1_ ) )
-       andBool ( #rangeUInt ( 128 , lengthBytes ( V2_ ) )
-               )))
-      
-    
     rule  ( Vm . mockCall ( V0_ : address , V1_ : uint256 , V2_ : bytes , V3_ : bytes ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #uint256 ( V1_ ) , #bytes ( V2_ ) , #bytes ( V3_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
        andBool ( #rangeUInt ( 256 , V1_ )
@@ -6689,14 +6673,21 @@ module VM-BIN-RUNTIME
                ))))
       
     
-    rule  ( Vm . prank ( V0_ : address ) => #abiCallData ( "prank" , #address ( V0_ ) , .TypedArgs ) )
-       ensures #rangeAddress ( V0_ )
+    rule  ( Vm . mockCall ( V0_ : address , V1_ : bytes , V2_ : bytes ) => #abiCallData ( "mockCall" , #address ( V0_ ) , #bytes ( V1_ ) , #bytes ( V2_ ) , .TypedArgs ) )
+       ensures ( #rangeAddress ( V0_ )
+       andBool ( #rangeUInt ( 128 , lengthBytes ( V1_ ) )
+       andBool ( #rangeUInt ( 128 , lengthBytes ( V2_ ) )
+               )))
       
     
     rule  ( Vm . prank ( V0_ : address , V1_ : address ) => #abiCallData ( "prank" , #address ( V0_ ) , #address ( V1_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
        andBool ( #rangeAddress ( V1_ )
                ))
+      
+    
+    rule  ( Vm . prank ( V0_ : address ) => #abiCallData ( "prank" , #address ( V0_ ) , .TypedArgs ) )
+       ensures #rangeAddress ( V0_ )
       
     
     rule  ( Vm . readFile ( V0_ : string ) => #abiCallData ( "readFile" , #string ( V0_ ) , .TypedArgs ) )
@@ -6722,14 +6713,14 @@ module VM-BIN-RUNTIME
        ensures #rangeUInt ( 256 , V0_ )
       
     
-    rule  ( Vm . rollFork ( V0_ : uint256 ) => #abiCallData ( "rollFork" , #uint256 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_ )
-      
-    
     rule  ( Vm . rollFork ( V0_forkId : uint256 , V1_blockNumber : uint256 ) => #abiCallData ( "rollFork" , #uint256 ( V0_forkId ) , #uint256 ( V1_blockNumber ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_forkId )
        andBool ( #rangeUInt ( 256 , V1_blockNumber )
                ))
+      
+    
+    rule  ( Vm . rollFork ( V0_ : uint256 ) => #abiCallData ( "rollFork" , #uint256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
       
     
     rule  ( Vm . rpcUrl ( V0_ : string ) => #abiCallData ( "rpcUrl" , #string ( V0_ ) , .TypedArgs ) )
@@ -6794,23 +6785,23 @@ module VM-BIN-RUNTIME
        ensures #rangeAddress ( V0_ )
       
     
-    rule  ( Vm . toString ( V0_ : bool ) => #abiCallData ( "toString" , #bool ( V0_ ) , .TypedArgs ) )
-       ensures #rangeBool ( V0_ )
+    rule  ( Vm . toString ( V0_ : uint256 ) => #abiCallData ( "toString" , #uint256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
       
     
     rule  ( Vm . toString ( V0_ : bytes ) => #abiCallData ( "toString" , #bytes ( V0_ ) , .TypedArgs ) )
        ensures #rangeUInt ( 128 , lengthBytes ( V0_ ) )
       
     
-    rule  ( Vm . toString ( V0_ : bytes32 ) => #abiCallData ( "toString" , #bytes32 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_ )
+    rule  ( Vm . toString ( V0_ : bool ) => #abiCallData ( "toString" , #bool ( V0_ ) , .TypedArgs ) )
+       ensures #rangeBool ( V0_ )
       
     
     rule  ( Vm . toString ( V0_ : int256 ) => #abiCallData ( "toString" , #int256 ( V0_ ) , .TypedArgs ) )
        ensures #rangeSInt ( 256 , V0_ )
       
     
-    rule  ( Vm . toString ( V0_ : uint256 ) => #abiCallData ( "toString" , #uint256 ( V0_ ) , .TypedArgs ) )
+    rule  ( Vm . toString ( V0_ : bytes32 ) => #abiCallData ( "toString" , #bytes32 ( V0_ ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_ )
       
     
@@ -6860,19 +6851,19 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "createFork(string,uint256)" ) => 1805892139 )
       
     
-    rule  ( selector ( "createSelectFork(string)" ) => 2556952628 )
+    rule  ( selector ( "createSelectFork(string,uint256)" ) => 1911440973 )
       
     
-    rule  ( selector ( "createSelectFork(string,uint256)" ) => 1911440973 )
+    rule  ( selector ( "createSelectFork(string)" ) => 2556952628 )
       
     
     rule  ( selector ( "deal(address,uint256)" ) => 3364511341 )
       
     
-    rule  ( selector ( "deriveKey(string,string,uint32)" ) => 1808477211 )
+    rule  ( selector ( "deriveKey(string,uint32)" ) => 1646872971 )
       
     
-    rule  ( selector ( "deriveKey(string,uint32)" ) => 1646872971 )
+    rule  ( selector ( "deriveKey(string,string,uint32)" ) => 1808477211 )
       
     
     rule  ( selector ( "envAddress(string)" ) => 890066623 )
@@ -6893,22 +6884,22 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "envBytes(string,string)" ) => 3720504603 )
       
     
-    rule  ( selector ( "envBytes32(string)" ) => 2543095874 )
-      
-    
     rule  ( selector ( "envBytes32(string,string)" ) => 1525821889 )
       
     
-    rule  ( selector ( "envInt(string)" ) => 2301234273 )
+    rule  ( selector ( "envBytes32(string)" ) => 2543095874 )
       
     
     rule  ( selector ( "envInt(string,string)" ) => 1108873552 )
       
     
-    rule  ( selector ( "envString(string)" ) => 4168600345 )
+    rule  ( selector ( "envInt(string)" ) => 2301234273 )
       
     
     rule  ( selector ( "envString(string,string)" ) => 347089865 )
+      
+    
+    rule  ( selector ( "envString(string)" ) => 4168600345 )
       
     
     rule  ( selector ( "envUint(string)" ) => 3247934751 )
@@ -6932,13 +6923,13 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "expectEmit(bool,bool,bool,bool,address)" ) => 2176505587 )
       
     
-    rule  ( selector ( "expectRevert()" ) => 4102309908 )
+    rule  ( selector ( "expectRevert(bytes4)" ) => 3273568480 )
       
     
     rule  ( selector ( "expectRevert(bytes)" ) => 4069379763 )
       
     
-    rule  ( selector ( "expectRevert(bytes4)" ) => 3273568480 )
+    rule  ( selector ( "expectRevert()" ) => 4102309908 )
       
     
     rule  ( selector ( "fee(uint256)" ) => 968063664 )
@@ -6962,16 +6953,16 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "load(address,bytes32)" ) => 1719639408 )
       
     
-    rule  ( selector ( "mockCall(address,bytes,bytes)" ) => 3110212580 )
-      
-    
     rule  ( selector ( "mockCall(address,uint256,bytes,bytes)" ) => 2168494993 )
       
     
-    rule  ( selector ( "prank(address)" ) => 3395723175 )
+    rule  ( selector ( "mockCall(address,bytes,bytes)" ) => 3110212580 )
       
     
     rule  ( selector ( "prank(address,address)" ) => 1206193358 )
+      
+    
+    rule  ( selector ( "prank(address)" ) => 3395723175 )
       
     
     rule  ( selector ( "readFile(string)" ) => 1626979089 )
@@ -6995,10 +6986,10 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "roll(uint256)" ) => 528174896 )
       
     
-    rule  ( selector ( "rollFork(uint256)" ) => 3652973473 )
+    rule  ( selector ( "rollFork(uint256,uint256)" ) => 3612115876 )
       
     
-    rule  ( selector ( "rollFork(uint256,uint256)" ) => 3612115876 )
+    rule  ( selector ( "rollFork(uint256)" ) => 3652973473 )
       
     
     rule  ( selector ( "rpcUrl(string)" ) => 2539285737 )
@@ -7046,19 +7037,19 @@ module VM-BIN-RUNTIME
     rule  ( selector ( "toString(address)" ) => 1456103998 )
       
     
-    rule  ( selector ( "toString(bool)" ) => 1910302682 )
+    rule  ( selector ( "toString(uint256)" ) => 1761649582 )
       
     
     rule  ( selector ( "toString(bytes)" ) => 1907020045 )
       
     
-    rule  ( selector ( "toString(bytes32)" ) => 2971277800 )
+    rule  ( selector ( "toString(bool)" ) => 1910302682 )
       
     
     rule  ( selector ( "toString(int256)" ) => 2736964622 )
       
     
-    rule  ( selector ( "toString(uint256)" ) => 1761649582 )
+    rule  ( selector ( "toString(bytes32)" ) => 2971277800 )
       
     
     rule  ( selector ( "warp(uint256)" ) => 3856056066 )
