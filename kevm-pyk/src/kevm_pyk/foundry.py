@@ -497,7 +497,7 @@ class CfgStat(NamedTuple):
     def from_file(path: Path) -> CfgStat:
         check_file_path(path)
         cfg_json = json.loads(path.read_text())
-        cfg_id = cfg_json['proofid']
+        cfg_id = cfg_json['id']
         cfg = KCFG.from_dict(cfg_json)
         total_nodes = len(cfg.nodes)
         frontier_nodes = len(cfg.frontier)
