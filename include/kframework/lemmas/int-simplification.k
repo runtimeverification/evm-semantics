@@ -115,7 +115,13 @@ module INT-SIMPLIFICATION-COMMON
   // max, min
   // ###########################################################################
 
-    rule minInt(A, B) => A requires A <=Int B [simplification]
+    rule [minint-left]: minInt(A, B) => A requires A <=Int B [simplification]
+
+    rule [minint-lt]:  minInt(A, B) <Int C  => true requires A  <Int C  orBool B  <Int C [simplification]
+    rule [minint-gt]:  A  <Int minInt(B, C) => true requires A  <Int B andBool A  <Int C [simplification]
+    rule [minint-geq]: A <=Int minInt(B, C) => true requires A <=Int B andBool A <=Int C [simplification]
+
+    rule [maxint-geq-left]: A <=Int maxInt(B, C) => true requires A <=Int B orBool A <=Int C [simplification]
 
   // ###########################################################################
   // inequality
@@ -137,11 +143,5 @@ module INT-SIMPLIFICATION-COMMON
     rule 0 <=Int A *Int B => true requires 0 <=Int A andBool 0 <=Int B [simplification]
 
     rule A -Int B +Int C <=Int D => false requires D <Int A -Int B andBool 0 <=Int C [simplification]
-
-    rule minInt(A, B) <Int C  => true requires A  <Int C  orBool B  <Int C [simplification]
-    rule A  <Int minInt(B, C) => true requires A  <Int B andBool A  <Int C [simplification]
-    rule A <=Int minInt(B, C) => true requires A <=Int B andBool A <=Int C [simplification]
-
-    rule A <=Int maxInt(B, C) => true requires A <=Int B orBool A <=Int C [simplification]
 
 endmodule
