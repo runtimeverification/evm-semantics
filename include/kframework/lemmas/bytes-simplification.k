@@ -26,11 +26,6 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     // #buf
 
-    // `#buf` is declared as total in `buf.md`
-    // rule [buf-ceil]:
-    //   #Ceil(#buf ( X , _:Int )) => { true #Equals 0 <=Int X }
-    //   [simplification]
-
     rule [buf-inject-k]:
       #buf(W:Int, X:Int) ==K #buf(W:Int, Y:Int) => X ==Int Y
       requires 0 <=Int W
@@ -144,8 +139,8 @@ module BYTES-SIMPLIFICATION [symbolic]
       [simplification, concrete(W)]
 
     rule [range-buf-zero-2]:
-      #range(#buf(_:Int, 0), _:Int, W:Int) => #buf(W, 0)
-      requires 0 <=Int W
+      #range(#buf(W:Int, 0), S1:Int, W1:Int) => #buf(W1, 0)
+      requires 0 <=Int W andBool 0 <=Int S andBool 0 <=Int W
       [simplification]
 
     rule [range-writeRange-before]:
