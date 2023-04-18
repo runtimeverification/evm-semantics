@@ -55,7 +55,7 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule (#range(#buf(32, X), 0, 28) ):Bytes => #buf(28, 0) requires #rangeUInt ( 32 , X ) [simplification]
 
-    rule (#range(#range( BA:Bytes, S0, L0), S1, L1) ) =>#range(BA, S0 +Int S1, minInt(L1, L0 -Int S1)) +Bytes #buf(maxInt(0, L1 -Int (L0 -Int S1)), 0)
+    rule (#range(#range(BA:Bytes, S0, L0), S1, L1)) => #range(BA, S0 +Int S1, minInt(L1, L0 -Int S1)) +Bytes #buf(maxInt(0, L1 -Int (L0 -Int S1)), 0)
       requires 0 <=Int S0 andBool 0 <=Int L0 andBool 0 <=Int S1 andBool 0 <=Int L1 [simplification]
 
     // lookup range in memory
@@ -82,7 +82,7 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [lengthBytes-geq-zero]:     0 <=Int lengthBytes ( _ )                 => true                                                [simplification, smt-lemma]
     rule [lengthBytes-concat]:       lengthBytes(BUF1 +Bytes BUF2)             => lengthBytes(BUF1) +Int lengthBytes(BUF2)            [simplification]
-    rule [lengthBytes-buf]:          lengthBytes(#buf(SIZE, _))                => SIZE                                                [simplification]
+    rule [lengthBytes-buf]:          lengthBytes(#buf(SIZE, _))                => SIZE   requires 0 <=Int SIZE                        [simplification]
     rule [lengthBytes-range]:        lengthBytes(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
     rule [lengthBytes-prtw-leq-len]: lengthBytes(#padRightToWidth(WIDTH, BUF)) => WIDTH  requires lengthBytes(BUF) <=Int WIDTH        [simplification]
 
