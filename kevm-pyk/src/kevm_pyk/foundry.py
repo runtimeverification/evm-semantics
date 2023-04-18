@@ -446,6 +446,7 @@ def foundry_show(
         nodes = list(nodes) + [node.id for node in ag_proof.kcfg.frontier]
     if stuck:
         nodes = list(nodes) + [node.id for node in ag_proof.kcfg.stuck]
+    nodes = unique(nodes)
 
     unstable_cells = [
         '<program>',
