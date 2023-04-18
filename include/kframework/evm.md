@@ -27,9 +27,9 @@ module GAS
                  | Gas ">=Gas" Gas [function, total]
 
    rule I1:Int +Gas I2:Int => I1 +Int I2
-   rule I1:Int +Gas I2:Int => I1 +Int I2
-   rule I1:Int +Gas I2:Int => I1 +Int I2
-   rule I1:Int +Gas I2:Int => I1 +Int I2
+   rule I1:Int -Gas I2:Int => I1 -Int I2
+   rule I1:Int *Gas I2:Int => I1 *Int I2
+   rule I1:Int /Gas I2:Int => I1 /Int I2
 
    rule I1:Int  <Gas I2:Int => I1  <Int I2
    rule I1:Int <=Gas I2:Int => I1 <=Int I2
