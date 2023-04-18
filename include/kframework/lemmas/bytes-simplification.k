@@ -7,8 +7,8 @@ module BYTES-SIMPLIFICATION [symbolic]
   // Buffer Reasoning
   // ########################
 
-    rule BA:Bytes   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                    [simplification, concrete(BA)]
-    rule #buf(32, DATA) ==K BA:Bytes   =>          DATA  ==Int #asInteger(BA) requires lengthBytes(BA) <=Int 32 [simplification, concrete(BA)]
+    rule BA:Bytes       ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                    [simplification, concrete(BA)]
+    rule #buf(32, DATA) ==K BA:Bytes       =>          DATA  ==Int #asInteger(BA) requires lengthBytes(BA) <=Int 32 [simplification, concrete(BA)]
 
     rule [bytes-concat-empty-right]: B:Bytes +Bytes .Bytes  => B [simplification]
     rule [bytes-concat-empty-left]:  .Bytes  +Bytes B:Bytes => B [simplification]
