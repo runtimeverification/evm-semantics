@@ -66,13 +66,13 @@ $ forge build
 *Kompile to generate K specifications:*
 
 ```sh
-$ kevm foundry-kompile out/
+$ kevm foundry-kompile
 ```
 
 *And discharge some specific test as a proof obligation (inside virtual environment):*
 
 ```sh
-$ kevm foundry-prove out/ --test AssertTest.test_assert_true
+$ kevm foundry-prove --test AssertTest.test_assert_true
 ```
 
 Foundry Module for KEVM
@@ -1053,12 +1053,11 @@ Utils
     syntax KItem ::= "#loadAccount" Int [klabel(foundry_loadAccount)]
  // -----------------------------------------------------------------
     rule <k> #loadAccount ACCT => #accessAccounts ACCT ... </k>
+         <account> <acctID> ACCT </acctID> ... </account>
          <activeAccounts> ACCTS:Set </activeAccounts>
       requires ACCT in ACCTS
 
-    rule <k> #loadAccount ACCT => #newAccount ACCT ~> #accessAccounts ACCT ... </k>
-         <activeAccounts> ACCTS:Set </activeAccounts>
-      requires notBool ACCT in ACCTS
+    rule <k> #loadAccount ACCT => #newAccount ACCT ~> #accessAccounts ACCT ... </k> [owise]
 ```
 
 - `#setBalance ACCTID NEWBAL` sets the balance of a given account.
