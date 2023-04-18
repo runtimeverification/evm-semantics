@@ -93,7 +93,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <pc>          0          </pc>                  // \mu_pc
               <gas>         0:Gas      </gas>                 // \mau_g
               <memoryUsed>  0          </memoryUsed>          // \mu_i
-              <callGas>     0          </callGas>
+              <callGas>     0:Gas      </callGas>
 
               <static>    false </static>
               <callDepth> 0     </callDepth>
@@ -2208,8 +2208,8 @@ There are several helpers for calculating gas (most of them also specified in th
 ```k
     syntax Exp     ::= Int
     syntax KResult ::= Int
-    syntax Exp ::= Ccall         ( Schedule , BExp , Int , Int , Int , Bool ) [strict(2)]
-                 | Ccallgas      ( Schedule , BExp , Int , Int , Int , Bool ) [strict(2)]
+    syntax Exp ::= Ccall         ( Schedule , BExp , Int , Gas , Int , Bool ) [strict(2)]
+                 | Ccallgas      ( Schedule , BExp , Int , Gas , Int , Bool ) [strict(2)]
                  | Cselfdestruct ( Schedule , BExp , Int )                    [strict(2)]
  // -------------------------------------------------------------------------------------
    rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
@@ -2221,7 +2221,7 @@ There are several helpers for calculating gas (most of them also specified in th
     rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
           => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
 
-    syntax Int ::= Cgascap        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Cgascap)       ]
+    syntax Int ::= Cgascap        ( Schedule , Int , Gas , Int )         [function, total, smtlib(gas_Cgascap)       ]
                  | Csstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Csstore)       ]
                  | Rsstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Rsstore)       ]
                  | Cextra         ( Schedule , Bool , Int , Bool )       [function, total, smtlib(gas_Cextra)        ]
