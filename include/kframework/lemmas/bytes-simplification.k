@@ -10,11 +10,10 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule BA:Bytes   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                    [simplification, concrete(BA)]
     rule #buf(32, DATA) ==K BA:Bytes   =>          DATA  ==Int #asInteger(BA) requires lengthBytes(BA) <=Int 32 [simplification, concrete(BA)]
 
-    rule WS         +Bytes .Bytes => WS  [simplification]
-    rule .Bytes +Bytes WS         => WS  [simplification]
+    rule [bytes-concat-empty-right]: B:Bytes +Bytes .Bytes  => B [simplification]
+    rule [bytes-concat-empty-left]:  .Bytes  +Bytes B:Bytes => B [simplification]
 
-    // Re-associating bytes concatenation into a canonical right-associative form
-    rule (BA1 +Bytes BA2) +Bytes BA3 => BA1 +Bytes (BA2 +Bytes BA3) [simplification]
+    rule [bytes-concat-assoc-right]: (BA1 +Bytes BA2) +Bytes BA3 => BA1 +Bytes (BA2 +Bytes BA3) [simplification]
 
     // #buf
 
