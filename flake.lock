@@ -1381,7 +1381,7 @@
         "repo": "std",
         "rev": "94a90eedb9cfc115b12ae8f6622d9904788559e4",
         "type": "github"
-      },with ExitSuccess, printing a log message at INFO level.
+      },
       "original": {
         "owner": "divnix",
         "repo": "std",
