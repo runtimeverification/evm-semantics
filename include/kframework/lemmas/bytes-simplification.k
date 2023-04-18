@@ -7,8 +7,6 @@ module BYTES-SIMPLIFICATION [symbolic]
   // Buffer Reasoning
   // ########################
 
-    rule 0 <=Int lengthBytes ( _ ) => true [smt-lemma, simplification]
-
     rule BA:Bytes   ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                    [simplification, concrete(BA)]
     rule #buf(32, DATA) ==K BA:Bytes   =>          DATA  ==Int #asInteger(BA) requires lengthBytes(BA) <=Int 32 [simplification, concrete(BA)]
 
@@ -73,10 +71,11 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     // lengthBytes
 
-    rule lengthBytes(BUF1 +Bytes BUF2)             => lengthBytes(BUF1) +Int lengthBytes(BUF2)            [simplification]
-    rule lengthBytes(#buf(SIZE, _))                => SIZE                                                [simplification]
-    rule lengthBytes(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
-    rule lengthBytes(#padRightToWidth(WIDTH, BUF)) => WIDTH  requires lengthBytes(BUF) <=Int WIDTH        [simplification]
+    rule [lengthBytes-geq-zero]:     0 <=Int lengthBytes ( _ )                 => true                                                [simplification, smt-lemma]
+    rule [lengthBytes-concat]:       lengthBytes(BUF1 +Bytes BUF2)             => lengthBytes(BUF1) +Int lengthBytes(BUF2)            [simplification]
+    rule [lengthBytes-buf]:          lengthBytes(#buf(SIZE, _))                => SIZE                                                [simplification]
+    rule [lengthBytes-range]:        lengthBytes(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+    rule [lengthBytes-prtw-leq-len]: lengthBytes(#padRightToWidth(WIDTH, BUF)) => WIDTH  requires lengthBytes(BUF) <=Int WIDTH        [simplification]
 
     // TODO: custom ==K unification doesn't work in Haskell yet
     // +Bytes unification
