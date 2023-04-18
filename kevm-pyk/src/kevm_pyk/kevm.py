@@ -17,7 +17,8 @@ from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
 
 if TYPE_CHECKING:
-    from typing import Final, Iterable, List, Optional
+    from collections.abc import Iterable
+    from typing import Final
 
     from pyk.cli_utils import BugReport
     from pyk.cterm import CTerm
@@ -41,12 +42,12 @@ class KEVM(KProve, KRun):
     def __init__(
         self,
         definition_dir: Path,
-        main_file: Optional[Path] = None,
-        use_directory: Optional[Path] = None,
+        main_file: Path | None = None,
+        use_directory: Path | None = None,
         kprove_command: str = 'kprove',
         krun_command: str = 'krun',
         extra_unparsing_modules: Iterable[KFlatModule] = (),
-        bug_report: Optional[BugReport] = None,
+        bug_report: BugReport | None = None,
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -76,14 +77,14 @@ class KEVM(KProve, KRun):
         main_file: Path,
         emit_json: bool = True,
         includes: Iterable[str] = (),
-        main_module_name: Optional[str] = None,
-        syntax_module_name: Optional[str] = None,
-        md_selector: Optional[str] = None,
+        main_module_name: str | None = None,
+        syntax_module_name: str | None = None,
+        md_selector: str | None = None,
         debug: bool = False,
         ccopts: Iterable[str] = (),
         llvm_kompile: bool = True,
         optimization: int = 0,
-        llvm_kompile_type: Optional[LLVMKompileType] = None,
+        llvm_kompile_type: LLVMKompileType | None = None,
     ) -> KEVM:
         try:
             kompile(
@@ -156,11 +157,11 @@ class KEVM(KProve, KRun):
         KEVM_CELL: Final = KSort('KevmCell')
 
     @staticmethod
-    def hook_namespaces() -> List[str]:
+    def hook_namespaces() -> list[str]:
         return ['JSON', 'KRYPTO', 'BLOCKCHAIN']
 
     @staticmethod
-    def concrete_rules() -> List[str]:
+    def concrete_rules() -> list[str]:
         return [
             'EVM.allBut64th.pos',
             'EVM.Caddraccess',
@@ -201,7 +202,7 @@ class KEVM(KProve, KRun):
             'SERIALIZATION.#newAddrCreate2',
         ]
 
-    def short_info(self, cterm: CTerm) -> List[str]:
+    def short_info(self, cterm: CTerm) -> list[str]:
         k_cell = self.pretty_print(cterm.cell('K_CELL')).replace('\n', ' ')
         if len(k_cell) > 80:
             k_cell = k_cell[0:80] + ' ...'
@@ -358,7 +359,7 @@ class KEVM(KProve, KRun):
         return KApply('#lookup(_,_)_EVM-TYPES_Int_Map_Int', [map, key])
 
     @staticmethod
-    def abi_calldata(name: str, args: List[KInner]) -> KApply:
+    def abi_calldata(name: str, args: list[KInner]) -> KApply:
         return KApply('#abiCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
 
     @staticmethod
@@ -410,22 +411,22 @@ class KEVM(KProve, KRun):
         return KApply('.Bytes_BYTES-HOOKED_Bytes')
 
     @staticmethod
-    def intlist(ints: List[KInner]) -> KApply:
+    def intlist(ints: list[KInner]) -> KApply:
         res = KApply('.List{"___HASHED-LOCATIONS_IntList_Int_IntList"}_IntList')
         for i in reversed(ints):
             res = KApply('___HASHED-LOCATIONS_IntList_Int_IntList', [i, res])
         return res
 
     @staticmethod
-    def typed_args(args: List[KInner]) -> KApply:
+    def typed_args(args: list[KInner]) -> KApply:
         res = KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
         for i in reversed(args):
             res = KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [i, res])
         return res
 
     @staticmethod
-    def accounts(accts: List[KInner]) -> KInner:
-        wrapped_accounts: List[KInner] = []
+    def accounts(accts: list[KInner]) -> KInner:
+        wrapped_accounts: list[KInner] = []
         for acct in accts:
             if type(acct) is KApply and acct.label.name == '<account>':
                 acct_id = acct.args[0]
