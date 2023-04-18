@@ -498,11 +498,22 @@ class CfgStat(NamedTuple):
         return '\n'.join(lines)
 
 
-def foundry_list(foundry_root: Path) -> List[CfgStat]:
+def foundry_list(foundry_root: Path) -> List[Iterable[str]]:
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     paths = ag_proofs_dir.glob('*.json')
-    return [CfgStat.from_file(path) for path in paths]
+
+    summaries = []
+    for path in paths:
+        _LOGGER.warning(path)
+        check_file_path(path)
+        cfg_json = json.loads(path.read_text())
+        cfg_id = cfg_json['id']
+        ag_proof = AGProof.read_proof(cfg_id, ag_proofs_dir)
+        summaries.append(ag_proof.summary)
+    return summaries
+    
+#      return [CfgStat.from_file(path) for path in paths]
 
 
 def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:

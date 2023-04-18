@@ -156,7 +156,7 @@ def parallel_kcfg_explore(
 
 
 def print_failure_info(_cfg: KCFG, _cfgid: str, kcfg_explore: KCFGExplore) -> list[str]:
-    unique_target = _cfg.get_unique_target()
+#      unique_target = _cfg.get_unique_target()
 
     res_lines: list[str] = []
 
@@ -173,14 +173,17 @@ def print_failure_info(_cfg: KCFG, _cfgid: str, kcfg_explore: KCFGExplore) -> li
         res_lines.append('')
         res_lines.append('Stuck nodes:')
         for node in _cfg.stuck:
-            node_cterm = CTerm.from_kast(kcfg_explore.cterm_simplify(node.cterm))
-            target_cterm = CTerm.from_kast(kcfg_explore.cterm_simplify(unique_target.cterm))
 
-            res_lines.append('')
-            res_lines.append(f'ID: {node.id}:')
-            res_lines.append('Failed subsumption into the target node because:')
-            _, reason = check_implication(kcfg_explore, node_cterm, target_cterm)
-            res_lines += reason.split('\n')
+            res_lines += [kcfg_explore.kprint.pretty_print(constraint) for constraint in _cfg.path_constraints(node.id)]
+
+#              node_cterm = CTerm.from_kast(kcfg_explore.cterm_simplify(node.cterm))
+#              target_cterm = CTerm.from_kast(kcfg_explore.cterm_simplify(unique_target.cterm))
+#  
+#              res_lines.append('')
+#              res_lines.append(f'ID: {node.id}:')
+#              res_lines.append('Failed subsumption into the target node because:')
+#              _, reason = check_implication(kcfg_explore, node_cterm, target_cterm)
+#              res_lines += reason.split('\n')
 
     return res_lines
 

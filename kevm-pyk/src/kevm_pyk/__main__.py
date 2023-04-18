@@ -473,9 +473,13 @@ def exec_foundry_to_dot(foundry_root: Path, test: str, **kwargs: Any) -> None:
 
 def exec_foundry_list(foundry_root: Path, details: bool = True, **kwargs: Any) -> None:
     stats = foundry_list(foundry_root=foundry_root)
-    delim = '\n\n' if details else '\n'
-    output = delim.join(stat.pretty(details=details) for stat in stats)
-    print(output)
+#      delim = '\n\n' if details else '\n'
+    for proof_info in stats:
+        print('\n')
+        for line in proof_info:
+            print(line)
+#      output = delim.join(stat.pretty(details=details) for stat in stats)
+#      print(output)
 
 
 def exec_run(
