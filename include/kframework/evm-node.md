@@ -124,6 +124,11 @@ This minimizes the amount of information which must be stored in the configurati
     If the account does not exist, it does nothing.
 
 ```{.k .node}
+    rule <k> #loadAccount ACCT => . ... </k> <account> <acctID> ACCT </acctID> ... </account>
+
+    rule <k> #loadAccount ACCT => . ... </k>
+      requires notBool #accountExists(ACCT)
+
     rule <k> #loadAccount ACCT => . ... </k>
          <accounts>
            ( .Bag
@@ -137,11 +142,7 @@ This minimizes the amount of information which must be stored in the configurati
              </account>
            )
            ...
-         </accounts>
-      requires notBool #isActiveAccount(ACCT) andBool #accountExists(ACCT)
-
-    rule <k> #loadAccount ACCT => . ... </k>
-      requires #isActiveAccount(ACCT) orBool notBool #accountExists(ACCT)
+         </accounts> [owise]
 ```
 
 -   `#getStorageData` loads the value for a single storage key of a specified account by its address and storage offset.
@@ -263,7 +264,7 @@ This minimizes the amount of information which must be stored in the configurati
          <timestamp> _ => TS </timestamp>
          <touchedAccounts> _ => SetItem(CB) </touchedAccounts>
          <accessedAccounts> ACCESSED => ACCESSED |Set SetItem(ACCTFROM) |Set SetItem(ACCTTO) </accessedAccounts>
-      requires #isActiveAccount(ACCTFROM)
+         <account> <acctID> ACCTFROM </acctID> ... </account>
 ```
 
 -   `makeAccessList` will initialize the `<accessedAccounts>` and `<accessedStorage>` cells for an access list transaction type and leave runVM at the top of the `<k>` cell.

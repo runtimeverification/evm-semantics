@@ -498,18 +498,6 @@ We make sure the given arguments (to be interpreted as addresses) are with 160 b
     rule isAddr2Op(_)           => false [owise]
 ```
 
-```k
-    syntax Bool ::= #isActiveAccount( Int ) [function]
- // --------------------------------------------------
-    rule [[ #isActiveAccount( ACCT ) => true ]]
-           <account>
-               <acctID> ACCT </acctID>
-               ...
-           </account>
-
-    rule #isActiveAccount( _ ) => false [owise]
-```
-
 ### Program Counter
 
 All operators except for `PUSH` and `JUMP*` increment the program counter by 1.
@@ -556,10 +544,6 @@ After executing a transaction, it's necessary to have the effect of the substate
          <touchedAccounts> ACCTS </touchedAccounts>
          <accessedAccounts> _ => .Set </accessedAccounts>
          <accessedStorage> _ => .Map </accessedStorage>
-
-    rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
-         <coinbase> MINER </coinbase>
-      requires notBool #isActiveAccount(MINER)
 
     rule <k> #finalizeTx(false) ... </k>
          <schedule> SCHED </schedule>
@@ -619,6 +603,9 @@ After executing a transaction, it's necessary to have the effect of the substate
            ...
          </message>
 
+    rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
+         <coinbase> MINER </coinbase> [owise]
+
     rule <k> (. => #deleteAccounts(Set2List(ACCTS))) ~> #finalizeTx(true) ... </k>
          <selfDestruct> ACCTS => .Set </selfDestruct>
       requires size(ACCTS) >Int 0
@@ -666,8 +653,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <logsBloom> _ => #bloomFilter(LOGS) </logsBloom>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeBlock ... </k>
-         <coinbase> MINER </coinbase>
-      requires notBool #isActiveAccount(MINER)
+         <coinbase> MINER </coinbase> [owise]
 
     rule <k> #rewardOmmers(.JSONs) => . ... </k>
     rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
@@ -747,8 +733,8 @@ These are just used by the other operators for shuffling local execution state a
                         | "#newExistingAccount" Int
                         | "#newFreshAccount" Int
  // --------------------------------------------
-    rule <k> #newAccount ACCT => #newExistingAccount ACCT ... </k> requires         #isActiveAccount(ACCT)
-    rule <k> #newAccount ACCT => #newFreshAccount ACCT    ... </k> requires notBool #isActiveAccount(ACCT)
+    rule <k> #newAccount ACCT => #newExistingAccount ACCT ... </k> <account> <acctID> ACCT </acctID> ... </account>
+    rule <k> #newAccount ACCT => #newFreshAccount ACCT    ... </k> [owise]
 
     rule <k> #newExistingAccount ACCT => #end EVMC_ACCOUNT_ALREADY_EXISTS ... </k>
          <account>
@@ -786,7 +772,8 @@ These are just used by the other operators for shuffling local execution state a
 
 ```k
     syntax InternalOp ::= "#transferFunds" Int Int Int
- // --------------------------------------------------
+                        | "#transferFundsToNonExistent" Int Int Int
+ // ---------------------------------------------------------------
     rule <k> #transferFunds ACCT ACCT VALUE => . ... </k>
          <account>
            <acctID> ACCT </acctID>
@@ -816,16 +803,16 @@ These are just used by the other operators for shuffling local execution state a
          </account>
       requires VALUE >Int ORIGFROM
 
-    rule <k> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
+    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #transferFundsToNonExistent ACCTFROM ACCTTO VALUE ... </k> [owise]
+
+    rule <k> #transferFundsToNonExistent ACCTFROM ACCTTO VALUE => #newAccount ACCTTO ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
          <schedule> SCHED </schedule>
       requires ACCTFROM =/=K ACCTTO
-       andBool notBool #isActiveAccount(ACCTTO)
        andBool (VALUE >Int 0 orBool notBool Gemptyisnonexistent << SCHED >>)
 
-    rule <k> #transferFunds ACCTFROM ACCTTO 0 => . ... </k>
+    rule <k> #transferFundsToNonExistent ACCTFROM ACCTTO 0 => . ... </k>
          <schedule> SCHED </schedule>
       requires ACCTFROM =/=K ACCTTO
-       andBool notBool #isActiveAccount(ACCTTO)
        andBool Gemptyisnonexistent << SCHED >>
 ```
 
@@ -1147,8 +1134,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
            ...
          </account>
 
-    rule <k> BALANCE ACCT => 0 ~> #push ... </k>
-      requires notBool #isActiveAccount(ACCT)
+    rule <k> BALANCE _ACCT => 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
@@ -1159,8 +1145,8 @@ For now, I assume that they instantiate an empty account and use the empty data.
            ...
          </account>
 
-    rule <k> EXTCODESIZE ACCT => 0 ~> #push ... </k>
-      requires notBool #isActiveAccount(ACCT)
+    rule <k> EXTCODESIZE _ACCT => 0 ~> #push ... </k> [owise]
+
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
@@ -1184,8 +1170,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
          </account>
        requires #accountEmpty(CODE, NONCE, BAL)
 
-    rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k>
-      requires notBool #isActiveAccount(ACCT)
+    rule <k> EXTCODEHASH _ACCT => 0 ~> #push ... </k> [owise]
 ```
 
 TODO: What should happen in the case that the account doesn't exist with `EXTCODECOPY`?
@@ -1202,8 +1187,7 @@ Should we pad zeros (for the copied "program")?
            ...
          </account>
 
-    rule <k> EXTCODECOPY ACCT _MEMSTART _PGMSTART _WIDTH => . ... </k>
-      requires notBool #isActiveAccount(ACCT)
+    rule <k> EXTCODECOPY _ACCT _MEMSTART _PGMSTART _WIDTH => . ... </k> [owise]
 ```
 
 ### Account Storage Operations
@@ -1287,8 +1271,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO ACCTCODE .Bytes VALUE APPVALUE ARGS STATIC
          ...
-         </k>
-      requires notBool #isActiveAccount(ACCTCODE)
+         </k> [owise]
 
     rule <k> #callWithCode ACCTFROM ACCTTO ACCTCODE BYTES VALUE APPVALUE ARGS STATIC
           => #pushCallStack ~> #pushWorldState
@@ -1946,9 +1929,7 @@ Access List Gas
          <schedule> SCHED </schedule>
       requires Ghasaccesslist << SCHED >> andBool #usesAccessList(OP)
 
-    rule <k> #access [ _ , _ ] => . ... </k>
-         <schedule> _ </schedule>
-      [owise]
+    rule <k> #access [ _ , _ ] => . ... </k> <schedule> _ </schedule> [owise]
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode )
  // -----------------------------------------------------
@@ -2281,9 +2262,6 @@ There are several helpers for calculating gas (most of them also specified in th
     syntax KResult ::= Bool
     syntax BExp ::= #accountNonexistent ( Int )
  // -------------------------------------------
-    rule <k> #accountNonexistent(ACCT) => true ... </k>
-      requires notBool #isActiveAccount(ACCT)
-
     rule <k> #accountNonexistent(ACCT) => #accountEmpty(CODE, NONCE, BAL) andBool Gemptyisnonexistent << SCHED >> ... </k>
          <schedule> SCHED </schedule>
          <account>
@@ -2293,6 +2271,8 @@ There are several helpers for calculating gas (most of them also specified in th
            <code>    CODE  </code>
            ...
          </account>
+
+   rule <k> #accountNonexistent(_) => true ... </k> [owise]
 
     syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, klabel(accountEmpty), symbol]
  // --------------------------------------------------------------------------------------------------

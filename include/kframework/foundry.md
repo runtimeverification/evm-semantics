@@ -1052,11 +1052,8 @@ Utils
 ```k
     syntax KItem ::= "#loadAccount" Int [klabel(foundry_loadAccount)]
  // -----------------------------------------------------------------
-    rule <k> #loadAccount ACCT => #accessAccounts ACCT ... </k>
-      requires #isActiveAccount(ACCT)
-
-    rule <k> #loadAccount ACCT => #newAccount ACCT ~> #accessAccounts ACCT ... </k>
-      requires notBool #isActiveAccount(ACCT)
+    rule <k> #loadAccount ACCT => #accessAccounts ACCT ... </k> <account> <acctID> ACCT </acctID> ... </account>
+    rule <k> #loadAccount ACCT => #newAccount ACCT ~> #accessAccounts ACCT ... </k> [owise]
 ```
 
 - `#setBalance ACCTID NEWBAL` sets the balance of a given account.
