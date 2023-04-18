@@ -1,0 +1,329 @@
+AccountParamsTest.testDealConcrete: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AccountParamsTest.testDealSymbolic: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AccountParamsTest.testEtchConcrete: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AccountParamsTest.testFail_GetNonce_true: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AccountParamsTest.testNonceSymbolic: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AccountParamsTest.test_GetNonce_true: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AccountParamsTest.test_Nonce_ExistentAddress: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AccountParamsTest.test_Nonce_NonExistentAddress: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AccountParamsTest.test_getNonce_unknownSymbolic: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AddrTest.test_builtInAddresses: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AddrTest.test_notBuiltinAddress_concrete: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AddrTest.test_notBuiltinAddress_symbolic: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AllowChangesTest.testAllow: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AllowChangesTest.testFailAllowCallsToAddress: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AllowChangesTest.testFailAllowChangesToStorage: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+ArithmeticTest.test_max1: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+ArithmeticTest.test_max2: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AssumeTest.test_assume_staticCall: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AssumeTest.test_assume_true: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AssumeTest.test_multi_assume: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+BlockParamsTest.testBlockNumber: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+BlockParamsTest.testChainId: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+BlockParamsTest.testCoinBase: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+BlockParamsTest.testFee: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+BlockParamsTest.testRoll: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+BlockParamsTest.testWarp: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+CounterTest.testIncrement: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+CounterTest.testSetNumber: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+EmitContractTest.testExpectEmit: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+EmitContractTest.testExpectEmitCheckEmitter: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+EmitContractTest.testExpectEmitDoNotCheckData: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+ExpectCallTest.testExpectRegularCall: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+ExpectCallTest.testExpectStaticCall: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+ExpectRevertTest.testFail_ExpectRevert_failAndSuccess: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+ExpectRevertTest.testFail_expectRevert_empty: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+ExpectRevertTest.testFail_expectRevert_false: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+ExpectRevertTest.testFail_expectRevert_multipleReverts: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+ExpectRevertTest.test_ExpectRevert_increasedDepth: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+ExpectRevertTest.test_expectRevert_internalCall: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+ExpectRevertTest.test_expectRevert_message: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+ExpectRevertTest.test_expectRevert_returnValue: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+ExpectRevertTest.test_expectRevert_true: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+GasTest.testInfiniteGas: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+LabelTest.testLabel: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+LoopsTest.test_sum_10: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+MethodDisambiguateTest.test_method_call: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+PlainPrankTest.testFail_startPrank_internalCall: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+PlainPrankTest.test_prank_zeroAddress_true: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+PlainPrankTest.test_startPrankWithOrigin_true: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+PlainPrankTest.test_startPrank_true: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+PlainPrankTest.test_startPrank_zeroAddress_true: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+PlainPrankTest.test_stopPrank_notExistent: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+AssertTest.test_assert_true_branch: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+StoreTest.testGasLoadColdVM: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+StoreTest.testGasLoadWarmUp: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+StoreTest.testGasStoreColdVM: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+StoreTest.testGasStoreWarmUp: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+StoreTest.testLoadNonExistent: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+StoreTest.testStoreLoad: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+StoreTest.testStoreLoadNonExistent: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+SymbolicStorageTest.testEmptyInitialStorage: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+SymbolicStorageTest.testFail_SymbolicStorage: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+SymbolicStorageTest.testFail_SymbolicStorage1: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+BytesTypeTest.test_bytes32: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+BytesTypeTest.test_bytes4: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
+
+UintTypeTest.test_uint256: passed
+    nodes: 0
+    frontier: 0
+    stuck: 0
