@@ -80,11 +80,11 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     // lengthBytes
 
-    rule [lengthBytes-geq-zero]:     0 <=Int lengthBytes ( _ )                 => true                                                [simplification, smt-lemma]
-    rule [lengthBytes-concat]:       lengthBytes(BUF1 +Bytes BUF2)             => lengthBytes(BUF1) +Int lengthBytes(BUF2)            [simplification]
-    rule [lengthBytes-buf]:          lengthBytes(#buf(SIZE, _))                => SIZE   requires 0 <=Int SIZE                        [simplification]
-    rule [lengthBytes-range]:        lengthBytes(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
-    rule [lengthBytes-prtw-leq-len]: lengthBytes(#padRightToWidth(WIDTH, BUF)) => WIDTH  requires lengthBytes(BUF) <=Int WIDTH        [simplification]
+    rule [lengthBytes-geq-zero]:     0 <=Int lengthBytes ( _ )                 => true                                                             [simplification, smt-lemma]
+    rule [lengthBytes-concat]:       lengthBytes(BUF1 +Bytes BUF2)             => lengthBytes(BUF1) +Int lengthBytes(BUF2)                         [simplification]
+    rule [lengthBytes-buf]:          lengthBytes(#buf(SIZE, I))                => SIZE   requires 0 <=Int SIZE andBool I <Int 2 ^Int (8 *Int SIZE) [simplification]
+    rule [lengthBytes-range]:        lengthBytes(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH              [simplification]
+    rule [lengthBytes-prtw-leq-len]: lengthBytes(#padRightToWidth(WIDTH, BUF)) => WIDTH  requires lengthBytes(BUF) <=Int WIDTH                     [simplification]
 
     // #asWord
 
