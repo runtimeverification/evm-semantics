@@ -22,7 +22,7 @@ from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof import AGProof
-from pyk.utils import shorten_hashes
+from pyk.utils import shorten_hashes, unique
 
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_main_module
