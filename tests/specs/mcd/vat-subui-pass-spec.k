@@ -5,7 +5,7 @@ module VAT-SUBUI-PASS-SPEC
 
     // Vat_subui
     claim [Vat.subui.pass]:
-      <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
+      <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
@@ -23,14 +23,14 @@ module VAT-SUBUI-PASS-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x -Int ABI_y : WS </wordStack>
+            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  =>  ABI_x -Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13304 => 13366 </pc>
             <gas> #gas(VGas) => #if ( ABI_y =/=Int 0 andBool 0 <=Int ABI_y )
-              #then   #gas ( ( VGas +Int -128 ) )
+              #then   #gas ( ( VGas +Int -136 ) )
               #else   #if 0 <=Int ABI_y
-                #then   #gas ( ( VGas +Int -114 ) )
-                #else   #gas ( ( VGas +Int -128 ) )
+                #then   #gas ( ( VGas +Int -122 ) )
+                #else   #gas ( ( VGas +Int -136 ) )
               #fi
             #fi </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>

@@ -4,17 +4,18 @@ import json
 import logging
 import sys
 from argparse import ArgumentParser
-from functools import reduce
+from itertools import chain
 from typing import TYPE_CHECKING
 
 from pyk.cli_utils import file_path
-from pyk.kore.prelude import INT, LBL_MAP, LBL_MAP_ITEM, STOP_MAP, STRING, int_dv, string_dv
-from pyk.kore.syntax import DV, App, SortApp, String, SymbolId
+from pyk.kore.prelude import INT, STRING, int_dv, kore_map, string_dv
+from pyk.kore.syntax import DV, App, RightAssoc, SortApp, String, SymbolId
 
 if TYPE_CHECKING:
     from argparse import Namespace
+    from collections.abc import Iterable
     from pathlib import Path
-    from typing import Any, Final, Optional
+    from typing import Any, Final
 
     from pyk.kore.syntax import Pattern, Sort
 
@@ -42,21 +43,13 @@ def gst_to_kore(gst_data: Any, schedule: str, mode: str, chainid: int) -> App:
         _config_map_entry('MODE', _mode_to_kore(mode), SortApp('SortMode')),
         _config_map_entry('CHAINID', _chainid_to_kore(chainid), INT),
     )
-    return App(
-        'LblinitGeneratedTopCell',
-        (),
-        (reduce(lambda x, y: App(LBL_MAP, (), (x, y)), entries, STOP_MAP),),
-    )
+    return App('LblinitGeneratedTopCell', (), (kore_map(*entries),))
 
 
-def _config_map_entry(var: str, value: Pattern, sort: Sort) -> App:
-    return App(
-        LBL_MAP_ITEM,
-        (),
-        (
-            _sort_injection(SORT_K_CONFIG_VAR, SORT_K_ITEM, _k_config_var(var)),
-            _sort_injection(sort, SORT_K_ITEM, value),
-        ),
+def _config_map_entry(var: str, value: Pattern, sort: Sort) -> tuple[Pattern, Pattern]:
+    return (
+        _sort_injection(SORT_K_CONFIG_VAR, SORT_K_ITEM, _k_config_var(var)),
+        _sort_injection(sort, SORT_K_ITEM, value),
     )
 
 
@@ -68,34 +61,21 @@ def _k_config_var(_data: str) -> DV:
     return DV(SORT_K_CONFIG_VAR, String(f'${_data}'))
 
 
-def _json_to_kore(_data: Any, *, sort: Optional[Sort] = None) -> Pattern:
+def _json_to_kore(_data: Any, *, sort: Sort | None = None) -> Pattern:
     if sort is None:
         sort = SORT_JSON
 
     if isinstance(_data, list):
-        return App(
-            LBL_JSON_LIST,
-            (),
-            (
-                reduce(
-                    lambda x, y: App(LBL_JSONS, (), (y, x)),
-                    reversed([_json_to_kore(elem) for elem in _data]),
-                    STOP_JSONS,
-                ),
-            ),
-        )
+        return App(LBL_JSON_LIST, (), (_jsons(_json_to_kore(elem) for elem in _data),))
 
     if isinstance(_data, dict):
         return App(
             LBL_JSON_OBJECT,
             (),
             (
-                reduce(
-                    lambda x, y: App(LBL_JSONS, (), (App(LBL_JSON_ENTRY, (), (y[0], y[1])), x)),
-                    reversed(
-                        [(_json_to_kore(key, sort=SORT_JSON_KEY), _json_to_kore(value)) for key, value in _data.items()]
-                    ),
-                    STOP_JSONS,
+                _jsons(
+                    App(LBL_JSON_ENTRY, (), (_json_to_kore(key, sort=SORT_JSON_KEY), _json_to_kore(value)))
+                    for key, value in _data.items()
                 ),
             ),
         )
@@ -107,6 +87,10 @@ def _json_to_kore(_data: Any, *, sort: Optional[Sort] = None) -> Pattern:
         return _sort_injection(INT, sort, int_dv(_data))
 
     raise AssertionError()
+
+
+def _jsons(patterns: Iterable[Pattern]) -> RightAssoc:
+    return RightAssoc(App(LBL_JSONS, (), chain(patterns, [STOP_JSONS])))
 
 
 def _schedule_to_kore(schedule: str) -> App:

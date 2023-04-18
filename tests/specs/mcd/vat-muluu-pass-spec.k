@@ -1,10 +1,11 @@
+
 requires "verification.k"
 
-module VAT-MULUI-PASS-SPEC
+module VAT-MULUU-PASS-SPEC
     imports VERIFICATION
 
-    // Vat_mului
-    claim [Vat.mului.pass]:
+    // Vat_muluu
+    claim [Vat.muluu.pass]:
       <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -23,12 +24,12 @@ module VAT-MULUI-PASS-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  => chop(ABI_x *Int ABI_y) : WS </wordStack>
+            <wordStack> ABI_y : ABI_x : JMPTO : WS  => ABI_x *Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
-            <pc> 13175 => 13233 </pc>
+            <pc> 13234 => 13277 </pc>
             <gas> #gas(VGas) => #if ABI_y ==Int 0
-              #then   #gas ( ( VGas +Int -104 ) )
-              #else   #gas ( ( VGas +Int -140 ) )
+              #then   #gas ( ( VGas +Int -62 ) )
+              #else   #gas ( ( VGas +Int -114 ) )
             #fi </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
@@ -67,14 +68,15 @@ module VAT-MULUI-PASS-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
+          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> Nonce_Vat </nonce>
+              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <nonce> _Nonce_Vat => ?_ </nonce>
             </account>
            ...
           </accounts>
@@ -93,15 +95,11 @@ module VAT-MULUI-PASS-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
-       andBool #rangeNonce(Nonce_Vat)
 
        andBool (#rangeUInt(256, ABI_x)
-       andBool (#rangeSInt(256, ABI_y)
+       andBool (#rangeUInt(256, ABI_y)
        andBool ((#sizeWordStack(WS) <=Int 1000)
        andBool (#rangeUInt(256, VMemoryUsed)
-       andBool ((#rangeSInt(256, ABI_x))
-       andBool ((#rangeSInt(256, ABI_x *Int ABI_y))))))))
-
-
+       andBool ((#rangeUInt(256, ABI_x *Int ABI_y)))))))
 
 endmodule

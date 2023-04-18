@@ -8,16 +8,17 @@ from pathos.pools import ProcessPool  # type: ignore
 from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
 from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
 from pyk.kcfg import KCFGExplore
+from pyk.proof import AGProof, AGProver
 from pyk.utils import single
 
 if TYPE_CHECKING:
-    from typing import Callable, Collection, Dict, Final, Iterable, List, Optional, Tuple, TypeVar, Union
+    from collections.abc import Callable, Collection, Iterable
+    from typing import Final, TypeVar
 
     from pyk.cli_utils import BugReport
     from pyk.cterm import CTerm
     from pyk.kast import KInner
     from pyk.kast.outer import KDefinition
-    from pyk.kcfg import KCFG
     from pyk.ktool.kprove import KProve
 
     T1 = TypeVar('T1')
@@ -26,16 +27,16 @@ if TYPE_CHECKING:
 _LOGGER: Final = logging.getLogger(__name__)
 
 
-def get_cfg_for_spec(  # noqa: N802
+def get_ag_proof_for_spec(  # noqa: N802
     kprove: KProve,
     spec_file: Path,
-    save_directory: Optional[Path],
-    spec_module_name: Optional[str] = None,
+    save_directory: Path | None,
+    spec_module_name: str | None = None,
     include_dirs: Iterable[Path] = (),
-    md_selector: Optional[str] = None,
+    md_selector: str | None = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
-) -> Tuple[str, KCFG]:
+) -> AGProof:
     if save_directory is None:
         save_directory = Path('.')
         _LOGGER.info(f'Using default save_directory: {save_directory}')
@@ -52,33 +53,30 @@ def get_cfg_for_spec(  # noqa: N802
         )
     )
 
-    kcfg = KCFGExplore.read_cfg(claim.label, save_directory)
-    if kcfg is None:
-        raise ValueError(f'Could not load CFG {claim} from {save_directory}')
-
-    return claim.label, kcfg
+    ag_proof = AGProof.read_proof(claim.label, save_directory)
+    return ag_proof
 
 
 def parallel_kcfg_explore(
     kprove: KProve,
-    proof_problems: Dict[str, KCFG],
-    save_directory: Optional[Path] = None,
+    proof_problems: dict[str, AGProof],
+    save_directory: Path | None = None,
     max_depth: int = 1000,
-    max_iterations: Optional[int] = None,
+    max_iterations: int | None = None,
     workers: int = 1,
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = False,
-    is_terminal: Optional[Callable[[CTerm], bool]] = None,
-    extract_branches: Optional[Callable[[CTerm], Iterable[KInner]]] = None,
-    bug_report: Optional[BugReport] = None,
-    kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
-    smt_timeout: Optional[int] = None,
-    smt_retry_limit: Optional[int] = None,
-) -> Dict[str, bool]:
-    def _call_rpc(packed_args: Tuple[str, KCFG, int]) -> bool:
-        _cfgid, _cfg, _index = packed_args
+    is_terminal: Callable[[CTerm], bool] | None = None,
+    extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
+    bug_report: BugReport | None = None,
+    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
+) -> dict[str, bool]:
+    def _call_rpc(packed_args: tuple[str, AGProof, int]) -> bool:
+        _cfgid, _ag_proof, _index = packed_args
         terminal_rules = ['EVM.halt']
         if break_every_step:
             terminal_rules.append('EVM.step')
@@ -103,18 +101,16 @@ def parallel_kcfg_explore(
 
         with KCFGExplore(
             kprove,
+            id=_ag_proof.id,
             bug_report=bug_report,
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:
+            ag_prover = AGProver(_ag_proof, is_terminal=is_terminal, extract_branches=extract_branches)
             try:
-                _cfg = kcfg_explore.all_path_reachability_prove(
-                    _cfgid,
-                    _cfg,
-                    cfg_dir=save_directory,
-                    is_terminal=is_terminal,
-                    extract_branches=extract_branches,
+                _cfg = ag_prover.advance_proof(
+                    kcfg_explore,
                     max_iterations=max_iterations,
                     execute_depth=max_depth,
                     terminal_rules=terminal_rules,
@@ -141,8 +137,8 @@ def parallel_kcfg_explore(
 
 def arg_pair_of(
     fst_type: Callable[[str], T1], snd_type: Callable[[str], T2], delim: str = ','
-) -> Callable[[str], Tuple[T1, T2]]:
-    def parse(s: str) -> Tuple[T1, T2]:
+) -> Callable[[str], tuple[T1, T2]]:
+    def parse(s: str) -> tuple[T1, T2]:
         elems = s.split(delim)
         length = len(elems)
         if length != 2:
@@ -152,7 +148,7 @@ def arg_pair_of(
     return parse
 
 
-def byte_offset_to_lines(lines: Iterable[str], byte_start: int, byte_width: int) -> Tuple[List[str], int, int]:
+def byte_offset_to_lines(lines: Iterable[str], byte_start: int, byte_width: int) -> tuple[list[str], int, int]:
     text_lines = []
     line_start = 0
     for line in lines:

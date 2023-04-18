@@ -38,6 +38,15 @@ contract AccountParamsTest is Test {
        assert(nonce == 1);
     }
 
+    function test_getNonce_unknownSymbolic(address addr) public {
+      vm.assume(addr != address(vm));
+      vm.assume(addr != address(this));
+      vm.assume(addr != address(0x3fAB184622Dc19b6109349B94811493BF2a45362));
+      vm.assume(addr != address(0x4e59b44847b379578588920cA78FbF26c0B4956C));
+      uint64 nonce = vm.getNonce(addr);
+      assert(nonce == 0);
+    }
+
     function test_GetNonce_false() public {
        uint64 nonce = vm.getNonce(address(100));
        assertEq(nonce, 10);
