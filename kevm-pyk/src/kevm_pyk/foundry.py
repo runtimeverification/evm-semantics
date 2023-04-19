@@ -464,11 +464,20 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
 def foundry_list(foundry_root: Path) -> list[str]:
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
-    lines: list[str] = []
 
-    proofs = AGProof.read_proofs(ag_proofs_dir)
-    for proof in proofs:
-        lines += proof.summary
+    all_methods = [
+        f'{contract.name}.{method.name}' for contract in foundry.contracts.values() for method in contract.methods
+    ]
+
+    proofs = {}
+    for method in all_methods:
+        if AGProof.proof_exists(method, ag_proofs_dir):
+            ag_proof = AGProof.read_proof(method, ag_proofs_dir)
+            proofs[ag_proof.id] = ag_proof
+
+    lines: list[str] = []
+    for _, proof in sorted(proofs.items()):
+        lines.extend(proof.summary)
 
     return lines
 
@@ -674,7 +683,6 @@ def _init_term(
             [
                 account_cell,  # test contract address
                 Foundry.account_CHEATCODE_ADDRESS(KApply('.Map')),
-                KVariable('ACCOUNTS_INIT'),
             ]
         ),
         'SINGLECALL_CELL': FALSE,
