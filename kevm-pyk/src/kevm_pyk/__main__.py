@@ -473,10 +473,8 @@ def exec_foundry_to_dot(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry_to_dot(foundry_root=foundry_root, test=test)
 
 
-def exec_foundry_list(foundry_root: Path, details: bool = True, **kwargs: Any) -> None:
+def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
     stats = foundry_list(foundry_root=foundry_root)
-    #      delim = '\n\n' if details else '\n'
-    #      output = delim.join(stat.pretty(details=details) for stat in stats)
     print('\n'.join(stats))
 
 
@@ -986,15 +984,11 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_to_dot.add_argument('test', type=str, help='Display the CFG for this test.')
 
-    foundry_list_args = command_parser.add_parser(
+    command_parser.add_parser(
         'foundry-list',
         help='List information about CFGs on disk',
         parents=[shared_args, k_args, foundry_root_arg],
     )
-    foundry_list_args.add_argument(
-        '--details', dest='details', default=True, action='store_true', help='Information about progress on each CFG.'
-    )
-    foundry_list_args.add_argument('--no-details', dest='details', action='store_false', help='Just list the CFGs.')
 
     foundry_view_kcfg_args = command_parser.add_parser(
         'foundry-view-kcfg',
