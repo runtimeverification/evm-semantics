@@ -19,14 +19,14 @@ module INFINITE-GAS
 
     syntax Gas ::= #gas(Int)
 
-    rule #gas(I1) +Gas I2:Int   => #gas(I1 +Int I2) 
-    rule I1:Int   +Gas #gas(I2) => #gas(I1 +Int I2) 
-    rule #gas(I1) -Gas I2:Int   => #gas(I1 -Int I2) 
-    rule I1:Int   -Gas #gas(I2) => #gas(I1 -Int I2) 
-    rule #gas(I1) *Gas I2:Int   => #gas(I1 *Int I2) 
-    rule I1:Int   *Gas #gas(I2) => #gas(I1 *Int I2) 
-    rule #gas(I1) /Gas I2:Int   => #gas(I1 /Int I2)  requires I2 =/=Int 0
-    rule I1:Int   /Gas #gas(I2) => #gas(I1 /Int I2)  requires I2 =/=Int 0
+    rule #gas(G) +Gas G'       => #gas(G +Int G') 
+    rule #gas(G) -Gas G'       => #gas(G -Int G') 
+    rule #gas(G) *Gas G'       => #gas(G *Int G') 
+    rule #gas(G) /Gas G'       => #gas(G /Int G')  requires G' =/=Int 0
+    rule      G  +Gas #gas(G') => #gas(G +Int G') 
+    rule      G  -Gas #gas(G') => #gas(G -Int G') 
+    rule      G  *Gas #gas(G') => #gas(G *Int G') 
+    rule      G  /Gas #gas(G') => #gas(G /Int G')  requires G' =/=Int 0
 
     rule  #gas(_)  <Gas _:Int   => false 
     rule  _:Int    <Gas #gas(_) => true  
@@ -36,5 +36,13 @@ module INFINITE-GAS
     rule  _:Int    >Gas #gas(_) => false 
     rule  #gas(_) >=Gas _:Int   => true  
     rule  _:Int   >=Gas #gas(_) => false 
+
+    rule minGas(#gas(G), #gas(G')) => #gas(minInt(G, G'))
+    // TODO Daniel: Do I need minGas(#gas(G), G') and minGas(G, #gas(G')) ?
+
+    rule #allBut64th(#gas(G)) => #gas(#allBut64th(G))
+    rule Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) requires #rangeUInt(256, GEXTRA) 
+
+    // TODO Daniel: Should I make a isKResult for #gas?
 endmodule
 ```

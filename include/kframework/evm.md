@@ -16,25 +16,30 @@ module GAS
 
    syntax Gas ::= Int
 
-   syntax Gas ::= Gas "+Gas" Gas [function, total]
-                | Gas "-Gas" Gas [function, total]
-                | Gas "*Gas" Gas [function, total]
-                | Gas "/Gas" Gas [function]
+   syntax Gas ::= Gas "*Gas" Gas [function, left, total]
+                | Gas "/Gas" Gas [function, left]
+                > left:
+                  Gas "+Gas" Gas [function, left, total]
+                | Gas "-Gas" Gas [function, left, total]
                
-   syntax Bool ::= Gas  "<Gas" Gas [function, total]
-                 | Gas "<=Gas" Gas [function, total]
-                 | Gas  ">Gas" Gas [function, total]
-                 | Gas ">=Gas" Gas [function, total]
+   syntax Bool ::= Gas  "<Gas" Gas [function, left, total]
+                 | Gas "<=Gas" Gas [function, left, total]
+                 | Gas  ">Gas" Gas [function, left, total]
+                 | Gas ">=Gas" Gas [function, left, total]
 
-   rule I1:Int +Gas I2:Int => I1 +Int I2
-   rule I1:Int -Gas I2:Int => I1 -Int I2
+   syntax Gas ::= "minGas" "(" Gas "," Gas ")" [function, total]
+
    rule I1:Int *Gas I2:Int => I1 *Int I2
    rule I1:Int /Gas I2:Int => I1 /Int I2
+   rule I1:Int +Gas I2:Int => I1 +Int I2
+   rule I1:Int -Gas I2:Int => I1 -Int I2
 
    rule I1:Int  <Gas I2:Int => I1  <Int I2
    rule I1:Int <=Gas I2:Int => I1 <=Int I2
    rule I1:Int  >Gas I2:Int => I1  >Int I2
    rule I1:Int >=Gas I2:Int => I1 >=Int I2
+
+   rule minGas(I1:Int, I2:Int) => minInt(I1, I2)
 endmodule
 
 module EVM
@@ -127,7 +132,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <difficulty>       0      </difficulty>       // I_Hd
               <number>           0      </number>           // I_Hi
               <gasLimit>         0      </gasLimit>         // I_Hl
-              <gasUsed>          0      </gasUsed>          // I_Hg
+              <gasUsed>          0:Gas  </gasUsed>          // I_Hg
               <timestamp>        0      </timestamp>        // I_Hs
               <extraData>        .Bytes </extraData>        // I_Hx
               <mixHash>          0      </mixHash>          // I_Hm
@@ -597,16 +602,18 @@ After executing a transaction, it's necessary to have the effect of the substate
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
          <gas> GAVAIL </gas>
-         <gasUsed> GUSED => GUSED +Int GLIMIT -Int GAVAIL </gasUsed>
+         <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
          <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
            <acctID> ORG </acctID>
+// TODO Daniel: Problem with balance becoming gas if GAVAIL is infinite
            <balance> ORGBAL => ORGBAL +Int GAVAIL *Int GPRICE </balance>
            ...
          </account>
          <account>
            <acctID> MINER </acctID>
+// TODO Daniel: Need to unwrap here too
            <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int (GPRICE -Int BFEE) </balance>
            ...
          </account>
@@ -623,7 +630,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
          <gas> GAVAIL </gas>
-         <gasUsed> GUSED => GUSED +Int GLIMIT -Int GAVAIL </gasUsed>
+         <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
          <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
@@ -982,6 +989,7 @@ These operators make queries about the current execution state.
     syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT" | "BASEFEE"
  // -------------------------------------------------------------------------
     rule <k> PC       => PCOUNT ~> #push ... </k> <pc> PCOUNT </pc>
+// TODO Daniel: After this step is applied proof was blocking   
     rule <k> GAS      => GAVAIL ~> #push ... </k> <gas> GAVAIL </gas>
     rule <k> GASPRICE => GPRICE ~> #push ... </k> <gasPrice> GPRICE </gasPrice>
     rule <k> GASLIMIT => GLIMIT ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
@@ -1453,7 +1461,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax InternalOp ::= "#refund" Exp [strict]
                         | "#setLocalMem" Int Int Bytes
  // --------------------------------------------------
-    rule [refund]: <k> #refund G:Int => . ... </k> <gas> GAVAIL => GAVAIL +Int G </gas>
+    rule [refund]: <k> #refund G:Gas => . ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas>
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
          <localMem> LM => #writeRange(LM, START, #range(WS, 0, minInt(WIDTH, lengthBytes(WS)))) </localMem>
@@ -1887,7 +1895,7 @@ Overall Gas
 
     rule <k> _G:Int ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
     rule <k>  G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Gas                  </gas> requires GAVAIL <Gas G
-    rule <k>  G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> requires GAVAIL >=Gas G
+    rule <k>  G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> requires G <=Gas GAVAIL
 
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [function, total]
@@ -2199,46 +2207,47 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
  // ------------------------------------------
     rule <schedule> SCHED </schedule>
          <k> #allocateCreateGas => . ... </k>
-         <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Int 64      #fi </gas>
+         <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Gas 64      #fi </gas>
          <callGas> _      => #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi </callGas>
 ```
 
 There are several helpers for calculating gas (most of them also specified in the YellowPaper).
 
 ```k
-    syntax Exp     ::= Int
+    syntax Exp     ::= Int | Gas
     syntax KResult ::= Int
     syntax Exp ::= Ccall         ( Schedule , BExp , Int , Gas , Int , Bool ) [strict(2)]
                  | Ccallgas      ( Schedule , BExp , Int , Gas , Int , Bool ) [strict(2)]
                  | Cselfdestruct ( Schedule , BExp , Int )                    [strict(2)]
  // -------------------------------------------------------------------------------------
    rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
-         => Cextra(SCHED, ISEMPTY, VALUE, ISWARM) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) ... </k>
+         => Cextra(SCHED, ISEMPTY, VALUE, ISWARM) +Gas Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) ... </k>
 
-    rule <k> Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
-          => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) +Int #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
+   rule <k> Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
+         => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) +Gas #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
 
-    rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
-          => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
+   rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
+         => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
 
-    syntax Int ::= Cgascap        ( Schedule , Int , Gas , Int )         [function, total, smtlib(gas_Cgascap)       ]
-                 | Csstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Csstore)       ]
-                 | Rsstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Rsstore)       ]
-                 | Cextra         ( Schedule , Bool , Int , Bool )       [function, total, smtlib(gas_Cextra)        ]
-                 | Cnew           ( Schedule , Bool , Int )              [function, total, smtlib(gas_Cnew)          ]
-                 | Cxfer          ( Schedule , Int )                     [function, total, smtlib(gas_Cxfer)         ]
-                 | Cmem           ( Schedule , Int )                     [function, total, smtlib(gas_Cmem), memo    ]
-                 | Caddraccess    ( Schedule , Bool )                    [function, total, smtlib(gas_Caddraccess)   ]
-                 | Cstorageaccess ( Schedule , Bool )                    [function, total, smtlib(gas_Cstorageaccess)]
-                 | Csload         ( Schedule , Bool )                    [function, total, smtlib(gas_Csload)        ]
-                 | Cextcodesize   ( Schedule )                           [function, total, smtlib(gas_Cextcodesize)  ]
-                 | Cextcodecopy   ( Schedule , Int )                     [function, total, smtlib(gas_Cextcodecopy)  ]
-                 | Cextcodehash   ( Schedule )                           [function, total, smtlib(gas_Cextcodehash)  ]
-                 | Cbalance       ( Schedule )                           [function, total, smtlib(gas_Cbalance)      ]
-                 | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [function, total, smtlib(gas_Cmodexp)       ]
+   syntax Gas ::= Cgascap        ( Schedule , Gas , Gas , Int )         [function, total, smtlib(gas_Cgascap)       ]
+   syntax Int ::= Cgascap        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Cgascap)       ]
+                | Csstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Csstore)       ]
+                | Rsstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Rsstore)       ]
+                | Cextra         ( Schedule , Bool , Int , Bool )       [function, total, smtlib(gas_Cextra)        ]
+                | Cnew           ( Schedule , Bool , Int )              [function, total, smtlib(gas_Cnew)          ]
+                | Cxfer          ( Schedule , Int )                     [function, total, smtlib(gas_Cxfer)         ]
+                | Cmem           ( Schedule , Int )                     [function, total, smtlib(gas_Cmem), memo    ]
+                | Caddraccess    ( Schedule , Bool )                    [function, total, smtlib(gas_Caddraccess)   ]
+                | Cstorageaccess ( Schedule , Bool )                    [function, total, smtlib(gas_Cstorageaccess)]
+                | Csload         ( Schedule , Bool )                    [function, total, smtlib(gas_Csload)        ]
+                | Cextcodesize   ( Schedule )                           [function, total, smtlib(gas_Cextcodesize)  ]
+                | Cextcodecopy   ( Schedule , Int )                     [function, total, smtlib(gas_Cextcodecopy)  ]
+                | Cextcodehash   ( Schedule )                           [function, total, smtlib(gas_Cextcodehash)  ]
+                | Cbalance       ( Schedule )                           [function, total, smtlib(gas_Cbalance)      ]
+                | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [function, total, smtlib(gas_Cmodexp)       ]
  // ------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
-         Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
+         Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
       requires 0 <=Int GCAP
 
@@ -2333,6 +2342,8 @@ There are several helpers for calculating gas (most of them also specified in th
  // --------------------------------------------------------------------------------------------------
     rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .Bytes andBool NONCE ==Int 0 andBool BAL ==Int 0
 
+// TODO Daniel: How do these changes interact with smtlib(gas_allBut64th)?
+    syntax Gas ::= #allBut64th ( Gas ) [function, total, smtlib(gas_allBut64th)]
     syntax Int ::= #allBut64th ( Int ) [function, total, smtlib(gas_allBut64th)]
  // ----------------------------------------------------------------------------
     rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
@@ -2350,9 +2361,9 @@ There are several helpers for calculating gas (most of them also specified in th
     rule G0(    _,  _, I, I, R) => R
     rule G0(SCHED, WS, I, J, R) => G0(SCHED, WS, I +Int 1, J, R +Int #if WS[I] ==Int 0 #then Gtxdatazero < SCHED > #else Gtxdatanonzero < SCHED > #fi) [owise]
 
-    syntax Int ::= "G*" "(" Int "," Int "," Int "," Schedule ")" [function]
+    syntax Gas ::= "G*" "(" Gas "," Int "," Int "," Schedule ")" [function]
  // -----------------------------------------------------------------------
-    rule G*(GAVAIL, GLIMIT, REFUND, SCHED) => GAVAIL +Int minInt((GLIMIT -Int GAVAIL) /Int Rmaxquotient < SCHED >, REFUND)
+    rule G*(GAVAIL, GLIMIT, REFUND, SCHED) => GAVAIL +Gas minGas((GLIMIT -Gas GAVAIL) /Gas Rmaxquotient < SCHED >, REFUND)
 
     syntax Int ::= #multComplexity(Int)    [function]
                  | #newMultComplexity(Int) [function]
