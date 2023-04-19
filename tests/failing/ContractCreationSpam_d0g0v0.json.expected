@@ -218,6 +218,25 @@
           <nonce>
             1
           </nonce>
+        </account> <account>
+          <acctID>
+            1167766894475069270441227884904096439843862160299
+          </acctID>
+          <balance>
+            0
+          </balance>
+          <code>
+            b""
+          </code>
+          <storage>
+            .Map
+          </storage>
+          <origStorage>
+            .Map
+          </origStorage>
+          <nonce>
+            0
+          </nonce>
         </account>
       </accounts>
       <txOrder>
