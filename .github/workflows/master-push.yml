@@ -53,7 +53,7 @@ jobs:
             nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework
 
   jammy-package:
-    name: 'Build '
+    name: 'Build Ubuntu Jammy Package'
     runs-on: ubuntu:22.04
     steps:
       - name: 'Check out code'
