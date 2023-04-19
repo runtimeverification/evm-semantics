@@ -486,17 +486,11 @@ tests/foundry/%: KEVM = $(POETRY_RUN) kevm
 foundry_dir  := tests/foundry
 foundry_out := $(foundry_dir)/out
 
-<<<<<<< HEAD
-test-foundry: KEVM_OPTS += --pyk --verbose
-test-foundry: KEVM = $(POETRY_RUN) kevm
-test-foundry: tests/foundry/foundry.k.check tests/foundry/foundry-helper-lemmas.k.check tests/foundry/out/kompiled/foundry.k.prove
-=======
 test-foundry-%: KEVM_OPTS += --pyk --verbose
 test-foundry-%: KEVM = $(POETRY_RUN) kevm
-test-foundry-kompile: tests/foundry/foundry.k.check
+test-foundry-kompile: tests/foundry/foundry.k.check tests/foundry/foundry-helper-lemmas.k.check
 test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
 test-foundry-list: tests/foundry/foundry-list.check
->>>>>>> origin/master
 
 foundry-forge-build: $(foundry_out)
 
