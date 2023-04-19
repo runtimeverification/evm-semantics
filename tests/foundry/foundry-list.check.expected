@@ -1,329 +1,395 @@
-EmitContractTest.testExpectEmit: passed
-    nodes: 0
+AGProof: AccountParamsTest.testDealConcrete
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-SymbolicStorageTest.testEmptyInitialStorage: passed
-    nodes: 0
+AGProof: AccountParamsTest.testDealSymbolic
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-StoreTest.testLoadNonExistent: passed
-    nodes: 0
+AGProof: AccountParamsTest.testEtchConcrete
+    status: ProofStatus.PASSED
+    nodes: 9
     frontier: 0
     stuck: 0
 
-ArithmeticTest.test_max2: passed
-    nodes: 0
+AGProof: AccountParamsTest.testFail_GetNonce_true
+    status: ProofStatus.PASSED
+    nodes: 9
     frontier: 0
     stuck: 0
 
-StoreTest.testGasStoreColdVM: passed
-    nodes: 0
+AGProof: AccountParamsTest.testNonceSymbolic
+    status: ProofStatus.PASSED
+    nodes: 8
     frontier: 0
     stuck: 0
 
-BlockParamsTest.testWarp: passed
-    nodes: 0
+AGProof: AccountParamsTest.test_GetNonce_true
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-StoreTest.testGasStoreWarmUp: passed
-    nodes: 0
+AGProof: AccountParamsTest.test_Nonce_ExistentAddress
+    status: ProofStatus.PASSED
+    nodes: 6
     frontier: 0
     stuck: 0
 
-StoreTest.testGasLoadColdVM: passed
-    nodes: 0
+AGProof: AccountParamsTest.test_Nonce_NonExistentAddress
+    status: ProofStatus.PASSED
+    nodes: 6
     frontier: 0
     stuck: 0
 
-ExpectRevertTest.test_expectRevert_returnValue: passed
-    nodes: 0
+AGProof: AccountParamsTest.test_getNonce_unknownSymbolic
+    status: ProofStatus.PASSED
+    nodes: 9
     frontier: 0
     stuck: 0
 
-SymbolicStorageTest.testFail_SymbolicStorage1: passed
-    nodes: 0
+AGProof: AddrTest.test_builtInAddresses
+    status: ProofStatus.PASSED
+    nodes: 4
     frontier: 0
     stuck: 0
 
-BlockParamsTest.testChainId: passed
-    nodes: 0
+AGProof: AddrTest.test_notBuiltinAddress_concrete
+    status: ProofStatus.PASSED
+    nodes: 4
     frontier: 0
     stuck: 0
 
-ExpectRevertTest.test_expectRevert_message: passed
-    nodes: 0
+AGProof: AddrTest.test_notBuiltinAddress_symbolic
+    status: ProofStatus.PASSED
+    nodes: 7
     frontier: 0
     stuck: 0
 
-ExpectRevertTest.testFail_expectRevert_false: passed
-    nodes: 0
+AGProof: AllowChangesTest.testAllow
+    status: ProofStatus.PASSED
+    nodes: 16
     frontier: 0
     stuck: 0
 
-BlockParamsTest.testCoinBase: passed
-    nodes: 0
+AGProof: AllowChangesTest.testFailAllowCallsToAddress
+    status: ProofStatus.PASSED
+    nodes: 16
     frontier: 0
     stuck: 0
 
-EmitContractTest.testExpectEmitDoNotCheckData: passed
-    nodes: 0
+AGProof: AllowChangesTest.testFailAllowChangesToStorage
+    status: ProofStatus.PASSED
+    nodes: 16
     frontier: 0
     stuck: 0
 
-MethodDisambiguateTest.test_method_call: passed
-    nodes: 0
+AGProof: ArithmeticTest.test_max1
+    status: ProofStatus.PASSED
+    nodes: 7
     frontier: 0
     stuck: 0
 
-AccountParamsTest.test_Nonce_NonExistentAddress: passed
-    nodes: 0
+AGProof: ArithmeticTest.test_max2
+    status: ProofStatus.PASSED
+    nodes: 6
     frontier: 0
     stuck: 0
 
-LabelTest.testLabel: passed
-    nodes: 0
+AGProof: AssertTest.test_assert_true_branch
+    status: ProofStatus.PASSED
+    nodes: 6
     frontier: 0
     stuck: 0
 
-AddrTest.test_builtInAddresses: passed
-    nodes: 0
+AGProof: AssumeTest.test_assume_staticCall
+    status: ProofStatus.PASSED
+    nodes: 6
     frontier: 0
     stuck: 0
 
-ExpectRevertTest.testFail_expectRevert_empty: passed
-    nodes: 0
+AGProof: AssumeTest.test_assume_true
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-ArithmeticTest.test_max1: passed
-    nodes: 0
+AGProof: AssumeTest.test_multi_assume
+    status: ProofStatus.PASSED
+    nodes: 13
     frontier: 0
     stuck: 0
 
-BlockParamsTest.testBlockNumber: passed
-    nodes: 0
+AGProof: BlockParamsTest.testBlockNumber
+    status: ProofStatus.PASSED
+    nodes: 4
     frontier: 0
     stuck: 0
 
-ExpectRevertTest.testFail_ExpectRevert_failAndSuccess: passed
-    nodes: 0
+AGProof: BlockParamsTest.testChainId
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-ExpectRevertTest.test_expectRevert_true: passed
-    nodes: 0
+AGProof: BlockParamsTest.testCoinBase
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-AssumeTest.test_assume_true: passed
-    nodes: 0
+AGProof: BlockParamsTest.testFee
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-StoreTest.testStoreLoad: passed
-    nodes: 0
+AGProof: BlockParamsTest.testRoll
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-AccountParamsTest.testDealSymbolic: passed
-    nodes: 0
+AGProof: BlockParamsTest.testWarp
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-CounterTest.testIncrement: passed
-    nodes: 0
+AGProof: BytesTypeTest.test_bytes32
+    status: ProofStatus.PASSED
+    nodes: 4
     frontier: 0
     stuck: 0
 
-AssumeTest.test_assume_staticCall: passed
-    nodes: 0
+AGProof: BytesTypeTest.test_bytes4
+    status: ProofStatus.PASSED
+    nodes: 4
     frontier: 0
     stuck: 0
 
-AssumeTest.test_multi_assume: passed
-    nodes: 0
+AGProof: CounterTest.testIncrement
+    status: ProofStatus.PASSED
+    nodes: 20
     frontier: 0
     stuck: 0
 
-ExpectCallTest.testExpectRegularCall: passed
-    nodes: 0
+AGProof: CounterTest.testSetNumber
+    status: ProofStatus.PASSED
+    nodes: 20
     frontier: 0
     stuck: 0
 
-UintTypeTest.test_uint256: passed
-    nodes: 0
+AGProof: EmitContractTest.testExpectEmit
+    status: ProofStatus.PASSED
+    nodes: 12
     frontier: 0
     stuck: 0
 
-ExpectRevertTest.test_ExpectRevert_increasedDepth: passed
-    nodes: 0
+AGProof: EmitContractTest.testExpectEmitCheckEmitter
+    status: ProofStatus.PASSED
+    nodes: 12
     frontier: 0
     stuck: 0
 
-PlainPrankTest.test_startPrank_true: passed
-    nodes: 0
+AGProof: EmitContractTest.testExpectEmitDoNotCheckData
+    status: ProofStatus.PASSED
+    nodes: 12
     frontier: 0
     stuck: 0
 
-ExpectCallTest.testExpectStaticCall: passed
-    nodes: 0
+AGProof: ExpectCallTest.testExpectRegularCall
+    status: ProofStatus.PASSED
+    nodes: 13
     frontier: 0
     stuck: 0
 
-AccountParamsTest.testDealConcrete: passed
-    nodes: 0
+AGProof: ExpectCallTest.testExpectStaticCall
+    status: ProofStatus.PASSED
+    nodes: 13
     frontier: 0
     stuck: 0
 
-LoopsTest.test_sum_10: passed
-    nodes: 0
+AGProof: ExpectRevertTest.testFail_ExpectRevert_failAndSuccess
+    status: ProofStatus.PASSED
+    nodes: 12
     frontier: 0
     stuck: 0
 
-GasTest.testInfiniteGas: passed
-    nodes: 0
+AGProof: ExpectRevertTest.testFail_expectRevert_empty
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-BytesTypeTest.test_bytes32: passed
-    nodes: 0
+AGProof: ExpectRevertTest.testFail_expectRevert_false
+    status: ProofStatus.PASSED
+    nodes: 12
     frontier: 0
     stuck: 0
 
-AccountParamsTest.testFail_GetNonce_true: passed
-    nodes: 0
+AGProof: ExpectRevertTest.testFail_expectRevert_multipleReverts
+    status: ProofStatus.PASSED
+    nodes: 16
     frontier: 0
     stuck: 0
 
-ExpectRevertTest.test_expectRevert_internalCall: passed
-    nodes: 0
+AGProof: ExpectRevertTest.test_ExpectRevert_increasedDepth
+    status: ProofStatus.PASSED
+    nodes: 19
     frontier: 0
     stuck: 0
 
-PlainPrankTest.test_stopPrank_notExistent: passed
-    nodes: 0
+AGProof: ExpectRevertTest.test_expectRevert_internalCall
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-AccountParamsTest.test_Nonce_ExistentAddress: passed
-    nodes: 0
+AGProof: ExpectRevertTest.test_expectRevert_message
+    status: ProofStatus.PASSED
+    nodes: 14
     frontier: 0
     stuck: 0
 
-ExpectRevertTest.testFail_expectRevert_multipleReverts: passed
-    nodes: 0
+AGProof: ExpectRevertTest.test_expectRevert_returnValue
+    status: ProofStatus.PASSED
+    nodes: 13
     frontier: 0
     stuck: 0
 
-AllowChangesTest.testFailAllowChangesToStorage: passed
-    nodes: 0
+AGProof: ExpectRevertTest.test_expectRevert_true
+    status: ProofStatus.PASSED
+    nodes: 12
     frontier: 0
     stuck: 0
 
-PlainPrankTest.testFail_startPrank_internalCall: passed
-    nodes: 0
+AGProof: GasTest.testInfiniteGas
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-PlainPrankTest.test_startPrankWithOrigin_true: passed
-    nodes: 0
+AGProof: LabelTest.testLabel
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-CounterTest.testSetNumber: passed
-    nodes: 0
+AGProof: LoopsTest.test_sum_10
+    status: ProofStatus.PASSED
+    nodes: 8
     frontier: 0
     stuck: 0
 
-AllowChangesTest.testFailAllowCallsToAddress: passed
-    nodes: 0
+AGProof: MethodDisambiguateTest.test_method_call
+    status: ProofStatus.PASSED
+    nodes: 4
     frontier: 0
     stuck: 0
 
-BlockParamsTest.testRoll: passed
-    nodes: 0
+AGProof: PlainPrankTest.testFail_startPrank_internalCall
+    status: ProofStatus.PASSED
+    nodes: 6
     frontier: 0
     stuck: 0
 
-AssertTest.test_assert_true_branch: passed
-    nodes: 0
+AGProof: PlainPrankTest.test_prank_zeroAddress_true
+    status: ProofStatus.PASSED
+    nodes: 20
     frontier: 0
     stuck: 0
 
-AccountParamsTest.test_getNonce_unknownSymbolic: passed
-    nodes: 0
+AGProof: PlainPrankTest.test_startPrankWithOrigin_true
+    status: ProofStatus.PASSED
+    nodes: 17
     frontier: 0
     stuck: 0
 
-AddrTest.test_notBuiltinAddress_symbolic: passed
-    nodes: 0
+AGProof: PlainPrankTest.test_startPrank_true
+    status: ProofStatus.PASSED
+    nodes: 17
     frontier: 0
     stuck: 0
 
-StoreTest.testGasLoadWarmUp: passed
-    nodes: 0
+AGProof: PlainPrankTest.test_startPrank_zeroAddress_true
+    status: ProofStatus.PASSED
+    nodes: 17
     frontier: 0
     stuck: 0
 
-StoreTest.testStoreLoadNonExistent: passed
-    nodes: 0
+AGProof: PlainPrankTest.test_stopPrank_notExistent
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-BlockParamsTest.testFee: passed
-    nodes: 0
+AGProof: StoreTest.testGasLoadColdVM
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-SymbolicStorageTest.testFail_SymbolicStorage: passed
-    nodes: 0
+AGProof: StoreTest.testGasLoadWarmUp
+    status: ProofStatus.PASSED
+    nodes: 9
     frontier: 0
     stuck: 0
 
-AllowChangesTest.testAllow: passed
-    nodes: 0
+AGProof: StoreTest.testGasStoreColdVM
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-AccountParamsTest.testEtchConcrete: passed
-    nodes: 0
+AGProof: StoreTest.testGasStoreWarmUp
+    status: ProofStatus.PASSED
+    nodes: 9
     frontier: 0
     stuck: 0
 
-BytesTypeTest.test_bytes4: passed
-    nodes: 0
+AGProof: StoreTest.testLoadNonExistent
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-AddrTest.test_notBuiltinAddress_concrete: passed
-    nodes: 0
+AGProof: StoreTest.testStoreLoad
+    status: ProofStatus.PASSED
+    nodes: 9
     frontier: 0
     stuck: 0
 
-PlainPrankTest.test_startPrank_zeroAddress_true: passed
-    nodes: 0
+AGProof: StoreTest.testStoreLoadNonExistent
+    status: ProofStatus.PASSED
+    nodes: 6
     frontier: 0
     stuck: 0
 
-EmitContractTest.testExpectEmitCheckEmitter: passed
-    nodes: 0
+AGProof: SymbolicStorageTest.testEmptyInitialStorage
+    status: ProofStatus.PASSED
+    nodes: 5
     frontier: 0
     stuck: 0
 
-AccountParamsTest.test_GetNonce_true: passed
-    nodes: 0
+AGProof: SymbolicStorageTest.testFail_SymbolicStorage
+    status: ProofStatus.PASSED
+    nodes: 8
     frontier: 0
     stuck: 0
 
-AccountParamsTest.testNonceSymbolic: passed
-    nodes: 0
+AGProof: SymbolicStorageTest.testFail_SymbolicStorage1
+    status: ProofStatus.PASSED
+    nodes: 11
     frontier: 0
     stuck: 0
 
-PlainPrankTest.test_prank_zeroAddress_true: passed
-    nodes: 0
+AGProof: UintTypeTest.test_uint256
+    status: ProofStatus.PASSED
+    nodes: 4
     frontier: 0
     stuck: 0
