@@ -478,6 +478,9 @@ def foundry_list(foundry_root: Path) -> list[str]:
     lines: list[str] = []
     for _, proof in sorted(proofs.items()):
         lines.extend(proof.summary)
+        lines.append('')
+    if len(lines) > 0:
+        lines = lines[0:-1]
 
     return lines
 
