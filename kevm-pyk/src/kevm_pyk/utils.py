@@ -78,12 +78,13 @@ def parallel_kcfg_explore(
     def _call_rpc(packed_args: tuple[str, AGProof, int]) -> bool:
         _cfgid, _ag_proof, _index = packed_args
         terminal_rules = ['EVM.halt']
+        cut_point_rules = []
         if break_every_step:
-            terminal_rules.append('EVM.step')
+            cut_point_rules.append('EVM.step')
         if break_on_jumpi:
-            terminal_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
+            cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
         if break_on_calls:
-            terminal_rules.extend(
+            cut_point_rules.extend(
                 [
                     'EVM.call',
                     'EVM.callcode',
@@ -114,6 +115,7 @@ def parallel_kcfg_explore(
                     max_iterations=max_iterations,
                     execute_depth=max_depth,
                     terminal_rules=terminal_rules,
+                    cut_point_rules=cut_point_rules,
                     implication_every_block=implication_every_block,
                 )
             except Exception as e:

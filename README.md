@@ -65,17 +65,17 @@ First install the following tools:
 -   [git](https://git-scm.com/)
 -   GNU [Bison](https://www.gnu.org/software/bison/), [Flex](https://github.com/westes/flex), and [Autoconf](http://www.gnu.org/software/autoconf/).
 -   GNU [libmpfr](https://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
--   [Z3](https://github.com/Z3Prover/z3) version 4.8.15
+-   [Z3](https://github.com/Z3Prover/z3) version 4.12.1
 
 #### Installing Z3
 
-KEVM requires Z3 version 4.8.15, which you may need to install from a source build if your package manager supplies a different version.
+KEVM requires Z3 version 4.12.1, which you may need to install from a source build if your package manager supplies a different version.
 To do so, follow the instructions [here](https://github.com/Z3Prover/z3#building-z3-using-make-and-gccclang) after checking out the correct tag in the Z3 repository:
 
 ```sh
 git clone https://github.com/Z3Prover/z3.git
 cd z3
-git checkout z3-4.8.15
+git checkout z3-4.12.1
 python scripts/mk_make.py
 cd build
 make
