@@ -140,7 +140,7 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [range-buf-zero-2]:
       #range(#buf(W:Int, 0), S1:Int, W1:Int) => #buf(W1, 0)
-      requires 0 <=Int W andBool 0 <=Int S andBool 0 <=Int W
+      requires 0 <=Int W andBool 0 <=Int S1 andBool 0 <=Int W
       [simplification]
 
     rule [range-writeRange-before]:
