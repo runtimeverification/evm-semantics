@@ -480,7 +480,7 @@ def exec_foundry_to_dot(foundry_root: Path, test: str, **kwargs: Any) -> None:
 
 
 def exec_foundry_list(foundry_root: Path, details: bool = True, **kwargs: Any) -> None:
-    stats = foundry_list(foundry_root=foundry_root)
+    stats = sorted(foundry_list(foundry_root=foundry_root), key=(lambda stat: stat.cfg_id))
     delim = '\n\n' if details else '\n'
     output = delim.join(stat.pretty(details=details) for stat in stats)
     print(output)

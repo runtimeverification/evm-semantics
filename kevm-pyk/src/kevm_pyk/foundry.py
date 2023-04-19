@@ -484,7 +484,7 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
 
 class CfgStat(NamedTuple):
     path: Path
-    cfg_id: int
+    cfg_id: str
     proven: str
     total_nodes: int
     frontier_nodes: int
