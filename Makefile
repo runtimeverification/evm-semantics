@@ -25,7 +25,7 @@ KEVM         := kevm
 KEVM_LIB_ABS := $(abspath $(KEVM_LIB))
 export KEVM_LIB_ABS
 
-KEVM_VERSION     ?= 1.0.1
+KEVM_VERSION     ?= $(shell cat package/version)
 KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
 
 K_SUBMODULE := $(DEPS_DIR)/k
