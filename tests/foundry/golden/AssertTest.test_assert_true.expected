@@ -22,7 +22,7 @@
 │    statusCode: EVMC_SUCCESS
 │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
-┊  constraint: OMITTED CONSTRAINT
+┊  constraint: true
 ┊  subst: OMITTED SUBST
 └─ OMITTED HASH (target, leaf)
      k: #halt ~> CONTINUATION
@@ -142,7 +142,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      </nonce>
                      ...
                    </account> )
-                   ( ( <account>
+                   ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -176,8 +176,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                        0
                      </nonce>
                      ...
-                   </account> )
-                   _ACCOUNTS_INIT ) )
+                   </account> ) )
                  </accounts>
                  ...
                </network>
@@ -343,7 +342,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      </nonce>
                      ...
                    </account>
-                   ( <account>
+                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -360,8 +359,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                        0
                      </nonce>
                      ...
-                   </account>
-                   _ACCOUNTS_INIT ) )
+                   </account> )
                  </accounts>
                  ...
                </network>

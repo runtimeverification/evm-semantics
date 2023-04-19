@@ -50,7 +50,7 @@
 │    statusCode: EVMC_SUCCESS
 │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
-┊  constraint: OMITTED CONSTRAINT
+┊  constraint: true
 ┊  subst: OMITTED SUBST
 └─ OMITTED HASH (target, leaf)
      k: #halt ~> CONTINUATION
@@ -169,7 +169,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      </nonce>
                      ...
                    </account> )
-                   ( ( <account>
+                   ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -203,8 +203,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                        0
                      </nonce>
                      ...
-                   </account> )
-                   _ACCOUNTS_INIT ) )
+                   </account> ) )
                  </accounts>
                  ...
                </network>
@@ -374,7 +373,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      </nonce>
                      ...
                    </account>
-                   ( <account>
+                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -391,8 +390,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                        0
                      </nonce>
                      ...
-                   </account>
-                   _ACCOUNTS_INIT ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -563,7 +561,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      </nonce>
                      ...
                    </account>
-                   ( <account>
+                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -580,8 +578,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                        0
                      </nonce>
                      ...
-                   </account>
-                   _ACCOUNTS_INIT ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -753,7 +750,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      </nonce>
                      ...
                    </account>
-                   ( <account>
+                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -770,8 +767,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                        0
                      </nonce>
                      ...
-                   </account>
-                   _ACCOUNTS_INIT ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -943,7 +939,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      </nonce>
                      ...
                    </account>
-                   ( <account>
+                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -960,8 +956,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                        0
                      </nonce>
                      ...
-                   </account>
-                   _ACCOUNTS_INIT ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -1130,7 +1125,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      </nonce>
                      ...
                    </account>
-                   ( <account>
+                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -1147,8 +1142,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                        0
                      </nonce>
                      ...
-                   </account>
-                   _ACCOUNTS_INIT ) )
+                   </account> )
                  </accounts>
                  ...
                </network>

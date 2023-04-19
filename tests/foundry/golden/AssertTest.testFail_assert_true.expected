@@ -142,7 +142,7 @@ Node OMITTED HASH:
               </nonce>
               ...
             </account>
-            ( <account>
+            <account>
               <acctID>
                 645326474426547203313410069153905908525362434349
               </acctID>
@@ -159,8 +159,7 @@ Node OMITTED HASH:
                 0
               </nonce>
               ...
-            </account>
-            ACCOUNTS_INIT:AccountCellMap ) )
+            </account> )
           </accounts>
           ...
         </network>
@@ -244,13 +243,7 @@ Node OMITTED HASH:
 #And ( { true #Equals 0 <=Int NUMBER_CELL:Int }
 #And ( { true #Equals CALLER_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
 #And ( { true #Equals ORIGIN_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
-#And ( { true #Equals NUMBER_CELL:Int <=Int 57896044618658097711785492504343953926634992332820282019728792003956564819967 }
-#And ( { false #Equals <acctID>
-  645326474426547203313410069153905908525362434349
-</acctID> in_keys ( ACCOUNTS_INIT:AccountCellMap ) }
-#And { false #Equals <acctID>
-  728815563385977040452943777879061427756277306518
-</acctID> in_keys ( ACCOUNTS_INIT:AccountCellMap ) } ) ) ) ) ) ) ) )
+#And { true #Equals NUMBER_CELL:Int <=Int 57896044618658097711785492504343953926634992332820282019728792003956564819967 } ) ) ) ) ) )
 
 
 
@@ -363,7 +356,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-TRUE
                      </nonce>
                      ...
                    </account> )
-                   ( ( <account>
+                   ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -397,8 +390,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-TRUE
                        0
                      </nonce>
                      ...
-                   </account> )
-                   _ACCOUNTS_INIT ) )
+                   </account> ) )
                  </accounts>
                  ...
                </network>
@@ -564,7 +556,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-TRUE
                      </nonce>
                      ...
                    </account>
-                   ( <account>
+                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -581,8 +573,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-TRUE
                        0
                      </nonce>
                      ...
-                   </account>
-                   _ACCOUNTS_INIT ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
