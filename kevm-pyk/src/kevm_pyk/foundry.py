@@ -442,6 +442,9 @@ def foundry_show(
     node_deltas: Iterable[tuple[str, str]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    omit_unstable_output: bool = False,
+    frontier: bool = False,
+    stuck: bool = False,
 ) -> str:
     contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
@@ -452,6 +455,21 @@ def foundry_show(
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
 
+    if frontier:
+        nodes = list(nodes) + [node.id for node in ag_proof.kcfg.frontier]
+    if stuck:
+        nodes = list(nodes) + [node.id for node in ag_proof.kcfg.stuck]
+    nodes = unique(nodes)
+
+    unstable_cells = [
+        '<program>',
+        '<jumpDests>',
+        '<pc>',
+        '<gas>',
+        '<code>',
+        '<activeAccounts>',
+    ]
+
     kcfg_show = KCFGShow(foundry.kevm)
     res_lines = kcfg_show.show(
         test,
@@ -461,7 +479,10 @@ def foundry_show(
         to_module=to_module,
         minimize=minimize,
         node_printer=_short_info,
+        omit_node_hash=omit_unstable_output,
+        omit_cells=(unstable_cells if omit_unstable_output else []),
     )
+
     return '\n'.join(res_lines)
 
 
