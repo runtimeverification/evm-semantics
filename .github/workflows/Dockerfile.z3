@@ -11,7 +11,7 @@ RUN    apt-get update        \
             git              \
             python3
 
-ARG Z3_VERSION=4.8.15
+ARG Z3_VERSION=4.12.1
 RUN    git clone 'https://github.com/z3prover/z3' --branch=z3-${Z3_VERSION} \
     && cd z3                                                                \
     && python3 scripts/mk_make.py                                           \
