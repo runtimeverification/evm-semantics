@@ -54,7 +54,7 @@ export PLUGIN_FULL_PATH
         test-prove test-failing-prove                                                                                                        \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-smoke \
         test-prove-mcd test-klab-prove                                                                                                       \
-        test-parse test-failure test-foundry test-foundry-forge                                                                              \
+        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-list                                                    \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                           \
         test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean                                                                   \
         media media-pdf metropolis-theme                                                                                                     \
@@ -486,9 +486,11 @@ tests/foundry/%: KEVM = $(POETRY_RUN) kevm
 foundry_dir  := tests/foundry
 foundry_out := $(foundry_dir)/out
 
-test-foundry: KEVM_OPTS += --pyk --verbose
-test-foundry: KEVM = $(POETRY_RUN) kevm
-test-foundry: tests/foundry/foundry.k.check tests/foundry/out/kompiled/foundry.k.prove
+test-foundry-%: KEVM_OPTS += --pyk --verbose
+test-foundry-%: KEVM = $(POETRY_RUN) kevm
+test-foundry-kompile: tests/foundry/foundry.k.check
+test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
+test-foundry-list: tests/foundry/foundry-list.check
 
 foundry-forge-build: $(foundry_out)
 
@@ -498,6 +500,13 @@ foundry-forge-test: foundry-forge-build
 $(foundry_out):
 	rm -rf $@
 	cd $(dir $@) && forge build
+
+tests/foundry/foundry-list.out: tests/foundry/out/kompiled/foundry.k.prove
+	$(KEVM) foundry-list --foundry-project-root $(foundry_dir) > $@
+
+tests/foundry/foundry-list.check: tests/foundry/foundry-list.out
+	grep --invert-match 'path:' $< > $@.stripped
+	$(CHECK) $@.stripped $@.expected
 
 tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
