@@ -6,10 +6,10 @@ import os
 import shutil
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING
 
 import tomlkit
-from pyk.cli_utils import BugReport, check_file_path, ensure_dir_path
+from pyk.cli_utils import BugReport, ensure_dir_path
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
 from pyk.kast.manip import minimize_term
@@ -22,14 +22,15 @@ from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof import AGProof
-from pyk.utils import shorten_hashes
+from pyk.utils import shorten_hashes, unique
 
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_main_module
 from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, parallel_kcfg_explore
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, Final, Iterable, List, Optional, Tuple, Union
+    from collections.abc import Iterable
+    from typing import Any, Final
 
     from pyk.kast import KInner
     from pyk.kcfg.tui import KCFGElem
@@ -39,13 +40,13 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 class Foundry:
     _root: Path
-    _toml: Dict[str, Any]
-    _bug_report: Optional[BugReport]
+    _toml: dict[str, Any]
+    _bug_report: BugReport | None
 
     def __init__(
         self,
         foundry_root: Path,
-        bug_report: Optional[BugReport] = None,
+        bug_report: BugReport | None = None,
     ) -> None:
         self._root = foundry_root
         with (foundry_root / 'foundry.toml').open('rb') as f:
@@ -53,7 +54,7 @@ class Foundry:
         self._bug_report = bug_report
 
     @property
-    def profile(self) -> Dict[str, Any]:
+    def profile(self) -> dict[str, Any]:
         profile_name = os.getenv('FOUNDRY_PROFILE', default='default')
         return self._toml['profile'][profile_name]
 
@@ -75,7 +76,7 @@ class Foundry:
         )
 
     @cached_property
-    def contracts(self) -> Dict[str, Contract]:
+    def contracts(self) -> dict[str, Contract]:
         pattern = '*.sol/*.json'
         paths = self.out.glob(pattern)
         json_paths = [str(path) for path in paths]
@@ -92,13 +93,13 @@ class Foundry:
         return _contracts
 
     @cached_property
-    def contract_ids(self) -> Dict[int, str]:
+    def contract_ids(self) -> dict[int, str]:
         _contract_ids = {}
         for c in self.contracts.values():
             _contract_ids[c.contract_id] = c.name
         return _contract_ids
 
-    def srcmap_data(self, contract_name: str, pc: int) -> Optional[Tuple[Path, int, int]]:
+    def srcmap_data(self, contract_name: str, pc: int) -> tuple[Path, int, int] | None:
         if contract_name not in self.contracts:
             _LOGGER.info(f'Contract not found in Foundry project: {contract_name}')
         contract = self.contracts[contract_name]
@@ -128,7 +129,7 @@ class Foundry:
         suffix_lines = [f'   {l}' for l in lines[end:]]
         return prefix_lines + actual_lines + suffix_lines
 
-    def short_info_for_contract(self, contract_name: str, cterm: CTerm) -> List[str]:
+    def short_info_for_contract(self, contract_name: str, cterm: CTerm) -> list[str]:
         ret_strs = self.kevm.short_info(cterm)
         _pc = cterm.cell('PC_CELL')
         if type(_pc) is KToken and _pc.sort == INT:
@@ -175,17 +176,6 @@ class Foundry:
         return intToken(0x7FA9385BE102AC3EAC297483DD6233D62B3E1496)
 
     @staticmethod
-    def account_TEST_CONTRACT_ADDRESS() -> KApply:  # noqa: N802
-        return KEVM.account_cell(
-            Foundry.address_TEST_CONTRACT(),
-            intToken(0),
-            KVariable('TEST_CODE'),
-            KApply('.Map'),
-            KApply('.Map'),
-            intToken(1),
-        )
-
-    @staticmethod
     def address_CHEATCODE() -> KToken:  # noqa: N802
         return intToken(0x7109709ECFA91A80626FF3989D68F67F5B1DD12D)
 
@@ -207,7 +197,7 @@ def foundry_kompile(
     definition_dir: Path,
     foundry_root: Path,
     includes: Iterable[str],
-    md_selector: Optional[str],
+    md_selector: str | None,
     regen: bool = False,
     rekompile: bool = False,
     requires: Iterable[str] = (),
@@ -229,7 +219,7 @@ def foundry_kompile(
     ensure_dir_path(foundry_requires_dir)
     ensure_dir_path(foundry_llvm_dir)
 
-    requires_paths: Dict[str, str] = {}
+    requires_paths: dict[str, str] = {}
     for r in requires:
         req = Path(r)
         if not req.exists():
@@ -264,7 +254,10 @@ def foundry_kompile(
             fmf.write(kevm.pretty_print(bin_runtime_definition) + '\n')
 
     def kevm_kompile(
-        out_dir: Path, backend: KompileBackend, llvm_kompile_type: Optional[LLVMKompileType] = None
+        out_dir: Path,
+        backend: KompileBackend,
+        llvm_kompile_type: LLVMKompileType | None = None,
+        md_selector: str | None = None,
     ) -> None:
         KEVM.kompile(
             out_dir,
@@ -283,16 +276,21 @@ def foundry_kompile(
 
     if regen or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
-        kevm_kompile(foundry_definition_dir, KompileBackend.HASKELL)
+        kevm_kompile(foundry_definition_dir, KompileBackend.HASKELL, md_selector=md_selector)
         if llvm_library:
             _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
-            kevm_kompile(foundry_llvm_dir, KompileBackend.LLVM, llvm_kompile_type=LLVMKompileType.C)
+            kevm_kompile(
+                foundry_llvm_dir,
+                KompileBackend.LLVM,
+                llvm_kompile_type=LLVMKompileType.C,
+                md_selector=('k & ! symbolic' if md_selector is None else f'{md_selector} & ! symbolic'),
+            )
 
 
 def foundry_prove(
     foundry_root: Path,
     max_depth: int = 1000,
-    max_iterations: Optional[int] = None,
+    max_iterations: int | None = None,
     reinit: bool = False,
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
@@ -303,10 +301,10 @@ def foundry_prove(
     break_on_calls: bool = True,
     implication_every_block: bool = True,
     bug_report: bool = False,
-    kore_rpc_command: Union[str, Iterable[str]] = ('kore-rpc',),
-    smt_timeout: Optional[int] = None,
-    smt_retry_limit: Optional[int] = None,
-) -> Dict[str, bool]:
+    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
+) -> dict[str, bool]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
@@ -332,7 +330,7 @@ def foundry_prove(
         for method in contract.methods
         if f'{contract.name}.{method.name}' not in all_tests
     ]
-    unfound_tests: List[str] = []
+    unfound_tests: list[str] = []
     tests = list(tests)
     if not tests:
         tests = all_tests
@@ -348,11 +346,10 @@ def foundry_prove(
     if unfound_tests:
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
-    ag_proofs: Dict[str, AGProof] = {}
+    ag_proofs: dict[str, AGProof] = {}
     for test in tests:
         if AGProof.proof_exists(test, ag_proofs_dir) and not reinit:
             ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-            assert type(ag_proof) is AGProof
         else:
             _LOGGER.info(f'Initializing KCFG for test: {test}')
             contract_name, method_name = test.split('.')
@@ -375,6 +372,7 @@ def foundry_prove(
             _LOGGER.info(f'Starting KCFGExplore for test: {test}')
             with KCFGExplore(
                 foundry.kevm,
+                id=test,
                 bug_report=br,
                 kore_rpc_command=kore_rpc_command,
                 smt_timeout=smt_timeout,
@@ -386,7 +384,7 @@ def foundry_prove(
 
                 if simplify_init:
                     _LOGGER.info(f'Simplifying KCFG for test: {test}')
-                    kcfg = kcfg_explore.simplify(test, kcfg)
+                    kcfg_explore.simplify(kcfg)
 
             ag_proof = AGProof(test, kcfg, proof_dir=ag_proofs_dir)
 
@@ -417,19 +415,36 @@ def foundry_show(
     foundry_root: Path,
     test: str,
     nodes: Iterable[str] = (),
-    node_deltas: Iterable[Tuple[str, str]] = (),
+    node_deltas: Iterable[tuple[str, str]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    omit_unstable_output: bool = False,
+    frontier: bool = False,
+    stuck: bool = False,
 ) -> str:
     contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
 
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
+
+    if frontier:
+        nodes = list(nodes) + [node.id for node in ag_proof.kcfg.frontier]
+    if stuck:
+        nodes = list(nodes) + [node.id for node in ag_proof.kcfg.stuck]
+    nodes = unique(nodes)
+
+    unstable_cells = [
+        '<program>',
+        '<jumpDests>',
+        '<pc>',
+        '<gas>',
+        '<code>',
+        '<activeAccounts>',
+    ]
 
     kcfg_show = KCFGShow(foundry.kevm)
     res_lines = kcfg_show.show(
@@ -440,7 +455,10 @@ def foundry_show(
         to_module=to_module,
         minimize=minimize,
         node_printer=_short_info,
+        omit_node_hash=omit_unstable_output,
+        omit_cells=(unstable_cells if omit_unstable_output else []),
     )
+
     return '\n'.join(res_lines)
 
 
@@ -449,78 +467,34 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     ag_proofs_dir = foundry.out / 'ag_proofs'
     dump_dir = ag_proofs_dir / 'dump'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     kcfg_show = KCFGShow(foundry.kevm)
     kcfg_show.dump(test, ag_proof.kcfg, dump_dir, dot=True)
 
 
-class CfgStat(NamedTuple):
-    path: Path
-    cfg_id: int
-    proven: str
-    total_nodes: int
-    frontier_nodes: int
-    stuck_nodes: int
-
-    @staticmethod
-    def from_file(path: Path) -> CfgStat:
-        check_file_path(path)
-        cfg_json = json.loads(path.read_text())
-        cfg_id = cfg_json['proofid']
-        cfg = KCFG.from_dict(cfg_json)
-        total_nodes = len(cfg.nodes)
-        frontier_nodes = len(cfg.frontier)
-        stuck_nodes = len(cfg.stuck)
-
-        proven = 'failed'
-        if stuck_nodes == 0:
-            proven = 'pending'
-            if frontier_nodes == 0:
-                proven = 'passed'
-
-        return CfgStat(
-            path=path,
-            cfg_id=cfg_id,
-            proven=proven,
-            total_nodes=total_nodes,
-            frontier_nodes=frontier_nodes,
-            stuck_nodes=stuck_nodes,
-        )
-
-    def pretty(self, *, details: bool = True) -> str:
-        lines = []
-        lines.append(f'{self.cfg_id}: {self.proven}')
-        if details:
-            lines.append(f'    path: {self.path}')
-            lines.append(f'    nodes: {self.total_nodes}')
-            lines.append(f'    frontier: {self.frontier_nodes}')
-            lines.append(f'    stuck: {self.stuck_nodes}')
-        return '\n'.join(lines)
-
-
-def foundry_list(foundry_root: Path) -> List[Iterable[str]]:
+def foundry_list(foundry_root: Path) -> list[str]:
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
-    paths = ag_proofs_dir.glob('*.json')
 
-    summaries = []
-    for path in paths:
-        _LOGGER.warning(path)
-        check_file_path(path)
-        cfg_json = json.loads(path.read_text())
-        cfg_id = cfg_json['id']
-        ag_proof = AGProof.read_proof(cfg_id, ag_proofs_dir)
-        summaries.append(ag_proof.summary)
-    return summaries
-    
-#      return [CfgStat.from_file(path) for path in paths]
+    all_methods = [
+        f'{contract.name}.{method.name}' for contract in foundry.contracts.values() for method in contract.methods
+    ]
+
+    lines: list[str] = []
+    for method in sorted(all_methods):
+        if AGProof.proof_exists(method, ag_proofs_dir):
+            ag_proof = AGProof.read_proof(method, ag_proofs_dir)
+            lines.extend(ag_proof.summary)
+            lines.append('')
+    if len(lines) > 0:
+        lines = lines[0:-1]
+
+    return lines
 
 
 def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     for _node in ag_proof.kcfg.reachable_nodes(node, traverse_covers=True):
         if not ag_proof.kcfg.is_target(_node.id):
             _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
@@ -535,17 +509,16 @@ def foundry_simplify_node(
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
-    smt_timeout: Optional[int] = None,
-    smt_retry_limit: Optional[int] = None,
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
 ) -> str:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     cterm = ag_proof.kcfg.node(node).cterm
     with KCFGExplore(
-        foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
     if replace:
@@ -562,8 +535,8 @@ def foundry_step_node(
     repeat: int = 1,
     depth: int = 1,
     bug_report: bool = False,
-    smt_timeout: Optional[int] = None,
-    smt_retry_limit: Optional[int] = None,
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
 ) -> None:
     if repeat < 1:
         raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
@@ -575,37 +548,33 @@ def foundry_step_node(
 
     ag_proofs_dir = foundry.out / 'ag_proofs'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     with KCFGExplore(
-        foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
         for _i in range(repeat):
-            kcfg, node = kcfg_explore.step(test, ag_proof.kcfg, node, depth=depth)
+            node = kcfg_explore.step(ag_proof.kcfg, node, depth=depth)
             ag_proof.write_proof()
 
 
 def foundry_section_edge(
     foundry_root: Path,
     test: str,
-    edge: Tuple[str, str],
+    edge: tuple[str, str],
     sections: int = 2,
     replace: bool = False,
     bug_report: bool = False,
-    smt_timeout: Optional[int] = None,
-    smt_retry_limit: Optional[int] = None,
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
 ) -> None:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     source_id, target_id = edge
     with KCFGExplore(
-        foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(
-            test, ag_proof.kcfg, source_id=source_id, target_id=target_id, sections=sections
-        )
+        kcfg, _ = kcfg_explore.section_edge(ag_proof.kcfg, source_id=source_id, target_id=target_id, sections=sections)
     ag_proof.write_proof()
 
 
@@ -617,7 +586,7 @@ def _write_cfg(cfg: KCFG, path: Path) -> None:
 def _foundry_to_bin_runtime(
     empty_config: KInner,
     contracts: Iterable[Contract],
-    main_module: Optional[str],
+    main_module: str | None,
     requires: Iterable[str],
     imports: Iterable[str],
 ) -> KDefinition:
@@ -669,8 +638,8 @@ def _init_term(
     empty_config: KInner,
     contract_name: str,
     *,
-    calldata: Optional[KInner] = None,
-    callvalue: Optional[KInner] = None,
+    calldata: KInner | None = None,
+    callvalue: KInner | None = None,
 ) -> KInner:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(
@@ -723,7 +692,6 @@ def _init_term(
             [
                 account_cell,  # test contract address
                 Foundry.account_CHEATCODE_ADDRESS(KApply('.Map')),
-                KVariable('ACCOUNTS_INIT'),
             ]
         ),
         'SINGLECALL_CELL': FALSE,

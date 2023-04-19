@@ -66,13 +66,13 @@ $ forge build
 *Kompile to generate K specifications:*
 
 ```sh
-$ kevm foundry-kompile out/
+$ kevm foundry-kompile
 ```
 
 *And discharge some specific test as a proof obligation (inside virtual environment):*
 
 ```sh
-$ kevm foundry-prove out/ --test AssertTest.test_assert_true
+$ kevm foundry-prove --test AssertTest.test_assert_true
 ```
 
 Foundry Module for KEVM
@@ -861,7 +861,7 @@ function infiniteGas() external;
 Set the remaining gas to an infinite value.
 This is useful for running tests without them running out of gas.
 
-```{.k .bytes}
+```{.k .bytes .symbolic}
     rule [foundry.call.infiniteGas]:
          <k> #call_foundry SELECTOR _ARGS => . ... </k>
          <gas> _ => #gas(?_VGAS) </gas>
@@ -1053,12 +1053,11 @@ Utils
     syntax KItem ::= "#loadAccount" Int [klabel(foundry_loadAccount)]
  // -----------------------------------------------------------------
     rule <k> #loadAccount ACCT => #accessAccounts ACCT ... </k>
+         <account> <acctID> ACCT </acctID> ... </account>
          <activeAccounts> ACCTS:Set </activeAccounts>
       requires ACCT in ACCTS
 
-    rule <k> #loadAccount ACCT => #newAccount ACCT ~> #accessAccounts ACCT ... </k>
-         <activeAccounts> ACCTS:Set </activeAccounts>
-      requires notBool ACCT in ACCTS
+    rule <k> #loadAccount ACCT => #newAccount ACCT ~> #accessAccounts ACCT ... </k> [owise]
 ```
 
 - `#setBalance ACCTID NEWBAL` sets the balance of a given account.
@@ -1145,7 +1144,9 @@ Utils
 
 ```k
      syntax KItem ::= "#setSymbolicStorage" Int [klabel(foundry_setSymbolicStorage)]
- // --------------------------------------------------------------------------------
+```
+
+```{.k .symbolic}
     rule <k> #setSymbolicStorage ACCTID => . ... </k>
          <account>
            <acctID> ACCTID </acctID>
