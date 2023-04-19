@@ -469,16 +469,12 @@ def foundry_list(foundry_root: Path) -> list[str]:
         f'{contract.name}.{method.name}' for contract in foundry.contracts.values() for method in contract.methods
     ]
 
-    proofs = {}
-    for method in all_methods:
+    lines: list[str] = []
+    for method in sorted(all_methods):
         if AGProof.proof_exists(method, ag_proofs_dir):
             ag_proof = AGProof.read_proof(method, ag_proofs_dir)
-            proofs[ag_proof.id] = ag_proof
-
-    lines: list[str] = []
-    for _, proof in sorted(proofs.items()):
-        lines.extend(proof.summary)
-        lines.append('')
+            lines.extend(ag_proof.summary)
+            lines.append('')
     if len(lines) > 0:
         lines = lines[0:-1]
 
