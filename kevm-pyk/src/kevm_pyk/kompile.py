@@ -103,6 +103,7 @@ def kevm_kompile(
     syntax_module: str | None,
     includes: Iterable[str] = (),
     emit_json: bool,
+    read_only: bool = False,
     ccopts: Iterable[str] = (),
     optimization: int = 0,
     llvm_kompile_type: LLVMKompileType | None = None,
@@ -123,6 +124,7 @@ def kevm_kompile(
         md_selector=md_selector,
         hook_namespaces=HOOK_NAMESPACES,
         emit_json=emit_json,
+        read_only=read_only,
     )
 
     kompile: Kompile
