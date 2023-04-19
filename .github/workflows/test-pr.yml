@@ -143,6 +143,8 @@ jobs:
         run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove -j2 FOUNDRY_PAR=12'
       - name: 'Foundry List'
         run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-list -j2'
+      - name: 'Foundry diff tests'
+        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-kcfg-diff -j2 FOUNDRY_PAR=12'
       - name: 'Tear down Docker'
         if: always()
         run: |
