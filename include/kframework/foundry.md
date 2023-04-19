@@ -66,13 +66,13 @@ $ forge build
 *Kompile to generate K specifications:*
 
 ```sh
-$ kevm foundry-kompile out/
+$ kevm foundry-kompile
 ```
 
 *And discharge some specific test as a proof obligation (inside virtual environment):*
 
 ```sh
-$ kevm foundry-prove out/ --test AssertTest.test_assert_true
+$ kevm foundry-prove --test AssertTest.test_assert_true
 ```
 
 Foundry Module for KEVM

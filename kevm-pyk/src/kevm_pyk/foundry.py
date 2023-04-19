@@ -6,10 +6,10 @@ import os
 import shutil
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING
 
 import tomlkit
-from pyk.cli_utils import BugReport, check_file_path, ensure_dir_path
+from pyk.cli_utils import BugReport, ensure_dir_path
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
 from pyk.kast.manip import minimize_term
@@ -174,17 +174,6 @@ class Foundry:
     @staticmethod
     def address_TEST_CONTRACT() -> KToken:  # noqa: N802
         return intToken(0x7FA9385BE102AC3EAC297483DD6233D62B3E1496)
-
-    @staticmethod
-    def account_TEST_CONTRACT_ADDRESS() -> KApply:  # noqa: N802
-        return KEVM.account_cell(
-            Foundry.address_TEST_CONTRACT(),
-            intToken(0),
-            KVariable('TEST_CODE'),
-            KApply('.Map'),
-            KApply('.Map'),
-            intToken(1),
-        )
 
     @staticmethod
     def address_CHEATCODE() -> KToken:  # noqa: N802
@@ -461,55 +450,24 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     kcfg_show.dump(test, ag_proof.kcfg, dump_dir, dot=True)
 
 
-class CfgStat(NamedTuple):
-    path: Path
-    cfg_id: int
-    proven: str
-    total_nodes: int
-    frontier_nodes: int
-    stuck_nodes: int
-
-    @staticmethod
-    def from_file(path: Path) -> CfgStat:
-        check_file_path(path)
-        cfg_json = json.loads(path.read_text())
-        cfg_id = cfg_json['id']
-        cfg = KCFG.from_dict(cfg_json)
-        total_nodes = len(cfg.nodes)
-        frontier_nodes = len(cfg.frontier)
-        stuck_nodes = len(cfg.stuck)
-
-        proven = 'failed'
-        if stuck_nodes == 0:
-            proven = 'pending'
-            if frontier_nodes == 0:
-                proven = 'passed'
-
-        return CfgStat(
-            path=path,
-            cfg_id=cfg_id,
-            proven=proven,
-            total_nodes=total_nodes,
-            frontier_nodes=frontier_nodes,
-            stuck_nodes=stuck_nodes,
-        )
-
-    def pretty(self, *, details: bool = True) -> str:
-        lines = []
-        lines.append(f'{self.cfg_id}: {self.proven}')
-        if details:
-            lines.append(f'    path: {self.path}')
-            lines.append(f'    nodes: {self.total_nodes}')
-            lines.append(f'    frontier: {self.frontier_nodes}')
-            lines.append(f'    stuck: {self.stuck_nodes}')
-        return '\n'.join(lines)
-
-
-def foundry_list(foundry_root: Path) -> list[CfgStat]:
+def foundry_list(foundry_root: Path) -> list[str]:
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
-    paths = ag_proofs_dir.glob('*.json')
-    return [CfgStat.from_file(path) for path in paths]
+
+    all_methods = [
+        f'{contract.name}.{method.name}' for contract in foundry.contracts.values() for method in contract.methods
+    ]
+
+    lines: list[str] = []
+    for method in sorted(all_methods):
+        if AGProof.proof_exists(method, ag_proofs_dir):
+            ag_proof = AGProof.read_proof(method, ag_proofs_dir)
+            lines.extend(ag_proof.summary)
+            lines.append('')
+    if len(lines) > 0:
+        lines = lines[0:-1]
+
+    return lines
 
 
 def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
@@ -702,7 +660,6 @@ def _init_term(
             [
                 account_cell,  # test contract address
                 Foundry.account_CHEATCODE_ADDRESS(KApply('.Map')),
-                KVariable('ACCOUNTS_INIT'),
             ]
         ),
         'SINGLECALL_CELL': FALSE,
