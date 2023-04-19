@@ -52,10 +52,25 @@ jobs:
             drv=$(nix-store --query --deriver ${kevm})
             nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework
 
+  jammy-package:
+    name: 'Build '
+    runs-on: ubuntu:22.04
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.push.head.sha }}
+      - name: 'Set up Docker'
+        uses: ./.github/actions/with-docker
+        with:
+          tag: kevm-package-jammy-${{ github.sha }}
+      - name: 'Build Package'
+        run: docker exec -u user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
+
   dockerhub-image:
     name: 'Publish to Dockerhub'
     runs-on: ubuntu-latest
-    needs: nix-cache
+    needs: [nix-cache, jammy-package]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
