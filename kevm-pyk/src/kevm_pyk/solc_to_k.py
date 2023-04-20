@@ -41,8 +41,10 @@ class Contract:
         arg_types: tuple[str, ...]
         contract_name: str
         payable: bool
+        signature: str
 
         def __init__(self, msig: str, id: int, abi: dict, contract_name: str, sort: KSort) -> None:
+            self.signature = msig
             self.name = abi['name']
             self.id = id
             self.arg_names = tuple([f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])])
@@ -51,11 +53,6 @@ class Contract:
             self.sort = sort
             # TODO: Check that we're handling all state mutability cases
             self.payable = abi['stateMutability'] == 'payable'
-
-        @property
-        def signature(self) -> str:
-            arg_list = ','.join(self.arg_types)
-            return f'{self.name}({arg_list})'
 
         @property
         def klabel(self) -> KLabel:
@@ -156,7 +153,7 @@ class Contract:
             _m = Contract.Method(msig, mid, method, contract_name, self.sort_method)
             _methods.append(_m)
 
-        self.methods = tuple(_methods)
+        self.methods = tuple(sorted(_methods, key=(lambda method: method.signature)))
 
         self.fields = FrozenDict({})
         if 'storageLayout' in self.contract_json and 'storage' in self.contract_json['storageLayout']:

@@ -54,7 +54,6 @@ def get_ag_proof_for_spec(  # noqa: N802
     )
 
     ag_proof = AGProof.read_proof(claim.label, save_directory)
-    assert type(ag_proof) is AGProof
     return ag_proof
 
 
@@ -79,12 +78,13 @@ def parallel_kcfg_explore(
     def _call_rpc(packed_args: tuple[str, AGProof, int]) -> bool:
         _cfgid, _ag_proof, _index = packed_args
         terminal_rules = ['EVM.halt']
+        cut_point_rules = []
         if break_every_step:
-            terminal_rules.append('EVM.step')
+            cut_point_rules.append('EVM.step')
         if break_on_jumpi:
-            terminal_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
+            cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
         if break_on_calls:
-            terminal_rules.extend(
+            cut_point_rules.extend(
                 [
                     'EVM.call',
                     'EVM.callcode',
@@ -102,20 +102,20 @@ def parallel_kcfg_explore(
 
         with KCFGExplore(
             kprove,
+            id=_ag_proof.id,
             bug_report=bug_report,
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:
-            ag_prover = AGProver(_ag_proof)
+            ag_prover = AGProver(_ag_proof, is_terminal=is_terminal, extract_branches=extract_branches)
             try:
                 _cfg = ag_prover.advance_proof(
                     kcfg_explore,
-                    is_terminal=is_terminal,
-                    extract_branches=extract_branches,
                     max_iterations=max_iterations,
                     execute_depth=max_depth,
                     terminal_rules=terminal_rules,
+                    cut_point_rules=cut_point_rules,
                     implication_every_block=implication_every_block,
                 )
             except Exception as e:

@@ -278,6 +278,7 @@ def exec_prove(
     }
     with KCFGExplore(
         kevm,
+        id='initializing',
         bug_report=br,
         kore_rpc_command=kore_rpc_command,
         smt_timeout=smt_timeout,
@@ -292,7 +293,7 @@ def exec_prove(
 
             if simplify_init:
                 _LOGGER.info(f'Simplifying KCFG for claim: {claim}')
-                ag_proof.kcfg = kcfg_explore.simplify(claim, ag_proof.kcfg)
+                kcfg_explore.simplify(ag_proof.kcfg)
 
             _proof_problems[claim] = ag_proof
 
@@ -455,6 +456,9 @@ def exec_foundry_show(
     node_deltas: Iterable[tuple[str, str]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    omit_unstable_output: bool = False,
+    frontier: bool = False,
+    stuck: bool = False,
     **kwargs: Any,
 ) -> None:
     output = foundry_show(
@@ -464,6 +468,9 @@ def exec_foundry_show(
         node_deltas=node_deltas,
         to_module=to_module,
         minimize=minimize,
+        omit_unstable_output=omit_unstable_output,
+        frontier=frontier,
+        stuck=stuck,
     )
     print(output)
 
@@ -472,11 +479,9 @@ def exec_foundry_to_dot(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry_to_dot(foundry_root=foundry_root, test=test)
 
 
-def exec_foundry_list(foundry_root: Path, details: bool = True, **kwargs: Any) -> None:
+def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
     stats = foundry_list(foundry_root=foundry_root)
-    delim = '\n\n' if details else '\n'
-    output = delim.join(stat.pretty(details=details) for stat in stats)
-    print(output)
+    print('\n'.join(stats))
 
 
 def exec_run(
@@ -508,7 +513,6 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     contract_name = test.split('.')[0]
 
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
@@ -978,7 +982,19 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[shared_args, k_args, kcfg_show_args, display_args, foundry_root_arg],
     )
     foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
-
+    foundry_show_args.add_argument(
+        '--omit-unstable-output',
+        dest='omit_unstable_output',
+        default=False,
+        action='store_true',
+        help='Strip output that is likely to change without the contract logic changing',
+    )
+    foundry_show_args.add_argument(
+        '--frontier', dest='frontier', default=False, action='store_true', help='Also display frontier nodes'
+    )
+    foundry_show_args.add_argument(
+        '--stuck', dest='stuck', default=False, action='store_true', help='Also display stuck nodes'
+    )
     foundry_to_dot = command_parser.add_parser(
         'foundry-to-dot',
         help='Dump the given CFG for the test as DOT for visualization.',
@@ -986,15 +1002,11 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_to_dot.add_argument('test', type=str, help='Display the CFG for this test.')
 
-    foundry_list_args = command_parser.add_parser(
+    command_parser.add_parser(
         'foundry-list',
         help='List information about CFGs on disk',
         parents=[shared_args, k_args, foundry_root_arg],
     )
-    foundry_list_args.add_argument(
-        '--details', dest='details', default=True, action='store_true', help='Information about progress on each CFG.'
-    )
-    foundry_list_args.add_argument('--no-details', dest='details', action='store_false', help='Just list the CFGs.')
 
     foundry_view_kcfg_args = command_parser.add_parser(
         'foundry-view-kcfg',

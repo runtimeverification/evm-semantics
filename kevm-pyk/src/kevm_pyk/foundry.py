@@ -6,13 +6,13 @@ import os
 import shutil
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING
 
 import tomlkit
-from pyk.cli_utils import BugReport, check_file_path, ensure_dir_path
+from pyk.cli_utils import BugReport, ensure_dir_path
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import minimize_term
+from pyk.kast.manip import get_cell, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import KompileBackend, LLVMKompileType
@@ -22,7 +22,7 @@ from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof import AGProof
-from pyk.utils import shorten_hashes
+from pyk.utils import shorten_hashes, single, unique
 
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_main_module
@@ -176,17 +176,6 @@ class Foundry:
         return intToken(0x7FA9385BE102AC3EAC297483DD6233D62B3E1496)
 
     @staticmethod
-    def account_TEST_CONTRACT_ADDRESS() -> KApply:  # noqa: N802
-        return KEVM.account_cell(
-            Foundry.address_TEST_CONTRACT(),
-            intToken(0),
-            KVariable('TEST_CODE'),
-            KApply('.Map'),
-            KApply('.Map'),
-            intToken(1),
-        )
-
-    @staticmethod
     def address_CHEATCODE() -> KToken:  # noqa: N802
         return intToken(0x7109709ECFA91A80626FF3989D68F67F5B1DD12D)
 
@@ -264,7 +253,12 @@ def foundry_kompile(
             kevm = KEVM(definition_dir, extra_unparsing_modules=bin_runtime_definition.all_modules)
             fmf.write(kevm.pretty_print(bin_runtime_definition) + '\n')
 
-    def kevm_kompile(out_dir: Path, backend: KompileBackend, llvm_kompile_type: LLVMKompileType | None = None) -> None:
+    def kevm_kompile(
+        out_dir: Path,
+        backend: KompileBackend,
+        llvm_kompile_type: LLVMKompileType | None = None,
+        md_selector: str | None = None,
+    ) -> None:
         KEVM.kompile(
             out_dir,
             backend,
@@ -282,10 +276,15 @@ def foundry_kompile(
 
     if regen or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
-        kevm_kompile(foundry_definition_dir, KompileBackend.HASKELL)
+        kevm_kompile(foundry_definition_dir, KompileBackend.HASKELL, md_selector=md_selector)
         if llvm_library:
             _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
-            kevm_kompile(foundry_llvm_dir, KompileBackend.LLVM, llvm_kompile_type=LLVMKompileType.C)
+            kevm_kompile(
+                foundry_llvm_dir,
+                KompileBackend.LLVM,
+                llvm_kompile_type=LLVMKompileType.C,
+                md_selector=('k & ! symbolic' if md_selector is None else f'{md_selector} & ! symbolic'),
+            )
 
 
 def foundry_prove(
@@ -347,69 +346,92 @@ def foundry_prove(
     if unfound_tests:
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
-    ag_proofs: dict[str, AGProof] = {}
-    for test in tests:
-        if AGProof.proof_exists(test, ag_proofs_dir) and not reinit:
-            ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-            assert type(ag_proof) is AGProof
-        else:
-            _LOGGER.info(f'Initializing KCFG for test: {test}')
-            contract_name, method_name = test.split('.')
-            contract = foundry.contracts[contract_name]
-            method = [m for m in contract.methods if m.name == method_name][0]
-            empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
-            kcfg = _method_to_cfg(empty_config, contract, method)
+    setup_methods: dict[str, str] = {}
+    contracts = unique({test.split('.')[0] for test in tests})
+    for contract_name in contracts:
+        contract = foundry.contracts[contract_name]
+        method = contract.method_by_name('setUp')
+        if method is not None:
+            setup_methods[contract.name] = f'{contract.name}.{method.name}'
 
-            _LOGGER.info(f'Expanding macros in initial state for test: {test}')
-            init_term = kcfg.get_unique_init().cterm.kast
-            init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
-            init_cterm = CTerm.from_kast(init_term)
+    def run_cfg_group(tests: list[str]) -> dict[str, bool]:
+        ag_proofs: dict[str, AGProof] = {}
+        for test in tests:
+            if AGProof.proof_exists(test, ag_proofs_dir) and not reinit:
+                ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+            else:
+                _LOGGER.info(f'Initializing KCFG for test: {test}')
+                contract_name, method_name = test.split('.')
+                contract = foundry.contracts[contract_name]
+                method = [m for m in contract.methods if m.name == method_name][0]
+                empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
 
-            _LOGGER.info(f'Expanding macros in target state for test: {test}')
-            target_term = kcfg.get_unique_target().cterm.kast
-            target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
-            target_cterm = CTerm.from_kast(target_term)
-            kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
+                use_setup = method.name.startswith('test') and contract_name in setup_methods
+                setup_method = None
+                if use_setup:
+                    setup_method = setup_methods[contract_name]
+                    _LOGGER.info(f'Using setup method {setup_method} for test: {test}')
 
-            _LOGGER.info(f'Starting KCFGExplore for test: {test}')
-            with KCFGExplore(
-                foundry.kevm,
-                bug_report=br,
-                kore_rpc_command=kore_rpc_command,
-                smt_timeout=smt_timeout,
-                smt_retry_limit=smt_retry_limit,
-            ) as kcfg_explore:
-                _LOGGER.info(f'Computing definedness constraint for test: {test}')
-                init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
-                kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
+                kcfg = _method_to_cfg(empty_config, contract, method, ag_proofs_dir, init_state=setup_method)
 
-                if simplify_init:
-                    _LOGGER.info(f'Simplifying KCFG for test: {test}')
-                    kcfg = kcfg_explore.simplify(test, kcfg)
+                _LOGGER.info(f'Expanding macros in initial state for test: {test}')
+                init_term = kcfg.get_unique_init().cterm.kast
+                init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
+                init_cterm = CTerm.from_kast(init_term)
 
-            ag_proof = AGProof(test, kcfg, proof_dir=ag_proofs_dir)
+                _LOGGER.info(f'Expanding macros in target state for test: {test}')
+                target_term = kcfg.get_unique_target().cterm.kast
+                target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
+                target_cterm = CTerm.from_kast(target_term)
+                kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
 
-        ag_proof.write_proof()
-        ag_proofs[test] = ag_proof
+                _LOGGER.info(f'Starting KCFGExplore for test: {test}')
+                with KCFGExplore(
+                    foundry.kevm,
+                    bug_report=br,
+                    kore_rpc_command=kore_rpc_command,
+                    smt_timeout=smt_timeout,
+                    smt_retry_limit=smt_retry_limit,
+                ) as kcfg_explore:
+                    _LOGGER.info(f'Computing definedness constraint for test: {test}')
+                    init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
+                    kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
 
-    return parallel_kcfg_explore(
-        foundry.kevm,
-        ag_proofs,
-        save_directory=ag_proofs_dir,
-        max_depth=max_depth,
-        max_iterations=max_iterations,
-        workers=workers,
-        break_every_step=break_every_step,
-        break_on_jumpi=break_on_jumpi,
-        break_on_calls=break_on_calls,
-        implication_every_block=implication_every_block,
-        is_terminal=KEVM.is_terminal,
-        extract_branches=KEVM.extract_branches,
-        bug_report=br,
-        kore_rpc_command=kore_rpc_command,
-        smt_timeout=smt_timeout,
-        smt_retry_limit=smt_retry_limit,
-    )
+                    if simplify_init:
+                        _LOGGER.info(f'Simplifying KCFG for test: {test}')
+                        kcfg_explore.simplify(kcfg)
+                ag_proof = AGProof(test, kcfg, proof_dir=ag_proofs_dir)
+
+            ag_proof.write_proof()
+            ag_proofs[test] = ag_proof
+
+        return parallel_kcfg_explore(
+            foundry.kevm,
+            ag_proofs,
+            save_directory=ag_proofs_dir,
+            max_depth=max_depth,
+            max_iterations=max_iterations,
+            workers=workers,
+            break_every_step=break_every_step,
+            break_on_jumpi=break_on_jumpi,
+            break_on_calls=break_on_calls,
+            implication_every_block=implication_every_block,
+            is_terminal=KEVM.is_terminal,
+            extract_branches=KEVM.extract_branches,
+            bug_report=br,
+            kore_rpc_command=kore_rpc_command,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
+        )
+
+    _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
+    results = run_cfg_group(list(setup_methods.values()))
+    failed = [setup_cfg for setup_cfg, passed in results.items() if not passed]
+    if failed:
+        raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
+
+    _LOGGER.info(f'Running test functions in parallel: {tests}')
+    return run_cfg_group(tests)
 
 
 def foundry_show(
@@ -419,16 +441,33 @@ def foundry_show(
     node_deltas: Iterable[tuple[str, str]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    omit_unstable_output: bool = False,
+    frontier: bool = False,
+    stuck: bool = False,
 ) -> str:
     contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
 
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
+
+    if frontier:
+        nodes = list(nodes) + [node.id for node in ag_proof.kcfg.frontier]
+    if stuck:
+        nodes = list(nodes) + [node.id for node in ag_proof.kcfg.stuck]
+    nodes = unique(nodes)
+
+    unstable_cells = [
+        '<program>',
+        '<jumpDests>',
+        '<pc>',
+        '<gas>',
+        '<code>',
+        '<activeAccounts>',
+    ]
 
     kcfg_show = KCFGShow(foundry.kevm)
     res_lines = kcfg_show.show(
@@ -439,7 +478,10 @@ def foundry_show(
         to_module=to_module,
         minimize=minimize,
         node_printer=_short_info,
+        omit_node_hash=omit_unstable_output,
+        omit_cells=(unstable_cells if omit_unstable_output else []),
     )
+
     return '\n'.join(res_lines)
 
 
@@ -448,67 +490,34 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     ag_proofs_dir = foundry.out / 'ag_proofs'
     dump_dir = ag_proofs_dir / 'dump'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     kcfg_show = KCFGShow(foundry.kevm)
     kcfg_show.dump(test, ag_proof.kcfg, dump_dir, dot=True)
 
 
-class CfgStat(NamedTuple):
-    path: Path
-    cfg_id: int
-    proven: str
-    total_nodes: int
-    frontier_nodes: int
-    stuck_nodes: int
-
-    @staticmethod
-    def from_file(path: Path) -> CfgStat:
-        check_file_path(path)
-        cfg_json = json.loads(path.read_text())
-        cfg_id = cfg_json['proofid']
-        cfg = KCFG.from_dict(cfg_json)
-        total_nodes = len(cfg.nodes)
-        frontier_nodes = len(cfg.frontier)
-        stuck_nodes = len(cfg.stuck)
-
-        proven = 'failed'
-        if stuck_nodes == 0:
-            proven = 'pending'
-            if frontier_nodes == 0:
-                proven = 'passed'
-
-        return CfgStat(
-            path=path,
-            cfg_id=cfg_id,
-            proven=proven,
-            total_nodes=total_nodes,
-            frontier_nodes=frontier_nodes,
-            stuck_nodes=stuck_nodes,
-        )
-
-    def pretty(self, *, details: bool = True) -> str:
-        lines = []
-        lines.append(f'{self.cfg_id}: {self.proven}')
-        if details:
-            lines.append(f'    path: {self.path}')
-            lines.append(f'    nodes: {self.total_nodes}')
-            lines.append(f'    frontier: {self.frontier_nodes}')
-            lines.append(f'    stuck: {self.stuck_nodes}')
-        return '\n'.join(lines)
-
-
-def foundry_list(foundry_root: Path) -> list[CfgStat]:
+def foundry_list(foundry_root: Path) -> list[str]:
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
-    paths = ag_proofs_dir.glob('*.json')
-    return [CfgStat.from_file(path) for path in paths]
+
+    all_methods = [
+        f'{contract.name}.{method.name}' for contract in foundry.contracts.values() for method in contract.methods
+    ]
+
+    lines: list[str] = []
+    for method in sorted(all_methods):
+        if AGProof.proof_exists(method, ag_proofs_dir):
+            ag_proof = AGProof.read_proof(method, ag_proofs_dir)
+            lines.extend(ag_proof.summary)
+            lines.append('')
+    if len(lines) > 0:
+        lines = lines[0:-1]
+
+    return lines
 
 
 def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     for _node in ag_proof.kcfg.reachable_nodes(node, traverse_covers=True):
         if not ag_proof.kcfg.is_target(_node.id):
             _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
@@ -530,10 +539,9 @@ def foundry_simplify_node(
     foundry = Foundry(foundry_root, bug_report=br)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     cterm = ag_proof.kcfg.node(node).cterm
     with KCFGExplore(
-        foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
         new_term = kcfg_explore.cterm_simplify(cterm)
     if replace:
@@ -563,12 +571,11 @@ def foundry_step_node(
 
     ag_proofs_dir = foundry.out / 'ag_proofs'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     with KCFGExplore(
-        foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
         for _i in range(repeat):
-            kcfg, node = kcfg_explore.step(test, ag_proof.kcfg, node, depth=depth)
+            node = kcfg_explore.step(ag_proof.kcfg, node, depth=depth)
             ag_proof.write_proof()
 
 
@@ -586,14 +593,11 @@ def foundry_section_edge(
     foundry = Foundry(foundry_root, bug_report=br)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-    assert type(ag_proof) is AGProof
     source_id, target_id = edge
     with KCFGExplore(
-        foundry.kevm, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(
-            test, ag_proof.kcfg, source_id=source_id, target_id=target_id, sections=sections
-        )
+        kcfg, _ = kcfg_explore.section_edge(ag_proof.kcfg, source_id=source_id, target_id=target_id, sections=sections)
     ag_proof.write_proof()
 
 
@@ -629,10 +633,18 @@ def _foundry_to_bin_runtime(
     return bin_runtime_definition
 
 
-def _method_to_cfg(empty_config: KInner, contract: Contract, method: Contract.Method) -> KCFG:
+def _method_to_cfg(
+    empty_config: KInner,
+    contract: Contract,
+    method: Contract.Method,
+    kcfgs_dir: Path,
+    init_state: str | None = None,
+) -> KCFG:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
-    init_term = _init_term(empty_config, contract.name, calldata=calldata, callvalue=callvalue)
+    init_term = _init_term(
+        empty_config, contract.name, kcfgs_dir, calldata=calldata, callvalue=callvalue, init_state=init_state
+    )
     init_cterm = _init_cterm(init_term)
     is_test = method.name.startswith('test')
     failing = method.name.startswith('testFail')
@@ -653,12 +665,22 @@ def _init_cterm(init_term: KInner) -> CTerm:
     return init_cterm
 
 
+def get_final_accounts_cell(cfgid: str, ag_proof_dir: Path) -> KInner:
+    ag_proof = AGProof.read_proof(cfgid, ag_proof_dir)
+    target = ag_proof.kcfg.get_unique_target()
+    cover = single(ag_proof.kcfg.covers(target_id=target.id))
+    accounts_cell = get_cell(cover.source.cterm.config, 'ACCOUNTS_CELL')
+    return accounts_cell
+
+
 def _init_term(
     empty_config: KInner,
     contract_name: str,
+    kcfgs_dir: Path,
     *,
     calldata: KInner | None = None,
     callvalue: KInner | None = None,
+    init_state: str | None = None,
 ) -> KInner:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(
@@ -711,7 +733,6 @@ def _init_term(
             [
                 account_cell,  # test contract address
                 Foundry.account_CHEATCODE_ADDRESS(KApply('.Map')),
-                KVariable('ACCOUNTS_INIT'),
             ]
         ),
         'SINGLECALL_CELL': FALSE,
@@ -728,6 +749,9 @@ def _init_term(
         'ADDRESSSET_CELL': KApply('.Set'),
         'STORAGESLOTSET_CELL': KApply('.Set'),
     }
+
+    if init_state:
+        init_subst['ACCOUNTS_CELL'] = get_final_accounts_cell(init_state, kcfgs_dir)
 
     if calldata is not None:
         init_subst['CALLDATA_CELL'] = calldata
