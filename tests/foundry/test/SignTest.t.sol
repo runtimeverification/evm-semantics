@@ -5,8 +5,6 @@ import "forge-std/Test.sol";
 
 contract SignTest is Test {
 
-    function setUp() public{}
-
     function testSign() public {
         address alice = vm.addr(1);
         bytes32 hash = keccak256("Signed by Alice");

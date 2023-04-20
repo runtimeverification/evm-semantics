@@ -2,7 +2,6 @@
 pragma solidity =0.8.13;
 
 contract UintTypeTest {
-    function setUp() public {}
 
     /* Tests for uint256 */
     function test_uint256(uint256 x) public pure {
@@ -486,7 +485,6 @@ contract UintTypeTest {
 }
 
 contract BytesTypeTest {
-    function setUp() public {}
 
     /* Tests for bytes32 */
     function test_bytes32(bytes32 x) public pure {
