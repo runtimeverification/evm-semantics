@@ -481,13 +481,13 @@ foundry-clean:
 	rm -f  tests/foundry/foundry.k
 	rm -f  tests/foundry/foundry.rule-profile
 
-tests/foundry/%: KEVM = $(POETRY_RUN) kevm
+tests/foundry/%: KEVM := $(POETRY_RUN) kevm
 
 foundry_dir  := tests/foundry
 foundry_out := $(foundry_dir)/out
 
 test-foundry-%: KEVM_OPTS += --pyk --verbose
-test-foundry-%: KEVM = $(POETRY_RUN) kevm
+test-foundry-%: KEVM := $(POETRY_RUN) kevm
 test-foundry-kompile: tests/foundry/foundry.k.check
 test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
 test-foundry-list: tests/foundry/foundry-list.check
@@ -548,7 +548,7 @@ tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompi
 	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose
-tests/specs/examples/%-bin-runtime.k: KEVM = $(POETRY_RUN) kevm
+tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) kevm
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
@@ -710,8 +710,8 @@ kevm_pyk_tests :=                                                               
                   tests/specs/examples/erc721-bin-runtime.k
 
 test-kevm-pyk: KEVM_OPTS += --pyk --verbose
-test-kevm-pyk: KEVM = $(POETRY_RUN) kevm
-test-kevm-pyk: KOMPILE = $(POETRY_RUN) kevm kompile
+test-kevm-pyk: KEVM := $(POETRY_RUN) $(KEVM)
+test-kevm-pyk: KOMPILE = $(POETRY_RUN) $(KEVM) kompile
 test-kevm-pyk: $(kevm_pyk_tests) poetry
 
 # Interactive Tests

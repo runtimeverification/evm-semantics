@@ -9,10 +9,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
+from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
+from pyk.prelude.ml import is_bottom
 from pyk.proof import AGProof
 
 from .foundry import (
@@ -29,14 +31,13 @@ from .foundry import (
 )
 from .kevm import KEVM, KEVMKompileMode
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, get_ag_proof_for_spec, parallel_kcfg_explore
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_ag_proof_for_spec, parallel_kcfg_explore
 
 if TYPE_CHECKING:
     from argparse import Namespace
     from collections.abc import Callable, Iterable
     from typing import Any, Final, TypeVar
 
-    from pyk.cterm import CTerm
     from pyk.kcfg.tui import KCFGElem
 
     T = TypeVar('T')
@@ -274,10 +275,6 @@ def exec_prove(
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
-    _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
-    proof_problems = {
-        c.label: AGProof(c.label, KCFG.from_claim(kevm.definition, c), proof_dir=save_directory) for c in claims
-    }
     with KCFGExplore(
         kevm,
         id='initializing',
@@ -286,20 +283,33 @@ def exec_prove(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
     ) as kcfg_explore:
-        _proof_problems = {}
+        proof_problems = {}
 
-        for claim, ag_proof in proof_problems.items():
-            _LOGGER.info(f'Computing definedness constraint for claim: {claim}')
-            init_node = ag_proof.kcfg.get_unique_init()
-            ag_proof.kcfg.replace_node(init_node.id, kcfg_explore.cterm_assume_defined(init_node.cterm))
+        for claim in claims:
+            _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
+            kcfg = KCFG.from_claim(kevm.definition, claim)
+
+            new_init = ensure_ksequence_on_k_cell(kcfg.get_unique_init().cterm)
+            new_target = ensure_ksequence_on_k_cell(kcfg.get_unique_target().cterm)
+
+            _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
+            new_init = kcfg_explore.cterm_assume_defined(new_init)
 
             if simplify_init:
-                _LOGGER.info(f'Simplifying KCFG for claim: {claim}')
-                kcfg_explore.simplify(ag_proof.kcfg)
+                _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
+                _new_init = kcfg_explore.cterm_simplify(new_init)
+                _new_target = kcfg_explore.cterm_simplify(new_target)
+                if is_bottom(_new_init):
+                    raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
+                if is_bottom(_new_target):
+                    raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
+                new_init = CTerm.from_kast(_new_init)
+                new_target = CTerm.from_kast(_new_target)
 
-            _proof_problems[claim] = ag_proof
+            kcfg.replace_node(kcfg.get_unique_init().id, new_init)
+            kcfg.replace_node(kcfg.get_unique_target().id, new_target)
 
-        proof_problems = _proof_problems
+            proof_problems[claim.label] = AGProof(claim.label, kcfg, proof_dir=save_directory)
 
     results = parallel_kcfg_explore(
         kevm,
