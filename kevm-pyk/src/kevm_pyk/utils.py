@@ -8,7 +8,7 @@ from pathos.pools import ProcessPool  # type: ignore
 from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
 from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
 from pyk.kcfg import KCFGExplore
-from pyk.proof import AGProof, AGProver
+from pyk.proof import APRProof, APRProver
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -36,7 +36,7 @@ def get_ag_proof_for_spec(  # noqa: N802
     md_selector: str | None = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
-) -> AGProof:
+) -> APRProof:
     if save_directory is None:
         save_directory = Path('.')
         _LOGGER.info(f'Using default save_directory: {save_directory}')
@@ -53,13 +53,13 @@ def get_ag_proof_for_spec(  # noqa: N802
         )
     )
 
-    ag_proof = AGProof.read_proof(claim.label, save_directory)
+    ag_proof = APRProof.read_proof(claim.label, save_directory)
     return ag_proof
 
 
 def parallel_kcfg_explore(
     kprove: KProve,
-    proof_problems: dict[str, AGProof],
+    proof_problems: dict[str, APRProof],
     save_directory: Path | None = None,
     max_depth: int = 1000,
     max_iterations: int | None = None,
@@ -75,7 +75,7 @@ def parallel_kcfg_explore(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
 ) -> dict[str, bool]:
-    def _call_rpc(packed_args: tuple[str, AGProof, int]) -> bool:
+    def _call_rpc(packed_args: tuple[str, APRProof, int]) -> bool:
         _cfgid, _ag_proof, _index = packed_args
         terminal_rules = ['EVM.halt']
         cut_point_rules = []
@@ -108,7 +108,7 @@ def parallel_kcfg_explore(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:
-            ag_prover = AGProver(_ag_proof, is_terminal=is_terminal, extract_branches=extract_branches)
+            ag_prover = APRProver(_ag_proof, is_terminal=is_terminal, extract_branches=extract_branches)
             try:
                 _cfg = ag_prover.advance_proof(
                     kcfg_explore,

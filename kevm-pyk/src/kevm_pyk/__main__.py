@@ -13,7 +13,7 @@ from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
-from pyk.proof import AGProof
+from pyk.proof import APRProof
 
 from .foundry import (
     Foundry,
@@ -274,7 +274,7 @@ def exec_prove(
 
     _LOGGER.info(f'Converting {len(claims)} KClaims to KCFGs')
     proof_problems = {
-        c.label: AGProof(c.label, KCFG.from_claim(kevm.definition, c), proof_dir=save_directory) for c in claims
+        c.label: APRProof(c.label, KCFG.from_claim(kevm.definition, c), proof_dir=save_directory) for c in claims
     }
     with KCFGExplore(
         kevm,
@@ -512,7 +512,7 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     ag_proofs_dir = foundry.out / 'ag_proofs'
     contract_name = test.split('.')[0]
 
-    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    ag_proof = APRProof.read_proof(test, ag_proofs_dir)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
