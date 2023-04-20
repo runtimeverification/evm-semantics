@@ -422,7 +422,7 @@ def foundry_prove(
                     if simplify_init:
                         _LOGGER.info(f'Simplifying KCFG for test: {test}')
                         kcfg_explore.simplify(kcfg)
-                ag_proof = AGProof(test, kcfg, proof_dir=ag_proofs_dir)
+                ag_proof = AGProof(test + contract.digest, kcfg, proof_dir=ag_proofs_dir)
 
             ag_proof.write_proof()
             ag_proofs[test] = ag_proof
