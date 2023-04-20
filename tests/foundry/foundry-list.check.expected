@@ -328,6 +328,24 @@ AGProof: PlainPrankTest.test_stopPrank_notExistent
     frontier: 0
     stuck: 0
 
+AGProof: Setup2Test.setUp
+    status: ProofStatus.PASSED
+    nodes: 5
+    frontier: 0
+    stuck: 0
+
+AGProof: Setup2Test.testFail_setup
+    status: ProofStatus.PASSED
+    nodes: 10
+    frontier: 0
+    stuck: 0
+
+AGProof: Setup2Test.test_setup
+    status: ProofStatus.PASSED
+    nodes: 5
+    frontier: 0
+    stuck: 0
+
 AGProof: StoreTest.testGasLoadColdVM
     status: ProofStatus.PASSED
     nodes: 7
