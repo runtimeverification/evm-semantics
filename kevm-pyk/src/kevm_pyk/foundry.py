@@ -359,7 +359,6 @@ def foundry_prove(
         for test in tests:
             if AGProof.proof_exists(test, ag_proofs_dir) and not reinit:
                 ag_proof = AGProof.read_proof(test, ag_proofs_dir)
-                assert type(ag_proof) is AGProof
             else:
                 _LOGGER.info(f'Initializing KCFG for test: {test}')
                 contract_name, method_name = test.split('.')
@@ -668,7 +667,6 @@ def _init_cterm(init_term: KInner) -> CTerm:
 
 def get_final_accounts_cell(cfgid: str, ag_proof_dir: Path) -> KInner:
     ag_proof = AGProof.read_proof(cfgid, ag_proof_dir)
-    assert type(ag_proof) is AGProof
     target = ag_proof.kcfg.get_unique_target()
     cover = single(ag_proof.kcfg.covers(target_id=target.id))
     accounts_cell = get_cell(cover.source.cterm.config, 'ACCOUNTS_CELL')
