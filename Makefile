@@ -51,12 +51,12 @@ export PLUGIN_FULL_PATH
         build build-haskell build-foundry build-llvm build-prove build-prove-haskell build-node build-kevm                                   \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance             \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                              \
-        test-prove test-failing-prove                                                                                                        \
+        test-prove test-failing-prove test-foundry-kcfg-diff                                                                                 \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-smoke \
         test-prove-mcd test-klab-prove                                                                                                       \
         test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-list                                                    \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                           \
-        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean                                                                   \
+        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean foundry-fail                                                      \
         media media-pdf metropolis-theme                                                                                                     \
         install uninstall                                                                                                                    \
         poetry-env poetry shell kevm-pyk
@@ -519,6 +519,30 @@ tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
 	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
 	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
+
+foundry_golden := tests/foundry/golden
+foundry_diff_tests := $(shell cat tests/foundry/checkoutput)
+
+test-foundry-kcfg-diff: $(patsubst %, $(foundry_golden)/%.check, $(foundry_diff_tests))
+
+foundry-fail: tests/foundry/out/kompiled/timestamp
+	$(KEVM) foundry-prove                                \
+	--foundry-project-root $(foundry_dir)                \
+	-j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000 \
+	$(KEVM_OPTS) $(KPROVE_OPTS)                          \
+	$(addprefix --test , $(foundry_diff_tests)) || true
+
+foundry_show_opts := --to-module --omit-unstable-output --frontier --stuck
+
+$(foundry_golden)/%.check: $(foundry_golden)/%.out
+	$(CHECK) $(foundry_golden)/$*.out $(foundry_golden)/$*.expected
+
+$(foundry_golden)/%.out: foundry-fail
+	$(KEVM) foundry-show $(foundry_show_opts)                   \
+	--foundry-project-root $(foundry_dir) $*                    \
+	| grep --invert-match 'rule \[BASIC-BLOCK-'                 \
+	| grep --invert-match '\[priority(.*), label(BASIC-BLOCK-'  \
+	> $@
 
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
 	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose
