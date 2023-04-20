@@ -24,10 +24,14 @@ RUN    apt-get update         \
     && apt-get install --yes  \
             cmake             \
             curl              \
+            debhelper         \
+            libboost-test-dev \
             libcrypto++-dev   \
             libprocps-dev     \
             libsecp256k1-dev  \
             libssl-dev        \
+            llvm-14-dev       \
+            llvm-14-tools     \
             netcat            \
             protobuf-compiler \
             python3           \
