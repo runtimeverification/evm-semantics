@@ -5,8 +5,17 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pathos.pools import ProcessPool  # type: ignore
+from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
-from pyk.kast.manip import abstract_term_safely, bottom_up, is_anon_var, split_config_and_constraints, split_config_from
+from pyk.kast.manip import (
+    abstract_term_safely,
+    bottom_up,
+    is_anon_var,
+    set_cell,
+    split_config_and_constraints,
+    split_config_from,
+)
+from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.proof import APRProof, APRProver
 from pyk.utils import single
@@ -16,7 +25,6 @@ if TYPE_CHECKING:
     from typing import Final, TypeVar
 
     from pyk.cli_utils import BugReport
-    from pyk.cterm import CTerm
     from pyk.kast import KInner
     from pyk.kast.outer import KDefinition
     from pyk.ktool.kprove import KProve
@@ -198,3 +206,11 @@ def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> 
         if type(subst[s]) is KVariable and not is_anon_var(subst[s]) and subst[s] not in keep_vars:
             subst[s] = abstract_term_safely(KVariable('_'), base_name=s)
     return Subst(subst)(config)
+
+
+def ensure_ksequence_on_k_cell(cterm: CTerm) -> CTerm:
+    k_cell = cterm.cell('K_CELL')
+    if type(k_cell) is not KSequence:
+        _LOGGER.info('Introducing artificial KSequence on <k> cell.')
+        return CTerm.from_kast(set_cell(cterm.kast, 'K_CELL', KSequence([k_cell])))
+    return cterm
