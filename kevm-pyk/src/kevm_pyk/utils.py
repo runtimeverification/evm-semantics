@@ -20,7 +20,12 @@ from pyk.kast.manip import (
     push_down_rewrites,
     split_config_and_constraints,
     split_config_from,
+    is_anon_var,
+    set_cell,
+    split_config_and_constraints,
+    split_config_from,
 )
+from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.prelude import k
 from pyk.prelude.ml import mlTop
@@ -328,3 +333,10 @@ def no_cell_rewrite_to_dots(term: KInner) -> KInner:
         return _term
 
     return bottom_up(_no_cell_rewrite_to_dots, term)
+
+def ensure_ksequence_on_k_cell(cterm: CTerm) -> CTerm:
+    k_cell = cterm.cell('K_CELL')
+    if type(k_cell) is not KSequence:
+        _LOGGER.info('Introducing artificial KSequence on <k> cell.')
+        return CTerm.from_kast(set_cell(cterm.kast, 'K_CELL', KSequence([k_cell])))
+    return cterm
