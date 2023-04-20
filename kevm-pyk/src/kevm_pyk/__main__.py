@@ -466,6 +466,9 @@ def exec_foundry_show(
     node_deltas: Iterable[tuple[str, str]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    omit_unstable_output: bool = False,
+    frontier: bool = False,
+    stuck: bool = False,
     **kwargs: Any,
 ) -> None:
     output = foundry_show(
@@ -475,6 +478,9 @@ def exec_foundry_show(
         node_deltas=node_deltas,
         to_module=to_module,
         minimize=minimize,
+        omit_unstable_output=omit_unstable_output,
+        frontier=frontier,
+        stuck=stuck,
     )
     print(output)
 
@@ -986,7 +992,19 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[shared_args, k_args, kcfg_show_args, display_args, foundry_root_arg],
     )
     foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
-
+    foundry_show_args.add_argument(
+        '--omit-unstable-output',
+        dest='omit_unstable_output',
+        default=False,
+        action='store_true',
+        help='Strip output that is likely to change without the contract logic changing',
+    )
+    foundry_show_args.add_argument(
+        '--frontier', dest='frontier', default=False, action='store_true', help='Also display frontier nodes'
+    )
+    foundry_show_args.add_argument(
+        '--stuck', dest='stuck', default=False, action='store_true', help='Also display stuck nodes'
+    )
     foundry_to_dot = command_parser.add_parser(
         'foundry-to-dot',
         help='Dump the given CFG for the test as DOT for visualization.',
