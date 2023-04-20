@@ -782,7 +782,7 @@ def _create_argument_parser() -> ArgumentParser:
         dest='enable_llvm_debug',
         default=False,
         action='store_true',
-        help='Kompile llvm backend with debug symbols.',
+        help='Make kompile generate debug symbols for llvm.',
     )
 
     k_kompile_args.add_argument('-O0', dest='o0', default=False, action='store_true', help='Optimization level 0.')
