@@ -4,8 +4,6 @@ pragma solidity =0.8.13;
 import "forge-std/Test.sol";
 
 contract ArithmeticTest is Test {
-    function setUp() public {}
-
     function max(uint x, uint y) internal pure returns (uint z) {
         if (x < y) {
             return y;

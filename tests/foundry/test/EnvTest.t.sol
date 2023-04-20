@@ -5,8 +5,6 @@ import "forge-std/Test.sol";
 
 contract EnvTest is Test {
 
-    function setUp() public{}
-
     function testEnvBool() public {
         string memory key = "BOOL_VALUE";
         string memory val = "true";
