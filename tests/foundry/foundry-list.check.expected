@@ -100,11 +100,65 @@ APRProof: ArithmeticTest.test_max2
     frontier: 0
     stuck: 0
 
+APRProof: AssertTest.testFail_assert_false
+    status: ProofStatus.PASSED
+    nodes: 5
+    frontier: 0
+    stuck: 0
+
+APRProof: AssertTest.testFail_assert_true
+    status: ProofStatus.FAILED
+    nodes: 5
+    frontier: 0
+    stuck: 1
+
+APRProof: AssertTest.testFail_expect_revert
+    status: ProofStatus.FAILED
+    nodes: 7
+    frontier: 0
+    stuck: 1
+
+APRProof: AssertTest.test_assert_false
+    status: ProofStatus.FAILED
+    nodes: 5
+    frontier: 0
+    stuck: 1
+
+APRProof: AssertTest.test_assert_true
+    status: ProofStatus.PASSED
+    nodes: 5
+    frontier: 0
+    stuck: 0
+
 APRProof: AssertTest.test_assert_true_branch
     status: ProofStatus.PASSED
     nodes: 11
     frontier: 0
     stuck: 0
+
+APRProof: AssertTest.test_revert_branch
+    status: ProofStatus.FAILED
+    nodes: 11
+    frontier: 0
+    stuck: 1
+
+APRProof: AssumeTest.testFail_assume_false
+    status: ProofStatus.FAILED
+    nodes: 7
+    frontier: 0
+    stuck: 1
+
+APRProof: AssumeTest.testFail_assume_true
+    status: ProofStatus.PASSED
+    nodes: 11
+    frontier: 0
+    stuck: 0
+
+APRProof: AssumeTest.test_assume_false
+    status: ProofStatus.FAILED
+    nodes: 11
+    frontier: 0
+    stuck: 1
 
 APRProof: AssumeTest.test_assume_staticCall
     status: ProofStatus.PASSED
