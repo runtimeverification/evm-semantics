@@ -523,7 +523,7 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     contract_name = test.split('.')[0]
-    proof_digest = test + foundry.contracts[contract_name].digest
+    proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
 
     ag_proof = AGProof.read_proof(proof_digest, ag_proofs_dir)
 

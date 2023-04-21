@@ -380,7 +380,7 @@ def foundry_prove(
         ag_proofs: dict[str, AGProof] = {}
         for test in tests:
             contract_name = test.split('.')[0]
-            proof_digest = test + foundry.contracts[contract_name].digest
+            proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
             if AGProof.proof_exists(proof_digest, ag_proofs_dir) and not reinit:
                 ag_proof = AGProof.read_proof(proof_digest, ag_proofs_dir)
             else:
@@ -474,7 +474,7 @@ def foundry_show(
     ag_proofs_dir = foundry.out / 'ag_proofs'
 
     contract_name = test.split('.')[0]
-    proof_digest = test + foundry.contracts[contract_name].digest
+    proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
     ag_proof = AGProof.read_proof(proof_digest, ag_proofs_dir)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
@@ -516,7 +516,7 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     ag_proofs_dir = foundry.out / 'ag_proofs'
     dump_dir = ag_proofs_dir / 'dump'
     contract_name = test.split('.')[0]
-    proof_digest = test + foundry.contracts[contract_name].digest
+    proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
     ag_proof = AGProof.read_proof(proof_digest, ag_proofs_dir)
     kcfg_show = KCFGShow(foundry.kevm)
     kcfg_show.dump(test, ag_proof.kcfg, dump_dir, dot=True)
@@ -533,7 +533,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
     lines: list[str] = []
     for method in sorted(all_methods):
         contract_name = method.split('.')[0]
-        proof_digest = method + foundry.contracts[contract_name].digest
+        proof_digest = f'{method}:{foundry.contracts[contract_name].digest}'
         if AGProof.proof_exists(proof_digest, ag_proofs_dir):
             ag_proof = AGProof.read_proof(proof_digest, ag_proofs_dir)
             lines.extend(ag_proof.summary)
@@ -548,7 +548,7 @@ def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     contract_name = test.split('.')[0]
-    proof_digest = test + foundry.contracts[contract_name].digest
+    proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
     ag_proof = AGProof.read_proof(proof_digest, ag_proofs_dir)
     for _node in ag_proof.kcfg.reachable_nodes(node, traverse_covers=True):
         if not ag_proof.kcfg.is_target(_node.id):
@@ -571,7 +571,7 @@ def foundry_simplify_node(
     foundry = Foundry(foundry_root, bug_report=br)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     contract_name = test.split('.')[0]
-    proof_digest = test + foundry.contracts[contract_name].digest
+    proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
     ag_proof = AGProof.read_proof(proof_digest, ag_proofs_dir)
     cterm = ag_proof.kcfg.node(node).cterm
     with KCFGExplore(
@@ -605,7 +605,7 @@ def foundry_step_node(
 
     ag_proofs_dir = foundry.out / 'ag_proofs'
     contract_name = test.split('.')[0]
-    proof_digest = test + foundry.contracts[contract_name].digest
+    proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
     ag_proof = AGProof.read_proof(proof_digest, ag_proofs_dir)
     with KCFGExplore(
         foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
@@ -629,7 +629,7 @@ def foundry_section_edge(
     foundry = Foundry(foundry_root, bug_report=br)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     contract_name = test.split('.')[0]
-    proof_digest = test + foundry.contracts[contract_name].digest
+    proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
     ag_proof = AGProof.read_proof(proof_digest, ag_proofs_dir)
     source_id, target_id = edge
     with KCFGExplore(
