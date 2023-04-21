@@ -268,6 +268,17 @@ class KEVM(KProve, KRun):
         return False
 
     @staticmethod
+    def same_loop_head(cterm1: CTerm, cterm2: CTerm) -> bool:
+        branch1 = list(KEVM.extract_branches(cterm1))
+        branch2 = list(KEVM.extract_branches(cterm2))
+        same_branch = branch1 is not None and branch2 is not None and branch1[0] == branch2[0]
+        same_cell_structure = all(
+            cterm1.cell(cn) == cterm2.cell(cn) for cn in ['PC_CELL', 'CALLDATA_CELL', 'PROGRAM_CELL', 'JUMPDESTS_CELL']
+        )
+        same_wordstack_structure = KEVM.wordstack_len(cterm1) == KEVM.wordstack_len(cterm2)
+        return same_branch and same_cell_structure and same_wordstack_structure
+
+    @staticmethod
     def halt() -> KApply:
         return KApply('#halt_EVM_KItem')
 
@@ -403,6 +414,10 @@ class KEVM(KProve, KRun):
                 KApply('<nonce>', [nonce]),
             ],
         )
+
+    @staticmethod
+    def wordstack_len(cterm: CTerm) -> int:
+        return len(flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', cterm.cell('WORDSTACK_CELL')))
 
     @staticmethod
     def parse_bytestack(s: KInner) -> KApply:
