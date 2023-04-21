@@ -4,7 +4,6 @@ pragma solidity =0.8.13;
 import "forge-std/Test.sol";
 
 contract LoopsTest is Test {
-    function setUp() public {}
 
     uint constant WAD = 10 ** 18;
     uint constant RAY = 10 ** 27;

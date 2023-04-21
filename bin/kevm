@@ -212,7 +212,11 @@ run_interpret() {
         ! ${bug_report} || KORE_EXEC_OPTS="${KORE_EXEC_OPTS} --bug-report ${bug_report_name}"
         export KORE_EXEC_OPTS
     fi
-    run_krun "${krun_args[@]}" "$@" > "${output}" || exit_status="$?"
+    if ${debugger}; then
+        run_krun "${krun_args[@]}" "$@" || exit_status="$?"
+    else
+        run_krun "${krun_args[@]}" "$@" > "${output}" || exit_status="$?"
+    fi
     if ${unparse} || [[ "${exit_status}" != '0' ]]; then
         cat "${output}" | "${KEVM}" kast --backend "${backend}" - pretty --input kore --sort GeneratedTopCell
     fi

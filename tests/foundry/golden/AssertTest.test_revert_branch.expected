@@ -4,43 +4,43 @@
 │    pc: 0
 │    callDepth: 0
 │    statusCode: STATUSCODE
-│    src: tests/foundry/test/Simple.t.sol:5:50
+│    src: tests/foundry/test/Simple.t.sol:5:48
 │
 │  (515 steps)
 ├─ OMITTED HASH (split)
-│    k: JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-│    pc: 479
+│    k: JUMPI 472 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+│    pc: 468
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
-│    src: tests/foundry/test/Simple.t.sol:22:23
+│    src: tests/foundry/test/Simple.t.sol:18:19
 ┃
 ┣━━┓ constraint: { true #Equals VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int }
 ┃  │
 ┃  ├─ OMITTED HASH (split)
-┃  │    k: JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-┃  │    pc: 479
+┃  │    k: JUMPI 472 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+┃  │    pc: 468
 ┃  │    callDepth: 0
 ┃  │    statusCode: STATUSCODE:StatusCode
-┃  │    src: tests/foundry/test/Simple.t.sol:22:23
+┃  │    src: tests/foundry/test/Simple.t.sol:18:19
 ┃  ┃
 ┃  ┣━━┓ constraint: { true #Equals VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int }
 ┃  ┃  │
 ┃  ┃  └─ OMITTED HASH (split)
-┃  ┃       k: JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-┃  ┃       pc: 479
+┃  ┃       k: JUMPI 472 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+┃  ┃       pc: 468
 ┃  ┃       callDepth: 0
 ┃  ┃       statusCode: STATUSCODE:StatusCode
-┃  ┃       src: tests/foundry/test/Simple.t.sol:22:23
+┃  ┃       src: tests/foundry/test/Simple.t.sol:18:19
 ┃  ┃     (looped back)
 ┃  ┃
 ┃  ┗━━┓ constraint: { true #Equals ( notBool VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) }
 ┃     │
 ┃     ├─ OMITTED HASH (leaf)
-┃     │    k: JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-┃     │    pc: 479
+┃     │    k: JUMPI 472 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+┃     │    pc: 468
 ┃     │    callDepth: 0
 ┃     │    statusCode: STATUSCODE:StatusCode
-┃     │    src: tests/foundry/test/Simple.t.sol:22:23
+┃     │    src: tests/foundry/test/Simple.t.sol:18:19
 ┃     │
 ┃     ┊  constraint: false
 ┃     ┊  subst: .Subst
@@ -53,30 +53,30 @@
 ┗━━┓ constraint: { true #Equals ( notBool VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) }
    │
    ├─ OMITTED HASH (split)
-   │    k: JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-   │    pc: 479
+   │    k: JUMPI 472 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+   │    pc: 468
    │    callDepth: 0
    │    statusCode: STATUSCODE:StatusCode
-   │    src: tests/foundry/test/Simple.t.sol:22:23
+   │    src: tests/foundry/test/Simple.t.sol:18:19
    ┃
    ┣━━┓ constraint: { true #Equals VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int }
    ┃  │
    ┃  └─ OMITTED HASH (leaf)
-   ┃       k: JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-   ┃       pc: 479
+   ┃       k: JUMPI 472 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+   ┃       pc: 468
    ┃       callDepth: 0
    ┃       statusCode: STATUSCODE:StatusCode
-   ┃       src: tests/foundry/test/Simple.t.sol:22:23
+   ┃       src: tests/foundry/test/Simple.t.sol:18:19
    ┃     (continues as previously)
    ┃
    ┗━━┓ constraint: { true #Equals ( notBool VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) }
       │
       └─ OMITTED HASH (split)
-           k: JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-           pc: 479
+           k: JUMPI 472 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+           pc: 468
            callDepth: 0
            statusCode: STATUSCODE:StatusCode
-           src: tests/foundry/test/Simple.t.sol:22:23
+           src: tests/foundry/test/Simple.t.sol:18:19
          (looped back)
 
 
@@ -88,7 +88,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
            <kevm>
              <k>
                ( #execute
-               ~> CONTINUATION => JUMPI 483 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int )
+               ~> CONTINUATION => JUMPI 472 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int )
                ~> #pc [ JUMPI ]
                ~> #execute
                ~> CONTINUATION:K )
@@ -118,7 +118,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 185 : ( 2349784459 : .WordStack ) ) ) ) )
+                     ( .WordStack => ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 174 : ( 2349784459 : .WordStack ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -169,7 +169,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      ...
                    </account> => <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
+                       645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
                        0
@@ -181,7 +181,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                        .Map
                      </origStorage>
                      <nonce>
-                       1
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -204,7 +204,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      ...
                    </account> => <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -216,7 +216,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                        .Map
                      </origStorage>
                      <nonce>
-                       0
+                       1
                      </nonce>
                      ...
                    </account> ) )

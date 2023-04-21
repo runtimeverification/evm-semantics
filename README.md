@@ -251,6 +251,18 @@ Run the file `tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmet
 kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json --schedule DEFAULT --mode VMTESTS
 ```
 
+To enable the debug symbols for the llvm backend, build using this command:
+
+```sh
+make build-llvm KEVM_OPTS=--enable-llvm-debug
+```
+
+To debug a conformance test, add the `--debugger` flag to the command:
+
+```sh
+kevm interpret tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json --backend llvm --mode NORMAL --schedule MERGE --chainid 1 --debugger
+```
+
 ### Keeping in mind while developing
 
 Always have your build up-to-date.
