@@ -15,7 +15,7 @@ from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
 from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
-from pyk.proof import AGProof, AGBMCProof
+from pyk.proof import AGProof
 
 from .foundry import (
     Foundry,
