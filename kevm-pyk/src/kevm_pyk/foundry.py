@@ -393,7 +393,7 @@ def foundry_prove(
                 use_setup = method.name.startswith('test') and contract_name in setup_methods
                 setup_digest = None
                 if use_setup:
-                    setup_digest = f'{contract_name}.setUp' + contract.digest
+                    setup_digest = f'{contract_name}.setUp:{contract.digest}'
                     _LOGGER.info(f'Using setup method for test: {test}')
 
                 kcfg = _method_to_cfg(empty_config, contract, method, ag_proofs_dir, init_state=setup_digest)
