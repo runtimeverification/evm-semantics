@@ -268,10 +268,10 @@ class KEVM(KProve, KRun):
         return False
 
     @staticmethod
-    def same_loop_head(cterm1: CTerm, cterm2: CTerm) -> bool:
+    def same_loop(cterm1: CTerm, cterm2: CTerm) -> bool:
         branch1 = list(KEVM.extract_branches(cterm1))
         branch2 = list(KEVM.extract_branches(cterm2))
-        same_branch = branch1 is not None and branch2 is not None and branch1[0] == branch2[0]
+        same_branch = len(branch1) and len(branch2) and branch1[0] == branch2[0]
         same_cell_structure = all(
             cterm1.cell(cn) == cterm2.cell(cn) for cn in ['PC_CELL', 'CALLDATA_CELL', 'PROGRAM_CELL', 'JUMPDESTS_CELL']
         )

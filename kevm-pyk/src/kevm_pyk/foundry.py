@@ -21,7 +21,7 @@ from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
-from pyk.proof import AGProof
+from pyk.proof import AGProof, AGBMCProof
 from pyk.utils import shorten_hashes, single, unique
 
 from .kevm import KEVM
@@ -300,6 +300,7 @@ def foundry_prove(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
+    bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
@@ -355,7 +356,7 @@ def foundry_prove(
             setup_methods[contract.name] = f'{contract.name}.{method.name}'
 
     def run_cfg_group(tests: list[str]) -> dict[str, bool]:
-        ag_proofs: dict[str, AGProof] = {}
+        ag_proofs: dict[str, AGProof | AGBMCProof] = {}
         for test in tests:
             if AGProof.proof_exists(test, ag_proofs_dir) and not reinit:
                 ag_proof = AGProof.read_proof(test, ag_proofs_dir)
@@ -400,7 +401,10 @@ def foundry_prove(
                     if simplify_init:
                         _LOGGER.info(f'Simplifying KCFG for test: {test}')
                         kcfg_explore.simplify(kcfg)
-                ag_proof = AGProof(test, kcfg, proof_dir=ag_proofs_dir)
+                if bmc_depth is not None:
+                    ag_proof = AGBMCProof(test, kcfg, proof_dir=ag_proofs_dir, bmc_depth=bmc_depth)
+                else:
+                    ag_proof = AGProof(test, kcfg, proof_dir=ag_proofs_dir)
 
             ag_proof.write_proof()
             ag_proofs[test] = ag_proof
@@ -417,6 +421,7 @@ def foundry_prove(
             break_on_calls=break_on_calls,
             implication_every_block=implication_every_block,
             is_terminal=KEVM.is_terminal,
+            same_loop=KEVM.same_loop,
             extract_branches=KEVM.extract_branches,
             bug_report=br,
             kore_rpc_command=kore_rpc_command,
