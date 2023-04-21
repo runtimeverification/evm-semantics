@@ -102,6 +102,7 @@ def exec_kompile(
     brew_root: Path | None = None,
     libcryptopp_dir: Path | None = None,
     openssl_root: Path | None = None,
+    enable_llvm_debug: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector {kwargs["md_selector"]}')
@@ -161,6 +162,7 @@ def exec_kompile(
         ccopts=ccopts,
         llvm_kompile=llvm_kompile,
         optimization=optimization,
+        enable_llvm_debug=enable_llvm_debug,
     )
 
 
@@ -786,6 +788,14 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Make kompile generate a dynamic llvm library.',
     )
+    k_kompile_args.add_argument(
+        '--enable-llvm-debug',
+        dest='enable_llvm_debug',
+        default=False,
+        action='store_true',
+        help='Make kompile generate debug symbols for llvm.',
+    )
+
     k_kompile_args.add_argument('-O0', dest='o0', default=False, action='store_true', help='Optimization level 0.')
     k_kompile_args.add_argument('-O1', dest='o1', default=False, action='store_true', help='Optimization level 1.')
     k_kompile_args.add_argument('-O2', dest='o2', default=False, action='store_true', help='Optimization level 2.')
