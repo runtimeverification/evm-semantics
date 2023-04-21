@@ -85,6 +85,7 @@ class KEVM(KProve, KRun):
         llvm_kompile: bool = True,
         optimization: int = 0,
         llvm_kompile_type: LLVMKompileType | None = None,
+        enable_llvm_debug: bool = False,
     ) -> KEVM:
         try:
             kompile(
@@ -103,6 +104,7 @@ class KEVM(KProve, KRun):
                 no_llvm_kompile=not llvm_kompile,
                 opt_level=optimization or None,
                 llvm_kompile_type=llvm_kompile_type,
+                enable_llvm_debug=enable_llvm_debug,
             )
         except RuntimeError as err:
             sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')
