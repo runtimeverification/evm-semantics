@@ -274,4 +274,22 @@ module LEMMAS-SPEC
     claim [ecrec-mask]: <k> runLemma  ( #asWord ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) &Int maxUInt160 )
                          => doneLemma ( #asWord ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) ) ... </k>
 
+ // minInt/maxInt
+
+    claim
+      <k> runLemma ( minInt(A, _B) <Int maxInt(C, _D) ) => doneLemma ( true ) ... </k>
+      requires A <Int C
+
+    claim
+      <k> runLemma ( minInt(E +Int A, E +Int _B) <Int maxInt(F +Int C, F +Int _D) ) => doneLemma ( true ) ... </k>
+      requires A <Int C andBool E <=Int F
+
+    claim
+      <k> runLemma ( minInt(_A, B) <=Int maxInt(_C, D) ) => doneLemma ( true ) ... </k>
+      requires B <=Int D
+
+    claim
+      <k> runLemma ( minInt(_A +Int E, B +Int E) <=Int maxInt(_C +Int F, D +Int F) ) => doneLemma ( true ) ... </k>
+      requires B <=Int D andBool E <=Int F
+
 endmodule
