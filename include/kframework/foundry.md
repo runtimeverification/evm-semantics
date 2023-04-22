@@ -496,7 +496,7 @@ The `<output>` cell will be updated with the value of the address generated from
 ```k
     rule [foundry.call.addr]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
-         <output> _ => #bufStrict(32, #addrFromPrivateKey(#unparseByteStack(ARGS))) </output>
+         <output> _ => #bufStrict(32, #addrFromPrivateKey(#unparseDataBytes(ARGS))) </output>
       requires SELECTOR ==Int selector ( "addr(uint256)" )
 ```
 
