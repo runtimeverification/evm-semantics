@@ -144,4 +144,26 @@ module INT-SIMPLIFICATION-COMMON
 
     rule A -Int B +Int C <=Int D => false requires D <Int A -Int B andBool 0 <=Int C [simplification]
 
+  // ###########################################################################
+  // up/Int
+  // ###########################################################################
+
+    rule [upInt-lt-true]:
+      ((X up/Int Y) *Int Y) <Int Z => true
+      requires X <=Int (Z -Int Y) andBool 0 <Int Y
+      [simplification]
+
+    rule [upInt-lt-false]:
+      ((X up/Int Y) *Int Y) <Int X => false
+      requires 0 <Int Y
+      [simplification]
+
+    rule [lengthBytes-upInt-32-lower-bound]:
+      lengthBytes(X) <=Int notMaxUInt5 &Int lengthBytes(X) +Int 31 => true
+      [simplification, smt-lemma]
+
+    rule [lengthBytes-upInt-32-upper-bound]:
+      lengthBytes(X) +Int 32 >Int notMaxUInt5 &Int lengthBytes(X) +Int 31 => true
+      [simplification, smt-lemma]
+
 endmodule
