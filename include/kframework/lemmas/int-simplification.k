@@ -115,13 +115,27 @@ module INT-SIMPLIFICATION-COMMON
   // max, min
   // ###########################################################################
 
-    rule [minint-left]: minInt(A, B) => A requires A <=Int B [simplification]
+    rule [minint-left]:  minInt(A, B) => A requires A <=Int B [simplification]
+    rule [minint-right]: minInt(A, B) => B requires B <=Int A [simplification]
 
-    rule [minint-lt]:  minInt(A, B) <Int C  => true requires A  <Int C  orBool B  <Int C [simplification]
-    rule [minint-gt]:  A  <Int minInt(B, C) => true requires A  <Int B andBool A  <Int C [simplification]
-    rule [minint-geq]: A <=Int minInt(B, C) => true requires A <=Int B andBool A <=Int C [simplification]
+    rule [minint-lt]:  minInt(A, B)  <Int C => A  <Int C  orBool B  <Int C [simplification]
+    rule [minint-leq]: minInt(A, B) <=Int C => A <=Int C  orBool B <=Int C [simplification]
+    rule [minint-gt]:  A  <Int minInt(B, C) => A  <Int B andBool A  <Int C [simplification]
+    rule [minint-geq]: A <=Int minInt(B, C) => A <=Int B andBool A <=Int C [simplification]
 
-    rule [maxint-geq-left]: A <=Int maxInt(B, C) => true requires A <=Int B orBool A <=Int C [simplification]
+    rule [minInt-factor-left]:  minInt ( A:Int +Int B:Int, A:Int +Int C:Int ) => A +Int minInt ( B, C ) [simplification]
+    rule [minInt-factor-right]: minInt ( A:Int +Int B:Int, C:Int +Int B:Int ) => minInt ( A, C ) +Int B [simplification]
+
+    rule [maxint-left]:  maxInt(A:Int, B:Int) => B requires A <=Int B [simplification]
+    rule [maxint-right]: maxInt(A:Int, B:Int) => A requires A >=Int B [simplification]
+
+    rule [maxint-lt]:  maxInt(A:Int, B:Int)  <Int C:Int => A  <Int C andBool B  <Int C [simplification]
+    rule [maxint-leq]: maxInt(A:Int, B:Int) <=Int C:Int => A <=Int C andBool B <=Int C [simplification]
+    rule [maxint-gt]:  A:Int  <Int maxInt(B:Int, C:Int) => A  <Int B  orBool A  <Int C [simplification]
+    rule [maxint-geq]: A:Int <=Int maxInt(B:Int, C:Int) => A <=Int B  orBool A <=Int C [simplification]
+
+    rule [maxInt-factor-left]:  maxInt ( A:Int +Int B:Int, A:Int +Int C:Int ) => A +Int maxInt ( B, C ) [simplification]
+    rule [maxInt-factor-right]: maxInt ( A:Int +Int B:Int, C:Int +Int B:Int ) => maxInt ( A, C ) +Int B [simplification]
 
   // ###########################################################################
   // inequality
