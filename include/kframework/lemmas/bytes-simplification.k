@@ -88,8 +88,6 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [lengthBytes-buf]:      lengthBytes(#buf(SIZE, _))                         => SIZE   requires 0 <=Int SIZE                        [simplification]
     rule [lengthBytes-range]:    lengthBytes(#range(_, START, WIDTH))               => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
     rule [lengthBytes-prtw]:     lengthBytes(#padRightToWidth(W:Int, B:Bytes))      => maxInt(lengthBytes(B), W)                           [simplification]
-    rule [lengthBytes-padleft]:  lengthBytes(padLeftBytes(B:Bytes, W:Int, _:Int) )  => maxInt(lengthBytes(B), W)                           [simplification]
-    rule [lengthBytes-padright]: lengthBytes(padRightBytes(B:Bytes, W:Int, _:Int) ) => maxInt(lengthBytes(B), W)                           [simplification]
 
     rule [lengthBytes-leq-zero]: lengthBytes(B:Bytes) <=Int 0 => B ==K .Bytes [simplification]
 
