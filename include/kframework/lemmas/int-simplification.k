@@ -165,6 +165,11 @@ module INT-SIMPLIFICATION-COMMON
   // up/Int
   // ###########################################################################
 
+    rule [bitwise-and-to-upInt]:
+      notMaxUInt5 &Int X +Int 31 => (X up/Int 32) *Int 32
+      requires 0 <=Int X
+      [simplification]
+
     rule [upInt-lt-true]:
       ((X up/Int Y) *Int Y) <Int Z => true
       requires X <=Int (Z -Int Y) andBool 0 <Int Y
@@ -175,12 +180,9 @@ module INT-SIMPLIFICATION-COMMON
       requires 0 <Int Y
       [simplification]
 
-    rule [lengthBytes-upInt-32-lower-bound]:
-      lengthBytes(X) <=Int notMaxUInt5 &Int lengthBytes(X) +Int 31 => true
-      [simplification, smt-lemma]
-
-    rule [lengthBytes-upInt-32-upper-bound]:
-      lengthBytes(X) +Int 32 >Int notMaxUInt5 &Int lengthBytes(X) +Int 31 => true
-      [simplification, smt-lemma]
+    rule [upInt-geq-true]:
+      X <=Int ((X up/Int Y) *Int Y) => true
+      requires 0 <Int Y
+      [simplification]
 
 endmodule
