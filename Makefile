@@ -69,7 +69,6 @@ clean: foundry-clean
 
 distclean:
 	rm -rf $(BUILD_DIR)
-	git clean -dffx -- tests/
 
 # Non-K Dependencies
 # ------------------
