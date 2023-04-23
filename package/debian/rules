@@ -17,6 +17,7 @@
 	dh $@
 
 override_dh_auto_build:
+	make RELEASE=true plugin-deps libff -j2
 	make RELEASE=true build -j8 KOMPILE_OPTS='--read-only-kompiled-directory'
 
 override_dh_auto_install:
