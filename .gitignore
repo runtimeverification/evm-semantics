@@ -14,6 +14,7 @@
 /tests/foundry/foundry.k
 /tests/foundry/foundry.k.check.stripped
 /tests/foundry/foundry-list.check.stripped
+/tests/foundry/golden/*.out
 /tests/foundry/*.out
 /tests/foundry/out
 /tests/foundry/test/filecopy2.txt
