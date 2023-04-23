@@ -502,7 +502,7 @@ $(foundry_out):
 	rm -rf $@
 	cd $(dir $@) && forge build
 
-tests/foundry/foundry-list.out: tests/foundry/out/kompiled/foundry.k.prove
+tests/foundry/foundry-list.out: tests/foundry/out/kompiled/foundry.k.prove foundry-fail
 	$(KEVM) foundry-list --foundry-project-root $(foundry_dir) > $@
 
 tests/foundry/foundry-list.check: tests/foundry/foundry-list.out
