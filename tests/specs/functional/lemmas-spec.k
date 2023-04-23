@@ -28,6 +28,9 @@ module LEMMAS-SPEC
 
     claim <k> runLemma(lengthBytes(#padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER .IntList))))) => doneLemma(32) ... </k> requires #rangeUInt(256, OWNER)
 
+    claim <k> runLemma(lengthBytes(#buf(X, 0) +Bytes #padRightToWidth(Y:Int, B:Bytes))) => doneLemma( X +Int Y ) ... </k>
+      requires lengthBytes(B) <Int X andBool lengthBytes(B) <Int Y
+
  // Addresses
  // ---------
 
