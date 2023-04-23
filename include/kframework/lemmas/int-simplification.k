@@ -127,7 +127,7 @@ module INT-SIMPLIFICATION-COMMON
     rule [minInt-factor-right]: minInt ( A:Int +Int B:Int, C:Int +Int B:Int ) => minInt ( A, C ) +Int B [simplification]
 
     rule [maxint-left]:  maxInt(A:Int, B:Int) => B requires A <=Int B [simplification]
-    rule [maxint-right]: maxInt(A:Int, B:Int) => A requires A >=Int B [simplification]
+    rule [maxint-right]: maxInt(A:Int, B:Int) => A requires B <=Int A [simplification]
 
     rule [maxint-lt]:  maxInt(A:Int, B:Int)  <Int C:Int => A  <Int C andBool B  <Int C [simplification]
     rule [maxint-leq]: maxInt(A:Int, B:Int) <=Int C:Int => A <=Int C andBool B <=Int C [simplification]
