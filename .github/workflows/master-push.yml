@@ -54,7 +54,7 @@ jobs:
 
   jammy-package:
     name: 'Build Ubuntu Jammy Package'
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted, linux, normal]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
