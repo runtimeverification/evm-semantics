@@ -17,8 +17,6 @@
 	dh $@
 
 override_dh_auto_build:
-	git submodule update --init --recursive
-	make RELEASE=true deps  -j8
 	make RELEASE=true build -j8 KOMPILE_OPTS='--read-only-kompiled-directory'
 
 override_dh_auto_install:
