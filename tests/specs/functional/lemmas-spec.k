@@ -274,4 +274,19 @@ module LEMMAS-SPEC
     claim [ecrec-mask]: <k> runLemma  ( #asWord ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) &Int maxUInt160 )
                          => doneLemma ( #asWord ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) ) ... </k>
 
+ // up/Int
+ // ------
+
+    claim [upInt-01]: <k> runLemma ( ((X up/Int Y) *Int Y) <Int X +Int Z )
+                           => doneLemma ( true ) ... </k>
+                          requires 0 <Int Y andBool Y <=Int Z
+
+    claim [upInt-02]: <k> runLemma ( lengthBytes(B) +Int X -Int Y <Int notMaxUInt5 &Int lengthBytes(B) +Int 31 )
+                           => doneLemma ( true ) ... </k>
+                          requires Y -Int X >Int 0
+
+    claim [upInt-03]: <k> runLemma ( lengthBytes(B) +Int X -Int Y >Int notMaxUInt5 &Int lengthBytes(B) +Int 31 )
+                           => doneLemma ( true ) ... </k>
+                          requires Y -Int X <Int -64
+
 endmodule
