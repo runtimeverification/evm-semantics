@@ -43,6 +43,9 @@ class Foundry:
     _toml: dict[str, Any]
     _bug_report: BugReport | None
 
+    class Sorts:
+        FOUNDRY_CELL: Final = KSort('FoundryCell')
+
     def __init__(
         self,
         foundry_root: Path,
@@ -160,9 +163,6 @@ class Foundry:
             if type(pc_cell) is KToken and pc_cell.sort == INT:
                 return self.solidity_src(contract_name, int(pc_cell.token))
         return ['NO DATA']
-
-    class Sorts:
-        FOUNDRY_CELL: Final = KSort('FoundryCell')
 
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
