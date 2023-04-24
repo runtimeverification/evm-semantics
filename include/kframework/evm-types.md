@@ -29,13 +29,12 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 ```k
     syntax Int ::= bool2Word ( Bool ) [function, total, smtlib(bool2Word)]
  // ----------------------------------------------------------------------
-    rule bool2Word( true  ) => 1 
+    rule bool2Word( true  ) => 1
     rule bool2Word( false ) => 0
 
     syntax Bool ::= word2Bool ( Int ) [function, total]
  // ---------------------------------------------------
-    rule word2Bool( W ) => false requires W  ==Int 0
-    rule word2Bool( W ) => true  requires W =/=Int 0
+    rule word2Bool( W ) => W =/=Int 0
 ```
 
 -   `sgn` gives the twos-complement interperetation of the sign of a word.
@@ -281,11 +280,11 @@ A cons-list is used for the EVM wordstack.
 
 ```k
     syntax Int ::= #sizeWordStack ( WordStack )       [function, total, smtlib(sizeWordStack)]
-                 | #sizeWordStack ( WordStack , Int ) [function, total, klabel(sizeWordStackAux), smtlib(sizeWordStackAux)]
+                 | #sizeWordStackAux ( WordStack , Int ) [function, total, klabel(sizeWordStackAux), smtlib(sizeWordStackAux)]
  // -----------------------------------------------------------------------------------------------------------------------
-    rule #sizeWordStack ( WS ) => #sizeWordStack(WS, 0)
-    rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
-    rule #sizeWordStack ( _ : WS, SIZE )     => #sizeWordStack(WS, SIZE +Int 1)
+    rule #sizeWordStack ( WS ) => #sizeWordStackAux(WS, 0)
+    rule #sizeWordStackAux ( .WordStack, SIZE ) => SIZE
+    rule #sizeWordStackAux ( _ : WS, SIZE )     => #sizeWordStackAux(WS, SIZE +Int 1)
 
     syntax Bool ::= Int "in" WordStack [function]
  // ---------------------------------------------
@@ -391,9 +390,9 @@ Accounts
 -   `#addr` turns an Ethereum word into the corresponding Ethereum address (160 LSB).
 
 ```k
-    syntax Int ::= #addr ( Int ) [function]
+    syntax Int ::= #addr ( Int ) [function, total]
  // ---------------------------------------
-    rule #addr(W) => W %Word pow160
+    rule #addr(W) => W %Word pow160 [preserves-definedness]
 ```
 
 Storage/Memory Lookup
