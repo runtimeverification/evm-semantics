@@ -95,6 +95,9 @@ class Foundry:
             _contracts[contract_name] = Contract(contract_name, contract_json, foundry=True)
         return _contracts
 
+    def proof_digest(self, contract: str, test: str) -> str:
+        return f'{contract}.{test}:{self.contracts[contract].digest}'
+
     @cached_property
     def digest(self) -> str:
         sorted_names = sorted(self.contracts.keys())
@@ -379,8 +382,8 @@ def foundry_prove(
     def run_cfg_group(tests: list[str]) -> dict[str, bool]:
         ag_proofs: dict[str, APRProof] = {}
         for test in tests:
-            contract_name = test.split('.')[0]
-            proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
+            contract_name, test_name = test.split('.')
+            proof_digest = foundry.proof_digest(contract_name, test_name)
             if APRProof.proof_exists(proof_digest, ag_proofs_dir) and not reinit:
                 ag_proof = APRProof.read_proof(proof_digest, ag_proofs_dir)
             else:
@@ -473,8 +476,8 @@ def foundry_show(
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
 
-    contract_name = test.split('.')[0]
-    proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
+    contract_name, test_name = test.split('.')
+    proof_digest = foundry.proof_digest(contract_name, test_name)
     ag_proof = APRProof.read_proof(proof_digest, ag_proofs_dir)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
@@ -515,8 +518,8 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     dump_dir = ag_proofs_dir / 'dump'
-    contract_name = test.split('.')[0]
-    proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
+    contract_name, test_name = test.split('.')
+    proof_digest = foundry.proof_digest(contract_name, test_name)
     ag_proof = APRProof.read_proof(proof_digest, ag_proofs_dir)
     kcfg_show = KCFGShow(foundry.kevm)
     kcfg_show.dump(test, ag_proof.kcfg, dump_dir, dot=True)
@@ -532,8 +535,8 @@ def foundry_list(foundry_root: Path) -> list[str]:
 
     lines: list[str] = []
     for method in sorted(all_methods):
-        contract_name = method.split('.')[0]
-        proof_digest = f'{method}:{foundry.contracts[contract_name].digest}'
+        contract_name, test_name = method.split('.')
+        proof_digest = foundry.proof_digest(contract_name, test_name)
         if APRProof.proof_exists(proof_digest, ag_proofs_dir):
             ag_proof = APRProof.read_proof(proof_digest, ag_proofs_dir)
             lines.extend(ag_proof.summary)
@@ -547,8 +550,8 @@ def foundry_list(foundry_root: Path) -> list[str]:
 def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
-    contract_name = test.split('.')[0]
-    proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
+    contract_name, test_name = test.split('.')
+    proof_digest = foundry.proof_digest(contract_name, test_name)
     ag_proof = APRProof.read_proof(proof_digest, ag_proofs_dir)
     for _node in ag_proof.kcfg.reachable_nodes(node, traverse_covers=True):
         if not ag_proof.kcfg.is_target(_node.id):
@@ -570,8 +573,8 @@ def foundry_simplify_node(
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     ag_proofs_dir = foundry.out / 'ag_proofs'
-    contract_name = test.split('.')[0]
-    proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
+    contract_name, test_name = test.split('.')
+    proof_digest = foundry.proof_digest(contract_name, test_name)
     ag_proof = APRProof.read_proof(proof_digest, ag_proofs_dir)
     cterm = ag_proof.kcfg.node(node).cterm
     with KCFGExplore(
@@ -604,8 +607,8 @@ def foundry_step_node(
     foundry = Foundry(foundry_root, bug_report=br)
 
     ag_proofs_dir = foundry.out / 'ag_proofs'
-    contract_name = test.split('.')[0]
-    proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
+    contract_name, test_name = test.split('.')
+    proof_digest = foundry.proof_digest(contract_name, test_name)
     ag_proof = APRProof.read_proof(proof_digest, ag_proofs_dir)
     with KCFGExplore(
         foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
@@ -628,8 +631,8 @@ def foundry_section_edge(
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     ag_proofs_dir = foundry.out / 'ag_proofs'
-    contract_name = test.split('.')[0]
-    proof_digest = f'{test}:{foundry.contracts[contract_name].digest}'
+    contract_name, test_name = test.split('.')
+    proof_digest = foundry.proof_digest(contract_name, test_name)
     ag_proof = APRProof.read_proof(proof_digest, ag_proofs_dir)
     source_id, target_id = edge
     with KCFGExplore(
