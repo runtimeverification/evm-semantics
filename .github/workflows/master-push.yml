@@ -79,9 +79,11 @@ jobs:
         run: |
           set -euxo pipefail
           version=$(cat package/version)
+          k_version=$(cat deps/k_release)
           tag_name="kevm-ci-test:${version}"
           container_name="kevm-ci-test-${GITHUB_SHA}"
-          docker build . --tag ${tag_name} --file package/debian/Dockerfile.test
+          docker build . --tag ${tag_name} --file package/debian/Dockerfile.test \
+            --build-arg K_VERSION=${k_version}
           docker run                        \
             --name ${container_name}        \
             --rm                            \

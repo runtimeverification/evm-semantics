@@ -14,7 +14,8 @@ RUN    apt-get update        \
     && apt-get install --yes \
         git                  \
         make                 \
-        sudo
+        sudo                 \
+        wget
 
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
@@ -25,3 +26,9 @@ RUN    groupadd -g $GROUP_ID user                             \
 
 USER $USER_ID:$GROUP_ID
 WORKDIR /home/user
+
+ARG K_VERSION
+RUN wget https://github.com/runtimeverification/k/releases/download/v${K_VERSION}/kframework_${K_VERSION}_amd64_ubuntu_jammy.deb \
+RUN    sudo apt-get update        \
+    && sudo apt-get upgrade --yes \
+    && sudo apt-get install --yes ./kframework_${K_VERSION}_amd64_ubuntu_jammy.deb
