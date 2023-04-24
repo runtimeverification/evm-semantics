@@ -28,6 +28,9 @@ module LEMMAS-SPEC
 
     claim <k> runLemma(lengthBytes(#padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER .IntList))))) => doneLemma(32) ... </k> requires #rangeUInt(256, OWNER)
 
+    claim <k> runLemma(lengthBytes(#buf(X, 0) +Bytes #padRightToWidth(Y:Int, B:Bytes))) => doneLemma( X +Int Y ) ... </k>
+      requires lengthBytes(B) <Int X andBool lengthBytes(B) <Int Y
+
  // Addresses
  // ---------
 
@@ -84,6 +87,10 @@ module LEMMAS-SPEC
 
     claim <k> runLemma( #writeRange( #writeRange( M:Bytes, 32, BA1 ), 32, BA2                                                                  )) => doneLemma(#writeRange(M:Bytes, 32, BA2                                                                  )) ... </k> requires lengthBytes(BA1) <=Int lengthBytes(BA2)
     claim <k> runLemma( #writeRange( #writeRange( M:Bytes, 32, BA1 ), 32, #padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER))) )) => doneLemma(#writeRange(M:Bytes, 32, #padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER))) )) ... </k> requires lengthBytes(BA1) ==Int 32 andBool #rangeUInt(256, OWNER)
+
+    // #writeRange past the end of the buffer
+    claim [write-past-end]: <k> runLemma  ( #writeRange ( #writeRange ( #writeRange ( #writeRange ( #buf(160, A) , 160 , #buf(32, B) ) , 192 , #buf(32, C) ) , 224 , #buf(32, D) ) , 256 , #buf(32, E) ) )
+                             => doneLemma ( #buf(160, A) +Bytes #buf(32, B) +Bytes #buf(32, C) +Bytes #buf(32, D) +Bytes #buf(32, E) ) ... </k>
 
  // #lookup simplifications
  // -----------------------
@@ -186,7 +193,7 @@ module LEMMAS-SPEC
  // ----------------------------
 
     claim [bytes-reassociation]: <k> runLemma  ( ((((A +Bytes B) +Bytes C) +Bytes D) +Bytes E) +Bytes F )
-	                             => doneLemma ( A +Bytes (B +Bytes (C +Bytes (D +Bytes (E +Bytes F)))) ) ... </k>
+                                  => doneLemma ( A +Bytes (B +Bytes (C +Bytes (D +Bytes (E +Bytes F)))) ) ... </k>
 
  // bitwise-and identity
  // --------------------
@@ -255,5 +262,19 @@ module LEMMAS-SPEC
     claim <k> runLemma ( maxUInt16 &Int N  ) => doneLemma ( N ) ... </k> requires #rangeUInt(16,  N)
     claim <k> runLemma ( N &Int maxUInt8   ) => doneLemma ( N ) ... </k> requires #rangeUInt(8,   N)
     claim <k> runLemma ( maxUInt8 &Int N   ) => doneLemma ( N ) ... </k> requires #rangeUInt(8,   N)
+
+ // ecrecover
+ // ---------
+    claim [ecrec-length]: <k> runLemma  ( lengthBytes ( #ecrec ( _ , _ , _ , _ ) ) <=Int 32 )
+                           => doneLemma ( true ) ... </k>
+
+    claim [ecrec-split]: <k> runLemma  ( #range ( #buf(160, 0) +Bytes _BUF , lengthBytes ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) +Int 128 , 32 -Int lengthBytes ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) ) )
+                          => doneLemma ( #range ( #buf( 32, 0)             , lengthBytes ( #ecrec ( HASH , SIGV , SIGR , SIGS ) )          , 32 -Int lengthBytes ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) ) ) ... </k>
+
+    claim [ecrec-range]: <k> runLemma  ( #rangeUInt ( 160 , #asWord ( #ecrec ( _ , _ , _ , _ ) ) ) )
+                          => doneLemma ( true ) ... </k>
+
+    claim [ecrec-mask]: <k> runLemma  ( #asWord ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) &Int maxUInt160 )
+                         => doneLemma ( #asWord ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) ) ... </k>
 
 endmodule
