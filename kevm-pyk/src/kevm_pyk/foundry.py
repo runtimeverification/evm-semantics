@@ -100,8 +100,7 @@ class Foundry:
 
     @cached_property
     def digest(self) -> str:
-        sorted_names = sorted(self.contracts.keys())
-        contract_digests = [self.contracts[c].digest for c in sorted_names]
+        contract_digests = [self.contracts[c].digest for c in sorted(self.contracts)]
         return hash_str('\n'.join(contract_digests))
 
     def up_to_date(self) -> bool:
