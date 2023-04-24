@@ -21,7 +21,7 @@ from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
-from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
+from pyk.proof import APRBMCProof, APRProof
 from pyk.utils import shorten_hashes, single, unique
 
 from .kevm import KEVM

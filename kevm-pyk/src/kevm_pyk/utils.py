@@ -67,7 +67,7 @@ def get_ag_proof_for_spec(  # noqa: N802
 
 def parallel_kcfg_explore(
     kprove: KProve,
-    proof_problems: dict[str, APRPProof | APRPBMCProof],
+    proof_problems: dict[str, APRProof | APRBMCProof],
     save_directory: Path | None = None,
     max_depth: int = 1000,
     max_iterations: int | None = None,
