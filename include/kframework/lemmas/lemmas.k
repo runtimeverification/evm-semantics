@@ -86,6 +86,9 @@ module LEMMAS [symbolic]
       requires I1 =/=Int I2
       [simplification]
 
+ // Hardcoded #addrFromPrivateKey simplifications, see: https://github.com/runtimeverification/haskell-backend/issues/3573
+    rule #addrFromPrivateKey("0x0000000000000000000000000000000000000000000000000000000000000001") => 721457446580647751014191829380889690493307935711 [priority(40)]
+
 endmodule
 
 module LEMMAS-HASKELL [symbolic, kore]
