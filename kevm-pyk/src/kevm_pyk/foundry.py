@@ -21,7 +21,7 @@ from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
-from pyk.proof import AGProof
+from pyk.proof import APRProof
 from pyk.utils import shorten_hashes, single, unique
 
 from .kevm import KEVM
@@ -355,10 +355,10 @@ def foundry_prove(
             setup_methods[contract.name] = f'{contract.name}.{method.name}'
 
     def run_cfg_group(tests: list[str]) -> dict[str, bool]:
-        ag_proofs: dict[str, AGProof] = {}
+        ag_proofs: dict[str, APRProof] = {}
         for test in tests:
-            if AGProof.proof_exists(test, ag_proofs_dir) and not reinit:
-                ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+            if APRProof.proof_exists(test, ag_proofs_dir) and not reinit:
+                ag_proof = APRProof.read_proof(test, ag_proofs_dir)
             else:
                 _LOGGER.info(f'Initializing KCFG for test: {test}')
                 contract_name, method_name = test.split('.')
@@ -400,7 +400,7 @@ def foundry_prove(
                     if simplify_init:
                         _LOGGER.info(f'Simplifying KCFG for test: {test}')
                         kcfg_explore.simplify(kcfg)
-                ag_proof = AGProof(test, kcfg, proof_dir=ag_proofs_dir)
+                ag_proof = APRProof(test, kcfg, proof_dir=ag_proofs_dir)
 
             ag_proof.write_proof()
             ag_proofs[test] = ag_proof
@@ -449,7 +449,7 @@ def foundry_show(
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
 
-    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    ag_proof = APRProof.read_proof(test, ag_proofs_dir)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
@@ -489,7 +489,7 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
     dump_dir = ag_proofs_dir / 'dump'
-    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    ag_proof = APRProof.read_proof(test, ag_proofs_dir)
     kcfg_show = KCFGShow(foundry.kevm)
     kcfg_show.dump(test, ag_proof.kcfg, dump_dir, dot=True)
 
@@ -504,8 +504,8 @@ def foundry_list(foundry_root: Path) -> list[str]:
 
     lines: list[str] = []
     for method in sorted(all_methods):
-        if AGProof.proof_exists(method, ag_proofs_dir):
-            ag_proof = AGProof.read_proof(method, ag_proofs_dir)
+        if APRProof.proof_exists(method, ag_proofs_dir):
+            ag_proof = APRProof.read_proof(method, ag_proofs_dir)
             lines.extend(ag_proof.summary)
             lines.append('')
     if len(lines) > 0:
@@ -517,7 +517,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
 def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
     foundry = Foundry(foundry_root)
     ag_proofs_dir = foundry.out / 'ag_proofs'
-    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    ag_proof = APRProof.read_proof(test, ag_proofs_dir)
     for _node in ag_proof.kcfg.reachable_nodes(node, traverse_covers=True):
         if not ag_proof.kcfg.is_target(_node.id):
             _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
@@ -538,7 +538,7 @@ def foundry_simplify_node(
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     ag_proofs_dir = foundry.out / 'ag_proofs'
-    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    ag_proof = APRProof.read_proof(test, ag_proofs_dir)
     cterm = ag_proof.kcfg.node(node).cterm
     with KCFGExplore(
         foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
@@ -570,7 +570,7 @@ def foundry_step_node(
     foundry = Foundry(foundry_root, bug_report=br)
 
     ag_proofs_dir = foundry.out / 'ag_proofs'
-    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    ag_proof = APRProof.read_proof(test, ag_proofs_dir)
     with KCFGExplore(
         foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
@@ -592,7 +592,7 @@ def foundry_section_edge(
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     ag_proofs_dir = foundry.out / 'ag_proofs'
-    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    ag_proof = APRProof.read_proof(test, ag_proofs_dir)
     source_id, target_id = edge
     with KCFGExplore(
         foundry.kevm, id=ag_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
@@ -666,7 +666,7 @@ def _init_cterm(init_term: KInner) -> CTerm:
 
 
 def get_final_accounts_cell(cfgid: str, ag_proof_dir: Path) -> KInner:
-    ag_proof = AGProof.read_proof(cfgid, ag_proof_dir)
+    ag_proof = APRProof.read_proof(cfgid, ag_proof_dir)
     target = ag_proof.kcfg.get_unique_target()
     cover = single(ag_proof.kcfg.covers(target_id=target.id))
     accounts_cell = get_cell(cover.source.cterm.config, 'ACCOUNTS_CELL')

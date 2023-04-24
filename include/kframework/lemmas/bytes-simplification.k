@@ -78,13 +78,18 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule #writeRange(#writeRange(MEM, K1, BUF1), K2, BUF2) => #writeRange(MEM, K2, BUF2)
       requires K1 +Int lengthBytes(BUF1) <=Int K2 +Int lengthBytes(BUF2) andBool K2 <=Int K1 [simplification]
 
+    rule #writeRange(MEM, K, BUF) => MEM +Bytes #buf(K -Int lengthBytes(MEM), 0) +Bytes BUF
+      requires lengthBytes(MEM) <=Int K [simplification]
+
     // lengthBytes
 
-    rule [lengthBytes-geq-zero]:     0 <=Int lengthBytes ( _ )                 => true                                                [simplification, smt-lemma]
-    rule [lengthBytes-concat]:       lengthBytes(BUF1 +Bytes BUF2)             => lengthBytes(BUF1) +Int lengthBytes(BUF2)            [simplification]
-    rule [lengthBytes-buf]:          lengthBytes(#buf(SIZE, _))                => SIZE   requires 0 <=Int SIZE                        [simplification]
-    rule [lengthBytes-range]:        lengthBytes(#range(_, START, WIDTH))      => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
-    rule [lengthBytes-prtw-leq-len]: lengthBytes(#padRightToWidth(WIDTH, BUF)) => WIDTH  requires lengthBytes(BUF) <=Int WIDTH        [simplification]
+    rule [lengthBytes-geq-zero]: 0 <=Int lengthBytes ( _ )                     => true                                                [simplification, smt-lemma]
+    rule [lengthBytes-concat]:   lengthBytes(BUF1 +Bytes BUF2)                 => lengthBytes(BUF1) +Int lengthBytes(BUF2)            [simplification]
+    rule [lengthBytes-buf]:      lengthBytes(#buf(SIZE, _))                    => SIZE   requires 0 <=Int SIZE                        [simplification]
+    rule [lengthBytes-range]:    lengthBytes(#range(_, START, WIDTH))          => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+    rule [lengthBytes-prtw]:     lengthBytes(#padRightToWidth(W:Int, B:Bytes)) => maxInt(lengthBytes(B), W)                           [simplification]
+
+    rule [lengthBytes-leq-zero]: lengthBytes(B:Bytes) <=Int 0 => B ==K .Bytes [simplification]
 
     // #asWord
 
@@ -95,4 +100,11 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
 
+    // #ecrec
+
+    rule lengthBytes ( #ecrec ( _ , _ , _ , _ ) ) <=Int 32 => true
+        [simplification, smt-lemma]
+
+    rule #asWord ( #ecrec ( _ , _ , _ , _ ) ) <Int pow160 => true
+        [simplification, smt-lemma]
 endmodule
