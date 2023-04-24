@@ -28,21 +28,27 @@ module INFINITE-GAS
     rule      G  *Gas #gas(G') => #gas(G *Int G') 
     rule      G  /Gas #gas(G') => #gas(G /Int G')  requires G' =/=Int 0
 
-    rule  #gas(_)  <Gas _:Int   => false 
-    rule  _:Int    <Gas #gas(_) => true  
-    rule  #gas(_) <=Gas _:Int   => false 
-    rule  _:Int   <=Gas #gas(_) => true  
-    rule  #gas(_)  >Gas _:Int   => true  
-    rule  _:Int    >Gas #gas(_) => false 
-    rule  #gas(_) >=Gas _:Int   => true  
-    rule  _:Int   >=Gas #gas(_) => false 
+    rule  #gas(_)  <Gas _:Int   => false
+    rule  #gas(_)  <Gas #gas(_) => false
+    rule  _:Int    <Gas #gas(_) => true 
+                                         
+    rule  #gas(_) <=Gas _:Int   => false
+    rule  #gas(_) <=Gas #gas(_) => true 
+    rule  _:Int   <=Gas #gas(_)  => true
+
+    rule  #gas(_)  >Gas _:Int   => true 
+    rule  _:Int    >Gas #gas(_) => false
+    rule  #gas(_)  >Gas #gas(_) => false
+
+    rule  #gas(_) >=Gas _:Int   => true 
+    rule  _:Int   >=Gas #gas(_) => false
+    rule  #gas(_) >=Gas #gas(_) => true 
 
     rule minGas(#gas(G), #gas(G')) => #gas(minInt(G, G'))
-    // TODO Daniel: Do I need minGas(#gas(G), G') and minGas(G, #gas(G')) ?
+    rule minGas(G:Int  , #gas(_))  => G
+    rule minGas(#gas(_), G':Int)   => G'
 
     rule #allBut64th(#gas(G)) => #gas(#allBut64th(G))
-    rule Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) requires #rangeUInt(256, GEXTRA) 
-
-    // TODO Daniel: Should I make a isKResult for #gas?
+    rule Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) [simplification] // TODO Daniel: Note I removed the requires here...
 endmodule
 ```

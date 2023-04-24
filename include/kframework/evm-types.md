@@ -14,6 +14,7 @@ module EVM-TYPES
     imports K-EQUAL
     imports JSON
     imports WORD
+    imports GAS
 ```
 
 Utilities
@@ -228,7 +229,9 @@ A cons-list is used for the EVM wordstack.
 
 ```k
     syntax WordStack ::= ".WordStack"      [smtlib(_dotWS)]
-                       | Int ":" WordStack [klabel(_:_WS), smtlib(_WS_)]
+// TODO Daniel: This feels wrong evm.md:737
+                       | Gas ":" WordStack [klabel(_:_WS), smtlib(_WS_)]
+                     //   | Int ":" WordStack [klabel(_:_WS), smtlib(_WS_)]
  // --------------------------------------------------------------------
 ```
 
@@ -262,13 +265,17 @@ A cons-list is used for the EVM wordstack.
 -   `WS [ N := W ]` sets element `N` of `WS` to `W` (padding with zeros as needed).
 
 ```k
-    syntax Int ::= WordStack "[" Int "]" [function, total]
+   //  syntax Int ::= WordStack "[" Int "]" [function, total]
+// TODO Daniel:   
+    syntax Gas ::= WordStack "[" Int "]" [function, total]
  // ------------------------------------------------------
     rule (W : _):WordStack [ N ] => W                  requires N ==Int 0
     rule WS:WordStack      [ N ] => #drop(N, WS) [ 0 ] requires N  >Int 0
     rule  _:WordStack      [ N ] => 0                  requires N  <Int 0
 
-    syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function, total]
+   //  syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function, total]
+// TODO Daniel:   
+    syntax WordStack ::= WordStack "[" Int ":=" Gas "]" [function, total]
  // ---------------------------------------------------------------------
     rule (_W0 : WS):WordStack [ N := W ] => W  : WS                     requires N ==Int 0
     rule ( W0 : WS):WordStack [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
@@ -287,7 +294,9 @@ A cons-list is used for the EVM wordstack.
     rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
     rule #sizeWordStack ( _ : WS, SIZE )     => #sizeWordStack(WS, SIZE +Int 1)
 
-    syntax Bool ::= Int "in" WordStack [function]
+   //  syntax Bool ::= Int "in" WordStack [function]
+// TODO Daniel:   
+    syntax Bool ::= Gas "in" WordStack [function]
  // ---------------------------------------------
     rule _ in .WordStack => false
     rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
@@ -297,8 +306,11 @@ A cons-list is used for the EVM wordstack.
 -   `#replicate` is a `WordStack` of length `N` with `A` the value of every element.
 
 ```k
-    syntax WordStack ::= #replicate    ( Int, Int )            [function, total]
-                       | #replicateAux ( Int, Int, WordStack ) [function, total]
+   //  syntax WordStack ::= #replicate    ( Int, Int )            [function, total]
+   //                     | #replicateAux ( Int, Int, WordStack ) [function, total]
+// TODO Daniel:   
+    syntax WordStack ::= #replicate    ( Int, Gas )            [function, total]
+                       | #replicateAux ( Int, Gas, WordStack ) [function, total]
  // ----------------------------------------------------------------------------
     rule #replicate   ( N,  A )     => #replicateAux(N, A, .WordStack)
     rule #replicateAux( N,  A, WS ) => #replicateAux(N -Int 1, A, A : WS) requires         N >Int 0
@@ -460,5 +472,38 @@ Productions related to transactions
     syntax DynamicFeeTx ::= DynamicFeeTxData     ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)
  // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+endmodule
+
+module GAS
+   imports INT
+
+   syntax Gas ::= Int
+
+   syntax Gas ::= Gas "*Gas" Gas [function, left, total]
+                | Gas "/Gas" Gas [function, left]
+                > left:
+                  Gas "+Gas" Gas [function, left, total]
+                | Gas "-Gas" Gas [function, left, total]
+               
+   syntax Bool ::= Gas  "<Gas" Gas [function, left, total]
+                 | Gas "<=Gas" Gas [function, left, total]
+                 | Gas  ">Gas" Gas [function, left, total]
+                 | Gas ">=Gas" Gas [function, left, total]
+
+   syntax Gas ::= "minGas" "(" Gas "," Gas ")" [function, total]
+
+   rule I1:Int *Gas I2:Int => I1 *Int I2
+   rule I1:Int /Gas I2:Int => I1 /Int I2
+   rule I1:Int +Gas I2:Int => I1 +Int I2
+   rule I1:Int -Gas I2:Int => I1 -Int I2
+
+   rule I1:Int  <Gas I2:Int => I1  <Int I2
+   rule I1:Int <=Gas I2:Int => I1 <=Int I2
+   rule I1:Int  >Gas I2:Int => I1  >Int I2
+   rule I1:Int >=Gas I2:Int => I1 >=Int I2
+
+   rule minGas(I1:Int, I2:Int) => minInt(I1, I2)
+
+   // rule gasToInt(G:Int) => G
 endmodule
 ```

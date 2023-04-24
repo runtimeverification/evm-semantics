@@ -11,37 +11,6 @@ This file only defines the local execution operations, the file `driver.md` will
 requires "data.md"
 requires "network.md"
 
-module GAS
-   imports INT
-
-   syntax Gas ::= Int
-
-   syntax Gas ::= Gas "*Gas" Gas [function, left, total]
-                | Gas "/Gas" Gas [function, left]
-                > left:
-                  Gas "+Gas" Gas [function, left, total]
-                | Gas "-Gas" Gas [function, left, total]
-               
-   syntax Bool ::= Gas  "<Gas" Gas [function, left, total]
-                 | Gas "<=Gas" Gas [function, left, total]
-                 | Gas  ">Gas" Gas [function, left, total]
-                 | Gas ">=Gas" Gas [function, left, total]
-
-   syntax Gas ::= "minGas" "(" Gas "," Gas ")" [function, total]
-
-   rule I1:Int *Gas I2:Int => I1 *Int I2
-   rule I1:Int /Gas I2:Int => I1 /Int I2
-   rule I1:Int +Gas I2:Int => I1 +Int I2
-   rule I1:Int -Gas I2:Int => I1 -Int I2
-
-   rule I1:Int  <Gas I2:Int => I1  <Int I2
-   rule I1:Int <=Gas I2:Int => I1 <=Int I2
-   rule I1:Int  >Gas I2:Int => I1  >Int I2
-   rule I1:Int >=Gas I2:Int => I1 >=Int I2
-
-   rule minGas(I1:Int, I2:Int) => minInt(I1, I2)
-endmodule
-
 module EVM
    imports STRING
    imports EVM-DATA
@@ -492,8 +461,9 @@ Here we load the correct number of arguments from the `wordStack` based on the s
 The `CallOp` opcodes all interperet their second argument as an address.
 
 ```k
-    syntax InternalOp ::= CallSixOp Int Int     Int Int Int Int
-                        | CallOp    Int Int Int Int Int Int Int
+// TODO Daniel: 
+    syntax InternalOp ::= CallSixOp Gas Int     Int Int Int Int
+                        | CallOp    Gas Int Int Int Int Int Int
  // -----------------------------------------------------------
     rule <k> #exec [ CSO:CallSixOp ] => #gas [ CSO , CSO W0 W1    W2 W3 W4 W5 ] ~> CSO W0 W1    W2 W3 W4 W5 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
     rule <k> #exec [ CO:CallOp     ] => #gas [ CO  , CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
@@ -762,7 +732,9 @@ These are just used by the other operators for shuffling local execution state a
 ```k
     syntax InternalOp ::= "#push" | "#setStack" WordStack
  // -----------------------------------------------------
-    rule <k> W0:Int ~> #push => . ... </k> <wordStack> WS => W0 : WS </wordStack>
+   //  rule <k> W0:Int ~> #push => . ... </k> <wordStack> WS => W0 : WS </wordStack>
+// TODO Daniel: Check
+    rule <k> W0:Gas ~> #push => . ... </k> <wordStack> WS => W0 : WS </wordStack>
     rule <k> #setStack WS    => . ... </k> <wordStack> _  => WS      </wordStack>
 ```
 
@@ -1893,9 +1865,9 @@ Overall Gas
     rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductMemoryGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
-    rule <k> _G:Int ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k>  G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Gas                  </gas> requires GAVAIL <Gas G
-    rule <k>  G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> requires G <=Gas GAVAIL
+    rule <k> _G:Gas ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
+    rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Gas                  </gas> requires GAVAIL <Gas G
+    rule <k>  G:Gas ~> #deductGas => .                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> requires G <=Gas GAVAIL
 
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [function, total]
@@ -2200,7 +2172,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
-    rule <k> GCALL:Int ~> #allocateCallGas => . ... </k>
+    rule <k> GCALL:Gas ~> #allocateCallGas => . ... </k>
          <callGas> _ => GCALL </callGas>
 
     syntax InternalOp ::= "#allocateCreateGas"
@@ -2216,8 +2188,8 @@ There are several helpers for calculating gas (most of them also specified in th
 ```k
     syntax Exp     ::= Int | Gas
     syntax KResult ::= Int
-    syntax Exp ::= Ccall         ( Schedule , BExp , Int , Gas , Int , Bool ) [strict(2)]
-                 | Ccallgas      ( Schedule , BExp , Int , Gas , Int , Bool ) [strict(2)]
+    syntax Exp ::= Ccall         ( Schedule , BExp , Gas , Gas , Int , Bool ) [strict(2)]
+                 | Ccallgas      ( Schedule , BExp , Gas , Gas , Int , Bool ) [strict(2)]
                  | Cselfdestruct ( Schedule , BExp , Int )                    [strict(2)]
  // -------------------------------------------------------------------------------------
    rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
@@ -2251,7 +2223,12 @@ There are several helpers for calculating gas (most of them also specified in th
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
       requires 0 <=Int GCAP
 
-    rule Cgascap(_, GCAP, _, _) => 0 requires GCAP <Int 0
+   //  rule [Cgascap]:
+   //       Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
+   //    => #if GAVAIL <Gas GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minGas(#allBut64th(GAVAIL -Gas GEXTRA), GCAP) #fi
+   //    requires 0 <=Gas GCAP
+
+    rule Cgascap(_, GCAP, _, _) => 0 requires GCAP <Gas 0
 
     rule [Csstore.new]:
          Csstore(SCHED, NEW, CURR, ORIG)
