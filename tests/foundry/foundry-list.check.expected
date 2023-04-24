@@ -52,6 +52,12 @@ APRProof: AccountParamsTest.test_getNonce_unknownSymbolic:c2d65fbf67b09929c121ee
     frontier: 0
     stuck: 0
 
+APRProof: AddrTest.test_addr_true
+    status: ProofStatus.PASSED
+    nodes: 7
+    frontier: 0
+    stuck: 0
+
 APRProof: AddrTest.test_builtInAddresses:e509002be11adba301faa6a3d78522b9d10f7d545a12bae3de0414252e2da221
     status: ProofStatus.PASSED
     nodes: 5
