@@ -87,6 +87,7 @@ module INT-SIMPLIFICATION-COMMON
     rule _ *Int 0 => 0 [simplification]
 
     rule (A *Int C) +Int (B *Int C) => (A +Int B) *Int C [simplification]
+    rule (A *Int C) -Int (B *Int C) => (A -Int B) *Int C [simplification]
 
     rule (E *Int A) +Int B +Int C +Int D +Int (F *Int A) => ((E +Int F) *Int A) +Int B +Int C +Int D [simplification]
 

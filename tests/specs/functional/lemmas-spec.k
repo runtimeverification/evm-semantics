@@ -173,6 +173,13 @@ module LEMMAS-SPEC
     claim <k> runLemma( #padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER         .IntList))) ) => doneLemma(#buf(32, #hashedLocation("Solidity", 2, OWNER         .IntList))) ... </k> requires #rangeUInt(256, OWNER)
     claim <k> runLemma( #padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER SPENDER .IntList))) ) => doneLemma(#buf(32, #hashedLocation("Solidity", 2, OWNER SPENDER .IntList))) ... </k> requires #rangeUInt(256, OWNER) andBool #rangeUInt(256, SPENDER)
 
+    claim <k> runLemma( #buf(32, X +Int Y) +Bytes #buf(lengthBytes(B), 0) +Bytes #buf(32 +Int Y -Int Y, #asWord(B))) => doneLemma ( #buf(32, Z -Int Y) +Bytes #buf(32, (3 *Int Y -Int (2 *Int Y)) -Int Y) +Bytes B ) ... </k>
+      requires lengthBytes(B) <=Int 4
+       andBool 0 <=Int X andBool 0 <=Int Y andBool Y <=Int Z
+       andBool X <Int 256 andBool Y <Int 256 andBool Z <Int 256
+       andBool X +Int 2 *Int Y -Int Z ==Int 0
+
+
  // chop simplification
  // -------------------
 

@@ -36,15 +36,15 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [buf-inject-k]:
       #buf(W:Int, X:Int) ==K #buf(W:Int, Y:Int) => X ==Int Y
       requires 0 <=Int W
-       andBool #rangeUInt (8 *Int W, X)
-       andBool #rangeUInt (8 *Int W, Y)
+       andBool 0 <=Int X andBool X <Int 2 ^Int (8 *Int W)
+       andBool 0 <=Int Y andBool Y <Int 2 ^Int (8 *Int W)
       [simplification]
 
     rule [buf-inject-ml]:
       { #buf(W:Int, X:Int) #Equals #buf(W:Int, Y:Int) } => { X #Equals Y }
       requires 0 <=Int W
-       andBool #rangeUInt (8 *Int W, X)
-       andBool #rangeUInt (8 *Int W, Y)
+       andBool 0 <=Int X andBool X <Int 2 ^Int (8 *Int W)
+       andBool 0 <=Int Y andBool Y <Int 2 ^Int (8 *Int W)
       [simplification]
 
     rule [buf-as-int-left]:  B:Bytes   ==K #buf(32, X:Int) => X ==Int #asInteger(B) requires lengthBytes(B) <=Int 32 [simplification, concrete(B)]
