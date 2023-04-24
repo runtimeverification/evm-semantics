@@ -65,7 +65,35 @@ jobs:
         with:
           tag: kevm-package-jammy-${{ github.sha }}
       - name: 'Build Package'
-        run: docker exec -u user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
+        run: |
+          set -euxo pipefail
+          version=$(cat package/version)
+          docker exec -u user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
+          docker exec -u user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'ls ..'
+          docker cp kevm-package-jammy-${GITHUB_SHA}:/home/user/kevm_${version}_amd64.deb ./
+      - name: 'Tear down Docker'
+        if: always()
+        run: |
+          docker stop --time=0 kevm-package-jammy-${GITHUB_SHA}
+      - name: 'Test Package'
+        run: |
+          set -euxo pipefail
+          version=$(cat package/version)
+          tag_name="kevm-ci-test:${version}"
+          container_name="kevm-ci-test-${GITHUB_SHA}"
+          docker build . --tag ${tag_name} --file package/debian/Dockerfile.test
+          docker run                        \
+            --name ${container_name}        \
+            --rm                            \
+            --interactive                   \
+            --tty                           \
+            --detach                        \
+            --user root                     \
+            --workdir /home/user            \
+            ${tag_name}
+          docker cp ./kevm_${version}_amd64.deb ${container_name}:/home/user/kevm_${version}_amd64.deb
+          docker exec -u user ${container_name} /bin/bash -c "sudo apt-get install --yes ./kevm_${version}_amd64.deb"
+          docker stop --time=0 ${container_name}
 
   dockerhub-image:
     name: 'Publish to Dockerhub'
