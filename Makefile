@@ -54,7 +54,7 @@ export PLUGIN_FULL_PATH
         test-prove test-failing-prove test-foundry-kcfg-diff                                                                                 \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-smoke \
         test-prove-mcd test-klab-prove                                                                                                       \
-        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-list                                                    \
+        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-bmc-prove test-foundry-list                             \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                           \
         test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean foundry-fail                                                      \
         media media-pdf metropolis-theme                                                                                                     \
