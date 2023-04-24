@@ -17,7 +17,7 @@ from pyk.kast.manip import (
 )
 from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
-from pyk.proof import AGBMCProof, AGBMCProver, AGProof, AGProver
+from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -44,7 +44,7 @@ def get_ag_proof_for_spec(  # noqa: N802
     md_selector: str | None = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
-) -> AGProof:
+) -> APRProof:
     if save_directory is None:
         save_directory = Path('.')
         _LOGGER.info(f'Using default save_directory: {save_directory}')
@@ -61,13 +61,13 @@ def get_ag_proof_for_spec(  # noqa: N802
         )
     )
 
-    ag_proof = AGProof.read_proof(claim.label, save_directory)
+    ag_proof = APRProof.read_proof(claim.label, save_directory)
     return ag_proof
 
 
 def parallel_kcfg_explore(
     kprove: KProve,
-    proof_problems: dict[str, AGProof | AGBMCProof],
+    proof_problems: dict[str, APRPProof | APRPBMCProof],
     save_directory: Path | None = None,
     max_depth: int = 1000,
     max_iterations: int | None = None,
@@ -85,7 +85,7 @@ def parallel_kcfg_explore(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
 ) -> dict[str, bool]:
-    def _call_rpc(packed_args: tuple[str, AGProof, int]) -> bool:
+    def _call_rpc(packed_args: tuple[str, APRProof, int]) -> bool:
         _cfgid, _ag_proof, _index = packed_args
         terminal_rules = ['EVM.halt']
         cut_point_rules = []
@@ -118,14 +118,14 @@ def parallel_kcfg_explore(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:
-            prover: AGBMCProof | AGProver
-            if type(_ag_proof) is AGBMCProof:
+            prover: APRBMCProof | APRProver
+            if type(_ag_proof) is APRBMCProof:
                 assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
-                prover = AGBMCProver(
+                prover = APRBMCProver(
                     _ag_proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop
                 )
             else:
-                prover = AGProver(_ag_proof, is_terminal=is_terminal, extract_branches=extract_branches)
+                prover = APRProver(_ag_proof, is_terminal=is_terminal, extract_branches=extract_branches)
             try:
                 _cfg = prover.advance_proof(
                     kcfg_explore,
