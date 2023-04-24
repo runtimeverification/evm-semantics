@@ -3,7 +3,6 @@ AccountParamsTest.testFail_GetNonce_false
 AccountParamsTest.test_GetNonce_false
 AddrTest.test_addr_false
 AddrTest.test_addr_symbolic
-AddrTest.test_addr_true
 AddrTest.testFail_addr_false
 AddrTest.testFail_addr_true
 AllowChangesTest.test
