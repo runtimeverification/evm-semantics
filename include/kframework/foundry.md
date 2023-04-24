@@ -490,8 +490,7 @@ function addr(uint256 privateKey) external returns (address);
 
 `foundry.call.addr` will match when the `addr` cheat code function is called.
 This rule takes `uint256` private key from the function call data, which is represented as `ARGS`, and computes the address.
-The `<output>` cell will be updated with the value of the address generated from the private key using `#addrFromPrivateKey(#unparseByteStack(ARGS))`.
-`#bufStrict` is used to pad the value to a length of 32.
+The `<output>` cell will be updated with the value of the address generated from the private key, padded to 32 bytes wide.
 
 ```k
     rule [foundry.call.addr]:
