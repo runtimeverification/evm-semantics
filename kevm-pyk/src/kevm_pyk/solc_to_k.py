@@ -168,7 +168,7 @@ class Contract:
 
     @cached_property
     def digest(self) -> str:
-        return hash_str(f'{self.name} - {json.dumps(self.contract_json)}')
+        return hash_str(f'{self.name} - {json.dumps(self.contract_json, sort_keys=True)}')
 
     @cached_property
     def srcmap(self) -> dict[int, tuple[int, int, int, str, int]]:
