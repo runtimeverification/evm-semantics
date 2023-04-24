@@ -165,24 +165,44 @@ module INT-SIMPLIFICATION-COMMON
   // up/Int
   // ###########################################################################
 
-    rule [bitwise-and-to-upInt]:
-      notMaxUInt5 &Int X +Int 31 => (X up/Int 32) *Int 32
-      requires 0 <=Int X
-      [simplification]
-
     rule [upInt-lt-true]:
       ((X up/Int Y) *Int Y) <Int Z => true
-      requires X <=Int (Z -Int Y) andBool 0 <Int Y
+      requires X +Int Y <=Int Z andBool 0 <Int Y
       [simplification]
 
     rule [upInt-lt-false]:
+      ((X up/Int Y) *Int Y) <Int Z => false
+      requires Z <=Int X andBool 0 <Int Y
+      [simplification]
+
+    rule [upInt-refl-lt]:
       ((X up/Int Y) *Int Y) <Int X => false
       requires 0 <Int Y
       [simplification]
 
-    rule [upInt-geq-true]:
+    rule [upInt-refl-leq]:
+      ((X up/Int Y) *Int Y) <=Int X => X modInt Y ==Int 0
+      requires 0 <Int Y
+      [simplification]
+
+    rule [upInt-refl-gt]:
+      X <Int ((X up/Int Y) *Int Y) => X modInt Y =/=Int 0
+      requires 0 <Int Y
+      [simplification]
+
+    rule [upInt-refl-geq]:
       X <=Int ((X up/Int Y) *Int Y) => true
       requires 0 <Int Y
       [simplification]
+
+    rule [upInt-ref-eq]:
+      X ==Int ((X up/Int Y) *Int Y) => X modInt Y ==Int 0
+      requires 0 <Int Y
+      [simplification, comm]
+
+    rule [upInt-refl-neq]:
+      X =/=Int ((X up/Int Y) *Int Y) => X modInt Y =/=Int 0
+      requires 0 <Int Y
+      [simplification, comm]
 
 endmodule

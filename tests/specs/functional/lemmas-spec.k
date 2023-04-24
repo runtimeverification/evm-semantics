@@ -284,7 +284,4 @@ module LEMMAS-SPEC
                            => doneLemma ( true ) ... </k>
                           requires 0 <Int Y andBool Y <=Int Z
 
-    claim [upInt-02]: <k> runLemma ( notMaxUInt5 &Int lengthBytes(B) +Int 31 >=Int lengthBytes(B) )
-                           => doneLemma ( true ) ... </k>
-
 endmodule
