@@ -13,6 +13,17 @@ module VERIFICATION
  // --------------------------------------
     rule runLemma( T ) => doneLemma( T )
 
+ // Shorthand for previous notations so that more complex
+ // claims do not have to be rewritten
+
+    syntax Bytes ::= Bytes "[" Int ".." Int "]" [function, total]
+ // -------------------------------------------------------------
+    rule B:Bytes [ S:Int .. W:Int ] => #range(B, S, W)
+
+    syntax Bytes ::= Bytes "[" Int ":=" Bytes "]" [function, total]
+ // ---------------------------------------------------------------
+    rule B:Bytes [ S:Int := B1:Bytes ] => #writeRange(B, S, B1)
+
 endmodule
 
 module LEMMAS-SPEC
