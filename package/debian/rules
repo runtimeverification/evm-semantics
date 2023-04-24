@@ -18,7 +18,7 @@
 
 override_dh_auto_build:
 	make RELEASE=true plugin-deps libff kevm-pyk -j3
-	make RELEASE=true build-kevm build-llvm build-haskell build-foundry -j8 KOMPILE_OPTS='--read-only-kompiled-directory'
+	make RELEASE=true build-kevm build-haskell build-foundry -j8 KOMPILE_OPTS='--read-only-kompiled-directory'
 
 override_dh_auto_install:
 	make RELEASE=true install -j8 KOMPILE_OPTS='--read-only-kompiled-directory' DESTDIR="$(CURDIR)/debian/kevm" INSTALL_PREFIX="/usr"
