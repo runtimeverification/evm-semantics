@@ -269,14 +269,22 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def same_loop(cterm1: CTerm, cterm2: CTerm) -> bool:
-        branch1 = list(KEVM.extract_branches(cterm1))
-        branch2 = list(KEVM.extract_branches(cterm2))
-        same_branch = len(branch1) > 0 and len(branch2) > 0 and branch1[0] == branch2[0]
-        same_cell_structure = all(
-            cterm1.cell(cn) == cterm2.cell(cn) for cn in ['PC_CELL', 'CALLDATA_CELL', 'PROGRAM_CELL', 'JUMPDESTS_CELL']
-        )
-        same_wordstack_structure = KEVM.wordstack_len(cterm1) == KEVM.wordstack_len(cterm2)
-        return same_branch and same_cell_structure and same_wordstack_structure
+        # In the same program, at the same calldepth, at the same program counter
+        for cell in ['PC_CELL', 'CALLDEPTH_CELL', 'PROGRAM_CELL']:
+            if cterm1.cell(cell) != cterm2.cell(cell):
+                return False
+        # duplicate from KEVM.extract_branches
+        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
+        pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
+        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
+        subst1 = branch_pattern.match(cterm1.cell('K_CELL'))
+        subst2 = branch_pattern.match(cterm2.cell('K_CELL'))
+        # Jumping to the same program counter
+        if subst1 is not None and subst2 is not None and subst1['###PCOUNT'] == subst2['###PCOUNT']:
+            # Same wordstack structure
+            if KEVM.wordstack_len(cterm1.cell('WORDSTACK_CELL')) == KEVM.wordstack_len(cterm2.cell('WORDSTACK_CELL')):
+                return True
+        return False
 
     @staticmethod
     def halt() -> KApply:
@@ -416,8 +424,8 @@ class KEVM(KProve, KRun):
         )
 
     @staticmethod
-    def wordstack_len(cterm: CTerm) -> int:
-        return len(flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', cterm.cell('WORDSTACK_CELL')))
+    def wordstack_len(wordstack: KInner) -> int:
+        return len(flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', wordstack))
 
     @staticmethod
     def parse_bytestack(s: KInner) -> KApply:
