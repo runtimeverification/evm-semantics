@@ -78,16 +78,6 @@ class KompileTarget(Enum):
                 raise AssertionError()
 
 
-class Kernel(Enum):
-    LINUX = 'Linux'
-    DARWIN = 'Darwin'
-
-    @staticmethod
-    def get() -> Kernel:
-        uname_res = run_process(('uname', '-s'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
-        return Kernel(uname_res)
-
-
 def kompile_target(
     definition_dir: Path,
     target: KompileTarget,
@@ -108,45 +98,9 @@ def kompile_target(
     md_selector = 'k & ! standalone' if target == KompileTarget.NODE else 'k & ! node'
 
     if backend == KompileBackend.LLVM:
-        ccopts = list(ccopts)
-        ccopts += ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
-
         if kevm_lib is None:
-            raise ValueError('Flag --kevm-lib missing')
-
-        libff_dir = kevm_lib / 'libff'
-        ccopts += [f'-L{libff_dir}/lib', f'-I{libff_dir}/include']
-
-        plugin_include = kevm_lib / 'blockchain-k-plugin/include'
-        ccopts += [
-            f'{plugin_include}/c/plugin_util.cpp',
-            f'{plugin_include}/c/crypto.cpp',
-            f'{plugin_include}/c/blake2.cpp',
-        ]
-
-        kernel = Kernel.get()
-        if kernel == Kernel.DARWIN:
-            brew_root = run_process(('brew', '--prefix'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
-            ccopts += [
-                f'-I{brew_root}/include',
-                f'-L{brew_root}/lib',
-            ]
-
-            openssl_root = run_process(('brew', '--prefix', 'openssl'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
-            ccopts += [
-                f'-I{openssl_root}/include',
-                f'-L{openssl_root}/lib',
-            ]
-
-            libcryptopp_dir = kevm_lib / 'cryptopp'
-            ccopts += [
-                f'-I{libcryptopp_dir}/include',
-                f'-L{libcryptopp_dir}/lib',
-            ]
-        elif kernel == Kernel.LINUX:
-            ccopts += ['-lprocps']
-        else:
-            raise AssertionError()
+            raise ValueError(f'Parameter kevm_lib must not be None for target: {target.value}')
+        ccopts = list(ccopts) + _lib_ccopts(kevm_lib)
 
     kevm_kompile(
         definition_dir,
@@ -163,6 +117,55 @@ def kompile_target(
         optimization=optimization,
         enable_llvm_debug=enable_llvm_debug,
     )
+
+
+def _lib_ccopts(kevm_lib: Path) -> list[str]:
+    ccopts = ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
+
+    libff_dir = kevm_lib / 'libff'
+    ccopts += [f'-L{libff_dir}/lib', f'-I{libff_dir}/include']
+
+    plugin_include = kevm_lib / 'blockchain-k-plugin/include'
+    ccopts += [
+        f'{plugin_include}/c/plugin_util.cpp',
+        f'{plugin_include}/c/crypto.cpp',
+        f'{plugin_include}/c/blake2.cpp',
+    ]
+
+    class Kernel(Enum):
+        LINUX = 'Linux'
+        DARWIN = 'Darwin'
+
+        @staticmethod
+        def get() -> Kernel:
+            uname_res = run_process(('uname', '-s'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+            return Kernel(uname_res)
+
+    kernel = Kernel.get()
+    if kernel == Kernel.DARWIN:
+        brew_root = run_process(('brew', '--prefix'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+        ccopts += [
+            f'-I{brew_root}/include',
+            f'-L{brew_root}/lib',
+        ]
+
+        openssl_root = run_process(('brew', '--prefix', 'openssl'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+        ccopts += [
+            f'-I{openssl_root}/include',
+            f'-L{openssl_root}/lib',
+        ]
+
+        libcryptopp_dir = kevm_lib / 'cryptopp'
+        ccopts += [
+            f'-I{libcryptopp_dir}/include',
+            f'-L{libcryptopp_dir}/lib',
+        ]
+    elif kernel == Kernel.LINUX:
+        ccopts += ['-lprocps']
+    else:
+        raise AssertionError()
+
+    return ccopts
 
 
 def kevm_kompile(
