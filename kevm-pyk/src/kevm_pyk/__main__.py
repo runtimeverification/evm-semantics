@@ -8,7 +8,7 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
+from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path, run_process
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
@@ -45,11 +45,6 @@ if TYPE_CHECKING:
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
-
-
-class KompileTarget(Enum):
-    LINUX = 'linux'
-    DARWIN = 'darwin'
 
 
 def _ignore_arg(args: dict[str, Any], arg: str, cli_option: str) -> None:
@@ -92,7 +87,6 @@ def exec_kompile(
     syntax_module: str | None,
     ccopts: Iterable[str] = (),
     llvm_kompile: bool = True,
-    target: KompileTarget | None = None,
     o0: bool = False,
     o1: bool = False,
     o2: bool = False,
@@ -107,6 +101,15 @@ def exec_kompile(
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector {kwargs["md_selector"]}')
+
+    class Kernel(Enum):
+        LINUX = 'Linux'
+        DARWIN = 'Darwin'
+
+        @staticmethod
+        def get() -> Kernel:
+            uname_res = run_process(('uname', '-s'), pipe_stderr=True).stdout.strip()
+            return Kernel(uname_res)
 
     optimization = 0
     if o1:
@@ -131,7 +134,9 @@ def exec_kompile(
                 f'{plugin_include}/c/blake2.cpp',
             ]
         ccopts += ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
-        if target == KompileTarget.DARWIN:
+
+        kernel = Kernel.get()
+        if kernel == Kernel.DARWIN:
             if brew_root is not None:
                 ccopts += [
                     f'-I{brew_root}/include',
@@ -147,8 +152,10 @@ def exec_kompile(
                     f'-I{libcryptopp_dir}/include',
                     f'-L{libcryptopp_dir}/lib',
                 ]
-        elif target == KompileTarget.LINUX:
+        elif kernel == Kernel.LINUX:
             ccopts += ['-lprocps']
+        else:
+            raise AssertionError()
 
     kevm_kompile(
         definition_dir,
@@ -880,9 +887,6 @@ def _create_argument_parser() -> ArgumentParser:
     )
     kompile_args.add_argument('--plugin-include', type=dir_path, help='Path to plugin include directory.')
     kompile_args.add_argument('--libff-dir', type=dir_path, help='Path to libff include directory.')
-    kompile_args.add_argument(
-        '--target', type=KompileTarget, default=KompileTarget.LINUX, help='Compilation target, [linux|darwin].'
-    )
     kompile_args.add_argument('--libcryptopp-dir', type=dir_path, help='Path to libcryptopp include directory.')
     kompile_args.add_argument(
         '--brew-root', type=dir_path, help='Path to homebrew root directory (only for --target-darwin).'
