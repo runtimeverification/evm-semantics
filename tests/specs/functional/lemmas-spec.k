@@ -265,7 +265,7 @@ module LEMMAS-SPEC
 
  // ecrecover
  // ---------
- 
+
     claim [ecrec-length]: <k> runLemma  ( lengthBytes ( #ecrec ( _ , _ , _ , _ ) ) <=Int 32 )
                            => doneLemma ( true ) ... </k>
 
@@ -284,6 +284,10 @@ module LEMMAS-SPEC
     claim [upInt-01]: <k> runLemma ( ((X up/Int Y) *Int Y) <Int X +Int Z )
                            => doneLemma ( true ) ... </k>
                           requires 0 <Int Y andBool Y <=Int Z
+
+    claim [upInt-refl-lt]: <k> runLemma ( ((X up/Int Y) *Int Y) <Int X )
+                            => doneLemma ( false ) ... </k>
+                           requires 0 <Int Y
 
  // Address computation
  // -------------------

@@ -175,11 +175,6 @@ module INT-SIMPLIFICATION-COMMON
       requires Z <=Int X andBool 0 <Int Y
       [simplification]
 
-    rule [upInt-refl-lt]:
-      ((X up/Int Y) *Int Y) <Int X => false
-      requires 0 <Int Y
-      [simplification]
-
     rule [upInt-refl-leq]:
       ((X up/Int Y) *Int Y) <=Int X => X modInt Y ==Int 0
       requires 0 <Int Y
