@@ -48,7 +48,7 @@ contract LoopsTest is Test {
         assertEq(expected, actual);
     }
 
-    function sum_N(uint n) pure internal returns (uint) {
+    function sum_N(uint n) pure public returns (uint) {
         uint s = 0;
         while (0 < n) {
             s = s + n;

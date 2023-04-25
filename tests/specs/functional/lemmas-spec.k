@@ -28,6 +28,9 @@ module LEMMAS-SPEC
 
     claim <k> runLemma(lengthBytes(#padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER .IntList))))) => doneLemma(32) ... </k> requires #rangeUInt(256, OWNER)
 
+    claim <k> runLemma(lengthBytes(#buf(X, 0) +Bytes #padRightToWidth(Y:Int, B:Bytes))) => doneLemma( X +Int Y ) ... </k>
+      requires lengthBytes(B) <Int X andBool lengthBytes(B) <Int Y
+
  // Addresses
  // ---------
 
@@ -273,5 +276,11 @@ module LEMMAS-SPEC
 
     claim [ecrec-mask]: <k> runLemma  ( #asWord ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) &Int maxUInt160 )
                          => doneLemma ( #asWord ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) ) ... </k>
+
+ // Address computation
+ // -------------------
+
+    claim [addr-from-private-key]: <k> runLemma  ( #addrFromPrivateKey(#unparseDataBytes(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01")) )
+                                    => doneLemma ( 721457446580647751014191829380889690493307935711 ) ... </k>
 
 endmodule
