@@ -4,15 +4,13 @@ import json
 import logging
 import sys
 from argparse import ArgumentParser
-from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path, run_process
+from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
-from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
@@ -30,7 +28,7 @@ from .foundry import (
     foundry_to_dot,
 )
 from .kevm import KEVM
-from .kompile import kevm_kompile
+from .kompile import KompileTarget, kompile_target
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
 from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_ag_proof_for_spec, parallel_kcfg_explore
 
@@ -45,23 +43,6 @@ if TYPE_CHECKING:
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
-
-
-class KompileTarget(Enum):
-    LLVM = 'llvm'
-    HASKELL = 'haskell'
-    NODE = 'node'
-    FOUNDRY = 'foundry'
-
-    @property
-    def backend(self) -> KompileBackend:
-        match self:
-            case self.LLVM | self.NODE:
-                return KompileBackend.LLVM
-            case self.HASKELL | self.FOUNDRY:
-                return KompileBackend.HASKELL
-            case _:
-                raise AssertionError()
 
 
 def _ignore_arg(args: dict[str, Any], arg: str, cli_option: str) -> None:
@@ -101,30 +82,16 @@ def exec_kompile(
     includes: list[str],
     main_module: str | None,
     syntax_module: str | None,
+    kevm_lib: Path | None = None,
     ccopts: Iterable[str] = (),
     o0: bool = False,
     o1: bool = False,
     o2: bool = False,
     o3: bool = False,
     debug: bool = False,
-    kevm_lib: Path | None = None,
     enable_llvm_debug: bool = False,
     **kwargs: Any,
 ) -> None:
-    _ignore_arg(kwargs, 'md_selector', f'--md-selector {kwargs["md_selector"]}')
-
-    llvm_kompile = target != KompileTarget.NODE
-    md_selector = 'k & ! standalone' if target == KompileTarget.NODE else 'k & ! node'
-
-    class Kernel(Enum):
-        LINUX = 'Linux'
-        DARWIN = 'Darwin'
-
-        @staticmethod
-        def get() -> Kernel:
-            uname_res = run_process(('uname', '-s'), pipe_stderr=True).stdout.strip()
-            return Kernel(uname_res)
-
     optimization = 0
     if o1:
         optimization = 1
@@ -133,60 +100,18 @@ def exec_kompile(
     if o3:
         optimization = 3
 
-    if target.backend == KompileBackend.LLVM:
-        ccopts = list(ccopts)
-        ccopts += ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
-
-        if kevm_lib is None:
-            raise ValueError('Flag --kevm-lib missing')
-
-        libff_dir = kevm_lib / 'libff'
-        ccopts += [f'-L{libff_dir}/lib', f'-I{libff_dir}/include']
-
-        plugin_include = kevm_lib / 'blockchain-k-plugin/include'
-        ccopts += [
-            f'{plugin_include}/c/plugin_util.cpp',
-            f'{plugin_include}/c/crypto.cpp',
-            f'{plugin_include}/c/blake2.cpp',
-        ]
-
-        kernel = Kernel.get()
-        if kernel == Kernel.DARWIN:
-            brew_root = run_process(('brew', '--prefix'), pipe_stderr=True).stdout.strip()
-            ccopts += [
-                f'-I{brew_root}/include',
-                f'-L{brew_root}/lib',
-            ]
-
-            openssl_root = run_process(('brew', '--prefix', 'openssl'), pipe_stderr=True).stdout.strip()
-            ccopts += [
-                f'-I{openssl_root}/include',
-                f'-L{openssl_root}/lib',
-            ]
-
-            libcryptopp_dir = kevm_lib / 'cryptopp'
-            ccopts += [
-                f'-I{libcryptopp_dir}/include',
-                f'-L{libcryptopp_dir}/lib',
-            ]
-        elif kernel == Kernel.LINUX:
-            ccopts += ['-lprocps']
-        else:
-            raise AssertionError()
-
-    kevm_kompile(
+    kompile_target(
         definition_dir,
-        target.backend,
-        main_file,
-        emit_json=emit_json,
+        target,
+        main_file=main_file,
+        kevm_lib=kevm_lib,
+        main_module=main_module,
+        syntax_module=syntax_module,
         includes=includes,
-        main_module_name=main_module,
-        syntax_module_name=syntax_module,
-        md_selector=md_selector,
-        debug=debug,
+        emit_json=emit_json,
         ccopts=ccopts,
-        llvm_kompile=llvm_kompile,
         optimization=optimization,
+        debug=debug,
         enable_llvm_debug=enable_llvm_debug,
     )
 
