@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import logging
 import sys
+from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pyk.cli_utils import run_process
 from pyk.ktool.kompile import KompileBackend, kompile
 
 if TYPE_CHECKING:
@@ -57,6 +59,110 @@ CONCRETE_RULES: Final = (
     'SERIALIZATION.#newAddr',
     'SERIALIZATION.#newAddrCreate2',
 )
+
+
+class KompileTarget(Enum):
+    LLVM = 'llvm'
+    HASKELL = 'haskell'
+    NODE = 'node'
+    FOUNDRY = 'foundry'
+
+    @property
+    def backend(self) -> KompileBackend:
+        match self:
+            case self.LLVM | self.NODE:
+                return KompileBackend.LLVM
+            case self.HASKELL | self.FOUNDRY:
+                return KompileBackend.HASKELL
+            case _:
+                raise AssertionError()
+
+
+class Kernel(Enum):
+    LINUX = 'Linux'
+    DARWIN = 'Darwin'
+
+    @staticmethod
+    def get() -> Kernel:
+        uname_res = run_process(('uname', '-s'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+        return Kernel(uname_res)
+
+
+def kompile_target(
+    definition_dir: Path,
+    target: KompileTarget,
+    *,
+    main_file: Path,
+    kevm_lib: Path | None = None,
+    main_module: str | None,
+    syntax_module: str | None,
+    includes: Iterable[str] = (),
+    emit_json: bool,
+    ccopts: Iterable[str] = (),
+    optimization: int = 0,
+    debug: bool = False,
+    enable_llvm_debug: bool = False,
+) -> None:
+    backend = target.backend
+    llvm_kompile = target != KompileTarget.NODE
+    md_selector = 'k & ! standalone' if target == KompileTarget.NODE else 'k & ! node'
+
+    if backend == KompileBackend.LLVM:
+        ccopts = list(ccopts)
+        ccopts += ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
+
+        if kevm_lib is None:
+            raise ValueError('Flag --kevm-lib missing')
+
+        libff_dir = kevm_lib / 'libff'
+        ccopts += [f'-L{libff_dir}/lib', f'-I{libff_dir}/include']
+
+        plugin_include = kevm_lib / 'blockchain-k-plugin/include'
+        ccopts += [
+            f'{plugin_include}/c/plugin_util.cpp',
+            f'{plugin_include}/c/crypto.cpp',
+            f'{plugin_include}/c/blake2.cpp',
+        ]
+
+        kernel = Kernel.get()
+        if kernel == Kernel.DARWIN:
+            brew_root = run_process(('brew', '--prefix'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+            ccopts += [
+                f'-I{brew_root}/include',
+                f'-L{brew_root}/lib',
+            ]
+
+            openssl_root = run_process(('brew', '--prefix', 'openssl'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+            ccopts += [
+                f'-I{openssl_root}/include',
+                f'-L{openssl_root}/lib',
+            ]
+
+            libcryptopp_dir = kevm_lib / 'cryptopp'
+            ccopts += [
+                f'-I{libcryptopp_dir}/include',
+                f'-L{libcryptopp_dir}/lib',
+            ]
+        elif kernel == Kernel.LINUX:
+            ccopts += ['-lprocps']
+        else:
+            raise AssertionError()
+
+    kevm_kompile(
+        definition_dir,
+        backend,
+        main_file,
+        emit_json=emit_json,
+        includes=includes,
+        main_module_name=main_module,
+        syntax_module_name=syntax_module,
+        md_selector=md_selector,
+        debug=debug,
+        ccopts=ccopts,
+        llvm_kompile=llvm_kompile,
+        optimization=optimization,
+        enable_llvm_debug=enable_llvm_debug,
+    )
 
 
 def kevm_kompile(
