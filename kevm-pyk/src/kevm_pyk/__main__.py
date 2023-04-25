@@ -419,6 +419,7 @@ def exec_foundry_prove(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
+    bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
@@ -446,6 +447,7 @@ def exec_foundry_prove(
         break_on_jumpi=break_on_jumpi,
         break_on_calls=break_on_calls,
         implication_every_block=implication_every_block,
+        bmc_depth=bmc_depth,
         bug_report=bug_report,
         kore_rpc_command=kore_rpc_command,
         smt_timeout=smt_timeout,
@@ -995,6 +997,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Reinitialize CFGs even if they already exist.',
+    )
+    foundry_prove_args.add_argument(
+        '--bmc-depth',
+        dest='bmc_depth',
+        default=None,
+        type=int,
+        help='Max depth of loop unrolling during bounded model checking',
     )
 
     foundry_show_args = command_parser.add_parser(
