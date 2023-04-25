@@ -42,7 +42,7 @@ rule <kevm>
                ( PCOUNT => ( ( PCOUNT +Int N ) +Int 1 ) )
              </pc>
              <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+               ( GAVAIL => ( GAVAIL -Int Gverylow < SCHED > ) )
              </gas>
              ...
            </callState>
@@ -52,7 +52,7 @@ rule <kevm>
        </ethereum>
        ...
      </kevm>
-  requires ( Gverylow < SCHED > <=Gas GAVAIL )
+  requires ( Gverylow < SCHED > <=Int GAVAIL )
    andBool ( #sizeWordStack( #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS ) <=Int 1024 )
     [priority(40)]
 
@@ -74,7 +74,7 @@ rule <kevm>
                ( PCOUNT => ( PCOUNT +Int 1 ) )
              </pc>
              <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+               ( GAVAIL => ( GAVAIL -Int Gverylow < SCHED > ) )
              </gas>
              ...
            </callState>
@@ -85,7 +85,7 @@ rule <kevm>
        ...
      </kevm>
   requires #stackNeeded(DUP(N)) <=Int #sizeWordStack(WS)
-   andBool ( Gverylow < SCHED > <=Gas GAVAIL )
+   andBool ( Gverylow < SCHED > <=Int GAVAIL )
    andBool ( #sizeWordStack( WS [ ( N +Int -1 ) ] : WS ) <=Int 1024 )
     [priority(40)]
 
@@ -107,7 +107,7 @@ rule <kevm>
                ( PCOUNT => ( PCOUNT +Int 1 ) )
              </pc>
              <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+               ( GAVAIL => ( GAVAIL -Int Gverylow < SCHED > ) )
              </gas>
              ...
            </callState>
@@ -118,7 +118,7 @@ rule <kevm>
        ...
      </kevm>
   requires #stackNeeded(SWAP(N)) <=Int #sizeWordStack(W0 : WS)
-   andBool ( Gverylow < SCHED > <=Gas GAVAIL )
+   andBool ( Gverylow < SCHED > <=Int GAVAIL )
    andBool ( #sizeWordStack( WS [ ( N +Int -1 ) ] : ( WS [ ( N +Int -1 ) := W0 ] ) ) <=Int 1024 )
     [priority(40)]
 
@@ -140,7 +140,7 @@ rule <kevm>
                ( PCOUNT => ( PCOUNT +Int 1 ) )
              </pc>
              <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+               ( GAVAIL => ( GAVAIL -Int Gverylow < SCHED > ) )
              </gas>
              ...
            </callState>
@@ -150,7 +150,7 @@ rule <kevm>
        </ethereum>
        ...
      </kevm>
-  requires ( Gverylow < SCHED > <=Gas GAVAIL )
+  requires ( Gverylow < SCHED > <=Int GAVAIL )
    andBool ( #sizeWordStack( chop( ( W0 +Int W1 ) ) : WS ) <=Int 1024 )
     [priority(40)]
 
@@ -172,7 +172,7 @@ rule <kevm>
                ( PCOUNT => ( PCOUNT +Int 1 ) )
              </pc>
              <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+               ( GAVAIL => ( GAVAIL -Int Gverylow < SCHED > ) )
              </gas>
              ...
            </callState>
@@ -182,7 +182,7 @@ rule <kevm>
        </ethereum>
        ...
      </kevm>
-  requires ( Gverylow < SCHED > <=Gas GAVAIL )
+  requires ( Gverylow < SCHED > <=Int GAVAIL )
    andBool ( #sizeWordStack( chop( ( W0 -Int W1 ) ) : WS ) <=Int 1024 )
     [priority(40)]
 
@@ -204,7 +204,7 @@ rule <kevm>
                ( PCOUNT => ( PCOUNT +Int 1 ) )
              </pc>
              <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+               ( GAVAIL => ( GAVAIL -Int Gverylow < SCHED > ) )
              </gas>
              ...
            </callState>
@@ -214,7 +214,7 @@ rule <kevm>
        </ethereum>
        ...
      </kevm>
-  requires ( Gverylow < SCHED > <=Gas GAVAIL )
+  requires ( Gverylow < SCHED > <=Int GAVAIL )
    andBool ( #sizeWordStack( W0 &Int W1 : WS ) <=Int 1024 )
     [priority(40)]
 
@@ -236,7 +236,7 @@ rule <kevm>
                ( PCOUNT => ( PCOUNT +Int 1 ) )
              </pc>
              <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+               ( GAVAIL => ( GAVAIL -Int Gverylow < SCHED > ) )
              </gas>
              ...
            </callState>
@@ -246,7 +246,7 @@ rule <kevm>
        </ethereum>
        ...
      </kevm>
-  requires ( Gverylow < SCHED > <=Gas GAVAIL )
+  requires ( Gverylow < SCHED > <=Int GAVAIL )
    andBool ( #sizeWordStack( bool2Word( W0 <Int W1 ) : WS ) <=Int 1024 )
     [priority(40)]
 
@@ -268,7 +268,7 @@ rule <kevm>
                ( PCOUNT => ( PCOUNT +Int 1 ) )
              </pc>
              <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+               ( GAVAIL => ( GAVAIL -Int Gverylow < SCHED > ) )
              </gas>
              ...
            </callState>
@@ -278,7 +278,7 @@ rule <kevm>
        </ethereum>
        ...
      </kevm>
-  requires ( Gverylow < SCHED > <=Gas GAVAIL )
+  requires ( Gverylow < SCHED > <=Int GAVAIL )
    andBool ( #sizeWordStack( bool2Word( W1 <Int W0 ) : WS ) <=Int 1024 )
     [priority(40)]
 
