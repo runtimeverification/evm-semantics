@@ -65,17 +65,17 @@ First install the following tools:
 -   [git](https://git-scm.com/)
 -   GNU [Bison](https://www.gnu.org/software/bison/), [Flex](https://github.com/westes/flex), and [Autoconf](http://www.gnu.org/software/autoconf/).
 -   GNU [libmpfr](https://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
--   [Z3](https://github.com/Z3Prover/z3) version 4.8.15
+-   [Z3](https://github.com/Z3Prover/z3) version 4.12.1
 
 #### Installing Z3
 
-KEVM requires Z3 version 4.8.15, which you may need to install from a source build if your package manager supplies a different version.
+KEVM requires Z3 version 4.12.1, which you may need to install from a source build if your package manager supplies a different version.
 To do so, follow the instructions [here](https://github.com/Z3Prover/z3#building-z3-using-make-and-gccclang) after checking out the correct tag in the Z3 repository:
 
 ```sh
 git clone https://github.com/Z3Prover/z3.git
 cd z3
-git checkout z3-4.8.15
+git checkout z3-4.12.1
 python scripts/mk_make.py
 cd build
 make
@@ -249,6 +249,18 @@ Run the file `tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmet
 
 ```sh
 kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json --schedule DEFAULT --mode VMTESTS
+```
+
+To enable the debug symbols for the llvm backend, build using this command:
+
+```sh
+make build-llvm KEVM_OPTS=--enable-llvm-debug
+```
+
+To debug a conformance test, add the `--debugger` flag to the command:
+
+```sh
+kevm interpret tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json --backend llvm --mode NORMAL --schedule MERGE --chainid 1 --debugger
 ```
 
 ### Keeping in mind while developing

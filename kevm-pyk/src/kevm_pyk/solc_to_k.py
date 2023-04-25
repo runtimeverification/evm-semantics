@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from dataclasses import dataclass
 from functools import cached_property
 from subprocess import CalledProcessError
@@ -19,8 +20,9 @@ from pyk.utils import FrozenDict
 from .kevm import KEVM
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from pathlib import Path
-    from typing import Any, Dict, Final, Iterable, List, Optional, Tuple
+    from typing import Any, Final
 
     from pyk.kast import KInner
     from pyk.kast.outer import KProductionItem, KSentence
@@ -35,28 +37,15 @@ class Contract:
         name: str
         id: int
         sort: KSort
-        arg_names: Tuple[str, ...]
-        arg_types: Tuple[str, ...]
+        arg_names: tuple[str, ...]
+        arg_types: tuple[str, ...]
         contract_name: str
         payable: bool
+        signature: str
 
-        def __init__(self, name: str, msig: str, id: int, contract_json: Dict, contract_name: str, sort: KSort) -> None:
-            def _get_method_abi(_mname: str, _margs: List[str]) -> Dict:
-                for _method in contract_json['abi']:
-                    if _method['type'] == 'function' and _method['name'] == _mname:
-                        _marg_types = [_marg['type'] for _marg in _method['inputs']]
-                        if len(_margs) == len(_marg_types) and all(
-                            a1 == a2 for a1, a2 in zip(_margs, _marg_types, strict=True)
-                        ):
-                            return _method
-                raise ValueError(f'Method not found in abi: {_mname}')
-
-            margs_cs = msig.split('(')[1][:-1]
-            margs = [] if margs_cs == '' else margs_cs.split(',')
-
-            abi = _get_method_abi(name, margs)
-
-            self.name = name
+        def __init__(self, msig: str, id: int, abi: dict, contract_name: str, sort: KSort) -> None:
+            self.signature = msig
+            self.name = abi['name']
             self.id = id
             self.arg_names = tuple([f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])])
             self.arg_types = tuple([input['type'] for input in abi['inputs']])
@@ -64,11 +53,6 @@ class Contract:
             self.sort = sort
             # TODO: Check that we're handling all state mutability cases
             self.payable = abi['stateMutability'] == 'payable'
-
-        @property
-        def signature(self) -> str:
-            arg_list = ','.join(self.arg_types)
-            return f'{self.name}({arg_list})'
 
         @property
         def klabel(self) -> KLabel:
@@ -81,15 +65,15 @@ class Contract:
 
         @property
         def production(self) -> KProduction:
-            items_before: List[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
+            items_before: list[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
 
-            items_args: List[KProductionItem] = []
+            items_args: list[KProductionItem] = []
             for i, input_type in enumerate(self.arg_types):
                 if i > 0:
                     items_args += [KTerminal(',')]
                 items_args += [KNonTerminal(_evm_base_sort(input_type)), KTerminal(':'), KTerminal(input_type)]
 
-            items_after: List[KProductionItem] = [KTerminal(')')]
+            items_after: list[KProductionItem] = [KTerminal(')')]
             return KProduction(
                 self.sort,
                 items_before + items_args + items_after,
@@ -97,12 +81,12 @@ class Contract:
                 att=KAtt({'symbol': ''}),
             )
 
-        def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> Optional[KRule]:
+        def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule | None:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
             prod_klabel = self.klabel
             assert prod_klabel is not None
-            args: List[KInner] = []
-            conjuncts: List[KInner] = []
+            args: list[KInner] = []
+            conjuncts: list[KInner] = []
             for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
                 args.append(KEVM.abi_type(input_type, KVariable(input_name)))
                 rp = _range_predicate(KVariable(input_name), input_type)
@@ -139,15 +123,15 @@ class Contract:
             return klabel(args)
 
     name: str
-    contract_json: Dict
+    contract_json: dict
     contract_id: int
     contract_path: str
     bytecode: str
-    raw_sourcemap: Optional[str]
-    methods: Tuple[Method, ...]
+    raw_sourcemap: str | None
+    methods: tuple[Method, ...]
     fields: FrozenDict
 
-    def __init__(self, contract_name: str, contract_json: Dict, foundry: bool = False) -> None:
+    def __init__(self, contract_name: str, contract_json: dict, foundry: bool = False) -> None:
         self.name = contract_name
         self.contract_json = contract_json
 
@@ -160,14 +144,16 @@ class Contract:
         self.bytecode = deployed_bytecode['object'].replace('0x', '')
         self.raw_sourcemap = deployed_bytecode['sourceMap'] if 'sourceMap' in deployed_bytecode else None
 
-        method_ids = evm['methodIdentifiers'] if 'methodIdentifiers' in evm else {}
         _methods = []
-        for msig in method_ids:
-            mname = msig.split('(')[0]
-            mid = int(method_ids[msig], 16)
-            _m = Contract.Method(mname, msig, mid, contract_json, contract_name, self.sort_method)
+        for method in contract_json['abi']:
+            if method['type'] != 'function':
+                continue
+            msig = method_sig_from_abi(method)
+            mid = int(evm['methodIdentifiers'][msig], 16)
+            _m = Contract.Method(msig, mid, method, contract_name, self.sort_method)
             _methods.append(_m)
-        self.methods = tuple(_methods)
+
+        self.methods = tuple(sorted(_methods, key=(lambda method: method.signature)))
 
         self.fields = FrozenDict({})
         if 'storageLayout' in self.contract_json and 'storage' in self.contract_json['storageLayout']:
@@ -181,7 +167,7 @@ class Contract:
             self.fields = FrozenDict(_fields)
 
     @cached_property
-    def srcmap(self) -> Dict[int, Tuple[int, int, int, str, int]]:
+    def srcmap(self) -> dict[int, tuple[int, int, int, str, int]]:
         _srcmap = {}
 
         if len(self.bytecode) > 0 and self.raw_sourcemap is not None:
@@ -280,14 +266,14 @@ class Contract:
         )
 
     @property
-    def method_sentences(self) -> List[KSentence]:
+    def method_sentences(self) -> list[KSentence]:
         method_application_production: KSentence = KProduction(
             KSort('Bytes'),
             [KNonTerminal(self.sort), KTerminal('.'), KNonTerminal(self.sort_method)],
             klabel=self.klabel_method,
             att=KAtt({'function': '', 'symbol': ''}),
         )
-        res: List[KSentence] = [method_application_production]
+        res: list[KSentence] = [method_application_production]
         res.extend(method.production for method in self.methods)
         method_rules = (method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods)
         res.extend(rule for rule in method_rules if rule)
@@ -295,9 +281,9 @@ class Contract:
         return res if len(res) > 1 else []
 
     @property
-    def field_sentences(self) -> List[KSentence]:
-        prods: List[KSentence] = [self.subsort_field]
-        rules: List[KSentence] = []
+    def field_sentences(self) -> list[KSentence]:
+        prods: list[KSentence] = [self.subsort_field]
+        rules: list[KSentence] = []
         for field, slot in self.fields.items():
             klabel = KLabel(self.klabel_field.name + f'_{field}')
             prods.append(KProduction(self.sort_field, [KTerminal(field)], klabel=klabel, att=KAtt({'symbol': ''})))
@@ -309,10 +295,10 @@ class Contract:
         return prods + rules
 
     @property
-    def sentences(self) -> List[KSentence]:
+    def sentences(self) -> list[KSentence]:
         return [self.subsort, self.production, self.macro_bin_runtime] + self.field_sentences + self.method_sentences
 
-    def method_by_name(self, name: str) -> Optional[Contract.Method]:
+    def method_by_name(self, name: str) -> Contract.Method | None:
         methods = [method for method in self.methods if method.name == 'setUp']
         if len(methods) > 1:
             raise ValueError(f'Found multiple methods with name {name}, expected at most one')
@@ -321,7 +307,7 @@ class Contract:
         return methods[0]
 
 
-def solc_compile(contract_file: Path) -> Dict[str, Any]:
+def solc_compile(contract_file: Path) -> dict[str, Any]:
     # TODO: add check to kevm:
     # solc version should be >=0.8.0 due to:
     # https://github.com/ethereum/solidity/issues/10276
@@ -429,7 +415,7 @@ def _evm_base_sort_int(type_label: str) -> bool:
     return success
 
 
-def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
+def _range_predicate(term: KInner, type_label: str) -> KInner | None:
     (success, result) = _range_predicate_uint(term, type_label)
     if success:
         return result
@@ -452,7 +438,7 @@ def _range_predicate(term: KInner, type_label: str) -> Optional[KInner]:
     return None
 
 
-def _range_predicate_uint(term: KInner, type_label: str) -> Tuple[bool, Optional[KInner]]:
+def _range_predicate_uint(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
     if type_label.startswith('uint') and not type_label.endswith(']'):
         width = int(type_label[4:])
         if not (0 < width and width <= 256 and width % 8 == 0):
@@ -460,3 +446,40 @@ def _range_predicate_uint(term: KInner, type_label: str) -> Tuple[bool, Optional
         return (True, KEVM.range_uint(width, term))
     else:
         return (False, None)
+
+
+def method_sig_from_abi(method_json: dict) -> str:
+    def unparse_input(input_json: dict) -> str:
+        is_array = False
+        is_sized = False
+        array_size = 0
+        base_type = input_json['type']
+        if re.match(r'.+\[.*\]', base_type):
+            is_array = True
+            array_size_str = base_type.split('[')[1][:-1]
+            if array_size_str != '':
+                is_sized = True
+                array_size = int(array_size_str)
+            base_type = base_type.split('[')[0]
+        if base_type == 'tuple':
+            input_type = '('
+            for i, component in enumerate(input_json['components']):
+                if i != 0:
+                    input_type += ','
+                input_type += unparse_input(component)
+            input_type += ')'
+            if is_array and not (is_sized):
+                input_type += '[]'
+            elif is_array and is_sized:
+                input_type += f'[{array_size}]'
+            return input_type
+        else:
+            return input_json['type']
+
+    method_name = method_json['name']
+    method_args = ''
+    for i, _input in enumerate(method_json['inputs']):
+        if i != 0:
+            method_args += ','
+        method_args += unparse_input(_input)
+    return f'{method_name}({method_args})'

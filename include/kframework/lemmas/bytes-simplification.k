@@ -12,9 +12,16 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires lengthBytes(BA1) =/=Int lengthBytes(BA2)
       [simplification]
 
+    rule [bytes-equal-concat-split-k]:
+      A:Bytes +Bytes B:Bytes ==K C:Bytes +Bytes D:Bytes => A ==K C #And B ==K D
+      requires lengthBytes(A) ==Int lengthBytes(C)
+        orBool lengthBytes(B) ==Int lengthBytes(D)
+      [simplification]
+
     rule [bytes-equal-concat-split-ml]:
       { A:Bytes +Bytes B:Bytes #Equals C:Bytes +Bytes D:Bytes } => { A #Equals C } #And { B #Equals D }
       requires lengthBytes(A) ==Int lengthBytes(C)
+        orBool lengthBytes(B) ==Int lengthBytes(D)
       [simplification]
 
     rule [bytes-concat-empty-right]: B:Bytes +Bytes .Bytes  => B [simplification]
@@ -22,7 +29,7 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [bytes-concat-right-assoc-symb-l]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B1), simplification]
     rule [bytes-concat-right-assoc-symb-r]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B2), simplification]
-    rule [bytes-concat-left-assoc-conc]   : B1:Bytes +Bytes (B2:Bytes +Bytes B3:Bytes) => (B1 +Bytes B2) +Bytes B3 [concrete(B1, B2), symbolic(B3), simplification]
+    rule [bytes-concat-left-assoc-conc]:    B1:Bytes +Bytes (B2:Bytes +Bytes B3:Bytes) => (B1 +Bytes B2) +Bytes B3 [concrete(B1, B2), symbolic(B3), simplification]
 
     // #buf
 
@@ -191,16 +198,28 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires S2 <=Int S1 andBool S1 +Int lengthBytes(B1) <=Int S2 +Int lengthBytes(B2)
       [simplification]
 
+    rule #range(#padRightToWidth(_, BUF), 0, WIDTH) => BUF requires lengthBytes(BUF) ==Int WIDTH [simplification]
+
+    // #writeRange
+
+    // re-order assignments
+    rule #writeRange(#writeRange(MEM, K1, BUF1:Bytes), K2, BUF2:Bytes) => #writeRange(#writeRange(MEM, K2, BUF2), K1, BUF1)
+      requires lengthBytes(BUF2) <=Int K1 -Int K2 andBool K2  <Int K1 [simplification]
+
+    // overwritten assignment
+    rule #writeRange(#writeRange(MEM, K1, BUF1), K2, BUF2) => #writeRange(MEM, K2, BUF2)
+      requires K1 +Int lengthBytes(BUF1) <=Int K2 +Int lengthBytes(BUF2) andBool K2 <=Int K1 [simplification]
+
+    rule #writeRange(MEM, K, BUF) => MEM +Bytes #buf(K -Int lengthBytes(MEM), 0) +Bytes BUF
+      requires lengthBytes(MEM) <=Int K [simplification]
+
     // lengthBytes
 
-    rule [lengthBytes-geq-zero]    : 0 <=Int lengthBytes(_:Bytes)                       => true                                           [simplification, smt-lemma]
-    rule [lengthBytes-concat]      : lengthBytes(B1:Bytes +Bytes B2:Bytes)              => lengthBytes(B1) +Int lengthBytes(B2)           [simplification]
-    rule [lengthBytes-buf]         : lengthBytes(#buf(W:Int, _:Int))                    => W requires 0 <=Int W                           [simplification]
-    rule [lengthBytes-range]       : lengthBytes(#range(_:Bytes, S:Int, W:Int))         => maxInt(0, W) requires 0 <=Int S                [simplification]
-    rule [lengthBytes-prtw-leq-len]: lengthBytes(#padRightToWidth(W:Int, B:Bytes))      => W requires lengthBytes(B) <Int W               [simplification]
-    rule [lengthBytes-prtw-len-gt] : lengthBytes(#padRightToWidth(W:Int, B:Bytes))      => lengthBytes(B) requires W <=Int lengthBytes(B) [simplification]
-    rule [lengthBytes-padleft]     : lengthBytes(padLeftBytes(B:Bytes, W:Int, _:Int) )  => maxInt(lengthBytes(B), W)                      [simplification]
-    rule [lengthBytes-padright]    : lengthBytes(padRightBytes(B:Bytes, W:Int, _:Int) ) => maxInt(lengthBytes(B), W)                      [simplification]
+    rule [lengthBytes-geq-zero]: 0 <=Int lengthBytes ( _ )                     => true                                                [simplification, smt-lemma]
+    rule [lengthBytes-concat]:   lengthBytes(BUF1 +Bytes BUF2)                 => lengthBytes(BUF1) +Int lengthBytes(BUF2)            [simplification]
+    rule [lengthBytes-buf]:      lengthBytes(#buf(SIZE, _))                    => SIZE   requires 0 <=Int SIZE                        [simplification]
+    rule [lengthBytes-range]:    lengthBytes(#range(_, START, WIDTH))          => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+    rule [lengthBytes-prtw]:     lengthBytes(#padRightToWidth(W:Int, B:Bytes)) => maxInt(lengthBytes(B), W)                           [simplification]
 
     rule [lengthBytes-leq-zero]: lengthBytes(B:Bytes) <=Int 0 => B ==K .Bytes [simplification]
 
@@ -231,6 +250,14 @@ module BYTES-SIMPLIFICATION [symbolic]
       #asWord(B:Bytes) <Int pow256 => true
       requires lengthBytes(B) <=Int 32
       [simplification]
+
+    // #ecrec
+
+    rule lengthBytes ( #ecrec ( _ , _ , _ , _ ) ) <=Int 32 => true
+        [simplification, smt-lemma]
+
+    rule #asWord ( #ecrec ( _ , _ , _ , _ ) ) <Int pow160 => true
+        [simplification, smt-lemma]
 
     // PETAR: these last three are uncategorised artefacts from before upstreaming
 
