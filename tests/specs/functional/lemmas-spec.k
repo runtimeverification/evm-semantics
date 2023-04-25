@@ -265,6 +265,7 @@ module LEMMAS-SPEC
 
  // ecrecover
  // ---------
+ 
     claim [ecrec-length]: <k> runLemma  ( lengthBytes ( #ecrec ( _ , _ , _ , _ ) ) <=Int 32 )
                            => doneLemma ( true ) ... </k>
 
@@ -283,5 +284,11 @@ module LEMMAS-SPEC
     claim [upInt-01]: <k> runLemma ( ((X up/Int Y) *Int Y) <Int X +Int Z )
                            => doneLemma ( true ) ... </k>
                           requires 0 <Int Y andBool Y <=Int Z
+
+ // Address computation
+ // -------------------
+
+    claim [addr-from-private-key]: <k> runLemma  ( #addrFromPrivateKey(#unparseDataBytes(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01")) )
+                                    => doneLemma ( 721457446580647751014191829380889690493307935711 ) ... </k>
 
 endmodule
