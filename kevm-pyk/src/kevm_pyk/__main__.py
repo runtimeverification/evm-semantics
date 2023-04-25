@@ -92,10 +92,8 @@ def exec_kompile(
     o2: bool = False,
     o3: bool = False,
     debug: bool = False,
-    plugin_include: Path | None = None,
-    libff_dir: Path | None = None,
+    kevm_lib: Path | None = None,
     brew_root: Path | None = None,
-    libcryptopp_dir: Path | None = None,
     openssl_root: Path | None = None,
     enable_llvm_debug: bool = False,
     **kwargs: Any,
@@ -125,15 +123,20 @@ def exec_kompile(
 
     if backend == KompileBackend.LLVM:
         ccopts = list(ccopts)
-        if libff_dir is not None:
-            ccopts += [f'-L{libff_dir}/lib', f'-I{libff_dir}/include']
-        if plugin_include is not None:
-            ccopts += [
-                f'{plugin_include}/c/plugin_util.cpp',
-                f'{plugin_include}/c/crypto.cpp',
-                f'{plugin_include}/c/blake2.cpp',
-            ]
         ccopts += ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
+
+        if kevm_lib is None:
+            raise ValueError('Flag --kevm-lib missing')
+
+        libff_dir = kevm_lib / 'libff'
+        ccopts += [f'-L{libff_dir}/lib', f'-I{libff_dir}/include']
+
+        plugin_include = kevm_lib / 'blockchain-k-plugin/include'
+        ccopts += [
+            f'{plugin_include}/c/plugin_util.cpp',
+            f'{plugin_include}/c/crypto.cpp',
+            f'{plugin_include}/c/blake2.cpp',
+        ]
 
         kernel = Kernel.get()
         if kernel == Kernel.DARWIN:
@@ -147,11 +150,12 @@ def exec_kompile(
                     f'-I{openssl_root}/include',
                     f'-L{openssl_root}/lib',
                 ]
-            if libcryptopp_dir is not None:
-                ccopts += [
-                    f'-I{libcryptopp_dir}/include',
-                    f'-L{libcryptopp_dir}/lib',
-                ]
+
+            libcryptopp_dir = kevm_lib / 'cryptopp'
+            ccopts += [
+                f'-I{libcryptopp_dir}/include',
+                f'-L{libcryptopp_dir}/lib',
+            ]
         elif kernel == Kernel.LINUX:
             ccopts += ['-lprocps']
         else:
@@ -888,9 +892,7 @@ def _create_argument_parser() -> ArgumentParser:
         default=KEVMKompileMode.STANDALONE,
         help='KEVM kompile mode, [standalone|node].',
     )
-    kompile_args.add_argument('--plugin-include', type=dir_path, help='Path to plugin include directory.')
-    kompile_args.add_argument('--libff-dir', type=dir_path, help='Path to libff include directory.')
-    kompile_args.add_argument('--libcryptopp-dir', type=dir_path, help='Path to libcryptopp include directory.')
+    kompile_args.add_argument('--kevm-lib', type=dir_path, help='Path to KEVM lib directory.')
     kompile_args.add_argument(
         '--brew-root', type=dir_path, help='Path to homebrew root directory (only for --target-darwin).'
     )
