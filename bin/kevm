@@ -62,7 +62,7 @@ run_kevm_pyk() {
 # User Commands
 
 run_kompile() {
-    local kompile_opts openssl_root
+    local kompile_opts
 
     ${pyk} || fatal 'Must supply --pyk with kevm kompile.'
 
@@ -73,11 +73,6 @@ run_kompile() {
         node)            kompile_opts+=( --kompile-mode 'node' --no-llvm-kompile ) ;;&
         llvm|node) backend=llvm
                    kompile_opts+=( --kevm-lib "${INSTALL_LIB}" )
-                   if [[ "$(uname -s)" == 'Darwin' ]]; then
-                       openssl_root="$(brew --prefix openssl)"
-                       brew_root="$(brew --prefix)"
-                       kompile_opts+=( --brew-root "${brew_root}" --openssl-root "${openssl_root}" )
-                   fi
                    ;;
         *)       fatal "Unknown backend for kompile: ${backend}" ;;
     esac
