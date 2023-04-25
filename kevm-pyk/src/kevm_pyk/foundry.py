@@ -25,6 +25,7 @@ from pyk.proof import APRProof
 from pyk.utils import shorten_hashes, single, unique
 
 from .kevm import KEVM
+from .kompile import kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module
 from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, parallel_kcfg_explore
 
@@ -253,13 +254,13 @@ def foundry_kompile(
             kevm = KEVM(definition_dir, extra_unparsing_modules=bin_runtime_definition.all_modules)
             fmf.write(kevm.pretty_print(bin_runtime_definition) + '\n')
 
-    def kevm_kompile(
+    def _kevm_kompile(
         out_dir: Path,
         backend: KompileBackend,
         llvm_kompile_type: LLVMKompileType | None = None,
         md_selector: str | None = None,
     ) -> None:
-        KEVM.kompile(
+        kevm_kompile(
             out_dir,
             backend,
             foundry_main_file,
@@ -276,10 +277,10 @@ def foundry_kompile(
 
     if regen or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
-        kevm_kompile(foundry_definition_dir, KompileBackend.HASKELL, md_selector=md_selector)
+        _kevm_kompile(foundry_definition_dir, KompileBackend.HASKELL, md_selector=md_selector)
         if llvm_library:
             _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
-            kevm_kompile(
+            _kevm_kompile(
                 foundry_llvm_dir,
                 KompileBackend.LLVM,
                 llvm_kompile_type=LLVMKompileType.C,

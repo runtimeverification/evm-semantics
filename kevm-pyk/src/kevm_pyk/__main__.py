@@ -29,7 +29,8 @@ from .foundry import (
     foundry_step_node,
     foundry_to_dot,
 )
-from .kevm import KEVM, KEVMKompileMode
+from .kevm import KEVM
+from .kompile import KEVMKompileMode, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
 from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_ag_proof_for_spec, parallel_kcfg_explore
 
@@ -149,7 +150,7 @@ def exec_kompile(
         elif target == KompileTarget.LINUX:
             ccopts += ['-lprocps']
 
-    KEVM.kompile(
+    kevm_kompile(
         definition_dir,
         backend,
         main_file,
