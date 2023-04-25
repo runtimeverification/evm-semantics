@@ -165,7 +165,6 @@ def exec_foundry_kompile(
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
-    _ignore_arg(kwargs, 'backend', f'--backend {kwargs["backend"]}')
     _ignore_arg(kwargs, 'o0', '-O0')
     _ignore_arg(kwargs, 'o1', '-O1')
     _ignore_arg(kwargs, 'o2', '-O2')
