@@ -93,8 +93,6 @@ def exec_kompile(
     o3: bool = False,
     debug: bool = False,
     kevm_lib: Path | None = None,
-    brew_root: Path | None = None,
-    openssl_root: Path | None = None,
     enable_llvm_debug: bool = False,
     **kwargs: Any,
 ) -> None:
@@ -140,16 +138,17 @@ def exec_kompile(
 
         kernel = Kernel.get()
         if kernel == Kernel.DARWIN:
-            if brew_root is not None:
-                ccopts += [
-                    f'-I{brew_root}/include',
-                    f'-L{brew_root}/lib',
-                ]
-            if openssl_root is not None:
-                ccopts += [
-                    f'-I{openssl_root}/include',
-                    f'-L{openssl_root}/lib',
-                ]
+            brew_root = run_process(('brew', '--prefix'), pipe_stderr=True).stdout.strip()
+            ccopts += [
+                f'-I{brew_root}/include',
+                f'-L{brew_root}/lib',
+            ]
+
+            openssl_root = run_process(('brew', '--prefix', 'openssl'), pipe_stderr=True).stdout.strip()
+            ccopts += [
+                f'-I{openssl_root}/include',
+                f'-L{openssl_root}/lib',
+            ]
 
             libcryptopp_dir = kevm_lib / 'cryptopp'
             ccopts += [
@@ -893,12 +892,6 @@ def _create_argument_parser() -> ArgumentParser:
         help='KEVM kompile mode, [standalone|node].',
     )
     kompile_args.add_argument('--kevm-lib', type=dir_path, help='Path to KEVM lib directory.')
-    kompile_args.add_argument(
-        '--brew-root', type=dir_path, help='Path to homebrew root directory (only for --target-darwin).'
-    )
-    kompile_args.add_argument(
-        '--openssl-root', type=dir_path, help='Path to openssl root directory (only for --target-darwin).'
-    )
 
     _ = command_parser.add_parser(
         'prove',
