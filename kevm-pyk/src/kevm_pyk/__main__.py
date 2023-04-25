@@ -30,7 +30,7 @@ from .foundry import (
     foundry_to_dot,
 )
 from .kevm import KEVM
-from .kompile import KEVMKompileMode, kevm_kompile
+from .kompile import kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
 from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_ag_proof_for_spec, parallel_kcfg_explore
 
@@ -45,6 +45,23 @@ if TYPE_CHECKING:
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
+
+
+class KompileTarget(Enum):
+    LLVM = 'llvm'
+    HASKELL = 'haskell'
+    NODE = 'node'
+    FOUNDRY = 'foundry'
+
+    @property
+    def backend(self) -> KompileBackend:
+        match self:
+            case self.LLVM | self.NODE:
+                return KompileBackend.LLVM
+            case self.HASKELL | self.FOUNDRY:
+                return KompileBackend.HASKELL
+            case _:
+                raise AssertionError()
 
 
 def _ignore_arg(args: dict[str, Any], arg: str, cli_option: str) -> None:
@@ -78,15 +95,13 @@ def exec_compile(contract_file: Path, **kwargs: Any) -> None:
 
 def exec_kompile(
     definition_dir: Path,
-    backend: KompileBackend,
+    target: KompileTarget,
     main_file: Path,
     emit_json: bool,
-    kompile_mode: KEVMKompileMode,
     includes: list[str],
     main_module: str | None,
     syntax_module: str | None,
     ccopts: Iterable[str] = (),
-    llvm_kompile: bool = True,
     o0: bool = False,
     o1: bool = False,
     o2: bool = False,
@@ -97,6 +112,9 @@ def exec_kompile(
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector {kwargs["md_selector"]}')
+
+    llvm_kompile = target != KompileTarget.NODE
+    md_selector = 'k & ! standalone' if target == KompileTarget.NODE else 'k & ! node'
 
     class Kernel(Enum):
         LINUX = 'Linux'
@@ -115,11 +133,7 @@ def exec_kompile(
     if o3:
         optimization = 3
 
-    md_selector = 'k & ! node'
-    if kompile_mode == KEVMKompileMode.NODE:
-        md_selector = 'k & ! standalone'
-
-    if backend == KompileBackend.LLVM:
+    if target.backend == KompileBackend.LLVM:
         ccopts = list(ccopts)
         ccopts += ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
 
@@ -162,7 +176,7 @@ def exec_kompile(
 
     kevm_kompile(
         definition_dir,
-        backend,
+        target.backend,
         main_file,
         emit_json=emit_json,
         includes=includes,
@@ -769,7 +783,6 @@ def _create_argument_parser() -> ArgumentParser:
     )
 
     k_kompile_args = ArgumentParser(add_help=False)
-    k_kompile_args.add_argument('--backend', type=KompileBackend, help='[llvm|haskell]')
     k_kompile_args.add_argument(
         '--emit-json',
         dest='emit_json',
@@ -885,12 +898,7 @@ def _create_argument_parser() -> ArgumentParser:
         'kompile', help='Kompile KEVM specification.', parents=[shared_args, k_args, k_kompile_args]
     )
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kompile_args.add_argument(
-        '--kompile-mode',
-        type=KEVMKompileMode,
-        default=KEVMKompileMode.STANDALONE,
-        help='KEVM kompile mode, [standalone|node].',
-    )
+    kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|node|foundry]')
     kompile_args.add_argument('--kevm-lib', type=dir_path, help='Path to KEVM lib directory.')
 
     _ = command_parser.add_parser(

@@ -66,18 +66,7 @@ run_kompile() {
 
     ${pyk} || fatal 'Must supply --pyk with kevm kompile.'
 
-    kompile_opts=( "${run_file}" )
-
-    case "${backend}" in
-        haskell|foundry) backend=haskell ;;
-        node)            kompile_opts+=( --kompile-mode 'node' --no-llvm-kompile ) ;;&
-        llvm|node) backend=llvm
-                   kompile_opts+=( --kevm-lib "${INSTALL_LIB}" )
-                   ;;
-        *)       fatal "Unknown backend for kompile: ${backend}" ;;
-    esac
-
-    kompile_opts+=(--backend ${backend})
+    kompile_opts=( "${run_file}" --target ${backend} --kevm-lib "${INSTALL_LIB}" )
     ! ${debug} || kompile_opts+=( --debug )
 
     run_kevm_pyk kompile "${kompile_opts[@]}" "$@"

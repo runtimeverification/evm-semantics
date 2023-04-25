@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import sys
-from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -58,11 +57,6 @@ CONCRETE_RULES: Final = (
     'SERIALIZATION.#newAddr',
     'SERIALIZATION.#newAddrCreate2',
 )
-
-
-class KEVMKompileMode(Enum):
-    NODE = 'node'
-    STANDALONE = 'standalone'
 
 
 def kevm_kompile(
