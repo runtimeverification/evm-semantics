@@ -12,7 +12,7 @@ APRProof: AccountParamsTest.testDealSymbolic
 
 APRProof: AccountParamsTest.testEtchConcrete
     status: ProofStatus.PASSED
-    nodes: 10
+    nodes: 24
     frontier: 0
     stuck: 0
 
@@ -90,13 +90,13 @@ APRProof: AllowChangesTest.testFailAllowChangesToStorage
 
 APRProof: ArithmeticTest.test_max1
     status: ProofStatus.PASSED
-    nodes: 8
+    nodes: 13
     frontier: 0
     stuck: 0
 
 APRProof: ArithmeticTest.test_max2
     status: ProofStatus.PASSED
-    nodes: 6
+    nodes: 11
     frontier: 0
     stuck: 0
 
@@ -132,15 +132,15 @@ APRProof: AssertTest.test_assert_true
 
 APRProof: AssertTest.test_assert_true_branch
     status: ProofStatus.PASSED
-    nodes: 6
+    nodes: 11
     frontier: 0
     stuck: 0
 
 APRProof: AssertTest.test_revert_branch
-    status: ProofStatus.PASSED
-    nodes: 6
+    status: ProofStatus.FAILED
+    nodes: 11
     frontier: 0
-    stuck: 0
+    stuck: 1
 
 APRProof: AssumeTest.testFail_assume_false
     status: ProofStatus.FAILED
@@ -186,7 +186,7 @@ APRProof: BMCLoopsTest.test_countdown_concrete
 
 APRProof: BMCLoopsTest.test_countdown_symbolic
     status: ProofStatus.PASSED
-    nodes: 8
+    nodes: 25
     frontier: 0
     stuck: 0
 
@@ -462,13 +462,13 @@ APRProof: SymbolicStorageTest.testEmptyInitialStorage
 
 APRProof: SymbolicStorageTest.testFail_SymbolicStorage
     status: ProofStatus.PASSED
-    nodes: 10
+    nodes: 19
     frontier: 0
     stuck: 0
 
 APRProof: SymbolicStorageTest.testFail_SymbolicStorage1
     status: ProofStatus.PASSED
-    nodes: 15
+    nodes: 24
     frontier: 0
     stuck: 0
 
