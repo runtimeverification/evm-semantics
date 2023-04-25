@@ -426,6 +426,7 @@ tests/specs/examples/erc721-spec%:                KPROVE_FILE   =  erc721-spec
 tests/specs/examples/storage-spec%:               KPROVE_EXT    =  md
 tests/specs/examples/storage-spec%:               KPROVE_FILE   =  storage-spec
 tests/specs/examples/sum-to-n-spec%:              KPROVE_FILE   =  sum-to-n-spec
+tests/specs/examples/sum-to-n-foundry-spec%:      KPROVE_FILE   =  sum-to-n-foundry-spec
 tests/specs/functional/infinite-gas-spec%:        KPROVE_FILE   =  infinite-gas-spec
 tests/specs/functional/int-simplifications-spec%: KPROVE_FILE   =  int-simplifications-spec
 tests/specs/functional/lemmas-no-smt-spec%:       KPROVE_FILE   =  lemmas-no-smt-spec
@@ -550,7 +551,7 @@ $(foundry_golden)/%.out: foundry-fail
 	> $@
 
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
-	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose --require $(foundry_dir)/lemmas.k --module-import SUM-TO-N-INVARIANT
+	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose #--require $(foundry_dir)/lemmas.k --module-import SUM-TO-N-INVARIANT
 tests/foundry/out/kompiled-test/timestamp: $(foundry_dir)/lemmas.k $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
 	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose --require $(foundry_dir)/lemmas.k --module-import TEST-HELPER-LEMMAS --kompiled-dir kompiled-test
 
@@ -660,6 +661,7 @@ prove_haskell_definitions :=                                                    
                              tests/specs/examples/storage-spec/haskell/timestamp          \
                              tests/specs/examples/solidity-code-spec/haskell/timestamp    \
                              tests/specs/examples/sum-to-n-spec/haskell/timestamp         \
+                             tests/specs/examples/sum-to-n-foundry-spec/haskell/timestamp \
                              tests/specs/functional/infinite-gas-spec/haskell/timestamp   \
                              tests/specs/functional/lemmas-no-smt-spec/haskell/timestamp  \
                              tests/specs/functional/lemmas-spec/haskell/timestamp         \
