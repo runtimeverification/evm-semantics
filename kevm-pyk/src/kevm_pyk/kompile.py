@@ -78,7 +78,7 @@ class KompileTarget(Enum):
                 raise AssertionError()
 
 
-def kompile_target(
+def kevm_kompile(
     definition_dir: Path,
     target: KompileTarget,
     *,
@@ -90,11 +90,12 @@ def kompile_target(
     emit_json: bool,
     ccopts: Iterable[str] = (),
     optimization: int = 0,
-    debug: bool = False,
+    llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
-) -> None:
+    debug: bool = False,
+) -> Path:
     backend = target.backend
-    llvm_kompile = target != KompileTarget.NODE
+    no_llvm_kompile = target == KompileTarget.NODE
     md_selector = 'k & ! standalone' if target == KompileTarget.NODE else 'k & ! node'
 
     if backend == KompileBackend.LLVM:
@@ -102,21 +103,33 @@ def kompile_target(
             raise ValueError(f'Parameter kevm_lib must not be None for target: {target.value}')
         ccopts = list(ccopts) + _lib_ccopts(kevm_lib)
 
-    kevm_kompile(
-        definition_dir,
-        backend,
-        main_file,
-        emit_json=emit_json,
-        includes=includes,
-        main_module_name=main_module,
-        syntax_module_name=syntax_module,
-        md_selector=md_selector,
-        debug=debug,
-        ccopts=ccopts,
-        llvm_kompile=llvm_kompile,
-        optimization=optimization,
-        enable_llvm_debug=enable_llvm_debug,
-    )
+    try:
+        kompile(
+            main_file=main_file,
+            output_dir=definition_dir,
+            backend=backend,
+            emit_json=emit_json,
+            include_dirs=[include for include in includes if Path(include).exists()],
+            main_module=main_module,
+            syntax_module=syntax_module,
+            md_selector=md_selector,
+            hook_namespaces=HOOK_NAMESPACES,
+            concrete_rules=CONCRETE_RULES if backend == KompileBackend.HASKELL else (),
+            ccopts=ccopts,
+            no_llvm_kompile=no_llvm_kompile,
+            opt_level=optimization or None,
+            llvm_kompile_type=llvm_kompile_type,
+            enable_llvm_debug=enable_llvm_debug,
+            debug=debug,
+        )
+    except RuntimeError as err:
+        sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')
+        sys.stderr.write(f'\nkompile stderr:\n{err.args[2]}\n')
+        sys.stderr.write(f'\nkompile returncode:\n{err.args[3]}\n')
+        sys.stderr.flush()
+        raise
+
+    return definition_dir
 
 
 def _lib_ccopts(kevm_lib: Path) -> list[str]:
@@ -166,48 +179,3 @@ def _lib_ccopts(kevm_lib: Path) -> list[str]:
         raise AssertionError()
 
     return ccopts
-
-
-def kevm_kompile(
-    definition_dir: Path,
-    backend: KompileBackend,
-    main_file: Path,
-    emit_json: bool = True,
-    includes: Iterable[str] = (),
-    main_module_name: str | None = None,
-    syntax_module_name: str | None = None,
-    md_selector: str | None = None,
-    debug: bool = False,
-    ccopts: Iterable[str] = (),
-    llvm_kompile: bool = True,
-    optimization: int = 0,
-    llvm_kompile_type: LLVMKompileType | None = None,
-    enable_llvm_debug: bool = False,
-) -> Path:
-    try:
-        kompile(
-            main_file=main_file,
-            output_dir=definition_dir,
-            backend=backend,
-            emit_json=emit_json,
-            include_dirs=[include for include in includes if Path(include).exists()],
-            main_module=main_module_name,
-            syntax_module=syntax_module_name,
-            md_selector=md_selector,
-            hook_namespaces=HOOK_NAMESPACES,
-            debug=debug,
-            concrete_rules=CONCRETE_RULES if backend == KompileBackend.HASKELL else (),
-            ccopts=ccopts,
-            no_llvm_kompile=not llvm_kompile,
-            opt_level=optimization or None,
-            llvm_kompile_type=llvm_kompile_type,
-            enable_llvm_debug=enable_llvm_debug,
-        )
-    except RuntimeError as err:
-        sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')
-        sys.stderr.write(f'\nkompile stderr:\n{err.args[2]}\n')
-        sys.stderr.write(f'\nkompile returncode:\n{err.args[3]}\n')
-        sys.stderr.flush()
-        raise
-
-    return definition_dir

@@ -28,7 +28,7 @@ from .foundry import (
     foundry_to_dot,
 )
 from .kevm import KEVM
-from .kompile import KompileTarget, kompile_target
+from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
 from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_ag_proof_for_spec, parallel_kcfg_explore
 
@@ -100,7 +100,7 @@ def exec_kompile(
     if o3:
         optimization = 3
 
-    kompile_target(
+    kevm_kompile(
         definition_dir,
         target,
         main_file=main_file,
@@ -111,8 +111,8 @@ def exec_kompile(
         emit_json=emit_json,
         ccopts=ccopts,
         optimization=optimization,
-        debug=debug,
         enable_llvm_debug=enable_llvm_debug,
+        debug=debug,
     )
 
 
