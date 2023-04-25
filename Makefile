@@ -54,7 +54,7 @@ export PLUGIN_FULL_PATH
         test-prove test-failing-prove test-foundry-kcfg-diff                                                                                 \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-smoke \
         test-prove-mcd test-klab-prove                                                                                                       \
-        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-list                                                    \
+        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-bmc-prove test-foundry-list                             \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                           \
         test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean foundry-fail                                                      \
         media media-pdf metropolis-theme                                                                                                     \
@@ -491,6 +491,7 @@ test-foundry-%: KEVM_OPTS += --pyk --verbose
 test-foundry-%: KEVM := $(POETRY_RUN) kevm
 test-foundry-kompile: tests/foundry/foundry.k.check
 test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
+test-foundry-bmc-prove: tests/foundry/out/kompiled/foundry.k.bmc-prove
 test-foundry-list: tests/foundry/foundry-list.check
 
 foundry-forge-build: $(foundry_out)
@@ -520,6 +521,13 @@ tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
 	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
 	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
+
+tests/foundry/out/kompiled/foundry.k.bmc-prove: tests/foundry/out/kompiled/timestamp
+	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
+	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
+            --bmc-depth 3                                                    \
+	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
+	    $(addprefix --test , $(shell cat tests/foundry/bmc-tests))
 
 foundry_golden := tests/foundry/golden
 foundry_diff_tests := $(shell cat tests/foundry/checkoutput)
