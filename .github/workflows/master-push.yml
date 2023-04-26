@@ -96,9 +96,9 @@ jobs:
           docker cp ./kevm_${version}_amd64.deb ${container_name}:/home/user/kevm_${version}_amd64.deb
           docker cp ./tests/foundry ${container_name}:/home/user/foundry
           docker exec -u user ${container_name} /bin/bash -c "sudo apt-get install --yes ./kevm_${version}_amd64.deb"
-          dokcer exec -u user ${container_name} /bin/bash -c "forge build --root foundry"
-          dokcer exec -u user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root foundry --verbose"
-          dokcer exec -u user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root foundry --verbose --test Examples.test_assert_bool_passing"
+          docker exec -u user ${container_name} /bin/bash -c "forge build --root foundry"
+          docker exec -u user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root foundry --verbose"
+          docker exec -u user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root foundry --verbose --test Examples.test_assert_bool_passing"
           docker stop --time=0 ${container_name}
 
   dockerhub-image:
