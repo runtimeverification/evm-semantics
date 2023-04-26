@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 import sys
 from enum import Enum
 from pathlib import Path
@@ -9,6 +8,8 @@ from typing import TYPE_CHECKING
 
 from pyk.cli_utils import run_process
 from pyk.ktool.kompile import KompileBackend, kompile
+
+from . import config
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -152,13 +153,12 @@ def _lib_ccopts(kevm_lib: Path) -> list[str]:
 
         @staticmethod
         def get() -> Kernel:
-            uname_res = run_process(('uname', '-s'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
-            return Kernel(uname_res)
+            uname = run_process(('uname', '-s'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+            return Kernel(uname)
 
     kernel = Kernel.get()
-    NIX_BUILD = os.environ.get('NIX_BUILD') == 'true'
     if kernel == Kernel.DARWIN:
-        if not NIX_BUILD:
+        if not config.NIX_BUILD:
             brew_root = run_process(('brew', '--prefix'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
             ccopts += [
                 f'-I{brew_root}/include',
