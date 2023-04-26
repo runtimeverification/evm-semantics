@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import sys
 from enum import Enum
 from pathlib import Path
@@ -155,24 +156,26 @@ def _lib_ccopts(kevm_lib: Path) -> list[str]:
             return Kernel(uname_res)
 
     kernel = Kernel.get()
+    NIX_BUILD = os.environ.get('NIX_BUILD') == 'true'
     if kernel == Kernel.DARWIN:
-        brew_root = run_process(('brew', '--prefix'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
-        ccopts += [
-            f'-I{brew_root}/include',
-            f'-L{brew_root}/lib',
-        ]
+        if not NIX_BUILD:
+            brew_root = run_process(('brew', '--prefix'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+            ccopts += [
+                f'-I{brew_root}/include',
+                f'-L{brew_root}/lib',
+            ]
 
-        openssl_root = run_process(('brew', '--prefix', 'openssl'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
-        ccopts += [
-            f'-I{openssl_root}/include',
-            f'-L{openssl_root}/lib',
-        ]
+            openssl_root = run_process(('brew', '--prefix', 'openssl'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+            ccopts += [
+                f'-I{openssl_root}/include',
+                f'-L{openssl_root}/lib',
+            ]
 
-        libcryptopp_dir = kevm_lib / 'cryptopp'
-        ccopts += [
-            f'-I{libcryptopp_dir}/include',
-            f'-L{libcryptopp_dir}/lib',
-        ]
+            libcryptopp_dir = kevm_lib / 'cryptopp'
+            ccopts += [
+                f'-I{libcryptopp_dir}/include',
+                f'-L{libcryptopp_dir}/lib',
+            ]
     elif kernel == Kernel.LINUX:
         ccopts += ['-lprocps']
     else:
