@@ -98,7 +98,7 @@ jobs:
           docker exec -u user ${container_name} /bin/bash -c "git clone https://github.com/runtimeverification/foundry-demo --branch v${version}"
           dokcer exec -u user ${container_name} /bin/bash -c "forge build --root evm-semantics/tests/foundry"
           dokcer exec -u user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root evm-semantics/tests/foundry --verbose"
-          dokcer exec -u user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root evm-semantics/tests/foundry --verbose --test AssertTest.test_assert_true"
+          dokcer exec -u user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root evm-semantics/tests/foundry --verbose --test Examples.test_assert_bool_passing"
           docker stop --time=0 ${container_name}
 
   dockerhub-image:
