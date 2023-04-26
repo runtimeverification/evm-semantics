@@ -268,6 +268,25 @@ class KEVM(KProve, KRun):
         return False
 
     @staticmethod
+    def same_loop(cterm1: CTerm, cterm2: CTerm) -> bool:
+        # In the same program, at the same calldepth, at the same program counter
+        for cell in ['PC_CELL', 'CALLDEPTH_CELL', 'PROGRAM_CELL']:
+            if cterm1.cell(cell) != cterm2.cell(cell):
+                return False
+        # duplicate from KEVM.extract_branches
+        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
+        pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
+        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
+        subst1 = branch_pattern.match(cterm1.cell('K_CELL'))
+        subst2 = branch_pattern.match(cterm2.cell('K_CELL'))
+        # Jumping to the same program counter
+        if subst1 is not None and subst2 is not None and subst1['###PCOUNT'] == subst2['###PCOUNT']:
+            # Same wordstack structure
+            if KEVM.wordstack_len(cterm1.cell('WORDSTACK_CELL')) == KEVM.wordstack_len(cterm2.cell('WORDSTACK_CELL')):
+                return True
+        return False
+
+    @staticmethod
     def halt() -> KApply:
         return KApply('#halt_EVM_KItem')
 
@@ -403,6 +422,10 @@ class KEVM(KProve, KRun):
                 KApply('<nonce>', [nonce]),
             ],
         )
+
+    @staticmethod
+    def wordstack_len(wordstack: KInner) -> int:
+        return len(flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', wordstack))
 
     @staticmethod
     def parse_bytestack(s: KInner) -> KApply:

@@ -184,6 +184,18 @@ APRProof: AssumeTest.test_multi_assume
     frontier: 0
     stuck: 0
 
+APRProof: BMCLoopsTest.test_countdown_concrete
+    status: ProofStatus.PASSED
+    nodes: 6
+    frontier: 0
+    stuck: 0
+
+APRProof: BMCLoopsTest.test_countdown_symbolic
+    status: ProofStatus.PASSED
+    nodes: 25
+    frontier: 0
+    stuck: 0
+
 APRProof: BlockParamsTest.testBlockNumber
     status: ProofStatus.PASSED
     nodes: 5
