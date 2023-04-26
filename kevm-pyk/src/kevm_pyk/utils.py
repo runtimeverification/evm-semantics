@@ -17,7 +17,7 @@ from pyk.kast.manip import (
 )
 from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
-from pyk.proof import APRProof, APRProver
+from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -67,7 +67,7 @@ def get_ag_proof_for_spec(  # noqa: N802
 
 def parallel_kcfg_explore(
     kprove: KProve,
-    proof_problems: dict[str, APRProof],
+    proof_problems: dict[str, APRProof | APRBMCProof],
     save_directory: Path | None = None,
     max_depth: int = 1000,
     max_iterations: int | None = None,
@@ -78,6 +78,8 @@ def parallel_kcfg_explore(
     implication_every_block: bool = False,
     is_terminal: Callable[[CTerm], bool] | None = None,
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
+    same_loop: Callable[[CTerm, CTerm], bool] | None = None,
+    bmc_depth: int | None = None,
     bug_report: BugReport | None = None,
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
@@ -116,9 +118,16 @@ def parallel_kcfg_explore(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:
-            ag_prover = APRProver(_ag_proof, is_terminal=is_terminal, extract_branches=extract_branches)
+            prover: APRBMCProof | APRProver
+            if type(_ag_proof) is APRBMCProof:
+                assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
+                prover = APRBMCProver(
+                    _ag_proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop
+                )
+            else:
+                prover = APRProver(_ag_proof, is_terminal=is_terminal, extract_branches=extract_branches)
             try:
-                _cfg = ag_prover.advance_proof(
+                _cfg = prover.advance_proof(
                     kcfg_explore,
                     max_iterations=max_iterations,
                     execute_depth=max_depth,

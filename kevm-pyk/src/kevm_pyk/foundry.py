@@ -21,8 +21,9 @@ from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
-from pyk.proof import APRProof
-from pyk.utils import shorten_hashes, single, unique
+from pyk.proof.proof import Proof
+from pyk.proof.reachability import APRBMCProof, APRProof
+from pyk.utils import hash_str, shorten_hashes, single, unique
 
 from .kevm import KEVM
 from .solc_to_k import Contract, contract_to_main_module
@@ -300,6 +301,7 @@ def foundry_prove(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
+    bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
@@ -355,10 +357,18 @@ def foundry_prove(
             setup_methods[contract.name] = f'{contract.name}.{method.name}'
 
     def run_cfg_group(tests: list[str]) -> dict[str, bool]:
-        ag_proofs: dict[str, APRProof] = {}
+        ag_proofs: dict[str, APRProof | APRBMCProof] = {}
         for test in tests:
-            if APRProof.proof_exists(test, ag_proofs_dir) and not reinit:
-                ag_proof = APRProof.read_proof(test, ag_proofs_dir)
+            if Proof.proof_exists(test, ag_proofs_dir) and not reinit:
+                proof_path = ag_proofs_dir / f'{hash_str(test)}.json'
+                proof_dict = json.loads(proof_path.read_text())
+                match proof_dict['type']:
+                    case 'APRProof':
+                        ag_proof = APRProof.from_dict(proof_dict)
+                    case 'APRBMCProof':
+                        ag_proof = APRBMCProof.from_dict(proof_dict)
+                    case unsupported_type:
+                        raise ValueError(f'Unsupported proof type {unsupported_type}')
             else:
                 _LOGGER.info(f'Initializing KCFG for test: {test}')
                 contract_name, method_name = test.split('.')
@@ -400,7 +410,10 @@ def foundry_prove(
                     if simplify_init:
                         _LOGGER.info(f'Simplifying KCFG for test: {test}')
                         kcfg_explore.simplify(kcfg)
-                ag_proof = APRProof(test, kcfg, proof_dir=ag_proofs_dir)
+                if bmc_depth is not None:
+                    ag_proof = APRBMCProof(test, kcfg, proof_dir=ag_proofs_dir, bmc_depth=bmc_depth)
+                else:
+                    ag_proof = APRProof(test, kcfg, proof_dir=ag_proofs_dir)
 
             ag_proof.write_proof()
             ag_proofs[test] = ag_proof
@@ -417,6 +430,7 @@ def foundry_prove(
             break_on_calls=break_on_calls,
             implication_every_block=implication_every_block,
             is_terminal=KEVM.is_terminal,
+            same_loop=KEVM.same_loop,
             extract_branches=KEVM.extract_branches,
             bug_report=br,
             kore_rpc_command=kore_rpc_command,
