@@ -15,7 +15,7 @@ from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import get_cell, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
-from pyk.ktool.kompile import KompileBackend, LLVMKompileType
+from pyk.ktool.kompile import KompileBackend, LLVMKompileType, kompile
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
@@ -26,6 +26,7 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.utils import hash_str, shorten_hashes, single, unique
 
 from .kevm import KEVM
+from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
 from .solc_to_k import Contract, contract_to_main_module
 from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, parallel_kcfg_explore
 
@@ -276,33 +277,35 @@ def foundry_kompile(
             kevm = KEVM(definition_dir, extra_unparsing_modules=bin_runtime_definition.all_modules)
             fmf.write(kevm.pretty_print(bin_runtime_definition) + '\n')
 
-    def kevm_kompile(
+    def _kompile(
         out_dir: Path,
         backend: KompileBackend,
         llvm_kompile_type: LLVMKompileType | None = None,
         md_selector: str | None = None,
     ) -> None:
-        KEVM.kompile(
-            out_dir,
-            backend,
-            foundry_main_file,
+        kompile(
+            main_file=foundry_main_file,
+            output_dir=out_dir,
+            backend=backend,
             emit_json=True,
-            includes=includes,
-            main_module_name=main_module,
-            syntax_module_name=syntax_module,
+            include_dirs=[include for include in includes if Path(include).exists()],
+            main_module=main_module,
+            syntax_module=syntax_module,
             md_selector=md_selector,
+            hook_namespaces=HOOK_NAMESPACES,
             debug=debug,
+            concrete_rules=CONCRETE_RULES if backend == KompileBackend.HASKELL else (),
             ccopts=ccopts,
-            llvm_kompile=llvm_kompile,
+            no_llvm_kompile=not llvm_kompile,
             llvm_kompile_type=llvm_kompile_type,
         )
 
     if regen or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
-        kevm_kompile(foundry_definition_dir, KompileBackend.HASKELL, md_selector=md_selector)
+        _kompile(foundry_definition_dir, KompileBackend.HASKELL, md_selector=md_selector)
         if llvm_library:
             _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
-            kevm_kompile(
+            _kompile(
                 foundry_llvm_dir,
                 KompileBackend.LLVM,
                 llvm_kompile_type=LLVMKompileType.C,
