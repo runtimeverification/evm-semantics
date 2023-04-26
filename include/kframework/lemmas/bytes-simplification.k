@@ -47,8 +47,7 @@ module BYTES-SIMPLIFICATION [symbolic]
        andBool 0 <=Int Y andBool Y <Int 2 ^Int (8 *Int W)
       [simplification]
 
-    rule [buf-as-int-left]:  B:Bytes   ==K #buf(32, X:Int) => X ==Int #asInteger(B) requires lengthBytes(B) <=Int 32 [simplification, concrete(B)]
-    rule [buf-as-int-right]: #buf(32, X:Int) ==K B:Bytes   => X ==Int #asInteger(B) requires lengthBytes(B) <=Int 32 [simplification, concrete(B)]
+    rule [buf-as-int]: B:Bytes ==K #buf(32, X:Int) => X ==Int #asInteger(B) requires lengthBytes(B) <=Int 32 [simplification, concrete(B), comm]
 
     rule [buf-asWord-invert]:
       #buf (W:Int , #asWord(B:Bytes)) => #buf(W -Int lengthBytes(B), 0) +Bytes B
