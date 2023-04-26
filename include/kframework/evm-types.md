@@ -476,6 +476,7 @@ endmodule
 
 module GAS
    imports INT
+   imports BOOL
 
    syntax Gas ::= Int
 
@@ -504,6 +505,7 @@ module GAS
 
    rule minGas(I1:Int, I2:Int) => minInt(I1, I2)
 
-   // rule gasToInt(G:Int) => G
+    rule A  <Gas B => false requires B <=Gas A [simplification]
+    rule A  >Gas B => false requires B >=Gas A [simplification]
 endmodule
 ```
