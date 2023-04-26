@@ -54,7 +54,7 @@ export PLUGIN_FULL_PATH
         test-prove test-failing-prove test-foundry-kcfg-diff                                                                                 \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-smoke \
         test-prove-mcd test-klab-prove                                                                                                       \
-        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-bmc-prove test-foundry-list                             \
+        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-list                                                    \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                           \
         test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean foundry-fail                                                      \
         media media-pdf metropolis-theme                                                                                                     \
@@ -206,6 +206,7 @@ kevm_files := abi.md                          \
               state-utils.md                  \
               word.md                         \
               lemmas/lemmas.k                 \
+              lemmas/evm-int-simplification.k \
               lemmas/int-simplification.k     \
               lemmas/bitwise-simplification.k \
               lemmas/bytes-simplification.k
@@ -412,32 +413,33 @@ test: test-conformance test-prove test-interactive test-parse test-kevm-pyk
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTESTS
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
-tests/specs/benchmarks/functional-spec%:          KPROVE_FILE   =  functional-spec
-tests/specs/benchmarks/functional-spec%:          KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/bihu/functional-spec%:                KPROVE_FILE   =  functional-spec
-tests/specs/bihu/functional-spec%:                KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/erc20/functional-spec%:               KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/examples/solidity-code-spec%:         KPROVE_EXT    =  md
-tests/specs/examples/solidity-code-spec%:         KPROVE_FILE   =  solidity-code-spec
-tests/specs/examples/erc20-spec%:                 KPROVE_EXT    =  md
-tests/specs/examples/erc20-spec%:                 KPROVE_FILE   =  erc20-spec
-tests/specs/examples/erc721-spec%:                KPROVE_EXT    =  md
-tests/specs/examples/erc721-spec%:                KPROVE_FILE   =  erc721-spec
-tests/specs/examples/storage-spec%:               KPROVE_EXT    =  md
-tests/specs/examples/storage-spec%:               KPROVE_FILE   =  storage-spec
-tests/specs/examples/sum-to-n-spec%:              KPROVE_FILE   =  sum-to-n-spec
-tests/specs/functional/infinite-gas-spec%:        KPROVE_FILE   =  infinite-gas-spec
-tests/specs/functional/int-simplifications-spec%: KPROVE_FILE   =  int-simplifications-spec
-tests/specs/functional/lemmas-no-smt-spec%:       KPROVE_FILE   =  lemmas-no-smt-spec
-tests/specs/functional/lemmas-no-smt-spec%:       KPROVE_OPTS   += --haskell-backend-command "kore-exec --smt=none"
-tests/specs/functional/lemmas-spec%:              KPROVE_FILE   =  lemmas-spec
-tests/specs/functional/merkle-spec%:              KPROVE_FILE   =  merkle-spec
-tests/specs/functional/storageRoot-spec%:         KPROVE_FILE   =  storageRoot-spec
-tests/specs/mcd/functional-spec%:                 KPROVE_FILE   =  functional-spec
-tests/specs/mcd/functional-spec%:                 KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/opcodes/evm-optimizations-spec%:      KPROVE_EXT    =  md
-tests/specs/opcodes/evm-optimizations-spec%:      KPROVE_FILE   =  evm-optimizations-spec
-tests/specs/opcodes/evm-optimizations-spec%:      KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
+tests/specs/benchmarks/functional-spec%:              KPROVE_FILE   =  functional-spec
+tests/specs/benchmarks/functional-spec%:              KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/bihu/functional-spec%:                    KPROVE_FILE   =  functional-spec
+tests/specs/bihu/functional-spec%:                    KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/erc20/functional-spec%:                   KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/examples/solidity-code-spec%:             KPROVE_EXT    =  md
+tests/specs/examples/solidity-code-spec%:             KPROVE_FILE   =  solidity-code-spec
+tests/specs/examples/erc20-spec%:                     KPROVE_EXT    =  md
+tests/specs/examples/erc20-spec%:                     KPROVE_FILE   =  erc20-spec
+tests/specs/examples/erc721-spec%:                    KPROVE_EXT    =  md
+tests/specs/examples/erc721-spec%:                    KPROVE_FILE   =  erc721-spec
+tests/specs/examples/storage-spec%:                   KPROVE_EXT    =  md
+tests/specs/examples/storage-spec%:                   KPROVE_FILE   =  storage-spec
+tests/specs/examples/sum-to-n-spec%:                  KPROVE_FILE   =  sum-to-n-spec
+tests/specs/functional/infinite-gas-spec%:            KPROVE_FILE   =  infinite-gas-spec
+tests/specs/functional/evm-int-simplifications-spec%: KPROVE_FILE   =  evm-int-simplifications-spec
+tests/specs/functional/int-simplifications-spec%:     KPROVE_FILE   =  int-simplifications-spec
+tests/specs/functional/lemmas-no-smt-spec%:           KPROVE_FILE   =  lemmas-no-smt-spec
+tests/specs/functional/lemmas-no-smt-spec%:           KPROVE_OPTS   += --haskell-backend-command "kore-exec --smt=none"
+tests/specs/functional/lemmas-spec%:                  KPROVE_FILE   =  lemmas-spec
+tests/specs/functional/merkle-spec%:                  KPROVE_FILE   =  merkle-spec
+tests/specs/functional/storageRoot-spec%:             KPROVE_FILE   =  storageRoot-spec
+tests/specs/mcd/functional-spec%:                     KPROVE_FILE   =  functional-spec
+tests/specs/mcd/functional-spec%:                     KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_EXT    =  md
+tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_FILE   =  evm-optimizations-spec
+tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
 
 tests/%.run: tests/%
 	$(KEVM) interpret $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                                  \
@@ -491,7 +493,6 @@ test-foundry-%: KEVM_OPTS += --pyk --verbose
 test-foundry-%: KEVM := $(POETRY_RUN) kevm
 test-foundry-kompile: tests/foundry/foundry.k.check
 test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
-test-foundry-bmc-prove: tests/foundry/out/kompiled/foundry.k.bmc-prove
 test-foundry-list: tests/foundry/foundry-list.check
 
 foundry-forge-build: $(foundry_out)
@@ -521,13 +522,6 @@ tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
 	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
 	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
-
-tests/foundry/out/kompiled/foundry.k.bmc-prove: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
-	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
-            --bmc-depth 3                                                    \
-	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
-	    $(addprefix --test , $(shell cat tests/foundry/bmc-tests))
 
 foundry_golden := tests/foundry/golden
 foundry_diff_tests := $(shell cat tests/foundry/checkoutput)
