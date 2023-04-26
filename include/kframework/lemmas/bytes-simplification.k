@@ -13,7 +13,7 @@ module BYTES-SIMPLIFICATION [symbolic]
       [simplification]
 
     rule [bytes-equal-concat-split-k]:
-      A:Bytes +Bytes B:Bytes ==K C:Bytes +Bytes D:Bytes => A ==K C #And B ==K D
+      A:Bytes +Bytes B:Bytes ==K C:Bytes +Bytes D:Bytes => A ==K C andBool B ==K D
       requires lengthBytes(A) ==Int lengthBytes(C)
         orBool lengthBytes(B) ==Int lengthBytes(D)
       [simplification]
