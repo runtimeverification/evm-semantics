@@ -94,11 +94,11 @@ jobs:
             --workdir /home/user            \
             ${tag_name}
           docker cp ./kevm_${version}_amd64.deb ${container_name}:/home/user/kevm_${version}_amd64.deb
+          docker cp ./tests/foundry ${container_name}:/home/user/foundry
           docker exec -u user ${container_name} /bin/bash -c "sudo apt-get install --yes ./kevm_${version}_amd64.deb"
-          docker exec -u user ${container_name} /bin/bash -c "git clone https://github.com/runtimeverification/foundry-demo --branch v${version}"
-          dokcer exec -u user ${container_name} /bin/bash -c "forge build --root evm-semantics/tests/foundry"
-          dokcer exec -u user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root evm-semantics/tests/foundry --verbose"
-          dokcer exec -u user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root evm-semantics/tests/foundry --verbose --test Examples.test_assert_bool_passing"
+          dokcer exec -u user ${container_name} /bin/bash -c "forge build --root foundry"
+          dokcer exec -u user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root foundry --verbose"
+          dokcer exec -u user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root foundry --verbose --test Examples.test_assert_bool_passing"
           docker stop --time=0 ${container_name}
 
   dockerhub-image:
