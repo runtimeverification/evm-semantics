@@ -4,7 +4,6 @@ import json
 import logging
 import sys
 from argparse import ArgumentParser
-from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -12,7 +11,6 @@ from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
-from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
@@ -29,7 +27,8 @@ from .foundry import (
     foundry_step_node,
     foundry_to_dot,
 )
-from .kevm import KEVM, KEVMKompileMode
+from .kevm import KEVM
+from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
 from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_ag_proof_for_spec, parallel_kcfg_explore
 
@@ -44,11 +43,6 @@ if TYPE_CHECKING:
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
-
-
-class KompileTarget(Enum):
-    LINUX = 'linux'
-    DARWIN = 'darwin'
 
 
 def _ignore_arg(args: dict[str, Any], arg: str, cli_option: str) -> None:
@@ -82,31 +76,22 @@ def exec_compile(contract_file: Path, **kwargs: Any) -> None:
 
 def exec_kompile(
     definition_dir: Path,
-    backend: KompileBackend,
+    target: KompileTarget,
     main_file: Path,
     emit_json: bool,
-    kompile_mode: KEVMKompileMode,
     includes: list[str],
     main_module: str | None,
     syntax_module: str | None,
+    kevm_lib: Path | None = None,
     ccopts: Iterable[str] = (),
-    llvm_kompile: bool = True,
-    target: KompileTarget | None = None,
     o0: bool = False,
     o1: bool = False,
     o2: bool = False,
     o3: bool = False,
     debug: bool = False,
-    plugin_include: Path | None = None,
-    libff_dir: Path | None = None,
-    brew_root: Path | None = None,
-    libcryptopp_dir: Path | None = None,
-    openssl_root: Path | None = None,
     enable_llvm_debug: bool = False,
     **kwargs: Any,
 ) -> None:
-    _ignore_arg(kwargs, 'md_selector', f'--md-selector {kwargs["md_selector"]}')
-
     optimization = 0
     if o1:
         optimization = 1
@@ -115,54 +100,19 @@ def exec_kompile(
     if o3:
         optimization = 3
 
-    md_selector = 'k & ! node'
-    if kompile_mode == KEVMKompileMode.NODE:
-        md_selector = 'k & ! standalone'
-
-    if backend == KompileBackend.LLVM:
-        ccopts = list(ccopts)
-        if libff_dir is not None:
-            ccopts += [f'-L{libff_dir}/lib', f'-I{libff_dir}/include']
-        if plugin_include is not None:
-            ccopts += [
-                f'{plugin_include}/c/plugin_util.cpp',
-                f'{plugin_include}/c/crypto.cpp',
-                f'{plugin_include}/c/blake2.cpp',
-            ]
-        ccopts += ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
-        if target == KompileTarget.DARWIN:
-            if brew_root is not None:
-                ccopts += [
-                    f'-I{brew_root}/include',
-                    f'-L{brew_root}/lib',
-                ]
-            if openssl_root is not None:
-                ccopts += [
-                    f'-I{openssl_root}/include',
-                    f'-L{openssl_root}/lib',
-                ]
-            if libcryptopp_dir is not None:
-                ccopts += [
-                    f'-I{libcryptopp_dir}/include',
-                    f'-L{libcryptopp_dir}/lib',
-                ]
-        elif target == KompileTarget.LINUX:
-            ccopts += ['-lprocps']
-
-    KEVM.kompile(
+    kevm_kompile(
         definition_dir,
-        backend,
-        main_file,
-        emit_json=emit_json,
+        target,
+        main_file=main_file,
+        kevm_lib=kevm_lib,
+        main_module=main_module,
+        syntax_module=syntax_module,
         includes=includes,
-        main_module_name=main_module,
-        syntax_module_name=syntax_module,
-        md_selector=md_selector,
-        debug=debug,
+        emit_json=emit_json,
         ccopts=ccopts,
-        llvm_kompile=llvm_kompile,
         optimization=optimization,
         enable_llvm_debug=enable_llvm_debug,
+        debug=debug,
     )
 
 
@@ -215,7 +165,6 @@ def exec_foundry_kompile(
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
-    _ignore_arg(kwargs, 'backend', f'--backend {kwargs["backend"]}')
     _ignore_arg(kwargs, 'o0', '-O0')
     _ignore_arg(kwargs, 'o1', '-O1')
     _ignore_arg(kwargs, 'o2', '-O2')
@@ -758,7 +707,6 @@ def _create_argument_parser() -> ArgumentParser:
     )
 
     k_kompile_args = ArgumentParser(add_help=False)
-    k_kompile_args.add_argument('--backend', type=KompileBackend, help='[llvm|haskell]')
     k_kompile_args.add_argument(
         '--emit-json',
         dest='emit_json',
@@ -874,24 +822,8 @@ def _create_argument_parser() -> ArgumentParser:
         'kompile', help='Kompile KEVM specification.', parents=[shared_args, k_args, k_kompile_args]
     )
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kompile_args.add_argument(
-        '--kompile-mode',
-        type=KEVMKompileMode,
-        default=KEVMKompileMode.STANDALONE,
-        help='KEVM kompile mode, [standalone|node].',
-    )
-    kompile_args.add_argument('--plugin-include', type=dir_path, help='Path to plugin include directory.')
-    kompile_args.add_argument('--libff-dir', type=dir_path, help='Path to libff include directory.')
-    kompile_args.add_argument(
-        '--target', type=KompileTarget, default=KompileTarget.LINUX, help='Compilation target, [linux|darwin].'
-    )
-    kompile_args.add_argument('--libcryptopp-dir', type=dir_path, help='Path to libcryptopp include directory.')
-    kompile_args.add_argument(
-        '--brew-root', type=dir_path, help='Path to homebrew root directory (only for --target-darwin).'
-    )
-    kompile_args.add_argument(
-        '--openssl-root', type=dir_path, help='Path to openssl root directory (only for --target-darwin).'
-    )
+    kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|node|foundry]')
+    kompile_args.add_argument('--kevm-lib', type=dir_path, help='Path to KEVM lib directory.')
 
     _ = command_parser.add_parser(
         'prove',
