@@ -732,9 +732,7 @@ These are just used by the other operators for shuffling local execution state a
 ```k
     syntax InternalOp ::= "#push" | "#setStack" WordStack
  // -----------------------------------------------------
-   //  rule <k> W0:Int ~> #push => . ... </k> <wordStack> WS => W0 : WS </wordStack>
-// TODO Daniel: Check
-    rule <k> W0:Gas ~> #push => . ... </k> <wordStack> WS => W0 : WS </wordStack>
+    rule <k> W0:Int ~> #push => . ... </k> <wordStack> WS => W0 : WS </wordStack>
     rule <k> #setStack WS    => . ... </k> <wordStack> _  => WS      </wordStack>
 ```
 
@@ -960,12 +958,11 @@ These operators make queries about the current execution state.
 ```k
     syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT" | "BASEFEE"
  // -------------------------------------------------------------------------
-    rule <k> PC       => PCOUNT ~> #push ... </k> <pc> PCOUNT </pc>
-// TODO Daniel: After this step is applied proof was blocking   
-    rule <k> GAS      => GAVAIL ~> #push ... </k> <gas> GAVAIL </gas>
-    rule <k> GASPRICE => GPRICE ~> #push ... </k> <gasPrice> GPRICE </gasPrice>
-    rule <k> GASLIMIT => GLIMIT ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
-    rule <k> BASEFEE  => BFEE   ~> #push ... </k> <baseFee> BFEE </baseFee>
+    rule <k> PC       => PCOUNT          ~> #push ... </k> <pc> PCOUNT </pc>
+    rule <k> GAS      => gas2Int(GAVAIL) ~> #push ... </k> <gas> GAVAIL </gas>
+    rule <k> GASPRICE => GPRICE          ~> #push ... </k> <gasPrice> GPRICE </gasPrice>
+    rule <k> GASLIMIT => GLIMIT          ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
+    rule <k> BASEFEE  => BFEE            ~> #push ... </k> <baseFee> BFEE </baseFee>
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "PREVRANDAO"
  // ----------------------------------------------------------------------------------------

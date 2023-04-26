@@ -19,40 +19,44 @@ module INFINITE-GAS
 
     syntax Gas ::= #gas(Int)
 
-    rule #gas(G) +Gas G'       => #gas(G +Int G') 
-    rule #gas(G) -Gas G'       => #gas(G -Int G') 
-    rule #gas(G) *Gas G'       => #gas(G *Int G') 
+    rule #gas(G) +Gas G'       => #gas(G +Int G')
+    rule #gas(G) -Gas G'       => #gas(G -Int G')
+    rule #gas(G) *Gas G'       => #gas(G *Int G')
     rule #gas(G) /Gas G'       => #gas(G /Int G')  requires G' =/=Int 0
-    rule      G  +Gas #gas(G') => #gas(G +Int G') 
-    rule      G  -Gas #gas(G') => #gas(G -Int G') 
-    rule      G  *Gas #gas(G') => #gas(G *Int G') 
+    rule      G  +Gas #gas(G') => #gas(G +Int G')
+    rule      G  -Gas #gas(G') => #gas(G -Int G')
+    rule      G  *Gas #gas(G') => #gas(G *Int G')
     rule      G  /Gas #gas(G') => #gas(G /Int G')  requires G' =/=Int 0
-    rule #gas(G) +Gas #gas(G') => #gas(G +Int G') 
-    rule #gas(G) -Gas #gas(G') => #gas(G -Int G') 
-    rule #gas(G) *Gas #gas(G') => #gas(G *Int G') 
+    rule #gas(G) +Gas #gas(G') => #gas(G +Int G')
+    rule #gas(G) -Gas #gas(G') => #gas(G -Int G')
+    rule #gas(G) *Gas #gas(G') => #gas(G *Int G')
     rule #gas(G) /Gas #gas(G') => #gas(G /Int G')  requires G' =/=Int 0
 
-    rule  #gas(_)  <Gas _:Int   => false 
-    rule  #gas(_)  <Gas #gas(_) => false 
-    rule  _:Int    <Gas #gas(_) => true  
-                                          
-    rule  #gas(_) <=Gas _:Int   => false 
-    rule  #gas(_) <=Gas #gas(_) => true  
-    rule  _:Int   <=Gas #gas(_) => true  
-                                         
-    rule  #gas(_)  >Gas _:Int   => true  
-    rule  #gas(_)  >Gas #gas(_) => false 
-    rule  _:Int    >Gas #gas(_) => false 
-                                         
-    rule  #gas(_) >=Gas _:Int   => true  
-    rule  #gas(_) >=Gas #gas(_) => true  
-    rule  _:Int   >=Gas #gas(_) => false  
+    rule  #gas(_)  <Gas _:Int   => false
+    rule  #gas(_)  <Gas #gas(_) => false
+    rule  _:Int    <Gas #gas(_) => true
+
+    rule  #gas(_) <=Gas _:Int   => false
+    rule  #gas(_) <=Gas #gas(_) => true
+    rule  _:Int   <=Gas #gas(_) => true
+
+    rule  #gas(_)  >Gas _:Int   => true
+    rule  #gas(_)  >Gas #gas(_) => false
+    rule  _:Int    >Gas #gas(_) => false
+
+    rule  #gas(_) >=Gas _:Int   => true
+    rule  #gas(_) >=Gas #gas(_) => true
+    rule  _:Int   >=Gas #gas(_) => false
 
     rule minGas(#gas(G), #gas(G')) => #gas(minInt(G, G'))
     rule minGas(G:Int  , #gas(_))  => G
     rule minGas(#gas(_), G':Int)   => G'
 
+    rule gas2Int(#gas(G)) => G
+
     rule #allBut64th(#gas(G)) => #gas(#allBut64th(G))
-    rule Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) [simplification] // TODO Daniel: Note I removed the requires here...
+    rule Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) [simplification]
+    rule Cgascap(SCHED, #gas(GCAP), GAVAIL:Int, GEXTRA)   => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) [simplification]
+    rule Cgascap(SCHED, GCAP:Int, #gas(GAVAIL), GEXTRA)   => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) [simplification]
 endmodule
 ```
