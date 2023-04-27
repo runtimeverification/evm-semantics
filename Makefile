@@ -165,6 +165,7 @@ $(plugin_k_include)/%: $(PLUGIN_SUBMODULE)/plugin/%
 
 plugin-deps: $(plugin_includes) $(plugin_c_includes)
 
+
 # Building
 # --------
 
@@ -223,97 +224,107 @@ $(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
 	@mkdir -p $(dir $@)
 	install $< $@
 
-KOMPILE_OPTS = -I $(INSTALL_INCLUDE)/kframework
-
+KOMPILE_OPTS :=
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
 endif
 
+KOMPILE_BACKEND       :=
+KOMPILE_MAIN_FILE     :=
+KOMPILE_MAIN_MODULE   :=
+KOMPILE_SYNTAX_MODULE :=
+
+kompile =                                        \
+    $(KOMPILE)                                   \
+    	$(KOMPILE_MAIN_FILE)                     \
+    	--backend $(KOMPILE_BACKEND)             \
+    	--main-module $(KOMPILE_MAIN_MODULE)     \
+    	--syntax-module $(KOMPILE_SYNTAX_MODULE) \
+    	$(KOMPILE_OPTS) $(KEVM_OPTS)
+
+
 # Haskell
 
-haskell_dir            := haskell
-haskell_main_module    := EDSL
-haskell_syntax_module  := $(haskell_main_module)
-haskell_main_file      := edsl.md
-haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
-haskell_kompiled_dir   := $(haskell_dir)
-haskell_kompiled       := $(haskell_kompiled_dir)/definition.kore
+haskell_dir      := haskell
+haskell_kompiled := $(haskell_dir)/definition.kore
+kompile_haskell  := $(KEVM_LIB)/$(haskell_kompiled)
 
 ifeq ($(UNAME_S),Darwin)
-$(KEVM_LIB)/$(haskell_kompiled): $(libsecp256k1_out)
+$(kompile_haskell): $(libsecp256k1_out)
 endif
 
-$(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend haskell                        \
-	    $(KEVM_INCLUDE)/kframework/$(haskell_main_file) \
-	    $(HASKELL_KOMPILE_OPTS)                         \
-	    --main-module $(haskell_main_module)            \
-	    --syntax-module $(haskell_syntax_module)        \
-	    $(KOMPILE_OPTS) $(KEVM_OPTS)
+$(kompile_haskell): $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
+
+$(kompile_haskell): KOMPILE_BACKEND       := haskell
+$(kompile_haskell): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/edsl.md
+$(kompile_haskell): KOMPILE_MAIN_MODULE   := EDSL
+$(kompile_haskell): KOMPILE_SYNTAX_MODULE := EDSL
+$(kompile_haskell):
+	$(kompile)
+
 
 # Standalone
 
-llvm_dir           := llvm
-llvm_main_module   := ETHEREUM-SIMULATION
-llvm_syntax_module := $(llvm_main_module)
-llvm_main_file     := driver.md
-llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
-llvm_kompiled      := $(llvm_dir)/interpreter
+llvm_dir      := llvm
+llvm_kompiled := $(llvm_dir)/interpreter
+kompile_llvm  := $(KEVM_LIB)/$(llvm_kompiled)
 
 ifeq ($(UNAME_S),Darwin)
-$(KEVM_LIB)/$(llvm_kompiled): $(libcryptopp_out)
+$(kompile_llvm): $(libcryptopp_out)
 endif
 
-$(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend llvm                        \
-	    $(KEVM_INCLUDE)/kframework/$(llvm_main_file) \
-	    --main-module $(llvm_main_module)            \
-	    --syntax-module $(llvm_syntax_module)        \
-	    $(KOMPILE_OPTS) $(KEVM_OPTS)
+$(kompile_llvm): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
+
+$(kompile_llvm): KOMPILE_BACKEND       := llvm
+$(kompile_llvm): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/driver.md
+$(kompile_llvm): KOMPILE_MAIN_MODULE   := ETHEREUM-SIMULATION
+$(kompile_llvm): KOMPILE_SYNTAX_MODULE := ETHEREUM-SIMULATION
+$(kompile_llvm):
+	$(kompile)
+
 
 # Node
-
-node_dir           := node
-node_main_module   := EVM-NODE
-node_syntax_module := $(node_main_module)
-node_main_file     := evm-node.md
-node_main_filename := $(basename $(notdir $(node_main_file)))
-node_kore          := $(node_dir)/definition.kore
-node_kompiled      := $(node_dir)/build/kevm-vm
+#
+node_dir      := node
+node_kore     := $(node_dir)/definition.kore
+node_kompiled := $(node_dir)/build/kevm-vm
+kompile_node  := $(KEVM_LIB)/$(node_kore)
 export node_dir
 
-$(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend node                        \
-	    $(KEVM_INCLUDE)/kframework/$(node_main_file) \
-	    --main-module $(node_main_module)            \
-	    --syntax-module $(node_syntax_module)        \
-	    $(KOMPILE_OPTS) $(KEVM_OPTS)
+$(kompile_node): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
+
+$(kompile_node): KOMPILE_BACKEND       := node
+$(kompile_node): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/evm-node.md
+$(kompile_node): KOMPILE_MAIN_MODULE   := EVM-NODE
+$(kompile_node): KOMPILE_SYNTAX_MODULE := EVM-NODE
+$(kompile_node):
+	$(kompile)
+
 
 $(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_out)
 	@mkdir -p $(dir $@)
 	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) && $(MAKE)
 
+
 # Foundry
 
-foundry_dir           := foundry
-foundry_main_module   := FOUNDRY
-foundry_syntax_module := $(foundry_main_module)
-foundry_main_file     := foundry.md
-foundry_main_filename := $(basename $(notdir $(foundry_main_file)))
-foundry_kompiled_dir  := $(foundry_dir)
-foundry_kompiled      := $(foundry_kompiled_dir)/definition.kore
+foundry_dir      := foundry
+foundry_kompiled := $(foundry_dir)/definition.kore
+kompile_foundry  := $(KEVM_LIB)/$(foundry_kompiled)
 
 ifeq ($(UNAME_S),Darwin)
-$(KEVM_LIB)/$(foundry_kompiled): $(libsecp256k1_out)
+$(kompile_foundry): $(libsecp256k1_out)
 endif
 
-$(KEVM_LIB)/$(foundry_kompiled): $(kevm_includes) $(plugin_includes) $(lemma_includes) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend foundry                        \
-	    $(KEVM_INCLUDE)/kframework/$(foundry_main_file) \
-	    --main-module $(foundry_main_module)            \
-	    --syntax-module $(foundry_syntax_module)        \
-	    $(HASKELL_KOMPILE_OPTS)                         \
-	    $(KOMPILE_OPTS) $(KEVM_OPTS)
+$(kompile_foundry): $(kevm_includes) $(plugin_includes) $(lemma_includes) $(KEVM_BIN)/kevm
+
+$(kompile_foundry): KOMPILE_BACKEND       := foundry
+$(kompile_foundry): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/foundry.md
+$(kompile_foundry): KOMPILE_MAIN_MODULE   := FOUNDRY
+$(kompile_foundry): KOMPILE_SYNTAX_MODULE := FOUNDRY
+$(kompile_foundry):
+	$(kompile)
+
 
 # Installing
 # ----------
@@ -563,18 +574,18 @@ tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) kevm
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< ERC20 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
+	$(KEVM) solc-to-k $< ERC20 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module ERC20-VERIFICATION > $@
 
 tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
 tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< ERC721 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
+	$(KEVM) solc-to-k $< ERC721 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module ERC721-VERIFICATION > $@
 
 tests/specs/examples/storage-spec/haskell/timestamp: tests/specs/examples/storage-bin-runtime.k
 tests/specs/examples/storage-bin-runtime.k: tests/specs/examples/Storage.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< Storage $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module STORAGE-VERIFICATION > $@
+	$(KEVM) solc-to-k $< Storage $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module STORAGE-VERIFICATION > $@
 
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< Empty $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
+	$(KEVM) solc-to-k $< Empty $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module EMPTY-VERIFICATION > $@
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
