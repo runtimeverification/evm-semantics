@@ -15,7 +15,7 @@ from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, 
 from pyk.kast.manip import get_cell, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
-from pyk.ktool.kompile import KompileBackend, LLVMKompileType, kompile
+from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
@@ -36,6 +36,7 @@ if TYPE_CHECKING:
 
     from pyk.kast import KInner
     from pyk.kcfg.tui import KCFGElem
+    from pyk.ktool.kompile import Kompile
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -283,22 +284,35 @@ def foundry_kompile(
         llvm_kompile_type: LLVMKompileType | None = None,
         md_selector: str | None = None,
     ) -> None:
-        kompile(
+        base_args = KompileArgs(
             main_file=foundry_main_file,
-            output_dir=out_dir,
-            backend=backend,
-            emit_json=True,
-            include_dirs=[include for include in includes if Path(include).exists()],
             main_module=main_module,
             syntax_module=syntax_module,
+            include_dirs=[include for include in includes if Path(include).exists()],
             md_selector=md_selector,
             hook_namespaces=HOOK_NAMESPACES,
+            emit_json=True,
             debug=debug,
-            concrete_rules=CONCRETE_RULES if backend == KompileBackend.HASKELL else (),
-            ccopts=ccopts,
-            no_llvm_kompile=not llvm_kompile,
-            llvm_kompile_type=llvm_kompile_type,
         )
+
+        kompile: Kompile
+        match backend:
+            case KompileBackend.LLVM:
+                kompile = LLVMKompile(
+                    base_args=base_args,
+                    ccopts=ccopts,
+                    no_llvm_kompile=not llvm_kompile,
+                    llvm_kompile_type=llvm_kompile_type,
+                )
+            case KompileBackend.HASKELL:
+                kompile = HaskellKompile(
+                    base_args=base_args,
+                    concrete_rules=CONCRETE_RULES,
+                )
+            case _:
+                raise ValueError(f'Unsuppored backend: {backend.value}')
+
+        kompile(output_dir=out_dir)
 
     if regen or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
