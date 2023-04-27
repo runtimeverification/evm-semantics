@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cli_utils import run_process
-from pyk.ktool.kompile import KompileBackend, kompile
+from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile
 
 from . import config
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import Final
 
-    from pyk.ktool.kompile import LLVMKompileType
+    from pyk.ktool.kompile import Kompile, LLVMKompileType
 
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -97,41 +97,50 @@ def kevm_kompile(
     debug: bool = False,
 ) -> Path:
     backend = target.backend
-    no_llvm_kompile = target == KompileTarget.NODE
     md_selector = 'k & ! standalone' if target == KompileTarget.NODE else 'k & ! node'
 
-    if backend == KompileBackend.LLVM:
-        if kevm_lib is None:
-            raise ValueError(f'Parameter kevm_lib must not be None for target: {target.value}')
-        ccopts = list(ccopts) + _lib_ccopts(kevm_lib)
+    base_args = KompileArgs(
+        main_file=main_file,
+        main_module=main_module,
+        syntax_module=syntax_module,
+        include_dirs=[include for include in includes if Path(include).exists()],
+        md_selector=md_selector,
+        hook_namespaces=HOOK_NAMESPACES,
+        emit_json=emit_json,
+        debug=debug,
+    )
+
+    kompile: Kompile
+    match backend:
+        case KompileBackend.LLVM:
+            if kevm_lib is None:
+                raise ValueError(f'Parameter kevm_lib must not be None for target: {target.value}')
+            ccopts = list(ccopts) + _lib_ccopts(kevm_lib)
+            no_llvm_kompile = target == KompileTarget.NODE
+            kompile = LLVMKompile(
+                base_args=base_args,
+                ccopts=ccopts,
+                no_llvm_kompile=no_llvm_kompile,
+                opt_level=optimization,
+                llvm_kompile_type=llvm_kompile_type,
+                enable_llvm_debug=enable_llvm_debug,
+            )
+        case KompileBackend.HASKELL:
+            kompile = HaskellKompile(
+                base_args=base_args,
+                concrete_rules=CONCRETE_RULES,
+            )
+        case _:
+            raise ValueError(f'Unsupported backend: {backend.value}')
 
     try:
-        kompile(
-            main_file=main_file,
-            output_dir=definition_dir,
-            backend=backend,
-            emit_json=emit_json,
-            include_dirs=[include for include in includes if Path(include).exists()],
-            main_module=main_module,
-            syntax_module=syntax_module,
-            md_selector=md_selector,
-            hook_namespaces=HOOK_NAMESPACES,
-            concrete_rules=CONCRETE_RULES if backend == KompileBackend.HASKELL else (),
-            ccopts=ccopts,
-            no_llvm_kompile=no_llvm_kompile,
-            opt_level=optimization or None,
-            llvm_kompile_type=llvm_kompile_type,
-            enable_llvm_debug=enable_llvm_debug,
-            debug=debug,
-        )
+        return kompile(output_dir=definition_dir)
     except RuntimeError as err:
         sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')
         sys.stderr.write(f'\nkompile stderr:\n{err.args[2]}\n')
         sys.stderr.write(f'\nkompile returncode:\n{err.args[3]}\n')
         sys.stderr.flush()
         raise
-
-    return definition_dir
 
 
 def _lib_ccopts(kevm_lib: Path) -> list[str]:
