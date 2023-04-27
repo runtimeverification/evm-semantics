@@ -186,8 +186,6 @@ shell: poetry
 kevm-pyk: poetry-env
 	$(MAKE) -C $(KEVM_PYK_DIR)
 
-KOMPILE := $(POETRY_RUN) $(KEVM) kompile --pyk
-
 kevm_files := abi.md                          \
               asm.md                          \
               buf.md                          \
@@ -224,23 +222,25 @@ $(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
 	@mkdir -p $(dir $@)
 	install $< $@
 
+KEVM_PYK              := $(POETRY_RUN) kevm-pyk
+KOMPILE               := KEVM_LIB=$(KEVM_LIB) $(KEVM_PYK) kompile
+KOMPILE_MAIN_FILE     :=
+KOMPILE_TARGET        :=
+KOMPILE_MAIN_MODULE   :=
+KOMPILE_SYNTAX_MODULE :=
+
 KOMPILE_OPTS :=
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
 endif
 
-KOMPILE_BACKEND       :=
-KOMPILE_MAIN_FILE     :=
-KOMPILE_MAIN_MODULE   :=
-KOMPILE_SYNTAX_MODULE :=
-
 kompile =                                        \
     $(KOMPILE)                                   \
-    	$(KOMPILE_MAIN_FILE)                     \
-    	--backend $(KOMPILE_BACKEND)             \
-    	--main-module $(KOMPILE_MAIN_MODULE)     \
-    	--syntax-module $(KOMPILE_SYNTAX_MODULE) \
-    	$(KOMPILE_OPTS) $(KEVM_OPTS)
+        $(KOMPILE_MAIN_FILE)                     \
+        --target $(KOMPILE_TARGET)               \
+        --main-module $(KOMPILE_MAIN_MODULE)     \
+        --syntax-module $(KOMPILE_SYNTAX_MODULE) \
+        $(KOMPILE_OPTS)
 
 
 # Haskell
@@ -253,9 +253,9 @@ ifeq ($(UNAME_S),Darwin)
 $(kompile_haskell): $(libsecp256k1_out)
 endif
 
-$(kompile_haskell): $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
+$(kompile_haskell): $(kevm_includes) $(plugin_includes)
 
-$(kompile_haskell): KOMPILE_BACKEND       := haskell
+$(kompile_haskell): KOMPILE_TARGET        := haskell
 $(kompile_haskell): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/edsl.md
 $(kompile_haskell): KOMPILE_MAIN_MODULE   := EDSL
 $(kompile_haskell): KOMPILE_SYNTAX_MODULE := EDSL
@@ -273,9 +273,9 @@ ifeq ($(UNAME_S),Darwin)
 $(kompile_llvm): $(libcryptopp_out)
 endif
 
-$(kompile_llvm): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
+$(kompile_llvm): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
 
-$(kompile_llvm): KOMPILE_BACKEND       := llvm
+$(kompile_llvm): KOMPILE_TARGET        := llvm
 $(kompile_llvm): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/driver.md
 $(kompile_llvm): KOMPILE_MAIN_MODULE   := ETHEREUM-SIMULATION
 $(kompile_llvm): KOMPILE_SYNTAX_MODULE := ETHEREUM-SIMULATION
@@ -291,9 +291,9 @@ node_kompiled := $(node_dir)/build/kevm-vm
 kompile_node  := $(KEVM_LIB)/$(node_kore)
 export node_dir
 
-$(kompile_node): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
+$(kompile_node): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
 
-$(kompile_node): KOMPILE_BACKEND       := node
+$(kompile_node): KOMPILE_TARGET        := node
 $(kompile_node): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/evm-node.md
 $(kompile_node): KOMPILE_MAIN_MODULE   := EVM-NODE
 $(kompile_node): KOMPILE_SYNTAX_MODULE := EVM-NODE
@@ -316,9 +316,9 @@ ifeq ($(UNAME_S),Darwin)
 $(kompile_foundry): $(libsecp256k1_out)
 endif
 
-$(kompile_foundry): $(kevm_includes) $(plugin_includes) $(lemma_includes) $(KEVM_BIN)/kevm
+$(kompile_foundry): $(kevm_includes) $(plugin_includes) $(lemma_includes)
 
-$(kompile_foundry): KOMPILE_BACKEND       := foundry
+$(kompile_foundry): KOMPILE_TARGET        := foundry
 $(kompile_foundry): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/foundry.md
 $(kompile_foundry): KOMPILE_MAIN_MODULE   := FOUNDRY
 $(kompile_foundry): KOMPILE_SYNTAX_MODULE := FOUNDRY
@@ -368,7 +368,7 @@ build-llvm:     $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-haskell:  $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
 build-node:     $(KEVM_LIB)/$(node_kompiled)
 build-kevm:     $(KEVM_BIN)/kevm $(KEVM_LIB)/version $(kevm_includes) $(plugin_includes)
-build-foundry:  $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
+build-foundry:  $(KEVM_BIN)/kevm $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
@@ -497,7 +497,7 @@ foundry-clean:
 
 tests/foundry/%: KEVM := $(POETRY_RUN) kevm
 
-foundry_dir  := tests/foundry
+foundry_dir := tests/foundry
 foundry_out := $(foundry_dir)/out
 
 test-foundry-%: KEVM_OPTS += --pyk --verbose
@@ -592,12 +592,14 @@ tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$
 	$(POETRY_RUN) $(KEVM) prove $< $(KEVM_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS) \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
-tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                         \
+tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) $(kevm_includes) $(plugin_includes)
+	$(KOMPILE)                                                                                                  \
+		$<                                                                                                      \
+		--target $(word 3, $(subst /, , $*))                                                                    \
 	    --output-definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
 	    --main-module $(KPROVE_MODULE)                                                                          \
 	    --syntax-module $(KPROVE_MODULE)                                                                        \
-	    $(KOMPILE_OPTS) $(KEVM_OPTS)
+	    $(KOMPILE_OPTS)
 
 tests/%.search: tests/%
 	$(KEVM) search $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" $(KEVM_OPTS) $(KSEARCH_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) > $@-out
@@ -683,7 +685,7 @@ prove_haskell_definitions :=                                                    
                              tests/specs/mcd/functional-spec/haskell/timestamp            \
                              tests/specs/mcd/verification/haskell/timestamp               \
                              tests/specs/opcodes/evm-optimizations-spec/haskell/timestamp
-build-prove-haskell: $(prove_haskell_definitions)
+build-prove-haskell: $(KEVM_BIN)/kevm $(prove_haskell_definitions)
 build-prove: $(prove_haskell_definitions)
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
@@ -733,7 +735,6 @@ kevm_pyk_tests :=                                                               
 
 test-kevm-pyk: KEVM_OPTS += --pyk --verbose
 test-kevm-pyk: KEVM := $(POETRY_RUN) $(KEVM)
-test-kevm-pyk: KOMPILE = $(POETRY_RUN) $(KEVM) kompile
 test-kevm-pyk: $(kevm_pyk_tests) poetry
 
 # Interactive Tests
