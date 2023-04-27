@@ -5,7 +5,7 @@ Here we use the construct `#gas` to represent positive infinity, while tracking 
 This allows (i) computing final gas used, and (ii) never stopping because of out-of-gas.
 Note that the argument to `#gas(_)` is just metadata tracking the current gas usage, and is not meant to be compared to other values.
 As such, any `#gas(G)` and `#gas(G')` are the _same_ positive infinite, regardless of the values `G` and `G'`.
-In particular, this means that `#gas(_) <Int #gas(_) => false`, and `#gas(_) <=Int #gas(_) => true`, regardless of the values contained in the `#gas(_)`.
+In particular, this means that `#gas(_) <Gas #gas(_) => false`, and `#gas(_) <=Gas #gas(_) => true`, regardless of the values contained in the `#gas(_)`.
 
 ```k
 requires "evm.md"

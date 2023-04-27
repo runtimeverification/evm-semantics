@@ -158,4 +158,9 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule B ==Bool false => notBool B [simplification]
 
+  // ########################
+  // Gas Costs
+  // ########################
+
+    rule N <Int Csstore(SCHED, _:Int, _:Int, _) => false requires Gsstoreset < SCHED > <=Int N [simplification]
 endmodule

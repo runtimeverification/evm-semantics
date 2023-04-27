@@ -14,7 +14,6 @@ module EVM-TYPES
     imports K-EQUAL
     imports JSON
     imports WORD
-    imports GAS
 ```
 
 Utilities
@@ -461,42 +460,5 @@ Productions related to transactions
     syntax DynamicFeeTx ::= DynamicFeeTxData     ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)
  // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-endmodule
-
-module GAS
-    imports INT
-    imports BOOL
-    
-    syntax Gas ::= Int
-    
-    syntax Gas ::= Gas "*Gas" Gas [function, left, total]
-                 | Gas "/Gas" Gas [function, left]
-                 > left:
-                   Gas "+Gas" Gas [function, left, total]
-                 | Gas "-Gas" Gas [function, left, total]
-
-    syntax Bool ::= Gas  "<Gas" Gas [function, left, total]
-                  | Gas "<=Gas" Gas [function, left, total]
-                  | Gas  ">Gas" Gas [function, left, total]
-                  | Gas ">=Gas" Gas [function, left, total]
-    
-    syntax Gas ::= "minGas" "(" Gas "," Gas ")" [function, total]
-    syntax Int ::= "gas2Int" "(" Gas ")" [function, total]
-    
-    rule I1:Int *Gas I2:Int => I1 *Int I2
-    rule I1:Int /Gas I2:Int => I1 /Int I2
-    rule I1:Int +Gas I2:Int => I1 +Int I2
-    rule I1:Int -Gas I2:Int => I1 -Int I2
-    
-    rule I1:Int  <Gas I2:Int => I1  <Int I2
-    rule I1:Int <=Gas I2:Int => I1 <=Int I2
-    rule I1:Int  >Gas I2:Int => I1  >Int I2
-    rule I1:Int >=Gas I2:Int => I1 >=Int I2
-    
-    rule minGas(I1:Int, I2:Int) => minInt(I1, I2)
-    rule gas2Int(G:Int) => G
-    
-    rule A  <Gas B => false requires B <=Gas A [simplification]
-    rule A  >Gas B => false requires B >=Gas A [simplification]
 endmodule
 ```

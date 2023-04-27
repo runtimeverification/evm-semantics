@@ -10,6 +10,7 @@ This file only defines the local execution operations, the file `driver.md` will
 ```k
 requires "data.md"
 requires "network.md"
+requires "gas.md"
 
 module EVM
    imports STRING
@@ -461,7 +462,6 @@ Here we load the correct number of arguments from the `wordStack` based on the s
 The `CallOp` opcodes all interperet their second argument as an address.
 
 ```k
-// TODO Daniel: 
     syntax InternalOp ::= CallSixOp Gas Int     Int Int Int Int
                         | CallOp    Gas Int Int Int Int Int Int
  // -----------------------------------------------------------
@@ -577,13 +577,11 @@ After executing a transaction, it's necessary to have the effect of the substate
          <refund> 0 </refund>
          <account>
            <acctID> ORG </acctID>
-// TODO Daniel: Problem with balance becoming gas if GAVAIL is infinite
            <balance> ORGBAL => ORGBAL +Int GAVAIL *Int GPRICE </balance>
            ...
          </account>
          <account>
            <acctID> MINER </acctID>
-// TODO Daniel: Need to unwrap here too
            <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int (GPRICE -Int BFEE) </balance>
            ...
          </account>
@@ -2220,11 +2218,6 @@ There are several helpers for calculating gas (most of them also specified in th
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
       requires 0 <=Int GCAP
 
-   //  rule [Cgascap]:
-   //       Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
-   //    => #if GAVAIL <Gas GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minGas(#allBut64th(GAVAIL -Gas GEXTRA), GCAP) #fi
-   //    requires 0 <=Gas GCAP
-
     rule Cgascap(_, GCAP, _, _) => 0 requires GCAP <Gas 0
 
     rule [Csstore.new]:
@@ -2316,7 +2309,6 @@ There are several helpers for calculating gas (most of them also specified in th
  // --------------------------------------------------------------------------------------------------
     rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .Bytes andBool NONCE ==Int 0 andBool BAL ==Int 0
 
-// TODO Daniel: How do these changes interact with smtlib(gas_allBut64th)?
     syntax Gas ::= #allBut64th ( Gas ) [function, total, smtlib(gas_allBut64th)]
     syntax Int ::= #allBut64th ( Int ) [function, total, smtlib(gas_allBut64th)]
  // ----------------------------------------------------------------------------
