@@ -524,11 +524,11 @@ tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
 
 tests/foundry/out/kompiled/foundry.k.bmc-prove: tests/foundry/out/kompiled/timestamp
-        $(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
-            -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
+	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
+	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
             --bmc-depth 3                                                    \
-            $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
-            $(addprefix --test , $(shell cat tests/foundry/bmc-tests))
+	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
+	    $(addprefix --test , $(shell cat tests/foundry/bmc-tests))
 
 foundry_golden := tests/foundry/golden
 foundry_diff_tests := $(shell cat tests/foundry/checkoutput)
