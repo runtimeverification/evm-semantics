@@ -40,14 +40,6 @@ module INFINITE-GAS
     rule  #gas(_) <=Gas #gas(_) => true
     rule  _:Int   <=Gas #gas(_) => true
 
-    rule  #gas(_)  >Gas _:Int   => true
-    rule  #gas(_)  >Gas #gas(_) => false
-    rule  _:Int    >Gas #gas(_) => false
-
-    rule  #gas(_) >=Gas _:Int   => true
-    rule  #gas(_) >=Gas #gas(_) => true
-    rule  _:Int   >=Gas #gas(_) => false
-
     rule minGas(#gas(G), #gas(G')) => #gas(minInt(G, G'))
     rule minGas(G:Int  , #gas(_))  => G
     rule minGas(#gas(_), G':Int)   => G'
