@@ -46,9 +46,14 @@ module INFINITE-GAS
 
     rule gas2Int(#gas(G)) => G
 
+    rule _ <=Gas #gas(_)        => true  [simplification]
+    rule         #gas(_) <Gas _ => false [simplification]
+
     rule #allBut64th(#gas(G)) => #gas(#allBut64th(G))
     rule Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) [simplification]
     rule Cgascap(SCHED, #gas(GCAP), GAVAIL:Int, GEXTRA)   => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) [simplification]
     rule Cgascap(SCHED, GCAP:Int, #gas(GAVAIL), GEXTRA)   => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) [simplification]
+
+    rule #if B #then #gas(G) #else #gas(G') #fi => #gas(#if B #then G #else G' #fi) [simplification]
 endmodule
 ```

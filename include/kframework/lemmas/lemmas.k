@@ -25,6 +25,7 @@ module LEMMAS [symbolic]
     rule         chop(_V) <Int pow256 => true        [simplification]
 
     rule X *Int Y <Int pow256 => true requires Y <=Int maxUInt256 /Int X [simplification]
+    rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification] 
 
   // ########################
   // Set Reasoning
@@ -89,6 +90,28 @@ module LEMMAS [symbolic]
  // Hardcoded #addrFromPrivateKey simplifications, see: https://github.com/runtimeverification/haskell-backend/issues/3573
     rule #addrFromPrivateKey("0x0000000000000000000000000000000000000000000000000000000000000001") => 721457446580647751014191829380889690493307935711 [priority(40)]
 
+  // ########################
+  // Memory
+  // ########################
+
+    rule 0 <=Int #memoryUsageUpdate(MU, START, WIDTH) => true requires 0 <=Int MU andBool 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+
+    rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START1, WIDTH1), START2, WIDTH2) => #memoryUsageUpdate(MU, START1, WIDTH1)
+      requires #rangeUInt(256, MU) andBool 0 <Int WIDTH1 andBool 0 <Int WIDTH2
+       andBool START2 +Int WIDTH2 <=Int START1 +Int WIDTH1
+      [simplification]
+
+    rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START1, WIDTH1), START2, WIDTH2) => #memoryUsageUpdate(MU, START2, WIDTH2)
+      requires #rangeUInt(256, MU) andBool 0 <Int WIDTH1 andBool 0 <Int WIDTH2
+       andBool START1 +Int WIDTH1 <Int START2 +Int WIDTH2
+      [simplification]
+
+  // ########################
+  // Gas Costs
+  // ########################
+
+    rule N <Int Csstore(SCHED, _:Int, _:Int, _) => false requires Gsstoreset < SCHED > <=Int N [simplification]
+    rule Csstore(SCHED, _:Int, _:Int, _) <=Int N => true requires Gsstoreset < SCHED >  <Int N [simplification]
 endmodule
 
 module LEMMAS-HASKELL [symbolic, kore]
@@ -157,11 +180,5 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
 
     rule B ==Bool false => notBool B [simplification]
-
-  // ########################
-  // Gas Costs
-  // ########################
-
-    rule N <Int Csstore(SCHED, _:Int, _:Int, _) => false requires Gsstoreset < SCHED > <=Int N [simplification]
-    rule Csstore(SCHED, _:Int, _:Int, _) <=Int N => true requires Gsstoreset < SCHED > <Int N [simplification] 
+    rule (notBool (A andBool B)) andBool A => (notBool B) andBool A [simplification]
 endmodule
