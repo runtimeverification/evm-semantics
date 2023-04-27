@@ -36,11 +36,10 @@ module SUM-TO-N-FOUNDRY-SPEC
 claim [foundry-sum-to-n-loop-invariant]:
   <kevm>
     <k>
-      ((JUMPI 1457 bool2Word ( N:Int ==Int 0 )) => .)
-//       ((JUMPI 1457 bool2Word ( N:Int ==Int 0 )) => JUMP 1457)
+      ((JUMPI 1457 bool2Word ( N:Int ==Int 0 )) => JUMP 1457)
       ~> #pc [ JUMPI ]
       ~> #execute
-      ~> CONTINUATION:K
+      ...
     </k>
     <mode>
       NORMAL
@@ -69,9 +68,7 @@ claim [foundry-sum-to-n-loop-invariant]:
             1427
           </pc>
           <gas>
-            ( #gas(_) => ?_ ) // 9223372036854774968 - 9223372036854774790
-            // Consumes 178 gas per loop iteration
-            // Precondition that we have enough gas
+            GAS_AMT:Int => GAS_AMT -Int (N *Int 178)
           </gas>
           ...
         </callState>
@@ -83,10 +80,10 @@ claim [foundry-sum-to-n-loop-invariant]:
   </kevm>
 
   requires 0 <Int N
-//   requires 0 <=Int N
    andBool #rangeUInt(256, S +Int ((N *Int (N +Int 1)) /Int 2))
    andBool #rangeUInt(256, N)
    andBool #rangeUInt(256, S)
+   andBool GAS_AMT >=Int N *Int 178
 
 
 endmodule
