@@ -20,8 +20,6 @@ module GAS-SYNTAX
 
     syntax Bool ::= Gas  "<Gas" Gas [function, left, total]
                   | Gas "<=Gas" Gas [function, left, total]
-                  | Gas  ">Gas" Gas [function, left, total]
-                  | Gas ">=Gas" Gas [function, left, total]
 endmodule
 
 module GAS
@@ -37,8 +35,6 @@ module GAS
     
     rule I1:Int  <Gas I2:Int => I1  <Int I2
     rule I1:Int <=Gas I2:Int => I1 <=Int I2
-    rule I1:Int  >Gas I2:Int => I1  >Int I2
-    rule I1:Int >=Gas I2:Int => I1 >=Int I2
     
     rule minGas(I1:Int, I2:Int) => minInt(I1, I2)
     rule gas2Int(G:Int) => G
@@ -49,7 +45,6 @@ module GAS-SIMPLIFICATION [symbolic]
     imports INT
     imports BOOL
 
-    rule A <Gas B => false requires B <=Gas A [simplification]
-    rule A >Gas B => false requires B >=Gas A [simplification]
+    rule A  <Gas B => false requires B <=Gas A [simplification]
 endmodule
 ```
