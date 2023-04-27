@@ -64,7 +64,7 @@ run_kevm_pyk() {
 
 run_kompile() {
     local kompile_opts
-    kompile_opts=( "${run_file}" --target ${backend} -I "${INSTALL_INCLUDE}/kframework" )
+    kompile_opts=("${run_file}" --target ${backend})
     ! ${verbose}    || kompile_opts+=(--verbose)
     ! ${debug}      || kompile_opts+=(--debug)
     ! ${bug_report} || kompile_opts+=(--bug-report)

@@ -112,11 +112,14 @@ def kevm_kompile(
     backend = target.backend
     md_selector = 'k & ! standalone' if target == KompileTarget.NODE else 'k & ! node'
 
+    include_dirs = [Path(include) for include in includes]
+    include_dirs += [config.INCLUDE_DIR]
+
     base_args = KompileArgs(
         main_file=main_file,
         main_module=main_module,
         syntax_module=syntax_module,
-        include_dirs=[include for include in includes if Path(include).exists()],
+        include_dirs=include_dirs,
         md_selector=md_selector,
         hook_namespaces=HOOK_NAMESPACES,
         emit_json=emit_json,

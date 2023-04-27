@@ -22,6 +22,9 @@ NIX_BUILD: Final = bool(os.getenv('NIX_BUILD'))
 KEVM_LIB: Final = Path(_env_or_raise('KEVM_LIB')).resolve()
 check_dir_path(KEVM_LIB)
 
+INCLUDE_DIR: Final = KEVM_LIB / 'include/kframework'
+check_dir_path(INCLUDE_DIR)
+
 LLVM_DIR: Final = KEVM_LIB / 'llvm'
 HASKELL_DIR: Final = KEVM_LIB / 'haskell'
 NODE_DIR: Final = KEVM_LIB / 'node'
