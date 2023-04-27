@@ -582,10 +582,10 @@ tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                  \
-	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
-	    --main-module $(KPROVE_MODULE)                                                                   \
-	    --syntax-module $(KPROVE_MODULE)                                                                 \
+	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                         \
+	    --output-definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
+	    --main-module $(KPROVE_MODULE)                                                                          \
+	    --syntax-module $(KPROVE_MODULE)                                                                        \
 	    $(KOMPILE_OPTS) $(KEVM_OPTS)
 
 tests/%.search: tests/%
