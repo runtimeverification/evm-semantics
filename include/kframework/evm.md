@@ -13,10 +13,10 @@ requires "network.md"
 requires "gas.md"
 
 module EVM
-   imports STRING
-   imports EVM-DATA
-   imports NETWORK
-   imports GAS
+    imports STRING
+    imports EVM-DATA
+    imports NETWORK
+    imports GAS
 ```
 
 Configuration
@@ -462,8 +462,8 @@ Here we load the correct number of arguments from the `wordStack` based on the s
 The `CallOp` opcodes all interperet their second argument as an address.
 
 ```k
-    syntax InternalOp ::= CallSixOp Gas Int     Int Int Int Int
-                        | CallOp    Gas Int Int Int Int Int Int
+    syntax InternalOp ::= CallSixOp Int Int     Int Int Int Int
+                        | CallOp    Int Int Int Int Int Int Int
  // -----------------------------------------------------------
     rule <k> #exec [ CSO:CallSixOp ] => #gas [ CSO , CSO W0 W1    W2 W3 W4 W5 ] ~> CSO W0 W1    W2 W3 W4 W5 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
     rule <k> #exec [ CO:CallOp     ] => #gas [ CO  , CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
