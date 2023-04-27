@@ -70,5 +70,6 @@ module SUM-TO-N-INVARIANT
    andBool CONDITION ==K bool2Word ( N:Int ==Int 0 )
    andBool PROGRAM ==K #binRuntime(LoopsTest)
    andBool JUMPDESTS ==K #computeValidJumpDests(#binRuntime(LoopsTest))
+  [priority(0)]
 
 endmodule
