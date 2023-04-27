@@ -163,4 +163,5 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
 
     rule N <Int Csstore(SCHED, _:Int, _:Int, _) => false requires Gsstoreset < SCHED > <=Int N [simplification]
+    rule Csstore(SCHED, _:Int, _:Int, _) <=Int N => true requires Gsstoreset < SCHED > <Int N [simplification] 
 endmodule
