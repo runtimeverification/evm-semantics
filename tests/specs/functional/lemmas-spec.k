@@ -13,17 +13,6 @@ module VERIFICATION
  // --------------------------------------
     rule runLemma( T ) => doneLemma( T )
 
- // Shorthand for previous notations so that more complex
- // claims do not have to be rewritten
-
-    syntax Bytes ::= Bytes "[" Int ".." Int "]" [function, total]
- // -------------------------------------------------------------
-    rule B:Bytes [ S:Int .. W:Int ] => #range(B, S, W)
-
-    syntax Bytes ::= Bytes "[" Int ":=" Bytes "]" [function, total]
- // ---------------------------------------------------------------
-    rule B:Bytes [ S:Int := B1:Bytes ] => #writeRange(B, S, B1)
-
 endmodule
 
 module LEMMAS-SPEC
@@ -165,8 +154,8 @@ module LEMMAS-SPEC
     claim [bufExtractPadding]: <k> runLemma ( #asWord ( ( #range( #buf ( 32 , X ), 0, 28 ) ):Bytes ) ) => doneLemma ( 0 ) ... </k> requires #rangeUInt(32, X)
 
     claim <k> runLemma ( #buf( 32 , bool2Word ( B:Bool ) ) ==K #buf( 32 , 1 )     ) => doneLemma( B ==K true ) ... </k>
-    claim <k> runLemma ( #buf( 32 , I:Int )                ==K #buf( 32 , 1 )     ) => doneLemma( I ==K 1    ) ... </k>
-    claim <k> runLemma ( #buf( 32 , 1 )                    ==K #buf( 32 , I:Int ) ) => doneLemma( I ==K 1    ) ... </k>
+    claim <k> runLemma ( #buf( 32 , I:Int )                ==K #buf( 32 , 1 )     ) => doneLemma( I ==K 1    ) ... </k> requires #rangeUInt(256, I)
+    claim <k> runLemma ( #buf( 32 , 1 )                    ==K #buf( 32 , I:Int ) ) => doneLemma( I ==K 1    ) ... </k> requires #rangeUInt(256, I)
 
     claim <k> runLemma ( #bufStrict( #ceil32(LEN) -Int LEN, 0 ) ) => doneLemma( #buf( #ceil32(LEN) -Int LEN, 0 ) ) ... </k> requires 0 <=Int LEN
 
