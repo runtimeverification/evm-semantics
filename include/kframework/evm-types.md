@@ -359,7 +359,7 @@ Bytes helper functions
     syntax Bytes ::= #range ( Bytes , Int , Int ) [function, total]
  // ---------------------------------------------------------------
     rule                #range(_, START, WIDTH)  => .Bytes                                                                       requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
-    rule [bytesRange] : #range(WS, START, WIDTH) => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int lengthBytes(WS)
+    rule [bytesRange] : #range(WS, START, WIDTH) => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int lengthBytes(WS) [preserves-definedness]
     rule                #range(_, _, WIDTH)      => padRightBytes(.Bytes, WIDTH, 0) [owise]
 
     syntax Bytes ::= #padToWidth      ( Int , Bytes ) [function, total]
