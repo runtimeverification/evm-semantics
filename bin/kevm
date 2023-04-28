@@ -57,7 +57,7 @@ run_kevm_pyk() {
     ! ${verbose}    || pyk_args+=(--verbose)
     ! ${debug}      || pyk_args+=(--debug)
     ! ${bug_report} || pyk_args+=(--bug-report)
-    KEVM_LIB=${INSTALL_LIB} execute python3 -m kevm_pyk "${pyk_command}" "$@" "${pyk_args[@]}"
+    execute python3 -m kevm_pyk "${pyk_command}" "$@" "${pyk_args[@]}"
 }
 
 # User Commands
@@ -67,7 +67,7 @@ run_kompile() {
     ! ${verbose}    || kompile_opts+=(--verbose)
     ! ${debug}      || kompile_opts+=(--debug)
     ! ${bug_report} || kompile_opts+=(--bug-report)
-    KEVM_LIB=${INSTALL_LIB} execute python3 -m kevm_pyk kompile "${run_file}" "$@" "${kompile_opts[@]}"
+    execute python3 -m kevm_pyk kompile "${run_file}" "$@" "${kompile_opts[@]}"
 }
 
 run_krun() {
