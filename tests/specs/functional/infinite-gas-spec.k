@@ -10,7 +10,7 @@ module VERIFICATION
     rule <k> runLemma(S) => doneLemma(S) ... </k>
 
     syntax Step ::= Bool | Int | Gas
- // --------------------------
+ // --------------------------------
 
 endmodule
 
