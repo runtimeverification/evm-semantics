@@ -366,9 +366,9 @@ Bytes helper functions
                    | #padRightToWidth ( Int , Bytes ) [function, total]
  // -------------------------------------------------------------------
     rule                            #padToWidth(N, BS)      =>               BS        requires notBool (N >=Int 0)
-    rule [padToWidthNonEmpty]:      #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0
+    rule [padToWidthNonEmpty]:      #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0 [preserves-definedness]
     rule                            #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
-    rule [padRightToWidthNonEmpty]: #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0
+    rule [padRightToWidthNonEmpty]: #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0 [preserves-definedness]
 ```
 
 Accounts
