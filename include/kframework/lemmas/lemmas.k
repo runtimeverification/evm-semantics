@@ -110,8 +110,30 @@ module LEMMAS [symbolic]
   // Gas Costs
   // ########################
 
-    rule N <Int Csstore(SCHED, _:Int, _:Int, _) => false requires Gsstoreset < SCHED > <=Int N [simplification]
-    rule Csstore(SCHED, _:Int, _:Int, _) <=Int N => true requires Gsstoreset < SCHED >  <Int N [simplification]
+    rule 0 <=Int Csload(_, _)                   => true [simplification]
+    rule 0 <=Int Cmem(_, _)                     => true [simplification]
+    rule 0 <=Int Caddraccess(_, _)              => true [simplification]
+    rule 0 <=Int Csstore(_, _, _, _)            => true [simplification]
+    rule 0 <=Int Cgascap(_, _:Int, _:Int, _)    => true [simplification]
+    rule 0 <=Gas Cgascap(_, _, _, _)            => true [simplification]
+    rule 0 <=Int #allBut64th(_)                 => true [simplification]
+    rule 0 <=Int Cextra(_, _, _, _)             => true [simplification]
+    rule 0 <=Int _:ScheduleConst < _:Schedule > => true [simplification]
+    rule 0 <=Int G up/Int _                     => true requires 0 <=Int G [simplification]
+    rule Cextra(_, _, _, _) <Int pow256         => true [simplification]
+
+    rule G <Int Csstore(SCHED, _:Int, _:Int, _) => false
+      requires Gsload       < SCHED > <=Int G
+       andBool Gsstoreset   < SCHED > <=Int G
+       andBool Gsstorereset < SCHED > <=Int G
+      [simplification]
+
+    rule Csstore(SCHED, _:Int, _:Int, _) <=Int G => true
+      requires Gsload       < SCHED > <=Int G
+       andBool Gsstoreset   < SCHED > <=Int G
+       andBool Gsstorereset < SCHED > <=Int G
+      [simplification]
+
 endmodule
 
 module LEMMAS-HASKELL [symbolic, kore]
