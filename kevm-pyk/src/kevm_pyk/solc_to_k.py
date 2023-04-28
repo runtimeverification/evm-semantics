@@ -15,7 +15,7 @@ from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KRul
 from pyk.prelude.kbool import TRUE, andBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
-from pyk.utils import FrozenDict
+from pyk.utils import FrozenDict, hash_str
 
 from .kevm import KEVM
 
@@ -165,6 +165,10 @@ class Contract:
                     continue
                 _fields[_l] = _s
             self.fields = FrozenDict(_fields)
+
+    @cached_property
+    def digest(self) -> str:
+        return hash_str(f'{self.name} - {json.dumps(self.contract_json, sort_keys=True)}')
 
     @cached_property
     def srcmap(self) -> dict[int, tuple[int, int, int, str, int]]:
@@ -366,6 +370,7 @@ def solc_compile(contract_file: Path) -> dict[str, Any]:
 def contract_to_main_module(contract: Contract, empty_config: KInner, imports: Iterable[str] = ()) -> KFlatModule:
     module_name = Contract.contract_to_module_name(contract.name, spec=False)
     return KFlatModule(module_name, contract.sentences, [KImport(i) for i in list(imports)])
+
 
 def contract_to_verification_module(contract: Contract, empty_config: KInner, imports: Iterable[str]) -> KFlatModule:
     main_module_name = Contract.contract_to_module_name(contract.name, spec=False)

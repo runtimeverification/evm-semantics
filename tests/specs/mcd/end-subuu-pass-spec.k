@@ -5,7 +5,7 @@ module END-SUBUU-PASS-SPEC
 
     // End_subuu
     claim [End.subuu.pass]:
-      <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
+      <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
@@ -23,10 +23,10 @@ module END-SUBUU-PASS-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x -Int ABI_y : WS </wordStack>
+            <wordStack> ABI_y : ABI_x : JMPTO:Int : WS  => ABI_x -Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 14664 => 14689 </pc>
-            <gas> #gas(VGas) => #gas ( ( VGas +Int -54 ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( VGas +Int -62 ) ) </gas> // -54
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
