@@ -280,11 +280,11 @@ A cons-list is used for the EVM wordstack.
 
 ```k
     syntax Int ::= #sizeWordStack ( WordStack )       [function, total, smtlib(sizeWordStack)]
-                 | #sizeWordStackAux ( WordStack , Int ) [function, total, klabel(sizeWordStackAux), smtlib(sizeWordStackAux)]
+                 | #sizeWordStack ( WordStack , Int ) [function, total, klabel(sizeWordStack), smtlib(sizeWordStack)]
  // -----------------------------------------------------------------------------------------------------------------------
-    rule #sizeWordStack ( WS ) => #sizeWordStackAux(WS, 0)
-    rule #sizeWordStackAux ( .WordStack, SIZE ) => SIZE
-    rule #sizeWordStackAux ( _ : WS, SIZE )     => #sizeWordStackAux(WS, SIZE +Int 1)
+    rule #sizeWordStack ( WS ) => #sizeWordStack(WS, 0)
+    rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
+    rule #sizeWordStack ( _ : WS, SIZE )     => #sizeWordStack(WS, SIZE +Int 1)
 
     syntax Bool ::= Int "in" WordStack [function]
  // ---------------------------------------------
