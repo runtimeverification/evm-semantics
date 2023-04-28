@@ -16,6 +16,29 @@ module SUM-TO-N-INVARIANT
 
   imports LOOPSTEST-CONTRACT
 
+    rule N xorInt maxUInt256 <Int S => false
+    requires #rangeUInt(256, S +Int ((N *Int (N +Int 1)) /Int 2))
+    andBool #rangeUInt(256, S)
+    andBool #rangeUInt(256, N)
+    [simplification]
+
+    rule (S +Int N) +Int (((N -Int 1) *Int N) /Int 2) <Int pow256 => true
+    requires #rangeUInt(256, S +Int ((N *Int (N +Int 1)) /Int 2))
+    andBool #rangeUInt(256, S)
+    andBool #rangeUInt(256, N)
+    [simplification]
+
+    rule chop(S +Int N) => S +Int N
+    requires #rangeUInt(256, S +Int ((N *Int (N +Int 1)) /Int 2))
+    andBool #rangeUInt(256, S)
+    andBool #rangeUInt(256, N)
+    [simplification]
+
+    rule chop(N +Int -1) => N +Int -1
+    requires 1 <=Int N andBool N <Int pow256
+    andBool #rangeUInt(256, N)
+    [simplification]
+
   rule [foundry-sum-to-n-loop-invariant]:
   <kevm>
     <k>
