@@ -272,6 +272,7 @@ module LEMMAS-SPEC
 
  // ecrecover
  // ---------
+
     claim [ecrec-length]: <k> runLemma  ( lengthBytes ( #ecrec ( _ , _ , _ , _ ) ) <=Int 32 )
                            => doneLemma ( true ) ... </k>
 
