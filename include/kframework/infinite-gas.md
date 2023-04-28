@@ -32,22 +32,16 @@ module INFINITE-GAS
     rule #gas(G) *Gas #gas(G') => #gas(G *Int G')
     rule #gas(G) /Gas #gas(G') => #gas(G /Int G')  requires G' =/=Int 0
 
-    rule  #gas(_)  <Gas _:Int   => false
-    rule  #gas(_)  <Gas #gas(_) => false
     rule  _:Int    <Gas #gas(_) => true
-
+    rule  #gas(_)  <Gas _       => false
     rule  #gas(_) <=Gas _:Int   => false
-    rule  #gas(_) <=Gas #gas(_) => true
-    rule  _:Int   <=Gas #gas(_) => true
+    rule _        <=Gas #gas(_) => true
 
     rule minGas(#gas(G), #gas(G')) => #gas(minInt(G, G'))
     rule minGas(G:Int  , #gas(_))  => G
     rule minGas(#gas(_), G':Int)   => G'
 
     rule gas2Int(#gas(G)) => G
-
-    rule _ <=Gas #gas(_)        => true  [simplification]
-    rule         #gas(_) <Gas _ => false [simplification]
 
     rule #allBut64th(#gas(G)) => #gas(#allBut64th(G))
     rule Cgascap(SCHED, #gas(GCAP), #gas(GAVAIL), GEXTRA) => #gas(Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)) [simplification]
