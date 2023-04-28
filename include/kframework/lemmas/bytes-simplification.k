@@ -7,19 +7,64 @@ module BYTES-SIMPLIFICATION [symbolic]
   // Buffer Reasoning
   // ########################
 
-    rule BA:Bytes       ==K #buf(32, DATA) => #buf(32, DATA) ==K              BA                                    [simplification, concrete(BA)]
-    rule #buf(32, DATA) ==K BA:Bytes       =>          DATA  ==Int #asInteger(BA) requires lengthBytes(BA) <=Int 32 [simplification, concrete(BA)]
+    rule [bytes-not-equal-length]:
+      BA1:Bytes ==K BA2:Bytes => false
+      requires lengthBytes(BA1) =/=Int lengthBytes(BA2)
+      [simplification]
+
+    rule [bytes-equal-concat-split-k]:
+      A:Bytes +Bytes B:Bytes ==K C:Bytes +Bytes D:Bytes => A ==K C andBool B ==K D
+      requires lengthBytes(A) ==Int lengthBytes(C)
+        orBool lengthBytes(B) ==Int lengthBytes(D)
+      [simplification]
+
+    rule [bytes-equal-concat-split-ml]:
+      { A:Bytes +Bytes B:Bytes #Equals C:Bytes +Bytes D:Bytes } => { A #Equals C } #And { B #Equals D }
+      requires lengthBytes(A) ==Int lengthBytes(C)
+        orBool lengthBytes(B) ==Int lengthBytes(D)
+      [simplification]
 
     rule [bytes-concat-empty-right]: B:Bytes +Bytes .Bytes  => B [simplification]
-    rule [bytes-concat-empty-left]:  .Bytes  +Bytes B:Bytes => B [simplification]
+    rule [bytes-concat-empty-left]:   .Bytes +Bytes B:Bytes => B [simplification]
 
-    rule [bytes-concat-assoc-right]: (BA1 +Bytes BA2) +Bytes BA3 => BA1 +Bytes (BA2 +Bytes BA3) [simplification]
+    rule [bytes-concat-right-assoc-symb-l]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B1), simplification]
+    rule [bytes-concat-right-assoc-symb-r]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B2), simplification]
+    rule [bytes-concat-left-assoc-conc]:    B1:Bytes +Bytes (B2:Bytes +Bytes B3:Bytes) => (B1 +Bytes B2) +Bytes B3 [concrete(B1, B2), symbolic(B3), simplification]
 
     // #buf
 
-    // TODO: custom ==K unification doesn't work in Haskell yet
-    // +Bytes unification
-    rule #buf(N, A) +Bytes BUF1 ==K #buf(N, B) +Bytes BUF2 => #buf(N, A) ==K #buf(N, B) andBool BUF1 ==K BUF2     [simplification]
+    rule [buf-inject-k]:
+      #buf(W:Int, X:Int) ==K #buf(W:Int, Y:Int) => X ==Int Y
+      requires 0 <=Int W
+       andBool 0 <=Int X andBool X <Int 2 ^Int (8 *Int W)
+       andBool 0 <=Int Y andBool Y <Int 2 ^Int (8 *Int W)
+      [simplification]
+
+    rule [buf-inject-ml]:
+      { #buf(W:Int, X:Int) #Equals #buf(W:Int, Y:Int) } => { X #Equals Y }
+      requires 0 <=Int W
+       andBool 0 <=Int X andBool X <Int 2 ^Int (8 *Int W)
+       andBool 0 <=Int Y andBool Y <Int 2 ^Int (8 *Int W)
+      [simplification]
+
+    rule [buf-as-int]: B:Bytes ==K #buf(32, X:Int) => X ==Int #asInteger(B)
+      requires lengthBytes(B) <=Int 32
+       andBool #rangeUInt(256, X) [simplification, concrete(B), comm]
+
+    rule [buf-asWord-invert]:
+      #buf (W:Int , #asWord(B:Bytes)) => #buf(W -Int lengthBytes(B), 0) +Bytes B
+      requires lengthBytes(B) <=Int W andBool W <=Int 32
+      [simplification]
+
+    rule [buf-zero-concat-base]:
+      #buf(W1:Int, 0) +Bytes #buf(W2:Int, 0) => #buf(W1 +Int W2, 0)
+      requires 0 <=Int W1 andBool 0 <=Int W2
+      [simplification]
+
+    rule [buf-zero-concat-conc]:
+      #buf(W1:Int, 0) +Bytes #buf(W2:Int, 0) +Bytes B => #buf(W1 +Int W2, 0) +Bytes B
+      requires 0 <=Int W1 andBool 0 <=Int W2
+      [simplification]
 
     // #range
 
@@ -212,4 +257,5 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule #asWord ( #ecrec ( _ , _ , _ , _ ) ) <Int pow160 => true
         [simplification, smt-lemma]
+
 endmodule
