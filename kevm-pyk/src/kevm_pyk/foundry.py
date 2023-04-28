@@ -275,7 +275,7 @@ def foundry_kompile(
     if regen or not foundry_contracts_file.exists() or not foundry_main_file.exists():
         requires = []
         requires += [f'requires/{name}' for name in list(requires_paths.keys())]
-        imports = ['FOUNDRY']  # + list(imports)
+        imports = ['FOUNDRY']
         kevm = KEVM(definition_dir)
         empty_config = kevm.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
         bin_runtime_definition = _foundry_to_contract_def(
@@ -291,11 +291,6 @@ def foundry_kompile(
             requires=(['contracts.k'] + requires),
             imports=_imports,
         )
-        #          bin_runtime_definition = _foundry_to_bin_runtime(
-        #              empty_config=empty_config,
-        #              contracts=[],
-        #              main_module
-        #          )
 
         kevm = KEVM(
             definition_dir,
