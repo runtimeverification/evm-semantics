@@ -551,9 +551,7 @@ $(foundry_golden)/%.out: foundry-fail
 	> $@
 
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
-	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose --require $(foundry_dir)/lemmas.k --module-import SUM-TO-N-INVARIANT
-tests/foundry/out/kompiled-test/timestamp: $(foundry_dir)/lemmas.k $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
-	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose --require $(foundry_dir)/lemmas.k --module-import TEST-HELPER-LEMMAS --kompiled-dir kompiled-test
+	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose --require $(foundry_dir)/lemmas.k --module-import LoopsTest:SUM-TO-N-INVARIANT
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose
 tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) kevm

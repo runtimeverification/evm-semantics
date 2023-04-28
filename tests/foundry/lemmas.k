@@ -1,5 +1,7 @@
+requires "../contracts.k"
+
 module TEST-HELPER-LEMMAS
-  imports ASSERTTEST-BIN-RUNTIME
+  imports ASSERTTEST-CONTRACT
 
   syntax Bytes ::= testFunction() [function]
   syntax Set ::= testFunction2(Bytes) [function]
@@ -12,7 +14,7 @@ endmodule
 
 module SUM-TO-N-INVARIANT
 
-  imports LOOPSTEST-BIN-RUNTIME
+  imports LOOPSTEST-CONTRACT
 
   rule [foundry-sum-to-n-loop-invariant]:
   <kevm>

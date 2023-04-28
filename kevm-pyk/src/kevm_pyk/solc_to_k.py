@@ -205,10 +205,14 @@ class Contract:
 
     @staticmethod
     def contract_to_module_name(c: str, spec: bool = True) -> str:
-        m = c.upper() + '-BIN-RUNTIME'
+        m = c.upper() + '-CONTRACT'
         if spec:
             m = m + '-SPEC'
         return m
+
+    @staticmethod
+    def contract_to_verification_module_name(c: str) -> str:
+        return c.upper() + '-VERIFICATION'
 
     @staticmethod
     def test_to_claim_name(t: str) -> str:
@@ -362,6 +366,11 @@ def solc_compile(contract_file: Path) -> dict[str, Any]:
 def contract_to_main_module(contract: Contract, empty_config: KInner, imports: Iterable[str] = ()) -> KFlatModule:
     module_name = Contract.contract_to_module_name(contract.name, spec=False)
     return KFlatModule(module_name, contract.sentences, [KImport(i) for i in list(imports)])
+
+def contract_to_verification_module(contract: Contract, empty_config: KInner, imports: Iterable[str]) -> KFlatModule:
+    main_module_name = Contract.contract_to_module_name(contract.name, spec=False)
+    verification_module_name = Contract.contract_to_verification_module_name(contract.name)
+    return KFlatModule(verification_module_name, [], [KImport(main_module_name)] + [KImport(i) for i in list(imports)])
 
 
 # Helpers
