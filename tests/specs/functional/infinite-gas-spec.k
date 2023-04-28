@@ -41,56 +41,56 @@ module INFINITE-GAS-SPEC
  // Infinite Gas simplifications
  // ----------------------------
 
-    claim [gas.inf.1]: <k> runLemma(#gas(8) -Gas 3) => doneLemma(#gas(5)) ... </k>
+    claim [gas.inf.1]:  <k> runLemma(#gas(8) -Gas 3) => doneLemma(#gas(5)) ... </k>
 
-    claim [gas.inf.2]: <k> runLemma(#gas(G) -Gas #gas(G')) => doneLemma(#gas(G -Int G')) ... </k>
+    claim [gas.inf.2]:  <k> runLemma(#gas(G) -Gas #gas(G')) => doneLemma(#gas(G -Int G')) ... </k>
 
-    claim [gas.inf.3]: <k> runLemma(#gas((((((VGas +Int -1148) -Int G1) +Int -866) -Int G2) +Int -4337))) => doneLemma(#gas(((VGas -Int G1) -Int G2) +Int -6351)) ... </k>
+    claim [gas.inf.3]:  <k> runLemma(#gas((((((VGas +Int -1148) -Int G1) +Int -866) -Int G2) +Int -4337))) => doneLemma(#gas(((VGas -Int G1) -Int G2) +Int -6351)) ... </k>
 
-    claim [gas.inf.4]: <k> runLemma(#gas((((VGas +Int -1259) -Int Csstore(ISTANBUL, 1, 1, Junk_0)) +Int -4339))) => doneLemma(#gas((VGas -Int Csstore(ISTANBUL, 1, 1, Junk_0)) +Int -5598)) ... </k>
+    claim [gas.inf.4]:  <k> runLemma(#gas((((VGas +Int -1259) -Int Csstore(ISTANBUL, 1, 1, Junk_0)) +Int -4339))) => doneLemma(#gas((VGas -Int Csstore(ISTANBUL, 1, 1, Junk_0)) +Int -5598)) ... </k>
 
-    claim [gas.inf.5]: <k> runLemma(#gas(G) +Gas (#allBut64th((VGas -Int Csstore(ISTANBUL, V1, V2, V3)) +Int -3232) +Int -3232)) => doneLemma(#gas(G +Int (#allBut64th((VGas -Int Csstore(ISTANBUL, V1, V2, V3)) +Int -3232) +Int -3232))) ... </k>
-    claim [gas.inf.6]: <k> runLemma(#gas(G) +Gas ((#allBut64th(VGas -Int Csstore(ISTANBUL, V1, V2, V3)) -Int Csstore(ISTANBUL, V1', V2', V3')) +Int -3232)) => doneLemma(#gas(G +Int ((#allBut64th(VGas -Int Csstore(ISTANBUL, V1, V2, V3)) -Int Csstore(ISTANBUL, V1', V2', V3')) +Int -3232))) ... </k>
-                                   
-    claim [gas.inf.7]: <k> runLemma(#gas(G) -Gas Cmem(SCHED, #memoryUsageUpdate(MU, W0, 32))) => doneLemma(#gas(G -Int Cmem(SCHED, #memoryUsageUpdate(MU, W0, 32)))) ... </k>
+    claim [gas.inf.5]:  <k> runLemma(#gas(G) +Gas (#allBut64th((VGas -Int Csstore(ISTANBUL, V1, V2, V3)) +Int -3232) +Int -3232)) => doneLemma(#gas(G +Int (#allBut64th((VGas -Int Csstore(ISTANBUL, V1, V2, V3)) +Int -3232) +Int -3232))) ... </k>
+    claim [gas.inf.6]:  <k> runLemma(#gas(G) +Gas ((#allBut64th(VGas -Int Csstore(ISTANBUL, V1, V2, V3)) -Int Csstore(ISTANBUL, V1', V2', V3')) +Int -3232)) => doneLemma(#gas(G +Int ((#allBut64th(VGas -Int Csstore(ISTANBUL, V1, V2, V3)) -Int Csstore(ISTANBUL, V1', V2', V3')) +Int -3232))) ... </k>
+
+    claim [gas.inf.7]:  <k> runLemma(#gas(G) -Gas Cmem(SCHED, #memoryUsageUpdate(MU, W0, 32))) => doneLemma(#gas(G -Int Cmem(SCHED, #memoryUsageUpdate(MU, W0, 32)))) ... </k>
            requires #rangeUInt(256, MU) andBool #rangeUInt(256, W0)
 
-    claim [gas.inf.8]: <k> runLemma(#gas(G) -Gas Gverylow < SCHED >) => doneLemma(#gas(G -Int Gverylow < SCHED >)) ... </k>
+    claim [gas.inf.8]:  <k> runLemma(#gas(G) -Gas Gverylow < SCHED >) => doneLemma(#gas(G -Int Gverylow < SCHED >)) ... </k>
 
-    claim [gas.inf.9]: <k> runLemma(#gas(G) -Gas 3 *Int (DATA_LEN up/Int 32)) => doneLemma(#gas(G -Int 3 *Int (DATA_LEN up/Int 32))) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+    claim [gas.inf.9]:  <k> runLemma(#gas(G) -Gas 3 *Int (DATA_LEN up/Int 32)) => doneLemma(#gas(G -Int 3 *Int (DATA_LEN up/Int 32))) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
 
-    // claim <k> runLemma (#gas(-271 -Int Cmem(ISTANBUL, #memoryUsageUpdate(5, 160, DATA_LEN))) -Gas 3 *Int (DATA_LEN up/Int 32) +Int -3)
-    //        => doneLemma(#gas(-271 -Int Cmem(ISTANBUL, #memoryUsageUpdate(5, 160, DATA_LEN)) -Int 3 *Int (DATA_LEN up/Int 32) +Int -3)) ... </k>
-    //   requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
+    claim [gas.inf.10]: <k> runLemma (#gas(-271 -Int Cmem(ISTANBUL, #memoryUsageUpdate(5, 160, DATA_LEN))) -Gas ((3 *Int (DATA_LEN up/Int 32) +Int 3)))
+           => doneLemma(#gas(-271 -Int Cmem(ISTANBUL, #memoryUsageUpdate(5, 160, DATA_LEN)) -Int (3 *Int (DATA_LEN up/Int 32) +Int 3))) ... </k>
+      requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
 
-    claim [gas.inf.10]: <k> runLemma(  #gas( -271 -Int CMEM -Int 3 *Int ( DATA_LEN up/Int 32 ) -Int CMEM' +Int CMEM -Int Cmem ( ISTANBUL , #memoryUsageUpdate ( 5 , ( DATA_LEN +Int 31 ) /Int 32 *Int 32 +Int 160 , 32 ) ) +Int CMEM' +Int -122))
+    claim [gas.inf.11]: <k> runLemma(  #gas( -271 -Int CMEM -Int 3 *Int ( DATA_LEN up/Int 32 ) -Int CMEM' +Int CMEM -Int Cmem ( ISTANBUL , #memoryUsageUpdate ( 5 , ( DATA_LEN +Int 31 ) /Int 32 *Int 32 +Int 160 , 32 ) ) +Int CMEM' +Int -122))
            => doneLemma( #gas( -271           -Int 3 *Int ( DATA_LEN up/Int 32 )                      -Int Cmem ( ISTANBUL , #memoryUsageUpdate ( 5 , ( DATA_LEN +Int 31 ) /Int 32 *Int 32 +Int 160 , 32 ) )            +Int -122)) ... </k>
 
-    claim [gas.inf.11]: <k> runLemma( #gas(VGAS +Int -6113) +Gas Cgascap(ISTANBUL, VGAS +Int -5413, VGAS +Int -5413, 700))
+    claim [gas.inf.12]: <k> runLemma( #gas(VGAS +Int -6113) +Gas Cgascap(ISTANBUL, VGAS +Int -5413, VGAS +Int -5413, 700))
            => doneLemma(#gas((VGAS +Int Cgascap(ISTANBUL, VGAS +Int -5413, VGAS +Int -5413, 700)) +Int -6113)) ... </k>
 
-    claim [gas.inf.12]: <k> runLemma( #gas(VGAS +Int -6113) +Gas Cgascap(ISTANBUL, #gas(VGAS +Int -5413), #gas(VGAS +Int -5413), 700))
+    claim [gas.inf.13]: <k> runLemma( #gas(VGAS +Int -6113) +Gas Cgascap(ISTANBUL, #gas(VGAS +Int -5413), #gas(VGAS +Int -5413), 700))
            => doneLemma(#gas((VGAS +Int Cgascap(ISTANBUL, VGAS +Int -5413, VGAS +Int -5413, 700)) +Int -6113)) ... </k>
 
-    claim [gas.inf.13]: <k> runLemma(       Cgascap(ISTANBUL, #gas(VGas +Int -2924), #gas(VGas +Int -2924), Cextra(ISTANBUL, ISEMPTY, VALUE, ISWARM))  )
+    claim [gas.inf.14]: <k> runLemma(       Cgascap(ISTANBUL, #gas(VGas +Int -2924), #gas(VGas +Int -2924), Cextra(ISTANBUL, ISEMPTY, VALUE, ISWARM))  )
            => doneLemma( #gas(Cgascap(ISTANBUL,     (VGas +Int -2924),     (VGas +Int -2924), Cextra(ISTANBUL, ISEMPTY, VALUE, ISWARM))) ) ... </k>
 
  // Infinite Gas comparisons
  // ------------------------
 
-    claim [gas.comp.1]: <k> runLemma(#gas(_)  <Gas 11     ) => doneLemma(false) ... </k>
-    claim [gas.comp.2]: <k> runLemma(#gas(_) <=Gas 11     ) => doneLemma(false) ... </k>
-    claim [gas.comp.3]: <k> runLemma(11       <Gas #gas(_)) => doneLemma(true)  ... </k>
-    claim [gas.comp.4]: <k> runLemma(11      <=Gas #gas(_)) => doneLemma(true)  ... </k>
+    claim [gas.comp.1]:  <k> runLemma(#gas(_)  <Gas 11     ) => doneLemma(false) ... </k>
+    claim [gas.comp.2]:  <k> runLemma(#gas(_) <=Gas 11     ) => doneLemma(false) ... </k>
+    claim [gas.comp.3]:  <k> runLemma(11       <Gas #gas(_)) => doneLemma(true)  ... </k>
+    claim [gas.comp.4]:  <k> runLemma(11      <=Gas #gas(_)) => doneLemma(true)  ... </k>
 
-    claim [gas.comp.5]: <k> runLemma(#gas(_) <Gas (Cmem(_, _) +Int Csstore(_, _, _, _))) => doneLemma(false) ... </k>
+    claim [gas.comp.5]:  <k> runLemma(#gas(_) <Gas (Cmem(_, _) +Int Csstore(_, _, _, _))) => doneLemma(false) ... </k>
 
-    claim [gas.comp.6]: <k> runLemma(#gas(_) <Gas (I1 +Int (I2 /Int I3) *Int I4)) => doneLemma(false) ... </k> requires I1 <=Int pow256 andBool I2 <=Int pow256 andBool I3 =/=Int 0 andBool I3 <=Int pow256 andBool I4 <=Int pow256
+    claim [gas.comp.6]:  <k> runLemma(#gas(_) <Gas (I1 +Int (I2 /Int I3) *Int I4)) => doneLemma(false) ... </k> requires I1 <=Int pow256 andBool I2 <=Int pow256 andBool I3 =/=Int 0 andBool I3 <=Int pow256 andBool I4 <=Int pow256
 
-    claim [gas.comp.7]: <k> runLemma(4822 <Gas minGas(#gas(VGas +Int 4544) +Gas (#gas(VGas +Int 4544) /Gas 64), #gas(VGas +Int 3844))) => doneLemma(true) ... </k>
-         
-    claim [gas.comp.8]: <k> runLemma(3 <Gas minGas(#gas(_VGas), 2)) => doneLemma(false) ... </k>
-    claim [gas.comp.9]: <k> runLemma(2 <Gas minGas(#gas(_VGas), 3)) => doneLemma(true ) ... </k>
+    claim [gas.comp.7]:  <k> runLemma(4822 <Gas minGas(#gas(VGas +Int 4544) +Gas (#gas(VGas +Int 4544) /Gas 64), #gas(VGas +Int 3844))) => doneLemma(true) ... </k>
+
+    claim [gas.comp.8]:  <k> runLemma(3 <Gas minGas(#gas(_VGas), 2)) => doneLemma(false) ... </k>
+    claim [gas.comp.9]:  <k> runLemma(2 <Gas minGas(#gas(_VGas), 3)) => doneLemma(true ) ... </k>
 
     claim [gas.comp.10]: <k> runLemma(#gas(_G) -Gas Csstore(_, _, _, _) <Gas 2) => doneLemma(false) ... </k>
     claim [gas.comp.11]: <k> runLemma(minGas(#gas(_G), #gas(_G'')) +Gas -2522 <Gas Csstore(_, _, _, _)) => doneLemma(false) ... </k>
@@ -104,8 +104,8 @@ module INFINITE-GAS-SPEC
     claim [gas.comp.16]: <k> runLemma(#if _:Int ==Int 0 #then #gas(VGas -Int Csstore(_, _, _,_)) #else #gas(VGas +Int -344) #fi <Gas minGas(#if _ #then #gas(_) #else #gas(_) #fi, #gas(_)))  => doneLemma(false) ... </k>
     claim [gas.comp.17]: <k> runLemma(minGas(#if _ #then #gas(_) #else #gas(_) #fi, #gas(_)) <=Gas #if _:Int ==Int 0 #then #gas(VGas -Int Csstore(_, _, _,_)) #else #gas(VGas +Int -344) #fi) => doneLemma(true)  ... </k>
 
-    claim [Csstore-1]: <k> runLemma(9223372036854696114 -Int Csstore(LONDON, _, _, _) <Int 8) => doneLemma(false) ... </k>
-    claim [Csstore-2]: <k> runLemma(8 <=Int 9223372036854763220 -Int Csstore(LONDON, _, _, _)) => doneLemma(true) ... </k>
+    claim [Csstore-1]:   <k> runLemma(9223372036854696114 -Int Csstore(LONDON, _, _, _) <Int 8) => doneLemma(false) ... </k>
+    claim [Csstore-2]:   <k> runLemma(8 <=Int 9223372036854763220 -Int Csstore(LONDON, _, _, _)) => doneLemma(true) ... </k>
 
     claim [gas.comp.18]: <k> runLemma(#allBut64th(#gas(_G)) <Gas #gas(_G')) => doneLemma(false) ... </k>
 
