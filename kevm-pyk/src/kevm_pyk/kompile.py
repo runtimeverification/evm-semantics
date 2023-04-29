@@ -107,7 +107,6 @@ def kevm_kompile(
         md_selector=md_selector,
         hook_namespaces=HOOK_NAMESPACES,
         emit_json=emit_json,
-        debug=debug,
     )
 
     kompile: Kompile
@@ -134,7 +133,7 @@ def kevm_kompile(
             raise ValueError(f'Unsupported backend: {backend.value}')
 
     try:
-        return kompile(output_dir=definition_dir)
+        return kompile(output_dir=definition_dir, debug=debug)
     except RuntimeError as err:
         sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')
         sys.stderr.write(f'\nkompile stderr:\n{err.args[2]}\n')
