@@ -92,7 +92,7 @@
                 --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
             '';
 
-            buildFlags = [ "POETRY_RUN=" "NIX_BUILD=true" ] ++
+            buildFlags = [ "KEVM_PYK=${final.kevm-pyk}/bin/kevm-pyk" "NIX_BUILD=true" ] ++
               prev.lib.optional (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
               "APPLE_SILICON=true";
             enableParallelBuilding = true;

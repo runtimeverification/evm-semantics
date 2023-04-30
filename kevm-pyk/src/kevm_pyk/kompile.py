@@ -79,13 +79,26 @@ class KompileTarget(Enum):
             case _:
                 raise AssertionError()
 
+    @property
+    def definition_dir(self) -> Path:
+        match self:
+            case self.LLVM:
+                return config.LLVM_DIR
+            case self.NODE:
+                return config.NODE_DIR
+            case self.HASKELL:
+                return config.HASKELL_DIR
+            case self.FOUNDRY:
+                return config.FOUNDRY_DIR
+            case _:
+                raise AssertionError()
+
 
 def kevm_kompile(
-    definition_dir: Path,
     target: KompileTarget,
     *,
+    output_dir: Path | None = None,
     main_file: Path,
-    kevm_lib: Path | None = None,
     main_module: str | None,
     syntax_module: str | None,
     includes: Iterable[str] = (),
@@ -99,11 +112,14 @@ def kevm_kompile(
     backend = target.backend
     md_selector = 'k & ! standalone' if target == KompileTarget.NODE else 'k & ! node'
 
+    include_dirs = [Path(include) for include in includes]
+    include_dirs += [config.INCLUDE_DIR]
+
     base_args = KompileArgs(
         main_file=main_file,
         main_module=main_module,
         syntax_module=syntax_module,
-        include_dirs=[include for include in includes if Path(include).exists()],
+        include_dirs=include_dirs,
         md_selector=md_selector,
         hook_namespaces=HOOK_NAMESPACES,
         emit_json=emit_json,
@@ -112,9 +128,7 @@ def kevm_kompile(
     kompile: Kompile
     match backend:
         case KompileBackend.LLVM:
-            if kevm_lib is None:
-                raise ValueError(f'Parameter kevm_lib must not be None for target: {target.value}')
-            ccopts = list(ccopts) + _lib_ccopts(kevm_lib)
+            ccopts = list(ccopts) + _lib_ccopts()
             no_llvm_kompile = target == KompileTarget.NODE
             kompile = LLVMKompile(
                 base_args=base_args,
@@ -133,7 +147,7 @@ def kevm_kompile(
             raise ValueError(f'Unsupported backend: {backend.value}')
 
     try:
-        return kompile(output_dir=definition_dir, debug=debug)
+        return kompile(output_dir=output_dir or target.definition_dir, debug=debug)
     except RuntimeError as err:
         sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')
         sys.stderr.write(f'\nkompile stderr:\n{err.args[2]}\n')
@@ -142,13 +156,13 @@ def kevm_kompile(
         raise
 
 
-def _lib_ccopts(kevm_lib: Path) -> list[str]:
+def _lib_ccopts() -> list[str]:
     ccopts = ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
 
-    libff_dir = kevm_lib / 'libff'
+    libff_dir = config.KEVM_LIB / 'libff'
     ccopts += [f'-L{libff_dir}/lib', f'-I{libff_dir}/include']
 
-    plugin_include = kevm_lib / 'blockchain-k-plugin/include'
+    plugin_include = config.KEVM_LIB / 'blockchain-k-plugin/include'
     ccopts += [
         f'{plugin_include}/c/plugin_util.cpp',
         f'{plugin_include}/c/crypto.cpp',
@@ -179,7 +193,7 @@ def _lib_ccopts(kevm_lib: Path) -> list[str]:
                 f'-L{openssl_root}/lib',
             ]
 
-            libcryptopp_dir = kevm_lib / 'cryptopp'
+            libcryptopp_dir = config.KEVM_LIB / 'cryptopp'
             ccopts += [
                 f'-I{libcryptopp_dir}/include',
                 f'-L{libcryptopp_dir}/lib',
