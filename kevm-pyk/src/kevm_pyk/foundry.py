@@ -31,8 +31,7 @@ from .solc_to_k import Contract, contract_to_main_module
 from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, parallel_kcfg_explore
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-    from typing import Any, Final
+    from typing import Any, Final, Iterable
 
     from pyk.kast import KInner
     from pyk.kcfg.tui import KCFGElem
@@ -355,9 +354,9 @@ def foundry_prove(
     br = BugReport(foundry_root / 'bug_report') if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
 
-    ag_proofs_dir = foundry.out / 'ag_proofs'
-    if not ag_proofs_dir.exists():
-        ag_proofs_dir.mkdir()
+    save_directory = foundry.out / 'ag_proofs'
+    if not save_directory.exists():
+        save_directory.mkdir()
 
     all_tests = [
         f'{contract.name}.{method.name}'
@@ -391,79 +390,34 @@ def foundry_prove(
     setup_methods: dict[str, str] = {}
     contracts = unique({test.split('.')[0] for test in tests})
     for contract_name in contracts:
-        contract = foundry.contracts[contract_name]
-        method = contract.method_by_name('setUp')
-        if method is not None:
-            setup_methods[contract.name] = f'{contract.name}.{method.name}'
+        if 'setUp' in foundry.contracts[contract_name].method_by_name:
+            setup_methods[contract_name] = f'{contract_name}.setUp'
 
     def run_cfg_group(tests: list[str]) -> dict[str, bool]:
-        ag_proofs: dict[str, APRProof | APRBMCProof] = {}
+        apr_proofs: dict[str, APRProof | APRBMCProof] = {}
         for test in tests:
             contract_name, test_name = test.split('.')
-            proof_digest = foundry.proof_digest(contract_name, test_name)
-            if Proof.proof_exists(proof_digest, ag_proofs_dir) and not reinit:
-                proof_path = ag_proofs_dir / f'{hash_str(proof_digest)}.json'
-                proof_dict = json.loads(proof_path.read_text())
-                match proof_dict['type']:
-                    case 'APRProof':
-                        ag_proof = APRProof.from_dict(proof_dict)
-                    case 'APRBMCProof':
-                        ag_proof = APRBMCProof.from_dict(proof_dict)
-                    case unsupported_type:
-                        raise ValueError(f'Unsupported proof type {unsupported_type}')
-            else:
-                _LOGGER.info(f'Initializing KCFG for test: {test}')
-                contract_name, method_name = test.split('.')
-                contract = foundry.contracts[contract_name]
-                method = [m for m in contract.methods if m.name == method_name][0]
-                empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
-
-                use_setup = method.name.startswith('test') and contract_name in setup_methods
-                setup_digest = None
-                if use_setup:
-                    setup_digest = f'{contract_name}.setUp:{contract.digest}'
-                    _LOGGER.info(f'Using setup method for test: {test}')
-
-                kcfg = _method_to_cfg(empty_config, contract, method, ag_proofs_dir, init_state=setup_digest)
-
-                _LOGGER.info(f'Expanding macros in initial state for test: {test}')
-                init_term = kcfg.get_unique_init().cterm.kast
-                init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
-                init_cterm = CTerm.from_kast(init_term)
-
-                _LOGGER.info(f'Expanding macros in target state for test: {test}')
-                target_term = kcfg.get_unique_target().cterm.kast
-                target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
-                target_cterm = CTerm.from_kast(target_term)
-                kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
-
-                _LOGGER.info(f'Starting KCFGExplore for test: {test}')
-                with KCFGExplore(
-                    foundry.kevm,
-                    bug_report=br,
-                    kore_rpc_command=kore_rpc_command,
-                    smt_timeout=smt_timeout,
-                    smt_retry_limit=smt_retry_limit,
-                ) as kcfg_explore:
-                    _LOGGER.info(f'Computing definedness constraint for test: {test}')
-                    init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
-                    kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
-
-                    if simplify_init:
-                        _LOGGER.info(f'Simplifying KCFG for test: {test}')
-                        kcfg_explore.simplify(kcfg)
-                if bmc_depth is not None:
-                    ag_proof = APRBMCProof(proof_digest, kcfg, proof_dir=ag_proofs_dir, bmc_depth=bmc_depth)
-                else:
-                    ag_proof = APRProof(proof_digest, kcfg, proof_dir=ag_proofs_dir)
-
-            ag_proof.write_proof()
-            ag_proofs[test] = ag_proof
+            contract = foundry.contracts[contract_name]
+            method = contract.method_by_name[test_name]
+            apr_proof = _method_to_apr_proof(
+                foundry,
+                contract,
+                method,
+                save_directory,
+                reinit=reinit,
+                simplify_init=simplify_init,
+                bmc_depth=bmc_depth,
+                kore_rpc_command=kore_rpc_command,
+                smt_timeout=smt_timeout,
+                smt_retry_limit=smt_retry_limit,
+                bug_report=br,
+            )
+            apr_proofs[test] = apr_proof
 
         return parallel_kcfg_explore(
             foundry.kevm,
-            ag_proofs,
-            save_directory=ag_proofs_dir,
+            apr_proofs,
+            save_directory=save_directory,
             max_depth=max_depth,
             max_iterations=max_iterations,
             workers=workers,
@@ -701,6 +655,79 @@ def _foundry_to_bin_runtime(
     )
 
     return bin_runtime_definition
+
+
+def _method_to_apr_proof(
+    foundry: Foundry,
+    contract: Contract,
+    method: Contract.Method,
+    save_directory: Path,
+    reinit: bool = False,
+    simplify_init: bool = True,
+    bmc_depth: int | None = None,
+    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
+    bug_report: BugReport | None = None,
+) -> APRProof | APRBMCProof:
+    contract_name = contract.name
+    method_name = method.name
+    test = f'{contract_name}.{method_name}'
+    proof_digest = foundry.proof_digest(contract_name, method_name)
+    if Proof.proof_exists(proof_digest, save_directory) and not reinit:
+        proof_path = save_directory / f'{hash_str(proof_digest)}.json'
+        proof_dict = json.loads(proof_path.read_text())
+        match proof_dict['type']:
+            case 'APRProof':
+                apr_proof = APRProof.from_dict(proof_dict)
+            case 'APRBMCProof':
+                apr_proof = APRBMCProof.from_dict(proof_dict)
+            case unsupported_type:
+                raise ValueError(f'Unsupported proof type {unsupported_type}')
+    else:
+        _LOGGER.info(f'Initializing KCFG for test: {test}')
+
+        setup_digest = None
+        if 'setUp' in contract.method_by_name:
+            setup_digest = f'{contract_name}.setUp:{contract.digest}'
+            _LOGGER.info(f'Using setUp method for test: {test}')
+
+        empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
+        kcfg = _method_to_cfg(empty_config, contract, method, save_directory, init_state=setup_digest)
+
+        _LOGGER.info(f'Expanding macros in initial state for test: {test}')
+        init_term = kcfg.get_unique_init().cterm.kast
+        init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
+        init_cterm = CTerm.from_kast(init_term)
+
+        _LOGGER.info(f'Expanding macros in target state for test: {test}')
+        target_term = kcfg.get_unique_target().cterm.kast
+        target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
+        target_cterm = CTerm.from_kast(target_term)
+        kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
+
+        _LOGGER.info(f'Starting KCFGExplore for test: {test}')
+        with KCFGExplore(
+            foundry.kevm,
+            bug_report=bug_report,
+            kore_rpc_command=kore_rpc_command,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
+        ) as kcfg_explore:
+            _LOGGER.info(f'Computing definedness constraint for test: {test}')
+            init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
+            kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
+
+            if simplify_init:
+                _LOGGER.info(f'Simplifying KCFG for test: {test}')
+                kcfg_explore.simplify(kcfg)
+        if bmc_depth is not None:
+            apr_proof = APRBMCProof(proof_digest, kcfg, proof_dir=save_directory, bmc_depth=bmc_depth)
+        else:
+            apr_proof = APRProof(proof_digest, kcfg, proof_dir=save_directory)
+
+    apr_proof.write_proof()
+    return apr_proof
 
 
 def _method_to_cfg(
