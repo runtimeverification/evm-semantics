@@ -2,32 +2,42 @@ FROM ghcr.io/foundry-rs/foundry:nightly-aeba75e4799f1e11e3daba98d967b83e286b0c4a
 
 FROM ubuntu:jammy
 
-ENV TZ America/Chicago
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+ENV TZ=America/Chicago
 ENV DEBIAN_FRONTEND=noninteractive
 
 COPY --from=FOUNDRY /usr/local/bin/forge /usr/local/bin/forge
 COPY --from=FOUNDRY /usr/local/bin/anvil /usr/local/bin/anvil
 COPY --from=FOUNDRY /usr/local/bin/cast /usr/local/bin/cast
 
-RUN    apt-get update           \
-    && apt-get upgrade --yes    \
-    && apt-get install --yes    \
-            build-essential     \
-            curl                \
-            git                 \
-            python3             \
-            python3-pip         \
-            sudo
+RUN    apt-get update        \
+    && apt-get upgrade --yes \
+    && apt-get install --yes \
+        curl                 \
+        git                  \
+        make                 \
+        sudo                 \
+        wget
 
-ARG USER=user
-ARG GROUP=${USER}
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - --version 1.3.2
+
 ARG USER_ID=1000
-ARG GROUP_ID=${USER_ID}
-RUN    groupadd -g ${GROUP_ID} ${USER} \
-    && useradd -m -u ${USER_ID} -s /bin/sh -g ${GROUP} -G sudo ${USER}
+ARG GROUP_ID=1000
+RUN    groupadd -g $GROUP_ID user                             \
+    && useradd -m -u $USER_ID -s /bin/sh -g user user -G sudo
 
-RUN echo "${USER} ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers
+USER $USER_ID:$GROUP_ID
+WORKDIR /home/user
 
-USER ${USER}:${GROUP}
-WORKDIR /home/${USER}
+ARG K_VERSION
+RUN wget https://github.com/runtimeverification/k/releases/download/v${K_VERSION}/kframework_${K_VERSION}_amd64_ubuntu_jammy.deb
+RUN    sudo apt-get update        \
+    && sudo apt-get upgrade --yes \
+    && sudo apt-get install --yes ./kframework_${K_VERSION}_amd64_ubuntu_jammy.deb
+
+ARG KEVM_VERSION
+COPY --chown user:user ./kevm_${version}_amd64.deb ./
+RUN    sudo apt-get update        \
+    && sudo apt-get upgrade --yes \
+    && sudo apt-get install --yes ./kevm_${version}_amd64.deb
