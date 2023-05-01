@@ -317,7 +317,6 @@ def foundry_kompile(
             md_selector=md_selector,
             hook_namespaces=HOOK_NAMESPACES,
             emit_json=True,
-            debug=debug,
         )
 
         kompile: Kompile
@@ -337,7 +336,7 @@ def foundry_kompile(
             case _:
                 raise ValueError(f'Unsuppored backend: {backend.value}')
 
-        kompile(output_dir=out_dir)
+        kompile(output_dir=out_dir, debug=debug)
 
     if regen or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
