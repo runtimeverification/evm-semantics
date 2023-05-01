@@ -41,6 +41,3 @@ ADD --chown user:user ./kevm_${version}_amd64.deb ./
 RUN    sudo apt-get update        \
     && sudo apt-get upgrade --yes \
     && sudo apt-get install --yes ./kevm_${version}_amd64.deb
-
-ADD --chown user:user ./kevm-pyk ./
-RUN cd kevm-pyk && poetry install --no-interaction
