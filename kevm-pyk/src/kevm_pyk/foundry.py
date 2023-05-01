@@ -32,7 +32,8 @@ from .solc_to_k import Contract, contract_to_main_module
 from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, parallel_kcfg_explore
 
 if TYPE_CHECKING:
-    from typing import Any, Final, Iterable
+    from collections.abc import Iterable
+    from typing import Any, Final
 
     from pyk.kast import KInner
     from pyk.kcfg.tui import KCFGElem
