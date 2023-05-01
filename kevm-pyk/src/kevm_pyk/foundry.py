@@ -693,7 +693,7 @@ def _method_to_apr_proof(
         _LOGGER.info(f'Initializing KCFG for test: {test}')
 
         setup_digest = None
-        if 'setUp' in contract.method_by_name:
+        if method_name != 'setUp' and 'setUp' in contract.method_by_name:
             setup_digest = f'{contract_name}.setUp:{contract.digest}'
             _LOGGER.info(f'Using setUp method for test: {test}')
 
