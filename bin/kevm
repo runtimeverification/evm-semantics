@@ -41,6 +41,7 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
 
+
 # Runners
 # -------
 
@@ -48,7 +49,7 @@ run_kevm_pyk() {
     local pyk_command pyk_args
     pyk_command="$1" ; shift
     case "${pyk_command}" in
-        kompile|run|prove|solc-to-k|foundry-kompile|foundry-prove|view-kcfg|show-kcfg)
+        run|prove|solc-to-k|foundry-kompile|foundry-prove|view-kcfg|show-kcfg)
             pyk_args=(--definition "${backend_dir}")
             pyk_args+=(-I "${INSTALL_INCLUDE}/kframework")
             ;;
@@ -63,13 +64,10 @@ run_kevm_pyk() {
 
 run_kompile() {
     local kompile_opts
-
-    ${pyk} || fatal 'Must supply --pyk with kevm kompile.'
-
-    kompile_opts=( "${run_file}" --target ${backend} --kevm-lib "${INSTALL_LIB}" )
-    ! ${debug} || kompile_opts+=( --debug )
-
-    run_kevm_pyk kompile "${kompile_opts[@]}" "$@"
+    ! ${verbose}    || kompile_opts+=(--verbose)
+    ! ${debug}      || kompile_opts+=(--debug)
+    ! ${bug_report} || kompile_opts+=(--bug-report)
+    execute python3 -m kevm_pyk kompile "${run_file}" "$@" "${kompile_opts[@]}"
 }
 
 run_krun() {
