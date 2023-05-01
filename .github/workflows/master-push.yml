@@ -84,7 +84,8 @@ jobs:
           tag_name="kevm-ci-test:${version}"
           container_name="kevm-ci-test-${GITHUB_SHA}"
           docker build . --tag ${tag_name} --file package/docker/Dockerfile \
-            --build-arg K_VERSION=${k_version}
+            --build-arg K_VERSION=${k_version}                              \
+            --build-arg KEVM_VERSION=${version}
           docker run                 \
             --name ${container_name} \
             --rm                     \
@@ -94,10 +95,8 @@ jobs:
             --user root              \
             --workdir /home/user     \
             ${tag_name}
-          docker cp ./kevm_${version}_amd64.deb ${container_name}:/home/user/kevm_${version}_amd64.deb
           docker cp ./tests/foundry ${container_name}:/home/user/foundry
-          docker exec -u user ${container_name} /bin/bash -c "sudo chown user:user -R /home/user"
-          docker exec -u user ${container_name} /bin/bash -c "sudo apt-get install --yes ./kevm_${version}_amd64.deb"
+          docker exec -u user ${container_name} /bin/bash -c "sudo chown user:user -R /home/user/foundry"
           docker exec -u user ${container_name} /bin/bash -c "forge build --root foundry"
           docker exec -u user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root foundry --verbose"
           docker exec -u user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root foundry --verbose --test Examples.test_assert_bool_passing"
