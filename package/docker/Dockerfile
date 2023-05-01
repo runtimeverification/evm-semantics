@@ -37,10 +37,10 @@ RUN    sudo apt-get update        \
     && sudo apt-get install --yes ./kframework_${K_VERSION}_amd64_ubuntu_jammy.deb
 
 ARG KEVM_VERSION
-COPY --chown user:user ./kevm_${version}_amd64.deb ./
+ADD --chown user:user ./kevm_${version}_amd64.deb ./
 RUN    sudo apt-get update        \
     && sudo apt-get upgrade --yes \
     && sudo apt-get install --yes ./kevm_${version}_amd64.deb
 
-COPY --chown user:user ./kevm-pyk ./
+ADD --chown user:user ./kevm-pyk ./
 RUN cd kevm-pyk && poetry install --no-interaction
