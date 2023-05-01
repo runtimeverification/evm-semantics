@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import tomlkit
+from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, ensure_dir_path
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
@@ -393,26 +394,29 @@ def foundry_prove(
         if 'setUp' in foundry.contracts[contract_name].method_by_name:
             setup_methods[contract_name] = f'{contract_name}.setUp'
 
+    def _init_apr_proof(_init_problems: tuple[str, str]) -> APRProof | APRBMCProof:
+        contract_name, method_name = _init_problems
+        contract = foundry.contracts[contract_name]
+        method = contract.method_by_name[method_name]
+        return _method_to_apr_proof(
+            foundry,
+            contract,
+            method,
+            save_directory,
+            reinit=reinit,
+            simplify_init=simplify_init,
+            bmc_depth=bmc_depth,
+            kore_rpc_command=kore_rpc_command,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
+            bug_report=br,
+        )
+
     def run_cfg_group(tests: list[str]) -> dict[str, bool]:
-        apr_proofs: dict[str, APRProof | APRBMCProof] = {}
-        for test in tests:
-            contract_name, test_name = test.split('.')
-            contract = foundry.contracts[contract_name]
-            method = contract.method_by_name[test_name]
-            apr_proof = _method_to_apr_proof(
-                foundry,
-                contract,
-                method,
-                save_directory,
-                reinit=reinit,
-                simplify_init=simplify_init,
-                bmc_depth=bmc_depth,
-                kore_rpc_command=kore_rpc_command,
-                smt_timeout=smt_timeout,
-                smt_retry_limit=smt_retry_limit,
-                bug_report=br,
-            )
-            apr_proofs[test] = apr_proof
+        init_problems = [tuple(test.split('.')) for test in tests]
+        with ProcessPool(ncpus=workers) as process_pool:
+            _apr_proofs = process_pool.map(_init_apr_proof, init_problems)
+        apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
 
         return parallel_kcfg_explore(
             foundry.kevm,
