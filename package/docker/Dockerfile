@@ -15,6 +15,7 @@ RUN    apt-get update        \
         curl                 \
         git                  \
         make                 \
+        python3              \
         sudo                 \
         wget
 
@@ -37,7 +38,7 @@ RUN    sudo apt-get update        \
     && sudo apt-get install --yes ./kframework_${K_VERSION}_amd64_ubuntu_jammy.deb
 
 ARG KEVM_VERSION
-ADD --chown user:user ./kevm_${version}_amd64.deb ./
+ADD --chown=user:user ./kevm_${KEVM_VERSION}_amd64.deb ./
 RUN    sudo apt-get update        \
     && sudo apt-get upgrade --yes \
-    && sudo apt-get install --yes ./kevm_${version}_amd64.deb
+    && sudo apt-get install --yes ./kevm_${KEVM_VERSION}_amd64.deb
