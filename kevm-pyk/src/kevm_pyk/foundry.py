@@ -767,8 +767,8 @@ def _init_cterm(init_term: KInner) -> CTerm:
     return init_cterm
 
 
-def get_final_accounts_cell(proof_digest: str, apr_proof_dir: Path) -> KInner:
-    apr_proof = APRProof.read_proof(proof_digest, apr_proof_dir)
+def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> KInner:
+    apr_proof = APRProof.read_proof(proof_digest, proof_dir)
     target = apr_proof.kcfg.get_unique_target()
     cover = single(apr_proof.kcfg.covers(target_id=target.id))
     accounts_cell = get_cell(cover.source.cterm.config, 'ACCOUNTS_CELL')
