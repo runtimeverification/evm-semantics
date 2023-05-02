@@ -395,8 +395,8 @@ def foundry_prove(
         if 'setUp' in foundry.contracts[contract_name].method_by_name:
             setup_methods[contract_name] = f'{contract_name}.setUp'
 
-    def _init_apr_proof(_init_problems: tuple[str, str]) -> APRProof | APRBMCProof:
-        contract_name, method_name = _init_problems
+    def _init_apr_proof(_init_problem: tuple[str, str]) -> APRProof | APRBMCProof:
+        contract_name, method_name = _init_problem
         contract = foundry.contracts[contract_name]
         method = contract.method_by_name[method_name]
         return _method_to_apr_proof(
