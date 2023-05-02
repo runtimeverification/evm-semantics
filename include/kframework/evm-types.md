@@ -29,7 +29,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 ```k
     syntax Int ::= bool2Word ( Bool ) [function, total, smtlib(bool2Word)]
  // ----------------------------------------------------------------------
-    rule bool2Word( true  ) => 1 
+    rule bool2Word( true  ) => 1
     rule bool2Word( false ) => 0
 
     syntax Bool ::= word2Bool ( Int ) [function, total]
@@ -315,17 +315,17 @@ A cons-list is used for the EVM wordstack.
 ```
 
 
--   `#writeRange(WS, START, WS')` assigns a contiguous chunk of `WS'` to `WS` starting at position `START`.
+-   `WS [ START := WS' ]` assigns a contiguous chunk of `WS'` to `WS` starting at position `START`.
 -   `#write(WM, IDX, VAL)` assigns a value `VAL` at position `IDX` in `WM`.
 
 ```k
     syntax Bytes ::= "#write" "(" Bytes "," Int "," Int ")" [function]
-                   | "#writeRange" "(" Bytes "," Int "," Bytes ")" [function, total, klabel(mapWriteRange)]
+                   | Bytes "[" Int ":=" Bytes "]" [function, total, klabel(mapWriteRange)]
  // -------------------------------------------------------------------------------------------------------
     rule #write(WM, IDX, VAL) => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ]
 
-    rule #writeRange(WS, START, WS') => replaceAtBytes(padRightBytes(WS, START +Int lengthBytes(WS'), 0), START, WS') requires START >=Int 0 [concrete]
-    rule #writeRange(_ , START, _)   => .Bytes                                                                        requires START  <Int 0 [concrete]
+    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int lengthBytes(WS'), 0), START, WS') requires START >=Int 0 [concrete]
+    rule _  [ START := _ ]   => .Bytes                                                                        requires START  <Int 0 [concrete]
 ```
 
 Bytes helper functions
