@@ -75,14 +75,13 @@ def exec_compile(contract_file: Path, **kwargs: Any) -> None:
 
 
 def exec_kompile(
-    definition_dir: Path,
     target: KompileTarget,
+    output_dir: Path | None,
     main_file: Path,
     emit_json: bool,
     includes: list[str],
     main_module: str | None,
     syntax_module: str | None,
-    kevm_lib: Path | None = None,
     ccopts: Iterable[str] = (),
     o0: bool = False,
     o1: bool = False,
@@ -101,10 +100,9 @@ def exec_kompile(
         optimization = 3
 
     kevm_kompile(
-        definition_dir,
         target,
+        output_dir=output_dir,
         main_file=main_file,
-        kevm_lib=kevm_lib,
         main_module=main_module,
         syntax_module=syntax_module,
         includes=includes,
@@ -823,7 +821,9 @@ def _create_argument_parser() -> ArgumentParser:
     )
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
     kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|node|foundry]')
-    kompile_args.add_argument('--kevm-lib', type=dir_path, help='Path to KEVM lib directory.')
+    kompile_args.add_argument(
+        '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
+    )
 
     _ = command_parser.add_parser(
         'prove',
