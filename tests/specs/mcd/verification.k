@@ -151,9 +151,9 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
   // Map
   // ########################
 
-    rule #range(M:Bytes [ K <- V ]                    , START, WIDTH) => #range(M [ K := V ], START, WIDTH)        requires K +Int 1                 ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START [concrete(K    , V     ), simplification]
-    rule #range(M:Bytes [ K <- V ] [ K' := VS':Bytes ], START, WIDTH) => #range(M [ K := V : VS' ], START, WIDTH)  requires K' +Int lengthBytes(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START
-                                                                                                                    andBool K +Int 1                 ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
+    rule #range(M:Bytes [ K <- V ]                    , START, WIDTH) => #range(M [ K := V : .Bytes ], START, WIDTH)  requires K +Int 1                 ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START [concrete(K    , V     ), simplification]
+    rule #range(M:Bytes [ K <- V ] [ K' := VS':Bytes ], START, WIDTH) => #range(M [ K := V : VS'    ], START, WIDTH)  requires K' +Int lengthBytes(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START
+                                                                                                                       andBool K +Int 1                 ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
     rule { (M:Map [K <- V1]) #Equals (M [K <- V2]) } => { V1 #Equals V2 }
          [simplification]
 
