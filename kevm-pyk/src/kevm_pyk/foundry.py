@@ -357,8 +357,7 @@ def foundry_prove(
     foundry = Foundry(foundry_root, bug_report=br)
 
     save_directory = foundry.out / 'apr_proofs'
-    if not save_directory.exists():
-        save_directory.mkdir()
+    save_directory.mkdir(exist_ok=True)
 
     all_tests = [
         f'{contract.name}.{method.name}'
