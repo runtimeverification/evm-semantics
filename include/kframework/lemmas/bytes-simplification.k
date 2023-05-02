@@ -71,7 +71,7 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [range-empty]:
       #range(_:Bytes, S:Int, W:Int) => .Bytes
       requires S <Int 0 orBool W <=Int 0
-      [simplification(1)]
+      [simplification(30)]
 
     rule [range-full]:
       #range(B:Bytes, 0, W:Int) => B
@@ -105,12 +105,12 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [range-inside-cHead-base-conc-left]:
       #range(B:Bytes, S1:Int +Int S2:Int, W:Int) => #range(#range(B, S1, lengthBytes(B) -Int S1), S2, W)
-      requires 0 <Int S1 +Int S2 andBool S1 +Int S2 <=Int lengthBytes(B)
+      requires 0 <=Int S1 andBool 0 <=Int S2 andBool 0 <Int S1 +Int S2 andBool S1 +Int S2 <=Int lengthBytes(B)
       [concrete(B), concrete(S1), simplification]
 
     rule [range-inside-cHead-base-conc-right]:
       #range(B:Bytes, S1:Int +Int S2:Int, W:Int) => #range(#range(B, S2, lengthBytes(B) -Int S2), S1, W)
-      requires 0 <Int S1 +Int S2 andBool S1 +Int S2 <=Int lengthBytes(B)
+      requires 0 <=Int S1 andBool 0 <=Int S2 andBool 0 <Int S1 +Int S2 andBool S1 +Int S2 <=Int lengthBytes(B)
       [concrete(B), concrete(S2), simplification]
 
     rule [range-inside-cHead-concat]:
@@ -198,7 +198,7 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [writeRange-as-concat-inside]:
       #writeRange(B1, S, B2:Bytes) =>
-        #range(B1, 0, S) +Bytes B2 +Bytes #range (B1 , S +Int lengthBytes(B2), lengthBytes(B1) -Int ( S +Int lengthBytes(B2)))
+        #range(B1, 0, S) +Bytes B2 +Bytes #range (B1 , S +Int lengthBytes(B2), lengthBytes(B1) -Int (S +Int lengthBytes(B2)))
       requires 0 <=Int S andBool S +Int lengthBytes(B2) <Int lengthBytes(B1)
       [simplification(60)]
 
@@ -235,7 +235,7 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [lengthBytes-geq-zero]: 0 <=Int lengthBytes ( _ )                     => true                                     [simplification, smt-lemma]
     rule [lengthBytes-concat]:   lengthBytes(BUF1 +Bytes BUF2)                 => lengthBytes(BUF1) +Int lengthBytes(BUF2) [simplification]
-    rule [lengthBytes-buf]:      lengthBytes(#buf(S, _))                       => S  requires 0 <=Int S                    [simplification]
+    rule [lengthBytes-buf]:      lengthBytes(#buf(S, _))                       => S requires 0 <=Int S                     [simplification]
     rule [lengthBytes-range]:    lengthBytes(#range(_, S:Int, W:Int))          => maxInt(0, W) requires 0 <=Int S          [simplification]
     rule [lengthBytes-prtw]:     lengthBytes(#padRightToWidth(W:Int, B:Bytes)) => maxInt(lengthBytes(B), W)                [simplification]
 

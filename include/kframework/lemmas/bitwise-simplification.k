@@ -44,11 +44,11 @@ module BITWISE-SIMPLIFICATION [symbolic]
     rule maxUInt160 &Int (X |Int (notMaxUInt160 &Int Y:Int)) => X requires #rangeUInt(160, X) andBool 0 <=Int Y [simplification]
 
     rule [lengthBytes-upInt-32-lower-bound]:
-      lengthBytes(X) <=Int notMaxUInt5 &Int lengthBytes(X) +Int 31 => true
+      lengthBytes(X) <=Int notMaxUInt5 &Int ( lengthBytes(X) +Int 31 ) => true
       [simplification, smt-lemma]
 
     rule [lengthBytes-upInt-32-upper-bound]:
-      lengthBytes(X) +Int 32 >Int notMaxUInt5 &Int lengthBytes(X) +Int 31 => true
+      lengthBytes(X) +Int 32 >Int notMaxUInt5 &Int ( lengthBytes(X) +Int 31 ) => true
       [simplification, smt-lemma]
 
 endmodule
