@@ -17,7 +17,7 @@ module INFINITE-GAS
     imports GAS
     imports EVM
 
-    syntax Gas ::= #gas(Int)
+    syntax Gas ::= #gas(Int) [klabel(infGas), symbol, smtlib(infGas)]
 
     rule #gas(G) +Gas G'       => #gas(G +Int G')
     rule #gas(G) -Gas G'       => #gas(G -Int G')
