@@ -15,7 +15,7 @@ endmodule
 module FUNCTIONAL-SPEC
     imports FUNCTIONAL-SPEC-SYNTAX
 
-    claim <k> runLemma (#range (B [ 128 := #ecrec ( #buf ( 32 , HASH ) , #buf ( 32 , SIGV ) , #buf ( 32 , SIGR ) , #buf ( 32 , SIGS ) ) ] [ 160 := #buf ( 32 , HASH ) ] [ 192 := #buf ( 32 , SIGV ) ] [ 224 := #buf ( 32 , SIGR ) ] [ 256 := #buf ( 32 , SIGS ) ] [ 160 := #padToWidth ( 32 , #asByteStack ( #asWord ( #ecrec ( #buf ( 32 , HASH ) , #buf ( 32 , SIGV ) , #buf ( 32 , SIGR ) , #buf ( 32 , SIGS ) ) ) ) ) ] , 160 , 32 )) => doneLemma (#buf(32, RECOVERED)) ... </k>
+    claim <k> runLemma (#range (_B [ 128 := #ecrec ( #buf ( 32 , HASH ) , #buf ( 32 , SIGV ) , #buf ( 32 , SIGR ) , #buf ( 32 , SIGS ) ) ] [ 160 := #buf ( 32 , HASH ) ] [ 192 := #buf ( 32 , SIGV ) ] [ 224 := #buf ( 32 , SIGR ) ] [ 256 := #buf ( 32 , SIGS ) ] [ 160 := #padToWidth ( 32 , #asByteStack ( #asWord ( #ecrec ( #buf ( 32 , HASH ) , #buf ( 32 , SIGV ) , #buf ( 32 , SIGR ) , #buf ( 32 , SIGS ) ) ) ) ) ] , 160 , 32 )) => doneLemma (#buf(32, RECOVERED)) ... </k>
       requires notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
        andBool RECOVERED ==Int #asWord(#ecrec(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS)))
        andBool #rangeUInt(256, HASH)
@@ -93,7 +93,7 @@ module FUNCTIONAL-SPEC
        andBool #rangeBytes(32, SIGS)
        andBool notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
 
-    claim <k> runLemma(#range( .Bytes, [ 0 := #bufStrict(0, 0) ], 0, 1))
+    claim <k> runLemma(#range( .Bytes [ 0 := #bufStrict(0, 0) ], 0, 1))
            => doneLemma(#buf(1, 0)) ... </k>
 
     claim <k> runLemma(#range( .Bytes [ 0 := #bufStrict(2, 0) ], 0, 1))
@@ -105,13 +105,13 @@ module FUNCTIONAL-SPEC
     claim <k> runLemma(#range( .Bytes [ 0 := #bufStrict(5, 0) ], 0, 3))
            => doneLemma(#buf(3, 0)) ... </k>
 
-    claim <k> runLemma(#range( .Bytes [ 0 := #bufStrict(100, 0) ], [ 10 := #bufStrict(N, 0) ], 10, 5 )) =>
+    claim <k> runLemma(#range( .Bytes [ 0 := #bufStrict(100, 0) ] [ 10 := #bufStrict(N, 0) ], 10, 5 )) =>
               doneLemma(#range(#bufStrict(N, 0), 10 -Int 10, minInt(5, lengthBytes(#bufStrict(N, 0)) -Int (10 -Int 10)) ) +Bytes #range( .Bytes [ 0 := #bufStrict(100, 0) ], 10 +Int lengthBytes(#bufStrict(N, 0)), 5 -Int minInt(5, lengthBytes(#bufStrict(N, 0)) -Int (10 -Int 10))))
          </k>
       requires N >=Int 0
        andBool N <=Int 5
 
-    claim <k> runLemma(#range( .Bytes [0 := #bufStrict(100, 0) ], [ 10 := #bufStrict(N, 0) ], 13, 5 )) =>
+    claim <k> runLemma(#range( .Bytes [0 := #bufStrict(100, 0) ] [ 10 := #bufStrict(N, 0) ], 13, 5 )) =>
               doneLemma(#range(#bufStrict(N, 0), 13 -Int 10, minInt(5, lengthBytes(#bufStrict(N, 0)) -Int (13 -Int 10)) ) +Bytes #range( .Bytes [ 0 := #bufStrict(100, 0) ], 10 +Int lengthBytes(#bufStrict(N, 0)), 5 -Int minInt(5, lengthBytes(#bufStrict(N, 0)) -Int (13 -Int 10))))
           </k>
       requires N >=Int 5
