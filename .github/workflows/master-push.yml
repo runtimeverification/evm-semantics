@@ -99,7 +99,7 @@ jobs:
           docker exec -u user ${container_name} /bin/bash -c "sudo chown user:user -R /home/user/foundry"
           docker exec -u user ${container_name} /bin/bash -c "forge build --root foundry"
           docker exec -u user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root foundry --verbose"
-          docker exec -u user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root foundry --verbose --test Examples.test_assert_bool_passing"
+          docker exec -u user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root foundry --verbose --test AssertTest.test_assert_true_branch"
           docker stop --time=0 ${container_name}
 
   dockerhub-image:
