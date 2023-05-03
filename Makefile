@@ -503,7 +503,7 @@ foundry_out := $(foundry_dir)/out
 
 test-foundry-%: KEVM_OPTS += --pyk --verbose
 test-foundry-%: KEVM := $(POETRY_RUN) kevm
-test-foundry-kompile: tests/foundry/foundry.k.check tests/foundry/foundry-helper-lemmas.k.check
+test-foundry-kompile: tests/foundry/foundry.k.check
 test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
 test-foundry-bmc-prove: tests/foundry/out/kompiled/foundry.k.bmc-prove
 test-foundry-list: tests/foundry/foundry-list.check
@@ -527,12 +527,8 @@ tests/foundry/foundry-list.check: tests/foundry/foundry-list.out
 tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
 	$(CHECK) $@.stripped $@.expected
-tests/foundry/foundry-helper-lemmas.k.check: tests/foundry/out/kompiled-test/foundry.k
-	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
-	$(CHECK) $@.stripped $@.expected
 
 tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
-tests/foundry/out/kompiled-test/foundry.k: tests/foundry/out/kompiled-test/timestamp
 
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
