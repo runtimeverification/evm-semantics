@@ -14,6 +14,7 @@
 │    statusCode: STATUSCODE:StatusCode
 │    src: tests/foundry/test/Simple.t.sol:18:19
 ┃
+┃ (branch)
 ┣━━┓ constraint: { true #Equals VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int }
 ┃  │
 ┃  ├─ OMITTED HASH (expanded)
