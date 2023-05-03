@@ -391,7 +391,7 @@ Accounts
 -   `#addr` turns an Ethereum word into the corresponding Ethereum address (160 LSB).
 
 ```k
-    syntax Int ::= #addr ( Int ) [function]
+    syntax Int ::= #addr ( Int ) [function, total]
  // ---------------------------------------
     rule #addr(W) => W %Word pow160
 ```
