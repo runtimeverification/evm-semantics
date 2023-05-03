@@ -306,13 +306,9 @@ class Contract:
     def sentences(self) -> list[KSentence]:
         return [self.subsort, self.production, self.macro_bin_runtime] + self.field_sentences + self.method_sentences
 
-    def method_by_name(self, name: str) -> Contract.Method | None:
-        methods = [method for method in self.methods if method.name == 'setUp']
-        if len(methods) > 1:
-            raise ValueError(f'Found multiple methods with name {name}, expected at most one')
-        if not methods:
-            return None
-        return methods[0]
+    @property
+    def method_by_name(self) -> dict[str, Contract.Method]:
+        return {method.name: method for method in self.methods}
 
 
 def solc_compile(contract_file: Path) -> dict[str, Any]:

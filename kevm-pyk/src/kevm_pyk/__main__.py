@@ -30,7 +30,7 @@ from .foundry import (
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_ag_proof_for_spec, parallel_kcfg_explore
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, parallel_kcfg_explore
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -304,7 +304,7 @@ def exec_show_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
-    ag_proof = get_ag_proof_for_spec(
+    apr_proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
@@ -317,8 +317,8 @@ def exec_show_kcfg(
 
     kcfg_show = KCFGShow(kevm)
     res_lines = kcfg_show.show(
-        ag_proof.id,
-        ag_proof.kcfg,
+        apr_proof.id,
+        apr_proof.kcfg,
         nodes=nodes,
         node_deltas=node_deltas,
         to_module=to_module,
@@ -340,7 +340,7 @@ def exec_view_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
-    ag_proof = get_ag_proof_for_spec(
+    apr_proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
@@ -351,7 +351,7 @@ def exec_view_kcfg(
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    viewer = KCFGViewer(ag_proof.kcfg, kevm, node_printer=kevm.short_info)
+    viewer = KCFGViewer(apr_proof.kcfg, kevm, node_printer=kevm.short_info)
     viewer.run()
 
 
@@ -472,11 +472,11 @@ def exec_run(
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
-    ag_proofs_dir = foundry.out / 'ag_proofs'
+    apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
 
-    ag_proof = APRProof.read_proof(proof_digest, ag_proofs_dir)
+    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
@@ -484,7 +484,7 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     def _custom_view(elem: KCFGElem) -> Iterable[str]:
         return foundry.custom_view(contract_name, elem)
 
-    viewer = KCFGViewer(ag_proof.kcfg, foundry.kevm, node_printer=_short_info, custom_view=_custom_view)
+    viewer = KCFGViewer(apr_proof.kcfg, foundry.kevm, node_printer=_short_info, custom_view=_custom_view)
     viewer.run()
 
 
