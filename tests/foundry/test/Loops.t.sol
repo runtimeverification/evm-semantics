@@ -48,7 +48,12 @@ contract LoopsTest is Test {
         assertEq(expected, actual);
     }
 
-    function sum_N(uint n) pure public returns (uint) {
+    function sum_N(uint n) public returns (uint) {
+        // Amount of gas left at beginning of loop: 9223372036854772642
+        // Amount of gas consumed per iteration: 178
+        // Number of iterations: n
+        // 9223372036854772642 // 178 = 51816696836262767
+        vm.assume(n <= 51816696836262767);
         uint s = 0;
         while (0 < n) {
             s = s + n;
