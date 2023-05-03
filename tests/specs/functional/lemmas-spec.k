@@ -121,10 +121,10 @@ module LEMMAS-SPEC
     claim <k> runLemma ( #range(_M, _N, -3) ) => doneLemma ( .Bytes ) ... </k>
 
     // Range outside of previous buffer write
-    claim <k> runLemma ( #range ( M [ 32 := _BUF:Bytes  ], 20, 4) ) => doneLemma ( #range(M, 20, 4) ) ... </k>
+    claim <k> runLemma ( #range ( M [ 32 := _          ], 20, 4) ) => doneLemma ( #range(M, 20, 4) ) ... </k>
     claim <k> runLemma ( #range ( M [ 32 := BUF:Bytes  ], 48, 4) ) => doneLemma ( #range(M, 48, 4) ) ... </k> requires lengthBytes(BUF) <=Int 12
-    claim <k> runLemma ( #range ( M [ 32 := _BUF:Bytes  ], 31, 1) ) => doneLemma ( #range(M, 31, 1) ) ... </k>
-    claim <k> runLemma ( #range ( M [ 32 :=  ], 33, 1) ) => doneLemma ( #range(M, 33, 1) ) ... </k>
+    claim <k> runLemma ( #range ( M [ 32 := _          ], 31, 1) ) => doneLemma ( #range(M, 31, 1) ) ... </k>
+    claim <k> runLemma ( #range ( M [ 32 := #buf(1, _) ], 33, 1) ) => doneLemma ( #range(M, 33, 1) ) ... </k>
 
     // Range starting before buffer write
     claim <k> runLemma ( #range(M [ 32 := BUF:Bytes ]            , 30 , 8) ) => doneLemma ( #range(M, 30, 2) +Bytes (#range(BUF, 0, 6))                          ) ... </k> requires lengthBytes(BUF) >=Int 6
