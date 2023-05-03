@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 _LOGGER: Final = logging.getLogger(__name__)
 
 
-def get_ag_proof_for_spec(  # noqa: N802
+def get_apr_proof_for_spec(  # noqa: N802
     kprove: KProve,
     spec_file: Path,
     save_directory: Path | None,
@@ -61,8 +61,8 @@ def get_ag_proof_for_spec(  # noqa: N802
         )
     )
 
-    ag_proof = APRProof.read_proof(claim.label, save_directory)
-    return ag_proof
+    apr_proof = APRProof.read_proof(claim.label, save_directory)
+    return apr_proof
 
 
 def parallel_kcfg_explore(
@@ -86,7 +86,7 @@ def parallel_kcfg_explore(
     smt_retry_limit: int | None = None,
 ) -> dict[str, bool]:
     def _call_rpc(packed_args: tuple[str, APRProof, int]) -> bool:
-        _cfgid, _ag_proof, _index = packed_args
+        _cfgid, _apr_proof, _index = packed_args
         terminal_rules = ['EVM.halt']
         cut_point_rules = []
         if break_every_step:
@@ -112,20 +112,20 @@ def parallel_kcfg_explore(
 
         with KCFGExplore(
             kprove,
-            id=_ag_proof.id,
+            id=_apr_proof.id,
             bug_report=bug_report,
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:
             prover: APRBMCProof | APRProver
-            if type(_ag_proof) is APRBMCProof:
+            if type(_apr_proof) is APRBMCProof:
                 assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
                 prover = APRBMCProver(
-                    _ag_proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop
+                    _apr_proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop
                 )
             else:
-                prover = APRProver(_ag_proof, is_terminal=is_terminal, extract_branches=extract_branches)
+                prover = APRProver(_apr_proof, is_terminal=is_terminal, extract_branches=extract_branches)
             try:
                 _cfg = prover.advance_proof(
                     kcfg_explore,
