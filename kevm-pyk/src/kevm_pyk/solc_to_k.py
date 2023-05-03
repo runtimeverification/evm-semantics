@@ -42,8 +42,9 @@ class Contract:
         contract_name: str
         payable: bool
         signature: str
+        ast: dict | None
 
-        def __init__(self, msig: str, id: int, abi: dict, contract_name: str, sort: KSort) -> None:
+        def __init__(self, msig: str, id: int, abi: dict, ast: dict | None, contract_name: str, sort: KSort) -> None:
             self.signature = msig
             self.name = abi['name']
             self.id = id
@@ -53,6 +54,7 @@ class Contract:
             self.sort = sort
             # TODO: Check that we're handling all state mutability cases
             self.payable = abi['stateMutability'] == 'payable'
+            self.ast = ast
 
         @property
         def klabel(self) -> KLabel:
@@ -62,6 +64,12 @@ class Contract:
         @property
         def selector_alias_rule(self) -> KRule:
             return KRule(KRewrite(KEVM.abi_selector(self.signature), intToken(self.id)))
+
+        @cached_property
+        def digest(self) -> str:
+            if self.ast is None:
+                raise ValueError(f'Method source  code for {self.name} not in contract, so a digest cannot be generated.')
+            return hash_str(json.dumps(self.ast, sort_keys=True))
 
         @property
         def production(self) -> KProduction:
@@ -144,13 +152,26 @@ class Contract:
         self.bytecode = deployed_bytecode['object'].replace('0x', '')
         self.raw_sourcemap = deployed_bytecode['sourceMap'] if 'sourceMap' in deployed_bytecode else None
 
+        def method_ast_from_contract_ast(contract_ast: dict, method_identifier: str) -> dict | None:
+            for node in contract_ast['nodes']:
+                if node['nodeType'] == 'ContractDefinition':
+                    for node1 in node['nodes']:
+                        if not 'functionSelector' in node1:
+                            _LOGGER.warning(f'no functionSelector: {node1}')
+                        if node1['nodeType'] == 'FunctionDefinition' and 'functionSelector' in node1 and node1['functionSelector'] == method_identifier:
+                            return node1
+            return None
+
         _methods = []
         for method in contract_json['abi']:
             if method['type'] != 'function':
                 continue
+            _LOGGER.info(f'Current method: {method["name"]}')
             msig = method_sig_from_abi(method)
-            mid = int(evm['methodIdentifiers'][msig], 16)
-            _m = Contract.Method(msig, mid, method, contract_name, self.sort_method)
+            method_selector: str = str(evm['methodIdentifiers'][msig])
+            method_ast = method_ast_from_contract_ast(evm['ast'], method_selector)
+            mid = int(method_selector, 16)
+            _m = Contract.Method(msig, mid, method, method_ast, contract_name, self.sort_method)
             _methods.append(_m)
 
         self.methods = tuple(sorted(_methods, key=(lambda method: method.signature)))

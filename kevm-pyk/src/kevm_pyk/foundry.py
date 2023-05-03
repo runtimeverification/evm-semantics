@@ -695,6 +695,7 @@ def _method_to_apr_proof(
         if method_name != 'setUp' and 'setUp' in contract.method_by_name:
             setup_digest = f'{contract_name}.setUp:{contract.digest}'
             _LOGGER.info(f'Using setUp method for test: {test}')
+            _LOGGER.info(f'method.digest: {method.digest}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
         kcfg = _method_to_cfg(empty_config, contract, method, save_directory, init_state=setup_digest)
