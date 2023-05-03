@@ -156,10 +156,16 @@ module BYTES-SIMPLIFICATION [symbolic]
        andBool #rangeUInt (8 *Int (32 -Int W), X)
       [simplification, concrete(W)]
 
-    rule [range-buf-zero-2]:
+    rule [range-buf-zero-2-symb]:
       #range(#buf(W:Int, 0), S1:Int, W1:Int) => #buf(W1, 0)
-      requires 0 <=Int W andBool 0 <=Int S1 andBool 0 <=Int W
+      requires 0 <=Int W andBool 0 <=Int S1 andBool 0 <=Int W1
       [simplification]
+
+    rule [range-buf-zero-2-conc]:
+      #range(B, S1:Int, W1:Int) => #buf(W1, 0)
+      requires 0 <=Int S1 andBool 0 <=Int W1
+       andBool B ==K #buf(lengthBytes(B), 0)
+      [concrete(B), simplification]
 
     rule [range-writeRange-before]:
       #range(#writeRange(B1:Bytes, S1:Int, B2:Bytes), S2:Int, W2:Int) =>
