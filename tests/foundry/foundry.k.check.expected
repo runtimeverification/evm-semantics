@@ -2207,13 +2207,22 @@ module REVERTERWITHRETURN-BIN-RUNTIME
     
     syntax Bytes ::= ReverterWithReturnContract "." ReverterWithReturnMethod [function(), symbol(), klabel(method_ReverterWithReturn)]
     
-    syntax ReverterWithReturnMethod ::= "revertUnless" "(" Int ":" "bool" ")" [symbol(), klabel(method_ReverterWithReturn_revertUnless_bool)]
+    syntax ReverterWithReturnMethod ::= "returnBytesUnless" "(" Int ":" "bool" ")" [symbol(), klabel(method_ReverterWithReturn_returnBytesUnless_bool)]
     
-    rule  ( ReverterWithReturn . revertUnless ( V0_returnInstead : bool ) => #abiCallData ( "revertUnless" , #bool ( V0_returnInstead ) , .TypedArgs ) )
-       ensures #rangeBool ( V0_returnInstead )
+    syntax ReverterWithReturnMethod ::= "returnTupleUnless" "(" Int ":" "bool" ")" [symbol(), klabel(method_ReverterWithReturn_returnTupleUnless_bool)]
+    
+    rule  ( ReverterWithReturn . returnBytesUnless ( V0_revertInstead : bool ) => #abiCallData ( "returnBytesUnless" , #bool ( V0_revertInstead ) , .TypedArgs ) )
+       ensures #rangeBool ( V0_revertInstead )
       
     
-    rule  ( selector ( "revertUnless(bool)" ) => 260261997 )
+    rule  ( ReverterWithReturn . returnTupleUnless ( V0_revertInstead : bool ) => #abiCallData ( "returnTupleUnless" , #bool ( V0_revertInstead ) , .TypedArgs ) )
+       ensures #rangeBool ( V0_revertInstead )
+      
+    
+    rule  ( selector ( "returnBytesUnless(bool)" ) => 3511402276 )
+      
+    
+    rule  ( selector ( "returnTupleUnless(bool)" ) => 3931056962 )
       
 
 endmodule
