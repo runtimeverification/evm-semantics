@@ -85,11 +85,11 @@ module LEMMAS-SPEC
     claim <k> runLemma ( M:Map [ I1 <- 1 ] [ I2 <- 2 ] ) => doneLemma ( M [ I1 <- 2 ]             ) ... </k> requires I1 ==Int I2
     claim <k> runLemma ( M:Map [ I1 <- 1 ] [ I2 <- 2 ] ) => doneLemma ( M [ I2 <- 2 ]             ) ... </k> requires I1 ==Int I2
 
-    claim <k> runLemma( #writeRange( #writeRange( M:Bytes, 32, BA1 ), 32, BA2                                                                  )) => doneLemma(#writeRange(M:Bytes, 32, BA2                                                                  )) ... </k> requires lengthBytes(BA1) <=Int lengthBytes(BA2)
-    claim <k> runLemma( #writeRange( #writeRange( M:Bytes, 32, BA1 ), 32, #padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER))) )) => doneLemma(#writeRange(M:Bytes, 32, #padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER))) )) ... </k> requires lengthBytes(BA1) ==Int 32 andBool #rangeUInt(256, OWNER)
+    claim <k> runLemma( M:Bytes [ 32 := BA1 ] [ 32 := BA2 ]                                                                  ) => doneLemma(M [ 32 := BA2 ]                                                                ) ... </k> requires lengthBytes(BA1) <=Int lengthBytes(BA2)
+    claim <k> runLemma( M:Bytes [ 32 := BA1 ] [ 32 := #padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER))) ] ) => doneLemma(M [ 32 := #padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER))) ] ) ... </k> requires lengthBytes(BA1) ==Int 32 andBool #rangeUInt(256, OWNER)
 
-    // #writeRange past the end of the buffer
-    claim [write-past-end]: <k> runLemma  ( #writeRange ( #writeRange ( #writeRange ( #writeRange ( #buf(160, A) , 160 , #buf(32, B) ) , 192 , #buf(32, C) ) , 224 , #buf(32, D) ) , 256 , #buf(32, E) ) )
+    // Memory write past the end of the buffer
+    claim [write-past-end]: <k> runLemma  ( #buf(160, A) [ 160 := #buf(32, B) ] [ 192 := #buf(32, C) ] [ 224 := #buf(32, D) ] [ 256 := #buf(32, E) ] )
                              => doneLemma ( #buf(160, A) +Bytes #buf(32, B) +Bytes #buf(32, C) +Bytes #buf(32, D) +Bytes #buf(32, E) ) ... </k>
 
  // #lookup simplifications
@@ -121,31 +121,31 @@ module LEMMAS-SPEC
     claim <k> runLemma ( #range(_M, _N, -3) ) => doneLemma ( .Bytes ) ... </k>
 
     // Range outside of previous buffer write
-    claim <k> runLemma ( #range(#writeRange(M, 32, _BUF:Bytes ), 20, 4) ) => doneLemma ( #range(M, 20, 4) ) ... </k>
-    claim <k> runLemma ( #range(#writeRange(M, 32,  BUF:Bytes ), 48, 4) ) => doneLemma ( #range(M, 48, 4) ) ... </k> requires lengthBytes(BUF) <=Int 12
-    claim <k> runLemma ( #range(#writeRange(M, 32, _BUF:Bytes ), 31, 1) ) => doneLemma ( #range(M, 31, 1) ) ... </k>
-    claim <k> runLemma ( #range(#writeRange(M, 32,  #buf(1, _BUF) ), 33, 1) ) => doneLemma ( #range(M, 33, 1) ) ... </k>
+    claim <k> runLemma ( #range ( M [ 32 := _          ], 20, 4) ) => doneLemma ( #range(M, 20, 4) ) ... </k>
+    claim <k> runLemma ( #range ( M [ 32 := BUF:Bytes  ], 48, 4) ) => doneLemma ( #range(M, 48, 4) ) ... </k> requires lengthBytes(BUF) <=Int 12
+    claim <k> runLemma ( #range ( M [ 32 := _          ], 31, 1) ) => doneLemma ( #range(M, 31, 1) ) ... </k>
+    claim <k> runLemma ( #range ( M [ 32 := #buf(1, _) ], 33, 1) ) => doneLemma ( #range(M, 33, 1) ) ... </k>
 
-    // Range starting before buf#writeRange(f, wr,
-    claim <k> runLemma ( #range(#writeRange(M, 32, BUF:Bytes )            , 30 , 8) ) => doneLemma ( #range(M, 30, 2) +Bytes (#range(BUF, 0, 6))                          ) ... </k> requires lengthBytes(BUF) >=Int 6
-    claim <k> runLemma ( #range(#writeRange(M, 32, (0 : 1 : 2 : .Bytes) ) , 30 , 8) ) => doneLemma ( #range(M, 30, 2) +Bytes (0 : 1 : 2 : .Bytes) +Bytes #range(M, 35, 3) ) ... </k>
-    claim <k> runLemma ( #range(#writeRange(M, 32, #buf(2, BUF) )         , 31 , 2) ) => doneLemma ( #range(M, 31, 1) +Bytes (#range(#buf(2, BUF), 0, 1) )                ) ... </k>
-    claim <k> runLemma ( #range(#writeRange(M, 32, #buf(1, BUF) )         , 31 , 2) ) => doneLemma ( #range(M, 31, 1) +Bytes #buf(1, BUF)                                 ) ... </k>
-    claim <k> runLemma ( #range(#writeRange(M, 32, #buf(1, BUF) )         , 31 , 3) ) => doneLemma ( #range(M, 31, 1) +Bytes #buf(1, BUF) +Bytes #range(M, 33, 1)         ) ... </k>
+    // Range starting before buffer write
+    claim <k> runLemma ( #range(M [ 32 := BUF:Bytes ]            , 30 , 8) ) => doneLemma ( #range(M, 30, 2) +Bytes (#range(BUF, 0, 6))                          ) ... </k> requires lengthBytes(BUF) >=Int 6
+    claim <k> runLemma ( #range(M [ 32 := (0 : 1 : 2 : .Bytes) ] , 30 , 8) ) => doneLemma ( #range(M, 30, 2) +Bytes (0 : 1 : 2 : .Bytes) +Bytes #range(M, 35, 3) ) ... </k>
+    claim <k> runLemma ( #range(M [ 32 := #buf(2, BUF) ]         , 31 , 2) ) => doneLemma ( #range(M, 31, 1) +Bytes (#range(#buf(2, BUF), 0, 1) )                ) ... </k>
+    claim <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ]         , 31 , 2) ) => doneLemma ( #range(M, 31, 1) +Bytes #buf(1, BUF)                                 ) ... </k>
+    claim <k> runLemma ( #range(M [ 32 := #buf(1, BUF) ]         , 31 , 3) ) => doneLemma ( #range(M, 31, 1) +Bytes #buf(1, BUF) +Bytes #range(M, 33, 1)         ) ... </k>
 
     // Range starting at same point as buffer write
-    claim <k> runLemma ( #range(#writeRange(_M, 32, BUF:Bytes )            , 32 , 7) ) => doneLemma( #range( BUF, 0, 7 )                          ) ... </k> requires lengthBytes(BUF) >=Int 7
-    claim <k> runLemma ( #range(#writeRange( M, 32, (0 : 1 : 2 : .Bytes) ) , 32 , 7) ) => doneLemma( (0 : 1 : 2 : .Bytes) +Bytes #range(M, 35, 4) ) ... </k>
-    claim <k> runLemma ( #range(#writeRange(_M, 32, #buf(2, BUF) )         , 32 , 1) ) => doneLemma( #range(#buf(2, BUF), 0, 1 )                  ) ... </k>
-    claim <k> runLemma ( #range(#writeRange(_M, 32, #buf(1, BUF) )         , 32 , 1) ) => doneLemma( #buf(1, BUF)                                 ) ... </k>
-    claim <k> runLemma ( #range(#writeRange( M, 32, #buf(1, BUF) )         , 32 , 2) ) => doneLemma( #buf(1, BUF) +Bytes #range(M, 33, 1)         ) ... </k>
+    claim <k> runLemma ( #range(_M [ 32 := BUF:Bytes ]            , 32 , 7) ) => doneLemma( #range( BUF, 0, 7 )                          ) ... </k> requires lengthBytes(BUF) >=Int 7
+    claim <k> runLemma ( #range( M [ 32 := (0 : 1 : 2 : .Bytes) ] , 32 , 7) ) => doneLemma( (0 : 1 : 2 : .Bytes) +Bytes #range(M, 35, 4) ) ... </k>
+    claim <k> runLemma ( #range(_M [ 32 := #buf(2, BUF) ]         , 32 , 1) ) => doneLemma( #range(#buf(2, BUF), 0, 1 )                  ) ... </k>
+    claim <k> runLemma ( #range(_M [ 32 := #buf(1, BUF) ]         , 32 , 1) ) => doneLemma( #buf(1, BUF)                                 ) ... </k>
+    claim <k> runLemma ( #range (M [ 32 := #buf(1, BUF) ]         , 32 , 2) ) => doneLemma( #buf(1, BUF) +Bytes #range(M, 33, 1)         ) ... </k>
 
     // Range starting in the middle of the buffer write
-    claim <k> runLemma ( #range(#writeRange(_M, 32, (0 : 1 : 2 : 3 : 4 : .Bytes) ) , 35 , 2) ) => doneLemma( (3 : 4 : .Bytes)                          ) ... </k>
-    claim <k> runLemma ( #range(#writeRange( M, 32, (0 : 1 : 2 : 3 : 4 : .Bytes) ) , 35 , 8) ) => doneLemma( (3 : 4 : .Bytes) +Bytes #range(M, 37, 6)  ) ... </k>
-    claim <k> runLemma ( #range(#writeRange(_M, 32, (0 : 1 : 2 : .Bytes)         ) , 33 , 1) ) => doneLemma( (1 : .Bytes)                              ) ... </k>
-    claim <k> runLemma ( #range(#writeRange(_M, 32, (0 : 1 : 2 : .Bytes)         ) , 33 , 2) ) => doneLemma( (1 : 2 : .Bytes)                          ) ... </k>
-    claim <k> runLemma ( #range(#writeRange( M, 32, (0 : 1 : 2 : .Bytes)         ) , 33 , 3) ) => doneLemma( (1 : 2 :  .Bytes) +Bytes #range(M, 35, 1) ) ... </k>
+    claim <k> runLemma ( #range(_M [ 32 := (0 : 1 : 2 : 3 : 4 : .Bytes) ] , 35 , 2) ) => doneLemma( (3 : 4 : .Bytes)                          ) ... </k>
+    claim <k> runLemma ( #range( M [ 32 := (0 : 1 : 2 : 3 : 4 : .Bytes) ] , 35 , 8) ) => doneLemma( (3 : 4 : .Bytes) +Bytes #range(M, 37, 6)  ) ... </k>
+    claim <k> runLemma ( #range(_M [ 32 := (0 : 1 : 2 : .Bytes)         ] , 33 , 1) ) => doneLemma( (1 : .Bytes)                              ) ... </k>
+    claim <k> runLemma ( #range(_M [ 32 := (0 : 1 : 2 : .Bytes)         ] , 33 , 2) ) => doneLemma( (1 : 2 : .Bytes)                          ) ... </k>
+    claim <k> runLemma ( #range( M [ 32 := (0 : 1 : 2 : .Bytes)         ] , 33 , 3) ) => doneLemma( (1 : 2 :  .Bytes) +Bytes #range(M, 35, 1) ) ... </k>
 
     claim [nestedRange]: <k> runLemma ( #range ( #range ( BA:Bytes , 4 , 64 ) , 32 , 32 ) ) => doneLemma ( #range ( BA , 36 , 32 ) ) ... </k>
 
