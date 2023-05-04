@@ -81,7 +81,7 @@ jobs:
           set -euxo pipefail
           version=$(cat package/version)
           k_version=$(cat deps/k_release)
-          tag_name="kevm-ci-test:${version}"
+          tag_name="kevm:ubuntu-jammy-${version}"
           container_name="kevm-ci-test-${GITHUB_SHA}"
           docker build . --tag ${tag_name} --file package/docker/Dockerfile \
             --build-arg K_VERSION=${k_version}                              \
@@ -100,7 +100,7 @@ jobs:
           set -euxo pipefail
           version=$(cat package/version)
           k_version=$(cat deps/k_release)
-          tag_name="kevm-ci-test:${version}"
+          tag_name="kevm:ubuntu-jammy-${version}"
           container_name="kevm-ci-test-${GITHUB_SHA}"
           docker cp ./tests/foundry ${container_name}:/home/user/foundry
           docker exec -u user ${container_name} /bin/bash -c "sudo chown user:user -R /home/user/foundry"
@@ -117,9 +117,9 @@ jobs:
           set -euxo pipefail
           version=$(cat package/version)
           k_version=$(cat deps/k_release)
-          tag_name="kevm-ci-test:${version}"
+          tag_name="kevm:ubuntu-jammy-${version}"
           docker login --username rvdockerhub --password ${DOCKERHUB_PASSWORD}
-          docker image push runtimeverificationinc/kevm:ubuntu-jammy-${version}
+          docker image push runtimeverificationinc/${tag_name}
 
   make-release:
     name: 'Cut Release'
