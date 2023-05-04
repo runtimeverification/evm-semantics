@@ -95,7 +95,7 @@ module VERIFICATION
   // Simplification
   // ########################
 
-    rule #range( #writeRange(_M, N, #buf(WIDTH, DATA) ), N, WIDTH) => #buf(WIDTH, DATA) [simplification]
+    rule #range( _M [ N := #buf(WIDTH, DATA) ], N, WIDTH ) => #buf(WIDTH, DATA) [simplification]
 
     rule #asWord(WS) &Int maxUInt256 => #asWord(WS) [simplification]
 

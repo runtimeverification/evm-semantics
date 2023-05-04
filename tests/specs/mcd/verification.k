@@ -151,9 +151,9 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
   // Map
   // ########################
 
-    rule #range(M:Bytes [ K <- V ]                            , START, WIDTH) => #range(#writeRange(M, K, (V : .Bytes) ), START, WIDTH)  requires K +Int 1                 ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START [concrete(K    , V     ), simplification]
-    rule #range(#writeRange(M:Bytes [ K <- V ], K', VS':Bytes), START, WIDTH) => #range(#writeRange(M, K, (V : VS')    ), START, WIDTH)  requires K' +Int lengthBytes(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START
-                                                                                                                                          andBool K +Int 1                 ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
+    rule #range(M:Bytes [ K <- V ]                    , START, WIDTH) => #range(M [ K := V : .Bytes ], START, WIDTH)  requires K +Int 1                 ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START [concrete(K    , V     ), simplification]
+    rule #range(M:Bytes [ K <- V ] [ K' := VS':Bytes ], START, WIDTH) => #range(M [ K := V : VS'    ], START, WIDTH)  requires K' +Int lengthBytes(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START
+                                                                                                                       andBool K +Int 1                 ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
     rule { (M:Map [K <- V1]) #Equals (M [K <- V2]) } => { V1 #Equals V2 }
          [simplification]
 
@@ -312,11 +312,11 @@ module LEMMAS-MCD-COMMON
    // ########################
 
     rule M:Bytes [ K <- V ]            [ K' <- V' ] => M [ K' <- V' ] [ K <- V ]             requires K' <Int K                        [simplification]
-    rule #writeRange(M, K, BUF:Bytes ) [ K' <- V' ] => #writeRange(M [ K' <- V' ], K, BUF )  requires K' <Int K
+    rule M [ K := BUF:Bytes ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ]  requires K' <Int K
                                                                                                orBool K +Int lengthBytes(BUF) <=Int K' [simplification]
     rule M [ K <- V ] => M requires #lookup(M, K) ==Int V [simplification]
 
-    rule #writeRange(#writeRange(M, K, BUF:Bytes), K', BUF':Bytes) => #writeRange( #writeRange(M , K , (#range(BUF , 0 , K' -Int K )) ), K' , BUF' )
+    rule M [ K := BUF:Bytes ] [ K' := BUF':Bytes ] => M [ K := (#range(BUF , 0 , K' -Int K )) ] [ K' := BUF' ]
        requires K <Int K'
         andBool K' <Int K +Int lengthBytes(BUF)
         andBool K +Int lengthBytes(BUF) <Int K' +Int lengthBytes(BUF')
@@ -324,7 +324,7 @@ module LEMMAS-MCD-COMMON
 
     rule M:Map [ K1 <- _ ] [ K2 <- V2 ] [ K1 <- V1' ] => M [ K1 <- V1' ] [ K2 <- V2 ] requires K1 =/=Int K2 [simplification]
 
-    rule #writeRange( #writeRange(M, K1, (BUF11 +Bytes BUF12) ), K2, BUF2 ) => #writeRange(#writeRange(M, K1 +Int lengthBytes(BUF11), BUF12), K2, BUF2 )
+    rule M [ K1 := (BUF11 +Bytes BUF12) ] [ K2 := BUF2 ] => M [ K1 +Int lengthBytes(BUF11) := BUF12 ] [ K2 := BUF2 ]
        requires K2 <=Int K1
         andBool K1 +Int lengthBytes(BUF11) <=Int K2 +Int lengthBytes(BUF2)
        [simplification]
