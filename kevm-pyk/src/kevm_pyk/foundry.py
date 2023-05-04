@@ -109,11 +109,19 @@ class Foundry:
 
     def up_to_date(self) -> bool:
         digest_file = self.out / 'digest'
-        return digest_file.exists() and digest_file.read_text() == self.digest
+        if not digest_file.exists():
+            return False
+        digest_dict = json.loads(digest_file.read_text())
+        return digest_dict['foundry'] == self.digest
 
     def update_digest(self) -> None:
         digest_file = self.out / 'digest'
-        digest_file.write_text(self.digest)
+        digest_dict = {}
+        if digest_file.exists():
+            digest_dict = json.loads(digest_file.read_text())
+        digest_dict['foundry'] = self.digest
+        digest_file.write_text(json.dumps(digest_dict))
+
         _LOGGER.info(f'Updated Foundry digest file: {digest_file}')
 
     @cached_property
@@ -391,8 +399,14 @@ def foundry_prove(
     setup_methods: dict[str, str] = {}
     contracts = unique({test.split('.')[0] for test in tests})
     for contract_name in contracts:
-        if 'setUp' in foundry.contracts[contract_name].method_by_name:
-            setup_methods[contract_name] = f'{contract_name}.setUp'
+        contract = foundry.contracts[contract_name]
+        if 'setUp' in contract.method_by_name:
+            setup_method = contract.method_by_name['setUp']
+            if not setup_method.up_to_date(foundry.out / 'digest'):
+                setup_methods[contract_name] = f'{setup_method.contract_name}.{setup_method.name}'
+                _LOGGER.info(f'setUp method {setup_method.contract_name}.{setup_method.name} is out of date')
+            else:
+                _LOGGER.info(f'setUp method {setup_method.contract_name}.{setup_method.name} skipped because it is up to date')
 
     def _init_apr_proof(_init_problem: tuple[str, str]) -> APRProof | APRBMCProof:
         contract_name, method_name = _init_problem
@@ -443,6 +457,14 @@ def foundry_prove(
     failed = [setup_cfg for setup_cfg, passed in results.items() if not passed]
     if failed:
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
+    contracts = unique({test.split('.')[0] for test in tests})
+    _LOGGER.info(f'contracts: {contracts}')
+    for contract_name in contracts:
+        _LOGGER.info(f'contract: {contract_name}')
+        contract = foundry.contracts[contract_name]
+        if 'setUp' in contract.method_by_name:
+            setup_method = contract.method_by_name['setUp']
+            setup_method.update_digest(foundry.out / 'digest')
 
     _LOGGER.info(f'Running test functions in parallel: {tests}')
     return run_cfg_group(tests)

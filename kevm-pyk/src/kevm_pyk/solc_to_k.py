@@ -65,6 +65,28 @@ class Contract:
         def selector_alias_rule(self) -> KRule:
             return KRule(KRewrite(KEVM.abi_selector(self.signature), intToken(self.id)))
 
+        def up_to_date(self, digest_file: Path) -> bool:
+            if not digest_file.exists():
+                return False
+            digest_dict = json.loads(digest_file.read_text())
+            if 'methods' not in digest_dict:
+                digest_dict['methods'] = {}
+            digest_file.write_text(json.dumps(digest_dict))
+            if self.signature not in digest_dict['methods']:
+                return False
+            return digest_dict['methods'][self.signature] == self.digest
+
+        def update_digest(self, digest_file: Path) -> None:
+            digest_dict = {}
+            if digest_file.exists():
+                digest_dict = json.loads(digest_file.read_text())
+            if 'methods' not in digest_dict:
+                digest_dict['methods'] = {}
+            digest_dict['methods'][self.signature] = self.digest
+            digest_file.write_text(json.dumps(digest_dict))
+
+            _LOGGER.info(f'Updated method {self.signature} in digest file: {digest_file}')
+
         @cached_property
         def digest(self) -> str:
             if self.ast is None:
@@ -156,9 +178,11 @@ class Contract:
             for node in contract_ast['nodes']:
                 if node['nodeType'] == 'ContractDefinition':
                     for node1 in node['nodes']:
+                        if not node1['nodeType'] == 'FunctionDefinition':
+                            continue
                         if not 'functionSelector' in node1:
-                            _LOGGER.warning(f'no functionSelector: {node1}')
-                        if node1['nodeType'] == 'FunctionDefinition' and 'functionSelector' in node1 and node1['functionSelector'] == method_identifier:
+                            continue
+                        if node1['functionSelector'] == method_identifier:
                             return node1
             return None
 
