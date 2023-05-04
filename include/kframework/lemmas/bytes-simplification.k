@@ -167,23 +167,23 @@ module BYTES-SIMPLIFICATION [symbolic]
        andBool B ==K #buf(lengthBytes(B), 0)
       [concrete(B), simplification]
 
-    rule [range-writeRange-before]:
-      #range(#writeRange(B1:Bytes, S1:Int, B2:Bytes), S2:Int, W2:Int) =>
+    rule [range-memUpdate-before]:
+      #range(B1:Bytes [ S1:Int := B2:Bytes ], S2:Int, W2:Int) =>
         #let W = minInt(W2, S1 -Int S2) #in
-          #range(B1, S2, W) +Bytes #range(#writeRange(B1, S1, B2), S1, W2 -Int W)
+          #range(B1, S2, W) +Bytes #range(B1 [ S1 := B2 ], S1, W2 -Int W)
       requires S2 <Int S1
       [simplification]
 
-    rule [range-writeRange-in-between]:
-      #range(#writeRange(B1:Bytes, S1:Int, B2:Bytes), S2:Int, W2:Int) =>
+    rule [range-memUpdate-in-between]:
+      #range(B1:Bytes [ S1:Int := B2:Bytes ], S2:Int, W2:Int) =>
         #let S = S2 -Int S1 #in
         #let W = minInt(W2, lengthBytes(B2) -Int S) #in
           #range(B2, S, W) +Bytes #range(B1, S1 +Int lengthBytes(B2), W2 -Int W)
       requires S1 <=Int S2 andBool S2 <=Int S1 +Int lengthBytes(B2)
       [simplification]
 
-    rule [range-writeRange-outside]:
-      #range(#writeRange(B1:Bytes, S1:Int, B2:Bytes), S2:Int, W2:Int) => #range(B1, S2, W2)
+    rule [range-memUpdate-outside]:
+      #range(B1:Bytes [ S1:Int := B2:Bytes ], S2:Int, W2:Int) => #range(B1, S2, W2)
       requires 0 <=Int S1 andBool 0 <=Int W2 andBool S1 +Int lengthBytes(B2) <=Int S2 [simplification]
 
     rule [range-buf-zero]:
@@ -195,47 +195,33 @@ module BYTES-SIMPLIFICATION [symbolic]
       #range(#padRightToWidth(_, BUF), 0, WIDTH) => BUF
       requires lengthBytes(BUF) ==Int WIDTH [simplification]
 
-    // #writeRange
+    // Memory update
 
-    rule [writeRange-is-empty]:
-      #writeRange(_:Bytes, S:Int, _:Bytes) => .Bytes
+    rule [memUpdate-is-empty]:
+      _:Bytes [ S:Int := _:Bytes ] => .Bytes
       requires S <Int 0
       [simplification]
 
-    rule [writeRange-as-concat-inside]:
-      #writeRange(B1, S, B2:Bytes) =>
+    rule [memUpdate-as-concat-inside]:
+      B1:Bytes [ S:Int := B2:Bytes ] =>
         #range(B1, 0, S) +Bytes B2 +Bytes #range (B1 , S +Int lengthBytes(B2), lengthBytes(B1) -Int (S +Int lengthBytes(B2)))
       requires 0 <=Int S andBool S +Int lengthBytes(B2) <Int lengthBytes(B1)
       [simplification(60)]
 
-    rule [writeRange-as-concat-outside]:
-      #writeRange(B1, S, B2:Bytes) => #range(B1, 0, S) +Bytes B2
+    rule [memUpdate-as-concat-outside-1]:
+      B1:Bytes [ S:Int := B2:Bytes ] => #range(B1, 0, S) +Bytes B2
       requires 0 <=Int S andBool lengthBytes(B1) <=Int S +Int lengthBytes(B2)
       [simplification(60)]
 
-    rule [writeRange-reorder]:
-      #writeRange(#writeRange(B:Bytes, S1:Int, B1:Bytes), S2:Int, B2:Bytes) =>
-        #writeRange(#writeRange(B, S2, B2), S1, B1)
+    rule [memUpdate-reorder]:
+      B:Bytes [ S1:Int := B1:Bytes] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ] [ S1 := B1 ]
       requires S2 <Int S1 andBool S2 +Int lengthBytes(B2) <=Int S1
       [simplification]
 
-    rule [writeRange-subsume]:
-      #writeRange(#writeRange(B:Bytes, S1:Int, B1:Bytes), S2:Int, B2:Bytes) => #writeRange(B, S2, B2)
+    rule [memUpdate-subsume]:
+      B:Bytes [ S1:Int := B1:Bytes] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ]
       requires S2 <=Int S1 andBool S1 +Int lengthBytes(B1) <=Int S2 +Int lengthBytes(B2)
       [simplification]
-
-    // #writeRange
-
-    // re-order assignments
-    rule #writeRange(#writeRange(MEM, K1, BUF1:Bytes), K2, BUF2:Bytes) => #writeRange(#writeRange(MEM, K2, BUF2), K1, BUF1)
-      requires lengthBytes(BUF2) <=Int K1 -Int K2 andBool K2  <Int K1 [simplification]
-
-    // overwritten assignment
-    rule #writeRange(#writeRange(MEM, K1, BUF1), K2, BUF2) => #writeRange(MEM, K2, BUF2)
-      requires K1 +Int lengthBytes(BUF1) <=Int K2 +Int lengthBytes(BUF2) andBool K2 <=Int K1 [simplification]
-
-    rule #writeRange(MEM, K, BUF) => MEM +Bytes #buf(K -Int lengthBytes(MEM), 0) +Bytes BUF
-      requires lengthBytes(MEM) <=Int K [simplification]
 
     // lengthBytes
 
