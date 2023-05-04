@@ -161,7 +161,7 @@ module BYTES-SIMPLIFICATION [symbolic]
       #range(B1:Bytes [ S1:Int := B2:Bytes ], S2:Int, W2:Int) =>
         #let W = minInt(W2, S1 -Int S2) #in
           #range(B1, S2, W) +Bytes #range(B1 [ S1 := B2 ], S1, W2 -Int W)
-      requires S2 <Int S1
+      requires 0 <=Int S2 andBool S2 <Int S1
       [simplification]
 
     rule [range-memUpdate-in-between]:
@@ -169,7 +169,7 @@ module BYTES-SIMPLIFICATION [symbolic]
         #let S = S2 -Int S1 #in
         #let W = minInt(W2, lengthBytes(B2) -Int S) #in
           #range(B2, S, W) +Bytes #range(B1, S1 +Int lengthBytes(B2), W2 -Int W)
-      requires S1 <=Int S2 andBool S2 <=Int S1 +Int lengthBytes(B2)
+      requires 0 <=Int S1 andBool S1 <=Int S2 andBool S2 <=Int S1 +Int lengthBytes(B2)
       [simplification]
 
     rule [range-memUpdate-outside]:
@@ -205,12 +205,12 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [memUpdate-reorder]:
       B:Bytes [ S1:Int := B1:Bytes] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ] [ S1 := B1 ]
-      requires S2 <Int S1 andBool S2 +Int lengthBytes(B2) <=Int S1
+      requires 0 <=Int S2 andBool S2 <Int S1 andBool S2 +Int lengthBytes(B2) <=Int S1
       [simplification]
 
     rule [memUpdate-subsume]:
       B:Bytes [ S1:Int := B1:Bytes] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ]
-      requires S2 <=Int S1 andBool S1 +Int lengthBytes(B1) <=Int S2 +Int lengthBytes(B2)
+      requires 0 <=Int S2 andBool S2 <=Int S1 andBool S1 +Int lengthBytes(B1) <=Int S2 +Int lengthBytes(B2)
       [simplification]
 
     // lengthBytes
