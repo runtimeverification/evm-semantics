@@ -16,22 +16,8 @@ module SUM-TO-N-INVARIANT
 
   imports LOOPSTEST-CONTRACT
 
-    rule N xorInt maxUInt256 <Int S => false
-    requires #rangeUInt(256, S +Int ((N *Int (N +Int 1)) /Int 2))
-    andBool #rangeUInt(256, S)
-    andBool #rangeUInt(256, N)
-    [simplification]
-
-    rule (S +Int N) +Int (((N -Int 1) *Int N) /Int 2) <Int pow256 => true
-    requires #rangeUInt(256, S +Int ((N *Int (N +Int 1)) /Int 2))
-    andBool #rangeUInt(256, S)
-    andBool #rangeUInt(256, N)
-    [simplification]
-
-    rule chop(S +Int N) => S +Int N
-    requires #rangeUInt(256, S +Int ((N *Int (N +Int 1)) /Int 2))
-    andBool #rangeUInt(256, S)
-    andBool #rangeUInt(256, N)
+    rule N xorInt maxUInt256 => maxUInt256 -Int N 
+    requires #rangeUInt(256, N)
     [simplification]
 
     rule A *Int B <=Int C => A <=Int C /Int B
