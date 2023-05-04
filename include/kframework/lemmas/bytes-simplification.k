@@ -27,9 +27,9 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [bytes-concat-empty-right]: B:Bytes +Bytes .Bytes  => B [simplification]
     rule [bytes-concat-empty-left]:   .Bytes +Bytes B:Bytes => B [simplification]
 
-    rule [bytes-concat-right-assoc-symb-l]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B1), simplification]
-    rule [bytes-concat-right-assoc-symb-r]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B2), simplification]
-    rule [bytes-concat-left-assoc-conc]:    B1:Bytes +Bytes (B2:Bytes +Bytes B3:Bytes) => (B1 +Bytes B2) +Bytes B3 [concrete(B1, B2), symbolic(B3), simplification]
+    rule [bytes-concat-right-assoc-symb-l]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B1), simplification(40)]
+    rule [bytes-concat-right-assoc-symb-r]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B2), simplification(40)]
+    rule [bytes-concat-left-assoc-conc]:    B1:Bytes +Bytes (B2:Bytes +Bytes B3:Bytes) => (B1 +Bytes B2) +Bytes B3 [concrete(B1, B2), symbolic(B3), simplification(40)]
 
     // #buf
 
@@ -74,13 +74,8 @@ module BYTES-SIMPLIFICATION [symbolic]
       [simplification(30)]
 
     rule [range-full]:
-      #range(B:Bytes, 0, W:Int) => B
-      requires lengthBytes(B) ==Int W
-      [simplification]
-
-    rule [range-overfull]:
       #range(B:Bytes, 0, W:Int) => B +Bytes #buf(W -Int lengthBytes(B), 0)
-      requires lengthBytes(B) <Int W
+      requires lengthBytes(B) <=Int W
       [simplification]
 
     rule [range-params-equal-ml]:
@@ -103,12 +98,7 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires lengthBytes(B1) <=Int W
       [simplification]
 
-    rule [range-inside-cHead-base-conc-left]:
-      #range(B:Bytes, S1:Int +Int S2:Int, W:Int) => #range(#range(B, S1, lengthBytes(B) -Int S1), S2, W)
-      requires 0 <=Int S1 andBool 0 <=Int S2 andBool 0 <Int S1 +Int S2 andBool S1 +Int S2 <=Int lengthBytes(B)
-      [concrete(B), concrete(S1), simplification]
-
-    rule [range-inside-cHead-base-conc-right]:
+    rule [range-inside-cHead-base-conc]:
       #range(B:Bytes, S1:Int +Int S2:Int, W:Int) => #range(#range(B, S2, lengthBytes(B) -Int S2), S1, W)
       requires 0 <=Int S1 andBool 0 <=Int S2 andBool 0 <Int S1 +Int S2 andBool S1 +Int S2 <=Int lengthBytes(B)
       [concrete(B), concrete(S2), simplification]
@@ -131,7 +121,7 @@ module BYTES-SIMPLIFICATION [symbolic]
       [simplification]
 
     rule [range-join-concat]:
-      #range(B1, S1, W1) +Bytes #range(B1, S2, W2) +Bytes B2 => #range(B1, S1, W1 +Int W2) +Bytes B2
+      #range(B1, S1, W1) +Bytes ( #range(B1, S2, W2) +Bytes B2 ) => #range(B1, S1, W1 +Int W2) +Bytes B2
       requires S2 ==Int S1 +Int W1
        andBool 0 <=Int S1 andBool 0 <=Int W1 andBool 0 <=Int S2 andBool 0 <=Int W2
       [simplification]
@@ -144,7 +134,7 @@ module BYTES-SIMPLIFICATION [symbolic]
       [simplification]
 
     rule [range-reform-concat]:
-      #range(B1:Bytes, S:Int, minInt(W1:Int, W2:Int)) +Bytes #buf(maxInt(0, W3:Int), 0) +Bytes B2:Bytes => #range (B1, S, W1) +Bytes B2
+      #range(B1:Bytes, S:Int, minInt(W1:Int, W2:Int)) +Bytes ( #buf(maxInt(0, W3:Int), 0) +Bytes B2:Bytes ) => #range (B1, S, W1) +Bytes B2
       requires W2 ==Int lengthBytes(B1) -Int S
        andBool W3 ==Int S +Int W1 -Int lengthBytes(B1)
        andBool 0 <=Int S andBool 0 <=Int W1 andBool 0 <=Int W2
