@@ -34,25 +34,11 @@ module SUM-TO-N-INVARIANT
     andBool #rangeUInt(256, N)
     [simplification]
 
-    rule chop(N +Int -1) => N +Int -1
-    requires 1 <=Int N andBool N <Int pow256
-    andBool #rangeUInt(256, N)
-    [simplification]
-
-    rule (N *Int (N +Int 1)) /Int 2 <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936 => true
-    requires N <Int 481231938336009023090067544955250113853
-    [simplification]
-
-    rule 0 <=Int (N *Int (N +Int 1)) /Int 2 => true
-    requires 0 <=Int N
-    [simplification]
-
-    rule N *Int 178 <=Int V => N <=Int V /Int 178
-    [simplification]
-
-//     rule N *Int 178 <=Int 9223372036854772639 => true
-//     requires N <=Int 1641760222560149529742
-//     [simplification]
+    rule A *Int B <=Int C => A <=Int C /Int B
+    requires B >Int 0
+     andBool A >=Int 0
+     andBool C >=Int 0
+    [simplification, concrete(B, C)]
 
   rule [foundry-sum-to-n-loop-invariant]:
   <kevm>

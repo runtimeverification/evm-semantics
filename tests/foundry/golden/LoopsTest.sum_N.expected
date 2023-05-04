@@ -1,9 +1,9 @@
 
 ┌─ OMITTED HASH (init, expanded)
-│    k: #execute ~> CONTINUATION
+│    k: #execute ~> CONTINUATION:K
 │    pc: 0
 │    callDepth: 0
-│    statusCode: STATUSCODE
+│    statusCode: STATUSCODE:StatusCode
 │    src: tests/foundry/test/Loops.t.sol:5:278
 │
 │  (776 steps)
@@ -65,10 +65,10 @@
 ┃  ┊  constraint: true
 ┃  ┊  subst: OMITTED SUBST
 ┃  └─ OMITTED HASH (target, leaf)
-┃       k: #halt ~> CONTINUATION
-┃       pc: PC_CELL_5d410f2a
-┃       callDepth: CALLDEPTH_CELL_5d410f2a
-┃       statusCode: STATUSCODE_FINAL
+┃       k: #halt ~> CONTINUATION:K
+┃       pc: PC_CELL_5d410f2a:Int
+┃       callDepth: CALLDEPTH_CELL_5d410f2a:Int
+┃       statusCode: STATUSCODE_FINAL:StatusCode
 ┃
 ┗━━┓ constraint: { true #Equals ( notBool VV0_n_114b9705:Int ==Int 0 ) }
    │
@@ -106,10 +106,10 @@
    ┊  constraint: true
    ┊  subst: OMITTED SUBST
    └─ OMITTED HASH (target, leaf)
-        k: #halt ~> CONTINUATION
-        pc: PC_CELL_5d410f2a
-        callDepth: CALLDEPTH_CELL_5d410f2a
-        statusCode: STATUSCODE_FINAL
+        k: #halt ~> CONTINUATION:K
+        pc: PC_CELL_5d410f2a:Int
+        callDepth: CALLDEPTH_CELL_5d410f2a:Int
+        statusCode: STATUSCODE_FINAL:StatusCode
 
 
 
@@ -119,11 +119,10 @@ module SUMMARY-LOOPSTEST-SUM-N
     
            <kevm>
              <k>
-               ( #execute
-               ~> CONTINUATION => CALL 9223372036854772793 645326474426547203313410069153905908525362434349 0 128 36 128 0
-               ~> #pc [ CALL ]
+               ( .K => CALL 9223372036854772793 645326474426547203313410069153905908525362434349 0 128 36 128 0
+               ~> #pc [ CALL ] )
                ~> #execute
-               ~> CONTINUATION:K )
+               ~> _CONTINUATION
              </k>
              <mode>
                NORMAL
@@ -144,7 +143,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      728815563385977040452943777879061427756277306518
                    </id>
                    <callData>
-                     ( LoopsTest . sum_N ( VV0_n_114b9705 : uint256 ) => b"~\x8e#\xd0" +Bytes #buf ( 32 , VV0_n_114b9705:Int ) )
+                     b"~\x8e#\xd0" +Bytes #buf ( 32 , VV0_n_114b9705:Int )
                    </callData>
                    <callValue>
                      0
@@ -153,7 +152,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      ( .WordStack => ( 164 : ( 1281615202 : ( 645326474426547203313410069153905908525362434349 : ( 0 : ( VV0_n_114b9705:Int : ( 334 : ( 2123244496 : .WordStack ) ) ) ) ) ) ) )
                    </wordStack>
                    <localMem>
-                     ( .Bytes => #writeRange ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" , 132 , #buf ( 32 , bool2Word ( VV0_n_114b9705:Int <=Int 51816696836262767 ) ) ) )
+                     ( b"" => #writeRange ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" , 132 , #buf ( 32 , bool2Word ( VV0_n_114b9705:Int <=Int 51816696836262767 ) ) ) )
                    </localMem>
                    <memoryUsed>
                      ( 0 => 6 )
@@ -185,41 +184,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                </evm>
                <network>
                  <accounts>
-                   ( ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account> )
                    ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
@@ -237,7 +201,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                        0
                      </nonce>
                      ...
-                   </account> => <account>
+                   </account>
+                   <account>
                      <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
@@ -254,7 +219,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                        1
                      </nonce>
                      ...
-                   </account> ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -300,7 +265,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                  0
                </expectedValue>
                <expectedData>
-                 ( .Bytes => b"" )
+                 b""
                </expectedData>
                <opcodeType>
                  .OpcodeType
