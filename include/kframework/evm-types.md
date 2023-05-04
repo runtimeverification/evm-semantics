@@ -321,7 +321,7 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax Bytes ::= "#write" "(" Bytes "," Int "," Int ")" [function]
                    | Bytes "[" Int ":=" Bytes "]" [function, total, klabel(mapWriteRange)]
- // -------------------------------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------------------
     rule #write(WM, IDX, VAL) => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ]
 
     rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int lengthBytes(WS'), 0), START, WS') requires START >=Int 0 [concrete]
