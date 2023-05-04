@@ -878,7 +878,7 @@ These operations are getters/setters of the local execution memory.
     syntax BinStackOp ::= "MSTORE" | "MSTORE8"
  // ------------------------------------------
     rule <k> MSTORE INDEX VALUE => . ... </k>
-         <localMem> LM => #writeRange(LM, INDEX, #padToWidth(32, #asByteStack(VALUE))) </localMem>
+         <localMem> LM => LM [ INDEX := #padToWidth(32, #asByteStack(VALUE)) ] </localMem>
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
          <localMem> LM => #write(LM, INDEX, (VALUE modInt 256)) </localMem>
@@ -994,7 +994,7 @@ These operators make queries about the current execution state.
  // ---------------------------------
     rule <k> CODECOPY MEMSTART PGMSTART WIDTH => . ... </k>
          <program> PGM </program>
-         <localMem> LM =>  #writeRange(LM, MEMSTART, #range(PGM, PGMSTART, WIDTH)) </localMem>
+         <localMem> LM =>  LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH) ] </localMem>
 
     syntax UnStackOp ::= "BLOCKHASH"
  // --------------------------------
@@ -1090,7 +1090,7 @@ These operators query about the current `CALL*` state.
     syntax TernStackOp ::= "CALLDATACOPY"
  // -------------------------------------
     rule <k> CALLDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </k>
-         <localMem> LM => #writeRange(LM, MEMSTART, #range(CD, DATASTART, DATAWIDTH)) </localMem>
+         <localMem> LM => LM [ MEMSTART := #range(CD, DATASTART, DATAWIDTH) ] </localMem>
          <callData> CD </callData>
 ```
 
@@ -1107,7 +1107,7 @@ These operators query about the current return data buffer.
     syntax TernStackOp ::= "RETURNDATACOPY"
  // ----------------------------------------
     rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => . ... </k>
-         <localMem> LM => #writeRange(LM, MEMSTART, #range(RD, DATASTART, DATAWIDTH)) </localMem>
+         <localMem> LM => LM [ MEMSTART := #range(RD, DATASTART, DATAWIDTH) ] </localMem>
          <output> RD </output>
       requires DATASTART +Int DATAWIDTH <=Int lengthBytes(RD)
 
@@ -1202,7 +1202,7 @@ Should we pad zeros (for the copied "program")?
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </k>
-         <localMem> LM => #writeRange(LM, MEMSTART, #range(PGM, PGMSTART, WIDTH)) </localMem>
+         <localMem> LM => LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH) ] </localMem>
          <account>
            <acctID> ACCT </acctID>
            <code> PGM </code>
@@ -1431,7 +1431,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule [refund]: <k> #refund G:Gas => . ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas>
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
-         <localMem> LM => #writeRange(LM, START, #range(WS, 0, minInt(WIDTH, lengthBytes(WS)))) </localMem>
+         <localMem> LM => LM [ START := #range(WS, 0, minInt(WIDTH, lengthBytes(WS))) ] </localMem>
 ```
 
 Ethereum Network OpCodes
@@ -1851,7 +1851,7 @@ Overall Gas
     rule <k> #memory [ OP , AOP ] => #memory(AOP, MU) ~> #deductMemory ... </k>
          <memoryUsed> MU </memoryUsed>
       requires #usesMemory(OP)
-   
+
    rule <k> #memory [ _ , _ ] => . ... </k> [owise]
 
     syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas" | "#deductMemoryGas"

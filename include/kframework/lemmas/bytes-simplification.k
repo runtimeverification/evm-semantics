@@ -70,20 +70,20 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule #range(_, _, K) => .Bytes requires K <=Int 0 [simplification]
 
-    rule #range(#writeRange(M, N, BUF:Bytes ), L, K) =>
-         #let W = minInt(K, N -Int L) #in #range(M, L, W) +Bytes #range(#writeRange(M, N, BUF), N, K -Int W)
+    rule #range( M [ N := BUF:Bytes ], L, K ) =>
+         #let W = minInt(K, N -Int L) #in #range(M, L, W) +Bytes #range(M [ N := BUF ], N, K -Int W)
       requires 0 <Int K andBool L <Int N [simplification]
 
-    rule #range(#writeRange(M, N, BUF:Bytes), L, K) =>
+    rule #range( M [ N := BUF:Bytes ], L, K ) =>
            #let S = L -Int N #in
            #let W = minInt(K, lengthBytes(BUF) -Int S) #in
            #range(BUF, S, W) +Bytes #range(M, N +Int lengthBytes(BUF), K -Int W)
       requires 0 <Int K andBool N <=Int L andBool L <=Int N +Int lengthBytes(BUF) [simplification]
 
-    rule #range(#writeRange(M, N, BUF:Bytes ), L, K) => #range(M, L, K)
+    rule #range( M [ N := BUF:Bytes ], L, K ) => #range(M, L, K)
       requires 0 <Int K andBool N +Int lengthBytes(BUF) <=Int L [simplification]
 
-    rule #range(#writeRange(#writeRange(M, N1, BUF1:Bytes), N2, BUF2:Bytes), L, K ) => #range(#writeRange(M, N2, BUF2), L, K)
+    rule #range( M [ N1 := BUF1:Bytes ] [ N2 := BUF2:Bytes ], L, K ) => #range( M [ N2 := BUF2 ], L, K )
         requires 0 <Int K andBool N1 +Int lengthBytes(BUF1) <=Int L [simplification]
 
     rule #range(M, N1 +Int N2, K) => #range(#range(M, N2, lengthBytes(M) -Int N2), N1, K)
@@ -113,17 +113,17 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule #range(#padRightToWidth(_, BUF), 0, WIDTH) => BUF requires lengthBytes(BUF) ==Int WIDTH [simplification]
 
-    // #writeRange
+    // WS [ START := WS' ]
 
-    // re-order assignments
-    rule #writeRange(#writeRange(MEM, K1, BUF1:Bytes), K2, BUF2:Bytes) => #writeRange(#writeRange(MEM, K2, BUF2), K1, BUF1)
+    // re-order memory write
+    rule MEM [ K1 := BUF1:Bytes ] [ K2 := BUF2:Bytes ] => MEM [ K2 := BUF2 ] [ K1 := BUF1 ]
       requires lengthBytes(BUF2) <=Int K1 -Int K2 andBool K2  <Int K1 [simplification]
 
-    // overwritten assignment
-    rule #writeRange(#writeRange(MEM, K1, BUF1), K2, BUF2) => #writeRange(MEM, K2, BUF2)
+    // overwritten memory write
+    rule MEM [ K1 := BUF1 ] [ K2 := BUF2 ] => MEM [ K2 := BUF2 ]
       requires K1 +Int lengthBytes(BUF1) <=Int K2 +Int lengthBytes(BUF2) andBool K2 <=Int K1 [simplification]
 
-    rule #writeRange(MEM, K, BUF) => MEM +Bytes #buf(K -Int lengthBytes(MEM), 0) +Bytes BUF
+    rule MEM [ K := BUF ] => MEM +Bytes #buf(K -Int lengthBytes(MEM), 0) +Bytes BUF
       requires lengthBytes(MEM) <=Int K [simplification]
 
     // lengthBytes
