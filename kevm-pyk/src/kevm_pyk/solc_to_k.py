@@ -39,18 +39,20 @@ class Contract:
         sort: KSort
         arg_names: tuple[str, ...]
         arg_types: tuple[str, ...]
+        contract: Contract
         contract_name: str
         payable: bool
         signature: str
         ast: dict | None
 
-        def __init__(self, msig: str, id: int, abi: dict, ast: dict | None, contract_name: str, sort: KSort) -> None:
+        def __init__(self, msig: str, id: int, abi: dict, ast: dict | None, contract: Contract, sort: KSort) -> None:
             self.signature = msig
             self.name = abi['name']
             self.id = id
             self.arg_names = tuple([f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])])
             self.arg_types = tuple([input['type'] for input in abi['inputs']])
-            self.contract_name = contract_name
+            self.contract = contract
+            self.contract_name = contract.name
             self.sort = sort
             # TODO: Check that we're handling all state mutability cases
             self.payable = abi['stateMutability'] == 'payable'
@@ -64,6 +66,10 @@ class Contract:
         @property
         def selector_alias_rule(self) -> KRule:
             return KRule(KRewrite(KEVM.abi_selector(self.signature), intToken(self.id)))
+
+        @cached_property
+        def is_setup(self) -> bool:
+            return self.name == 'setUp'
 
         def up_to_date(self, digest_file: Path) -> bool:
             if not digest_file.exists():
@@ -89,9 +95,12 @@ class Contract:
 
         @cached_property
         def digest(self) -> str:
-            if self.ast is None:
-                raise ValueError(f'Method source  code for {self.name} not in contract, so a digest cannot be generated.')
-            return hash_str(json.dumps(self.ast, sort_keys=True))
+            ast = json.dumps(self.ast, sort_keys=True) if self.ast is not None else {}
+            storage_layout = (
+                json.dumps(self.contract.contract_json['storageLayout'], sort_keys=True) if self.ast is not None else {}
+            )
+            contract_json = self.contract.contract_json if not self.is_setup else {}
+            return hash_str(f'{self.signature}{ast}{storage_layout}{contract_json}')
 
         @property
         def production(self) -> KProduction:
@@ -195,7 +204,7 @@ class Contract:
             method_selector: str = str(evm['methodIdentifiers'][msig])
             method_ast = method_ast_from_contract_ast(evm['ast'], method_selector)
             mid = int(method_selector, 16)
-            _m = Contract.Method(msig, mid, method, method_ast, contract_name, self.sort_method)
+            _m = Contract.Method(msig, mid, method, method_ast, self, self.sort_method)
             _methods.append(_m)
 
         self.methods = tuple(sorted(_methods, key=(lambda method: method.signature)))
