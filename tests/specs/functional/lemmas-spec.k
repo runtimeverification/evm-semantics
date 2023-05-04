@@ -215,7 +215,7 @@ module LEMMAS-SPEC
       requires lengthBytes(Y) +Int 20 ==Int Z +Int 20
        andBool S1 +Int 1 ==Int S2 +Int 6
        andBool 0 <Int lengthBytes(Y)
-       andBool 0 <=Int S1
+       andBool 0 <=Int S1 andBool 0 <=Int S
 
     claim [range-32]:
       <k> runLemma(
