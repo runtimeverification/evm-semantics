@@ -409,22 +409,22 @@ def foundry_prove(
 
     test_methods = [
         method
+        for contract in foundry.contracts.values()
         for method in contract.methods
         if (f'{method.contract_name}.{method.name}' in tests or method.is_setup)
     ]
 
     out_of_date_methods: set[str] = set()
     for method in test_methods:
-        if not method.up_to_date(foundry.out / 'digest'):
-            out_of_date_methods.add(method.signature)
-            if reinit:
-                _LOGGER.info(
-                    f'Method {method.contract_name}.{method.signature} is out of date but will be reinitialized.'
-                )
-            else:
-                _LOGGER.info(f'Method {method.contract_name}.{method.signature} is out of date')
+        if not method.up_to_date(foundry.out / 'digest') or reinit:
+            out_of_date_methods.add(method.qualified_name)
+            _LOGGER.info(f'Method {method.qualified_name} is out of date')
         else:
-            _LOGGER.info(f'Method {method.contract_name}.{method.signature} skipped because it is up to date')
+            _LOGGER.info(f'Method {method.qualified_name} skipped because it is up to date')
+            if not method.contract_up_to_date(foundry.out / 'digest'):
+                _LOGGER.warning(
+                    f'Method {method.qualified_name} skipped because digest was up to date, but the contract it is a part of has changed.'
+                )
 
     def _init_apr_proof(_init_problem: tuple[str, str]) -> APRProof | APRBMCProof:
         contract_name, method_name = _init_problem
@@ -435,7 +435,7 @@ def foundry_prove(
             contract,
             method,
             save_directory,
-            reinit=(reinit or (method.signature in out_of_date_methods)),
+            reinit=(method.qualified_name in out_of_date_methods),
             simplify_init=simplify_init,
             bmc_depth=bmc_depth,
             kore_rpc_command=kore_rpc_command,
@@ -477,12 +477,6 @@ def foundry_prove(
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
     contracts = unique({test.split('.')[0] for test in tests})
     _LOGGER.info(f'contracts: {contracts}')
-    #      for contract_name in contracts:
-    #          _LOGGER.info(f'contract: {contract_name}')
-    #          contract = foundry.contracts[contract_name]
-    #          if 'setUp' in contract.method_by_name:
-    #              setup_method = contract.method_by_name['setUp']
-    #              setup_method.update_digest(foundry.out / 'digest')
 
     for method in test_methods:
         method.update_digest(foundry.out / 'digest')

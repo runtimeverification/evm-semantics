@@ -63,6 +63,10 @@ class Contract:
             args_list = '_'.join(self.arg_types)
             return KLabel(f'method_{self.contract_name}_{self.name}_{args_list}')
 
+        @cached_property
+        def qualified_name(self) -> str:
+            return f'{self.contract_name}.{self.signature}'
+
         @property
         def selector_alias_rule(self) -> KRule:
             return KRule(KRewrite(KEVM.abi_selector(self.signature), intToken(self.id)))
@@ -77,10 +81,21 @@ class Contract:
             digest_dict = json.loads(digest_file.read_text())
             if 'methods' not in digest_dict:
                 digest_dict['methods'] = {}
-            digest_file.write_text(json.dumps(digest_dict))
-            if self.signature not in digest_dict['methods']:
+                digest_file.write_text(json.dumps(digest_dict))
+            if self.qualified_name not in digest_dict['methods']:
                 return False
-            return digest_dict['methods'][self.signature] == self.digest
+            return digest_dict['methods'][self.qualified_name]['method'] == self.digest
+
+        def contract_up_to_date(self, digest_file: Path) -> bool:
+            if not digest_file.exists():
+                return False
+            digest_dict = json.loads(digest_file.read_text())
+            if 'methods' not in digest_dict:
+                digest_dict['methods'] = {}
+                digest_file.write_text(json.dumps(digest_dict))
+            if self.qualified_name not in digest_dict['methods']:
+                return False
+            return digest_dict['methods'][self.qualified_name]['contract'] == self.contract.digest
 
         def update_digest(self, digest_file: Path) -> None:
             digest_dict = {}
@@ -88,10 +103,10 @@ class Contract:
                 digest_dict = json.loads(digest_file.read_text())
             if 'methods' not in digest_dict:
                 digest_dict['methods'] = {}
-            digest_dict['methods'][self.signature] = self.digest
+            digest_dict['methods'][self.qualified_name] = {'method': self.digest, 'contract': self.contract.digest}
             digest_file.write_text(json.dumps(digest_dict))
 
-            _LOGGER.info(f'Updated method {self.signature} in digest file: {digest_file}')
+            _LOGGER.info(f'Updated method {self.qualified_name} in digest file: {digest_file}')
 
         @cached_property
         def digest(self) -> str:
@@ -99,8 +114,8 @@ class Contract:
             storage_layout = (
                 json.dumps(self.contract.contract_json['storageLayout'], sort_keys=True) if self.ast is not None else {}
             )
-            contract_json = self.contract.contract_json if not self.is_setup else {}
-            return hash_str(f'{self.signature}{ast}{storage_layout}{contract_json}')
+            contract_digest = self.contract.digest if not self.is_setup else {}
+            return hash_str(f'{self.signature}{ast}{storage_layout}{contract_digest}')
 
         @property
         def production(self) -> KProduction:
