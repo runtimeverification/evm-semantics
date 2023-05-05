@@ -111,9 +111,7 @@ class Contract:
         @cached_property
         def digest(self) -> str:
             ast = json.dumps(self.ast, sort_keys=True) if self.ast is not None else {}
-            storage_layout = (
-                json.dumps(self.contract.contract_json['storageLayout'], sort_keys=True) if self.ast is not None else {}
-            )
+            storage_layout = json.dumps(self.contract.contract_json['storageLayout'], sort_keys=True)
             contract_digest = self.contract.digest if not self.is_setup else {}
             return hash_str(f'{self.signature}{ast}{storage_layout}{contract_digest}')
 
