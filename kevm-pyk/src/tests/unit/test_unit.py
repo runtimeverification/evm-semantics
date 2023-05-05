@@ -206,7 +206,8 @@ contract_json = """
     "aggregate((address,bytes)[])": "252dba42"
   },
   "ast": {
-    "absolutePath": "lib/forge-std/src/interfaces/IMulticall3.sol"
+    "absolutePath": "lib/forge-std/src/interfaces/IMulticall3.sol",
+    "nodes": []
   },
   "id": 17
 }
