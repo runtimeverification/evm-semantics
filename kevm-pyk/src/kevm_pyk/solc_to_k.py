@@ -215,7 +215,7 @@ class Contract:
             _LOGGER.info(f'Current method: {method["name"]}')
             msig = method_sig_from_abi(method)
             method_selector: str = str(evm['methodIdentifiers'][msig])
-            method_ast = method_ast_from_contract_ast(evm['ast'], method_selector)
+            method_ast = method_ast_from_contract_ast(self.contract_json['ast'], method_selector)
             mid = int(method_selector, 16)
             _m = Contract.Method(msig, mid, method, method_ast, self, self.sort_method)
             _methods.append(_m)
