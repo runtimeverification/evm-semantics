@@ -276,8 +276,8 @@ Node OMITTED HASH:
 
 
 module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
-
-
+    
+    
            <kevm>
              <k>
                ( #execute
@@ -492,7 +492,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
              </whitelist>
            </cheatcodes>
          </foundry>
-
+    
            <kevm>
              <k>
                ( CALL 9223372036854772734 645326474426547203313410069153905908525362434349 0 128 36 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
@@ -674,7 +674,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
              </whitelist>
            </cheatcodes>
          </foundry>
-
+    
            <kevm>
              <k>
                ( #checkCall 728815563385977040452943777879061427756277306518 0
@@ -860,7 +860,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
              </whitelist>
            </cheatcodes>
          </foundry>
-
+    
            <kevm>
              <k>
                ( #end EVMC_SUCCESS => #halt )
@@ -1046,7 +1046,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
              </whitelist>
            </cheatcodes>
          </foundry>
-
+    
            <kevm>
              <k>
                #halt
@@ -1234,3 +1234,4 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
          </foundry>
 
 endmodule
+
