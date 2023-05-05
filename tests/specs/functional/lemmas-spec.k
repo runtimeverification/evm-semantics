@@ -265,6 +265,9 @@ module LEMMAS-SPEC
       <k> runLemma ( #range(B:Bytes, 5 +Int S2:Int, W:Int) ) => doneLemma ( #range(#range(B, 5, lengthBytes(B) -Int 5), S2, W) ) ... </k>
       requires 0 <=Int S2 andBool (5 +Int S2 <=Int lengthBytes(B))
 
+    claim [range-37]:
+      <k> runLemma( _B1:Bytes [ 1 := _B2:Bytes ] [ -1 := _B3:Bytes ]) => doneLemma(.Bytes) ... </k>
+
  // #buf simplification
  // -------------------
     claim [bufExtractPadding]: <k> runLemma ( #asWord ( ( #range( #buf ( 32 , X ), 0, 28 ) ):Bytes ) ) => doneLemma ( 0 ) ... </k> requires #rangeUInt(32, X)
