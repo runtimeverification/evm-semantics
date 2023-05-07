@@ -5,7 +5,7 @@ module VAT-SUBUI-PASS-ROUGH-SPEC
 
     // Vat_subui
     claim [Vat.subui.pass.rough]:
-      <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
+      <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
@@ -23,7 +23,7 @@ module VAT-SUBUI-PASS-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x -Int ABI_y : WS </wordStack>
+            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  => ABI_x -Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13304 => 13366 </pc>
             <gas> #gas(VGas) => ?_ </gas>
