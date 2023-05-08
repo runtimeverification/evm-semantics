@@ -339,18 +339,6 @@ OpCode Execution
          <basic-blocks> BLOCKS                                        </basic-blocks>
        requires BLOCK_JUMPDEST in_keys(BLOCKS)
         andBool lengthBytes(REMAIDNER) ==Int 0
-
-    // TODO: Loading a new block while the current one is not exhausted. This should be impossible.
-    rule <k> #loadBasicBlock [ BLOCK_JUMPDEST ] => #end EVMC_FAILURE ... </k>
-         <basic-block>  REMAIDNER </basic-block>
-         <basic-blocks> BLOCKS    </basic-blocks>
-       requires BLOCK_JUMPDEST in_keys(BLOCKS)
-        andBool lengthBytes(REMAIDNER) >Int 0
-
-    // TODO: Loading a basic block with a program counter what is not a jumpdest or the prgoram start. This should be impossible.
-    rule <k> #loadBasicBlock [ BLOCK_JUMPDEST ] => #end EVMC_FAILURE ... </k>
-         <basic-blocks> BLOCKS                 </basic-blocks>
-       requires notBool(BLOCK_JUMPDEST in_keys(BLOCKS))
 ```
 
 ### Single Step
