@@ -307,11 +307,51 @@ OpCode Execution
     rule [halt]:
          <k> #halt ~> (#execute => .) ... </k>
 
-    rule [step]:
-         <k> (. => #next [ #lookupOpCode(PGM, PCOUNT, SCHED) ]) ~> #execute ... </k>
-         <program> PGM </program>
+    rule [load-basic-block]:
+         <k> (. => #loadBasicBlock [ PCOUNT ]) ~> #execute ... </k>
+         <basic-block> BLOCK </basic-block>
          <pc> PCOUNT </pc>
+      requires lengthBytes(BLOCK) ==Int 0
+
+    rule [step]:
+         <k> (. => #next [ #unconsOpCode(BLOCK, SCHED) ]) ~> #execute ... </k>
+         <basic-block> BLOCK => #dropOpCode(BLOCK, #unconsOpCode(BLOCK, SCHED)) </basic-block>
          <schedule> SCHED </schedule>
+      requires lengthBytes(BLOCK) >Int 0
+```
+
+### Loading the next basic block
+
+```k
+    syntax InternalOp ::= "#loadBasicBlock" "[" Int "]"
+ // ---------------------------------------------------
+
+    syntax KItem ::= #halt(KItem)
+
+ // ---------------------------------------------------
+    rule <k> #loadBasicBlock [ PGM_END ] => . ... </k>
+         <program> PGM </program>
+         <output> _ => .Bytes </output>
+      requires PGM_END ==Int lengthBytes(PGM)
+
+    // TODO: here we should start executing the new basic block by consuming its first opcode
+    rule <k> #loadBasicBlock [ BLOCK_JUMPDEST ] => . ... </k>
+         <basic-block>  REMAIDNER  => {BLOCKS[BLOCK_JUMPDEST]}:>Bytes </basic-block>
+         <basic-blocks> BLOCKS                                        </basic-blocks>
+       requires BLOCK_JUMPDEST in_keys(BLOCKS)
+        andBool lengthBytes(REMAIDNER) ==Int 0
+
+    // TODO: Loading a new block while the current one is not exhausted. This should be impossible.
+    rule <k> #loadBasicBlock [ BLOCK_JUMPDEST ] => #end EVMC_FAILURE ... </k>
+         <basic-block>  REMAIDNER </basic-block>
+         <basic-blocks> BLOCKS    </basic-blocks>
+       requires BLOCK_JUMPDEST in_keys(BLOCKS)
+        andBool lengthBytes(REMAIDNER) >Int 0
+
+    // TODO: Loading a basic block with a program counter what is not a jumpdest or the prgoram start. This should be impossible.
+    rule <k> #loadBasicBlock [ BLOCK_JUMPDEST ] => #end EVMC_FAILURE ... </k>
+         <basic-blocks> BLOCKS                 </basic-blocks>
+       requires notBool(BLOCK_JUMPDEST in_keys(BLOCKS))
 ```
 
 ### Single Step
@@ -1043,6 +1083,7 @@ The `JUMP*` family of operations affect the current program counter.
     syntax UnStackOp ::= "JUMP"
  // ---------------------------
     rule <k> JUMP DEST => #endBasicBlock... </k>
+         <basic-block> _ => .Bytes </basic-block>
          <pc> _ => DEST </pc>
          <jumpDests> DESTS </jumpDests>
       requires DEST in DESTS
