@@ -284,6 +284,17 @@ OpCode Execution
  // -----------------------------------------------------------------------------------------------
     rule #lookupOpCode(BA, I, SCHED) => #dasmOpCode(BA[I], SCHED) requires 0 <=Int I andBool I <Int lengthBytes(BA)
     rule #lookupOpCode(_, _, _)  => .NoOpCode [owise]
+
+    syntax MaybeOpCode ::= "#unconsOpCode" "(" Bytes "," Schedule ")" [function, total]
+ // -------------------------------------------------------------------------------------------
+    rule #unconsOpCode(BA, SCHED) => #dasmOpCode(BA[0], SCHED) requires 0 <Int lengthBytes(BA)
+    rule #unconsOpCode(_, _)      => .NoOpCode                 [owise]
+
+    syntax Bytes ::= #dropOpCode(Bytes, MaybeOpCode)  [function, total]
+ // --------------------------------------------------------------
+    rule #dropOpCode(BA, _)         => .Bytes                                         requires lengthBytes(BA) ==Int 0
+    rule #dropOpCode(BA, .NoOpCode) => BA
+    rule #dropOpCode(BA, OP)        => substrBytes(BA, #widthOp(OP), lengthBytes(BA)) [owise]
 ```
 
 -   `#execute` loads the next opcode.
