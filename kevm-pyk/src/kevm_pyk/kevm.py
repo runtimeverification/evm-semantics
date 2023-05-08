@@ -1,14 +1,10 @@
 from __future__ import annotations
 
 import logging
-import sys
-from enum import Enum
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
 from pyk.kast.manip import flatten_label
-from pyk.ktool.kompile import KompileBackend, kompile
 from pyk.ktool.kprint import paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
@@ -18,24 +14,19 @@ from pyk.prelude.string import stringToken
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from pathlib import Path
     from typing import Final
 
     from pyk.cli_utils import BugReport
     from pyk.cterm import CTerm
     from pyk.kast import KInner
     from pyk.kast.outer import KFlatModule
-    from pyk.ktool.kompile import LLVMKompileType
     from pyk.ktool.kprint import SymbolTable
 
 _LOGGER: Final = logging.getLogger(__name__)
 
 
 # KEVM class
-
-
-class KEVMKompileMode(Enum):
-    NODE = 'node'
-    STANDALONE = 'standalone'
 
 
 class KEVM(KProve, KRun):
@@ -69,48 +60,6 @@ class KEVM(KProve, KRun):
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
         )
-
-    @staticmethod
-    def kompile(
-        definition_dir: Path,
-        backend: KompileBackend,
-        main_file: Path,
-        emit_json: bool = True,
-        includes: Iterable[str] = (),
-        main_module_name: str | None = None,
-        syntax_module_name: str | None = None,
-        md_selector: str | None = None,
-        debug: bool = False,
-        ccopts: Iterable[str] = (),
-        llvm_kompile: bool = True,
-        optimization: int = 0,
-        llvm_kompile_type: LLVMKompileType | None = None,
-    ) -> KEVM:
-        try:
-            kompile(
-                main_file=main_file,
-                output_dir=definition_dir,
-                backend=backend,
-                emit_json=emit_json,
-                include_dirs=[include for include in includes if Path(include).exists()],
-                main_module=main_module_name,
-                syntax_module=syntax_module_name,
-                md_selector=md_selector,
-                hook_namespaces=KEVM.hook_namespaces(),
-                debug=debug,
-                concrete_rules=KEVM.concrete_rules() if backend == KompileBackend.HASKELL else (),
-                ccopts=ccopts,
-                no_llvm_kompile=not llvm_kompile,
-                opt_level=optimization or None,
-                llvm_kompile_type=llvm_kompile_type,
-            )
-        except RuntimeError as err:
-            sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')
-            sys.stderr.write(f'\nkompile stderr:\n{err.args[2]}\n')
-            sys.stderr.write(f'\nkompile returncode:\n{err.args[3]}\n')
-            sys.stderr.flush()
-            raise
-        return KEVM(definition_dir, main_file=main_file)
 
     @classmethod
     def _patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
@@ -155,52 +104,6 @@ class KEVM(KProve, KRun):
 
     class Sorts:
         KEVM_CELL: Final = KSort('KevmCell')
-
-    @staticmethod
-    def hook_namespaces() -> list[str]:
-        return ['JSON', 'KRYPTO', 'BLOCKCHAIN']
-
-    @staticmethod
-    def concrete_rules() -> list[str]:
-        return [
-            'EVM.allBut64th.pos',
-            'EVM.Caddraccess',
-            'EVM.Cbalance.new',
-            'EVM.Cbalance.old',
-            'EVM.Cextcodecopy.new',
-            'EVM.Cextcodecopy.old',
-            'EVM.Cextcodehash.new',
-            'EVM.Cextcodehash.old',
-            'EVM.Cextcodesize.new',
-            'EVM.Cextcodesize.old',
-            'EVM.Cextra.new',
-            'EVM.Cextra.old',
-            'EVM.Cgascap',
-            'EVM.Cmem',
-            'EVM.Cmodexp.new',
-            'EVM.Cmodexp.old',
-            'EVM.Csload.new',
-            'EVM.Csstore.new',
-            'EVM.Csstore.old',
-            'EVM.Cstorageaccess',
-            'EVM.ecrec',
-            'EVM.#memoryUsageUpdate.some',
-            'EVM.Rsstore.new',
-            'EVM.Rsstore.old',
-            'EVM-TYPES.bytesRange',
-            'EVM-TYPES.padRightToWidthNonEmpty',
-            'EVM-TYPES.padToWidthNonEmpty',
-            'EVM-TYPES.powmod.nonzero',
-            'EVM-TYPES.powmod.zero',
-            'EVM-TYPES.signextend.invalid',
-            'EVM-TYPES.signextend.negative',
-            'EVM-TYPES.signextend.positive',
-            'EVM-TYPES.upDivInt',
-            'SERIALIZATION.addrFromPrivateKey',
-            'SERIALIZATION.keccak',
-            'SERIALIZATION.#newAddr',
-            'SERIALIZATION.#newAddrCreate2',
-        ]
 
     def short_info(self, cterm: CTerm) -> list[str]:
         k_cell = self.pretty_print(cterm.cell('K_CELL')).replace('\n', ' ')
@@ -263,6 +166,25 @@ class KEVM(KProve, KRun):
                 # <callDepth> 0 </callDepth>
                 if cterm.cell('CALLDEPTH_CELL') == intToken(0):
                     return True
+        return False
+
+    @staticmethod
+    def same_loop(cterm1: CTerm, cterm2: CTerm) -> bool:
+        # In the same program, at the same calldepth, at the same program counter
+        for cell in ['PC_CELL', 'CALLDEPTH_CELL', 'PROGRAM_CELL']:
+            if cterm1.cell(cell) != cterm2.cell(cell):
+                return False
+        # duplicate from KEVM.extract_branches
+        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
+        pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
+        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
+        subst1 = branch_pattern.match(cterm1.cell('K_CELL'))
+        subst2 = branch_pattern.match(cterm2.cell('K_CELL'))
+        # Jumping to the same program counter
+        if subst1 is not None and subst2 is not None and subst1['###PCOUNT'] == subst2['###PCOUNT']:
+            # Same wordstack structure
+            if KEVM.wordstack_len(cterm1.cell('WORDSTACK_CELL')) == KEVM.wordstack_len(cterm2.cell('WORDSTACK_CELL')):
+                return True
         return False
 
     @staticmethod
@@ -401,6 +323,10 @@ class KEVM(KProve, KRun):
                 KApply('<nonce>', [nonce]),
             ],
         )
+
+    @staticmethod
+    def wordstack_len(wordstack: KInner) -> int:
+        return len(flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', wordstack))
 
     @staticmethod
     def parse_bytestack(s: KInner) -> KApply:

@@ -15,7 +15,7 @@ from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KRul
 from pyk.prelude.kbool import TRUE, andBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
-from pyk.utils import FrozenDict
+from pyk.utils import FrozenDict, hash_str
 
 from .kevm import KEVM
 
@@ -167,6 +167,10 @@ class Contract:
             self.fields = FrozenDict(_fields)
 
     @cached_property
+    def digest(self) -> str:
+        return hash_str(f'{self.name} - {json.dumps(self.contract_json, sort_keys=True)}')
+
+    @cached_property
     def srcmap(self) -> dict[int, tuple[int, int, int, str, int]]:
         _srcmap = {}
 
@@ -298,13 +302,9 @@ class Contract:
     def sentences(self) -> list[KSentence]:
         return [self.subsort, self.production, self.macro_bin_runtime] + self.field_sentences + self.method_sentences
 
-    def method_by_name(self, name: str) -> Contract.Method | None:
-        methods = [method for method in self.methods if method.name == 'setUp']
-        if len(methods) > 1:
-            raise ValueError(f'Found multiple methods with name {name}, expected at most one')
-        if not methods:
-            return None
-        return methods[0]
+    @property
+    def method_by_name(self) -> dict[str, Contract.Method]:
+        return {method.name: method for method in self.methods}
 
 
 def solc_compile(contract_file: Path) -> dict[str, Any]:

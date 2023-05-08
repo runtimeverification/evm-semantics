@@ -30,11 +30,25 @@ contract DepthReverter {
 }
 
 contract ReverterWithReturn {
-    function revertUnless(bool returnInstead) public returns (bytes memory) {
-        if (returnInstead) {
-            return abi.encodePacked(bytes4(0xdeadbeef));
-        } else {
+    function returnBytesUnless(bool revertInstead)
+        public
+        returns (bytes memory)
+    {
+        if (revertInstead) {
             revert("Error");
+        } else {
+            return abi.encodePacked(bytes4(0xdeadbeef));
+        }
+    }
+
+    function returnTupleUnless(bool revertInstead)
+        public
+        returns (uint256, uint256)
+    {
+        if (revertInstead) {
+            revert("Error");
+        } else {
+            return (1, 2);
         }
     }
 }
@@ -120,8 +134,14 @@ contract ExpectRevertTest is Test {
 
     function test_expectRevert_returnValue() public {
         ReverterWithReturn reverter = new ReverterWithReturn();
+
         vm.expectRevert("Error");
-        bytes memory returnValue = reverter.revertUnless(false);
-        assertEq0(returnValue, "");
+        bytes memory returnValueBytes = reverter.returnBytesUnless(true);
+        assertEq0(returnValueBytes, "");
+
+        vm.expectRevert("Error");
+        (uint256 fst, uint256 snd) = reverter.returnTupleUnless(true);
+        assertEq(fst, 0);
+        assertEq(snd, 0);
     }
 }

@@ -1,14 +1,17 @@
 requires "evm.md"
 requires "buf.md"
-requires "int-simplification.k"
 requires "bitwise-simplification.k"
 requires "bytes-simplification.k"
+requires "evm-int-simplification.k"
+requires "int-simplification.k"
+
 
 
 module LEMMAS [symbolic]
-    imports INT-SIMPLIFICATION
     imports BITWISE-SIMPLIFICATION
     imports BYTES-SIMPLIFICATION
+    imports INT-SIMPLIFICATION
+    imports EVM-INT-SIMPLIFICATION
     imports LEMMAS-HASKELL
 
   // ########################
@@ -85,6 +88,9 @@ module LEMMAS [symbolic]
     rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true
       requires I1 =/=Int I2
       [simplification]
+
+ // Hardcoded #addrFromPrivateKey simplifications, see: https://github.com/runtimeverification/haskell-backend/issues/3573
+    rule #addrFromPrivateKey("0x0000000000000000000000000000000000000000000000000000000000000001") => 721457446580647751014191829380889690493307935711 [priority(40)]
 
 endmodule
 

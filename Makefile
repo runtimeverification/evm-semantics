@@ -54,7 +54,7 @@ export PLUGIN_FULL_PATH
         test-prove test-failing-prove test-foundry-kcfg-diff                                                                                 \
         test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-smoke \
         test-prove-mcd test-klab-prove                                                                                                       \
-        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-list                                                    \
+        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-bmc-prove test-foundry-list                             \
         test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                           \
         test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean foundry-fail                                                      \
         media media-pdf metropolis-theme                                                                                                     \
@@ -165,6 +165,7 @@ $(plugin_k_include)/%: $(PLUGIN_SUBMODULE)/plugin/%
 
 plugin-deps: $(plugin_includes) $(plugin_c_includes)
 
+
 # Building
 # --------
 
@@ -185,8 +186,6 @@ shell: poetry
 kevm-pyk: poetry-env
 	$(MAKE) -C $(KEVM_PYK_DIR)
 
-KOMPILE := $(POETRY_RUN) $(KEVM) kompile --pyk
-
 kevm_files := abi.md                          \
               asm.md                          \
               buf.md                          \
@@ -206,6 +205,7 @@ kevm_files := abi.md                          \
               state-utils.md                  \
               word.md                         \
               lemmas/lemmas.k                 \
+              lemmas/evm-int-simplification.k \
               lemmas/int-simplification.k     \
               lemmas/bitwise-simplification.k \
               lemmas/bytes-simplification.k
@@ -222,97 +222,109 @@ $(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
 	@mkdir -p $(dir $@)
 	install $< $@
 
-KOMPILE_OPTS = -I $(INSTALL_INCLUDE)/kframework
+KEVM_PYK              := $(POETRY_RUN) kevm-pyk
+KOMPILE               := KEVM_LIB=$(KEVM_LIB) $(KEVM_PYK) kompile
+KOMPILE_MAIN_FILE     :=
+KOMPILE_TARGET        :=
+KOMPILE_MAIN_MODULE   :=
+KOMPILE_SYNTAX_MODULE :=
 
+KOMPILE_OPTS :=
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
 endif
 
+kompile =                                        \
+    $(KOMPILE)                                   \
+        $(KOMPILE_MAIN_FILE)                     \
+        --target $(KOMPILE_TARGET)               \
+        --main-module $(KOMPILE_MAIN_MODULE)     \
+        --syntax-module $(KOMPILE_SYNTAX_MODULE) \
+        $(KOMPILE_OPTS)
+
+
 # Haskell
 
-haskell_dir            := haskell
-haskell_main_module    := EDSL
-haskell_syntax_module  := $(haskell_main_module)
-haskell_main_file      := edsl.md
-haskell_main_filename  := $(basename $(notdir $(haskell_main_file)))
-haskell_kompiled_dir   := $(haskell_dir)
-haskell_kompiled       := $(haskell_kompiled_dir)/definition.kore
+haskell_dir      := haskell
+haskell_kompiled := $(haskell_dir)/definition.kore
+kompile_haskell  := $(KEVM_LIB)/$(haskell_kompiled)
 
 ifeq ($(UNAME_S),Darwin)
-$(KEVM_LIB)/$(haskell_kompiled): $(libsecp256k1_out)
+$(kompile_haskell): $(libsecp256k1_out)
 endif
 
-$(KEVM_LIB)/$(haskell_kompiled): $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend haskell                        \
-	    $(KEVM_INCLUDE)/kframework/$(haskell_main_file) \
-	    $(HASKELL_KOMPILE_OPTS)                         \
-	    --main-module $(haskell_main_module)            \
-	    --syntax-module $(haskell_syntax_module)        \
-	    $(KOMPILE_OPTS) $(KEVM_OPTS)
+$(kompile_haskell): $(kevm_includes) $(plugin_includes)
+
+$(kompile_haskell): KOMPILE_TARGET        := haskell
+$(kompile_haskell): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/edsl.md
+$(kompile_haskell): KOMPILE_MAIN_MODULE   := EDSL
+$(kompile_haskell): KOMPILE_SYNTAX_MODULE := EDSL
+$(kompile_haskell):
+	$(kompile)
+
 
 # Standalone
 
-llvm_dir           := llvm
-llvm_main_module   := ETHEREUM-SIMULATION
-llvm_syntax_module := $(llvm_main_module)
-llvm_main_file     := driver.md
-llvm_main_filename := $(basename $(notdir $(llvm_main_file)))
-llvm_kompiled      := $(llvm_dir)/interpreter
+llvm_dir      := llvm
+llvm_kompiled := $(llvm_dir)/interpreter
+kompile_llvm  := $(KEVM_LIB)/$(llvm_kompiled)
 
 ifeq ($(UNAME_S),Darwin)
-$(KEVM_LIB)/$(llvm_kompiled): $(libcryptopp_out)
+$(kompile_llvm): $(libcryptopp_out)
 endif
 
-$(KEVM_LIB)/$(llvm_kompiled): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend llvm                        \
-	    $(KEVM_INCLUDE)/kframework/$(llvm_main_file) \
-	    --main-module $(llvm_main_module)            \
-	    --syntax-module $(llvm_syntax_module)        \
-	    $(KOMPILE_OPTS) $(KEVM_OPTS)
+$(kompile_llvm): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
+
+$(kompile_llvm): KOMPILE_TARGET        := llvm
+$(kompile_llvm): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/driver.md
+$(kompile_llvm): KOMPILE_MAIN_MODULE   := ETHEREUM-SIMULATION
+$(kompile_llvm): KOMPILE_SYNTAX_MODULE := ETHEREUM-SIMULATION
+$(kompile_llvm):
+	$(kompile)
+
 
 # Node
-
-node_dir           := node
-node_main_module   := EVM-NODE
-node_syntax_module := $(node_main_module)
-node_main_file     := evm-node.md
-node_main_filename := $(basename $(notdir $(node_main_file)))
-node_kore          := $(node_dir)/definition.kore
-node_kompiled      := $(node_dir)/build/kevm-vm
+#
+node_dir      := node
+node_kore     := $(node_dir)/definition.kore
+node_kompiled := $(node_dir)/build/kevm-vm
+kompile_node  := $(KEVM_LIB)/$(node_kore)
 export node_dir
 
-$(KEVM_LIB)/$(node_kore): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend node                        \
-	    $(KEVM_INCLUDE)/kframework/$(node_main_file) \
-	    --main-module $(node_main_module)            \
-	    --syntax-module $(node_syntax_module)        \
-	    $(KOMPILE_OPTS) $(KEVM_OPTS)
+$(kompile_node): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
+
+$(kompile_node): KOMPILE_TARGET        := node
+$(kompile_node): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/evm-node.md
+$(kompile_node): KOMPILE_MAIN_MODULE   := EVM-NODE
+$(kompile_node): KOMPILE_SYNTAX_MODULE := EVM-NODE
+$(kompile_node):
+	$(kompile)
+
 
 $(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_out)
 	@mkdir -p $(dir $@)
 	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) && $(MAKE)
 
+
 # Foundry
 
-foundry_dir           := foundry
-foundry_main_module   := FOUNDRY
-foundry_syntax_module := $(foundry_main_module)
-foundry_main_file     := foundry.md
-foundry_main_filename := $(basename $(notdir $(foundry_main_file)))
-foundry_kompiled_dir  := $(foundry_dir)
-foundry_kompiled      := $(foundry_kompiled_dir)/definition.kore
+foundry_dir      := foundry
+foundry_kompiled := $(foundry_dir)/definition.kore
+kompile_foundry  := $(KEVM_LIB)/$(foundry_kompiled)
 
 ifeq ($(UNAME_S),Darwin)
-$(KEVM_LIB)/$(foundry_kompiled): $(libsecp256k1_out)
+$(kompile_foundry): $(libsecp256k1_out)
 endif
 
-$(KEVM_LIB)/$(foundry_kompiled): $(kevm_includes) $(plugin_includes) $(lemma_includes) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend foundry                        \
-	    $(KEVM_INCLUDE)/kframework/$(foundry_main_file) \
-	    --main-module $(foundry_main_module)            \
-	    --syntax-module $(foundry_syntax_module)        \
-	    $(HASKELL_KOMPILE_OPTS)                         \
-	    $(KOMPILE_OPTS) $(KEVM_OPTS)
+$(kompile_foundry): $(kevm_includes) $(plugin_includes) $(lemma_includes)
+
+$(kompile_foundry): KOMPILE_TARGET        := foundry
+$(kompile_foundry): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/foundry.md
+$(kompile_foundry): KOMPILE_MAIN_MODULE   := FOUNDRY
+$(kompile_foundry): KOMPILE_SYNTAX_MODULE := FOUNDRY
+$(kompile_foundry):
+	$(kompile)
+
 
 # Installing
 # ----------
@@ -356,7 +368,7 @@ build-llvm:     $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
 build-haskell:  $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
 build-node:     $(KEVM_LIB)/$(node_kompiled)
 build-kevm:     $(KEVM_BIN)/kevm $(KEVM_LIB)/version $(kevm_includes) $(plugin_includes)
-build-foundry:  $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
+build-foundry:  $(KEVM_BIN)/kevm $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
@@ -412,31 +424,33 @@ test: test-conformance test-prove test-interactive test-parse test-kevm-pyk
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTESTS
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
-tests/specs/benchmarks/functional-spec%:     KPROVE_FILE   =  functional-spec
-tests/specs/benchmarks/functional-spec%:     KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/bihu/functional-spec%:           KPROVE_FILE   =  functional-spec
-tests/specs/bihu/functional-spec%:           KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/erc20/functional-spec%:          KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/examples/solidity-code-spec%:    KPROVE_EXT    =  md
-tests/specs/examples/solidity-code-spec%:    KPROVE_FILE   =  solidity-code-spec
-tests/specs/examples/erc20-spec%:            KPROVE_EXT    =  md
-tests/specs/examples/erc20-spec%:            KPROVE_FILE   =  erc20-spec
-tests/specs/examples/erc721-spec%:           KPROVE_EXT    =  md
-tests/specs/examples/erc721-spec%:           KPROVE_FILE   =  erc721-spec
-tests/specs/examples/storage-spec%:          KPROVE_EXT    =  md
-tests/specs/examples/storage-spec%:          KPROVE_FILE   =  storage-spec
-tests/specs/examples/sum-to-n-spec%:         KPROVE_FILE   =  sum-to-n-spec
-tests/specs/functional/infinite-gas-spec%:   KPROVE_FILE   =  infinite-gas-spec
-tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_FILE   =  lemmas-no-smt-spec
-tests/specs/functional/lemmas-no-smt-spec%:  KPROVE_OPTS   += --haskell-backend-command "kore-exec --smt=none"
-tests/specs/functional/lemmas-spec%:         KPROVE_FILE   =  lemmas-spec
-tests/specs/functional/merkle-spec%:         KPROVE_FILE   =  merkle-spec
-tests/specs/functional/storageRoot-spec%:    KPROVE_FILE   =  storageRoot-spec
-tests/specs/mcd/functional-spec%:            KPROVE_FILE   =  functional-spec
-tests/specs/mcd/functional-spec%:            KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/opcodes/evm-optimizations-spec%: KPROVE_EXT    =  md
-tests/specs/opcodes/evm-optimizations-spec%: KPROVE_FILE   =  evm-optimizations-spec
-tests/specs/opcodes/evm-optimizations-spec%: KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
+tests/specs/benchmarks/functional-spec%:              KPROVE_FILE   =  functional-spec
+tests/specs/benchmarks/functional-spec%:              KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/bihu/functional-spec%:                    KPROVE_FILE   =  functional-spec
+tests/specs/bihu/functional-spec%:                    KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/erc20/functional-spec%:                   KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/examples/solidity-code-spec%:             KPROVE_EXT    =  md
+tests/specs/examples/solidity-code-spec%:             KPROVE_FILE   =  solidity-code-spec
+tests/specs/examples/erc20-spec%:                     KPROVE_EXT    =  md
+tests/specs/examples/erc20-spec%:                     KPROVE_FILE   =  erc20-spec
+tests/specs/examples/erc721-spec%:                    KPROVE_EXT    =  md
+tests/specs/examples/erc721-spec%:                    KPROVE_FILE   =  erc721-spec
+tests/specs/examples/storage-spec%:                   KPROVE_EXT    =  md
+tests/specs/examples/storage-spec%:                   KPROVE_FILE   =  storage-spec
+tests/specs/examples/sum-to-n-spec%:                  KPROVE_FILE   =  sum-to-n-spec
+tests/specs/functional/infinite-gas-spec%:            KPROVE_FILE   =  infinite-gas-spec
+tests/specs/functional/evm-int-simplifications-spec%: KPROVE_FILE   =  evm-int-simplifications-spec
+tests/specs/functional/int-simplifications-spec%:     KPROVE_FILE   =  int-simplifications-spec
+tests/specs/functional/lemmas-no-smt-spec%:           KPROVE_FILE   =  lemmas-no-smt-spec
+tests/specs/functional/lemmas-no-smt-spec%:           KPROVE_OPTS   += --haskell-backend-command "kore-exec --smt=none"
+tests/specs/functional/lemmas-spec%:                  KPROVE_FILE   =  lemmas-spec
+tests/specs/functional/merkle-spec%:                  KPROVE_FILE   =  merkle-spec
+tests/specs/functional/storageRoot-spec%:             KPROVE_FILE   =  storageRoot-spec
+tests/specs/mcd/functional-spec%:                     KPROVE_FILE   =  functional-spec
+tests/specs/mcd/functional-spec%:                     KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_EXT    =  md
+tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_FILE   =  evm-optimizations-spec
+tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
 
 tests/%.run: tests/%
 	$(KEVM) interpret $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                                  \
@@ -483,13 +497,14 @@ foundry-clean:
 
 tests/foundry/%: KEVM := $(POETRY_RUN) kevm
 
-foundry_dir  := tests/foundry
+foundry_dir := tests/foundry
 foundry_out := $(foundry_dir)/out
 
 test-foundry-%: KEVM_OPTS += --pyk --verbose
 test-foundry-%: KEVM := $(POETRY_RUN) kevm
 test-foundry-kompile: tests/foundry/foundry.k.check
 test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
+test-foundry-bmc-prove: tests/foundry/out/kompiled/foundry.k.bmc-prove
 test-foundry-list: tests/foundry/foundry-list.check
 
 foundry-forge-build: $(foundry_out)
@@ -501,7 +516,7 @@ $(foundry_out):
 	rm -rf $@
 	cd $(dir $@) && forge build
 
-tests/foundry/foundry-list.out: tests/foundry/out/kompiled/foundry.k.prove
+tests/foundry/foundry-list.out: tests/foundry/out/kompiled/foundry.k.prove foundry-fail
 	$(KEVM) foundry-list --foundry-project-root $(foundry_dir) > $@
 
 tests/foundry/foundry-list.check: tests/foundry/foundry-list.out
@@ -519,6 +534,13 @@ tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
 	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
 	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
+
+tests/foundry/out/kompiled/foundry.k.bmc-prove: tests/foundry/out/kompiled/timestamp
+	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
+	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
+            --bmc-depth 3                                                    \
+	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
+	    $(addprefix --test , $(shell cat tests/foundry/bmc-tests))
 
 foundry_golden := tests/foundry/golden
 foundry_diff_tests := $(shell cat tests/foundry/checkoutput)
@@ -552,30 +574,32 @@ tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) kevm
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< ERC20 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC20-VERIFICATION > $@
+	$(KEVM) solc-to-k $< ERC20 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module ERC20-VERIFICATION > $@
 
 tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
 tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< ERC721 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module ERC721-VERIFICATION > $@
+	$(KEVM) solc-to-k $< ERC721 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module ERC721-VERIFICATION > $@
 
 tests/specs/examples/storage-spec/haskell/timestamp: tests/specs/examples/storage-bin-runtime.k
 tests/specs/examples/storage-bin-runtime.k: tests/specs/examples/Storage.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< Storage $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module STORAGE-VERIFICATION > $@
+	$(KEVM) solc-to-k $< Storage $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module STORAGE-VERIFICATION > $@
 
 tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< Empty $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_kompiled_dir) --main-module EMPTY-VERIFICATION > $@
+	$(KEVM) solc-to-k $< Empty $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module EMPTY-VERIFICATION > $@
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
 	$(POETRY_RUN) $(KEVM) prove $< $(KEVM_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS) \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
-tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) $(kevm_includes) $(plugin_includes) $(KEVM_BIN)/kevm
-	$(KOMPILE) --backend $(word 3, $(subst /, , $*)) $<                                                  \
-	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
-	    --main-module $(KPROVE_MODULE)                                                                   \
-	    --syntax-module $(KPROVE_MODULE)                                                                 \
-	    $(KOMPILE_OPTS) $(KEVM_OPTS)
+tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) $(kevm_includes) $(plugin_includes)
+	$(KOMPILE)                                                                                                  \
+		$<                                                                                                      \
+		--target $(word 3, $(subst /, , $*))                                                                    \
+	    --output-definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
+	    --main-module $(KPROVE_MODULE)                                                                          \
+	    --syntax-module $(KPROVE_MODULE)                                                                        \
+	    $(KOMPILE_OPTS)
 
 tests/%.search: tests/%
 	$(KEVM) search $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" $(KEVM_OPTS) $(KSEARCH_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) > $@-out
@@ -661,7 +685,7 @@ prove_haskell_definitions :=                                                    
                              tests/specs/mcd/functional-spec/haskell/timestamp            \
                              tests/specs/mcd/verification/haskell/timestamp               \
                              tests/specs/opcodes/evm-optimizations-spec/haskell/timestamp
-build-prove-haskell: $(prove_haskell_definitions)
+build-prove-haskell: $(KEVM_BIN)/kevm $(prove_haskell_definitions)
 build-prove: $(prove_haskell_definitions)
 
 test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
@@ -711,7 +735,6 @@ kevm_pyk_tests :=                                                               
 
 test-kevm-pyk: KEVM_OPTS += --pyk --verbose
 test-kevm-pyk: KEVM := $(POETRY_RUN) $(KEVM)
-test-kevm-pyk: KOMPILE = $(POETRY_RUN) $(KEVM) kompile
 test-kevm-pyk: $(kevm_pyk_tests) poetry
 
 # Interactive Tests

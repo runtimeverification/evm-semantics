@@ -4,7 +4,6 @@ import json
 import logging
 import sys
 from argparse import ArgumentParser
-from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -12,10 +11,9 @@ from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
-from pyk.ktool.kompile import KompileBackend
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
-from pyk.proof import AGProof
+from pyk.proof import APRProof
 
 from .foundry import (
     Foundry,
@@ -29,9 +27,10 @@ from .foundry import (
     foundry_step_node,
     foundry_to_dot,
 )
-from .kevm import KEVM, KEVMKompileMode
+from .kevm import KEVM
+from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_ag_proof_for_spec, parallel_kcfg_explore
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, parallel_kcfg_explore
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -44,11 +43,6 @@ if TYPE_CHECKING:
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
-
-
-class KompileTarget(Enum):
-    LINUX = 'linux'
-    DARWIN = 'darwin'
 
 
 def _ignore_arg(args: dict[str, Any], arg: str, cli_option: str) -> None:
@@ -81,31 +75,22 @@ def exec_compile(contract_file: Path, **kwargs: Any) -> None:
 
 
 def exec_kompile(
-    definition_dir: Path,
-    backend: KompileBackend,
+    target: KompileTarget,
+    output_dir: Path | None,
     main_file: Path,
     emit_json: bool,
-    kompile_mode: KEVMKompileMode,
     includes: list[str],
     main_module: str | None,
     syntax_module: str | None,
     ccopts: Iterable[str] = (),
-    llvm_kompile: bool = True,
-    target: KompileTarget | None = None,
     o0: bool = False,
     o1: bool = False,
     o2: bool = False,
     o3: bool = False,
     debug: bool = False,
-    plugin_include: Path | None = None,
-    libff_dir: Path | None = None,
-    brew_root: Path | None = None,
-    libcryptopp_dir: Path | None = None,
-    openssl_root: Path | None = None,
+    enable_llvm_debug: bool = False,
     **kwargs: Any,
 ) -> None:
-    _ignore_arg(kwargs, 'md_selector', f'--md-selector {kwargs["md_selector"]}')
-
     optimization = 0
     if o1:
         optimization = 1
@@ -114,53 +99,18 @@ def exec_kompile(
     if o3:
         optimization = 3
 
-    md_selector = 'k & ! node'
-    if kompile_mode == KEVMKompileMode.NODE:
-        md_selector = 'k & ! standalone'
-
-    if backend == KompileBackend.LLVM:
-        ccopts = list(ccopts)
-        if libff_dir is not None:
-            ccopts += [f'-L{libff_dir}/lib', f'-I{libff_dir}/include']
-        if plugin_include is not None:
-            ccopts += [
-                f'{plugin_include}/c/plugin_util.cpp',
-                f'{plugin_include}/c/crypto.cpp',
-                f'{plugin_include}/c/blake2.cpp',
-            ]
-        ccopts += ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
-        if target == KompileTarget.DARWIN:
-            if brew_root is not None:
-                ccopts += [
-                    f'-I{brew_root}/include',
-                    f'-L{brew_root}/lib',
-                ]
-            if openssl_root is not None:
-                ccopts += [
-                    f'-I{openssl_root}/include',
-                    f'-L{openssl_root}/lib',
-                ]
-            if libcryptopp_dir is not None:
-                ccopts += [
-                    f'-I{libcryptopp_dir}/include',
-                    f'-L{libcryptopp_dir}/lib',
-                ]
-        elif target == KompileTarget.LINUX:
-            ccopts += ['-lprocps']
-
-    KEVM.kompile(
-        definition_dir,
-        backend,
-        main_file,
-        emit_json=emit_json,
+    kevm_kompile(
+        target,
+        output_dir=output_dir,
+        main_file=main_file,
+        main_module=main_module,
+        syntax_module=syntax_module,
         includes=includes,
-        main_module_name=main_module,
-        syntax_module_name=syntax_module,
-        md_selector=md_selector,
-        debug=debug,
+        emit_json=emit_json,
         ccopts=ccopts,
-        llvm_kompile=llvm_kompile,
         optimization=optimization,
+        enable_llvm_debug=enable_llvm_debug,
+        debug=debug,
     )
 
 
@@ -213,7 +163,6 @@ def exec_foundry_kompile(
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
-    _ignore_arg(kwargs, 'backend', f'--backend {kwargs["backend"]}')
     _ignore_arg(kwargs, 'o0', '-O0')
     _ignore_arg(kwargs, 'o1', '-O1')
     _ignore_arg(kwargs, 'o2', '-O2')
@@ -307,7 +256,7 @@ def exec_prove(
             kcfg.replace_node(kcfg.get_unique_init().id, new_init)
             kcfg.replace_node(kcfg.get_unique_target().id, new_target)
 
-            proof_problems[claim.label] = AGProof(claim.label, kcfg, proof_dir=save_directory)
+            proof_problems[claim.label] = APRProof(claim.label, kcfg, proof_dir=save_directory)
 
     results = parallel_kcfg_explore(
         kevm,
@@ -353,7 +302,7 @@ def exec_show_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
-    ag_proof = get_ag_proof_for_spec(
+    apr_proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
@@ -366,8 +315,8 @@ def exec_show_kcfg(
 
     kcfg_show = KCFGShow(kevm)
     res_lines = kcfg_show.show(
-        ag_proof.id,
-        ag_proof.kcfg,
+        apr_proof.id,
+        apr_proof.kcfg,
         nodes=nodes,
         node_deltas=node_deltas,
         to_module=to_module,
@@ -389,7 +338,7 @@ def exec_view_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
-    ag_proof = get_ag_proof_for_spec(
+    apr_proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
@@ -400,7 +349,7 @@ def exec_view_kcfg(
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    viewer = KCFGViewer(ag_proof.kcfg, kevm, node_printer=kevm.short_info)
+    viewer = KCFGViewer(apr_proof.kcfg, kevm, node_printer=kevm.short_info)
     viewer.run()
 
 
@@ -417,6 +366,7 @@ def exec_foundry_prove(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
+    bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
@@ -444,6 +394,7 @@ def exec_foundry_prove(
         break_on_jumpi=break_on_jumpi,
         break_on_calls=break_on_calls,
         implication_every_block=implication_every_block,
+        bmc_depth=bmc_depth,
         bug_report=bug_report,
         kore_rpc_command=kore_rpc_command,
         smt_timeout=smt_timeout,
@@ -519,10 +470,11 @@ def exec_run(
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
-    ag_proofs_dir = foundry.out / 'ag_proofs'
-    contract_name = test.split('.')[0]
+    apr_proofs_dir = foundry.out / 'apr_proofs'
+    contract_name, test_name = test.split('.')
+    proof_digest = foundry.proof_digest(contract_name, test_name)
 
-    ag_proof = AGProof.read_proof(test, ag_proofs_dir)
+    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
@@ -530,7 +482,7 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     def _custom_view(elem: KCFGElem) -> Iterable[str]:
         return foundry.custom_view(contract_name, elem)
 
-    viewer = KCFGViewer(ag_proof.kcfg, foundry.kevm, node_printer=_short_info, custom_view=_custom_view)
+    viewer = KCFGViewer(apr_proof.kcfg, foundry.kevm, node_printer=_short_info, custom_view=_custom_view)
     viewer.run()
 
 
@@ -753,7 +705,6 @@ def _create_argument_parser() -> ArgumentParser:
     )
 
     k_kompile_args = ArgumentParser(add_help=False)
-    k_kompile_args.add_argument('--backend', type=KompileBackend, help='[llvm|haskell]')
     k_kompile_args.add_argument(
         '--emit-json',
         dest='emit_json',
@@ -785,6 +736,14 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Make kompile generate a dynamic llvm library.',
     )
+    k_kompile_args.add_argument(
+        '--enable-llvm-debug',
+        dest='enable_llvm_debug',
+        default=False,
+        action='store_true',
+        help='Make kompile generate debug symbols for llvm.',
+    )
+
     k_kompile_args.add_argument('-O0', dest='o0', default=False, action='store_true', help='Optimization level 0.')
     k_kompile_args.add_argument('-O1', dest='o1', default=False, action='store_true', help='Optimization level 1.')
     k_kompile_args.add_argument('-O2', dest='o2', default=False, action='store_true', help='Optimization level 2.')
@@ -861,23 +820,9 @@ def _create_argument_parser() -> ArgumentParser:
         'kompile', help='Kompile KEVM specification.', parents=[shared_args, k_args, k_kompile_args]
     )
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
+    kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|node|foundry]')
     kompile_args.add_argument(
-        '--kompile-mode',
-        type=KEVMKompileMode,
-        default=KEVMKompileMode.STANDALONE,
-        help='KEVM kompile mode, [standalone|node].',
-    )
-    kompile_args.add_argument('--plugin-include', type=dir_path, help='Path to plugin include directory.')
-    kompile_args.add_argument('--libff-dir', type=dir_path, help='Path to libff include directory.')
-    kompile_args.add_argument(
-        '--target', type=KompileTarget, default=KompileTarget.LINUX, help='Compilation target, [linux|darwin].'
-    )
-    kompile_args.add_argument('--libcryptopp-dir', type=dir_path, help='Path to libcryptopp include directory.')
-    kompile_args.add_argument(
-        '--brew-root', type=dir_path, help='Path to homebrew root directory (only for --target-darwin).'
-    )
-    kompile_args.add_argument(
-        '--openssl-root', type=dir_path, help='Path to openssl root directory (only for --target-darwin).'
+        '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )
 
     _ = command_parser.add_parser(
@@ -984,6 +929,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Reinitialize CFGs even if they already exist.',
+    )
+    foundry_prove_args.add_argument(
+        '--bmc-depth',
+        dest='bmc_depth',
+        default=None,
+        type=int,
+        help='Max depth of loop unrolling during bounded model checking',
     )
 
     foundry_show_args = command_parser.add_parser(

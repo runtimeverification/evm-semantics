@@ -18,9 +18,6 @@ from pyk.kast.manip import (
     minimize_term,
     ml_pred_to_bool,
     push_down_rewrites,
-    split_config_and_constraints,
-    split_config_from,
-    is_anon_var,
     set_cell,
     split_config_and_constraints,
     split_config_from,
@@ -29,7 +26,7 @@ from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.prelude import k
 from pyk.prelude.ml import mlTop
-from pyk.proof import AGProof, AGProver
+from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -48,7 +45,7 @@ if TYPE_CHECKING:
 _LOGGER: Final = logging.getLogger(__name__)
 
 
-def get_ag_proof_for_spec(  # noqa: N802
+def get_apr_proof_for_spec(  # noqa: N802
     kprove: KProve,
     spec_file: Path,
     save_directory: Path | None,
@@ -57,7 +54,7 @@ def get_ag_proof_for_spec(  # noqa: N802
     md_selector: str | None = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
-) -> AGProof:
+) -> APRProof:
     if save_directory is None:
         save_directory = Path('.')
         _LOGGER.info(f'Using default save_directory: {save_directory}')
@@ -74,13 +71,13 @@ def get_ag_proof_for_spec(  # noqa: N802
         )
     )
 
-    ag_proof = AGProof.read_proof(claim.label, save_directory)
-    return ag_proof
+    apr_proof = APRProof.read_proof(claim.label, save_directory)
+    return apr_proof
 
 
 def parallel_kcfg_explore(
     kprove: KProve,
-    proof_problems: dict[str, AGProof],
+    proof_problems: dict[str, APRProof | APRBMCProof],
     save_directory: Path | None = None,
     max_depth: int = 1000,
     max_iterations: int | None = None,
@@ -91,13 +88,15 @@ def parallel_kcfg_explore(
     implication_every_block: bool = False,
     is_terminal: Callable[[CTerm], bool] | None = None,
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
+    same_loop: Callable[[CTerm, CTerm], bool] | None = None,
+    bmc_depth: int | None = None,
     bug_report: BugReport | None = None,
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
 ) -> dict[str, bool]:
-    def _call_rpc(packed_args: tuple[str, AGProof, int]) -> bool:
-        _cfgid, _ag_proof, _index = packed_args
+    def _call_rpc(packed_args: tuple[str, APRProof, int]) -> bool:
+        _cfgid, _apr_proof, _index = packed_args
         terminal_rules = ['EVM.halt']
         cut_point_rules = []
         if break_every_step:
@@ -123,15 +122,22 @@ def parallel_kcfg_explore(
 
         with KCFGExplore(
             kprove,
-            id=_ag_proof.id,
+            id=_apr_proof.id,
             bug_report=bug_report,
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
         ) as kcfg_explore:
-            ag_prover = AGProver(_ag_proof, is_terminal=is_terminal, extract_branches=extract_branches)
+            prover: APRBMCProof | APRProver
+            if type(_apr_proof) is APRBMCProof:
+                assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
+                prover = APRBMCProver(
+                    _apr_proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop
+                )
+            else:
+                prover = APRProver(_apr_proof, is_terminal=is_terminal, extract_branches=extract_branches)
             try:
-                _cfg = ag_prover.advance_proof(
+                _cfg = prover.advance_proof(
                     kcfg_explore,
                     max_iterations=max_iterations,
                     execute_depth=max_depth,
@@ -162,7 +168,7 @@ def parallel_kcfg_explore(
 
 
 def print_failure_info(_cfg: KCFG, _cfgid: str, kcfg_explore: KCFGExplore) -> list[str]:
-#      unique_target = _cfg.get_unique_target()
+    #      unique_target = _cfg.get_unique_target()
 
     res_lines: list[str] = []
 
@@ -179,17 +185,16 @@ def print_failure_info(_cfg: KCFG, _cfgid: str, kcfg_explore: KCFGExplore) -> li
         res_lines.append('')
         res_lines.append('Stuck nodes:')
         for node in _cfg.stuck:
+            res_lines += [kcfg_explore.kprint.pretty_print(_cfg.path_constraints(node.id))]
 
-            res_lines += [kcfg_explore.kprint.pretty_print(constraint) for constraint in _cfg.path_constraints(node.id)]
-
-#              node_cterm = CTerm.from_kast(kcfg_explore.cterm_simplify(node.cterm))
-#              target_cterm = CTerm.from_kast(kcfg_explore.cterm_simplify(unique_target.cterm))
-#  
-#              res_lines.append('')
-#              res_lines.append(f'ID: {node.id}:')
-#              res_lines.append('Failed subsumption into the target node because:')
-#              _, reason = check_implication(kcfg_explore, node_cterm, target_cterm)
-#              res_lines += reason.split('\n')
+    #              node_cterm = CTerm.from_kast(kcfg_explore.cterm_simplify(node.cterm))
+    #              target_cterm = CTerm.from_kast(kcfg_explore.cterm_simplify(unique_target.cterm))
+    #
+    #              res_lines.append('')
+    #              res_lines.append(f'ID: {node.id}:')
+    #              res_lines.append('Failed subsumption into the target node because:')
+    #              _, reason = check_implication(kcfg_explore, node_cterm, target_cterm)
+    #              res_lines += reason.split('\n')
 
     return res_lines
 
@@ -257,7 +262,7 @@ def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> 
     return Subst(subst)(config)
 
 
-def check_implication(kcfg_explore: KCFGExplore, concrete: CTerm, abstract: CTerm) -> Tuple[bool, str]:
+def check_implication(kcfg_explore: KCFGExplore, concrete: CTerm, abstract: CTerm) -> tuple[bool, str]:
     def _is_cell_subst(csubst: KInner) -> bool:
         if type(csubst) is KApply and csubst.label.name == '_==K_':
             csubst_arg = csubst.args[0]
@@ -333,6 +338,7 @@ def no_cell_rewrite_to_dots(term: KInner) -> KInner:
         return _term
 
     return bottom_up(_no_cell_rewrite_to_dots, term)
+
 
 def ensure_ksequence_on_k_cell(cterm: CTerm) -> CTerm:
     k_cell = cterm.cell('K_CELL')
