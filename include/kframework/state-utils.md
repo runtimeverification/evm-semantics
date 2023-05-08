@@ -32,6 +32,8 @@ module STATE-UTILS
          <callDepth>        _ => 0          </callDepth>
          <callStack>        _ => .List      </callStack>
          <program>          _ => .Bytes     </program>
+         <basic-block>      _ => .Bytes     </basic-block>
+         <basic-blocks>     _ => .Map       </basic-blocks>
          <jumpDests>        _ => .Set       </jumpDests>
          <id>               _ => .Account   </id>
          <caller>           _ => .Account   </caller>

@@ -53,6 +53,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <callState>
               <program>   .Bytes </program>
               <jumpDests> .Set   </jumpDests>
+              <basic-block> .Bytes </basic-block>
+              <basic-blocks> .Map  </basic-blocks>
 
               // I_*
               <id>        .Account </id>                    // I_a
@@ -1350,9 +1352,16 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax KItem ::= "#loadProgram" Bytes
  // -------------------------------------
-    rule <k> #loadProgram BYTES => . ... </k>
+    rule <k> #loadProgram BYTES => #initBasicBlocks ... </k>
          <program> _ => BYTES </program>
          <jumpDests> _ => #computeValidJumpDests(BYTES) </jumpDests>
+
+    syntax KItem ::= "#initBasicBlocks"
+ // -----------------------------------
+    rule <k> #initBasicBlocks => . ... </k>
+         <program> PGM </program>
+         <jumpDests> JUMPDESTS </jumpDests>
+         <basic-blocks> _ => #computeBasicBlocks(PGM, qsort(Set2List(JUMPDESTS))) </basic-blocks>
 
     syntax KItem ::= "#touchAccounts" Account | "#touchAccounts" Account Account
  // ----------------------------------------------------------------------------
