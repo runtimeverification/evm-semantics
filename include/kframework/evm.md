@@ -1385,6 +1385,22 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT ListItem(I)) requires PGM [ I ] ==Int 91
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
+
+   syntax Map ::= #computeBasicBlocks(Bytes, List)           [function, memo]
+                | #computeBasicBlocks(Bytes, List, Int, Map) [function, klabel(#computeBasicBlocksAux)]
+ // ---------------------------------------------------------------------------------------------------
+   rule #computeBasicBlocks(PGM, .List)     => 0 |-> PGM
+   rule #computeBasicBlocks(PGM, JUMPDESTS) => #computeBasicBlocks(PGM, JUMPDESTS ListItem(lengthBytes(PGM)), 0, .Map)
+
+   rule #computeBasicBlocks(_PGM, .List, _, RESULT) => RESULT
+   rule #computeBasicBlocks(PGM,
+                            ListItem(NEXT_BB_START) JUMPDESTS,
+                            CURRENT_BB_START,
+                            RESULT) =>
+        #computeBasicBlocks(PGM,
+                            JUMPDESTS,
+                            NEXT_BB_START,
+                            RESULT (CURRENT_BB_START |-> #range(PGM, CURRENT_BB_START, NEXT_BB_START -Int CURRENT_BB_START)))
 ```
 
 ```k
