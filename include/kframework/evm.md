@@ -329,12 +329,11 @@ OpCode Execution
     syntax KItem ::= #halt(KItem)
 
  // ---------------------------------------------------
-    rule <k> #loadBasicBlock [ PGM_END ] => . ... </k>
+    rule <k> #loadBasicBlock [ PGM_END ] => #end EVMC_SUCCESS ... </k>
          <program> PGM </program>
          <output> _ => .Bytes </output>
       requires PGM_END ==Int lengthBytes(PGM)
 
-    // TODO: here we should start executing the new basic block by consuming its first opcode
     rule <k> #loadBasicBlock [ BLOCK_JUMPDEST ] => . ... </k>
          <basic-block>  REMAIDNER  => {BLOCKS[BLOCK_JUMPDEST]}:>Bytes </basic-block>
          <basic-blocks> BLOCKS                                        </basic-blocks>
