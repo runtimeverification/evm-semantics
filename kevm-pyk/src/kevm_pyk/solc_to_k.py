@@ -5,6 +5,7 @@ import logging
 import re
 from dataclasses import dataclass
 from functools import cached_property
+from json import JSONDecodeError
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
@@ -78,7 +79,12 @@ class Contract:
         def up_to_date(self, digest_file: Path) -> bool:
             if not digest_file.exists():
                 return False
-            digest_dict = json.loads(digest_file.read_text())
+            text = digest_file.read_text()
+            try:
+                digest_dict = json.loads(text)
+            except JSONDecodeError:
+                _LOGGER.warning('json text: ')
+                exit(1)
             if 'methods' not in digest_dict:
                 digest_dict['methods'] = {}
                 digest_file.write_text(json.dumps(digest_dict))
