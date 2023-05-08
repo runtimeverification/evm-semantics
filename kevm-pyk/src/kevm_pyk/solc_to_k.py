@@ -83,7 +83,7 @@ class Contract:
             try:
                 digest_dict = json.loads(text)
             except JSONDecodeError:
-                _LOGGER.warning('json text: ')
+                _LOGGER.warning(f'json text: {text}')
                 exit(1)
             if 'methods' not in digest_dict:
                 digest_dict['methods'] = {}
