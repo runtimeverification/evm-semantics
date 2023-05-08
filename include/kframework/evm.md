@@ -293,10 +293,13 @@ OpCode Execution
     rule #unconsOpCode(_, _)      => .NoOpCode                 [owise]
 
     syntax Bytes ::= #dropOpCode(Bytes, MaybeOpCode)  [function, total]
- // --------------------------------------------------------------
+ // -------------------------------------------------------------------
     rule #dropOpCode(BA, _)         => .Bytes                                         requires lengthBytes(BA) ==Int 0
     rule #dropOpCode(BA, .NoOpCode) => BA
-    rule #dropOpCode(BA, OP)        => substrBytes(BA, #widthOp(OP), lengthBytes(BA)) [owise]
+    rule #dropOpCode(BA, OP)        => substrBytes(BA, #widthOp(OP), lengthBytes(BA)) requires #widthOp(OP) <=Int lengthBytes(BA)
+    rule #dropOpCode(_, _)          => .Bytes                                         [owise]
+
+
 ```
 
 -   `#execute` loads the next opcode.
@@ -331,8 +334,7 @@ OpCode Execution
  // ---------------------------------------------------
     rule <k> #loadBasicBlock [ PGM_END ] => #end EVMC_SUCCESS ... </k>
          <program> PGM </program>
-         <output> _ => .Bytes </output>
-      requires PGM_END ==Int lengthBytes(PGM)
+      requires PGM_END >=Int lengthBytes(PGM)
 
     rule <k> #loadBasicBlock [ BLOCK_JUMPDEST ] => . ... </k>
          <basic-block>  REMAIDNER  => {BLOCKS[BLOCK_JUMPDEST]}:>Bytes </basic-block>
@@ -1435,17 +1437,18 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
 
    syntax Map ::= #computeBasicBlocks(Bytes, List)           [function, memo]
-                | #computeBasicBlocks(Bytes, List, Int, Map) [function, klabel(#computeBasicBlocksAux)]
+                | #computeBasicBlocksAux(Bytes, List, Int, Map) [function, klabel(#computeBasicBlocksAux)]
  // ---------------------------------------------------------------------------------------------------
-   rule #computeBasicBlocks(PGM, .List)     => 0 |-> PGM
-   rule #computeBasicBlocks(PGM, JUMPDESTS) => #computeBasicBlocks(PGM, JUMPDESTS ListItem(lengthBytes(PGM)), 0, .Map)
+   rule #computeBasicBlocks(PGM, .List)                 => 0 |-> PGM
+   rule #computeBasicBlocks(PGM, ListItem(0) JUMPDESTS) => #computeBasicBlocksAux(PGM, JUMPDESTS ListItem(lengthBytes(PGM)), 0, .Map)
+   rule #computeBasicBlocks(PGM, JUMPDESTS)             => #computeBasicBlocksAux(PGM, JUMPDESTS ListItem(lengthBytes(PGM)), 0, .Map) [owise]
 
-   rule #computeBasicBlocks(_PGM, .List, _, RESULT) => RESULT
-   rule #computeBasicBlocks(PGM,
+   rule #computeBasicBlocksAux(_PGM, .List, _, RESULT) => RESULT
+   rule #computeBasicBlocksAux(PGM,
                             ListItem(NEXT_BB_START) JUMPDESTS,
                             CURRENT_BB_START,
                             RESULT) =>
-        #computeBasicBlocks(PGM,
+        #computeBasicBlocksAux(PGM,
                             JUMPDESTS,
                             NEXT_BB_START,
                             RESULT (CURRENT_BB_START |-> #range(PGM, CURRENT_BB_START, NEXT_BB_START -Int CURRENT_BB_START)))
