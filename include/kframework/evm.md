@@ -1143,15 +1143,15 @@ For now, I assume that they instantiate an empty account and use the empty data.
     syntax UnStackOp ::= "BALANCE"
  // ------------------------------
     rule <k> BALANCE ACCT => BAL ~> #push ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            ...
          </account>
+      requires ACCT in ACCTS
 
-    rule <k> BALANCE ACCT => 0 ~> #push ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+    rule <k> BALANCE ACCT => 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
