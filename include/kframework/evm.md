@@ -1169,6 +1169,7 @@ For now, I assume that they instantiate an empty account and use the empty data.
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
     rule <k> EXTCODEHASH ACCT => keccak(CODE) ~> #push ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE:Bytes </code>
@@ -1176,21 +1177,9 @@ For now, I assume that they instantiate an empty account and use the empty data.
            <balance> BAL </balance>
            ...
          </account>
-      requires notBool #accountEmpty(CODE, NONCE, BAL)
+      requires ACCT in ACCTS andBool notBool #accountEmpty(CODE, NONCE, BAL)
 
-     rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <code> CODE </code>
-           <nonce> NONCE </nonce>
-           <balance> BAL </balance>
-           ...
-         </account>
-       requires #accountEmpty(CODE, NONCE, BAL)
-
-    rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+    rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k> [owise]
 ```
 
 TODO: What should happen in the case that the account doesn't exist with `EXTCODECOPY`?
