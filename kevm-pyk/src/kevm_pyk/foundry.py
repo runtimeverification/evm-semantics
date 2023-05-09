@@ -207,7 +207,7 @@ class Foundry:
         return KEVM.account_cell(
             Foundry.address_CHEATCODE(),  # Hardcoded for now
             intToken(0),
-            bytesToken('\x00'),
+            bytesToken(b'\x00'),
             store_var,
             KApply('.Map'),
             intToken(0),
