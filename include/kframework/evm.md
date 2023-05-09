@@ -1156,15 +1156,15 @@ For now, I assume that they instantiate an empty account and use the empty data.
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
     rule <k> EXTCODESIZE ACCT => lengthBytes(CODE) ~> #push ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
            ...
          </account>
+      requires ACCT in ACCTS
 
-    rule <k> EXTCODESIZE ACCT => 0 ~> #push ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
+    rule <k> EXTCODESIZE _ => 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
