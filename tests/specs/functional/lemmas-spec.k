@@ -268,6 +268,10 @@ module LEMMAS-SPEC
     claim [range-37]:
       <k> runLemma( _B1:Bytes [ 1 := _B2:Bytes ] [ -1 := _B3:Bytes ]) => doneLemma(.Bytes) ... </k>
 
+    claim [range-38]:
+      <k> runLemma( #range (#buf(8, X:Int), -3, _:Int) ) => doneLemma( .Bytes ) ... </k>
+      requires 0 <=Int X andBool X <Int pow64
+
  // #buf simplification
  // -------------------
     claim [bufExtractPadding]: <k> runLemma ( #asWord ( ( #range( #buf ( 32 , X ), 0, 28 ) ):Bytes ) ) => doneLemma ( 0 ) ... </k> requires #rangeUInt(32, X)
