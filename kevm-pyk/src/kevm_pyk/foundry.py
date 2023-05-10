@@ -231,17 +231,17 @@ def foundry_kompile(
 ) -> None:
     syntax_module = 'FOUNDRY-CONTRACTS'
     foundry = Foundry(foundry_root)
-    kompiled_dir = foundry.out / 'kompiled' if kompiled_dir is None else kompiled_dir
-    foundry_definition_dir = foundry.out / kompiled_dir
+    _kompiled_dir = foundry.out / 'kompiled' if kompiled_dir is None else Path(kompiled_dir)
+    foundry_definition_dir = foundry.out / _kompiled_dir
     foundry_requires_dir = foundry_definition_dir / 'requires'
     foundry_llvm_dir = foundry.out / 'kompiled-llvm'
     foundry_contracts_file = foundry_definition_dir / 'contracts.k'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
+    main_module = 'FOUNDRY-MAIN'
     ensure_dir_path(foundry_definition_dir)
     ensure_dir_path(foundry_requires_dir)
     ensure_dir_path(foundry_llvm_dir)
-    main_module = 'FOUNDRY-MAIN'
 
     requires_paths: dict[str, str] = {}
 
@@ -272,7 +272,7 @@ def foundry_kompile(
         if imp[0] in _imports:
             _imports[imp[0]].append(imp[1])
         else:
-            raise ValueError(f"Contract {imp[0]!r} doesn\'t exist.")
+            raise ValueError(f'Could not find contract: {imp[0]}')
 
     if regen or not foundry_contracts_file.exists() or not foundry_main_file.exists():
         requires = []
@@ -298,12 +298,10 @@ def foundry_kompile(
             definition_dir,
             extra_unparsing_modules=(bin_runtime_definition.all_modules + contract_main_definition.all_modules),
         )
-        with open(foundry_contracts_file, 'w') as fcf:
-            _LOGGER.info(f'Writing file: {foundry_contracts_file}')
-            fcf.write(kevm.pretty_print(bin_runtime_definition) + '\n')
-        with open(foundry_main_file, 'w') as fmf:
-            _LOGGER.info(f'Writing file: {foundry_main_file}')
-            fmf.write(kevm.pretty_print(contract_main_definition) + '\n')
+        foundry_contracts_file.write_text(kevm.pretty_print(bin_runtime_definition) + '\n')
+        _LOGGER.info(f'Wrote file: {foundry_contracts_file}')
+        foundry_contracts_file.write_text(kevm.pretty_print(contract_main_definition) + '\n')
+        _LOGGER.info(f'Wrote file: {foundry_main_file}')
 
     def _kompile(
         out_dir: Path,
@@ -665,12 +663,8 @@ def _foundry_to_contract_def(
     contracts: Iterable[Contract],
     requires: Iterable[str],
 ) -> KDefinition:
-    modules = []
+    modules = [contract_to_main_module(contract, empty_config, imports=['FOUNDRY']) for contract in contracts]
     main_module = Contract.contract_to_module_name(list(contracts)[0].name_upper, spec=False)
-    for contract in contracts:
-        module = contract_to_main_module(contract, empty_config, imports=['FOUNDRY'])
-        _LOGGER.info(f'Produced contract module: {module.name}')
-        modules.append(module)
 
     return KDefinition(
         main_module,
@@ -686,13 +680,10 @@ def _foundry_to_main_def(
     requires: Iterable[str],
     imports: dict[str, list[str]],
 ) -> KDefinition:
-    modules = []
-
-    for contract in contracts:
-        module = contract_to_verification_module(contract, empty_config, imports=imports[contract.name])
-        _LOGGER.info(f'Produced contract module: {module.name}')
-        modules.append(module)
-
+    modules = [
+        contract_to_verification_module(contract, empty_config, imports=imports[contract.name])
+        for contract in contracts
+    ]
     _main_module = KFlatModule(
         main_module,
         imports=(KImport(mname) for mname in [_m.name for _m in modules]),
