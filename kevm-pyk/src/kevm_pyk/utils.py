@@ -18,7 +18,7 @@ from pyk.kast.manip import (
 from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
-from pyk.utils import single, shorten_hash
+from pyk.utils import shorten_hash, single
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable
@@ -176,7 +176,6 @@ def print_failure_info(_cfg: KCFG, _cfgid: str, kcfg_explore: KCFGExplore) -> li
         res_lines.append('')
         res_lines.append('Stuck nodes:')
         for node in _cfg.stuck:
-
             res_lines.append(f'  Node id: {shorten_hash(node.id)}')
 
             simplified_node, _ = kcfg_explore.cterm_simplify(node.cterm)
