@@ -22,6 +22,7 @@ override_dh_auto_build:
 
 override_dh_auto_install:
 	make RELEASE=true install -j8 KOMPILE_OPTS='--read-only-kompiled-directory' DESTDIR="$(CURDIR)/debian/kevm" INSTALL_PREFIX="/usr"
+	cd kevm-pyk && pip install . --no-input --root $(CURDIR)/debian/kevm --prefix=/usr
 
 override_dh_auto_test:
 	true
