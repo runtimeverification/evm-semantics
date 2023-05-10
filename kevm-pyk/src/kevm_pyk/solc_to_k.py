@@ -223,7 +223,6 @@ class Contract:
         for method in contract_json['abi']:
             if method['type'] != 'function':
                 continue
-            _LOGGER.info(f'Current method: {method["name"]}')
             msig = method_sig_from_abi(method)
             method_selector: str = str(evm['methodIdentifiers'][msig])
             method_ast = method_ast_from_contract_ast(self.contract_json['ast'], method_selector)
