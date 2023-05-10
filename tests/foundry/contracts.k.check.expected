@@ -4372,6 +4372,94 @@ module SETUP2TEST-CONTRACT
 
 endmodule
 
+module SETUPDEPLOYTEST-CONTRACT
+    imports public FOUNDRY
+    
+    syntax Contract ::= SetUpDeployTestContract
+    
+    syntax SetUpDeployTestContract ::= "SetUpDeployTest" [symbol(), klabel(contract_SetUpDeployTest)]
+    
+      
+    
+    syntax Field ::= SetUpDeployTestField
+    
+    syntax SetUpDeployTestField ::= "IS_TEST" [symbol(), klabel(field_SetUpDeployTest_IS_TEST)]
+    
+    syntax SetUpDeployTestField ::= "_failed" [symbol(), klabel(field_SetUpDeployTest__failed)]
+    
+    syntax SetUpDeployTestField ::= "IS_SCRIPT" [symbol(), klabel(field_SetUpDeployTest_IS_SCRIPT)]
+    
+    syntax SetUpDeployTestField ::= "stdstore" [symbol(), klabel(field_SetUpDeployTest_stdstore)]
+    
+    syntax SetUpDeployTestField ::= "token" [symbol(), klabel(field_SetUpDeployTest_token)]
+    
+    rule  ( #loc ( SetUpDeployTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( SetUpDeployTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( SetUpDeployTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( SetUpDeployTest . stdstore ) => 1 )
+      
+    
+    rule  ( #loc ( SetUpDeployTest . token ) => 8 )
+      
+    
+    syntax Bytes ::= SetUpDeployTestContract "." SetUpDeployTestMethod [function(), symbol(), klabel(method_SetUpDeployTest)]
+    
+    syntax SetUpDeployTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_SetUpDeployTest_IS_SCRIPT_)]
+    
+    syntax SetUpDeployTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_SetUpDeployTest_IS_TEST_)]
+    
+    syntax SetUpDeployTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SetUpDeployTest_failed_)]
+    
+    syntax SetUpDeployTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_SetUpDeployTest_setUp_)]
+    
+    syntax SetUpDeployTestMethod ::= "test_extcodesize" "(" ")" [symbol(), klabel(method_SetUpDeployTest_test_extcodesize_)]
+    
+    syntax SetUpDeployTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_SetUpDeployTest_vm_)]
+    
+    rule  ( SetUpDeployTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( SetUpDeployTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( SetUpDeployTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( SetUpDeployTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
+      
+    
+    rule  ( SetUpDeployTest . test_extcodesize ( ) => #abiCallData ( "test_extcodesize" , .TypedArgs ) )
+      
+    
+    rule  ( SetUpDeployTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "test_extcodesize()" ) => 1657400005 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
+
+endmodule
+
 module SETUPTEST-CONTRACT
     imports public FOUNDRY
     
