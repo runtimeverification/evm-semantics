@@ -567,7 +567,7 @@ def foundry_simplify_node(
     with KCFGExplore(
         foundry.kevm, id=apr_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
-        new_term = kcfg_explore.cterm_simplify(cterm)
+        new_term, _ = kcfg_explore.cterm_simplify(cterm)
     if replace:
         apr_proof.kcfg.replace_node(node, CTerm.from_kast(new_term))
         apr_proof.write_proof()
@@ -601,7 +601,7 @@ def foundry_step_node(
         foundry.kevm, id=apr_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
         for _i in range(repeat):
-            node = kcfg_explore.step(apr_proof.kcfg, node, depth=depth)
+            node = kcfg_explore.step(apr_proof.kcfg, node, {}, depth=depth)
             apr_proof.write_proof()
 
 
@@ -625,7 +625,7 @@ def foundry_section_edge(
     with KCFGExplore(
         foundry.kevm, id=apr_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
     ) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(apr_proof.kcfg, source_id=source_id, target_id=target_id, sections=sections)
+        kcfg, _ = kcfg_explore.section_edge(apr_proof.kcfg, source_id, target_id, {}, sections=sections)
     apr_proof.write_proof()
 
 
@@ -724,11 +724,11 @@ def _method_to_apr_proof(
 
             if simplify_init:
                 _LOGGER.info(f'Simplifying KCFG for test: {test}')
-                kcfg_explore.simplify(kcfg)
+                kcfg_explore.simplify(kcfg, {})
         if bmc_depth is not None:
-            apr_proof = APRBMCProof(proof_digest, kcfg, proof_dir=save_directory, bmc_depth=bmc_depth)
+            apr_proof = APRBMCProof(proof_digest, kcfg, {}, proof_dir=save_directory, bmc_depth=bmc_depth)
         else:
-            apr_proof = APRProof(proof_digest, kcfg, proof_dir=save_directory)
+            apr_proof = APRProof(proof_digest, kcfg, {}, proof_dir=save_directory)
 
     apr_proof.write_proof()
     return apr_proof
