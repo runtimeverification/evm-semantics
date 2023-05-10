@@ -158,7 +158,6 @@ def exec_foundry_kompile(
     llvm_kompile: bool = True,
     debug: bool = False,
     llvm_library: bool = False,
-    kompiled_dir: str | None = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
@@ -181,7 +180,6 @@ def exec_foundry_kompile(
         llvm_kompile=llvm_kompile,
         debug=debug,
         llvm_library=llvm_library,
-        kompiled_dir=kompiled_dir,
     )
 
 
@@ -902,12 +900,6 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Rekompile foundry.k even if kompiled definition already exists.',
-    )
-    foundry_kompile.add_argument(
-        '--kompiled-dir',
-        dest='kompiled_dir',
-        type=str,
-        help='Folder (under [foundry-project-root]/out/) to output as kompiled directory.',
     )
 
     foundry_prove_args = command_parser.add_parser(
