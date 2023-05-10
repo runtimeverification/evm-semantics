@@ -18,7 +18,7 @@ from pyk.kast.manip import (
 from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
-from pyk.utils import single
+from pyk.utils import single, shorten_hash
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable
@@ -159,7 +159,7 @@ def parallel_kcfg_explore(
 
 
 def print_failure_info(_cfg: KCFG, _cfgid: str, kcfg_explore: KCFGExplore) -> list[str]:
-    #      unique_target = _cfg.get_unique_target()
+    unique_target = _cfg.get_unique_target()
 
     res_lines: list[str] = []
 
@@ -176,16 +176,21 @@ def print_failure_info(_cfg: KCFG, _cfgid: str, kcfg_explore: KCFGExplore) -> li
         res_lines.append('')
         res_lines.append('Stuck nodes:')
         for node in _cfg.stuck:
-            res_lines += [kcfg_explore.kprint.pretty_print(_cfg.path_constraints(node.id))]
 
-    #              node_cterm = CTerm.from_kast(kcfg_explore.cterm_simplify(node.cterm))
-    #              target_cterm = CTerm.from_kast(kcfg_explore.cterm_simplify(unique_target.cterm))
-    #
-    #              res_lines.append('')
-    #              res_lines.append(f'ID: {node.id}:')
-    #              res_lines.append('Failed subsumption into the target node because:')
-    #              _, reason = check_implication(kcfg_explore, node_cterm, target_cterm)
-    #              res_lines += reason.split('\n')
+            res_lines.append(f'  Node id: {shorten_hash(node.id)}')
+
+            simplified_node, _ = kcfg_explore.cterm_simplify(node.cterm)
+            simplified_target, _ = kcfg_explore.cterm_simplify(unique_target.cterm)
+
+            node_cterm = CTerm.from_kast(simplified_node)
+            target_cterm = CTerm.from_kast(simplified_target)
+
+            res_lines.append('  Failure reason:')
+            _, reason = kcfg_explore.implication_failure_reason(node_cterm, target_cterm)
+            res_lines += [f'    {line}' for line in reason.split('\n')]
+
+            res_lines.append('  Path condition:')
+            res_lines += [f'    {kcfg_explore.kprint.pretty_print(_cfg.path_constraints(node.id))}']
 
     return res_lines
 
