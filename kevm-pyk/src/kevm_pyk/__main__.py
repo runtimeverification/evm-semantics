@@ -420,6 +420,7 @@ def exec_foundry_show(
     omit_unstable_output: bool = False,
     frontier: bool = False,
     stuck: bool = False,
+    failure_info: bool = False,
     **kwargs: Any,
 ) -> None:
     output = foundry_show(
@@ -432,6 +433,7 @@ def exec_foundry_show(
         omit_unstable_output=omit_unstable_output,
         frontier=frontier,
         stuck=stuck,
+        failure_info=failure_info,
     )
     print(output)
 
@@ -937,6 +939,19 @@ def _create_argument_parser() -> ArgumentParser:
         type=int,
         help='Max depth of loop unrolling during bounded model checking',
     )
+    foundry_prove_args.add_argument(
+        '--failure-information',
+        dest='failure_info',
+        default=True,
+        action='store_true',
+        help='Show failure summary for all failing tests',
+    )
+    foundry_prove_args.add_argument(
+        '--no-failure-information',
+        dest='failure_info',
+        action='store_false',
+        help='Do not show failure summary for failing tests',
+    )
 
     foundry_show_args = command_parser.add_parser(
         'foundry-show',
@@ -950,6 +965,19 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Strip output that is likely to change without the contract logic changing',
+    )
+    foundry_show_args.add_argument(
+        '--failure-information',
+        dest='failure_info',
+        default=True,
+        action='store_true',
+        help='Show failure summary for cfg',
+    )
+    foundry_show_args.add_argument(
+        '--no-failure-information',
+        dest='failure_info',
+        action='store_false',
+        help='Do not show failure summary for cfg',
     )
     foundry_show_args.add_argument(
         '--frontier', dest='frontier', default=False, action='store_true', help='Also display frontier nodes'

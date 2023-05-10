@@ -85,6 +85,7 @@ def parallel_kcfg_explore(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    failure_info: bool = False,
 ) -> dict[str, bool]:
     def _call_rpc(packed_args: tuple[str, APRProof, int]) -> bool:
         _cfgid, _apr_proof, _index = packed_args
@@ -146,9 +147,10 @@ def parallel_kcfg_explore(
                 return True
             else:
                 _LOGGER.error(f'Proof failed: {_cfgid}')
-                failure_log = print_failure_info(_cfg, _cfgid, kcfg_explore)
-                for line in failure_log:
-                    _LOGGER.error(line)
+                if failure_info:
+                    failure_log = print_failure_info(_cfg, _cfgid, kcfg_explore)
+                    for line in failure_log:
+                        _LOGGER.warning(line)
                 return False
 
     with ProcessPool(ncpus=workers) as process_pool:
@@ -176,6 +178,7 @@ def print_failure_info(_cfg: KCFG, _cfgid: str, kcfg_explore: KCFGExplore) -> li
         res_lines.append('')
         res_lines.append('Stuck nodes:')
         for node in _cfg.stuck:
+            res_lines.append('')
             res_lines.append(f'  Node id: {shorten_hash(node.id)}')
 
             simplified_node, _ = kcfg_explore.cterm_simplify(node.cterm)

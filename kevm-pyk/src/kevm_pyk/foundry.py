@@ -29,7 +29,13 @@ from pyk.utils import hash_str, shorten_hashes, single, unique
 from .kevm import KEVM
 from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
 from .solc_to_k import Contract, contract_to_main_module
-from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, parallel_kcfg_explore
+from .utils import (
+    KDefinition__expand_macros,
+    abstract_cell_vars,
+    byte_offset_to_lines,
+    parallel_kcfg_explore,
+    print_failure_info,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -347,6 +353,7 @@ def foundry_prove(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    failure_info: bool = False,
 ) -> dict[str, bool]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -436,6 +443,7 @@ def foundry_prove(
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
+            failure_info=failure_info,
         )
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
@@ -458,6 +466,7 @@ def foundry_show(
     omit_unstable_output: bool = False,
     frontier: bool = False,
     stuck: bool = False,
+    failure_info: bool = False,
 ) -> str:
     contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
@@ -497,6 +506,10 @@ def foundry_show(
         omit_node_hash=omit_unstable_output,
         omit_cells=(unstable_cells if omit_unstable_output else []),
     )
+
+    if failure_info:
+        with KCFGExplore(foundry.kevm, id=apr_proof.id) as kcfg_explore:
+            res_lines += print_failure_info(apr_proof.kcfg, apr_proof.id, kcfg_explore)
 
     return '\n'.join(res_lines)
 

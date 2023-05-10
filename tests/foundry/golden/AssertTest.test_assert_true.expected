@@ -4,31 +4,31 @@
 │    pc: 0
 │    callDepth: 0
 │    statusCode: STATUSCODE
-│    src: tests/foundry/test/Simple.t.sol:5:48
+│    src: tests/foundry/test/Simple.t.sol:5:54
 │
-│  (300 steps)
+│  (331 steps)
 ├─ OMITTED HASH (expanded)
 │    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│    pc: 175
+│    pc: 213
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
-│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 │  (1 step)
 ├─ OMITTED HASH (expanded)
 │    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│    pc: 175
+│    pc: 213
 │    callDepth: 0
 │    statusCode: EVMC_SUCCESS
-│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 │  (2 steps)
 ├─ OMITTED HASH (leaf)
 │    k: #halt ~> CONTINUATION:K
-│    pc: 175
+│    pc: 213
 │    callDepth: 0
 │    statusCode: EVMC_SUCCESS
-│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 ┊  constraint: true
 ┊  subst: OMITTED SUBST
@@ -112,41 +112,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                </evm>
                <network>
                  <accounts>
-                   ( ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account> )
                    ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
@@ -164,7 +129,8 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                        0
                      </nonce>
                      ...
-                   </account> => <account>
+                   </account>
+                   <account>
                      <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
@@ -181,7 +147,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                        1
                      </nonce>
                      ...
-                   </account> ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -627,3 +593,4 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
 
 endmodule
 
+0 Failure nodes. (0 frontier and 0 stuck)

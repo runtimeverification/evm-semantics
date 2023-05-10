@@ -4,12 +4,12 @@
 │    pc: 0
 │    callDepth: 0
 │    statusCode: STATUSCODE
-│    src: tests/foundry/test/Simple.t.sol:5:48
+│    src: tests/foundry/test/Simple.t.sol:5:54
 │
-│  (523 steps)
+│  (554 steps)
 ├─ OMITTED HASH (expanded)
-│    k: CALL 9223372036854772923 645326474426547203313410069153905908525362434349 0 128  ...
-│    pc: 423
+│    k: CALL 9223372036854772901 645326474426547203313410069153905908525362434349 0 128  ...
+│    pc: 480
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:58:59
@@ -17,7 +17,7 @@
 │  (1 step)
 ├─ OMITTED HASH (expanded)
 │    k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
-│    pc: 423
+│    pc: 480
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:58:59
@@ -25,21 +25,21 @@
 │  (212 steps)
 ├─ OMITTED HASH (expanded)
 │    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 918
+│    pc: 992
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ OMITTED HASH (expanded)
 │    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 918
+│    pc: 992
 │    callDepth: 0
 │    statusCode: EVMC_REVERT
 │
 │  (5 steps)
 └─ OMITTED HASH (expanded, stuck, leaf)
      k: #halt ~> CONTINUATION:K
-     pc: 918
+     pc: 992
      callDepth: 0
      statusCode: EVMC_SUCCESS
    (stuck)
@@ -104,7 +104,7 @@ Node OMITTED HASH:
               0
             </callValue>
             <wordStack>
-              ( 342 : ( 174 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
+              ( 399 : ( 212 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
             </wordStack>
             <localMem>
               b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -113,7 +113,7 @@ Node OMITTED HASH:
               5
             </memoryUsed>
             <callGas>
-              9079256848778916998
+              9079256848778916976
             </callGas>
             <static>
               false
@@ -282,7 +282,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
            <kevm>
              <k>
                ( #execute
-               ~> CONTINUATION => CALL 9223372036854772923 645326474426547203313410069153905908525362434349 0 128 4 128 0
+               ~> CONTINUATION => CALL 9223372036854772901 645326474426547203313410069153905908525362434349 0 128 4 128 0
                ~> #pc [ CALL ]
                ~> #execute
                ~> CONTINUATION:K )
@@ -312,7 +312,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 132 : ( 4102309908 : ( 645326474426547203313410069153905908525362434349 : ( 174 : ( 709747105 : .WordStack ) ) ) ) ) )
+                     ( .WordStack => ( 132 : ( 4102309908 : ( 645326474426547203313410069153905908525362434349 : ( 212 : ( 709747105 : .WordStack ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
@@ -321,7 +321,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      ( 0 => 5 )
                    </memoryUsed>
                    <callGas>
-                     ( _CALLGAS_CELL => 9079256848778916998 )
+                     ( _CALLGAS_CELL => 9079256848778916976 )
                    </callGas>
                    <static>
                      false
@@ -347,41 +347,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                </evm>
                <network>
                  <accounts>
-                   ( ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account> )
                    ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
@@ -399,7 +364,8 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                        0
                      </nonce>
                      ...
-                   </account> => <account>
+                   </account>
+                   <account>
                      <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
@@ -416,7 +382,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                        1
                      </nonce>
                      ...
-                   </account> ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -496,7 +462,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
     
            <kevm>
              <k>
-               ( CALL 9223372036854772923 645326474426547203313410069153905908525362434349 0 128 4 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
+               ( CALL 9223372036854772901 645326474426547203313410069153905908525362434349 0 128 4 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
                ~> #call 728815563385977040452943777879061427756277306518 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"\xf4\x84H\x14" false
                ~> #return 128 0 )
                ~> #pc [ CALL ]
@@ -528,7 +494,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      0
                    </callValue>
                    <wordStack>
-                     ( 132 : ( 4102309908 : ( 645326474426547203313410069153905908525362434349 : ( 174 : ( 709747105 : .WordStack ) ) ) ) )
+                     ( 132 : ( 4102309908 : ( 645326474426547203313410069153905908525362434349 : ( 212 : ( 709747105 : .WordStack ) ) ) ) )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -537,7 +503,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916998
+                     9079256848778916976
                    </callGas>
                    <static>
                      false
@@ -714,7 +680,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      0
                    </callValue>
                    <wordStack>
-                     ( ( 132 => 342 ) : ( ( 4102309908 => 174 ) : ( ( 645326474426547203313410069153905908525362434349 => 709747105 ) : ( ( 174 : ( 709747105 : .WordStack ) ) => .WordStack ) ) ) )
+                     ( ( 132 => 399 ) : ( ( 4102309908 => 212 ) : ( ( 645326474426547203313410069153905908525362434349 => 709747105 ) : ( ( 212 : ( 709747105 : .WordStack ) ) => .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
@@ -723,7 +689,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916998
+                     9079256848778916976
                    </callGas>
                    <static>
                      false
@@ -905,7 +871,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      0
                    </callValue>
                    <wordStack>
-                     ( 342 : ( 174 : ( 709747105 : .WordStack ) ) )
+                     ( 399 : ( 212 : ( 709747105 : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -914,7 +880,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916998
+                     9079256848778916976
                    </callGas>
                    <static>
                      false
@@ -1096,7 +1062,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      0
                    </callValue>
                    <wordStack>
-                     ( 342 : ( 174 : ( 709747105 : .WordStack ) ) )
+                     ( 399 : ( 212 : ( 709747105 : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -1105,7 +1071,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916998
+                     9079256848778916976
                    </callGas>
                    <static>
                      false
@@ -1251,3 +1217,18 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
 
 endmodule
 
+1 Failure nodes. (0 frontier and 1 stuck)
+
+Stuck nodes:
+
+  Node id: 80848a..eac14c
+  Failure reason:
+    Implication check failed, the following is the remaining implication:
+    ( ( { true #Equals 0 <=Int CALLER_ID:Int }
+    #And ( { true #Equals 0 <=Int ORIGIN_ID:Int }
+    #And ( { true #Equals 0 <=Int NUMBER_CELL:Int }
+    #And ( { true #Equals CALLER_ID:Int <Int pow160 }
+    #And ( { true #Equals ORIGIN_ID:Int <Int pow160 }
+    #And { true #Equals NUMBER_CELL:Int <=Int maxSInt256 } ) ) ) ) ) #Implies { false #Equals foundry_success ( EVMC_SUCCESS , #lookup ( .Map , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) , false , false , false , false ) } )
+  Path condition:
+    #Top

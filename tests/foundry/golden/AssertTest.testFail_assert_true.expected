@@ -4,31 +4,31 @@
 │    pc: 0
 │    callDepth: 0
 │    statusCode: STATUSCODE
-│    src: tests/foundry/test/Simple.t.sol:5:48
+│    src: tests/foundry/test/Simple.t.sol:5:54
 │
-│  (238 steps)
+│  (269 steps)
 ├─ OMITTED HASH (expanded)
 │    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│    pc: 175
+│    pc: 213
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
-│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 │  (1 step)
 ├─ OMITTED HASH (expanded)
 │    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│    pc: 175
+│    pc: 213
 │    callDepth: 0
 │    statusCode: EVMC_SUCCESS
-│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 │  (2 steps)
 └─ OMITTED HASH (expanded, stuck, leaf)
      k: #halt ~> CONTINUATION:K
-     pc: 175
+     pc: 213
      callDepth: 0
      statusCode: EVMC_SUCCESS
-     src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+     src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
    (stuck)
 
 
@@ -326,41 +326,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-TRUE
                </evm>
                <network>
                  <accounts>
-                   ( ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account> )
                    ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
@@ -378,7 +343,8 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-TRUE
                        0
                      </nonce>
                      ...
-                   </account> => <account>
+                   </account>
+                   <account>
                      <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
@@ -395,7 +361,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-TRUE
                        1
                      </nonce>
                      ...
-                   </account> ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -841,3 +807,18 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-TRUE
 
 endmodule
 
+1 Failure nodes. (0 frontier and 1 stuck)
+
+Stuck nodes:
+
+  Node id: 30b447..c22b50
+  Failure reason:
+    Implication check failed, the following is the remaining implication:
+    ( ( { true #Equals 0 <=Int CALLER_ID:Int }
+    #And ( { true #Equals 0 <=Int ORIGIN_ID:Int }
+    #And ( { true #Equals 0 <=Int NUMBER_CELL:Int }
+    #And ( { true #Equals CALLER_ID:Int <Int pow160 }
+    #And ( { true #Equals ORIGIN_ID:Int <Int pow160 }
+    #And { true #Equals NUMBER_CELL:Int <=Int maxSInt256 } ) ) ) ) ) #Implies { false #Equals foundry_success ( EVMC_SUCCESS , #lookup ( .Map , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) , false , false , false , false ) } )
+  Path condition:
+    #Top

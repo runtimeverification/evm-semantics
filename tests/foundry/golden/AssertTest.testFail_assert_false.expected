@@ -4,26 +4,26 @@
 │    pc: 0
 │    callDepth: 0
 │    statusCode: STATUSCODE
-│    src: tests/foundry/test/Simple.t.sol:5:48
+│    src: tests/foundry/test/Simple.t.sol:5:54
 │
-│  (342 steps)
+│  (407 steps)
 ├─ OMITTED HASH (expanded)
 │    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 918
+│    pc: 992
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ OMITTED HASH (expanded)
 │    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 918
+│    pc: 992
 │    callDepth: 0
 │    statusCode: EVMC_REVERT
 │
 │  (2 steps)
 ├─ OMITTED HASH (leaf)
 │    k: #halt ~> CONTINUATION:K
-│    pc: 918
+│    pc: 992
 │    callDepth: 0
 │    statusCode: EVMC_REVERT
 │
@@ -77,7 +77,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 342 : ( 174 : ( 2057948334 : .WordStack ) ) ) )
+                     ( .WordStack => ( 399 : ( 212 : ( 2057948334 : .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -109,41 +109,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                </evm>
                <network>
                  <accounts>
-                   ( ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account> )
                    ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
@@ -161,7 +126,8 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                        0
                      </nonce>
                      ...
-                   </account> => <account>
+                   </account>
+                   <account>
                      <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
@@ -178,7 +144,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                        1
                      </nonce>
                      ...
-                   </account> ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -294,7 +260,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( 342 : ( 174 : ( 2057948334 : .WordStack ) ) )
+                     ( 399 : ( 212 : ( 2057948334 : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -477,7 +443,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( 342 : ( 174 : ( 2057948334 : .WordStack ) ) )
+                     ( 399 : ( 212 : ( 2057948334 : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -624,3 +590,4 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
 
 endmodule
 
+0 Failure nodes. (0 frontier and 0 stuck)
