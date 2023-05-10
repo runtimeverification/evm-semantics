@@ -47,7 +47,6 @@ CONCRETE_RULES: Final = (
     'EVM.#memoryUsageUpdate.some',
     'EVM.Rsstore.new',
     'EVM.Rsstore.old',
-    'EVM-TYPES.bytesRange',
     'EVM-TYPES.padRightToWidthNonEmpty',
     'EVM-TYPES.padToWidthNonEmpty',
     'EVM-TYPES.powmod.nonzero',
