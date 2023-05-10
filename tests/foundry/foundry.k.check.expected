@@ -4676,6 +4676,8 @@ module ASSERTTEST-BIN-RUNTIME
     
     syntax AssertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AssertTest_failed_)]
     
+    syntax AssertTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_AssertTest_setUp_)]
+    
     syntax AssertTestMethod ::= "testFail_assert_false" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_false_)]
     
     syntax AssertTestMethod ::= "testFail_assert_true" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_true_)]
@@ -4688,6 +4690,8 @@ module ASSERTTEST-BIN-RUNTIME
     
     syntax AssertTestMethod ::= "test_assert_true_branch" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_test_assert_true_branch_uint256)]
     
+    syntax AssertTestMethod ::= "test_failing_branch" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_test_failing_branch_uint256)]
+    
     syntax AssertTestMethod ::= "test_revert_branch" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_test_revert_branch_uint256_uint256)]
     
     syntax AssertTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_AssertTest_vm_)]
@@ -4699,6 +4703,9 @@ module ASSERTTEST-BIN-RUNTIME
       
     
     rule  ( AssertTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( AssertTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
     
     rule  ( AssertTest . testFail_assert_false ( ) => #abiCallData ( "testFail_assert_false" , .TypedArgs ) )
@@ -4720,6 +4727,10 @@ module ASSERTTEST-BIN-RUNTIME
        ensures #rangeUInt ( 256 , V0_x )
       
     
+    rule  ( AssertTest . test_failing_branch ( V0_x : uint256 ) => #abiCallData ( "test_failing_branch" , #uint256 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_x )
+      
+    
     rule  ( AssertTest . test_revert_branch ( V0_x : uint256 , V1_y : uint256 ) => #abiCallData ( "test_revert_branch" , #uint256 ( V0_x ) , #uint256 ( V1_y ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_x )
        andBool ( #rangeUInt ( 256 , V1_y )
@@ -4738,6 +4749,9 @@ module ASSERTTEST-BIN-RUNTIME
     rule  ( selector ( "failed()" ) => 3124842406 )
       
     
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
     rule  ( selector ( "testFail_assert_false()" ) => 2057948334 )
       
     
@@ -4754,6 +4768,9 @@ module ASSERTTEST-BIN-RUNTIME
       
     
     rule  ( selector ( "test_assert_true_branch(uint256)" ) => 3267411143 )
+      
+    
+    rule  ( selector ( "test_failing_branch(uint256)" ) => 1176678741 )
       
     
     rule  ( selector ( "test_revert_branch(uint256,uint256)" ) => 2349784459 )
