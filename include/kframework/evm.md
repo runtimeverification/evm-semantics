@@ -1382,16 +1382,10 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax KItem ::= "#loadProgram" Bytes
  // -------------------------------------
-    rule <k> #loadProgram BYTES => #initBasicBlocks ... </k>
+    rule <k> #loadProgram BYTES => . ... </k>
          <program> _ => BYTES </program>
          <jumpDests> _ => #computeValidJumpDests(BYTES) </jumpDests>
-
-    syntax KItem ::= "#initBasicBlocks"
- // -----------------------------------
-    rule <k> #initBasicBlocks => . ... </k>
-         <program> PGM </program>
-         <jumpDests> JUMPDESTS </jumpDests>
-         <basic-blocks> _ => #computeBasicBlocks(PGM, qsort(Set2List(JUMPDESTS))) </basic-blocks>
+         <basic-blocks> _ => #computeBasicBlocks(BYTES) </basic-blocks>
 
     syntax KItem ::= "#touchAccounts" Account | "#touchAccounts" Account Account
  // ----------------------------------------------------------------------------
@@ -1436,22 +1430,32 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT ListItem(I)) requires PGM [ I ] ==Int 91
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
 
-   syntax Map ::= #computeBasicBlocks(Bytes, List)           [function, memo]
-                | #computeBasicBlocksAux(Bytes, List, Int, Map) [function, klabel(#computeBasicBlocksAux)]
- // ---------------------------------------------------------------------------------------------------
-   rule #computeBasicBlocks(PGM, .List)                 => 0 |-> PGM
-   rule #computeBasicBlocks(PGM, ListItem(0) JUMPDESTS) => #computeBasicBlocksAux(PGM, JUMPDESTS ListItem(lengthBytes(PGM)), 0, .Map)
-   rule #computeBasicBlocks(PGM, JUMPDESTS)             => #computeBasicBlocksAux(PGM, JUMPDESTS ListItem(lengthBytes(PGM)), 0, .Map) [owise]
+   syntax Map ::= #computeBasicBlocks(Bytes)                [function, memo]
+                | #computeBasicBlocks(Bytes, Int, Int, Map) [function, klabel(#computeBasicBlocksAux)]
+ // -------------------------------------------------------------------------------------------------------
+   rule #computeBasicBlocks(PGM) => #let BLOCKS = #computeBasicBlocks(PGM, 0, 0, .Map)
+                                    #in #if size(BLOCKS) ==Int 0 #then (0 |-> PGM) #else BLOCKS #fi
 
-   rule #computeBasicBlocksAux(_PGM, .List, _, RESULT) => RESULT
-   rule #computeBasicBlocksAux(PGM,
-                            ListItem(NEXT_BB_START) JUMPDESTS,
-                            CURRENT_BB_START,
-                            RESULT) =>
-        #computeBasicBlocksAux(PGM,
-                            JUMPDESTS,
-                            NEXT_BB_START,
-                            RESULT (CURRENT_BB_START |-> #range(PGM, CURRENT_BB_START, NEXT_BB_START -Int CURRENT_BB_START)))
+   syntax Map ::= #computeBasicBlocksWithinBound(Bytes, Int, Int, Map) [function]
+ // -----------------------------------------------------------------------------------
+   rule #computeBasicBlocks(PGM, I, J, RESULT) => RESULT (J |-> substrBytes(PGM, J, lengthBytes(PGM)))
+     requires I >=Int lengthBytes(PGM) andBool J >Int 0
+   rule #computeBasicBlocks(PGM, I, J, RESULT) => RESULT
+     requires I >=Int lengthBytes(PGM) andBool J ==Int 0
+   rule #computeBasicBlocks(PGM, I, J, RESULT) => #computeBasicBlocksWithinBound(PGM, I, J, RESULT)
+     requires I <Int  lengthBytes(PGM)
+
+   rule #computeBasicBlocksWithinBound(PGM, I, _, RESULT) =>
+        #computeBasicBlocks(PGM, I +Int 1, I, RESULT)
+     requires PGM [ I ] ==Int 91
+      andBool I ==Int 0
+   rule #computeBasicBlocksWithinBound(PGM, I, J, RESULT) =>
+        #computeBasicBlocks(PGM, I +Int 1, I, RESULT (J |-> substrBytes(PGM, J, I)))
+     requires PGM [ I ] ==Int 91
+      andBool I >Int 0
+   rule #computeBasicBlocksWithinBound(PGM, I, J, RESULT) =>
+        #computeBasicBlocks(PGM, I +Int #widthOpCode(PGM [ I ]), J, RESULT)
+     requires notBool PGM [ I ] ==Int 91
 ```
 
 ```k
