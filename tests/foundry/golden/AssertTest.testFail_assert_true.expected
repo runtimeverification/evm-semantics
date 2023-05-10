@@ -91,7 +91,7 @@ Node OMITTED HASH:
               0
             </callValue>
             <wordStack>
-              ( 409427266 : .WordStack )
+              ( selector ( "testFail_assert_true()" ) : .WordStack )
             </wordStack>
             <localMem>
               b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -249,9 +249,9 @@ Node OMITTED HASH:
 #And ( { true #Equals 0 <=Int CALLER_ID:Int }
 #And ( { true #Equals 0 <=Int ORIGIN_ID:Int }
 #And ( { true #Equals 0 <=Int NUMBER_CELL:Int }
-#And ( { true #Equals CALLER_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
-#And ( { true #Equals ORIGIN_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
-#And { true #Equals NUMBER_CELL:Int <=Int 57896044618658097711785492504343953926634992332820282019728792003956564819967 } ) ) ) ) ) )
+#And ( { true #Equals CALLER_ID:Int <Int pow160 }
+#And ( { true #Equals ORIGIN_ID:Int <Int pow160 }
+#And { true #Equals NUMBER_CELL:Int <=Int maxBlockNum } ) ) ) ) ) )
 
 
 
