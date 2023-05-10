@@ -1,30 +1,8 @@
 requires "../contracts.k"
 
-module TEST-HELPER-LEMMAS
-  imports ASSERTTEST-CONTRACT
-
-  syntax Bytes ::= testFunction() [function]
-  syntax Set ::= testFunction2(Bytes) [function]
-
-  rule testFunction() => AssertTest.test_assert_true() [simplification]
-  rule testFunction() => #binRuntime(AssertTest) [simplification]
-  rule testFunction2(PGM) => #computeValidJumpDests(PGM) [simplification]
-
-endmodule
-
 module SUM-TO-N-INVARIANT
 
   imports LOOPSTEST-CONTRACT
-
-    rule N xorInt maxUInt256 => maxUInt256 -Int N 
-    requires #rangeUInt(256, N)
-    [simplification]
-
-    rule A *Int B <=Int C => A <=Int C /Int B
-    requires 0 <Int B
-     andBool 0 <=Int A
-     andBool 0 <=Int C
-    [simplification, concrete(B, C)]
 
   rule [foundry-sum-to-n-loop-invariant]:
   <kevm>

@@ -9,12 +9,6 @@ module VERIFICATION
     requires #rangeUInt(256, N)
     [simplification]
 
-    rule A *Int B <=Int C => A <=Int C /Int B
-    requires 0 <Int B
-     andBool 0 <=Int A
-     andBool 0 <=Int C
-    [simplification, concrete(B, C)]
-
 endmodule
 
 module SUM-TO-N-FOUNDRY-SPEC
