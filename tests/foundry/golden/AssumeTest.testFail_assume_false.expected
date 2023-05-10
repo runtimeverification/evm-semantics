@@ -270,7 +270,7 @@ Node OMITTED HASH:
 #And ( { true #Equals 0 <=Int VV1_b_114b9705:Int }
 #And ( { true #Equals CALLER_ID:Int <Int pow160 }
 #And ( { true #Equals ORIGIN_ID:Int <Int pow160 }
-#And ( { true #Equals NUMBER_CELL:Int <=Int maxBlockNum }
+#And ( { true #Equals NUMBER_CELL:Int <=Int maxSInt256 }
 #And { true #Equals VV1_b_114b9705:Int <Int pow256 } ) ) ) ) ) ) ) ) )
 
 
