@@ -244,8 +244,8 @@ def exec_prove(
 
             if simplify_init:
                 _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                _new_init = kcfg_explore.cterm_simplify(new_init)
-                _new_target = kcfg_explore.cterm_simplify(new_target)
+                _new_init, _ = kcfg_explore.cterm_simplify(new_init)
+                _new_target, _ = kcfg_explore.cterm_simplify(new_target)
                 if is_bottom(_new_init):
                     raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
                 if is_bottom(_new_target):
@@ -256,7 +256,7 @@ def exec_prove(
             kcfg.replace_node(kcfg.get_unique_init().id, new_init)
             kcfg.replace_node(kcfg.get_unique_target().id, new_target)
 
-            proof_problems[claim.label] = APRProof(claim.label, kcfg, proof_dir=save_directory)
+            proof_problems[claim.label] = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
 
     results = parallel_kcfg_explore(
         kevm,
