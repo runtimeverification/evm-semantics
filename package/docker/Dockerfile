@@ -16,6 +16,7 @@ RUN    apt-get update        \
         git                  \
         make                 \
         python3              \
+        python3-pip          \
         sudo                 \
         wget
 
@@ -43,5 +44,5 @@ RUN    sudo apt-get update        \
     && sudo apt-get upgrade --yes \
     && sudo apt-get install --yes ./kevm_${KEVM_VERSION}_amd64.deb
 
-ADD --chown=user:user ./kevm-pyk ./
-RUN cd kevm-pyk && pip install .
+ADD --chown=user:user ./kevm-pyk /home/user/kevm-pyk
+RUN cd /home/user/kevm-pyk && pip3 install .
