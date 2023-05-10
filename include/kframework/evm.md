@@ -1147,7 +1147,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
          </account>
       requires ACCT in ACCTS
 
-    rule <k> BALANCE ACCT => 0 ~> #push ... </k> [owise]
+    rule <k> BALANCE _ => 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
@@ -1175,7 +1175,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
          </account>
       requires ACCT in ACCTS andBool notBool #accountEmpty(CODE, NONCE, BAL)
 
-    rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k> [owise]
+    rule <k> EXTCODEHASH _ => 0 ~> #push ... </k> [owise]
 
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
@@ -1189,7 +1189,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
          </account>
       requires ACCT in ACCTS
 
-    rule <k> EXTCODECOPY ACCT _MEMSTART _PGMSTART _WIDTH => . ... </k> [owise]
+    rule <k> EXTCODECOPY _ _ _ _ => . ... </k> [owise]
 ```
 
 ### Account Storage Operations
