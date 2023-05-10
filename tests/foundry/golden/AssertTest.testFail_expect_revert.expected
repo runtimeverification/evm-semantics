@@ -104,7 +104,7 @@ Node OMITTED HASH:
               0
             </callValue>
             <wordStack>
-              ( 342 : ( 174 : ( 709747105 : .WordStack ) ) )
+              ( 342 : ( 174 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
             </wordStack>
             <localMem>
               b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -150,24 +150,6 @@ Node OMITTED HASH:
           <accounts>
             ( <account>
               <acctID>
-                728815563385977040452943777879061427756277306518
-              </acctID>
-              <balance>
-                0
-              </balance>
-              <storage>
-                .Map
-              </storage>
-              <origStorage>
-                .Map
-              </origStorage>
-              <nonce>
-                1
-              </nonce>
-              ...
-            </account>
-            <account>
-              <acctID>
                 645326474426547203313410069153905908525362434349
               </acctID>
               <balance>
@@ -181,6 +163,24 @@ Node OMITTED HASH:
               </origStorage>
               <nonce>
                 0
+              </nonce>
+              ...
+            </account>
+            <account>
+              <acctID>
+                728815563385977040452943777879061427756277306518
+              </acctID>
+              <balance>
+                0
+              </balance>
+              <storage>
+                .Map
+              </storage>
+              <origStorage>
+                .Map
+              </origStorage>
+              <nonce>
+                1
               </nonce>
               ...
             </account> )
@@ -270,9 +270,9 @@ Node OMITTED HASH:
 #And ( { true #Equals 0 <=Int CALLER_ID:Int }
 #And ( { true #Equals 0 <=Int ORIGIN_ID:Int }
 #And ( { true #Equals 0 <=Int NUMBER_CELL:Int }
-#And ( { true #Equals CALLER_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
-#And ( { true #Equals ORIGIN_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
-#And { true #Equals NUMBER_CELL:Int <=Int 57896044618658097711785492504343953926634992332820282019728792003956564819967 } ) ) ) ) ) )
+#And ( { true #Equals CALLER_ID:Int <Int pow160 }
+#And ( { true #Equals ORIGIN_ID:Int <Int pow160 }
+#And { true #Equals NUMBER_CELL:Int <=Int maxSInt256 } ) ) ) ) ) )
 
 
 
@@ -366,7 +366,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      ...
                    </account> => <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
+                       645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
                        0
@@ -378,7 +378,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                        .Map
                      </origStorage>
                      <nonce>
-                       1
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -401,7 +401,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      ...
                    </account> => <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -413,7 +413,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                        .Map
                      </origStorage>
                      <nonce>
-                       0
+                       1
                      </nonce>
                      ...
                    </account> ) )
@@ -565,24 +565,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -596,6 +578,24 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -751,24 +751,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -782,6 +764,24 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -942,24 +942,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -973,6 +955,24 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -1133,24 +1133,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -1164,6 +1146,24 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
