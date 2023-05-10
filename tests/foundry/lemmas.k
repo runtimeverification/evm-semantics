@@ -4,6 +4,10 @@ module SUM-TO-N-INVARIANT
 
   imports LOOPSTEST-CONTRACT
 
+  rule N xorInt maxUInt256 => maxUInt256 -Int N 
+  requires #rangeUInt(256, N)
+  [simplification]
+
   rule [foundry-sum-to-n-loop-invariant]:
   <kevm>
     <k>
