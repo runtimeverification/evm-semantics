@@ -13,7 +13,7 @@ from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, ensure_dir_path
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import get_cell, minimize_term
+from pyk.kast.manip import minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
@@ -766,12 +766,11 @@ def _init_cterm(init_term: KInner) -> CTerm:
     return init_cterm
 
 
-def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> KInner:
+def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, KInner]:
     apr_proof = APRProof.read_proof(proof_digest, proof_dir)
     target = apr_proof.kcfg.get_unique_target()
-    cover = single(apr_proof.kcfg.covers(target_id=target.id))
-    accounts_cell = get_cell(cover.source.cterm.config, 'ACCOUNTS_CELL')
-    return accounts_cell
+    cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
+    return (cterm.cell('ACCOUNTS_CELL'), cterm.cell('ACTIVEACCOUNTS_CELL'))
 
 
 def _init_term(
@@ -852,7 +851,9 @@ def _init_term(
     }
 
     if init_state:
-        init_subst['ACCOUNTS_CELL'] = get_final_accounts_cell(init_state, kcfgs_dir)
+        accts, active_accts = get_final_accounts_cell(init_state, kcfgs_dir)
+        init_subst['ACCOUNTS_CELL'] = accts
+        init_subst['ACTIVEACCOUNTS_CELL'] = active_accts
 
     if calldata is not None:
         init_subst['CALLDATA_CELL'] = calldata
