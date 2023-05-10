@@ -227,10 +227,11 @@ def foundry_kompile(
     llvm_kompile: bool = True,
     debug: bool = False,
     llvm_library: bool = False,
-    kompiled_dir: str = 'kompiled',
+    kompiled_dir: str | None = None,
 ) -> None:
     syntax_module = 'FOUNDRY-CONTRACTS'
     foundry = Foundry(foundry_root)
+    kompiled_dir = foundry.out / 'kompiled' if kompiled_dir is None else kompiled_dir
     foundry_definition_dir = foundry.out / kompiled_dir
     foundry_requires_dir = foundry_definition_dir / 'requires'
     foundry_llvm_dir = foundry.out / 'kompiled-llvm'

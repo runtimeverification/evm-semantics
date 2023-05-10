@@ -158,7 +158,7 @@ def exec_foundry_kompile(
     llvm_kompile: bool = True,
     debug: bool = False,
     llvm_library: bool = False,
-    kompiled_dir: str = 'kompiled',
+    kompiled_dir: str | None = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
@@ -907,7 +907,6 @@ def _create_argument_parser() -> ArgumentParser:
         '--kompiled-dir',
         dest='kompiled_dir',
         type=str,
-        default=Path('kompiled'),
         help='Folder (under [foundry-project-root]/out/) to output as kompiled directory.',
     )
 
