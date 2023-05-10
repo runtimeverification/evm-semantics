@@ -106,65 +106,11 @@ APRProof: ArithmeticTest.test_max2:d17dc3ea07c3a2ed77403f2f13c29fe30303528012855
     frontier: 0
     stuck: 0
 
-APRProof: AssertTest.testFail_assert_false:d1ad83c26534c40104d7a703d8c0311aea54779ff11ba084862795e69b68a209
-    status: ProofStatus.PASSED
-    nodes: 5
-    frontier: 0
-    stuck: 0
-
-APRProof: AssertTest.testFail_assert_true:d1ad83c26534c40104d7a703d8c0311aea54779ff11ba084862795e69b68a209
-    status: ProofStatus.FAILED
-    nodes: 5
-    frontier: 0
-    stuck: 1
-
-APRProof: AssertTest.testFail_expect_revert:d1ad83c26534c40104d7a703d8c0311aea54779ff11ba084862795e69b68a209
-    status: ProofStatus.FAILED
-    nodes: 7
-    frontier: 0
-    stuck: 1
-
-APRProof: AssertTest.test_assert_false:d1ad83c26534c40104d7a703d8c0311aea54779ff11ba084862795e69b68a209
-    status: ProofStatus.FAILED
-    nodes: 5
-    frontier: 0
-    stuck: 1
-
-APRProof: AssertTest.test_assert_true:d1ad83c26534c40104d7a703d8c0311aea54779ff11ba084862795e69b68a209
-    status: ProofStatus.PASSED
-    nodes: 5
-    frontier: 0
-    stuck: 0
-
 APRProof: AssertTest.test_assert_true_branch:d1ad83c26534c40104d7a703d8c0311aea54779ff11ba084862795e69b68a209
     status: ProofStatus.PASSED
     nodes: 11
     frontier: 0
     stuck: 0
-
-APRProof: AssertTest.test_revert_branch:d1ad83c26534c40104d7a703d8c0311aea54779ff11ba084862795e69b68a209
-    status: ProofStatus.FAILED
-    nodes: 11
-    frontier: 0
-    stuck: 1
-
-APRProof: AssumeTest.testFail_assume_false:d7ec3d637e70c98d19563ba5ec8c2813230ac8829c7ff77d7ce6a79c5ed5d133
-    status: ProofStatus.FAILED
-    nodes: 7
-    frontier: 0
-    stuck: 1
-
-APRProof: AssumeTest.testFail_assume_true:d7ec3d637e70c98d19563ba5ec8c2813230ac8829c7ff77d7ce6a79c5ed5d133
-    status: ProofStatus.PASSED
-    nodes: 11
-    frontier: 0
-    stuck: 0
-
-APRProof: AssumeTest.test_assume_false:d7ec3d637e70c98d19563ba5ec8c2813230ac8829c7ff77d7ce6a79c5ed5d133
-    status: ProofStatus.FAILED
-    nodes: 11
-    frontier: 0
-    stuck: 1
 
 APRProof: AssumeTest.test_assume_staticCall:d7ec3d637e70c98d19563ba5ec8c2813230ac8829c7ff77d7ce6a79c5ed5d133
     status: ProofStatus.PASSED

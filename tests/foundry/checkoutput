@@ -8,3 +8,4 @@ AssumeTest.testFail_assume_false
 AssumeTest.testFail_assume_true
 AssumeTest.test_assume_false
 LoopsTest.sum_N
+SetUpDeployTest.test_extcodesize
