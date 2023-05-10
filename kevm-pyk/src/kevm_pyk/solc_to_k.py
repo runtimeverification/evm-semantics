@@ -95,7 +95,12 @@ class Contract:
         def contract_up_to_date(self, digest_file: Path) -> bool:
             if not digest_file.exists():
                 return False
-            digest_dict = json.loads(digest_file.read_text())
+            text = digest_file.read_text()
+            try:
+                digest_dict = json.loads(text)
+            except JSONDecodeError:
+                _LOGGER.warning(f'json text: {text}')
+                exit(1)
             if 'methods' not in digest_dict:
                 digest_dict['methods'] = {}
                 digest_file.write_text(json.dumps(digest_dict))
