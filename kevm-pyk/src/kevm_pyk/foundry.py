@@ -231,7 +231,7 @@ def foundry_kompile(
 ) -> None:
     syntax_module = 'FOUNDRY-CONTRACTS'
     foundry = Foundry(foundry_root)
-    _kompiled_dir = foundry.out / 'kompiled' if kompiled_dir is None else Path(kompiled_dir)
+    _kompiled_dir = 'kompiled' if kompiled_dir is None else kompiled_dir
     foundry_definition_dir = foundry.out / _kompiled_dir
     foundry_requires_dir = foundry_definition_dir / 'requires'
     foundry_llvm_dir = foundry.out / 'kompiled-llvm'
@@ -274,6 +274,9 @@ def foundry_kompile(
         else:
             raise ValueError(f'Could not find contract: {imp[0]}')
 
+    _LOGGER.info(f'foundry_contracts_file: {foundry_contracts_file}')
+    _LOGGER.info(f'foundry_main_file: {foundry_main_file}')
+
     if regen or not foundry_contracts_file.exists() or not foundry_main_file.exists():
         requires = []
         requires += [f'requires/{name}' for name in list(requires_paths.keys())]
@@ -300,7 +303,7 @@ def foundry_kompile(
         )
         foundry_contracts_file.write_text(kevm.pretty_print(bin_runtime_definition) + '\n')
         _LOGGER.info(f'Wrote file: {foundry_contracts_file}')
-        foundry_contracts_file.write_text(kevm.pretty_print(contract_main_definition) + '\n')
+        foundry_main_file.write_text(kevm.pretty_print(contract_main_definition) + '\n')
         _LOGGER.info(f'Wrote file: {foundry_main_file}')
 
     def _kompile(

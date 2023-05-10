@@ -21,9 +21,9 @@ module SUM-TO-N-INVARIANT
     [simplification]
 
     rule A *Int B <=Int C => A <=Int C /Int B
-    requires B >Int 0
-     andBool A >=Int 0
-     andBool C >=Int 0
+    requires 0 <Int B
+     andBool 0 <=Int A
+     andBool 0 <=Int C
     [simplification, concrete(B, C)]
 
   rule [foundry-sum-to-n-loop-invariant]:
