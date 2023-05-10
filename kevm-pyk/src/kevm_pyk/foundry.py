@@ -800,6 +800,8 @@ def _init_term(
         'CALLDEPTH_CELL': intToken(0),
         'PROGRAM_CELL': program,
         'JUMPDESTS_CELL': KEVM.compute_valid_jumpdests(program),
+        'BASICBLOCK_CELL': KApply('.Bytes_BYTES-HOOKED_Bytes'),
+        'BASICBLOCKS_CELL': KEVM.compute_basic_blocks(program),
         'ORIGIN_CELL': KVariable('ORIGIN_ID'),
         'LOG_CELL': KApply('.List'),
         'ID_CELL': Foundry.address_TEST_CONTRACT(),

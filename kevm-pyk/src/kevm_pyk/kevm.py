@@ -260,6 +260,10 @@ class KEVM(KProve, KRun):
         return KApply('#computeValidJumpDests(_)_EVM_Set_Bytes', [p])
 
     @staticmethod
+    def compute_basic_blocks(p: KInner) -> KApply:
+        return KApply('#computeBasicBlocks(_)_EVM_Map_Bytes', [p])
+
+    @staticmethod
     def bin_runtime(c: KInner) -> KApply:
         return KApply('binRuntime', [c])
 
