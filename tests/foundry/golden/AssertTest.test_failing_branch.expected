@@ -1,9 +1,9 @@
 
 ┌─ OMITTED HASH (init, expanded)
-│    k: #execute ~> CONTINUATION:K
+│    k: #execute ~> CONTINUATION
 │    pc: 0
 │    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
+│    statusCode: STATUSCODE
 │    src: tests/foundry/test/Simple.t.sol:5:54
 │
 │  (616 steps)
@@ -51,10 +51,10 @@
 ┃  ┊  constraint: true
 ┃  ┊  subst: OMITTED SUBST
 ┃  └─ OMITTED HASH (target, leaf)
-┃       k: #halt ~> CONTINUATION:K
-┃       pc: PC_CELL_5d410f2a:Int
-┃       callDepth: CALLDEPTH_CELL_5d410f2a:Int
-┃       statusCode: STATUSCODE_FINAL:StatusCode
+┃       k: #halt ~> CONTINUATION
+┃       pc: PC_CELL_5d410f2a
+┃       callDepth: CALLDEPTH_CELL_5d410f2a
+┃       statusCode: STATUSCODE_FINAL
 ┃
 ┗━━┓ constraint: { true #Equals ( notBool 100 <=Int VV0_x_114b9705:Int ) }
    │
@@ -91,10 +91,10 @@
 Target Nodes:
 
 OMITTED HASH (target, leaf)
- k: #halt ~> CONTINUATION:K
- pc: PC_CELL_5d410f2a:Int
- callDepth: CALLDEPTH_CELL_5d410f2a:Int
- statusCode: STATUSCODE_FINAL:StatusCode
+ k: #halt ~> CONTINUATION
+ pc: PC_CELL_5d410f2a
+ callDepth: CALLDEPTH_CELL_5d410f2a
+ statusCode: STATUSCODE_FINAL
 
 
 Node OMITTED HASH:
@@ -312,10 +312,11 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
     
            <kevm>
              <k>
-               ( .K => JUMPI 526 bool2Word ( 100 <=Int VV0_x_114b9705:Int )
-               ~> #pc [ JUMPI ] )
+               ( #execute
+               ~> CONTINUATION => JUMPI 526 bool2Word ( 100 <=Int VV0_x_114b9705:Int )
+               ~> #pc [ JUMPI ]
                ~> #execute
-               ~> _CONTINUATION
+               ~> CONTINUATION:K )
              </k>
              <mode>
                NORMAL
@@ -336,7 +337,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      728815563385977040452943777879061427756277306518
                    </id>
                    <callData>
-                     b"F\"\xb1U" +Bytes #buf ( 32 , VV0_x_114b9705:Int )
+                     ( AssertTest . test_failing_branch ( VV0_x_114b9705 : uint256 ) => b"F\"\xb1U" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) )
                    </callData>
                    <callValue>
                      0
@@ -345,7 +346,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      ( .WordStack => ( VV0_x_114b9705:Int : ( 212 : ( 1176678741 : .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
-                     ( b"" => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
+                     ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
                    </localMem>
                    <memoryUsed>
                      ( 0 => 3 )
@@ -455,7 +456,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                  0
                </expectedValue>
                <expectedData>
-                 b""
+                 ( .Bytes => b"" )
                </expectedData>
                <opcodeType>
                  .OpcodeType

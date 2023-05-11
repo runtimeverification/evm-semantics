@@ -371,6 +371,7 @@ def exec_foundry_prove(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    failure_info: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -399,6 +400,7 @@ def exec_foundry_prove(
         kore_rpc_command=kore_rpc_command,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
+        failure_info=failure_info
     )
     failed = 0
     for pid, r in results.items():
@@ -969,7 +971,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_show_args.add_argument(
         '--failure-information',
         dest='failure_info',
-        default=True,
+        default=False,
         action='store_true',
         help='Show failure summary for cfg',
     )
