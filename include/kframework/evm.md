@@ -1127,33 +1127,28 @@ Operators that require access to the rest of the Ethereum network world-state ca
     syntax UnStackOp ::= "BALANCE"
  // ------------------------------
     rule <k> BALANCE ACCT => BAL ~> #push ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            ...
          </account>
-      requires ACCT in ACCTS
 
     rule <k> BALANCE _ => 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
     rule <k> EXTCODESIZE ACCT => lengthBytes(CODE) ~> #push ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
            ...
          </account>
-      requires ACCT in ACCTS
 
     rule <k> EXTCODESIZE _ => 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
     rule <k> EXTCODEHASH ACCT => keccak(CODE) ~> #push ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE:Bytes </code>
@@ -1161,7 +1156,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
            <balance> BAL </balance>
            ...
          </account>
-      requires ACCT in ACCTS andBool notBool #accountEmpty(CODE, NONCE, BAL)
+      requires notBool #accountEmpty(CODE, NONCE, BAL)
 
     rule <k> EXTCODEHASH _ => 0 ~> #push ... </k> [owise]
 
@@ -1169,13 +1164,11 @@ Operators that require access to the rest of the Ethereum network world-state ca
  // ------------------------------------
     rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </k>
          <localMem> LM => LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH) ] </localMem>
-         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <code> PGM </code>
            ...
          </account>
-      requires ACCT in ACCTS
 
     rule <k> EXTCODECOPY _ _ _ _ => . ... </k> [owise]
 ```
