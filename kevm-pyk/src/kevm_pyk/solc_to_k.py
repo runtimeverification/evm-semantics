@@ -41,11 +41,22 @@ class Contract:
         arg_types: tuple[str, ...]
         contract_name: str
         contract_digest: str
+        contract_storage_digest: str
         payable: bool
         signature: str
         ast: dict | None
 
-        def __init__(self, msig: str, id: int, abi: dict, ast: dict | None, contract_name: str, contract_digest: str, sort: KSort) -> None:
+        def __init__(
+            self,
+            msig: str,
+            id: int,
+            abi: dict,
+            ast: dict | None,
+            contract_name: str,
+            contract_digest: str,
+            contract_storage_digest: str,
+            sort: KSort,
+        ) -> None:
             self.signature = msig
             self.name = abi['name']
             self.id = id
@@ -53,6 +64,7 @@ class Contract:
             self.arg_types = tuple([input['type'] for input in abi['inputs']])
             self.contract_name = contract_name
             self.contract_digest = contract_digest
+            self.contract_storage_digest = contract_storage_digest
             self.sort = sort
             # TODO: Check that we're handling all state mutability cases
             self.payable = abi['stateMutability'] == 'payable'
@@ -111,9 +123,8 @@ class Contract:
         @cached_property
         def digest(self) -> str:
             ast = json.dumps(self.ast, sort_keys=True) if self.ast is not None else {}
-            storage_layout = json.dumps(self.contract.contract_json['storageLayout'], sort_keys=True)
             contract_digest = self.contract_digest if not self.is_setup else {}
-            return hash_str(f'{self.signature}{ast}{storage_layout}{contract_digest}')
+            return hash_str(f'{self.signature}{ast}{self.contract_storage_digest}{contract_digest}')
 
         @property
         def production(self) -> KProduction:
@@ -217,7 +228,9 @@ class Contract:
             method_selector: str = str(evm['methodIdentifiers'][msig])
             mid = int(method_selector, 16)
             method_ast = function_asts[method_selector] if method_selector in function_asts else None
-            _m = Contract.Method(msig, mid, method, method_ast, self.name, self.digest, self.sort_method)
+            _m = Contract.Method(
+                msig, mid, method, method_ast, self.name, self.digest, self.storage_digest, self.sort_method
+            )
             _methods.append(_m)
 
         self.methods = tuple(sorted(_methods, key=(lambda method: method.signature)))
@@ -236,6 +249,10 @@ class Contract:
     @cached_property
     def digest(self) -> str:
         return hash_str(f'{self.name} - {json.dumps(self.contract_json, sort_keys=True)}')
+
+    @cached_property
+    def storage_digest(self) -> str:
+        return hash_str(f'{self.name} - {json.dumps(self.contract_json["storageLayout"], sort_keys=True)}')
 
     @cached_property
     def srcmap(self) -> dict[int, tuple[int, int, int, str, int]]:
