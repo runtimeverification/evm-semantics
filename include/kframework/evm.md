@@ -341,6 +341,7 @@ OpCode Execution
          <basic-blocks> BLOCKS                                        </basic-blocks>
        requires BLOCK_JUMPDEST in_keys(BLOCKS)
         andBool lengthBytes(REMAIDNER) ==Int 0
+        andBool lengthBytes({BLOCKS[BLOCK_JUMPDEST]}:>Bytes) >Int 0
 ```
 
 ### Single Step
