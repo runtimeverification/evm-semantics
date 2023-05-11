@@ -207,13 +207,12 @@ class Contract:
         self.bytecode = deployed_bytecode['object'].replace('0x', '')
         self.raw_sourcemap = deployed_bytecode['sourceMap'] if 'sourceMap' in deployed_bytecode else None
 
-        contract_ast = single(
-            [
-                node
-                for node in self.contract_json['ast']['nodes']
-                if node['nodeType'] == 'ContractDefinition' and node['name'] == self.name
-            ]
-        )
+        contract_ast_nodes = [
+            node
+            for node in self.contract_json['ast']['nodes']
+            if node['nodeType'] == 'ContractDefinition' and node['name'] == self.name
+        ]
+        contract_ast = single(contract_ast_nodes) if len(contract_ast_nodes) > 0 else {'nodes': []}
         function_asts = {
             node['functionSelector']: node
             for node in contract_ast['nodes']
