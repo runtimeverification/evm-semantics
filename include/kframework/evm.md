@@ -1416,7 +1416,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
                 | #computeBasicBlocks(Bytes, Int, Int, Map) [function, klabel(#computeBasicBlocksAux)]
  // -------------------------------------------------------------------------------------------------------
    rule #computeBasicBlocks(PGM) => #let BLOCKS = #computeBasicBlocks(PGM, 0, 0, .Map)
-                                    #in #if size(BLOCKS) ==Int 0 #then (0 |-> PGM) #else BLOCKS #fi
+                                    #in #if size(BLOCKS) ==Int 0 andBool lengthBytes(PGM) >Int 0 #then (0 |-> PGM) #else BLOCKS #fi
 
    syntax Map ::= #computeBasicBlocksWithinBound(Bytes, Int, Int, Map) [function]
  // -----------------------------------------------------------------------------------
