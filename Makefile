@@ -105,6 +105,10 @@ ifneq ($(APPLE_SILICON),)
     LIBFF_CMAKE_FLAGS += -DCURVE=ALT_BN128 -DUSE_ASM=Off
 endif
 
+ifeq ($(LIBFF_NO_FPIC),)
+    LIBFF_CMAKE_FLAGS += -DCMAKE_CXX_FLAGS=-fPIC
+endif
+
 $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
 	@mkdir -p $(PLUGIN_SUBMODULE)/deps/libff/build
 	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                                     \
