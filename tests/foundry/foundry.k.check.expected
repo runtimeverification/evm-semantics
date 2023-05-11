@@ -52,6 +52,7 @@ module FOUNDRY-MAIN
     imports public SAFETEST-VERIFICATION
     imports public SCRIPT-VERIFICATION
     imports public SETUP2TEST-VERIFICATION
+    imports public SETUPDEPLOYTEST-VERIFICATION
     imports public SETUPTEST-VERIFICATION
     imports public SIGNTEST-VERIFICATION
     imports public ASSERTTEST-VERIFICATION
@@ -424,6 +425,13 @@ endmodule
 
 module SETUP2TEST-VERIFICATION
     imports public SETUP2TEST-CONTRACT
+    
+    
+
+endmodule
+
+module SETUPDEPLOYTEST-VERIFICATION
+    imports public SETUPDEPLOYTEST-CONTRACT
     
     
 
