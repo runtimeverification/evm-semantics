@@ -400,7 +400,7 @@ def exec_foundry_prove(
         kore_rpc_command=kore_rpc_command,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
-        failure_info=failure_info
+        failure_info=failure_info,
     )
     failed = 0
     for pid, r in results.items():
