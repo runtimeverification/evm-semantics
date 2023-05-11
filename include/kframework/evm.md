@@ -1385,6 +1385,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #loadProgram BYTES => . ... </k>
          <program> _ => BYTES </program>
          <jumpDests> _ => #computeValidJumpDests(BYTES) </jumpDests>
+         <basic-block> _ => .Bytes </basic-block>
          <basic-blocks> _ => #computeBasicBlocks(BYTES) </basic-blocks>
 
     syntax KItem ::= "#touchAccounts" Account | "#touchAccounts" Account Account
