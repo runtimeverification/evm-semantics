@@ -475,8 +475,6 @@ def foundry_prove(
     failed = [setup_cfg for setup_cfg, passed in results.items() if not passed]
     if failed:
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
-    contracts = unique({test.split('.')[0] for test in tests})
-    _LOGGER.info(f'contracts: {contracts}')
 
     for method in test_methods:
         method.update_digest(foundry.out / 'digest')
@@ -732,7 +730,6 @@ def _method_to_apr_proof(
         if method_name != 'setUp' and 'setUp' in contract.method_by_name:
             setup_digest = f'{contract_name}.setUp:{contract.digest}'
             _LOGGER.info(f'Using setUp method for test: {test}')
-            _LOGGER.info(f'method.digest: {method.digest}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
         kcfg = _method_to_cfg(empty_config, contract, method, save_directory, init_state=setup_digest)
