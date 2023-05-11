@@ -1123,37 +1123,37 @@ Operators that require access to the rest of the Ethereum network world-state ca
 
 ### Account Queries
 
-TODO: It's unclear what to do in the case of an account not existing for these operators.
-`BALANCE` is specified to push 0 in this case, but the others are not specified.
-For now, I assume that they instantiate an empty account and use the empty data.
-
 ```k
     syntax UnStackOp ::= "BALANCE"
  // ------------------------------
     rule <k> BALANCE ACCT => BAL ~> #push ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            ...
          </account>
+      requires ACCT in ACCTS
 
-    rule <k> BALANCE _ACCT => 0 ~> #push ... </k> [owise]
+    rule <k> BALANCE _ => 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
     rule <k> EXTCODESIZE ACCT => lengthBytes(CODE) ~> #push ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
            ...
          </account>
+      requires ACCT in ACCTS
 
-    rule <k> EXTCODESIZE _ACCT => 0 ~> #push ... </k> [owise]
-
+    rule <k> EXTCODESIZE _ => 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
     rule <k> EXTCODEHASH ACCT => keccak(CODE) ~> #push ... </k>
+         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE:Bytes </code>
@@ -1161,36 +1161,23 @@ For now, I assume that they instantiate an empty account and use the empty data.
            <balance> BAL </balance>
            ...
          </account>
-      requires notBool #accountEmpty(CODE, NONCE, BAL)
+      requires ACCT in ACCTS andBool notBool #accountEmpty(CODE, NONCE, BAL)
 
-     rule <k> EXTCODEHASH ACCT => 0 ~> #push ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <code> CODE </code>
-           <nonce> NONCE </nonce>
-           <balance> BAL </balance>
-           ...
-         </account>
-       requires #accountEmpty(CODE, NONCE, BAL)
+    rule <k> EXTCODEHASH _ => 0 ~> #push ... </k> [owise]
 
-    rule <k> EXTCODEHASH _ACCT => 0 ~> #push ... </k> [owise]
-```
-
-TODO: What should happen in the case that the account doesn't exist with `EXTCODECOPY`?
-Should we pad zeros (for the copied "program")?
-
-```k
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </k>
          <localMem> LM => LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH) ] </localMem>
+         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <code> PGM </code>
            ...
          </account>
+      requires ACCT in ACCTS
 
-    rule <k> EXTCODECOPY _ACCT _MEMSTART _PGMSTART _WIDTH => . ... </k> [owise]
+    rule <k> EXTCODECOPY _ _ _ _ => . ... </k> [owise]
 ```
 
 ### Account Storage Operations

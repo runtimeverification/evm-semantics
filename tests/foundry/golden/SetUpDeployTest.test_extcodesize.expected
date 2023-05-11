@@ -4,28 +4,31 @@
 │    pc: 0
 │    callDepth: 0
 │    statusCode: STATUSCODE
-│    src: tests/foundry/test/Simple.t.sol:5:48
+│    src: tests/foundry/test/SetUpDeploy.t.sol:18:35
 │
-│  (342 steps)
+│  (435 steps)
 ├─ OMITTED HASH (expanded)
-│    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 918
+│    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+│    pc: 112
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
+│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (1 step)
 ├─ OMITTED HASH (expanded)
-│    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 918
+│    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+│    pc: 112
 │    callDepth: 0
-│    statusCode: EVMC_REVERT
+│    statusCode: EVMC_SUCCESS
+│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (2 steps)
 ├─ OMITTED HASH (leaf)
 │    k: #halt ~> CONTINUATION:K
-│    pc: 918
+│    pc: 112
 │    callDepth: 0
-│    statusCode: EVMC_REVERT
+│    statusCode: EVMC_SUCCESS
+│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 ┊  constraint: true
 ┊  subst: OMITTED SUBST
@@ -38,14 +41,14 @@
 
 
 
-module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
+module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
     
     
            <kevm>
              <k>
                ( #execute
-               ~> CONTINUATION => #end EVMC_REVERT
-               ~> #pc [ REVERT ]
+               ~> CONTINUATION => #end EVMC_SUCCESS
+               ~> #pc [ STOP ]
                ~> #execute
                ~> CONTINUATION:K )
              </k>
@@ -58,7 +61,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
              <ethereum>
                <evm>
                  <output>
-                   ( _OUTPUT_CELL => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" )
+                   ( _OUTPUT_CELL => b"" )
                  </output>
                  <callStack>
                    .List
@@ -71,16 +74,16 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                      728815563385977040452943777879061427756277306518
                    </id>
                    <callData>
-                     ( AssertTest . testFail_assert_false ( ) => b"z\xa9\xcc\xae" )
+                     ( SetUpDeployTest . test_extcodesize ( ) => b"b\xc9\xea\xc5" )
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 342 : ( 174 : ( 2057948334 : .WordStack ) ) ) )
+                     ( .WordStack => ( 1657400005 : .WordStack ) )
                    </wordStack>
                    <localMem>
-                     ( .Bytes => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
+                     ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
                    </localMem>
                    <memoryUsed>
                      ( 0 => 3 )
@@ -98,10 +101,10 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                      .List
                    </log>
                    <accessedAccounts>
-                     .Set
+                     ( .Set => SetItem ( 491460923342184218035706888008750043977755113263 ) )
                    </accessedAccounts>
                    <accessedStorage>
-                     .Map
+                     ( .Map => ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 8 ) ) )
                    </accessedStorage>
                    ...
                  </substate>
@@ -109,41 +112,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                </evm>
                <network>
                  <accounts>
-                   ( ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account> )
                    ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
@@ -161,7 +129,26 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                        0
                      </nonce>
                      ...
-                   </account> => <account>
+                   </account>
+                   ( <account>
+                     <acctID>
+                       491460923342184218035706888008750043977755113263
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       ( 0 |-> 0 )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
                      <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
@@ -169,13 +156,13 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                        0
                      </balance>
                      <storage>
-                       .Map
+                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
                      </storage>
                      <origStorage>
                        .Map
                      </origStorage>
                      <nonce>
-                       1
+                       2
                      </nonce>
                      ...
                    </account> ) )
@@ -258,8 +245,8 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
     
            <kevm>
              <k>
-               ( #end EVMC_REVERT => #halt )
-               ~> #pc [ REVERT ]
+               ( #end EVMC_SUCCESS => #halt )
+               ~> #pc [ STOP ]
                ~> #execute
                ~> _CONTINUATION
              </k>
@@ -272,10 +259,10 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
              <ethereum>
                <evm>
                  <output>
-                   b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
+                   b""
                  </output>
                  <statusCode>
-                   ( _STATUSCODE => EVMC_REVERT )
+                   ( _STATUSCODE => EVMC_SUCCESS )
                  </statusCode>
                  <callStack>
                    .List
@@ -288,16 +275,16 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                      728815563385977040452943777879061427756277306518
                    </id>
                    <callData>
-                     b"z\xa9\xcc\xae"
+                     b"b\xc9\xea\xc5"
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( 342 : ( 174 : ( 2057948334 : .WordStack ) ) )
+                     ( 1657400005 : .WordStack )
                    </wordStack>
                    <localMem>
-                     b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
+                     b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
                    <memoryUsed>
                      3
@@ -315,10 +302,10 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                      .List
                    </log>
                    <accessedAccounts>
-                     .Set
+                     SetItem ( 491460923342184218035706888008750043977755113263 )
                    </accessedAccounts>
                    <accessedStorage>
-                     .Map
+                     ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 8 ) )
                    </accessedStorage>
                    ...
                  </substate>
@@ -344,15 +331,15 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                      </nonce>
                      ...
                    </account>
-                   <account>
+                   ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
+                       491460923342184218035706888008750043977755113263
                      </acctID>
                      <balance>
                        0
                      </balance>
                      <storage>
-                       .Map
+                       ( 0 |-> 0 )
                      </storage>
                      <origStorage>
                        .Map
@@ -361,7 +348,25 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                        1
                      </nonce>
                      ...
-                   </account> )
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       2
+                     </nonce>
+                     ...
+                   </account> ) )
                  </accounts>
                  ...
                </network>
@@ -442,7 +447,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
            <kevm>
              <k>
                #halt
-               ~> ( #pc [ REVERT ]
+               ~> ( #pc [ STOP ]
                ~> #execute => .K )
                ~> _CONTINUATION
              </k>
@@ -455,10 +460,10 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
              <ethereum>
                <evm>
                  <output>
-                   b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
+                   b""
                  </output>
                  <statusCode>
-                   EVMC_REVERT
+                   EVMC_SUCCESS
                  </statusCode>
                  <callStack>
                    .List
@@ -471,16 +476,16 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                      728815563385977040452943777879061427756277306518
                    </id>
                    <callData>
-                     b"z\xa9\xcc\xae"
+                     b"b\xc9\xea\xc5"
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( 342 : ( 174 : ( 2057948334 : .WordStack ) ) )
+                     ( 1657400005 : .WordStack )
                    </wordStack>
                    <localMem>
-                     b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
+                     b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
                    <memoryUsed>
                      3
@@ -498,10 +503,10 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                      .List
                    </log>
                    <accessedAccounts>
-                     .Set
+                     SetItem ( 491460923342184218035706888008750043977755113263 )
                    </accessedAccounts>
                    <accessedStorage>
-                     .Map
+                     ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 8 ) )
                    </accessedStorage>
                    ...
                  </substate>
@@ -527,15 +532,15 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                      </nonce>
                      ...
                    </account>
-                   <account>
+                   ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
+                       491460923342184218035706888008750043977755113263
                      </acctID>
                      <balance>
                        0
                      </balance>
                      <storage>
-                       .Map
+                       ( 0 |-> 0 )
                      </storage>
                      <origStorage>
                        .Map
@@ -544,7 +549,25 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                        1
                      </nonce>
                      ...
-                   </account> )
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       2
+                     </nonce>
+                     ...
+                   </account> ) )
                  </accounts>
                  ...
                </network>
