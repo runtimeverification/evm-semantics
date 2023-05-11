@@ -39,20 +39,20 @@ class Contract:
         sort: KSort
         arg_names: tuple[str, ...]
         arg_types: tuple[str, ...]
-        contract: Contract
         contract_name: str
+        contract_digest: str
         payable: bool
         signature: str
         ast: dict | None
 
-        def __init__(self, msig: str, id: int, abi: dict, ast: dict | None, contract: Contract, sort: KSort) -> None:
+        def __init__(self, msig: str, id: int, abi: dict, ast: dict | None, contract_name: str, contract_digest: str, sort: KSort) -> None:
             self.signature = msig
             self.name = abi['name']
             self.id = id
             self.arg_names = tuple([f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])])
             self.arg_types = tuple([input['type'] for input in abi['inputs']])
-            self.contract = contract
-            self.contract_name = contract.name
+            self.contract_name = contract_name
+            self.contract_digest = contract_digest
             self.sort = sort
             # TODO: Check that we're handling all state mutability cases
             self.payable = abi['stateMutability'] == 'payable'
@@ -95,7 +95,7 @@ class Contract:
                 digest_file.write_text(json.dumps(digest_dict))
             if self.qualified_name not in digest_dict['methods']:
                 return False
-            return digest_dict['methods'][self.qualified_name]['contract'] == self.contract.digest
+            return digest_dict['methods'][self.qualified_name]['contract'] == self.contract_digest
 
         def update_digest(self, digest_file: Path) -> None:
             digest_dict = {}
@@ -103,7 +103,7 @@ class Contract:
                 digest_dict = json.loads(digest_file.read_text())
             if 'methods' not in digest_dict:
                 digest_dict['methods'] = {}
-            digest_dict['methods'][self.qualified_name] = {'method': self.digest, 'contract': self.contract.digest}
+            digest_dict['methods'][self.qualified_name] = {'method': self.digest, 'contract': self.contract_digest}
             digest_file.write_text(json.dumps(digest_dict))
 
             _LOGGER.info(f'Updated method {self.qualified_name} in digest file: {digest_file}')
@@ -112,7 +112,7 @@ class Contract:
         def digest(self) -> str:
             ast = json.dumps(self.ast, sort_keys=True) if self.ast is not None else {}
             storage_layout = json.dumps(self.contract.contract_json['storageLayout'], sort_keys=True)
-            contract_digest = self.contract.digest if not self.is_setup else {}
+            contract_digest = self.contract_digest if not self.is_setup else {}
             return hash_str(f'{self.signature}{ast}{storage_layout}{contract_digest}')
 
         @property
@@ -217,7 +217,7 @@ class Contract:
             method_selector: str = str(evm['methodIdentifiers'][msig])
             mid = int(method_selector, 16)
             method_ast = function_asts[method_selector] if method_selector in function_asts else None
-            _m = Contract.Method(msig, mid, method, method_ast, self, self.sort_method)
+            _m = Contract.Method(msig, mid, method, method_ast, self.name, self.digest, self.sort_method)
             _methods.append(_m)
 
         self.methods = tuple(sorted(_methods, key=(lambda method: method.signature)))
