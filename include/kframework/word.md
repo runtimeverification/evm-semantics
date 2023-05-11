@@ -49,7 +49,7 @@ These can be used for pattern-matching on the LHS of rules as well (`alias` attr
                  | "pow32"  [alias] /* 2 ^Int 32"  */
                  | "pow24"  [alias] /* 2 ^Int 24"  */
                  | "pow16"  [alias] /* 2 ^Int 16"  */
-                 | "pow8"   [alias] /* 2 ^Int 8"   */
+                 | "pow8"   [macro] /* 2 ^Int 8"   */
  // ------------------------------------------------
     rule pow256 => 115792089237316195423570985008687907853269984665640564039457584007913129639936
     rule pow255 => 57896044618658097711785492504343953926634992332820282019728792003956564819968
@@ -257,7 +257,7 @@ The maximum and minimum values of each type are defined below.
     rule notMaxUInt224 => 115792089210356248756420345214020892766250353992003419616917011526809519390720
 
     syntax Int ::= "eth"         [macro]
-                 | "maxBlockNum" [alias] /* 7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF == (2 ^ 256) - (2 ^ 255) - 1 */
+                 | "maxBlockNum" [macro] /* 7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF == (2 ^ 256) - (2 ^ 255) - 1 */
  // ----------------------------------------------------------------------------------------------------------------------------------------
     rule eth         => 1000000000000000000
     rule maxBlockNum => 57896044618658097711785492504343953926634992332820282019728792003956564819967
