@@ -353,7 +353,7 @@ def foundry_prove(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
-    failure_info: bool = False,
+    failure_info: bool = True,
 ) -> dict[str, bool]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')

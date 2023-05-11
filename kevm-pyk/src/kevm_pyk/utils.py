@@ -85,7 +85,7 @@ def parallel_kcfg_explore(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
-    failure_info: bool = False,
+    failure_info: bool = True,
 ) -> dict[str, bool]:
     def _call_rpc(packed_args: tuple[str, APRProof, int]) -> bool:
         _cfgid, _apr_proof, _index = packed_args
