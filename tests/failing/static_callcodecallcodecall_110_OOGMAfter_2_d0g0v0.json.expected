@@ -38,6 +38,12 @@
         <jumpDests>
           .Set
         </jumpDests>
+        <basic-block>
+          b""
+        </basic-block>
+        <basic-blocks>
+          .Map
+        </basic-blocks>
         <id>
           .Account
         </id>
