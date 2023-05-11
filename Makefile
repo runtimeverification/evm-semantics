@@ -203,7 +203,6 @@ kevm_files := abi.md                          \
               hashed-locations.md             \
               infinite-gas.md                 \
               json-rpc.md                     \
-              k-utils.md                      \
               network.md                      \
               optimizations.md                \
               serialization.md                \
