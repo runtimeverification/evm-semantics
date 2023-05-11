@@ -82,6 +82,7 @@ def exec_kompile(
     includes: list[str],
     main_module: str | None,
     syntax_module: str | None,
+    read_only: bool = False,
     ccopts: Iterable[str] = (),
     o0: bool = False,
     o1: bool = False,
@@ -107,6 +108,7 @@ def exec_kompile(
         syntax_module=syntax_module,
         includes=includes,
         emit_json=emit_json,
+        read_only=read_only,
         ccopts=ccopts,
         optimization=optimization,
         enable_llvm_debug=enable_llvm_debug,
@@ -747,7 +749,13 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Make kompile generate debug symbols for llvm.',
     )
-
+    k_kompile_args.add_argument(
+        '--read-only-kompiled-directory',
+        dest='read_only',
+        default=False,
+        action='store_true',
+        help='Generated a kompiled directory that K will not attempt to write to afterwards.',
+    )
     k_kompile_args.add_argument('-O0', dest='o0', default=False, action='store_true', help='Optimization level 0.')
     k_kompile_args.add_argument('-O1', dest='o1', default=False, action='store_true', help='Optimization level 1.')
     k_kompile_args.add_argument('-O2', dest='o2', default=False, action='store_true', help='Optimization level 2.')
