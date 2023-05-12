@@ -106,43 +106,55 @@ APRProof: ArithmeticTest.test_max2:e959b95bf15f2233e03f1b8a5e4b64b45fa0e0d9ea743
     frontier: 0
     stuck: 0
 
-APRProof: AssertTest.testFail_assert_false:df8300af05e6cbc8dc4a9f5243fcbf726d0b4920774dcb354ddccaa3b0881a8f
+APRProof: AssertTest.setUp:bd0347b53ab8760bd717b133619d3d5a8659fe28ab9966670a4d65ba629d2120
     status: ProofStatus.PASSED
     nodes: 5
     frontier: 0
     stuck: 0
 
-APRProof: AssertTest.testFail_assert_true:df8300af05e6cbc8dc4a9f5243fcbf726d0b4920774dcb354ddccaa3b0881a8f
+APRProof: AssertTest.testFail_assert_false:bd0347b53ab8760bd717b133619d3d5a8659fe28ab9966670a4d65ba629d2120
+    status: ProofStatus.PASSED
+    nodes: 5
+    frontier: 0
+    stuck: 0
+
+APRProof: AssertTest.testFail_assert_true:bd0347b53ab8760bd717b133619d3d5a8659fe28ab9966670a4d65ba629d2120
     status: ProofStatus.FAILED
     nodes: 5
     frontier: 0
     stuck: 1
 
-APRProof: AssertTest.testFail_expect_revert:df8300af05e6cbc8dc4a9f5243fcbf726d0b4920774dcb354ddccaa3b0881a8f
+APRProof: AssertTest.testFail_expect_revert:bd0347b53ab8760bd717b133619d3d5a8659fe28ab9966670a4d65ba629d2120
     status: ProofStatus.FAILED
     nodes: 7
     frontier: 0
     stuck: 1
 
-APRProof: AssertTest.test_assert_false:df8300af05e6cbc8dc4a9f5243fcbf726d0b4920774dcb354ddccaa3b0881a8f
+APRProof: AssertTest.test_assert_false:bd0347b53ab8760bd717b133619d3d5a8659fe28ab9966670a4d65ba629d2120
     status: ProofStatus.FAILED
     nodes: 5
     frontier: 0
     stuck: 1
 
-APRProof: AssertTest.test_assert_true:df8300af05e6cbc8dc4a9f5243fcbf726d0b4920774dcb354ddccaa3b0881a8f
+APRProof: AssertTest.test_assert_true:bd0347b53ab8760bd717b133619d3d5a8659fe28ab9966670a4d65ba629d2120
     status: ProofStatus.PASSED
     nodes: 5
     frontier: 0
     stuck: 0
 
-APRProof: AssertTest.test_assert_true_branch:df8300af05e6cbc8dc4a9f5243fcbf726d0b4920774dcb354ddccaa3b0881a8f
+APRProof: AssertTest.test_assert_true_branch:bd0347b53ab8760bd717b133619d3d5a8659fe28ab9966670a4d65ba629d2120
     status: ProofStatus.PASSED
     nodes: 11
     frontier: 0
     stuck: 0
 
-APRProof: AssertTest.test_revert_branch:df8300af05e6cbc8dc4a9f5243fcbf726d0b4920774dcb354ddccaa3b0881a8f
+APRProof: AssertTest.test_failing_branch:bd0347b53ab8760bd717b133619d3d5a8659fe28ab9966670a4d65ba629d2120
+    status: ProofStatus.FAILED
+    nodes: 11
+    frontier: 0
+    stuck: 1
+
+APRProof: AssertTest.test_revert_branch:bd0347b53ab8760bd717b133619d3d5a8659fe28ab9966670a4d65ba629d2120
     status: ProofStatus.FAILED
     nodes: 11
     frontier: 0
@@ -232,13 +244,13 @@ APRProof: BlockParamsTest.testWarp:758859adc935563b8074f4d891319cf209e7c2c02b15f
     frontier: 0
     stuck: 0
 
-APRProof: BytesTypeTest.test_bytes32:86652e5776590c02b48dcb964943bec8eaac1e96549367e6b3e6f6fd418df17d
+APRProof: BytesTypeTest.test_bytes32:962df01d802389598fd3528cb6e7b24a95ba400a1a07638451507a6eb1b274e3
     status: ProofStatus.PASSED
     nodes: 5
     frontier: 0
     stuck: 0
 
-APRProof: BytesTypeTest.test_bytes4:86652e5776590c02b48dcb964943bec8eaac1e96549367e6b3e6f6fd418df17d
+APRProof: BytesTypeTest.test_bytes4:962df01d802389598fd3528cb6e7b24a95ba400a1a07638451507a6eb1b274e3
     status: ProofStatus.PASSED
     nodes: 5
     frontier: 0
@@ -430,67 +442,67 @@ APRProof: Setup2Test.test_setup:96c988e0fc3a6f9deb8e84c7691faf3241f68fd9b78bac4b
     frontier: 0
     stuck: 0
 
-APRProof: StoreTest.testGasLoadColdVM:98872d512e237973189cbb00c51d9e2db9b6f2dba2da6371c91890a5923b066e
+APRProof: StoreTest.testGasLoadColdVM:d2bc7cfe3e03a1717ee8a2018775aed35a13ad75e7669a6339d6508df04992d1
     status: ProofStatus.PASSED
     nodes: 7
     frontier: 0
     stuck: 0
 
-APRProof: StoreTest.testGasLoadWarmUp:98872d512e237973189cbb00c51d9e2db9b6f2dba2da6371c91890a5923b066e
+APRProof: StoreTest.testGasLoadWarmUp:d2bc7cfe3e03a1717ee8a2018775aed35a13ad75e7669a6339d6508df04992d1
     status: ProofStatus.PASSED
     nodes: 13
     frontier: 0
     stuck: 0
 
-APRProof: StoreTest.testGasStoreColdVM:98872d512e237973189cbb00c51d9e2db9b6f2dba2da6371c91890a5923b066e
+APRProof: StoreTest.testGasStoreColdVM:d2bc7cfe3e03a1717ee8a2018775aed35a13ad75e7669a6339d6508df04992d1
     status: ProofStatus.PASSED
     nodes: 7
     frontier: 0
     stuck: 0
 
-APRProof: StoreTest.testGasStoreWarmUp:98872d512e237973189cbb00c51d9e2db9b6f2dba2da6371c91890a5923b066e
+APRProof: StoreTest.testGasStoreWarmUp:d2bc7cfe3e03a1717ee8a2018775aed35a13ad75e7669a6339d6508df04992d1
     status: ProofStatus.PASSED
     nodes: 13
     frontier: 0
     stuck: 0
 
-APRProof: StoreTest.testLoadNonExistent:98872d512e237973189cbb00c51d9e2db9b6f2dba2da6371c91890a5923b066e
+APRProof: StoreTest.testLoadNonExistent:d2bc7cfe3e03a1717ee8a2018775aed35a13ad75e7669a6339d6508df04992d1
     status: ProofStatus.PASSED
     nodes: 7
     frontier: 0
     stuck: 0
 
-APRProof: StoreTest.testStoreLoad:98872d512e237973189cbb00c51d9e2db9b6f2dba2da6371c91890a5923b066e
+APRProof: StoreTest.testStoreLoad:d2bc7cfe3e03a1717ee8a2018775aed35a13ad75e7669a6339d6508df04992d1
     status: ProofStatus.PASSED
     nodes: 14
     frontier: 0
     stuck: 0
 
-APRProof: StoreTest.testStoreLoadNonExistent:98872d512e237973189cbb00c51d9e2db9b6f2dba2da6371c91890a5923b066e
+APRProof: StoreTest.testStoreLoadNonExistent:d2bc7cfe3e03a1717ee8a2018775aed35a13ad75e7669a6339d6508df04992d1
     status: ProofStatus.PASSED
     nodes: 9
     frontier: 0
     stuck: 0
 
-APRProof: SymbolicStorageTest.testEmptyInitialStorage:03c2d66c8081f6cc58e6b9d5b78905d6755408160aad3ecf3ddbbe25e32f1e1c
+APRProof: SymbolicStorageTest.testEmptyInitialStorage:a7c6c767a237fe4e96c849920b313b07da97f0bb75066b10a52383795fb889a8
     status: ProofStatus.PASSED
     nodes: 7
     frontier: 0
     stuck: 0
 
-APRProof: SymbolicStorageTest.testFail_SymbolicStorage:03c2d66c8081f6cc58e6b9d5b78905d6755408160aad3ecf3ddbbe25e32f1e1c
+APRProof: SymbolicStorageTest.testFail_SymbolicStorage:a7c6c767a237fe4e96c849920b313b07da97f0bb75066b10a52383795fb889a8
     status: ProofStatus.PASSED
     nodes: 19
     frontier: 0
     stuck: 0
 
-APRProof: SymbolicStorageTest.testFail_SymbolicStorage1:03c2d66c8081f6cc58e6b9d5b78905d6755408160aad3ecf3ddbbe25e32f1e1c
+APRProof: SymbolicStorageTest.testFail_SymbolicStorage1:a7c6c767a237fe4e96c849920b313b07da97f0bb75066b10a52383795fb889a8
     status: ProofStatus.PASSED
     nodes: 24
     frontier: 0
     stuck: 0
 
-APRProof: UintTypeTest.test_uint256:19e54df996c736ec3f56a1d40b25c8367836aa00170bda78651dbf0851576d7f
+APRProof: UintTypeTest.test_uint256:1af8ae7180c83e274799f5baf3f0ea7e9111cce08682356e89f1bfc638f848f5
     status: ProofStatus.PASSED
     nodes: 5
     frontier: 0
