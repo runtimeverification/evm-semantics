@@ -472,11 +472,12 @@ def exec_run(
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
+#      apr_proofs_dir = foundry.out / 'apr_proofs'
+#      contract_name, test_name = test.split('.')
+#      proof_digest = foundry.proof_digest(contract_name, test_name)
 
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+#      apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    apr_proof = foundry.proof(test)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)

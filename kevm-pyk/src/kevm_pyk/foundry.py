@@ -102,6 +102,12 @@ class Foundry:
     def proof_digest(self, contract: str, test: str) -> str:
         return f'{contract}.{test}:{self.contracts[contract].digest}'
 
+    def proof(self, full_test_name: str) -> APRProof:
+        contract_name, test_name = full_test_name.split('.')
+        apr_proofs_dir = self.out / 'apr_proofs'
+        proof_digest = self.proof_digest(contract_name, test_name)
+        return APRProof.read_proof(proof_digest, apr_proofs_dir)
+
     @cached_property
     def digest(self) -> str:
         contract_digests = [self.contracts[c].digest for c in sorted(self.contracts)]
