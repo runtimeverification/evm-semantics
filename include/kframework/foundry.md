@@ -1319,7 +1319,7 @@ If the production is matched when no prank is active, it will be ignored.
         </prank>
 ```
 ```k
-    syntax Bytes ::= #sign ( Bytes , Bytes ) [function,klabel(foundry_sign)]
+    syntax Bytes ::= #sign ( Bytes , Bytes ) [function, total, klabel(foundry_sign)]
  // ------------------------------------------------------------------------
     rule #sign(BA1, BA2) => #parseByteStack(ECDSASign(#unparseByteStack(BA1), #unparseByteStack(BA2))) [concrete]
 ```
