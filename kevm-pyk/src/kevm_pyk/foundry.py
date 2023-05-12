@@ -402,10 +402,6 @@ def foundry_prove(
     setup_methods: dict[str, str] = {}
     contracts = unique({test.split('.')[0] for test in tests})
     for contract_name in contracts:
-        #          contract = foundry.contracts[contract_name]
-        #          if 'setUp' in contract.method_by_name:
-        #              setup_method = contract.method_by_name['setUp']
-        #              setup_methods[contract_name] = f'{setup_method.contract_name}.{setup_method.name}'
         if 'setUp' in foundry.contracts[contract_name].method_by_name:
             setup_methods[contract_name] = f'{contract_name}.setUp'
 
