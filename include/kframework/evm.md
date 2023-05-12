@@ -1690,8 +1690,8 @@ Precompiled Contracts
          <callData> DATA </callData>
          <output> _ => #ecrec(#range(DATA, 0, 32), #range(DATA, 32, 32), #range(DATA, 64, 32), #range(DATA, 96, 32)) </output>
 
-    syntax Bytes ::= #ecrec ( Bytes , Bytes , Bytes , Bytes ) [function, smtlib(ecrec)]
-                   | #ecrec ( Account )                       [function]
+    syntax Bytes ::= #ecrec ( Bytes , Bytes , Bytes , Bytes ) [function, total, smtlib(ecrec)]
+                   | #ecrec ( Account )                       [function, total]
  // --------------------------------------------------------------------
     rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(#unparseByteStack(HASH), #asWord(SIGV), #unparseByteStack(SIGR), #unparseByteStack(SIGS)))
 
