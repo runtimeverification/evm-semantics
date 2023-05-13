@@ -3,12 +3,14 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
-from pyk.kast.manip import flatten_label
+from pyk.kast import KInner
+from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, bottom_up, build_assoc
+from pyk.kast.manip import flatten_label, get_cell, set_cell
 from pyk.ktool.kprint import paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
-from pyk.prelude.kint import intToken, ltInt
+from pyk.prelude.bytes import BYTES, pretty_bytes
+from pyk.prelude.kint import INT, intToken, ltInt
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
 
@@ -19,7 +21,7 @@ if TYPE_CHECKING:
 
     from pyk.cli_utils import BugReport
     from pyk.cterm import CTerm
-    from pyk.kast import KInner
+    from pyk.kast.inner import KAst
     from pyk.kast.outer import KFlatModule
     from pyk.ktool.kprint import SymbolTable
 
@@ -360,3 +362,53 @@ class KEVM(KProve, KRun):
             else:
                 wrapped_accounts.append(acct)
         return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), wrapped_accounts)
+
+    def pretty_print(self, kast: KAst, *, unalias: bool = True) -> str:
+        if isinstance(kast, KInner):
+            kast = KEVM._int_token_to_hex(kast)
+        return super().pretty_print(kast)
+
+    @staticmethod
+    def _int_token_to_hex(kast: KInner) -> KInner:
+        def _helper(_kast: KInner) -> KInner:
+            if type(_kast) is KToken and _kast.sort == INT:
+                return KToken(hex(int(_kast.token)), INT)
+            if type(_kast) is KToken and _kast.sort == BYTES:
+                return KToken('0x' + pretty_bytes(_kast).hex(), BYTES)
+            return _kast
+
+        conjuncts = flatten_label('#And', kast)
+        term = None
+        for c in conjuncts:
+            if type(c) is KApply and c.is_cell:
+                if term:
+                    raise ValueError(f'Found two configurations in pattern:\n\n{term}\n\nand\n\n{c}')
+                term = c
+                for cell in [
+                    'K_CELL',
+                    'OUTPUT_CELL',
+                    'PROGRAM_CELL',
+                    'ID_CELL',
+                    'CALLER_CELL',
+                    'CALLDATA_CELL',
+                    'CALLVALUE_CELL',
+                    'WORDSTACK_CELL',
+                    'LOCALMEM_CELL',
+                    'ORIGIN_CELL',
+                    'LOGSBLOOM_CELL',
+                    'EXTRADATA_CELL',
+                    'PREVCALLER_CELL',
+                    'PREVORIGIN_CELL',
+                    'NEWCALLER_CELL',
+                    'NEWORIGIN_CELL',
+                    'EXPECTEDREASON_CELL',
+                    'EXPECTEDADDRESS_CELL',
+                    'EXPECTEDVALUE_CELL',
+                    'EXPECTEDDATA_CELL',
+                    'EXPECTEDEVENTADDRESS_CELL',
+                ]:
+                    try:
+                        kast = set_cell(kast, cell, bottom_up(_helper, get_cell(kast, cell)))
+                    except KeyError:
+                        continue
+        return kast
