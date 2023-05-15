@@ -424,8 +424,6 @@ def foundry_prove(
                     f'Method {method.qualified_name} skipped because digest was up to date, but the contract it is a part of has changed.'
                 )
 
-    _LOGGER.info(f'out of date methods: {out_of_date_methods}')
-
     def _init_apr_proof(_init_problem: tuple[str, str]) -> APRProof | APRBMCProof:
         contract_name, method_name = _init_problem
         contract = foundry.contracts[contract_name]
