@@ -24,10 +24,14 @@ RUN    apt-get update         \
     && apt-get install --yes  \
             cmake             \
             curl              \
+            debhelper         \
+            libboost-test-dev \
             libcrypto++-dev   \
             libprocps-dev     \
             libsecp256k1-dev  \
             libssl-dev        \
+            llvm-14-dev       \
+            llvm-14-tools     \
             netcat            \
             protobuf-compiler \
             python3           \
@@ -41,4 +45,5 @@ ARG GROUP_ID=1000
 RUN groupadd -g $GROUP_ID user && useradd -m -u $USER_ID -s /bin/sh -g user user
 
 USER user:user
-WORKDIR /home/user
+RUN mkdir /home/user/workspace
+WORKDIR /home/user/workspace
