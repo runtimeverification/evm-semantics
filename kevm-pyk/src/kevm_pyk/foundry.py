@@ -272,9 +272,6 @@ def foundry_kompile(
         else:
             raise ValueError(f'Could not find contract: {imp[0]}')
 
-    _LOGGER.info(f'foundry_contracts_file: {foundry_contracts_file}')
-    _LOGGER.info(f'foundry_main_file: {foundry_main_file}')
-
     if regen or not foundry_contracts_file.exists() or not foundry_main_file.exists():
         requires = []
         requires += [f'requires/{name}' for name in list(requires_paths.keys())]
@@ -665,7 +662,9 @@ def _foundry_to_contract_def(
     requires: Iterable[str],
 ) -> KDefinition:
     modules = [contract_to_main_module(contract, empty_config, imports=['FOUNDRY']) for contract in contracts]
-    main_module = Contract.contract_to_module_name(list(contracts)[0].name_upper, spec=False)
+    # First module is chosen as main module arbitrarily, since the contract definition is just a set of
+    # contract modules.
+    main_module = Contract.contract_to_module_name(list(contracts)[0].name_upper)
 
     return KDefinition(
         main_module,
