@@ -113,7 +113,7 @@ On ArchLinux:
 sudo pacman -S                                               \
     base base-devel boost clang cmake crypto++ curl git gmp  \
     gflags jdk-openjdk jemalloc libsecp256k1 lld llvm maven  \
-    mpfr protobuf python stack yaml-cpp zlib
+    mpfr protobuf poetry python stack yaml-cpp zlib
 ```
 
 #### macOS
