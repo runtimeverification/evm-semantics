@@ -82,6 +82,7 @@ def exec_kompile(
     includes: list[str],
     main_module: str | None,
     syntax_module: str | None,
+    read_only: bool = False,
     ccopts: Iterable[str] = (),
     o0: bool = False,
     o1: bool = False,
@@ -107,6 +108,7 @@ def exec_kompile(
         syntax_module=syntax_module,
         includes=includes,
         emit_json=emit_json,
+        read_only=read_only,
         ccopts=ccopts,
         optimization=optimization,
         enable_llvm_debug=enable_llvm_debug,
@@ -204,6 +206,7 @@ def exec_prove(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
     br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
@@ -229,6 +232,7 @@ def exec_prove(
         kore_rpc_command=kore_rpc_command,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
+        trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
         proof_problems = {}
 
@@ -275,6 +279,7 @@ def exec_prove(
         kore_rpc_command=kore_rpc_command,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
+        trace_rewrites=trace_rewrites,
     )
     failed = 0
     for pid, r in results.items():
@@ -371,6 +376,7 @@ def exec_foundry_prove(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -399,6 +405,7 @@ def exec_foundry_prove(
         kore_rpc_command=kore_rpc_command,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
+        trace_rewrites=trace_rewrites,
     )
     failed = 0
     for pid, r in results.items():
@@ -499,6 +506,7 @@ def exec_foundry_simplify_node(
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
     pretty_term = foundry_simplify_node(
@@ -510,6 +518,7 @@ def exec_foundry_simplify_node(
         bug_report=bug_report,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
+        trace_rewrites=trace_rewrites,
     )
     print(f'Simplified:\n{pretty_term}')
 
@@ -523,6 +532,7 @@ def exec_foundry_step_node(
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
     foundry_step_node(
@@ -534,6 +544,7 @@ def exec_foundry_step_node(
         bug_report=bug_report,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
+        trace_rewrites=trace_rewrites,
     )
 
 
@@ -546,6 +557,7 @@ def exec_foundry_section_edge(
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
     foundry_section_edge(
@@ -557,6 +569,7 @@ def exec_foundry_section_edge(
         bug_report=bug_report,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
+        trace_rewrites=trace_rewrites,
     )
 
 
@@ -594,6 +607,12 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Generate a haskell-backend bug report for the execution.',
+    )
+    rpc_args.add_argument(
+        '--trace-rewrites',
+        default=False,
+        action='store_true',
+        help='Log traces of all simplification and rewrite rule applications.',
     )
 
     smt_args = ArgumentParser(add_help=False)
@@ -743,7 +762,13 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Make kompile generate debug symbols for llvm.',
     )
-
+    k_kompile_args.add_argument(
+        '--read-only-kompiled-directory',
+        dest='read_only',
+        default=False,
+        action='store_true',
+        help='Generated a kompiled directory that K will not attempt to write to afterwards.',
+    )
     k_kompile_args.add_argument('-O0', dest='o0', default=False, action='store_true', help='Optimization level 0.')
     k_kompile_args.add_argument('-O1', dest='o1', default=False, action='store_true', help='Optimization level 1.')
     k_kompile_args.add_argument('-O2', dest='o2', default=False, action='store_true', help='Optimization level 2.')

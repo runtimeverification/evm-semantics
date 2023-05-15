@@ -17,9 +17,8 @@
 	dh $@
 
 override_dh_auto_build:
-	git submodule update --init --recursive
-	make RELEASE=true deps  -j8
-	make RELEASE=true build -j8 KOMPILE_OPTS='--read-only-kompiled-directory'
+	make RELEASE=true plugin-deps kevm-pyk -j3
+	make RELEASE=true build-kevm build-haskell build-foundry -j8 KOMPILE_OPTS='--read-only-kompiled-directory'
 
 override_dh_auto_install:
 	make RELEASE=true install -j8 KOMPILE_OPTS='--read-only-kompiled-directory' DESTDIR="$(CURDIR)/debian/kevm" INSTALL_PREFIX="/usr"
