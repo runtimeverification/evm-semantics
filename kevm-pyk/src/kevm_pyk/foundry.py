@@ -100,7 +100,7 @@ class Foundry:
         return _contracts
 
     def proof_digest(self, contract: str, test: str) -> str:
-        return f'{contract}.{test}:{self.contracts[contract].digest}'
+        return f'{contract}.{test}:{self.contracts[contract].method_by_name[test].digest}'
 
     @cached_property
     def digest(self) -> str:
@@ -400,7 +400,7 @@ def foundry_prove(
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
     setup_methods: dict[str, str] = {}
-    contracts = unique({test.split('.')[0] for test in tests})
+    contracts = set(unique({test.split('.')[0] for test in tests}))
     for contract_name in contracts:
         if 'setUp' in foundry.contracts[contract_name].method_by_name:
             setup_methods[contract_name] = f'{contract_name}.setUp'
@@ -409,7 +409,7 @@ def foundry_prove(
         method
         for contract in foundry.contracts.values()
         for method in contract.methods
-        if (f'{method.contract_name}.{method.name}' in tests or method.is_setup)
+        if (f'{method.contract_name}.{method.name}' in tests or (method.is_setup and method.contract_name in contracts))
     ]
 
     out_of_date_methods: set[str] = set()
@@ -423,6 +423,8 @@ def foundry_prove(
                 _LOGGER.warning(
                     f'Method {method.qualified_name} skipped because digest was up to date, but the contract it is a part of has changed.'
                 )
+
+    _LOGGER.info(f'out of date methods: {out_of_date_methods}')
 
     def _init_apr_proof(_init_problem: tuple[str, str]) -> APRProof | APRBMCProof:
         contract_name, method_name = _init_problem
@@ -726,7 +728,7 @@ def _method_to_apr_proof(
 
         setup_digest = None
         if method_name != 'setUp' and 'setUp' in contract.method_by_name:
-            setup_digest = f'{contract_name}.setUp:{contract.digest}'
+            setup_digest = foundry.proof_digest(contract_name, 'setUp')
             _LOGGER.info(f'Using setUp method for test: {test}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
