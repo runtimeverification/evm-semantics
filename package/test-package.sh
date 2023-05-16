@@ -18,6 +18,12 @@ kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmSystemOperati
 kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmSystemOperations/TestNameRegistrator.json \
     --backend haskell-standalone --mode VMTESTS --schedule DEFAULT --chainid 1 --pyk
 
+kevm run tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_Xto0toY_d0g0v0.json \
+    --backend llvm --mode NORMAL --schedule CONSTANTINOPLE --chainid 1 --pyk
+
+kevm run tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/stSStoreTest/sstore_Xto0toY_d0g0v0.json \
+    --backend haskell-standalone --mode NORMAL --schedule CONSTANTINOPLE --chainid 1 --pyk
+
 kevm kast tests/interactive/log3_MaxTopic_d0g0v0.json --backend llvm > tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
 git --no-pager diff --no-index --ignore-all-space -R tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out tests/interactive/log3_MaxTopic_d0g0v0.json.parse-expected
 rm tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
