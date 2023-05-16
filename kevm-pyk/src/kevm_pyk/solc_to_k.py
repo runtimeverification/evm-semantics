@@ -306,6 +306,10 @@ class Contract:
     def method_by_name(self) -> dict[str, Contract.Method]:
         return {method.name: method for method in self.methods}
 
+    @property
+    def tests(self) -> set[str]:
+        return {method.name for method in self.methods if method.name.startswith("test")}
+
 
 def solc_compile(contract_file: Path) -> dict[str, Any]:
     # TODO: add check to kevm:
