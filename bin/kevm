@@ -167,11 +167,8 @@ run_search() {
 }
 
 run_interpret() {
-    local kast output exit_status krun_args bug_report_name
+    local krun_args bug_report_name
 
-    output="$(mktemp)"
-    trap "rm -rf ${output}" INT TERM EXIT
-    exit_status=0
     krun_args=(--no-expand-macros)
     ${unparse} || krun_args+=(--no-unparse)
     if [[ ${backend} == haskell ]]; then
