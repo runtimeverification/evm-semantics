@@ -463,8 +463,8 @@ def exec_run(
     **kwargs: Any,
 ) -> None:
     krun_result = _krun(
-        definition_dir=Path(definition_dir),
-        input_file=Path(input_file),
+        definition_dir=definition_dir,
+        input_file=input_file,
         depth=depth,
         term=term,
         no_expand_macros=not expand_macros,
@@ -711,7 +711,7 @@ def _create_argument_parser() -> ArgumentParser:
     k_args.add_argument('--main-module', default=None, type=str, help='Name of the main module.')
     k_args.add_argument('--syntax-module', default=None, type=str, help='Name of the syntax module.')
     k_args.add_argument('--spec-module', default=None, type=str, help='Name of the spec module.')
-    k_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
+    k_args.add_argument('--definition', type=dir_path, dest='definition_dir', help='Path to definition to use.')
     k_args.add_argument(
         '--md-selector',
         type=str,
