@@ -2,10 +2,10 @@
 
 set -xeuo pipefail
 
-distro="${1:-focal}"
+distro="${1:-jammy}"
 
 case "$distro" in
-    focal)  control_file=control.focal              ;;
+    jammy)  control_file=control.jammy              ;;
     *)      echo "Unknown distro: $distro" ; exti 1 ;;
 esac
 

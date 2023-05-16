@@ -25,7 +25,7 @@ KEVM         := kevm
 KEVM_LIB_ABS := $(abspath $(KEVM_LIB))
 export KEVM_LIB_ABS
 
-KEVM_VERSION     ?= 1.0.1
+KEVM_VERSION     ?= $(shell cat package/version)
 KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
 
 K_SUBMODULE := $(DEPS_DIR)/k
@@ -69,7 +69,6 @@ clean: foundry-clean
 
 distclean:
 	rm -rf $(BUILD_DIR)
-	git clean -dffx -- tests/
 
 # Non-K Dependencies
 # ------------------
@@ -103,6 +102,10 @@ endif
 
 ifneq ($(APPLE_SILICON),)
     LIBFF_CMAKE_FLAGS += -DCURVE=ALT_BN128 -DUSE_ASM=Off
+endif
+
+ifeq ($(LIBFF_NO_FPIC),)
+    LIBFF_CMAKE_FLAGS += -DCMAKE_CXX_FLAGS=-fPIC
 endif
 
 $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
