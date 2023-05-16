@@ -71,30 +71,23 @@ run_kompile() {
 }
 
 run_krun() {
-    local cschedule cmode cchainid parser krun_args
-
-    check_k_install
-
-    cschedule=$cSCHEDULE_kore
-    cmode=$cMODE_kore
-    cchainid=$cCHAINID_kore
-    parser='cat'
+    local parser krun_args
 
     krun_args=(--definition "${backend_dir}" "${run_file}")
-    if ! ${pyk}; then
-        ! ${debugger} || krun_args+=(--debugger)
-        krun_args+=(-cSCHEDULE="${cschedule}" -pSCHEDULE="${parser}")
-        krun_args+=(-cMODE="${cmode}" -pMODE="${parser}")
-        krun_args+=(-cCHAINID="${cchainid}" -pCHAINID="${parser}")
+    if ${debugger}; then
+        parser='cat'
+
+        krun_args+=(--debugger)
+        krun_args+=(-cSCHEDULE="${cSCHEDULE_kore}" -pSCHEDULE="${parser}")
+        krun_args+=(-cMODE="${cMODE_kore}" -pMODE="${parser}")
+        krun_args+=(-cCHAINID="${cCHAINID_kore}" -pCHAINID="${parser}")
+
+        execute krun "${krun_args[@]}" "$@"
     else
         krun_args+=(--schedule ${schedule})
         krun_args+=(--mode ${mode})
         krun_args+=(--chainid ${chainid})
-    fi
 
-    if ! ${pyk}; then
-        execute krun "${krun_args[@]}" "$@"
-    else
         run_kevm_pyk run "${krun_args[@]}" "$@"
     fi
 }
