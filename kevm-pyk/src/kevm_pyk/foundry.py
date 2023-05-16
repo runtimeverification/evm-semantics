@@ -358,6 +358,7 @@ def foundry_prove(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    trace_rewrites: bool = False,
 ) -> dict[str, bool]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -424,8 +425,6 @@ def foundry_prove(
                     f'Method {method.qualified_name} skipped because digest was up to date, but the contract it is a part of has changed.'
                 )
 
-    _LOGGER.info(f'out of date methods: {out_of_date_methods}')
-
     def _init_apr_proof(_init_problem: tuple[str, str]) -> APRProof | APRBMCProof:
         contract_name, method_name = _init_problem
         contract = foundry.contracts[contract_name]
@@ -442,6 +441,7 @@ def foundry_prove(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             bug_report=br,
+            trace_rewrites=trace_rewrites,
         )
 
     def run_cfg_group(tests: list[str]) -> dict[str, bool]:
@@ -468,6 +468,7 @@ def foundry_prove(
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
+            trace_rewrites=trace_rewrites,
         )
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
@@ -591,6 +592,7 @@ def foundry_simplify_node(
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    trace_rewrites: bool = False,
 ) -> str:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
@@ -600,7 +602,12 @@ def foundry_simplify_node(
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     cterm = apr_proof.kcfg.node(node).cterm
     with KCFGExplore(
-        foundry.kevm, id=apr_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm,
+        id=apr_proof.id,
+        bug_report=br,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
+        trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
         new_term, _ = kcfg_explore.cterm_simplify(cterm)
     if replace:
@@ -619,6 +626,7 @@ def foundry_step_node(
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    trace_rewrites: bool = False,
 ) -> None:
     if repeat < 1:
         raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
@@ -633,10 +641,15 @@ def foundry_step_node(
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     with KCFGExplore(
-        foundry.kevm, id=apr_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm,
+        id=apr_proof.id,
+        bug_report=br,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
+        trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
         for _i in range(repeat):
-            node = kcfg_explore.step(apr_proof.kcfg, node, {}, depth=depth)
+            node = kcfg_explore.step(apr_proof.kcfg, node, apr_proof.logs, depth=depth)
             apr_proof.write_proof()
 
 
@@ -649,6 +662,7 @@ def foundry_section_edge(
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    trace_rewrites: bool = False,
 ) -> None:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
@@ -658,9 +672,16 @@ def foundry_section_edge(
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     source_id, target_id = edge
     with KCFGExplore(
-        foundry.kevm, id=apr_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm,
+        id=apr_proof.id,
+        bug_report=br,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
+        trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(apr_proof.kcfg, source_id, target_id, {}, sections=sections)
+        kcfg, _ = kcfg_explore.section_edge(
+            apr_proof.kcfg, source_id=source_id, target_id=target_id, logs=apr_proof.logs, sections=sections
+        )
     apr_proof.write_proof()
 
 
@@ -708,6 +729,7 @@ def _method_to_apr_proof(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     bug_report: BugReport | None = None,
+    trace_rewrites: bool = False,
 ) -> APRProof | APRBMCProof:
     contract_name = contract.name
     method_name = method.name
@@ -752,6 +774,7 @@ def _method_to_apr_proof(
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
+            trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
             _LOGGER.info(f'Computing definedness constraint for test: {test}')
             init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
