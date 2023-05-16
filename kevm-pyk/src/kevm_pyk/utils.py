@@ -86,6 +86,7 @@ def parallel_kcfg_explore(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
+    trace_rewrites: bool = False,
 ) -> dict[str, bool]:
     def _call_rpc(packed_args: tuple[str, APRProof, int]) -> bool:
         _cfgid, _apr_proof, _index = packed_args
@@ -119,6 +120,7 @@ def parallel_kcfg_explore(
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
+            trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
             prover: APRBMCProof | APRProver
             if type(_apr_proof) is APRBMCProof:
