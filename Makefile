@@ -358,6 +358,7 @@ install_bins := kevm    \
 install_libs := $(haskell_kompiled)                                        \
                 $(llvm_kompiled)                                           \
                 $(foundry_kompiled)                                        \
+                $(haskell_standalone_kompiled)                             \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
                 kore-json.py                                               \
                 release.md                                                 \
