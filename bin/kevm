@@ -169,13 +169,11 @@ run_search() {
 run_interpret() {
     local kast output exit_status krun_args bug_report_name
 
-    kast="$(mktemp)"
     output="$(mktemp)"
-    trap "rm -rf ${kast} ${output}" INT TERM EXIT
+    trap "rm -rf ${output}" INT TERM EXIT
     exit_status=0
-    run_kast kore > ${kast}
-    run_file="${kast}"
-    krun_args=(--term --parser cat --no-expand-macros --output kore)
+    krun_args=(--no-expand-macros)
+    ${unparse} || krun_args+=(--no-unparse)
     if [[ ${backend} == haskell ]]; then
         KORE_EXEC_OPTS="${KORE_EXEC_OPTS:-} --smt none"
         haskell_backend_command+=(--smt none)
@@ -183,15 +181,7 @@ run_interpret() {
         ! ${bug_report} || KORE_EXEC_OPTS="${KORE_EXEC_OPTS} --bug-report ${bug_report_name}"
         export KORE_EXEC_OPTS
     fi
-    if ${debugger}; then
-        run_krun "${krun_args[@]}" "$@" || exit_status="$?"
-    else
-        run_krun "${krun_args[@]}" "$@" > "${output}" || exit_status="$?"
-    fi
-    if ${unparse} || [[ "${exit_status}" != '0' ]]; then
-        cat "${output}" | "${KEVM}" kast --backend "${backend}" - pretty --input kore --sort GeneratedTopCell
-    fi
-    exit "${exit_status}"
+    run_krun "${krun_args[@]}" "$@"
 }
 
 run_solc() {

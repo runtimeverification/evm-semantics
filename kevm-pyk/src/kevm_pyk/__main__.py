@@ -12,6 +12,7 @@ from pyk.cli_utils import BugReport, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
+from pyk.kore.parser import KoreParser
 from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
@@ -462,10 +463,11 @@ def exec_run(
     parser: str | None,
     expand_macros: str,
     depth: int | None,
-    output: str,
+    output: KRunOutput,
     schedule: str,
     mode: str,
     chainid: int,
+    unparse: bool,
     **kwargs: Any,
 ) -> None:
     if input_file.suffix == '.json':
@@ -481,7 +483,7 @@ def exec_run(
                 term=True,
                 no_expand_macros=not expand_macros,
                 parser='cat',
-                output=KRunOutput[output.upper()],
+                output=KRunOutput.KORE,
             )
     else:
         cmap = {
@@ -499,9 +501,22 @@ def exec_run(
             parser=parser,
             cmap=cmap,
             pmap=pmap,
-            output=KRunOutput[output.upper()],
+            output=KRunOutput.KORE,
         )
-    print(krun_result.stdout)
+    if krun_result.returncode != 0 or unparse:
+        if output == KRunOutput.NONE:
+            pass
+        elif output == KRunOutput.KORE:
+            print(krun_result.stdout)
+        else:
+            kevm = KEVM(definition_dir)
+            kast_output = kevm.kore_to_kast(KoreParser(krun_result.stdout).pattern())
+            if output == KRunOutput.JSON:
+                print(kast_output.to_json())
+            elif output == KRunOutput.PRETTY:
+                print(kevm.pretty_print(kast_output))
+            else:
+                raise ValueError(f'Unsupported printing mode --output: {output}')
     sys.exit(krun_result.returncode)
 
 
@@ -670,9 +685,15 @@ def _create_argument_parser() -> ArgumentParser:
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
     run_args.add_argument('--parser', default=None, type=str, help='Parser to use for $PGM.')
     run_args.add_argument(
+        '--unparse', dest='unparse', default=True, action='store_true', help='Unparse the output in all cases.'
+    )
+    run_args.add_argument(
+        '--no-unparse', dest='unparse', action='store_false', help='Do not unparse the output on success cases.'
+    )
+    run_args.add_argument(
         '--output',
-        default='pretty',
-        type=str,
+        default=KRunOutput.PRETTY,
+        type=KRunOutput,
         help='Output format to use, one of [pretty|program|kast|binary|json|latex|kore|none].',
     )
     run_args.add_argument(
