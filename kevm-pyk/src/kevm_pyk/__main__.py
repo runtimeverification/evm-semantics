@@ -5,6 +5,7 @@ import logging
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
 
 from pyk.cli_utils import BugReport, file_path
@@ -29,7 +30,7 @@ from .foundry import (
     foundry_step_node,
     foundry_to_dot,
 )
-from .gst_to_kore import _mode_to_kore, _schedule_to_kore
+from .gst_to_kore import _mode_to_kore, _schedule_to_kore, gst_to_kore
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
@@ -458,7 +459,6 @@ def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
 def exec_run(
     definition_dir: Path,
     input_file: Path,
-    term: bool,
     parser: str | None,
     expand_macros: str,
     depth: int | None,
@@ -468,23 +468,39 @@ def exec_run(
     chainid: int,
     **kwargs: Any,
 ) -> None:
-    cmap = {
-        'MODE': _mode_to_kore(mode).text,
-        'SCHEDULE': _schedule_to_kore(schedule).text,
-        'CHAINID': int_dv(chainid).text,
-    }
-    pmap = {'MODE': 'cat', 'SCHEDULE': 'cat', 'CHAINID': 'cat'}
-    krun_result = _krun(
-        definition_dir=definition_dir,
-        input_file=input_file,
-        depth=depth,
-        term=term,
-        no_expand_macros=not expand_macros,
-        parser=parser,
-        cmap=cmap,
-        pmap=pmap,
-        output=KRunOutput[output.upper()],
-    )
+    if input_file.suffix == '.json':
+        pgm = json.loads(input_file.read_text())
+        pgm_kore = gst_to_kore(pgm, schedule, mode, chainid)
+        with NamedTemporaryFile('w', delete=False) as ntf:
+            ntf.write(pgm_kore.text)
+            ntf.flush()
+            krun_result = _krun(
+                definition_dir=definition_dir,
+                input_file=Path(ntf.name),
+                depth=depth,
+                term=True,
+                no_expand_macros=not expand_macros,
+                parser='cat',
+                output=KRunOutput[output.upper()],
+            )
+    else:
+        cmap = {
+            'MODE': _mode_to_kore(mode).text,
+            'SCHEDULE': _schedule_to_kore(schedule).text,
+            'CHAINID': int_dv(chainid).text,
+        }
+        pmap = {'MODE': 'cat', 'SCHEDULE': 'cat', 'CHAINID': 'cat'}
+        krun_result = _krun(
+            definition_dir=definition_dir,
+            input_file=input_file,
+            depth=depth,
+            term=False,
+            no_expand_macros=not expand_macros,
+            parser=parser,
+            cmap=cmap,
+            pmap=pmap,
+            output=KRunOutput[output.upper()],
+        )
     print(krun_result.stdout)
     sys.exit(krun_result.returncode)
 
@@ -652,9 +668,6 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.shared_args, kevm_cli_args.evm_chain_args, kevm_cli_args.k_args],
     )
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
-    run_args.add_argument(
-        '--term', default=False, action='store_true', help='<input_file> is the entire term to execute.'
-    )
     run_args.add_argument('--parser', default=None, type=str, help='Parser to use for $PGM.')
     run_args.add_argument(
         '--output',
