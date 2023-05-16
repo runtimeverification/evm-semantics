@@ -478,10 +478,12 @@ def foundry_prove(
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
 
     _LOGGER.info(f'Running test functions in parallel: {tests}')
-    return run_cfg_group(tests)
+    results = run_cfg_group(tests)
 
     for method in test_methods:
         method.update_digest(foundry.out / 'digest')
+
+    return results
 
 
 def foundry_show(
