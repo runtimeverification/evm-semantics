@@ -484,6 +484,7 @@ def exec_run(
                 no_expand_macros=not expand_macros,
                 parser='cat',
                 output=KRunOutput.KORE,
+                check=False,
             )
     else:
         cmap = {
@@ -502,6 +503,7 @@ def exec_run(
             cmap=cmap,
             pmap=pmap,
             output=KRunOutput.KORE,
+            check=False,
         )
     if krun_result.returncode != 0 or unparse:
         if output == KRunOutput.NONE:
