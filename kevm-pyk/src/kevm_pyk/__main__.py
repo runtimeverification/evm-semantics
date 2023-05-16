@@ -858,7 +858,7 @@ def _create_argument_parser() -> ArgumentParser:
         'kompile', help='Kompile KEVM specification.', parents=[shared_args, k_args, k_kompile_args]
     )
     kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|node|foundry]')
+    kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|haskell-standalone|node|foundry]')
     kompile_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )

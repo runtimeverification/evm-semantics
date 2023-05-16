@@ -66,6 +66,7 @@ CONCRETE_RULES: Final = (
 class KompileTarget(Enum):
     LLVM = 'llvm'
     HASKELL = 'haskell'
+    HASKELL_STANDALONE = 'haskell-standalone'
     NODE = 'node'
     FOUNDRY = 'foundry'
 
@@ -74,7 +75,7 @@ class KompileTarget(Enum):
         match self:
             case self.LLVM | self.NODE:
                 return KompileBackend.LLVM
-            case self.HASKELL | self.FOUNDRY:
+            case self.HASKELL | self.FOUNDRY | self.HASKELL_STANDALONE:
                 return KompileBackend.HASKELL
             case _:
                 raise AssertionError()
@@ -88,6 +89,8 @@ class KompileTarget(Enum):
                 return config.NODE_DIR
             case self.HASKELL:
                 return config.HASKELL_DIR
+            case self.HASKELL_STANDALONE:
+                return config.HASKELL_STANDALONE_DIR
             case self.FOUNDRY:
                 return config.FOUNDRY_DIR
             case _:
