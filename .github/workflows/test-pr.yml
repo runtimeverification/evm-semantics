@@ -181,5 +181,7 @@ jobs:
         with:
           name: k-framework
           authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
+      - name: 'Build KEVM'
+        run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs
       - name: 'Test KEVM'
         run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#kevm-test
