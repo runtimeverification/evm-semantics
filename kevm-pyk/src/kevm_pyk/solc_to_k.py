@@ -387,7 +387,7 @@ class Contract:
 
     @property
     def tests(self) -> set[str]:
-        return {method.name for method in self.methods if method.name.startswith("test")}
+        return {method.name for method in self.methods if method.name.startswith('test')}
 
 
 def solc_compile(contract_file: Path) -> dict[str, Any]:

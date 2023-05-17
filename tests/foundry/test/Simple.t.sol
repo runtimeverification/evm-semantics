@@ -45,4 +45,9 @@ contract AssertTest is Test {
             assert(false);
         }
     }
+
+    function test_call() public {
+        address(123456).call("");
+        assert(true);
+    }
 }

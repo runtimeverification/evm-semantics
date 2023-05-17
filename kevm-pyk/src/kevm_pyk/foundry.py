@@ -617,14 +617,24 @@ def foundry_coverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
 
                     if apr_proof.status is not ProofStatus.PASSED:
-                        raise Exception("Can only run coverage on passing proofs")
+                        print(apr_proof.status)
+                        # raise Exception('Can only run coverage on passing proofs')
+                    else:
+                        proofs[proof_digest] = apr_proof
 
-                    proofs[proof_digest] = apr_proof
-
-    for digest, proof in proofs.items():
+    for _, proof in proofs.items():
         kcfg = proof.kcfg
-        print(digest)
-        calling = kcfg.calling_nodes()
+        nodes = kcfg.nodes
+        for node in nodes:
+            cells = node.cterm.cells
+            # print(len(cells))
+            # print(cells)
+            if "K_CELL" in cells:
+                # _________EVM_InternalOp_CallOp_Int_Int_Int_Int_Int_Int_Int
+                # print(cells["K_CELL"])
+                cell = cells["K_CELL"]
+                if isinstance(cell, (KSequence)):
+                    print(cell)
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
     foundry = Foundry(foundry_root)
