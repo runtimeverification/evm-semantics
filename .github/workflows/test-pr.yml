@@ -158,7 +158,7 @@ jobs:
         include:
           - runner: normal
           - runner: macos-12
-          - runner: MacM1
+          - runner: macOS,ARM64
     needs: version-bump
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
