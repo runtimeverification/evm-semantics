@@ -88,7 +88,7 @@ run_krun() {
         krun_args+=(--mode ${mode})
         krun_args+=(--chainid ${chainid})
 
-        run_kevm_pyk run "${krun_args[@]}" "$@"
+        kevm-interpret "${krun_args[@]}" "$@"
     fi
 }
 
