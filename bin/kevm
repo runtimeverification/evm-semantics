@@ -87,6 +87,8 @@ run_krun() {
         krun_args+=(--schedule ${schedule})
         krun_args+=(--mode ${mode})
         krun_args+=(--chainid ${chainid})
+        ! ${debug}   || krun_args+=(--debug)
+        ! ${verbose} || krun_args+=(--verbose)
 
         kevm-interpret "${krun_args[@]}" "$@"
     fi

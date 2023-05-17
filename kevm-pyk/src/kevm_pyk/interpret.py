@@ -28,6 +28,7 @@ _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 def main() -> None:
     sys.setrecursionlimit(15000000)
     args = _parse_args()
+    logging.basicConfig(level=_loglevel(args), format=_LOG_FORMAT)
     _exec_interpret(
         args.definition_dir,
         args.input_file,
@@ -141,3 +142,13 @@ def _parse_args() -> Namespace:
 
 if __name__ == '__main__':
     main()
+
+
+def _loglevel(args: Namespace) -> int:
+    if args.debug:
+        return logging.DEBUG
+
+    if args.verbose:
+        return logging.INFO
+
+    return logging.WARNING
