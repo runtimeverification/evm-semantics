@@ -439,13 +439,14 @@ def foundry_prove(
     for method in test_methods:
         if not method.up_to_date(foundry.out / 'digest') or reinit:
             out_of_date_methods.add(method.qualified_name)
-            _LOGGER.info(f'Method {method.qualified_name} is out of date')
+            _LOGGER.info(f'Method {method.qualified_name} is out of date, so it was reinitialized')
         else:
-            _LOGGER.info(f'Method {method.qualified_name} skipped because it is up to date')
+            _LOGGER.info(f'Method {method.qualified_name} not reinitialized because it is up to date')
             if not method.contract_up_to_date(foundry.out / 'digest'):
                 _LOGGER.warning(
-                    f'Method {method.qualified_name} skipped because digest was up to date, but the contract it is a part of has changed.'
+                    f'Method {method.qualified_name} not reinitialized because digest was up to date, but the contract it is a part of has changed.'
                 )
+        method.update_digest(foundry.out / 'digest')
 
     def _init_apr_proof(_init_problem: tuple[str, str]) -> APRProof | APRBMCProof:
         contract_name, method_name = _init_problem
@@ -501,9 +502,6 @@ def foundry_prove(
 
     _LOGGER.info(f'Running test functions in parallel: {tests}')
     results = run_cfg_group(tests)
-
-    for method in test_methods:
-        method.update_digest(foundry.out / 'digest')
 
     return results
 
