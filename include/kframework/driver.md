@@ -113,7 +113,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE </nonce>
            ...
          </account>
-         <accessedAccounts> _ => .Set </accessedAccounts>
+         <accessedAccounts> _ => SetItem(MINER) </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
 
     rule <k> loadTx(ACCTFROM)
@@ -145,7 +145,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
-         <accessedAccounts> _ => .Set </accessedAccounts>
+         <accessedAccounts> _ => SetItem(MINER) </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
 

@@ -245,7 +245,7 @@ This minimizes the amount of information which must be stored in the configurati
            ...
          </account>
          <touchedAccounts> _ => SetItem(CB) </touchedAccounts>
-         <accessedAccounts> ACCESSED => ACCESSED |Set SetItem(ACCTFROM) |Set SetItem(#newAddr(ACCTFROM, NONCE -Int 1)) </accessedAccounts>
+         <accessedAccounts> ACCESSED => ACCESSED |Set SetItem(ACCTFROM) |Set SetItem(#newAddr(ACCTFROM, NONCE -Int 1)) |Set SetItem(CB) </accessedAccounts>
 
     rule <k> runVM(false, ACCTTO, ACCTFROM, _, ARGS, VALUE, GPRICE, GAVAIL, CB, DIFF, NUMB, GLIMIT, TS, _)
           => #loadAccount ACCTTO
@@ -264,7 +264,7 @@ This minimizes the amount of information which must be stored in the configurati
          <gasLimit> _ => GLIMIT </gasLimit>
          <timestamp> _ => TS </timestamp>
          <touchedAccounts> _ => SetItem(CB) </touchedAccounts>
-         <accessedAccounts> ACCESSED => ACCESSED |Set SetItem(ACCTFROM) |Set SetItem(ACCTTO) </accessedAccounts>
+         <accessedAccounts> ACCESSED => ACCESSED |Set SetItem(ACCTFROM) |Set SetItem(ACCTTO) |Set SetItem(CB) </accessedAccounts>
          <account> <acctID> ACCTFROM </acctID> ... </account>
 ```
 
