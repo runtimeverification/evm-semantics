@@ -185,6 +185,7 @@ class KEVMCLIArgs:
             'BERLIN',
             'LONDON',
             'MERGE',
+            'SHANGHAI',
         )
         modes = ('NORMAL', 'VMTESTS')
 

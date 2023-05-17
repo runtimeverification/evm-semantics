@@ -1659,6 +1659,7 @@ Precompiled Contracts
     rule #precompiledAccounts(BERLIN)            => #precompiledAccounts(ISTANBUL)
     rule #precompiledAccounts(LONDON)            => #precompiledAccounts(BERLIN)
     rule #precompiledAccounts(MERGE)             => #precompiledAccounts(LONDON)
+    rule #precompiledAccounts(SHANGHAI)          => #precompiledAccounts(MERGE)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -2645,6 +2646,16 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasprevrandao << MERGE >> => true
     rule SCHEDFLAG      << MERGE >> => SCHEDFLAG << LONDON >>
       requires notBool SCHEDFLAG ==K Ghasprevrandao
+```
+
+### Shanghai Schedule
+
+```k
+    syntax Schedule ::= "SHANGHAI" [klabel(SHANGHAI_EVM), symbol, smtlib(schedule_SHANGHAI)]
+ // ----------------------------------------------------------------------------------------
+    rule SCHEDCONST < SHANGHAI > => SCHEDCONST < MERGE >
+
+    rule SCHEDFLAG << SHANGHAI >> => SCHEDFLAG << MERGE >>
 ```
 
 EVM Program Representations

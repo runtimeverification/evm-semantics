@@ -232,7 +232,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                  <spec> is a K specification to be proved.
                  <main> is a K definition to be kompiled, which may include files from KEVM.
                  <KEVM arg> is one of [--mode (NORMAL|VMTESTS)]
-                                      [--schedule (MERGE|LONDON|BERLIN|ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
+                                      [--schedule (SHANGHAI|MERGE|LONDON|BERLIN|ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
                                       [--chainid NNN]
                                       [--bug-report]
                                       [--profile-haskell]
@@ -271,7 +271,7 @@ profile_timeout="0"
 kore_prof_arg=""
 bug_report=false
 mode=NORMAL
-schedule=MERGE
+schedule=SHANGHAI
 chainid=1
 verif_module=VERIFICATION
 pyk=false
