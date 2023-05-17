@@ -2176,8 +2176,8 @@ There are several helpers for calculating gas (most of them also specified in th
    rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
          => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
 
-   syntax Gas ::= Cgascap        ( Schedule , Gas , Gas , Int )         [function, total, smtlib(gas_Cgascap_Gas)       ]
-   syntax Int ::= Cgascap        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Cgascap_Int)       ]
+   syntax Gas ::= Cgascap        ( Schedule , Gas , Gas , Int )         [function, total, smtlib(gas_Cgascap_Gas)   ]
+   syntax Int ::= Cgascap        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Cgascap_Int)   ]
                 | Csstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Csstore)       ]
                 | Rsstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Rsstore)       ]
                 | Cextra         ( Schedule , Bool , Int , Bool )       [function, total, smtlib(gas_Cextra)        ]
