@@ -14,6 +14,7 @@ from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
 from pyk.kore.parser import KoreParser
 from pyk.kore.prelude import int_dv
+from pyk.kore.tools import kore_print
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
@@ -511,14 +512,8 @@ def exec_run(
         elif output == KRunOutput.KORE:
             print(krun_result.stdout)
         else:
-            kevm = KEVM(definition_dir)
-            kast_output = kevm.kore_to_kast(KoreParser(krun_result.stdout).pattern())
-            if output == KRunOutput.JSON:
-                print(kast_output.to_json())
-            elif output == KRunOutput.PRETTY:
-                print(kevm.pretty_print(kast_output))
-            else:
-                raise ValueError(f'Unsupported printing mode --output: {output}')
+            kore = KoreParser(krun_result.stdout).pattern()
+            print(kore_print(kore, definition_dir, output.value))
     sys.exit(krun_result.returncode)
 
 
