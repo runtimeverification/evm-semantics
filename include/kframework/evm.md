@@ -1301,6 +1301,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
  // --------------------------------------------------------------
     rule <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> requires         #isPrecompiledAccount(ACCTCODE, SCHED)
+      [preserves-definedness]
     rule <k> #precompiled?(ACCTCODE, SCHED) => .                                ... </k> requires notBool #isPrecompiledAccount(ACCTCODE, SCHED)
 
     syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [function, total, smtlib(isPrecompiledAccount)]
@@ -2154,6 +2155,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          <k> #allocateCreateGas => . ... </k>
          <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Int 64      #fi </gas>
          <callGas> _      => #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi </callGas>
+      [preserves-definedness]
 ```
 
 There are several helpers for calculating gas (most of them also specified in the YellowPaper).
