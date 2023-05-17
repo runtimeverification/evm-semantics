@@ -153,6 +153,7 @@ jobs:
   nix:
     name: 'Nix'
     strategy:
+      fail-fast: false
       matrix:
         include:
           - runner: normal
