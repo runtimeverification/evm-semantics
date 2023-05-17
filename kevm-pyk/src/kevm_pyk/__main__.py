@@ -5,16 +5,13 @@ import logging
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
 
 from pyk.cli_utils import BugReport, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
-from pyk.kore.prelude import int_dv
-from pyk.kore.tools import kore_print
-from pyk.ktool.krun import KRunOutput, _krun
+from pyk.ktool.krun import KRunOutput
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
 
@@ -31,7 +28,7 @@ from .foundry import (
     foundry_step_node,
     foundry_to_dot,
 )
-from .gst_to_kore import _mode_to_kore, _schedule_to_kore, gst_to_kore
+from .interpret import _exec_interpret
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
@@ -470,47 +467,18 @@ def exec_run(
     unparse: bool,
     **kwargs: Any,
 ) -> None:
-    if input_file.suffix == '.json':
-        pgm = json.loads(input_file.read_text())
-        pgm_kore = gst_to_kore(pgm, schedule, mode, chainid)
-        with NamedTemporaryFile('w', delete=False) as ntf:
-            ntf.write(pgm_kore.text)
-            ntf.flush()
-            krun_result = _krun(
-                definition_dir=definition_dir,
-                input_file=Path(ntf.name),
-                depth=depth,
-                term=True,
-                no_expand_macros=not expand_macros,
-                parser='cat',
-                output=KRunOutput.KORE,
-                check=False,
-            )
-    else:
-        cmap = {
-            'MODE': _mode_to_kore(mode).text,
-            'SCHEDULE': _schedule_to_kore(schedule).text,
-            'CHAINID': int_dv(chainid).text,
-        }
-        pmap = {'MODE': 'cat', 'SCHEDULE': 'cat', 'CHAINID': 'cat'}
-        krun_result = _krun(
-            definition_dir=definition_dir,
-            input_file=input_file,
-            depth=depth,
-            term=False,
-            no_expand_macros=not expand_macros,
-            parser=parser,
-            cmap=cmap,
-            pmap=pmap,
-            output=KRunOutput.KORE,
-            check=False,
-        )
-    if krun_result.returncode != 0 or unparse:
-        if output == KRunOutput.NONE:
-            pass
-        else:
-            print(kore_print(krun_result.stdout, definition_dir, output.value))
-    sys.exit(krun_result.returncode)
+    _exec_interpret(
+        definition_dir,
+        input_file,
+        parser,
+        expand_macros,
+        depth,
+        output,
+        schedule,
+        mode,
+        chainid,
+        unparse,
+    )
 
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
