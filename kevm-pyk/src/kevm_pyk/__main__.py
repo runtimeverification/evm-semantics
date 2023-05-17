@@ -12,7 +12,6 @@ from pyk.cli_utils import BugReport, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
-from pyk.kore.parser import KoreParser
 from pyk.kore.prelude import int_dv
 from pyk.kore.tools import kore_print
 from pyk.ktool.krun import KRunOutput, _krun
@@ -509,11 +508,8 @@ def exec_run(
     if krun_result.returncode != 0 or unparse:
         if output == KRunOutput.NONE:
             pass
-        elif output == KRunOutput.KORE:
-            print(krun_result.stdout)
         else:
-            kore = KoreParser(krun_result.stdout).pattern()
-            print(kore_print(kore, definition_dir, output.value))
+            print(kore_print(krun_result.stdout, definition_dir, output.value))
     sys.exit(krun_result.returncode)
 
 
