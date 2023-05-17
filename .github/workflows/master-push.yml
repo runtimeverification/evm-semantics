@@ -16,7 +16,7 @@ jobs:
         include:
           - runner: normal
           - runner: macos-12
-          - runner: macOS,ARM64
+          - runner: ARM64
     runs-on: ${{ matrix.runner }}
     steps:
       - name: 'Check out code'
