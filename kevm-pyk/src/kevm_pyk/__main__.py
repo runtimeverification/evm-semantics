@@ -15,7 +15,7 @@ from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
 
-from .cli import evm_chain_args, k_args, kompile_args, kprove_args, shared_args
+from .cli import KEVMCLIArgs
 from .foundry import (
     Foundry,
     foundry_kompile,
@@ -584,6 +584,8 @@ def _create_argument_parser() -> ArgumentParser:
 
         return parse
 
+    kevm_cli_args = KEVMCLIArgs()
+
     display_args = ArgumentParser(add_help=False)
     display_args.add_argument('--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.')
     display_args.add_argument('--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.')
@@ -755,7 +757,9 @@ def _create_argument_parser() -> ArgumentParser:
     command_parser = parser.add_subparsers(dest='command', required=True)
 
     kevm_kompile_args = command_parser.add_parser(
-        'kompile', help='Kompile KEVM specification.', parents=[shared_args(), k_args(), kompile_args()]
+        'kompile',
+        help='Kompile KEVM specification.',
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
     )
     kevm_kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
     kevm_kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|node|foundry]')
@@ -766,23 +770,33 @@ def _create_argument_parser() -> ArgumentParser:
     _ = command_parser.add_parser(
         'prove',
         help='Run KEVM proof.',
-        parents=[shared_args(), k_args(), kprove_args(), rpc_args, smt_args, explore_args, spec_args],
+        parents=[
+            kevm_cli_args.shared_args,
+            kevm_cli_args.k_args,
+            kevm_cli_args.kprove_args,
+            rpc_args,
+            smt_args,
+            explore_args,
+            spec_args,
+        ],
     )
 
     _ = command_parser.add_parser(
         'view-kcfg',
         help='Display tree view of CFG',
-        parents=[shared_args(), k_args(), spec_args],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, spec_args],
     )
 
     _ = command_parser.add_parser(
         'show-kcfg',
         help='Display tree show of CFG',
-        parents=[shared_args(), k_args(), kcfg_show_args, spec_args, display_args],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kcfg_show_args, spec_args, display_args],
     )
 
     run_args = command_parser.add_parser(
-        'run', help='Run KEVM test/simulation.', parents=[shared_args(), evm_chain_args(), k_args()]
+        'run',
+        help='Run KEVM test/simulation.',
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.evm_chain_args, kevm_cli_args.k_args],
     )
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
     run_args.add_argument(
@@ -815,7 +829,7 @@ def _create_argument_parser() -> ArgumentParser:
     solc_to_k_args = command_parser.add_parser(
         'solc-to-k',
         help='Output helper K definition for given JSON output from solc compiler.',
-        parents=[shared_args(), k_args(), k_gen_args],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, k_gen_args],
     )
     solc_to_k_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
@@ -823,7 +837,13 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_kompile = command_parser.add_parser(
         'foundry-kompile',
         help='Kompile K definition corresponding to given output directory.',
-        parents=[shared_args(), k_args(), k_gen_args, kompile_args(), foundry_root_arg],
+        parents=[
+            kevm_cli_args.shared_args,
+            kevm_cli_args.k_args,
+            k_gen_args,
+            kevm_cli_args.kompile_args,
+            foundry_root_arg,
+        ],
     )
     foundry_kompile.add_argument(
         '--regen',
@@ -843,7 +863,15 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_prove_args = command_parser.add_parser(
         'foundry-prove',
         help='Run Foundry Proof.',
-        parents=[shared_args(), k_args(), kprove_args(), smt_args, rpc_args, explore_args, foundry_root_arg],
+        parents=[
+            kevm_cli_args.shared_args,
+            kevm_cli_args.k_args,
+            kevm_cli_args.kprove_args,
+            smt_args,
+            rpc_args,
+            explore_args,
+            foundry_root_arg,
+        ],
     )
     foundry_prove_args.add_argument(
         '--test',
@@ -879,7 +907,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_show_args = command_parser.add_parser(
         'foundry-show',
         help='Display a given Foundry CFG.',
-        parents=[shared_args(), k_args(), kcfg_show_args, display_args, foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kcfg_show_args, display_args, foundry_root_arg],
     )
     foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
     foundry_show_args.add_argument(
@@ -898,27 +926,27 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_to_dot = command_parser.add_parser(
         'foundry-to-dot',
         help='Dump the given CFG for the test as DOT for visualization.',
-        parents=[shared_args(), foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, foundry_root_arg],
     )
     foundry_to_dot.add_argument('test', type=str, help='Display the CFG for this test.')
 
     command_parser.add_parser(
         'foundry-list',
         help='List information about CFGs on disk',
-        parents=[shared_args(), k_args(), foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, foundry_root_arg],
     )
 
     foundry_view_kcfg_args = command_parser.add_parser(
         'foundry-view-kcfg',
         help='Display tree view of CFG',
-        parents=[shared_args(), foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, foundry_root_arg],
     )
     foundry_view_kcfg_args.add_argument('test', type=str, help='View the CFG for this test.')
 
     foundry_remove_node = command_parser.add_parser(
         'foundry-remove-node',
         help='Remove a node and its successors.',
-        parents=[shared_args(), foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, foundry_root_arg],
     )
     foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
     foundry_remove_node.add_argument('node', type=str, help='Node to remove CFG subgraph from.')
@@ -926,7 +954,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',
         help='Simplify a given node, and potentially replace it.',
-        parents=[shared_args(), smt_args, rpc_args, display_args, foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, smt_args, rpc_args, display_args, foundry_root_arg],
     )
     foundry_simplify_node.add_argument('test', type=str, help='Simplify node in this CFG.')
     foundry_simplify_node.add_argument('node', type=str, help='Node to simplify in CFG.')
@@ -937,7 +965,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_step_node = command_parser.add_parser(
         'foundry-step-node',
         help='Step from a given node, adding it to the CFG.',
-        parents=[shared_args(), rpc_args, smt_args, foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, rpc_args, smt_args, foundry_root_arg],
     )
     foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
     foundry_step_node.add_argument('node', type=str, help='Node to step from in CFG.')
@@ -951,7 +979,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_section_edge = command_parser.add_parser(
         'foundry-section-edge',
         help='Given an edge in the graph, cut it into sections to get intermediate nodes.',
-        parents=[shared_args(), rpc_args, smt_args, foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, rpc_args, smt_args, foundry_root_arg],
     )
     foundry_section_edge.add_argument('test', type=str, help='Section edge in this CFG.')
     foundry_section_edge.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
