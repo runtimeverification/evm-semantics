@@ -13,7 +13,7 @@ from pyk.kore.prelude import int_dv
 from pyk.kore.tools import kore_print
 from pyk.ktool.krun import KRunOutput, _krun
 
-from .cli import evm_chain_args, k_args, shared_args
+from .cli import KEVMCLIArgs
 from .gst_to_kore import _mode_to_kore, _schedule_to_kore, gst_to_kore
 
 if TYPE_CHECKING:
@@ -104,9 +104,10 @@ def _exec_interpret(
 
 
 def _parse_args() -> Namespace:
+    kevm_cli_args = KEVMCLIArgs()
     parser = ArgumentParser(
         description='Inpterpret an EVM program (GeneralStateTest or custom KEVM format)',
-        parents=[shared_args(), k_args(), evm_chain_args()],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.evm_chain_args],
     )
     parser.add_argument('input_file', type=file_path, help='Path to input file.')
     parser.add_argument('--parser', default=None, type=str, help='Parser to use for $PGM.')
