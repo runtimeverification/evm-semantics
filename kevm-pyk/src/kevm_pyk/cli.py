@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 from functools import cached_property
+from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import dir_path
+from pyk.cli_utils import dir_path, ensure_dir_path, file_path
+
+from .utils import arg_pair_of
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -143,5 +146,199 @@ class KEVMCLIArgs:
             choices=modes,
             default='NORMAL',
             help="execution mode to use [{'|'.join(modes)}]",
+        )
+        return args
+
+    @cached_property
+    def display_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument('--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.')
+        args.add_argument('--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.')
+        return args
+
+    @cached_property
+    def foundry_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument(
+            '--foundry-project-root',
+            dest='foundry_root',
+            type=dir_path,
+            default=Path('.'),
+            help='Path to Foundry project root directory.',
+        )
+        return args
+
+    @cached_property
+    def rpc_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument(
+            '--bug-report',
+            default=False,
+            action='store_true',
+            help='Generate a haskell-backend bug report for the execution.',
+        )
+        args.add_argument(
+            '--trace-rewrites',
+            default=False,
+            action='store_true',
+            help='Log traces of all simplification and rewrite rule applications.',
+        )
+        return args
+
+    @cached_property
+    def smt_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument(
+            '--smt-timeout', dest='smt_timeout', type=int, default=125, help='Timeout in ms to use for SMT queries.'
+        )
+        args.add_argument(
+            '--smt-retry-limit',
+            dest='smt_retry_limit',
+            type=int,
+            default=4,
+            help='Number of times to retry SMT queries with scaling timeouts.',
+        )
+        return args
+
+    @cached_property
+    def explore_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument(
+            '--break-every-step',
+            dest='break_every_step',
+            default=False,
+            action='store_true',
+            help='Store a node for every EVM opcode step (expensive).',
+        )
+        args.add_argument(
+            '--break-on-jumpi',
+            dest='break_on_jumpi',
+            default=False,
+            action='store_true',
+            help='Store a node for every EVM jump opcode.',
+        )
+        args.add_argument(
+            '--break-on-calls',
+            dest='break_on_calls',
+            default=True,
+            action='store_true',
+            help='Store a node for every EVM call made.',
+        )
+        args.add_argument(
+            '--no-break-on-calls',
+            dest='break_on_calls',
+            action='store_false',
+            help='Do not store a node for every EVM call made.',
+        )
+        args.add_argument(
+            '--implication-every-block',
+            dest='implication_every_block',
+            default=True,
+            action='store_true',
+            help='Check subsumption into target state every basic block, not just at terminal nodes.',
+        )
+        args.add_argument(
+            '--no-implication-every-block',
+            dest='implication_every_block',
+            action='store_false',
+            help='Do not check subsumption into target state every basic block, not just at terminal nodes.',
+        )
+        args.add_argument(
+            '--simplify-init',
+            dest='simplify_init',
+            default=True,
+            action='store_true',
+            help='Simplify the initial and target states at startup.',
+        )
+        args.add_argument(
+            '--no-simplify-init',
+            dest='simplify_init',
+            action='store_false',
+            help='Do not simplify the initial and target states at startup.',
+        )
+        args.add_argument(
+            '--max-depth',
+            dest='max_depth',
+            default=1000,
+            type=int,
+            help='Store every Nth state in the CFG for inspection.',
+        )
+        args.add_argument(
+            '--max-iterations',
+            dest='max_iterations',
+            default=None,
+            type=int,
+            help='Store every Nth state in the CFG for inspection.',
+        )
+        args.add_argument(
+            '--kore-rpc-command',
+            dest='kore_rpc_command',
+            type=str,
+            default='kore-rpc',
+            help='Custom command to start RPC server',
+        )
+        return args
+
+    @cached_property
+    def k_gen_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument(
+            '--require',
+            dest='requires',
+            default=[],
+            action='append',
+            help='Extra K requires to include in generated output.',
+        )
+        args.add_argument(
+            '--module-import',
+            dest='imports',
+            default=[],
+            action='append',
+            help='Extra modules to import into generated main module.',
+        )
+        return args
+
+    @cached_property
+    def spec_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument('spec_file', type=file_path, help='Path to spec file.')
+        args.add_argument('--save-directory', type=ensure_dir_path, help='Path to where CFGs are stored.')
+        args.add_argument(
+            '--claim',
+            type=str,
+            dest='claim_labels',
+            action='append',
+            help='Only prove listed claims, MODULE_NAME.claim-id',
+        )
+        args.add_argument(
+            '--exclude-claim',
+            type=str,
+            dest='exclude_claim_labels',
+            action='append',
+            help='Skip listed claims, MODULE_NAME.claim-id',
+        )
+        return args
+
+    @cached_property
+    def kcfg_show_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument(
+            '--node',
+            type=str,
+            dest='nodes',
+            default=[],
+            action='append',
+            help='List of nodes to display as well.',
+        )
+        args.add_argument(
+            '--node-delta',
+            type=arg_pair_of(str, str),
+            dest='node_deltas',
+            default=[],
+            action='append',
+            help='List of nodes to display delta for.',
+        )
+        args.add_argument(
+            '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
         )
         return args
