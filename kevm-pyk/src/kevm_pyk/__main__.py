@@ -15,6 +15,7 @@ from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
 
+from .cli import evm_chain_args, k_args, kompile_args, kprove_args, shared_args
 from .foundry import (
     Foundry,
     foundry_kompile,
@@ -583,11 +584,6 @@ def _create_argument_parser() -> ArgumentParser:
 
         return parse
 
-    shared_args = ArgumentParser(add_help=False)
-    shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
-    shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
-    shared_args.add_argument('--workers', '-j', default=1, type=int, help='Number of processes to run in parallel.')
-
     display_args = ArgumentParser(add_help=False)
     display_args.add_argument('--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.')
     display_args.add_argument('--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.')
@@ -703,89 +699,6 @@ def _create_argument_parser() -> ArgumentParser:
         help='Custom command to start RPC server',
     )
 
-    k_args = ArgumentParser(add_help=False)
-    k_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
-    k_args.add_argument(
-        '-I', type=str, dest='includes', default=[], action='append', help='Directories to lookup K definitions in.'
-    )
-    k_args.add_argument('--main-module', default=None, type=str, help='Name of the main module.')
-    k_args.add_argument('--syntax-module', default=None, type=str, help='Name of the syntax module.')
-    k_args.add_argument('--spec-module', default=None, type=str, help='Name of the spec module.')
-    k_args.add_argument('--definition', type=dir_path, dest='definition_dir', help='Path to definition to use.')
-    k_args.add_argument(
-        '--md-selector',
-        type=str,
-        help='Code selector expression to use when reading markdown.',
-    )
-
-    kprove_args = ArgumentParser(add_help=False)
-    kprove_args.add_argument(
-        '--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.'
-    )
-
-    k_kompile_args = ArgumentParser(add_help=False)
-    k_kompile_args.add_argument(
-        '--emit-json',
-        dest='emit_json',
-        default=True,
-        action='store_true',
-        help='Emit JSON definition after compilation.',
-    )
-    k_kompile_args.add_argument(
-        '--no-emit-json', dest='emit_json', action='store_false', help='Do not JSON definition after compilation.'
-    )
-    k_kompile_args.add_argument(
-        '-ccopt',
-        dest='ccopts',
-        default=[],
-        action='append',
-        help='Additional arguments to pass to llvm-kompile.',
-    )
-    k_kompile_args.add_argument(
-        '--no-llvm-kompile',
-        dest='llvm_kompile',
-        default=True,
-        action='store_false',
-        help='Do not run llvm-kompile process.',
-    )
-    k_kompile_args.add_argument(
-        '--with-llvm-library',
-        dest='llvm_library',
-        default=False,
-        action='store_true',
-        help='Make kompile generate a dynamic llvm library.',
-    )
-    k_kompile_args.add_argument(
-        '--enable-llvm-debug',
-        dest='enable_llvm_debug',
-        default=False,
-        action='store_true',
-        help='Make kompile generate debug symbols for llvm.',
-    )
-    k_kompile_args.add_argument(
-        '--read-only-kompiled-directory',
-        dest='read_only',
-        default=False,
-        action='store_true',
-        help='Generated a kompiled directory that K will not attempt to write to afterwards.',
-    )
-    k_kompile_args.add_argument('-O0', dest='o0', default=False, action='store_true', help='Optimization level 0.')
-    k_kompile_args.add_argument('-O1', dest='o1', default=False, action='store_true', help='Optimization level 1.')
-    k_kompile_args.add_argument('-O2', dest='o2', default=False, action='store_true', help='Optimization level 2.')
-    k_kompile_args.add_argument('-O3', dest='o3', default=False, action='store_true', help='Optimization level 3.')
-
-    evm_chain_args = ArgumentParser(add_help=False)
-    evm_chain_args.add_argument(
-        '--schedule',
-        type=str,
-        default='LONDON',
-        help='KEVM Schedule to use for execution. One of [DEFAULT|FRONTIER|HOMESTEAD|TANGERINE_WHISTLE|SPURIOUS_DRAGON|BYZANTIUM|CONSTANTINOPLE|PETERSBURG|ISTANBUL|BERLIN|LONDON].',
-    )
-    evm_chain_args.add_argument('--chainid', type=int, default=1, help='Chain ID to use for execution.')
-    evm_chain_args.add_argument(
-        '--mode', type=str, default='NORMAL', help='Execution mode to use. One of [NORMAL|VMTESTS].'
-    )
-
     k_gen_args = ArgumentParser(add_help=False)
     k_gen_args.add_argument(
         '--require',
@@ -841,35 +754,35 @@ def _create_argument_parser() -> ArgumentParser:
 
     command_parser = parser.add_subparsers(dest='command', required=True)
 
-    kompile_args = command_parser.add_parser(
-        'kompile', help='Kompile KEVM specification.', parents=[shared_args, k_args, k_kompile_args]
+    kevm_kompile_args = command_parser.add_parser(
+        'kompile', help='Kompile KEVM specification.', parents=[shared_args(), k_args(), kompile_args()]
     )
-    kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|node|foundry]')
-    kompile_args.add_argument(
+    kevm_kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
+    kevm_kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|node|foundry]')
+    kevm_kompile_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )
 
     _ = command_parser.add_parser(
         'prove',
         help='Run KEVM proof.',
-        parents=[shared_args, k_args, kprove_args, rpc_args, smt_args, explore_args, spec_args],
+        parents=[shared_args(), k_args(), kprove_args(), rpc_args, smt_args, explore_args, spec_args],
     )
 
     _ = command_parser.add_parser(
         'view-kcfg',
         help='Display tree view of CFG',
-        parents=[shared_args, k_args, spec_args],
+        parents=[shared_args(), k_args(), spec_args],
     )
 
     _ = command_parser.add_parser(
         'show-kcfg',
         help='Display tree show of CFG',
-        parents=[shared_args, k_args, kcfg_show_args, spec_args, display_args],
+        parents=[shared_args(), k_args(), kcfg_show_args, spec_args, display_args],
     )
 
     run_args = command_parser.add_parser(
-        'run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args, k_args]
+        'run', help='Run KEVM test/simulation.', parents=[shared_args(), evm_chain_args(), k_args()]
     )
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
     run_args.add_argument(
@@ -902,7 +815,7 @@ def _create_argument_parser() -> ArgumentParser:
     solc_to_k_args = command_parser.add_parser(
         'solc-to-k',
         help='Output helper K definition for given JSON output from solc compiler.',
-        parents=[shared_args, k_args, k_gen_args],
+        parents=[shared_args(), k_args(), k_gen_args],
     )
     solc_to_k_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
@@ -910,7 +823,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_kompile = command_parser.add_parser(
         'foundry-kompile',
         help='Kompile K definition corresponding to given output directory.',
-        parents=[shared_args, k_args, k_gen_args, k_kompile_args, foundry_root_arg],
+        parents=[shared_args(), k_args(), k_gen_args, kompile_args(), foundry_root_arg],
     )
     foundry_kompile.add_argument(
         '--regen',
@@ -930,7 +843,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_prove_args = command_parser.add_parser(
         'foundry-prove',
         help='Run Foundry Proof.',
-        parents=[shared_args, k_args, kprove_args, smt_args, rpc_args, explore_args, foundry_root_arg],
+        parents=[shared_args(), k_args(), kprove_args(), smt_args, rpc_args, explore_args, foundry_root_arg],
     )
     foundry_prove_args.add_argument(
         '--test',
@@ -966,7 +879,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_show_args = command_parser.add_parser(
         'foundry-show',
         help='Display a given Foundry CFG.',
-        parents=[shared_args, k_args, kcfg_show_args, display_args, foundry_root_arg],
+        parents=[shared_args(), k_args(), kcfg_show_args, display_args, foundry_root_arg],
     )
     foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
     foundry_show_args.add_argument(
@@ -985,27 +898,27 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_to_dot = command_parser.add_parser(
         'foundry-to-dot',
         help='Dump the given CFG for the test as DOT for visualization.',
-        parents=[shared_args, foundry_root_arg],
+        parents=[shared_args(), foundry_root_arg],
     )
     foundry_to_dot.add_argument('test', type=str, help='Display the CFG for this test.')
 
     command_parser.add_parser(
         'foundry-list',
         help='List information about CFGs on disk',
-        parents=[shared_args, k_args, foundry_root_arg],
+        parents=[shared_args(), k_args(), foundry_root_arg],
     )
 
     foundry_view_kcfg_args = command_parser.add_parser(
         'foundry-view-kcfg',
         help='Display tree view of CFG',
-        parents=[shared_args, foundry_root_arg],
+        parents=[shared_args(), foundry_root_arg],
     )
     foundry_view_kcfg_args.add_argument('test', type=str, help='View the CFG for this test.')
 
     foundry_remove_node = command_parser.add_parser(
         'foundry-remove-node',
         help='Remove a node and its successors.',
-        parents=[shared_args, foundry_root_arg],
+        parents=[shared_args(), foundry_root_arg],
     )
     foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
     foundry_remove_node.add_argument('node', type=str, help='Node to remove CFG subgraph from.')
@@ -1013,7 +926,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',
         help='Simplify a given node, and potentially replace it.',
-        parents=[shared_args, smt_args, rpc_args, display_args, foundry_root_arg],
+        parents=[shared_args(), smt_args, rpc_args, display_args, foundry_root_arg],
     )
     foundry_simplify_node.add_argument('test', type=str, help='Simplify node in this CFG.')
     foundry_simplify_node.add_argument('node', type=str, help='Node to simplify in CFG.')
@@ -1024,7 +937,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_step_node = command_parser.add_parser(
         'foundry-step-node',
         help='Step from a given node, adding it to the CFG.',
-        parents=[shared_args, rpc_args, smt_args, foundry_root_arg],
+        parents=[shared_args(), rpc_args, smt_args, foundry_root_arg],
     )
     foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
     foundry_step_node.add_argument('node', type=str, help='Node to step from in CFG.')
@@ -1038,7 +951,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_section_edge = command_parser.add_parser(
         'foundry-section-edge',
         help='Given an edge in the graph, cut it into sections to get intermediate nodes.',
-        parents=[shared_args, rpc_args, smt_args, foundry_root_arg],
+        parents=[shared_args(), rpc_args, smt_args, foundry_root_arg],
     )
     foundry_section_edge.add_argument('test', type=str, help='Section edge in this CFG.')
     foundry_section_edge.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
