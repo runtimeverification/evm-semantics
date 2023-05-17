@@ -317,6 +317,7 @@ This rule then takes a `bool` condition from the function call data, represented
     rule [foundry.call.assume]:
          <k> #call_foundry SELECTOR ARGS => #assume(ARGS ==K #bufStrict(32, 1)) ... </k>
       requires SELECTOR ==Int selector ( "assume(bool)" )
+      [preserves-definedness]
 ```
 
 #### `deal` - Set a given balance to a given account.
