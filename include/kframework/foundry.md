@@ -348,9 +348,7 @@ The values are forwarded to the `#setCode` production which updates the account 
     rule [foundry.call.etch]:
          <k> #call_foundry SELECTOR ARGS
           => #loadAccount #asWord(#range(ARGS, 0, 32))
-          ~> #let CODE_START = 96 #in
-             #let CODE_LENGTH = #asWord(#range(ARGS, 64, 32)) #in
-             #setCode #asWord(#range(ARGS, 0, 32)) #range(ARGS, CODE_START, CODE_LENGTH)
+          ~> #setCode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 96, #asWord(#range(ARGS, 64, 32)))
          ...
          </k>
       requires SELECTOR ==Int selector ( "etch(address,bytes)" )
@@ -624,9 +622,7 @@ If the `expect*OPCODE*` selector is matched, the rule will load the account into
     rule [foundry.call.expectStaticCall]:
          <k> #call_foundry SELECTOR ARGS
           => #loadAccount #asWord(#range(ARGS, 0, 32))
-          ~> #let CODE_START = 96 #in
-          #let DATA_LENGTH = #asWord(#range(ARGS, 64, 32)) #in
-          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, CODE_START, DATA_LENGTH) 0 Static
+          ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 96, #asWord(#range(ARGS, 64, 32))) 0 Static
           ...
          </k>
       requires SELECTOR ==Int selector ( "expectStaticCall(address,bytes)" )
@@ -634,9 +630,7 @@ If the `expect*OPCODE*` selector is matched, the rule will load the account into
     rule [foundry.call.expectDelegateCall]:
          <k> #call_foundry SELECTOR ARGS
           => #loadAccount #asWord(#range(ARGS, 0, 32))
-          ~> #let DATA_START = 96 #in
-          #let DATA_LENGTH = #asWord(#range(ARGS, 64, 32)) #in
-          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) 0 Delegate
+          ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 96, #asWord(#range(ARGS, 64, 32))) 0 Delegate
           ...
          </k>
       requires SELECTOR ==Int selector ( "expectDelegateCall(address,bytes)" )
@@ -644,9 +638,7 @@ If the `expect*OPCODE*` selector is matched, the rule will load the account into
     rule [foundry.call.expectRegularCall]:
          <k> #call_foundry SELECTOR ARGS
           => #loadAccount #asWord(#range(ARGS, 0, 32))
-          ~> #let DATA_START = 128 #in
-          #let DATA_LENGTH = #asWord(#range(ARGS, 96, 32)) #in
-          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Call
+          ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 128, #asWord(#range(ARGS, 96, 32))) #asWord(#range(ARGS, 32, 32)) Call
           ...
          </k>
       requires SELECTOR ==Int selector ( "expectRegularCall(address,uint256,bytes)" )
@@ -654,9 +646,7 @@ If the `expect*OPCODE*` selector is matched, the rule will load the account into
     rule [foundry.call.expectCreate]:
          <k> #call_foundry SELECTOR ARGS
           => #loadAccount #asWord(#range(ARGS, 0, 32))
-          ~> #let DATA_START = 128 #in
-          #let DATA_LENGTH = #asWord(#range(ARGS, 96, 32)) #in
-          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Create
+          ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 128, #asWord(#range(ARGS, 96, 32))) #asWord(#range(ARGS, 32, 32)) Create
           ...
          </k>
       requires SELECTOR ==Int selector ( "expectCreate(address,uint256,bytes)" )
@@ -664,9 +654,7 @@ If the `expect*OPCODE*` selector is matched, the rule will load the account into
     rule [foundry.call.expectCreate2]:
          <k> #call_foundry SELECTOR ARGS
           => #loadAccount #asWord(#range(ARGS, 0, 32))
-          ~> #let DATA_START = 128 #in
-          #let DATA_LENGTH = #asWord(#range(ARGS, 96, 32)) #in
-          #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, DATA_START, DATA_LENGTH) #asWord(#range(ARGS, 32, 32)) Create2
+          ~> #setExpectOpcode #asWord(#range(ARGS, 0, 32)) #range(ARGS, 128, #asWord(#range(ARGS, 96, 32))) #asWord(#range(ARGS, 32, 32)) Create2
           ...
          </k>
       requires SELECTOR ==Int selector ( "expectCreate2(address,uint256,bytes)" )
