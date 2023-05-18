@@ -141,10 +141,11 @@ def kevm_kompile(
     )
 
     kompile: Kompile
-    haskell_binary = not (Kernel.get() == Kernel.DARWIN)
+    kernel = Kernel.get()
+    haskell_binary = kernel is not Kernel.DARWIN
     match backend:
         case KompileBackend.LLVM:
-            ccopts = list(ccopts) + _lib_ccopts()
+            ccopts = list(ccopts) + _lib_ccopts(kernel)
             no_llvm_kompile = target == KompileTarget.NODE
             kompile = LLVMKompile(
                 base_args=base_args,
@@ -173,7 +174,7 @@ def kevm_kompile(
         raise
 
 
-def _lib_ccopts() -> list[str]:
+def _lib_ccopts(kernel: Kernel) -> list[str]:
     ccopts = ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
 
     libff_dir = config.KEVM_LIB / 'libff'
@@ -186,7 +187,6 @@ def _lib_ccopts() -> list[str]:
         f'{plugin_include}/c/blake2.cpp',
     ]
 
-    kernel = Kernel.get()
     if kernel == Kernel.DARWIN:
         if not config.NIX_BUILD:
             brew_root = run_process(('brew', '--prefix'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
