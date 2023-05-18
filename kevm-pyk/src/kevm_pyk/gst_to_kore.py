@@ -10,6 +10,8 @@ from pyk.cli_utils import file_path
 from pyk.kore.prelude import INT, SORT_JSON, SORT_K_ITEM, inj, int_dv, json_to_kore, top_cell_initializer
 from pyk.kore.syntax import App, SortApp
 
+from .cli import KEVMCLIArgs
+
 if TYPE_CHECKING:
     from argparse import Namespace
     from pathlib import Path
@@ -57,37 +59,12 @@ def _exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int) 
 
 
 def _parse_args() -> Namespace:
-    schedules = (
-        'DEFAULT',
-        'FRONTIER',
-        'HOMESTEAD',
-        'TANGERINE_WHISTLE',
-        'SPURIOUS_DRAGON',
-        'BYZANTIUM',
-        'CONSTANTINOPLE',
-        'PETERSBURG',
-        'ISTANBUL',
-        'BERLIN',
-        'LONDON',
-        'MERGE',
+    kevm_cli_args = KEVMCLIArgs()
+    parser = ArgumentParser(
+        description='Convert a GeneralStateTest to Kore for compsumption by KEVM',
+        parents=[kevm_cli_args.evm_chain_args],
     )
-    modes = ('NORMAL', 'VMTESTS')
-
-    parser = ArgumentParser(description='Convert a GeneralStateTest to Kore for compsumption by KEVM')
     parser.add_argument('input_file', type=file_path, help='path to GST')
-    parser.add_argument(
-        '--schedule',
-        choices=schedules,
-        default='LONDON',
-        help=f"schedule to use for execution [{'|'.join(schedules)}]",
-    )
-    parser.add_argument('--chainid', type=int, default=1, help='chain ID to use for execution')
-    parser.add_argument(
-        '--mode',
-        choices=modes,
-        default='NORMAL',
-        help="execution mode to use [{'|'.join(modes)}]",
-    )
     return parser.parse_args()
 
 
