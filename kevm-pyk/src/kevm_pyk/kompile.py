@@ -63,6 +63,16 @@ CONCRETE_RULES: Final = (
 )
 
 
+class Kernel(Enum):
+    LINUX = 'Linux'
+    DARWIN = 'Darwin'
+
+    @staticmethod
+    def get() -> Kernel:
+        uname = run_process(('uname', '-s'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+        return Kernel(uname)
+
+
 class KompileTarget(Enum):
     LLVM = 'llvm'
     HASKELL = 'haskell'
@@ -131,6 +141,7 @@ def kevm_kompile(
     )
 
     kompile: Kompile
+    haskell_binary = not (Kernel.get() == Kernel.DARWIN)
     match backend:
         case KompileBackend.LLVM:
             ccopts = list(ccopts) + _lib_ccopts()
@@ -147,6 +158,7 @@ def kevm_kompile(
             kompile = HaskellKompile(
                 base_args=base_args,
                 concrete_rules=CONCRETE_RULES,
+                haskell_binary=haskell_binary,
             )
         case _:
             raise ValueError(f'Unsupported backend: {backend.value}')
@@ -173,15 +185,6 @@ def _lib_ccopts() -> list[str]:
         f'{plugin_include}/c/crypto.cpp',
         f'{plugin_include}/c/blake2.cpp',
     ]
-
-    class Kernel(Enum):
-        LINUX = 'Linux'
-        DARWIN = 'Darwin'
-
-        @staticmethod
-        def get() -> Kernel:
-            uname = run_process(('uname', '-s'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
-            return Kernel(uname)
 
     kernel = Kernel.get()
     if kernel == Kernel.DARWIN:
