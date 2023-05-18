@@ -7,6 +7,7 @@ import shutil
 import hashlib
 from functools import cached_property
 from pathlib import Path
+import subprocess
 from typing import TYPE_CHECKING
 
 import tomlkit
@@ -139,6 +140,7 @@ class Foundry:
 
                     file_h = htype.hexdigest()
                     if file_h != h:
+                        print(contract_path, file_h, h)
                         return False
             except:
                 continue
@@ -203,6 +205,9 @@ class Foundry:
             if type(pc_cell) is KToken and pc_cell.sort == INT:
                 return self.solidity_src(contract_name, int(pc_cell.token))
         return ['NO DATA']
+
+    def build(self) -> None:
+        os.system("cd " + str(self._root) + "; forge build")
 
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
@@ -427,9 +432,11 @@ def foundry_prove(
 
     if not foundry.up_to_date_artifacts():
         print("Files changed, rekompiling")
-        # forge build
+        foundry.build()
         foundry_kompile(definition_dir, foundry_root, includes, md_selector, True, False, requires, imports, ccopts, llvm_kompile, debug, llvm_library)
-        print("Done")
+        print("Done rekompiling...")
+    else:
+        print("Files up to date, proving...")
 
     all_tests = [
         f'{contract.name}.{method.name}'
@@ -1038,4 +1045,5 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             KVariable('STORAGESLOTSET_FINAL'),
         ],
     )
+
 

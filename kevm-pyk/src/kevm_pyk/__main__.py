@@ -389,10 +389,6 @@ def exec_foundry_prove(
     trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
-    _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
-    _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
-    _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
 
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
@@ -872,5 +868,6 @@ def _loglevel(args: Namespace) -> int:
 
 if __name__ == '__main__':
     main()
+
 
 
