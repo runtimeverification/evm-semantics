@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import shutil
+import hashlib
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -110,6 +111,35 @@ class Foundry:
     def up_to_date(self) -> bool:
         digest_file = self.out / 'digest'
         return digest_file.exists() and digest_file.read_text() == self.digest
+
+    def up_to_date_artifacts(self) -> bool:
+        contracts = self.contracts
+        cash: dict[str, str] = {}
+        for _, contract in contracts.items():
+            artifacts = contract.contract_json
+            if 'metadata' in artifacts:
+                if 'sources' in artifacts['metadata']:
+                    sources = artifacts['metadata']['sources']
+                    for path, source in sources.items():
+                        if path not in cash:
+                            h = source['keccak256']
+                            cash[path] = h
+
+        for path, h in cash.items():
+            contract_path = self._root / path
+            try:
+                with open(contract_path, 'rb') as f:
+                    # print(contract_path)
+                    content = f.read()
+                    # print(content)
+                    file_h = hashlib.sha3_256(content).hexdigest()
+                    # print(file_h, h)
+                    if file_h != h:
+                        return False
+            except:
+                continue
+
+        return True
 
     def update_digest(self) -> None:
         digest_file = self.out / 'digest'
@@ -381,6 +411,11 @@ def foundry_prove(
 
     save_directory = foundry.out / 'apr_proofs'
     save_directory.mkdir(exist_ok=True)
+
+    if not foundry.up_to_date_artifacts():
+        print("Files changed, rekompiling")
+        # self.foundry_kompile(definitions, foundry_root)
+        print("Done")
 
     all_tests = [
         f'{contract.name}.{method.name}'
@@ -989,3 +1024,6 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             KVariable('STORAGESLOTSET_FINAL'),
         ],
     )
+
+def _up_to_date() -> bool:
+    artifacts = {}
