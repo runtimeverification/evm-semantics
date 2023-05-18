@@ -185,14 +185,56 @@ def exec_foundry_kompile(
     )
 
 
-def exec_prove(
+def exec_prove_legacy(
     definition_dir: Path,
     spec_file: Path,
-    includes: list[str],
+    includes: Iterable[str] = (),
     bug_report: bool = False,
     save_directory: Path | None = None,
     spec_module: str | None = None,
-    md_selector: str | None = None,
+    debug: bool = False,
+    debugger: bool = False,
+    max_depth: int | None = None,
+    max_counterexamples: int | None = None,
+    branching_allowed: int | None = None,
+    haskell_backend_arg: str | None = None,
+    **kwargs: Any,
+) -> None:
+    kevm = KEVM(definition_dir, use_directory=save_directory)
+    args: list[str] = []
+    haskell_args: list[str] = []
+    if debug:
+        args.append('--debug')
+    if debugger:
+        args.append('--debugger')
+    if max_depth:
+        args += ['--depth', f'{max_depth}']
+    if branching_allowed:
+        args += ['--branching-allowed', f'{branching_allowed}']
+    if max_counterexamples:
+        haskell_args += ['--max-counterexamples', f'{max_counterexamples}']
+    if bug_report:
+        haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.rstrip("-spec.k")}']
+    if haskell_backend_arg:
+        haskell_args.append(haskell_backend_arg)
+
+    kevm.prove(
+        spec_file=spec_file,
+        spec_module_name=spec_module,
+        args=args,
+        include_dirs=[Path(i) for i in includes],
+        md_selector='k & ! node',
+        haskell_args=haskell_args,
+    )
+
+
+def exec_prove(
+    definition_dir: Path,
+    spec_file: Path,
+    includes: Iterable[str],
+    bug_report: bool = False,
+    save_directory: Path | None = None,
+    spec_module: str | None = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
     max_depth: int = 1000,
@@ -209,6 +251,9 @@ def exec_prove(
     trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
+    _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
+    md_selector = 'k & ! node'
+
     br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=br)
 
@@ -586,6 +631,7 @@ def _create_argument_parser() -> ArgumentParser:
     shared_args = ArgumentParser(add_help=False)
     shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
     shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
+
     shared_args.add_argument('--workers', '-j', default=1, type=int, help='Number of processes to run in parallel.')
 
     display_args = ArgumentParser(add_help=False)
@@ -723,6 +769,43 @@ def _create_argument_parser() -> ArgumentParser:
         '--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.'
     )
 
+    kprove_legacy_args = ArgumentParser(add_help=False)
+    kprove_legacy_args.add_argument(
+        '--debugger',
+        dest='debugger',
+        default=False,
+        action='store_true',
+        help='Launch proof in an interactive debugger.',
+    )
+    kprove_legacy.add_argument(
+        '--max-depth',
+        dest='max_depth',
+        default=None,
+        type=int,
+        help='The maximum number of computational steps to prove.'
+    )
+    kprove_legacy_args.add_argument(
+        '--max-counterexamples',
+        type=int,
+        dest='max_counterexamples',
+        default=None,
+        help='Maximum number of counterexamples reported before a forcible stop.',
+    )
+    kprove_legacy_args.add_argument(
+        '--branching-allowed',
+        type=int,
+        dest='branching_allowed',
+        default=None,
+        help='Number of branching events allowed before a forcible stop.',
+    )
+    kprove_legacy_args.add_argument(
+        '--haskell-backend-arg',
+        type=str,
+        dest='haskell_backend_arg',
+        default=None,
+        help='Arguments passed to the Haskell backend execution engine.',
+    )
+
     k_kompile_args = ArgumentParser(add_help=False)
     k_kompile_args.add_argument(
         '--emit-json',
@@ -854,6 +937,10 @@ def _create_argument_parser() -> ArgumentParser:
         'prove',
         help='Run KEVM proof.',
         parents=[shared_args, k_args, kprove_args, rpc_args, smt_args, explore_args, spec_args],
+    )
+
+    _ = command_parser.add_parser(
+        'prove-legacy', help='Run KEVM proof using the legacy kprove binary.', parents=[shared_args, kprove_legacy_args]
     )
 
     _ = command_parser.add_parser(
