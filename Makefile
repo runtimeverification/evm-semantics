@@ -443,6 +443,7 @@ tests/specs/examples/erc721-spec%:                    KPROVE_FILE   =  erc721-sp
 tests/specs/examples/storage-spec%:                   KPROVE_EXT    =  md
 tests/specs/examples/storage-spec%:                   KPROVE_FILE   =  storage-spec
 tests/specs/examples/sum-to-n-spec%:                  KPROVE_FILE   =  sum-to-n-spec
+tests/specs/examples/sum-to-n-foundry-spec%:          KPROVE_FILE   =  sum-to-n-foundry-spec
 tests/specs/functional/infinite-gas-spec%:            KPROVE_FILE   =  infinite-gas-spec
 tests/specs/functional/evm-int-simplifications-spec%: KPROVE_FILE   =  evm-int-simplifications-spec
 tests/specs/functional/int-simplifications-spec%:     KPROVE_FILE   =  int-simplifications-spec
@@ -507,7 +508,7 @@ foundry_out := $(foundry_dir)/out
 
 test-foundry-%: KEVM_OPTS += --pyk --verbose
 test-foundry-%: KEVM := $(POETRY_RUN) kevm
-test-foundry-kompile: tests/foundry/foundry.k.check
+test-foundry-kompile: tests/foundry/foundry.k.check tests/foundry/contracts.k.check
 test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
 test-foundry-bmc-prove: tests/foundry/out/kompiled/foundry.k.bmc-prove
 test-foundry-list: tests/foundry/foundry-list.check
@@ -532,7 +533,12 @@ tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
 	$(CHECK) $@.stripped $@.expected
 
+tests/foundry/contracts.k.check: tests/foundry/out/kompiled/contracts.k
+	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
+	$(CHECK) $@.stripped $@.expected
+
 tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
+tests/foundry/out/kompiled/contracts.k: tests/foundry/out/kompiled/timestamp
 
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
@@ -572,7 +578,7 @@ $(foundry_golden)/%.out: foundry-fail
 	> $@
 
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
-	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose
+	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose --require $(foundry_dir)/lemmas.k --module-import LoopsTest:SUM-TO-N-INVARIANT
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose
 tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) kevm
@@ -682,6 +688,7 @@ prove_haskell_definitions :=                                                    
                              tests/specs/examples/storage-spec/haskell/timestamp          \
                              tests/specs/examples/solidity-code-spec/haskell/timestamp    \
                              tests/specs/examples/sum-to-n-spec/haskell/timestamp         \
+                             tests/specs/examples/sum-to-n-foundry-spec/haskell/timestamp \
                              tests/specs/functional/infinite-gas-spec/haskell/timestamp   \
                              tests/specs/functional/lemmas-no-smt-spec/haskell/timestamp  \
                              tests/specs/functional/lemmas-spec/haskell/timestamp         \
