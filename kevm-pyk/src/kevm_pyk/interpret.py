@@ -108,35 +108,14 @@ def _parse_args() -> Namespace:
     kevm_cli_args = KEVMCLIArgs()
     parser = ArgumentParser(
         description='Inpterpret an EVM program (GeneralStateTest or custom KEVM format)',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.evm_chain_args],
+        parents=[
+            kevm_cli_args.shared_args,
+            kevm_cli_args.k_args,
+            kevm_cli_args.krun_args,
+            kevm_cli_args.evm_chain_args,
+        ],
     )
     parser.add_argument('input_file', type=file_path, help='Path to input file.')
-    parser.add_argument('--parser', default=None, type=str, help='Parser to use for $PGM.')
-    parser.add_argument(
-        '--unparse', dest='unparse', default=True, action='store_true', help='Unparse the output in all cases.'
-    )
-    parser.add_argument(
-        '--no-unparse', dest='unparse', action='store_false', help='Do not unparse the output on success cases.'
-    )
-    parser.add_argument(
-        '--output',
-        default=KRunOutput.PRETTY,
-        type=KRunOutput,
-        help='Output format to use, one of [pretty|program|kast|binary|json|latex|kore|none].',
-    )
-    parser.add_argument(
-        '--expand-macros',
-        dest='expand_macros',
-        default=True,
-        action='store_true',
-        help='Expand macros on the input term before execution.',
-    )
-    parser.add_argument(
-        '--no-expand-macros',
-        dest='expand_macros',
-        action='store_false',
-        help='Do not expand macros on the input term before execution.',
-    )
     return parser.parse_args()
 
 

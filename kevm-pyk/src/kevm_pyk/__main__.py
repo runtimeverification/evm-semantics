@@ -11,7 +11,6 @@ from pyk.cli_utils import BugReport, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
-from pyk.ktool.krun import KRunOutput
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
 
@@ -40,6 +39,7 @@ if TYPE_CHECKING:
     from typing import Any, Final, TypeVar
 
     from pyk.kcfg.tui import KCFGElem
+    from pyk.ktool.krun import KRunOutput
 
     T = TypeVar('T')
 
@@ -641,35 +641,14 @@ def _create_argument_parser() -> ArgumentParser:
     run_args = command_parser.add_parser(
         'run',
         help='Run KEVM test/simulation.',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.evm_chain_args, kevm_cli_args.k_args],
+        parents=[
+            kevm_cli_args.shared_args,
+            kevm_cli_args.k_args,
+            kevm_cli_args.krun_args,
+            kevm_cli_args.evm_chain_args,
+        ],
     )
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
-    run_args.add_argument('--parser', default=None, type=str, help='Parser to use for $PGM.')
-    run_args.add_argument(
-        '--unparse', dest='unparse', default=True, action='store_true', help='Unparse the output in all cases.'
-    )
-    run_args.add_argument(
-        '--no-unparse', dest='unparse', action='store_false', help='Do not unparse the output on success cases.'
-    )
-    run_args.add_argument(
-        '--output',
-        default=KRunOutput.PRETTY,
-        type=KRunOutput,
-        help='Output format to use, one of [pretty|program|kast|binary|json|latex|kore|none].',
-    )
-    run_args.add_argument(
-        '--expand-macros',
-        dest='expand_macros',
-        default=True,
-        action='store_true',
-        help='Expand macros on the input term before execution.',
-    )
-    run_args.add_argument(
-        '--no-expand-macros',
-        dest='expand_macros',
-        action='store_false',
-        help='Do not expand macros on the input term before execution.',
-    )
 
     solc_args = command_parser.add_parser('compile', help='Generate combined JSON with solc compilation results.')
     solc_args.add_argument('contract_file', type=file_path, help='Path to contract file.')

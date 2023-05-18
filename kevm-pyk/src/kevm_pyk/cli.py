@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cli_utils import dir_path, ensure_dir_path, file_path
+from pyk.ktool.krun import KRunOutput
 
 from .utils import arg_pair_of
 
@@ -58,6 +59,37 @@ class KEVMCLIArgs:
             type=list_of(str, delim=','),
             default=[],
             help='Comma-separate list of equations to debug.',
+        )
+        return args
+
+    @cached_property
+    def krun_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument('--parser', default=None, type=str, help='Parser to use for $PGM.')
+        args.add_argument(
+            '--unparse', dest='unparse', default=True, action='store_true', help='Unparse the output in all cases.'
+        )
+        args.add_argument(
+            '--no-unparse', dest='unparse', action='store_false', help='Do not unparse the output on success cases.'
+        )
+        args.add_argument(
+            '--output',
+            default=KRunOutput.PRETTY,
+            type=KRunOutput,
+            help='Output format to use, one of [pretty|program|kast|binary|json|latex|kore|none].',
+        )
+        args.add_argument(
+            '--expand-macros',
+            dest='expand_macros',
+            default=True,
+            action='store_true',
+            help='Expand macros on the input term before execution.',
+        )
+        args.add_argument(
+            '--no-expand-macros',
+            dest='expand_macros',
+            action='store_false',
+            help='Do not expand macros on the input term before execution.',
         )
         return args
 
