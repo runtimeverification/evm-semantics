@@ -776,7 +776,7 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Launch proof in an interactive debugger.',
     )
-    kprove_legacy.add_argument(
+    kprove_legacy_args.add_argument(
         '--max-depth',
         dest='max_depth',
         default=None,
