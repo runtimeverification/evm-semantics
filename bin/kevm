@@ -211,7 +211,7 @@ run_solc() {
 run_foundry() {
     local foundry_command
     foundry_command=("${run_command}")
-    if [[ "${run_command}" == foundry-kompile ]]; then
+    if [[ "${run_command}" == foundry-kompile || "${run_command}" == foundry-prove ]]; then
         foundry_command+=(--definition "${backend_dir}")
     fi
     run_kevm_pyk "${foundry_command[@]}" "$@"
@@ -382,3 +382,5 @@ case "$run_command-$backend" in
     foundry-*                            ) run_foundry            "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
+
+

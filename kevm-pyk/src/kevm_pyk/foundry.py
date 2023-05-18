@@ -386,7 +386,16 @@ def foundry_kompile(
 
 
 def foundry_prove(
+    definition_dir: Path,
     foundry_root: Path,
+    includes: Iterable[str],
+    md_selector: str | None,
+    requires: Iterable[str] = (),
+    imports: Iterable[str] = (),
+    ccopts: Iterable[str] = (),
+    llvm_kompile: bool = True,
+    debug: bool = False,
+    llvm_library: bool = False,
     max_depth: int = 1000,
     max_iterations: int | None = None,
     reinit: bool = False,
@@ -418,7 +427,8 @@ def foundry_prove(
 
     if not foundry.up_to_date_artifacts():
         print("Files changed, rekompiling")
-        # self.foundry_kompile(definitions, foundry_root)
+        # forge build
+        foundry_kompile(definition_dir, foundry_root, includes, md_selector, True, False, requires, imports, ccopts, llvm_kompile, debug, llvm_library)
         print("Done")
 
     all_tests = [
@@ -1029,5 +1039,3 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
         ],
     )
 
-def _up_to_date() -> bool:
-    artifacts = {}

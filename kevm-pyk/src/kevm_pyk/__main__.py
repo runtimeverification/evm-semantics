@@ -360,7 +360,16 @@ def exec_view_kcfg(
 
 
 def exec_foundry_prove(
+    definition_dir: Path,
     foundry_root: Path,
+    md_selector: str | None = None,
+    includes: Iterable[str] = (),
+    requires: Iterable[str] = (),
+    imports: Iterable[str] = (),
+    ccopts: Iterable[str] = (),
+    llvm_kompile: bool = True,
+    debug: bool = False,
+    llvm_library: bool = False,
     max_depth: int = 1000,
     max_iterations: int | None = None,
     reinit: bool = False,
@@ -389,7 +398,16 @@ def exec_foundry_prove(
         kore_rpc_command = kore_rpc_command.split()
 
     results = foundry_prove(
+        definition_dir=definition_dir,
         foundry_root=foundry_root,
+        includes=includes,
+        md_selector=md_selector,
+        requires=requires,
+        imports=imports,
+        ccopts=ccopts,
+        llvm_kompile=llvm_kompile,
+        debug=debug,
+        llvm_library=llvm_library,
         max_depth=max_depth,
         max_iterations=max_iterations,
         reinit=reinit,
@@ -854,3 +872,5 @@ def _loglevel(args: Namespace) -> int:
 
 if __name__ == '__main__':
     main()
+
+
