@@ -286,7 +286,7 @@ while [[ $# -gt 0 ]]; do
         --debugger)            debugger=true                   ; shift   ;;
         --profile-haskell)     profile_haskell=true            ; shift   ;;
         --profile-timeout)     profile_timeout="$2"            ; shift 2 ;;
-        --kore-prof-arg)       kore_prof_arg="$2"             ; shift 2 ;;
+        --kore-prof-arg)       kore_prof_arg="$2"              ; shift 2 ;;
         --bug-report)          bug_report=true                 ; shift   ;;
         --backend)             backend="$2"                    ; shift 2 ;;
         --definition)          backend_dir="$2"                ; shift 2 ;;
