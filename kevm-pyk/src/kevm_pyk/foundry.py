@@ -113,27 +113,31 @@ class Foundry:
         return digest_file.exists() and digest_file.read_text() == self.digest
 
     def up_to_date_artifacts(self) -> bool:
-        contracts = self.contracts
+        cache = self._root / 'cache/solidity-files-cache.json'
         cash: dict[str, str] = {}
-        for _, contract in contracts.items():
-            artifacts = contract.contract_json
-            if 'metadata' in artifacts:
-                if 'sources' in artifacts['metadata']:
-                    sources = artifacts['metadata']['sources']
-                    for path, source in sources.items():
-                        if path not in cash:
-                            h = source['keccak256']
-                            cash[path] = h
+
+        if os.path.isfile(cache):
+            contract_json = json.loads(Path(cache).read_text())
+            files = contract_json['files']
+            for path, source in files.items():
+                if path not in cash:
+                    h = source['contentHash']
+                    cash[path] = h
+        else:
+            return False
 
         for path, h in cash.items():
             contract_path = self._root / path
             try:
-                with open(contract_path, 'rb') as f:
-                    # print(contract_path)
-                    content = f.read()
-                    # print(content)
-                    file_h = hashlib.sha3_256(content).hexdigest()
-                    # print(file_h, h)
+                with open(contract_path, 'rb', buffering=0) as f:
+                    htype = hashlib.md5()
+                    while True:
+                        chunk = f.read(htype.block_size)
+                        if not chunk:
+                            break
+                        htype.update(chunk)
+
+                    file_h = htype.hexdigest()
                     if file_h != h:
                         return False
             except:
