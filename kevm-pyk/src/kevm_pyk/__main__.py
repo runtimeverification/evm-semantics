@@ -631,7 +631,6 @@ def _create_argument_parser() -> ArgumentParser:
     shared_args = ArgumentParser(add_help=False)
     shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
     shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
-
     shared_args.add_argument('--workers', '-j', default=1, type=int, help='Number of processes to run in parallel.')
 
     display_args = ArgumentParser(add_help=False)
