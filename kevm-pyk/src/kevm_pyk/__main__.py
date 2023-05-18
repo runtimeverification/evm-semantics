@@ -781,7 +781,7 @@ def _create_argument_parser() -> ArgumentParser:
         dest='max_depth',
         default=None,
         type=int,
-        help='The maximum number of computational steps to prove.'
+        help='The maximum number of computational steps to prove.',
     )
     kprove_legacy_args.add_argument(
         '--max-counterexamples',
