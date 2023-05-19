@@ -378,15 +378,15 @@ cCHAINID_kore="\dv{SortInt{}}(\"${chainid}\")"
 ! ${debug} || set -x
 
 case "$run_command-$backend" in
-    kompile-@(llvm|haskell|node|foundry) ) run_kompile            "$@" ;;
-    run-@(llvm|haskell)                  ) run_krun               "$@" ;;
-    kast-@(llvm|haskell)                 ) run_kast               "$@" ;;
-    interpret-@(llvm|haskell)            ) run_interpret          "$@" ;;
-    prove-@(haskell|foundry)             ) run_prove              "$@" ;;
-    search-@(haskell)                    ) run_search             "$@" ;;
-    view-kcfg-*                          ) run_kevm_pyk view-kcfg "$@" ;;
-    show-kcfg-*                          ) run_kevm_pyk show-kcfg "$@" ;;
-    solc-to-k-*                          ) run_solc               "$@" ;;
-    foundry-*                            ) run_foundry            "$@" ;;
+    kompile-@(llvm|haskell|node|foundry)   ) run_kompile            "$@" ;;
+    run-@(llvm|haskell|haskell-standalone) ) run_krun               "$@" ;;
+    kast-@(llvm|haskell)                   ) run_kast               "$@" ;;
+    interpret-@(llvm|haskell)              ) run_interpret          "$@" ;;
+    prove-@(haskell|foundry)               ) run_prove              "$@" ;;
+    search-@(haskell)                      ) run_search             "$@" ;;
+    view-kcfg-*                            ) run_kevm_pyk view-kcfg "$@" ;;
+    show-kcfg-*                            ) run_kevm_pyk show-kcfg "$@" ;;
+    solc-to-k-*                            ) run_solc               "$@" ;;
+    foundry-*                              ) run_foundry            "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
