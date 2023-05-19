@@ -6,6 +6,7 @@ import os
 import shutil
 from functools import cached_property
 from pathlib import Path
+from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
 import tomlkit
@@ -172,9 +173,9 @@ class Foundry:
 
     def build(self) -> None:
         try:
-            run_process(['forge', 'build', '--root', str(self._root)], pipe_stderr=True)
-        except:
-            raise RuntimeError("Couldn't forge build!")
+            run_process(['forge', 'build', '--root', str(self._root)], logger=_LOGGER)
+        except CalledProcessError as err:
+            raise RuntimeError("Couldn't forge build!") from err
 
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
