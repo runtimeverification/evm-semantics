@@ -478,8 +478,9 @@ tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_EXT    =  md
 tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_FILE   =  evm-optimizations-spec
 tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
 
-tests/%.run: tests/%
-	$(KEVM) interpret $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                                  \
+tests/%.run: KRUN_OPTS += --no-unparse
+tests/%.run: tests/% poetry
+	kevm-interpret $< $(KEVM_OPTS) $(KRUN_OPTS) --target $(TEST_CONCRETE_BACKEND)                                      \
 	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                        \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
@@ -521,13 +522,13 @@ foundry-clean:
 	rm -f  tests/foundry/foundry.k
 	rm -f  tests/foundry/foundry.rule-profile
 
-tests/foundry/%: KEVM := $(POETRY_RUN) kevm
+tests/foundry/%: KEVM := $(POETRY_RUN) $(KEVM)
 
 foundry_dir := tests/foundry
 foundry_out := $(foundry_dir)/out
 
 test-foundry-%: KEVM_OPTS += --pyk --verbose
-test-foundry-%: KEVM := $(POETRY_RUN) kevm
+test-foundry-%: KEVM := $(POETRY_RUN) $(KEVM)
 test-foundry-kompile: tests/foundry/foundry.k.check tests/foundry/contracts.k.check
 test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
 test-foundry-bmc-prove: tests/foundry/out/kompiled/foundry.k.bmc-prove
@@ -601,7 +602,7 @@ tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompi
 	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose --require $(foundry_dir)/lemmas.k --module-import LoopsTest:SUM-TO-N-INVARIANT
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose
-tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) kevm
+tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) $(KEVM)
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
 tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
