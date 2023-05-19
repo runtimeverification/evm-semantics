@@ -31,7 +31,7 @@ from .foundry import (
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, parallel_kcfg_explore
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -235,8 +235,6 @@ def exec_prove(
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
-        proof_problems = {}
-
         for claim in claims:
             _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
             kcfg = KCFG.from_claim(kevm.definition, claim)
@@ -261,35 +259,37 @@ def exec_prove(
             kcfg.replace_node(kcfg.get_unique_init().id, new_init)
             kcfg.replace_node(kcfg.get_unique_target().id, new_target)
 
-            proof_problems[claim.label] = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
+            proof_problem = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
 
-    results = parallel_kcfg_explore(
-        kevm,
-        proof_problems,
-        save_directory=save_directory,
-        max_depth=max_depth,
-        max_iterations=max_iterations,
-        workers=workers,
-        break_every_step=break_every_step,
-        break_on_jumpi=break_on_jumpi,
-        break_on_calls=break_on_calls,
-        implication_every_block=implication_every_block,
-        is_terminal=KEVM.is_terminal,
-        extract_branches=KEVM.extract_branches,
-        bug_report=br,
-        kore_rpc_command=kore_rpc_command,
-        smt_timeout=smt_timeout,
-        smt_retry_limit=smt_retry_limit,
-        trace_rewrites=trace_rewrites,
-    )
-    failed = 0
-    for pid, r in results.items():
-        if r:
-            print(f'PROOF PASSED: {pid}')
-        else:
-            failed += 1
-            print(f'PROOF FAILED: {pid}')
-    sys.exit(failed)
+            result = kevm_apr_prove(
+                kevm,
+                claim.label,
+                proof_problem,
+                kcfg_explore,
+        #          proof_problems,
+                save_directory=save_directory,
+                max_depth=max_depth,
+                max_iterations=max_iterations,
+                workers=workers,
+                break_every_step=break_every_step,
+                break_on_jumpi=break_on_jumpi,
+                break_on_calls=break_on_calls,
+                implication_every_block=implication_every_block,
+                is_terminal=KEVM.is_terminal,
+                extract_branches=KEVM.extract_branches,
+                bug_report=br,
+                kore_rpc_command=kore_rpc_command,
+                smt_timeout=smt_timeout,
+                smt_retry_limit=smt_retry_limit,
+                trace_rewrites=trace_rewrites,
+            )
+            failed = 0
+            if result:
+                print(f'PROOF PASSED: {proof_problem.id}')
+            else:
+                failed += 1
+                print(f'PROOF FAILED: {proof_problem.id}')
+            sys.exit(failed)
 
 
 def exec_show_kcfg(
