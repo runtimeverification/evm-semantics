@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli_utils import BugReport, ensure_dir_path
+from pyk.cli_utils import BugReport, ensure_dir_path, run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
 from pyk.kast.manip import minimize_term
@@ -170,6 +170,12 @@ class Foundry:
                 return self.solidity_src(contract_name, int(pc_cell.token))
         return ['NO DATA']
 
+    def build(self) -> None:
+        try:
+            run_process(['forge', 'build', '--root', str(self._root)], pipe_stderr=True)
+        except:
+            raise RuntimeError("Couldn't forge build!")
+
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
         return KApply('foundry_success', [s, dst, r, c, e1, e2])
@@ -242,6 +248,8 @@ def foundry_kompile(
     ensure_dir_path(foundry_llvm_dir)
 
     requires_paths: dict[str, str] = {}
+
+    foundry.build()
 
     if not foundry.up_to_date():
         _LOGGER.info('Detected updates to contracts, regenerating K definition.')
