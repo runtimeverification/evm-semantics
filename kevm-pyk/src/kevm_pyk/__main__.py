@@ -29,7 +29,7 @@ from .foundry import (
 )
 from .interpret import _exec_interpret
 from .kevm import KEVM
-from .kompile import KompileTarget, kevm_kompile
+from .kompile import kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
 from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, parallel_kcfg_explore
 
@@ -40,6 +40,8 @@ if TYPE_CHECKING:
 
     from pyk.kcfg.tui import KCFGElem
     from pyk.ktool.krun import KRunOutput
+
+    from .kompile import KompileTarget
 
     T = TypeVar('T')
 
@@ -455,7 +457,6 @@ def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
 
 
 def exec_run(
-    definition_dir: Path,
     input_file: Path,
     parser: str | None,
     expand_macros: str,
@@ -465,10 +466,11 @@ def exec_run(
     mode: str,
     chainid: int,
     unparse: bool,
+    target: KompileTarget,
     **kwargs: Any,
 ) -> None:
     _exec_interpret(
-        definition_dir,
+        target,
         input_file,
         parser,
         expand_macros,
@@ -598,12 +600,14 @@ def _create_argument_parser() -> ArgumentParser:
     kevm_kompile_args = command_parser.add_parser(
         'kompile',
         help='Kompile KEVM specification.',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
+        parents=[
+            kevm_cli_args.shared_args,
+            kevm_cli_args.k_args,
+            kevm_cli_args.kompile_args,
+            kevm_cli_args.kevm_target_args,
+        ],
     )
     kevm_kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kevm_kompile_args.add_argument(
-        '--target', type=KompileTarget, help='[llvm|haskell|haskell-standalone|node|foundry]'
-    )
     kevm_kompile_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )

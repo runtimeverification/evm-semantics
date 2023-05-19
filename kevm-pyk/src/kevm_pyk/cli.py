@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from pyk.cli_utils import dir_path, ensure_dir_path, file_path
 from pyk.ktool.krun import KRunOutput
 
+from .kompile import KompileTarget
 from .utils import arg_pair_of
 
 if TYPE_CHECKING:
@@ -145,6 +146,12 @@ class KEVMCLIArgs:
         args.add_argument('-O1', dest='o1', default=False, action='store_true', help='Optimization level 1.')
         args.add_argument('-O2', dest='o2', default=False, action='store_true', help='Optimization level 2.')
         args.add_argument('-O3', dest='o3', default=False, action='store_true', help='Optimization level 3.')
+        return args
+
+    @cached_property
+    def kevm_target_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|haskell-standalone|node|foundry]')
         return args
 
     @cached_property

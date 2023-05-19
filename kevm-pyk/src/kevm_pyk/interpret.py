@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     from argparse import Namespace
     from typing import Final
 
+    from .kompile import KompileTarget
+
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -30,7 +32,7 @@ def main() -> None:
     args = _parse_args()
     logging.basicConfig(level=_loglevel(args), format=_LOG_FORMAT)
     _exec_interpret(
-        args.definition_dir,
+        args.target,
         args.input_file,
         args.parser,
         args.expand_macros,
@@ -44,7 +46,7 @@ def main() -> None:
 
 
 def _exec_interpret(
-    definition_dir: Path,
+    target: KompileTarget,
     input_file: Path,
     parser: str | None,
     expand_macros: str,
@@ -64,7 +66,7 @@ def _exec_interpret(
             ntf.flush()
             _LOGGER.info('Invoking krun.')
             krun_result = _krun(
-                definition_dir=definition_dir,
+                definition_dir=target.definition_dir,
                 input_file=Path(ntf.name),
                 depth=depth,
                 term=True,
@@ -83,7 +85,7 @@ def _exec_interpret(
         pmap = {'MODE': 'cat', 'SCHEDULE': 'cat', 'CHAINID': 'cat'}
         _LOGGER.info('Invoking krun.')
         krun_result = _krun(
-            definition_dir=definition_dir,
+            definition_dir=target.definition_dir,
             input_file=input_file,
             depth=depth,
             term=False,
@@ -99,7 +101,7 @@ def _exec_interpret(
             pass
         else:
             _LOGGER.info('Unparsing output.')
-            print(kore_print(krun_result.stdout, definition_dir, output.value))
+            print(kore_print(krun_result.stdout, target.definition_dir, output.value))
     _LOGGER.info('Finished.')
     sys.exit(krun_result.returncode)
 
@@ -112,6 +114,7 @@ def _parse_args() -> Namespace:
             kevm_cli_args.shared_args,
             kevm_cli_args.k_args,
             kevm_cli_args.krun_args,
+            kevm_cli_args.kevm_target_args,
             kevm_cli_args.evm_chain_args,
         ],
     )
