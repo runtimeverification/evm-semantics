@@ -221,9 +221,9 @@ run_foundry() {
 # ----
 
 if [[ $# -eq 0 ]]; then 
-  run_command='help'
+    run_command='help'
 else 
-  run_command="$1" ; shift
+    run_command="$1" ; shift
 fi
 
 if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
@@ -367,8 +367,7 @@ if [[ "${run_command}" != foundry-* ]] && [[ "${run_command}" != *-kcfg ]]; then
         fi
         [[ -f "${run_file}" ]] || fatal "File does not exist: ${run_file}"
     else
-        echo "Please provide a file!"
-        exit 0
+        fatal "Please provide a file!"
     fi
 fi
 
