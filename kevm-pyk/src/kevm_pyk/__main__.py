@@ -201,6 +201,9 @@ def exec_prove_legacy(
     haskell_backend_arg: str | None = None,
     **kwargs: Any,
 ) -> None:
+    _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
+    md_selector = 'k & ! node'
+
     kevm = KEVM(definition_dir, use_directory=save_directory)
     args: list[str] = []
     haskell_args: list[str] = []
@@ -224,7 +227,7 @@ def exec_prove_legacy(
         spec_module_name=spec_module,
         args=args,
         include_dirs=[Path(i) for i in includes],
-        md_selector='k & ! node',
+        md_selector=md_selector,
         haskell_args=haskell_args,
     )
 
@@ -663,7 +666,7 @@ def _create_argument_parser() -> ArgumentParser:
     _ = command_parser.add_parser(
         'prove-legacy',
         help='Run KEVM proof using the legacy kprove binary.',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.kprove_legacy_args],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.kprove_legacy_args],
     )
 
     _ = command_parser.add_parser(
