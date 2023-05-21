@@ -11,6 +11,7 @@ from pyk.cli_utils import BugReport, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
+from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
@@ -28,6 +29,7 @@ from .foundry import (
     foundry_step_node,
     foundry_to_dot,
 )
+from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
@@ -509,8 +511,17 @@ def exec_run(
     expand_macros: str,
     depth: int | None,
     output: str,
+    schedule: str,
+    mode: str,
+    chainid: int,
     **kwargs: Any,
 ) -> None:
+    cmap = {
+        'MODE': _mode_to_kore(mode).text,
+        'SCHEDULE': _schedule_to_kore(schedule).text,
+        'CHAINID': int_dv(chainid).text,
+    }
+    pmap = {'MODE': 'cat', 'SCHEDULE': 'cat', 'CHAINID': 'cat'}
     krun_result = _krun(
         definition_dir=definition_dir,
         input_file=input_file,
@@ -518,6 +529,8 @@ def exec_run(
         term=term,
         no_expand_macros=not expand_macros,
         parser=parser,
+        cmap=cmap,
+        pmap=pmap,
         output=KRunOutput[output.upper()],
     )
     print(krun_result.stdout)
@@ -644,7 +657,9 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
     )
     kevm_kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kevm_kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|node|foundry]')
+    kevm_kompile_args.add_argument(
+        '--target', type=KompileTarget, help='[llvm|haskell|haskell-standalone|node|foundry]'
+    )
     kevm_kompile_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )
