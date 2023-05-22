@@ -1,8 +1,9 @@
 import json
 
-from pyk.kast.inner import KSort
+from pyk.kast.inner import KApply, KSort, KToken
 
 from kevm_pyk.hello import hello
+from kevm_pyk.kevm import KEVM
 from kevm_pyk.solc_to_k import Contract, method_sig_from_abi
 
 
@@ -222,3 +223,30 @@ def test_contract_creation() -> None:
     assert method.arg_types == ('tuple[]',)
     assert method.contract_name == 'TestContract'
     assert method.payable
+
+
+def test_int_to_hex() -> None:
+    kast = KApply('<K>', [KToken('1234', 'Int')])
+    to_hex = KEVM._int_token_to_hex(kast)
+    assert type(to_hex) is KApply
+    tok = to_hex.args[0]
+    assert type(tok) is KToken
+    assert tok.token == '0x4d2'
+
+
+def test_empty_bytes() -> None:
+    kast = KApply('<K>', [KToken('b""', 'Bytes')])
+    to_hex = KEVM._int_token_to_hex(kast)
+    assert type(to_hex) is KApply
+    tok = to_hex.args[0]
+    assert type(tok) is KToken
+    assert tok.token == '0x'
+
+
+def test_bytes_to_hex() -> None:
+    kast = KApply('<K>', [KToken('b"\\xa6\\xb9c\\x9d"', 'Bytes')])
+    to_hex = KEVM._int_token_to_hex(kast)
+    assert type(to_hex) is KApply
+    tok = to_hex.args[0]
+    assert type(tok) is KToken
+    assert tok.token == '0xa6b9639d'
