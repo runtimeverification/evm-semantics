@@ -195,6 +195,8 @@ def exec_prove_legacy(
     bug_report: bool = False,
     save_directory: Path | None = None,
     spec_module: str | None = None,
+    claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] = (),
     debug: bool = False,
     debugger: bool = False,
     max_depth: int | None = None,
@@ -209,12 +211,14 @@ def exec_prove_legacy(
     kevm = KEVM(definition_dir, use_directory=save_directory)
     args: list[str] = []
     haskell_args: list[str] = []
+    if claim_labels:
+        args += ['--claims', ','.join(claim_labels)]
+    if exclude_claim_labels:
+        args += ['--exclude', ','.join(exclude_claim_labels)]
     if debug:
         args.append('--debug')
     if debugger:
         args.append('--debugger')
-    if max_depth:
-        args += ['--depth', f'{max_depth}']
     if branching_allowed:
         args += ['--branching-allowed', f'{branching_allowed}']
     if max_counterexamples:
@@ -231,6 +235,7 @@ def exec_prove_legacy(
         include_dirs=[Path(i) for i in includes],
         md_selector=md_selector,
         haskell_args=haskell_args,
+        depth=max_depth,
     )
 
 
@@ -681,7 +686,12 @@ def _create_argument_parser() -> ArgumentParser:
     _ = command_parser.add_parser(
         'prove-legacy',
         help='Run KEVM proof using the legacy kprove binary.',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.kprove_legacy_args],
+        parents=[
+            kevm_cli_args.shared_args,
+            kevm_cli_args.k_args,
+            kevm_cli_args.spec_args,
+            kevm_cli_args.kprove_legacy_args,
+        ],
     )
 
     _ = command_parser.add_parser(
