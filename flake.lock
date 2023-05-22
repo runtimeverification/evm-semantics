@@ -650,16 +650,16 @@
         "rv-utils": "rv-utils"
       },
       "locked": {
-        "lastModified": 1684430695,
-        "narHash": "sha256-WBthgh364xlxVyTJlnrbC+2BPDwtAuMY8aJzUnGjx9k=",
+        "lastModified": 1684780428,
+        "narHash": "sha256-LL6PovjsAPMCAu8k97ByNHvHXkwSdhHiWVI17firDbI=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "28420c1f477d8599de61618e47cd870688617255",
+        "rev": "1d2342ef30fd826c00e99da24605311f8f92a278",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v5.6.102",
+        "ref": "v5.6.103",
         "repo": "k",
         "type": "github"
       }
