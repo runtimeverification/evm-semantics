@@ -17,12 +17,13 @@ INSTALL_BIN     ?= $(INSTALL_PREFIX)/bin
 INSTALL_LIB     ?= $(INSTALL_PREFIX)/lib/kevm
 INSTALL_INCLUDE ?= $(INSTALL_LIB)/include
 
-KEVM_BIN     := $(BUILD_DIR)$(INSTALL_BIN)
-KEVM_LIB     := $(BUILD_DIR)$(INSTALL_LIB)
-KEVM_INCLUDE := $(KEVM_LIB)/include
-KEVM_K_BIN   := $(KEVM_LIB)/kframework/bin
-KEVM         := kevm
-KEVM_LIB_ABS := $(abspath $(KEVM_LIB))
+KEVM_BIN       := $(BUILD_DIR)$(INSTALL_BIN)
+KEVM_LIB       := $(BUILD_DIR)$(INSTALL_LIB)
+KEVM_INCLUDE   := $(KEVM_LIB)/include
+KEVM_K_BIN     := $(KEVM_LIB)/kframework/bin
+KEVM           := kevm
+KEVM_INTERPRET := kevm-interpret
+KEVM_LIB_ABS   := $(abspath $(KEVM_LIB))
 export KEVM_LIB_ABS
 
 KEVM_VERSION     ?= $(shell cat package/version)
@@ -480,7 +481,7 @@ tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_MODULE =  EVM-OPTIM
 
 tests/%.run: KRUN_OPTS += --no-unparse
 tests/%.run: tests/% poetry
-	kevm-interpret $< $(KEVM_OPTS) $(KRUN_OPTS) --target $(TEST_CONCRETE_BACKEND)                                      \
+	$(KEVM_INTERPRET) $< $(KEVM_OPTS) $(KRUN_OPTS) --target $(TEST_CONCRETE_BACKEND)                                   \
 	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                        \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
