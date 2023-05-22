@@ -460,7 +460,6 @@ def foundry_prove(
                 f'{_init_problem[0]}.{_init_problem[1]}',
                 proof,
                 kcfg_explore,
-                #              apr_proofs,
                 save_directory=save_directory,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
@@ -794,14 +793,6 @@ def _method_to_apr_proof(
         kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
 
         _LOGGER.info(f'Starting KCFGExplore for test: {test}')
-        #          with KCFGExplore(
-        #              foundry.kevm,
-        #              bug_report=bug_report,
-        #              kore_rpc_command=kore_rpc_command,
-        #              smt_timeout=smt_timeout,
-        #              smt_retry_limit=smt_retry_limit,
-        #              trace_rewrites=trace_rewrites,
-        #          ) as kcfg_explore:
         _LOGGER.info(f'Computing definedness constraint for test: {test}')
         init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
         kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)

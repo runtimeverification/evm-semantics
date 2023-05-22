@@ -268,7 +268,6 @@ def exec_prove(
                 claim.label,
                 proof_problem,
                 kcfg_explore,
-                #          proof_problems,
                 save_directory=save_directory,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
