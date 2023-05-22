@@ -48,7 +48,7 @@ export PLUGIN_FULL_PATH
 
 .PHONY: all clean distclean                                                                                                                  \
         deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                                  \
-        build build-haskell build-foundry build-llvm build-prove build-prove-haskell build-node build-kevm                                   \
+        build build-haskell build-haskell-standalone build-foundry build-llvm build-prove build-prove-haskell build-node build-kevm          \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance             \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                              \
         test-prove test-failing-prove test-foundry-kcfg-diff                                                                                 \
@@ -286,6 +286,26 @@ $(kompile_llvm):
 	$(kompile)
 
 
+# Haskell Standalone
+
+haskell_standalone_dir      := haskell-standalone
+haskell_standalone_kompiled := $(haskell_standalone_dir)/definition.kore
+kompile_haskell_standalone  := $(KEVM_LIB)/$(haskell_standalone_kompiled)
+
+ifeq ($(UNAME_S),Darwin)
+$(kompile_haskell_standalone): $(libsecp256k1_out)
+endif
+
+$(kompile_haskell_standalone): $(kevm_includes) $(plugin_includes)
+
+$(kompile_haskell_standalone): KOMPILE_TARGET        := haskell-standalone
+$(kompile_haskell_standalone): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/driver.md
+$(kompile_haskell_standalone): KOMPILE_MAIN_MODULE   := ETHEREUM-SIMULATION
+$(kompile_haskell_standalone): KOMPILE_SYNTAX_MODULE := ETHEREUM-SIMULATION
+$(kompile_haskell_standalone):
+	$(kompile)
+
+
 # Node
 #
 node_dir      := node
@@ -338,6 +358,7 @@ install_bins := kevm    \
 install_libs := $(haskell_kompiled)                                        \
                 $(llvm_kompiled)                                           \
                 $(foundry_kompiled)                                        \
+                $(haskell_standalone_kompiled)                             \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
                 kore-json.py                                               \
                 release.md                                                 \
@@ -367,11 +388,12 @@ $(KEVM_LIB)/release.md: INSTALL.md
 
 build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
 
-build-llvm:     $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
-build-haskell:  $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
-build-node:     $(KEVM_LIB)/$(node_kompiled)
-build-kevm:     $(KEVM_BIN)/kevm $(KEVM_LIB)/version $(kevm_includes) $(plugin_includes)
-build-foundry:  $(KEVM_BIN)/kevm $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
+build-llvm:               $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
+build-haskell:            $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
+build-haskell-standalone: $(KEVM_LIB)/$(haskell_standalone_kompiled) $(KEVM_LIB)/kore-json.py
+build-node:               $(KEVM_LIB)/$(node_kompiled)
+build-kevm:               $(KEVM_BIN)/kevm $(KEVM_LIB)/version $(kevm_includes) $(plugin_includes)
+build-foundry:            $(KEVM_BIN)/kevm $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
