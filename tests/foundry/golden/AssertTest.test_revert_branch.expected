@@ -1600,7 +1600,7 @@ Stuck nodes:
     #And ( { true #Equals ORIGIN_ID:Int <Int pow160 }
     #And ( { true #Equals NUMBER_CELL:Int <=Int maxSInt256 }
     #And ( { true #Equals VV0_x_114b9705:Int <Int pow256 }
-    #And { true #Equals VV1_y_114b9705:Int <Int pow256 } ) ) ) ) ) ) ) ) ) ) #Implies { true #Equals foundry_success ( EVMC_REVERT , #lookup ( .Map , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) , false , false , false , false ) } )
+    #And { true #Equals VV1_y_114b9705:Int <Int pow256 } ) ) ) ) ) ) ) ) ) ) #Implies { true #Equals foundry_success ( ... statusCode: EVMC_REVERT , failed: #lookup ( .Map , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) , revertExpected: false , opcodeExpected: false , recordEventExpected: false , eventExpected: false ) } )
 See `foundry_success` predicate for more information:
 https://github.com/runtimeverification/evm-semantics/blob/master/include/kframework/foundry.md#foundry-success-predicate
 Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD
