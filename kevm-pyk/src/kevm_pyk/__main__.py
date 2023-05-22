@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
@@ -40,6 +41,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
     from typing import Any, Final, TypeVar
 
+    from pyk.kast.outer import KClaim
     from pyk.kcfg.tui import KCFGElem
 
     T = TypeVar('T')
@@ -228,16 +230,16 @@ def exec_prove(
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
-    with KCFGExplore(
-        kevm,
-        id='initializing',
-        bug_report=br,
-        kore_rpc_command=kore_rpc_command,
-        smt_timeout=smt_timeout,
-        smt_retry_limit=smt_retry_limit,
-        trace_rewrites=trace_rewrites,
-    ) as kcfg_explore:
-        for claim in claims:
+    def _init_and_run_proof(claim: KClaim) -> bool:
+        with KCFGExplore(
+            kevm,
+            id='initializing',
+            bug_report=br,
+            kore_rpc_command=kore_rpc_command,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
+            trace_rewrites=trace_rewrites,
+        ) as kcfg_explore:
             _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
             kcfg = KCFG.from_claim(kevm.definition, claim)
 
@@ -263,7 +265,7 @@ def exec_prove(
 
             proof_problem = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
 
-            result = kevm_apr_prove(
+            return kevm_apr_prove(
                 kevm,
                 claim.label,
                 proof_problem,
@@ -284,13 +286,18 @@ def exec_prove(
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
             )
-            failed = 0
-            if result:
-                print(f'PROOF PASSED: {proof_problem.id}')
-            else:
-                failed += 1
-                print(f'PROOF FAILED: {proof_problem.id}')
-            sys.exit(failed)
+
+    with ProcessPool(ncpus=workers) as process_pool:
+        results = process_pool.map(_init_and_run_proof, claims)
+
+    failed = 0
+    for claim, result in zip(claims, results, strict=True):
+        if result:
+            print(f'PROOF PASSED: {claim.label}')
+        else:
+            failed += 1
+            print(f'PROOF FAILED: {claim.label}')
+    sys.exit(failed)
 
 
 def exec_show_kcfg(
