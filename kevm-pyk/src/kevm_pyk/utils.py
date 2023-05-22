@@ -20,13 +20,13 @@ from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.utils import single
 
 if TYPE_CHECKING:
-    from pyk.kcfg import KCFGExplore
     from collections.abc import Callable, Collection, Iterable
     from typing import Final, TypeVar
 
     from pyk.cli_utils import BugReport
     from pyk.kast import KInner
     from pyk.kast.outer import KDefinition
+    from pyk.kcfg import KCFGExplore
     from pyk.ktool.kprove import KProve
 
     T1 = TypeVar('T1')
@@ -69,7 +69,7 @@ def kevm_apr_prove(
     kprove: KProve,
     cfgid: str,
     proof: APRProof | APRBMCProof,
-#      proof_problems: dict[str, APRProof | APRBMCProof],
+    #      proof_problems: dict[str, APRProof | APRBMCProof],
     kcfg_explore: KCFGExplore,
     save_directory: Path | None = None,
     max_depth: int = 1000,
@@ -89,8 +89,8 @@ def kevm_apr_prove(
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
 ) -> bool:
-#      def _call_rpc(packed_args: tuple[str, APRProof, int]) -> bool:
-#      _cfgid, _apr_proof, _index = packed_args
+    #      def _call_rpc(packed_args: tuple[str, APRProof, int]) -> bool:
+    #      _cfgid, _apr_proof, _index = packed_args
     _cfgid = cfgid
     _apr_proof = proof
     terminal_rules = ['EVM.halt']
@@ -115,16 +115,16 @@ def kevm_apr_prove(
                 'EVM.return.success',
             ]
         )
-#  
-#      with KCFGExplore(
-#          kprove,
-#          id=_apr_proof.id,
-#          bug_report=bug_report,
-#          kore_rpc_command=kore_rpc_command,
-#          smt_timeout=smt_timeout,
-#          smt_retry_limit=smt_retry_limit,
-#          trace_rewrites=trace_rewrites,
-#      ) as kcfg_explore:
+    #
+    #      with KCFGExplore(
+    #          kprove,
+    #          id=_apr_proof.id,
+    #          bug_report=bug_report,
+    #          kore_rpc_command=kore_rpc_command,
+    #          smt_timeout=smt_timeout,
+    #          smt_retry_limit=smt_retry_limit,
+    #          trace_rewrites=trace_rewrites,
+    #      ) as kcfg_explore:
     prover: APRBMCProof | APRProver
     if type(_apr_proof) is APRBMCProof:
         assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
@@ -154,10 +154,11 @@ def kevm_apr_prove(
         _LOGGER.error(f'Proof failed: {_cfgid}')
         return False
 
+
 #      with ProcessPool(ncpus=workers) as process_pool:
 #          _proof_problems = [(_id, _cfg, _i) for _i, (_id, _cfg) in enumerate(proof_problems.items())]
 #          results = process_pool.map(_call_rpc, _proof_problems)
-#  
+#
 #      return dict(zip(proof_problems, results, strict=True))
 
 

@@ -418,7 +418,6 @@ def foundry_prove(
             setup_methods[contract_name] = f'{contract_name}.setUp'
 
     def _init_apr_proof(_init_problem: tuple[str, str], kcfg_explore: KCFGExplore) -> APRProof | APRBMCProof:
-
         contract_name, method_name = _init_problem
         contract = foundry.contracts[contract_name]
         method = contract.method_by_name[method_name]
@@ -439,7 +438,6 @@ def foundry_prove(
         )
 
     def _init_and_run_proof(_init_problem: tuple[str, str]) -> bool:
-
         with KCFGExplore(
             foundry.kevm,
             kore_rpc_command=kore_rpc_command,
@@ -447,14 +445,13 @@ def foundry_prove(
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
-
             proof = _init_apr_proof(_init_problem, kcfg_explore)
             return kevm_apr_prove(
                 foundry.kevm,
                 f'{_init_problem[0]}.{_init_problem[1]}',
                 proof,
                 kcfg_explore,
-    #              apr_proofs,
+                #              apr_proofs,
                 save_directory=save_directory,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
@@ -479,7 +476,6 @@ def foundry_prove(
             _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
         apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
         return apr_proofs
-
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
     results = run_cfg_group(list(setup_methods.values()))
@@ -789,14 +785,14 @@ def _method_to_apr_proof(
         kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
 
         _LOGGER.info(f'Starting KCFGExplore for test: {test}')
-#          with KCFGExplore(
-#              foundry.kevm,
-#              bug_report=bug_report,
-#              kore_rpc_command=kore_rpc_command,
-#              smt_timeout=smt_timeout,
-#              smt_retry_limit=smt_retry_limit,
-#              trace_rewrites=trace_rewrites,
-#          ) as kcfg_explore:
+        #          with KCFGExplore(
+        #              foundry.kevm,
+        #              bug_report=bug_report,
+        #              kore_rpc_command=kore_rpc_command,
+        #              smt_timeout=smt_timeout,
+        #              smt_retry_limit=smt_retry_limit,
+        #              trace_rewrites=trace_rewrites,
+        #          ) as kcfg_explore:
         _LOGGER.info(f'Computing definedness constraint for test: {test}')
         init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
         kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
