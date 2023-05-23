@@ -235,6 +235,8 @@ KOMPILE_SYNTAX_MODULE :=
 KOMPILE_OPTS :=
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
+else
+    KOMPILE_OPTS += -O1
 endif
 
 kompile =                                        \
