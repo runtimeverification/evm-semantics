@@ -447,8 +447,11 @@ def foundry_prove(
         )
 
     def _init_and_run_proof(_init_problem: tuple[str, str]) -> bool:
+        proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
         with KCFGExplore(
             foundry.kevm,
+            id=proof_id,
+            bug_report=br,
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
@@ -457,7 +460,7 @@ def foundry_prove(
             proof = _init_apr_proof(_init_problem, kcfg_explore)
             return kevm_apr_prove(
                 foundry.kevm,
-                f'{_init_problem[0]}.{_init_problem[1]}',
+                proof_id,
                 proof,
                 kcfg_explore,
                 save_directory=save_directory,
