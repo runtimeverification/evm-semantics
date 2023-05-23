@@ -154,7 +154,7 @@ module FOUNDRY-SUCCESS
         recordEventExpected: Bool ","
         eventExpected: Bool
       ")" [function, klabel(foundry_success), symbol]
- // --------------------------------------------------------------------------------------------------------------------------------------------
+ // -------------------------------------------------
     rule foundry_success(EVMC_SUCCESS, 0, false, false, false, false) => true
     rule foundry_success(_, _, _, _, _, _)                            => false [owise]
 
