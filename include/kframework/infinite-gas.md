@@ -38,8 +38,8 @@ module INFINITE-GAS
     rule _       <=Gas #gas(_) => true  [simplification]
 
     rule minGas(#gas(G), #gas(G')) => #gas(minInt(G, G'))
-    rule minGas(G:Int  , #gas(_))  => G
-    rule minGas(#gas(_), G':Int)   => G'
+    rule minGas(G:Int  , #gas(G')) => #gas(minInt(G, G'))
+    rule minGas(#gas(G), G':Int)   => #gas(minInt(G, G'))
 
     rule gas2Int(#gas(G)) => G
 
