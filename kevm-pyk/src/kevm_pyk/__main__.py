@@ -233,7 +233,7 @@ def exec_prove(
     def _init_and_run_proof(claim: KClaim) -> bool:
         with KCFGExplore(
             kevm,
-            id='initializing',
+            id=claim.label,
             bug_report=br,
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
