@@ -107,7 +107,7 @@ class Foundry:
         return _contracts
 
     def proof_digest(self, contract: str, test: str) -> str:
-        return f'{contract}.{test}:{self.contracts[contract].digest}'
+        return f'{contract}.{test}:{self.contracts[contract].method_by_name[test].digest}'
 
     @cached_property
     def digest(self) -> str:
@@ -116,11 +116,22 @@ class Foundry:
 
     def up_to_date(self) -> bool:
         digest_file = self.out / 'digest'
-        return digest_file.exists() and digest_file.read_text() == self.digest
+        if not digest_file.exists():
+            return False
+        digest_dict = json.loads(digest_file.read_text())
+        if 'foundry' not in digest_dict:
+            digest_dict['foundry'] = ''
+        digest_file.write_text(json.dumps(digest_dict))
+        return digest_dict['foundry'] == self.digest
 
     def update_digest(self) -> None:
         digest_file = self.out / 'digest'
-        digest_file.write_text(self.digest)
+        digest_dict = {}
+        if digest_file.exists():
+            digest_dict = json.loads(digest_file.read_text())
+        digest_dict['foundry'] = self.digest
+        digest_file.write_text(json.dumps(digest_dict))
+
         _LOGGER.info(f'Updated Foundry digest file: {digest_file}')
 
     @cached_property
@@ -428,10 +439,30 @@ def foundry_prove(
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
     setup_methods: dict[str, str] = {}
-    contracts = unique({test.split('.')[0] for test in tests})
+    contracts = set(unique({test.split('.')[0] for test in tests}))
     for contract_name in contracts:
         if 'setUp' in foundry.contracts[contract_name].method_by_name:
             setup_methods[contract_name] = f'{contract_name}.setUp'
+
+    test_methods = [
+        method
+        for contract in foundry.contracts.values()
+        for method in contract.methods
+        if (f'{method.contract_name}.{method.name}' in tests or (method.is_setup and method.contract_name in contracts))
+    ]
+
+    out_of_date_methods: set[str] = set()
+    for method in test_methods:
+        if not method.up_to_date(foundry.out / 'digest') or reinit:
+            out_of_date_methods.add(method.qualified_name)
+            _LOGGER.info(f'Method {method.qualified_name} is out of date, so it was reinitialized')
+        else:
+            _LOGGER.info(f'Method {method.qualified_name} not reinitialized because it is up to date')
+            if not method.contract_up_to_date(foundry.out / 'digest'):
+                _LOGGER.warning(
+                    f'Method {method.qualified_name} not reinitialized because digest was up to date, but the contract it is a part of has changed.'
+                )
+        method.update_digest(foundry.out / 'digest')
 
     def _init_apr_proof(_init_problem: tuple[str, str]) -> APRProof | APRBMCProof:
         contract_name, method_name = _init_problem
@@ -442,7 +473,7 @@ def foundry_prove(
             contract,
             method,
             save_directory,
-            reinit=reinit,
+            reinit=(method.qualified_name in out_of_date_methods),
             simplify_init=simplify_init,
             bmc_depth=bmc_depth,
             kore_rpc_command=kore_rpc_command,
@@ -487,7 +518,9 @@ def foundry_prove(
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
 
     _LOGGER.info(f'Running test functions in parallel: {tests}')
-    return run_cfg_group(tests)
+    results = run_cfg_group(tests)
+
+    return results
 
 
 def foundry_show(
@@ -774,7 +807,7 @@ def _method_to_apr_proof(
 
         setup_digest = None
         if method_name != 'setUp' and 'setUp' in contract.method_by_name:
-            setup_digest = f'{contract_name}.setUp:{contract.digest}'
+            setup_digest = foundry.proof_digest(contract_name, 'setUp')
             _LOGGER.info(f'Using setUp method for test: {test}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
