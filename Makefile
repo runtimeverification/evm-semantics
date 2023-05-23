@@ -767,8 +767,9 @@ kevm_pyk_tests :=                                                               
                   tests/specs/examples/erc20-bin-runtime.k                                                     \
                   tests/specs/examples/erc721-bin-runtime.k
 
-test-kevm-pyk: KEVM_OPTS += --pyk --verbose
+test-kevm-pyk: KEVM_OPTS += --verbose
 test-kevm-pyk: KEVM := $(POETRY_RUN) $(KEVM)
+test-kevm-pyk: KEVM_INTERPRET := $(POETRY_RUN) $(KEVM_INTERPRET)
 test-kevm-pyk: $(kevm_pyk_tests) poetry
 
 # Interactive Tests

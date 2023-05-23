@@ -104,14 +104,7 @@ run_kast() {
     fi
 
     case "${run_file}-${output_mode}" in
-        *.json-kore) if ! ${pyk}; then
-                         execute kore-json.py "${run_file}" "${cSCHEDULE_kore}" "${cMODE_kore}" "${cCHAINID_kore}"
-                     else
-                         check_k_install
-                         gst-to-kore "${run_file}" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@"
-                     fi
-                     ;;
-        *.json-kast) fatal "kast output is not supported for .json input"
+        *.json-kore) gst-to-kore "${run_file}" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@"
                      ;;
         *)           check_k_install ; kast --definition "${backend_dir}" "${run_file}" --output "${output_mode}" "$@"
                      ;;
