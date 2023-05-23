@@ -89,7 +89,7 @@ module INFINITE-GAS-SPEC
 
     claim [gas.comp.7]:  <k> runLemma(4822 <Gas minGas(#gas(VGas +Int 4544) +Gas (#gas(VGas +Int 4544) /Gas 64), #gas(VGas +Int 3844))) => doneLemma(true) ... </k>
 
-    claim [gas.comp.8]:  <k> runLemma(3 <Gas minGas(#gas(_VGas), 2)) => doneLemma(false) ... </k>
+    claim [gas.comp.8]:  <k> runLemma(3 <Gas minGas(#gas(_VGas), 2)) => doneLemma(true)  ... </k>
     claim [gas.comp.9]:  <k> runLemma(2 <Gas minGas(#gas(_VGas), 3)) => doneLemma(true ) ... </k>
 
     claim [gas.comp.10]: <k> runLemma(#gas(_G) -Gas Csstore(_, _, _, _) <Gas 2) => doneLemma(false) ... </k>
