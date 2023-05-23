@@ -192,15 +192,18 @@ def print_failure_info(_cfg: KCFG, _cfgid: str, kcfg_explore: KCFGExplore) -> li
             res_lines.append('  Failure reason:')
             _, reason = kcfg_explore.implication_failure_reason(node_cterm, target_cterm)
             res_lines += [f'    {line}' for line in reason.split('\n')]
+
+            res_lines.append('  Path condition:')
+            res_lines += [f'    {kcfg_explore.kprint.pretty_print(_cfg.path_constraints(node.id))}']
+
             if 'foundry_success' in reason:
+                res_lines.append('')
                 res_lines.append('See `foundry_success` predicate for more information:')
                 res_lines.append(
                     'https://github.com/runtimeverification/evm-semantics/blob/master/include/kframework/foundry.md#foundry-success-predicate'
                 )
+            res_lines.append('')
             res_lines.append('Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD')
-
-            res_lines.append('  Path condition:')
-            res_lines += [f'    {kcfg_explore.kprint.pretty_print(_cfg.path_constraints(node.id))}']
 
     return res_lines
 
