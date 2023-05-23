@@ -8,18 +8,18 @@ module GAS-SYNTAX
     imports INT-SYNTAX
     
     syntax Gas ::= Int
-    syntax Int ::= "gas2Int" "(" Gas ")" [function, total]
+    syntax Int ::= "gas2Int" "(" Gas ")" [function]
     
     syntax Gas ::= "minGas" "(" Gas "," Gas ")" [function, total]
                  > left:
-                   Gas "*Gas" Gas [function, left, total]
-                 | Gas "/Gas" Gas [function, left]
+                   Gas "*Gas" Gas [function, total]
+                 | Gas "/Gas" Gas [function]
                  > left:
-                   Gas "+Gas" Gas [function, left, total]
-                 | Gas "-Gas" Gas [function, left, total]
+                   Gas "+Gas" Gas [function, total]
+                 | Gas "-Gas" Gas [function, total]
 
-    syntax Bool ::= Gas  "<Gas" Gas [function, left, total]
-                  | Gas "<=Gas" Gas [function, left, total]
+    syntax Bool ::= Gas  "<Gas" Gas [function, total]
+                  | Gas "<=Gas" Gas [function, total]
 endmodule
 
 module GAS
