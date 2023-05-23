@@ -317,7 +317,7 @@ A cons-list is used for the EVM wordstack.
 
 -   `WS [ START := WS' ]` assigns a contiguous chunk of `WS'` to `WS` starting at position `START`.
 -   `#write(WM, IDX, VAL)` assigns a value `VAL` at position `IDX` in `WM`.
-
+-   TODO: remove the first rule for `:=` when [#1844](https://github.com/runtimeverification/evm-semantics/issues/1844) is fixed.
 ```k
     syntax Bytes ::= "#write" "(" Bytes "," Int "," Int ")" [function]
                    | Bytes "[" Int ":=" Bytes "]" [function, total, klabel(mapWriteRange)]
