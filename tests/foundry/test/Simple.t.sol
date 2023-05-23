@@ -47,7 +47,7 @@ contract AssertTest is Test {
     }
 
     function test_call() public {
-        address(123456).call("");
+        address(123456).call{gas: 99999}("");
         assert(true);
     }
 }

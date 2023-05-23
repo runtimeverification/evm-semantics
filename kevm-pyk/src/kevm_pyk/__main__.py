@@ -17,8 +17,8 @@ from pyk.proof import APRProof
 
 from .foundry import (
     Foundry,
-    foundry_coverage,
     foundry_kompile,
+    foundry_koverage,
     foundry_list,
     foundry_prove,
     foundry_remove_node,
@@ -338,6 +338,7 @@ def exec_view_kcfg(
     md_selector: str | None = None,
     **kwargs: Any,
 ) -> None:
+    print('viewer')
     kevm = KEVM(definition_dir)
     apr_proof = get_apr_proof_for_spec(
         kevm,
@@ -437,8 +438,8 @@ def exec_foundry_show(
     print(output)
 
 
-def exec_foundry_coverage(foundry_root: Path, contracts: Iterable[str] = (), **kwargs: Any) -> None:
-    foundry_coverage(foundry_root=foundry_root, contracts=contracts)
+def exec_foundry_koverage(foundry_root: Path, contracts: Iterable[str] = (), **kwargs: Any) -> None:
+    foundry_koverage(foundry_root=foundry_root, contracts=contracts)
 
 
 def exec_foundry_to_dot(foundry_root: Path, test: str, **kwargs: Any) -> None:
@@ -963,12 +964,12 @@ def _create_argument_parser() -> ArgumentParser:
         '--stuck', dest='stuck', default=False, action='store_true', help='Also display stuck nodes'
     )
 
-    foundry_coverage_args = command_parser.add_parser(
-        'foundry-coverage',
+    foundry_koverage_args = command_parser.add_parser(
+        'foundry-koverage',
         help='Run symbolic coverage on a foundry property',
         parents=[shared_args, foundry_root_arg],
     )
-    # foundry_coverage_args.add_argument(
+    # foundry_koverage_args.add_argument(
     #     '--test',
     #     type=str,
     #     dest='tests',
@@ -976,7 +977,7 @@ def _create_argument_parser() -> ArgumentParser:
     #     action='append',
     #     help='Limit to only listed tests, ContractName.TestName',
     # )
-    foundry_coverage_args.add_argument(
+    foundry_koverage_args.add_argument(
         '--contracts',
         type=str,
         dest='contracts',
