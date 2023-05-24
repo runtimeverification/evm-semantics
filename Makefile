@@ -235,6 +235,8 @@ KOMPILE_SYNTAX_MODULE :=
 KOMPILE_OPTS :=
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
+else
+    KOMPILE_OPTS += -O1
 endif
 
 kompile =                                        \
@@ -539,7 +541,6 @@ foundry-forge-test: foundry-forge-build
 	cd $(foundry_dir) && forge test --ffi
 
 $(foundry_out):
-	rm -rf $@
 	cd $(dir $@) && forge build
 
 tests/foundry/foundry-list.out: tests/foundry/out/kompiled/foundry.k.prove foundry-fail
