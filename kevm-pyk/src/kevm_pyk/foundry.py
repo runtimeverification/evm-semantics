@@ -47,7 +47,7 @@ class Foundry:
     _root: Path
     _toml: dict[str, Any]
     _bug_report: BugReport | None
-    _requires: list[str]
+    _requires: list[str] | None
 
     class Sorts:
         FOUNDRY_CELL: Final = KSort('FoundryCell')
@@ -56,7 +56,7 @@ class Foundry:
         self,
         foundry_root: Path,
         bug_report: BugReport | None = None,
-        requires: list[str] = [],
+        requires: list[str] | None = None,
     ) -> None:
         self._root = foundry_root
         with (foundry_root / 'foundry.toml').open('rb') as f:
@@ -113,6 +113,8 @@ class Foundry:
 #      @cached_property
     @property
     def digest(self) -> str:
+        if self.requires is None:
+            raise ValueError('Attempted to compute the foundry digest without specifying the requires files.')
         contract_digests = [self.contracts[c].digest for c in sorted(self.contracts)]
         requires_digests = [hash_str(Path(requires_file).read_text()) for requires_file in self.requires]
         return hash_str('\n'.join(contract_digests + requires_digests))
