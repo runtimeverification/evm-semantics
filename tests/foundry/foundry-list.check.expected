@@ -340,7 +340,7 @@ APRProof: ExpectRevertTest.test_expectRevert_true:de7000e92030214d433a6dd51fce1f
     frontier: 0
     stuck: 0
 
-APRProof: LabelTest.testLabel:85ca7551a8af5de26c858bb2f8f048112df662f9e2e44ea729679eb0429996a3
+APRProof: LabelTest.testLabel:fff0ddccfa7d6527a2055a794cb0777dcdd5b0d04c8e0a8b714faf0ca5f84eb9
     status: ProofStatus.PASSED
     nodes: 7
     frontier: 0
