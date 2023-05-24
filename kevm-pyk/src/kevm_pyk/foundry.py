@@ -7,6 +7,7 @@ import shutil
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
+import hashlib
 
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
@@ -508,37 +509,7 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
     contracts = set(contracts)
     len_contracts = len(contracts)
 
-    # empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
-    # print(empty_config)
-
-    # proofs: dict[str, APRProof] = {}
-
-    # top = KApply(
-    #     '<generatedTop>',
-    #     KApply(
-    #         '<foundry>',
-    #         KApply(
-    #             '<kevm>',
-    #             KApply(
-    #                 KLabel('#call________EVM_InternalOp_Int_Int_Int_Int_Int_Bytes_Bool'),
-    #                 [
-    #                     KToken('728815563385977040452943777879061427756277306518', 'Int'),
-    #                     KToken('123456', 'Int'),
-    #                     KToken('0', 'Int'),
-    #                     KToken('0', 'Int'),
-    #                     KToken("b\'\'", 'Bytes'),
-    #                     KToken('false', 'Bool'),
-    #                 ],
-    #             ),
-    #         ),
-    #     ),
-    # )
-
-    # print(top)
-
-    @staticmethod
-    def _do_nothing(_kast: KInner) -> KInner:
-        return _kast
+    call_cells: dict[bytes, KInner] = dict()
 
     for name, contract in artifacts.items():
         if (len_contracts != 0 and name in contracts) or len_contracts == 0:
@@ -547,105 +518,29 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                 proof_digest = foundry.proof_digest(name, test)
                 if APRProof.proof_exists(proof_digest, apr_proofs_dir):
                     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-
                     if apr_proof.status is ProofStatus.PASSED:
                         kcfg = apr_proof.kcfg
                         nodes = kcfg.nodes
-                        # print(nodes)
                         for node in nodes:
-                            # print(node)
-                            # config = node.cterm.config
-
-                            # # print(config)
-
-                            # # my_node = KApply("#call________EVM_InternalOp_Int_Int_Int_Int_Int_Bytes_Bool")
-                            # # my_node = KSequence()
-                            # my_node = KToken("728815563385977040452943777879061427756277306518", KSort("Int"))
-                            # print(config.match(my_node))
-                            # print(my_node.match(config))
-
-                            # top = KApply('<generatedTop>', KApply('<foundry>', KApply('<kevm>')))
-                            # top = top.match(config)
-                            # if not top == None:
-                            #     top = top['<generatedTop>']
-
-                            #     print(top)
-
-                            #     foundry = KVariable('<foundry>')
-                            #     foundry = foundry.match(top)
-                            #     foundry = foundry['<foundry>']
-
-                            #     kevm = KVariable('<kevm>')
-                            #     kevm = kevm.match(foundry)
-                            #     kevm = kevm.get('<kevm>')
-
-                            #     # print(kevm)
-
-                            #     assert(top != kevm)
-                            # else:
-                            #     print('Dont match')
-
                             cterm = node.cterm
                             kast = cterm.cell('K_CELL')
-
-                            # NOTE this works for getting the current PC
-                            # _pc = cterm.cell('PC_CELL')
-                            # if type(_pc) is KToken and _pc.sort == INT:
-                            #     print(_pc.token)
-
-                            # they're all KSequence
                             if type(kast) is KSequence:
                                 items = kast.items
-                                # print(kast.items)
-
-                                # NOTE these are all KApply or KVariable
+                                # TODO: check for leaf nodes to get the compounded path conditions from the start (with vm.assume) and compare it to all possible values
                                 for item in items:
                                     if type(item) is KApply:
                                         # print(item.label.name)
-                                        if item.label.name == '#call________EVM_InternalOp_Int_Int_Int_Int_Int_Bytes_Bool':
+                                        if item.label.name.startswith('#callWithCode'):
                                             call_args = item.args
-                                            print(call_args)
-                                            # gas = call_args[0]
-                                            addr = call_args[1]
+                                            code = call_args[3]
+                                            if type(code) is KToken:
+                                                acct_code = code.token
+                                                acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
+                                                call_cells[acct_hash] = kast
 
-                                            # print(gas, addr)
-
-                                            # if type(gas) is KToken and type(addr) is KToken:
-                                            #     print(f'gas: {gas.token}; addr: {hex(int(addr.token))}')
-                                            if type(addr) is KToken:
-                                                calls[hex(int(addr))] = True
-
-                                    # kast = undo_aliases(foundry.kevm.definition, item)
-
-                                    # conjuncts = flatten_label('#And', item)
-                                    # term = None
-
-                                    # for c in conjuncts:
-                                    #     # if type(c) is KApply:
-                                    #     #     print(c.is_cell)
-                                    #     # if type(c) is KApply and c.is_cell:
-                                        
-                                    #     if term:
-                                    #         raise ValueError('two configs')
-                                    #     term = c
-                                    #     # NOTE this always fail
-
-                                    #     try:
-                                    #         # print(get_cell(kast, 'K_CELL'))
-                                    #         ret = set_cell(item, 'K_CELL', bottom_up(_do_nothing, get_cell(item, 'K_CELL')))
-                                    #         print(ret)
-                                    #     except:
-                                    #         print('no')
-                                    #         pass
-
-                                    # # exit(1)
-
-
-#                     proof_path = apr_proofs_dir / f'{hash_str(proof_digest)}.json'
-#                     print(proof_path)
-#                     definition = read_kast_definition(proof_path)
-#                     top_cell = definition.empty_config(GENERATED_TOP_CELL)
-#                     print(top_cell)
+    for k, v in call_cells.items():
+        print(k, v)
+        pass
 
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:

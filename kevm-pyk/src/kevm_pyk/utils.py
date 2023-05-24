@@ -97,6 +97,7 @@ def parallel_kcfg_explore(
         if break_on_calls:
             cut_point_rules.extend(
                 [
+                    'EVM.callWithCode',
                     'EVM.call',
                     'EVM.callcode',
                     'EVM.delegatecall',

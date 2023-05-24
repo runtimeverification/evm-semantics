@@ -46,8 +46,19 @@ contract AssertTest is Test {
         }
     }
 
-    function test_call() public {
-        address(123456).call{gas: 99999}("");
-        assert(true);
+    function test_call(uint256 val) public {
+        // address(123456).call{gas: 99999}("not_a_selector()");
+        // address who = address(uint160(uint256(bytes32(keccak256("who")))));
+        address to = address(uint160(uint256(bytes32(keccak256("to")))));
+        // who.call{value: 1 ether}(abi.encodeWithSignature("transfer(address,uint256)", to, 500));
+        to.call(abi.encode(val));
+    }
+
+    function test_delegate() public {
+        address(this).delegatecall(abi.encodeWithSignature("transfer(address,uint256)", address(10987654321), 500));
+    }
+
+    function test_simple_call() public {
+        address(123456).call("");
     }
 }

@@ -1260,7 +1260,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
       requires notBool (VALUE >Int BAL orBool CD >=Int 1024 orBool notBool #rangeNonce(NONCE))
 
-    rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
+      rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO ACCTCODE CODE VALUE APPVALUE ARGS STATIC
          ...
          </k>
@@ -1277,7 +1277,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCTCODE in ACCTS
 
-    rule <k> #callWithCode ACCTFROM ACCTTO ACCTCODE BYTES VALUE APPVALUE ARGS STATIC
+      rule [callWithCode]: <k> #callWithCode ACCTFROM ACCTTO ACCTCODE BYTES VALUE APPVALUE ARGS STATIC
           => #pushCallStack ~> #pushWorldState
           ~> #transferFunds ACCTFROM ACCTTO VALUE
           ~> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC
