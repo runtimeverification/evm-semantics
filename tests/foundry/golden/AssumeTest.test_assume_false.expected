@@ -1,5 +1,5 @@
 
-┌─ OMITTED HASH (init, expanded)
+┌─ 4 (init, expanded)
 │    k: #execute ~> CONTINUATION
 │    pc: 0
 │    callDepth: 0
@@ -7,49 +7,49 @@
 │    src: tests/foundry/test/AssumeTest.t.sol:5:44
 │
 │  (872 steps)
-├─ OMITTED HASH (expanded)
+├─ 7 (expanded)
 │    k: CALL 9223372036854772765 645326474426547203313410069153905908525362434349 0 128  ...
 │    pc: 424
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ OMITTED HASH (expanded)
+├─ 9 (expanded)
 │    k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
 │    pc: 424
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1000 steps)
-├─ OMITTED HASH (expanded)
+├─ 11 (expanded)
 │    k: #gas [ MSTORE , MSTORE 192 46308022326495007027972728677917914892729792999299745 ...
 │    pc: 2271
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1000 steps)
-├─ OMITTED HASH (expanded)
+├─ 13 (expanded)
 │    k: #gasExec ( LONDON , JUMP 2621 ) ~> #deductGas ~> #access [ JUMP , JUMP 2621 ] ~> ...
 │    pc: 2691
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (819 steps)
-├─ OMITTED HASH (expanded)
+├─ 15 (expanded)
 │    k: CALL 9223372036854765620 645326474426547203313410069153905908525362434349 0 388  ...
 │    pc: 2389
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ OMITTED HASH (expanded)
+├─ 17 (expanded)
 │    k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
 │    pc: 2389
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (387 steps)
-├─ OMITTED HASH (expanded)
+├─ 19 (expanded)
 │    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │    pc: 183
 │    callDepth: 0
@@ -57,7 +57,7 @@
 │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (1 step)
-├─ OMITTED HASH (expanded)
+├─ 21 (expanded)
 │    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │    pc: 183
 │    callDepth: 0
@@ -65,7 +65,7 @@
 │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (2 steps)
-└─ OMITTED HASH (expanded, stuck, leaf)
+└─ 23 (expanded, stuck, leaf)
      k: #halt ~> CONTINUATION:K
      pc: 183
      callDepth: 0
@@ -74,7 +74,7 @@
    (stuck)
 
 
-└─ OMITTED HASH (target, leaf)
+└─ 3 (target, leaf)
      k: #halt ~> CONTINUATION
      pc: PC_CELL_5d410f2a
      callDepth: CALLDEPTH_CELL_5d410f2a
@@ -83,14 +83,14 @@
 
 Target Nodes:
 
-OMITTED HASH (target, leaf)
+3 (target, leaf)
  k: #halt ~> CONTINUATION
  pc: PC_CELL_5d410f2a
  callDepth: CALLDEPTH_CELL_5d410f2a
  statusCode: STATUSCODE_FINAL
 
 
-Node OMITTED HASH:
+Node 23:
 
 ( <generatedTop>
   <foundry>

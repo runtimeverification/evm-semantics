@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from typing import Any, Final
 
     from pyk.kast import KInner
+    from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
     from pyk.ktool.kompile import Kompile
 
@@ -528,8 +529,8 @@ def foundry_prove(
 def foundry_show(
     foundry_root: Path,
     test: str,
-    nodes: Iterable[str] = (),
-    node_deltas: Iterable[tuple[str, str]] = (),
+    nodes: Iterable[NodeIdLike] = (),
+    node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
     omit_unstable_output: bool = False,
@@ -571,7 +572,6 @@ def foundry_show(
         to_module=to_module,
         minimize=minimize,
         node_printer=_short_info,
-        omit_node_hash=omit_unstable_output,
         omit_cells=(unstable_cells if omit_unstable_output else []),
     )
 
@@ -611,7 +611,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
     return lines
 
 
-def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
+def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None:
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
@@ -627,7 +627,7 @@ def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
 def foundry_simplify_node(
     foundry_root: Path,
     test: str,
-    node: str,
+    node: NodeIdLike,
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
@@ -661,7 +661,7 @@ def foundry_simplify_node(
 def foundry_step_node(
     foundry_root: Path,
     test: str,
-    node: str,
+    node: NodeIdLike,
     repeat: int = 1,
     depth: int = 1,
     bug_report: bool = False,
