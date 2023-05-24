@@ -65,6 +65,12 @@ class KEVMCLIArgs:
     def kprove_legacy_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
         args.add_argument(
+            '--bug-report',
+            default=False,
+            action='store_true',
+            help='Generate a haskell-backend bug report for the execution.',
+        )
+        args.add_argument(
             '--debugger',
             dest='debugger',
             default=False,
