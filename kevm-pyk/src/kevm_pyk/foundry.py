@@ -47,6 +47,7 @@ class Foundry:
     _root: Path
     _toml: dict[str, Any]
     _bug_report: BugReport | None
+    _requires: list[str]
 
     class Sorts:
         FOUNDRY_CELL: Final = KSort('FoundryCell')
@@ -55,11 +56,17 @@ class Foundry:
         self,
         foundry_root: Path,
         bug_report: BugReport | None = None,
+        requires: list[str] = [],
     ) -> None:
         self._root = foundry_root
         with (foundry_root / 'foundry.toml').open('rb') as f:
             self._toml = tomlkit.load(f)
         self._bug_report = bug_report
+        self._requires = requires
+
+    @property
+    def requires(self) -> list[str]:
+        return self._requires
 
     @property
     def profile(self) -> dict[str, Any]:
@@ -103,10 +110,12 @@ class Foundry:
     def proof_digest(self, contract: str, test: str) -> str:
         return f'{contract}.{test}:{self.contracts[contract].method_by_name[test].digest}'
 
-    @cached_property
+#      @cached_property
+    @property
     def digest(self) -> str:
         contract_digests = [self.contracts[c].digest for c in sorted(self.contracts)]
-        return hash_str('\n'.join(contract_digests))
+        requires_digests = [hash_str(Path(requires_file).read_text()) for requires_file in self.requires]
+        return hash_str('\n'.join(contract_digests + requires_digests))
 
     def up_to_date(self) -> bool:
         digest_file = self.out / 'digest'
@@ -247,7 +256,7 @@ def foundry_kompile(
     llvm_library: bool = False,
 ) -> None:
     syntax_module = 'FOUNDRY-CONTRACTS'
-    foundry = Foundry(foundry_root)
+    foundry = Foundry(foundry_root, requires=requires)
     foundry_definition_dir = foundry.out / 'kompiled'
     foundry_requires_dir = foundry_definition_dir / 'requires'
     foundry_llvm_dir = foundry.out / 'kompiled-llvm'
