@@ -208,7 +208,6 @@ def exec_prove_legacy(
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
     md_selector = 'k & ! node'
 
-    print(f'definition_dir={definition_dir.resolve()}')
     kevm = KEVM(definition_dir, use_directory=save_directory)
     args: list[str] = []
     haskell_args: list[str] = []
