@@ -48,7 +48,7 @@ class Foundry:
     _root: Path
     _toml: dict[str, Any]
     _bug_report: BugReport | None
-    _requires: Iterable[str] | None
+    requires: Iterable[str] | None
 
     class Sorts:
         FOUNDRY_CELL: Final = KSort('FoundryCell')
@@ -64,10 +64,6 @@ class Foundry:
             self._toml = tomlkit.load(f)
         self._bug_report = bug_report
         self._requires = requires
-
-    @property
-    def requires(self) -> Iterable[str] | None:
-        return self._requires
 
     @property
     def profile(self) -> dict[str, Any]:
