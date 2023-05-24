@@ -1,5 +1,5 @@
 
-┌─ OMITTED HASH (init, expanded)
+┌─ 4 (init, expanded)
 │    k: #execute ~> CONTINUATION
 │    pc: 0
 │    callDepth: 0
@@ -7,7 +7,7 @@
 │    src: tests/foundry/test/Simple.t.sol:5:48
 │
 │  (300 steps)
-├─ OMITTED HASH (expanded)
+├─ 7 (expanded)
 │    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │    pc: 175
 │    callDepth: 0
@@ -15,7 +15,7 @@
 │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (1 step)
-├─ OMITTED HASH (expanded)
+├─ 9 (expanded)
 │    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │    pc: 175
 │    callDepth: 0
@@ -23,7 +23,7 @@
 │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (2 steps)
-├─ OMITTED HASH (leaf)
+├─ 11 (leaf)
 │    k: #halt ~> CONTINUATION:K
 │    pc: 175
 │    callDepth: 0
@@ -32,7 +32,7 @@
 │
 ┊  constraint: true
 ┊  subst: OMITTED SUBST
-└─ OMITTED HASH (target, leaf)
+└─ 3 (target, leaf)
      k: #halt ~> CONTINUATION
      pc: PC_CELL_5d410f2a
      callDepth: CALLDEPTH_CELL_5d410f2a
@@ -131,7 +131,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      ...
                    </account> => <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
+                       645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
                        0
@@ -143,7 +143,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                        .Map
                      </origStorage>
                      <nonce>
-                       1
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -166,7 +166,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      ...
                    </account> => <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -178,7 +178,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                        .Map
                      </origStorage>
                      <nonce>
-                       0
+                       1
                      </nonce>
                      ...
                    </account> ) )
@@ -331,24 +331,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -362,6 +344,24 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -514,24 +514,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -545,6 +527,24 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )

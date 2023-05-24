@@ -14,6 +14,7 @@ tests/specs/erc20/hkg/transferFrom-success-2-spec.k
 tests/specs/erc20/hkg/transfer-success-1-spec.k
 tests/specs/erc20/hkg/transfer-success-2-spec.k
 tests/specs/examples/sum-to-n-spec.k
+tests/specs/examples/sum-to-n-foundry-spec.k
 tests/specs/functional/int-simplifications-spec.k
 tests/specs/functional/lemmas-no-smt-spec.k
 tests/specs/functional/lemmas-spec.k

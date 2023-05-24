@@ -25,7 +25,7 @@ KEVM         := kevm
 KEVM_LIB_ABS := $(abspath $(KEVM_LIB))
 export KEVM_LIB_ABS
 
-KEVM_VERSION     ?= 1.0.1
+KEVM_VERSION     ?= $(shell cat package/version)
 KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
 
 K_SUBMODULE := $(DEPS_DIR)/k
@@ -48,7 +48,7 @@ export PLUGIN_FULL_PATH
 
 .PHONY: all clean distclean                                                                                                                  \
         deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                                  \
-        build build-haskell build-foundry build-llvm build-prove build-prove-haskell build-node build-kevm                                   \
+        build build-haskell build-haskell-standalone build-foundry build-llvm build-prove build-prove-haskell build-node build-kevm          \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance             \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                              \
         test-prove test-failing-prove test-foundry-kcfg-diff                                                                                 \
@@ -69,7 +69,6 @@ clean: foundry-clean
 
 distclean:
 	rm -rf $(BUILD_DIR)
-	git clean -dffx -- tests/
 
 # Non-K Dependencies
 # ------------------
@@ -103,6 +102,10 @@ endif
 
 ifneq ($(APPLE_SILICON),)
     LIBFF_CMAKE_FLAGS += -DCURVE=ALT_BN128 -DUSE_ASM=Off
+endif
+
+ifeq ($(LIBFF_NO_FPIC),)
+    LIBFF_CMAKE_FLAGS += -DCMAKE_CXX_FLAGS=-fPIC
 endif
 
 $(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
@@ -232,6 +235,8 @@ KOMPILE_SYNTAX_MODULE :=
 KOMPILE_OPTS :=
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
+else
+    KOMPILE_OPTS += -O1
 endif
 
 kompile =                                        \
@@ -280,6 +285,26 @@ $(kompile_llvm): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/driver.md
 $(kompile_llvm): KOMPILE_MAIN_MODULE   := ETHEREUM-SIMULATION
 $(kompile_llvm): KOMPILE_SYNTAX_MODULE := ETHEREUM-SIMULATION
 $(kompile_llvm):
+	$(kompile)
+
+
+# Haskell Standalone
+
+haskell_standalone_dir      := haskell-standalone
+haskell_standalone_kompiled := $(haskell_standalone_dir)/definition.kore
+kompile_haskell_standalone  := $(KEVM_LIB)/$(haskell_standalone_kompiled)
+
+ifeq ($(UNAME_S),Darwin)
+$(kompile_haskell_standalone): $(libsecp256k1_out)
+endif
+
+$(kompile_haskell_standalone): $(kevm_includes) $(plugin_includes)
+
+$(kompile_haskell_standalone): KOMPILE_TARGET        := haskell-standalone
+$(kompile_haskell_standalone): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/driver.md
+$(kompile_haskell_standalone): KOMPILE_MAIN_MODULE   := ETHEREUM-SIMULATION
+$(kompile_haskell_standalone): KOMPILE_SYNTAX_MODULE := ETHEREUM-SIMULATION
+$(kompile_haskell_standalone):
 	$(kompile)
 
 
@@ -335,6 +360,7 @@ install_bins := kevm    \
 install_libs := $(haskell_kompiled)                                        \
                 $(llvm_kompiled)                                           \
                 $(foundry_kompiled)                                        \
+                $(haskell_standalone_kompiled)                             \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
                 kore-json.py                                               \
                 release.md                                                 \
@@ -364,11 +390,12 @@ $(KEVM_LIB)/release.md: INSTALL.md
 
 build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
 
-build-llvm:     $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
-build-haskell:  $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
-build-node:     $(KEVM_LIB)/$(node_kompiled)
-build-kevm:     $(KEVM_BIN)/kevm $(KEVM_LIB)/version $(kevm_includes) $(plugin_includes)
-build-foundry:  $(KEVM_BIN)/kevm $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
+build-llvm:               $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
+build-haskell:            $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
+build-haskell-standalone: $(KEVM_LIB)/$(haskell_standalone_kompiled) $(KEVM_LIB)/kore-json.py
+build-node:               $(KEVM_LIB)/$(node_kompiled)
+build-kevm:               $(KEVM_BIN)/kevm $(KEVM_LIB)/version $(kevm_includes) $(plugin_includes)
+build-foundry:            $(KEVM_BIN)/kevm $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
@@ -438,6 +465,7 @@ tests/specs/examples/erc721-spec%:                    KPROVE_FILE   =  erc721-sp
 tests/specs/examples/storage-spec%:                   KPROVE_EXT    =  md
 tests/specs/examples/storage-spec%:                   KPROVE_FILE   =  storage-spec
 tests/specs/examples/sum-to-n-spec%:                  KPROVE_FILE   =  sum-to-n-spec
+tests/specs/examples/sum-to-n-foundry-spec%:          KPROVE_FILE   =  sum-to-n-foundry-spec
 tests/specs/functional/infinite-gas-spec%:            KPROVE_FILE   =  infinite-gas-spec
 tests/specs/functional/evm-int-simplifications-spec%: KPROVE_FILE   =  evm-int-simplifications-spec
 tests/specs/functional/int-simplifications-spec%:     KPROVE_FILE   =  int-simplifications-spec
@@ -502,7 +530,7 @@ foundry_out := $(foundry_dir)/out
 
 test-foundry-%: KEVM_OPTS += --pyk --verbose
 test-foundry-%: KEVM := $(POETRY_RUN) kevm
-test-foundry-kompile: tests/foundry/foundry.k.check
+test-foundry-kompile: tests/foundry/foundry.k.check tests/foundry/contracts.k.check
 test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
 test-foundry-bmc-prove: tests/foundry/out/kompiled/foundry.k.bmc-prove
 test-foundry-list: tests/foundry/foundry-list.check
@@ -513,7 +541,6 @@ foundry-forge-test: foundry-forge-build
 	cd $(foundry_dir) && forge test --ffi
 
 $(foundry_out):
-	rm -rf $@
 	cd $(dir $@) && forge build
 
 tests/foundry/foundry-list.out: tests/foundry/out/kompiled/foundry.k.prove foundry-fail
@@ -527,7 +554,12 @@ tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
 	$(CHECK) $@.stripped $@.expected
 
+tests/foundry/contracts.k.check: tests/foundry/out/kompiled/contracts.k
+	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
+	$(CHECK) $@.stripped $@.expected
+
 tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
+tests/foundry/out/kompiled/contracts.k: tests/foundry/out/kompiled/timestamp
 
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
@@ -567,7 +599,7 @@ $(foundry_golden)/%.out: foundry-fail
 	> $@
 
 tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
-	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose
+	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose --require $(foundry_dir)/lemmas.k --module-import LoopsTest:SUM-TO-N-INVARIANT
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose
 tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) kevm
@@ -677,6 +709,7 @@ prove_haskell_definitions :=                                                    
                              tests/specs/examples/storage-spec/haskell/timestamp          \
                              tests/specs/examples/solidity-code-spec/haskell/timestamp    \
                              tests/specs/examples/sum-to-n-spec/haskell/timestamp         \
+                             tests/specs/examples/sum-to-n-foundry-spec/haskell/timestamp \
                              tests/specs/functional/infinite-gas-spec/haskell/timestamp   \
                              tests/specs/functional/lemmas-no-smt-spec/haskell/timestamp  \
                              tests/specs/functional/lemmas-spec/haskell/timestamp         \

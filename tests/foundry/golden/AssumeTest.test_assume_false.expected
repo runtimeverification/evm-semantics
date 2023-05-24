@@ -1,5 +1,5 @@
 
-┌─ OMITTED HASH (init, expanded)
+┌─ 4 (init, expanded)
 │    k: #execute ~> CONTINUATION
 │    pc: 0
 │    callDepth: 0
@@ -7,49 +7,49 @@
 │    src: tests/foundry/test/AssumeTest.t.sol:5:44
 │
 │  (872 steps)
-├─ OMITTED HASH (expanded)
+├─ 7 (expanded)
 │    k: CALL 9223372036854772765 645326474426547203313410069153905908525362434349 0 128  ...
 │    pc: 424
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ OMITTED HASH (expanded)
+├─ 9 (expanded)
 │    k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
 │    pc: 424
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1000 steps)
-├─ OMITTED HASH (expanded)
+├─ 11 (expanded)
 │    k: #gas [ MSTORE , MSTORE 192 46308022326495007027972728677917914892729792999299745 ...
 │    pc: 2271
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1000 steps)
-├─ OMITTED HASH (expanded)
+├─ 13 (expanded)
 │    k: #gasExec ( LONDON , JUMP 2621 ) ~> #deductGas ~> #access [ JUMP , JUMP 2621 ] ~> ...
 │    pc: 2691
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (819 steps)
-├─ OMITTED HASH (expanded)
+├─ 15 (expanded)
 │    k: CALL 9223372036854765620 645326474426547203313410069153905908525362434349 0 388  ...
 │    pc: 2389
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ OMITTED HASH (expanded)
+├─ 17 (expanded)
 │    k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
 │    pc: 2389
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (387 steps)
-├─ OMITTED HASH (expanded)
+├─ 19 (expanded)
 │    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │    pc: 183
 │    callDepth: 0
@@ -57,7 +57,7 @@
 │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (1 step)
-├─ OMITTED HASH (expanded)
+├─ 21 (expanded)
 │    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │    pc: 183
 │    callDepth: 0
@@ -65,7 +65,7 @@
 │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (2 steps)
-└─ OMITTED HASH (expanded, stuck, leaf)
+└─ 23 (expanded, stuck, leaf)
      k: #halt ~> CONTINUATION:K
      pc: 183
      callDepth: 0
@@ -74,7 +74,7 @@
    (stuck)
 
 
-└─ OMITTED HASH (target, leaf)
+└─ 3 (target, leaf)
      k: #halt ~> CONTINUATION
      pc: PC_CELL_5d410f2a
      callDepth: CALLDEPTH_CELL_5d410f2a
@@ -83,14 +83,14 @@
 
 Target Nodes:
 
-OMITTED HASH (target, leaf)
+3 (target, leaf)
  k: #halt ~> CONTINUATION
  pc: PC_CELL_5d410f2a
  callDepth: CALLDEPTH_CELL_5d410f2a
  statusCode: STATUSCODE_FINAL
 
 
-Node OMITTED HASH:
+Node 23:
 
 ( <generatedTop>
   <foundry>
@@ -133,7 +133,7 @@ Node OMITTED HASH:
               0
             </callValue>
             <wordStack>
-              ( 3827036084 : .WordStack )
+              ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack )
             </wordStack>
             <localMem>
               b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x84\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00dp\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01p\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -179,24 +179,6 @@ Node OMITTED HASH:
           <accounts>
             ( <account>
               <acctID>
-                728815563385977040452943777879061427756277306518
-              </acctID>
-              <balance>
-                0
-              </balance>
-              <storage>
-                ( 0 |-> 256 )
-              </storage>
-              <origStorage>
-                .Map
-              </origStorage>
-              <nonce>
-                1
-              </nonce>
-              ...
-            </account>
-            <account>
-              <acctID>
                 645326474426547203313410069153905908525362434349
               </acctID>
               <balance>
@@ -210,6 +192,24 @@ Node OMITTED HASH:
               </origStorage>
               <nonce>
                 0
+              </nonce>
+              ...
+            </account>
+            <account>
+              <acctID>
+                728815563385977040452943777879061427756277306518
+              </acctID>
+              <balance>
+                0
+              </balance>
+              <storage>
+                ( 0 |-> 256 )
+              </storage>
+              <origStorage>
+                .Map
+              </origStorage>
+              <nonce>
+                1
               </nonce>
               ...
             </account> )
@@ -297,11 +297,11 @@ Node OMITTED HASH:
 #And ( { true #Equals 0 <=Int NUMBER_CELL:Int }
 #And ( { true #Equals 0 <=Int VV0_a_114b9705:Int }
 #And ( { true #Equals 0 <=Int VV1_b_114b9705:Int }
-#And ( { true #Equals CALLER_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
-#And ( { true #Equals ORIGIN_ID:Int <Int 1461501637330902918203684832716283019655932542976 }
-#And ( { true #Equals NUMBER_CELL:Int <=Int 57896044618658097711785492504343953926634992332820282019728792003956564819967 }
-#And ( { true #Equals VV0_a_114b9705:Int <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936 }
-#And ( { true #Equals VV1_b_114b9705:Int <Int 115792089237316195423570985008687907853269984665640564039457584007913129639936 }
+#And ( { true #Equals CALLER_ID:Int <Int pow160 }
+#And ( { true #Equals ORIGIN_ID:Int <Int pow160 }
+#And ( { true #Equals NUMBER_CELL:Int <=Int maxSInt256 }
+#And ( { true #Equals VV0_a_114b9705:Int <Int pow256 }
+#And ( { true #Equals VV1_b_114b9705:Int <Int pow256 }
 #And { true #Equals ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ==Bool true } ) ) ) ) ) ) ) ) ) ) ) )
 
 
@@ -396,7 +396,7 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                      ...
                    </account> => <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
+                       645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
                        0
@@ -408,7 +408,7 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                        .Map
                      </origStorage>
                      <nonce>
-                       1
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -431,7 +431,7 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                      ...
                    </account> => <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -443,7 +443,7 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                        .Map
                      </origStorage>
                      <nonce>
-                       0
+                       1
                      </nonce>
                      ...
                    </account> ) )
@@ -595,24 +595,6 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -626,6 +608,24 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -782,24 +782,6 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -813,6 +795,24 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -970,24 +970,6 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -1001,6 +983,24 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -1157,24 +1157,6 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -1188,6 +1170,24 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -1342,24 +1342,6 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -1373,6 +1355,24 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -1528,24 +1528,6 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       ( .Map => ( 0 |-> 256 ) )
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -1559,6 +1541,24 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       ( .Map => ( 0 |-> 256 ) )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -1714,24 +1714,6 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       ( 0 |-> 256 )
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -1745,6 +1727,24 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       ( 0 |-> 256 )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -1900,24 +1900,6 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       ( 0 |-> 256 )
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -1931,6 +1913,24 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       ( 0 |-> 256 )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )

@@ -63,9 +63,20 @@ CONCRETE_RULES: Final = (
 )
 
 
+class Kernel(Enum):
+    LINUX = 'Linux'
+    DARWIN = 'Darwin'
+
+    @staticmethod
+    def get() -> Kernel:
+        uname = run_process(('uname', '-s'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+        return Kernel(uname)
+
+
 class KompileTarget(Enum):
     LLVM = 'llvm'
     HASKELL = 'haskell'
+    HASKELL_STANDALONE = 'haskell-standalone'
     NODE = 'node'
     FOUNDRY = 'foundry'
 
@@ -74,7 +85,7 @@ class KompileTarget(Enum):
         match self:
             case self.LLVM | self.NODE:
                 return KompileBackend.LLVM
-            case self.HASKELL | self.FOUNDRY:
+            case self.HASKELL | self.FOUNDRY | self.HASKELL_STANDALONE:
                 return KompileBackend.HASKELL
             case _:
                 raise AssertionError()
@@ -88,6 +99,8 @@ class KompileTarget(Enum):
                 return config.NODE_DIR
             case self.HASKELL:
                 return config.HASKELL_DIR
+            case self.HASKELL_STANDALONE:
+                return config.HASKELL_STANDALONE_DIR
             case self.FOUNDRY:
                 return config.FOUNDRY_DIR
             case _:
@@ -103,6 +116,7 @@ def kevm_kompile(
     syntax_module: str | None,
     includes: Iterable[str] = (),
     emit_json: bool,
+    read_only: bool = False,
     ccopts: Iterable[str] = (),
     optimization: int = 0,
     llvm_kompile_type: LLVMKompileType | None = None,
@@ -123,12 +137,15 @@ def kevm_kompile(
         md_selector=md_selector,
         hook_namespaces=HOOK_NAMESPACES,
         emit_json=emit_json,
+        read_only=read_only,
     )
 
     kompile: Kompile
+    kernel = Kernel.get()
+    haskell_binary = kernel is not Kernel.DARWIN
     match backend:
         case KompileBackend.LLVM:
-            ccopts = list(ccopts) + _lib_ccopts()
+            ccopts = list(ccopts) + _lib_ccopts(kernel)
             no_llvm_kompile = target == KompileTarget.NODE
             kompile = LLVMKompile(
                 base_args=base_args,
@@ -142,6 +159,7 @@ def kevm_kompile(
             kompile = HaskellKompile(
                 base_args=base_args,
                 concrete_rules=CONCRETE_RULES,
+                haskell_binary=haskell_binary,
             )
         case _:
             raise ValueError(f'Unsupported backend: {backend.value}')
@@ -156,7 +174,7 @@ def kevm_kompile(
         raise
 
 
-def _lib_ccopts() -> list[str]:
+def _lib_ccopts(kernel: Kernel) -> list[str]:
     ccopts = ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
 
     libff_dir = config.KEVM_LIB / 'libff'
@@ -169,16 +187,6 @@ def _lib_ccopts() -> list[str]:
         f'{plugin_include}/c/blake2.cpp',
     ]
 
-    class Kernel(Enum):
-        LINUX = 'Linux'
-        DARWIN = 'Darwin'
-
-        @staticmethod
-        def get() -> Kernel:
-            uname = run_process(('uname', '-s'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
-            return Kernel(uname)
-
-    kernel = Kernel.get()
     if kernel == Kernel.DARWIN:
         if not config.NIX_BUILD:
             brew_root = run_process(('brew', '--prefix'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
