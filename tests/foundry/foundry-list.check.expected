@@ -143,9 +143,9 @@ APRProof: AssertTest.test_assert_true:a327e722a5bc2ed41b1ff750e1eadf3e83cb553953
     stuck: 0
 
 APRProof: AssertTest.test_assert_true_branch:705a36696541984d6c6b28ade9bbb7a3840cbcfdc2e150b3da4329cb7c06527a
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 11
+    frontier: 0
     stuck: 0
 
 APRProof: AssertTest.test_failing_branch:62e246cc0325a8ab400bed7aa96455fdf5277f9a1a755fa8cfaf572ed805c686
@@ -245,15 +245,15 @@ APRProof: BlockParamsTest.testWarp:49d83395db7ebb166803ad3eab6e76f728488b0df9590
     stuck: 0
 
 APRProof: BytesTypeTest.test_bytes32:ef04f8720410ede5bec0b17fda8340c62e9818d9a663c53bb393bddb3987a17e
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 5
+    frontier: 0
     stuck: 0
 
 APRProof: BytesTypeTest.test_bytes4:46a17b849e4f2991bcdce4aa6a0629b26f2db8fd929dc4a66b2f8aae5e50dded
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 5
+    frontier: 0
     stuck: 0
 
 APRProof: CounterTest.testIncrement:3992e730124fa1381551e230218898550b2665bfc50a236b94ec973de817e943
@@ -317,9 +317,9 @@ APRProof: ExpectRevertTest.testFail_expectRevert_false:1d576d88b3dcc6f5276fe7070
     stuck: 0
 
 APRProof: ExpectRevertTest.testFail_expectRevert_multipleReverts:581fb9ea8cd100a6dcf3df7158bb4f00855cee18ee1e43212ff1c557c35220c4
-    status: ProofStatus.PENDING
-    nodes: 9
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 24
+    frontier: 0
     stuck: 0
 
 APRProof: ExpectRevertTest.test_ExpectRevert_increasedDepth:62d768e5623286d1005ecaa9610933221883959d37f4b3469066d88d0415a191
@@ -335,21 +335,21 @@ APRProof: ExpectRevertTest.test_expectRevert_internalCall:cbcb172e7f8d76df6b2bd8
     stuck: 0
 
 APRProof: ExpectRevertTest.test_expectRevert_message:5594a9370b5b578b68ecc65f7acf7c75d6badb6cb9b255dbce908feb20dce045
-    status: ProofStatus.PENDING
-    nodes: 10
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 20
+    frontier: 0
     stuck: 0
 
 APRProof: ExpectRevertTest.test_expectRevert_returnValue:aa77e10b4f62f49f84a0672f7f3b4b3b6c5181dcc247967e8dbe1711ce0a4b40
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 27
+    frontier: 0
     stuck: 0
 
 APRProof: ExpectRevertTest.test_expectRevert_true:de7000e92030214d433a6dd51fce1fe48b94f505788a780f63866a8bdf794b0e
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 18
+    frontier: 0
     stuck: 0
 
 APRProof: GasTest.testInfiniteGas:ea3d007590dc158a074517857e177bcfa8b5ef593ec02a9c80bb42337e830de2
@@ -371,21 +371,21 @@ APRProof: LoopsTest.sum_N:031a8a7fd8a89ea433a5c7307fd8e6ee86fed775c4188c1078f3de
     stuck: 0
 
 APRProof: LoopsTest.test_sum_10:30ed1ae0020518510e2ba4e1a1487e245df8e70bd3e1523a82419bd2864b76e1
-    status: ProofStatus.PENDING
-    nodes: 7
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 10
+    frontier: 0
     stuck: 0
 
 APRProof: MethodDisambiguateTest.test_method_call:3786df7e8684c4703688ee31a20e7924bd12aafb41b43e4d7c6747402f456ef7
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 5
+    frontier: 0
     stuck: 0
 
 APRProof: PlainPrankTest.testFail_startPrank_internalCall:bbaab6548be80ef31d590a24bb3c34367cbf9b5559525bc5437136de45f0d9af
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 9
+    frontier: 0
     stuck: 0
 
 APRProof: PlainPrankTest.test_prank_zeroAddress_true:901bf2ce10e3745450eb66583d6120d18b131ff3c47aec309ca06b66d6589081
@@ -395,27 +395,27 @@ APRProof: PlainPrankTest.test_prank_zeroAddress_true:901bf2ce10e3745450eb66583d6
     stuck: 0
 
 APRProof: PlainPrankTest.test_startPrankWithOrigin_true:04631949ff19a67ae9204131ad0de7a2f9d10d0feb77119fc4a30679b8100eb8
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 26
+    frontier: 0
     stuck: 0
 
 APRProof: PlainPrankTest.test_startPrank_true:cbb13d45d46d95755f53a25e087525927a4e5f277ba4ce1a5891cdc8c151ef92
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 26
+    frontier: 0
     stuck: 0
 
 APRProof: PlainPrankTest.test_startPrank_zeroAddress_true:dd7959dcf5de16ead3655ad4d1f2e09438fd0762efdf40c40e19fed0dc8bda61
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 26
+    frontier: 0
     stuck: 0
 
 APRProof: PlainPrankTest.test_stopPrank_notExistent:fb68e75bcad340c21f02047d7b194597f62ddaef8a9b1ec4cff1169dfca1ff92
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 7
+    frontier: 0
     stuck: 0
 
 APRProof: SetUpDeployTest.setUp:ea545d29e24145e8b49df4eaf3ec901b9972459926f28605587c9b1157175caf
@@ -437,79 +437,79 @@ APRProof: Setup2Test.setUp:7dfe52b3906be5ad1783250c325ddf66f6f78de610c2515152b0d
     stuck: 0
 
 APRProof: Setup2Test.testFail_setup:5c9415bdd3a7fee6382e9ff59eadc6effbdaafa9c907cb733861cbbca7e438ce
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 10
+    frontier: 0
     stuck: 0
 
 APRProof: Setup2Test.test_setup:d382cf9915e17de9bafe20dd19723db5b4c6af6d7e7b2f0f098abe97c8f3a174
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 5
+    frontier: 0
     stuck: 0
 
 APRProof: StoreTest.testGasLoadColdVM:28926dbeb6462b88b02e57c7c390f5b5f18613387e1acc48ee527ddcd6f51c38
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 7
+    frontier: 0
     stuck: 0
 
 APRProof: StoreTest.testGasLoadWarmUp:830c58f5c790eda97f2e3c2085c72c60ec78a6b0aba178e4266f3c7fa52e9317
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 13
+    frontier: 0
     stuck: 0
 
 APRProof: StoreTest.testGasStoreColdVM:88886eb3ba563ccbd8ab31758d8811e3c2d9959d583600cd2d36d7ee45167019
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 7
+    frontier: 0
     stuck: 0
 
 APRProof: StoreTest.testGasStoreWarmUp:5d343b20742849259c7a1f2940c919489c7a917e215bbfb13fac0c41b540f676
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 13
+    frontier: 0
     stuck: 0
 
 APRProof: StoreTest.testLoadNonExistent:49e724f7b888037a8be429c3fc401aa4b914d30e58e5dc95071b39879539da4e
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 7
+    frontier: 0
     stuck: 0
 
 APRProof: StoreTest.testStoreLoad:ee201cded4b77a4da3de21730cd01fa5fc5d69d5b76781c67576cdaf0b936a78
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 14
+    frontier: 0
     stuck: 0
 
 APRProof: StoreTest.testStoreLoadNonExistent:96db02ddef29dc3a63ddac54ea5cba1df3d68eccad923fe04402ee6b68f695f1
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 9
+    frontier: 0
     stuck: 0
 
 APRProof: SymbolicStorageTest.testEmptyInitialStorage:9d98193ee0160832abaafc4239b38ec3afdaa078e23c52cb21492bd80b70bb7b
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 7
+    frontier: 0
     stuck: 0
 
 APRProof: SymbolicStorageTest.testFail_SymbolicStorage:2f60adbdb429c8dafe3ac4f413c523f873b4d1653fb2a4c6145547f845bebc17
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 19
+    frontier: 0
     stuck: 0
 
 APRProof: SymbolicStorageTest.testFail_SymbolicStorage1:6583ada3ba3da1f3ff59bf60e07ee67afc17bdea5327b49a0ad44e9ed00de134
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 24
+    frontier: 0
     stuck: 0
 
 APRProof: UintTypeTest.test_uint256:fed11faa6e8138097d5d92e606e313d18cc8a752446d42345820bb5b6ff66294
-    status: ProofStatus.PENDING
-    nodes: 2
-    frontier: 1
+    status: ProofStatus.PASSED
+    nodes: 5
+    frontier: 0
     stuck: 0
