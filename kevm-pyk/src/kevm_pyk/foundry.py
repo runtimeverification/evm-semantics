@@ -47,7 +47,7 @@ class Foundry:
     _root: Path
     _toml: dict[str, Any]
     _bug_report: BugReport | None
-    _requires: list[str] | None
+    _requires: Iterable[str] | None
 
     class Sorts:
         FOUNDRY_CELL: Final = KSort('FoundryCell')
@@ -56,7 +56,7 @@ class Foundry:
         self,
         foundry_root: Path,
         bug_report: BugReport | None = None,
-        requires: list[str] | None = None,
+        requires: Iterable[str] | None = None,
     ) -> None:
         self._root = foundry_root
         with (foundry_root / 'foundry.toml').open('rb') as f:
@@ -65,7 +65,7 @@ class Foundry:
         self._requires = requires
 
     @property
-    def requires(self) -> list[str]:
+    def requires(self) -> Iterable[str] | None:
         return self._requires
 
     @property
@@ -110,8 +110,7 @@ class Foundry:
     def proof_digest(self, contract: str, test: str) -> str:
         return f'{contract}.{test}:{self.contracts[contract].method_by_name[test].digest}'
 
-#      @cached_property
-    @property
+    @cached_property
     def digest(self) -> str:
         if self.requires is None:
             raise ValueError('Attempted to compute the foundry digest without specifying the requires files.')
