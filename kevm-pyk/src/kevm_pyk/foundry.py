@@ -458,26 +458,6 @@ def foundry_prove(
                 )
         method.update_digest(foundry.out / 'digest')
 
-    def _init_apr_proof(_init_problem: tuple[str, str], kcfg_explore: KCFGExplore) -> APRProof | APRBMCProof:
-        contract_name, method_name = _init_problem
-        contract = foundry.contracts[contract_name]
-        method = contract.method_by_name[method_name]
-        return _method_to_apr_proof(
-            foundry,
-            contract,
-            method,
-            save_directory,
-            kcfg_explore,
-            reinit=(method.qualified_name in out_of_date_methods),
-            simplify_init=simplify_init,
-            bmc_depth=bmc_depth,
-            kore_rpc_command=kore_rpc_command,
-            smt_timeout=smt_timeout,
-            smt_retry_limit=smt_retry_limit,
-            bug_report=br,
-            trace_rewrites=trace_rewrites,
-        )
-
     def _init_and_run_proof(_init_problem: tuple[str, str]) -> bool:
         proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
         with KCFGExplore(
@@ -489,7 +469,25 @@ def foundry_prove(
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
-            proof = _init_apr_proof(_init_problem, kcfg_explore)
+            contract_name, method_name = _init_problem
+            contract = foundry.contracts[contract_name]
+            method = contract.method_by_name[method_name]
+            proof = _method_to_apr_proof(
+                foundry,
+                contract,
+                method,
+                save_directory,
+                kcfg_explore,
+                reinit=(method.qualified_name in out_of_date_methods),
+                simplify_init=simplify_init,
+                bmc_depth=bmc_depth,
+                kore_rpc_command=kore_rpc_command,
+                smt_timeout=smt_timeout,
+                smt_retry_limit=smt_retry_limit,
+                bug_report=br,
+                trace_rewrites=trace_rewrites,
+            )
+
             return kevm_apr_prove(
                 foundry.kevm,
                 proof_id,
