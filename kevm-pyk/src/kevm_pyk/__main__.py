@@ -202,12 +202,13 @@ def exec_prove_legacy(
     max_depth: int | None = None,
     max_counterexamples: int | None = None,
     branching_allowed: int | None = None,
-    haskell_backend_arg: str | None = None,
+    haskell_backend_args: Iterable[str] = (),
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
     md_selector = 'k & ! node'
 
+    print(f'definition_dir={definition_dir.resolve()}')
     kevm = KEVM(definition_dir, use_directory=save_directory)
     args: list[str] = []
     haskell_args: list[str] = []
@@ -225,8 +226,8 @@ def exec_prove_legacy(
         haskell_args += ['--max-counterexamples', f'{max_counterexamples}']
     if bug_report:
         haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.rstrip("-spec.k")}']
-    if haskell_backend_arg:
-        haskell_args.append(haskell_backend_arg)
+    if haskell_backend_args:
+        haskell_args += list(haskell_backend_args)
 
     kevm.prove(
         spec_file=spec_file,

@@ -100,9 +100,9 @@ class KEVMCLIArgs:
         )
         args.add_argument(
             '--haskell-backend-arg',
-            type=str,
-            dest='haskell_backend_arg',
-            default=None,
+            dest='haskell_backend_args',
+            default=[],
+            action='append',
             help='Arguments passed to the Haskell backend execution engine.',
         )
         return args
