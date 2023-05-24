@@ -13,6 +13,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import TypeVar
 
+    from pyk.kcfg.kcfg import NodeIdLike
+
     T = TypeVar('T')
 
 
@@ -21,6 +23,13 @@ def list_of(elem_type: Callable[[str], T], delim: str = ';') -> Callable[[str], 
         return [elem_type(elem) for elem in s.split(delim)]
 
     return parse
+
+
+def node_id_like(s: str) -> NodeIdLike:
+    try:
+        return int(s)
+    except ValueError:
+        return s
 
 
 class KEVMCLIArgs:
@@ -370,7 +379,7 @@ class KEVMCLIArgs:
         args = ArgumentParser(add_help=False)
         args.add_argument(
             '--node',
-            type=str,
+            type=node_id_like,
             dest='nodes',
             default=[],
             action='append',
@@ -378,7 +387,7 @@ class KEVMCLIArgs:
         )
         args.add_argument(
             '--node-delta',
-            type=arg_pair_of(str, str),
+            type=arg_pair_of(node_id_like, node_id_like),
             dest='node_deltas',
             default=[],
             action='append',
