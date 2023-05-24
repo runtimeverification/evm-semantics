@@ -1170,7 +1170,8 @@ Operators that require access to the rest of the Ethereum network world-state ca
            ...
          </account>
 
-    rule <k> EXTCODECOPY _ _ _ _ => . ... </k> [owise]
+    rule <k> EXTCODECOPY _ MEMSTART _ WIDTH => . ... </k>
+         <localMem> LM => LM [ MEMSTART := #padToWidth(WIDTH, .Bytes) ] </localMem> [owise]
 ```
 
 ### Account Storage Operations

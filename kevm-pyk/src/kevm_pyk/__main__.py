@@ -7,14 +7,16 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
+from pyk.cli_utils import BugReport, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
+from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
 
+from .cli import KEVMCLIArgs
 from .foundry import (
     Foundry,
     foundry_kompile,
@@ -27,6 +29,7 @@ from .foundry import (
     foundry_step_node,
     foundry_to_dot,
 )
+from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
@@ -460,15 +463,26 @@ def exec_run(
     expand_macros: str,
     depth: int | None,
     output: str,
+    schedule: str,
+    mode: str,
+    chainid: int,
     **kwargs: Any,
 ) -> None:
+    cmap = {
+        'MODE': _mode_to_kore(mode).text,
+        'SCHEDULE': _schedule_to_kore(schedule).text,
+        'CHAINID': int_dv(chainid).text,
+    }
+    pmap = {'MODE': 'cat', 'SCHEDULE': 'cat', 'CHAINID': 'cat'}
     krun_result = _krun(
-        definition_dir=Path(definition_dir),
-        input_file=Path(input_file),
+        definition_dir=definition_dir,
+        input_file=input_file,
         depth=depth,
         term=term,
         no_expand_macros=not expand_macros,
         parser=parser,
+        cmap=cmap,
+        pmap=pmap,
         output=KRunOutput[output.upper()],
     )
     print(krun_result.stdout)
@@ -583,293 +597,61 @@ def _create_argument_parser() -> ArgumentParser:
 
         return parse
 
-    shared_args = ArgumentParser(add_help=False)
-    shared_args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
-    shared_args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
-    shared_args.add_argument('--workers', '-j', default=1, type=int, help='Number of processes to run in parallel.')
-
-    display_args = ArgumentParser(add_help=False)
-    display_args.add_argument('--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.')
-    display_args.add_argument('--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.')
-
-    foundry_root_arg = ArgumentParser(add_help=False)
-    foundry_root_arg.add_argument(
-        '--foundry-project-root',
-        dest='foundry_root',
-        type=dir_path,
-        default=Path('.'),
-        help='Path to Foundry project root directory.',
-    )
-
-    rpc_args = ArgumentParser(add_help=False)
-    rpc_args.add_argument(
-        '--bug-report',
-        default=False,
-        action='store_true',
-        help='Generate a haskell-backend bug report for the execution.',
-    )
-    rpc_args.add_argument(
-        '--trace-rewrites',
-        default=False,
-        action='store_true',
-        help='Log traces of all simplification and rewrite rule applications.',
-    )
-
-    smt_args = ArgumentParser(add_help=False)
-    smt_args.add_argument(
-        '--smt-timeout', dest='smt_timeout', type=int, default=125, help='Timeout in ms to use for SMT queries.'
-    )
-    smt_args.add_argument(
-        '--smt-retry-limit',
-        dest='smt_retry_limit',
-        type=int,
-        default=4,
-        help='Number of times to retry SMT queries with scaling timeouts.',
-    )
-
-    explore_args = ArgumentParser(add_help=False)
-    explore_args.add_argument(
-        '--break-every-step',
-        dest='break_every_step',
-        default=False,
-        action='store_true',
-        help='Store a node for every EVM opcode step (expensive).',
-    )
-    explore_args.add_argument(
-        '--break-on-jumpi',
-        dest='break_on_jumpi',
-        default=False,
-        action='store_true',
-        help='Store a node for every EVM jump opcode.',
-    )
-    explore_args.add_argument(
-        '--break-on-calls',
-        dest='break_on_calls',
-        default=True,
-        action='store_true',
-        help='Store a node for every EVM call made.',
-    )
-    explore_args.add_argument(
-        '--no-break-on-calls',
-        dest='break_on_calls',
-        action='store_false',
-        help='Do not store a node for every EVM call made.',
-    )
-    explore_args.add_argument(
-        '--implication-every-block',
-        dest='implication_every_block',
-        default=True,
-        action='store_true',
-        help='Check subsumption into target state every basic block, not just at terminal nodes.',
-    )
-    explore_args.add_argument(
-        '--no-implication-every-block',
-        dest='implication_every_block',
-        action='store_false',
-        help='Do not check subsumption into target state every basic block, not just at terminal nodes.',
-    )
-    explore_args.add_argument(
-        '--simplify-init',
-        dest='simplify_init',
-        default=True,
-        action='store_true',
-        help='Simplify the initial and target states at startup.',
-    )
-    explore_args.add_argument(
-        '--no-simplify-init',
-        dest='simplify_init',
-        action='store_false',
-        help='Do not simplify the initial and target states at startup.',
-    )
-    explore_args.add_argument(
-        '--max-depth',
-        dest='max_depth',
-        default=1000,
-        type=int,
-        help='Store every Nth state in the CFG for inspection.',
-    )
-    explore_args.add_argument(
-        '--max-iterations',
-        dest='max_iterations',
-        default=None,
-        type=int,
-        help='Store every Nth state in the CFG for inspection.',
-    )
-    explore_args.add_argument(
-        '--kore-rpc-command',
-        dest='kore_rpc_command',
-        type=str,
-        default='kore-rpc',
-        help='Custom command to start RPC server',
-    )
-
-    k_args = ArgumentParser(add_help=False)
-    k_args.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
-    k_args.add_argument(
-        '-I', type=str, dest='includes', default=[], action='append', help='Directories to lookup K definitions in.'
-    )
-    k_args.add_argument('--main-module', default=None, type=str, help='Name of the main module.')
-    k_args.add_argument('--syntax-module', default=None, type=str, help='Name of the syntax module.')
-    k_args.add_argument('--spec-module', default=None, type=str, help='Name of the spec module.')
-    k_args.add_argument('--definition', type=str, dest='definition_dir', help='Path to definition to use.')
-    k_args.add_argument(
-        '--md-selector',
-        type=str,
-        help='Code selector expression to use when reading markdown.',
-    )
-
-    kprove_args = ArgumentParser(add_help=False)
-    kprove_args.add_argument(
-        '--debug-equations', type=list_of(str, delim=','), default=[], help='Comma-separate list of equations to debug.'
-    )
-
-    k_kompile_args = ArgumentParser(add_help=False)
-    k_kompile_args.add_argument(
-        '--emit-json',
-        dest='emit_json',
-        default=True,
-        action='store_true',
-        help='Emit JSON definition after compilation.',
-    )
-    k_kompile_args.add_argument(
-        '--no-emit-json', dest='emit_json', action='store_false', help='Do not JSON definition after compilation.'
-    )
-    k_kompile_args.add_argument(
-        '-ccopt',
-        dest='ccopts',
-        default=[],
-        action='append',
-        help='Additional arguments to pass to llvm-kompile.',
-    )
-    k_kompile_args.add_argument(
-        '--no-llvm-kompile',
-        dest='llvm_kompile',
-        default=True,
-        action='store_false',
-        help='Do not run llvm-kompile process.',
-    )
-    k_kompile_args.add_argument(
-        '--with-llvm-library',
-        dest='llvm_library',
-        default=False,
-        action='store_true',
-        help='Make kompile generate a dynamic llvm library.',
-    )
-    k_kompile_args.add_argument(
-        '--enable-llvm-debug',
-        dest='enable_llvm_debug',
-        default=False,
-        action='store_true',
-        help='Make kompile generate debug symbols for llvm.',
-    )
-    k_kompile_args.add_argument(
-        '--read-only-kompiled-directory',
-        dest='read_only',
-        default=False,
-        action='store_true',
-        help='Generated a kompiled directory that K will not attempt to write to afterwards.',
-    )
-    k_kompile_args.add_argument('-O0', dest='o0', default=False, action='store_true', help='Optimization level 0.')
-    k_kompile_args.add_argument('-O1', dest='o1', default=False, action='store_true', help='Optimization level 1.')
-    k_kompile_args.add_argument('-O2', dest='o2', default=False, action='store_true', help='Optimization level 2.')
-    k_kompile_args.add_argument('-O3', dest='o3', default=False, action='store_true', help='Optimization level 3.')
-
-    evm_chain_args = ArgumentParser(add_help=False)
-    evm_chain_args.add_argument(
-        '--schedule',
-        type=str,
-        default='LONDON',
-        help='KEVM Schedule to use for execution. One of [DEFAULT|FRONTIER|HOMESTEAD|TANGERINE_WHISTLE|SPURIOUS_DRAGON|BYZANTIUM|CONSTANTINOPLE|PETERSBURG|ISTANBUL|BERLIN|LONDON].',
-    )
-    evm_chain_args.add_argument('--chainid', type=int, default=1, help='Chain ID to use for execution.')
-    evm_chain_args.add_argument(
-        '--mode', type=str, default='NORMAL', help='Execution mode to use. One of [NORMAL|VMTESTS].'
-    )
-
-    k_gen_args = ArgumentParser(add_help=False)
-    k_gen_args.add_argument(
-        '--require',
-        dest='requires',
-        default=[],
-        action='append',
-        help='Extra K requires to include in generated output.',
-    )
-    k_gen_args.add_argument(
-        '--module-import',
-        dest='imports',
-        default=[],
-        action='append',
-        help='Extra modules to import into generated main module.',
-    )
-
-    spec_args = ArgumentParser(add_help=False)
-    spec_args.add_argument('spec_file', type=file_path, help='Path to spec file.')
-    spec_args.add_argument('--save-directory', type=ensure_dir_path, help='Path to where CFGs are stored.')
-    spec_args.add_argument(
-        '--claim', type=str, dest='claim_labels', action='append', help='Only prove listed claims, MODULE_NAME.claim-id'
-    )
-    spec_args.add_argument(
-        '--exclude-claim',
-        type=str,
-        dest='exclude_claim_labels',
-        action='append',
-        help='Skip listed claims, MODULE_NAME.claim-id',
-    )
-
-    kcfg_show_args = ArgumentParser(add_help=False)
-    kcfg_show_args.add_argument(
-        '--node',
-        type=str,
-        dest='nodes',
-        default=[],
-        action='append',
-        help='List of nodes to display as well.',
-    )
-    kcfg_show_args.add_argument(
-        '--node-delta',
-        type=arg_pair_of(str, str),
-        dest='node_deltas',
-        default=[],
-        action='append',
-        help='List of nodes to display delta for.',
-    )
-    kcfg_show_args.add_argument(
-        '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
-    )
+    kevm_cli_args = KEVMCLIArgs()
 
     parser = ArgumentParser(prog='python3 -m kevm_pyk')
 
     command_parser = parser.add_subparsers(dest='command', required=True)
 
-    kompile_args = command_parser.add_parser(
-        'kompile', help='Kompile KEVM specification.', parents=[shared_args, k_args, k_kompile_args]
+    kevm_kompile_args = command_parser.add_parser(
+        'kompile',
+        help='Kompile KEVM specification.',
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
     )
-    kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|node|foundry]')
-    kompile_args.add_argument(
+    kevm_kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
+    kevm_kompile_args.add_argument(
+        '--target', type=KompileTarget, help='[llvm|haskell|haskell-standalone|node|foundry]'
+    )
+    kevm_kompile_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )
 
     _ = command_parser.add_parser(
         'prove',
         help='Run KEVM proof.',
-        parents=[shared_args, k_args, kprove_args, rpc_args, smt_args, explore_args, spec_args],
+        parents=[
+            kevm_cli_args.shared_args,
+            kevm_cli_args.k_args,
+            kevm_cli_args.kprove_args,
+            kevm_cli_args.rpc_args,
+            kevm_cli_args.smt_args,
+            kevm_cli_args.explore_args,
+            kevm_cli_args.spec_args,
+        ],
     )
 
     _ = command_parser.add_parser(
         'view-kcfg',
         help='Display tree view of CFG',
-        parents=[shared_args, k_args, spec_args],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.spec_args],
     )
 
     _ = command_parser.add_parser(
         'show-kcfg',
         help='Display tree show of CFG',
-        parents=[shared_args, k_args, kcfg_show_args, spec_args, display_args],
+        parents=[
+            kevm_cli_args.shared_args,
+            kevm_cli_args.k_args,
+            kevm_cli_args.kcfg_show_args,
+            kevm_cli_args.spec_args,
+            kevm_cli_args.display_args,
+        ],
     )
 
     run_args = command_parser.add_parser(
-        'run', help='Run KEVM test/simulation.', parents=[shared_args, evm_chain_args, k_args]
+        'run',
+        help='Run KEVM test/simulation.',
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.evm_chain_args, kevm_cli_args.k_args],
     )
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
     run_args.add_argument(
@@ -902,7 +684,7 @@ def _create_argument_parser() -> ArgumentParser:
     solc_to_k_args = command_parser.add_parser(
         'solc-to-k',
         help='Output helper K definition for given JSON output from solc compiler.',
-        parents=[shared_args, k_args, k_gen_args],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.k_gen_args],
     )
     solc_to_k_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
@@ -910,7 +692,13 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_kompile = command_parser.add_parser(
         'foundry-kompile',
         help='Kompile K definition corresponding to given output directory.',
-        parents=[shared_args, k_args, k_gen_args, k_kompile_args, foundry_root_arg],
+        parents=[
+            kevm_cli_args.shared_args,
+            kevm_cli_args.k_args,
+            kevm_cli_args.k_gen_args,
+            kevm_cli_args.kompile_args,
+            kevm_cli_args.foundry_args,
+        ],
     )
     foundry_kompile.add_argument(
         '--regen',
@@ -930,7 +718,15 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_prove_args = command_parser.add_parser(
         'foundry-prove',
         help='Run Foundry Proof.',
-        parents=[shared_args, k_args, kprove_args, smt_args, rpc_args, explore_args, foundry_root_arg],
+        parents=[
+            kevm_cli_args.shared_args,
+            kevm_cli_args.k_args,
+            kevm_cli_args.kprove_args,
+            kevm_cli_args.smt_args,
+            kevm_cli_args.rpc_args,
+            kevm_cli_args.explore_args,
+            kevm_cli_args.foundry_args,
+        ],
     )
     foundry_prove_args.add_argument(
         '--test',
@@ -966,7 +762,13 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_show_args = command_parser.add_parser(
         'foundry-show',
         help='Display a given Foundry CFG.',
-        parents=[shared_args, k_args, kcfg_show_args, display_args, foundry_root_arg],
+        parents=[
+            kevm_cli_args.shared_args,
+            kevm_cli_args.k_args,
+            kevm_cli_args.kcfg_show_args,
+            kevm_cli_args.display_args,
+            kevm_cli_args.foundry_args,
+        ],
     )
     foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
     foundry_show_args.add_argument(
@@ -985,27 +787,27 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_to_dot = command_parser.add_parser(
         'foundry-to-dot',
         help='Dump the given CFG for the test as DOT for visualization.',
-        parents=[shared_args, foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.foundry_args],
     )
     foundry_to_dot.add_argument('test', type=str, help='Display the CFG for this test.')
 
     command_parser.add_parser(
         'foundry-list',
         help='List information about CFGs on disk',
-        parents=[shared_args, k_args, foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.foundry_args],
     )
 
     foundry_view_kcfg_args = command_parser.add_parser(
         'foundry-view-kcfg',
         help='Display tree view of CFG',
-        parents=[shared_args, foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.foundry_args],
     )
     foundry_view_kcfg_args.add_argument('test', type=str, help='View the CFG for this test.')
 
     foundry_remove_node = command_parser.add_parser(
         'foundry-remove-node',
         help='Remove a node and its successors.',
-        parents=[shared_args, foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.foundry_args],
     )
     foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
     foundry_remove_node.add_argument('node', type=str, help='Node to remove CFG subgraph from.')
@@ -1013,7 +815,13 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',
         help='Simplify a given node, and potentially replace it.',
-        parents=[shared_args, smt_args, rpc_args, display_args, foundry_root_arg],
+        parents=[
+            kevm_cli_args.shared_args,
+            kevm_cli_args.smt_args,
+            kevm_cli_args.rpc_args,
+            kevm_cli_args.display_args,
+            kevm_cli_args.foundry_args,
+        ],
     )
     foundry_simplify_node.add_argument('test', type=str, help='Simplify node in this CFG.')
     foundry_simplify_node.add_argument('node', type=str, help='Node to simplify in CFG.')
@@ -1024,7 +832,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_step_node = command_parser.add_parser(
         'foundry-step-node',
         help='Step from a given node, adding it to the CFG.',
-        parents=[shared_args, rpc_args, smt_args, foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.rpc_args, kevm_cli_args.smt_args, kevm_cli_args.foundry_args],
     )
     foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
     foundry_step_node.add_argument('node', type=str, help='Node to step from in CFG.')
@@ -1038,7 +846,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_section_edge = command_parser.add_parser(
         'foundry-section-edge',
         help='Given an edge in the graph, cut it into sections to get intermediate nodes.',
-        parents=[shared_args, rpc_args, smt_args, foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.rpc_args, kevm_cli_args.smt_args, kevm_cli_args.foundry_args],
     )
     foundry_section_edge.add_argument('test', type=str, help='Section edge in this CFG.')
     foundry_section_edge.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')

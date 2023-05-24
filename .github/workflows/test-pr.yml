@@ -153,11 +153,12 @@ jobs:
   nix:
     name: 'Nix'
     strategy:
+      fail-fast: false
       matrix:
         include:
           - runner: normal
           - runner: macos-12
-          - runner: MacM1
+          - runner: ARM64
     needs: version-bump
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
@@ -180,5 +181,7 @@ jobs:
         with:
           name: k-framework
           authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
+      - name: 'Build KEVM'
+        run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs
       - name: 'Test KEVM'
         run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#kevm-test
