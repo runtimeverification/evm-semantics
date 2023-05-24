@@ -586,7 +586,7 @@ foundry-fail: tests/foundry/out/kompiled/timestamp
 	$(KEVM_OPTS) $(KPROVE_OPTS)                          \
 	$(addprefix --test , $(foundry_diff_tests)) || true
 
-foundry_show_opts := --to-module --omit-unstable-output --frontier --stuck
+foundry_show_opts := --to-module --omit-unstable-output --frontier --stuck --sort-collections
 
 $(foundry_golden)/%.check: $(foundry_golden)/%.out
 	$(CHECK) $(foundry_golden)/$*.out $(foundry_golden)/$*.expected
