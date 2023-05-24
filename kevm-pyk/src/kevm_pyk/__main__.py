@@ -16,7 +16,7 @@ from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
 
-from .cli import KEVMCLIArgs
+from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
     Foundry,
     foundry_kompile,
@@ -40,6 +40,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
     from typing import Any, Final, TypeVar
 
+    from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
 
     T = TypeVar('T')
@@ -303,8 +304,8 @@ def exec_show_kcfg(
     exclude_claim_labels: Iterable[str] = (),
     spec_module: str | None = None,
     md_selector: str | None = None,
-    nodes: Iterable[str] = (),
-    node_deltas: Iterable[tuple[str, str]] = (),
+    nodes: Iterable[NodeIdLike] = (),
+    node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
     **kwargs: Any,
@@ -425,8 +426,8 @@ def exec_foundry_prove(
 def exec_foundry_show(
     foundry_root: Path,
     test: str,
-    nodes: Iterable[str] = (),
-    node_deltas: Iterable[tuple[str, str]] = (),
+    nodes: Iterable[NodeIdLike] = (),
+    node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
     omit_unstable_output: bool = False,
@@ -511,14 +512,14 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     viewer.run()
 
 
-def exec_foundry_remove_node(foundry_root: Path, test: str, node: str, **kwargs: Any) -> None:
+def exec_foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike, **kwargs: Any) -> None:
     foundry_remove_node(foundry_root=foundry_root, test=test, node=node)
 
 
 def exec_foundry_simplify_node(
     foundry_root: Path,
     test: str,
-    node: str,
+    node: NodeIdLike,
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
@@ -544,7 +545,7 @@ def exec_foundry_simplify_node(
 def exec_foundry_step_node(
     foundry_root: Path,
     test: str,
-    node: str,
+    node: NodeIdLike,
     repeat: int = 1,
     depth: int = 1,
     bug_report: bool = False,
@@ -840,7 +841,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.shared_args, kevm_cli_args.foundry_args],
     )
     foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
-    foundry_remove_node.add_argument('node', type=str, help='Node to remove CFG subgraph from.')
+    foundry_remove_node.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
 
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',
@@ -854,7 +855,7 @@ def _create_argument_parser() -> ArgumentParser:
         ],
     )
     foundry_simplify_node.add_argument('test', type=str, help='Simplify node in this CFG.')
-    foundry_simplify_node.add_argument('node', type=str, help='Node to simplify in CFG.')
+    foundry_simplify_node.add_argument('node', type=node_id_like, help='Node to simplify in CFG.')
     foundry_simplify_node.add_argument(
         '--replace', default=False, help='Replace the original node with the simplified variant in the graph.'
     )
@@ -865,7 +866,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.shared_args, kevm_cli_args.rpc_args, kevm_cli_args.smt_args, kevm_cli_args.foundry_args],
     )
     foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
-    foundry_step_node.add_argument('node', type=str, help='Node to step from in CFG.')
+    foundry_step_node.add_argument('node', type=node_id_like, help='Node to step from in CFG.')
     foundry_step_node.add_argument(
         '--repeat', type=int, default=1, help='How many node expansions to do from the given start node (>= 1).'
     )

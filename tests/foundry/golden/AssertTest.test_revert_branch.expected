@@ -1,43 +1,56 @@
 
-┌─ OMITTED HASH (init, expanded)
+┌─ 4 (init, expanded)
 │    k: #execute ~> CONTINUATION
 │    pc: 0
 │    callDepth: 0
 │    statusCode: STATUSCODE
 │    src: tests/foundry/test/Simple.t.sol:5:54
 │
+<<<<<<< HEAD
 │  (580 steps)
 ├─ OMITTED HASH (split)
 │    k: JUMPI 549 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
 │    pc: 545
+=======
+│  (515 steps)
+├─ 7 (split)
+│    k: JUMPI 472 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+│    pc: 468
+>>>>>>> origin/master
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 ┃
 ┃ (branch)
 ┣━━┓ constraint: { true #Equals VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int }
 ┃  │
+<<<<<<< HEAD
 ┃  ├─ OMITTED HASH (expanded)
 ┃  │    k: JUMPI 549 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
 ┃  │    pc: 545
+=======
+┃  ├─ 9 (expanded)
+┃  │    k: JUMPI 472 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+┃  │    pc: 468
+>>>>>>> origin/master
 ┃  │    callDepth: 0
 ┃  │    statusCode: STATUSCODE:StatusCode
 ┃  │
 ┃  │  (116 steps)
-┃  ├─ OMITTED HASH (expanded)
+┃  ├─ 12 (expanded)
 ┃  │    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 ┃  │    pc: 992
 ┃  │    callDepth: 0
 ┃  │    statusCode: STATUSCODE:StatusCode
 ┃  │
 ┃  │  (1 step)
-┃  ├─ OMITTED HASH (expanded)
+┃  ├─ 16 (expanded)
 ┃  │    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 ┃  │    pc: 992
 ┃  │    callDepth: 0
 ┃  │    statusCode: EVMC_REVERT
 ┃  │
 ┃  │  (2 steps)
-┃  └─ OMITTED HASH (expanded, stuck, leaf)
+┃  └─ 20 (expanded, stuck, leaf)
 ┃       k: #halt ~> CONTINUATION:K
 ┃       pc: 992
 ┃       callDepth: 0
@@ -46,14 +59,20 @@
 ┃
 ┗━━┓ constraint: { true #Equals ( notBool VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) }
    │
+<<<<<<< HEAD
    ├─ OMITTED HASH (expanded)
    │    k: JUMPI 549 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
    │    pc: 545
+=======
+   ├─ 10 (expanded)
+   │    k: JUMPI 472 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+   │    pc: 468
+>>>>>>> origin/master
    │    callDepth: 0
    │    statusCode: STATUSCODE:StatusCode
    │
    │  (62 steps)
-   ├─ OMITTED HASH (expanded)
+   ├─ 14 (expanded)
    │    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
    │    pc: 213
    │    callDepth: 0
@@ -61,7 +80,7 @@
    │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
    │
    │  (1 step)
-   ├─ OMITTED HASH (expanded)
+   ├─ 18 (expanded)
    │    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
    │    pc: 213
    │    callDepth: 0
@@ -69,7 +88,7 @@
    │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
    │
    │  (2 steps)
-   ├─ OMITTED HASH (leaf)
+   ├─ 22 (leaf)
    │    k: #halt ~> CONTINUATION:K
    │    pc: 213
    │    callDepth: 0
@@ -78,7 +97,7 @@
    │
    ┊  constraint: true
    ┊  subst: OMITTED SUBST
-   └─ OMITTED HASH (target, leaf)
+   └─ 3 (target, leaf)
         k: #halt ~> CONTINUATION
         pc: PC_CELL_5d410f2a
         callDepth: CALLDEPTH_CELL_5d410f2a
@@ -87,14 +106,14 @@
 
 Target Nodes:
 
-OMITTED HASH (target, leaf)
+3 (target, leaf)
  k: #halt ~> CONTINUATION
  pc: PC_CELL_5d410f2a
  callDepth: CALLDEPTH_CELL_5d410f2a
  statusCode: STATUSCODE_FINAL
 
 
-Node OMITTED HASH:
+Node 20:
 
 ( <generatedTop>
   <foundry>

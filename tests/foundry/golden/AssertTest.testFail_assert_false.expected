@@ -1,27 +1,32 @@
 
-┌─ OMITTED HASH (init, expanded)
+┌─ 4 (init, expanded)
 │    k: #execute ~> CONTINUATION
 │    pc: 0
 │    callDepth: 0
 │    statusCode: STATUSCODE
 │    src: tests/foundry/test/Simple.t.sol:5:54
 │
+<<<<<<< HEAD
 │  (407 steps)
 ├─ OMITTED HASH (expanded)
+=======
+│  (342 steps)
+├─ 7 (expanded)
+>>>>>>> origin/master
 │    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │    pc: 992
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ OMITTED HASH (expanded)
+├─ 9 (expanded)
 │    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │    pc: 992
 │    callDepth: 0
 │    statusCode: EVMC_REVERT
 │
 │  (2 steps)
-├─ OMITTED HASH (leaf)
+├─ 11 (leaf)
 │    k: #halt ~> CONTINUATION:K
 │    pc: 992
 │    callDepth: 0
@@ -29,7 +34,7 @@
 │
 ┊  constraint: true
 ┊  subst: OMITTED SUBST
-└─ OMITTED HASH (target, leaf)
+└─ 3 (target, leaf)
      k: #halt ~> CONTINUATION
      pc: PC_CELL_5d410f2a
      callDepth: CALLDEPTH_CELL_5d410f2a
