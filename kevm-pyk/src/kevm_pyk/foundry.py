@@ -523,6 +523,7 @@ def foundry_show(
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    sort_collections: bool = False,
     omit_unstable_output: bool = False,
     frontier: bool = False,
     stuck: bool = False,
@@ -561,6 +562,7 @@ def foundry_show(
         node_deltas=node_deltas,
         to_module=to_module,
         minimize=minimize,
+        sort_collections=sort_collections,
         node_printer=_short_info,
         omit_cells=(unstable_cells if omit_unstable_output else []),
     )
@@ -620,6 +622,7 @@ def foundry_simplify_node(
     node: NodeIdLike,
     replace: bool = False,
     minimize: bool = True,
+    sort_collections: bool = False,
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
@@ -645,7 +648,7 @@ def foundry_simplify_node(
         apr_proof.kcfg.replace_node(node, CTerm.from_kast(new_term))
         apr_proof.write_proof()
     res_term = minimize_term(new_term) if minimize else new_term
-    return foundry.kevm.pretty_print(res_term)
+    return foundry.kevm.pretty_print(res_term, sort_collections=sort_collections)
 
 
 def foundry_step_node(
