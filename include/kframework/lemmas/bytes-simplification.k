@@ -101,7 +101,7 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [range-inside-cHead-base-conc]:
       #range(B:Bytes, S1:Int +Int S2:Int, W:Int) => #range(#range(B, S2, lengthBytes(B) -Int S2), S1, W)
       requires 0 <=Int S1 andBool 0 <=Int S2 andBool 0 <Int S1 +Int S2 andBool S1 +Int S2 <=Int lengthBytes(B)
-      [concrete(B), concrete(S2), simplification]
+      [concrete(B, S2), simplification]
 
     rule [range-inside-cHead-concat]:
       #range(B1:Bytes +Bytes B2:Bytes, S:Int, W:Int) => #range(#range(B1, S, lengthBytes(B1) -Int S) +Bytes B2, 0, W)
@@ -128,33 +128,27 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [range-reform-base]:
       #range(B:Bytes, S:Int, minInt(W1:Int, W2:Int)) +Bytes #buf(maxInt(0, W3:Int), 0) => #range (B, S, W1)
-      requires W2 ==Int lengthBytes(B) -Int S
-       andBool W3 ==Int S +Int W1 -Int lengthBytes(B)
+      requires W1 ==Int W2 +Int W3
+       andBool W2 ==Int lengthBytes(B) -Int S
        andBool 0 <=Int S andBool 0 <=Int W1 andBool 0 <=Int W2
       [simplification]
 
     rule [range-reform-concat]:
       #range(B1:Bytes, S:Int, minInt(W1:Int, W2:Int)) +Bytes ( #buf(maxInt(0, W3:Int), 0) +Bytes B2:Bytes ) => #range (B1, S, W1) +Bytes B2
-      requires W2 ==Int lengthBytes(B1) -Int S
-       andBool W3 ==Int S +Int W1 -Int lengthBytes(B1)
+      requires W1 ==Int W2 +Int W3
+       andBool W2 ==Int lengthBytes(B) -Int S
        andBool 0 <=Int S andBool 0 <=Int W1 andBool 0 <=Int W2
       [simplification]
 
-    rule [range-buf-zero-1]:
-      #range(#buf(32, X:Int), 0, W:Int) => #buf(W, 0)
-      requires 0 <=Int W andBool W <=Int 32
-       andBool #rangeUInt (8 *Int (32 -Int W), X)
-      [simplification, concrete(W)]
-
-    rule [range-buf-zero-2-symb]:
+    rule [range-buf-zero-symb]:
       #range(#buf(W:Int, 0), S1:Int, W1:Int) => #buf(W1, 0)
       requires 0 <=Int W andBool 0 <=Int S1 andBool 0 <=Int W1
       [simplification]
 
-    rule [range-buf-zero-2-conc]:
+    rule [range-buf-zero-conc]:
       #range(B, S1:Int, W1:Int) => #buf(W1, 0)
       requires 0 <=Int S1 andBool 0 <=Int W1
-       andBool B ==K #buf(lengthBytes(B), 0)
+       andBool #asInteger(B) ==Int 0
       [concrete(B), simplification]
 
     rule [range-memUpdate-before]:
