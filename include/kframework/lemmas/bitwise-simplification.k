@@ -45,7 +45,7 @@ module BITWISE-SIMPLIFICATION [symbolic]
 
     rule [lengthBytes-upInt-32-lower-bound]:
       lengthBytes(X) <=Int notMaxUInt5 &Int ( lengthBytes(X) +Int 31 ) => true
-      requires lengthBytes(X) <=Int 32
+      requires lengthBytes(X) +Int 31 <Int pow256
       [simplification, smt-lemma]
 
     rule [lengthBytes-upInt-32-upper-bound]:

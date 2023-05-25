@@ -136,7 +136,7 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [range-reform-concat]:
       #range(B1:Bytes, S:Int, minInt(W1:Int, W2:Int)) +Bytes ( #buf(maxInt(0, W3:Int), 0) +Bytes B2:Bytes ) => #range (B1, S, W1) +Bytes B2
       requires W1 ==Int W2 +Int W3
-       andBool W2 ==Int lengthBytes(B) -Int S
+       andBool W2 ==Int lengthBytes(B1) -Int S
        andBool 0 <=Int S andBool 0 <=Int W1 andBool 0 <=Int W2
       [simplification]
 
