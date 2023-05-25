@@ -109,11 +109,8 @@ class Foundry:
 
     @cached_property
     def digest(self) -> str:
-        if self.requires is None:
-            raise ValueError('Attempted to compute the foundry digest without specifying the requires files.')
         contract_digests = [self.contracts[c].digest for c in sorted(self.contracts)]
-        requires_digests = [hash_str(Path(requires_file).read_text()) for requires_file in self.requires]
-        return hash_str('\n'.join(contract_digests + requires_digests))
+        return hash_str('\n'.join(contract_digests))
 
     def up_to_date(self) -> bool:
         digest_file = self.out / 'digest'
@@ -300,8 +297,8 @@ def foundry_kompile(
             raise ValueError(f'Could not find contract: {imp[0]}')
 
     if regen or not foundry_contracts_file.exists() or not foundry_main_file.exists():
-        requires = []
-        requires += [f'requires/{name}' for name in list(requires_paths.keys())]
+        copied_requires = []
+        copied_requires += [f'requires/{name}' for name in list(requires_paths.keys())]
         imports = ['FOUNDRY']
         kevm = KEVM(definition_dir)
         empty_config = kevm.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
@@ -315,7 +312,7 @@ def foundry_kompile(
             main_module=main_module,
             empty_config=empty_config,
             contracts=foundry.contracts.values(),
-            requires=(['contracts.k'] + requires),
+            requires=(['contracts.k'] + copied_requires),
             imports=_imports,
         )
 
@@ -363,7 +360,23 @@ def foundry_kompile(
 
         kompile(output_dir=out_dir, debug=debug)
 
-    if regen or rekompile or not kompiled_timestamp.exists():
+    def kompilation_digest() -> str:
+        k_files = list(requires) + [foundry_contracts_file, foundry_main_file]
+        return hash_str(''.join([hash_str(Path(k_file).read_text()) for k_file in k_files]))
+
+    def kompilation_up_to_date() -> bool:
+        digest_file = foundry_definition_dir / 'digest'
+        if not digest_file.exists():
+            return False
+        old_digest = digest_file.read_text()
+
+        return old_digest == kompilation_digest()
+
+    def update_kompilation_digest():
+        digest_file = foundry_definition_dir / 'digest'
+        digest_file.write_text(kompilation_digest())
+
+    if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
         _kompile(foundry_definition_dir, KompileBackend.HASKELL, md_selector=md_selector)
         if llvm_library:
@@ -375,6 +388,7 @@ def foundry_kompile(
                 md_selector=('k & ! symbolic' if md_selector is None else f'{md_selector} & ! symbolic'),
             )
 
+    update_kompilation_digest()
     foundry.update_digest()
 
 
