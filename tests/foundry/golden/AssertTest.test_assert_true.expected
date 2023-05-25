@@ -131,7 +131,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      ...
                    </account> => <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -143,7 +143,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                        .Map
                      </origStorage>
                      <nonce>
-                       0
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -166,7 +166,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      ...
                    </account> => <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
+                       645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
                        0
@@ -178,7 +178,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                        .Map
                      </origStorage>
                      <nonce>
-                       1
+                       0
                      </nonce>
                      ...
                    </account> ) )
@@ -331,24 +331,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -362,6 +344,24 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -514,24 +514,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -545,6 +527,24 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
