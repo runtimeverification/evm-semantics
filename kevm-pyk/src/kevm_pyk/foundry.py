@@ -63,7 +63,7 @@ class Foundry:
         with (foundry_root / 'foundry.toml').open('rb') as f:
             self._toml = tomlkit.load(f)
         self._bug_report = bug_report
-        self._requires = requires
+        self.requires = requires
 
     @property
     def profile(self) -> dict[str, Any]:
