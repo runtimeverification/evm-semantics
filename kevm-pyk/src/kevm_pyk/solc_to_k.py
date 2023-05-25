@@ -251,7 +251,7 @@ class Contract:
 
     @cached_property
     def storage_digest(self) -> str:
-        storage_layout = self.contract_json.get("storageLayout") or {}
+        storage_layout = self.contract_json.get('storageLayout') or {}
         return hash_str(f'{self.name} - {json.dumps(storage_layout, sort_keys=True)}')
 
     @cached_property
