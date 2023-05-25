@@ -251,7 +251,7 @@ class Contract:
 
     @cached_property
     def storage_digest(self) -> str:
-        return hash_str(f'{self.name} - {json.dumps(self.contract_json["storageLayout"], sort_keys=True)}')
+        return hash_str(f'{self.name} - {json.dumps(self.contract_json.get("storageLayout", []), sort_keys=True)}')
 
     @cached_property
     def srcmap(self) -> dict[int, tuple[int, int, int, str, int]]:
