@@ -211,3 +211,4 @@ UintTypeTest.test_uint88_fail
 UintTypeTest.test_uint8_fail
 UintTypeTest.test_uint96
 UintTypeTest.test_uint96_fail
+GasTest.testInfiniteGas

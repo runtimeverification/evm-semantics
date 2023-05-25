@@ -200,6 +200,7 @@ kevm_files := abi.md                          \
               evm-node.md                     \
               foundry.md                      \
               hashed-locations.md             \
+              gas.md                          \
               infinite-gas.md                 \
               json-rpc.md                     \
               network.md                      \

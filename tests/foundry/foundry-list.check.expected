@@ -352,12 +352,6 @@ APRProof: ExpectRevertTest.test_expectRevert_true:de7000e92030214d433a6dd51fce1f
     frontier: 0
     stuck: 0
 
-APRProof: GasTest.testInfiniteGas:ea3d007590dc158a074517857e177bcfa8b5ef593ec02a9c80bb42337e830de2
-    status: ProofStatus.PASSED
-    nodes: 7
-    frontier: 0
-    stuck: 0
-
 APRProof: LabelTest.testLabel:fff0ddccfa7d6527a2055a794cb0777dcdd5b0d04c8e0a8b714faf0ca5f84eb9
     status: ProofStatus.PASSED
     nodes: 7
