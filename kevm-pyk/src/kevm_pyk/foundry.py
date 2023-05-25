@@ -48,7 +48,6 @@ class Foundry:
     _root: Path
     _toml: dict[str, Any]
     _bug_report: BugReport | None
-    requires: Iterable[str] | None
 
     class Sorts:
         FOUNDRY_CELL: Final = KSort('FoundryCell')
@@ -57,13 +56,11 @@ class Foundry:
         self,
         foundry_root: Path,
         bug_report: BugReport | None = None,
-        requires: Iterable[str] | None = None,
     ) -> None:
         self._root = foundry_root
         with (foundry_root / 'foundry.toml').open('rb') as f:
             self._toml = tomlkit.load(f)
         self._bug_report = bug_report
-        self.requires = requires
 
     @property
     def profile(self) -> dict[str, Any]:
@@ -251,7 +248,7 @@ def foundry_kompile(
     llvm_library: bool = False,
 ) -> None:
     syntax_module = 'FOUNDRY-CONTRACTS'
-    foundry = Foundry(foundry_root, requires=requires)
+    foundry = Foundry(foundry_root)
     foundry_definition_dir = foundry.out / 'kompiled'
     foundry_requires_dir = foundry_definition_dir / 'requires'
     foundry_llvm_dir = foundry.out / 'kompiled-llvm'
@@ -372,7 +369,7 @@ def foundry_kompile(
 
         return old_digest == kompilation_digest()
 
-    def update_kompilation_digest():
+    def update_kompilation_digest() -> None:
         digest_file = foundry_definition_dir / 'digest'
         digest_file.write_text(kompilation_digest())
 
