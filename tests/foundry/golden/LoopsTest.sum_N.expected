@@ -1,5 +1,5 @@
 
-┌─ OMITTED HASH (init, expanded)
+┌─ 4 (init, expanded)
 │    k: #execute ~> CONTINUATION
 │    pc: 0
 │    callDepth: 0
@@ -7,21 +7,21 @@
 │    src: tests/foundry/test/Loops.t.sol:5:278
 │
 │  (776 steps)
-├─ OMITTED HASH (expanded)
+├─ 7 (expanded)
 │    k: CALL 9223372036854772793 645326474426547203313410069153905908525362434349 0 128  ...
 │    pc: 1509
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ OMITTED HASH (expanded)
+├─ 9 (expanded)
 │    k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
 │    pc: 1509
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (153 steps)
-├─ OMITTED HASH (split)
+├─ 11 (split)
 │    k: JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 ) ~> #pc [ JUMPI ] ~> #execute ...
 │    pc: 1539
 │    callDepth: 0
@@ -31,7 +31,7 @@
 ┃ (branch)
 ┣━━┓ constraint: { true #Equals VV0_n_114b9705:Int ==Int 0 }
 ┃  │
-┃  ├─ OMITTED HASH (expanded)
+┃  ├─ 13 (expanded)
 ┃  │    k: JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 ) ~> #pc [ JUMPI ] ~> #execute ...
 ┃  │    pc: 1539
 ┃  │    callDepth: 0
@@ -39,7 +39,7 @@
 ┃  │    src: tests/foundry/test/Loops.t.sol:164:178
 ┃  │
 ┃  │  (162 steps)
-┃  ├─ OMITTED HASH (expanded)
+┃  ├─ 16 (expanded)
 ┃  │    k: #end EVMC_SUCCESS ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
 ┃  │    pc: 352
 ┃  │    callDepth: 0
@@ -47,7 +47,7 @@
 ┃  │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 ┃  │
 ┃  │  (1 step)
-┃  ├─ OMITTED HASH (expanded)
+┃  ├─ 20 (expanded)
 ┃  │    k: #halt ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
 ┃  │    pc: 352
 ┃  │    callDepth: 0
@@ -55,7 +55,7 @@
 ┃  │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 ┃  │
 ┃  │  (2 steps)
-┃  ├─ OMITTED HASH (leaf)
+┃  ├─ 24 (leaf)
 ┃  │    k: #halt ~> CONTINUATION:K
 ┃  │    pc: 352
 ┃  │    callDepth: 0
@@ -64,7 +64,7 @@
 ┃  │
 ┃  ┊  constraint: true
 ┃  ┊  subst: OMITTED SUBST
-┃  └─ OMITTED HASH (target, leaf)
+┃  └─ 3 (target, leaf)
 ┃       k: #halt ~> CONTINUATION
 ┃       pc: PC_CELL_5d410f2a
 ┃       callDepth: CALLDEPTH_CELL_5d410f2a
@@ -72,7 +72,7 @@
 ┃
 ┗━━┓ constraint: { true #Equals ( notBool VV0_n_114b9705:Int ==Int 0 ) }
    │
-   ├─ OMITTED HASH (expanded)
+   ├─ 14 (expanded)
    │    k: JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 ) ~> #pc [ JUMPI ] ~> #execute ...
    │    pc: 1539
    │    callDepth: 0
@@ -80,7 +80,7 @@
    │    src: tests/foundry/test/Loops.t.sol:164:178
    │
    │  (162 steps)
-   ├─ OMITTED HASH (expanded)
+   ├─ 18 (expanded)
    │    k: #end EVMC_SUCCESS ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
    │    pc: 352
    │    callDepth: 0
@@ -88,7 +88,7 @@
    │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
    │
    │  (1 step)
-   ├─ OMITTED HASH (expanded)
+   ├─ 22 (expanded)
    │    k: #halt ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
    │    pc: 352
    │    callDepth: 0
@@ -96,7 +96,7 @@
    │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
    │
    │  (2 steps)
-   ├─ OMITTED HASH (leaf)
+   ├─ 26 (leaf)
    │    k: #halt ~> CONTINUATION:K
    │    pc: 352
    │    callDepth: 0
@@ -105,7 +105,7 @@
    │
    ┊  constraint: true
    ┊  subst: OMITTED SUBST
-   └─ OMITTED HASH (target, leaf)
+   └─ 3 (target, leaf)
         k: #halt ~> CONTINUATION
         pc: PC_CELL_5d410f2a
         callDepth: CALLDEPTH_CELL_5d410f2a
@@ -204,7 +204,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      ...
                    </account> => <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -216,7 +216,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                        .Map
                      </origStorage>
                      <nonce>
-                       0
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -239,7 +239,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      ...
                    </account> => <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
+                       645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
                        0
@@ -251,7 +251,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                        .Map
                      </origStorage>
                      <nonce>
-                       1
+                       0
                      </nonce>
                      ...
                    </account> ) )
@@ -403,24 +403,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -434,6 +416,24 @@ module SUMMARY-LOOPSTEST-SUM-N
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -589,24 +589,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -620,6 +602,24 @@ module SUMMARY-LOOPSTEST-SUM-N
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -773,24 +773,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -804,6 +786,24 @@ module SUMMARY-LOOPSTEST-SUM-N
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -957,24 +957,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -988,6 +970,24 @@ module SUMMARY-LOOPSTEST-SUM-N
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -1143,24 +1143,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -1174,6 +1156,24 @@ module SUMMARY-LOOPSTEST-SUM-N
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -1329,24 +1329,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -1360,6 +1342,24 @@ module SUMMARY-LOOPSTEST-SUM-N
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -1515,24 +1515,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -1546,6 +1528,24 @@ module SUMMARY-LOOPSTEST-SUM-N
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -1701,24 +1701,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -1732,6 +1714,24 @@ module SUMMARY-LOOPSTEST-SUM-N
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )

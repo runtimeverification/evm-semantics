@@ -30,13 +30,14 @@ from pyk.utils import hash_str, shorten_hashes, single, unique
 from .kevm import KEVM
 from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
-from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, parallel_kcfg_explore
+from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, kevm_apr_prove
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import Any, Final
 
     from pyk.kast import KInner
+    from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
     from pyk.ktool.kompile import Kompile
 
@@ -457,51 +458,65 @@ def foundry_prove(
                 )
         method.update_digest(foundry.out / 'digest')
 
-    def _init_apr_proof(_init_problem: tuple[str, str]) -> APRProof | APRBMCProof:
-        contract_name, method_name = _init_problem
-        contract = foundry.contracts[contract_name]
-        method = contract.method_by_name[method_name]
-        return _method_to_apr_proof(
-            foundry,
-            contract,
-            method,
-            save_directory,
-            reinit=(method.qualified_name in out_of_date_methods),
-            simplify_init=simplify_init,
-            bmc_depth=bmc_depth,
+    def _init_and_run_proof(_init_problem: tuple[str, str]) -> bool:
+        proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
+        with KCFGExplore(
+            foundry.kevm,
+            id=proof_id,
+            bug_report=br,
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
-            bug_report=br,
             trace_rewrites=trace_rewrites,
-        )
+        ) as kcfg_explore:
+            contract_name, method_name = _init_problem
+            contract = foundry.contracts[contract_name]
+            method = contract.method_by_name[method_name]
+            proof = _method_to_apr_proof(
+                foundry,
+                contract,
+                method,
+                save_directory,
+                kcfg_explore,
+                reinit=(method.qualified_name in out_of_date_methods),
+                simplify_init=simplify_init,
+                bmc_depth=bmc_depth,
+                kore_rpc_command=kore_rpc_command,
+                smt_timeout=smt_timeout,
+                smt_retry_limit=smt_retry_limit,
+                bug_report=br,
+                trace_rewrites=trace_rewrites,
+            )
+
+            return kevm_apr_prove(
+                foundry.kevm,
+                proof_id,
+                proof,
+                kcfg_explore,
+                save_directory=save_directory,
+                max_depth=max_depth,
+                max_iterations=max_iterations,
+                workers=workers,
+                break_every_step=break_every_step,
+                break_on_jumpi=break_on_jumpi,
+                break_on_calls=break_on_calls,
+                implication_every_block=implication_every_block,
+                is_terminal=KEVM.is_terminal,
+                same_loop=KEVM.same_loop,
+                extract_branches=KEVM.extract_branches,
+                bug_report=br,
+                kore_rpc_command=kore_rpc_command,
+                smt_timeout=smt_timeout,
+                smt_retry_limit=smt_retry_limit,
+                trace_rewrites=trace_rewrites,
+            )
 
     def run_cfg_group(tests: list[str]) -> dict[str, bool]:
         init_problems = [tuple(test.split('.')) for test in tests]
         with ProcessPool(ncpus=workers) as process_pool:
-            _apr_proofs = process_pool.map(_init_apr_proof, init_problems)
+            _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
         apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
-
-        return parallel_kcfg_explore(
-            foundry.kevm,
-            apr_proofs,
-            save_directory=save_directory,
-            max_depth=max_depth,
-            max_iterations=max_iterations,
-            workers=workers,
-            break_every_step=break_every_step,
-            break_on_jumpi=break_on_jumpi,
-            break_on_calls=break_on_calls,
-            implication_every_block=implication_every_block,
-            is_terminal=KEVM.is_terminal,
-            same_loop=KEVM.same_loop,
-            extract_branches=KEVM.extract_branches,
-            bug_report=br,
-            kore_rpc_command=kore_rpc_command,
-            smt_timeout=smt_timeout,
-            smt_retry_limit=smt_retry_limit,
-            trace_rewrites=trace_rewrites,
-        )
+        return apr_proofs
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
     results = run_cfg_group(list(setup_methods.values()))
@@ -518,8 +533,8 @@ def foundry_prove(
 def foundry_show(
     foundry_root: Path,
     test: str,
-    nodes: Iterable[str] = (),
-    node_deltas: Iterable[tuple[str, str]] = (),
+    nodes: Iterable[NodeIdLike] = (),
+    node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
     omit_unstable_output: bool = False,
@@ -561,7 +576,6 @@ def foundry_show(
         to_module=to_module,
         minimize=minimize,
         node_printer=_short_info,
-        omit_node_hash=omit_unstable_output,
         omit_cells=(unstable_cells if omit_unstable_output else []),
     )
 
@@ -601,7 +615,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
     return lines
 
 
-def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
+def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None:
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
@@ -617,7 +631,7 @@ def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
 def foundry_simplify_node(
     foundry_root: Path,
     test: str,
-    node: str,
+    node: NodeIdLike,
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
@@ -651,7 +665,7 @@ def foundry_simplify_node(
 def foundry_step_node(
     foundry_root: Path,
     test: str,
-    node: str,
+    node: NodeIdLike,
     repeat: int = 1,
     depth: int = 1,
     bug_report: bool = False,
@@ -766,6 +780,7 @@ def _method_to_apr_proof(
     contract: Contract,
     method: Contract.Method,
     save_directory: Path,
+    kcfg_explore: KCFGExplore,
     reinit: bool = False,
     simplify_init: bool = True,
     bmc_depth: int | None = None,
@@ -812,21 +827,13 @@ def _method_to_apr_proof(
         kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
 
         _LOGGER.info(f'Starting KCFGExplore for test: {test}')
-        with KCFGExplore(
-            foundry.kevm,
-            bug_report=bug_report,
-            kore_rpc_command=kore_rpc_command,
-            smt_timeout=smt_timeout,
-            smt_retry_limit=smt_retry_limit,
-            trace_rewrites=trace_rewrites,
-        ) as kcfg_explore:
-            _LOGGER.info(f'Computing definedness constraint for test: {test}')
-            init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
-            kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
+        _LOGGER.info(f'Computing definedness constraint for test: {test}')
+        init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
+        kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
 
-            if simplify_init:
-                _LOGGER.info(f'Simplifying KCFG for test: {test}')
-                kcfg_explore.simplify(kcfg, {})
+        if simplify_init:
+            _LOGGER.info(f'Simplifying KCFG for test: {test}')
+            kcfg_explore.simplify(kcfg, {})
         if bmc_depth is not None:
             apr_proof = APRBMCProof(proof_digest, kcfg, {}, proof_dir=save_directory, bmc_depth=bmc_depth)
         else:

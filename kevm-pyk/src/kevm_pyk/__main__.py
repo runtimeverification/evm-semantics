@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
@@ -16,7 +17,7 @@ from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
 
-from .cli import KEVMCLIArgs
+from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
     Foundry,
     foundry_kompile,
@@ -33,13 +34,15 @@ from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, parallel_kcfg_explore
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove
 
 if TYPE_CHECKING:
     from argparse import Namespace
     from collections.abc import Callable, Iterable
     from typing import Any, Final, TypeVar
 
+    from pyk.kast.outer import KClaim
+    from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
 
     T = TypeVar('T')
@@ -228,18 +231,16 @@ def exec_prove(
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
-    with KCFGExplore(
-        kevm,
-        id='initializing',
-        bug_report=br,
-        kore_rpc_command=kore_rpc_command,
-        smt_timeout=smt_timeout,
-        smt_retry_limit=smt_retry_limit,
-        trace_rewrites=trace_rewrites,
-    ) as kcfg_explore:
-        proof_problems = {}
-
-        for claim in claims:
+    def _init_and_run_proof(claim: KClaim) -> bool:
+        with KCFGExplore(
+            kevm,
+            id=claim.label,
+            bug_report=br,
+            kore_rpc_command=kore_rpc_command,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
+            trace_rewrites=trace_rewrites,
+        ) as kcfg_explore:
             _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
             kcfg = KCFG.from_claim(kevm.definition, claim)
 
@@ -263,34 +264,40 @@ def exec_prove(
             kcfg.replace_node(kcfg.get_unique_init().id, new_init)
             kcfg.replace_node(kcfg.get_unique_target().id, new_target)
 
-            proof_problems[claim.label] = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
+            proof_problem = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
 
-    results = parallel_kcfg_explore(
-        kevm,
-        proof_problems,
-        save_directory=save_directory,
-        max_depth=max_depth,
-        max_iterations=max_iterations,
-        workers=workers,
-        break_every_step=break_every_step,
-        break_on_jumpi=break_on_jumpi,
-        break_on_calls=break_on_calls,
-        implication_every_block=implication_every_block,
-        is_terminal=KEVM.is_terminal,
-        extract_branches=KEVM.extract_branches,
-        bug_report=br,
-        kore_rpc_command=kore_rpc_command,
-        smt_timeout=smt_timeout,
-        smt_retry_limit=smt_retry_limit,
-        trace_rewrites=trace_rewrites,
-    )
+            return kevm_apr_prove(
+                kevm,
+                claim.label,
+                proof_problem,
+                kcfg_explore,
+                save_directory=save_directory,
+                max_depth=max_depth,
+                max_iterations=max_iterations,
+                workers=workers,
+                break_every_step=break_every_step,
+                break_on_jumpi=break_on_jumpi,
+                break_on_calls=break_on_calls,
+                implication_every_block=implication_every_block,
+                is_terminal=KEVM.is_terminal,
+                extract_branches=KEVM.extract_branches,
+                bug_report=br,
+                kore_rpc_command=kore_rpc_command,
+                smt_timeout=smt_timeout,
+                smt_retry_limit=smt_retry_limit,
+                trace_rewrites=trace_rewrites,
+            )
+
+    with ProcessPool(ncpus=workers) as process_pool:
+        results = process_pool.map(_init_and_run_proof, claims)
+
     failed = 0
-    for pid, r in results.items():
-        if r:
-            print(f'PROOF PASSED: {pid}')
+    for claim, result in zip(claims, results, strict=True):
+        if result:
+            print(f'PROOF PASSED: {claim.label}')
         else:
             failed += 1
-            print(f'PROOF FAILED: {pid}')
+            print(f'PROOF FAILED: {claim.label}')
     sys.exit(failed)
 
 
@@ -303,8 +310,8 @@ def exec_show_kcfg(
     exclude_claim_labels: Iterable[str] = (),
     spec_module: str | None = None,
     md_selector: str | None = None,
-    nodes: Iterable[str] = (),
-    node_deltas: Iterable[tuple[str, str]] = (),
+    nodes: Iterable[NodeIdLike] = (),
+    node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
     **kwargs: Any,
@@ -423,8 +430,8 @@ def exec_foundry_prove(
 def exec_foundry_show(
     foundry_root: Path,
     test: str,
-    nodes: Iterable[str] = (),
-    node_deltas: Iterable[tuple[str, str]] = (),
+    nodes: Iterable[NodeIdLike] = (),
+    node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
     omit_unstable_output: bool = False,
@@ -507,14 +514,14 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     viewer.run()
 
 
-def exec_foundry_remove_node(foundry_root: Path, test: str, node: str, **kwargs: Any) -> None:
+def exec_foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike, **kwargs: Any) -> None:
     foundry_remove_node(foundry_root=foundry_root, test=test, node=node)
 
 
 def exec_foundry_simplify_node(
     foundry_root: Path,
     test: str,
-    node: str,
+    node: NodeIdLike,
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
@@ -540,7 +547,7 @@ def exec_foundry_simplify_node(
 def exec_foundry_step_node(
     foundry_root: Path,
     test: str,
-    node: str,
+    node: NodeIdLike,
     repeat: int = 1,
     depth: int = 1,
     bug_report: bool = False,
@@ -810,7 +817,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.shared_args, kevm_cli_args.foundry_args],
     )
     foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
-    foundry_remove_node.add_argument('node', type=str, help='Node to remove CFG subgraph from.')
+    foundry_remove_node.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
 
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',
@@ -824,7 +831,7 @@ def _create_argument_parser() -> ArgumentParser:
         ],
     )
     foundry_simplify_node.add_argument('test', type=str, help='Simplify node in this CFG.')
-    foundry_simplify_node.add_argument('node', type=str, help='Node to simplify in CFG.')
+    foundry_simplify_node.add_argument('node', type=node_id_like, help='Node to simplify in CFG.')
     foundry_simplify_node.add_argument(
         '--replace', default=False, help='Replace the original node with the simplified variant in the graph.'
     )
@@ -835,7 +842,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.shared_args, kevm_cli_args.rpc_args, kevm_cli_args.smt_args, kevm_cli_args.foundry_args],
     )
     foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
-    foundry_step_node.add_argument('node', type=str, help='Node to step from in CFG.')
+    foundry_step_node.add_argument('node', type=node_id_like, help='Node to step from in CFG.')
     foundry_step_node.add_argument(
         '--repeat', type=int, default=1, help='How many node expansions to do from the given start node (>= 1).'
     )
