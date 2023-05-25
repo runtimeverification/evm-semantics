@@ -6,13 +6,8 @@
 │    statusCode: STATUSCODE
 │    src: tests/foundry/test/Simple.t.sol:5:54
 │
-<<<<<<< HEAD
 │  (376 steps)
-├─ OMITTED HASH (expanded)
-=======
-│  (480 steps)
 ├─ 7 (expanded)
->>>>>>> origin/master
 │    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │    pc: 992
 │    callDepth: 0
@@ -328,47 +323,9 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                </evm>
                <network>
                  <accounts>
-<<<<<<< HEAD
-=======
-                   ( ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> )
->>>>>>> origin/master
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -380,7 +337,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                        .Map
                      </origStorage>
                      <nonce>
-                       0
+                       1
                      </nonce>
                      ...
                    </account>
@@ -851,7 +808,7 @@ endmodule
 
 Stuck nodes:
 
-  Node id: 89eadf..f7654f
+  Node id: 11
   Failure reason:
     Implication check failed, the following is the remaining implication:
     ( ( { true #Equals 0 <=Int CALLER_ID:Int }

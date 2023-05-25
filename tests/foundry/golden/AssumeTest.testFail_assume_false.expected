@@ -1239,7 +1239,7 @@ endmodule
 
 Stuck nodes:
 
-  Node id: f90fb0..12e710
+  Node id: 15
   Failure reason:
     Implication check failed, the following is the remaining implication:
     ( ( { VV0_a_114b9705:Int #Equals VV1_b_114b9705:Int }

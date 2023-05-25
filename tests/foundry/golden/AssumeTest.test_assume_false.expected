@@ -2017,7 +2017,7 @@ endmodule
 
 Stuck nodes:
 
-  Node id: 10dc33..cfe7bb
+  Node id: 23
   Failure reason:
     Implication check failed, the following is the remaining implication:
     ( ( { true #Equals 0 <=Int CALLER_ID:Int }

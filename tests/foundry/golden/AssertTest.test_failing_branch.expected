@@ -1,5 +1,5 @@
 
-┌─ OMITTED HASH (init, expanded)
+┌─ 4 (init, expanded)
 │    k: #execute ~> CONTINUATION
 │    pc: 0
 │    callDepth: 0
@@ -7,7 +7,7 @@
 │    src: tests/foundry/test/Simple.t.sol:5:54
 │
 │  (616 steps)
-├─ OMITTED HASH (split)
+├─ 7 (split)
 │    k: JUMPI 526 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
 │    pc: 518
 │    callDepth: 0
@@ -17,7 +17,7 @@
 ┃ (branch)
 ┣━━┓ constraint: { true #Equals 100 <=Int VV0_x_114b9705:Int }
 ┃  │
-┃  ├─ OMITTED HASH (expanded)
+┃  ├─ 9 (expanded)
 ┃  │    k: JUMPI 526 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
 ┃  │    pc: 518
 ┃  │    callDepth: 0
@@ -25,7 +25,7 @@
 ┃  │    src: tests/foundry/test/Simple.t.sol:26:27
 ┃  │
 ┃  │  (64 steps)
-┃  ├─ OMITTED HASH (expanded)
+┃  ├─ 12 (expanded)
 ┃  │    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 ┃  │    pc: 213
 ┃  │    callDepth: 0
@@ -33,7 +33,7 @@
 ┃  │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 ┃  │
 ┃  │  (1 step)
-┃  ├─ OMITTED HASH (expanded)
+┃  ├─ 16 (expanded)
 ┃  │    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 ┃  │    pc: 213
 ┃  │    callDepth: 0
@@ -41,7 +41,7 @@
 ┃  │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 ┃  │
 ┃  │  (2 steps)
-┃  ├─ OMITTED HASH (leaf)
+┃  ├─ 20 (leaf)
 ┃  │    k: #halt ~> CONTINUATION:K
 ┃  │    pc: 213
 ┃  │    callDepth: 0
@@ -50,7 +50,7 @@
 ┃  │
 ┃  ┊  constraint: true
 ┃  ┊  subst: OMITTED SUBST
-┃  └─ OMITTED HASH (target, leaf)
+┃  └─ 3 (target, leaf)
 ┃       k: #halt ~> CONTINUATION
 ┃       pc: PC_CELL_5d410f2a
 ┃       callDepth: CALLDEPTH_CELL_5d410f2a
@@ -58,7 +58,7 @@
 ┃
 ┗━━┓ constraint: { true #Equals ( notBool 100 <=Int VV0_x_114b9705:Int ) }
    │
-   ├─ OMITTED HASH (expanded)
+   ├─ 10 (expanded)
    │    k: JUMPI 526 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
    │    pc: 518
    │    callDepth: 0
@@ -66,21 +66,21 @@
    │    src: tests/foundry/test/Simple.t.sol:26:27
    │
    │  (102 steps)
-   ├─ OMITTED HASH (expanded)
+   ├─ 14 (expanded)
    │    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
    │    pc: 992
    │    callDepth: 0
    │    statusCode: STATUSCODE:StatusCode
    │
    │  (1 step)
-   ├─ OMITTED HASH (expanded)
+   ├─ 18 (expanded)
    │    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
    │    pc: 992
    │    callDepth: 0
    │    statusCode: EVMC_REVERT
    │
    │  (2 steps)
-   └─ OMITTED HASH (expanded, stuck, leaf)
+   └─ 22 (expanded, stuck, leaf)
         k: #halt ~> CONTINUATION:K
         pc: 992
         callDepth: 0
@@ -90,14 +90,14 @@
 
 Target Nodes:
 
-OMITTED HASH (target, leaf)
+3 (target, leaf)
  k: #halt ~> CONTINUATION
  pc: PC_CELL_5d410f2a
  callDepth: CALLDEPTH_CELL_5d410f2a
  statusCode: STATUSCODE_FINAL
 
 
-Node OMITTED HASH:
+Node 22:
 
 ( <generatedTop>
   <foundry>
@@ -183,24 +183,6 @@ Node OMITTED HASH:
           <accounts>
             ( <account>
               <acctID>
-                645326474426547203313410069153905908525362434349
-              </acctID>
-              <balance>
-                0
-              </balance>
-              <storage>
-                .Map
-              </storage>
-              <origStorage>
-                .Map
-              </origStorage>
-              <nonce>
-                0
-              </nonce>
-              ...
-            </account>
-            <account>
-              <acctID>
                 728815563385977040452943777879061427756277306518
               </acctID>
               <balance>
@@ -214,6 +196,24 @@ Node OMITTED HASH:
               </origStorage>
               <nonce>
                 1
+              </nonce>
+              ...
+            </account>
+            <account>
+              <acctID>
+                645326474426547203313410069153905908525362434349
+              </acctID>
+              <balance>
+                0
+              </balance>
+              <storage>
+                .Map
+              </storage>
+              <origStorage>
+                .Map
+              </origStorage>
+              <nonce>
+                0
               </nonce>
               ...
             </account> )
@@ -377,24 +377,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -408,6 +390,24 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -558,24 +558,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -589,6 +571,24 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -739,24 +739,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -770,6 +752,24 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -922,24 +922,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -953,6 +935,24 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -1105,24 +1105,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -1136,6 +1118,24 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -1288,24 +1288,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -1319,6 +1301,24 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -1471,24 +1471,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -1502,6 +1484,24 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -1588,7 +1588,7 @@ endmodule
 
 Stuck nodes:
 
-  Node id: 44deb8..9f3cac
+  Node id: 22
   Failure reason:
     Implication check failed, the following is the remaining implication:
     ( ( { true #Equals 0 <=Int CALLER_ID:Int }

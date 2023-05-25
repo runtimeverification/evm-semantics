@@ -6,32 +6,19 @@
 │    statusCode: STATUSCODE
 │    src: tests/foundry/test/Simple.t.sol:5:54
 │
-<<<<<<< HEAD
 │  (580 steps)
-├─ OMITTED HASH (split)
+├─ 7 (split)
 │    k: JUMPI 549 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
 │    pc: 545
-=======
-│  (515 steps)
-├─ 7 (split)
-│    k: JUMPI 472 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-│    pc: 468
->>>>>>> origin/master
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 ┃
 ┃ (branch)
 ┣━━┓ constraint: { true #Equals VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int }
 ┃  │
-<<<<<<< HEAD
-┃  ├─ OMITTED HASH (expanded)
+┃  ├─ 9 (expanded)
 ┃  │    k: JUMPI 549 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
 ┃  │    pc: 545
-=======
-┃  ├─ 9 (expanded)
-┃  │    k: JUMPI 472 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-┃  │    pc: 468
->>>>>>> origin/master
 ┃  │    callDepth: 0
 ┃  │    statusCode: STATUSCODE:StatusCode
 ┃  │
@@ -59,15 +46,9 @@
 ┃
 ┗━━┓ constraint: { true #Equals ( notBool VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) }
    │
-<<<<<<< HEAD
-   ├─ OMITTED HASH (expanded)
+   ├─ 10 (expanded)
    │    k: JUMPI 549 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
    │    pc: 545
-=======
-   ├─ 10 (expanded)
-   │    k: JUMPI 472 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-   │    pc: 468
->>>>>>> origin/master
    │    callDepth: 0
    │    statusCode: STATUSCODE:StatusCode
    │
@@ -393,47 +374,9 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                </evm>
                <network>
                  <accounts>
-<<<<<<< HEAD
-=======
-                   ( ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> )
->>>>>>> origin/master
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -445,7 +388,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                        .Map
                      </origStorage>
                      <nonce>
-                       0
+                       1
                      </nonce>
                      ...
                    </account>
@@ -1644,7 +1587,7 @@ endmodule
 
 Stuck nodes:
 
-  Node id: c10cec..ca8100
+  Node id: 20
   Failure reason:
     Implication check failed, the following is the remaining implication:
     ( ( { true #Equals 0 <=Int CALLER_ID:Int }

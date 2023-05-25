@@ -6,17 +6,10 @@
 │    statusCode: STATUSCODE
 │    src: tests/foundry/test/Simple.t.sol:5:54
 │
-<<<<<<< HEAD
 │  (554 steps)
-├─ OMITTED HASH (expanded)
+├─ 7 (expanded)
 │    k: CALL 9223372036854772901 645326474426547203313410069153905908525362434349 0 128  ...
 │    pc: 480
-=======
-│  (523 steps)
-├─ 7 (expanded)
-│    k: CALL 9223372036854772923 645326474426547203313410069153905908525362434349 0 128  ...
-│    pc: 423
->>>>>>> origin/master
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:58:59
@@ -354,47 +347,9 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                </evm>
                <network>
                  <accounts>
-<<<<<<< HEAD
-=======
-                   ( ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> )
->>>>>>> origin/master
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -406,7 +361,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                        .Map
                      </origStorage>
                      <nonce>
-                       0
+                       1
                      </nonce>
                      ...
                    </account>
@@ -1266,7 +1221,7 @@ endmodule
 
 Stuck nodes:
 
-  Node id: 80848a..eac14c
+  Node id: 15
   Failure reason:
     Implication check failed, the following is the remaining implication:
     ( ( { true #Equals 0 <=Int CALLER_ID:Int }
