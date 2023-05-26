@@ -514,6 +514,7 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
     for name, contract in artifacts.items():
         if (len_contracts != 0 and name in contracts) or len_contracts == 0:
             tests = contract.tests
+
             for test in tests:
                 proof_digest = foundry.proof_digest(name, test)
                 if APRProof.proof_exists(proof_digest, apr_proofs_dir):
@@ -521,13 +522,18 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                     if apr_proof.status is ProofStatus.PASSED:
                         kcfg = apr_proof.kcfg
                         nodes = kcfg.nodes
+                        leaves = kcfg.leaves
+
+                        for leaf in leaves:
+                            print(leaf.cterm.constraints)
+
                         for node in nodes:
                             cterm = node.cterm
                             kast = cterm.cell('K_CELL')
                             if type(kast) is KSequence:
-                                items = kast.items
+
                                 # TODO: check for leaf nodes to get the compounded path conditions from the start (with vm.assume) and compare it to all possible values
-                                for item in items:
+                                for item in kast.items:
                                     if type(item) is KApply:
                                         # print(item.label.name)
                                         if item.label.name.startswith('#callWithCode'):

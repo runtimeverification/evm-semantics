@@ -106,7 +106,6 @@ class KEVM(KProve, KRun):
         KEVM_CELL: Final = KSort('KevmCell')
 
     def short_info(self, cterm: CTerm) -> list[str]:
-        print('short info!')
         k_cell = self.pretty_print(cterm.cell('K_CELL')).replace('\n', ' ')
         if len(k_cell) > 80:
             k_cell = k_cell[0:80] + ' ...'
