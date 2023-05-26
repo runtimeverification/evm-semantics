@@ -17,8 +17,8 @@ from pyk.kast.manip import (
 from pyk.kast.outer import KSequence
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.proof.equality import EqualityProof, EqualityProver
-from pyk.utils import single
 from pyk.proof.proof import ProofStatus
+from pyk.utils import single
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable
@@ -148,15 +148,17 @@ def kevm_apr_prove(
                 return True
             if prover.proof.status == ProofStatus.FAILED:
                 _LOGGER.info(f'Proof failed: {prover.proof.id}')
+                if type(proof) is EqualityProof:
+                    _LOGGER.info(proof.pretty(kprove))
                 return False
             if prover.proof.status == ProofStatus.PENDING:
                 _LOGGER.info(f'Proof pending: {prover.proof.id}')
                 return False
+        return False
 
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}', exc_info=True)
         return False
-
 
 
 def arg_pair_of(
