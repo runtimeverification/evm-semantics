@@ -30,7 +30,7 @@ from pyk.utils import hash_str, shorten_hashes, single, unique
 from .kevm import KEVM
 from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
-from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines
+from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines,kevm_apr_prove 
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -871,7 +871,7 @@ def _method_to_apr_proof(
 
         setup_digest = None
         if method_name != 'setUp' and 'setUp' in contract.method_by_name:
-            setup_digest = foundry.proof_digest(contract_name, 'setUp')
+            setup_digest = f'{contract_name}.setUp:{contract.digest}'
             _LOGGER.info(f'Using setUp method for test: {test}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
