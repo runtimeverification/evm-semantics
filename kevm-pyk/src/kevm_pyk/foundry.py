@@ -23,14 +23,14 @@ from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
-from pyk.proof.proof import Proof
+from pyk.proof.proof import Proof, ProofStatus
 from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.utils import hash_str, shorten_hashes, single, unique
 
 from .kevm import KEVM
 from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
-from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
-from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, kevm_apr_prove
+from .solc_to_k import Contract, contract_to_main_module
+from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, parallel_kcfg_explore
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -599,6 +599,33 @@ def foundry_show(
     return '\n'.join(res_lines)
 
 
+def foundry_coverage(foundry_root: Path, contracts: Iterable[str]) -> None:
+    foundry = Foundry(foundry_root)
+    apr_proofs_dir = foundry.out / 'apr_proofs'
+    artifacts = foundry.contracts
+    contracts = set(contracts)
+    len_contracts = len(contracts)
+
+    proofs: dict[str, APRProof] = {}
+
+    for name, contract in artifacts.items():
+        if (len_contracts != 0 and name in contracts) or len_contracts == 0:
+            tests = contract.tests
+            for test in tests:
+                proof_digest = foundry.proof_digest(name, test)
+                if APRProof.proof_exists(proof_digest, apr_proofs_dir):
+                    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+
+                    if apr_proof.status is not ProofStatus.PASSED:
+                        raise Exception("Can only run coverage on passing proofs")
+
+                    proofs[proof_digest] = apr_proof
+
+    for digest, proof in proofs.items():
+        kcfg = proof.kcfg
+        print(digest)
+        calling = kcfg.calling_nodes()
+
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
@@ -654,7 +681,6 @@ def foundry_simplify_node(
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
-    trace_rewrites: bool = False,
 ) -> str:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)

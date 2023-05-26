@@ -7,8 +7,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli_utils import BugReport, file_path
+from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
@@ -20,6 +19,7 @@ from pyk.proof import APRProof
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
     Foundry,
+    foundry_coverage,
     foundry_kompile,
     foundry_list,
     foundry_prove,
@@ -34,7 +34,7 @@ from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, parallel_kcfg_explore
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -453,6 +453,10 @@ def exec_foundry_show(
     print(output)
 
 
+def exec_foundry_coverage(foundry_root: Path, contracts: Iterable[str] = (), **kwargs: Any) -> None:
+    foundry_coverage(foundry_root=foundry_root, contracts=contracts)
+
+
 def exec_foundry_to_dot(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry_to_dot(foundry_root=foundry_root, test=test)
 
@@ -791,6 +795,29 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_show_args.add_argument(
         '--stuck', dest='stuck', default=False, action='store_true', help='Also display stuck nodes'
     )
+
+    foundry_coverage_args = command_parser.add_parser(
+        'foundry-coverage',
+        help='Run symbolic coverage on a foundry property',
+        parents=[shared_args, foundry_root_arg],
+    )
+    # foundry_coverage_args.add_argument(
+    #     '--test',
+    #     type=str,
+    #     dest='tests',
+    #     default=[],
+    #     action='append',
+    #     help='Limit to only listed tests, ContractName.TestName',
+    # )
+    foundry_coverage_args.add_argument(
+        '--contracts',
+        type=str,
+        dest='contracts',
+        default=[],
+        action='append',
+        help='Only run on specific contract proofs',
+    )
+
     foundry_to_dot = command_parser.add_parser(
         'foundry-to-dot',
         help='Dump the given CFG for the test as DOT for visualization.',
