@@ -205,6 +205,7 @@ kevm_files := abi.md                          \
               json-rpc.md                     \
               network.md                      \
               optimizations.md                \
+              schedule.md                     \
               serialization.md                \
               state-utils.md                  \
               word.md                         \
