@@ -4,7 +4,6 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
@@ -16,7 +15,6 @@ from pyk.kast.manip import (
     split_config_from,
 )
 from pyk.kast.outer import KSequence
-from pyk.kcfg import KCFGExplore
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.utils import single
 
@@ -27,6 +25,7 @@ if TYPE_CHECKING:
     from pyk.cli_utils import BugReport
     from pyk.kast import KInner
     from pyk.kast.outer import KDefinition
+    from pyk.kcfg import KCFGExplore
     from pyk.ktool.kprove import KProve
 
     T1 = TypeVar('T1')
@@ -65,9 +64,11 @@ def get_apr_proof_for_spec(  # noqa: N802
     return apr_proof
 
 
-def parallel_kcfg_explore(
+def kevm_apr_prove(
     kprove: KProve,
-    proof_problems: dict[str, APRProof | APRBMCProof],
+    cfgid: str,
+    proof: APRProof | APRBMCProof,
+    kcfg_explore: KCFGExplore,
     save_directory: Path | None = None,
     max_depth: int = 1000,
     max_iterations: int | None = None,
@@ -85,76 +86,59 @@ def parallel_kcfg_explore(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
-) -> dict[str, bool]:
-    def _call_rpc(packed_args: tuple[str, APRProof, int]) -> bool:
-        _cfgid, _apr_proof, _index = packed_args
-        terminal_rules = ['EVM.halt']
-        cut_point_rules = []
-        if break_every_step:
-            cut_point_rules.append('EVM.step')
-        if break_on_jumpi:
-            cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
-        if break_on_calls:
-            cut_point_rules.extend(
-                [
-                    'EVM.callWithCode',
-                    'EVM.call',
-                    'EVM.callcode',
-                    'EVM.delegatecall',
-                    'EVM.staticcall',
-                    'EVM.create',
-                    'EVM.create2',
-                    'FOUNDRY.foundry.call',
-                    'EVM.end',
-                    'EVM.return.exception',
-                    'EVM.return.revert',
-                    'EVM.return.success',
-                ]
-            )
+) -> bool:
+    _cfgid = cfgid
+    _apr_proof = proof
+    terminal_rules = ['EVM.halt']
+    cut_point_rules = []
+    if break_every_step:
+        cut_point_rules.append('EVM.step')
+    if break_on_jumpi:
+        cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
+    if break_on_calls:
+        cut_point_rules.extend(
+            [
+                'EVM.call',
+                'EVM.callcode',
+                'EVM.delegatecall',
+                'EVM.staticcall',
+                'EVM.create',
+                'EVM.create2',
+                'FOUNDRY.foundry.call',
+                'EVM.end',
+                'EVM.return.exception',
+                'EVM.return.revert',
+                'EVM.return.success',
+            ]
+        )
+    prover: APRBMCProof | APRProver
+    if type(_apr_proof) is APRBMCProof:
+        assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
+        prover = APRBMCProver(
+            _apr_proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop
+        )
+    else:
+        prover = APRProver(_apr_proof, is_terminal=is_terminal, extract_branches=extract_branches)
+    try:
+        _cfg = prover.advance_proof(
+            kcfg_explore,
+            max_iterations=max_iterations,
+            execute_depth=max_depth,
+            terminal_rules=terminal_rules,
+            cut_point_rules=cut_point_rules,
+            implication_every_block=implication_every_block,
+        )
+    except Exception as e:
+        _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}', exc_info=True)
+        return False
 
-        with KCFGExplore(
-            kprove,
-            id=_apr_proof.id,
-            bug_report=bug_report,
-            kore_rpc_command=kore_rpc_command,
-            smt_timeout=smt_timeout,
-            smt_retry_limit=smt_retry_limit,
-            trace_rewrites=trace_rewrites,
-        ) as kcfg_explore:
-            prover: APRBMCProof | APRProver
-            if type(_apr_proof) is APRBMCProof:
-                assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
-                prover = APRBMCProver(
-                    _apr_proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop
-                )
-            else:
-                prover = APRProver(_apr_proof, is_terminal=is_terminal, extract_branches=extract_branches)
-            try:
-                _cfg = prover.advance_proof(
-                    kcfg_explore,
-                    max_iterations=max_iterations,
-                    execute_depth=max_depth,
-                    terminal_rules=terminal_rules,
-                    cut_point_rules=cut_point_rules,
-                    implication_every_block=implication_every_block,
-                )
-            except Exception as e:
-                _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}', exc_info=True)
-                return False
-
-        failure_nodes = _cfg.frontier + _cfg.stuck
-        if len(failure_nodes) == 0:
-            _LOGGER.info(f'Proof passed: {_cfgid}')
-            return True
-        else:
-            _LOGGER.error(f'Proof failed: {_cfgid}')
-            return False
-
-    with ProcessPool(ncpus=workers) as process_pool:
-        _proof_problems = [(_id, _cfg, _i) for _i, (_id, _cfg) in enumerate(proof_problems.items())]
-        results = process_pool.map(_call_rpc, _proof_problems)
-
-    return dict(zip(proof_problems, results, strict=True))
+    failure_nodes = _cfg.frontier + _cfg.stuck
+    if len(failure_nodes) == 0:
+        _LOGGER.info(f'Proof passed: {_cfgid}')
+        return True
+    else:
+        _LOGGER.error(f'Proof failed: {_cfgid}')
+        return False
 
 
 def arg_pair_of(

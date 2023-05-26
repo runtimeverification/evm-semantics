@@ -10,11 +10,13 @@ This file only defines the local execution operations, the file `driver.md` will
 ```k
 requires "data.md"
 requires "network.md"
+requires "gas.md"
 
 module EVM
     imports STRING
     imports EVM-DATA
     imports NETWORK
+    imports GAS
 ```
 
 Configuration
@@ -64,9 +66,9 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <wordStack>   .WordStack </wordStack>           // \mu_s
               <localMem>    .Bytes     </localMem>            // \mu_m
               <pc>          0          </pc>                  // \mu_pc
-              <gas>         0          </gas>                 // \mu_g
+              <gas>         0:Gas      </gas>                 // \mau_g
               <memoryUsed>  0          </memoryUsed>          // \mu_i
-              <callGas>     0          </callGas>
+              <callGas>     0:Gas      </callGas>
 
               <static>    false </static>
               <callDepth> 0     </callDepth>
@@ -100,7 +102,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <difficulty>       0      </difficulty>       // I_Hd
               <number>           0      </number>           // I_Hi
               <gasLimit>         0      </gasLimit>         // I_Hl
-              <gasUsed>          0      </gasUsed>          // I_Hg
+              <gasUsed>          0:Gas  </gasUsed>          // I_Hg
               <timestamp>        0      </timestamp>        // I_Hs
               <extraData>        .Bytes </extraData>        // I_Hx
               <mixHash>          0      </mixHash>          // I_Hm
@@ -201,19 +203,19 @@ The `callStack` cell stores a list of previous VM execution states.
     syntax InternalOp ::= "#pushCallStack"
  // --------------------------------------
     rule <k> #pushCallStack => . ... </k>
-         <callStack> (.List => ListItem(CALLSTATE)) ... </callStack>
+         <callStack> STACK => ListItem(CALLSTATE) STACK </callStack>
          <callState> CALLSTATE </callState>
 
     syntax InternalOp ::= "#popCallStack"
  // -------------------------------------
     rule <k> #popCallStack => . ... </k>
-         <callStack>  (ListItem(CALLSTATE) => .List) ... </callStack>
+         <callStack> ListItem(CALLSTATE) REST => REST </callStack>
          <callState> _ => CALLSTATE </callState>
 
     syntax InternalOp ::= "#dropCallStack"
  // --------------------------------------
     rule <k> #dropCallStack => . ... </k>
-         <callStack> (ListItem(_) => .List) ... </callStack>
+         <callStack> ListItem(_) REST => REST </callStack>
 ```
 
 ### The StateStack
@@ -231,7 +233,7 @@ The `interimStates` cell stores a list of previous world states.
     syntax InternalOp ::= "#pushWorldState"
  // ---------------------------------------
     rule <k> #pushWorldState => .K ... </k>
-         <interimStates> (.List => ListItem({ ACCTDATA | ACCTS | SUBSTATE })) ... </interimStates>
+         <interimStates> STATES => ListItem({ ACCTDATA | ACCTS | SUBSTATE }) STATES </interimStates>
          <activeAccounts> ACCTS    </activeAccounts>
          <accounts>       ACCTDATA </accounts>
          <substate>       SUBSTATE </substate>
@@ -239,14 +241,14 @@ The `interimStates` cell stores a list of previous world states.
     syntax InternalOp ::= "#popWorldState"
  // --------------------------------------
     rule <k> #popWorldState => .K ... </k>
-         <interimStates> (ListItem({ ACCTDATA | ACCTS | SUBSTATE }) => .List) ... </interimStates>
+         <interimStates> ListItem({ ACCTDATA | ACCTS | SUBSTATE }) REST => REST </interimStates>
          <activeAccounts> _ => ACCTS    </activeAccounts>
          <accounts>       _ => ACCTDATA </accounts>
          <substate>       _ => SUBSTATE </substate>
 
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
-    rule <k> #dropWorldState => . ... </k> <interimStates> (ListItem(_) => .List) ... </interimStates>
+    rule <k> #dropWorldState => . ... </k> <interimStates> ListItem(_) REST => REST </interimStates>
 ```
 
 Control Flow
@@ -529,7 +531,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 ```k
     syntax InternalOp ::= #finalizeStorage ( List )
  // -----------------------------------------------
-    rule <k> #finalizeStorage((ListItem(ACCT) => .List) _) ... </k>
+    rule <k> #finalizeStorage(ListItem(ACCT) REST => REST) ... </k>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
@@ -570,7 +572,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
          <gas> GAVAIL </gas>
-         <gasUsed> GUSED => GUSED +Int GLIMIT -Int GAVAIL </gasUsed>
+         <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
          <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
@@ -583,7 +585,7 @@ After executing a transaction, it's necessary to have the effect of the substate
            <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int (GPRICE -Int BFEE) </balance>
            ...
          </account>
-         <txPending> ListItem(TXID:Int) => .List ... </txPending>
+         <txPending> ListItem(TXID:Int) REST => REST </txPending>
          <message>
            <msgID> TXID </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
@@ -596,7 +598,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
          <gas> GAVAIL </gas>
-         <gasUsed> GUSED => GUSED +Int GLIMIT -Int GAVAIL </gasUsed>
+         <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
          <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
@@ -604,7 +606,7 @@ After executing a transaction, it's necessary to have the effect of the substate
            <balance> BAL => BAL +Int GLIMIT *Int (GPRICE -Int BFEE) </balance>
            ...
          </account>
-         <txPending> ListItem(MsgId:Int) => .List ... </txPending>
+         <txPending> ListItem(MsgId:Int) REST => REST </txPending>
          <message>
            <msgID> MsgId </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
@@ -954,11 +956,11 @@ These operators make queries about the current execution state.
 ```k
     syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT" | "BASEFEE"
  // -------------------------------------------------------------------------
-    rule <k> PC       => PCOUNT ~> #push ... </k> <pc> PCOUNT </pc>
-    rule <k> GAS      => GAVAIL ~> #push ... </k> <gas> GAVAIL </gas>
-    rule <k> GASPRICE => GPRICE ~> #push ... </k> <gasPrice> GPRICE </gasPrice>
-    rule <k> GASLIMIT => GLIMIT ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
-    rule <k> BASEFEE  => BFEE   ~> #push ... </k> <baseFee> BFEE </baseFee>
+    rule <k> PC       => PCOUNT          ~> #push ... </k> <pc> PCOUNT </pc>
+    rule <k> GAS      => gas2Int(GAVAIL) ~> #push ... </k> <gas> GAVAIL </gas>
+    rule <k> GASPRICE => GPRICE          ~> #push ... </k> <gasPrice> GPRICE </gasPrice>
+    rule <k> GASLIMIT => GLIMIT          ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
+    rule <k> BASEFEE  => BFEE            ~> #push ... </k> <baseFee> BFEE </baseFee>
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "PREVRANDAO"
  // ----------------------------------------------------------------------------------------
@@ -1124,7 +1126,7 @@ These operators query about the current return data buffer.
          <id> ACCT </id>
          <wordStack> WS => #drop(N, WS) </wordStack>
          <localMem> LM </localMem>
-         <log> ... (.List => ListItem({ ACCT | WordStack2List(#take(N, WS)) | #range(LM, MEMSTART, MEMWIDTH) })) </log>
+         <log> L => L ListItem({ ACCT | WordStack2List(#take(N, WS)) | #range(LM, MEMSTART, MEMWIDTH) }) </log>
       requires #sizeWordStack(WS) >=Int N
 ```
 
@@ -1189,7 +1191,8 @@ Operators that require access to the rest of the Ethereum network world-state ca
          </account>
       requires ACCT in ACCTS
 
-    rule <k> EXTCODECOPY _ _ _ _ => . ... </k> [owise]
+    rule <k> EXTCODECOPY _ MEMSTART _ WIDTH => . ... </k>
+         <localMem> LM => LM [ MEMSTART := #padToWidth(WIDTH, .Bytes) ] </localMem> [owise]
 ```
 
 ### Account Storage Operations
@@ -1301,6 +1304,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
  // --------------------------------------------------------------
     rule <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> requires         #isPrecompiledAccount(ACCTCODE, SCHED)
+      [preserves-definedness]
     rule <k> #precompiled?(ACCTCODE, SCHED) => .                                ... </k> requires notBool #isPrecompiledAccount(ACCTCODE, SCHED)
 
     syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [function, total, smtlib(isPrecompiledAccount)]
@@ -1353,7 +1357,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #accessAccounts ADDRSET:Set => . ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
 
-    syntax Set ::= #computeValidJumpDests(Bytes)            [function, memo]
+    syntax Set ::= #computeValidJumpDests(Bytes)            [function, memo, total]
                  | #computeValidJumpDests(Bytes, Int, List) [function, klabel(#computeValidJumpDestsAux)]
  // -----------------------------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
@@ -1403,10 +1407,10 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <output> OUT </output>
          <gas> GAVAIL </gas>
 
-    syntax InternalOp ::= "#refund" Exp [strict]
+    syntax InternalOp ::= "#refund" Gas
                         | "#setLocalMem" Int Int Bytes
  // --------------------------------------------------
-    rule [refund]: <k> #refund G:Int => . ... </k> <gas> GAVAIL => GAVAIL +Int G </gas>
+    rule [refund]: <k> #refund G:Gas => . ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas>
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
          <localMem> LM => LM [ START := #range(WS, 0, minInt(WIDTH, lengthBytes(WS))) ] </localMem>
@@ -1838,9 +1842,9 @@ Overall Gas
     rule <k> MU':Int ~> #deductMemory => (Cmem(SCHED, MU') -Int Cmem(SCHED, MU)) ~> #deductMemoryGas ... </k>
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
-    rule <k> _G:Int ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k>  G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Int G
-    rule <k>  G:Int ~> #deductGas => .                    ... </k> <gas> GAVAIL => GAVAIL -Int G </gas> requires GAVAIL >=Int G
+    rule <k> _G:Gas ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
+    rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Gas                  </gas> requires GAVAIL <Gas G
+    rule <k>  G:Gas ~> #deductGas => .                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> requires G <=Gas GAVAIL
 
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [function, total]
@@ -1975,12 +1979,12 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          </account>
          <refund> R => R +Int Rsstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) </refund>
       requires notBool Ghassstorestipend << SCHED >>
-        orBool notBool GAVAIL <=Int Gcallstipend < SCHED >
+        orBool notBool GAVAIL <=Gas Gcallstipend < SCHED >
 
     rule <k> #gasExec(SCHED, SSTORE _ _ ) => #end EVMC_OUT_OF_GAS ... </k>
          <gas> GAVAIL </gas>
       requires Ghassstorestipend << SCHED >>
-       andBool GAVAIL <=Int Gcallstipend < SCHED >
+       andBool GAVAIL <=Gas Gcallstipend < SCHED >
 
     rule <k> #gasExec(SCHED, EXP _ 0)  => Gexp < SCHED > ... </k>
     rule <k> #gasExec(SCHED, EXP _ W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=Int 0
@@ -2145,57 +2149,59 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
-    rule <k> GCALL:Int ~> #allocateCallGas => . ... </k>
+    rule <k> GCALL:Gas ~> #allocateCallGas => . ... </k>
          <callGas> _ => GCALL </callGas>
 
     syntax InternalOp ::= "#allocateCreateGas"
  // ------------------------------------------
     rule <schedule> SCHED </schedule>
          <k> #allocateCreateGas => . ... </k>
-         <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Int 64      #fi </gas>
+         <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Gas 64      #fi </gas>
          <callGas> _      => #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi </callGas>
+      [preserves-definedness]
 ```
 
 There are several helpers for calculating gas (most of them also specified in the YellowPaper).
 
 ```k
-    syntax Exp     ::= Int
+    syntax Exp     ::= Int | Gas
     syntax KResult ::= Int
-    syntax Exp ::= Ccall         ( Schedule , BExp , Int , Int , Int , Bool ) [strict(2)]
-                 | Ccallgas      ( Schedule , BExp , Int , Int , Int , Bool ) [strict(2)]
+    syntax Exp ::= Ccall         ( Schedule , BExp , Gas , Gas , Int , Bool ) [strict(2)]
+                 | Ccallgas      ( Schedule , BExp , Gas , Gas , Int , Bool ) [strict(2)]
                  | Cselfdestruct ( Schedule , BExp , Int )                    [strict(2)]
  // -------------------------------------------------------------------------------------
    rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
-         => Cextra(SCHED, ISEMPTY, VALUE, ISWARM) +Int Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) ... </k>
+         => Cextra(SCHED, ISEMPTY, VALUE, ISWARM) +Gas Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) ... </k>
 
-    rule <k> Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
-          => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) +Int #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
+   rule <k> Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
+         => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) +Gas #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
 
-    rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
-          => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
+   rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
+         => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
 
-    syntax Int ::= Cgascap        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Cgascap)       ]
-                 | Csstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Csstore)       ]
-                 | Rsstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Rsstore)       ]
-                 | Cextra         ( Schedule , Bool , Int , Bool )       [function, total, smtlib(gas_Cextra)        ]
-                 | Cnew           ( Schedule , Bool , Int )              [function, total, smtlib(gas_Cnew)          ]
-                 | Cxfer          ( Schedule , Int )                     [function, total, smtlib(gas_Cxfer)         ]
-                 | Cmem           ( Schedule , Int )                     [function, total, smtlib(gas_Cmem), memo    ]
-                 | Caddraccess    ( Schedule , Bool )                    [function, total, smtlib(gas_Caddraccess)   ]
-                 | Cstorageaccess ( Schedule , Bool )                    [function, total, smtlib(gas_Cstorageaccess)]
-                 | Csload         ( Schedule , Bool )                    [function, total, smtlib(gas_Csload)        ]
-                 | Cextcodesize   ( Schedule )                           [function, total, smtlib(gas_Cextcodesize)  ]
-                 | Cextcodecopy   ( Schedule , Int )                     [function, total, smtlib(gas_Cextcodecopy)  ]
-                 | Cextcodehash   ( Schedule )                           [function, total, smtlib(gas_Cextcodehash)  ]
-                 | Cbalance       ( Schedule )                           [function, total, smtlib(gas_Cbalance)      ]
-                 | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [function, total, smtlib(gas_Cmodexp)       ]
+   syntax Gas ::= Cgascap        ( Schedule , Gas , Gas , Int )         [function, total, smtlib(gas_Cgascap_Gas)   ]
+   syntax Int ::= Cgascap        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Cgascap_Int)   ]
+                | Csstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Csstore)       ]
+                | Rsstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Rsstore)       ]
+                | Cextra         ( Schedule , Bool , Int , Bool )       [function, total, smtlib(gas_Cextra)        ]
+                | Cnew           ( Schedule , Bool , Int )              [function, total, smtlib(gas_Cnew)          ]
+                | Cxfer          ( Schedule , Int )                     [function, total, smtlib(gas_Cxfer)         ]
+                | Cmem           ( Schedule , Int )                     [function, total, smtlib(gas_Cmem), memo    ]
+                | Caddraccess    ( Schedule , Bool )                    [function, total, smtlib(gas_Caddraccess)   ]
+                | Cstorageaccess ( Schedule , Bool )                    [function, total, smtlib(gas_Cstorageaccess)]
+                | Csload         ( Schedule , Bool )                    [function, total, smtlib(gas_Csload)        ]
+                | Cextcodesize   ( Schedule )                           [function, total, smtlib(gas_Cextcodesize)  ]
+                | Cextcodecopy   ( Schedule , Int )                     [function, total, smtlib(gas_Cextcodecopy)  ]
+                | Cextcodehash   ( Schedule )                           [function, total, smtlib(gas_Cextcodehash)  ]
+                | Cbalance       ( Schedule )                           [function, total, smtlib(gas_Cbalance)      ]
+                | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [function, total, smtlib(gas_Cmodexp)       ]
  // ------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
-         Cgascap(SCHED, GCAP, GAVAIL, GEXTRA)
+         Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
       requires 0 <=Int GCAP
 
-    rule Cgascap(_, GCAP, _, _) => 0 requires GCAP <Int 0
+    rule Cgascap(_, GCAP, _, _) => 0 requires GCAP <Gas 0
 
     rule [Csstore.new]:
          Csstore(SCHED, NEW, CURR, ORIG)
@@ -2282,12 +2288,13 @@ There are several helpers for calculating gas (most of them also specified in th
            ...
          </account>
 
-    syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, klabel(accountEmpty), symbol]
+    syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, total, klabel(accountEmpty), symbol]
  // --------------------------------------------------------------------------------------------------
     rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .Bytes andBool NONCE ==Int 0 andBool BAL ==Int 0
 
-    syntax Int ::= #allBut64th ( Int ) [function, total, smtlib(gas_allBut64th)]
- // ----------------------------------------------------------------------------
+    syntax Gas ::= #allBut64th ( Gas ) [function, total, smtlib(gas_allBut64th_Gas)]
+    syntax Int ::= #allBut64th ( Int ) [function, total, smtlib(gas_allBut64th_Int)]
+ // --------------------------------------------------------------------------------
     rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
     rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
 
@@ -2303,9 +2310,9 @@ There are several helpers for calculating gas (most of them also specified in th
     rule G0(    _,  _, I, I, R) => R
     rule G0(SCHED, WS, I, J, R) => G0(SCHED, WS, I +Int 1, J, R +Int #if WS[I] ==Int 0 #then Gtxdatazero < SCHED > #else Gtxdatanonzero < SCHED > #fi) [owise]
 
-    syntax Int ::= "G*" "(" Int "," Int "," Int "," Schedule ")" [function]
+    syntax Gas ::= "G*" "(" Gas "," Int "," Int "," Schedule ")" [function]
  // -----------------------------------------------------------------------
-    rule G*(GAVAIL, GLIMIT, REFUND, SCHED) => GAVAIL +Int minInt((GLIMIT -Int GAVAIL) /Int Rmaxquotient < SCHED >, REFUND)
+    rule G*(GAVAIL, GLIMIT, REFUND, SCHED) => GAVAIL +Gas minGas((GLIMIT -Gas GAVAIL) /Gas Rmaxquotient < SCHED >, REFUND)
 
     syntax Int ::= #multComplexity(Int)    [function]
                  | #newMultComplexity(Int) [function]

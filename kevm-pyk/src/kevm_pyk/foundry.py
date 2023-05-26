@@ -6,12 +6,13 @@ import os
 import shutil
 from functools import cached_property
 from pathlib import Path
+from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 import hashlib
 
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli_utils import BugReport, ensure_dir_path
+from pyk.cli_utils import BugReport, ensure_dir_path, run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, bottom_up, build_assoc
 from pyk.kast.manip import flatten_label, get_cell, minimize_term, set_cell, undo_aliases
@@ -29,14 +30,15 @@ from pyk.utils import hash_str, shorten_hashes, single, unique
 
 from .kevm import KEVM
 from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
-from .solc_to_k import Contract, contract_to_main_module
-from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, parallel_kcfg_explore
+from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
+from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, kevm_apr_prove
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import Any, Final
 
     from pyk.kast import KInner
+    from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
     from pyk.ktool.kompile import Kompile
 
@@ -101,7 +103,7 @@ class Foundry:
         return _contracts
 
     def proof_digest(self, contract: str, test: str) -> str:
-        return f'{contract}.{test}:{self.contracts[contract].digest}'
+        return f'{contract}.{test}:{self.contracts[contract].method_by_name[test].digest}'
 
     @cached_property
     def digest(self) -> str:
@@ -110,11 +112,22 @@ class Foundry:
 
     def up_to_date(self) -> bool:
         digest_file = self.out / 'digest'
-        return digest_file.exists() and digest_file.read_text() == self.digest
+        if not digest_file.exists():
+            return False
+        digest_dict = json.loads(digest_file.read_text())
+        if 'foundry' not in digest_dict:
+            digest_dict['foundry'] = ''
+        digest_file.write_text(json.dumps(digest_dict))
+        return digest_dict['foundry'] == self.digest
 
     def update_digest(self) -> None:
         digest_file = self.out / 'digest'
-        digest_file.write_text(self.digest)
+        digest_dict = {}
+        if digest_file.exists():
+            digest_dict = json.loads(digest_file.read_text())
+        digest_dict['foundry'] = self.digest
+        digest_file.write_text(json.dumps(digest_dict))
+
         _LOGGER.info(f'Updated Foundry digest file: {digest_file}')
 
     @cached_property
@@ -170,6 +183,12 @@ class Foundry:
             if type(pc_cell) is KToken and pc_cell.sort == INT:
                 return self.solidity_src(contract_name, int(pc_cell.token))
         return ['NO DATA']
+
+    def build(self) -> None:
+        try:
+            run_process(['forge', 'build', '--root', str(self._root)], logger=_LOGGER)
+        except CalledProcessError as err:
+            raise RuntimeError("Couldn't forge build!") from err
 
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
@@ -229,19 +248,22 @@ def foundry_kompile(
     debug: bool = False,
     llvm_library: bool = False,
 ) -> None:
-    main_module = 'FOUNDRY-MAIN'
-    syntax_module = 'FOUNDRY-MAIN'
+    syntax_module = 'FOUNDRY-CONTRACTS'
     foundry = Foundry(foundry_root)
     foundry_definition_dir = foundry.out / 'kompiled'
     foundry_requires_dir = foundry_definition_dir / 'requires'
     foundry_llvm_dir = foundry.out / 'kompiled-llvm'
+    foundry_contracts_file = foundry_definition_dir / 'contracts.k'
     foundry_main_file = foundry_definition_dir / 'foundry.k'
     kompiled_timestamp = foundry_definition_dir / 'timestamp'
+    main_module = 'FOUNDRY-MAIN'
     ensure_dir_path(foundry_definition_dir)
     ensure_dir_path(foundry_requires_dir)
     ensure_dir_path(foundry_llvm_dir)
 
     requires_paths: dict[str, str] = {}
+
+    foundry.build()
 
     if not foundry.up_to_date():
         _LOGGER.info('Detected updates to contracts, regenerating K definition.')
@@ -262,23 +284,44 @@ def foundry_kompile(
             shutil.copy(req, req_path)
             regen = True
 
-    if regen or not foundry_main_file.exists():
-        requires = ['foundry.md']
-        requires += [f'requires/{name}' for name in list(requires_paths.keys())]
-        imports = ['FOUNDRY'] + list(imports)
+    _imports: dict[str, list[str]] = {contract.name: [] for contract in foundry.contracts.values()}
+    for i in imports:
+        imp = i.split(':')
+        if not len(imp) == 2:
+            raise ValueError(f'module imports must be of the form "[ContractName]:[MODULE-NAME]". Got: {i}')
+        if imp[0] in _imports:
+            _imports[imp[0]].append(imp[1])
+        else:
+            raise ValueError(f'Could not find contract: {imp[0]}')
+
+    if regen or not foundry_contracts_file.exists() or not foundry_main_file.exists():
+        copied_requires = []
+        copied_requires += [f'requires/{name}' for name in list(requires_paths.keys())]
+        imports = ['FOUNDRY']
         kevm = KEVM(definition_dir)
         empty_config = kevm.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
-        bin_runtime_definition = _foundry_to_bin_runtime(
+        bin_runtime_definition = _foundry_to_contract_def(
             empty_config=empty_config,
             contracts=foundry.contracts.values(),
-            main_module=main_module,
-            requires=requires,
-            imports=imports,
+            requires=['foundry.md'],
         )
-        with open(foundry_main_file, 'w') as fmf:
-            _LOGGER.info(f'Writing file: {foundry_main_file}')
-            kevm = KEVM(definition_dir, extra_unparsing_modules=bin_runtime_definition.all_modules)
-            fmf.write(kevm.pretty_print(bin_runtime_definition) + '\n')
+
+        contract_main_definition = _foundry_to_main_def(
+            main_module=main_module,
+            empty_config=empty_config,
+            contracts=foundry.contracts.values(),
+            requires=(['contracts.k'] + copied_requires),
+            imports=_imports,
+        )
+
+        kevm = KEVM(
+            definition_dir,
+            extra_unparsing_modules=(bin_runtime_definition.all_modules + contract_main_definition.all_modules),
+        )
+        foundry_contracts_file.write_text(kevm.pretty_print(bin_runtime_definition) + '\n')
+        _LOGGER.info(f'Wrote file: {foundry_contracts_file}')
+        foundry_main_file.write_text(kevm.pretty_print(contract_main_definition) + '\n')
+        _LOGGER.info(f'Wrote file: {foundry_main_file}')
 
     def _kompile(
         out_dir: Path,
@@ -315,7 +358,23 @@ def foundry_kompile(
 
         kompile(output_dir=out_dir, debug=debug)
 
-    if regen or rekompile or not kompiled_timestamp.exists():
+    def kompilation_digest() -> str:
+        k_files = list(requires) + [foundry_contracts_file, foundry_main_file]
+        return hash_str(''.join([hash_str(Path(k_file).read_text()) for k_file in k_files]))
+
+    def kompilation_up_to_date() -> bool:
+        digest_file = foundry_definition_dir / 'digest'
+        if not digest_file.exists():
+            return False
+        old_digest = digest_file.read_text()
+
+        return old_digest == kompilation_digest()
+
+    def update_kompilation_digest() -> None:
+        digest_file = foundry_definition_dir / 'digest'
+        digest_file.write_text(kompilation_digest())
+
+    if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
         _kompile(foundry_definition_dir, KompileBackend.HASKELL, md_selector=md_selector)
         if llvm_library:
@@ -327,6 +386,7 @@ def foundry_kompile(
                 md_selector=('k & ! symbolic' if md_selector is None else f'{md_selector} & ! symbolic'),
             )
 
+    update_kompilation_digest()
     foundry.update_digest()
 
 
@@ -348,6 +408,7 @@ def foundry_prove(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    trace_rewrites: bool = False,
 ) -> dict[str, bool]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -390,54 +451,90 @@ def foundry_prove(
         raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
     setup_methods: dict[str, str] = {}
-    contracts = unique({test.split('.')[0] for test in tests})
+    contracts = set(unique({test.split('.')[0] for test in tests}))
     for contract_name in contracts:
         if 'setUp' in foundry.contracts[contract_name].method_by_name:
             setup_methods[contract_name] = f'{contract_name}.setUp'
 
-    def _init_apr_proof(_init_problem: tuple[str, str]) -> APRProof | APRBMCProof:
-        contract_name, method_name = _init_problem
-        contract = foundry.contracts[contract_name]
-        method = contract.method_by_name[method_name]
-        return _method_to_apr_proof(
-            foundry,
-            contract,
-            method,
-            save_directory,
-            reinit=reinit,
-            simplify_init=simplify_init,
-            bmc_depth=bmc_depth,
+    test_methods = [
+        method
+        for contract in foundry.contracts.values()
+        for method in contract.methods
+        if (f'{method.contract_name}.{method.name}' in tests or (method.is_setup and method.contract_name in contracts))
+    ]
+
+    out_of_date_methods: set[str] = set()
+    for method in test_methods:
+        if not method.up_to_date(foundry.out / 'digest') or reinit:
+            out_of_date_methods.add(method.qualified_name)
+            _LOGGER.info(f'Method {method.qualified_name} is out of date, so it was reinitialized')
+        else:
+            _LOGGER.info(f'Method {method.qualified_name} not reinitialized because it is up to date')
+            if not method.contract_up_to_date(foundry.out / 'digest'):
+                _LOGGER.warning(
+                    f'Method {method.qualified_name} not reinitialized because digest was up to date, but the contract it is a part of has changed.'
+                )
+        method.update_digest(foundry.out / 'digest')
+
+    def _init_and_run_proof(_init_problem: tuple[str, str]) -> bool:
+        proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
+        with KCFGExplore(
+            foundry.kevm,
+            id=proof_id,
+            bug_report=br,
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
-            bug_report=br,
-        )
+            trace_rewrites=trace_rewrites,
+        ) as kcfg_explore:
+            contract_name, method_name = _init_problem
+            contract = foundry.contracts[contract_name]
+            method = contract.method_by_name[method_name]
+            proof = _method_to_apr_proof(
+                foundry,
+                contract,
+                method,
+                save_directory,
+                kcfg_explore,
+                reinit=(method.qualified_name in out_of_date_methods),
+                simplify_init=simplify_init,
+                bmc_depth=bmc_depth,
+                kore_rpc_command=kore_rpc_command,
+                smt_timeout=smt_timeout,
+                smt_retry_limit=smt_retry_limit,
+                bug_report=br,
+                trace_rewrites=trace_rewrites,
+            )
+
+            return kevm_apr_prove(
+                foundry.kevm,
+                proof_id,
+                proof,
+                kcfg_explore,
+                save_directory=save_directory,
+                max_depth=max_depth,
+                max_iterations=max_iterations,
+                workers=workers,
+                break_every_step=break_every_step,
+                break_on_jumpi=break_on_jumpi,
+                break_on_calls=break_on_calls,
+                implication_every_block=implication_every_block,
+                is_terminal=KEVM.is_terminal,
+                same_loop=KEVM.same_loop,
+                extract_branches=KEVM.extract_branches,
+                bug_report=br,
+                kore_rpc_command=kore_rpc_command,
+                smt_timeout=smt_timeout,
+                smt_retry_limit=smt_retry_limit,
+                trace_rewrites=trace_rewrites,
+            )
 
     def run_cfg_group(tests: list[str]) -> dict[str, bool]:
         init_problems = [tuple(test.split('.')) for test in tests]
         with ProcessPool(ncpus=workers) as process_pool:
-            _apr_proofs = process_pool.map(_init_apr_proof, init_problems)
+            _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
         apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
-
-        return parallel_kcfg_explore(
-            foundry.kevm,
-            apr_proofs,
-            save_directory=save_directory,
-            max_depth=max_depth,
-            max_iterations=max_iterations,
-            workers=workers,
-            break_every_step=break_every_step,
-            break_on_jumpi=break_on_jumpi,
-            break_on_calls=break_on_calls,
-            implication_every_block=implication_every_block,
-            is_terminal=KEVM.is_terminal,
-            same_loop=KEVM.same_loop,
-            extract_branches=KEVM.extract_branches,
-            bug_report=br,
-            kore_rpc_command=kore_rpc_command,
-            smt_timeout=smt_timeout,
-            smt_retry_limit=smt_retry_limit,
-        )
+        return apr_proofs
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
     results = run_cfg_group(list(setup_methods.values()))
@@ -446,14 +543,16 @@ def foundry_prove(
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
 
     _LOGGER.info(f'Running test functions in parallel: {tests}')
-    return run_cfg_group(tests)
+    results = run_cfg_group(tests)
+
+    return results
 
 
 def foundry_show(
     foundry_root: Path,
     test: str,
-    nodes: Iterable[str] = (),
-    node_deltas: Iterable[tuple[str, str]] = (),
+    nodes: Iterable[NodeIdLike] = (),
+    node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
     omit_unstable_output: bool = False,
@@ -495,7 +594,6 @@ def foundry_show(
         to_module=to_module,
         minimize=minimize,
         node_printer=_short_info,
-        omit_node_hash=omit_unstable_output,
         omit_cells=(unstable_cells if omit_unstable_output else []),
     )
 
@@ -582,7 +680,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
     return lines
 
 
-def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
+def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None:
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
@@ -598,7 +696,7 @@ def foundry_remove_node(foundry_root: Path, test: str, node: str) -> None:
 def foundry_simplify_node(
     foundry_root: Path,
     test: str,
-    node: str,
+    node: NodeIdLike,
     replace: bool = False,
     minimize: bool = True,
     bug_report: bool = False,
@@ -613,7 +711,12 @@ def foundry_simplify_node(
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     cterm = apr_proof.kcfg.node(node).cterm
     with KCFGExplore(
-        foundry.kevm, id=apr_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm,
+        id=apr_proof.id,
+        bug_report=br,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
+        trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
         new_term, _ = kcfg_explore.cterm_simplify(cterm)
     if replace:
@@ -626,12 +729,13 @@ def foundry_simplify_node(
 def foundry_step_node(
     foundry_root: Path,
     test: str,
-    node: str,
+    node: NodeIdLike,
     repeat: int = 1,
     depth: int = 1,
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    trace_rewrites: bool = False,
 ) -> None:
     if repeat < 1:
         raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
@@ -646,7 +750,12 @@ def foundry_step_node(
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     with KCFGExplore(
-        foundry.kevm, id=apr_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm,
+        id=apr_proof.id,
+        bug_report=br,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
+        trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
         for _i in range(repeat):
             node = kcfg_explore.step(apr_proof.kcfg, node, {}, depth=depth)
@@ -662,6 +771,7 @@ def foundry_section_edge(
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    trace_rewrites: bool = False,
 ) -> None:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
@@ -671,9 +781,16 @@ def foundry_section_edge(
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     source_id, target_id = edge
     with KCFGExplore(
-        foundry.kevm, id=apr_proof.id, bug_report=br, smt_timeout=smt_timeout, smt_retry_limit=smt_retry_limit
+        foundry.kevm,
+        id=apr_proof.id,
+        bug_report=br,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
+        trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(apr_proof.kcfg, source_id, target_id, {}, sections=sections)
+        kcfg, _ = kcfg_explore.section_edge(
+            apr_proof.kcfg, source_id=source_id, target_id=target_id, logs=apr_proof.logs, sections=sections
+        )
     apr_proof.write_proof()
 
 
@@ -682,31 +799,44 @@ def _write_cfg(cfg: KCFG, path: Path) -> None:
     _LOGGER.info(f'Updated CFG file: {path}')
 
 
-def _foundry_to_bin_runtime(
+def _foundry_to_contract_def(
     empty_config: KInner,
     contracts: Iterable[Contract],
-    main_module: str | None,
     requires: Iterable[str],
-    imports: Iterable[str],
 ) -> KDefinition:
-    modules = []
-    for contract in contracts:
-        module = contract_to_main_module(contract, empty_config, imports=imports)
-        _LOGGER.info(f'Produced contract module: {module.name}')
-        modules.append(module)
-    _main_module = KFlatModule(
-        main_module if main_module else 'MAIN',
-        imports=(KImport(mname) for mname in [_m.name for _m in modules] + list(imports)),
-    )
-    modules.append(_main_module)
+    modules = [contract_to_main_module(contract, empty_config, imports=['FOUNDRY']) for contract in contracts]
+    # First module is chosen as main module arbitrarily, since the contract definition is just a set of
+    # contract modules.
+    main_module = Contract.contract_to_module_name(list(contracts)[0].name_upper)
 
-    bin_runtime_definition = KDefinition(
-        _main_module.name,
+    return KDefinition(
+        main_module,
         modules,
         requires=(KRequire(req) for req in list(requires)),
     )
 
-    return bin_runtime_definition
+
+def _foundry_to_main_def(
+    main_module: str,
+    contracts: Iterable[Contract],
+    empty_config: KInner,
+    requires: Iterable[str],
+    imports: dict[str, list[str]],
+) -> KDefinition:
+    modules = [
+        contract_to_verification_module(contract, empty_config, imports=imports[contract.name])
+        for contract in contracts
+    ]
+    _main_module = KFlatModule(
+        main_module,
+        imports=(KImport(mname) for mname in [_m.name for _m in modules]),
+    )
+
+    return KDefinition(
+        main_module,
+        [_main_module] + modules,
+        requires=(KRequire(req) for req in list(requires)),
+    )
 
 
 def _method_to_apr_proof(
@@ -714,6 +844,7 @@ def _method_to_apr_proof(
     contract: Contract,
     method: Contract.Method,
     save_directory: Path,
+    kcfg_explore: KCFGExplore,
     reinit: bool = False,
     simplify_init: bool = True,
     bmc_depth: int | None = None,
@@ -721,6 +852,7 @@ def _method_to_apr_proof(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     bug_report: BugReport | None = None,
+    trace_rewrites: bool = False,
 ) -> APRProof | APRBMCProof:
     contract_name = contract.name
     method_name = method.name
@@ -741,7 +873,7 @@ def _method_to_apr_proof(
 
         setup_digest = None
         if method_name != 'setUp' and 'setUp' in contract.method_by_name:
-            setup_digest = f'{contract_name}.setUp:{contract.digest}'
+            setup_digest = foundry.proof_digest(contract_name, 'setUp')
             _LOGGER.info(f'Using setUp method for test: {test}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
@@ -759,20 +891,13 @@ def _method_to_apr_proof(
         kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
 
         _LOGGER.info(f'Starting KCFGExplore for test: {test}')
-        with KCFGExplore(
-            foundry.kevm,
-            bug_report=bug_report,
-            kore_rpc_command=kore_rpc_command,
-            smt_timeout=smt_timeout,
-            smt_retry_limit=smt_retry_limit,
-        ) as kcfg_explore:
-            _LOGGER.info(f'Computing definedness constraint for test: {test}')
-            init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
-            kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
+        _LOGGER.info(f'Computing definedness constraint for test: {test}')
+        init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
+        kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
 
-            if simplify_init:
-                _LOGGER.info(f'Simplifying KCFG for test: {test}')
-                kcfg_explore.simplify(kcfg, {})
+        if simplify_init:
+            _LOGGER.info(f'Simplifying KCFG for test: {test}')
+            kcfg_explore.simplify(kcfg, {})
         if bmc_depth is not None:
             apr_proof = APRBMCProof(proof_digest, kcfg, {}, proof_dir=save_directory, bmc_depth=bmc_depth)
         else:
