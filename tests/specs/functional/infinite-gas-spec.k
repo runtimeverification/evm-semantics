@@ -1,4 +1,4 @@
-requires "infinite-gas.md"
+requires "gas.md"
 requires "lemmas/lemmas.k"
 
 module VERIFICATION

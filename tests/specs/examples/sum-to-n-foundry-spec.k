@@ -1,5 +1,5 @@
 requires "lemmas/lemmas.k"
-requires "infinite-gas.md"
+requires "gas.md"
 
 module VERIFICATION
     imports LEMMAS
