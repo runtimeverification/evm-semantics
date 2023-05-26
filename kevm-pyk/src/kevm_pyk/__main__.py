@@ -34,7 +34,7 @@ from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, parallel_kcfg_explore
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -799,7 +799,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_coverage_args = command_parser.add_parser(
         'foundry-coverage',
         help='Run symbolic coverage on a foundry property',
-        parents=[shared_args, foundry_root_arg],
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.foundry_args],
     )
     # foundry_coverage_args.add_argument(
     #     '--test',

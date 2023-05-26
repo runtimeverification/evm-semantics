@@ -29,8 +29,8 @@ from pyk.utils import hash_str, shorten_hashes, single, unique
 
 from .kevm import KEVM
 from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
-from .solc_to_k import Contract, contract_to_main_module
-from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, parallel_kcfg_explore
+from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
+from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
