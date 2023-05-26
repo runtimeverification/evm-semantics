@@ -201,7 +201,6 @@ kevm_files := abi.md                          \
               foundry.md                      \
               hashed-locations.md             \
               gas.md                          \
-              infinite-gas.md                 \
               json-rpc.md                     \
               network.md                      \
               optimizations.md                \
