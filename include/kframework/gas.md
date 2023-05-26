@@ -92,7 +92,11 @@ module INFINITE-GAS
 endmodule
 ```
 
-/// TODO Docs
+KEVM Gas Fees
+=============
+
+Here are some internal helper functions for calculating gas. Most of these functions are specified in the YellowPaper.
+
 ```k
 module GAS-FEES
     imports GAS-SYNTAX
@@ -242,7 +246,14 @@ module GAS-FEES
     rule #adjustedExpLength(1) => 0
     rule #adjustedExpLength(N) => 1 +Int #adjustedExpLength(N /Int 2) requires N >Int 1
 endmodule
+```
 
+KEVM Gas Simplifications
+========================
+
+Here are simplification rules related to gas that the haskell backend uses.
+
+```k
 module GAS-SIMPLIFICATION [symbolic]
     imports GAS-SYNTAX
     imports INT

@@ -1,4 +1,7 @@
-/// TODO DOCS
+KEVM Schedules
+==============
+
+Schedules correspond to upgrades in the Ethereum ecosystem. The cost of gas functions is dependent on the schedule.
 
 ### Default Schedule
 
