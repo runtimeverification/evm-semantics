@@ -1603,7 +1603,9 @@ Stuck nodes:
   Path condition:
     { true #Equals ( notBool 100 <=Int VV0_x_114b9705:Int ) }
 
+Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD
+
 See `foundry_success` predicate for more information:
 https://github.com/runtimeverification/evm-semantics/blob/master/include/kframework/foundry.md#foundry-success-predicate
 
-Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD
+Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

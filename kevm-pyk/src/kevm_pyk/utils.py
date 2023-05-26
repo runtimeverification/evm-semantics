@@ -141,6 +141,18 @@ def kevm_apr_prove(
         _LOGGER.error(f'Proof failed: {_cfgid}')
         if failure_info:
             failure_log = print_failure_info(_cfg, _cfgid, kcfg_explore)
+
+            print_foundry_success_info = any('foundry_success' in line for line in failure_log)
+            if print_foundry_success_info:
+                failure_log.append('')
+                failure_log.append('See `foundry_success` predicate for more information:')
+                failure_log.append(
+                    'https://github.com/runtimeverification/evm-semantics/blob/master/include/kframework/foundry.md#foundry-success-predicate'
+                )
+            failure_log.append('')
+            failure_log.append(
+                'Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/'
+            )
             for line in failure_log:
                 _LOGGER.warning(line)
         return False
@@ -180,12 +192,6 @@ def print_failure_info(_cfg: KCFG, _cfgid: str, kcfg_explore: KCFGExplore) -> li
             res_lines.append('  Path condition:')
             res_lines += [f'    {kcfg_explore.kprint.pretty_print(_cfg.path_constraints(node.id))}']
 
-            if 'foundry_success' in reason:
-                res_lines.append('')
-                res_lines.append('See `foundry_success` predicate for more information:')
-                res_lines.append(
-                    'https://github.com/runtimeverification/evm-semantics/blob/master/include/kframework/foundry.md#foundry-success-predicate'
-                )
             res_lines.append('')
             res_lines.append('Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD')
 
