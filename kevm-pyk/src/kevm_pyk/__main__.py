@@ -10,12 +10,13 @@ from typing import TYPE_CHECKING
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, file_path
 from pyk.cterm import CTerm
-from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
+from pyk.kast.outer import KApply, KDefinition, KFlatModule, KImport, KRequire, KRewrite
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
 from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
+from pyk.proof.equality import EqualityProof
 
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
@@ -44,6 +45,7 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
+    from pyk.proof.proof import Proof
 
     T = TypeVar('T')
 
@@ -231,6 +233,16 @@ def exec_prove(
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
+    def is_functional(claim: KClaim) -> bool:
+        _LOGGER.warning(f'claim:{claim}')
+        return not (
+            type(claim.body) is KApply
+            and claim.body.label.name == '<generatedTop>'
+            or type(claim.body) is KRewrite
+            and type(claim.body.lhs) is KApply
+            and claim.body.lhs.label.name == '<generatedTop'
+        )
+
     def _init_and_run_proof(claim: KClaim) -> bool:
         with KCFGExplore(
             kevm,
@@ -241,30 +253,37 @@ def exec_prove(
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
-            _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
-            kcfg = KCFG.from_claim(kevm.definition, claim)
+            proof_problem: Proof
+            if is_functional(claim):
+                _LOGGER.warning('claim is functional.')
+                proof_problem = EqualityProof.from_claim(claim, kevm.definition)
+            else:
+                _LOGGER.warning('claim is not functional.')
 
-            new_init = ensure_ksequence_on_k_cell(kcfg.get_unique_init().cterm)
-            new_target = ensure_ksequence_on_k_cell(kcfg.get_unique_target().cterm)
+                _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
+                kcfg = KCFG.from_claim(kevm.definition, claim)
 
-            _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-            new_init = kcfg_explore.cterm_assume_defined(new_init)
+                new_init = ensure_ksequence_on_k_cell(kcfg.get_unique_init().cterm)
+                new_target = ensure_ksequence_on_k_cell(kcfg.get_unique_target().cterm)
 
-            if simplify_init:
-                _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                _new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                _new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                if is_bottom(_new_init):
-                    raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
-                if is_bottom(_new_target):
-                    raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
-                new_init = CTerm.from_kast(_new_init)
-                new_target = CTerm.from_kast(_new_target)
+                _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
+                new_init = kcfg_explore.cterm_assume_defined(new_init)
 
-            kcfg.replace_node(kcfg.get_unique_init().id, new_init)
-            kcfg.replace_node(kcfg.get_unique_target().id, new_target)
+                if simplify_init:
+                    _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
+                    _new_init, _ = kcfg_explore.cterm_simplify(new_init)
+                    _new_target, _ = kcfg_explore.cterm_simplify(new_target)
+                    if is_bottom(_new_init):
+                        raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
+                    if is_bottom(_new_target):
+                        raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
+                    new_init = CTerm.from_kast(_new_init)
+                    new_target = CTerm.from_kast(_new_target)
 
-            proof_problem = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
+                kcfg.replace_node(kcfg.get_unique_init().id, new_init)
+                kcfg.replace_node(kcfg.get_unique_target().id, new_target)
+
+                proof_problem = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
 
             return kevm_apr_prove(
                 kevm,

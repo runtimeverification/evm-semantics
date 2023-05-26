@@ -16,7 +16,9 @@ from pyk.kast.manip import (
 )
 from pyk.kast.outer import KSequence
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
+from pyk.proof.equality import EqualityProof, EqualityProver
 from pyk.utils import single
+from pyk.proof.proof import ProofStatus
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable
@@ -27,6 +29,7 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KDefinition
     from pyk.kcfg import KCFGExplore
     from pyk.ktool.kprove import KProve
+    from pyk.proof.proof import Proof
 
     T1 = TypeVar('T1')
     T2 = TypeVar('T2')
@@ -67,7 +70,7 @@ def get_apr_proof_for_spec(  # noqa: N802
 def kevm_apr_prove(
     kprove: KProve,
     cfgid: str,
-    proof: APRProof | APRBMCProof,
+    proof: Proof,
     kcfg_explore: KCFGExplore,
     save_directory: Path | None = None,
     max_depth: int = 1000,
@@ -111,34 +114,49 @@ def kevm_apr_prove(
                 'EVM.return.success',
             ]
         )
-    prover: APRBMCProof | APRProver
+    prover: APRBMCProver | APRProver | EqualityProver
     if type(_apr_proof) is APRBMCProof:
         assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
         prover = APRBMCProver(
             _apr_proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop
         )
-    else:
+    elif type(_apr_proof) is APRProof:
         prover = APRProver(_apr_proof, is_terminal=is_terminal, extract_branches=extract_branches)
+    elif type(_apr_proof) is EqualityProof:
+        prover = EqualityProver(_apr_proof)
     try:
-        _cfg = prover.advance_proof(
-            kcfg_explore,
-            max_iterations=max_iterations,
-            execute_depth=max_depth,
-            terminal_rules=terminal_rules,
-            cut_point_rules=cut_point_rules,
-            implication_every_block=implication_every_block,
-        )
+        if type(prover) is APRBMCProver or type(prover) is APRProver:
+            _cfg = prover.advance_proof(
+                kcfg_explore,
+                max_iterations=max_iterations,
+                execute_depth=max_depth,
+                terminal_rules=terminal_rules,
+                cut_point_rules=cut_point_rules,
+                implication_every_block=implication_every_block,
+            )
+            failure_nodes = _cfg.frontier + _cfg.stuck
+            if len(failure_nodes) == 0:
+                _LOGGER.info(f'Proof passed: {_cfgid}')
+                return True
+            else:
+                _LOGGER.error(f'Proof failed: {_cfgid}')
+                return False
+        elif type(prover) is EqualityProver:
+            prover.advance_proof(kcfg_explore)
+            if prover.proof.status == ProofStatus.PASSED:
+                _LOGGER.info(f'Proof passed: {prover.proof.id}')
+                return True
+            if prover.proof.status == ProofStatus.FAILED:
+                _LOGGER.info(f'Proof failed: {prover.proof.id}')
+                return False
+            if prover.proof.status == ProofStatus.PENDING:
+                _LOGGER.info(f'Proof pending: {prover.proof.id}')
+                return False
+
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}', exc_info=True)
         return False
 
-    failure_nodes = _cfg.frontier + _cfg.stuck
-    if len(failure_nodes) == 0:
-        _LOGGER.info(f'Proof passed: {_cfgid}')
-        return True
-    else:
-        _LOGGER.error(f'Proof failed: {_cfgid}')
-        return False
 
 
 def arg_pair_of(

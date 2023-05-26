@@ -17,7 +17,7 @@ module FUNCTIONAL-SPEC
 
     // Arithmetic
 
-    claim <k> runLemma((X +Int pow256) -Int chop(Y)) => doneLemma(X -Int Y) ... </k>
+    claim ((X +Int pow256) -Int chop(Y)) => (X -Int Y)
       requires #rangeUInt(256, X)
        andBool #rangeSInt(256, Y)
        andBool Y <Int 0
