@@ -606,7 +606,7 @@ def foundry_coverage(foundry_root: Path, contracts: Iterable[str]) -> None:
     contracts = set(contracts)
     len_contracts = len(contracts)
 
-    proofs: dict[str, APRProof] = {}
+    call_cells: dict[bytes, set[KInner]] = dict()
 
     for name, contract in artifacts.items():
         if (len_contracts != 0 and name in contracts) or len_contracts == 0:
@@ -615,26 +615,35 @@ def foundry_coverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                 proof_digest = foundry.proof_digest(name, test)
                 if APRProof.proof_exists(proof_digest, apr_proofs_dir):
                     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+                    if apr_proof.status is ProofStatus.PASSED:
+                        kcfg = apr_proof.kcfg
+                        nodes = kcfg.nodes
+                        # leaves = kcfg.leaves
 
-                    if apr_proof.status is not ProofStatus.PASSED:
-                        print(apr_proof.status)
-                        # raise Exception('Can only run coverage on passing proofs')
-                    else:
-                        proofs[proof_digest] = apr_proof
+                        # for leaf in leaves:
+                        #     print(leaf.cterm.constraints)
 
-    for _, proof in proofs.items():
-        kcfg = proof.kcfg
-        nodes = kcfg.nodes
-        for node in nodes:
-            cells = node.cterm.cells
-            # print(len(cells))
-            # print(cells)
-            if "K_CELL" in cells:
-                # _________EVM_InternalOp_CallOp_Int_Int_Int_Int_Int_Int_Int
-                # print(cells["K_CELL"])
-                cell = cells["K_CELL"]
-                if isinstance(cell, (KSequence)):
-                    print(cell)
+                        for node in nodes:
+                            cterm = node.cterm
+                            kast = cterm.cell('K_CELL')
+                            if type(kast) is KSequence:
+                                # TODO: check for leaf nodes to get the compounded path conditions from the start (with vm.assume) and compare it to all possible values
+                                for item in kast.items:
+                                    if type(item) is KApply and item.label.name.startswith('#callWithCode'):
+                                        call_args = item.args
+                                        code = call_args[3]
+                                        if type(code) is KToken:
+                                            acct_code = code.token
+                                            acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
+                                            # TODO: should we do some pre processing by checking that the same constraints are not already here ?
+                                            for cons in cterm.constraints:
+                                                call_cells[acct_hash].add(cons)
+                                            break
+
+    for k, v in call_cells.items():
+        print(k, v)
+        pass
+
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
     foundry = Foundry(foundry_root)

@@ -2123,7 +2123,6 @@ module EXPECTREVERTTEST-CONTRACT
     
     rule  ( selector ( "testFail_expectRevert_bytes4()" ) => 3540765930 )
       
-    
     rule  ( selector ( "testFail_expectRevert_empty()" ) => 3691097669 )
       
     
