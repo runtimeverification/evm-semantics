@@ -28,7 +28,7 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.utils import hash_str, shorten_hashes, single, unique
 
 from .kevm import KEVM
-from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
+from .kompile import CONCRETE_RULES, HOOK_NAMESPACES, KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, kevm_apr_prove
 
@@ -324,38 +324,23 @@ def foundry_kompile(
 
     def _kompile(
         out_dir: Path,
-        backend: KompileBackend,
+        backend: KompileTarget,
         llvm_kompile_type: LLVMKompileType | None = None,
         md_selector: str | None = None,
     ) -> None:
-        base_args = KompileArgs(
+        kevm_kompile(
+            target=backend,
+            output_dir=out_dir,
             main_file=foundry_main_file,
             main_module=main_module,
             syntax_module=syntax_module,
-            include_dirs=[include for include in includes if Path(include).exists()],
-            md_selector=md_selector,
-            hook_namespaces=HOOK_NAMESPACES,
+            includes=[include for include in includes if Path(include).exists()],
             emit_json=True,
+            ccopts=ccopts,
+            llvm_kompile_type=llvm_kompile_type,
+            debug=debug,
+            md_selector=md_selector,
         )
-
-        kompile: Kompile
-        match backend:
-            case KompileBackend.LLVM:
-                kompile = LLVMKompile(
-                    base_args=base_args,
-                    ccopts=ccopts,
-                    no_llvm_kompile=not llvm_kompile,
-                    llvm_kompile_type=llvm_kompile_type,
-                )
-            case KompileBackend.HASKELL:
-                kompile = HaskellKompile(
-                    base_args=base_args,
-                    concrete_rules=CONCRETE_RULES,
-                )
-            case _:
-                raise ValueError(f'Unsuppored backend: {backend.value}')
-
-        kompile(output_dir=out_dir, debug=debug)
 
     def kompilation_digest() -> str:
         k_files = list(requires) + [foundry_contracts_file, foundry_main_file]
@@ -375,12 +360,12 @@ def foundry_kompile(
 
     if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
-        _kompile(foundry_definition_dir, KompileBackend.HASKELL, md_selector=md_selector)
+        _kompile(foundry_definition_dir, KompileTarget.HASKELL, md_selector=md_selector)
         if llvm_library:
             _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
             _kompile(
                 foundry_llvm_dir,
-                KompileBackend.LLVM,
+                KompileTarget.LLVM,
                 llvm_kompile_type=LLVMKompileType.C,
                 md_selector=('k & ! symbolic' if md_selector is None else f'{md_selector} & ! symbolic'),
             )

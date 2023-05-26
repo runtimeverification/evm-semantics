@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cli_utils import run_process
-from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile
+from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
 
 from . import config
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import Final
 
-    from pyk.ktool.kompile import Kompile, LLVMKompileType
+    from pyk.ktool.kompile import Kompile
 
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -121,9 +121,11 @@ def kevm_kompile(
     llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
     debug: bool = False,
+    md_selector: str | None = None,
 ) -> Path:
     backend = target.backend
-    md_selector = 'k & ! standalone' if target == KompileTarget.NODE else 'k & ! node'
+    if not md_selector:
+        md_selector = 'k & ! standalone' if target == KompileTarget.NODE else 'k & ! node'
 
     include_dirs = [Path(include) for include in includes]
     include_dirs += [config.INCLUDE_DIR]
@@ -144,7 +146,7 @@ def kevm_kompile(
     haskell_binary = kernel is not Kernel.DARWIN
     match backend:
         case KompileBackend.LLVM:
-            ccopts = list(ccopts) + _lib_ccopts(kernel)
+            ccopts = list(ccopts) + _lib_ccopts(kernel, llvm_kompile_type)
             no_llvm_kompile = target == KompileTarget.NODE
             kompile = LLVMKompile(
                 base_args=base_args,
@@ -173,8 +175,11 @@ def kevm_kompile(
         raise
 
 
-def _lib_ccopts(kernel: Kernel) -> list[str]:
-    ccopts = ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
+def _lib_ccopts(kernel: Kernel, llvm_kompile_type: LLVMKompileType | None = None) -> list[str]:
+    ccopts = ['-g', '-std=c++14']
+
+    if llvm_kompile_type != LLVMKompileType.C: ccopts += ['-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
+    
 
     libff_dir = config.KEVM_LIB / 'libff'
     ccopts += [f'-L{libff_dir}/lib', f'-I{libff_dir}/include']
@@ -187,7 +192,7 @@ def _lib_ccopts(kernel: Kernel) -> list[str]:
     ]
 
     if kernel == Kernel.DARWIN:
-        if not config.NIX_BUILD:
+        if not config.NIX_LIBS:
             brew_root = run_process(('brew', '--prefix'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
             ccopts += [
                 f'-I{brew_root}/include',
@@ -205,8 +210,11 @@ def _lib_ccopts(kernel: Kernel) -> list[str]:
                 f'-I{libcryptopp_dir}/include',
                 f'-L{libcryptopp_dir}/lib',
             ]
+        else:
+            ccopts += config.NIX_LIBS.split(' ')
     elif kernel == Kernel.LINUX:
-        ccopts += ['-lprocps']
+        ccopts += ['-lprocps' ]
+        ccopts += config.NIX_LIBS.split(' ')
     else:
         raise AssertionError()
 

@@ -2,14 +2,16 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/b01f185e4866de7c5b5a82f833ca9ea3c3f72fc4";
+    nixpkgs.url =
+      "github:NixOS/nixpkgs/b01f185e4866de7c5b5a82f833ca9ea3c3f72fc4";
     k-framework.url = "github:runtimeverification/k/v5.6.110";
     k-framework.inputs.nixpkgs.follows = "nixpkgs";
     #nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.url = "github:runtimeverification/rv-nix-tools";
     poetry2nix.follows = "pyk/poetry2nix";
-    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/23fb5e8fdb4a87451fd40a0e49118eaab481931b";
+    blockchain-k-plugin.url =
+      "github:runtimeverification/blockchain-k-plugin/23fb5e8fdb4a87451fd40a0e49118eaab481931b";
     blockchain-k-plugin.inputs.flake-utils.follows = "k-framework/flake-utils";
     blockchain-k-plugin.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     ethereum-tests.url =
@@ -24,9 +26,9 @@
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
 
   };
-  outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils, poetry2nix
-    , blockchain-k-plugin, ethereum-tests, ethereum-legacytests, rv-utils, pyk
-    }:
+  outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
+    , poetry2nix, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
+    , rv-utils, pyk }:
     let
       buildInputs = pkgs: k:
         with pkgs;
@@ -55,7 +57,10 @@
 
       overlay = final: prev: {
         kevm = k:
-          prev.stdenv.mkDerivation {
+          let
+            nixLibs =
+              "-I${final.secp256k1}/include -L${final.secp256k1}/lib -I${final.openssl.dev}/include -L${final.openssl.dev}/lib -I${final.cryptopp.dev}/include -L${final.cryptopp.dev}/lib";
+          in prev.stdenv.mkDerivation {
             pname = "kevm";
             version = self.rev or "dirty";
             buildInputs = buildInputs final k;
@@ -92,8 +97,11 @@
                 --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
             '';
 
-            buildFlags = [ "KEVM_PYK=${final.kevm-pyk}/bin/kevm-pyk" "NIX_BUILD=true" ] ++
-              prev.lib.optional (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
+            buildFlagsArray = "NIX_LIBS=${nixLibs}";
+
+            buildFlags = [ "KEVM_PYK=${final.kevm-pyk}/bin/kevm-pyk" ]
+              ++ prev.lib.optional
+              (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
               "APPLE_SILICON=true";
             enableParallelBuilding = true;
 
@@ -106,7 +114,7 @@
               mv .build/usr/* $out/
               wrapProgram $out/bin/kevm --prefix PATH : ${
                 prev.lib.makeBinPath [ final.solc prev.which k ]
-              }
+              } --set NIX_LIBS "${nixLibs}"
               ln -s ${k} $out/lib/kevm/kframework
             '';
           };
@@ -145,9 +153,9 @@
           projectDir = ./kevm-pyk;
           overrides = prev.poetry2nix.overrides.withDefaults
             (finalPython: prevPython: { pyk = prev.pyk-python310; });
-          groups = [];
+          groups = [ ];
           # We remove `"dev"` from `checkGroups`, so that poetry2nix does not try to resolve dev dependencies.
-          checkGroups = [];
+          checkGroups = [ ];
         };
 
       };
@@ -164,7 +172,7 @@
             (final: prev: { llvm-backend-release = false; })
             (final: prev: {
               # https://github.com/NixOS/nixpkgs/pull/219240
-              solc = prev.callPackage ./nix/solc/default.nix {};
+              solc = prev.callPackage ./nix/solc/default.nix { };
             })
             k-framework.overlay
             blockchain-k-plugin.overlay
@@ -177,7 +185,8 @@
       in {
         packages.default = kevm;
         devShell = pkgs.mkShell {
-          buildInputs = buildInputs pkgs k-framework.packages.${system}.k ++ [ pkgs.poetry ];
+          buildInputs = buildInputs pkgs k-framework.packages.${system}.k
+            ++ [ pkgs.poetry ];
         };
 
         apps = {
