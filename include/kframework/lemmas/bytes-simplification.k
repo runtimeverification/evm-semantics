@@ -232,9 +232,6 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
 
-    rule maxUInt8  &Int #asWord(B) => #asWord(#range(B ,31 ,1)) requires lengthBytes(B) ==Int 32 [simplification]
-    rule maxUInt16 &Int #asWord(B) => #asWord(#range(B ,30 ,2)) requires lengthBytes(B) ==Int 32 [simplification] 
-
     // #ecrec
 
     rule lengthBytes ( #ecrec ( _ , _ , _ , _ ) ) <=Int 32 => true

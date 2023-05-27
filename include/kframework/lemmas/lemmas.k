@@ -24,7 +24,6 @@ module LEMMAS [symbolic]
 
     // chop range & simplification
     rule chop(I) => I requires #rangeUInt( 256 , I ) [simplification]
-    rule chop(I) => I modInt pow256                  [simplification, smt-lemma]
     rule 0 <=Int chop(_V)             => true        [simplification, smt-lemma]
     rule         chop(_V) <Int pow256 => true        [simplification]
 
@@ -76,7 +75,6 @@ module LEMMAS [symbolic]
     //Required for #Ceil(#buf)
     rule 0 <=Int keccak( _ )             => true [simplification]
     rule         keccak( _ ) <Int pow256 => true [simplification]
-    rule         keccak( _ ) ==Int maxUInt256 => false [simplification]
 
   // ########################
   // Map Reasoning
@@ -182,10 +180,6 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
 
     rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
-
-    rule ( ( X modInt N ) +Int Y ) modInt N => (X +Int Y) modInt N [simplification]
-
-    rule X xorInt maxUInt256 => maxUInt256 -Int X requires #rangeUInt(256, X) [simplification]
 
     // ; Z3 version 4.8.12
     // (set-option :smt.mbqi true)

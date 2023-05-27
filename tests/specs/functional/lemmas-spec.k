@@ -307,10 +307,6 @@ module LEMMAS-SPEC
     claim [chop-range-inferred]: <k> runLemma(X <Int chop(X *Int Y) /Int 1000000000000000000) => doneLemma(X <Int (X *Int Y) /Int 1000000000000000000) ... </k>
       requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) andBool Y <=Int maxUInt256 /Int X
 
-    claim [chop-successor-key]: <k> runLemma ( #lookup ( STORAGE [ chop ( KEY +Int 1 ) <- _ ] , KEY ) ) => doneLemma ( #lookup ( STORAGE , KEY ) ) ... </k>
-
-    claim [chop-successor]: <k> runLemma ( chop ( KEY +Int 1 ) =/=Int KEY ) => doneLemma ( true ) ... </k>
-
  // #padToWidth simplification
  // --------------------------
 
@@ -334,14 +330,6 @@ module LEMMAS-SPEC
 
     claim [bytes-reassociation]: <k> runLemma  ( ((((A +Bytes B) +Bytes C) +Bytes D) +Bytes E) +Bytes F )
                                   => doneLemma ( A +Bytes (B +Bytes (C +Bytes (D +Bytes (E +Bytes F)))) ) ... </k>
-
-    claim [length-concat]: <k> runLemma ( lengthBytes ( #range ( #buf ( 32 , _X ) , 3 , 29 ) +Bytes b"\x01" +Bytes #buf ( 2 , Y ) ) )
-                            => doneLemma ( 32 ) ... </k> 
-                           requires #rangeUInt ( 16 , Y )
-
-    claim [concat-ranges]: <k> runLemma ( #asWord ( #range ( #buf ( 32 , X ) , 0 , 29 ) +Bytes #range ( #buf ( 32 , X ) , 29 , 3 ) ) )
-                            => doneLemma ( X ) ... </k> 
-                           requires #rangeUInt ( 256 , X )                                   
 
  // bitwise-and identity
  // --------------------
@@ -410,39 +398,6 @@ module LEMMAS-SPEC
     claim <k> runLemma ( maxUInt16 &Int N  ) => doneLemma ( N ) ... </k> requires #rangeUInt(16,  N)
     claim <k> runLemma ( N &Int maxUInt8   ) => doneLemma ( N ) ... </k> requires #rangeUInt(8,   N)
     claim <k> runLemma ( maxUInt8 &Int N   ) => doneLemma ( N ) ... </k> requires #rangeUInt(8,   N)
-
- // shift
- // -----
-
-    claim [shift-range]: <k> runLemma ( #rangeUInt ( 256 , X <<Int 16 ) ) => doneLemma ( true ) ... </k> requires #rangeUInt ( 16 , X )
-
-    claim [shift-mod]: <k> runLemma ( ( X <<Int 16 ) modInt pow256 ) => doneLemma ( X <<Int 16 ) ... </k> requires #rangeUInt ( 16 , X )
-
-    claim [shift-248]: <k> runLemma ( ( X <<Int 248 ) <Int pow256 ) => doneLemma ( true ) ... </k> requires #rangeUInt ( 8 , X )
-
-    claim [lowest-8-bits]: 
-      <k> runLemma ( maxUInt8 &Int #asWord ( #range ( #buf ( 32 , X ) , 1 , 31 ) +Bytes #range ( #buf ( 32 , #asWord ( b"\x01" +Bytes #range ( #buf ( 32 , Y ) , 0 , 2 ) +Bytes #range ( #buf ( 32 , Z ) , 0 , 29 ) ) ) , 0 , 1 ) ) ) => 
-          doneLemma ( 1 ) ... 
-      </k>
-      requires #rangeUInt ( 256 , X ) 
-       andBool #rangeUInt ( 256 , Y ) 
-       andBool #rangeUInt ( 256 , Z )
-
-    claim [highest-8-bits]: 
-      <k> runLemma ( maxUInt8 &Int #asWord ( #range ( #buf ( 32 , ( notMaxUInt248 &Int ( ( X <<Int 248 ) modInt pow256 ) ) ) , 0 , 1 ) ) ) => 
-          doneLemma ( X ) ... 
-      </k>
-      requires #rangeUInt ( 8 , X )
-
-    claim [highest-16-bits]: 
-      <k> runLemma ( maxUInt16 &Int #asWord ( #range ( #buf ( 32 , X ) , 3 , 29 ) +Bytes b"\x01" +Bytes #range ( #buf ( 32 , ( notMaxUInt240 &Int ( ( Y <<Int 240 ) modInt pow256 ) ) ) , 0 , 2 ) ) ) => 
-          doneLemma ( Y ) ... 
-      </k>
-      requires #rangeUInt ( 256 , X ) andBool #rangeUInt ( 16 , Y )
-
-    claim [one-byte-range]: 
-      <k> runLemma ( #asWord ( #range ( #buf ( 32 , notMaxUInt248 &Int ( X <<Int 248 ) modInt pow256 ) , 0 , 1 ) ) <Int pow8 ) => doneLemma ( true ) ... </k>
-      requires #rangeUInt ( 8 , X )
 
  // ecrecover
  // ---------
