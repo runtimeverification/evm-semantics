@@ -66,6 +66,11 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires 0 <=Int W1 andBool 0 <=Int W2
       [simplification]
 
+    rule #buf(32 , #asWord(B:Bytes)) => B requires lengthBytes(B) ==Int 32 [simplification]
+
+    rule #buf(32, X <<Int 248) => #buf(1, X) +Bytes #buf(31, 0) requires #rangeUInt( 8, X) [simplification]
+    rule #buf(32, X <<Int 240) => #buf(2, X) +Bytes #buf(30, 0) requires #rangeUInt(16, X) [simplification]
+    
     // #range
 
     rule [range-empty]:
