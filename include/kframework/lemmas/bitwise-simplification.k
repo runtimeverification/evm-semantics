@@ -55,6 +55,7 @@ module BITWISE-SIMPLIFICATION [symbolic]
     rule notMaxUInt240 &Int (X <<Int 240) => X <<Int 240 requires #rangeUInt(16, X) [simplification]
     rule notMaxUInt248 &Int (X <<Int 248) => X <<Int 248 requires #rangeUInt( 8, X) [simplification]
 
+    rule maxUInt32  &Int X => X requires #rangeUInt (32, X) [simplification]     
     rule maxUInt8   &Int (X |Int (  notMaxUInt8 &Int Y:Int)) => X requires #rangeUInt(  8, X) andBool 0 <=Int Y [simplification]
     rule maxUInt16  &Int (X |Int ( notMaxUInt16 &Int Y:Int)) => X requires #rangeUInt( 16, X) andBool 0 <=Int Y [simplification]
     rule maxUInt32  &Int (X |Int ( notMaxUInt32 &Int Y:Int)) => X requires #rangeUInt( 32, X) andBool 0 <=Int Y [simplification]
