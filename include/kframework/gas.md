@@ -101,9 +101,6 @@ Here are some internal helper functions for calculating gas. Most of these funct
 module GAS-FEES
     imports GAS-SYNTAX
     imports SCHEDULE
-
-    // MOVED FROM evm.md:173`
-    syntax AccountCode ::= Bytes
     
     syntax Gas ::= Cgascap        ( Schedule , Gas , Gas , Int )         [function, total, smtlib(gas_Cgascap_Gas)   ]
     syntax Int ::= Cgascap        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Cgascap_Int)   ]
@@ -196,14 +193,8 @@ module GAS-FEES
     rule [Cmodexp.new]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => maxInt(200, (#newMultComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1)) /Int Gquaddivisor < SCHED > )
       requires Ghasaccesslist << SCHED >>
 
-    syntax BExp    ::= Bool
-    syntax KResult ::= Bool
-    syntax BExp ::= #accountNonexistent ( Int )
- // -------------------------------------------
-
-
     syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, total, klabel(accountEmpty), symbol]
- // --------------------------------------------------------------------------------------------------
+ // ---------------------------------------------------------------------------------------------------------
     rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .Bytes andBool NONCE ==Int 0 andBool BAL ==Int 0
 
     syntax Gas ::= #allBut64th ( Gas ) [function, total, smtlib(gas_allBut64th_Gas)]

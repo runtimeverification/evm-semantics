@@ -2178,6 +2178,10 @@ There are several helpers for calculating gas (most of them also specified in th
     rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
          => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
 
+    syntax BExp    ::= Bool
+    syntax KResult ::= Bool
+    syntax BExp ::= #accountNonexistent ( Int )
+ // -------------------------------------------
     rule <k> #accountNonexistent(ACCT) => true ... </k>
          <activeAccounts> ACCTS </activeAccounts>
       requires notBool ACCT in ACCTS
