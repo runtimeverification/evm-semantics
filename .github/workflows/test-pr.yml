@@ -60,7 +60,7 @@ jobs:
     name: 'Build and Test KEVM concrete execution'
     needs: version-bump
     runs-on: [self-hosted, linux, normal]
-    timeout-minutes: 45
+    timeout-minutes: 20
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
