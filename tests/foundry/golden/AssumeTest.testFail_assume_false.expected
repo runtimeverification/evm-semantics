@@ -1,5 +1,5 @@
 
-┌─ OMITTED HASH (init, expanded)
+┌─ 4 (init, expanded)
 │    k: #execute ~> CONTINUATION
 │    pc: 0
 │    callDepth: 0
@@ -7,21 +7,21 @@
 │    src: tests/foundry/test/AssumeTest.t.sol:5:44
 │
 │  (919 steps)
-├─ OMITTED HASH (expanded)
+├─ 7 (expanded)
 │    k: CALL 9223372036854772734 645326474426547203313410069153905908525362434349 0 128  ...
 │    pc: 424
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ OMITTED HASH (expanded)
+├─ 9 (expanded)
 │    k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
 │    pc: 424
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (299 steps)
-├─ OMITTED HASH (expanded)
+├─ 11 (expanded)
 │    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │    pc: 183
 │    callDepth: 0
@@ -29,7 +29,7 @@
 │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (1 step)
-├─ OMITTED HASH (expanded)
+├─ 13 (expanded)
 │    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │    pc: 183
 │    callDepth: 0
@@ -37,7 +37,7 @@
 │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (2 steps)
-└─ OMITTED HASH (expanded, stuck, leaf)
+└─ 15 (expanded, stuck, leaf)
      k: #halt ~> CONTINUATION:K
      pc: 183
      callDepth: 0
@@ -46,7 +46,7 @@
    (stuck)
 
 
-└─ OMITTED HASH (target, leaf)
+└─ 3 (target, leaf)
      k: #halt ~> CONTINUATION
      pc: PC_CELL_5d410f2a
      callDepth: CALLDEPTH_CELL_5d410f2a
@@ -55,14 +55,14 @@
 
 Target Nodes:
 
-OMITTED HASH (target, leaf)
+3 (target, leaf)
  k: #halt ~> CONTINUATION
  pc: PC_CELL_5d410f2a
  callDepth: CALLDEPTH_CELL_5d410f2a
  statusCode: STATUSCODE_FINAL
 
 
-Node OMITTED HASH:
+Node 15:
 
 ( <generatedTop>
   <foundry>
@@ -151,24 +151,6 @@ Node OMITTED HASH:
           <accounts>
             ( <account>
               <acctID>
-                645326474426547203313410069153905908525362434349
-              </acctID>
-              <balance>
-                0
-              </balance>
-              <storage>
-                .Map
-              </storage>
-              <origStorage>
-                .Map
-              </origStorage>
-              <nonce>
-                0
-              </nonce>
-              ...
-            </account>
-            <account>
-              <acctID>
                 728815563385977040452943777879061427756277306518
               </acctID>
               <balance>
@@ -182,6 +164,24 @@ Node OMITTED HASH:
               </origStorage>
               <nonce>
                 1
+              </nonce>
+              ...
+            </account>
+            <account>
+              <acctID>
+                645326474426547203313410069153905908525362434349
+              </acctID>
+              <balance>
+                0
+              </balance>
+              <storage>
+                .Map
+              </storage>
+              <origStorage>
+                .Map
+              </origStorage>
+              <nonce>
+                0
               </nonce>
               ...
             </account> )
@@ -314,7 +314,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                      ( .WordStack => ( 164 : ( 1281615202 : ( 645326474426547203313410069153905908525362434349 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 182 : ( 1596879099 : .WordStack ) ) ) ) ) ) ) )
                    </wordStack>
                    <localMem>
-                     ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" [ 132 := #buf ( 32 , bool2Word ( VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) ] )
+                     ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) )
                    </localMem>
                    <memoryUsed>
                      ( 0 => 6 )
@@ -365,7 +365,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                      ...
                    </account> => <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -377,7 +377,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                        .Map
                      </origStorage>
                      <nonce>
-                       0
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -400,7 +400,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                      ...
                    </account> => <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
+                       645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
                        0
@@ -412,7 +412,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                        .Map
                      </origStorage>
                      <nonce>
-                       1
+                       0
                      </nonce>
                      ...
                    </account> ) )
@@ -530,7 +530,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                      ( 164 : ( 1281615202 : ( 645326474426547203313410069153905908525362434349 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 182 : ( 1596879099 : .WordStack ) ) ) ) ) ) )
                    </wordStack>
                    <localMem>
-                     b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" [ 132 := #buf ( 32 , bool2Word ( VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) ]
+                     b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) )
                    </localMem>
                    <memoryUsed>
                      6
@@ -564,24 +564,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -595,6 +577,24 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -716,7 +716,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                      ( ( 164 => 1596879099 ) : ( ( 1281615202 : ( 645326474426547203313410069153905908525362434349 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 182 : ( 1596879099 : .WordStack ) ) ) ) ) ) => .WordStack ) )
                    </wordStack>
                    <localMem>
-                     ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" [ 132 := #buf ( 32 , bool2Word ( VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) ] => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" )
+                     ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" )
                    </localMem>
                    <memoryUsed>
                      6
@@ -750,24 +750,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -781,6 +763,24 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -936,24 +936,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -967,6 +949,24 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
@@ -1122,24 +1122,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                  <accounts>
                    ( <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
@@ -1153,6 +1135,24 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                      </origStorage>
                      <nonce>
                        1
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
                      </nonce>
                      ...
                    </account> )
