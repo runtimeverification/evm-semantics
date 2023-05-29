@@ -8,6 +8,7 @@ from functools import cached_property
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
+import hashlib
 
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
@@ -599,14 +600,14 @@ def foundry_show(
     return '\n'.join(res_lines)
 
 
-def foundry_coverage(foundry_root: Path, contracts: Iterable[str]) -> None:
+def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
     artifacts = foundry.contracts
     contracts = set(contracts)
     len_contracts = len(contracts)
 
-    call_cells: dict[bytes, set[KInner]] = dict()
+    call_cells: dict[bytes, set[KInner]] = {}
 
     for name, contract in artifacts.items():
         if (len_contracts != 0 and name in contracts) or len_contracts == 0:
@@ -618,16 +619,16 @@ def foundry_coverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                     if apr_proof.status is ProofStatus.PASSED:
                         kcfg = apr_proof.kcfg
                         nodes = kcfg.nodes
-                        # leaves = kcfg.leaves
+                        leaves = kcfg.leaves
+                        cons = set()
 
-                        # for leaf in leaves:
-                        #     print(leaf.cterm.constraints)
+                        for leaf in leaves:
+                            cons.add(leaf.cterm.constraints)
 
                         for node in nodes:
                             cterm = node.cterm
                             kast = cterm.cell('K_CELL')
                             if type(kast) is KSequence:
-                                # TODO: check for leaf nodes to get the compounded path conditions from the start (with vm.assume) and compare it to all possible values
                                 for item in kast.items:
                                     if type(item) is KApply and item.label.name.startswith('#callWithCode'):
                                         call_args = item.args
@@ -635,13 +636,17 @@ def foundry_coverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                                         if type(code) is KToken:
                                             acct_code = code.token
                                             acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
-                                            # TODO: should we do some pre processing by checking that the same constraints are not already here ?
-                                            for cons in cterm.constraints:
-                                                call_cells[acct_hash].add(cons)
+                                            call_cells[acct_hash] = cons
                                             break
 
-    for k, v in call_cells.items():
-        print(k, v)
+    for bytecode_h, cons in call_cells.items():
+        dummy_config = KApply("<dummy>")
+        print(cons)
+        # TODO: negate the constraints using #Not
+        cterm = CTerm(dummy_config, cons)
+        kcfg_explore = KCFGExplore(foundry.kevm)
+        depth, _cterm, next_cterms, next_node_logs = kcfg_explore.cterm_execute(cterm)
+        print(depth, next_node_logs)
         pass
 
 
@@ -871,10 +876,12 @@ def _method_to_apr_proof(
 
         setup_digest = None
         if method_name != 'setUp' and 'setUp' in contract.method_by_name:
-            setup_digest = f'{contract_name}.setUp:{contract.digest}'
+            # setup_digest = f'{contract_name}.setUp:{contract.digest}'
+            setup_digest = foundry.proof_digest(contract_name, 'setUp')
             _LOGGER.info(f'Using setUp method for test: {test}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
+        print(save_directory, setup_digest)
         kcfg = _method_to_cfg(empty_config, contract, method, save_directory, init_state=setup_digest)
 
         _LOGGER.info(f'Expanding macros in initial state for test: {test}')
@@ -938,6 +945,7 @@ def _init_cterm(init_term: KInner) -> CTerm:
 
 
 def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, KInner]:
+    print(proof_digest, proof_dir)
     apr_proof = APRProof.read_proof(proof_digest, proof_dir)
     target = apr_proof.kcfg.get_unique_target()
     cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm

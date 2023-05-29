@@ -98,6 +98,7 @@ def kevm_apr_prove(
     if break_on_calls:
         cut_point_rules.extend(
             [
+                'EVM.callWithCode',
                 'EVM.call',
                 'EVM.callcode',
                 'EVM.delegatecall',
