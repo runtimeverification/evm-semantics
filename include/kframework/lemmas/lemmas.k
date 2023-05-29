@@ -28,6 +28,7 @@ module LEMMAS [symbolic]
     rule         chop(_V) <Int pow256 => true        [simplification]
 
     rule X *Int Y <Int pow256 => true requires Y <=Int maxUInt256 /Int X [simplification]
+    rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification] 
 
   // ########################
   // Set Reasoning
@@ -91,6 +92,61 @@ module LEMMAS [symbolic]
 
  // Hardcoded #addrFromPrivateKey simplifications, see: https://github.com/runtimeverification/haskell-backend/issues/3573
     rule #addrFromPrivateKey("0x0000000000000000000000000000000000000000000000000000000000000001") => 721457446580647751014191829380889690493307935711 [priority(40)]
+
+  // ########################
+  // Memory
+  // ########################
+
+    rule 0 <=Int #memoryUsageUpdate(MU, START, WIDTH) => true requires 0 <=Int MU andBool 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+
+    rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START1, WIDTH1), START2, WIDTH2) => #memoryUsageUpdate(MU, START1, WIDTH1)
+      requires #rangeUInt(256, MU) andBool 0 <Int WIDTH1 andBool 0 <Int WIDTH2
+       andBool START2 +Int WIDTH2 <=Int START1 +Int WIDTH1
+      [simplification]
+
+    rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START1, WIDTH1), START2, WIDTH2) => #memoryUsageUpdate(MU, START2, WIDTH2)
+      requires #rangeUInt(256, MU) andBool 0 <Int WIDTH1 andBool 0 <Int WIDTH2
+       andBool START1 +Int WIDTH1 <Int START2 +Int WIDTH2
+      [simplification]
+
+  // ########################
+  // Gas Costs
+  // ########################
+
+    rule 0 <=Int Csload(_, _)                   => true                                       [simplification]
+    rule 0 <=Int Cmem(_, N)                     => true requires 0 <=Int N                    [simplification]
+    rule 0 <=Int Caddraccess(_, _)              => true                                       [simplification]
+    rule 0 <=Int Csstore(_, _, _, _)            => true                                       [simplification]
+    rule 0 <=Int Cgascap(_, _:Int, _:Int, _)    => true                                       [simplification]
+    rule 0 <=Int #allBut64th(_:Int)             => true                                       [simplification]
+    rule 0 <=Int Cextra(_, _, _, _)             => true                                       [simplification]
+    rule 0 <=Int _:ScheduleConst < _:Schedule > => true                                       [simplification]
+    rule 0 <=Int G up/Int I                     => true requires 0 <=Int G andBool 0 <Int I   [simplification]
+    rule Cextra(_, _, _, _) <Int pow256         => true                                       [simplification]
+
+    rule G <Int Csstore(SCHED, _:Int, _:Int, _) => false
+      requires Gsload       < SCHED > <=Int G
+       andBool Gsstoreset   < SCHED > <=Int G
+       andBool Gsstorereset < SCHED > <=Int G
+      [simplification]
+
+    rule Csstore(SCHED, _:Int, _:Int, _) <=Int G => true
+      requires Gsload       < SCHED > <=Int G
+       andBool Gsstoreset   < SCHED > <=Int G
+       andBool Gsstorereset < SCHED > <=Int G
+      [simplification]
+
+    rule G <=Int Csstore(SCHED, _:Int, _:Int, _) => false
+      requires Gsload       < SCHED > <Int G
+       andBool Gsstoreset   < SCHED > <Int G
+       andBool Gsstorereset < SCHED > <Int G
+      [simplification]
+
+    rule Csstore(SCHED, _:Int, _:Int, _) <Int G => true
+      requires Gsload       < SCHED > <Int G
+       andBool Gsstoreset   < SCHED > <Int G
+       andBool Gsstorereset < SCHED > <Int G
+      [simplification]
 
 endmodule
 
@@ -160,5 +216,5 @@ module LEMMAS-HASKELL [symbolic, kore]
   // ########################
 
     rule B ==Bool false => notBool B [simplification]
-
+    rule (notBool (A andBool B)) andBool A => (notBool B) andBool A [simplification]
 endmodule

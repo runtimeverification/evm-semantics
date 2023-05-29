@@ -206,8 +206,16 @@ contract_json = """
   "methodIdentifiers": {
     "aggregate((address,bytes)[])": "252dba42"
   },
+  "storageLayout": [],
   "ast": {
-    "absolutePath": "lib/forge-std/src/interfaces/IMulticall3.sol"
+    "absolutePath": "lib/forge-std/src/interfaces/IMulticall3.sol",
+    "nodes": [
+      {
+        "nodeType": "ContractDefinition",
+        "name": "TestContract",
+        "nodes": []
+      }
+    ]
   },
   "id": 17
 }
