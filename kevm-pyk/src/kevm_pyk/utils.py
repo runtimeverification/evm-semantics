@@ -85,7 +85,6 @@ def kevm_apr_prove(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
-    failure_info: bool = True,
     trace_rewrites: bool = False,
 ) -> bool:
     _cfgid = cfgid
@@ -139,22 +138,6 @@ def kevm_apr_prove(
         return True
     else:
         _LOGGER.error(f'Proof failed: {_cfgid}')
-        if failure_info:
-            failure_log = print_failure_info(_cfg, _cfgid, kcfg_explore)
-
-            print_foundry_success_info = any('foundry_success' in line for line in failure_log)
-            if print_foundry_success_info:
-                failure_log.append('')
-                failure_log.append('See `foundry_success` predicate for more information:')
-                failure_log.append(
-                    'https://github.com/runtimeverification/evm-semantics/blob/master/include/kframework/foundry.md#foundry-success-predicate'
-                )
-            failure_log.append('')
-            failure_log.append(
-                'Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/'
-            )
-            for line in failure_log:
-                _LOGGER.warning(line)
         return False
 
 

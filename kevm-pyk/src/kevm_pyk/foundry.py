@@ -238,6 +238,24 @@ class Foundry:
             intToken(0),
         )
 
+    @staticmethod
+    def help_info(kcfg_explore: KCFGExplore, apr_proof: APRProof) -> list[str]:
+        res_lines = []
+        res_lines += print_failure_info(apr_proof.kcfg, apr_proof.id, kcfg_explore)
+
+        print_foundry_success_info = any('foundry_success' in line for line in res_lines)
+        if print_foundry_success_info:
+            res_lines.append('')
+            res_lines.append('See `foundry_success` predicate for more information:')
+            res_lines.append(
+                'https://github.com/runtimeverification/evm-semantics/blob/master/include/kframework/foundry.md#foundry-success-predicate'
+            )
+        res_lines.append('')
+        res_lines.append(
+            'Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/'
+        )
+        return res_lines
+
 
 def foundry_kompile(
     definition_dir: Path,
@@ -512,7 +530,7 @@ def foundry_prove(
                 trace_rewrites=trace_rewrites,
             )
 
-            return kevm_apr_prove(
+            result = kevm_apr_prove(
                 foundry.kevm,
                 proof_id,
                 proof,
@@ -532,9 +550,15 @@ def foundry_prove(
                 kore_rpc_command=kore_rpc_command,
                 smt_timeout=smt_timeout,
                 smt_retry_limit=smt_retry_limit,
-                failure_info=failure_info,
                 trace_rewrites=trace_rewrites,
             )
+
+            if failure_info:
+                failure_log = Foundry.help_info(kcfg_explore, proof)
+                for line in failure_log:
+                    _LOGGER.warning(line)
+
+            return result
 
     def run_cfg_group(tests: list[str]) -> dict[str, bool]:
         init_problems = [tuple(test.split('.')) for test in tests]
@@ -608,19 +632,7 @@ def foundry_show(
 
     if failure_info:
         with KCFGExplore(foundry.kevm, id=apr_proof.id) as kcfg_explore:
-            res_lines += print_failure_info(apr_proof.kcfg, apr_proof.id, kcfg_explore)
-
-        print_foundry_success_info = any('foundry_success' in line for line in res_lines)
-        if print_foundry_success_info:
-            res_lines.append('')
-            res_lines.append('See `foundry_success` predicate for more information:')
-            res_lines.append(
-                'https://github.com/runtimeverification/evm-semantics/blob/master/include/kframework/foundry.md#foundry-success-predicate'
-            )
-        res_lines.append('')
-        res_lines.append(
-            'Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/'
-        )
+            res_lines += Foundry.help_info(kcfg_explore, apr_proof)
 
     return '\n'.join(res_lines)
 
