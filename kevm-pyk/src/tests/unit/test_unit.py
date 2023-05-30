@@ -234,27 +234,17 @@ def test_contract_creation() -> None:
 
 
 def test_int_to_hex() -> None:
-    kast = KApply('<K>', [KToken('1234', 'Int')])
-    to_hex = KEVM._int_token_to_hex(kast)
-    assert type(to_hex) is KApply
-    tok = to_hex.args[0]
-    assert type(tok) is KToken
-    assert tok.token == '0x4d2'
+    test_values = [
+        ([KToken('100', 'Int')], '100'),
+        ([KToken('1234', 'Int')], '0x4d2'),
+        ([KToken('b""', 'Bytes')], '0x'),
+        ([KToken('b"\\xa6\\xb9c\\x9d"', 'Bytes')], '0xa6b9639d'),
+    ]
 
-
-def test_empty_bytes() -> None:
-    kast = KApply('<K>', [KToken('b""', 'Bytes')])
-    to_hex = KEVM._int_token_to_hex(kast)
-    assert type(to_hex) is KApply
-    tok = to_hex.args[0]
-    assert type(tok) is KToken
-    assert tok.token == '0x'
-
-
-def test_bytes_to_hex() -> None:
-    kast = KApply('<K>', [KToken('b"\\xa6\\xb9c\\x9d"', 'Bytes')])
-    to_hex = KEVM._int_token_to_hex(kast)
-    assert type(to_hex) is KApply
-    tok = to_hex.args[0]
-    assert type(tok) is KToken
-    assert tok.token == '0xa6b9639d'
+    for input, result in test_values:
+        kast = KApply('<K>', input)
+        to_hex = KEVM._int_token_to_hex(kast)
+        assert type(to_hex) is KApply
+        tok = to_hex.args[0]
+        assert type(tok) is KToken
+        assert tok.token == result

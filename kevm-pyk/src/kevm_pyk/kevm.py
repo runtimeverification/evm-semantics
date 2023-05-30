@@ -373,7 +373,7 @@ class KEVM(KProve, KRun):
     @staticmethod
     def _int_token_to_hex(kast: KInner) -> KInner:
         def _helper(_kast: KInner) -> KInner:
-            if type(_kast) is KToken and _kast.sort == INT:
+            if type(_kast) is KToken and _kast.sort == INT and int(_kast.token) >= 256:
                 return KToken(hex(int(_kast.token)), INT)
             if type(_kast) is KToken and _kast.sort == BYTES:
                 return KToken('0x' + pretty_bytes(_kast).hex(), BYTES)
