@@ -608,9 +608,6 @@ After executing a transaction, it's necessary to have the effect of the substate
            ...
          </message>
 
-    rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
-         <coinbase> MINER </coinbase> [owise]
-
     rule <k> (. => #deleteAccounts(Set2List(ACCTS))) ~> #finalizeTx(true) ... </k>
          <selfDestruct> ACCTS => .Set </selfDestruct>
       requires size(ACCTS) >Int 0
