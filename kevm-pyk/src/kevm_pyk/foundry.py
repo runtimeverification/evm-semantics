@@ -185,7 +185,9 @@ class Foundry:
 
     def build(self) -> None:
         try:
-            run_process(['forge', 'build', '--root', str(self._root), '--extra-output', 'storageLayout'], logger=_LOGGER)
+            run_process(
+                ['forge', 'build', '--root', str(self._root), '--extra-output', 'storageLayout'], logger=_LOGGER
+            )
         except CalledProcessError as err:
             raise RuntimeError("Couldn't forge build!") from err
 
