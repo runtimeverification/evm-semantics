@@ -128,6 +128,7 @@ This minimizes the amount of information which must be stored in the configurati
 
     rule <k> #loadAccount ACCT => . ... </k>
       requires notBool #accountExists(ACCT)
+      [priority(55)]
 
     rule <k> #loadAccount ACCT => . ... </k>
          <accounts>
