@@ -203,19 +203,19 @@ The `callStack` cell stores a list of previous VM execution states.
     syntax InternalOp ::= "#pushCallStack"
  // --------------------------------------
     rule <k> #pushCallStack => . ... </k>
-         <callStack> (.List => ListItem(CALLSTATE)) ... </callStack>
+         <callStack> STACK => ListItem(CALLSTATE) STACK </callStack>
          <callState> CALLSTATE </callState>
 
     syntax InternalOp ::= "#popCallStack"
  // -------------------------------------
     rule <k> #popCallStack => . ... </k>
-         <callStack>  (ListItem(CALLSTATE) => .List) ... </callStack>
+         <callStack> ListItem(CALLSTATE) REST => REST </callStack>
          <callState> _ => CALLSTATE </callState>
 
     syntax InternalOp ::= "#dropCallStack"
  // --------------------------------------
     rule <k> #dropCallStack => . ... </k>
-         <callStack> (ListItem(_) => .List) ... </callStack>
+         <callStack> ListItem(_) REST => REST </callStack>
 ```
 
 ### The StateStack
@@ -233,7 +233,7 @@ The `interimStates` cell stores a list of previous world states.
     syntax InternalOp ::= "#pushWorldState"
  // ---------------------------------------
     rule <k> #pushWorldState => .K ... </k>
-         <interimStates> (.List => ListItem({ ACCTDATA | ACCTS | SUBSTATE })) ... </interimStates>
+         <interimStates> STATES => ListItem({ ACCTDATA | ACCTS | SUBSTATE }) STATES </interimStates>
          <activeAccounts> ACCTS    </activeAccounts>
          <accounts>       ACCTDATA </accounts>
          <substate>       SUBSTATE </substate>
@@ -241,14 +241,14 @@ The `interimStates` cell stores a list of previous world states.
     syntax InternalOp ::= "#popWorldState"
  // --------------------------------------
     rule <k> #popWorldState => .K ... </k>
-         <interimStates> (ListItem({ ACCTDATA | ACCTS | SUBSTATE }) => .List) ... </interimStates>
+         <interimStates> ListItem({ ACCTDATA | ACCTS | SUBSTATE }) REST => REST </interimStates>
          <activeAccounts> _ => ACCTS    </activeAccounts>
          <accounts>       _ => ACCTDATA </accounts>
          <substate>       _ => SUBSTATE </substate>
 
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
-    rule <k> #dropWorldState => . ... </k> <interimStates> (ListItem(_) => .List) ... </interimStates>
+    rule <k> #dropWorldState => . ... </k> <interimStates> ListItem(_) REST => REST </interimStates>
 ```
 
 Control Flow
@@ -531,7 +531,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 ```k
     syntax InternalOp ::= #finalizeStorage ( List )
  // -----------------------------------------------
-    rule <k> #finalizeStorage((ListItem(ACCT) => .List) _) ... </k>
+    rule <k> #finalizeStorage(ListItem(ACCT) REST => REST) ... </k>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
@@ -585,7 +585,7 @@ After executing a transaction, it's necessary to have the effect of the substate
            <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int (GPRICE -Int BFEE) </balance>
            ...
          </account>
-         <txPending> ListItem(TXID:Int) => .List ... </txPending>
+         <txPending> ListItem(TXID:Int) REST => REST </txPending>
          <message>
            <msgID> TXID </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
@@ -606,7 +606,7 @@ After executing a transaction, it's necessary to have the effect of the substate
            <balance> BAL => BAL +Int GLIMIT *Int (GPRICE -Int BFEE) </balance>
            ...
          </account>
-         <txPending> ListItem(MsgId:Int) => .List ... </txPending>
+         <txPending> ListItem(MsgId:Int) REST => REST </txPending>
          <message>
            <msgID> MsgId </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
@@ -1126,7 +1126,7 @@ These operators query about the current return data buffer.
          <id> ACCT </id>
          <wordStack> WS => #drop(N, WS) </wordStack>
          <localMem> LM </localMem>
-         <log> ... (.List => ListItem({ ACCT | WordStack2List(#take(N, WS)) | #range(LM, MEMSTART, MEMWIDTH) })) </log>
+         <log> L => L ListItem({ ACCT | WordStack2List(#take(N, WS)) | #range(LM, MEMSTART, MEMWIDTH) }) </log>
       requires #sizeWordStack(WS) >=Int N
 ```
 
@@ -1304,6 +1304,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
  // --------------------------------------------------------------
     rule <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> requires         #isPrecompiledAccount(ACCTCODE, SCHED)
+      [preserves-definedness]
     rule <k> #precompiled?(ACCTCODE, SCHED) => .                                ... </k> requires notBool #isPrecompiledAccount(ACCTCODE, SCHED)
 
     syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [function, total, smtlib(isPrecompiledAccount)]
@@ -1356,7 +1357,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #accessAccounts ADDRSET:Set => . ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
 
-    syntax Set ::= #computeValidJumpDests(Bytes)            [function, memo]
+    syntax Set ::= #computeValidJumpDests(Bytes)            [function, memo, total]
                  | #computeValidJumpDests(Bytes, Int, List) [function, klabel(#computeValidJumpDestsAux)]
  // -----------------------------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
@@ -2157,6 +2158,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          <k> #allocateCreateGas => . ... </k>
          <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Gas 64      #fi </gas>
          <callGas> _      => #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi </callGas>
+      [preserves-definedness]
 ```
 
 There are several helpers for calculating gas (most of them also specified in the YellowPaper).
@@ -2286,7 +2288,7 @@ There are several helpers for calculating gas (most of them also specified in th
            ...
          </account>
 
-    syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, klabel(accountEmpty), symbol]
+    syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, total, klabel(accountEmpty), symbol]
  // --------------------------------------------------------------------------------------------------
     rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .Bytes andBool NONCE ==Int 0 andBool BAL ==Int 0
 
