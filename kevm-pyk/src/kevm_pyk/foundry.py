@@ -9,14 +9,14 @@ from functools import cached_property
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
-from pyk.kore.syntax import Not, Sort
+from pyk.kore.syntax import Not, Sort, SortVar
 
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, ensure_dir_path, run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import minimize_term
+from pyk.kast.manip import minimize_term, split_config_and_constraints
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
@@ -657,33 +657,38 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
 
     for bytecode_h, cons_set in call_cells.items():
         for se in cons_set:
-            se[0]
+            config = se[0]
             # print(conf)
             # print(se[1].cterm.constraints)
             base_cons = se[1].cterm.constraints
+            leaves = se[2]
             # print(base_cons)
             # for cons in se[1].cterm.constraints:
                 # print(cons)
             #     kore = kcfg_explore.kprint.kast_to_kore(cons, GENERATED_TOP_CELL)
             #     print(kore)
-            for leaf in se[2][1:]:
+            for leaf in leaves[1:]:
                 leaf_cons = leaf.cterm.constraints
                 new_cons = []
                 for cons in leaf_cons:
-                    # print(conf)
                     # TODO: looks like we are getting some memory leaks here
                     # depth, _cterm, next_cterms, next_node_logs = kcfg_explore.cterm_execute(cterm)
                     # print(depth, next_node_logs)
                     # TODO: negate the constraints using #Not
                     if not base_cons.__contains__(cons):
                         # print(cons)
-                        new_cons.append(cons)
-                        kore = kcfg_explore.kprint.kast_to_kore(cons, GENERATED_TOP_CELL)
-                        print(kore)
-                        negated = Not(Sort.__new__(Sort), kore)
-                        print(negated)
+                        # kore = kcfg_explore.kprint.kast_to_kore(cons, GENERATED_TOP_CELL)
+                        # negated = Not(SortVar('negated'), kore)
+                        # new_cons.append(negated)
+                        negated = KApply("#Not", [cons])
+                        new_cons.append(negated)
                 # call the prover for all the new constraints
                 # ask for a counter example that satisfies the negated constraints
+                new_cterm = CTerm(config, new_cons)
+                # TODO: this awaits some kast, so either convert from kore to kast again, or apply the `Not` to Kast directly (better option)
+                simplified = kcfg_explore.cterm_simplify(new_cterm)[0]
+                constraints = split_config_and_constraints(simplified)[1]
+                print(constraints)
 
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
@@ -917,7 +922,6 @@ def _method_to_apr_proof(
             _LOGGER.info(f'Using setUp method for test: {test}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
-        print(save_directory, setup_digest)
         kcfg = _method_to_cfg(empty_config, contract, method, save_directory, init_state=setup_digest)
 
         _LOGGER.info(f'Expanding macros in initial state for test: {test}')
