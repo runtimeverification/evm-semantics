@@ -421,17 +421,17 @@ def foundry_prove(
     save_directory.mkdir(exist_ok=True)
 
     all_tests = [
-        f'{contract.name}.{method.name}'
+        f'{contract.name}.{method.signature}'
         for contract in foundry.contracts.values()
         if contract.name.endswith('Test')
         for method in contract.methods
         if method.name.startswith('test')
     ]
     all_non_tests = [
-        f'{contract.name}.{method.name}'
+        f'{contract.name}.{method.signature}'
         for contract in foundry.contracts.values()
         for method in contract.methods
-        if f'{contract.name}.{method.name}' not in all_tests
+        if f'{contract.name}.{method.signature}' not in all_tests
     ]
     unfound_tests: list[str] = []
     tests = list(tests)
@@ -464,7 +464,7 @@ def foundry_prove(
             raise ValueError(f'Passed tests are ambiguous, matching methods: {matching}')
 
     _LOGGER.info(f'Running tests: {tests}')
-    exit(1)
+    # exit(1)
 
     setup_methods: dict[str, str] = {}
     contracts = set(unique({test.split('.')[0] for test in tests}))
@@ -476,7 +476,7 @@ def foundry_prove(
         method
         for contract in foundry.contracts.values()
         for method in contract.methods
-        if (f'{method.contract_name}.{method.name}' in tests or (method.is_setup and method.contract_name in contracts))
+        if (f'{method.contract_name}.{method.signature}' in tests or (method.is_setup and method.contract_name in contracts))
     ]
 
     out_of_date_methods: set[str] = set()
@@ -503,9 +503,9 @@ def foundry_prove(
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
-            contract_name, method_name = _init_problem
+            contract_name, method_sig = _init_problem
             contract = foundry.contracts[contract_name]
-            method = contract.method_by_name[method_name]
+            method = contract.method_by_sig[method_sig]
             proof = _method_to_apr_proof(
                 foundry,
                 contract,
@@ -637,8 +637,8 @@ def foundry_list(foundry_root: Path) -> list[str]:
 
     lines: list[str] = []
     for method in sorted(all_methods):
-        contract_name, test_name = method.split('.')
-        proof_digest = foundry.proof_digest(contract_name, test_name)
+        contract_name, test_sig = method.split('.')
+        proof_digest = foundry.proof_digest(contract_name, test_sig)
         if APRProof.proof_exists(proof_digest, apr_proofs_dir):
             apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
             lines.extend(apr_proof.summary)
