@@ -9,6 +9,7 @@ from functools import cached_property
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
+from pyk.kore.syntax import Not, Sort
 
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
@@ -661,8 +662,8 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
             # print(se[1].cterm.constraints)
             base_cons = se[1].cterm.constraints
             # print(base_cons)
-            for cons in se[1].cterm.constraints:
-                print(cons)
+            # for cons in se[1].cterm.constraints:
+                # print(cons)
             #     kore = kcfg_explore.kprint.kast_to_kore(cons, GENERATED_TOP_CELL)
             #     print(kore)
             for leaf in se[2][1:]:
@@ -679,6 +680,8 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                         new_cons.append(cons)
                         kore = kcfg_explore.kprint.kast_to_kore(cons, GENERATED_TOP_CELL)
                         print(kore)
+                        negated = Not(Sort.__new__(Sort), kore)
+                        print(negated)
                 # call the prover for all the new constraints
                 # ask for a counter example that satisfies the negated constraints
 
