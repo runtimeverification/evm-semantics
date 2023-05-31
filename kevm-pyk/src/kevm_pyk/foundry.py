@@ -101,8 +101,8 @@ class Foundry:
             _contracts[contract_name] = Contract(contract_name, contract_json, foundry=True)
         return _contracts
 
-    def proof_digest(self, contract: str, test: str) -> str:
-        return f'{contract}.{test}:{self.contracts[contract].method_by_name[test].digest}'
+    def proof_digest(self, contract: str, test_sig: str) -> str:
+        return f'{contract}.{test_sig}:{self.contracts[contract].method_by_sig[test_sig].digest}'
 
     @cached_property
     def digest(self) -> str:
@@ -188,6 +188,26 @@ class Foundry:
             run_process(['forge', 'build', '--root', str(self._root)], logger=_LOGGER)
         except CalledProcessError as err:
             raise RuntimeError("Couldn't forge build!") from err
+
+    @cached_property
+    def all_tests(self) -> list[str]:
+        return [
+            f'{contract.name}.{method.signature}'
+            for contract in self.contracts.values()
+            if contract.name.endswith('Test')
+            for method in contract.methods
+            if method.name.startswith('test')
+        ]
+
+    @cached_property
+    def all_non_tests(self) -> list[str]:
+        return [
+            f'{contract.name}.{method.signature}'
+            for contract in self.contracts.values()
+            for method in contract.methods
+            if f'{contract.name}.{method.signature}' not in self.all_tests
+        ]
+
 
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
@@ -420,13 +440,7 @@ def foundry_prove(
     save_directory = foundry.out / 'apr_proofs'
     save_directory.mkdir(exist_ok=True)
 
-    all_tests = [
-        f'{contract.name}.{method.signature}'
-        for contract in foundry.contracts.values()
-        if contract.name.endswith('Test')
-        for method in contract.methods
-        if method.name.startswith('test')
-    ]
+    all_tests = foundry.all_tests
     all_non_tests = [
         f'{contract.name}.{method.signature}'
         for contract in foundry.contracts.values()
@@ -446,25 +460,9 @@ def foundry_prove(
         if _t in tests:
             tests.remove(_t)
 
-    def _matching_tests(_tests: list[str]) -> list[str]:
-        matching_tests = list()
-        for _t in _tests:
-            for t in all_tests:
-                if t.startswith(_t):
-                    matching_tests.append(t)
-        return matching_tests
-
-    matching = _matching_tests(tests)
-    match len(matching):
-        case 0:
-            raise ValueError(f'Test identifiers not found: {unfound_tests}')
-        case 1:
-            tests = matching
-        case _:
-            raise ValueError(f'Passed tests are ambiguous, matching methods: {matching}')
+    tests = _matching_tests(tests, all_tests)
 
     _LOGGER.info(f'Running tests: {tests}')
-    # exit(1)
 
     setup_methods: dict[str, str] = {}
     contracts = set(unique({test.split('.')[0] for test in tests}))
@@ -580,7 +578,8 @@ def foundry_show(
     apr_proofs_dir = foundry.out / 'apr_proofs'
 
     contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
+    test_sig = _matching_tests([test_name], foundry.all_tests)[0]
+    proof_digest = foundry.proof_digest(contract_name, test_sig)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
@@ -621,7 +620,8 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     apr_proofs_dir = foundry.out / 'apr_proofs'
     dump_dir = apr_proofs_dir / 'dump'
     contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
+    test_sig = _matching_tests([test_name], foundry.all_tests)[0]
+    proof_digest = foundry.proof_digest(contract_name, test_sig)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     kcfg_show = KCFGShow(foundry.kevm)
     kcfg_show.dump(test, apr_proof.kcfg, dump_dir, dot=True)
@@ -637,7 +637,8 @@ def foundry_list(foundry_root: Path) -> list[str]:
 
     lines: list[str] = []
     for method in sorted(all_methods):
-        contract_name, test_sig = method.split('.')
+        contract_name, test_name = method.split('.')
+        test_sig = _matching_tests([test_name], foundry.all_tests)[0]
         proof_digest = foundry.proof_digest(contract_name, test_sig)
         if APRProof.proof_exists(proof_digest, apr_proofs_dir):
             apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
@@ -653,7 +654,8 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
+    test_sig = _matching_tests([test_name], foundry.all_tests)[0]
+    proof_digest = foundry.proof_digest(contract_name, test_sig)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     for _node in apr_proof.kcfg.reachable_nodes(node, traverse_covers=True):
         if not apr_proof.kcfg.is_target(_node.id):
@@ -677,7 +679,8 @@ def foundry_simplify_node(
     foundry = Foundry(foundry_root, bug_report=br)
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
+    test_sig = _matching_tests([test_name], foundry.all_tests)[0]
+    proof_digest = foundry.proof_digest(contract_name, test_sig)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     cterm = apr_proof.kcfg.node(node).cterm
     with KCFGExplore(
@@ -717,7 +720,8 @@ def foundry_step_node(
 
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
+    test_sig = _matching_tests([test_name], foundry.all_tests)[0]
+    proof_digest = foundry.proof_digest(contract_name, test_sig)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     with KCFGExplore(
         foundry.kevm,
@@ -747,7 +751,8 @@ def foundry_section_edge(
     foundry = Foundry(foundry_root, bug_report=br)
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
+    test_sig = _matching_tests([test_name], foundry.all_tests)[0]
+    proof_digest = foundry.proof_digest(contract_name, test_sig)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     source_id, target_id = edge
     with KCFGExplore(
@@ -825,9 +830,9 @@ def _method_to_apr_proof(
     trace_rewrites: bool = False,
 ) -> APRProof | APRBMCProof:
     contract_name = contract.name
-    method_name = method.name
-    test = f'{contract_name}.{method_name}'
-    proof_digest = foundry.proof_digest(contract_name, method_name)
+    method_sig = method.signature
+    test = f'{contract_name}.{method_sig}'
+    proof_digest = foundry.proof_digest(contract_name, method_sig)
     if Proof.proof_exists(proof_digest, save_directory) and not reinit:
         proof_path = save_directory / f'{hash_str(proof_digest)}.json'
         proof_dict = json.loads(proof_path.read_text())
@@ -842,8 +847,8 @@ def _method_to_apr_proof(
         _LOGGER.info(f'Initializing KCFG for test: {test}')
 
         setup_digest = None
-        if method_name != 'setUp' and 'setUp' in contract.method_by_name:
-            setup_digest = foundry.proof_digest(contract_name, 'setUp')
+        if method_sig != 'setUp()' and 'setUp' in contract.method_by_name:
+            setup_digest = foundry.proof_digest(contract_name, 'setUp()')
             _LOGGER.info(f'Using setUp method for test: {test}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
@@ -1072,3 +1077,19 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             KVariable('STORAGESLOTSET_FINAL'),
         ],
     )
+
+def _matching_tests(_tests: list[str], within: list[str]) -> list[str]:
+    tests = list()
+    for _t in _tests:
+        matching_tests = list()
+        for t in within:
+            if t.startswith(_t):
+                matching_tests.append(t)
+        match len(matching_tests):
+            case 0:
+                raise ValueError(f'Test identifier not found: {_t}')
+            case 1:
+                tests.append(matching_tests[0])
+            case _:
+                raise ValueError(f'Passed tests are ambiguous, matching methods: {matching_tests}')
+    return tests
