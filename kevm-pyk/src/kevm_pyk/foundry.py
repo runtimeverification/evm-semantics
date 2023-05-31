@@ -445,9 +445,26 @@ def foundry_prove(
             unfound_tests.append(_t)
         if _t in tests:
             tests.remove(_t)
+
+    def _matching_tests(_tests: list[str]) -> list[str]:
+        matching_tests = list()
+        for _t in _tests:
+            for t in all_tests:
+                if t.startswith(_t):
+                    matching_tests.append(t)
+        return matching_tests
+
+    matching = _matching_tests(tests)
+    match len(matching):
+        case 0:
+            raise ValueError(f'Test identifiers not found: {unfound_tests}')
+        case 1:
+            tests = matching
+        case _:
+            raise ValueError(f'Passed tests are ambiguous, matching methods: {matching}')
+
     _LOGGER.info(f'Running tests: {tests}')
-    if unfound_tests:
-        raise ValueError(f'Test identifiers not found: {unfound_tests}')
+    exit(1)
 
     setup_methods: dict[str, str] = {}
     contracts = set(unique({test.split('.')[0] for test in tests}))
