@@ -2,65 +2,57 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    nixpkgs.url =
-      "github:NixOS/nixpkgs/b01f185e4866de7c5b5a82f833ca9ea3c3f72fc4";
+    nixpkgs.url = "github:NixOS/nixpkgs/b01f185e4866de7c5b5a82f833ca9ea3c3f72fc4";
     k-framework.url = "github:runtimeverification/k/v5.6.110";
     k-framework.inputs.nixpkgs.follows = "nixpkgs";
     #nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.url = "github:runtimeverification/rv-nix-tools";
     poetry2nix.follows = "pyk/poetry2nix";
-    blockchain-k-plugin.url =
-      "github:runtimeverification/blockchain-k-plugin/23fb5e8fdb4a87451fd40a0e49118eaab481931b";
+    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/sam/full-nix-flake";
     blockchain-k-plugin.inputs.flake-utils.follows = "k-framework/flake-utils";
     blockchain-k-plugin.inputs.nixpkgs.follows = "k-framework/nixpkgs";
-    ethereum-tests.url =
-      "github:ethereum/tests/6401889dec4eee58e808fd178fb2c7f628a3e039";
+    ethereum-tests.url = "github:ethereum/tests/6401889dec4eee58e808fd178fb2c7f628a3e039";
     ethereum-tests.flake = false;
-    ethereum-legacytests.url =
-      "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
+    ethereum-legacytests.url = "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
     pyk.url = "github:runtimeverification/pyk/v0.1.307";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
-
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
     , poetry2nix, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
     , rv-utils, pyk }:
     let
+      nixLibs = pkgs:
+        with pkgs;
+        "-I${procps}/include -L${procps}/lib -I${openssl.dev}/include -L${openssl.out}/lib";
       buildInputs = pkgs: k:
         with pkgs;
         [
           k
           llvm-backend
           autoconf
+          automake
           cmake
           clang
           llvmPackages.llvm
-          cryptopp.dev
           fmt
-          gmp
-          # graphviz
+          libtool
           mpfr
           openssl.dev
           pkg-config
           procps
           protobuf
           python310
-          secp256k1
           solc
           time
-        ] ++ lib.optional (!stdenv.isDarwin) elfutils
-        ++ lib.optionals stdenv.isDarwin [ automake libtool ];
+        ] ++ lib.optional (!stdenv.isDarwin) elfutils;
 
       overlay = final: prev: {
         kevm = k:
-          let
-            nixLibs =
-              "-I${final.secp256k1}/include -L${final.secp256k1}/lib -I${final.openssl.dev}/include -L${final.openssl.dev}/lib -I${final.cryptopp.dev}/include -L${final.cryptopp.dev}/lib";
-          in prev.stdenv.mkDerivation {
+          prev.stdenv.mkDerivation {
             pname = "kevm";
             version = self.rev or "dirty";
             buildInputs = buildInputs final k;
@@ -87,6 +79,15 @@
                 cp -rv ${prev.blockchain-k-plugin-src}/* $out/deps/plugin/
               '';
             };
+            #  src = prev.lib.cleanSource
+            #     (prev.nix-gitignore.gitignoreSourcePure [
+            #       ./.gitignore
+            #       ".github/"
+            #       "result*"
+            #       "*.nix"
+            #       "deps/"
+            #       "kevm-pyk/"
+            #     ] ./.);
 
             dontUseCmakeConfigure = true;
 
@@ -97,7 +98,7 @@
                 --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
             '';
 
-            buildFlagsArray = "NIX_LIBS=${nixLibs}";
+            buildFlagsArray = "NIX_LIBS=${nixLibs prev}";
 
             buildFlags = [ "KEVM_PYK=${final.kevm-pyk}/bin/kevm-pyk" ]
               ++ prev.lib.optional
@@ -106,7 +107,8 @@
             enableParallelBuilding = true;
 
             preBuild = ''
-              make plugin-deps
+              mkdir -p .build/usr/lib/kevm/
+              ln -s ${prev.blockchain-k-plugin}/lib/* .build/usr/lib/kevm/
             '';
 
             installPhase = ''
@@ -114,8 +116,9 @@
               mv .build/usr/* $out/
               wrapProgram $out/bin/kevm --prefix PATH : ${
                 prev.lib.makeBinPath [ final.solc prev.which k ]
-              } --set NIX_LIBS "${nixLibs}"
+              } --set NIX_LIBS "${nixLibs prev}"
               ln -s ${k} $out/lib/kevm/kframework
+
             '';
           };
 
@@ -187,6 +190,13 @@
         devShell = pkgs.mkShell {
           buildInputs = buildInputs pkgs k-framework.packages.${system}.k
             ++ [ pkgs.poetry ];
+
+          shellHook = ''
+            export NIX_LIBS="${nixLibs pkgs}"
+            ${pkgs.lib.strings.optionalString
+            (pkgs.stdenv.isAarch64 && pkgs.stdenv.isDarwin)
+            "export APPLE_SILICON=true"}
+          '';
         };
 
         apps = {
