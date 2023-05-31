@@ -56,9 +56,51 @@ jobs:
       - name: 'Push updates'
         run: git push origin HEAD:${GITHUB_HEAD_REF}
 
+  kevm-pyk-code-quality-checks:
+    needs: version-bump
+    name: 'Code Quality Checks'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+      - name: 'Install Poetry'
+        uses: Gr1N/setup-poetry@v8
+      - name: 'Run code quality checks'
+        run: make -C kevm-pyk check
+      - name: 'Run pyupgrade'
+        run: make -C kevm-pyk pyupgrade
+
+  kevm-pyk-unit-tests:
+    needs: kevm-pyk-code-quality-checks
+    name: 'Unit Tests'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+      - name: 'Install Poetry'
+        uses: Gr1N/setup-poetry@v8
+      - name: 'Run unit tests'
+        run: make -C kevm-pyk cov-unit
+
+  kevm-pyk-profile:
+    needs: kevm-pyk-code-quality-checks
+    name: 'Profiling'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: 'Install Poetry'
+        uses: Gr1N/setup-poetry@v8
+      - name: 'Run profiling'
+        run: |
+          make -C kevm-pyk profile
+          find /tmp/pytest-of-${USER}/pytest-current/ -type f | sort | xargs tail -n +1
+
   test-concrete-execution:
     name: 'Build and Test KEVM concrete execution'
-    needs: version-bump
+    needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, normal]
     timeout-minutes: 25
     steps:
@@ -72,9 +114,7 @@ jobs:
         with:
           tag: kevm-ci-concrete-${{ github.sha }}
       - name: 'Build kevm-pyk'
-        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk'
-      - name: 'Run pyupgrade'
-        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} make -C kevm-pyk pyupgrade
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make poetry'
       - name: 'Build kevm'
         run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-llvm build-node -j`nproc` RELEASE=true'
       - name: 'Test kevm-pyk'
@@ -109,7 +149,7 @@ jobs:
         with:
           tag: kevm-ci-haskell-${{ github.sha }}
       - name: 'Build kevm-pyk'
-        run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk'
+        run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make poetry'
       - name: 'Build Definitions'
         run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make build-prove-haskell -j4'
       - name: 'Prove Haskell'
@@ -134,7 +174,7 @@ jobs:
         with:
           tag: kevm-ci-foundry-${{ github.sha }}
       - name: 'Build kevm-pyk'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make kevm-pyk'
+        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make poetry'
       - name: 'Build Foundry'
         run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
       - name: 'Foundry Kompile'
