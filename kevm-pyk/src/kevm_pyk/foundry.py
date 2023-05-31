@@ -17,7 +17,7 @@ from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, 
 from pyk.kast.manip import minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
-from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
+from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
@@ -28,7 +28,7 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.utils import hash_str, shorten_hashes, single, unique
 
 from .kevm import KEVM
-from .kompile import CONCRETE_RULES, HOOK_NAMESPACES, KompileTarget, kevm_kompile
+from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, kevm_apr_prove
 
@@ -39,7 +39,6 @@ if TYPE_CHECKING:
     from pyk.kast import KInner
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
-    from pyk.ktool.kompile import Kompile
 
 _LOGGER: Final = logging.getLogger(__name__)
 

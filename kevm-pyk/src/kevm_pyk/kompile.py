@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cli_utils import run_process
-from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
+from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile
 
 from . import config
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import Final
 
-    from pyk.ktool.kompile import Kompile
+    from pyk.ktool.kompile import Kompile, LLVMKompileType
 
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -176,13 +176,18 @@ def kevm_kompile(
 
 
 def _lib_ccopts(kernel: Kernel, llvm_kompile_type: LLVMKompileType | None = None) -> list[str]:
-    ccopts = ['-g', '-std=c++14']
+    ccopts = ['-g', '-std=c++17']
 
-    if llvm_kompile_type != LLVMKompileType.C: ccopts += ['-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
-    
+    ccopts += ['-lssl', '-lcrypto']
 
     libff_dir = config.KEVM_LIB / 'libff'
-    ccopts += [f'-L{libff_dir}/lib', f'-I{libff_dir}/include']
+    ccopts += [f'{libff_dir}/lib/libff.a', f'-I{libff_dir}/include']
+
+    libcryptopp_dir = config.KEVM_LIB / 'libcryptopp'
+    ccopts += [f'{libcryptopp_dir}/lib/libcryptopp.a', f'-I{libcryptopp_dir}/include']
+
+    libsecp256k1_dir = config.KEVM_LIB / 'libsecp256k1'
+    ccopts += [f'{libsecp256k1_dir}/lib/libsecp256k1.a', f'-I{libsecp256k1_dir}/include']
 
     plugin_include = config.KEVM_LIB / 'blockchain-k-plugin/include'
     ccopts += [
@@ -204,17 +209,12 @@ def _lib_ccopts(kernel: Kernel, llvm_kompile_type: LLVMKompileType | None = None
                 f'-I{openssl_root}/include',
                 f'-L{openssl_root}/lib',
             ]
-
-            libcryptopp_dir = config.KEVM_LIB / 'cryptopp'
-            ccopts += [
-                f'-I{libcryptopp_dir}/include',
-                f'-L{libcryptopp_dir}/lib',
-            ]
         else:
             ccopts += config.NIX_LIBS.split(' ')
     elif kernel == Kernel.LINUX:
-        ccopts += ['-lprocps' ]
-        ccopts += config.NIX_LIBS.split(' ')
+        ccopts += ['-lprocps']
+        if config.NIX_LIBS:
+            ccopts += config.NIX_LIBS.split(' ')
     else:
         raise AssertionError()
 
