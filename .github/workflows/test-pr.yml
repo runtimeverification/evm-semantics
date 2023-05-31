@@ -30,22 +30,6 @@ jobs:
           ./package/version.sh bump ${og_version}
           ./package/version.sh sub
           git add --update && git commit --message "Set Version: $(cat package/version)" || true
-      - name: 'Install Nix'
-        uses: cachix/install-nix-action@v19
-        with:
-          install_url: https://releases.nixos.org/nix/nix-2.13.3/install
-          extra_nix_config: |
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - name: 'Install Cachix'
-        uses: cachix/cachix-action@v12
-        with:
-          name: k-framework
-          authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
-          skipPush: true
-      - name: 'Update nix flake inputs'
-        run: |
-          nix flake update
-          git add flake.nix flake.lock && git commit -m 'flake.{nix,lock}: update Nix derivations' || true
       - name: 'Push updates'
         run: git push origin HEAD:${GITHUB_HEAD_REF}
 
