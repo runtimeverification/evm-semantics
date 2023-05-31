@@ -1069,9 +1069,9 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
 
 
 def _matching_tests(_tests: list[str], within: list[str]) -> list[str]:
-    tests = list()
+    tests = []
     for _t in _tests:
-        matching_tests = list()
+        matching_tests = []
         for t in within:
             if t.startswith(_t):
                 matching_tests.append(t)
