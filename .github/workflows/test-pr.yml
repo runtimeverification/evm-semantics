@@ -24,18 +24,12 @@ jobs:
         run: |
           git config user.name devops
           git config user.email devops@runtimeverification.com
-      - name: 'Install Poetry'
-        uses: Gr1N/setup-poetry@v8
       - name: 'Update version'
         run: |
           og_version=$(git show origin/${GITHUB_BASE_REF}:package/version)
           ./package/version.sh bump ${og_version}
           ./package/version.sh sub
           git add --update && git commit --message "Set Version: $(cat package/version)" || true
-      - name: 'Sync Poetry'
-        run: |
-          poetry -C kevm-pyk update
-          git add kevm-pyk/poetry.lock && git commit --message 'kevm-pyk/: sync poetry files' || true
       - name: 'Install Nix'
         uses: cachix/install-nix-action@v19
         with:
