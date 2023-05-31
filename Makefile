@@ -30,12 +30,10 @@ KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
 
 K_SUBMODULE := $(DEPS_DIR)/k
 
-LIBRARY_PATH       := $(LOCAL_LIB):$(KEVM_LIB_ABS)/libff/lib
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
 PATH               := $(abspath $(KEVM_BIN)):$(abspath $(KEVM_K_BIN)):$(LOCAL_BIN):$(PATH)
 
-export LIBRARY_PATH
 export C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH
 export PATH
@@ -47,7 +45,7 @@ export PLUGIN_FULL_PATH
 
 
 .PHONY: all clean distclean                                                                                                                  \
-        deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                                  \
+        deps k-deps plugin-deps plugin-deps-libs protobuf                                                                                  \
         build build-haskell build-haskell-standalone build-foundry build-llvm build-prove build-prove-haskell build-node build-kevm          \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance             \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                              \
@@ -73,55 +71,13 @@ distclean:
 # Non-K Dependencies
 # ------------------
 
-libsecp256k1_out := $(LOCAL_LIB)/pkgconfig/libsecp256k1.pc
-libff_out        := $(KEVM_LIB)/libff/lib/libff.a
-libcryptopp_out  := $(KEVM_LIB)/cryptopp/lib/libcryptopp.a
 protobuf_out     := $(LOCAL_LIB)/proto/proto/msg.pb.cc
-
-libsecp256k1: $(libsecp256k1_out)
-libff:        $(libff_out)
-libcryptopp : $(libcryptopp_out)
 protobuf:     $(protobuf_out)
-
-$(libsecp256k1_out): $(PLUGIN_SUBMODULE)/deps/secp256k1/autogen.sh
-	cd $(PLUGIN_SUBMODULE)/deps/secp256k1                                 \
-	    && ./autogen.sh                                                   \
-	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
-	    && $(MAKE)                                                        \
-	    && $(MAKE) install
-
-LIBFF_CMAKE_FLAGS :=
-
-ifeq ($(UNAME_S),Linux)
-    LIBFF_CMAKE_FLAGS +=
-else ifeq ($(UNAME_S),Darwin)
-    LIBFF_CMAKE_FLAGS += -DWITH_PROCPS=OFF -DOPENSSL_ROOT_DIR=$(shell brew --prefix openssl)
-else
-    LIBFF_CMAKE_FLAGS += -DWITH_PROCPS=OFF
-endif
-
-ifneq ($(APPLE_SILICON),)
-    LIBFF_CMAKE_FLAGS += -DCURVE=ALT_BN128 -DUSE_ASM=Off
-endif
-
-ifeq ($(LIBFF_NO_FPIC),)
-    LIBFF_CMAKE_FLAGS += -DCMAKE_CXX_FLAGS=-fPIC
-endif
-
-$(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
-	@mkdir -p $(PLUGIN_SUBMODULE)/deps/libff/build
-	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                                     \
-	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
-	    && make -s -j4                                                                                          \
-	    && make install DESTDIR=$(CURDIR)/$(BUILD_DIR)
 
 $(protobuf_out): $(NODE_DIR)/proto/msg.proto
 	@mkdir -p $(LOCAL_LIB)/proto
 	protoc --cpp_out=$(LOCAL_LIB)/proto -I $(NODE_DIR) $(NODE_DIR)/proto/msg.proto
 
-$(libcryptopp_out): $(PLUGIN_SUBMODULE)/deps/cryptopp/GNUmakefile
-	cd $(PLUGIN_SUBMODULE)/deps/cryptopp                            \
-            && $(MAKE) install DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/cryptopp
 
 # K Dependencies
 # --------------
@@ -155,8 +111,10 @@ plugin_k_include  := $(KEVM_INCLUDE)/kframework/plugin
 plugin_include    := $(KEVM_LIB)/blockchain-k-plugin/include
 plugin_k          := krypto.md
 plugin_c          := plugin_util.cpp crypto.cpp blake2.cpp plugin_util.h blake2.h
+plugin_needed_lib := libcryptopp libff libsecp256k1
 plugin_includes   := $(patsubst %, $(plugin_k_include)/%, $(plugin_k))
 plugin_c_includes := $(patsubst %, $(plugin_include)/c/%, $(plugin_c))
+plugin_needed_libs := $(patsubst %, $(KEVM_LIB)/%, $(plugin_needed_lib))
 
 $(plugin_include)/c/%: $(PLUGIN_SUBMODULE)/plugin-c/%
 	@mkdir -p $(dir $@)
@@ -166,7 +124,15 @@ $(plugin_k_include)/%: $(PLUGIN_SUBMODULE)/plugin/%
 	@mkdir -p $(dir $@)
 	install $< $@
 
-plugin-deps: $(plugin_includes) $(plugin_c_includes)
+
+$(KEVM_LIB)/%: $(PLUGIN_SUBMODULE)/build/%
+	@mkdir -p $(dir $@)
+	cp -r $< $@
+
+$(PLUGIN_SUBMODULE)/build/lib%:
+	cd $(PLUGIN_SUBMODULE) && make $*
+
+plugin-deps: $(plugin_includes) $(plugin_c_includes) $(plugin_needed_libs)
 
 
 # Building
@@ -275,11 +241,9 @@ llvm_dir      := llvm
 llvm_kompiled := $(llvm_dir)/interpreter
 kompile_llvm  := $(KEVM_LIB)/$(llvm_kompiled)
 
-ifeq ($(UNAME_S),Darwin)
-$(kompile_llvm): $(libcryptopp_out)
-endif
 
-$(kompile_llvm): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
+
+$(kompile_llvm): $(kevm_includes) $(plugin_includes) $(plugin_c_includes)
 
 $(kompile_llvm): KOMPILE_TARGET        := llvm
 $(kompile_llvm): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/driver.md
@@ -295,9 +259,6 @@ haskell_standalone_dir      := haskell-standalone
 haskell_standalone_kompiled := $(haskell_standalone_dir)/definition.kore
 kompile_haskell_standalone  := $(KEVM_LIB)/$(haskell_standalone_kompiled)
 
-ifeq ($(UNAME_S),Darwin)
-$(kompile_haskell_standalone): $(libsecp256k1_out)
-endif
 
 $(kompile_haskell_standalone): $(kevm_includes) $(plugin_includes)
 
@@ -317,7 +278,7 @@ node_kompiled := $(node_dir)/build/kevm-vm
 kompile_node  := $(KEVM_LIB)/$(node_kore)
 export node_dir
 
-$(kompile_node): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
+$(kompile_node): $(kevm_includes) $(plugin_includes) $(plugin_c_includes)
 
 $(kompile_node): KOMPILE_TARGET        := node
 $(kompile_node): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/evm-node.md
@@ -327,7 +288,7 @@ $(kompile_node):
 	$(kompile)
 
 
-$(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_out)
+$(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out)
 	@mkdir -p $(dir $@)
 	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) && $(MAKE)
 
@@ -338,9 +299,6 @@ foundry_dir      := foundry
 foundry_kompiled := $(foundry_dir)/definition.kore
 kompile_foundry  := $(KEVM_LIB)/$(foundry_kompiled)
 
-ifeq ($(UNAME_S),Darwin)
-$(kompile_foundry): $(libsecp256k1_out)
-endif
 
 $(kompile_foundry): $(kevm_includes) $(plugin_includes) $(lemma_includes)
 
