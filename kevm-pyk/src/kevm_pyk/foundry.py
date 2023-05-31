@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -8,7 +9,6 @@ from functools import cached_property
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
-import hashlib
 
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
@@ -31,7 +31,7 @@ from pyk.utils import hash_str, shorten_hashes, single, unique
 from .kevm import KEVM
 from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
-from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines,kevm_apr_prove 
+from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, kevm_apr_prove
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -186,7 +186,9 @@ class Foundry:
 
     def build(self) -> None:
         try:
-            run_process(['forge', 'build', '--root', str(self._root), '--extra-output', 'storageLayout'], logger=_LOGGER)
+            run_process(
+                ['forge', 'build', '--root', str(self._root), '--extra-output', 'storageLayout'], logger=_LOGGER
+            )
         except CalledProcessError as err:
             raise RuntimeError("Couldn't forge build!") from err
 
@@ -607,7 +609,7 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
     contracts = set(contracts)
     len_contracts = len(contracts)
 
-    call_cells: dict[bytes, list[tuple[KInner, list[KCFG.Node]]]] = {}
+    call_cells: dict[bytes, list[tuple[KInner, KCFG.Node, list[KCFG.Node]]]] = {}
 
     for name, contract in artifacts.items():
         if (len_contracts != 0 and name in contracts) or len_contracts == 0:
@@ -621,51 +623,64 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                         nodes = kcfg.nodes
                         leaves = kcfg.leaves
 
-                        for node in nodes:
-                            cterm = node.cterm
-                            kast = cterm.cell('K_CELL')
-                            if type(kast) is KSequence:
-                                for item in kast.items:
-                                    if type(item) is KApply and item.label.name.startswith('#callWithCode'):
-                                        # print(node)
-                                        call_args = item.args
-                                        # TODO: parse this and store the caller
-                                        # next, we should try to get the origin and other interesting values
-                                        caller = call_args[0]
-                                        code = call_args[3]
-                                        if type(code) is KToken:
-                                            acct_code = code.token
-                                            acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
+                        if len(nodes) > 1:
+                            base_node = nodes[1]
 
-                                            # if type(kcfg) is KCFG.Node:
-                                            val: list[tuple[KInner, list[KCFG.Node]]] = list()
-                                            if call_cells.get(acct_hash) is not None:
-                                                val = call_cells[acct_hash]
+                            for node in nodes:
+                                # print(node.cterm.constraints)
+                                cterm = node.cterm
+                                kast = cterm.cell('K_CELL')
+                                if type(kast) is KSequence:
+                                    for item in kast.items:
+                                        if type(item) is KApply and item.label.name.startswith('#callWithCode'):
+                                            # print(node)
+                                            call_args = item.args
+                                            # TODO: parse this and store the caller
+                                            # next, we should try to get the origin and other interesting values
+                                            call_args[0]
+                                            code = call_args[3]
+                                            if type(code) is KToken:
+                                                acct_code = code.token
+                                                acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
 
-                                            val.append((cterm.config, leaves))
-                                            call_cells[acct_hash] = val
+                                                val = []
+                                                if call_cells.get(acct_hash) is not None:
+                                                    val = call_cells[acct_hash]
 
-                                            break
+                                                val.append((cterm.config, base_node, leaves))
+                                                call_cells[acct_hash] = val
+
+                                                break
+
+    kcfg_explore = KCFGExplore(foundry.kevm)
 
     for bytecode_h, cons_set in call_cells.items():
-        print("==========")
         for se in cons_set:
-            conf = se[0]
-            for leaf in se[1]:
-                constraints = leaf.cterm.constraints
-                for cons in constraints:
+            se[0]
+            # print(conf)
+            # print(se[1].cterm.constraints)
+            base_cons = se[1].cterm.constraints
+            # print(base_cons)
+            for cons in se[1].cterm.constraints:
+                print(cons)
+            #     kore = kcfg_explore.kprint.kast_to_kore(cons, GENERATED_TOP_CELL)
+            #     print(kore)
+            for leaf in se[2][1:]:
+                leaf_cons = leaf.cterm.constraints
+                new_cons = []
+                for cons in leaf_cons:
                     # print(conf)
-                    # print(cons)
-                    # print(se)
-                    # TODO: negate the constraints using #Not
-                    # cterm = CTerm(conf, cons)
-                    kcfg_explore = KCFGExplore(foundry.kevm)
                     # TODO: looks like we are getting some memory leaks here
                     # depth, _cterm, next_cterms, next_node_logs = kcfg_explore.cterm_execute(cterm)
                     # print(depth, next_node_logs)
-                    kore = kcfg_explore.kprint.kast_to_kore(cons, GENERATED_TOP_CELL)
-                    print(kore)
-        print("==========")
+                    # TODO: negate the constraints using #Not
+                    if not base_cons.__contains__(cons):
+                        # print(cons)
+                        new_cons.append(cons)
+                        kore = kcfg_explore.kprint.kast_to_kore(cons, GENERATED_TOP_CELL)
+                        print(kore)
+                # call the prover for all the new constraints
+                # ask for a counter example that satisfies the negated constraints
 
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:

@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import BugReport, dir_path, ensure_dir_path, file_path
+from pyk.cli_utils import BugReport, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
@@ -19,8 +19,8 @@ from pyk.proof import APRProof
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
     Foundry,
-    foundry_koverage,
     foundry_kompile,
+    foundry_koverage,
     foundry_list,
     foundry_prove,
     foundry_remove_node,
