@@ -638,7 +638,7 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    for _node in apr_proof.kcfg.reachable_nodes(node, traverse_covers=True):
+    for _node in apr_proof.kcfg.reachable_nodes(node):
         if not apr_proof.kcfg.is_target(_node.id):
             _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
             apr_proof.kcfg.remove_node(_node.id)
