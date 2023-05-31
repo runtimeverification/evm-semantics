@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
 from pyk.kast.manip import flatten_label
-from pyk.ktool.kprint import paren
+from pyk.kast.pretty import paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
 from pyk.prelude.kint import intToken, ltInt
@@ -51,6 +51,7 @@ class KEVM(KProve, KRun):
             command=kprove_command,
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
+            patch_symbol_table=KEVM._kevm_patch_symbol_table,
         )
         KRun.__init__(
             self,
@@ -59,10 +60,11 @@ class KEVM(KProve, KRun):
             command=krun_command,
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
+            patch_symbol_table=KEVM._kevm_patch_symbol_table,
         )
 
     @classmethod
-    def _patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
+    def _kevm_patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
         # fmt: off
         symbol_table['#Bottom']                                       = lambda: '#Bottom'
         symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)
