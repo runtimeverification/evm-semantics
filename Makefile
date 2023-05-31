@@ -45,7 +45,7 @@ export PLUGIN_FULL_PATH
 
 
 .PHONY: all clean distclean                                                                                                                  \
-        deps k-deps plugin-deps plugin-deps-libs protobuf                                                                                  \
+        deps k-deps plugin-deps protobuf                                                                                                     \
         build build-haskell build-haskell-standalone build-foundry build-llvm build-prove build-prove-haskell build-node build-kevm          \
         test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance             \
         test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                              \
