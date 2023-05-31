@@ -46,8 +46,22 @@ contract AssertTest is Test {
         }
     }
 
-    function test_call(uint256 x) public {
-        vm.assume(x > 10);
-        address(2819807389471923).call(abi.encodeWithSignature("func(uint256)", x));
+    struct Pack {
+        uint8 x;
+        uint64 y;
+    }
+
+    function test_call(Pack calldata pack) public {
+        vm.assume(pack.x > 10);
+        address(2819807389471923).call(abi.encodeWithSignature("func(uint256)", pack.x));
+    }
+
+    function test_prank() public {
+        vm.prank(address(7482741294), address(123456789));
+        address(2819807389471923).call(abi.encodeWithSignature("func()"));
+    }
+
+    function test_simple(uint256 x) public {
+        address(7478948923748124).call(abi.encodeWithSignature("func(uint256)", x));
     }
 }

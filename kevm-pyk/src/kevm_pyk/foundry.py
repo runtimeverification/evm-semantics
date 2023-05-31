@@ -186,7 +186,7 @@ class Foundry:
 
     def build(self) -> None:
         try:
-            run_process(['forge', 'build', '--root', str(self._root)], logger=_LOGGER)
+            run_process(['forge', 'build', '--root', str(self._root), '--extra-output', 'storageLayout'], logger=_LOGGER)
         except CalledProcessError as err:
             raise RuntimeError("Couldn't forge build!") from err
 
@@ -607,7 +607,7 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
     contracts = set(contracts)
     len_contracts = len(contracts)
 
-    call_cells: dict[bytes, set[KInner]] = {}
+    call_cells: dict[bytes, list[tuple[KInner, list[KCFG.Node]]]] = {}
 
     for name, contract in artifacts.items():
         if (len_contracts != 0 and name in contracts) or len_contracts == 0:
@@ -616,14 +616,10 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                 proof_digest = foundry.proof_digest(name, test)
                 if APRProof.proof_exists(proof_digest, apr_proofs_dir):
                     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-                    if apr_proof.status is ProofStatus.PASSED:
+                    if apr_proof.status is ProofStatus.PASSED or True:
                         kcfg = apr_proof.kcfg
                         nodes = kcfg.nodes
                         leaves = kcfg.leaves
-                        cons = set()
-
-                        for leaf in leaves:
-                            cons.add(leaf.cterm.constraints)
 
                         for node in nodes:
                             cterm = node.cterm
@@ -631,23 +627,45 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                             if type(kast) is KSequence:
                                 for item in kast.items:
                                     if type(item) is KApply and item.label.name.startswith('#callWithCode'):
+                                        # print(node)
                                         call_args = item.args
+                                        # TODO: parse this and store the caller
+                                        # next, we should try to get the origin and other interesting values
+                                        caller = call_args[0]
                                         code = call_args[3]
                                         if type(code) is KToken:
                                             acct_code = code.token
                                             acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
-                                            call_cells[acct_hash] = cons
+
+                                            # if type(kcfg) is KCFG.Node:
+                                            val: list[tuple[KInner, list[KCFG.Node]]] = list()
+                                            if call_cells.get(acct_hash) is not None:
+                                                val = call_cells[acct_hash]
+
+                                            val.append((cterm.config, leaves))
+                                            call_cells[acct_hash] = val
+
                                             break
 
-    for bytecode_h, cons in call_cells.items():
-        dummy_config = KApply("<dummy>")
-        print(cons)
-        # TODO: negate the constraints using #Not
-        cterm = CTerm(dummy_config, cons)
-        kcfg_explore = KCFGExplore(foundry.kevm)
-        depth, _cterm, next_cterms, next_node_logs = kcfg_explore.cterm_execute(cterm)
-        print(depth, next_node_logs)
-        pass
+    for bytecode_h, cons_set in call_cells.items():
+        print("==========")
+        for se in cons_set:
+            conf = se[0]
+            for leaf in se[1]:
+                constraints = leaf.cterm.constraints
+                for cons in constraints:
+                    # print(conf)
+                    # print(cons)
+                    # print(se)
+                    # TODO: negate the constraints using #Not
+                    # cterm = CTerm(conf, cons)
+                    kcfg_explore = KCFGExplore(foundry.kevm)
+                    # TODO: looks like we are getting some memory leaks here
+                    # depth, _cterm, next_cterms, next_node_logs = kcfg_explore.cterm_execute(cterm)
+                    # print(depth, next_node_logs)
+                    kore = kcfg_explore.kprint.kast_to_kore(cons, GENERATED_TOP_CELL)
+                    print(kore)
+        print("==========")
 
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
