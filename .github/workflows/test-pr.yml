@@ -116,7 +116,7 @@ jobs:
       - name: 'Build kevm-pyk'
         run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make poetry'
       - name: 'Build kevm'
-        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-llvm build-node -j`nproc` RELEASE=true'
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make plugin-deps build-llvm build-node -j`nproc` RELEASE=true'
       - name: 'Test kevm-pyk'
         run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-kevm-pyk -j`nproc`'
       - name: 'Test conformance'
