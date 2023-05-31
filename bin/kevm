@@ -2,7 +2,7 @@
 
 set -euo pipefail
 shopt -s extglob
-
+set -o allexport
 debug=false
 profile=false
 verbose=false
@@ -49,7 +49,7 @@ run_kevm_pyk() {
     local pyk_command pyk_args
     pyk_command="$1" ; shift
     case "${pyk_command}" in
-        run|prove|solc-to-k|foundry-kompile|foundry-prove|view-kcfg|show-kcfg)
+        run|prove|prove-legacy|solc-to-k|foundry-kompile|foundry-prove|view-kcfg|show-kcfg)
             pyk_args=(--definition "${backend_dir}")
             pyk_args+=(-I "${INSTALL_INCLUDE}/kframework")
             ;;
@@ -124,46 +124,25 @@ run_kast() {
 }
 
 run_prove() {
-    local def_module run_dir proof_args bug_report_name \
-          eventlog_name kprove omit_cells omit_labels
+    local prove_args
 
     check_k_install
 
-    bug_report_name="kevm-bug-$(basename "${run_file%-spec.k}")"
-    eventlog_name="${run_file}.eventlog"
-
-    proof_args=("${run_file}")
-    if ! ${pyk}; then
-        proof_args+=(--definition "${backend_dir}")
-        proof_args+=( -I "${INSTALL_INCLUDE}/kframework" )
-        ! ${debug} || proof_args+=(--debug)
-    fi
-
-    [[ ! -f ${concrete_rules_file} ]] || proof_args+=(--concrete-rules "$(cat ${concrete_rules_file} | tr '\n' ',')")
-
-    case "${backend}" in
-        haskell) proof_args+=(--md-selector 'k & ! node')
-                 ${pyk}   || ! ${bug_report}     || haskell_backend_command+=(--bug-report "${bug_report_name}")
-                 ! ${pyk} || ! ${bug_report}     || proof_args+=(--bug-report)
-                 ! ${profile_haskell}            || haskell_backend_command+=(+RTS -l -ol${eventlog_name} -RTS)
-                 [[ -z ${max_counterexamples} ]] || haskell_backend_command+=(--max-counterexamples ${max_counterexamples})
-                 [[ -z ${branching_allowed}   ]] || haskell_backend_command+=(--breadth ${branching_allowed})
-
-                 ! ${debugger}                              || proof_args+=(--debugger)
-                 [[ ${#haskell_backend_command[@]} -le 1 ]] || proof_args+=(--haskell-backend-command "${haskell_backend_command[*]}")
-                 ;;
-        *)       fatal "Unknown backend for proving! ${backend}" ;;
-    esac
-
-    if ${profile_haskell}; then
-        timeout -s INT "${profile_timeout}" ${kprove} "${proof_args[@]}" "$@" || true
-        execute kore-prof "${eventlog_name}" ${kore_prof_args} > "${eventlog_name}.json"
+    if ${pyk}; then
+	run_kevm_pyk prove "${run_file}" "$@"
     else
-        if ${pyk}; then
-            run_kevm_pyk prove "${proof_args[@]}" "$@"
-        else
-            execute kprove "${proof_args[@]}" "$@"
-        fi
+	prove_args=(prove-legacy "${run_file}")
+	! ${debugger} || prove_args+=(--debugger)
+	if ${profile_haskell}; then
+	    eventlog_name="${run_file}.eventlog"
+	    prove_args+=("--haskell-backend-arg=\"+RTS -l -ol${eventlog_name} -RTS\"")
+	    cur_dir=$(pwd)
+	    run_script="cd "${cur_dir}" && run_kevm_pyk "${prove_args[@]}" "$@""
+            timeout -s INT "${profile_timeout}" bash -c "${run_script}" || true
+            execute kore-prof "${eventlog_name}" ${kore_prof_arg} > "${eventlog_name}.json"
+	else
+	    run_kevm_pyk "${prove_args[@]}" "$@"
+	fi
     fi
 }
 
@@ -185,7 +164,6 @@ run_interpret() {
     krun_args=(--term --parser cat --no-expand-macros --output kore)
     if [[ ${backend} == haskell ]]; then
         KORE_EXEC_OPTS="${KORE_EXEC_OPTS:-} --smt none"
-        haskell_backend_command+=(--smt none)
         bug_report_name="kevm-bug-$(basename "${run_file%.json}")"
         ! ${bug_report} || KORE_EXEC_OPTS="${KORE_EXEC_OPTS} --bug-report ${bug_report_name}"
         export KORE_EXEC_OPTS
@@ -256,11 +234,10 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                  <KEVM arg> is one of [--mode (NORMAL|VMTESTS)]
                                       [--schedule (MERGE|LONDON|BERLIN|ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
                                       [--chainid NNN]
-                                      [--concrete-rules-file <concrete_rules_file>]
                                       [--bug-report]
                                       [--profile-haskell]
                                       [--profile-timeout <duration>]
-                                      [--kore-prof-args \"<kore-prof arg>*\"]
+                                      [--kore-prof-arg <kore_prof_arg>]
                                       [--verif-module <verification_module>]
                                       [--pyk-minimize]
                                       [--pyk-omit-labels <comma_separated_labels>]
@@ -268,7 +245,6 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--branching-allowed <max_branches>]
                                       [--haskell-backend-arg <haskell_backend_arg>]
                  <K arg> is an argument you want to pass to K.
-                 <kore-prof arg> is an argument you want to pass to kore-prof.
                  <output format> is the format for Kast to output the term in.
                  <pattern> is the configuration pattern to search for.
                  <def_module> is the module to take as axioms when doing verification.
@@ -292,17 +268,13 @@ unparse=true
 debugger=false
 profile_haskell=false
 profile_timeout="0"
-kore_prof_args=""
+kore_prof_arg=""
 bug_report=false
 mode=NORMAL
 schedule=MERGE
 chainid=1
-concrete_rules_file=
 verif_module=VERIFICATION
 pyk=false
-max_counterexamples=
-branching_allowed=
-haskell_backend_command=(kore-exec)
 kevm_port='8545'
 kevm_host='127.0.0.1'
 [[ ! "${run_command}" == prove     ]] || backend=haskell
@@ -324,17 +296,13 @@ while [[ $# -gt 0 ]]; do
         --debugger)            debugger=true                   ; shift   ;;
         --profile-haskell)     profile_haskell=true            ; shift   ;;
         --profile-timeout)     profile_timeout="$2"            ; shift 2 ;;
-        --kore-prof-args)      kore_prof_args="$2"             ; shift 2 ;;
+        --kore-prof-arg)       kore_prof_arg="$2"              ; shift 2 ;;
         --bug-report)          bug_report=true                 ; shift   ;;
         --backend)             backend="$2"                    ; shift 2 ;;
         --definition)          backend_dir="$2"                ; shift 2 ;;
-        --concrete-rules-file) concrete_rules_file="$2"        ; shift 2 ;;
         --verif-module)        verif_module="$2"               ; shift 2 ;;
         --pyk)                 pyk=true                        ; shift   ;;
         --no-pyk)              pyk=false                       ; shift   ;;
-        --max-counterexamples) max_counterexamples="$2"        ; shift 2 ;;
-        --branching-allowed)   branching_allowed="$2"          ; shift 2 ;;
-        --haskell-backend-arg) haskell_backend_command+=("$2") ; shift 2 ;;
         --mode)                mode="$2"                       ; shift 2 ;;
         --schedule)            schedule="$2"                   ; shift 2 ;;
         --chainid)             chainid="$2"                    ; shift 2 ;;
@@ -349,7 +317,7 @@ backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
 ! $profile_haskell || [[ "$backend" == haskell ]] || fatal "Option --profile-haskell only usable with --backend haskell!"
 [[ $profile_timeout = "0" ]] || $profile_haskell  || fatal "Option --profile-timeout only usable with --profile-haskell!"
-[[ $kore_prof_args = "" ]]   || $profile_haskell  || fatal "Option --kore-prof-args only usable with --profile-haskell!"
+[[ $kore_prof_arg = "" ]]    || $profile_haskell  || fatal "Option --kore-prof-arg only usable with --profile-haskell!"
 if ${pyk}; then
     ! ${debugger}        || fatal "Option --pyk not usable with --debugger!"
     ! ${profile_haskell} || fatal "Option --pyk not usable with --profile-haskell!"
@@ -382,7 +350,7 @@ case "$run_command-$backend" in
     run-@(llvm|haskell|haskell-standalone) ) run_krun               "$@" ;;
     kast-@(llvm|haskell)                   ) run_kast               "$@" ;;
     interpret-@(llvm|haskell)              ) run_interpret          "$@" ;;
-    prove-@(haskell|foundry)               ) run_prove              "$@" ;;
+    prove-@(haskell)                       ) run_prove              "$@" ;;
     search-@(haskell)                      ) run_search             "$@" ;;
     view-kcfg-*                            ) run_kevm_pyk view-kcfg "$@" ;;
     show-kcfg-*                            ) run_kevm_pyk show-kcfg "$@" ;;
