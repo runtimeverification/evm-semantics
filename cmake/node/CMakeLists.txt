@@ -37,7 +37,9 @@ set(TARGET_NAME "kevm-vm")
 
 link_directories(AFTER SYSTEM
   $ENV{LIBRARY_PATH}
-  $ENV{KEVM_LIB_ABS}/cryptopp/lib)
+  $ENV{KEVM_LIB_ABS}/libff/lib
+  $ENV{KEVM_LIB_ABS}/libcryptopp/lib
+  $ENV{KEVM_LIB_ABS}/libsecp256k1/lib)
 
 if(APPLE)
   link_directories(AFTER SYSTEM "${BREW_PREFIX}/opt/openssl/lib")
@@ -72,7 +74,8 @@ target_include_directories(kevm-vm
 	PUBLIC $ENV{NODE_DIR}/vm/kevm
 	PUBLIC ${CMAKE_SOURCE_DIR}/..
 	PUBLIC $ENV{KEVM_LIB_ABS}/libff/include
-	PUBLIC $ENV{KEVM_LIB_ABS}/cryptopp/include
+	PUBLIC $ENV{KEVM_LIB_ABS}/libcryptopp/include
+  PUBLIC $ENV{KEVM_LIB_ABS}/libsecp256k1/include
 	PUBLIC ${K_LIB}/../include/kllvm)
 target_compile_options(kevm-vm
 	PUBLIC $ENV{LLVM_KOMPILE_OPTS}
