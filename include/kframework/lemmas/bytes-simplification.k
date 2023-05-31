@@ -27,9 +27,9 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [bytes-concat-empty-right]: B:Bytes +Bytes .Bytes  => B [simplification]
     rule [bytes-concat-empty-left]:   .Bytes +Bytes B:Bytes => B [simplification]
 
-    rule [bytes-concat-right-assoc-symb-l]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B1), simplification]
-    rule [bytes-concat-right-assoc-symb-r]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B2), simplification]
-    rule [bytes-concat-left-assoc-conc]:    B1:Bytes +Bytes (B2:Bytes +Bytes B3:Bytes) => (B1 +Bytes B2) +Bytes B3 [concrete(B1, B2), symbolic(B3), simplification]
+    rule [bytes-concat-right-assoc-symb-l]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B1), simplification(40)]
+    rule [bytes-concat-right-assoc-symb-r]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B2), simplification(40)]
+    rule [bytes-concat-left-assoc-conc]:    B1:Bytes +Bytes (B2:Bytes +Bytes B3:Bytes) => (B1 +Bytes B2) +Bytes B3 [concrete(B1, B2), symbolic(B3), simplification(40)]
 
     // #buf
 
@@ -68,71 +68,153 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     // #range
 
-    rule #range(_, _, K) => .Bytes requires K <=Int 0 [simplification]
+    rule [range-empty]:
+      #range(_:Bytes, S:Int, W:Int) => .Bytes
+      requires S <Int 0 orBool W <=Int 0
+      [simplification(30)]
 
-    rule #range( M [ N := BUF:Bytes ], L, K ) =>
-         #let W = minInt(K, N -Int L) #in #range(M, L, W) +Bytes #range(M [ N := BUF ], N, K -Int W)
-      requires 0 <Int K andBool L <Int N [simplification]
+    rule [range-full]:
+      #range(B:Bytes, 0, W:Int) => B +Bytes #buf(W -Int lengthBytes(B), 0)
+      requires lengthBytes(B) <=Int W
+      [simplification]
 
-    rule #range( M [ N := BUF:Bytes ], L, K ) =>
-           #let S = L -Int N #in
-           #let W = minInt(K, lengthBytes(BUF) -Int S) #in
-           #range(BUF, S, W) +Bytes #range(M, N +Int lengthBytes(BUF), K -Int W)
-      requires 0 <Int K andBool N <=Int L andBool L <=Int N +Int lengthBytes(BUF) [simplification]
+    rule [range-params-equal-ml]:
+      { #range (B1:Bytes, S1:Int, W1:Int) #Equals #range (B2:Bytes, S2:Int, W2:Int) } => #Top
+      requires B1 ==K B2 andBool S1 ==Int S2 andBool W1 ==Int W2
+      [simplification]
 
-    rule #range( M [ N := BUF:Bytes ], L, K ) => #range(M, L, K)
-      requires 0 <Int K andBool N +Int lengthBytes(BUF) <=Int L [simplification]
+    rule [range-included-in-cHead]:
+      #range(B1:Bytes +Bytes _:Bytes, S:Int, W:Int) => #range(B1, S, W)
+      requires S +Int W <=Int lengthBytes(B1)
+      [simplification]
 
-    rule #range( M [ N1 := BUF1:Bytes ] [ N2 := BUF2:Bytes ], L, K ) => #range( M [ N2 := BUF2 ], L, K )
-        requires 0 <Int K andBool N1 +Int lengthBytes(BUF1) <=Int L [simplification]
+    rule [range-outside-cHead]:
+      #range(B1:Bytes +Bytes B2:Bytes, S:Int, W:Int) => #range(B2, S -Int lengthBytes(B1), W)
+      requires lengthBytes(B1) <=Int S
+      [simplification]
 
-    rule #range(M, N1 +Int N2, K) => #range(#range(M, N2, lengthBytes(M) -Int N2), N1, K)
-      requires 0 <=Int N1 andBool 0 <=Int N2
-      [simplification, concrete(N2), concrete(M)]
+    rule [range-includes-cHead]:
+      #range(B1:Bytes +Bytes B2:Bytes, 0, W:Int) => B1 +Bytes #range(B2, 0, W -Int lengthBytes(B1))
+      requires lengthBytes(B1) <=Int W
+      [simplification]
 
-    rule #range(A +Bytes _B, START, LENGTH) => #range(A, START, LENGTH)
-      requires START +Int LENGTH <=Int lengthBytes(A) [simplification]
+    rule [range-inside-cHead-base-conc]:
+      #range(B:Bytes, S1:Int +Int S2:Int, W:Int) => #range(#range(B, S2, lengthBytes(B) -Int S2), S1, W)
+      requires 0 <=Int S1 andBool 0 <=Int S2 andBool 0 <Int S1 +Int S2 andBool S1 +Int S2 <=Int lengthBytes(B)
+      [concrete(B, S2), simplification]
 
-    rule #range(A +Bytes B, START, LENGTH) => #range(B, START -Int lengthBytes(A), LENGTH)
-      requires lengthBytes(A) <=Int START [simplification]
+    rule [range-inside-cHead-concat]:
+      #range(B1:Bytes +Bytes B2:Bytes, S:Int, W:Int) => #range(#range(B1, S, lengthBytes(B1) -Int S) +Bytes B2, 0, W)
+      requires 0 <Int S andBool S <=Int lengthBytes(B1)
+      [simplification]
 
-    rule #range(BA:Bytes, 0, LEN) => BA requires lengthBytes(BA) ==Int LEN [simplification]
+    rule [range-of-range]:
+      #range(#range(B:Bytes, S1:Int, W1:Int), S2:Int, W2:Int) =>
+        #range(B, S1 +Int S2, minInt(W2, W1 -Int S2)) +Bytes #buf(maxInt(0, W2 -Int (W1 -Int S2)), 0)
+      requires 0 <=Int S1 andBool 0 <=Int W1 andBool 0 <=Int S2 andBool 0 <=Int W2
+      [simplification]
 
-    rule (#range(#buf(32, X), 0, 28) ):Bytes => #buf(28, 0) requires #rangeUInt ( 32 , X ) [simplification]
+    rule [range-join-base]:
+      #range(B, S1, W1) +Bytes #range(B, S2, W2) => #range(B, S1, W1 +Int W2)
+      requires S2 ==Int S1 +Int W1
+       andBool 0 <=Int S1 andBool 0 <=Int W1 andBool 0 <=Int S2 andBool 0 <=Int W2
+      [simplification]
 
-    rule (#range(#range(BA:Bytes, S0, L0), S1, L1)) => #range(BA, S0 +Int S1, minInt(L1, L0 -Int S1)) +Bytes #buf(maxInt(0, L1 -Int (L0 -Int S1)), 0)
-      requires 0 <=Int S0 andBool 0 <=Int L0 andBool 0 <=Int S1 andBool 0 <=Int L1 [simplification]
+    rule [range-join-concat]:
+      #range(B1, S1, W1) +Bytes ( #range(B1, S2, W2) +Bytes B2 ) => #range(B1, S1, W1 +Int W2) +Bytes B2
+      requires S2 ==Int S1 +Int W1
+       andBool 0 <=Int S1 andBool 0 <=Int W1 andBool 0 <=Int S2 andBool 0 <=Int W2
+      [simplification]
 
-    // lookup range in memory
-    rule #range(MEM, 0, W) => MEM  requires W ==Int lengthBytes(MEM) [simplification]
+    rule [range-reform-base]:
+      #range(B:Bytes, S:Int, minInt(W1:Int, W2:Int)) +Bytes #buf(maxInt(0, W3:Int), 0) => #range (B, S, W1)
+      requires W1 ==Int W2 +Int W3
+       andBool W2 ==Int lengthBytes(B) -Int S
+       andBool 0 <=Int S andBool 0 <=Int W1 andBool 0 <=Int W2
+      [simplification]
 
-    // lookup range in concatenated memory buffers
-    rule #range((BUF1 +Bytes  BUF2), START, WIDTH) =>  #range(BUF2, START -Int lengthBytes(BUF1), WIDTH                        )                                                                    requires                        lengthBytes(BUF1) <=Int START                                                          [simplification]
-    rule #range((BUF1 +Bytes  _   ), START, WIDTH) =>  #range(BUF1, START                       , WIDTH                        )                                                                    requires START +Int WIDTH <=Int lengthBytes(BUF1)                       andBool 0 <=Int START andBool 0 <=Int WIDTH    [simplification]
-    rule #range((BUF1 +Bytes  BUF2), START, WIDTH) => (#range(BUF1, START                       , lengthBytes(BUF1) -Int START)) +Bytes (#range(BUF2, 0, START +Int WIDTH -Int lengthBytes(BUF1)))  requires                        lengthBytes(BUF1) <Int START +Int WIDTH andBool #range(0 <= START < lengthBytes(BUF1)) [simplification]
+    rule [range-reform-concat]:
+      #range(B1:Bytes, S:Int, minInt(W1:Int, W2:Int)) +Bytes ( #buf(maxInt(0, W3:Int), 0) +Bytes B2:Bytes ) => #range (B1, S, W1) +Bytes B2
+      requires W1 ==Int W2 +Int W3
+       andBool W2 ==Int lengthBytes(B1) -Int S
+       andBool 0 <=Int S andBool 0 <=Int W1 andBool 0 <=Int W2
+      [simplification]
 
-    rule #range(#padRightToWidth(_, BUF), 0, WIDTH) => BUF requires lengthBytes(BUF) ==Int WIDTH [simplification]
+    rule [range-buf-zero-symb]:
+      #range(#buf(W:Int, 0), S1:Int, W1:Int) => #buf(W1, 0)
+      requires 0 <=Int W andBool 0 <=Int S1 andBool 0 <=Int W1
+      [simplification]
 
-    // WS [ START := WS' ]
+    rule [range-buf-zero-conc]:
+      #range(B, S1:Int, W1:Int) => #buf(W1, 0)
+      requires 0 <=Int S1 andBool 0 <=Int W1
+       andBool #asInteger(B) ==Int 0
+      [concrete(B), simplification]
 
-    // re-order memory write
-    rule MEM [ K1 := BUF1:Bytes ] [ K2 := BUF2:Bytes ] => MEM [ K2 := BUF2 ] [ K1 := BUF1 ]
-      requires lengthBytes(BUF2) <=Int K1 -Int K2 andBool K2  <Int K1 [simplification]
+    rule [range-memUpdate-before]:
+      #range(B1:Bytes [ S1:Int := B2:Bytes ], S2:Int, W2:Int) =>
+        #let W = minInt(W2, S1 -Int S2) #in
+          #range(B1, S2, W) +Bytes #range(B1 [ S1 := B2 ], S1, W2 -Int W)
+      requires 0 <=Int S2 andBool S2 <Int S1
+      [simplification]
 
-    // overwritten memory write
-    rule MEM [ K1 := BUF1 ] [ K2 := BUF2 ] => MEM [ K2 := BUF2 ]
-      requires K1 +Int lengthBytes(BUF1) <=Int K2 +Int lengthBytes(BUF2) andBool K2 <=Int K1 [simplification]
+    rule [range-memUpdate-in-between]:
+      #range(B1:Bytes [ S1:Int := B2:Bytes ], S2:Int, W2:Int) =>
+        #let S = S2 -Int S1 #in
+        #let W = minInt(W2, lengthBytes(B2) -Int S) #in
+          #range(B2, S, W) +Bytes #range(B1, S1 +Int lengthBytes(B2), W2 -Int W)
+      requires 0 <=Int S1 andBool S1 <=Int S2 andBool S2 <=Int S1 +Int lengthBytes(B2)
+      [simplification]
 
-    rule MEM [ K := BUF ] => MEM +Bytes #buf(K -Int lengthBytes(MEM), 0) +Bytes BUF
-      requires lengthBytes(MEM) <=Int K [simplification]
+    rule [range-memUpdate-outside]:
+      #range(B1:Bytes [ S1:Int := B2:Bytes ], S2:Int, W2:Int) => #range(B1, S2, W2)
+      requires 0 <=Int S1 andBool 0 <=Int W2 andBool S1 +Int lengthBytes(B2) <=Int S2 [simplification]
+
+    rule [range-buf-zero]:
+      #range (#buf(W1:Int, X:Int), S2:Int, W2:Int) => #buf(W2, 0)
+      requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int (W1 -Int (S2 +Int W2)))
+       andBool 0 <=Int S2 andBool 0 <=Int W2 andBool S2 +Int W2 <=Int W1
+      [simplification]
+
+    rule [range-padRightToWidth]:
+      #range(#padRightToWidth(_, BUF), 0, WIDTH) => BUF
+      requires lengthBytes(BUF) ==Int WIDTH [simplification]
+
+    // Memory update
+
+    rule [memUpdate-is-empty]:
+      _:Bytes [ S:Int := _:Bytes ] => .Bytes
+      requires S <Int 0
+      [simplification]
+
+    rule [memUpdate-as-concat-inside]:
+      B1:Bytes [ S:Int := B2:Bytes ] =>
+        #range(B1, 0, S) +Bytes B2 +Bytes #range (B1 , S +Int lengthBytes(B2), lengthBytes(B1) -Int (S +Int lengthBytes(B2)))
+      requires 0 <=Int S andBool S +Int lengthBytes(B2) <Int lengthBytes(B1)
+      [simplification(60)]
+
+    rule [memUpdate-as-concat-outside-1]:
+      B1:Bytes [ S:Int := B2:Bytes ] => #range(B1, 0, S) +Bytes B2
+      requires 0 <=Int S andBool lengthBytes(B1) <=Int S +Int lengthBytes(B2)
+      [simplification(60)]
+
+    rule [memUpdate-reorder]:
+      B:Bytes [ S1:Int := B1:Bytes] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ] [ S1 := B1 ]
+      requires 0 <=Int S2 andBool S2 <Int S1 andBool S2 +Int lengthBytes(B2) <=Int S1
+      [simplification]
+
+    rule [memUpdate-subsume]:
+      B:Bytes [ S1:Int := B1:Bytes] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ]
+      requires 0 <=Int S2 andBool S2 <=Int S1 andBool S1 +Int lengthBytes(B1) <=Int S2 +Int lengthBytes(B2)
+      [simplification]
 
     // lengthBytes
 
-    rule [lengthBytes-geq-zero]: 0 <=Int lengthBytes ( _ )                     => true                                                [simplification, smt-lemma]
-    rule [lengthBytes-concat]:   lengthBytes(BUF1 +Bytes BUF2)                 => lengthBytes(BUF1) +Int lengthBytes(BUF2)            [simplification]
-    rule [lengthBytes-buf]:      lengthBytes(#buf(SIZE, _))                    => SIZE   requires 0 <=Int SIZE                        [simplification]
-    rule [lengthBytes-range]:    lengthBytes(#range(_, START, WIDTH))          => WIDTH  requires 0 <=Int START andBool 0 <=Int WIDTH [simplification]
-    rule [lengthBytes-prtw]:     lengthBytes(#padRightToWidth(W:Int, B:Bytes)) => maxInt(lengthBytes(B), W)                           [simplification]
+    rule [lengthBytes-geq-zero]: 0 <=Int lengthBytes ( _ )                     => true                                     [simplification, smt-lemma]
+    rule [lengthBytes-concat]:   lengthBytes(BUF1 +Bytes BUF2)                 => lengthBytes(BUF1) +Int lengthBytes(BUF2) [simplification]
+    rule [lengthBytes-buf]:      lengthBytes(#buf(S, _))                       => S requires 0 <=Int S                     [simplification]
+    rule [lengthBytes-range]:    lengthBytes(#range(_, S:Int, W:Int))          => maxInt(0, W) requires 0 <=Int S          [simplification]
+    rule [lengthBytes-prtw]:     lengthBytes(#padRightToWidth(W:Int, B:Bytes)) => maxInt(lengthBytes(B), W)                [simplification]
 
     rule [lengthBytes-leq-zero]: lengthBytes(B:Bytes) <=Int 0 => B ==K .Bytes [simplification]
 
