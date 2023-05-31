@@ -622,14 +622,13 @@ def foundry_list(foundry_root: Path) -> list[str]:
     apr_proofs_dir = foundry.out / 'apr_proofs'
 
     all_methods = [
-        f'{contract.name}.{method.name}' for contract in foundry.contracts.values() for method in contract.methods
+        f'{contract.name}.{method.signature}' for contract in foundry.contracts.values() for method in contract.methods
     ]
 
     lines: list[str] = []
     for method in sorted(all_methods):
-        contract_name = method.split('.')[0]
-        test_sig = _matching_tests([method], foundry.all_tests)[0].split('.')[1]
-        proof_digest = foundry.proof_digest(contract_name, test_sig)
+        contract_name, sig = method.split('.')
+        proof_digest = foundry.proof_digest(contract_name, sig)
         if APRProof.proof_exists(proof_digest, apr_proofs_dir):
             apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
             lines.extend(apr_proof.summary)
