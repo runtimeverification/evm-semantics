@@ -208,7 +208,6 @@ class Foundry:
             if f'{contract.name}.{method.signature}' not in self.all_tests
         ]
 
-
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
         return KApply('foundry_success', [s, dst, r, c, e1, e2])
@@ -474,7 +473,10 @@ def foundry_prove(
         method
         for contract in foundry.contracts.values()
         for method in contract.methods
-        if (f'{method.contract_name}.{method.signature}' in tests or (method.is_setup and method.contract_name in contracts))
+        if (
+            f'{method.contract_name}.{method.signature}' in tests
+            or (method.is_setup and method.contract_name in contracts)
+        )
     ]
 
     out_of_date_methods: set[str] = set()
@@ -1077,6 +1079,7 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             KVariable('STORAGESLOTSET_FINAL'),
         ],
     )
+
 
 def _matching_tests(_tests: list[str], within: list[str]) -> list[str]:
     tests = list()
