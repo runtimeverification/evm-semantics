@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, ensure_dir_path, run_process
-from pyk.cterm import CSubst, CTerm
+from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
 from pyk.kast.manip import minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
@@ -869,7 +869,9 @@ def _method_to_cfg(
 ) -> KCFG:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
-    init_cterm = _init_cterm(empty_config, contract.name, kcfgs_dir, calldata=calldata, callvalue=callvalue, init_state=init_state)
+    init_cterm = _init_cterm(
+        empty_config, contract.name, kcfgs_dir, calldata=calldata, callvalue=callvalue, init_state=init_state
+    )
     is_test = method.name.startswith('test')
     failing = method.name.startswith('testFail')
     final_cterm = _final_cterm(empty_config, contract.name, failing=failing, is_test=is_test)
@@ -883,20 +885,13 @@ def _method_to_cfg(
     return cfg
 
 
-# def _init_cterm(init_term: KInner) -> CTerm:
-#     init_cterm = CTerm.from_kast(init_term)
-#     init_cterm = KEVM.add_invariant(init_cterm)
-#     return init_cterm
-
-
-def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, KInner, tuple[KInner]]:
+def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, KInner, tuple[KInner, ...]]:
     apr_proof = APRProof.read_proof(proof_digest, proof_dir)
     target = apr_proof.kcfg.get_unique_target()
     cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
     return (cterm.cell('ACCOUNTS_CELL'), cterm.cell('ACTIVEACCOUNTS_CELL'), cterm.constraints)
 
 
-# TODO: use the init_state here to propagate the setUp constraints if set
 def _init_cterm(
     empty_config: KInner,
     contract_name: str,
