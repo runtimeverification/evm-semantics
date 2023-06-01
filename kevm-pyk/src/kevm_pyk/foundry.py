@@ -239,10 +239,8 @@ class Foundry:
         )
 
     @staticmethod
-    def help_info(kcfg_explore: KCFGExplore, apr_proof: APRProof) -> list[str]:
-        res_lines = []
-        res_lines += print_failure_info(apr_proof.kcfg, apr_proof.id, kcfg_explore)
-
+    def help_info() -> list[str]:
+        res_lines: list[str] = []
         print_foundry_success_info = any('foundry_success' in line for line in res_lines)
         if print_foundry_success_info:
             res_lines.append('')
@@ -554,7 +552,8 @@ def foundry_prove(
             )
 
             if failure_info:
-                failure_log = Foundry.help_info(kcfg_explore, proof)
+                failure_log = print_failure_info(proof.kcfg, proof.id, kcfg_explore)
+                failure_log += Foundry.help_info()
                 for line in failure_log:
                     _LOGGER.warning(line)
 
@@ -632,7 +631,8 @@ def foundry_show(
 
     if failure_info:
         with KCFGExplore(foundry.kevm, id=apr_proof.id) as kcfg_explore:
-            res_lines += Foundry.help_info(kcfg_explore, apr_proof)
+            res_lines = print_failure_info(apr_proof.kcfg, apr_proof.id, kcfg_explore)
+            res_lines += Foundry.help_info()
 
     return '\n'.join(res_lines)
 
