@@ -191,14 +191,64 @@ def exec_foundry_kompile(
     )
 
 
-def exec_prove(
+def exec_prove_legacy(
     definition_dir: Path,
     spec_file: Path,
-    includes: list[str],
+    includes: Iterable[str] = (),
     bug_report: bool = False,
     save_directory: Path | None = None,
     spec_module: str | None = None,
-    md_selector: str | None = None,
+    claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] = (),
+    debug: bool = False,
+    debugger: bool = False,
+    max_depth: int | None = None,
+    max_counterexamples: int | None = None,
+    branching_allowed: int | None = None,
+    haskell_backend_args: Iterable[str] = (),
+    **kwargs: Any,
+) -> None:
+    _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
+    md_selector = 'k & ! node'
+
+    kevm = KEVM(definition_dir, use_directory=save_directory)
+    args: list[str] = []
+    haskell_args: list[str] = []
+    if claim_labels:
+        args += ['--claims', ','.join(claim_labels)]
+    if exclude_claim_labels:
+        args += ['--exclude', ','.join(exclude_claim_labels)]
+    if debug:
+        args.append('--debug')
+    if debugger:
+        args.append('--debugger')
+    if branching_allowed:
+        args += ['--branching-allowed', f'{branching_allowed}']
+    if max_counterexamples:
+        haskell_args += ['--max-counterexamples', f'{max_counterexamples}']
+    if bug_report:
+        haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.rstrip("-spec.k")}']
+    if haskell_backend_args:
+        haskell_args += list(haskell_backend_args)
+
+    kevm.prove(
+        spec_file=spec_file,
+        spec_module_name=spec_module,
+        args=args,
+        include_dirs=[Path(i) for i in includes],
+        md_selector=md_selector,
+        haskell_args=haskell_args,
+        depth=max_depth,
+    )
+
+
+def exec_prove(
+    definition_dir: Path,
+    spec_file: Path,
+    includes: Iterable[str],
+    bug_report: bool = False,
+    save_directory: Path | None = None,
+    spec_module: str | None = None,
     claim_labels: Iterable[str] = (),
     exclude_claim_labels: Iterable[str] = (),
     max_depth: int = 1000,
@@ -215,6 +265,9 @@ def exec_prove(
     trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
+    _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
+    md_selector = 'k & ! node'
+
     br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=br)
 
@@ -638,6 +691,17 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.smt_args,
             kevm_cli_args.explore_args,
             kevm_cli_args.spec_args,
+        ],
+    )
+
+    _ = command_parser.add_parser(
+        'prove-legacy',
+        help='Run KEVM proof using the legacy kprove binary.',
+        parents=[
+            kevm_cli_args.shared_args,
+            kevm_cli_args.k_args,
+            kevm_cli_args.spec_args,
+            kevm_cli_args.kprove_legacy_args,
         ],
     )
 
