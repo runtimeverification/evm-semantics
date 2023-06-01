@@ -330,9 +330,13 @@ def exec_prove(
                         _new_init, _ = kcfg_explore.cterm_simplify(new_init)
                         _new_target, _ = kcfg_explore.cterm_simplify(new_target)
                         if is_bottom(_new_init):
-                            raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
+                            raise ValueError(
+                                'Simplifying initial node led to #Bottom, are you sure your LHS is defined?'
+                            )
                         if is_bottom(_new_target):
-                            raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
+                            raise ValueError(
+                                'Simplifying target node led to #Bottom, are you sure your RHS is defined?'
+                            )
                         new_init = CTerm.from_kast(_new_init)
                         new_target = CTerm.from_kast(_new_target)
 
