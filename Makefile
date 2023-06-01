@@ -130,7 +130,7 @@ $(KEVM_LIB)/%: $(PLUGIN_SUBMODULE)/build/%
 	cp -r $< $@
 
 $(PLUGIN_SUBMODULE)/build/lib%:
-	cd $(PLUGIN_SUBMODULE) && make $*
+	cd $(PLUGIN_SUBMODULE) && make lib$*
 
 plugin-deps: $(plugin_includes) $(plugin_c_includes) $(plugin_needed_libs)
 
