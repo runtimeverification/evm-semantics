@@ -644,9 +644,9 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                                                 acct_code = code.token
                                                 acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
 
-                                                val = []
-                                                if call_cells.get(acct_hash) is not None:
-                                                    val = call_cells[acct_hash]
+                                                val = call_cells.get(acct_hash)
+                                                if val is None:
+                                                    val = []
 
                                                 val.append((cterm.config, base_node, leaves))
                                                 call_cells[acct_hash] = val
@@ -668,7 +668,9 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
             #     kore = kcfg_explore.kprint.kast_to_kore(cons, GENERATED_TOP_CELL)
             #     print(kore)
             for leaf in leaves[1:]:
+            # for leaf in leaves:
                 leaf_cons = leaf.cterm.constraints
+                # print(leaf_cons)
                 new_cons = []
                 for cons in leaf_cons:
                     # TODO: looks like we are getting some memory leaks here
@@ -680,13 +682,18 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                         # kore = kcfg_explore.kprint.kast_to_kore(cons, GENERATED_TOP_CELL)
                         # negated = Not(SortVar('negated'), kore)
                         # new_cons.append(negated)
-                        negated = KApply("#Not", [cons])
+                        negated = KApply(KLabel("#Not", KSort("Bool")), [cons])
                         new_cons.append(negated)
                 # call the prover for all the new constraints
                 # ask for a counter example that satisfies the negated constraints
                 new_cterm = CTerm(config, new_cons)
+                # new_cterm = CTerm(config, leaf_cons)
                 # TODO: this awaits some kast, so either convert from kore to kast again, or apply the `Not` to Kast directly (better option)
-                simplified = kcfg_explore.cterm_simplify(new_cterm)[0]
+                simplified, _ = kcfg_explore.cterm_simplify(new_cterm)
+                # TODO: Uncaught expection thrown of type "NoSuchElementException"
+                # (NoSuchElementException: key not found: #EmptyK)
+                # This probably happens as some kind of KSequence have an arity (number of args) as 0
+                # But applying a #Not label doesn't implies adding a KSequence ?
                 constraints = split_config_and_constraints(simplified)[1]
                 print(constraints)
 

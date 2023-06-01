@@ -62,7 +62,12 @@ contract AssertTest is Test {
     }
 
     function test_simple(uint256 x) public {
-        vm.assume(x > 10);
+        vm.assume(!(x > 10));
         address(7478948923748124).call(abi.encodeWithSignature("func(uint256)", x));
+    }
+
+    function test_bool(bool x) public {
+        vm.assume(!x == true);
+        address(7686812637812839).call(abi.encodeWithSignature("func(bool)", x));
     }
 }
