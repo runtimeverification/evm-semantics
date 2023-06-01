@@ -15,6 +15,8 @@ COPY --from=FOUNDRY /usr/local/bin/cast /usr/local/bin/cast
 
 COPY --from=Z3 /usr/bin/z3 /usr/bin/z3
 
+ARG LLVM_VERSION
+
 RUN    apt-get update                                   \
     && apt-get install --yes software-properties-common \
     && add-apt-repository ppa:ethereum/ethereum
@@ -22,6 +24,7 @@ RUN    apt-get update                                   \
 RUN    apt-get update         \
     && apt-get upgrade --yes  \
     && apt-get install --yes  \
+            clang-${LLVM_VERSION} \
             cmake             \
             curl              \
             debhelper         \
