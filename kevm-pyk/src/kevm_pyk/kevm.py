@@ -8,7 +8,8 @@ from pyk.kast.manip import flatten_label
 from pyk.ktool.kprint import paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
-from pyk.prelude.kint import INT, intToken, ltInt
+from pyk.prelude.k import K
+from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
 
@@ -167,11 +168,9 @@ class KEVM(KProve, KRun):
             # <k> #halt </k>
             elif k_cell.arity == 1 and k_cell[0] == KEVM.halt():
                 return True
-            # <k> #halt ~> X ~> CONTINUATION </k> and X is not KVariable(..., sort=KSort('Int')) or KVariable(..., sort=KSort('OpCode'))
+            # <k> #halt ~> X:K </k>
             elif (
-                k_cell.arity > 1
-                and k_cell[0] == KEVM.halt()
-                and (type(k_cell[1]) is KVariable and k_cell[1].sort not in {INT, KSort('OpCode')})
+                k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable and k_cell[1].sort == K
             ):
                 return True
         return False
