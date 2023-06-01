@@ -25,7 +25,7 @@ from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof
 from pyk.proof.reachability import APRBMCProof, APRProof
-from pyk.utils import hash_str, shorten_hashes, single, unique
+from pyk.utils import hash_str, single, unique
 
 from .kevm import KEVM
 from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
@@ -638,10 +638,8 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    for _node in apr_proof.kcfg.reachable_nodes(node, traverse_covers=True):
-        if not apr_proof.kcfg.is_target(_node.id):
-            _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
-            apr_proof.kcfg.remove_node(_node.id)
+    node_ids = apr_proof.kcfg.prune(node)
+    _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof()
 
 
