@@ -317,6 +317,7 @@ A cons-list is used for the EVM wordstack.
 
 -   `WS [ START := WS' ]` assigns a contiguous chunk of `WS'` to `WS` starting at position `START`.
 -   `#write(WM, IDX, VAL)` assigns a value `VAL` at position `IDX` in `WM`.
+-   TODO: remove the first rule for `:=` when [#1844](https://github.com/runtimeverification/evm-semantics/issues/1844) is fixed.
 
 ```k
     syntax Bytes ::= "#write" "(" Bytes "," Int "," Int ")" [function]
@@ -324,8 +325,9 @@ A cons-list is used for the EVM wordstack.
  // --------------------------------------------------------------------------------------
     rule #write(WM, IDX, VAL) => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ]
 
-    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int lengthBytes(WS'), 0), START, WS') requires START >=Int 0 [concrete]
-    rule _  [ START := _ ]   => .Bytes                                                                        requires START  <Int 0 [concrete]
+    rule WS [ START := WS' ] => WS                                                                            requires 0     <=Int START andBool lengthBytes(WS')  ==Int 0 [concrete]
+    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int lengthBytes(WS'), 0), START, WS') requires 0     <=Int START andBool lengthBytes(WS') =/=Int 0 [concrete]
+    rule _  [ START := _ ]   => .Bytes                                                                        requires START  <Int 0                                       [concrete]
 ```
 
 Bytes helper functions
@@ -359,9 +361,9 @@ Bytes helper functions
 
     syntax Bytes ::= #range ( Bytes , Int , Int ) [function, total]
  // ---------------------------------------------------------------
-    rule                #range(_, START, WIDTH)  => .Bytes                                                                       requires notBool (WIDTH >=Int 0 andBool START >=Int 0)
-    rule [bytesRange] : #range(WS, START, WIDTH) => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int lengthBytes(WS)
-    rule                #range(_, _, WIDTH)      => padRightBytes(.Bytes, WIDTH, 0) [owise]
+    rule                #range(_, START, WIDTH)  => .Bytes                                                                       requires notBool (WIDTH >=Int 0 andBool START >=Int 0) [concrete]
+    rule [bytesRange] : #range(WS, START, WIDTH) => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int lengthBytes(WS) [concrete]
+    rule                #range(_, _, WIDTH)      => padRightBytes(.Bytes, WIDTH, 0) [owise, concrete]
 
     syntax Bytes ::= #padToWidth      ( Int , Bytes ) [function, total]
                    | #padRightToWidth ( Int , Bytes ) [function, total]

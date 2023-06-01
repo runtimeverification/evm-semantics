@@ -114,6 +114,24 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                  <accounts>
                    ( <account>
                      <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       2
+                     </nonce>
+                     ...
+                   </account>
+                   ( <account>
+                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -130,7 +148,7 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                      </nonce>
                      ...
                    </account>
-                   ( <account>
+                   <account>
                      <acctID>
                        491460923342184218035706888008750043977755113263
                      </acctID>
@@ -145,24 +163,6 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                      </origStorage>
                      <nonce>
                        1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       2
                      </nonce>
                      ...
                    </account> ) )
@@ -315,6 +315,24 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                  <accounts>
                    ( <account>
                      <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       2
+                     </nonce>
+                     ...
+                   </account>
+                   ( <account>
+                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -331,7 +349,7 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                      </nonce>
                      ...
                    </account>
-                   ( <account>
+                   <account>
                      <acctID>
                        491460923342184218035706888008750043977755113263
                      </acctID>
@@ -346,24 +364,6 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                      </origStorage>
                      <nonce>
                        1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       2
                      </nonce>
                      ...
                    </account> ) )
@@ -516,6 +516,24 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                  <accounts>
                    ( <account>
                      <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       2
+                     </nonce>
+                     ...
+                   </account>
+                   ( <account>
+                     <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
@@ -532,7 +550,7 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                      </nonce>
                      ...
                    </account>
-                   ( <account>
+                   <account>
                      <acctID>
                        491460923342184218035706888008750043977755113263
                      </acctID>
@@ -547,24 +565,6 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                      </origStorage>
                      <nonce>
                        1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       2
                      </nonce>
                      ...
                    </account> ) )
