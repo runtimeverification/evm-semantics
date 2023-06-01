@@ -150,7 +150,7 @@ def exec_solc_to_k(
         _main_module.name, modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
     )
     _kprint = KEVM(definition_dir, extra_unparsing_modules=modules)
-    print(_kprint.pretty_print(bin_runtime_definition) + '\n')
+    print(_kprint.pretty_print(bin_runtime_definition, unalias=False) + '\n')
 
 
 def exec_foundry_kompile(
