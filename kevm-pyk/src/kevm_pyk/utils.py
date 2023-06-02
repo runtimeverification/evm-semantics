@@ -86,7 +86,7 @@ def kevm_apr_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
-) -> bool:
+) -> tuple[bool, list[str] | None]:
     _cfgid = cfgid
     _apr_proof = proof
     terminal_rules = ['EVM.halt']
@@ -130,15 +130,17 @@ def kevm_apr_prove(
         )
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}', exc_info=True)
-        return False
+        return False, None
 
     failure_nodes = _cfg.frontier + _cfg.stuck
     if len(failure_nodes) == 0:
         _LOGGER.info(f'Proof passed: {_cfgid}')
-        return True
+        return True, None
     else:
         _LOGGER.error(f'Proof failed: {_cfgid}')
-        return False
+        failure_log: list[str] | None = None
+        failure_log = print_failure_info(proof.kcfg, proof.id, kcfg_explore)
+        return False, failure_log
 
 
 def print_failure_info(_cfg: KCFG, _cfgid: str, kcfg_explore: KCFGExplore) -> list[str]:

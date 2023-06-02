@@ -332,6 +332,19 @@ class KEVMCLIArgs:
             default='kore-rpc',
             help='Custom command to start RPC server',
         )
+        args.add_argument(
+            '--failure-information',
+            dest='failure_info',
+            default=True,
+            action='store_true',
+            help='Show failure summary for all failing tests',
+        )
+        args.add_argument(
+            '--no-failure-information',
+            dest='failure_info',
+            action='store_false',
+            help='Do not show failure summary for failing tests',
+        )
         return args
 
     @cached_property
@@ -392,6 +405,19 @@ class KEVMCLIArgs:
             default=[],
             action='append',
             help='List of nodes to display delta for.',
+        )
+        args.add_argument(
+            '--failure-information',
+            dest='failure_info',
+            default=False,
+            action='store_true',
+            help='Show failure summary for cfg',
+        )
+        args.add_argument(
+            '--no-failure-information',
+            dest='failure_info',
+            action='store_false',
+            help='Do not show failure summary for cfg',
         )
         args.add_argument(
             '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'

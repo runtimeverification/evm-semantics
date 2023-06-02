@@ -34,7 +34,7 @@ from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove, print_failure_info
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -263,6 +263,7 @@ def exec_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    failure_info: bool = True,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
@@ -284,7 +285,7 @@ def exec_prove(
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
-    def _init_and_run_proof(claim: KClaim) -> bool:
+    def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
         with KCFGExplore(
             kevm,
             id=claim.label,
@@ -345,12 +346,16 @@ def exec_prove(
         results = process_pool.map(_init_and_run_proof, claims)
 
     failed = 0
-    for claim, result in zip(claims, results, strict=True):
-        if result:
+    for claim, r in zip(claims, results, strict=True):
+        passed, failure_log = r
+        if passed:
             print(f'PROOF PASSED: {claim.label}')
         else:
             failed += 1
             print(f'PROOF FAILED: {claim.label}')
+            if failure_info and failure_log is not None:
+                for line in failure_log:
+                    print(line)
     sys.exit(failed)
 
 
@@ -367,6 +372,7 @@ def exec_show_kcfg(
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    failure_info: bool = False,
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
@@ -391,6 +397,11 @@ def exec_show_kcfg(
         minimize=minimize,
         node_printer=kevm.short_info,
     )
+
+    if failure_info:
+        with KCFGExplore(kevm, id=apr_proof.id) as kcfg_explore:
+            res_lines += print_failure_info(apr_proof.kcfg, apr_proof.id, kcfg_explore)
+
     print('\n'.join(res_lines))
 
 
@@ -469,16 +480,21 @@ def exec_foundry_prove(
         kore_rpc_command=kore_rpc_command,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
-        failure_info=failure_info,
         trace_rewrites=trace_rewrites,
     )
     failed = 0
     for pid, r in results.items():
-        if r:
+        passed, failure_log = r
+        if passed:
             print(f'PROOF PASSED: {pid}')
         else:
             failed += 1
             print(f'PROOF FAILED: {pid}')
+            if failure_info and failure_log is not None:
+                failure_log += Foundry.help_info()
+                for line in failure_log:
+                    print(line)
+
     sys.exit(failed)
 
 
@@ -833,19 +849,6 @@ def _create_argument_parser() -> ArgumentParser:
         type=int,
         help='Max depth of loop unrolling during bounded model checking',
     )
-    foundry_prove_args.add_argument(
-        '--failure-information',
-        dest='failure_info',
-        default=True,
-        action='store_true',
-        help='Show failure summary for all failing tests',
-    )
-    foundry_prove_args.add_argument(
-        '--no-failure-information',
-        dest='failure_info',
-        action='store_false',
-        help='Do not show failure summary for failing tests',
-    )
 
     foundry_show_args = command_parser.add_parser(
         'foundry-show',
@@ -865,19 +868,6 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Strip output that is likely to change without the contract logic changing',
-    )
-    foundry_show_args.add_argument(
-        '--failure-information',
-        dest='failure_info',
-        default=False,
-        action='store_true',
-        help='Show failure summary for cfg',
-    )
-    foundry_show_args.add_argument(
-        '--no-failure-information',
-        dest='failure_info',
-        action='store_false',
-        help='Do not show failure summary for cfg',
     )
     foundry_show_args.add_argument(
         '--frontier', dest='frontier', default=False, action='store_true', help='Also display frontier nodes'

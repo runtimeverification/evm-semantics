@@ -431,7 +431,7 @@ def foundry_prove(
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
     trace_rewrites: bool = False,
-) -> dict[str, bool]:
+) -> dict[str, tuple[bool, list[str] | None]]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
@@ -498,7 +498,7 @@ def foundry_prove(
                 )
         method.update_digest(foundry.out / 'digest')
 
-    def _init_and_run_proof(_init_problem: tuple[str, str]) -> bool:
+    def _init_and_run_proof(_init_problem: tuple[str, str]) -> tuple[bool, list[str] | None]:
         proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
         with KCFGExplore(
             foundry.kevm,
@@ -551,15 +551,9 @@ def foundry_prove(
                 trace_rewrites=trace_rewrites,
             )
 
-            if failure_info:
-                failure_log = print_failure_info(proof.kcfg, proof.id, kcfg_explore)
-                failure_log += Foundry.help_info()
-                for line in failure_log:
-                    _LOGGER.warning(line)
-
             return result
 
-    def run_cfg_group(tests: list[str]) -> dict[str, bool]:
+    def run_cfg_group(tests: list[str]) -> dict[str, tuple[bool, list[str] | None]]:
         init_problems = [tuple(test.split('.')) for test in tests]
         with ProcessPool(ncpus=workers) as process_pool:
             _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
@@ -631,7 +625,7 @@ def foundry_show(
 
     if failure_info:
         with KCFGExplore(foundry.kevm, id=apr_proof.id) as kcfg_explore:
-            res_lines = print_failure_info(apr_proof.kcfg, apr_proof.id, kcfg_explore)
+            res_lines += print_failure_info(apr_proof.kcfg, apr_proof.id, kcfg_explore)
             res_lines += Foundry.help_info()
 
     return '\n'.join(res_lines)
