@@ -236,7 +236,6 @@ def foundry_kompile(
     definition_dir: Path,
     foundry_root: Path,
     includes: Iterable[str],
-    md_selector: str | None,
     regen: bool = False,
     rekompile: bool = False,
     requires: Iterable[str] = (),
@@ -325,7 +324,6 @@ def foundry_kompile(
         out_dir: Path,
         backend: KompileTarget,
         llvm_kompile_type: LLVMKompileType | None = None,
-        md_selector: str | None = None,
     ) -> None:
         kevm_kompile(
             target=backend,
@@ -338,7 +336,6 @@ def foundry_kompile(
             ccopts=ccopts,
             llvm_kompile_type=llvm_kompile_type,
             debug=debug,
-            md_selector=md_selector,
         )
 
     def kompilation_digest() -> str:
@@ -359,14 +356,13 @@ def foundry_kompile(
 
     if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
-        _kompile(foundry_definition_dir, KompileTarget.HASKELL, md_selector=md_selector)
+        _kompile(foundry_definition_dir, KompileTarget.HASKELL)
         if llvm_library:
             _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
             _kompile(
                 foundry_llvm_dir,
                 KompileTarget.LLVM,
                 llvm_kompile_type=LLVMKompileType.C,
-                md_selector=('k & ! symbolic' if md_selector is None else f'{md_selector} & ! symbolic'),
             )
 
     update_kompilation_digest()

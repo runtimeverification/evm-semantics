@@ -105,6 +105,22 @@ class KompileTarget(Enum):
             case _:
                 raise AssertionError()
 
+    @property
+    def md_selector(self) -> str:
+        match self:
+            case self.LLVM:
+                return 'k & ! node & ! symbolic'
+            case self.NODE:
+                return 'k & ! symbolic & ! standalone'
+            case self.HASKELL:
+                return 'k & ! node & ! concrete'
+            case self.HASKELL_STANDALONE:
+                return 'k & ! node & ! concrete'
+            case self.FOUNDRY:
+                return 'k & ! node & ! concrete'
+            case _:
+                raise AssertionError()
+
 
 def kevm_kompile(
     target: KompileTarget,
@@ -121,11 +137,9 @@ def kevm_kompile(
     llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
     debug: bool = False,
-    md_selector: str | None = None,
 ) -> Path:
     backend = target.backend
-    if not md_selector:
-        md_selector = 'k & ! standalone' if target == KompileTarget.NODE else 'k & ! node'
+    md_selector = target.md_selector
 
     include_dirs = [Path(include) for include in includes]
     include_dirs += [config.INCLUDE_DIR]
@@ -146,7 +160,7 @@ def kevm_kompile(
     haskell_binary = kernel is not Kernel.DARWIN
     match backend:
         case KompileBackend.LLVM:
-            ccopts = list(ccopts) + _lib_ccopts(kernel, llvm_kompile_type)
+            ccopts = list(ccopts) + _lib_ccopts(kernel)
             no_llvm_kompile = target == KompileTarget.NODE
             kompile = LLVMKompile(
                 base_args=base_args,
@@ -175,7 +189,7 @@ def kevm_kompile(
         raise
 
 
-def _lib_ccopts(kernel: Kernel, llvm_kompile_type: LLVMKompileType | None = None) -> list[str]:
+def _lib_ccopts(kernel: Kernel) -> list[str]:
     ccopts = ['-g', '-std=c++17']
 
     ccopts += ['-lssl', '-lcrypto']
