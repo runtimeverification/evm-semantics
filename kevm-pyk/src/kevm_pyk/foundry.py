@@ -21,7 +21,7 @@ from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
-from pyk.prelude.kbool import FALSE, notBool
+from pyk.prelude.kbool import FALSE, notBool, orBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof, ProofStatus
@@ -627,74 +627,71 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                             base_node = nodes[1]
 
                             for node in nodes:
-                                # print(node.cterm.constraints)
                                 cterm = node.cterm
-                                kast = cterm.cell('K_CELL')
-                                if type(kast) is KSequence:
-                                    for item in kast.items:
-                                        if type(item) is KApply and item.label.name.startswith('#callWithCode'):
-                                            # print(node)
-                                            call_args = item.args
-                                            # TODO: parse this and store the caller
-                                            # next, we should try to get the origin and other interesting values
-                                            call_args[0]
-                                            code = call_args[3]
-                                            if type(code) is KToken:
-                                                acct_code = code.token
-                                                acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
+                                # note: we may want to hide this away
+                                k_cell_pattern = KSequence(
+                                    [
+                                        KApply(
+                                            '#callWithCode_________EVM_InternalOp_Int_Int_Int_Bytes_Int_Int_Bytes_Bool',
+                                            [
+                                                KVariable('_A1'),
+                                                KVariable('_A2'),
+                                                KVariable('_A3'),
+                                                KVariable('CODE'),
+                                                KVariable('_A5'),
+                                                KVariable('_A6'),
+                                                KVariable('_A7'),
+                                                KVariable('_A8'),
+                                            ],
+                                        ),
+                                        KApply(
+                                            '#return___EVM_KItem_Int_Int',
+                                            [KVariable('_A10'), KVariable('_A11'),]
+                                        ),
+                                        KApply(
+                                            '#pc[_]_EVM_InternalOp_OpCode',
+                                            [KApply('CALL_EVM_CallOp')]
+                                        ),
+                                        KApply('#execute_EVM_KItem'),
+                                        KVariable('_A12')
+                                    ]
+                                )
 
-                                                val = call_cells.get(acct_hash)
-                                                if val is None:
-                                                    val = []
+                                k_match = k_cell_pattern.match(cterm.cell('K_CELL'))
+                                if k_match is not None:
+                                    code = k_match['CODE']
+                                    if type(code) is KToken:
+                                        acct_code = code.token
+                                        acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
 
-                                                val.append((cterm.config, base_node, leaves))
-                                                call_cells[acct_hash] = val
+                                        val = call_cells.get(acct_hash)
+                                        if val is None:
+                                            val = []
 
-                                                break
+                                        val.append((cterm.config, base_node, leaves))
+                                        call_cells[acct_hash] = val
+                                        break
 
     kcfg_explore = KCFGExplore(foundry.kevm)
 
     for bytecode_h, cons_set in call_cells.items():
-        for se in cons_set:
-            config = se[0]
-            # print(conf)
-            # print(se[1].cterm.constraints)
-            base_cons = se[1].cterm.constraints
-            leaves = se[2]
-            # print(base_cons)
-            # for cons in se[1].cterm.constraints:
-            # print(cons)
-            #     kore = kcfg_explore.kprint.kast_to_kore(cons, GENERATED_TOP_CELL)
-            #     print(kore)
-            for leaf in leaves[1:]:
-                # for leaf in leaves:
-                leaf_cons = leaf.cterm.constraints
-                # print(leaf_cons)
-                new_cons = []
-                for cons in leaf_cons:
-                    # TODO: looks like we are getting some memory leaks here
-                    # depth, _cterm, next_cterms, next_node_logs = kcfg_explore.cterm_execute(cterm)
-                    # print(depth, next_node_logs)
-                    # TODO: negate the constraints using #Not
-                    if not base_cons.__contains__(cons):
-                        # print(cons)
-                        # kore = kcfg_explore.kprint.kast_to_kore(cons, GENERATED_TOP_CELL)
-                        # negated = Not(SortVar('negated'), kore)
-                        # new_cons.append(negated)
-                        negated = KApply(KLabel("#Not", KSort("Bool")), [cons])
-                        new_cons.append(negated)
-                # call the prover for all the new constraints
-                # ask for a counter example that satisfies the negated constraints
-                new_cterm = CTerm(config, new_cons)
-                # new_cterm = CTerm(config, leaf_cons)
-                # TODO: this awaits some kast, so either convert from kore to kast again, or apply the `Not` to Kast directly (better option)
+        for (config, node, leaves) in cons_set:
+            # union = KInner()
+            constraints = [leaf.cterm.constraints for leaf in leaves[1:]]
+            flat = [item for t in constraints for item in t]
+            union = orBool(flat)
+            negated = notBool(union)
+            new_cterm = CTerm(config, [negated])
+            try:
                 simplified, _ = kcfg_explore.cterm_simplify(new_cterm)
-                # TODO: Uncaught expection thrown of type "NoSuchElementException"
-                # (NoSuchElementException: key not found: #EmptyK)
-                # This probably happens as some kind of KSequence have an arity (number of args) as 0
-                # But applying a #Not label doesn't implies adding a KSequence ?
-                constraints = split_config_and_constraints(simplified)[1]
-                print(constraints)
+            except:
+                exit(1)
+
+            # TODO: Uncaught expection thrown of type "NoSuchElementException"
+            # (NoSuchElementException: key not found: #EmptyK)
+            # This probably happens as some kind of KSequence have an arity (number of args) as 0
+            constraints = split_config_and_constraints(simplified)[1]
+            # print(constraints)
 
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
