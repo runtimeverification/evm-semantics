@@ -13,7 +13,7 @@ import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, ensure_dir_path, run_process
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
+from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
@@ -25,7 +25,7 @@ from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof
 from pyk.proof.reachability import APRBMCProof, APRProof
-from pyk.utils import hash_str, shorten_hashes, single, unique
+from pyk.utils import hash_str, single, unique
 
 from .kevm import KEVM
 from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
@@ -339,7 +339,7 @@ def foundry_kompile(
             definition_dir,
             extra_unparsing_modules=(bin_runtime_definition.all_modules + contract_main_definition.all_modules),
         )
-        foundry_contracts_file.write_text(kevm.pretty_print(bin_runtime_definition) + '\n')
+        foundry_contracts_file.write_text(kevm.pretty_print(bin_runtime_definition, unalias=False) + '\n')
         _LOGGER.info(f'Wrote file: {foundry_contracts_file}')
         foundry_main_file.write_text(kevm.pretty_print(contract_main_definition) + '\n')
         _LOGGER.info(f'Wrote file: {foundry_main_file}')
@@ -608,7 +608,6 @@ def foundry_show(
         '<pc>',
         '<gas>',
         '<code>',
-        '<activeAccounts>',
     ]
 
     kcfg_show = KCFGShow(foundry.kevm)
@@ -670,10 +669,8 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    for _node in apr_proof.kcfg.reachable_nodes(node, traverse_covers=True):
-        if not apr_proof.kcfg.is_target(_node.id):
-            _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
-            apr_proof.kcfg.remove_node(_node.id)
+    node_ids = apr_proof.kcfg.prune(node)
+    _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof()
 
 
@@ -708,7 +705,7 @@ def foundry_simplify_node(
         apr_proof.kcfg.replace_node(node, CTerm.from_kast(new_term))
         apr_proof.write_proof()
     res_term = minimize_term(new_term) if minimize else new_term
-    return foundry.kevm.pretty_print(res_term)
+    return foundry.kevm.pretty_print(res_term, unalias=False)
 
 
 def foundry_step_node(
@@ -924,11 +921,11 @@ def _init_cterm(init_term: KInner) -> CTerm:
     return init_cterm
 
 
-def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, KInner]:
+def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> KInner:
     apr_proof = APRProof.read_proof(proof_digest, proof_dir)
     target = apr_proof.kcfg.get_unique_target()
     cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
-    return (cterm.cell('ACCOUNTS_CELL'), cterm.cell('ACTIVEACCOUNTS_CELL'))
+    return cterm.cell('ACCOUNTS_CELL')
 
 
 def _init_term(
@@ -964,17 +961,6 @@ def _init_term(
         'ACCESSEDACCOUNTS_CELL': KApply('.Set'),
         'ACCESSEDSTORAGE_CELL': KApply('.Map'),
         'INTERIMSTATES_CELL': KApply('.List'),
-        'ACTIVEACCOUNTS_CELL': build_assoc(
-            KApply('.Set'),
-            KLabel('_Set_'),
-            map(
-                KLabel('SetItem'),
-                [
-                    Foundry.address_TEST_CONTRACT(),
-                    Foundry.address_CHEATCODE(),
-                ],
-            ),
-        ),
         'LOCALMEM_CELL': KApply('.Bytes_BYTES-HOOKED_Bytes'),
         'PREVCALLER_CELL': KApply('.Account_EVM-TYPES_Account'),
         'PREVORIGIN_CELL': KApply('.Account_EVM-TYPES_Account'),
@@ -1009,9 +995,8 @@ def _init_term(
     }
 
     if init_state:
-        accts, active_accts = get_final_accounts_cell(init_state, kcfgs_dir)
+        accts = get_final_accounts_cell(init_state, kcfgs_dir)
         init_subst['ACCOUNTS_CELL'] = accts
-        init_subst['ACTIVEACCOUNTS_CELL'] = active_accts
 
     if calldata is not None:
         init_subst['CALLDATA_CELL'] = calldata

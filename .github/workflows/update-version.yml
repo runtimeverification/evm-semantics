@@ -13,8 +13,8 @@ concurrency:
 jobs:
 
   update-versions:
-    name: 'Update dependency versions'
-    runs-on: ubuntu-22.04
+    name: 'Update Dependency Versions'
+    runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
