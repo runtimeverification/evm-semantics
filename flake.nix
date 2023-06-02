@@ -79,15 +79,6 @@
                 cp -rv ${prev.blockchain-k-plugin-src}/* $out/deps/plugin/
               '';
             };
-            #  src = prev.lib.cleanSource
-            #     (prev.nix-gitignore.gitignoreSourcePure [
-            #       ./.gitignore
-            #       ".github/"
-            #       "result*"
-            #       "*.nix"
-            #       "deps/"
-            #       "kevm-pyk/"
-            #     ] ./.);
 
             dontUseCmakeConfigure = true;
 
