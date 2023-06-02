@@ -509,6 +509,7 @@ def _range_predicate(term: KInner, type_label: str) -> KInner | None:
         case 'string': return TRUE
 
     predicate_functions = [
+        _range_predicate_dyn_array,
         _range_predicate_array,
         _range_predicate_uint,
         _range_predicate_int,
@@ -596,11 +597,19 @@ def _range_predicate_ufixed(term: KInner, type_label: str) -> tuple[bool, KInner
         return (False, None)
 
 
-def _range_predicate_array(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
+def _range_predicate_dyn_array(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
     if type_label.endswith('[]'):
         return (True, KEVM.range_uint(128, KEVM.size_bytes(term)))
     else:
         return (False, None)
+
+def _range_predicate_array(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
+    if type_label.endswith(']'):
+        parts = type_label.rsplit('[', 1)
+        if len(parts) > 1:
+            number = int(parts[1].rstrip(']'))
+            return (True, KEVM.range_uint((number * 256), KEVM.size_bytes(term)))
+    return (False, None)
 
 
 def method_sig_from_abi(method_json: dict) -> str:
