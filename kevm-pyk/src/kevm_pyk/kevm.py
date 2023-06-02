@@ -8,6 +8,7 @@ from pyk.kast.manip import flatten_label
 from pyk.kast.pretty import paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
+from pyk.prelude.k import K
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
@@ -163,11 +164,17 @@ class KEVM(KProve, KRun):
         if k_cell == KEVM.halt():
             return True
         elif type(k_cell) is KSequence:
-            # <k> #halt ~> CONTINUATION </k>
-            if k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
-                # <callDepth> 0 </callDepth>
-                if cterm.cell('CALLDEPTH_CELL') == intToken(0):
-                    return True
+            # <k> . </k>
+            if k_cell.arity == 0:
+                return True
+            # <k> #halt </k>
+            elif k_cell.arity == 1 and k_cell[0] == KEVM.halt():
+                return True
+            # <k> #halt ~> X:K </k>
+            elif (
+                k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable and k_cell[1].sort == K
+            ):
+                return True
         return False
 
     @staticmethod
