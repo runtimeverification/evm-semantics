@@ -62,7 +62,6 @@ module CREATE-SPEC
               <network>
                 <chainID> _ </chainID>
 
-                <activeAccounts> SetItem(ACCT_ID) ACCTS:Set (.Set => SetItem(#newAddr(ACCT_ID, NONCE))) </activeAccounts>
                 <accounts>
                   <account>
                     <acctID> ACCT_ID </acctID>
@@ -142,7 +141,6 @@ module CREATE-SPEC
               <network>
                 <chainID> _ </chainID>
 
-                <activeAccounts> SetItem(ACCT_ID) ACCTS:Set </activeAccounts>
                 <accounts> _ </accounts>
 
                 <txOrder> _ </txOrder>
