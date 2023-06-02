@@ -36,7 +36,7 @@ from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_prove
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -310,7 +310,14 @@ def exec_prove(
         ) as kcfg_explore:
             proof_problem: Proof
             if is_functional(claim):
-                proof_problem = EqualityProof.from_claim(claim, kevm.definition)
+                if (
+                    save_directory is not None
+                    and not reinit
+                    and EqualityProof.proof_exists(claim.label, save_directory)
+                ):
+                    proof_problem = EqualityProof.read_proof(claim.label, save_directory)
+                else:
+                    proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
             else:
                 if save_directory is not None and not reinit and APRProof.proof_exists(claim.label, save_directory):
                     proof_problem = APRProof.read_proof(claim.label, save_directory)
@@ -345,7 +352,7 @@ def exec_prove(
 
                     proof_problem = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
 
-            return kevm_apr_prove(
+            return kevm_prove(
                 kevm,
                 claim.label,
                 proof_problem,

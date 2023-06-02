@@ -3,13 +3,6 @@ requires "verification.k"
 module FUNCTIONAL-SPEC-SYNTAX
     imports VERIFICATION
 
-//     syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
-//  // -------------------------------------------------------
-//     rule <k> runLemma(S) => doneLemma(S) ... </k>
-// 
-//     syntax Step ::= Bytes | Int | Bool
-//  // ----------------------------------
-
 endmodule
 
 module FUNCTIONAL-SPEC

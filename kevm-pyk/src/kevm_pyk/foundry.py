@@ -30,7 +30,7 @@ from pyk.utils import hash_str, single, unique
 from .kevm import KEVM
 from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
-from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, kevm_apr_prove
+from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, kevm_prove
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -505,7 +505,7 @@ def foundry_prove(
                 trace_rewrites=trace_rewrites,
             )
 
-            return kevm_apr_prove(
+            return kevm_prove(
                 foundry.kevm,
                 proof_id,
                 proof,

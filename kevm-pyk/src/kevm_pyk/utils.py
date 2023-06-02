@@ -67,7 +67,7 @@ def get_apr_proof_for_spec(  # noqa: N802
     return apr_proof
 
 
-def kevm_apr_prove(
+def kevm_prove(
     kprove: KProve,
     cfgid: str,
     proof: Proof,
@@ -91,7 +91,7 @@ def kevm_apr_prove(
     trace_rewrites: bool = False,
 ) -> bool:
     _cfgid = cfgid
-    _apr_proof = proof
+    proof = proof
     terminal_rules = ['EVM.halt']
     cut_point_rules = []
     if break_every_step:
@@ -115,15 +115,15 @@ def kevm_apr_prove(
             ]
         )
     prover: APRBMCProver | APRProver | EqualityProver
-    if type(_apr_proof) is APRBMCProof:
+    if type(proof) is APRBMCProof:
         assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
-        prover = APRBMCProver(
-            _apr_proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop
-        )
-    elif type(_apr_proof) is APRProof:
-        prover = APRProver(_apr_proof, is_terminal=is_terminal, extract_branches=extract_branches)
-    elif type(_apr_proof) is EqualityProof:
-        prover = EqualityProver(_apr_proof)
+        prover = APRBMCProver(proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop)
+    elif type(proof) is APRProof:
+        prover = APRProver(proof, is_terminal=is_terminal, extract_branches=extract_branches)
+    elif type(proof) is EqualityProof:
+        prover = EqualityProver(proof)
+    else:
+        raise ValueError(f'Do not know how to build prover for proof: {proof}')
     try:
         if type(prover) is APRBMCProver or type(prover) is APRProver:
             _cfg = prover.advance_proof(
