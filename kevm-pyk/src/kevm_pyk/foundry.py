@@ -682,15 +682,12 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
             union = orBool(flat)
             negated = notBool(union)
             new_cterm = CTerm(config, [negated])
-            try:
-                simplified, _ = kcfg_explore.cterm_simplify(new_cterm)
-            except:
-                exit(1)
+            simplified, _ = kcfg_explore.cterm_simplify(new_cterm)
 
             # TODO: Uncaught expection thrown of type "NoSuchElementException"
             # (NoSuchElementException: key not found: #EmptyK)
             # This probably happens as some kind of KSequence have an arity (number of args) as 0
-            constraints = split_config_and_constraints(simplified)[1]
+            # constraints = split_config_and_constraints(simplified)[1]
             # print(constraints)
 
 
