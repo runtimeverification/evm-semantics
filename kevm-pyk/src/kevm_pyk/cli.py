@@ -15,6 +15,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import TypeVar
 
+    from pyk.kcfg.kcfg import NodeIdLike
+
     T = TypeVar('T')
 
 
@@ -23,6 +25,13 @@ def list_of(elem_type: Callable[[str], T], delim: str = ';') -> Callable[[str], 
         return [elem_type(elem) for elem in s.split(delim)]
 
     return parse
+
+
+def node_id_like(s: str) -> NodeIdLike:
+    try:
+        return int(s)
+    except ValueError:
+        return s
 
 
 class KEVMCLIArgs:
@@ -91,6 +100,52 @@ class KEVMCLIArgs:
             dest='expand_macros',
             action='store_false',
             help='Do not expand macros on the input term before execution.',
+        )
+        return args
+
+    @cached_property
+    def kprove_legacy_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument(
+            '--bug-report',
+            default=False,
+            action='store_true',
+            help='Generate a haskell-backend bug report for the execution.',
+        )
+        args.add_argument(
+            '--debugger',
+            dest='debugger',
+            default=False,
+            action='store_true',
+            help='Launch proof in an interactive debugger.',
+        )
+        args.add_argument(
+            '--max-depth',
+            dest='max_depth',
+            default=None,
+            type=int,
+            help='The maximum number of computational steps to prove.',
+        )
+        args.add_argument(
+            '--max-counterexamples',
+            type=int,
+            dest='max_counterexamples',
+            default=None,
+            help='Maximum number of counterexamples reported before a forcible stop.',
+        )
+        args.add_argument(
+            '--branching-allowed',
+            type=int,
+            dest='branching_allowed',
+            default=None,
+            help='Number of branching events allowed before a forcible stop.',
+        )
+        args.add_argument(
+            '--haskell-backend-arg',
+            dest='haskell_backend_args',
+            default=[],
+            action='append',
+            help='Arguments passed to the Haskell backend execution engine.',
         )
         return args
 
@@ -363,7 +418,7 @@ class KEVMCLIArgs:
         args = ArgumentParser(add_help=False)
         args.add_argument(
             '--node',
-            type=str,
+            type=node_id_like,
             dest='nodes',
             default=[],
             action='append',
@@ -371,7 +426,7 @@ class KEVMCLIArgs:
         )
         args.add_argument(
             '--node-delta',
-            type=arg_pair_of(str, str),
+            type=arg_pair_of(node_id_like, node_id_like),
             dest='node_deltas',
             default=[],
             action='append',

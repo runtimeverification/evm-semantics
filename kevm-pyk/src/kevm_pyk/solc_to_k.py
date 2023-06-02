@@ -15,7 +15,7 @@ from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KRul
 from pyk.prelude.kbool import TRUE, andBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
-from pyk.utils import FrozenDict, hash_str
+from pyk.utils import FrozenDict, hash_str, single
 
 from .kevm import KEVM
 
@@ -40,28 +40,91 @@ class Contract:
         arg_names: tuple[str, ...]
         arg_types: tuple[str, ...]
         contract_name: str
+        contract_digest: str
+        contract_storage_digest: str
         payable: bool
         signature: str
+        ast: dict | None
 
-        def __init__(self, msig: str, id: int, abi: dict, contract_name: str, sort: KSort) -> None:
+        def __init__(
+            self,
+            msig: str,
+            id: int,
+            abi: dict,
+            ast: dict | None,
+            contract_name: str,
+            contract_digest: str,
+            contract_storage_digest: str,
+            sort: KSort,
+        ) -> None:
             self.signature = msig
             self.name = abi['name']
             self.id = id
             self.arg_names = tuple([f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])])
             self.arg_types = tuple([input['type'] for input in abi['inputs']])
             self.contract_name = contract_name
+            self.contract_digest = contract_digest
+            self.contract_storage_digest = contract_storage_digest
             self.sort = sort
             # TODO: Check that we're handling all state mutability cases
             self.payable = abi['stateMutability'] == 'payable'
+            self.ast = ast
 
         @property
         def klabel(self) -> KLabel:
             args_list = '_'.join(self.arg_types)
             return KLabel(f'method_{self.contract_name}_{self.name}_{args_list}')
 
+        @cached_property
+        def qualified_name(self) -> str:
+            return f'{self.contract_name}.{self.signature}'
+
         @property
         def selector_alias_rule(self) -> KRule:
             return KRule(KRewrite(KEVM.abi_selector(self.signature), intToken(self.id)))
+
+        @cached_property
+        def is_setup(self) -> bool:
+            return self.name == 'setUp'
+
+        def up_to_date(self, digest_file: Path) -> bool:
+            if not digest_file.exists():
+                return False
+            digest_dict = json.loads(digest_file.read_text())
+            if 'methods' not in digest_dict:
+                digest_dict['methods'] = {}
+                digest_file.write_text(json.dumps(digest_dict))
+            if self.qualified_name not in digest_dict['methods']:
+                return False
+            return digest_dict['methods'][self.qualified_name]['method'] == self.digest
+
+        def contract_up_to_date(self, digest_file: Path) -> bool:
+            if not digest_file.exists():
+                return False
+            digest_dict = json.loads(digest_file.read_text())
+            if 'methods' not in digest_dict:
+                digest_dict['methods'] = {}
+                digest_file.write_text(json.dumps(digest_dict))
+            if self.qualified_name not in digest_dict['methods']:
+                return False
+            return digest_dict['methods'][self.qualified_name]['contract'] == self.contract_digest
+
+        def update_digest(self, digest_file: Path) -> None:
+            digest_dict = {}
+            if digest_file.exists():
+                digest_dict = json.loads(digest_file.read_text())
+            if 'methods' not in digest_dict:
+                digest_dict['methods'] = {}
+            digest_dict['methods'][self.qualified_name] = {'method': self.digest, 'contract': self.contract_digest}
+            digest_file.write_text(json.dumps(digest_dict))
+
+            _LOGGER.info(f'Updated method {self.qualified_name} in digest file: {digest_file}')
+
+        @cached_property
+        def digest(self) -> str:
+            ast = json.dumps(self.ast, sort_keys=True) if self.ast is not None else {}
+            contract_digest = self.contract_digest if not self.is_setup else {}
+            return hash_str(f'{self.signature}{ast}{self.contract_storage_digest}{contract_digest}')
 
         @property
         def production(self) -> KProduction:
@@ -144,13 +207,29 @@ class Contract:
         self.bytecode = deployed_bytecode['object'].replace('0x', '')
         self.raw_sourcemap = deployed_bytecode['sourceMap'] if 'sourceMap' in deployed_bytecode else None
 
+        contract_ast_nodes = [
+            node
+            for node in self.contract_json['ast']['nodes']
+            if node['nodeType'] == 'ContractDefinition' and node['name'] == self.name
+        ]
+        contract_ast = single(contract_ast_nodes) if len(contract_ast_nodes) > 0 else {'nodes': []}
+        function_asts = {
+            node['functionSelector']: node
+            for node in contract_ast['nodes']
+            if node['nodeType'] == 'FunctionDefinition' and 'functionSelector' in node
+        }
+
         _methods = []
         for method in contract_json['abi']:
             if method['type'] != 'function':
                 continue
             msig = method_sig_from_abi(method)
-            mid = int(evm['methodIdentifiers'][msig], 16)
-            _m = Contract.Method(msig, mid, method, contract_name, self.sort_method)
+            method_selector: str = str(evm['methodIdentifiers'][msig])
+            mid = int(method_selector, 16)
+            method_ast = function_asts[method_selector] if method_selector in function_asts else None
+            _m = Contract.Method(
+                msig, mid, method, method_ast, self.name, self.digest, self.storage_digest, self.sort_method
+            )
             _methods.append(_m)
 
         self.methods = tuple(sorted(_methods, key=(lambda method: method.signature)))
@@ -169,6 +248,11 @@ class Contract:
     @cached_property
     def digest(self) -> str:
         return hash_str(f'{self.name} - {json.dumps(self.contract_json, sort_keys=True)}')
+
+    @cached_property
+    def storage_digest(self) -> str:
+        storage_layout = self.contract_json.get('storageLayout') or {}
+        return hash_str(f'{self.name} - {json.dumps(storage_layout, sort_keys=True)}')
 
     @cached_property
     def srcmap(self) -> dict[int, tuple[int, int, int, str, int]]:

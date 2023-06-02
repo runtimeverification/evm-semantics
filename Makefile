@@ -201,6 +201,7 @@ kevm_files := abi.md                          \
               evm-node.md                     \
               foundry.md                      \
               hashed-locations.md             \
+              gas.md                          \
               infinite-gas.md                 \
               json-rpc.md                     \
               network.md                      \
@@ -236,6 +237,8 @@ KOMPILE_SYNTAX_MODULE :=
 KOMPILE_OPTS :=
 ifneq (,$(RELEASE))
     KOMPILE_OPTS += -O2
+else
+    KOMPILE_OPTS += -O1
 endif
 
 kompile =                                        \
@@ -469,7 +472,7 @@ tests/specs/functional/infinite-gas-spec%:            KPROVE_FILE   =  infinite-
 tests/specs/functional/evm-int-simplifications-spec%: KPROVE_FILE   =  evm-int-simplifications-spec
 tests/specs/functional/int-simplifications-spec%:     KPROVE_FILE   =  int-simplifications-spec
 tests/specs/functional/lemmas-no-smt-spec%:           KPROVE_FILE   =  lemmas-no-smt-spec
-tests/specs/functional/lemmas-no-smt-spec%:           KPROVE_OPTS   += --haskell-backend-command "kore-exec --smt=none"
+tests/specs/functional/lemmas-no-smt-spec%:           KPROVE_OPTS   += --haskell-backend-arg="--smt=none"
 tests/specs/functional/lemmas-spec%:                  KPROVE_FILE   =  lemmas-spec
 tests/specs/functional/merkle-spec%:                  KPROVE_FILE   =  merkle-spec
 tests/specs/functional/storageRoot-spec%:             KPROVE_FILE   =  storageRoot-spec
@@ -541,7 +544,6 @@ foundry-forge-test: foundry-forge-build
 	cd $(foundry_dir) && forge test --ffi
 
 $(foundry_out):
-	rm -rf $@
 	cd $(dir $@) && forge build
 
 tests/foundry/foundry-list.out: tests/foundry/out/kompiled/foundry.k.prove foundry-fail
