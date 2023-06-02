@@ -317,7 +317,7 @@ def foundry_kompile(
             definition_dir,
             extra_unparsing_modules=(bin_runtime_definition.all_modules + contract_main_definition.all_modules),
         )
-        foundry_contracts_file.write_text(kevm.pretty_print(bin_runtime_definition) + '\n')
+        foundry_contracts_file.write_text(kevm.pretty_print(bin_runtime_definition, unalias=False) + '\n')
         _LOGGER.info(f'Wrote file: {foundry_contracts_file}')
         foundry_main_file.write_text(kevm.pretty_print(contract_main_definition) + '\n')
         _LOGGER.info(f'Wrote file: {foundry_main_file}')
@@ -673,7 +673,7 @@ def foundry_simplify_node(
         apr_proof.kcfg.replace_node(node, CTerm.from_kast(new_term))
         apr_proof.write_proof()
     res_term = minimize_term(new_term) if minimize else new_term
-    return foundry.kevm.pretty_print(res_term)
+    return foundry.kevm.pretty_print(res_term, unalias=False)
 
 
 def foundry_step_node(
