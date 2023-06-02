@@ -9,7 +9,6 @@ from functools import cached_property
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
-from pyk.kore.syntax import Not, Sort, SortVar
 
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
@@ -664,11 +663,11 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
             leaves = se[2]
             # print(base_cons)
             # for cons in se[1].cterm.constraints:
-                # print(cons)
+            # print(cons)
             #     kore = kcfg_explore.kprint.kast_to_kore(cons, GENERATED_TOP_CELL)
             #     print(kore)
             for leaf in leaves[1:]:
-            # for leaf in leaves:
+                # for leaf in leaves:
                 leaf_cons = leaf.cterm.constraints
                 # print(leaf_cons)
                 new_cons = []
