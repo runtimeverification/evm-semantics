@@ -512,7 +512,9 @@ def _range_predicate(term: KInner, type_label: str) -> KInner | None:
         _range_predicate_array,
         _range_predicate_uint,
         _range_predicate_int,
-        _range_predicate_bytes
+        _range_predicate_bytes,
+        _range_predicate_ufixed,
+        _range_predicate_fixed
     ]
 
     for f in predicate_functions:
@@ -556,6 +558,40 @@ def _range_predicate_bytes(term: KInner, type_label: str) -> tuple[bool, KInner 
         if not (0 < width and width <= 32):
             raise ValueError(f'Unsupported range predicate bytes<M> type: {type_label}')
         return (True, KEVM.range_bytes(intToken(width), term))
+    else:
+        return (False, None)
+
+def _range_predicate_fixed(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
+    if type_label.startswith('fixed') or type_label.startswith('ufixed'):
+        if type_label == 'fixed':
+            width = 128
+            dec = 18
+        else:
+            num = re.findall(r'\d{1,3}', type_label)
+            nums = [int(n) for n in num]
+            if not len(nums) == 2:
+                raise ValueError(f'fixed point type error: {type_label}')
+            (width, dec) = (nums[0], nums[1])
+        if not (0 < width and width <= 128 or width % 8 != 0) or not (0 < dec and dec <= 18):
+            raise ValueError(f'Unsupported range predicate fixed<M>x<N> type: {type_label}')
+        return (False, None)
+    else:
+        return (False, None)
+
+def _range_predicate_ufixed(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
+    if type_label.startswith('ufixed'):
+        if type_label == 'ufixed':
+            width = 128
+            dec = 18
+        else:
+            num = re.findall(r'\d{1,3}', type_label)
+            nums = [int(n) for n in num]
+            if not len(nums) == 2:
+                raise ValueError(f'fixed point type error: {type_label}')
+            (width, dec) = (nums[0], nums[1])
+        if not (0 < width and width <= 128 or width % 8 != 0) or not (0 < dec and dec <= 18):
+            raise ValueError(f'Unsupported range predicate ufixed<M>x<N> type: {type_label}')
+        return (False, None)
     else:
         return (False, None)
 
