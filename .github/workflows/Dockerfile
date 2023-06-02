@@ -21,24 +21,22 @@ RUN    apt-get update                                   \
     && apt-get install --yes software-properties-common \
     && add-apt-repository ppa:ethereum/ethereum
 
-RUN    apt-get update         \
-    && apt-get upgrade --yes  \
-    && apt-get install --yes  \
-            clang-${LLVM_VERSION} \
-            cmake             \
-            curl              \
-            debhelper         \
-            libboost-test-dev \
-            libcrypto++-dev   \
-            libprocps-dev     \
-            libsecp256k1-dev  \
-            libssl-dev        \
-            llvm-14-dev       \
-            llvm-14-tools     \
-            netcat            \
-            protobuf-compiler \
-            python3           \
-            python3-pip       \
+RUN    apt-get update                  \
+    && apt-get upgrade --yes           \
+    && apt-get install --yes           \
+            clang-${LLVM_VERSION}      \
+            cmake                      \
+            curl                       \
+            debhelper                  \
+            libboost-test-dev          \
+            libprocps-dev              \
+            libssl-dev                 \
+            llvm-${LLVM_VERSION}-dev   \
+            llvm-${LLVM_VERSION}-tools \
+            netcat                     \
+            protobuf-compiler          \
+            python3                    \
+            python3-pip                \
             solc
 
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - --version 1.3.2
