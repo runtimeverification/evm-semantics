@@ -284,6 +284,9 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID
+                   </caller>
                    <callData>
                      ( AssertTest . test_assert_false ( ) => b"]\xde\xcb\xfd" )
                    </callData>
@@ -291,7 +294,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 342 : ( 174 : ( 1574882301 : .WordStack ) ) ) )
+                     ( .WordStack => ( 342 : ( 174 : ( selector ( "test_assert_false()" ) : .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -319,45 +322,19 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
-                   ( ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> )
                    ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
@@ -375,9 +352,10 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                        0
                      </nonce>
                      ...
-                   </account> => <account>
+                   </account>
+                   <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -389,10 +367,10 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                        .Map
                      </origStorage>
                      <nonce>
-                       0
+                       1
                      </nonce>
                      ...
-                   </account> ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -469,6 +447,25 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID
+       andBool ( CALLER_ID <Int pow160
+       andBool ( 0 <=Int ORIGIN_ID
+       andBool ( ORIGIN_ID <Int pow160
+       andBool ( 0 <=Int NUMBER_CELL
+       andBool ( NUMBER_CELL <=Int maxSInt256
+       andBool ( lengthBytes ( AssertTest . test_assert_false ( ) ) <Int pow128
+       andBool ( 0 <=Int 9223372036854775807
+       andBool ( 9223372036854775807 <Int pow256
+       andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
+       andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
+               )))))))))))
+       ensures ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+               ))))))
     
            <kevm>
              <k>
@@ -501,6 +498,9 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
                    <callData>
                      b"]\xde\xcb\xfd"
                    </callData>
@@ -508,7 +508,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( 342 : ( 174 : ( 1574882301 : .WordStack ) ) )
+                     ( 342 : ( 174 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -536,29 +536,20 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
                    ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -573,6 +564,24 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -652,6 +661,13 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+               ))))))
     
            <kevm>
              <k>
@@ -684,6 +700,9 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
                    <callData>
                      b"]\xde\xcb\xfd"
                    </callData>
@@ -691,7 +710,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( 342 : ( 174 : ( 1574882301 : .WordStack ) ) )
+                     ( 342 : ( 174 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -719,29 +738,20 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
                    ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -756,6 +766,24 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -835,6 +863,13 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+               ))))))
 
 endmodule
 
