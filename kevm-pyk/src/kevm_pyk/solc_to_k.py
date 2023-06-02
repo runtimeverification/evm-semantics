@@ -503,16 +503,13 @@ def _evm_base_sort_int(type_label: str) -> bool:
 
 def _range_predicate(term: KInner, type_label: str) -> KInner | None:
     (success, result) = _range_predicate_uint(term, type_label)
+    (success, result) = _range_predicate_bytes(term, type_label)
     if success:
         return result
     if type_label == 'address':
         return KEVM.range_address(term)
     if type_label == 'bool':
         return KEVM.range_bool(term)
-    if type_label == 'bytes4':
-        return KEVM.range_bytes(intToken(4), term)
-    if type_label in {'bytes32', 'uint256'}:
-        return KEVM.range_uint(256, term)
     if type_label == 'int256':
         return KEVM.range_sint(256, term)
     if type_label == 'bytes':
@@ -530,6 +527,16 @@ def _range_predicate_uint(term: KInner, type_label: str) -> tuple[bool, KInner |
         if not (0 < width and width <= 256 and width % 8 == 0):
             raise ValueError(f'Unsupported range predicate type: {type_label}')
         return (True, KEVM.range_uint(width, term))
+    else:
+        return (False, None)
+
+
+def _range_predicate_bytes(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
+    if type_label.startswith('bytes') and not type_label.endswith('bytes'):
+        width = int(type_label[5:])
+        if not (0 < width and width <= 32):
+            raise ValueError(f'Unsupported range predicate type: {type_label}')
+        return (True, KEVM.range_bytes(intToken(width), term))
     else:
         return (False, None)
 
