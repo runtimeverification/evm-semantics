@@ -14,7 +14,7 @@ from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, ensure_dir_path, run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import minimize_term
+from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
@@ -30,7 +30,7 @@ from pyk.utils import hash_str, shorten_hashes, single, unique
 from .kevm import KEVM
 from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
-from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, kevm_apr_prove
+from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, constraints_for, kevm_apr_prove
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -885,11 +885,14 @@ def _method_to_cfg(
     return cfg
 
 
-def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, KInner, tuple[KInner, ...]]:
+def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, KInner, Iterable[KInner]]:
     apr_proof = APRProof.read_proof(proof_digest, proof_dir)
     target = apr_proof.kcfg.get_unique_target()
     cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
-    return (cterm.cell('ACCOUNTS_CELL'), cterm.cell('ACTIVEACCOUNTS_CELL'), cterm.constraints)
+    acct_cell = cterm.cell('ACCOUNTS_CELL')
+    fvars = free_vars(acct_cell)
+    acct_cons = constraints_for(fvars, cterm.constraints)
+    return (acct_cell, cterm.cell('ACTIVEACCOUNTS_CELL'), acct_cons)
 
 
 def _init_cterm(
