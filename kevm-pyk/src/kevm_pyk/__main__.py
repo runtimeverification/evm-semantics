@@ -157,7 +157,6 @@ def exec_solc_to_k(
 def exec_foundry_kompile(
     definition_dir: Path,
     foundry_root: Path,
-    md_selector: str | None = None,
     includes: Iterable[str] = (),
     regen: bool = False,
     rekompile: bool = False,
@@ -180,7 +179,6 @@ def exec_foundry_kompile(
         definition_dir=definition_dir,
         foundry_root=foundry_root,
         includes=includes,
-        md_selector=md_selector,
         regen=regen,
         rekompile=rekompile,
         requires=requires,
