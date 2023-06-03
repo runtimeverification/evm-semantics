@@ -92,6 +92,8 @@ jobs:
           tag: kevm-ci-concrete-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make poetry'
+      - name: 'Build blockchain-k-plugin-deps'
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
       - name: 'Build kevm'
         run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-llvm build-node -j`nproc` RELEASE=true'
       - name: 'Test kevm-pyk'
