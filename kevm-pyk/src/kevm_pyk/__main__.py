@@ -411,6 +411,7 @@ def exec_show_kcfg(
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    sort_collections: bool = False,
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
@@ -433,6 +434,7 @@ def exec_show_kcfg(
         node_deltas=node_deltas,
         to_module=to_module,
         minimize=minimize,
+        sort_collections=sort_collections,
         node_printer=kevm.short_info,
     )
     print('\n'.join(res_lines))
@@ -531,6 +533,7 @@ def exec_foundry_show(
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    sort_collections: bool = False,
     omit_unstable_output: bool = False,
     frontier: bool = False,
     stuck: bool = False,
@@ -544,6 +547,7 @@ def exec_foundry_show(
         to_module=to_module,
         minimize=minimize,
         omit_unstable_output=omit_unstable_output,
+        sort_collections=sort_collections,
         frontier=frontier,
         stuck=stuck,
     )
@@ -621,6 +625,7 @@ def exec_foundry_simplify_node(
     node: NodeIdLike,
     replace: bool = False,
     minimize: bool = True,
+    sort_collections: bool = False,
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
@@ -633,6 +638,7 @@ def exec_foundry_simplify_node(
         node=node,
         replace=replace,
         minimize=minimize,
+        sort_collections=sort_collections,
         bug_report=bug_report,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
@@ -702,7 +708,6 @@ def _create_argument_parser() -> ArgumentParser:
         return parse
 
     kevm_cli_args = KEVMCLIArgs()
-
     parser = ArgumentParser(prog='python3 -m kevm_pyk')
 
     command_parser = parser.add_subparsers(dest='command', required=True)
