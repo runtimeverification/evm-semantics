@@ -505,8 +505,7 @@ def _range_predicate(term: KInner, type_label: str) -> KInner | None:
     match type_label:
         case 'address': return KEVM.range_address(term)
         case 'bool': return KEVM.range_bool(term)
-        case 'bytes': return KEVM.range_uint(128, KEVM.size_bytes(term))
-        case 'string': return TRUE
+        case 'bytes' | 'string': return KEVM.range_uint(128, KEVM.size_bytes(term))
 
     predicate_functions = [
         _range_predicate_dyn_array,
