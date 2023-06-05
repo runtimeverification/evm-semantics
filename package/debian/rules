@@ -17,7 +17,7 @@
 	dh $@
 
 override_dh_auto_build:
-	make RELEASE=true plugin-deps kevm-pyk -j3
+	make RELEASE=true CXX=clang++-14 plugin-deps kevm-pyk -j3
 	make RELEASE=true build-kevm build-haskell build-foundry -j8 KOMPILE_OPTS='--read-only-kompiled-directory'
 
 override_dh_auto_install:
