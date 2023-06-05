@@ -385,6 +385,7 @@ def foundry_prove(
     bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    use_booster: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
@@ -399,6 +400,31 @@ def foundry_prove(
 
     save_directory = foundry.out / 'apr_proofs'
     save_directory.mkdir(exist_ok=True)
+
+    foundry_llvm_dir = foundry.out / 'kompiled-llvm'
+    if use_booster:
+        try:
+            run_process(('which', 'booster'), pipe_stderr=True).stdout.strip()
+        except CalledProcessError:
+            raise RuntimeError(
+                "Couldn't locate the booster RPC binary. Please put 'booster' on PATH manually or using kup install/kup shell."
+            ) from None
+
+        if not foundry_llvm_dir.exists():
+            raise ValueError(
+                f"Could not find the LLVM kompiled folder in {foundry.out}. Please re-run foundry-kompile with the '--with-llvm-library' flag"
+            )
+        llvm_dylib = foundry_llvm_dir / 'interpreter.so'
+        if llvm_dylib.exists():
+            kore_rpc_command = ('booster', '--llvm-backend-library', str(llvm_dylib))
+        else:
+            llvm_dylib = foundry_llvm_dir / 'interpreter.dylib'
+            if llvm_dylib.exists():
+                kore_rpc_command = ('booster', '--llvm-backend-library', str(llvm_dylib))
+            else:
+                raise ValueError(
+                    f"Could not find the LLVM dynamic library in {foundry_llvm_dir}. Please re-run foundry-kompile with the '--with-llvm-library' flag"
+                )
 
     all_tests = [
         f'{contract.name}.{method.name}'
@@ -478,11 +504,6 @@ def foundry_prove(
                 reinit=(method.qualified_name in out_of_date_methods),
                 simplify_init=simplify_init,
                 bmc_depth=bmc_depth,
-                kore_rpc_command=kore_rpc_command,
-                smt_timeout=smt_timeout,
-                smt_retry_limit=smt_retry_limit,
-                bug_report=br,
-                trace_rewrites=trace_rewrites,
             )
 
             return kevm_apr_prove(
@@ -781,11 +802,6 @@ def _method_to_apr_proof(
     reinit: bool = False,
     simplify_init: bool = True,
     bmc_depth: int | None = None,
-    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
-    smt_timeout: int | None = None,
-    smt_retry_limit: int | None = None,
-    bug_report: BugReport | None = None,
-    trace_rewrites: bool = False,
 ) -> APRProof | APRBMCProof:
     contract_name = contract.name
     method_name = method.name
