@@ -15,7 +15,7 @@ from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, ensure_dir_path, run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import minimize_term, ml_pred_to_bool, split_config_and_constraints
+from pyk.kast.manip import minimize_term, ml_pred_to_bool
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
@@ -646,14 +646,14 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                                         ),
                                         KApply(
                                             '#return___EVM_KItem_Int_Int',
-                                            [KVariable('_A10'), KVariable('_A11'),]
+                                            [
+                                                KVariable('_A10'),
+                                                KVariable('_A11'),
+                                            ],
                                         ),
-                                        KApply(
-                                            '#pc[_]_EVM_InternalOp_OpCode',
-                                            [KApply('CALL_EVM_CallOp')]
-                                        ),
+                                        KApply('#pc[_]_EVM_InternalOp_OpCode', [KApply('CALL_EVM_CallOp')]),
                                         KApply('#execute_EVM_KItem'),
-                                        KVariable('_A12')
+                                        KVariable('_A12'),
                                     ]
                                 )
 
@@ -673,12 +673,12 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                                         break
 
     for bytecode_h, cons_set in call_cells.items():
-        for (config, node, leaves) in cons_set:
+        for config, node, leaves in cons_set:
             constraints = [leaf.cterm.constraints for leaf in leaves[1:]]
             flat = [item for t in constraints for item in t]
             bool_flat = [ml_pred_to_bool(item) for item in flat]
             union = orBool(bool_flat)
-            negated = notBool(union)
+            notBool(union)
             # new_cterm = CTerm(config, [negated])
             # new_cterm = CTerm(config, [union])
             # new_cterm = CTerm(config, flat)
