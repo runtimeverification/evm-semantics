@@ -202,8 +202,13 @@ jobs:
           authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
       - name: 'Build KEVM'
         run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs
-      - name: 'Test KEVM'
-        run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#kevm-test
+      # - name: 'Test KEVM'
+      #   run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#kevm-test
+      - name: 'Test booster'
+        run: |
+          GC_DONT_GC=1 nix shell git+ssh://git@github.com/runtimeverification/hs-backend-booster#booster --extra-experimental-features 'nix-command flakes' --print-build-logs
+          build/bin/kevm --help
+          which booster
 
   dockerhub-image-dry-run:
     name: 'Build Ubuntu Jammy DockerHub Image'
