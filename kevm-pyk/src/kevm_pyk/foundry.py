@@ -15,7 +15,7 @@ from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, ensure_dir_path, run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import minimize_term, split_config_and_constraints
+from pyk.kast.manip import minimize_term, ml_pred_to_bool, split_config_and_constraints
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
@@ -26,7 +26,7 @@ from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof, ProofStatus
 from pyk.proof.reachability import APRBMCProof, APRProof
-from pyk.utils import hash_str, shorten_hashes, single, unique
+from pyk.utils import hash_str, single, unique
 
 from .kevm import KEVM
 from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
@@ -672,23 +672,25 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                                         call_cells[acct_hash] = val
                                         break
 
-    kcfg_explore = KCFGExplore(foundry.kevm)
-
     for bytecode_h, cons_set in call_cells.items():
         for (config, node, leaves) in cons_set:
-            # union = KInner()
             constraints = [leaf.cterm.constraints for leaf in leaves[1:]]
             flat = [item for t in constraints for item in t]
-            union = orBool(flat)
+            bool_flat = [ml_pred_to_bool(item) for item in flat]
+            union = orBool(bool_flat)
             negated = notBool(union)
-            new_cterm = CTerm(config, [negated])
-            simplified, _ = kcfg_explore.cterm_simplify(new_cterm)
+            # new_cterm = CTerm(config, [negated])
+            # new_cterm = CTerm(config, [union])
+            # new_cterm = CTerm(config, flat)
+            new_cterm = CTerm(config, [union])
+            with KCFGExplore(foundry.kevm) as kcfg_explore:
+                simplified, _ = kcfg_explore.cterm_simplify(new_cterm)
 
-            # TODO: Uncaught expection thrown of type "NoSuchElementException"
-            # (NoSuchElementException: key not found: #EmptyK)
-            # This probably happens as some kind of KSequence have an arity (number of args) as 0
-            # constraints = split_config_and_constraints(simplified)[1]
-            # print(constraints)
+                # TODO: Uncaught expection thrown of type "NoSuchElementException"
+                # (NoSuchElementException: key not found: #EmptyK)
+                # This probably happens as some kind of KSequence have an arity (number of args) as 0
+                # constraints = split_config_and_constraints(simplified)[1]
+                # print(constraints)
 
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
@@ -730,10 +732,8 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    for _node in apr_proof.kcfg.reachable_nodes(node, traverse_covers=True):
-        if not apr_proof.kcfg.is_target(_node.id):
-            _LOGGER.info(f'Removing node: {shorten_hashes(_node.id)}')
-            apr_proof.kcfg.remove_node(_node.id)
+    node_ids = apr_proof.kcfg.prune(node)
+    _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof()
 
 

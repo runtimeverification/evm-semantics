@@ -325,9 +325,9 @@ A cons-list is used for the EVM wordstack.
  // --------------------------------------------------------------------------------------
     rule #write(WM, IDX, VAL) => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ]
 
-    rule WS [ START := WS' ] => WS                                                                            requires START >=Int 0 andBool lengthBytes(WS') ==Int 0  [concrete]
-    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int lengthBytes(WS'), 0), START, WS') requires START >=Int 0 andBool lengthBytes(WS') =/=Int 0 [concrete]
-    rule _  [ START := _ ]   => .Bytes                                                                        requires START  <Int 0 [concrete]
+    rule WS [ START := WS' ] => WS                                                                            requires 0     <=Int START andBool lengthBytes(WS')  ==Int 0 [concrete]
+    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int lengthBytes(WS'), 0), START, WS') requires 0     <=Int START andBool lengthBytes(WS') =/=Int 0 [concrete]
+    rule _  [ START := _ ]   => .Bytes                                                                        requires START  <Int 0                                       [concrete]
 ```
 
 Bytes helper functions
