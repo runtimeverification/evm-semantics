@@ -183,24 +183,6 @@ Node 20:
           <accounts>
             ( <account>
               <acctID>
-                728815563385977040452943777879061427756277306518
-              </acctID>
-              <balance>
-                0
-              </balance>
-              <storage>
-                .Map
-              </storage>
-              <origStorage>
-                .Map
-              </origStorage>
-              <nonce>
-                1
-              </nonce>
-              ...
-            </account>
-            <account>
-              <acctID>
                 645326474426547203313410069153905908525362434349
               </acctID>
               <balance>
@@ -214,6 +196,24 @@ Node 20:
               </origStorage>
               <nonce>
                 0
+              </nonce>
+              ...
+            </account>
+            <account>
+              <acctID>
+                728815563385977040452943777879061427756277306518
+              </acctID>
+              <balance>
+                0
+              </balance>
+              <storage>
+                .Map
+              </storage>
+              <origStorage>
+                .Map
+              </origStorage>
+              <nonce>
+                1
               </nonce>
               ...
             </account> )
@@ -338,6 +338,9 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID
+                   </caller>
                    <callData>
                      ( AssertTest . test_revert_branch ( VV0_x_114b9705 : uint256 , VV1_y_114b9705 : uint256 ) => b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int ) )
                    </callData>
@@ -345,7 +348,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 174 : ( 2349784459 : .WordStack ) ) ) ) )
+                     ( .WordStack => ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 174 : ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -373,45 +376,19 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
-                   ( ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> )
                    ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
@@ -429,9 +406,10 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                        0
                      </nonce>
                      ...
-                   </account> => <account>
+                   </account>
+                   <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
@@ -443,10 +421,10 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                        .Map
                      </origStorage>
                      <nonce>
-                       0
+                       1
                      </nonce>
                      ...
-                   </account> ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -523,6 +501,29 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int VV0_x_114b9705:Int
+       andBool ( 0 <=Int VV1_y_114b9705:Int
+       andBool ( VV0_x_114b9705:Int <Int pow256
+       andBool ( VV1_y_114b9705:Int <Int pow256
+       andBool ( 0 <=Int CALLER_ID
+       andBool ( CALLER_ID <Int pow160
+       andBool ( 0 <=Int ORIGIN_ID
+       andBool ( ORIGIN_ID <Int pow160
+       andBool ( 0 <=Int NUMBER_CELL
+       andBool ( NUMBER_CELL <=Int maxSInt256
+       andBool ( 0 <=Int 9223372036854775807
+       andBool ( 9223372036854775807 <Int pow256
+       andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
+       andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
+       andBool ( lengthBytes ( AssertTest . test_revert_branch ( VV0_x_114b9705 : uint256 , VV1_y_114b9705 : uint256 ) ) <Int pow128
+               )))))))))))))))
+       ensures ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+               ))))))
     
            <kevm>
              <k>
@@ -553,6 +554,9 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
                    <callData>
                      b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int )
                    </callData>
@@ -560,7 +564,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      0
                    </callValue>
                    <wordStack>
-                     ( ( VV1_y_114b9705:Int => 480 ) : ( ( VV0_x_114b9705:Int => VV1_y_114b9705:Int ) : ( ( 174 => VV0_x_114b9705:Int ) : ( ( 2349784459 => 174 ) : ( .WordStack => ( 2349784459 : .WordStack ) ) ) ) ) )
+                     ( ( VV1_y_114b9705:Int => 480 ) : ( ( VV0_x_114b9705:Int => VV1_y_114b9705:Int ) : ( ( 174 => VV0_x_114b9705:Int ) : ( ( selector ( "test_revert_branch(uint256,uint256)" ) => 174 ) : ( .WordStack => ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -588,29 +592,20 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
                    ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -625,6 +620,24 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -704,6 +717,18 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( 0 <=Int VV0_x_114b9705:Int
+       andBool ( 0 <=Int VV1_y_114b9705:Int
+       andBool ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+       andBool ( VV0_x_114b9705:Int <Int pow256
+       andBool ( VV1_y_114b9705:Int <Int pow256
+               )))))))))))
     
            <kevm>
              <k>
@@ -734,6 +759,9 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
                    <callData>
                      b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int )
                    </callData>
@@ -741,7 +769,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      0
                    </callValue>
                    <wordStack>
-                     ( ( VV1_y_114b9705:Int => 2349784459 ) : ( ( VV0_x_114b9705:Int : ( 174 : ( 2349784459 : .WordStack ) ) ) => .WordStack ) )
+                     ( ( VV1_y_114b9705:Int => selector ( "test_revert_branch(uint256,uint256)" ) ) : ( ( VV0_x_114b9705:Int : ( 174 : ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) => .WordStack ) )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -769,29 +797,20 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
                    ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -806,6 +825,24 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -885,6 +922,19 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( 0 <=Int VV0_x_114b9705:Int
+       andBool ( 0 <=Int VV1_y_114b9705:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+       andBool ( ( notBool VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int )
+       andBool ( VV0_x_114b9705:Int <Int pow256
+       andBool ( VV1_y_114b9705:Int <Int pow256
+               )))))))))))
+       ensures VV0_x_114b9705:Int <Int VV1_y_114b9705:Int
     
            <kevm>
              <k>
@@ -917,6 +967,9 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
                    <callData>
                      b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int )
                    </callData>
@@ -924,7 +977,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      0
                    </callValue>
                    <wordStack>
-                     ( 480 : ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 174 : ( 2349784459 : .WordStack ) ) ) ) )
+                     ( 480 : ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 174 : ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -952,29 +1005,20 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
                    ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -989,6 +1033,24 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -1068,6 +1130,18 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( 0 <=Int VV0_x_114b9705:Int
+       andBool ( 0 <=Int VV1_y_114b9705:Int
+       andBool ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+       andBool ( VV0_x_114b9705:Int <Int pow256
+       andBool ( VV1_y_114b9705:Int <Int pow256
+               )))))))))))
     
            <kevm>
              <k>
@@ -1100,14 +1174,17 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
                    <callData>
-                     b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , _VV0_x_114b9705 ) +Bytes #buf ( 32 , _VV1_y_114b9705 )
+                     b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int )
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( 2349784459 : .WordStack )
+                     ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -1135,29 +1212,20 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
                    ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -1172,6 +1240,24 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -1251,6 +1337,18 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( 0 <=Int VV0_x_114b9705:Int
+       andBool ( 0 <=Int VV1_y_114b9705:Int
+       andBool ( VV0_x_114b9705:Int <Int VV1_y_114b9705:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+       andBool ( VV0_x_114b9705:Int <Int pow256
+       andBool ( VV1_y_114b9705:Int <Int pow256
+               )))))))))))
     
            <kevm>
              <k>
@@ -1283,6 +1381,9 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
                    <callData>
                      b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int )
                    </callData>
@@ -1290,7 +1391,7 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      0
                    </callValue>
                    <wordStack>
-                     ( 480 : ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 174 : ( 2349784459 : .WordStack ) ) ) ) )
+                     ( 480 : ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 174 : ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -1318,29 +1419,20 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
                    ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -1355,6 +1447,24 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -1434,6 +1544,18 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( 0 <=Int VV0_x_114b9705:Int
+       andBool ( 0 <=Int VV1_y_114b9705:Int
+       andBool ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+       andBool ( VV0_x_114b9705:Int <Int pow256
+       andBool ( VV1_y_114b9705:Int <Int pow256
+               )))))))))))
     
            <kevm>
              <k>
@@ -1466,14 +1588,17 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
                    <callData>
-                     b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , _VV0_x_114b9705 ) +Bytes #buf ( 32 , _VV1_y_114b9705 )
+                     b"\x8c\x0e\xdd\x8b" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) +Bytes #buf ( 32 , VV1_y_114b9705:Int )
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( 2349784459 : .WordStack )
+                     ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -1501,29 +1626,20 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
                    ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -1538,6 +1654,24 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
                      </origStorage>
                      <nonce>
                        0
+                     </nonce>
+                     ...
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
                      </nonce>
                      ...
                    </account> )
@@ -1617,6 +1751,18 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( 0 <=Int VV0_x_114b9705:Int
+       andBool ( 0 <=Int VV1_y_114b9705:Int
+       andBool ( VV0_x_114b9705:Int <Int VV1_y_114b9705:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+       andBool ( VV0_x_114b9705:Int <Int pow256
+       andBool ( VV1_y_114b9705:Int <Int pow256
+               )))))))))))
 
 endmodule
 
