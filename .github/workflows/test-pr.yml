@@ -219,7 +219,7 @@ jobs:
           cd booster
           ls
           GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#booster
-          which booster
+          result/bin/booster -h
 
   dockerhub-image-dry-run:
     name: 'Build Ubuntu Jammy DockerHub Image'
