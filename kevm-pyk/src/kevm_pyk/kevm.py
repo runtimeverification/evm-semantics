@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
 from pyk.kast.manip import flatten_label
-from pyk.ktool.kprint import paren
+from pyk.kast.pretty import paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
 from pyk.prelude.kint import intToken, ltInt
