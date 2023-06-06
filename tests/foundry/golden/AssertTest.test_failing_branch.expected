@@ -183,24 +183,6 @@ Node 22:
           <accounts>
             ( <account>
               <acctID>
-                728815563385977040452943777879061427756277306518
-              </acctID>
-              <balance>
-                0
-              </balance>
-              <storage>
-                .Map
-              </storage>
-              <origStorage>
-                .Map
-              </origStorage>
-              <nonce>
-                1
-              </nonce>
-              ...
-            </account>
-            <account>
-              <acctID>
                 645326474426547203313410069153905908525362434349
               </acctID>
               <balance>
@@ -214,6 +196,24 @@ Node 22:
               </origStorage>
               <nonce>
                 0
+              </nonce>
+              ...
+            </account>
+            <account>
+              <acctID>
+                728815563385977040452943777879061427756277306518
+              </acctID>
+              <balance>
+                0
+              </balance>
+              <storage>
+                .Map
+              </storage>
+              <origStorage>
+                .Map
+              </origStorage>
+              <nonce>
+                1
               </nonce>
               ...
             </account> )
