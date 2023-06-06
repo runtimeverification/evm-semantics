@@ -130,7 +130,7 @@ def kevm_kompile(
     main_module: str | None,
     syntax_module: str | None,
     includes: Iterable[str] = (),
-    emit_json: bool,
+    emit_json: bool = True,
     read_only: bool = False,
     ccopts: Iterable[str] = (),
     optimization: int = 0,

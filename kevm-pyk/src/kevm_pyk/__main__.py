@@ -282,6 +282,9 @@ def exec_prove(
         exclude_claim_labels=exclude_claim_labels,
     )
 
+    if not claims:
+        raise ValueError(f'No claims found in file: {spec_file}')
+
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
@@ -367,7 +370,9 @@ def exec_prove(
             if failure_info and failure_log is not None:
                 for line in failure_log:
                     print(line)
-    sys.exit(failed)
+
+    if failed:
+        sys.exit(failed)
 
 
 def exec_prune_proof(
