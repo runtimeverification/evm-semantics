@@ -216,7 +216,9 @@ jobs:
           path: booster
       - name: 'Test booster'
         run: |
-          GC_DONT_GC=1 nix shell ./booster#booster --extra-experimental-features 'nix-command flakes' --print-build-logs
+          cd booster
+          ls
+          GC_DONT_GC=1 nix shell .#booster --extra-experimental-features 'nix-command flakes' --print-build-logs
           which booster
 
   dockerhub-image-dry-run:
