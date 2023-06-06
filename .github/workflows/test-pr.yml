@@ -207,19 +207,19 @@ jobs:
       - name: 'Get booster version'
         run: |
           echo "BOOSTER_COMMIT=$(cat deps/booster_release)" >> $GITHUB_ENV  
-      - name: 'Check out booster'
-        uses: actions/checkout@v3
-        with:
-          repository: runtimeverification/hs-backend-booster
-          token: ${{ secrets.JENKINS_GITHUB_PAT }}
-          ref: ${{ env.BOOSTER_COMMIT }}
-          path: booster
+#       - name: 'Check out booster'
+#         uses: actions/checkout@v3
+#         with:
+#           repository: runtimeverification/hs-backend-booster
+#           token: ${{ secrets.JENKINS_GITHUB_PAT }}
+#           ref: ${{ env.BOOSTER_COMMIT }}
+#           path: booster
       - name: 'Test booster'
         run: |
           cd booster
           ls
           GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#booster
-          result/bin/booster -h
+          result/bin/booster -h  --option access-tokens= github.com=${{ secrets.JENKINS_GITHUB_PAT }}
 
   dockerhub-image-dry-run:
     name: 'Build Ubuntu Jammy DockerHub Image'
