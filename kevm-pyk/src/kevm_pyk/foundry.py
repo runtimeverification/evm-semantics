@@ -15,7 +15,7 @@ from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, ensure_dir_path, run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import minimize_term, ml_pred_to_bool
+from pyk.kast.manip import minimize_term, ml_pred_to_bool, split_config_and_constraints
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
@@ -23,7 +23,7 @@ from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool, orBool
 from pyk.prelude.kint import INT, intToken
-from pyk.prelude.ml import mlEqualsTrue
+from pyk.prelude.ml import mlAnd, mlEqualsTrue, mlTop
 from pyk.proof.proof import Proof, ProofStatus
 from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.utils import hash_str, single, unique
@@ -674,23 +674,22 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
 
     for bytecode_h, cons_set in call_cells.items():
         for config, node, leaves in cons_set:
+            base_cons = node.cterm.constraints
             constraints = [leaf.cterm.constraints for leaf in leaves[1:]]
             flat = [item for t in constraints for item in t]
-            bool_flat = [ml_pred_to_bool(item) for item in flat]
-            union = orBool(bool_flat)
-            notBool(union)
-            # new_cterm = CTerm(config, [negated])
-            # new_cterm = CTerm(config, [union])
-            # new_cterm = CTerm(config, flat)
-            new_cterm = CTerm(config, [union])
+            filtered = [cons for cons in flat if not base_cons.__contains__(cons)]
+            bool_filtered = [apply.args for apply in filtered if isinstance(apply, KApply)]
+            bool_filtered = [arg for args in bool_filtered for arg in args]
+            union = orBool(bool_filtered)
+            negated = notBool(union)
+            negated = KApply(
+                    KLabel('#Equals', [KSort('Bool'), KSort('GeneratedTopCell')]),
+                    [KToken('true', KSort('Bool')), negated]
+                )
+            new_cterm = CTerm(config, [negated])
             with KCFGExplore(foundry.kevm) as kcfg_explore:
                 simplified, _ = kcfg_explore.cterm_simplify(new_cterm)
-
-                # TODO: Uncaught expection thrown of type "NoSuchElementException"
-                # (NoSuchElementException: key not found: #EmptyK)
-                # This probably happens as some kind of KSequence have an arity (number of args) as 0
                 # constraints = split_config_and_constraints(simplified)[1]
-                # print(constraints)
 
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:

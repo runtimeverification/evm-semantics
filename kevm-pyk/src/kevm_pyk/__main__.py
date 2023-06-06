@@ -925,16 +925,8 @@ def _create_argument_parser() -> ArgumentParser:
         help='Run symbolic coverage on a foundry property',
         parents=[kevm_cli_args.shared_args, kevm_cli_args.foundry_args],
     )
-    # foundry_koverage_args.add_argument(
-    #     '--test',
-    #     type=str,
-    #     dest='tests',
-    #     default=[],
-    #     action='append',
-    #     help='Limit to only listed tests, ContractName.TestName',
-    # )
     foundry_koverage_args.add_argument(
-        '--contracts',
+        '--contract',
         type=str,
         dest='contracts',
         default=[],
