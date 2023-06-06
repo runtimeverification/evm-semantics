@@ -200,14 +200,23 @@ jobs:
         with:
           name: k-framework
           authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
-      - name: 'Build KEVM'
-        run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs
+      # - name: 'Build KEVM'
+      #   run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs
       # - name: 'Test KEVM'
       #   run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#kevm-test
+      - name: 'Get booster version'
+        run: |
+          echo "BOOSTER_COMMIT=$(cat deps/booster_release)" >> $GITHUB_ENV  
+      - name: 'Check out booster'
+        uses: actions/checkout@v3
+        with:
+          repository: runtimeverification/hs-backend-booster
+          token: ${{ secrets.JENKINS_GITHUB_PAT }}
+          ref: ${{ env.BOOSTER_COMMIT }}
+          path: booster
       - name: 'Test booster'
         run: |
-          GC_DONT_GC=1 nix shell git+ssh://git@github.com/runtimeverification/hs-backend-booster#booster --extra-experimental-features 'nix-command flakes' --print-build-logs
-          build/bin/kevm --help
+          GC_DONT_GC=1 nix shell ./booster#booster --extra-experimental-features 'nix-command flakes' --print-build-logs
           which booster
 
   dockerhub-image-dry-run:
