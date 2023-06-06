@@ -4,7 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from pyk.kast import KInner
-from pyk.kast.inner import KApply, KLabel, KRewrite, KSequence, KSort, KToken, KVariable, bottom_up, build_assoc
+from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, bottom_up, build_assoc
 from pyk.kast.manip import flatten_label, get_cell, set_cell, undo_aliases
 from pyk.ktool.kprint import paren
 from pyk.ktool.kprove import KProve
@@ -32,8 +32,6 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 class KEVM(KProve, KRun):
-    _method_sigs: dict
-
     def __init__(
         self,
         definition_dir: Path,
@@ -42,7 +40,6 @@ class KEVM(KProve, KRun):
         kprove_command: str = 'kprove',
         krun_command: str = 'krun',
         extra_unparsing_modules: Iterable[KFlatModule] = (),
-        method_sigs: dict[str, str] = {},
         bug_report: BugReport | None = None,
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
@@ -65,7 +62,6 @@ class KEVM(KProve, KRun):
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
         )
-        _method_sigs = method_sigs
 
     @classmethod
     def _patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
@@ -383,17 +379,6 @@ class KEVM(KProve, KRun):
                 return KToken('0x' + pretty_bytes(_kast).hex(), BYTES)
             return _kast
 
-        def _print_calldata(_kast: KInner) -> KInner:
-            if type(_kast) is KToken:
-                sig = _kast.token
-                # token = KToken('6a7a313c', _kast.sort)
-                # return token
-                # return KToken(f'{sig}', 'String')
-                # sig = _method_sigs.get(sig)
-                # if sig is not None:
-                #     return KToken(sig, 'String')
-            return _kast
-
         conjuncts = flatten_label('#And', kast)
         term = None
         for c in conjuncts:
@@ -427,8 +412,6 @@ class KEVM(KProve, KRun):
                     'EXPECTEDEVENTADDRESS_CELL',
                     'ACTIVEACCOUNTS_CELL',
                 ]:
-                    if cell == 'CALLDATA_CELL':
-                        kast = set_cell(kast, cell, bottom_up(_print_calldata, get_cell(kast, cell)))
                     try:
                         kast = set_cell(kast, cell, bottom_up(_helper, get_cell(kast, cell)))
                     except KeyError:
