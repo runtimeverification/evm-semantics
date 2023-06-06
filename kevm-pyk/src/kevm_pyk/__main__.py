@@ -326,7 +326,7 @@ def exec_prove(
 
                 proof_problem = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
 
-            return kevm_apr_prove(
+            passed = kevm_apr_prove(
                 kevm,
                 claim.label,
                 proof_problem,
@@ -347,6 +347,11 @@ def exec_prove(
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
             )
+            failure_log = None
+            if not passed:
+                failure_log = print_failure_info(proof_problem.kcfg, claim.label, kcfg_explore)
+
+            return passed, failure_log
 
     with ProcessPool(ncpus=workers) as process_pool:
         results = process_pool.map(_init_and_run_proof, claims)

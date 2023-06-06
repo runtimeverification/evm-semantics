@@ -508,7 +508,7 @@ def foundry_prove(
                 trace_rewrites=trace_rewrites,
             )
 
-            result = kevm_apr_prove(
+            passed = kevm_apr_prove(
                 foundry.kevm,
                 proof_id,
                 proof,
@@ -530,8 +530,11 @@ def foundry_prove(
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
             )
+            failure_log = None
+            if not passed:
+                failure_log = print_failure_info(proof.kcfg, proof_id, kcfg_explore)
 
-            return result
+            return passed, failure_log
 
     def run_cfg_group(tests: list[str]) -> dict[str, tuple[bool, list[str] | None]]:
         init_problems = [tuple(test.split('.')) for test in tests]
