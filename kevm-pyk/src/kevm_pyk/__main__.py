@@ -287,14 +287,10 @@ def exec_prove(
         kore_rpc_command = kore_rpc_command.split()
 
     def is_functional(claim: KClaim) -> bool:
-        _LOGGER.warning(f'claim:{claim}')
-        return not (
-            type(claim.body) is KApply
-            and claim.body.label.name == '<generatedTop>'
-            or type(claim.body) is KRewrite
-            and type(claim.body.lhs) is KApply
-            and claim.body.lhs.label.name == '<generatedTop'
-        )
+        claim_lhs = claim.body
+        if type(claim_lhs) is KRewrite:
+            claim_lhs = claim_lhs.lhs
+        return not (type(claim_lhs) is KApply and claim_lhs.label.name == '<generatedTop>')
 
     def _init_and_run_proof(claim: KClaim) -> bool:
         with KCFGExplore(
