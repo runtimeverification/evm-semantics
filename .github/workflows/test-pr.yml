@@ -218,7 +218,7 @@ jobs:
         run: |
           cd booster
           ls
-          GC_DONT_GC=1 nix shell .#booster --extra-experimental-features 'nix-command flakes' --print-build-logs
+          GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#booster
           which booster
 
   dockerhub-image-dry-run:
