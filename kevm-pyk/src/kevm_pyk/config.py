@@ -34,7 +34,7 @@ def _kevm_lib() -> Path:
     return kevm_lib
 
 
-NIX_BUILD: Final = bool(os.getenv('NIX_BUILD'))
+NIX_LIBS: Final = os.getenv('NIX_LIBS')
 KEVM_LIB: Final = _kevm_lib()
 
 INCLUDE_DIR: Final = KEVM_LIB / 'include/kframework'

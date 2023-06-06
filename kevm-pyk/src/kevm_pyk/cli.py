@@ -209,6 +209,13 @@ class KEVMCLIArgs:
         args = ArgumentParser(add_help=False)
         args.add_argument('--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.')
         args.add_argument('--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.')
+        args.add_argument(
+            '--sort-collections',
+            dest='sort_collections',
+            default=False,
+            action='store_true',
+            help='Sort collections before outputting term.',
+        )
         return args
 
     @cached_property

@@ -17,7 +17,7 @@ from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
-from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
+from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
@@ -28,7 +28,7 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.utils import hash_str, single, unique
 
 from .kevm import KEVM
-from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
+from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 from .utils import (
     KDefinition__expand_macros,
@@ -45,7 +45,6 @@ if TYPE_CHECKING:
     from pyk.kast import KInner
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
-    from pyk.ktool.kompile import Kompile
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -259,7 +258,6 @@ def foundry_kompile(
     definition_dir: Path,
     foundry_root: Path,
     includes: Iterable[str],
-    md_selector: str | None,
     regen: bool = False,
     rekompile: bool = False,
     requires: Iterable[str] = (),
@@ -346,38 +344,21 @@ def foundry_kompile(
 
     def _kompile(
         out_dir: Path,
-        backend: KompileBackend,
+        backend: KompileTarget,
         llvm_kompile_type: LLVMKompileType | None = None,
-        md_selector: str | None = None,
     ) -> None:
-        base_args = KompileArgs(
+        kevm_kompile(
+            target=backend,
+            output_dir=out_dir,
             main_file=foundry_main_file,
             main_module=main_module,
             syntax_module=syntax_module,
-            include_dirs=[include for include in includes if Path(include).exists()],
-            md_selector=md_selector,
-            hook_namespaces=HOOK_NAMESPACES,
+            includes=[include for include in includes if Path(include).exists()],
             emit_json=True,
+            ccopts=ccopts,
+            llvm_kompile_type=llvm_kompile_type,
+            debug=debug,
         )
-
-        kompile: Kompile
-        match backend:
-            case KompileBackend.LLVM:
-                kompile = LLVMKompile(
-                    base_args=base_args,
-                    ccopts=ccopts,
-                    no_llvm_kompile=not llvm_kompile,
-                    llvm_kompile_type=llvm_kompile_type,
-                )
-            case KompileBackend.HASKELL:
-                kompile = HaskellKompile(
-                    base_args=base_args,
-                    concrete_rules=CONCRETE_RULES,
-                )
-            case _:
-                raise ValueError(f'Unsuppored backend: {backend.value}')
-
-        kompile(output_dir=out_dir, debug=debug)
 
     def kompilation_digest() -> str:
         k_files = list(requires) + [foundry_contracts_file, foundry_main_file]
@@ -397,14 +378,13 @@ def foundry_kompile(
 
     if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
-        _kompile(foundry_definition_dir, KompileBackend.HASKELL, md_selector=md_selector)
+        _kompile(foundry_definition_dir, KompileTarget.HASKELL)
         if llvm_library:
             _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
             _kompile(
                 foundry_llvm_dir,
-                KompileBackend.LLVM,
+                KompileTarget.LLVM,
                 llvm_kompile_type=LLVMKompileType.C,
-                md_selector=('k & ! symbolic' if md_selector is None else f'{md_selector} & ! symbolic'),
             )
 
     update_kompilation_digest()
@@ -580,6 +560,7 @@ def foundry_show(
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    sort_collections: bool = False,
     omit_unstable_output: bool = False,
     frontier: bool = False,
     stuck: bool = False,
@@ -618,6 +599,7 @@ def foundry_show(
         node_deltas=node_deltas,
         to_module=to_module,
         minimize=minimize,
+        sort_collections=sort_collections,
         node_printer=_short_info,
         omit_cells=(unstable_cells if omit_unstable_output else []),
     )
@@ -680,6 +662,7 @@ def foundry_simplify_node(
     node: NodeIdLike,
     replace: bool = False,
     minimize: bool = True,
+    sort_collections: bool = False,
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
@@ -705,7 +688,7 @@ def foundry_simplify_node(
         apr_proof.kcfg.replace_node(node, CTerm.from_kast(new_term))
         apr_proof.write_proof()
     res_term = minimize_term(new_term) if minimize else new_term
-    return foundry.kevm.pretty_print(res_term, unalias=False)
+    return foundry.kevm.pretty_print(res_term, unalias=False, sort_collections=sort_collections)
 
 
 def foundry_step_node(
