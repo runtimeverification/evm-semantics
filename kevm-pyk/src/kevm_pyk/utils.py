@@ -86,6 +86,7 @@ def kevm_apr_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    interactive: bool = False,
 ) -> bool:
     _cfgid = cfgid
     _apr_proof = proof
@@ -127,6 +128,7 @@ def kevm_apr_prove(
             terminal_rules=terminal_rules,
             cut_point_rules=cut_point_rules,
             implication_every_block=implication_every_block,
+            interactive=interactive,
         )
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}', exc_info=True)

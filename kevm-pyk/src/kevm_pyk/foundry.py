@@ -388,6 +388,7 @@ def foundry_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    interactive: bool = False,
 ) -> dict[str, bool]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -455,7 +456,7 @@ def foundry_prove(
                 )
         method.update_digest(foundry.out / 'digest')
 
-    def _init_and_run_proof(_init_problem: tuple[str, str]) -> bool:
+    def _init_and_run_proof(_init_problem: tuple[str, str], interactive: bool = False) -> bool:
         proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
         with KCFGExplore(
             foundry.kevm,
@@ -506,13 +507,20 @@ def foundry_prove(
                 smt_timeout=smt_timeout,
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
+                interactive=interactive,
             )
 
     def run_cfg_group(tests: list[str]) -> dict[str, bool]:
         init_problems = [tuple(test.split('.')) for test in tests]
-        with ProcessPool(ncpus=workers) as process_pool:
-            _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
-        apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
+        apr_proofs = {}
+        if interactive:
+            for problem in init_problems:
+                passed = _init_and_run_proof(problem, interactive=True)
+                apr_proofs[f'{problem[0]}.{problem[1]}'] = passed
+        else:
+            with ProcessPool(ncpus=workers) as process_pool:
+                _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
+            apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
         return apr_proofs
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')

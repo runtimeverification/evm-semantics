@@ -515,6 +515,7 @@ def exec_foundry_prove(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
+        interactive=True,
     )
     failed = 0
     for pid, r in results.items():
