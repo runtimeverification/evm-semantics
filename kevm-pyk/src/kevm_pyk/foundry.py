@@ -21,7 +21,7 @@ from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
-from pyk.prelude.kbool import FALSE, notBool, orBool
+from pyk.prelude.kbool import FALSE, TRUE, notBool, orBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof, ProofStatus
@@ -679,8 +679,8 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
             flat = [item for t in constraints for item in t]
             filtered = [cons for cons in flat if not base_cons.__contains__(cons)]
             bool_filtered = [apply.args for apply in filtered if isinstance(apply, KApply)]
-            union = [arg for args in bool_filtered for arg in args]
-            union = orBool(union[1:])
+            bool_filtered = [arg for args in bool_filtered for arg in args if arg != TRUE]
+            union = orBool(bool_filtered)
             negated = notBool(union)
             negated = KApply(
                 KLabel('#Equals', [KSort('Bool'), KSort('GeneratedTopCell')]), [KToken('true', KSort('Bool')), negated]
