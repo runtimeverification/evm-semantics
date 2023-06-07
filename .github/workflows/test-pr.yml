@@ -196,8 +196,6 @@ jobs:
           cd booster
           GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#booster
           result/bin/booster -h
-      - name: 'Set PATH for booster'
-        run: export PATH="$(pwd)/booster/result/bin:$PATH" && which booster
       - name: 'Build blockchain-k-plugin-deps'
         run: nix develop --extra-experimental-features 'nix-command flakes' --command make plugin-deps
       - name: 'Build kevm-pyk'
@@ -209,7 +207,7 @@ jobs:
       - name: 'Foundry Kompile'
         run: nix develop --extra-experimental-features 'nix-command flakes' --command make test-foundry-kompile -j2 KEVM_OPTS=--with-llvm-library
       - name: 'Foundry Prove'
-        run: nix develop --extra-experimental-features 'nix-command flakes' --command make test-foundry-prove -j2 FOUNDRY_PAR=12 KPROVE_OPTS=--use-booster
+        run: nix develop --extra-experimental-features 'nix-command flakes' --command export PATH="$(pwd)/booster/result/bin:$PATH" && make test-foundry-prove -j2 FOUNDRY_PAR=12 KPROVE_OPTS=--use-booster
       # - name: 'Foundry diff tests'
       #   run: docker exec -u user kevm-ci-foundry-booster-${GITHUB_SHA} /bin/bash -c 'make test-foundry-kcfg-diff -j2 FOUNDRY_PAR=12'
       # - name: 'Foundry List'
