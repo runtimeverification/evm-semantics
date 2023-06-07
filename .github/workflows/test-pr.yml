@@ -201,7 +201,7 @@ jobs:
         with:
           tag: kevm-ci-foundry-booster-${{ github.sha }}
       - name: 'Set PATH for booster'
-        run: docker exec -u user kevm-ci-foundry-booster-${GITHUB_SHA} /bin/bash -c 'export PATH="$(pwd)/booster/result/bin:$PATH" && which booster'
+        run: docker exec -u user kevm-ci-foundry-booster-${GITHUB_SHA} /bin/bash -c 'ls "$(pwd)/booster/result/bin" && export PATH="$(pwd)/booster/result/bin:$PATH" && which booster'
       - name: 'Build blockchain-k-plugin-deps'
         run: docker exec -u user kevm-ci-foundry-booster-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
       - name: 'Build kevm-pyk'
