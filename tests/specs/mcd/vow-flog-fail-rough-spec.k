@@ -64,7 +64,6 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -181,7 +180,6 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -281,7 +279,6 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>

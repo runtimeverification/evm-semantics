@@ -14,11 +14,11 @@ import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, ensure_dir_path, run_process
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst, build_assoc
-from pyk.kast.manip import minimize_term, split_config_and_constraints
+from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
+from pyk.kast.manip import minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
-from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
+from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, TRUE, notBool, orBool
@@ -29,9 +29,15 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.utils import hash_str, single, unique
 
 from .kevm import KEVM
-from .kompile import CONCRETE_RULES, HOOK_NAMESPACES
+from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
-from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, kevm_apr_prove
+from .utils import (
+    KDefinition__expand_macros,
+    abstract_cell_vars,
+    byte_offset_to_lines,
+    kevm_apr_prove,
+    print_failure_info,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -40,7 +46,6 @@ if TYPE_CHECKING:
     from pyk.kast import KInner
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
-    from pyk.ktool.kompile import Kompile
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -186,9 +191,7 @@ class Foundry:
 
     def build(self) -> None:
         try:
-            run_process(
-                ['forge', 'build', '--root', str(self._root), '--extra-output', 'storageLayout'], logger=_LOGGER
-            )
+            run_process(['forge', 'build', '--root', str(self._root)], logger=_LOGGER)
         except CalledProcessError as err:
             raise RuntimeError("Couldn't forge build!") from err
 
@@ -235,12 +238,27 @@ class Foundry:
             intToken(0),
         )
 
+    @staticmethod
+    def help_info() -> list[str]:
+        res_lines: list[str] = []
+        print_foundry_success_info = any('foundry_success' in line for line in res_lines)
+        if print_foundry_success_info:
+            res_lines.append('')
+            res_lines.append('See `foundry_success` predicate for more information:')
+            res_lines.append(
+                'https://github.com/runtimeverification/evm-semantics/blob/master/include/kframework/foundry.md#foundry-success-predicate'
+            )
+        res_lines.append('')
+        res_lines.append(
+            'Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/'
+        )
+        return res_lines
+
 
 def foundry_kompile(
     definition_dir: Path,
     foundry_root: Path,
     includes: Iterable[str],
-    md_selector: str | None,
     regen: bool = False,
     rekompile: bool = False,
     requires: Iterable[str] = (),
@@ -320,45 +338,28 @@ def foundry_kompile(
             definition_dir,
             extra_unparsing_modules=(bin_runtime_definition.all_modules + contract_main_definition.all_modules),
         )
-        foundry_contracts_file.write_text(kevm.pretty_print(bin_runtime_definition) + '\n')
+        foundry_contracts_file.write_text(kevm.pretty_print(bin_runtime_definition, unalias=False) + '\n')
         _LOGGER.info(f'Wrote file: {foundry_contracts_file}')
         foundry_main_file.write_text(kevm.pretty_print(contract_main_definition) + '\n')
         _LOGGER.info(f'Wrote file: {foundry_main_file}')
 
     def _kompile(
         out_dir: Path,
-        backend: KompileBackend,
+        backend: KompileTarget,
         llvm_kompile_type: LLVMKompileType | None = None,
-        md_selector: str | None = None,
     ) -> None:
-        base_args = KompileArgs(
+        kevm_kompile(
+            target=backend,
+            output_dir=out_dir,
             main_file=foundry_main_file,
             main_module=main_module,
             syntax_module=syntax_module,
-            include_dirs=[include for include in includes if Path(include).exists()],
-            md_selector=md_selector,
-            hook_namespaces=HOOK_NAMESPACES,
+            includes=[include for include in includes if Path(include).exists()],
             emit_json=True,
+            ccopts=ccopts,
+            llvm_kompile_type=llvm_kompile_type,
+            debug=debug,
         )
-
-        kompile: Kompile
-        match backend:
-            case KompileBackend.LLVM:
-                kompile = LLVMKompile(
-                    base_args=base_args,
-                    ccopts=ccopts,
-                    no_llvm_kompile=not llvm_kompile,
-                    llvm_kompile_type=llvm_kompile_type,
-                )
-            case KompileBackend.HASKELL:
-                kompile = HaskellKompile(
-                    base_args=base_args,
-                    concrete_rules=CONCRETE_RULES,
-                )
-            case _:
-                raise ValueError(f'Unsuppored backend: {backend.value}')
-
-        kompile(output_dir=out_dir, debug=debug)
 
     def kompilation_digest() -> str:
         k_files = list(requires) + [foundry_contracts_file, foundry_main_file]
@@ -378,14 +379,13 @@ def foundry_kompile(
 
     if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
-        _kompile(foundry_definition_dir, KompileBackend.HASKELL, md_selector=md_selector)
+        _kompile(foundry_definition_dir, KompileTarget.HASKELL)
         if llvm_library:
             _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
             _kompile(
                 foundry_llvm_dir,
-                KompileBackend.LLVM,
+                KompileTarget.LLVM,
                 llvm_kompile_type=LLVMKompileType.C,
-                md_selector=('k & ! symbolic' if md_selector is None else f'{md_selector} & ! symbolic'),
             )
 
     update_kompilation_digest()
@@ -410,8 +410,9 @@ def foundry_prove(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    failure_info: bool = True,
     trace_rewrites: bool = False,
-) -> dict[str, bool]:
+) -> dict[str, tuple[bool, list[str] | None]]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
@@ -478,7 +479,7 @@ def foundry_prove(
                 )
         method.update_digest(foundry.out / 'digest')
 
-    def _init_and_run_proof(_init_problem: tuple[str, str]) -> bool:
+    def _init_and_run_proof(_init_problem: tuple[str, str]) -> tuple[bool, list[str] | None]:
         proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
         with KCFGExplore(
             foundry.kevm,
@@ -508,7 +509,7 @@ def foundry_prove(
                 trace_rewrites=trace_rewrites,
             )
 
-            return kevm_apr_prove(
+            passed = kevm_apr_prove(
                 foundry.kevm,
                 proof_id,
                 proof,
@@ -530,12 +531,18 @@ def foundry_prove(
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
             )
+            failure_log = None
+            if not passed:
+                failure_log = print_failure_info(proof.kcfg, proof_id, kcfg_explore)
 
-    def run_cfg_group(tests: list[str]) -> dict[str, bool]:
+            return passed, failure_log
+
+    def run_cfg_group(tests: list[str]) -> dict[str, tuple[bool, list[str] | None]]:
         init_problems = [tuple(test.split('.')) for test in tests]
         with ProcessPool(ncpus=workers) as process_pool:
             _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
         apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
+
         return apr_proofs
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
@@ -557,9 +564,11 @@ def foundry_show(
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    sort_collections: bool = False,
     omit_unstable_output: bool = False,
     frontier: bool = False,
     stuck: bool = False,
+    failure_info: bool = False,
 ) -> str:
     contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
@@ -584,7 +593,6 @@ def foundry_show(
         '<pc>',
         '<gas>',
         '<code>',
-        '<activeAccounts>',
     ]
 
     kcfg_show = KCFGShow(foundry.kevm)
@@ -595,9 +603,15 @@ def foundry_show(
         node_deltas=node_deltas,
         to_module=to_module,
         minimize=minimize,
+        sort_collections=sort_collections,
         node_printer=_short_info,
         omit_cells=(unstable_cells if omit_unstable_output else []),
     )
+
+    if failure_info:
+        with KCFGExplore(foundry.kevm, id=apr_proof.id) as kcfg_explore:
+            res_lines += print_failure_info(apr_proof.kcfg, apr_proof.id, kcfg_explore)
+            res_lines += Foundry.help_info()
 
     return '\n'.join(res_lines)
 
@@ -745,6 +759,7 @@ def foundry_simplify_node(
     node: NodeIdLike,
     replace: bool = False,
     minimize: bool = True,
+    sort_collections: bool = False,
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
@@ -769,7 +784,7 @@ def foundry_simplify_node(
         apr_proof.kcfg.replace_node(node, CTerm.from_kast(new_term))
         apr_proof.write_proof()
     res_term = minimize_term(new_term) if minimize else new_term
-    return foundry.kevm.pretty_print(res_term)
+    return foundry.kevm.pretty_print(res_term, unalias=False, sort_collections=sort_collections)
 
 
 def foundry_step_node(
@@ -986,12 +1001,11 @@ def _init_cterm(init_term: KInner) -> CTerm:
     return init_cterm
 
 
-def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, KInner]:
-    print(proof_digest, proof_dir)
+def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> KInner:
     apr_proof = APRProof.read_proof(proof_digest, proof_dir)
     target = apr_proof.kcfg.get_unique_target()
     cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
-    return (cterm.cell('ACCOUNTS_CELL'), cterm.cell('ACTIVEACCOUNTS_CELL'))
+    return cterm.cell('ACCOUNTS_CELL')
 
 
 def _init_term(
@@ -1027,17 +1041,6 @@ def _init_term(
         'ACCESSEDACCOUNTS_CELL': KApply('.Set'),
         'ACCESSEDSTORAGE_CELL': KApply('.Map'),
         'INTERIMSTATES_CELL': KApply('.List'),
-        'ACTIVEACCOUNTS_CELL': build_assoc(
-            KApply('.Set'),
-            KLabel('_Set_'),
-            map(
-                KLabel('SetItem'),
-                [
-                    Foundry.address_TEST_CONTRACT(),
-                    Foundry.address_CHEATCODE(),
-                ],
-            ),
-        ),
         'LOCALMEM_CELL': KApply('.Bytes_BYTES-HOOKED_Bytes'),
         'PREVCALLER_CELL': KApply('.Account_EVM-TYPES_Account'),
         'PREVORIGIN_CELL': KApply('.Account_EVM-TYPES_Account'),
@@ -1072,9 +1075,8 @@ def _init_term(
     }
 
     if init_state:
-        accts, active_accts = get_final_accounts_cell(init_state, kcfgs_dir)
+        accts = get_final_accounts_cell(init_state, kcfgs_dir)
         init_subst['ACCOUNTS_CELL'] = accts
-        init_subst['ACTIVEACCOUNTS_CELL'] = active_accts
 
     if calldata is not None:
         init_subst['CALLDATA_CELL'] = calldata

@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
@@ -35,7 +36,7 @@ from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove, print_failure_info
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -151,13 +152,12 @@ def exec_solc_to_k(
         _main_module.name, modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
     )
     _kprint = KEVM(definition_dir, extra_unparsing_modules=modules)
-    print(_kprint.pretty_print(bin_runtime_definition) + '\n')
+    print(_kprint.pretty_print(bin_runtime_definition, unalias=False) + '\n')
 
 
 def exec_foundry_kompile(
     definition_dir: Path,
     foundry_root: Path,
-    md_selector: str | None = None,
     includes: Iterable[str] = (),
     regen: bool = False,
     rekompile: bool = False,
@@ -180,7 +180,6 @@ def exec_foundry_kompile(
         definition_dir=definition_dir,
         foundry_root=foundry_root,
         includes=includes,
-        md_selector=md_selector,
         regen=regen,
         rekompile=rekompile,
         requires=requires,
@@ -265,6 +264,7 @@ def exec_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    failure_info: bool = True,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
@@ -286,7 +286,7 @@ def exec_prove(
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
-    def _init_and_run_proof(claim: KClaim) -> bool:
+    def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
         with KCFGExplore(
             kevm,
             id=claim.label,
@@ -327,7 +327,7 @@ def exec_prove(
 
                 proof_problem = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
 
-            return kevm_apr_prove(
+            passed = kevm_apr_prove(
                 kevm,
                 claim.label,
                 proof_problem,
@@ -348,17 +348,26 @@ def exec_prove(
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
             )
+            failure_log = None
+            if not passed:
+                failure_log = print_failure_info(proof_problem.kcfg, claim.label, kcfg_explore)
+
+            return passed, failure_log
 
     with ProcessPool(ncpus=workers) as process_pool:
         results = process_pool.map(_init_and_run_proof, claims)
 
     failed = 0
-    for claim, result in zip(claims, results, strict=True):
-        if result:
+    for claim, r in zip(claims, results, strict=True):
+        passed, failure_log = r
+        if passed:
             print(f'PROOF PASSED: {claim.label}')
         else:
             failed += 1
             print(f'PROOF FAILED: {claim.label}')
+            if failure_info and failure_log is not None:
+                for line in failure_log:
+                    print(line)
     sys.exit(failed)
 
 
@@ -413,6 +422,8 @@ def exec_show_kcfg(
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    failure_info: bool = False,
+    sort_collections: bool = False,
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
@@ -435,8 +446,14 @@ def exec_show_kcfg(
         node_deltas=node_deltas,
         to_module=to_module,
         minimize=minimize,
+        sort_collections=sort_collections,
         node_printer=kevm.short_info,
     )
+
+    if failure_info:
+        with KCFGExplore(kevm, id=apr_proof.id) as kcfg_explore:
+            res_lines += print_failure_info(apr_proof.kcfg, apr_proof.id, kcfg_explore)
+
     print('\n'.join(res_lines))
 
 
@@ -485,6 +502,7 @@ def exec_foundry_prove(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    failure_info: bool = True,
     trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
@@ -518,11 +536,17 @@ def exec_foundry_prove(
     )
     failed = 0
     for pid, r in results.items():
-        if r:
+        passed, failure_log = r
+        if passed:
             print(f'PROOF PASSED: {pid}')
         else:
             failed += 1
             print(f'PROOF FAILED: {pid}')
+            if failure_info and failure_log is not None:
+                failure_log += Foundry.help_info()
+                for line in failure_log:
+                    print(line)
+
     sys.exit(failed)
 
 
@@ -533,9 +557,11 @@ def exec_foundry_show(
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    sort_collections: bool = False,
     omit_unstable_output: bool = False,
     frontier: bool = False,
     stuck: bool = False,
+    failure_info: bool = False,
     **kwargs: Any,
 ) -> None:
     output = foundry_show(
@@ -546,8 +572,10 @@ def exec_foundry_show(
         to_module=to_module,
         minimize=minimize,
         omit_unstable_output=omit_unstable_output,
+        sort_collections=sort_collections,
         frontier=frontier,
         stuck=stuck,
+        failure_info=failure_info,
     )
     print(output)
 
@@ -627,6 +655,7 @@ def exec_foundry_simplify_node(
     node: NodeIdLike,
     replace: bool = False,
     minimize: bool = True,
+    sort_collections: bool = False,
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
@@ -639,6 +668,7 @@ def exec_foundry_simplify_node(
         node=node,
         replace=replace,
         minimize=minimize,
+        sort_collections=sort_collections,
         bug_report=bug_report,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
@@ -708,7 +738,6 @@ def _create_argument_parser() -> ArgumentParser:
         return parse
 
     kevm_cli_args = KEVMCLIArgs()
-
     parser = ArgumentParser(prog='python3 -m kevm_pyk')
 
     command_parser = parser.add_subparsers(dest='command', required=True)
