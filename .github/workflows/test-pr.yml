@@ -216,10 +216,8 @@ jobs:
 #           path: booster
       - name: 'Test booster'
         run: |
-          cd booster
-          ls
-          GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#booster
-          result/bin/booster -h  --option access-tokens= github.com=${{ secrets.JENKINS_GITHUB_PAT }}
+          GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs  --option access-tokens= github.com=${{ secrets.JENKINS_GITHUB_PAT }} git+ssh://git@github.com/runtimeverification/hs-backend-booster#booster
+          result/bin/booster -h
 
   dockerhub-image-dry-run:
     name: 'Build Ubuntu Jammy DockerHub Image'
