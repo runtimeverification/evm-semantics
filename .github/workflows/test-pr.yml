@@ -172,7 +172,7 @@ jobs:
 
 
   test-prove-foundry-booster:
-    name: 'Build and Test KEVM Foundry proofs'
+    name: 'Build and Test KEVM Foundry proofs (booster)'
     # needs: test-concrete-execution
     runs-on: [self-hosted, linux, huge]
     timeout-minutes: 150
@@ -193,6 +193,7 @@ jobs:
           path: booster
       - name: 'Build booster'
         run: |
+          cd booster
           GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#booster
           result/bin/booster -h
       - name: 'Set up Docker'
