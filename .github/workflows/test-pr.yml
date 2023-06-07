@@ -204,9 +204,9 @@ jobs:
       #   run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs
       # - name: 'Test KEVM'
       #   run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#kevm-test
-      - name: 'Get booster version'
-        run: |
-          echo "BOOSTER_COMMIT=$(cat deps/booster_release)" >> $GITHUB_ENV  
+#       - name: 'Get booster version'
+#         run: |
+#           echo "BOOSTER_COMMIT=$(cat deps/booster_release)" >> $GITHUB_ENV  
 #       - name: 'Check out booster'
 #         uses: actions/checkout@v3
 #         with:
@@ -216,7 +216,7 @@ jobs:
 #           path: booster
       - name: 'Test booster'
         run: |
-          GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs  --option access-tokens= github.com=${{ secrets.JENKINS_GITHUB_PAT }} git+ssh://git@github.com/runtimeverification/hs-backend-booster#booster
+          GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs  --option access-tokens github.com=${{ secrets.JENKINS_GITHUB_PAT }} 'git+ssh://git@github.com/runtimeverification/hs-backend-booster?rev=$(cat deps/booster_release)'#booster
           result/bin/booster -h
 
   dockerhub-image-dry-run:
