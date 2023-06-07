@@ -196,6 +196,10 @@ jobs:
           cd booster
           GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#booster
           result/bin/booster -h
+      - name: 'Build devShell'
+        env: 
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
+        run: nix build .#devShell.x86_64-linux.inputDerivation --json | jq -r '.[].outputs | to_entries[].value' | cachix push k-framework
       - name: 'Build blockchain-k-plugin-deps'
         run: nix develop --extra-experimental-features 'nix-command flakes' --command make plugin-deps
       - name: 'Build kevm-pyk'
