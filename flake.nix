@@ -24,7 +24,7 @@
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
     , poetry2nix, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
-    , rv-utils, pyk }:
+    , rv-utils, pyk, foundry }:
     let
       nixLibs = pkgs:
         with pkgs;
