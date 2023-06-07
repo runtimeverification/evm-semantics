@@ -4,26 +4,26 @@
 │    pc: 0
 │    callDepth: 0
 │    statusCode: STATUSCODE
-│    src: tests/foundry/test/Simple.t.sol:5:48
+│    src: tests/foundry/test/Simple.t.sol:5:54
 │
-│  (480 steps)
+│  (376 steps)
 ├─ 7 (expanded)
 │    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 918
+│    pc: 992
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 9 (expanded)
 │    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 918
+│    pc: 992
 │    callDepth: 0
 │    statusCode: EVMC_REVERT
 │
 │  (2 steps)
 └─ 11 (expanded, stuck, leaf)
      k: #halt ~> CONTINUATION:K
-     pc: 918
+     pc: 992
      callDepth: 0
      statusCode: EVMC_REVERT
    (stuck)
@@ -88,7 +88,7 @@ Node 11:
               0
             </callValue>
             <wordStack>
-              ( 342 : ( 174 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
+              ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
             </wordStack>
             <localMem>
               b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -294,7 +294,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 342 : ( 174 : ( selector ( "test_assert_false()" ) : .WordStack ) ) ) )
+                     ( .WordStack => ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -508,7 +508,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( 342 : ( 174 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
+                     ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -710,7 +710,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( 342 : ( 174 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
+                     ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -873,3 +873,22 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
 
 endmodule
 
+1 Failure nodes. (0 frontier and 1 stuck)
+
+Stuck nodes:
+
+  Node id: 11
+  Failure reason:
+    Implication check failed, the following is the remaining implication:
+    ( ( { true #Equals 0 <=Int CALLER_ID:Int }
+    #And ( { true #Equals 0 <=Int ORIGIN_ID:Int }
+    #And ( { true #Equals 0 <=Int NUMBER_CELL:Int }
+    #And ( { true #Equals CALLER_ID:Int <Int pow160 }
+    #And ( { true #Equals ORIGIN_ID:Int <Int pow160 }
+    #And { true #Equals NUMBER_CELL:Int <=Int maxSInt256 } ) ) ) ) ) #Implies { true #Equals foundry_success ( ... statusCode: EVMC_REVERT , failed: #lookup ( .Map , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) , revertExpected: false , opcodeExpected: false , recordEventExpected: false , eventExpected: false ) } )
+  Path condition:
+    #Top
+
+Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD
+
+Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

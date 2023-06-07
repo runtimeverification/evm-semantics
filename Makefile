@@ -552,7 +552,7 @@ $(foundry_golden)/%.check: $(foundry_golden)/%.out
 
 $(foundry_golden)/%.out: foundry-fail
 	$(KEVM) foundry-show $(foundry_show_opts)                   \
-	--foundry-project-root $(foundry_dir) $*                    \
+	--foundry-project-root $(foundry_dir) $* --failure-info     \
 	| grep --invert-match 'rule \[BASIC-BLOCK-'                 \
 	| grep --invert-match '\[priority(.*), label(BASIC-BLOCK-'  \
 	> $@

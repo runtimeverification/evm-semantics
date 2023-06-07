@@ -161,6 +161,53 @@ def kevm_prove(
         return False
 
 
+def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
+    if type(proof) is APRProof or type(proof) is APRBMCProof:
+        unique_target = proof.kcfg.get_unique_target()
+
+        res_lines: list[str] = []
+
+        num_frontier = len(proof.kcfg.frontier)
+        num_stuck = len(proof.kcfg.stuck)
+        res_lines.append(f'{num_frontier + num_stuck} Failure nodes. ({num_frontier} frontier and {num_stuck} stuck)')
+        if num_frontier > 0:
+            res_lines.append('')
+            res_lines.append('Frontier nodes:')
+            for node in proof.kcfg.frontier:
+                res_lines.append('')
+                res_lines.append(f'ID: {node.id}:')
+        if num_stuck > 0:
+            res_lines.append('')
+            res_lines.append('Stuck nodes:')
+            for node in proof.kcfg.stuck:
+                res_lines.append('')
+                res_lines.append(f'  Node id: {str(node.id)}')
+
+                simplified_node, _ = kcfg_explore.cterm_simplify(node.cterm)
+                simplified_target, _ = kcfg_explore.cterm_simplify(unique_target.cterm)
+
+                node_cterm = CTerm.from_kast(simplified_node)
+                target_cterm = CTerm.from_kast(simplified_target)
+
+                res_lines.append('  Failure reason:')
+                _, reason = kcfg_explore.implication_failure_reason(node_cterm, target_cterm)
+                res_lines += [f'    {line}' for line in reason.split('\n')]
+
+                res_lines.append('  Path condition:')
+                res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.kcfg.path_constraints(node.id))}']
+
+                res_lines.append('')
+                res_lines.append(
+                    'Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD'
+                )
+
+        return res_lines
+    elif type(proof) is EqualityProof:
+        return ['EqualityProof failed.']
+    else:
+        raise ValueError('Unknown proof type.')
+
+
 def arg_pair_of(
     fst_type: Callable[[str], T1], snd_type: Callable[[str], T2], delim: str = ','
 ) -> Callable[[str], tuple[T1, T2]]:

@@ -30,7 +30,7 @@ from pyk.utils import hash_str, single, unique
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
-from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, kevm_prove
+from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, kevm_prove, print_failure_info
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -231,6 +231,22 @@ class Foundry:
             intToken(0),
         )
 
+    @staticmethod
+    def help_info() -> list[str]:
+        res_lines: list[str] = []
+        print_foundry_success_info = any('foundry_success' in line for line in res_lines)
+        if print_foundry_success_info:
+            res_lines.append('')
+            res_lines.append('See `foundry_success` predicate for more information:')
+            res_lines.append(
+                'https://github.com/runtimeverification/evm-semantics/blob/master/include/kframework/foundry.md#foundry-success-predicate'
+            )
+        res_lines.append('')
+        res_lines.append(
+            'Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/'
+        )
+        return res_lines
+
 
 def foundry_kompile(
     definition_dir: Path,
@@ -387,8 +403,9 @@ def foundry_prove(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    failure_info: bool = True,
     trace_rewrites: bool = False,
-) -> dict[str, bool]:
+) -> dict[str, tuple[bool, list[str] | None]]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
@@ -455,7 +472,7 @@ def foundry_prove(
                 )
         method.update_digest(foundry.out / 'digest')
 
-    def _init_and_run_proof(_init_problem: tuple[str, str]) -> bool:
+    def _init_and_run_proof(_init_problem: tuple[str, str]) -> tuple[bool, list[str] | None]:
         proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
         with KCFGExplore(
             foundry.kevm,
@@ -485,7 +502,7 @@ def foundry_prove(
                 trace_rewrites=trace_rewrites,
             )
 
-            return kevm_prove(
+            passed = kevm_prove(
                 foundry.kevm,
                 proof_id,
                 proof,
@@ -507,12 +524,18 @@ def foundry_prove(
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
             )
+            failure_log = None
+            if not passed:
+                failure_log = print_failure_info(proof, kcfg_explore)
 
-    def run_cfg_group(tests: list[str]) -> dict[str, bool]:
+            return passed, failure_log
+
+    def run_cfg_group(tests: list[str]) -> dict[str, tuple[bool, list[str] | None]]:
         init_problems = [tuple(test.split('.')) for test in tests]
         with ProcessPool(ncpus=workers) as process_pool:
             _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
         apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
+
         return apr_proofs
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
@@ -538,6 +561,7 @@ def foundry_show(
     omit_unstable_output: bool = False,
     frontier: bool = False,
     stuck: bool = False,
+    failure_info: bool = False,
 ) -> str:
     contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
@@ -576,6 +600,11 @@ def foundry_show(
         node_printer=_short_info,
         omit_cells=(unstable_cells if omit_unstable_output else []),
     )
+
+    if failure_info:
+        with KCFGExplore(foundry.kevm, id=apr_proof.id) as kcfg_explore:
+            res_lines += print_failure_info(apr_proof, kcfg_explore)
+            res_lines += Foundry.help_info()
 
     return '\n'.join(res_lines)
 
