@@ -200,6 +200,8 @@ jobs:
         uses: ./.github/actions/with-docker
         with:
           tag: kevm-ci-foundry-booster-${{ github.sha }}
+      - name: 'Set PATH for booster'
+        run: docker exec -u user kevm-ci-foundry-booster-${GITHUB_SHA} /bin/bash -c 'export PATH="$(pwd)/booster/result/bin:$PATH" && which booster'
       - name: 'Build blockchain-k-plugin-deps'
         run: docker exec -u user kevm-ci-foundry-booster-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
       - name: 'Build kevm-pyk'
@@ -211,7 +213,7 @@ jobs:
       - name: 'Foundry Kompile'
         run: docker exec -u user kevm-ci-foundry-booster-${GITHUB_SHA} /bin/bash -c 'make test-foundry-kompile -j2 KEVM_OPTS=--with-llvm-library'
       - name: 'Foundry Prove'
-        run: docker exec -u user kevm-ci-foundry-booster-${GITHUB_SHA} /bin/bash -c 'PATH="$(pwd)/booster/result/bin":$PATH make test-foundry-prove -j2 FOUNDRY_PAR=12 KPROVE_OPTS=--use-booster'
+        run: docker exec -u user kevm-ci-foundry-booster-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove -j2 FOUNDRY_PAR=12 KEVM_OPTS=--with-llvm-library KPROVE_OPTS=--use-booster'
       # - name: 'Foundry diff tests'
       #   run: docker exec -u user kevm-ci-foundry-booster-${GITHUB_SHA} /bin/bash -c 'make test-foundry-kcfg-diff -j2 FOUNDRY_PAR=12'
       # - name: 'Foundry List'
