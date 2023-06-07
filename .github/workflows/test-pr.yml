@@ -173,7 +173,7 @@ jobs:
 
   test-prove-foundry-booster:
     name: 'Build and Test KEVM Foundry proofs'
-    needs: test-concrete-execution
+    # needs: test-concrete-execution
     runs-on: [self-hosted, linux, huge]
     timeout-minutes: 150
     steps:
