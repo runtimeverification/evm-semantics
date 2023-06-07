@@ -406,6 +406,7 @@ class KEVM(KProve, KRun):
                     'WORDSTACK_CELL',
                     'LOCALMEM_CELL',
                     'ORIGIN_CELL',
+                    'COINBASE_CELL',
                     'LOGSBLOOM_CELL',
                     'EXTRADATA_CELL',
                     'ACCOUNTS_CELL',
@@ -419,7 +420,6 @@ class KEVM(KProve, KRun):
                     'EXPECTEDVALUE_CELL',
                     'EXPECTEDDATA_CELL',
                     'EXPECTEDEVENTADDRESS_CELL',
-                    'ACTIVEACCOUNTS_CELL',
                 ]:
                     try:
                         kast = set_cell(kast, cell, bottom_up(_helper, get_cell(kast, cell)))
