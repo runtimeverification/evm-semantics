@@ -66,7 +66,7 @@ def test_vm(test_file: Path) -> None:
         gst_data = json.load(f)
 
     # When
-    res = interpret(gst_data, 'DEFAULT', 'VMTESTS', 1)
+    res = interpret(gst_data, 'DEFAULT', 'VMTESTS', 1, check=False)
 
     # Then
     _assert_exit_code_zero(res)
@@ -93,7 +93,7 @@ def test_bchain(test_file: Path) -> None:
         gst_data = json.load(f)
 
     # When
-    res = interpret(gst_data, 'MERGE', 'NORMAL', 1)
+    res = interpret(gst_data, 'MERGE', 'NORMAL', 1, check=False)
 
     # Then
     _assert_exit_code_zero(res)
