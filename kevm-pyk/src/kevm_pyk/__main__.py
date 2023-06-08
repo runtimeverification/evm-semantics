@@ -483,7 +483,7 @@ def exec_foundry_prove(
     bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
-    use_booster: bool = False,
+    use_booster: str | None = None,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
@@ -897,8 +897,11 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_prove_args.add_argument(
         '--use-booster',
         dest='use_booster',
-        default=False,
-        action='store_true',
+        const='booster',
+        default=None,
+        action='store',
+        nargs='?',
+        type=str,
         help="Use the booster RPC server instead of kore-rpc. Requires calling foundry-kompile with the '--with-llvm-library' flag",
     )
 
