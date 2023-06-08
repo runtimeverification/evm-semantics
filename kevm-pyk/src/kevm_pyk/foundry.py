@@ -643,7 +643,7 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                                         KApply(
                                             '#callWithCode_________EVM_InternalOp_Int_Int_Int_Bytes_Int_Int_Bytes_Bool',
                                             [
-                                            KVariable('_A1'),
+                                                KVariable('_A1'),
                                                 KVariable('_A2'),
                                                 KVariable('_A3'),
                                                 KVariable('CODE'),
