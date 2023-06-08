@@ -4,26 +4,26 @@
 │    pc: 0
 │    callDepth: 0
 │    statusCode: STATUSCODE
-│    src: tests/foundry/test/Simple.t.sol:5:48
+│    src: tests/foundry/test/Simple.t.sol:5:54
 │
-│  (342 steps)
+│  (407 steps)
 ├─ 7 (expanded)
 │    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 918
+│    pc: 992
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 9 (expanded)
 │    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 918
+│    pc: 992
 │    callDepth: 0
 │    statusCode: EVMC_REVERT
 │
 │  (2 steps)
 ├─ 11 (leaf)
 │    k: #halt ~> CONTINUATION:K
-│    pc: 918
+│    pc: 992
 │    callDepth: 0
 │    statusCode: EVMC_REVERT
 │
@@ -80,7 +80,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 342 : ( 174 : ( selector ( "testFail_assert_false()" ) : .WordStack ) ) ) )
+                     ( .WordStack => ( 399 : ( 212 : ( selector ( "testFail_assert_false()" ) : .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -294,7 +294,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( 342 : ( 174 : ( selector ( "testFail_assert_false()" ) : .WordStack ) ) )
+                     ( 399 : ( 212 : ( selector ( "testFail_assert_false()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -496,7 +496,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( 342 : ( 174 : ( selector ( "testFail_assert_false()" ) : .WordStack ) ) )
+                     ( 399 : ( 212 : ( selector ( "testFail_assert_false()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -659,3 +659,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
 
 endmodule
 
+0 Failure nodes. (0 frontier and 0 stuck)
+
+Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

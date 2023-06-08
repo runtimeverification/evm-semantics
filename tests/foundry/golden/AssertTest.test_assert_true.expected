@@ -4,31 +4,31 @@
 │    pc: 0
 │    callDepth: 0
 │    statusCode: STATUSCODE
-│    src: tests/foundry/test/Simple.t.sol:5:48
+│    src: tests/foundry/test/Simple.t.sol:5:54
 │
-│  (300 steps)
+│  (331 steps)
 ├─ 7 (expanded)
 │    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│    pc: 175
+│    pc: 213
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
-│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 │  (1 step)
 ├─ 9 (expanded)
 │    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│    pc: 175
+│    pc: 213
 │    callDepth: 0
 │    statusCode: EVMC_SUCCESS
-│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 │  (2 steps)
 ├─ 11 (leaf)
 │    k: #halt ~> CONTINUATION:K
-│    pc: 175
+│    pc: 213
 │    callDepth: 0
 │    statusCode: EVMC_SUCCESS
-│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 ┊  constraint: true
 ┊  subst: OMITTED SUBST
@@ -662,3 +662,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
 
 endmodule
 
+0 Failure nodes. (0 frontier and 0 stuck)
+
+Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/
