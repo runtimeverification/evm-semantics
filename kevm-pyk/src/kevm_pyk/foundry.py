@@ -687,8 +687,8 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
             constraints = [leaf.cterm.constraints for leaf in leaves[1:]]
             flat = [item for t in constraints for item in t]
             filtered = [cons for cons in flat if not base_cons.__contains__(cons)]
-            bool_filtered = [apply.args for apply in filtered if isinstance(apply, KApply)]
-            bool_filtered = [arg for args in bool_filtered for arg in args if arg != TRUE]
+            args_filtered = [apply.args for apply in filtered if isinstance(apply, KApply)]
+            bool_filtered = [arg for args in args_filtered for arg in args if arg != TRUE]
             union = orBool(bool_filtered)
             negated = notBool(union)
             negated = KApply(
@@ -697,9 +697,9 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
             new_cterm = CTerm(config, [negated])
             with KCFGExplore(foundry.kevm) as kcfg_explore:
                 simplified, _ = kcfg_explore.cterm_simplify(new_cterm)
-                constraints = split_config_and_constraints(simplified)[1]
+                new_constraints = split_config_and_constraints(simplified)[1]
                 with KCFGExplore(foundry.kevm) as kcfg_explore:
-                    kore = kcfg_explore.kprint.kast_to_kore(constraints)
+                    kore = kcfg_explore.kprint.kast_to_kore(new_constraints)
                     pretty = kcfg_explore.kprint.kore_to_pretty(kore)
                     print(pretty)
 
@@ -758,6 +758,7 @@ def foundry_simplify_node(
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    trace_rewrites: bool = False,
 ) -> str:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
