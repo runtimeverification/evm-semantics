@@ -34,6 +34,7 @@ from .utils import (
     KDefinition__expand_macros,
     abstract_cell_vars,
     byte_offset_to_lines,
+    constraints_for,
     kevm_apr_prove,
     print_failure_info,
 )
