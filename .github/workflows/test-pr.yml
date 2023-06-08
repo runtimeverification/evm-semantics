@@ -212,8 +212,8 @@ jobs:
         run: nix develop --extra-experimental-features 'nix-command flakes' --command make test-foundry-kompile -j2 KEVM_OPTS=--with-llvm-library
       - name: 'Foundry Prove'
         run: |
-          BOOSTER_BIN="$(pwd)/booster/result/bin"
-          nix develop --extra-experimental-features 'nix-command flakes' --command bash -c "PATH=$BOOSTER_BIN:$PATH && make test-foundry-prove -j2 FOUNDRY_PAR=12 KPROVE_OPTS=--use-booster"
+          BOOSTER_BIN="$(pwd)/booster/result/bin/booster"
+          nix develop --extra-experimental-features 'nix-command flakes' --command make test-foundry-prove -j2 FOUNDRY_PAR=12 KPROVE_OPTS="--use-booster $BOOSTER_BIN"
       # - name: 'Foundry diff tests'
       #   run: docker exec -u user kevm-ci-foundry-booster-${GITHUB_SHA} /bin/bash -c 'make test-foundry-kcfg-diff -j2 FOUNDRY_PAR=12'
       # - name: 'Foundry List'
