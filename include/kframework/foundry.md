@@ -145,8 +145,16 @@ Hence, checking if a `DSTest.assert*` has failed amounts to reading as a boolean
 module FOUNDRY-SUCCESS
     imports EVM
 
-    syntax Bool ::= "foundry_success" "(" StatusCode "," Int "," Bool "," Bool "," Bool "," Bool ")" [function, klabel(foundry_success), symbol]
- // --------------------------------------------------------------------------------------------------------------------------------------------
+    syntax Bool ::= 
+      "foundry_success" "("
+        statusCode: StatusCode "," 
+        failed: Int ","
+        revertExpected: Bool ","
+        opcodeExpected: Bool ","
+        recordEventExpected: Bool ","
+        eventExpected: Bool
+      ")" [function, klabel(foundry_success), symbol]
+ // -------------------------------------------------
     rule foundry_success(EVMC_SUCCESS, 0, false, false, false, false) => true
     rule foundry_success(_, _, _, _, _, _)                            => false [owise]
 
