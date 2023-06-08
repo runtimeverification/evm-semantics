@@ -72,38 +72,19 @@ def test_vm(test_file: Path) -> None:
     _assert_exit_code_zero(res)
 
 
-BCHAIN_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'
-BCHAIN_TESTS: Final = tuple(BCHAIN_TEST_DIR.glob('*/*.json'))
-
-
-@pytest.mark.parametrize(
-    'test_file', BCHAIN_TESTS, ids=[str(test_file.relative_to(BCHAIN_TEST_DIR)) for test_file in BCHAIN_TESTS]
-)
-def test_bchain(test_file: Path) -> None:
-    if test_file in SKIPPED_TESTS:
-        pytest.skip()
-
-    # Given
-    with test_file.open() as f:
-        gst_data = json.load(f)
-
-    # When
-    res = interpret(gst_data, 'MERGE', 'NORMAL', 1)
-
-    # Then
-    _assert_exit_code_zero(res)
-
+BCHAIN_NEW_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'
+BCHAIN_NEW_TESTS: Final = tuple(BCHAIN_NEW_TEST_DIR.glob('*/*.json'))
 
 BCHAIN_LEGACY_TEST_DIR: Final = TEST_DIR / 'LegacyTests/Constantinople/BlockchainTests/GeneralStateTests'
 BCHAIN_LEGACY_TESTS: Final = tuple(BCHAIN_LEGACY_TEST_DIR.glob('*/*.json'))
 
+BCHAIN_TESTS: Final = BCHAIN_NEW_TESTS + BCHAIN_LEGACY_TESTS
+
 
 @pytest.mark.parametrize(
-    'test_file',
-    BCHAIN_LEGACY_TESTS,
-    ids=[str(test_file.relative_to(BCHAIN_LEGACY_TEST_DIR)) for test_file in BCHAIN_LEGACY_TESTS],
+    'test_file', BCHAIN_TESTS, ids=[str(test_file.relative_to(TEST_DIR)) for test_file in BCHAIN_TESTS]
 )
-def test_bchain_legacy(test_file: Path) -> None:
+def test_bchain(test_file: Path) -> None:
     if test_file in SKIPPED_TESTS:
         pytest.skip()
 
