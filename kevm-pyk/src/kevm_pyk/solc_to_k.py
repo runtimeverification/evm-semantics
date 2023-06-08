@@ -260,16 +260,19 @@ class Contract:
 
         if len(self.bytecode) > 0 and self.raw_sourcemap is not None:
             instr_to_pc = {}
-            pc = 0
+            idx = 0
             instr = 0
-            bs = [int(self.bytecode[i : i + 2], 16) for i in range(0, len(self.bytecode), 2)]
-            while pc < len(bs):
-                b = bs[pc]
-                instr_to_pc[instr] = pc
+            bs = [self.bytecode[i : i + 2] for i in range(0, len(self.bytecode), 2)]
+            while idx < len(bs):
+                instr_to_pc[instr] = idx
+                b = int(bs[idx], 16)
                 if 0x60 <= b and b < 0x7F:
                     push_width = b - 0x5F
-                    pc = pc + push_width
-                pc += 1
+                    if idx + 1 < len(bs) and bs[idx] == '__' and  b == 0x73:
+                        idx = idx + 17
+                    else:
+                        idx = idx + push_width
+                idx += 1
                 instr += 1
 
             instrs_srcmap = self.raw_sourcemap.split(';')
