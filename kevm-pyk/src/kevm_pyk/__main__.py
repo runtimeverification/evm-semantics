@@ -24,12 +24,14 @@ from .foundry import (
     foundry_kompile,
     foundry_list,
     foundry_prove,
+    foundry_refute_node,
     foundry_remove_node,
     foundry_section_edge,
     foundry_show,
     foundry_simplify_node,
     foundry_step_node,
     foundry_to_dot,
+    foundry_unrefute_node,
 )
 from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM
@@ -298,7 +300,9 @@ def exec_prove(
             proof_problem: APRProof
 
             if save_directory is not None and not reinit and APRProof.proof_exists(claim.label, save_directory):
-                proof_problem = APRProof.read_proof(claim.label, save_directory)
+                _proof_problem = APRProof.read_proof(claim.label, save_directory)
+                assert type(_proof_problem) is APRProof
+                proof_problem = _proof_problem
 
             else:
                 _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
@@ -403,6 +407,7 @@ def exec_prune_proof(
     )
 
     apr_proof = APRProof.read_proof(claim.label, save_directory)
+    assert type(apr_proof) is APRProof
     node_ids = apr_proof.kcfg.prune(node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof()
@@ -629,6 +634,7 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     proof_digest = foundry.proof_digest(contract_name, test_name)
 
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    assert type(apr_proof) is APRProof
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
@@ -642,6 +648,14 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
 
 def exec_foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike, **kwargs: Any) -> None:
     foundry_remove_node(foundry_root=foundry_root, test=test, node=node)
+
+
+def exec_foundry_refute_node(foundry_root: Path, test: str, node: NodeIdLike, **kwargs: Any) -> None:
+    foundry_refute_node(foundry_root=foundry_root, test=test, node=node)
+
+
+def exec_foundry_unrefute_node(foundry_root: Path, test: str, node: NodeIdLike, **kwargs: Any) -> None:
+    foundry_unrefute_node(foundry_root=foundry_root, test=test, node=node)
 
 
 def exec_foundry_simplify_node(
@@ -968,8 +982,24 @@ def _create_argument_parser() -> ArgumentParser:
         help='Remove a node and its successors.',
         parents=[kevm_cli_args.shared_args, kevm_cli_args.foundry_args],
     )
-    foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
+    foundry_remove_node.add_argument('test', type=str, help='Test to remove the subgraph from.')
     foundry_remove_node.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
+
+    foundry_refute_node = command_parser.add_parser(
+        'foundry-refute-node',
+        help='Convert node into refutation proof and mark it as expanded.',
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.foundry_args],
+    )
+    foundry_refute_node.add_argument('test', type=str, help='Test to refute node on.')
+    foundry_refute_node.add_argument('node', type=node_id_like, help='Node to refute.')
+
+    foundry_unrefute_node = command_parser.add_parser(
+        'foundry-unrefute-node',
+        help='Removes a refutation proof from a node so the prover will explore it normally.',
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.foundry_args],
+    )
+    foundry_unrefute_node.add_argument('test', type=str, help='Test to unrefute node on.')
+    foundry_unrefute_node.add_argument('node', type=node_id_like, help='Node to unrefute.')
 
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',

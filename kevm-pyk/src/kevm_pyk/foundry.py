@@ -24,7 +24,7 @@ from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof
-from pyk.proof.reachability import APRBMCProof, APRProof
+from pyk.proof.reachability import APRBMCProof, APRProof, APRProver
 from pyk.utils import hash_str, single, unique
 
 from .kevm import KEVM
@@ -576,6 +576,7 @@ def foundry_show(
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    assert type(apr_proof) is APRProof
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
@@ -622,6 +623,7 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    assert type(apr_proof) is APRProof
     kcfg_show = KCFGShow(foundry.kevm)
     kcfg_show.dump(test, apr_proof.kcfg, dump_dir, dot=True)
 
@@ -654,8 +656,53 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    assert type(apr_proof) is APRProof
     node_ids = apr_proof.kcfg.prune(node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
+    apr_proof.write_proof()
+
+
+def foundry_refute_node(foundry_root: Path, test: str, node: NodeIdLike) -> None:
+    foundry = Foundry(foundry_root)
+    apr_proofs_dir = foundry.out / 'apr_proofs'
+    contract_name, test_name = test.split('.')
+    proof_digest = foundry.proof_digest(contract_name, test_name)
+    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    assert type(apr_proof) is APRProof
+    prover = APRProver(apr_proof)
+
+    _node = apr_proof.kcfg.get_node(node)
+    if _node is None:
+        raise ValueError(f'Node {node} not found.')
+
+    with KCFGExplore(
+        foundry.kevm,
+        id=apr_proof.id,
+    ) as kcfg_explore:
+        prover.refute_node(kcfg_explore, _node)
+
+    apr_proof.write_proof()
+
+
+def foundry_unrefute_node(foundry_root: Path, test: str, node: NodeIdLike) -> None:
+    foundry = Foundry(foundry_root)
+    apr_proofs_dir = foundry.out / 'apr_proofs'
+    contract_name, test_name = test.split('.')
+    proof_digest = foundry.proof_digest(contract_name, test_name)
+    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    assert type(apr_proof) is APRProof
+    prover = APRProver(apr_proof)
+
+    _node = apr_proof.kcfg.get_node(node)
+    if _node is None:
+        raise ValueError(f'Node {node} not found.')
+
+    with KCFGExplore(
+        foundry.kevm,
+        id=apr_proof.id,
+    ) as kcfg_explore:
+        prover.unrefute_node(_node)
+
     apr_proof.write_proof()
 
 
@@ -677,6 +724,7 @@ def foundry_simplify_node(
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    assert type(apr_proof) is APRProof
     cterm = apr_proof.kcfg.node(node).cterm
     with KCFGExplore(
         foundry.kevm,
@@ -717,6 +765,7 @@ def foundry_step_node(
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    assert type(apr_proof) is APRProof
     with KCFGExplore(
         foundry.kevm,
         id=apr_proof.id,
@@ -747,6 +796,7 @@ def foundry_section_edge(
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    assert type(apr_proof) is APRProof
     source_id, target_id = edge
     with KCFGExplore(
         foundry.kevm,
@@ -909,6 +959,7 @@ def _init_cterm(init_term: KInner) -> CTerm:
 
 def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> KInner:
     apr_proof = APRProof.read_proof(proof_digest, proof_dir)
+    assert type(apr_proof) is APRProof
     target = apr_proof.kcfg.get_unique_target()
     cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
     return cterm.cell('ACCOUNTS_CELL')
