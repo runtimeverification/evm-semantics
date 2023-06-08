@@ -54,6 +54,8 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
+        with:
+          submodules: true
       - name: 'Install Poetry'
         uses: Gr1N/setup-poetry@v8
       - name: 'Run unit tests'

@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import sys
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING, final
 
 import pytest
@@ -14,8 +13,11 @@ from kevm_pyk.__main__ import exec_prove
 from kevm_pyk.kevm import KEVM
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
 
+from ..utils import REPO_ROOT
+
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from pathlib import Path
     from typing import Any, Final
 
     from pytest import LogCaptureFixture, TempPathFactory
@@ -23,7 +25,6 @@ if TYPE_CHECKING:
 
 sys.setrecursionlimit(10**8)
 
-REPO_ROOT: Final = Path(__file__).parents[4]
 TEST_DIR: Final = REPO_ROOT / 'tests'
 SPEC_DIR: Final = TEST_DIR / 'specs'
 
