@@ -268,7 +268,7 @@ class Contract:
                 b = int(bs[idx], 16)
                 if 0x60 <= b and b < 0x7F:
                     push_width = b - 0x5F
-                    if idx + 1 < len(bs) and bs[idx] == '__' and  b == 0x73:
+                    if idx + 1 < len(bs) and bs[idx] == '__' and b == 0x73:
                         idx = idx + 17
                     else:
                         idx = idx + push_width
