@@ -198,8 +198,6 @@ jobs:
         env: 
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
         run: cachix watch-exec k-framework -- nix build --extra-experimental-features 'nix-command flakes' .#devShell.x86_64-linux.inputDerivation --no-link
-      - name: 'Cleanup'
-        run: nix develop --extra-experimental-features 'nix-command flakes' --command make clean
       - name: 'Build blockchain-k-plugin-deps'
         run: nix develop --extra-experimental-features 'nix-command flakes' --command make plugin-deps
       - name: 'Build kevm-pyk'
@@ -214,6 +212,8 @@ jobs:
         run: |
           BOOSTER_BIN="$(pwd)/booster/result/bin/booster"
           nix develop --extra-experimental-features 'nix-command flakes' --command make test-foundry-prove -j2 FOUNDRY_PAR=12 KPROVE_OPTS="--use-booster $BOOSTER_BIN"
+      - name: 'Cleanup'
+        run: nix develop --extra-experimental-features 'nix-command flakes' --command make clean
 
   nix:
     name: 'Nix'
