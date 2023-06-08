@@ -14,8 +14,8 @@ import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli_utils import BugReport, ensure_dir_path, run_process
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
-from pyk.kast.manip import minimize_term
+from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst
+from pyk.kast.manip import minimize_term, split_config_and_constraints
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import LLVMKompileType
@@ -620,7 +620,7 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
     artifacts = foundry.contracts
-    contracts = set(contracts)
+    contracts = set(contracts) if len(set(contracts)) > 0 else set(foundry.contracts.keys())
     len_contracts = len(contracts)
 
     call_cells: dict[bytes, list[tuple[KInner, KCFG.Node, list[KCFG.Node]]]] = {}
@@ -634,21 +634,16 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
                     if apr_proof.status is ProofStatus.PASSED or True:
                         kcfg = apr_proof.kcfg
-                        nodes = kcfg.nodes
-                        leaves = kcfg.leaves
 
-                        if len(nodes) > 1:
-                            base_node = nodes[1]
-
-                            for node in nodes:
+                        if len(kcfg.nodes) > 1:
+                            for node in kcfg.nodes:
                                 cterm = node.cterm
-                                # note: we may want to hide this away
                                 k_cell_pattern = KSequence(
                                     [
                                         KApply(
                                             '#callWithCode_________EVM_InternalOp_Int_Int_Int_Bytes_Int_Int_Bytes_Bool',
                                             [
-                                                KVariable('_A1'),
+                                            KVariable('_A1'),
                                                 KVariable('_A2'),
                                                 KVariable('_A3'),
                                                 KVariable('CODE'),
@@ -682,11 +677,11 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
                                         if val is None:
                                             val = []
 
-                                        val.append((cterm.config, base_node, leaves))
+                                        val.append((cterm.config, kcfg.nodes[1], kcfg.leaves))
                                         call_cells[acct_hash] = val
                                         break
 
-    for bytecode_h, cons_set in call_cells.items():
+    for _bytecode_h, cons_set in call_cells.items():
         for config, node, leaves in cons_set:
             base_cons = node.cterm.constraints
             constraints = [leaf.cterm.constraints for leaf in leaves[1:]]
@@ -934,7 +929,6 @@ def _method_to_apr_proof(
 
         setup_digest = None
         if method_name != 'setUp' and 'setUp' in contract.method_by_name:
-            # setup_digest = f'{contract_name}.setUp:{contract.digest}'
             setup_digest = foundry.proof_digest(contract_name, 'setUp')
             _LOGGER.info(f'Using setUp method for test: {test}')
 
