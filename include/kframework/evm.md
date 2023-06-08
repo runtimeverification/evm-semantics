@@ -846,8 +846,11 @@ Some operators don't calculate anything, they just push the stack around a bit.
     rule <k> DUP(N)  WS:WordStack => #setStack ((WS [ N -Int 1 ]) : WS)                      ... </k>
     rule <k> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) ... </k>
 
-    syntax PushOp ::= PUSH ( Int )
+    syntax PushOp ::= "PUSHZERO"
+                    | PUSH ( Int )
  // ------------------------------
+    rule <k> PUSHZERO => 0 ~> #push ... </k>
+
     rule <k> PUSH(N) => #asWord(#range(PGM, PCOUNT +Int 1, N)) ~> #push ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
@@ -2059,6 +2062,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, BASEFEE)        => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, POP _)          => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, PC)             => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, PUSHZERO)       => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, MSIZE)          => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, GAS)            => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, CHAINID)        => Gbase < SCHED > ... </k>
@@ -2747,6 +2751,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  89,     _ ) => MSIZE
     rule #dasmOpCode(  90,     _ ) => GAS
     rule #dasmOpCode(  91,     _ ) => JUMPDEST
+    rule #dasmOpCode(  95,     _ ) => PUSHZERO
     rule #dasmOpCode(  96,     _ ) => PUSH(1)
     rule #dasmOpCode(  97,     _ ) => PUSH(2)
     rule #dasmOpCode(  98,     _ ) => PUSH(3)
