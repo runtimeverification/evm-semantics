@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from pyk.kast import KInner
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, bottom_up, build_assoc
-from pyk.kast.manip import flatten_label, get_cell, set_cell, undo_aliases
+from pyk.kast.manip import flatten_label, get_cell, set_cell
 from pyk.kast.pretty import paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
@@ -373,11 +373,9 @@ class KEVM(KProve, KRun):
         return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), wrapped_accounts)
 
     def pretty_print(self, kast: KAst, *, unalias: bool = True, sort_collections: bool = False) -> str:
-        if unalias and isinstance(kast, KInner):
-            kast = undo_aliases(self.definition, kast)
         if isinstance(kast, KInner):
             kast = KEVM._int_token_to_hex(kast)
-        return super().pretty_print(kast, unalias=False)
+        return super().pretty_print(kast, unalias=unalias, sort_collections=sort_collections)
 
     @staticmethod
     def _int_token_to_hex(kast: KInner) -> KInner:
@@ -398,6 +396,7 @@ class KEVM(KProve, KRun):
                 for cell in [
                     'K_CELL',
                     'OUTPUT_CELL',
+                    'CALLSTACK_CELL',
                     'PROGRAM_CELL',
                     'ID_CELL',
                     'CALLER_CELL',
