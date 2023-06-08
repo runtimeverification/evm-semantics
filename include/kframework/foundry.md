@@ -184,7 +184,13 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<isStorageWhitelistActive>` flags if the whitelist mode is enabled for storage changes.
     - `<addressSet>` - stores the address whitelist.
     - `<storageSlotSet>` - stores the storage whitelist containing pairs of addresses and storage indexes.
-
+6. The `<recordAccess>` subconfiguration stores values used for the `record` and `access` cheat codes.
+    - `<isRecordActive>` flags whether reads and writes to storage should be recorded.
+    - `<records>` is a `Map` of `<record>` cells.
+        - Each `<record>` cell records reads and writes for the storage associated with a particular address.
+        - `<recordKey>` indicates the address and serves as the `Map` key.
+        - `<reads>` keeps a list of all storage slots which have been read for the address.
+        - `<write>` keeps a list of all storage slots which have been written for the address.
 ```k
 module FOUNDRY-CHEAT-CODES
     imports EVM
@@ -228,6 +234,16 @@ module FOUNDRY-CHEAT-CODES
           <addressSet> .Set </addressSet>
           <storageSlotSet> .Set </storageSlotSet>
         </whitelist>
+        <recordAccess>
+          <isRecordActive> false </isRecordActive>
+          <records>
+            <record multiplicity="*" type="Map">
+              <recordKey> 0 </recordKey>
+              <reads> .List </reads>
+              <writes> .List </writes>
+            </record>
+          </records>
+        </recordAccess>
       </cheatcodes>
 ```
 
@@ -1023,7 +1039,131 @@ The `ECDSASign` function returns the signed data in [r,s,v] form, which we conve
       requires SELECTOR ==Int selector ( "sign(uint256,bytes32)" )
 ```
 
-Otherwise, throw an error for any other call to the Foundry contract.
+Recording and accessing storage operations
+------------------------------------------
+
+#### `record` - Record all reads and writes to storage.
+
+```
+function record() external;
+```
+
+The rule `function.call.record` will match when the `record` cheat code function is called.
+
+```k
+   rule [foundry.call.record]:
+        <k> #call_foundry SELECTOR _ => #enableRecord ... </k>
+     requires SELECTOR ==Int selector ( "record()" )
+```
+
+Here, `#enableRecord` updates `<isRecordActive>` to indicate that storage operations should now be recorded.
+
+```k
+    rule <k> #enableRecord => . ... </k>
+         <recordAccess>
+           <isRecordActive> _ => true </isRecordActive>
+           ...
+         </recordAccess>
+```
+
+The rules for `SLOAD` and `SSTORE` are overriden so that they additionally write in the `<record>` cells when `<isRecordActive>` is `true`. Note that every write also counts as a read.
+
+```k
+   rule [foundry.recordSLOAD]:
+        <k> SLOAD INDEX => #recordRead INDEX ~> #pauseRecord ~> SLOAD INDEX ~> #resumeRecord ... </k>
+        <recordAccess> <recordActive> true </recordActive> ... </recordAccess>
+     [priority(39)]
+
+   rule [foundry.recordSSTORE]:
+        <k> SSTORE INDEX NEW => #recordRead INDEX ~> #recordWrite INDEX ~> #pauseRecord ~> SSTORE INDEX NEW ~> #resumeRecord ... </k>
+        <recordAccess> <recordActive> true </recordActive> ... </recordAccess>
+     [priority(39)]
+```
+
+In these rules, `#pauseRecord` and `#resumeRecord` are used to temporarily set `<isRecordActive>` to `false`, allowing the original `SLOAD` and `SSTORE` rules from `evm.md` to be executed.
+
+```k
+    rule <k> #pauseRecord => . ... </k>
+         <recordAccess> <isRecordActive> _ => false </isRecordActive> ... </recordAccess>
+	rule <k> #resumeRecord => . ... </k>
+         <recordAccess> <isRecordActive> _ => true </isRecordActive> ... </recordAccess>
+```
+
+Finally, `#recordRead` and `#recordWrite` update `<records>` to take note of the storage operations.
+
+```k
+    rule <k> #recordRead V => . </k>
+         <id> KEY </id>
+         <recordAccess>
+           <record>
+             <recordKey> KEY </recordKey>
+             <reads> R => R ListItem(#buf(32, V)) </reads>
+             ...
+           </record>
+           ...
+         </recordAccess>
+
+    rule <k> #recordRead V => . </k>
+         <id> KEY </id>
+         <recordAccess>
+            <records>
+               ( .Bag
+               => <record>
+                    <recordKey> KEY </recordKey>
+                    <reads> ListItem(#buf(32, V)) </reads>
+                    ...
+                  </record>
+               )
+            </records>
+            ...
+         </recordAccess> [owise]
+
+    rule <k> #recordWrite V => . </k>
+         <id> KEY </id>
+         <recordAccess>
+           <record>
+             <recordKey> KEY </recordKey>
+             <writes> R => R ListItem(#buf(32, V)) </writes>
+             ...
+           </record>
+           ...
+         </recordAccess>
+
+    rule <k> #recordWrite V => . </k>
+         <id> KEY </id>
+         <recordAccess>
+            <records>
+               ( .Bag
+               => <record>
+                    <recordKey> KEY </recordKey>
+                    <writes> ListItem(#buf(32, V)) </writes>
+                    ...
+                  </record>
+               )
+            </records>
+            ...
+         </recordAccess> [owise]
+```
+
+#### `accesses` - Access all recorded reads and writes for a storage slot.
+
+```
+function accesses(address) external returns (bytes32[] memory reads, bytes32[] memory writes);
+```
+
+The rule `function.call.accesses` will match when the `record` cheat code function is called.
+
+```k
+   rule [foundry.call.accesses]:
+        <k> #call_foundry SELECTOR _ => . ... </k>
+		<output> _ => TODO ... </output>
+     requires SELECTOR ==Int selector ( "accesses(address)" )
+```
+
+Unimplemented or nonexistent cheat codes
+----------------------------------------
+
+Otherwise, we throw an error for any other call to the Foundry contract.
 
 ```k
     rule [foundry.call.owise]:
@@ -1415,6 +1555,8 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )
     rule ( selector ( "allowChangesToStorage(address,uint256)" )   => 4207417100 )
     rule ( selector ( "infiniteGas()" )                            => 3986649939 )
+    rule ( selector ( "record()" )                                 => 644673801  )
+    rule ( selector ( "accesses(address)" )                        => 1706857601 )
 ```
 
 - selectors for unimplemented cheat code functions.
@@ -1439,8 +1581,6 @@ If the production is matched when no prank is active, it will be ignored.
     rule selector ( "envString(string,string)" )                => 347089865
     rule selector ( "envBytes(string,string)" )                 => 3720504603
     rule selector ( "expectRevert(bytes4)" )                    => 3273568480
-    rule selector ( "record()" )                                => 644673801
-    rule selector ( "accesses(address)" )                       => 1706857601
     rule selector ( "mockCall(address,bytes calldata,bytes)" )  => 378193464
     rule selector ( "mockCall(address,uint256,bytes,bytes)" )   => 2168494993
     rule selector ( "clearMockedCalls()" )                      => 1071599125
