@@ -15,7 +15,7 @@ from pyk.kast.manip import (
     split_config_from,
 )
 from pyk.kast.outer import KSequence
-from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
+from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver, ProofStatus
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -87,7 +87,7 @@ def kevm_apr_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
-) -> bool:
+) -> ProofStatus:
     _cfgid = cfgid
     _apr_proof = proof
     terminal_rules = ['EVM.halt']
@@ -121,7 +121,7 @@ def kevm_apr_prove(
     else:
         prover = APRProver(_apr_proof, is_terminal=is_terminal, extract_branches=extract_branches)
     try:
-        _cfg = prover.advance_proof(
+        _ = prover.advance_proof(
             kcfg_explore,
             max_iterations=max_iterations,
             execute_depth=max_depth,
@@ -131,15 +131,15 @@ def kevm_apr_prove(
         )
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}', exc_info=True)
-        return False
+        return ProofStatus.PENDING
 
-    failure_nodes = _cfg.frontier + _cfg.stuck
-    if len(failure_nodes) == 0:
+    if _apr_proof.status == ProofStatus.PASSED:
         _LOGGER.info(f'Proof passed: {_cfgid}')
-        return True
-    else:
+    elif _apr_proof.status == ProofStatus.FAILED:
         _LOGGER.error(f'Proof failed: {_cfgid}')
-        return False
+    elif _apr_proof.status == ProofStatus.PENDING:
+        _LOGGER.error(f'Proof pending: {_cfgid}')
+    return _apr_proof.status
 
 
 def print_failure_info(_cfg: KCFG, _cfgid: str, kcfg_explore: KCFGExplore) -> list[str]:

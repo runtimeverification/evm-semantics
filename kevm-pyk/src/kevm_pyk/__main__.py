@@ -15,7 +15,7 @@ from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
 from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
-from pyk.proof import APRProof
+from pyk.proof import APRProof, ProofStatus
 from pyk.utils import single
 
 from .cli import KEVMCLIArgs, node_id_like
@@ -330,7 +330,7 @@ def exec_prove(
 
                 proof_problem = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
 
-            passed = kevm_apr_prove(
+            proof_status = kevm_apr_prove(
                 kevm,
                 claim.label,
                 proof_problem,
@@ -352,6 +352,7 @@ def exec_prove(
                 trace_rewrites=trace_rewrites,
             )
             failure_log = None
+            passed = proof_status == ProofStatus.PASSED
             if not passed:
                 failure_log = print_failure_info(proof_problem.kcfg, claim.label, kcfg_explore)
 

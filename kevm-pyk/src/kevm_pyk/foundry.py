@@ -23,7 +23,7 @@ from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
-from pyk.proof.proof import Proof
+from pyk.proof.proof import Proof, ProofStatus
 from pyk.proof.reachability import APRBMCProof, APRProof, APRProver
 from pyk.utils import hash_str, single, unique
 
@@ -508,7 +508,7 @@ def foundry_prove(
                 trace_rewrites=trace_rewrites,
             )
 
-            passed = kevm_apr_prove(
+            proof_status = kevm_apr_prove(
                 foundry.kevm,
                 proof_id,
                 proof,
@@ -531,6 +531,7 @@ def foundry_prove(
                 trace_rewrites=trace_rewrites,
             )
             failure_log = None
+            passed = proof_status == ProofStatus.PASSED
             if not passed:
                 failure_log = print_failure_info(proof.kcfg, proof_id, kcfg_explore)
 
@@ -697,11 +698,7 @@ def foundry_unrefute_node(foundry_root: Path, test: str, node: NodeIdLike) -> No
     if _node is None:
         raise ValueError(f'Node {node} not found.')
 
-    with KCFGExplore(
-        foundry.kevm,
-        id=apr_proof.id,
-    ) as kcfg_explore:
-        prover.unrefute_node(_node)
+    prover.unrefute_node(_node)
 
     apr_proof.write_proof()
 
@@ -881,6 +878,8 @@ def _method_to_apr_proof(
         proof_dict = json.loads(proof_path.read_text())
         match proof_dict['type']:
             case 'APRProof':
+#                  _LOGGER.info(f'proof_dict: {proof_dict}')
+                _LOGGER.info(f'proof_path: {proof_path}')
                 apr_proof = APRProof.from_dict(proof_dict, proof_dir=save_directory)
             case 'APRBMCProof':
                 apr_proof = APRBMCProof.from_dict(proof_dict, proof_dir=save_directory)
