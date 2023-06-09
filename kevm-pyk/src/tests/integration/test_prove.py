@@ -68,7 +68,27 @@ SLOW_TESTS: Final = exclude_list(TEST_DIR / 'slow.haskell')
 FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
 
-KOMPILE_MODULE: Final = {
+KOMPILE_MAIN_FILE: Final = {
+    'benchmarks/functional-spec.k': 'functional-spec.k',
+    'bihu/functional-spec.k': 'functional-spec.k',
+    'examples/solidity-code-spec.md': 'solidity-code-spec.md',
+    'examples/erc20-spec.md': 'erc20-spec.md',
+    'examples/erc721-spec.md': 'erc721-spec.md',
+    'examples/storage-spec.k': 'storage-spec.k',
+    'examples/sum-to-n-spec.k': 'sum-to-n-spec.k',
+    'examples/sum-to-n-foundry-spec.k': 'sum-to-n-foundry-spec.k',
+    'functional/infinite-gas-spec.k': 'infinite-gas-spec.k',
+    'functional/evm-int-simplifications-spec.k': 'evm-int-simplifications-spec.k',
+    'functional/int-simplifications-spec.k': 'int-simplifications-spec.k',
+    'functional/lemmas-no-smt-spec.k': 'lemmas-no-smt-spec.k',
+    'functional/lemmas-spec.k': 'lemmas-spec.k',
+    'functional/merkle-spec.k': 'merkle-spec.k',
+    'functional/storageRoot-spec.k': 'storageRoot-spec.k',
+    'mcd/functional-spec.k': 'functional-spec.k',
+    'opcodes/evm-optimizations-spec.md': 'evm-optimizations-spec.md',
+}
+
+KOMPILE_MAIN_MODULE: Final = {
     'benchmarks/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'bihu/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'erc20/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
@@ -97,19 +117,22 @@ def test_pyk_prove(spec_file: Path, tmp_path: Path) -> None:
 
     # Given
     spec_id = str(spec_file.relative_to(SPEC_DIR))
-    definition_dir = tmp_path / 'kompiled'
+
+    spec_root = SPEC_DIR / spec_file.relative_to(SPEC_DIR).parents[-2]
+    main_file = spec_root / KOMPILE_MAIN_FILE.get(spec_id, 'verification.k')
+    main_module_name = KOMPILE_MAIN_MODULE.get(spec_id, 'VERIFICATION')
+    definition_dir = tmp_path / f'{main_file.stem}-kompiled'
+
     use_directory = tmp_path / 'kprove'
     use_directory.mkdir()
 
     # When
-    module_name = KOMPILE_MODULE.get(spec_id, 'VERIFICATION')
-
     kevm_kompile(
         target=KompileTarget.HASKELL,
-        main_file=spec_file,
+        main_file=main_file,
         output_dir=definition_dir,
-        main_module=module_name,
-        syntax_module=module_name,
+        main_module=main_module_name,
+        syntax_module=main_module_name,
     )
 
     exec_prove(
@@ -139,22 +162,25 @@ def test_legacy_prove(spec_file: Path, tmp_path: Path, caplog: LogCaptureFixture
 
     # Given
     spec_id = str(spec_file.relative_to(SPEC_DIR))
+
+    spec_root = SPEC_DIR / spec_file.relative_to(SPEC_DIR).parents[-2]
+    main_file = spec_root / KOMPILE_MAIN_FILE.get(spec_id, 'verification.k')
+    main_module_name = KOMPILE_MAIN_MODULE.get(spec_id, 'VERIFICATION')
+    definition_dir = tmp_path / f'{main_file.stem}-kompiled'
+    args = PROVE_ARGS.get(spec_id, {})
+
     log_file = tmp_path / 'log.txt'
-    definition_dir = tmp_path / 'kompiled'
     use_directory = tmp_path / 'kprove'
     use_directory.mkdir()
 
     # When
-    module_name = KOMPILE_MODULE.get(spec_id, 'VERIFICATION')
-    args = PROVE_ARGS.get(spec_id, {})
-
     try:
         kevm_kompile(
             target=KompileTarget.HASKELL,
-            main_file=spec_file,
+            main_file=main_file,
             output_dir=definition_dir,
-            main_module=module_name,
-            syntax_module=module_name,
+            main_module=main_module_name,
+            syntax_module=main_module_name,
         )
 
         kevm = KEVM(definition_dir, use_directory=use_directory)
