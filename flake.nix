@@ -21,10 +21,11 @@
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent release
+    booster.url = "github:runtimeverification/hs-backend-booster/f262648140297854ba51e8586b117a3f32a7a72f";
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
     , poetry2nix, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
-    , rv-utils, pyk, foundry }:
+    , rv-utils, pyk, foundry, booster }:
     let
       nixLibs = pkgs:
         with pkgs;
@@ -107,7 +108,7 @@
               mkdir -p $out
               mv .build/usr/* $out/
               wrapProgram $out/bin/kevm --prefix PATH : ${
-                prev.lib.makeBinPath [ final.solc prev.which k ]
+                prev.lib.makeBinPath [ final.solc prev.which k final.booster ]
               } --set NIX_LIBS "${nixLibs prev}"
               ln -s ${k} $out/lib/kevm/kframework
 
@@ -174,6 +175,7 @@
             poetry2nix.overlay
             pyk.overlay
             foundry.overlay
+            booster.overlays.default
             overlay
           ];
         };
@@ -182,7 +184,7 @@
         packages.default = kevm;
         devShell = pkgs.mkShell {
           buildInputs = buildInputs pkgs k-framework.packages.${system}.k
-            ++ [ pkgs.poetry pkgs.foundry-bin ];
+            ++ [ pkgs.poetry pkgs.foundry-bin pkgs.booster ];
 
           shellHook = ''
             export NIX_LIBS="${nixLibs pkgs}"
