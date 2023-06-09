@@ -99,7 +99,7 @@ jobs:
       - name: 'Test kevm-pyk'
         run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-kevm-pyk -j`nproc`'
       - name: 'Test conformance'
-        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-conformance -j`nproc` TEST_CONCRETE_BACKEND=llvm'
+        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-conformance'
       - name: 'Test llvm krun'
         run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'
       - name: 'Test kast'
