@@ -1,6 +1,7 @@
 pragma solidity =0.8.13;
 
 import "forge-std/Test.sol";
+import "../src/KEVMCheats.sol";
 
 contract ERC20 {
     function name() public view returns (string memory) {}
@@ -16,7 +17,7 @@ contract ERC20 {
     function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool) {}
 }
 
-contract ERC20Test is Test {
+contract ERC20Test is Test, KEVMCheats {
     ERC20 erc20;
 
     function setUp() public {
@@ -24,6 +25,7 @@ contract ERC20Test is Test {
     }
 
     function testCallOther(bytes4 signature, bytes memory args) public {
+        kevm.infiniteGas();
         vm.assume(signature != bytes4(keccak256(bytes("decimals()"))));
         vm.assume(signature != bytes4(keccak256(bytes("name()"))));
         vm.assume(signature != bytes4(keccak256(bytes("symbol()"))));

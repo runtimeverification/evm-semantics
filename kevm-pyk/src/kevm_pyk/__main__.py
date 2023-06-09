@@ -580,8 +580,8 @@ def exec_foundry_show(
     print(output)
 
 
-def exec_foundry_koverage(foundry_root: Path, contracts: Iterable[str] = (), **kwargs: Any) -> None:
-    foundry_koverage(foundry_root=foundry_root, contracts=contracts)
+def exec_foundry_koverage(foundry_root: Path, contracts: Iterable[str] = (), tests: Iterable[str] = (), **kwargs: Any) -> None:
+    foundry_koverage(foundry_root=foundry_root, contracts=contracts, tests=tests)
 
 
 def exec_foundry_to_dot(foundry_root: Path, test: str, **kwargs: Any) -> None:
@@ -961,6 +961,14 @@ def _create_argument_parser() -> ArgumentParser:
         default=[],
         action='append',
         help='Only run on specific contract proofs',
+    )
+    foundry_koverage_args.add_argument(
+        '--test',
+        type=str,
+        dest='tests',
+        default=[],
+        action='append',
+        help='Limit to only listed tests, ContractName.TestName',
     )
 
     foundry_to_dot = command_parser.add_parser(

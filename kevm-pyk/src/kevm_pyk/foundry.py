@@ -21,7 +21,7 @@ from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
-from pyk.prelude.kbool import FALSE, TRUE, notBool, orBool
+from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool, orBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof, ProofStatus
@@ -616,72 +616,150 @@ def foundry_show(
     return '\n'.join(res_lines)
 
 
-def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
+def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterable[str]) -> None:
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
-    artifacts = foundry.contracts
     contracts = set(contracts) if len(set(contracts)) > 0 else set(foundry.contracts.keys())
-    len_contracts = len(contracts)
-
     call_cells: dict[bytes, list[tuple[KInner, KCFG.Node, list[KCFG.Node]]]] = {}
 
-    for name, contract in artifacts.items():
-        if (len_contracts != 0 and name in contracts) or len_contracts == 0:
-            tests = contract.tests
-            for test in tests:
-                proof_digest = foundry.proof_digest(name, test)
-                if APRProof.proof_exists(proof_digest, apr_proofs_dir):
-                    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-                    if apr_proof.status is ProofStatus.PASSED or True:
-                        kcfg = apr_proof.kcfg
+    def _test_name(name: str, test: str) -> str:
+        return f'{name}.{test}'
 
-                        if len(kcfg.nodes) > 1:
-                            for node in kcfg.nodes:
-                                cterm = node.cterm
-                                k_cell_pattern = KSequence(
-                                    [
-                                        KApply(
-                                            '#callWithCode_________EVM_InternalOp_Int_Int_Int_Bytes_Int_Int_Bytes_Bool',
+    for name, contract in foundry.contracts.items():
+        if len(contracts) == 0 or name in contracts:
+            for test in contract.tests:
+                if len(set(tests)) == 0 or _test_name(name, test) in tests:
+                    proof_digest = foundry.proof_digest(name, test)
+                    if not APRProof.proof_exists(proof_digest, apr_proofs_dir):
+                        _LOGGER.warning(f'Proof does not exists: {_test_name(name, test)}')
+                    else:
+                        apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+                        if apr_proof.status is not ProofStatus.PASSED:
+                            _LOGGER.warning(f'Koverage not running on not passed proof: {_test_name(name, test)}')
+                        else:
+                            kcfg = apr_proof.kcfg
+
+                            if len(kcfg.nodes) > 1:
+                                for node in kcfg.nodes:
+                                    cterm = node.cterm
+                                    k_cell_pattern = KSequence(
+                                        [
+                                            KApply(
+                                                '#callWithCode_________EVM_InternalOp_Int_Int_Int_Bytes_Int_Int_Bytes_Bool',
+                                                [
+                                                    KVariable('_A1'),
+                                                    KVariable('_A2'),
+                                                    KVariable('_A3'),
+                                                    KVariable('CODE'),
+                                                    KVariable('_A4'),
+                                                    KVariable('_A5'),
+                                                    KVariable('_A6'),
+                                                    KVariable('_A7'),
+                                                ],
+                                            ),
+                                            KApply(
+                                                '#return___EVM_KItem_Int_Int',
+                                                [
+                                                    KVariable('_A8'),
+                                                    KVariable('_A9'),
+                                                ],
+                                            ),
+                                            KApply('#pc[_]_EVM_InternalOp_OpCode', [KApply('CALL_EVM_CallOp')]),
+                                            KApply('#execute_EVM_KItem'),
+                                            KVariable('_A10'),
+                                        ]
+                                    )
+
+                                    # print(cterm.cell('K_CELL'))
+                                    k_match = k_cell_pattern.match(cterm.cell('K_CELL'))
+
+                                    if k_match is None:
+                                        k_cell_pattern = KSequence(
                                             [
-                                                KVariable('_A1'),
-                                                KVariable('_A2'),
-                                                KVariable('_A3'),
-                                                KVariable('CODE'),
-                                                KVariable('_A5'),
-                                                KVariable('_A6'),
-                                                KVariable('_A7'),
-                                                KVariable('_A8'),
-                                            ],
-                                        ),
-                                        KApply(
-                                            '#return___EVM_KItem_Int_Int',
+                                                KApply(
+                                                    '#callWithCode_________EVM_InternalOp_Int_Int_Int_Bytes_Int_Int_Bytes_Bool',
+                                                    [
+                                                        KVariable('_A1'),
+                                                        KVariable('_A2'),
+                                                        KVariable('_A3'),
+                                                        KVariable('CODE'),
+                                                        KVariable('_A4'),
+                                                        KVariable('_A5'),
+                                                        KApply(
+                                                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                            [
+                                                                KVariable('A6'),
+                                                                KApply(
+                                                                    '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                    KVariable('_A7'),
+                                                                    KVariable('_A8'),
+                                                                )
+                                                            ]
+                                                        ),
+                                                        KVariable('_A9')
+                                                    ],
+                                                ),
+                                                KApply(
+                                                    '#return___EVM_KItem_Int_Int',
+                                                    [
+                                                        KVariable('_A10'),
+                                                        KVariable('_A11'),
+                                                    ],
+                                                ),
+                                                KApply('#pc[_]_EVM_InternalOp_OpCode', [KApply('STATICCALL_EVM_CallSixOp')]),
+                                                KApply('#execute_EVM_KItem'),
+                                                KVariable('_A12'),
+                                            ]
+                                        )
+                                        k_match = k_cell_pattern.match(cterm.cell('K_CELL'))
+
+                                    # TODO: for constant calldata, we may need to add it in the uncovered values. Because else it will assume that the variable which is not symbolic is not in the constraints and will be true == true
+                                    if k_match is None:
+                                        k_cell_pattern = KSequence(
                                             [
+                                                KApply(
+                                                    '#callWithCode_________EVM_InternalOp_Int_Int_Int_Bytes_Int_Int_Bytes_Bool',
+                                                    [
+                                                        KVariable('_A1'),
+                                                        KVariable('_A2'),
+                                                        KVariable('_A3'),
+                                                        KVariable('CODE'),
+                                                        KVariable('_A4'),
+                                                        KVariable('_A5'),
+                                                        KVariable('_A6'),
+                                                        KVariable('_A7'),
+                                                    ],
+                                                ),
+                                                KApply(
+                                                    '#return___EVM_KItem_Int_Int',
+                                                    [
+                                                        KVariable('_A8'),
+                                                        KVariable('_A9'),
+                                                    ],
+                                                ),
+                                                KApply('#pc[_]_EVM_InternalOp_OpCode', [KApply('STATICCALL_EVM_CallSixOp')]),
+                                                KApply('#execute_EVM_KItem'),
                                                 KVariable('_A10'),
-                                                KVariable('_A11'),
-                                            ],
-                                        ),
-                                        KApply('#pc[_]_EVM_InternalOp_OpCode', [KApply('CALL_EVM_CallOp')]),
-                                        KApply('#execute_EVM_KItem'),
-                                        KVariable('_A12'),
-                                    ]
-                                )
+                                            ]
+                                        )
+                                        k_match = k_cell_pattern.match(cterm.cell('K_CELL'))
 
-                                k_match = k_cell_pattern.match(cterm.cell('K_CELL'))
-                                if k_match is not None:
-                                    code = k_match['CODE']
-                                    if type(code) is KToken:
-                                        acct_code = code.token
-                                        acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
+                                    if k_match is not None:
+                                        code = k_match['CODE']
+                                        if type(code) is KToken:
+                                            acct_code = code.token
+                                            acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
 
-                                        val = call_cells.get(acct_hash)
-                                        if val is None:
-                                            val = []
+                                            val = call_cells.get(acct_hash)
+                                            if val is None:
+                                                val = []
 
-                                        val.append((cterm.config, kcfg.nodes[1], kcfg.leaves))
-                                        call_cells[acct_hash] = val
-                                        break
+                                            val.append((cterm.config, kcfg.nodes[1], kcfg.leaves))
+                                            call_cells[acct_hash] = val
+                                            break
 
     for _bytecode_h, cons_set in call_cells.items():
+        # print(_bytecode_h)
         for config, node, leaves in cons_set:
             base_cons = node.cterm.constraints
             constraints = [leaf.cterm.constraints for leaf in leaves[1:]]
@@ -689,11 +767,15 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str]) -> None:
             filtered = [cons for cons in flat if not base_cons.__contains__(cons)]
             args_filtered = [apply.args for apply in filtered if isinstance(apply, KApply)]
             bool_filtered = [arg for args in args_filtered for arg in args if arg != TRUE]
-            union = orBool(bool_filtered)
+            union = andBool(bool_filtered)
             negated = notBool(union)
             negated = KApply(
                 KLabel('#Equals', [KSort('Bool'), KSort('GeneratedTopCell')]), [KToken('true', KSort('Bool')), negated]
             )
+            with KCFGExplore(foundry.kevm) as kcfg_explore:
+                kore = kcfg_explore.kprint.kast_to_kore(negated)
+                pretty = kcfg_explore.kprint.kore_to_pretty(kore)
+                print(pretty)
             new_cterm = CTerm(config, [negated])
             with KCFGExplore(foundry.kevm) as kcfg_explore:
                 simplified, _ = kcfg_explore.cterm_simplify(new_cterm)

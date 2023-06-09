@@ -18,7 +18,8 @@ contract CoverageTest is Test {
     }
 
     function test_f_2(uint256 x) public {
-        vm.assume(x >= 10 && x < 20);
+        vm.assume(x >= 10);
+        vm.assume(x < 20);
         uint256 y = cov.f(x);
         assertEq(y, 5);
     }
