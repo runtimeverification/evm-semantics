@@ -881,9 +881,9 @@ def _method_to_apr_proof(
         proof_dict = json.loads(proof_path.read_text())
         match proof_dict['type']:
             case 'APRProof':
-                apr_proof = APRProof.from_dict(proof_dict)
+                apr_proof = APRProof.from_dict(proof_dict, proof_dir=save_directory)
             case 'APRBMCProof':
-                apr_proof = APRBMCProof.from_dict(proof_dict)
+                apr_proof = APRBMCProof.from_dict(proof_dict, proof_dir=save_directory)
             case unsupported_type:
                 raise ValueError(f'Unsupported proof type {unsupported_type}')
     else:
