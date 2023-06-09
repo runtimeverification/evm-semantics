@@ -1462,11 +1462,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 -   `#create____` transfers the endowment to the new account and triggers the execution of the initialization code.
 -   `#codeDeposit_` checks the result of initialization code and whether the code deposit can be paid, indicating an error if not.
 -   `#isValidCode_` checks if the code returned by the execution of the initialization code begins with a reserved byte. [EIP-3541]
+-   `#checkInitCode` checks the length of the transaction data in a create transaction. [EIP-3860]
 
 ```k
     syntax InternalOp ::= "#create"   Int Int Int Bytes
                         | "#mkCreate" Int Int Int Bytes
                         | "#incrementNonce" Int
+                        | "#checkInitCode"  Int
  // -------------------------------------------
     rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
           => #incrementNonce ACCTFROM
@@ -1501,6 +1503,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
+
+    rule <k> #checkInitCode INITCODELEN => . ... </k>
+         <schedule> SCHED </schedule>
+      requires notBool Ghasmaxinitcodesize << SCHED >> orBool INITCODELEN <=Int maxInitCodeSize < SCHED >
+
+    rule <k> #checkInitCode _ => #end EVMC_OUT_OF_GAS ... </k> [owise]
 
     syntax Bool ::= #isValidCode ( Bytes , Schedule ) [function]
  // ------------------------------------------------------------
@@ -1571,6 +1579,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <k> CREATE VALUE MEMSTART MEMWIDTH
           => #accessAccounts #newAddr(ACCT, NONCE)
           ~> #checkCall ACCT VALUE
+          ~> #checkInitCode (MEMWIDTH /Int 2)
           ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
@@ -1593,6 +1602,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
           => #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #checkCall ACCT VALUE
+          ~> #checkInitCode(MEMWIDTH /Int 2)
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
          ...
@@ -2020,14 +2030,14 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
            ...
          </account>
 
-    rule <k> #gasExec(SCHED, CREATE _ _ _)
-          => Gcreate < SCHED > ~> #deductGas
+    rule <k> #gasExec(SCHED, CREATE _ _ WIDTH)
+          => Gcreate < SCHED > +Int Cinitcode(SCHED, WIDTH /Int 2) ~> #deductGas
           ~> #allocateCreateGas ~> 0
          ...
          </k>
 
     rule <k> #gasExec(SCHED, CREATE2 _ _ WIDTH _)
-          => Gcreate < SCHED > +Int Gsha3word < SCHED > *Int (WIDTH up/Int 32) ~> #deductGas
+          => Gcreate < SCHED > +Int Gsha3word < SCHED > *Int (WIDTH up/Int 32) +Int Cinitcode(SCHED, WIDTH /Int 2) ~> #deductGas
           ~> #allocateCreateGas ~> 0
          ...
          </k>
@@ -2177,7 +2187,8 @@ There are several helpers for calculating gas (most of them also specified in th
                 | Cextcodehash   ( Schedule )                           [function, total, smtlib(gas_Cextcodehash)  ]
                 | Cbalance       ( Schedule )                           [function, total, smtlib(gas_Cbalance)      ]
                 | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [function, total, smtlib(gas_Cmodexp)       ]
- // ------------------------------------------------------------------------------------------------------------------
+                | Cinitcode      ( Schedule , Int )                     [function, total, smtlib(gas_Cinitcode)     ]
+ // -----------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
@@ -2252,6 +2263,9 @@ There are several helpers for calculating gas (most of them also specified in th
     rule [Cmodexp.new]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => maxInt(200, (#newMultComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1)) /Int Gquaddivisor < SCHED > )
       requires Ghasaccesslist << SCHED >>
 
+    rule [Cinitcode.new]: Cinitcode(SCHED, INITCODELEN) => Ginitcodewordcost < SCHED > *Int ( INITCODELEN up/Int 32 ) requires         Ghasmaxinitcodesize << SCHED >>
+    rule [Cinitcode.old]: Cinitcode(SCHED, _)           => 0                                                          requires notBool Ghasmaxinitcodesize << SCHED >>
+
     syntax BExp    ::= Bool
     syntax KResult ::= Bool
     syntax BExp ::= #accountNonexistent ( Int )
@@ -2278,14 +2292,11 @@ There are several helpers for calculating gas (most of them also specified in th
     rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
     rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
 
-    syntax Int ::= G0 ( Schedule , Bytes , Bool )           [function]
+    syntax Int ::= G0 ( Schedule , Bytes , Bool )           [function, klabel(G0base)]
                  | G0 ( Schedule , Bytes , Int , Int, Int ) [function, klabel(G0data)]
-                 | G0 ( Schedule , Bool )                   [function, klabel(G0base)]
  // ----------------------------------------------------------------------------------
-    rule G0(SCHED, WS, B) => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int G0(SCHED, B)
-
-    rule G0(SCHED, true)  => Gtxcreate    < SCHED >
-    rule G0(SCHED, false) => Gtransaction < SCHED >
+    rule G0(SCHED, WS, false) => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int Gtransaction < SCHED >
+    rule G0(SCHED, WS, true)  => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int Gtxcreate < SCHED > +Int Cinitcode(SCHED, lengthBytes(WS))
 
     rule G0(    _,  _, I, I, R) => R
     rule G0(SCHED, WS, I, J, R) => G0(SCHED, WS, I +Int 1, J, R +Int #if WS[I] ==Int 0 #then Gtxdatazero < SCHED > #else Gtxdatanonzero < SCHED > #fi) [owise]
@@ -2334,8 +2345,8 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
-                          | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"
- // --------------------------------------------------------------------
+                          | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize"
+ // ----------------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -2346,15 +2357,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     syntax Int ::= ScheduleConst "<" Schedule ">" [function, total]
  // ---------------------------------------------------------------
 
-    syntax ScheduleConst ::= "Gzero"            | "Gbase"              | "Gverylow"      | "Glow"          | "Gmid"        | "Ghigh"
-                           | "Gextcodesize"     | "Gextcodecopy"       | "Gbalance"      | "Gsload"        | "Gjumpdest"   | "Gsstoreset"
-                           | "Gsstorereset"     | "Rsstoreclear"       | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"     | "Gcodedeposit"  | "Gcall"
-                           | "Gcallvalue"       | "Gcallstipend"       | "Gnewaccount"   | "Gexp"          | "Gexpbyte"    | "Gmemory"       | "Gtxcreate"
-                           | "Gtxdatazero"      | "Gtxdatanonzero"     | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
-                           | "Gsha3word"        | "Gcopy"              | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
-                           | "Gecadd"           | "Gecmul"             | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"     | "Gcoldsload"    | "Gcoldaccountaccess"
-                           | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"           | "Rmaxquotient"
- // -----------------------------------------------------------------------------------------------------------------------
+    syntax ScheduleConst ::= "Gzero"         | "Gbase"         | "Gverylow"      | "Glow"              | "Gmid"               | "Ghigh"            | "Gextcodesize"
+                           | "Gextcodecopy"  | "Gbalance"      | "Gsload"        | "Gjumpdest"         | "Gsstoreset"         | "Gsstorereset"     | "Rsstoreclear"
+                           | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"       | "Gcodedeposit"      | "Gcall"              | "Gcallvalue"       | "Gcallstipend"
+                           | "Gnewaccount"   | "Gexp"          | "Gexpbyte"      | "Gmemory"           | "Gtxcreate"          | "Gtxdatazero"      | "Gtxdatanonzero"
+                           | "Gtransaction"  | "Glog"          | "Glogdata"      | "Glogtopic"         | "Gsha3"              | "Gsha3word"        | "Gcopy"
+                           | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize"   | "Rb"                | "Gquaddivisor"       | "Gecadd"           | "Gecmul"
+                           | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"       | "Gcoldsload"        | "Gcoldaccountaccess" | "Gwarmstorageread" | "Gaccesslistaddress"
+                           | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"
+ // ----------------------------------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
@@ -2425,6 +2436,9 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gaccessliststoragekey < DEFAULT > => 0
     rule Gaccesslistaddress    < DEFAULT > => 0
 
+    rule maxInitCodeSize   < DEFAULT > => 0
+    rule Ginitcodewordcost < DEFAULT > => 0
+
     rule Rmaxquotient < DEFAULT > => 2
 
     rule Gselfdestructnewaccount << DEFAULT >> => false
@@ -2445,6 +2459,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasbasefee             << DEFAULT >> => false
     rule Ghasrejectedfirstbyte   << DEFAULT >> => false
     rule Ghasprevrandao          << DEFAULT >> => false
+    rule Ghasmaxinitcodesize     << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -2657,9 +2672,16 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "SHANGHAI" [klabel(SHANGHAI_EVM), symbol, smtlib(schedule_SHANGHAI)]
  // ----------------------------------------------------------------------------------------
-    rule SCHEDCONST < SHANGHAI > => SCHEDCONST < MERGE >
+    rule maxInitCodeSize   < SHANGHAI > => 2 *Int maxCodeSize < SHANGHAI >
+    rule Ginitcodewordcost < SHANGHAI > => 2
+    rule SCHEDCONST        < SHANGHAI > => SCHEDCONST < MERGE >
+      requires notBool ( SCHEDCONST ==K maxInitCodeSize
+                  orBool SCHEDCONST ==K Ghasmaxinitcodesize
+                       )
 
-    rule SCHEDFLAG << SHANGHAI >> => SCHEDFLAG << MERGE >>
+    rule Ghasmaxinitcodesize << SHANGHAI >> => true
+    rule SCHEDFLAG           << SHANGHAI >> => SCHEDFLAG << MERGE >>
+      requires notBool SCHEDFLAG ==K Ghasmaxinitcodesize
 ```
 
 EVM Program Representations

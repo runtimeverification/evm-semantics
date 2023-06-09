@@ -64,8 +64,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 -   `loadTx(_)` loads the next transaction to be executed into the current state.
 -   `finishTx` is a place-holder for performing necessary cleanup after a transaction.
 
-**TODO**: `loadTx(_) => loadTx_`
-
 ```k
     syntax EthereumCommand ::= "startTx"
  // ------------------------------------
@@ -86,6 +84,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
  // ---------------------------------------------
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccounts(SCHED)
+          ~> #checkInitCode lengthBytes(CODE)
           ~> #loadAccessList(TA)
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
