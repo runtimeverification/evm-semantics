@@ -607,35 +607,20 @@ smoke_tests_prove=tests/specs/erc20/ds/transfer-failure-1-a-spec.k
 
 # Conformance Tests
 
-tests/ethereum-tests/%.json: tests/ethereum-tests/make.timestamp
+test-conformance: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_conformance.py -n8'
 
-slow_conformance_tests    = $(shell cat tests/slow.$(TEST_CONCRETE_BACKEND))    # timeout after 20s
-failing_conformance_tests = $(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
+test-vm: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_vm -n8'
 
-test-all-conformance: test-all-vm test-all-bchain
-test-rest-conformance: test-rest-vm test-rest-bchain
-test-slow-conformance: $(slow_conformance_tests:=.run)
-test-failing-conformance: $(failing_conformance_tests:=.run)
-test-conformance: test-vm test-bchain
+test-rest-vm: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_rest_vm -n8'
 
-all_vm_tests     = $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/VMTests/*/*.json)
-quick_vm_tests   = $(filter-out $(slow_conformance_tests), $(all_vm_tests))
-passing_vm_tests = $(filter-out $(failing_conformance_tests), $(quick_vm_tests))
-rest_vm_tests    = $(filter-out $(passing_vm_tests), $(all_vm_tests))
+test-bchain: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_bchain -n8'
 
-test-all-vm: $(all_vm_tests:=.run)
-test-rest-vm: $(rest_vm_tests:=.run)
-test-vm: $(passing_vm_tests:=.run)
-
-all_bchain_tests     = $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)                            \
-                       $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/*/*.json)
-quick_bchain_tests   = $(filter-out $(slow_conformance_tests), $(all_bchain_tests))
-passing_bchain_tests = $(filter-out $(failing_conformance_tests), $(quick_bchain_tests))
-rest_bchain_tests    = $(filter-out $(passing_bchain_tests), $(all_bchain_tests))
-
-test-all-bchain: $(all_bchain_tests:=.run)
-test-rest-bchain: $(rest_bchain_tests:=.run)
-test-bchain: $(passing_bchain_tests:=.run)
+test-rest-bchain: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_rest_bchain -n8'
 
 # Proof Tests
 
