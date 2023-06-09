@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import logging
 import sys
+from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, final
 
 import pytest
 from pyk.prelude.ml import mlTop
@@ -14,9 +15,10 @@ from kevm_pyk.kevm import KEVM
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from typing import Any, Final
 
-    from pytest import LogCaptureFixture
+    from pytest import LogCaptureFixture, TempPathFactory
 
 
 sys.setrecursionlimit(10**8)
@@ -24,6 +26,11 @@ sys.setrecursionlimit(10**8)
 REPO_ROOT: Final = Path(__file__).parents[4]
 TEST_DIR: Final = REPO_ROOT / 'tests'
 SPEC_DIR: Final = TEST_DIR / 'specs'
+
+
+# -------------------
+# Test specifications
+# -------------------
 
 
 def spec_files(dir_name: str, glob: str) -> tuple[Path, ...]:
@@ -68,6 +75,11 @@ SLOW_TESTS: Final = exclude_list(TEST_DIR / 'slow.haskell')
 FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
 
+# -----------
+# Kompilation
+# -----------
+
+
 KOMPILE_MAIN_FILE: Final = {
     'benchmarks/functional-spec.k': 'functional-spec.k',
     'bihu/functional-spec.k': 'functional-spec.k',
@@ -96,11 +108,53 @@ KOMPILE_MAIN_MODULE: Final = {
     'opcodes/evm-optimizations-spec.md': 'EVM-OPTIMIZATIONS-SPEC-LEMMAS',
 }
 
-PROVE_ARGS: Final[dict[str, Any]] = {
-    'functional/lemmas-no-smt-spec.k': {
-        'haskell_args': ['--smt=none'],
-    },
-}
+
+@final
+@dataclass(frozen=True)
+class Target:
+    main_file: Path
+    main_module_name: str
+
+    def __call__(self, output_dir: Path) -> Path:
+        return kevm_kompile(
+            output_dir=output_dir,
+            target=KompileTarget.HASKELL,
+            main_file=self.main_file,
+            main_module=self.main_module_name,
+            syntax_module=self.main_module_name,
+            debug=True,
+        )
+
+
+@pytest.fixture(scope='module')
+def definition_dir_for(tmp_path_factory: TempPathFactory) -> Callable[[Path], Path]:
+    cache_dir = tmp_path_factory.mktemp('kompiled')
+    cache: dict[Target, Path] = {}
+
+    def kompile(spec_file: Path) -> Path:
+        target = _target_for_spec(spec_file)
+
+        if target not in cache:
+            output_dir_name = f'{target.main_file.stem}-kompiled-{len(cache)}'
+            cache[target] = target(output_dir=cache_dir / output_dir_name)
+
+        return cache[target]
+
+    return kompile
+
+
+def _target_for_spec(spec_file: Path) -> Target:
+    spec_file = spec_file.resolve()
+    spec_id = str(spec_file.relative_to(SPEC_DIR))
+    spec_root = SPEC_DIR / spec_file.relative_to(SPEC_DIR).parents[-2]
+    main_file = spec_root / KOMPILE_MAIN_FILE.get(spec_id, 'verification.k')
+    main_module_name = KOMPILE_MAIN_MODULE.get(spec_id, 'VERIFICATION')
+    return Target(main_file, main_module_name)
+
+
+# ---------
+# Pyk tests
+# ---------
 
 
 SKIPPED_PYK_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TESTS)
@@ -111,30 +165,20 @@ SKIPPED_PYK_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TE
     ALL_TESTS,
     ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in ALL_TESTS],
 )
-def test_pyk_prove(spec_file: Path, tmp_path: Path) -> None:
+def test_pyk_prove(
+    spec_file: Path,
+    definition_dir_for: Callable[[Path], Path],
+    tmp_path: Path,
+) -> None:
     if spec_file in SKIPPED_PYK_TESTS:
         pytest.skip()
 
     # Given
-    spec_id = str(spec_file.relative_to(SPEC_DIR))
-
-    spec_root = SPEC_DIR / spec_file.relative_to(SPEC_DIR).parents[-2]
-    main_file = spec_root / KOMPILE_MAIN_FILE.get(spec_id, 'verification.k')
-    main_module_name = KOMPILE_MAIN_MODULE.get(spec_id, 'VERIFICATION')
-    definition_dir = tmp_path / f'{main_file.stem}-kompiled'
-
     use_directory = tmp_path / 'kprove'
     use_directory.mkdir()
 
     # When
-    kevm_kompile(
-        target=KompileTarget.HASKELL,
-        main_file=main_file,
-        output_dir=definition_dir,
-        main_module=main_module_name,
-        syntax_module=main_module_name,
-    )
-
+    definition_dir = definition_dir_for(spec_file)
     exec_prove(
         spec_file=spec_file,
         definition_dir=definition_dir,
@@ -146,7 +190,19 @@ def test_pyk_prove(spec_file: Path, tmp_path: Path) -> None:
     )
 
 
+# ------------
+# Legacy tests
+# ------------
+
+
 SKIPPED_LEGACY_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS)
+
+
+PROVE_ARGS: Final[dict[str, Any]] = {
+    'functional/lemmas-no-smt-spec.k': {
+        'haskell_args': ['--smt=none'],
+    },
+}
 
 
 @pytest.mark.parametrize(
@@ -154,7 +210,12 @@ SKIPPED_LEGACY_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS)
     FAILING_PYK_TESTS,
     ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in FAILING_PYK_TESTS],
 )
-def test_legacy_prove(spec_file: Path, tmp_path: Path, caplog: LogCaptureFixture) -> None:
+def test_legacy_prove(
+    spec_file: Path,
+    definition_dir_for: Callable[[Path], Path],
+    tmp_path: Path,
+    caplog: LogCaptureFixture,
+) -> None:
     caplog.set_level(logging.INFO)
 
     if spec_file in SKIPPED_LEGACY_TESTS:
@@ -162,11 +223,6 @@ def test_legacy_prove(spec_file: Path, tmp_path: Path, caplog: LogCaptureFixture
 
     # Given
     spec_id = str(spec_file.relative_to(SPEC_DIR))
-
-    spec_root = SPEC_DIR / spec_file.relative_to(SPEC_DIR).parents[-2]
-    main_file = spec_root / KOMPILE_MAIN_FILE.get(spec_id, 'verification.k')
-    main_module_name = KOMPILE_MAIN_MODULE.get(spec_id, 'VERIFICATION')
-    definition_dir = tmp_path / f'{main_file.stem}-kompiled'
     args = PROVE_ARGS.get(spec_id, {})
 
     log_file = tmp_path / 'log.txt'
@@ -175,14 +231,7 @@ def test_legacy_prove(spec_file: Path, tmp_path: Path, caplog: LogCaptureFixture
 
     # When
     try:
-        kevm_kompile(
-            target=KompileTarget.HASKELL,
-            main_file=main_file,
-            output_dir=definition_dir,
-            main_module=main_module_name,
-            syntax_module=main_module_name,
-        )
-
+        definition_dir = definition_dir_for(spec_file)
         kevm = KEVM(definition_dir, use_directory=use_directory)
         actual = kevm.prove(spec_file=spec_file, include_dirs=[config.INCLUDE_DIR], **args)
     except BaseException:
