@@ -210,8 +210,12 @@ class Foundry:
         ]
 
     def matching_tests(self, tests: list[str], exclude_tests: list[str]) -> list[str]:
-        all_tests = self.all_tests
-        all_non_tests = self.all_non_tests
+        def _escape_brackets(regs: list[str]) -> list[str]:
+            regs = [reg.replace('[', '\[') for reg in regs]
+            return [reg.replace(']', '\]') for reg in regs]
+
+        all_tests = _escape_bracket(self.all_tests)
+        all_non_tests = _escape_bracket(self.all_non_tests)
         matched_tests = set()
         unfound_tests: list[str] = []
         if not tests:
