@@ -21,7 +21,7 @@
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent release
-    booster.url = "github:runtimeverification/hs-backend-booster/f262648140297854ba51e8586b117a3f32a7a72f";
+    booster.url = "github:runtimeverification/hs-backend-booster/63bc29f0f0ef8933fd657cf94909fce72f253fc8";
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
     , poetry2nix, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
