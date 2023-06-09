@@ -486,6 +486,9 @@ tests/foundry/%: KEVM := $(POETRY_RUN) kevm
 
 foundry_dir := tests/foundry
 foundry_out := $(foundry_dir)/out
+foundry_koverage := $(foundry_dir)/koverage
+koverage_tests_expected := $(shell find $(foundry_koverage) -name '*.expected' -printf "%f\n")
+koverage_tests := $(shell find $(foundry_koverage) -type f -iname '*.expected' -exec basename -s '.expected' {} +)
 
 test-foundry-%: KEVM_OPTS += --pyk --verbose
 test-foundry-%: KEVM := $(POETRY_RUN) kevm
@@ -493,6 +496,7 @@ test-foundry-kompile: tests/foundry/foundry.k.check tests/foundry/contracts.k.ch
 test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
 test-foundry-bmc-prove: tests/foundry/out/kompiled/foundry.k.bmc-prove
 test-foundry-list: tests/foundry/foundry-list.check
+test-foundry-koverage: tests/foundry/foundry-koverage.check
 
 foundry-forge-build: $(foundry_out)
 
@@ -509,6 +513,12 @@ tests/foundry/foundry-list.check: tests/foundry/foundry-list.out
 	grep --invert-match 'path:' $< > $@.stripped
 	$(CHECK) $@.stripped $@.expected
 
+tests/foundry/foundry-koverage.out: tests/foundry/out/kompiled/foundry.koverage.k.prove
+	$(foreach test,$(koverage_tests), \ ($(KEVM) foundry-koverage --foundry-project-root $(foundry_dir --test $(test))) > $(foundry_koverage)/$(test).output)
+
+tests/foundry/foundry-koverage.check: tests/foundry/foundry-koverage.out
+	$(foreach test,$(koverage_tests), \ $(CHECK) $(foundry_koverage)/$(test).output $(foundry_koverage)/$(test).expected)
+
 tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
 	$(CHECK) $@.stripped $@.expected
@@ -519,6 +529,12 @@ tests/foundry/contracts.k.check: tests/foundry/out/kompiled/contracts.k
 
 tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
 tests/foundry/out/kompiled/contracts.k: tests/foundry/out/kompiled/timestamp
+
+tests/foundry/out/kompiled/foundry.koverage.k.prove: tests/foundry/out/kompiled/timestamp
+	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
+	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
+	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
+	    $(addprefix --test , $(koverage_tests))
 
 tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
