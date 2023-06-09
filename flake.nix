@@ -108,7 +108,7 @@
               mkdir -p $out
               mv .build/usr/* $out/
               wrapProgram $out/bin/kevm --prefix PATH : ${
-                prev.lib.makeBinPath [ final.solc prev.which k final.booster ]
+                prev.lib.makeBinPath [ final.solc prev.which k booster.packages.${prev.system}.booster ]
               } --set NIX_LIBS "${nixLibs prev}"
               ln -s ${k} $out/lib/kevm/kframework
 
@@ -184,7 +184,7 @@
         packages.default = kevm;
         devShell = pkgs.mkShell {
           buildInputs = buildInputs pkgs k-framework.packages.${system}.k
-            ++ [ pkgs.poetry pkgs.foundry-bin pkgs.booster ];
+            ++ [ pkgs.poetry pkgs.foundry-bin booster.packages.${system}.booster ];
 
           shellHook = ''
             export NIX_LIBS="${nixLibs pkgs}"
