@@ -41,7 +41,7 @@ def get_apr_proof_for_spec(  # noqa: N802
     spec_module_name: str | None = None,
     include_dirs: Iterable[Path] = (),
     md_selector: str | None = None,
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
 ) -> APRProof:
     if save_directory is None:
