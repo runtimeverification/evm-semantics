@@ -514,10 +514,10 @@ tests/foundry/foundry-list.check: tests/foundry/foundry-list.out
 	$(CHECK) $@.stripped $@.expected
 
 tests/foundry/foundry-koverage.out: tests/foundry/out/kompiled/foundry.koverage.k.prove
-	$(foreach test,$(koverage_tests), \ ($(KEVM) foundry-koverage --foundry-project-root $(foundry_dir --test $(test))) > $(foundry_koverage)/$(test).output)
+	$(foreach test,$(koverage_tests), $(shell $(KEVM) foundry-koverage --foundry-project-root $(foundry_dir) --test $(test) > $(foundry_koverage)/$(test).output)) \
 
 tests/foundry/foundry-koverage.check: tests/foundry/foundry-koverage.out
-	$(foreach test,$(koverage_tests), \ $(CHECK) $(foundry_koverage)/$(test).output $(foundry_koverage)/$(test).expected)
+	$(foreach test,$(koverage_tests), $(CHECK) $(foundry_koverage)/$(test).output $(foundry_koverage)/$(test).expected)
 
 tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
 	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
