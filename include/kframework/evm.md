@@ -108,6 +108,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <mixHash>          0      </mixHash>          // I_Hm
               <blockNonce>       0      </blockNonce>       // I_Hn
               <baseFee>          0      </baseFee>
+              <withdrawalsRoot>  0      </withdrawalsRoot>
 
               <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
             </block>
@@ -162,6 +163,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <txType>        .TxType    </txType>
               </message>
             </messages>
+
+            <withdrawals> .List </withdrawals>
 
           </network>
 
@@ -248,6 +251,14 @@ The `interimStates` cell stores a list of previous world states.
     rule <k> #dropWorldState => . ... </k> <interimStates> ListItem(_) REST => REST </interimStates>
 ```
 
+### The Withdrawals
+
+The `withdrawals` cell stores a list of all withdrawals that are pushed from the beacon chain to the EVM. [EIP-4895]
+
+```k
+    syntax Withdrawal ::= "{" Int "|" Int "|" Int "|" Int "}"
+ // ---------------------------------------------------------
+```
 Control Flow
 ------------
 
@@ -358,7 +369,7 @@ The `#next [_]` operator initiates execution by:
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
-    rule #stackNeeded(PUSH(_))          => 0
+    rule #stackNeeded(_POP:PushOp)      => 0
     rule #stackNeeded(_IOP:InvalidOp)   => 0
     rule #stackNeeded(_NOP:NullStackOp) => 0
     rule #stackNeeded(_UOP:UnStackOp)   => 1

@@ -260,7 +260,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```k
     syntax Set ::= "#loadKeys" [function]
  // -------------------------------------
-    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") )
+    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") SetItem("withdrawals") )
 
     rule <k> run  TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } ... </k>
       requires KEY in #loadKeys
@@ -458,7 +458,7 @@ Here we check the other post-conditions associated with an EVM test.
       requires KEY in ( SetItem("coinbase") SetItem("difficulty") SetItem("gasLimit") SetItem("gasUsed")
                         SetItem("mixHash") SetItem("nonce") SetItem("number") SetItem("parentHash")
                         SetItem("receiptTrie") SetItem("stateRoot") SetItem("timestamp")
-                        SetItem("transactionsTrie") SetItem("uncleHash") SetItem("baseFeePerGas")
+                        SetItem("transactionsTrie") SetItem("uncleHash") SetItem("baseFeePerGas") SetItem("withdrawalsRoot")
                       )
 
     rule <k> check "blockHeader" : { "bloom"            : VALUE } => . ... </k> <logsBloom>        VALUE </logsBloom>
@@ -477,6 +477,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "blockHeader" : { "transactionsTrie" : VALUE } => . ... </k> <transactionsRoot> VALUE </transactionsRoot>
     rule <k> check "blockHeader" : { "uncleHash"        : VALUE } => . ... </k> <ommersHash>       VALUE </ommersHash>
     rule <k> check "blockHeader" : { "baseFeePerGas"    : VALUE } => . ... </k> <baseFee>          VALUE </baseFee>
+    rule <k> check "blockHeader" : { "withdrawalsRoot"  : VALUE } => . ... </k> <withdrawalsRoot>  VALUE </withdrawalsRoot>
 
     rule <k> check "blockHeader" : { "hash": HASH:Bytes } => . ...</k>
          <previousHash>     HP </previousHash>
@@ -495,8 +496,10 @@ Here we check the other post-conditions associated with an EVM test.
          <mixHash>          HM </mixHash>
          <blockNonce>       HN </blockNonce>
          <baseFee>          HF </baseFee>
-      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)     ==Int #asWord(HASH)
-        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF) ==Int #asWord(HASH)
+         <withdrawalsRoot>  WR </withdrawalsRoot>
+      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)         ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)     ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR) ==Int #asWord(HASH)
 
     rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
  // ------------------------------------------------------------------------------------------------------------------------

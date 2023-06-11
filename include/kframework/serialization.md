@@ -65,7 +65,9 @@ Address/Hash Helpers
                  | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderStr), symbol]
                  | #blockHeaderHash( Int , Int , Int , Int , Int , Int , Bytes , Int , Int , Int , Int , Int , Bytes , Int , Int , Int) [function, klabel(blockHeaderHashBaseFee), symbol]
                  | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderBaseFeeStr), symbol]
- // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                 | #blockHeaderHash( Int , Int , Int , Int , Int , Int , Bytes , Int , Int , Int , Int , Int , Bytes , Int , Int , Int , Int) [function, klabel(blockHeaderHashWithdrawals), symbol]
+                 | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderWithdrawalsStr), symbol]
+ // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     rule #blockHeaderHash(HP:String, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
          => #parseHexWord( Keccak256( #rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN ] ) ) )
 
@@ -88,6 +90,20 @@ Address/Hash Helpers
                                                   , HB, HD, HI, HL, HG, HS, HX
                                                   , #wordBytes(HM), #padToWidth(8, #asByteStack(HN))
                                                   , HF
+                                                  ]
+                                                )
+                                    )
+                         )
+
+    rule #blockHeaderHash(HP:String, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WF)
+         => #parseHexWord( Keccak256( #rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WF ] ) ) )
+
+    rule #blockHeaderHash(HP:Int, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WF)
+         => #parseHexWord( Keccak256( #rlpEncode( [ #wordBytes(HP), #wordBytes(HO), #addrBytes(HC)
+                                                  , #wordBytes(HR), #wordBytes(HT), #wordBytes(HE)
+                                                  , HB, HD, HI, HL, HG, HS, HX
+                                                  , #wordBytes(HM), #padToWidth(8, #asByteStack(HN))
+                                                  , HF , #wordBytes(WF)
                                                   ]
                                                 )
                                     )
