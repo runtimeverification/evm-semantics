@@ -580,7 +580,9 @@ def exec_foundry_show(
     print(output)
 
 
-def exec_foundry_koverage(foundry_root: Path, contracts: Iterable[str] = (), tests: Iterable[str] = (), **kwargs: Any) -> None:
+def exec_foundry_koverage(
+    foundry_root: Path, contracts: Iterable[str] = (), tests: Iterable[str] = (), **kwargs: Any
+) -> None:
     foundry_koverage(foundry_root=foundry_root, contracts=contracts, tests=tests)
 
 

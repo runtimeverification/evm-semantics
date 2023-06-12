@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
+from pyk.kast.inner import KApply, KLabel, KRewrite, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
     bottom_up,
@@ -15,6 +15,8 @@ from pyk.kast.manip import (
     split_config_from,
 )
 from pyk.kast.outer import KSequence
+from pyk.prelude.k import GENERATED_TOP_CELL
+from pyk.prelude.kbool import TRUE
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.utils import single
 
@@ -251,3 +253,30 @@ def ensure_ksequence_on_k_cell(cterm: CTerm) -> CTerm:
         _LOGGER.info('Introducing artificial KSequence on <k> cell.')
         return CTerm.from_kast(set_cell(cterm.kast, 'K_CELL', KSequence([k_cell])))
     return cterm
+
+
+def mk_bytes_constraint(token: KToken, var: KVariable) -> KInner:
+    if token.sort is None or token.sort.name != 'Bytes':
+        raise ValueError(f'Expected Bytes sort, found {token.sort}')
+    eq = KApply(
+        '_==Bool_', 
+        [
+            KApply(
+                '_==Bool_',
+                [
+                    KApply(
+                        '_==Int_', 
+                        [
+                            var,
+                            KApply('#asInteger(_)_EVM-TYPES_Int_Bytes', [token])
+                        ]
+                    ),
+                    TRUE
+                ]
+            ),
+            TRUE
+        ]
+    )
+    top = KApply(KLabel('#Equals', [KSort('Bool'), GENERATED_TOP_CELL]), [TRUE, eq])
+
+    return top
