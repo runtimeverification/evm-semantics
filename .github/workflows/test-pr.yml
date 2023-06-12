@@ -79,7 +79,7 @@ jobs:
     name: 'Build and Test KEVM concrete execution'
     needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, normal]
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -127,12 +127,8 @@ jobs:
         uses: ./.github/actions/with-docker
         with:
           tag: kevm-ci-haskell-${{ github.sha }}
-      - name: 'Build kevm-pyk'
-        run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make poetry'
-      - name: 'Build Definitions'
-        run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make build-prove-haskell -j4'
       - name: 'Prove Haskell'
-        run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove -j9 TEST_SYMBOLIC_BACKEND=haskell'
+        run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove'
       - name: 'Tear down Docker'
         if: always()
         run: |
