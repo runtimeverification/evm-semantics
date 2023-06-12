@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from pyk.cli_utils import BugReport
     from pyk.kast import KInner
     from pyk.kast.outer import KDefinition
-    from pyk.kcfg import KCFGExplore
+    from pyk.kcfg import KCFG, KCFGExplore
     from pyk.ktool.kprove import KProve
 
     T1 = TypeVar('T1')
@@ -41,7 +41,7 @@ def get_apr_proof_for_spec(  # noqa: N802
     spec_module_name: str | None = None,
     include_dirs: Iterable[Path] = (),
     md_selector: str | None = None,
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
 ) -> APRProof:
     if save_directory is None:
@@ -139,6 +139,46 @@ def kevm_apr_prove(
     else:
         _LOGGER.error(f'Proof failed: {_cfgid}')
         return False
+
+
+def print_failure_info(_cfg: KCFG, _cfgid: str, kcfg_explore: KCFGExplore) -> list[str]:
+    unique_target = _cfg.get_unique_target()
+
+    res_lines: list[str] = []
+
+    num_frontier = len(_cfg.frontier)
+    num_stuck = len(_cfg.stuck)
+    res_lines.append(f'{num_frontier + num_stuck} Failure nodes. ({num_frontier} frontier and {num_stuck} stuck)')
+    if num_frontier > 0:
+        res_lines.append('')
+        res_lines.append('Frontier nodes:')
+        for node in _cfg.frontier:
+            res_lines.append('')
+            res_lines.append(f'ID: {node.id}:')
+    if num_stuck > 0:
+        res_lines.append('')
+        res_lines.append('Stuck nodes:')
+        for node in _cfg.stuck:
+            res_lines.append('')
+            res_lines.append(f'  Node id: {str(node.id)}')
+
+            simplified_node, _ = kcfg_explore.cterm_simplify(node.cterm)
+            simplified_target, _ = kcfg_explore.cterm_simplify(unique_target.cterm)
+
+            node_cterm = CTerm.from_kast(simplified_node)
+            target_cterm = CTerm.from_kast(simplified_target)
+
+            res_lines.append('  Failure reason:')
+            _, reason = kcfg_explore.implication_failure_reason(node_cterm, target_cterm)
+            res_lines += [f'    {line}' for line in reason.split('\n')]
+
+            res_lines.append('  Path condition:')
+            res_lines += [f'    {kcfg_explore.kprint.pretty_print(_cfg.path_constraints(node.id))}']
+
+            res_lines.append('')
+            res_lines.append('Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD')
+
+    return res_lines
 
 
 def arg_pair_of(

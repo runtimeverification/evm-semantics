@@ -35,7 +35,7 @@ from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove, print_failure_info
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -197,7 +197,7 @@ def exec_prove_legacy(
     bug_report: bool = False,
     save_directory: Path | None = None,
     spec_module: str | None = None,
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     debug: bool = False,
     debugger: bool = False,
@@ -248,7 +248,7 @@ def exec_prove(
     bug_report: bool = False,
     save_directory: Path | None = None,
     spec_module: str | None = None,
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     reinit: bool = False,
     max_depth: int = 1000,
@@ -263,6 +263,7 @@ def exec_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    failure_info: bool = True,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
@@ -281,10 +282,13 @@ def exec_prove(
         exclude_claim_labels=exclude_claim_labels,
     )
 
+    if not claims:
+        raise ValueError(f'No claims found in file: {spec_file}')
+
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
-    def _init_and_run_proof(claim: KClaim) -> bool:
+    def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
         with KCFGExplore(
             kevm,
             id=claim.label,
@@ -325,7 +329,7 @@ def exec_prove(
 
                 proof_problem = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
 
-            return kevm_apr_prove(
+            passed = kevm_apr_prove(
                 kevm,
                 claim.label,
                 proof_problem,
@@ -346,18 +350,29 @@ def exec_prove(
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
             )
+            failure_log = None
+            if not passed:
+                failure_log = print_failure_info(proof_problem.kcfg, claim.label, kcfg_explore)
+
+            return passed, failure_log
 
     with ProcessPool(ncpus=workers) as process_pool:
         results = process_pool.map(_init_and_run_proof, claims)
 
     failed = 0
-    for claim, result in zip(claims, results, strict=True):
-        if result:
+    for claim, r in zip(claims, results, strict=True):
+        passed, failure_log = r
+        if passed:
             print(f'PROOF PASSED: {claim.label}')
         else:
             failed += 1
             print(f'PROOF FAILED: {claim.label}')
-    sys.exit(failed)
+            if failure_info and failure_log is not None:
+                for line in failure_log:
+                    print(line)
+
+    if failed:
+        sys.exit(failed)
 
 
 def exec_prune_proof(
@@ -367,7 +382,7 @@ def exec_prune_proof(
     includes: Iterable[str] = (),
     save_directory: Path | None = None,
     spec_module: str | None = None,
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     **kwargs: Any,
 ) -> None:
@@ -403,7 +418,7 @@ def exec_show_kcfg(
     spec_file: Path,
     save_directory: Path | None = None,
     includes: Iterable[str] = (),
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     spec_module: str | None = None,
     md_selector: str | None = None,
@@ -411,6 +426,7 @@ def exec_show_kcfg(
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    failure_info: bool = False,
     sort_collections: bool = False,
     **kwargs: Any,
 ) -> None:
@@ -437,6 +453,11 @@ def exec_show_kcfg(
         sort_collections=sort_collections,
         node_printer=kevm.short_info,
     )
+
+    if failure_info:
+        with KCFGExplore(kevm, id=apr_proof.id) as kcfg_explore:
+            res_lines += print_failure_info(apr_proof.kcfg, apr_proof.id, kcfg_explore)
+
     print('\n'.join(res_lines))
 
 
@@ -445,7 +466,7 @@ def exec_view_kcfg(
     spec_file: Path,
     save_directory: Path | None = None,
     includes: Iterable[str] = (),
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     spec_module: str | None = None,
     md_selector: str | None = None,
@@ -485,6 +506,7 @@ def exec_foundry_prove(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    failure_info: bool = True,
     trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
@@ -518,11 +540,17 @@ def exec_foundry_prove(
     )
     failed = 0
     for pid, r in results.items():
-        if r:
+        passed, failure_log = r
+        if passed:
             print(f'PROOF PASSED: {pid}')
         else:
             failed += 1
             print(f'PROOF FAILED: {pid}')
+            if failure_info and failure_log is not None:
+                failure_log += Foundry.help_info()
+                for line in failure_log:
+                    print(line)
+
     sys.exit(failed)
 
 
@@ -537,6 +565,7 @@ def exec_foundry_show(
     omit_unstable_output: bool = False,
     frontier: bool = False,
     stuck: bool = False,
+    failure_info: bool = False,
     **kwargs: Any,
 ) -> None:
     output = foundry_show(
@@ -550,6 +579,7 @@ def exec_foundry_show(
         sort_collections=sort_collections,
         frontier=frontier,
         stuck=stuck,
+        failure_info=failure_info,
     )
     print(output)
 
