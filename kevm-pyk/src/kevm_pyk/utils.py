@@ -255,7 +255,7 @@ def ensure_ksequence_on_k_cell(cterm: CTerm) -> CTerm:
     return cterm
 
 
-def mk_bytes_constraint(token: KToken, var: KVariable) -> KInner:
+def mk_bytes_constraint(token: KToken, var: KVariable) -> KApply:
     if token.sort is None or token.sort.name != 'Bytes':
         raise ValueError(f'Expected Bytes sort, found {token.sort}')
     eq = KApply(

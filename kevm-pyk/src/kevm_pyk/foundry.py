@@ -21,7 +21,7 @@ from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
-from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
+from pyk.prelude.kbool import FALSE, TRUE, andBool, impliesBool, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import is_bottom, mlEqualsTrue
 from pyk.proof.proof import Proof, ProofStatus
@@ -621,7 +621,7 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contracts = set(contracts) if len(set(contracts)) > 0 else set(foundry.contracts.keys())
-    call_cells: dict[bytes, list[tuple[KInner, KCFG.Node, list[KInner]]]] = {}
+    call_cells: dict[bytes, list[tuple[KInner, KInner]]] = {}
 
     def _test_name(name: str, test: str) -> str:
         return f'{name}.{test}'
@@ -723,6 +723,11 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
         ),
     ]
 
+    def _cons_intersection(constraints: Iterable[KInner]) -> KInner:
+        args_filtered = [apply.args for apply in constraints if isinstance(apply, KApply)]
+        bool_filtered = [arg for args in args_filtered for arg in args if arg != TRUE]
+        return andBool(bool_filtered)
+
     for name, contract in foundry.contracts.items():
         if len(contracts) == 0 or name in contracts:
             for test in contract.tests:
@@ -737,42 +742,39 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
                         else:
                             kcfg = apr_proof.kcfg
 
-                            if len(kcfg.nodes) > 1:
-                                for node in kcfg.nodes:
-                                    cterm = node.cterm
-                                    for pattern in k_match_patterns:
-                                        k_match = pattern.match(cterm.cell('K_CELL'))
-                                        if k_match is not None:
-                                            code = k_match['CODE']
-                                            args = k_match['ARGS']
-                                            if type(code) is KToken:
-                                                acct_code = code.token
-                                                acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
+                            for node in kcfg.nodes:
+                                cterm = node.cterm
+                                for pattern in k_match_patterns:
+                                    k_match = pattern.match(cterm.cell('K_CELL'))
+                                    if k_match is not None:
+                                        code = k_match['CODE']
+                                        args = k_match['ARGS']
+                                        if type(code) is KToken:
+                                            acct_code = code.token
+                                            acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
 
-                                                val = call_cells.get(acct_hash)
-                                                if val is None:
-                                                    val = []
+                                            val = call_cells.get(acct_hash)
+                                            if val is None:
+                                                val = []
 
-                                                constraints = [leaf.cterm.constraints for leaf in kcfg.leaves[1:]]
-                                                flat_constraints = [cons for constr in constraints for cons in constr]
-                                                # TODO: parse args when they are of type BYTES-HOOKED
-                                                if type(args) is KToken:
-                                                    args_cons = mk_bytes_constraint(args, KVariable('ARGS', 'Int'))
-                                                    flat_constraints.append(args_cons)
-                                                val.append((cterm.config, kcfg.nodes[1], flat_constraints))
-                                                call_cells[acct_hash] = val
-                                                break
+                                            cov_cons = [node.cterm.constraints for node in kcfg.covered]
+                                            fcov_cons = _cons_intersection([c for cons in cov_cons for c in cons])
+                                            init_cons = [node.cterm.constraints for node in kcfg.init]
+                                            finit_cons = _cons_intersection([c for cons in init_cons for c in cons])
+                                            new_cons = andBool([fcov_cons, notBool(finit_cons)])
+                                            new = impliesBool(finit_cons, new_cons)
+                                            # TODO: parse args when they are of type BYTES-HOOKED
+                                            if type(args) is KToken:
+                                                args_cons = mk_bytes_constraint(args, KVariable('ARGS', 'Int'))
+                                                new = _cons_intersection([new, args_cons])
+                                            val.append((cterm.config, new))
+                                            call_cells[acct_hash] = val
+                                            break
 
     for bytecode_h, cons_set in call_cells.items():
-        for config, node, constraints in cons_set:
-            base_cons = node.cterm.constraints
-            filtered = [cons for cons in constraints if not base_cons.__contains__(cons)]
-            args_filtered = [apply.args for apply in filtered if isinstance(apply, KApply)]
-            bool_filtered = [arg for args in args_filtered for arg in args if arg != TRUE]
-            union = andBool(bool_filtered)
-            negated = notBool(union)
+        for config, constraints in cons_set:
             negated = KApply(
-                KLabel('#Equals', [KSort('Bool'), KSort('GeneratedTopCell')]), [KToken('true', KSort('Bool')), negated]
+                KLabel('#Equals', [KSort('Bool'), GENERATED_TOP_CELL]), [TRUE, constraints]
             )
             new_cterm = CTerm(config, [negated])
             with KCFGExplore(foundry.kevm) as kcfg_explore:
