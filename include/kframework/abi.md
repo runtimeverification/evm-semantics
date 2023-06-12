@@ -75,6 +75,10 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
  // ----------------------------------------------------------------------------------------------
 
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
+	                   | #bytes32TypedArgs ( List{Int} ) [function]
+
+	rule #bytes32TypedArgs ( .List ) => .List
+	rule #bytes32TypedArgs ( ListItem(B:Int) BS:List ) => #bytes32(B) #bytes32TypedArgs(BS)
  // ------------------------------------------------------------
 
     syntax Bytes ::= #abiCallData ( String , TypedArgs ) [function]

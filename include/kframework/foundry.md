@@ -1159,13 +1159,37 @@ Finally, `#recordRead` and `#recordWrite` update `<records>` to take note of the
 function accesses(address) external returns (bytes32[] memory reads, bytes32[] memory writes);
 ```
 
-The rule `function.call.accesses` will match when the `record` cheat code function is called.
+The rule `function.call.accesses` will match when the `accesses` cheat code function is called.
 
 ```k
    rule [foundry.call.accesses]:
-        <k> #call_foundry SELECTOR _ => . ... </k>
-		<output> _ => TODO ... </output>
+        <k> #call_foundry SELECTOR ARGS => #returnAccesses #asWord(ARGS) ... </k>
      requires SELECTOR ==Int selector ( "accesses(address)" )
+```
+Here, `#returnAccesses` updates the `output` cell to return the pair `(reads, writes)`.
+```k
+   rule <k> #returnAccesses ADDR => . ... </k>
+        <output>
+		  _ =>
+		  #encodeArgs(#array(#bytes32(0), size(READS), #bytes32TypedArgs(READS)),
+		              #array(#bytes32(0), size(WRITES), #bytes32TypedArgs(WRITES)))
+	    </output>
+		<recordAccess>
+          <record>
+            <recordKey> ADDR </recordKey>
+			<reads> READS </reads>
+            <writes> WRITES </writes>
+            ...
+          </record>
+          ...
+		</recordAccess>
+
+   rule <k> #returnAccesses ADDR => . ... </k>
+        <output>
+		  _ =>
+		  #encodeArgs(#array(#bytes32(0), 0, .List),
+		              #array(#bytes32(0), 0, .List)
+	    </output> [owise]
 ```
 
 Unimplemented or nonexistent cheat codes
