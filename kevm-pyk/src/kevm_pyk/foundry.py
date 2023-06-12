@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli_utils import BugReport, ensure_dir_path, run_process
+from pyk.cli_utils import ensure_dir_path, run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import minimize_term
@@ -25,7 +25,7 @@ from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof
 from pyk.proof.reachability import APRBMCProof, APRProof
-from pyk.utils import hash_str, single, unique
+from pyk.utils import BugReport, hash_str, single, unique
 
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
