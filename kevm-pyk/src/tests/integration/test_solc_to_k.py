@@ -9,8 +9,9 @@ from kevm_pyk.kompile import KompileTarget, kevm_kompile
 from .utils import TEST_DATA_DIR
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
-    from typing import Callable, Final
+    from typing import Final
 
 
 EXAMPLES_DIR: Final = TEST_DATA_DIR / 'examples'
