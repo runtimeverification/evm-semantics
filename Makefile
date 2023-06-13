@@ -44,19 +44,18 @@ PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
 export PLUGIN_FULL_PATH
 
 
-.PHONY: all clean distclean                                                                                                                  \
-        deps k-deps plugin-deps protobuf                                                                                                     \
-        build build-haskell build-haskell-standalone build-foundry build-llvm build-prove build-prove-haskell build-node build-kevm          \
-        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance             \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                              \
-        test-prove test-failing-prove test-foundry-kcfg-diff                                                                                 \
-        test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-smoke \
-        test-prove-mcd test-klab-prove                                                                                                       \
-        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-bmc-prove test-foundry-list                             \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                           \
-        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean foundry-fail                                                      \
-        media media-pdf metropolis-theme                                                                                                     \
-        install uninstall                                                                                                                    \
+.PHONY: all clean distclean                                                                                                      \
+        deps k-deps plugin-deps protobuf                                                                                         \
+        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm                              \
+        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
+        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
+        test-prove test-failing-prove test-foundry-kcfg-diff                                                                     \
+        test-prove-smoke test-klab-prove                                                                                         \
+        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-bmc-prove test-foundry-list                 \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
+        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean foundry-fail                                          \
+        media media-pdf metropolis-theme                                                                                         \
+        install uninstall                                                                                                        \
         poetry-env poetry shell kevm-pyk
 .SECONDARY:
 
@@ -410,35 +409,6 @@ test: test-conformance test-prove test-interactive test-parse test-kevm-pyk
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTESTS
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
-tests/specs/benchmarks/functional-spec%:              KPROVE_FILE   =  functional-spec
-tests/specs/benchmarks/functional-spec%:              KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/bihu/functional-spec%:                    KPROVE_FILE   =  functional-spec
-tests/specs/bihu/functional-spec%:                    KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/erc20/functional-spec%:                   KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/examples/solidity-code-spec%:             KPROVE_EXT    =  md
-tests/specs/examples/solidity-code-spec%:             KPROVE_FILE   =  solidity-code-spec
-tests/specs/examples/erc20-spec%:                     KPROVE_EXT    =  md
-tests/specs/examples/erc20-spec%:                     KPROVE_FILE   =  erc20-spec
-tests/specs/examples/erc721-spec%:                    KPROVE_EXT    =  md
-tests/specs/examples/erc721-spec%:                    KPROVE_FILE   =  erc721-spec
-tests/specs/examples/storage-spec%:                   KPROVE_EXT    =  md
-tests/specs/examples/storage-spec%:                   KPROVE_FILE   =  storage-spec
-tests/specs/examples/sum-to-n-spec%:                  KPROVE_FILE   =  sum-to-n-spec
-tests/specs/examples/sum-to-n-foundry-spec%:          KPROVE_FILE   =  sum-to-n-foundry-spec
-tests/specs/functional/infinite-gas-spec%:            KPROVE_FILE   =  infinite-gas-spec
-tests/specs/functional/evm-int-simplifications-spec%: KPROVE_FILE   =  evm-int-simplifications-spec
-tests/specs/functional/int-simplifications-spec%:     KPROVE_FILE   =  int-simplifications-spec
-tests/specs/functional/lemmas-no-smt-spec%:           KPROVE_FILE   =  lemmas-no-smt-spec
-tests/specs/functional/lemmas-no-smt-spec%:           KPROVE_OPTS   += --haskell-backend-arg="--smt=none"
-tests/specs/functional/lemmas-spec%:                  KPROVE_FILE   =  lemmas-spec
-tests/specs/functional/merkle-spec%:                  KPROVE_FILE   =  merkle-spec
-tests/specs/functional/storageRoot-spec%:             KPROVE_FILE   =  storageRoot-spec
-tests/specs/mcd/functional-spec%:                     KPROVE_FILE   =  functional-spec
-tests/specs/mcd/functional-spec%:                     KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_EXT    =  md
-tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_FILE   =  evm-optimizations-spec
-tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
-
 tests/%.run: tests/%
 	$(KEVM) interpret $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                                  \
 	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
@@ -623,96 +593,32 @@ smoke_tests_prove=tests/specs/erc20/ds/transfer-failure-1-a-spec.k
 
 # Conformance Tests
 
-tests/ethereum-tests/%.json: tests/ethereum-tests/make.timestamp
+test-conformance: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_conformance.py -n8'
 
-slow_conformance_tests    = $(shell cat tests/slow.$(TEST_CONCRETE_BACKEND))    # timeout after 20s
-failing_conformance_tests = $(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
+test-vm: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_vm -n8'
 
-test-all-conformance: test-all-vm test-all-bchain
-test-rest-conformance: test-rest-vm test-rest-bchain
-test-slow-conformance: $(slow_conformance_tests:=.run)
-test-failing-conformance: $(failing_conformance_tests:=.run)
-test-conformance: test-vm test-bchain
+test-rest-vm: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_rest_vm -n8'
 
-all_vm_tests     = $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/VMTests/*/*.json)
-quick_vm_tests   = $(filter-out $(slow_conformance_tests), $(all_vm_tests))
-passing_vm_tests = $(filter-out $(failing_conformance_tests), $(quick_vm_tests))
-rest_vm_tests    = $(filter-out $(passing_vm_tests), $(all_vm_tests))
+test-bchain: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_bchain -n8'
 
-test-all-vm: $(all_vm_tests:=.run)
-test-rest-vm: $(rest_vm_tests:=.run)
-test-vm: $(passing_vm_tests:=.run)
-
-all_bchain_tests     = $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)                            \
-                       $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/*/*.json)
-quick_bchain_tests   = $(filter-out $(slow_conformance_tests), $(all_bchain_tests))
-passing_bchain_tests = $(filter-out $(failing_conformance_tests), $(quick_bchain_tests))
-rest_bchain_tests    = $(filter-out $(passing_bchain_tests), $(all_bchain_tests))
-
-test-all-bchain: $(all_bchain_tests:=.run)
-test-rest-bchain: $(rest_bchain_tests:=.run)
-test-bchain: $(passing_bchain_tests:=.run)
+test-rest-bchain: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_rest_bchain -n8'
 
 # Proof Tests
 
-prove_specs_dir          := tests/specs
-prove_failing_tests      := $(shell cat tests/failing-symbolic.$(TEST_SYMBOLIC_BACKEND))
-prove_pyk_failing_tests  := $(shell cat tests/failing-symbolic.pyk)
-prove_slow_tests         := $(shell cat tests/slow.$(TEST_SYMBOLIC_BACKEND))
-prove_skip_tests         := $(prove_failing_tests) $(prove_slow_tests)
-prove_benchmarks_tests   := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/benchmarks/*-spec.k))
-prove_functional_tests   := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/functional/*-spec.k))
-prove_opcodes_tests      := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/opcodes/*-spec.k))
-prove_erc20_tests        := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/erc20/*/*-spec.k))
-prove_bihu_tests         := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/bihu/*-spec.k))
-prove_examples_tests     := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k) $(wildcard $(prove_specs_dir)/examples/*-spec.md))
-prove_mcd_tests          := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
-prove_optimization_tests := $(filter-out $(prove_skip_tests), tests/specs/opcodes/evm-optimizations-spec.md)
-prove_all_tests          := $(prove_benchmarks_tests) $(prove_functional_tests) $(prove_opcodes_tests) $(prove_erc20_tests) $(prove_bihu_tests) $(prove_examples_tests) $(prove_mcd_tests) $(prove_optimization_tests)
-prove_pyk_tests          := $(filter-out $(prove_pyk_failing_tests), $(prove_all_tests))
-prove_smoke_tests        := $(shell cat tests/specs/smoke)
+prove_smoke_tests := $(shell cat tests/specs/smoke)
 
-## best-effort list of prove kompiled definitions to produce ahead of time
-prove_haskell_definitions :=                                                              \
-                             tests/specs/benchmarks/functional-spec/haskell/timestamp     \
-                             tests/specs/benchmarks/verification/haskell/timestamp        \
-                             tests/specs/bihu/functional-spec/haskell/timestamp           \
-                             tests/specs/bihu/verification/haskell/timestamp              \
-                             tests/specs/erc20/verification/haskell/timestamp             \
-                             tests/specs/examples/erc20-spec/haskell/timestamp            \
-                             tests/specs/examples/erc721-spec/haskell/timestamp           \
-                             tests/specs/examples/storage-spec/haskell/timestamp          \
-                             tests/specs/examples/solidity-code-spec/haskell/timestamp    \
-                             tests/specs/examples/sum-to-n-spec/haskell/timestamp         \
-                             tests/specs/examples/sum-to-n-foundry-spec/haskell/timestamp \
-                             tests/specs/functional/infinite-gas-spec/haskell/timestamp   \
-                             tests/specs/functional/lemmas-no-smt-spec/haskell/timestamp  \
-                             tests/specs/functional/lemmas-spec/haskell/timestamp         \
-                             tests/specs/functional/merkle-spec/haskell/timestamp         \
-                             tests/specs/functional/storageRoot-spec/haskell/timestamp    \
-                             tests/specs/mcd/functional-spec/haskell/timestamp            \
-                             tests/specs/mcd/verification/haskell/timestamp               \
-                             tests/specs/opcodes/evm-optimizations-spec/haskell/timestamp
-build-prove-haskell: $(KEVM_BIN)/kevm $(prove_haskell_definitions)
-build-prove: $(prove_haskell_definitions)
+test-prove: tests/specs/opcodes/evm-optimizations-spec.md build-kevm poetry
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_prove -n8'
 
-test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
-test-prove-benchmarks:    $(prove_benchmarks_tests:=.prove)
-test-prove-functional:    $(prove_functional_tests:=.prove)
-test-prove-opcodes:       $(prove_opcodes_tests:=.prove)
-test-prove-erc20:         $(prove_erc20_tests:=.prove)
-test-prove-bihu:          $(prove_bihu_tests:=.prove)
-test-prove-examples:      $(prove_examples_tests:=.prove)
-test-prove-mcd:           $(prove_mcd_tests:=.prove)
-test-prove-optimizations: $(prove_optimization_tests:=.prove)
-test-prove-smoke:         $(prove_smoke_tests:=.prove)
-
-test-failing-prove: $(prove_failing_tests:=.prove)
+test-prove-smoke: $(prove_smoke_tests:=.prove)
 
 test-klab-prove: KPROVE_OPTS += --debugger
 test-klab-prove: $(smoke_tests_prove:=.prove)
-
-$(prove_pyk_tests:=.prove): KPROVE_OPTS += --pyk --max-depth 1000 --verbose
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.md

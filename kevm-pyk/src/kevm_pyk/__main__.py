@@ -198,7 +198,7 @@ def exec_prove_legacy(
     bug_report: bool = False,
     save_directory: Path | None = None,
     spec_module: str | None = None,
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     debug: bool = False,
     debugger: bool = False,
@@ -249,7 +249,7 @@ def exec_prove(
     bug_report: bool = False,
     save_directory: Path | None = None,
     spec_module: str | None = None,
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     reinit: bool = False,
     max_depth: int = 1000,
@@ -282,6 +282,9 @@ def exec_prove(
         claim_labels=claim_labels,
         exclude_claim_labels=exclude_claim_labels,
     )
+
+    if not claims:
+        raise ValueError(f'No claims found in file: {spec_file}')
 
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
@@ -368,7 +371,9 @@ def exec_prove(
             if failure_info and failure_log is not None:
                 for line in failure_log:
                     print(line)
-    sys.exit(failed)
+
+    if failed:
+        sys.exit(failed)
 
 
 def exec_prune_proof(
@@ -378,7 +383,7 @@ def exec_prune_proof(
     includes: Iterable[str] = (),
     save_directory: Path | None = None,
     spec_module: str | None = None,
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     **kwargs: Any,
 ) -> None:
@@ -414,7 +419,7 @@ def exec_show_kcfg(
     spec_file: Path,
     save_directory: Path | None = None,
     includes: Iterable[str] = (),
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     spec_module: str | None = None,
     md_selector: str | None = None,
@@ -462,7 +467,7 @@ def exec_view_kcfg(
     spec_file: Path,
     save_directory: Path | None = None,
     includes: Iterable[str] = (),
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     spec_module: str | None = None,
     md_selector: str | None = None,
