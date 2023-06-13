@@ -761,6 +761,11 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
                                             fcov_cons = _cons_intersection([c for cons in cov_cons for c in cons])
                                             init_cons = [node.cterm.constraints for node in kcfg.init]
                                             finit_cons = _cons_intersection([c for cons in init_cons for c in cons])
+
+                                            # target = kcfg.target[0]
+                                            # print(target)
+                                            # path_constraints = apr_proof.path_constraints(target)
+
                                             new_cons = andBool([fcov_cons, notBool(finit_cons)])
                                             new = impliesBool(finit_cons, new_cons)
                                             # TODO: parse args when they are of type BYTES-HOOKED
