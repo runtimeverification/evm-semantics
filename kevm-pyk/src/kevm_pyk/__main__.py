@@ -484,10 +484,19 @@ def exec_view_kcfg(
 
 
 def exec_foundry_prove(
+    definition_dir: Path,
     foundry_root: Path,
     max_depth: int = 1000,
     max_iterations: int | None = None,
     reinit: bool = False,
+    includes: Iterable[str] = (),
+    requires: Iterable[str] = (),
+    imports: Iterable[str] = (),
+    regen: bool = False,
+    rekompile: bool = False,
+    ccopts: Iterable[str] = (),
+    llvm_kompile: bool = True,
+    llvm_library: bool = False,
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
     workers: int = 1,
@@ -503,21 +512,31 @@ def exec_foundry_prove(
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
     trace_rewrites: bool = False,
+    debug: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
-    _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
+#      _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
 
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
     results = foundry_prove(
+        definition_dir=definition_dir,
         foundry_root=foundry_root,
         max_depth=max_depth,
         max_iterations=max_iterations,
         reinit=reinit,
+        includes=includes,
+        requires=requires,
+        imports=imports,
+        regen=regen,
+        rekompile=rekompile,
+        ccopts=ccopts,
+        llvm_kompile=llvm_kompile,
+        llvm_library=llvm_library,
         tests=tests,
         exclude_tests=exclude_tests,
         workers=workers,
@@ -532,7 +551,9 @@ def exec_foundry_prove(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
+        debug=debug,
     )
+
     failed = 0
     for pid, r in results.items():
         passed, failure_log = r

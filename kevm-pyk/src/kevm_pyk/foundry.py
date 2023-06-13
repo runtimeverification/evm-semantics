@@ -314,6 +314,7 @@ def foundry_kompile(
             raise ValueError(f'Could not find contract: {imp[0]}')
 
     if regen or not foundry_contracts_file.exists() or not foundry_main_file.exists():
+        print('Regenerating K definition.')
         copied_requires = []
         copied_requires += [f'requires/{name}' for name in list(requires_paths.keys())]
         imports = ['FOUNDRY']
@@ -341,6 +342,8 @@ def foundry_kompile(
         _LOGGER.info(f'Wrote file: {foundry_contracts_file}')
         foundry_main_file.write_text(kevm.pretty_print(contract_main_definition) + '\n')
         _LOGGER.info(f'Wrote file: {foundry_main_file}')
+    else:
+        print('Skipped regenerating K definition.')
 
     def _kompile(
         out_dir: Path,
@@ -377,6 +380,7 @@ def foundry_kompile(
         digest_file.write_text(kompilation_digest())
 
     if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
+        print(f'Kompiling definition: {foundry_definition_dir}')
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
         _kompile(foundry_definition_dir, KompileTarget.HASKELL)
         if llvm_library:
@@ -386,6 +390,8 @@ def foundry_kompile(
                 KompileTarget.LLVM,
                 llvm_kompile_type=LLVMKompileType.C,
             )
+    else:
+        print('Skipped kompilation.')
 
     update_kompilation_digest()
     foundry.update_digest()
@@ -393,9 +399,18 @@ def foundry_kompile(
 
 def foundry_prove(
     foundry_root: Path,
+    definition_dir: Path,
     max_depth: int = 1000,
     max_iterations: int | None = None,
+    includes: Iterable[str] = (),
+    requires: Iterable[str] = (),
+    imports: Iterable[str] = (),
+    regen: bool = False,
+    rekompile: bool = False,
+    ccopts: Iterable[str] = (),
     reinit: bool = False,
+    llvm_kompile: bool = True,
+    llvm_library: bool = False,
     tests: Iterable[str] = (),
     exclude_tests: Iterable[str] = (),
     workers: int = 1,
@@ -411,7 +426,23 @@ def foundry_prove(
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
     trace_rewrites: bool = False,
+    debug: bool = False,
 ) -> dict[str, tuple[bool, list[str] | None]]:
+
+    foundry_kompile(
+        definition_dir=definition_dir,
+        foundry_root=foundry_root,
+        includes=includes,
+        regen=regen,
+        rekompile=rekompile,
+        requires=requires,
+        imports=imports,
+        ccopts=ccopts,
+        llvm_kompile=llvm_kompile,
+        debug=debug,
+        llvm_library=llvm_library,
+    )
+
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
@@ -544,13 +575,13 @@ def foundry_prove(
 
         return apr_proofs
 
-    _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
+    print(f'Running setup functions in parallel: {list(setup_methods.values())}')
     results = run_cfg_group(list(setup_methods.values()))
     failed = [setup_cfg for setup_cfg, passed in results.items() if not passed]
     if failed:
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
 
-    _LOGGER.info(f'Running test functions in parallel: {tests}')
+    print(f'Running test functions in parallel: {tests}')
     results = run_cfg_group(tests)
 
     return results

@@ -557,7 +557,9 @@ $(foundry_golden)/%.out: foundry-fail
 	| grep --invert-match '\[priority(.*), label(BASIC-BLOCK-'  \
 	> $@
 
-tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
+# tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
+#   $(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose --require $(foundry_dir)/lemmas.k --module-import LoopsTest:SUM-TO-N-INVARIANT
+tests/foundry/out/kompiled/timestamp: $(foundry_out) poetry
 	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose --require $(foundry_dir)/lemmas.k --module-import LoopsTest:SUM-TO-N-INVARIANT
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose
