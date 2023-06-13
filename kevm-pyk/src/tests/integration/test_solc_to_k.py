@@ -1,17 +1,19 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
 
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
 
+from .utils import TEST_DATA_DIR
+
 if TYPE_CHECKING:
+    from pathlib import Path
     from typing import Callable, Final
 
 
-EXAMPLES_DIR: Final = (Path(__file__).parent / 'test-data/examples').resolve(strict=True)
+EXAMPLES_DIR: Final = TEST_DATA_DIR / 'examples'
 TEST_DATA: Final = tuple(EXAMPLES_DIR.glob('*.sol'))
 
 
