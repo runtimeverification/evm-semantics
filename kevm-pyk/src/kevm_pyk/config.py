@@ -5,7 +5,8 @@ from pathlib import Path
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import check_dir_path, run_process
+from pyk.cli.utils import check_dir_path
+from pyk.utils import run_process
 
 if TYPE_CHECKING:
     from typing import Final

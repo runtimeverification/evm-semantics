@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING
 
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli_utils import BugReport, ensure_dir_path, run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import minimize_term
@@ -25,7 +24,7 @@ from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof
 from pyk.proof.reachability import APRBMCProof, APRProof
-from pyk.utils import hash_str, single, unique
+from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
@@ -504,7 +503,6 @@ def foundry_prove(
 
             passed = kevm_prove(
                 foundry.kevm,
-                proof_id,
                 proof,
                 kcfg_explore,
                 save_directory=save_directory,
@@ -825,9 +823,9 @@ def _method_to_apr_proof(
         proof_dict = json.loads(proof_path.read_text())
         match proof_dict['type']:
             case 'APRProof':
-                apr_proof = APRProof.from_dict(proof_dict)
+                apr_proof = APRProof.from_dict(proof_dict, proof_dir=save_directory)
             case 'APRBMCProof':
-                apr_proof = APRBMCProof.from_dict(proof_dict)
+                apr_proof = APRBMCProof.from_dict(proof_dict, proof_dir=save_directory)
             case unsupported_type:
                 raise ValueError(f'Unsupported proof type {unsupported_type}')
     else:
@@ -839,31 +837,33 @@ def _method_to_apr_proof(
             _LOGGER.info(f'Using setUp method for test: {test}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
-        kcfg = _method_to_cfg(empty_config, contract, method, save_directory, init_state=setup_digest)
+        kcfg, init_node_id, target_node_id = _method_to_cfg(
+            empty_config, contract, method, save_directory, init_state=setup_digest
+        )
 
         _LOGGER.info(f'Expanding macros in initial state for test: {test}')
-        init_term = kcfg.get_unique_init().cterm.kast
+        init_term = kcfg.node(init_node_id).cterm.kast
         init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
         init_cterm = CTerm.from_kast(init_term)
-
-        _LOGGER.info(f'Expanding macros in target state for test: {test}')
-        target_term = kcfg.get_unique_target().cterm.kast
-        target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
-        target_cterm = CTerm.from_kast(target_term)
-        kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
-
-        _LOGGER.info(f'Starting KCFGExplore for test: {test}')
         _LOGGER.info(f'Computing definedness constraint for test: {test}')
         init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
-        kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
+        kcfg.replace_node(init_node_id, init_cterm)
+
+        _LOGGER.info(f'Expanding macros in target state for test: {test}')
+        target_term = kcfg.node(target_node_id).cterm.kast
+        target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
+        target_cterm = CTerm.from_kast(target_term)
+        kcfg.replace_node(target_node_id, target_cterm)
 
         if simplify_init:
             _LOGGER.info(f'Simplifying KCFG for test: {test}')
             kcfg_explore.simplify(kcfg, {})
         if bmc_depth is not None:
-            apr_proof = APRBMCProof(proof_digest, kcfg, {}, proof_dir=save_directory, bmc_depth=bmc_depth)
+            apr_proof = APRBMCProof(
+                proof_digest, kcfg, init_node_id, target_node_id, {}, bmc_depth, proof_dir=save_directory
+            )
         else:
-            apr_proof = APRProof(proof_digest, kcfg, {}, proof_dir=save_directory)
+            apr_proof = APRProof(proof_digest, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
 
     apr_proof.write_proof()
     return apr_proof
@@ -875,7 +875,7 @@ def _method_to_cfg(
     method: Contract.Method,
     kcfgs_dir: Path,
     init_state: str | None = None,
-) -> KCFG:
+) -> tuple[KCFG, NodeIdLike, NodeIdLike]:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
     init_term = _init_term(
@@ -892,7 +892,7 @@ def _method_to_cfg(
     target_node = cfg.create_node(final_cterm)
     cfg.add_target(target_node.id)
 
-    return cfg
+    return cfg, init_node.id, target_node.id
 
 
 def _init_cterm(init_term: KInner) -> CTerm:
