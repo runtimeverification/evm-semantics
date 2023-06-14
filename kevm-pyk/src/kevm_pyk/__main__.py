@@ -17,7 +17,6 @@ from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
 from pyk.proof.equality import EqualityProof
-from pyk.utils import single
 from pyk.utils import BugReport, single
 
 from .cli import KEVMCLIArgs, node_id_like
@@ -349,10 +348,13 @@ def exec_prove(
                     kcfg.replace_node(init_node_id, new_init)
                     kcfg.replace_node(target_node_id, new_target)
 
-                    proof_problem = APRProof(claim.label, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
+                    proof_problem = APRProof(
+                        claim.label, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory
+                    )
 
             passed = kevm_prove(
                 kevm,
+                claim.label,
                 proof_problem,
                 kcfg_explore,
                 save_directory=save_directory,
