@@ -211,26 +211,29 @@ class Foundry:
 
     def matching_tests(self, tests: list[str], exclude_tests: list[str]) -> list[str]:
         def _escape_brackets(regs: list[str]) -> list[str]:
-            regs = [reg.replace('[', '\[') for reg in regs]
-            return [reg.replace(']', '\]') for reg in regs]
+            regs = [reg.replace('[', '\\[') for reg in regs]
+            regs = [reg.replace(']', '\\]') for reg in regs]
+            regs = [reg.replace('(', '\\(') for reg in regs]
+            return [reg.replace(')', '\\)') for reg in regs]
 
-        all_tests = _escape_bracket(self.all_tests)
-        all_non_tests = _escape_bracket(self.all_non_tests)
+        all_tests = self.all_tests
+        all_non_tests = self.all_non_tests
         matched_tests = set()
         unfound_tests: list[str] = []
         if not tests:
             tests = all_tests
-        for _t in tests:
-            if not any(re.search(_t, test) for test in (all_tests + all_non_tests)):
-                unfound_tests.append(_t)
-        for t in all_tests:
-            if any(re.search(t, test) for test in all_tests):
-                matched_tests.add(t)
-            else:
+        tests = _escape_brackets(tests)
+        for t in tests:
+            if not any(re.search(t, test) for test in (all_tests + all_non_tests)):
                 unfound_tests.append(t)
-            if any(re.search(t, test) for test in exclude_tests):
+            else:
+                print(t)
+        for test in all_tests:
+            if any(re.search(t, test) for t in tests):
+                matched_tests.add(test)
+            if any(re.search(t, test) for t in exclude_tests):
                 try:
-                    matched_tests.remove(t)
+                    matched_tests.remove(test)
                 except:
                     pass
         if unfound_tests:
