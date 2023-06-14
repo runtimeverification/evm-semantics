@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli_utils import BugReport, file_path
+from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
@@ -16,7 +16,7 @@ from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
-from pyk.utils import single
+from pyk.utils import BugReport, single
 
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
@@ -197,7 +197,7 @@ def exec_prove_legacy(
     bug_report: bool = False,
     save_directory: Path | None = None,
     spec_module: str | None = None,
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     debug: bool = False,
     debugger: bool = False,
@@ -248,7 +248,7 @@ def exec_prove(
     bug_report: bool = False,
     save_directory: Path | None = None,
     spec_module: str | None = None,
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     reinit: bool = False,
     max_depth: int = 1000,
@@ -282,6 +282,9 @@ def exec_prove(
         exclude_claim_labels=exclude_claim_labels,
     )
 
+    if not claims:
+        raise ValueError(f'No claims found in file: {spec_file}')
+
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
@@ -302,10 +305,10 @@ def exec_prove(
 
             else:
                 _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
-                kcfg = KCFG.from_claim(kevm.definition, claim)
+                kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
 
-                new_init = ensure_ksequence_on_k_cell(kcfg.get_unique_init().cterm)
-                new_target = ensure_ksequence_on_k_cell(kcfg.get_unique_target().cterm)
+                new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
+                new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
 
                 _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
                 new_init = kcfg_explore.cterm_assume_defined(new_init)
@@ -321,14 +324,13 @@ def exec_prove(
                     new_init = CTerm.from_kast(_new_init)
                     new_target = CTerm.from_kast(_new_target)
 
-                kcfg.replace_node(kcfg.get_unique_init().id, new_init)
-                kcfg.replace_node(kcfg.get_unique_target().id, new_target)
+                kcfg.replace_node(init_node_id, new_init)
+                kcfg.replace_node(target_node_id, new_target)
 
-                proof_problem = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
+                proof_problem = APRProof(claim.label, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
 
             passed = kevm_apr_prove(
                 kevm,
-                claim.label,
                 proof_problem,
                 kcfg_explore,
                 save_directory=save_directory,
@@ -349,7 +351,7 @@ def exec_prove(
             )
             failure_log = None
             if not passed:
-                failure_log = print_failure_info(proof_problem.kcfg, claim.label, kcfg_explore)
+                failure_log = print_failure_info(proof_problem, kcfg_explore)
 
             return passed, failure_log
 
@@ -367,7 +369,9 @@ def exec_prove(
             if failure_info and failure_log is not None:
                 for line in failure_log:
                     print(line)
-    sys.exit(failed)
+
+    if failed:
+        sys.exit(failed)
 
 
 def exec_prune_proof(
@@ -377,7 +381,7 @@ def exec_prune_proof(
     includes: Iterable[str] = (),
     save_directory: Path | None = None,
     spec_module: str | None = None,
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     **kwargs: Any,
 ) -> None:
@@ -413,7 +417,7 @@ def exec_show_kcfg(
     spec_file: Path,
     save_directory: Path | None = None,
     includes: Iterable[str] = (),
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     spec_module: str | None = None,
     md_selector: str | None = None,
@@ -451,7 +455,7 @@ def exec_show_kcfg(
 
     if failure_info:
         with KCFGExplore(kevm, id=apr_proof.id) as kcfg_explore:
-            res_lines += print_failure_info(apr_proof.kcfg, apr_proof.id, kcfg_explore)
+            res_lines += print_failure_info(apr_proof, kcfg_explore)
 
     print('\n'.join(res_lines))
 
@@ -461,7 +465,7 @@ def exec_view_kcfg(
     spec_file: Path,
     save_directory: Path | None = None,
     includes: Iterable[str] = (),
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     spec_module: str | None = None,
     md_selector: str | None = None,

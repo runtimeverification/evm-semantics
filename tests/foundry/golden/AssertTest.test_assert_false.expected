@@ -1,5 +1,5 @@
 
-┌─ 4 (init, expanded)
+┌─ 1 (init, expanded)
 │    k: #execute ~> CONTINUATION
 │    pc: 0
 │    callDepth: 0
@@ -7,21 +7,21 @@
 │    src: tests/foundry/test/Simple.t.sol:5:54
 │
 │  (376 steps)
-├─ 7 (expanded)
+├─ 3 (expanded)
 │    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │    pc: 992
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 9 (expanded)
+├─ 4 (expanded)
 │    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │    pc: 992
 │    callDepth: 0
 │    statusCode: EVMC_REVERT
 │
 │  (2 steps)
-└─ 11 (expanded, stuck, leaf)
+└─ 5 (expanded, stuck, leaf)
      k: #halt ~> CONTINUATION:K
      pc: 992
      callDepth: 0
@@ -29,7 +29,7 @@
    (stuck)
 
 
-└─ 3 (target, leaf)
+└─ 2 (target, leaf)
      k: #halt ~> CONTINUATION
      pc: PC_CELL_5d410f2a
      callDepth: CALLDEPTH_CELL_5d410f2a
@@ -38,14 +38,14 @@
 
 Target Nodes:
 
-3 (target, leaf)
+2 (target, leaf)
  k: #halt ~> CONTINUATION
  pc: PC_CELL_5d410f2a
  callDepth: CALLDEPTH_CELL_5d410f2a
  statusCode: STATUSCODE_FINAL
 
 
-Node 11:
+Node 5:
 
 ( <generatedTop>
   <foundry>
@@ -873,11 +873,11 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
 
 endmodule
 
-1 Failure nodes. (0 frontier and 1 stuck)
+1 Failure nodes. (0 pending and 1 stuck)
 
 Stuck nodes:
 
-  Node id: 11
+  Node id: 5
   Failure reason:
     Implication check failed, the following is the remaining implication:
     ( ( { true #Equals 0 <=Int CALLER_ID:Int }
