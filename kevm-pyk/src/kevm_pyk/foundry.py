@@ -223,21 +223,17 @@ class Foundry:
         if not tests:
             tests = all_tests
         tests = _escape_brackets(tests)
+        exclude_tests = _escape_brackets(exclude_tests)
         for t in tests:
             if not any(re.search(t, test) for test in (all_tests + all_non_tests)):
                 unfound_tests.append(t)
-            else:
-                print(t)
         for test in all_tests:
-            if any(re.search(t, test) for t in tests):
+            if any(re.search(t, test) for t in tests) and not any(re.search(t, test) for t in exclude_tests):
                 matched_tests.add(test)
-            if any(re.search(t, test) for t in exclude_tests):
-                try:
-                    matched_tests.remove(test)
-                except KeyError:
-                    pass
         if unfound_tests:
             raise ValueError(f'Test identifiers not found: {set(unfound_tests)}')
+        elif len(matched_tests) == 0:
+            raise ValueError('No test matched the predicates')
         return list(matched_tests)
 
     def matching_sig(self, test: str) -> str:
