@@ -157,7 +157,7 @@ jobs:
       - name: 'Foundry Kompile'
         run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-kompile -j2'
       - name: 'Foundry Prove'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove -j2 FOUNDRY_PAR=12'
+        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove'
       - name: 'Foundry diff tests'
         run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-kcfg-diff -j2 FOUNDRY_PAR=12'
       - name: 'Foundry List'

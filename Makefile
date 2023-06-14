@@ -460,7 +460,8 @@ foundry_out := $(foundry_dir)/out
 test-foundry-%: KEVM_OPTS += --pyk --verbose
 test-foundry-%: KEVM := $(POETRY_RUN) kevm
 test-foundry-kompile: tests/foundry/foundry.k.check tests/foundry/contracts.k.check
-test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
+test-foundry-prove: poetry build-kevm build-foundry
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_foundry_prove -n8'
 test-foundry-bmc-prove: tests/foundry/out/kompiled/foundry.k.bmc-prove
 test-foundry-list: tests/foundry/foundry-list.check
 
