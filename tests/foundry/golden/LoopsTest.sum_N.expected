@@ -1,5 +1,5 @@
 
-┌─ 4 (init, expanded)
+┌─ 1 (init, expanded)
 │    k: #execute ~> CONTINUATION
 │    pc: 0
 │    callDepth: 0
@@ -7,21 +7,21 @@
 │    src: tests/foundry/test/Loops.t.sol:5:278
 │
 │  (776 steps)
-├─ 7 (expanded)
+├─ 3 (expanded)
 │    k: CALL 9223372036854772793 645326474426547203313410069153905908525362434349 0 128  ...
 │    pc: 1509
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 9 (expanded)
+├─ 4 (expanded)
 │    k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
 │    pc: 1509
 │    callDepth: 0
 │    statusCode: STATUSCODE:StatusCode
 │
 │  (153 steps)
-├─ 11 (split)
+├─ 5 (split)
 │    k: JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 ) ~> #pc [ JUMPI ] ~> #execute ...
 │    pc: 1539
 │    callDepth: 0
@@ -31,7 +31,7 @@
 ┃ (branch)
 ┣━━┓ constraint: { true #Equals VV0_n_114b9705:Int ==Int 0 }
 ┃  │
-┃  ├─ 13 (expanded)
+┃  ├─ 6 (expanded)
 ┃  │    k: JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 ) ~> #pc [ JUMPI ] ~> #execute ...
 ┃  │    pc: 1539
 ┃  │    callDepth: 0
@@ -39,7 +39,7 @@
 ┃  │    src: tests/foundry/test/Loops.t.sol:164:178
 ┃  │
 ┃  │  (162 steps)
-┃  ├─ 16 (expanded)
+┃  ├─ 8 (expanded)
 ┃  │    k: #end EVMC_SUCCESS ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
 ┃  │    pc: 352
 ┃  │    callDepth: 0
@@ -47,7 +47,7 @@
 ┃  │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 ┃  │
 ┃  │  (1 step)
-┃  ├─ 20 (expanded)
+┃  ├─ 10 (expanded)
 ┃  │    k: #halt ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
 ┃  │    pc: 352
 ┃  │    callDepth: 0
@@ -55,7 +55,7 @@
 ┃  │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 ┃  │
 ┃  │  (2 steps)
-┃  ├─ 24 (leaf)
+┃  ├─ 12 (leaf)
 ┃  │    k: #halt ~> CONTINUATION:K
 ┃  │    pc: 352
 ┃  │    callDepth: 0
@@ -64,7 +64,7 @@
 ┃  │
 ┃  ┊  constraint: true
 ┃  ┊  subst: OMITTED SUBST
-┃  └─ 3 (target, leaf)
+┃  └─ 2 (target, leaf)
 ┃       k: #halt ~> CONTINUATION
 ┃       pc: PC_CELL_5d410f2a
 ┃       callDepth: CALLDEPTH_CELL_5d410f2a
@@ -72,7 +72,7 @@
 ┃
 ┗━━┓ constraint: { true #Equals ( notBool VV0_n_114b9705:Int ==Int 0 ) }
    │
-   ├─ 14 (expanded)
+   ├─ 7 (expanded)
    │    k: JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 ) ~> #pc [ JUMPI ] ~> #execute ...
    │    pc: 1539
    │    callDepth: 0
@@ -80,7 +80,7 @@
    │    src: tests/foundry/test/Loops.t.sol:164:178
    │
    │  (162 steps)
-   ├─ 18 (expanded)
+   ├─ 9 (expanded)
    │    k: #end EVMC_SUCCESS ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
    │    pc: 352
    │    callDepth: 0
@@ -88,7 +88,7 @@
    │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
    │
    │  (1 step)
-   ├─ 22 (expanded)
+   ├─ 11 (expanded)
    │    k: #halt ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
    │    pc: 352
    │    callDepth: 0
@@ -96,7 +96,7 @@
    │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
    │
    │  (2 steps)
-   ├─ 26 (leaf)
+   ├─ 13 (leaf)
    │    k: #halt ~> CONTINUATION:K
    │    pc: 352
    │    callDepth: 0
@@ -105,7 +105,7 @@
    │
    ┊  constraint: true
    ┊  subst: OMITTED SUBST
-   └─ 3 (target, leaf)
+   └─ 2 (target, leaf)
         k: #halt ~> CONTINUATION
         pc: PC_CELL_5d410f2a
         callDepth: CALLDEPTH_CELL_5d410f2a
@@ -2066,6 +2066,6 @@ module SUMMARY-LOOPSTEST-SUM-N
 
 endmodule
 
-0 Failure nodes. (0 frontier and 0 stuck)
+0 Failure nodes. (0 pending and 0 stuck)
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/
