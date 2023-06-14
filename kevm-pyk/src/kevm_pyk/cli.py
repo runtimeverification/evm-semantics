@@ -5,7 +5,8 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import dir_path, ensure_dir_path, file_path
+from pyk.cli.utils import dir_path, file_path
+from pyk.utils import ensure_dir_path
 
 from .utils import arg_pair_of
 
@@ -67,6 +68,52 @@ class KEVMCLIArgs:
             type=list_of(str, delim=','),
             default=[],
             help='Comma-separate list of equations to debug.',
+        )
+        return args
+
+    @cached_property
+    def kprove_legacy_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument(
+            '--bug-report',
+            default=False,
+            action='store_true',
+            help='Generate a haskell-backend bug report for the execution.',
+        )
+        args.add_argument(
+            '--debugger',
+            dest='debugger',
+            default=False,
+            action='store_true',
+            help='Launch proof in an interactive debugger.',
+        )
+        args.add_argument(
+            '--max-depth',
+            dest='max_depth',
+            default=None,
+            type=int,
+            help='The maximum number of computational steps to prove.',
+        )
+        args.add_argument(
+            '--max-counterexamples',
+            type=int,
+            dest='max_counterexamples',
+            default=None,
+            help='Maximum number of counterexamples reported before a forcible stop.',
+        )
+        args.add_argument(
+            '--branching-allowed',
+            type=int,
+            dest='branching_allowed',
+            default=None,
+            help='Number of branching events allowed before a forcible stop.',
+        )
+        args.add_argument(
+            '--haskell-backend-arg',
+            dest='haskell_backend_args',
+            default=[],
+            action='append',
+            help='Arguments passed to the Haskell backend execution engine.',
         )
         return args
 
@@ -163,6 +210,13 @@ class KEVMCLIArgs:
         args = ArgumentParser(add_help=False)
         args.add_argument('--minimize', dest='minimize', default=True, action='store_true', help='Minimize output.')
         args.add_argument('--no-minimize', dest='minimize', action='store_false', help='Do not minimize output.')
+        args.add_argument(
+            '--sort-collections',
+            dest='sort_collections',
+            default=False,
+            action='store_true',
+            help='Sort collections before outputting term.',
+        )
         return args
 
     @cached_property
@@ -286,6 +340,19 @@ class KEVMCLIArgs:
             default='kore-rpc',
             help='Custom command to start RPC server',
         )
+        args.add_argument(
+            '--failure-information',
+            dest='failure_info',
+            default=True,
+            action='store_true',
+            help='Show failure summary for all failing tests',
+        )
+        args.add_argument(
+            '--no-failure-information',
+            dest='failure_info',
+            action='store_false',
+            help='Do not show failure summary for failing tests',
+        )
         return args
 
     @cached_property
@@ -346,6 +413,19 @@ class KEVMCLIArgs:
             default=[],
             action='append',
             help='List of nodes to display delta for.',
+        )
+        args.add_argument(
+            '--failure-information',
+            dest='failure_info',
+            default=False,
+            action='store_true',
+            help='Show failure summary for cfg',
+        )
+        args.add_argument(
+            '--no-failure-information',
+            dest='failure_info',
+            action='store_false',
+            help='Do not show failure summary for cfg',
         )
         args.add_argument(
             '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'

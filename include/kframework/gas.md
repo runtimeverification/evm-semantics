@@ -6,10 +6,10 @@ Here is a representation of `Gas`. This sort is used by `<gas>`, `<callGas>`, an
 ```k
 module GAS-SYNTAX
     imports INT-SYNTAX
-    
+
     syntax Gas ::= Int
-    syntax Int ::= "gas2Int" "(" Gas ")" [function]
-    
+    syntax Int ::= "gas2Int" "(" Gas ")" [function, total]
+
     syntax Gas ::= "minGas" "(" Gas "," Gas ")" [function, total]
                  > left:
                    Gas "*Gas" Gas [function, total]
@@ -27,15 +27,15 @@ module GAS
     imports BOOL
     imports GAS-SYNTAX
     imports GAS-SIMPLIFICATION
-    
+
     rule I1:Int *Gas I2:Int => I1 *Int I2
     rule I1:Int /Gas I2:Int => I1 /Int I2
     rule I1:Int +Gas I2:Int => I1 +Int I2
     rule I1:Int -Gas I2:Int => I1 -Int I2
-    
+
     rule I1:Int  <Gas I2:Int => I1  <Int I2
     rule I1:Int <=Gas I2:Int => I1 <=Int I2
-    
+
     rule minGas(I1:Int, I2:Int) => minInt(I1, I2)
     rule gas2Int(G:Int) => G
 endmodule
